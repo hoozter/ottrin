@@ -1,0 +1,13 @@
+[package]
+name = "ottrin-platform"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+ottrin-core = { path = "../ottrin-core" }
+thiserror.workspace = true
+tracing.workspace = true
+trash = "5"
+opener = "0.8"

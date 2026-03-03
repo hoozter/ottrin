@@ -1,0 +1,11 @@
+[package]
+name = "ottrin-preview"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+ottrin-core = { path = "../ottrin-core" }
+thiserror.workspace = true
+serde.workspace = true

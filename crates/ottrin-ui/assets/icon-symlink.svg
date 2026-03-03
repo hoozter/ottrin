@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <!-- Document body (dimmed) -->
+  <path d="M3.5 1C2.67 1 2 1.67 2 2.5v11C2 14.33 2.67 15 3.5 15h9c.83 0 1.5-.67 1.5-1.5V6L10 1H3.5z" fill="#7b8b9a" opacity="0.7"/>
+  <path d="M10 1l4 5h-3.5C10.22 6 10 5.78 10 5.5V1z" fill="#546373" opacity="0.7"/>
+  <!-- Symlink arrow overlay -->
+  <path d="M4.5 11.5 L4.5 8.5 L7.5 8.5 L7.5 7 L10 9 L7.5 11 L7.5 9.5 L5.5 9.5 L5.5 11.5 Z" fill="#5294e2"/>
+</svg>
