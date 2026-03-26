@@ -9,3 +9,6 @@ authors.workspace = true
 ottrin-core = { path = "../ottrin-core" }
 thiserror.workspace = true
 serde.workspace = true
+zip = { version = "2", default-features = false, features = ["deflate"] }
+lofty = { version = "0.22", default-features = false }
+lopdf = "0.34"

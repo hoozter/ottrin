@@ -1,202 +1,151 @@
-# Ottrin — Roadmap
+# Ottrin Roadmap (Current)
 
 ## Legend
 - [ ] Not started
 - [~] In progress
 - [x] Done
 
----
+## v0.1.0 — Foundation release (2026-03-26)
 
-## Phase 0 — Foundation ✓
-- [x] Rust workspace scaffold with split crates
-- [x] CI baseline (cargo check on Linux + Windows)
-- [x] Core crate: domain models, AppState, config serialization
-- [x] Platform crate: trash, file ops abstraction
-- [x] Copy crate: transfer queue model
-- [x] Preview crate: async pipeline
-- [x] Project definition and roadmap documented
+**Changelog:** Initial release with stable core. Build issues fixed (PathBuf serialization, closure borrows). All tests pass and release binary builds.
 
----
+### Core navigation and views
+- [x] Keyboard-first navigation (arrows, Enter, Backspace, Tab, Space)
+- [x] Column view with stable focus and path-aligned selection behavior
+- [x] Finder-style Miller navigation (depth tracking, scroll freeze, remembered path re-entry)
+- [x] List and Grid views
+- [x] Horizontal column auto-scroll (focus stays visible)
+- [x] Resizable column separators
+- [x] Tabs with per-tab history
+- [x] Bookmarks row and path/address bar
 
-## Phase 1 — UI Shell (Current Phase)
+### File operations and command workflow
+- [x] Copy / move / delete (trash + permanent)
+- [x] Rename
+- [x] Integrated command frame with shell-style commands
+- [x] Drop Folder workflow with in-app folder picker
+- [x] Drop Folder recents and pinned model (core support)
 
-Goal: A navigable, beautiful window with the correct chrome. No feature completeness yet —
-just the skeleton that looks and feels right.
+### Privileged operations
+- [x] Privileged helper architecture
+- [x] Retry-as-admin flow for denied operations
+- [x] In-app helper status and setup surface
 
-### Window Chrome
-- [ ] Title bar: back, forward, up buttons
-- [ ] Address bar: shows current path as clickable breadcrumbs
-- [ ] Address bar: click to edit path directly (Ctrl+L)
-- [ ] Search button (opens overlay — stub for now)
-- [ ] Menu button (hamburger — stub for now)
+### Search foundation
+- [x] Dedicated search crate (`ottrin-search`)
+- [x] Indexed global/current-folder search modes
+- [x] Search query parser and sort modes
+- [x] Search panel integrated into smart sidebar
+- [x] Search result context actions (open/reveal/copy/move workflows)
 
-### Tab Bar
-- [ ] Tab strip rendering with active/inactive states
-- [ ] New tab button (+)
-- [ ] Close tab (× on tab, middle-click)
-- [ ] Keyboard: Ctrl+T, Ctrl+W, Ctrl+Tab, Ctrl+Shift+Tab
-- [ ] Each tab has independent path + navigation history
-- [ ] Tab label = folder name; tooltip = full path
+### Theming and visual system
+- [x] Theme preset engine (Ottrin/Breeze/Adwaita/Windows 11/Solarized/Nord/G33k)
+- [x] Per-preset custom overrides persisted in config
+- [x] Semantic file classification + centralized visual mapping
+- [x] In-app theme editor with live preview + save/save-as/reset flow
 
-### File Pane — List View
-- [ ] Directory listing with async background worker (port existing)
-- [ ] Columns: Name, Size, Modified, Type
-- [ ] Sortable columns (click header)
-- [ ] Keyboard navigation: ↑↓ move selection, → enter folder, ← go up, Enter open
-- [ ] Double-click to enter folder / open file
-- [ ] Selection: click, Ctrl+click (multi), Shift+click (range), Ctrl+A
-- [ ] Smooth hover states, selection highlight
-- [ ] Empty folder message
-
-### File Pane — Miller Columns (Default)
-- [ ] Three-column layout: grandparent | parent | current
-- [ ] Column scroll: entering a folder adds rightmost column, old leftmost drops off
-- [ ] Going up shifts columns right
-- [ ] Rightmost column shows folder contents on hover, file preview on select
-- [ ] Arrow key navigation across columns (← enters parent column, → enters child)
-- [ ] Consistent with "Up always works" rule
-
-### File Pane — Grid / Thumbnails
-- [ ] Grid layout with configurable icon size
-- [ ] Thumbnail generation for image files
-- [ ] Fallback icon for non-image files (Papirus set)
-
-### View Mode Switcher
-- [ ] Per-tab view mode: Miller | List | Grid
-- [ ] Accessible from breadcrumb row button
-- [ ] Persisted per session
-
-### Target Bar
-- [ ] Always-visible bar between file pane and status bar
-- [ ] Shows "No target set" when empty (dim, unobtrusive)
-- [ ] Shows target path with accent color when set
-- [ ] "Recent ▾" dropdown — last 10 targets, persisted
-- [ ] Clear (✕) button
-- [ ] Right-click any folder in file list → "Set as Target"
-- [ ] Drag folder to target bar to set it
-- [ ] Type path directly in target bar
-
-### Status Bar
-- [ ] Item count for current folder
-- [ ] Selection summary (N selected, X MB)
-- [ ] Operation status indicator (Idle / copying... / error)
-- [ ] `>_` icon to open/close command frame
-
-### Command Frame
-- [ ] Slide-up panel from bottom, above status bar
-- [ ] Activated by: typing `:`, clicking `>_` icon
-- [ ] Option: always-visible (settings)
-- [ ] Input with `>` prompt
-- [ ] Path tab-completion with dropdown
-- [ ] Command history (↑/↓)
-- [ ] Escape dismisses
-- [ ] Supported commands: cd, mkdir, touch, cp, mv, rm, chmod, chown, ln, terminal/cmd
-
-### Dark / Light Theme
-- [ ] True dark theme (#141414 bg, #1e1e1e panels)
-- [ ] True light theme (white bg, warm neutral panels)
-- [ ] System default detection (auto-select on launch)
-- [ ] Manual toggle in menu
+### Miller file preview
+- [x] Collapsible info panel with file type descriptions
+- [x] Expandable details (permissions, owner, dimensions, etc.)
+- [x] Clickable size cycling (KB/MB/GB/TB)
+- [x] Scroll capped — no infinite horizontal scroll
+- [x] Image preview with max-height constraint
 
 ---
 
-## Phase 2 — File Operations
+## v0.2 — Search Overhaul + Tandem View
 
-Goal: All standard file operations work correctly and asynchronously.
+### Search reliability
+- [x] Fixed indexing pipeline (0% stall → live file-count progress)
+- [x] File watcher (notify) triggers re-index on create/rename/delete
+- [x] Recursive walk of all indexed locations (WalkDir)
+- [x] Field::Any query matches full path, not just filename
+- [x] `rebuild_index()` method for manual re-scan
+- [ ] Benchmark: <100ms query on indexes of 500k+ files
+- [ ] "Current folder" scope uses live walk fallback — needs testing at scale
 
-- [ ] Create file / folder (from context menu and command frame)
-- [ ] Rename: F2 inline edit
-- [ ] Copy / Cut / Paste (Ctrl+C/X/V)
-- [ ] Copy to Target (context menu, prominent)
-- [ ] Move to Target (context menu, prominent)
-- [ ] Delete to trash (Delete key + context menu)
-- [ ] Permanent delete (Shift+Delete, confirmation dialog)
-- [ ] Open with default app
-- [ ] Open with... (lists installed apps)
-- [ ] Properties panel (size, type, dates, path, permissions)
-- [ ] All operations async — file ops use background thread, results reflected in UI
-- [ ] Transfer queue with progress, speed, ETA
-- [ ] Conflict resolution: Skip / Overwrite / Rename (global default + per-item)
-- [ ] Cancel and retry in transfer queue
-- [ ] Transfer queue panel (collapsible from status bar)
-- [ ] Drag and drop between tabs
+### Search settings UI
+- [x] Live status card: file count, scan progress, active root, last-scan timestamp
+- [x] Framed editable list for indexed locations with per-row remove
+- [x] Framed editable list for excluded folders with per-row remove
+- [x] Exclude/include glob lists with add-pattern input and per-item remove
+- [x] Default exclude patterns in SearchConfig (editor scratch, VCS, Python cache, Trash)
+- [x] Platform-default exclude roots (Linux: /proc /sys /dev /run) — user-removable
+- [x] Supplemental results: plocate and private locate.db integration with availability detection
+- [x] Advanced section: daily updatedb cron (pkexec) + fanotify privileged-daemon option
+- [x] "Reset search settings to defaults" — config reset only, does not clear the index
+- [x] Gear icon in search panel opens Search settings tab
+- [x] Settings viewport scrollbar: non-floating, 8px, always visible
+- [ ] Ctrl+F shortcut to focus search panel from anywhere
 
----
+### Search engine foundation (DB-backed)
+- [ ] SQLite index store for file metadata + crawl state
+- [ ] Resumable scanner with checkpoints (no restart-from-zero)
+- [ ] Keep previous index active while rebuilding
+- [ ] FTS5 content index (opt-in by folder)
+- [ ] Background extraction queue + throttling
+- [ ] Migration path from in-memory index to DB
 
-## Phase 3 — Spacebar Preview
-
-Goal: Space previews anything. Inline preview in Miller rightmost column.
-
-- [ ] Preview overlay: Space opens, Space/Escape closes
-- [ ] ← / → cycle files in current folder while preview open
-- [ ] Text / code: syntax highlighted, scrollable
-- [ ] Images: full rendered (jpg, png, gif, webp, svg, bmp)
-- [ ] Video: first-frame thumbnail + metadata
-- [ ] Audio: metadata + waveform (symphonia)
-- [ ] PDF: rendered first page + page count
-- [ ] Archives: file listing
-- [ ] Office: extracted text / metadata
-- [ ] Unknown: hex dump + file type guess
-- [ ] Preview cache
-- [ ] Async loading (no UI block)
-- [ ] Miller inline preview in rightmost column
-
----
-
-## Phase 4 — Link View (Split Tabs)
-
-Goal: On-demand Commander-style layout via tab linking.
-
-- [ ] Link two tabs: right-click tab → "Link with..." → pick second tab
-- [ ] Split view: 50/50 with draggable divider
-- [ ] Unlink: right-click → "Unlink"
-- [ ] Pin: left panel frozen, other tabs show in right panel
-- [ ] Keyboard toggle: Ctrl+\
-- [ ] Visual indicator on linked tabs
+### Tandem View (dual-pane)
+- [ ] Side-by-side tab display with draggable divider
+- [ ] "Open in Tandem" via right-click folder
+- [ ] Shift+click two tabs to enter tandem
+- [ ] Tab pinning (one side stays fixed while other rotates)
+- [ ] Independent navigation/scroll/sort per side
 
 ---
 
-## Phase 5 — Search (Indexed)
+## v0.3 — Theme Editor + Space Inspector
 
-Goal: Instant global search. The "Everything for Linux/Windows" feature.
+### Theme editor redesign
+- [ ] Click-on-preview to edit: hover highlights regions, click opens editors
+- [ ] Single live preview (remove action preview)
+- [ ] Fix window clipping / sizing constraints
+- [ ] Theme import/export (.json)
 
-- [ ] Search overlay: Ctrl+F
-- [ ] Scope: Current Folder | Home | All Indexed
-- [ ] Instant results from index
-- [ ] Results: filename, full path, size, modified date
-- [ ] Keyboard navigation in results
-- [ ] Enter → open file; Ctrl+Enter → open containing folder; Ctrl+C → copy path
-- [ ] SQLite FTS5 index
-- [ ] Background index builder (runs on first launch)
-- [ ] Incremental updates via notify crate (inotify / FSEvents / RDCW)
-- [ ] Settings: add/remove indexed paths
-- [ ] Settings: exclude patterns (node_modules, .git, etc.)
-- [ ] Settings: toggle hidden files, system files
-- [ ] Index progress indicator on first build
-
----
-
-## Phase 6 — Polish and Release
-
-- [ ] File system watcher: auto-refresh open folders on external changes
-- [ ] Session restore: reopen last session's tabs on launch
-- [ ] Bookmarks (per-tab or global — to be decided)
-- [ ] Keyboard shortcut customization
-- [ ] Settings panel (full)
-- [ ] Linux packaging: AppImage, .deb, .rpm
-- [ ] Windows packaging: MSI + portable
-- [ ] Crash reporting strategy
-- [ ] Versioned config migration
-- [ ] README with screenshots
+### Space Preview → Quick Inspector
+- [ ] Separate OS window, not constrained by main app
+- [ ] Image: pixel-accurate zoom, pan, checkerboard, EXIF, rotate
+- [ ] PDF: rendered pages, navigation, thumbnail strip
+- [ ] Folders: item count, size, type breakdown, sample thumbnails
+- [ ] Media: metadata display (playback deferred)
+- [ ] Fonts: preview text entry
+- [ ] Archives: content listing
 
 ---
 
-## Backlog (Future Consideration)
-- [ ] macOS support
-- [ ] Network paths / mounts UX
-- [ ] Per-folder view overrides
-- [ ] Theme customization (accent color picker)
-- [ ] Bulk rename tool
-- [ ] Archive creation / extraction in-app
-- [ ] Git status indicators in file list
-- [ ] FTP / SFTP remote browsing
+## v0.4 — Polish + Thumbnails
+
+### Settings and cache
+- [ ] Cache settings: location, clear, max size, explanation
+- [ ] General settings consistency pass
+
+### Thumbnail icons and folder previews
+- [ ] Thumbnail-as-icon toggle (Grid/Miller/List)
+- [ ] macOS-style folder content preview (composited thumbnails)
+- [ ] Lazy generation + cache with mtime invalidation
+- [ ] Scope: home folder by default, configurable
+
+### Usability
+- [ ] Per-folder view presets and column/profile persistence
+- [ ] Context menu and status messaging polish
+- [ ] Wire Rename/Delete/Copy/Cut context menu actions (stubs currently)
+- [ ] Multi-select (Ctrl+A, Shift+click, rubber band)
+
+---
+
+## v0.5 Release hardening
+- [ ] Linux packaging pass (AppImage, deb, rpm)
+- [ ] Windows packaging + privilege/elevation QA
+- [ ] Startup/shutdown/crash-path stability hardening
+- [ ] Regression test coverage for navigation/search/file ops
+
+---
+
+## Definition of "v1 workable"
+- [ ] Navigation is stable and predictable in all view modes
+- [ ] Search is fast, complete, and trustworthy for common workloads
+- [ ] Tandem View works reliably for dual-pane workflows
+- [ ] Core file operations are robust with clear failure/retry UX
+- [ ] Privileged operations are reliable on Linux and validated on Windows
+- [ ] No blocking UI freezes in normal workflows

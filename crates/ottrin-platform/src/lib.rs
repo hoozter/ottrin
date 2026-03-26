@@ -1,5 +1,8 @@
-use ottrin_core::{ConflictAction, DeleteMode, EntryKind, FileCommand};
+use ottrin_core::{
+    ConflictAction, DeleteMode, EntryKind, FileCommand, PrivilegedRequest, PrivilegedResponse,
+};
 use std::path::{Path, PathBuf};
+use std::sync::{OnceLock, RwLock};
 use std::time::SystemTime;
 use thiserror::Error;
 
@@ -27,14 +30,80 @@ pub enum PlatformError {
     DestinationExists(String),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PrivilegedAvailability {
+    Ready,
+    Misconfigured(String),
+    Unsupported(String),
+}
+
 pub trait PlatformOps: Send + Sync {
     fn delete_path(&self, target: &Path, mode: DeleteMode) -> Result<(), PlatformError>;
     fn reveal_in_system(&self, target: &Path) -> Result<(), PlatformError>;
     fn execute_command(&self, command: &FileCommand) -> Result<Option<FileProperties>, PlatformError>;
+    fn execute_privileged(&self, request: &PrivilegedRequest) -> Result<PrivilegedResponse, PlatformError>;
+    fn privileged_availability(&self) -> PrivilegedAvailability;
 }
 
 #[derive(Debug, Default)]
 pub struct DefaultPlatform;
+
+static PRIV_HELPER_OVERRIDE: OnceLock<RwLock<Option<PathBuf>>> = OnceLock::new();
+
+fn helper_override_store() -> &'static RwLock<Option<PathBuf>> {
+    PRIV_HELPER_OVERRIDE.get_or_init(|| RwLock::new(None))
+}
+
+pub fn set_privileged_helper_override(path: Option<PathBuf>) {
+    if let Ok(mut p) = helper_override_store().write() {
+        *p = path;
+    }
+}
+
+fn resolve_helper_name(default_name: &str) -> String {
+    if let Ok(p) = helper_override_store().read()
+        && let Some(path) = p.as_ref()
+    {
+        return path.display().to_string();
+    }
+    if let Ok(path) = std::env::var("OTTRIN_PRIV_HELPER") {
+        // Invalid env overrides should not break packaged auto-discovery.
+        if is_executable_available(&path) {
+            return path;
+        }
+    }
+    if let Some(found) = auto_discover_helper(default_name) {
+        return found.display().to_string();
+    }
+    default_name.to_string()
+}
+
+fn auto_discover_helper(default_name: &str) -> Option<PathBuf> {
+    let mut candidates = Vec::new();
+    if let Ok(exe) = std::env::current_exe()
+        && let Some(dir) = exe.parent()
+    {
+        // Portable/bundled layout: helper next to app.
+        candidates.push(dir.join(default_name));
+        // Linux distro layouts.
+        #[cfg(target_os = "linux")]
+        {
+            candidates.push(dir.join("../libexec/ottrin").join(default_name));
+            candidates.push(dir.join("../lib/ottrin").join(default_name));
+            candidates.push(PathBuf::from("/usr/libexec/ottrin").join(default_name));
+            candidates.push(PathBuf::from("/usr/lib/ottrin").join(default_name));
+            candidates.push(PathBuf::from("/usr/libexec").join(default_name));
+        }
+        // Windows installer layouts.
+        #[cfg(target_os = "windows")]
+        {
+            candidates.push(dir.join("helpers").join(default_name));
+            candidates.push(dir.join("bin").join(default_name));
+        }
+    }
+
+    candidates.into_iter().find(|p| p.is_file())
+}
 
 impl PlatformOps for DefaultPlatform {
     fn delete_path(&self, target: &Path, mode: DeleteMode) -> Result<(), PlatformError> {
@@ -114,17 +183,197 @@ impl PlatformOps for DefaultPlatform {
                 Ok(Some(props))
             }
             FileCommand::Chmod { target, mode_str } => {
-                chmod_path(target, mode_str)
-                    .map_err(|e| PlatformError::Io(e))?;
+                chmod_path(target, mode_str).map_err(PlatformError::Io)?;
                 Ok(None)
             }
             FileCommand::Symlink { link_path, target } => {
-                create_symlink(link_path, target)
-                    .map_err(|e| PlatformError::Io(e))?;
+                create_symlink(link_path, target).map_err(PlatformError::Io)?;
                 Ok(None)
             }
         }
     }
+
+    fn execute_privileged(&self, request: &PrivilegedRequest) -> Result<PrivilegedResponse, PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            execute_privileged_linux(request)
+        }
+        #[cfg(target_os = "windows")]
+        {
+            return execute_privileged_windows(request);
+        }
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+        {
+            let _ = request;
+            Ok(PrivilegedResponse {
+                status: ottrin_core::PrivilegedStatus::Unsupported,
+                message: Some("Privileged helper integration is not implemented on this OS yet.".to_string()),
+                payload: None,
+            })
+        }
+    }
+
+    fn privileged_availability(&self) -> PrivilegedAvailability {
+        #[cfg(target_os = "linux")]
+        {
+            if !is_executable_available("pkexec") {
+                return PrivilegedAvailability::Misconfigured(
+                    "pkexec not found in PATH".to_string(),
+                );
+            }
+            let helper = resolve_helper_name("ottrin-priv-helper");
+            if !is_executable_available(&helper) {
+                return PrivilegedAvailability::Misconfigured(format!(
+                    "Privileged helper '{}' not found (set OTTRIN_PRIV_HELPER or use --helper-path)",
+                    helper
+                ));
+            }
+            PrivilegedAvailability::Ready
+        }
+        #[cfg(target_os = "windows")]
+        {
+            if !is_executable_available("powershell.exe") && !is_executable_available("powershell") {
+                return PrivilegedAvailability::Misconfigured(
+                    "PowerShell not found; UAC launcher unavailable".to_string(),
+                );
+            }
+            let helper = resolve_helper_name("ottrin-priv-helper.exe");
+            if !is_executable_available(&helper) {
+                return PrivilegedAvailability::Misconfigured(format!(
+                    "Privileged helper '{}' not found (set OTTRIN_PRIV_HELPER or use --helper-path)",
+                    helper
+                ));
+            }
+            return PrivilegedAvailability::Ready;
+        }
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+        {
+            PrivilegedAvailability::Unsupported(
+                "Integrated privilege management is not implemented on this platform.".to_string(),
+            )
+        }
+    }
+}
+
+fn is_executable_available(name: &str) -> bool {
+    let candidate = Path::new(name);
+    if candidate.components().count() > 1 || candidate.is_absolute() {
+        return candidate.is_file();
+    }
+    let path_var = match std::env::var_os("PATH") {
+        Some(v) => v,
+        None => return false,
+    };
+    for dir in std::env::split_paths(&path_var) {
+        let full = dir.join(name);
+        if full.is_file() {
+            return true;
+        }
+        #[cfg(target_os = "windows")]
+        {
+            if full.extension().is_none() {
+                for ext in ["exe", "cmd", "bat"] {
+                    if dir.join(format!("{}.{}", name, ext)).is_file() {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
+#[cfg(target_os = "linux")]
+fn execute_privileged_linux(request: &PrivilegedRequest) -> Result<PrivilegedResponse, PlatformError> {
+    use std::io::Write as _;
+    use std::process::{Command, Stdio};
+
+    let helper = resolve_helper_name("ottrin-priv-helper");
+    let mut child = Command::new("pkexec")
+        .arg(helper)
+        .arg("--stdio-json")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| PlatformError::Io(e.to_string()))?;
+
+    let req_bytes = serde_json::to_vec(request)
+        .map_err(|e| PlatformError::Io(format!("serialize request failed: {}", e)))?;
+    if let Some(mut stdin) = child.stdin.take() {
+        stdin
+            .write_all(&req_bytes)
+            .map_err(|e| PlatformError::Io(format!("write request failed: {}", e)))?;
+    }
+
+    let out = child
+        .wait_with_output()
+        .map_err(|e| PlatformError::Io(e.to_string()))?;
+    if out.stdout.is_empty() {
+        let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+        if !out.status.success() {
+            return Err(PlatformError::Io(if stderr.is_empty() {
+                "privileged helper failed".to_string()
+            } else {
+                stderr
+            }));
+        }
+        return Err(PlatformError::Io("privileged helper returned no data".to_string()));
+    }
+
+    serde_json::from_slice::<PrivilegedResponse>(&out.stdout)
+        .map_err(|e| PlatformError::Io(format!("decode response failed: {}", e)))
+}
+
+#[cfg(target_os = "windows")]
+fn execute_privileged_windows(request: &PrivilegedRequest) -> Result<PrivilegedResponse, PlatformError> {
+    use std::process::Command;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let helper = resolve_helper_name("ottrin-priv-helper.exe");
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    let pid = std::process::id();
+    let req_path = std::env::temp_dir().join(format!("ottrin-priv-{}-{}.req.json", pid, nonce));
+    let res_path = std::env::temp_dir().join(format!("ottrin-priv-{}-{}.res.json", pid, nonce));
+
+    let req_bytes = serde_json::to_vec(request)
+        .map_err(|e| PlatformError::Io(format!("serialize request failed: {}", e)))?;
+    std::fs::write(&req_path, req_bytes)
+        .map_err(|e| PlatformError::Io(format!("write request file failed: {}", e)))?;
+
+    let ps_quote = |s: &str| s.replace('\'', "''");
+    let helper_q = ps_quote(&helper);
+    let req_q = ps_quote(&req_path.display().to_string());
+    let res_q = ps_quote(&res_path.display().to_string());
+    let ps = format!(
+        "$p = Start-Process -FilePath '{}' -Verb RunAs -ArgumentList @('--request-file','{}','--response-file','{}') -PassThru -Wait; exit $p.ExitCode",
+        helper_q, req_q, res_q
+    );
+
+    let out = Command::new("powershell")
+        .args(["-NoProfile", "-Command", &ps])
+        .output()
+        .map_err(|e| PlatformError::Io(format!("failed to invoke UAC process: {}", e)))?;
+    if !out.status.success() {
+        let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+        let _ = std::fs::remove_file(&req_path);
+        let _ = std::fs::remove_file(&res_path);
+        return Err(PlatformError::Io(if stderr.is_empty() {
+            "privileged helper process failed or canceled".to_string()
+        } else {
+            stderr
+        }));
+    }
+
+    let bytes = std::fs::read(&res_path)
+        .map_err(|e| PlatformError::Io(format!("read response file failed: {}", e)))?;
+    let _ = std::fs::remove_file(&req_path);
+    let _ = std::fs::remove_file(&res_path);
+    serde_json::from_slice::<PrivilegedResponse>(&bytes)
+        .map_err(|e| PlatformError::Io(format!("decode response failed: {}", e)))
 }
 
 fn ensure_existing_dir(path: &Path) -> Result<(), PlatformError> {
@@ -207,7 +456,7 @@ fn copy_entry(source: &Path, destination: &Path) -> Result<(), PlatformError> {
 
     let meta = std::fs::symlink_metadata(source).map_err(|e| PlatformError::Io(e.to_string()))?;
     if meta.is_dir() {
-        copy_dir_recursive(source, &destination)
+        copy_dir_recursive(source, destination)
     } else {
         std::fs::copy(source, destination)
             .map(|_| ())
@@ -242,7 +491,7 @@ fn move_entry(source: &Path, destination: &Path) -> Result<(), PlatformError> {
         return Err(PlatformError::InvalidSource(source.display().to_string()));
     }
 
-    match std::fs::rename(source, &destination) {
+    match std::fs::rename(source, destination) {
         Ok(()) => Ok(()),
         Err(_) => {
             copy_entry(source, destination)?;

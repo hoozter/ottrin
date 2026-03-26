@@ -3,6 +3,7 @@ members = [
   "crates/ottrin-app",
   "crates/ottrin-core",
   "crates/ottrin-platform",
+  "crates/ottrin-search",
   "crates/ottrin-copy",
   "crates/ottrin-preview",
   "crates/ottrin-ui",

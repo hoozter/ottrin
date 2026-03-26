@@ -8,15 +8,21 @@ A fast, keyboard-friendly file manager built with Rust and [egui](https://github
 
 ## Features
 
-- **Miller columns** — browse your file system the way it actually works, with parent, current, and preview columns side-by-side
+- **Column view (Miller columns)** — browse your file system the way it actually works, with parent, current, and preview columns side-by-side
+- **Smooth column navigation** — horizontal auto-scroll keeps focus visible while preserving path context
+- **Resizable columns** — drag separators; column widths persist while you navigate
 - **List and Grid views** — switch between views instantly with a single click
-- **Smart sidebar** — file info and copy/move target panel in a compact, toggleable activity strip
+- **Smart sidebar** — info, drop folder, and search panels in a compact, toggleable activity strip
 - **Bookmarks bar** — one-click shortcuts to your most-used folders (right-click to add/remove)
 - **Integrated command frame** — run `mkdir`, `touch`, `mv`, `cp`, `rm`, `chmod`, `ln -s` and more without leaving the app; opens on any keypress
 - **Keyboard first** — arrow keys, Enter, Backspace, and Tab navigate the Miller view
 - **Tabs** — multiple locations open at once, full navigation history per tab
-- **Dark and Light themes** — configured in Settings (hamburger menu → Settings)
-- **Preview overlay** — text files inline, other types launch the system default app (Space bar)
+- **Theme system** — built-in presets (Ottrin, Breeze, Adwaita, Windows 11, Solarized, Nord, G33k) with live editing and custom theme save/load
+- **Semantic file styling** — file/folder types are classified and styled consistently across views
+- **Drop Folder workflow** — quick copy/move destination with recents and pinned entries
+- **Integrated privilege management** — denied operations can retry via helper flow
+- **Global search panel** — indexed search with scope switching and per-result actions
+- **Preview system** — text inline, images in-app, and richer metadata cards for PDF/audio/video/archive/office formats (Space bar)
 
 ## Status
 
@@ -39,6 +45,7 @@ cargo run -p ottrin-app
 | Arrow keys | Navigate between files |
 | Enter | Open directory / launch file |
 | Backspace | Go to parent directory |
+| Ctrl+F | Open search panel |
 | Space | Preview file |
 | Esc | Close preview / command frame |
 | F5 | Refresh current directory |
@@ -56,8 +63,9 @@ cargo run -p ottrin-app
 | `ottrin-app` | Native entrypoint (eframe) |
 | `ottrin-ui` | egui application shell and all views |
 | `ottrin-core` | Domain models, commands, settings |
-| `ottrin-platform` | OS integrations (trash, shell actions) |
+| `ottrin-platform` | OS integrations (trash, shell actions, privileged helper flow) |
 | `ottrin-copy` | Copy/move queue with conflict policies |
+| `ottrin-search` | Indexed search, watcher sync, and fallback querying |
 | `ottrin-preview` | Preview request/response pipeline |
 
 ## License

@@ -7,4 +7,5 @@ authors.workspace = true
 
 [dependencies]
 ottrin-ui = { path = "../ottrin-ui" }
+ottrin-platform = { path = "../ottrin-platform" }
 eframe.workspace = true

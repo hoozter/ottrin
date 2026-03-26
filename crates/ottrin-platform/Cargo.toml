@@ -11,3 +11,4 @@ thiserror.workspace = true
 tracing.workspace = true
 trash = "5"
 opener = "0.8"
+serde_json = "1"
