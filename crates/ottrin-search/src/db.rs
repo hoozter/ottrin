@@ -69,7 +69,7 @@ impl SearchDb {
         )?;
         let rows = stmt.query_map([], |row| {
             let kind: i64 = row.get(3)?;
-            Ok(SearchResultItem {
+            let mut item = SearchResultItem {
                 path: row.get::<_, String>(0)?.into(),
                 parent_path: row.get::<_, String>(1)?.into(),
                 name: row.get(2)?,
@@ -81,7 +81,13 @@ impl SearchDb {
                     Some(v) => Some(v != 0),
                     None => None,
                 },
-            })
+                content_snippet: None,
+                name_lower: String::new(),
+                path_str: String::new(),
+                path_lower: String::new(),
+            };
+            item.prepare();
+            Ok(item)
         })?;
         let mut out = Vec::new();
         for row in rows {

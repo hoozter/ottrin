@@ -267,6 +267,9 @@ pub struct SearchQuery {
     pub sort: SearchSort,
     pub limit: usize,
     pub offset: usize,
+    /// When true, search file contents via ripgrep in addition to filenames.
+    #[serde(default)]
+    pub content_search: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -281,6 +284,30 @@ pub struct SearchResultItem {
     pub symlink_target_is_dir: Option<bool>,
     pub size_bytes: Option<u64>,
     pub modified_unix_secs: Option<u64>,
+    /// For content search results: a short snippet of the matching line.
+    #[serde(default)]
+    pub content_snippet: Option<String>,
+    /// Pre-computed lowercase name — populated at index-build time to avoid
+    /// per-query allocations in the hot query path.
+    #[serde(skip, default)]
+    pub name_lower: String,
+    /// Pre-computed lossy path string — populated at index-build time.
+    #[serde(skip, default)]
+    pub path_str: String,
+    /// Pre-computed lowercase lossy path string — avoids per-query allocation.
+    #[serde(skip, default)]
+    pub path_lower: String,
+}
+
+impl SearchResultItem {
+    /// Populate the pre-computed lowercase / path-string fields from the primary fields.
+    /// Call this once after construction (indexing or loading from cache/DB).
+    #[inline]
+    pub fn prepare(&mut self) {
+        self.name_lower = self.name.to_ascii_lowercase();
+        self.path_str = self.path.to_string_lossy().into_owned();
+        self.path_lower = self.path_str.to_ascii_lowercase();
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

@@ -744,6 +744,50 @@ impl SearchService {
             }
         }
 
+        // ── Fuzzy pass: supplement with subsequence-matched filenames ─────────
+        // Only runs when query is a single bare word and exact results are sparse.
+        if is_simple_single_word(&query.text) && matched.len() < query.limit {
+            let q = query.text.trim();
+            let mut seen: HashSet<PathBuf> = matched.iter().map(|(_, item)| item.path.clone()).collect();
+            for item in idx.items.iter()
+                .filter(|item| scope_match(&query, item))
+                .filter(|item| query.include_hidden_system || !item.name.starts_with('.'))
+            {
+                if seen.contains(&item.path) {
+                    continue;
+                }
+                if let Some(score) = fuzzy_subsequence_score(q, &item.name) {
+                    seen.insert(item.path.clone());
+                    matched.push((score, item.clone()));
+                    if matched.len() >= query.limit.saturating_mul(2).max(200) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // ── Content search pass: use ripgrep when requested ───────────────────
+        if query.content_search && query.text.trim().len() >= 2 {
+            let roots = ordered_query_roots(&query, &cfg);
+            let content_limit = query.limit.max(50);
+            let rg_items = query_content_ripgrep(
+                query.text.trim(),
+                &roots,
+                query.include_hidden_system,
+                content_limit,
+            );
+            let mut seen: HashSet<PathBuf> = matched.iter().map(|(_, item)| item.path.clone()).collect();
+            for item in rg_items {
+                if scope_match(&query, &item) && seen.insert(item.path.clone()) {
+                    // Content matches get a high base score — they are strong signals
+                    matched.push((8_000, item));
+                    if matched.len() >= query.limit.saturating_mul(2).max(200) {
+                        break;
+                    }
+                }
+            }
+        }
+
         sort_results(&mut matched, query.sort);
         let total = matched.len();
         let items = matched
@@ -998,7 +1042,7 @@ where
                     .ok()
                     .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
                     .map(|d| d.as_secs());
-                batch.push(SearchResultItem {
+                let mut item = SearchResultItem {
                     path: path.to_path_buf(),
                     parent_path: path.parent().map(Path::to_path_buf).unwrap_or_default(),
                     name,
@@ -1007,7 +1051,13 @@ where
                     symlink_target_is_dir: if matches!(kind, EntryKind::Symlink) { Some(meta.is_dir()) } else { None },
                     size_bytes: size,
                     modified_unix_secs: modified,
-                });
+                    content_snippet: None,
+                    name_lower: String::new(),
+                    path_str: String::new(),
+                    path_lower: String::new(),
+                };
+                item.prepare();
+                batch.push(item);
                 total_indexed += 1;
 
                 if batch.len() >= STREAM_BATCH_SIZE {
@@ -1117,7 +1167,11 @@ fn load_index_from_disk() -> Option<Vec<SearchResultItem>> {
     }
     let path = index_cache_path();
     let data = std::fs::read(&path).ok()?;
-    serde_json::from_slice(&data).ok()
+    let mut items: Vec<SearchResultItem> = serde_json::from_slice(&data).ok()?;
+    for item in &mut items {
+        item.prepare();
+    }
+    Some(items)
 }
 
 /// Returns how many seconds ago the on-disk index was last written.
@@ -1530,7 +1584,7 @@ fn make_item_from_path(path: &Path) -> Option<SearchResultItem> {
         .modified().ok()
         .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
         .map(|d| d.as_secs());
-    Some(SearchResultItem {
+    let mut item = SearchResultItem {
         path: path.to_path_buf(),
         parent_path: path.parent().map(Path::to_path_buf).unwrap_or_default(),
         name,
@@ -1539,7 +1593,13 @@ fn make_item_from_path(path: &Path) -> Option<SearchResultItem> {
         symlink_target_is_dir: if matches!(kind, EntryKind::Symlink) { Some(meta.is_dir()) } else { None },
         size_bytes: size,
         modified_unix_secs: modified,
-    })
+        content_snippet: None,
+        name_lower: String::new(),
+        path_str: String::new(),
+        path_lower: String::new(),
+    };
+    item.prepare();
+    Some(item)
 }
 
 /// Apply a batch of `NotifyAction`s to the index without re-walking the filesystem.
@@ -1697,7 +1757,7 @@ fn query_current_folder_fallback(query: &SearchQuery, expr: &Expr, cfg: &SearchC
             .ok()
             .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
             .map(|d| d.as_secs());
-        let item = SearchResultItem {
+        let mut item = SearchResultItem {
             path: path.to_path_buf(),
             parent_path: path.parent().map(Path::to_path_buf).unwrap_or_default(),
             name,
@@ -1710,7 +1770,12 @@ fn query_current_folder_fallback(query: &SearchQuery, expr: &Expr, cfg: &SearchC
             },
             size_bytes: size,
             modified_unix_secs: modified,
+            content_snippet: None,
+            name_lower: String::new(),
+            path_str: String::new(),
+            path_lower: String::new(),
         };
+        item.prepare();
         if eval_expr(expr, &item) {
             out.push((relevance_score(query, &item), item));
         }
@@ -1841,7 +1906,7 @@ fn query_global_fallback_pass(
                 .ok()
                 .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
                 .map(|d| d.as_secs());
-            let item = SearchResultItem {
+            let mut item = SearchResultItem {
                 path: path.to_path_buf(),
                 parent_path: path.parent().map(Path::to_path_buf).unwrap_or_default(),
                 name,
@@ -1854,7 +1919,12 @@ fn query_global_fallback_pass(
                 },
                 size_bytes: size,
                 modified_unix_secs: modified,
+                content_snippet: None,
+                name_lower: String::new(),
+                path_str: String::new(),
+                path_lower: String::new(),
             };
+            item.prepare();
             if eval_expr(expr, &item) && seen_paths.insert(item.path.clone()) {
                 out.push((relevance_score(query, &item), item));
             }
@@ -2154,22 +2224,23 @@ fn eval_expr(expr: &Expr, item: &SearchResultItem) -> bool {
 }
 
 fn eval_term(t: &Term, item: &SearchResultItem) -> bool {
-    let name_l = item.name.to_ascii_lowercase();
-    let path_l = item.path.to_string_lossy().to_ascii_lowercase();
+    // Use pre-computed lowercase fields — zero allocations in the hot query path.
+    let name_l = &item.name_lower;
+    let path_l = &item.path_lower;
     match t {
         Term::Contains { field, value } => match field {
             // Substring match on name OR path — grep-like behavior.
             // "cat" matches "angelcat.pdf", "cat_photo.jpg", "/cats/file.txt".
             // Multi-term AND queries ("angel cat pdf") match all terms independently.
-            Field::Any => name_l.contains(value) || path_l.contains(value),
-            Field::Name => name_l.contains(value),
-            Field::Path => path_l.contains(value),
+            Field::Any => name_l.contains(value.as_str()) || path_l.contains(value.as_str()),
+            Field::Name => name_l.contains(value.as_str()),
+            Field::Path => path_l.contains(value.as_str()),
             Field::Ext => item.path.extension().and_then(|e| e.to_str()).map(|e| e.eq_ignore_ascii_case(value)).unwrap_or(false),
         },
         Term::Regex { field, regex } => match field {
             Field::Any => regex.is_match(&item.name),
             Field::Name => regex.is_match(&item.name),
-            Field::Path => regex.is_match(&item.path.to_string_lossy()),
+            Field::Path => regex.is_match(&item.path_str),
             Field::Ext => item.path.extension().and_then(|e| e.to_str()).map(|e| regex.is_match(e)).unwrap_or(false),
         },
         Term::TypeIs(v) => match item.kind {
@@ -2183,24 +2254,167 @@ fn eval_term(t: &Term, item: &SearchResultItem) -> bool {
 
 fn relevance_score(query: &SearchQuery, item: &SearchResultItem) -> i64 {
     let q = query.text.to_ascii_lowercase();
-    let name = item.name.to_ascii_lowercase();
-    if name == q {
+    // Use pre-computed lowercase fields — zero allocations.
+    let name = &item.name_lower;
+    if name == &q {
         10_000
-    } else if name.starts_with(&q) {
+    } else if name.starts_with(&*q) {
         7_500
-    } else if name.contains(&q) {
+    } else if name.contains(&*q) {
         5_000
-    } else if item.path.to_string_lossy().to_ascii_lowercase().contains(&q) {
+    } else if item.path_lower.contains(&*q) {
         2_500
     } else {
         0
     }
 }
 
+/// Fuzzy subsequence score: returns Some(score) if every character of `query` appears
+/// in `text` in order (case-insensitive). Scores are in the 100–999 range, below all
+/// exact-match scores so fuzzy results sort after precise matches.
+fn fuzzy_subsequence_score(query: &str, text: &str) -> Option<i64> {
+    if query.is_empty() {
+        return Some(100);
+    }
+    let q: Vec<char> = query.chars().map(|c| c.to_ascii_lowercase()).collect();
+    let t: Vec<char> = text.chars().map(|c| c.to_ascii_lowercase()).collect();
+    let mut qi = 0usize;
+    let mut first_match: Option<usize> = None;
+    let mut last_match = 0usize;
+    for (ti, &tc) in t.iter().enumerate() {
+        if qi < q.len() && tc == q[qi] {
+            first_match.get_or_insert(ti);
+            last_match = ti;
+            qi += 1;
+        }
+    }
+    if qi < q.len() {
+        return None; // Not all query chars found in text
+    }
+    let first = first_match.unwrap_or(0);
+    let span = (last_match - first + 1) as i64;
+    let q_len = q.len() as i64;
+    // Compact matches score higher; start-of-string bonus
+    let compactness = (q_len * 200) / span;
+    let start_bonus: i64 = if first == 0 { 300 } else if first < 3 { 150 } else { 0 };
+    Some((compactness + start_bonus).clamp(100, 999))
+}
+
+/// Returns true when the query is a single bare word (no operators, no field prefixes).
+/// Used to decide whether to run a fuzzy supplemental pass.
+fn is_simple_single_word(text: &str) -> bool {
+    let t = text.trim();
+    t.len() >= 2
+        && !t.contains(' ')
+        && !t.contains('(')
+        && !t.contains('|')
+        && !t.contains(':')
+        && !t.starts_with('!')
+        && !t.starts_with('/')
+        && !t.starts_with('"')
+}
+
+/// Run ripgrep to find files whose *contents* match `pattern`.
+/// Returns items with `content_snippet` populated (first matching line, trimmed).
+/// Falls back to an empty vec if rg is not on PATH or times out.
+pub fn query_content_ripgrep(
+    pattern: &str,
+    roots: &[PathBuf],
+    include_hidden: bool,
+    limit: usize,
+) -> Vec<SearchResultItem> {
+    if pattern.trim().is_empty() || roots.is_empty() {
+        return Vec::new();
+    }
+    // First pass: get files with matches (-l)
+    let mut cmd = std::process::Command::new("rg");
+    cmd.arg("--files-with-matches")
+        .arg("--fixed-strings")
+        .arg("--max-count=1");
+    if include_hidden {
+        cmd.arg("--hidden");
+    }
+    cmd.arg("--").arg(pattern);
+    for root in roots {
+        cmd.arg(root);
+    }
+    let file_output = match cmd.output() {
+        Ok(o) if o.status.success() || !o.stdout.is_empty() => o,
+        _ => return Vec::new(),
+    };
+    let matching_paths: Vec<PathBuf> = std::str::from_utf8(&file_output.stdout)
+        .unwrap_or("")
+        .lines()
+        .filter(|l| !l.is_empty())
+        .take(limit)
+        .map(PathBuf::from)
+        .collect();
+    if matching_paths.is_empty() {
+        return Vec::new();
+    }
+    // Second pass: get one-line snippet per file
+    let mut snippets: std::collections::HashMap<PathBuf, String> = std::collections::HashMap::new();
+    let mut snippet_cmd = std::process::Command::new("rg");
+    snippet_cmd
+        .arg("--max-count=1")
+        .arg("--fixed-strings")
+        .arg("--no-heading")
+        .arg("--with-filename")
+        .arg("--line-number");
+    if include_hidden {
+        snippet_cmd.arg("--hidden");
+    }
+    snippet_cmd.arg("--").arg(pattern);
+    for p in &matching_paths {
+        snippet_cmd.arg(p);
+    }
+    if let Ok(snip_out) = snippet_cmd.output() {
+        for line in std::str::from_utf8(&snip_out.stdout).unwrap_or("").lines() {
+            // format: /path/to/file:lineno:matched text
+            if let Some(rest) = line.splitn(2, ':').nth(1) {
+                if let Some(text) = rest.splitn(2, ':').nth(1) {
+                    let path = PathBuf::from(line.splitn(2, ':').next().unwrap_or(""));
+                    snippets.entry(path).or_insert_with(|| text.trim().to_string());
+                }
+            }
+        }
+    }
+    matching_paths
+        .into_iter()
+        .filter_map(|path| {
+            let meta = std::fs::metadata(&path).ok()?;
+            let name = path.file_name()?.to_string_lossy().into_owned();
+            let parent = path.parent().unwrap_or(Path::new("")).to_path_buf();
+            let modified = meta
+                .modified()
+                .ok()
+                .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
+                .map(|d| d.as_secs());
+            let snippet = snippets.remove(&path);
+            let mut item = SearchResultItem {
+                path: path.clone(),
+                parent_path: parent,
+                name,
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: Some(meta.len()),
+                modified_unix_secs: modified,
+                content_snippet: snippet,
+                name_lower: String::new(),
+                path_str: String::new(),
+                path_lower: String::new(),
+            };
+            item.prepare();
+            Some(item)
+        })
+        .collect()
+}
+
 fn sort_results(v: &mut [(i64, SearchResultItem)], sort: SearchSort) {
     match sort {
         SearchSort::Relevance => v.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.name.cmp(&b.1.name))),
-        SearchSort::Name => v.sort_by(|a, b| a.1.name.to_ascii_lowercase().cmp(&b.1.name.to_ascii_lowercase())),
+        SearchSort::Name => v.sort_by(|a, b| a.1.name_lower.cmp(&b.1.name_lower)),
         SearchSort::Path => v.sort_by(|a, b| a.1.path.cmp(&b.1.path)),
         SearchSort::Modified => v.sort_by(|a, b| b.1.modified_unix_secs.unwrap_or(0).cmp(&a.1.modified_unix_secs.unwrap_or(0))),
         SearchSort::Size => v.sort_by(|a, b| b.1.size_bytes.unwrap_or(0).cmp(&a.1.size_bytes.unwrap_or(0))),
@@ -2213,7 +2427,7 @@ mod tests {
     use std::fs;
 
     fn mk_item(path: &str, name: &str, kind: EntryKind) -> SearchResultItem {
-        SearchResultItem {
+        let mut item = SearchResultItem {
             path: PathBuf::from(path),
             parent_path: PathBuf::from(path).parent().map(Path::to_path_buf).unwrap_or_default(),
             name: name.to_string(),
@@ -2222,7 +2436,13 @@ mod tests {
             symlink_target_is_dir: None,
             size_bytes: None,
             modified_unix_secs: None,
-        }
+            content_snippet: None,
+            name_lower: String::new(),
+            path_str: String::new(),
+            path_lower: String::new(),
+        };
+        item.prepare();
+        item
     }
 
     #[test]
@@ -2241,6 +2461,7 @@ mod tests {
             sort: SearchSort::Relevance,
             limit: 100,
             offset: 0,
+            content_search: false,
         };
         let in_scope = mk_item("/tmp/a/b/foo.txt", "foo.txt", EntryKind::File);
         let out_scope = mk_item("/tmp/c/foo.txt", "foo.txt", EntryKind::File);
@@ -2264,6 +2485,7 @@ mod tests {
             sort: SearchSort::Relevance,
             limit: 100,
             offset: 0,
+            content_search: false,
         };
         let expr = parse_query(&query.text).expect("parse query");
         let hits = query_current_folder_fallback(&query, &expr, &SearchConfig::default());
@@ -2304,6 +2526,7 @@ mod tests {
             sort: SearchSort::Relevance,
             limit: 50,
             offset: 0,
+            content_search: false,
         });
 
         assert_eq!(response.total, 1);
@@ -2329,6 +2552,7 @@ mod tests {
             sort: SearchSort::Relevance,
             limit: 20,
             offset: 0,
+            content_search: false,
         };
         let roots = ordered_query_roots(
             &query,
@@ -2371,5 +2595,58 @@ mod tests {
         assert!(eval_expr(&expr, &name_match));
         assert!(eval_expr(&expr, &path_match));
         assert!(!eval_expr(&expr, &no_match));
+    }
+
+    /// Benchmark: 500k synthetic items, query must return in <100ms.
+    /// Run with: cargo test -p ottrin-search --release -- bench_query_500k --nocapture
+    #[test]
+    fn bench_query_500k() {
+        const N: usize = 500_000;
+        // Build a realistic synthetic index: mix of files and directories.
+        let mut items: Vec<SearchResultItem> = (0..N)
+            .map(|i| {
+                let dir = format!("/home/user/projects/repo_{}/src/module_{}", i / 1000, i % 100);
+                let name = format!("file_{:06}.rs", i);
+                let path = format!("{}/{}", dir, name);
+                mk_item(&path, &name, EntryKind::File)
+            })
+            .collect();
+        // Sprinkle in a few items that match the query "needle".
+        items[12345] = mk_item("/home/user/docs/needle.txt", "needle.txt", EntryKind::File);
+        items[99999] = mk_item("/home/user/projects/needle_lib/main.rs", "main.rs", EntryKind::File);
+
+        let query = SearchQuery {
+            text: "needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 50,
+            offset: 0,
+            content_search: false,
+        };
+        let expr = parse_query(&query.text).expect("parse query");
+
+        let start = std::time::Instant::now();
+        let matched: Vec<_> = items
+            .iter()
+            .filter(|item| !item.name.starts_with('.'))
+            .filter_map(|item| {
+                if eval_expr(&expr, item) {
+                    Some((relevance_score(&query, item), item))
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let elapsed = start.elapsed();
+
+        println!("500k query: {}ms, {} hits", elapsed.as_millis(), matched.len());
+        assert!(
+            elapsed.as_millis() < 100,
+            "Query over 500k items took {}ms — exceeds 100ms budget",
+            elapsed.as_millis()
+        );
+        assert!(matched.len() >= 2, "Expected at least 2 needle matches, got {}", matched.len());
     }
 }

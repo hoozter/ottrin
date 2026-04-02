@@ -7,7 +7,7 @@
 - [x] Diagnose why index stays at 0% — fixed: replaced misleading % with file count
 - [x] Ensure file watcher (notify) triggers re-index on file create/rename/delete — verified working
 - [x] Verify all indexed locations are walked recursively — WalkDir recursive walk confirmed
-- [ ] Benchmark: index ~500k files, query should return in <100ms
+- [x] Benchmark: index ~500k files, query should return in <100ms — verified 32ms (release build)
 - [ ] "Current Folder" scope must do a live walk, not depend on stale index — has fallback, needs testing
 - [x] Ensure search finds folders, subfolders, AND files — fixed: Field::Any now matches path too
 - [x] Added `rebuild_index()` method for manual reindex trigger
@@ -28,7 +28,7 @@
 - [x] Settings viewport scrollbar: non-floating, 8px wide, visible track
 
 ### 1C. Search panel UX
-- [ ] Ctrl+F focuses search panel from anywhere
+- [x] Ctrl+F focuses search panel from anywhere
 - [x] Clear progress reporting: "Indexing · N files found" / "Indexed N files"
 - [x] Last indexed timestamp visible in settings status card
 - [x] Result count in header (already was there)

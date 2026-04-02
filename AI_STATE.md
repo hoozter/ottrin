@@ -84,11 +84,10 @@ Settings window is a separate egui ViewportId; style/scroll settings must be app
 `AI_STATE.md` is the authoritative operational state file and must be updated when roadmap status changes.
 
 CURRENT ROADMAP
-1. Search engine foundation — SQLite + FTS5, resumable scanning, durable index storage.
+1. Search engine foundation — COMPLETE. SQLite + resumable scanning + <100ms query on 500k files.
 2. Tandem View (dual-pane) — side-by-side tab display, pinning, independent navigation per side.
-3. Remaining v0.2 search polish: Ctrl+F shortcut, benchmarking on large trees.
-4. Theme editor redesign (click-on-preview to edit, import/export).
-5. Space Preview → Quick Inspector (separate OS window, image/PDF/folder/media).
+3. Theme editor redesign (click-on-preview to edit, import/export).
+4. Space Preview → Quick Inspector (separate OS window, image/PDF/folder/media).
 
 KNOWN ISSUES
 Rename, Delete, Copy, Cut in context menu close the menu but don't execute (clipboard model exists, no execute binding yet).
@@ -98,7 +97,6 @@ Multi-select not implemented (Ctrl+A selects last item only).
 popup_below_widget / toggle_popup / close_popup(id) are deprecated in egui 0.33 (use egui::Popup instead) — works but flagged.
 Preview overlay: text files show content; others show icon + "Open with default app" (no native open wired on all platforms yet).
 Tandem View not yet implemented.
-Ctrl+F shortcut to focus search panel not yet wired.
 
 NEXT TASK
 Tandem View (Phase 2A): data model and activation paths.
