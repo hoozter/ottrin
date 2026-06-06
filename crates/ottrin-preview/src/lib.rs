@@ -58,19 +58,27 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
 }
 
 pub fn classify_path(path: &std::path::Path) -> PreviewKind {
-    let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("").to_ascii_lowercase();
+    let ext = path
+        .extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
 
     match ext.as_str() {
-        "txt" | "md" | "markdown" | "log" | "csv" | "tsv" | "json" | "toml" | "yaml" | "yml" | "ini"
-        | "cfg" | "conf" | "env" | "xml" | "html" | "htm" | "css" | "scss" | "less" | "svg"
-        | "rs" | "js" | "ts" | "jsx" | "tsx" | "py" | "rb" | "go" | "java" | "c" | "cpp" | "h"
-        | "hpp" | "m" | "mm" | "sh" | "bash" | "zsh" | "fish" | "ps1" | "bat" => PreviewKind::Text,
+        "txt" | "md" | "markdown" | "log" | "csv" | "tsv" | "json" | "toml" | "yaml" | "yml"
+        | "ini" | "cfg" | "conf" | "env" | "xml" | "html" | "htm" | "css" | "scss" | "less"
+        | "svg" | "rs" | "js" | "ts" | "jsx" | "tsx" | "py" | "rb" | "go" | "java" | "c"
+        | "cpp" | "h" | "hpp" | "m" | "mm" | "sh" | "bash" | "zsh" | "fish" | "ps1" | "bat" => {
+            PreviewKind::Text
+        }
         "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" => PreviewKind::Image,
         "pdf" => PreviewKind::Pdf,
         "mp4" | "mkv" | "webm" | "mov" | "avi" | "m4v" => PreviewKind::VideoMetadata,
         "mp3" | "flac" | "wav" | "ogg" | "m4a" | "aac" => PreviewKind::AudioMetadata,
         "zip" | "tar" | "gz" | "xz" | "bz2" | "7z" | "rar" => PreviewKind::ArchiveMetadata,
-        "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "odt" | "ods" | "odp" => PreviewKind::OfficeMetadata,
+        "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "odt" | "ods" | "odp" => {
+            PreviewKind::OfficeMetadata
+        }
         _ => PreviewKind::Unsupported,
     }
 }
@@ -87,7 +95,11 @@ fn metadata_summary(path: &std::path::Path, kind_label: &str, extra: Option<&str
             {
                 lines.push(format!("Modified: {}", format_modified(dur.as_secs())));
             }
-            if let Some(ext) = path.extension().and_then(|s| s.to_str()).filter(|s| !s.is_empty()) {
+            if let Some(ext) = path
+                .extension()
+                .and_then(|s| s.to_str())
+                .filter(|s| !s.is_empty())
+            {
                 lines.push(format!("Format: {}", ext.to_ascii_uppercase()));
             }
             if let Some(extra) = extra.filter(|s| !s.is_empty()) {
@@ -145,7 +157,11 @@ fn preview_text(title: String, path: &std::path::Path) -> PreviewData {
 }
 
 fn preview_image(title: String, path: &std::path::Path) -> PreviewData {
-    let info = metadata_summary(path, "Image preview available.", Some("Open externally for full editing."));
+    let info = metadata_summary(
+        path,
+        "Image preview available.",
+        Some("Open externally for full editing."),
+    );
     PreviewData {
         title,
         kind: PreviewKind::Image,
@@ -161,21 +177,27 @@ fn preview_pdf(title: String, path: &std::path::Path) -> PreviewData {
         Ok(doc) => {
             let page_count = doc.get_pages().len();
 
-            let mut lines = vec![format!("PDF document — {page_count} page{}", if page_count == 1 { "" } else { "s" })];
+            let mut lines = vec![format!(
+                "PDF document — {page_count} page{}",
+                if page_count == 1 { "" } else { "s" }
+            )];
 
             // Extract document info (title, author, subject, creator)
-            if let Ok(info_ref) = doc.trailer.get(b"Info") {
-                if let Ok(info_obj) = doc.get_object(info_ref.as_reference().unwrap_or_default()) {
-                    if let lopdf::Object::Dictionary(dict) = info_obj {
-                        for (key_name, label) in [("Title", "Title"), ("Author", "Author"), ("Subject", "Subject"), ("Creator", "Creator")] {
-                            if let Ok(val) = dict.get(key_name.as_bytes()) {
-                                if let Some(s) = pdf_obj_to_string(val) {
-                                    if !s.trim().is_empty() {
-                                        lines.push(format!("{label}: {s}"));
-                                    }
-                                }
-                            }
-                        }
+            if let Ok(info_ref) = doc.trailer.get(b"Info")
+                && let Ok(lopdf::Object::Dictionary(dict)) =
+                    doc.get_object(info_ref.as_reference().unwrap_or_default())
+            {
+                for (key_name, label) in [
+                    ("Title", "Title"),
+                    ("Author", "Author"),
+                    ("Subject", "Subject"),
+                    ("Creator", "Creator"),
+                ] {
+                    if let Ok(val) = dict.get(key_name.as_bytes())
+                        && let Some(s) = pdf_obj_to_string(val)
+                        && !s.trim().is_empty()
+                    {
+                        lines.push(format!("{label}: {s}"));
                     }
                 }
             }
@@ -201,7 +223,11 @@ fn preview_pdf(title: String, path: &std::path::Path) -> PreviewData {
             }
         }
         Err(_) => {
-            let info = metadata_summary(path, "PDF document.", Some("Could not parse PDF structure."));
+            let info = metadata_summary(
+                path,
+                "PDF document.",
+                Some("Could not parse PDF structure."),
+            );
             PreviewData {
                 title,
                 kind: PreviewKind::Pdf,
@@ -251,7 +277,10 @@ fn preview_audio(title: String, path: &std::path::Path) -> PreviewData {
             }
 
             // Tags
-            if let Some(tag) = tagged_file.primary_tag().or_else(|| tagged_file.first_tag()) {
+            if let Some(tag) = tagged_file
+                .primary_tag()
+                .or_else(|| tagged_file.first_tag())
+            {
                 if let Some(t) = tag.title() {
                     lines.push(format!("Title: {t}"));
                 }
@@ -315,14 +344,22 @@ fn preview_video(title: String, path: &std::path::Path) -> PreviewData {
 // ── Archive preview via zip crate ──────────────────────────────────────
 
 fn preview_archive(title: String, path: &std::path::Path) -> PreviewData {
-    let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("").to_ascii_lowercase();
+    let ext = path
+        .extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
 
     if ext == "zip" {
         return preview_zip(title, path);
     }
 
     // For non-zip archives, show metadata only
-    let info = metadata_summary(path, &format!("{} archive.", ext.to_ascii_uppercase()), None);
+    let info = metadata_summary(
+        path,
+        &format!("{} archive.", ext.to_ascii_uppercase()),
+        None,
+    );
     PreviewData {
         title,
         kind: PreviewKind::ArchiveMetadata,
@@ -334,9 +371,9 @@ fn preview_archive(title: String, path: &std::path::Path) -> PreviewData {
 fn preview_zip(title: String, path: &std::path::Path) -> PreviewData {
     const MAX_ENTRIES: usize = 200;
 
-    match std::fs::File::open(path).and_then(|f| {
-        zip::ZipArchive::new(f).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
-    }) {
+    match std::fs::File::open(path)
+        .and_then(|f| zip::ZipArchive::new(f).map_err(std::io::Error::other))
+    {
         Ok(mut archive) => {
             let total = archive.len();
             let mut total_uncompressed: u64 = 0;
@@ -367,9 +404,11 @@ fn preview_zip(title: String, path: &std::path::Path) -> PreviewData {
             }
 
             let mut lines = vec![
-                format!("ZIP archive — {files} file{}, {dirs} folder{}",
+                format!(
+                    "ZIP archive — {files} file{}, {dirs} folder{}",
                     if files == 1 { "" } else { "s" },
-                    if dirs == 1 { "" } else { "s" }),
+                    if dirs == 1 { "" } else { "s" }
+                ),
                 format!("Uncompressed: {}", format_size(total_uncompressed)),
             ];
 
@@ -396,7 +435,11 @@ fn preview_zip(title: String, path: &std::path::Path) -> PreviewData {
             }
         }
         Err(_) => {
-            let info = metadata_summary(path, "ZIP archive.", Some("Could not read archive contents."));
+            let info = metadata_summary(
+                path,
+                "ZIP archive.",
+                Some("Could not read archive contents."),
+            );
             PreviewData {
                 title,
                 kind: PreviewKind::ArchiveMetadata,
@@ -411,36 +454,43 @@ fn preview_zip(title: String, path: &std::path::Path) -> PreviewData {
 
 fn preview_office(title: String, path: &std::path::Path) -> PreviewData {
     // OOXML files (.docx, .xlsx, .pptx) are ZIP archives — try to read basic info
-    let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("").to_ascii_lowercase();
+    let ext = path
+        .extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
     let is_ooxml = matches!(ext.as_str(), "docx" | "xlsx" | "pptx");
 
-    if is_ooxml {
-        if let Ok(file) = std::fs::File::open(path) {
-            if let Ok(archive) = zip::ZipArchive::new(file) {
-                let mut lines = vec![format!("{} document.", ext.to_ascii_uppercase())];
-                let total_parts = archive.len();
-                lines.push(format!("Internal parts: {total_parts}"));
+    if is_ooxml
+        && let Ok(file) = std::fs::File::open(path)
+        && let Ok(archive) = zip::ZipArchive::new(file)
+    {
+        let mut lines = vec![format!("{} document.", ext.to_ascii_uppercase())];
+        let total_parts = archive.len();
+        lines.push(format!("Internal parts: {total_parts}"));
 
-                if let Ok(meta) = std::fs::metadata(path) {
-                    lines.push(format!("Size: {}", format_size(meta.len())));
-                    if let Ok(modified) = meta.modified()
-                        && let Ok(dur) = modified.duration_since(std::time::UNIX_EPOCH)
-                    {
-                        lines.push(format!("Modified: {}", format_modified(dur.as_secs())));
-                    }
-                }
-
-                return PreviewData {
-                    title,
-                    kind: PreviewKind::OfficeMetadata,
-                    body: lines.join("\n"),
-                    open_external: true,
-                };
+        if let Ok(meta) = std::fs::metadata(path) {
+            lines.push(format!("Size: {}", format_size(meta.len())));
+            if let Ok(modified) = meta.modified()
+                && let Ok(dur) = modified.duration_since(std::time::UNIX_EPOCH)
+            {
+                lines.push(format!("Modified: {}", format_modified(dur.as_secs())));
             }
         }
+
+        return PreviewData {
+            title,
+            kind: PreviewKind::OfficeMetadata,
+            body: lines.join("\n"),
+            open_external: true,
+        };
     }
 
-    let info = metadata_summary(path, &format!("{} document.", ext.to_ascii_uppercase()), None);
+    let info = metadata_summary(
+        path,
+        &format!("{} document.", ext.to_ascii_uppercase()),
+        None,
+    );
     PreviewData {
         title,
         kind: PreviewKind::OfficeMetadata,

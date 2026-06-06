@@ -1,7 +1,7 @@
 use ottrin_core::{EntryKind, SearchResultItem};
-use rusqlite::{params, Connection};
+use rusqlite::{Connection, params};
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 /// Schema version for the on-disk search database.
@@ -70,17 +70,14 @@ impl SearchDb {
         let rows = stmt.query_map([], |row| {
             let kind: i64 = row.get(3)?;
             let mut item = SearchResultItem {
-                path: row.get::<_, String>(0)?.into(),
-                parent_path: row.get::<_, String>(1)?.into(),
+                path: PathBuf::from(row.get::<_, String>(0)?),
+                parent_path: PathBuf::from(row.get::<_, String>(1)?),
                 name: row.get(2)?,
                 kind: entry_kind_from_i64(kind),
                 size_bytes: row.get(4)?,
                 modified_unix_secs: row.get(5)?,
                 is_executable: row.get::<_, i64>(6)? != 0,
-                symlink_target_is_dir: match row.get::<_, Option<i64>>(7)? {
-                    Some(v) => Some(v != 0),
-                    None => None,
-                },
+                symlink_target_is_dir: row.get::<_, Option<i64>>(7)?.map(|v| v != 0),
                 content_snippet: None,
                 name_lower: String::new(),
                 path_str: String::new(),
@@ -114,33 +111,6 @@ impl SearchDb {
         }
         Ok(out)
     }
-
-    pub fn write_snapshot(&self, items: &[SearchResultItem]) -> Result<(), SearchDbError> {
-        let mut conn = Connection::open(&self.path)?;
-        migrate(&conn)?;
-        let tx = conn.transaction()?;
-        tx.execute("DELETE FROM files", [])?;
-        {
-            let mut stmt = tx.prepare_cached(
-                "INSERT INTO files (path, parent_path, name, kind, size_bytes, modified_unix_secs, is_executable, symlink_target_is_dir)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-            )?;
-            for item in items {
-                stmt.execute(params![
-                    item.path.to_string_lossy().to_string(),
-                    item.parent_path.to_string_lossy().to_string(),
-                    item.name,
-                    entry_kind_to_i64(item.kind),
-                    item.size_bytes,
-                    item.modified_unix_secs,
-                    if item.is_executable { 1 } else { 0 },
-                    item.symlink_target_is_dir.map(|v| if v { 1 } else { 0 }),
-                ])?;
-            }
-        }
-        tx.commit()?;
-        Ok(())
-    }
 }
 
 pub struct SearchDbWriter {
@@ -155,11 +125,6 @@ impl SearchDbWriter {
         let conn = Connection::open(&path)?;
         migrate(&conn)?;
         Ok(Self { conn })
-    }
-
-    pub fn clear_files(&mut self) -> Result<(), SearchDbError> {
-        self.conn.execute("DELETE FROM files", [])?;
-        Ok(())
     }
 
     pub fn insert_batch(&mut self, items: &[SearchResultItem]) -> Result<(), SearchDbError> {
@@ -215,7 +180,7 @@ impl SearchDbWriter {
         Ok(())
     }
 
-    pub fn remove_path_tree(&mut self, path: &PathBuf) -> Result<(), SearchDbError> {
+    pub fn remove_path_tree(&mut self, path: &Path) -> Result<(), SearchDbError> {
         let path_str = path.to_string_lossy();
         let prefix = format!("{}/%", path_str.trim_end_matches('/'));
         self.conn.execute(
@@ -225,7 +190,11 @@ impl SearchDbWriter {
         Ok(())
     }
 
-    pub fn set_scan_cursor(&mut self, root: &PathBuf, cursor: Option<&PathBuf>) -> Result<(), SearchDbError> {
+    pub fn set_scan_cursor(
+        &mut self,
+        root: &Path,
+        cursor: Option<&Path>,
+    ) -> Result<(), SearchDbError> {
         let root_id = self.root_id(root)?;
         let cursor_text = cursor.map(|p| p.to_string_lossy().to_string());
         let now = current_unix_secs();
@@ -241,20 +210,22 @@ impl SearchDbWriter {
     }
 
     pub fn clear_scan_cursors(&mut self) -> Result<(), SearchDbError> {
-        self.conn.execute("UPDATE scan_state SET cursor = NULL", [])?;
+        self.conn
+            .execute("UPDATE scan_state SET cursor = NULL", [])?;
         Ok(())
     }
 
-    fn root_id(&mut self, root: &PathBuf) -> Result<i64, SearchDbError> {
+    fn root_id(&mut self, root: &Path) -> Result<i64, SearchDbError> {
         let root_text = root.to_string_lossy().to_string();
-        self.conn
-            .execute(
-                "INSERT INTO roots (path) VALUES (?1) ON CONFLICT(path) DO NOTHING",
-                params![root_text],
-            )?;
-        let id: i64 = self
-            .conn
-            .query_row("SELECT id FROM roots WHERE path = ?1", params![root_text], |row| row.get(0))?;
+        self.conn.execute(
+            "INSERT INTO roots (path) VALUES (?1) ON CONFLICT(path) DO NOTHING",
+            params![root_text],
+        )?;
+        let id: i64 = self.conn.query_row(
+            "SELECT id FROM roots WHERE path = ?1",
+            params![root_text],
+            |row| row.get(0),
+        )?;
         Ok(id)
     }
 }
@@ -273,7 +244,11 @@ pub fn search_db_path() -> PathBuf {
     #[cfg(target_os = "windows")]
     let cache_root = std::env::var("LOCALAPPDATA")
         .map(PathBuf::from)
-        .unwrap_or_else(|_| ottrin_core::default_home_dir().join("AppData").join("Local"));
+        .unwrap_or_else(|_| {
+            ottrin_core::default_home_dir()
+                .join("AppData")
+                .join("Local")
+        });
     #[cfg(not(target_os = "windows"))]
     let cache_root = std::env::var("XDG_CACHE_HOME")
         .map(PathBuf::from)
@@ -292,7 +267,10 @@ fn migrate(conn: &Connection) -> Result<(), SearchDbError> {
             Ok(())
         }
         1 => {
-            conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS scan_state_root_id_idx ON scan_state(root_id)", [])?;
+            conn.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS scan_state_root_id_idx ON scan_state(root_id)",
+                [],
+            )?;
             conn.execute("PRAGMA user_version = 2", [])?;
             Ok(())
         }

@@ -4,12 +4,15 @@ use ottrin_core::{
 };
 use ottrin_platform::{DefaultPlatform, PlatformOps};
 use std::io::{Read as _, Write as _};
-use std::path::PathBuf;
 use std::path::Path;
+use std::path::PathBuf;
 
 enum IoMode {
     Stdio,
-    Files { request_file: PathBuf, response_file: PathBuf },
+    Files {
+        request_file: PathBuf,
+        response_file: PathBuf,
+    },
 }
 
 fn main() {
@@ -94,10 +97,8 @@ fn read_request(mode: &IoMode) -> Result<PrivilegedRequest, String> {
                 .map_err(|_| "Failed to read request from stdin".to_string())?;
             b
         }
-        IoMode::Files { request_file, .. } => {
-            std::fs::read(request_file)
-                .map_err(|e| format!("Failed to read request file: {}", e))?
-        }
+        IoMode::Files { request_file, .. } => std::fs::read(request_file)
+            .map_err(|e| format!("Failed to read request file: {}", e))?,
     };
     serde_json::from_slice(&input).map_err(|e| format!("Invalid request JSON: {}", e))
 }
@@ -140,17 +141,15 @@ fn map_platform_error(message: String) -> PrivilegedResponse {
 
 fn write_response(mode: &IoMode, resp: PrivilegedResponse) {
     match serde_json::to_vec(&resp) {
-        Ok(bytes) => {
-            match mode {
-                IoMode::Stdio => {
-                    let _ = std::io::stdout().write_all(&bytes);
-                    let _ = std::io::stdout().flush();
-                }
-                IoMode::Files { response_file, .. } => {
-                    let _ = std::fs::write(response_file, bytes);
-                }
+        Ok(bytes) => match mode {
+            IoMode::Stdio => {
+                let _ = std::io::stdout().write_all(&bytes);
+                let _ = std::io::stdout().flush();
             }
-        }
+            IoMode::Files { response_file, .. } => {
+                let _ = std::fs::write(response_file, bytes);
+            }
+        },
         Err(e) => {
             let _ = writeln!(std::io::stderr(), "Failed to serialize response: {}", e);
         }
@@ -188,7 +187,11 @@ fn list_directory(path: &Path, show_hidden: bool) -> Result<Vec<FileEntry>, Stri
         } else {
             EntryKind::Other
         };
-        let size_bytes = if matches!(kind, EntryKind::File) { Some(meta.len()) } else { None };
+        let size_bytes = if matches!(kind, EntryKind::File) {
+            Some(meta.len())
+        } else {
+            None
+        };
         let modified_unix_secs = meta
             .modified()
             .ok()

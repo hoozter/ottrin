@@ -40,8 +40,14 @@ pub enum PrivilegedAvailability {
 pub trait PlatformOps: Send + Sync {
     fn delete_path(&self, target: &Path, mode: DeleteMode) -> Result<(), PlatformError>;
     fn reveal_in_system(&self, target: &Path) -> Result<(), PlatformError>;
-    fn execute_command(&self, command: &FileCommand) -> Result<Option<FileProperties>, PlatformError>;
-    fn execute_privileged(&self, request: &PrivilegedRequest) -> Result<PrivilegedResponse, PlatformError>;
+    fn execute_command(
+        &self,
+        command: &FileCommand,
+    ) -> Result<Option<FileProperties>, PlatformError>;
+    fn execute_privileged(
+        &self,
+        request: &PrivilegedRequest,
+    ) -> Result<PrivilegedResponse, PlatformError>;
     fn privileged_availability(&self) -> PrivilegedAvailability;
 }
 
@@ -119,7 +125,10 @@ impl PlatformOps for DefaultPlatform {
         opener::open(target).map_err(|e| PlatformError::Io(e.to_string()))
     }
 
-    fn execute_command(&self, command: &FileCommand) -> Result<Option<FileProperties>, PlatformError> {
+    fn execute_command(
+        &self,
+        command: &FileCommand,
+    ) -> Result<Option<FileProperties>, PlatformError> {
         match command {
             FileCommand::CreateFile { parent, name } => {
                 ensure_existing_dir(parent)?;
@@ -193,7 +202,10 @@ impl PlatformOps for DefaultPlatform {
         }
     }
 
-    fn execute_privileged(&self, request: &PrivilegedRequest) -> Result<PrivilegedResponse, PlatformError> {
+    fn execute_privileged(
+        &self,
+        request: &PrivilegedRequest,
+    ) -> Result<PrivilegedResponse, PlatformError> {
         #[cfg(target_os = "linux")]
         {
             execute_privileged_linux(request)
@@ -207,7 +219,9 @@ impl PlatformOps for DefaultPlatform {
             let _ = request;
             Ok(PrivilegedResponse {
                 status: ottrin_core::PrivilegedStatus::Unsupported,
-                message: Some("Privileged helper integration is not implemented on this OS yet.".to_string()),
+                message: Some(
+                    "Privileged helper integration is not implemented on this OS yet.".to_string(),
+                ),
                 payload: None,
             })
         }
@@ -232,7 +246,8 @@ impl PlatformOps for DefaultPlatform {
         }
         #[cfg(target_os = "windows")]
         {
-            if !is_executable_available("powershell.exe") && !is_executable_available("powershell") {
+            if !is_executable_available("powershell.exe") && !is_executable_available("powershell")
+            {
                 return PrivilegedAvailability::Misconfigured(
                     "PowerShell not found; UAC launcher unavailable".to_string(),
                 );
@@ -284,7 +299,9 @@ fn is_executable_available(name: &str) -> bool {
 }
 
 #[cfg(target_os = "linux")]
-fn execute_privileged_linux(request: &PrivilegedRequest) -> Result<PrivilegedResponse, PlatformError> {
+fn execute_privileged_linux(
+    request: &PrivilegedRequest,
+) -> Result<PrivilegedResponse, PlatformError> {
     use std::io::Write as _;
     use std::process::{Command, Stdio};
 
@@ -318,7 +335,9 @@ fn execute_privileged_linux(request: &PrivilegedRequest) -> Result<PrivilegedRes
                 stderr
             }));
         }
-        return Err(PlatformError::Io("privileged helper returned no data".to_string()));
+        return Err(PlatformError::Io(
+            "privileged helper returned no data".to_string(),
+        ));
     }
 
     serde_json::from_slice::<PrivilegedResponse>(&out.stdout)
@@ -326,7 +345,9 @@ fn execute_privileged_linux(request: &PrivilegedRequest) -> Result<PrivilegedRes
 }
 
 #[cfg(target_os = "windows")]
-fn execute_privileged_windows(request: &PrivilegedRequest) -> Result<PrivilegedResponse, PlatformError> {
+fn execute_privileged_windows(
+    request: &PrivilegedRequest,
+) -> Result<PrivilegedResponse, PlatformError> {
     use std::process::Command;
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -380,7 +401,9 @@ fn ensure_existing_dir(path: &Path) -> Result<(), PlatformError> {
     if path.is_dir() {
         Ok(())
     } else {
-        Err(PlatformError::InvalidDestination(path.display().to_string()))
+        Err(PlatformError::InvalidDestination(
+            path.display().to_string(),
+        ))
     }
 }
 
@@ -432,7 +455,10 @@ fn next_available_name(base: &Path) -> PathBuf {
         .and_then(|s| s.to_str())
         .unwrap_or("item")
         .to_string();
-    let ext = base.extension().and_then(|e| e.to_str()).map(str::to_string);
+    let ext = base
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(str::to_string);
 
     for i in 1.. {
         let candidate_name = if let Some(ext) = &ext {

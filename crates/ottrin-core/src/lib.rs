@@ -117,8 +117,8 @@ pub struct SavedTheme {
 pub enum ViewMode {
     #[default]
     Miller, // Three-column Finder-style (default)
-    List,   // Single-pane sortable list
-    Grid,   // Icon grid with thumbnails
+    List, // Single-pane sortable list
+    Grid, // Icon grid with thumbnails
 }
 
 // ── Sort ──────────────────────────────────────────────────────────────────────
@@ -140,7 +140,10 @@ pub struct SortConfig {
 
 impl Default for SortConfig {
     fn default() -> Self {
-        Self { by: SortBy::Name, ascending: true }
+        Self {
+            by: SortBy::Name,
+            ascending: true,
+        }
     }
 }
 
@@ -247,15 +250,19 @@ impl Default for SearchConfig {
 /// are included so they don't get walked if someone indexes `/`. All of these
 /// are visible and removable in Settings → Search.
 pub fn default_exclude_roots() -> Vec<PathBuf> {
-    let mut v: Vec<PathBuf> = Vec::new();
     #[cfg(target_os = "linux")]
     {
-        v.push(PathBuf::from("/proc"));
-        v.push(PathBuf::from("/sys"));
-        v.push(PathBuf::from("/dev"));
-        v.push(PathBuf::from("/run"));
+        vec![
+            PathBuf::from("/proc"),
+            PathBuf::from("/sys"),
+            PathBuf::from("/dev"),
+            PathBuf::from("/run"),
+        ]
     }
-    v
+    #[cfg(not(target_os = "linux"))]
+    {
+        Vec::new()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -417,7 +424,11 @@ pub struct FileSemantic {
 }
 
 impl FileSemantic {
-    fn new(category: FileCategory, code_subtype: Option<CodeSubtype>, rule_hint: Option<&str>) -> Self {
+    fn new(
+        category: FileCategory,
+        code_subtype: Option<CodeSubtype>,
+        rule_hint: Option<&str>,
+    ) -> Self {
         Self {
             category,
             code_subtype,
@@ -586,17 +597,41 @@ impl TargetState {
     }
 }
 
-// ── Link view (split tabs) ────────────────────────────────────────────────────
+// ── Tandem / link view (split tabs) ─────────────────────────────────────────
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum TandemSide {
+    #[default]
+    Left,
+    Right,
+}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct LinkView {
     pub left_tab_id: u64,
     pub right_tab_id: u64,
-    /// When pinned, the left panel stays fixed; clicking other tabs updates only
-    /// the right panel (Commander-style layout on demand).
+    /// Legacy boolean from the earlier split-tab model. Kept for backward
+    /// compatibility and normalized into `pinned_tab_id` on load.
     pub left_pinned: bool,
+    /// If one tab is pinned, it stays fixed while the other side changes.
+    pub pinned_tab_id: Option<u64>,
+    pub active_side: TandemSide,
     /// Fraction of total width given to the left panel (0.0–1.0).
     pub split_ratio: f32,
+}
+
+impl Default for LinkView {
+    fn default() -> Self {
+        Self {
+            left_tab_id: 0,
+            right_tab_id: 0,
+            left_pinned: false,
+            pinned_tab_id: None,
+            active_side: TandemSide::Left,
+            split_ratio: 0.5,
+        }
+    }
 }
 
 impl LinkView {
@@ -604,9 +639,68 @@ impl LinkView {
         Self {
             left_tab_id: left_id,
             right_tab_id: right_id,
-            left_pinned: false,
-            split_ratio: 0.5,
+            ..Self::default()
         }
+    }
+
+    pub fn normalize_legacy(&mut self) {
+        if self.pinned_tab_id.is_none() && self.left_pinned {
+            self.pinned_tab_id = Some(self.left_tab_id);
+        }
+        self.left_pinned = self.pinned_tab_id == Some(self.left_tab_id);
+    }
+
+    pub fn side_for_tab(&self, tab_id: u64) -> Option<TandemSide> {
+        if self.left_tab_id == tab_id {
+            Some(TandemSide::Left)
+        } else if self.right_tab_id == tab_id {
+            Some(TandemSide::Right)
+        } else {
+            None
+        }
+    }
+
+    pub fn tab_id_for_side(&self, side: TandemSide) -> u64 {
+        match side {
+            TandemSide::Left => self.left_tab_id,
+            TandemSide::Right => self.right_tab_id,
+        }
+    }
+
+    pub fn set_tab_for_side(&mut self, side: TandemSide, tab_id: u64) {
+        match side {
+            TandemSide::Left => self.left_tab_id = tab_id,
+            TandemSide::Right => self.right_tab_id = tab_id,
+        }
+    }
+
+    pub fn contains_tab(&self, tab_id: u64) -> bool {
+        self.left_tab_id == tab_id || self.right_tab_id == tab_id
+    }
+
+    pub fn active_tab_id(&self) -> u64 {
+        match self.active_side {
+            TandemSide::Left => self.left_tab_id,
+            TandemSide::Right => self.right_tab_id,
+        }
+    }
+
+    pub fn set_active_tab(&mut self, tab_id: u64) {
+        if tab_id == self.left_tab_id {
+            self.active_side = TandemSide::Left;
+        } else if tab_id == self.right_tab_id {
+            self.active_side = TandemSide::Right;
+        }
+    }
+
+    pub fn pinned_side(&self) -> Option<TandemSide> {
+        self.pinned_tab_id
+            .and_then(|tab_id| self.side_for_tab(tab_id))
+    }
+
+    pub fn set_pinned_tab(&mut self, tab_id: Option<u64>) {
+        self.pinned_tab_id = tab_id.filter(|tab_id| self.contains_tab(*tab_id));
+        self.left_pinned = self.pinned_tab_id == Some(self.left_tab_id);
     }
 }
 
@@ -702,16 +796,11 @@ fn default_view_scale() -> f32 {
     1.0
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Default)]
 pub enum MillerColumnWidthMode {
+    #[default]
     Fixed,
     Auto,
-}
-
-impl Default for MillerColumnWidthMode {
-    fn default() -> Self {
-        Self::Fixed
-    }
 }
 
 // ── App state (runtime) ───────────────────────────────────────────────────────
@@ -750,6 +839,74 @@ impl AppState {
         &mut self.tabs[idx]
     }
 
+    pub fn select_tab_idx(&mut self, idx: usize) -> usize {
+        let idx = idx.min(self.tabs.len().saturating_sub(1));
+        self.active_tab_idx = idx;
+        if let Some(link_view) = self.link_view.as_mut() {
+            link_view.normalize_legacy();
+            let active_id = self.tabs[idx].id;
+            link_view.set_active_tab(active_id);
+        }
+        idx
+    }
+
+    pub fn select_tab_id(&mut self, id: u64) -> Option<usize> {
+        let idx = self.tab_idx_by_id(id)?;
+        Some(self.select_tab_idx(idx))
+    }
+
+    pub fn select_tab_id_preserving_tandem(&mut self, id: u64) -> Option<usize> {
+        let idx = self.tab_idx_by_id(id)?;
+        Some(self.select_tab_idx_preserving_tandem(idx))
+    }
+
+    pub fn select_tab_idx_preserving_tandem(&mut self, idx: usize) -> usize {
+        let idx = idx.min(self.tabs.len().saturating_sub(1));
+        if self.tabs.is_empty() {
+            self.active_tab_idx = 0;
+            return 0;
+        }
+        let selected_id = self.tabs[idx].id;
+        if let Some(link_view) = self.link_view.as_mut() {
+            link_view.normalize_legacy();
+            if link_view.contains_tab(selected_id) {
+                self.active_tab_idx = idx;
+                link_view.set_active_tab(selected_id);
+                return idx;
+            }
+            if let Some(pinned_side) = link_view.pinned_side() {
+                let other_side = match pinned_side {
+                    TandemSide::Left => TandemSide::Right,
+                    TandemSide::Right => TandemSide::Left,
+                };
+                link_view.set_tab_for_side(other_side, selected_id);
+                link_view.set_active_tab(selected_id);
+                self.active_tab_idx = idx;
+                return idx;
+            }
+        }
+        self.select_tab_idx(idx)
+    }
+
+    pub fn activate_tandem(&mut self, left_idx: usize, right_idx: usize) -> Option<()> {
+        if self.tabs.len() < 2 {
+            return None;
+        }
+        let left_idx = left_idx.min(self.tabs.len().saturating_sub(1));
+        let right_idx = right_idx.min(self.tabs.len().saturating_sub(1));
+        if left_idx == right_idx {
+            return None;
+        }
+        let left_id = self.tabs[left_idx].id;
+        let right_id = self.tabs[right_idx].id;
+        let mut link_view = LinkView::new(left_id, right_id);
+        link_view.normalize_legacy();
+        link_view.set_active_tab(right_id);
+        self.link_view = Some(link_view);
+        self.active_tab_idx = right_idx;
+        Some(())
+    }
+
     pub fn new_tab(&mut self, dir: PathBuf) -> usize {
         let id = self.next_tab_id;
         self.next_tab_id += 1;
@@ -766,13 +923,16 @@ impl AppState {
         // If this tab is part of link view, unlink first
         let closing_id = self.tabs[idx].id;
         if let Some(lv) = &self.link_view
-            && (lv.left_tab_id == closing_id || lv.right_tab_id == closing_id)
+            && lv.contains_tab(closing_id)
         {
             self.link_view = None;
         }
         self.tabs.remove(idx);
         if self.active_tab_idx >= self.tabs.len() {
             self.active_tab_idx = self.tabs.len() - 1;
+        }
+        if !self.tabs.is_empty() {
+            self.select_tab_idx(self.active_tab_idx);
         }
     }
 
@@ -806,15 +966,43 @@ pub enum ConflictAction {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum FileCommand {
-    CreateFile { parent: PathBuf, name: String },
-    CreateFolder { parent: PathBuf, name: String },
-    Rename { source: PathBuf, new_name: String },
-    Delete { targets: Vec<PathBuf>, mode: DeleteMode },
-    Copy { sources: Vec<PathBuf>, destination: PathBuf, conflict: ConflictAction },
-    Move { sources: Vec<PathBuf>, destination: PathBuf, conflict: ConflictAction },
-    ShowProperties { target: PathBuf },
-    Chmod { target: PathBuf, mode_str: String },
-    Symlink { link_path: PathBuf, target: PathBuf },
+    CreateFile {
+        parent: PathBuf,
+        name: String,
+    },
+    CreateFolder {
+        parent: PathBuf,
+        name: String,
+    },
+    Rename {
+        source: PathBuf,
+        new_name: String,
+    },
+    Delete {
+        targets: Vec<PathBuf>,
+        mode: DeleteMode,
+    },
+    Copy {
+        sources: Vec<PathBuf>,
+        destination: PathBuf,
+        conflict: ConflictAction,
+    },
+    Move {
+        sources: Vec<PathBuf>,
+        destination: PathBuf,
+        conflict: ConflictAction,
+    },
+    ShowProperties {
+        target: PathBuf,
+    },
+    Chmod {
+        target: PathBuf,
+        mode_str: String,
+    },
+    Symlink {
+        link_path: PathBuf,
+        target: PathBuf,
+    },
 }
 
 // ── Privileged operations (planned integrated elevation) ────────────────────
@@ -917,10 +1105,7 @@ pub fn format_size_units(bytes: u64) -> Vec<String> {
             format!("{} B", bytes),
         ]
     } else if b >= KB {
-        vec![
-            format!("{:.0} KB", b / KB),
-            format!("{} B", bytes),
-        ]
+        vec![format!("{:.0} KB", b / KB), format!("{} B", bytes)]
     } else {
         vec![format!("{} B", bytes)]
     }
@@ -946,7 +1131,9 @@ pub fn format_modified(unix_secs: u64) -> String {
         let days = unix_secs / 86_400;
         let year = 1970u64 + days / 365;
         let month = ((days % 365) / 30) + 1;
-        let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        let months = [
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+        ];
         format!("{} {}", months[(month as usize).min(11)], year)
     }
 }
@@ -1008,23 +1195,68 @@ fn classify_exact_name(name: &str, platform_case_mode: PlatformCaseMode) -> Opti
         ("Makefile", C::Config, None, "exact:Makefile"),
         ("Cargo.toml", C::Config, Some(S::TOML), "exact:Cargo.toml"),
         ("Cargo.lock", C::Config, Some(S::TOML), "exact:Cargo.lock"),
-        ("package.json", C::Config, Some(S::JSON), "exact:package.json"),
-        ("package-lock.json", C::Config, Some(S::JSON), "exact:package-lock.json"),
-        ("pnpm-lock.yaml", C::Config, Some(S::YAML), "exact:pnpm-lock.yaml"),
+        (
+            "package.json",
+            C::Config,
+            Some(S::JSON),
+            "exact:package.json",
+        ),
+        (
+            "package-lock.json",
+            C::Config,
+            Some(S::JSON),
+            "exact:package-lock.json",
+        ),
+        (
+            "pnpm-lock.yaml",
+            C::Config,
+            Some(S::YAML),
+            "exact:pnpm-lock.yaml",
+        ),
         ("yarn.lock", C::Config, None, "exact:yarn.lock"),
-        ("tsconfig.json", C::Config, Some(S::JSON), "exact:tsconfig.json"),
-        ("vite.config.js", C::Config, Some(S::JavaScript), "exact:vite.config.js"),
-        ("webpack.config.js", C::Config, Some(S::JavaScript), "exact:webpack.config.js"),
+        (
+            "tsconfig.json",
+            C::Config,
+            Some(S::JSON),
+            "exact:tsconfig.json",
+        ),
+        (
+            "vite.config.js",
+            C::Config,
+            Some(S::JavaScript),
+            "exact:vite.config.js",
+        ),
+        (
+            "webpack.config.js",
+            C::Config,
+            Some(S::JavaScript),
+            "exact:webpack.config.js",
+        ),
         (".env", C::Config, None, "exact:.env"),
         (".gitignore", C::Config, None, "exact:.gitignore"),
         (".gitattributes", C::Config, None, "exact:.gitattributes"),
         (".editorconfig", C::Config, None, "exact:.editorconfig"),
         ("CMakeLists.txt", C::Config, None, "exact:CMakeLists.txt"),
         ("meson.build", C::Config, None, "exact:meson.build"),
-        ("compose.yaml", C::Config, Some(S::YAML), "exact:compose.yaml"),
+        (
+            "compose.yaml",
+            C::Config,
+            Some(S::YAML),
+            "exact:compose.yaml",
+        ),
         ("compose.yml", C::Config, Some(S::YAML), "exact:compose.yml"),
-        ("docker-compose.yaml", C::Config, Some(S::YAML), "exact:docker-compose.yaml"),
-        ("docker-compose.yml", C::Config, Some(S::YAML), "exact:docker-compose.yml"),
+        (
+            "docker-compose.yaml",
+            C::Config,
+            Some(S::YAML),
+            "exact:docker-compose.yaml",
+        ),
+        (
+            "docker-compose.yml",
+            C::Config,
+            Some(S::YAML),
+            "exact:docker-compose.yml",
+        ),
     ];
 
     by_name
@@ -1043,7 +1275,12 @@ fn classify_special_extension(name: &str) -> Option<FileSemantic> {
         (".tar.xz", C::Archive, None, "special-ext:.tar.xz"),
         (".tar.zst", C::Archive, None, "special-ext:.tar.zst"),
         (".d.ts", C::Code, Some(S::TypeScript), "special-ext:.d.ts"),
-        (".user.js", C::Code, Some(S::JavaScript), "special-ext:.user.js"),
+        (
+            ".user.js",
+            C::Code,
+            Some(S::JavaScript),
+            "special-ext:.user.js",
+        ),
     ];
     by_suffix
         .into_iter()
@@ -1070,8 +1307,8 @@ fn classify_extension(path: &Path) -> Option<FileSemantic> {
         | "ora" | "raw" | "dng" | "cr2" | "nef" | "orf" | "arw" | "rw2" | "pef" | "sr2"
         | "svgz" | "jxl" | "fig" | "sketch" => FileSemantic::new(C::Image, None, Some("ext:image")),
 
-        "mp4" | "mkv" | "webm" | "avi" | "mov" | "flv" | "wmv" | "mpg" | "mpeg" | "m4v"
-        | "3gp" | "mts" | "m2ts" | "ogv" | "rm" | "rmvb" | "f4v" => {
+        "mp4" | "mkv" | "webm" | "avi" | "mov" | "flv" | "wmv" | "mpg" | "mpeg" | "m4v" | "3gp"
+        | "mts" | "m2ts" | "ogv" | "rm" | "rmvb" | "f4v" => {
             FileSemantic::new(C::Video, None, Some("ext:video"))
         }
 
@@ -1104,8 +1341,8 @@ fn classify_extension(path: &Path) -> Option<FileSemantic> {
             FileSemantic::new(C::Presentation, None, Some("ext:presentation"))
         }
 
-        "deb" | "rpm" | "pkg" | "apk" | "flatpak" | "flatpakref" | "appimage" | "snap"
-        | "msi" | "exe" => FileSemantic::new(C::Package, None, Some("ext:package")),
+        "deb" | "rpm" | "pkg" | "apk" | "flatpak" | "flatpakref" | "appimage" | "snap" | "msi"
+        | "exe" => FileSemantic::new(C::Package, None, Some("ext:package")),
 
         "ini" | "cfg" | "conf" | "env" | "properties" | "plist" | "lock" | "editorconfig"
         | "gitignore" | "gitattributes" => FileSemantic::new(C::Config, None, Some("ext:config")),
@@ -1132,8 +1369,8 @@ fn classify_extension(path: &Path) -> Option<FileSemantic> {
         "toml" => FileSemantic::new(C::Code, Some(S::TOML), Some("ext:code-toml")),
         "yaml" | "yml" => FileSemantic::new(C::Code, Some(S::YAML), Some("ext:code-yaml")),
         "xml" | "c" | "h" | "cpp" | "hpp" | "cc" | "hh" | "go" | "mod" | "sum" | "java"
-        | "class" | "kt" | "kts" | "gradle" | "cs" | "csproj" | "sln" | "vb" | "php"
-        | "phtml" | "rb" | "gemspec" | "lua" | "swift" | "sql" => {
+        | "class" | "kt" | "kts" | "gradle" | "cs" | "csproj" | "sln" | "vb" | "php" | "phtml"
+        | "rb" | "gemspec" | "lua" | "swift" | "sql" => {
             FileSemantic::new(C::Code, Some(S::Other), Some("ext:code-other"))
         }
 
@@ -1267,6 +1504,79 @@ mod tests {
         // Should not close the last tab
         state.close_tab(0);
         assert_eq!(state.tabs.len(), 1);
+    }
+
+    #[test]
+    fn link_view_normalizes_legacy_left_pin() {
+        let mut link = LinkView {
+            left_tab_id: 11,
+            right_tab_id: 22,
+            left_pinned: true,
+            pinned_tab_id: None,
+            active_side: TandemSide::Left,
+            split_ratio: 0.5,
+        };
+        link.normalize_legacy();
+        assert_eq!(link.pinned_tab_id, Some(11));
+        assert!(link.left_pinned);
+    }
+
+    #[test]
+    fn link_view_tracks_pinned_side_and_reassigns_tabs() {
+        let mut link = LinkView {
+            left_tab_id: 11,
+            right_tab_id: 22,
+            left_pinned: false,
+            pinned_tab_id: Some(22),
+            active_side: TandemSide::Right,
+            split_ratio: 0.5,
+        };
+
+        assert_eq!(link.pinned_side(), Some(TandemSide::Right));
+        link.set_tab_for_side(TandemSide::Right, 33);
+        assert_eq!(link.tab_id_for_side(TandemSide::Right), 33);
+
+        link.set_pinned_tab(Some(33));
+        assert_eq!(link.pinned_tab_id, Some(33));
+        assert!(!link.left_pinned);
+    }
+
+    #[test]
+    fn app_state_activate_tandem_and_select_tab() {
+        let mut state = AppState::default();
+        let right_idx = state.new_tab(PathBuf::from("/tmp"));
+        let left_idx = 0usize;
+        state.activate_tandem(left_idx, right_idx).unwrap();
+        let link = state.link_view.as_ref().unwrap();
+        assert_eq!(link.left_tab_id, state.tabs[left_idx].id);
+        assert_eq!(link.right_tab_id, state.tabs[right_idx].id);
+        assert_eq!(link.active_side, TandemSide::Right);
+
+        state.select_tab_idx(left_idx);
+        let link = state.link_view.as_ref().unwrap();
+        assert_eq!(link.active_side, TandemSide::Left);
+    }
+
+    #[test]
+    fn select_tab_idx_preserves_pinned_tandem_pair() {
+        let mut state = AppState::default();
+        let right_idx = state.new_tab(PathBuf::from("/tmp/right"));
+        let left_idx = 0usize;
+        state.activate_tandem(left_idx, right_idx).unwrap();
+        let extra_idx = state.new_tab(PathBuf::from("/tmp/extra"));
+        let left_id = state.tabs[left_idx].id;
+        {
+            let link = state.link_view.as_mut().unwrap();
+            link.set_pinned_tab(Some(left_id));
+        }
+
+        state.select_tab_idx_preserving_tandem(extra_idx);
+        let link = state.link_view.as_ref().unwrap();
+        assert_eq!(link.left_tab_id, left_id);
+        assert_eq!(link.right_tab_id, state.tabs[extra_idx].id);
+        assert_eq!(link.pinned_tab_id, Some(left_id));
+        assert_eq!(link.active_side, TandemSide::Right);
+        assert_eq!(state.active_tab_idx, extra_idx);
     }
 
     #[test]

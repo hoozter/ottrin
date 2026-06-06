@@ -1,15 +1,15 @@
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use ottrin_core::{
-    EntryKind, SearchConfig, SearchIndexStatus, SearchQuery, SearchResponse, SearchResultItem, SearchScope,
-    SearchSort,
+    EntryKind, SearchConfig, SearchIndexStatus, SearchQuery, SearchResponse, SearchResultItem,
+    SearchScope, SearchSort,
 };
 use regex::{Regex, RegexBuilder};
 use std::collections::HashSet;
-use std::panic::AssertUnwindSafe;
-use std::path::{Path, PathBuf};
 #[cfg(target_os = "linux")]
 use std::os::unix::fs::MetadataExt;
+use std::panic::AssertUnwindSafe;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 use std::thread::JoinHandle;
@@ -18,7 +18,7 @@ use thiserror::Error;
 use walkdir::WalkDir;
 
 mod db;
-use db::{search_db_path, SearchDb, SearchDbWriter};
+use db::{SearchDb, SearchDbWriter, search_db_path};
 
 /// Publish this many indexed items to the shared index before the walk completes,
 /// so queries return partial results immediately (FSearch-style streaming).
@@ -171,13 +171,13 @@ impl SearchService {
                 let mut needs_rebuild = true;
                 // Incremental update state: events are debounced over 500ms before applying.
                 let mut pending: Vec<NotifyAction> = Vec::new();
-            let mut last_event_at: Option<Instant> = None;
-            // Tracks when the last full rebuild completed, for scheduled refresh.
-            let mut last_full_rebuild_at: Option<Instant> = None;
-            // Tracks when we last ran updatedb for the managed locate database.
-            let mut last_updatedb_at: Option<Instant> = None;
-            let mut locate_db_initialized = false;
-            let mut last_stall_restart_at: Option<Instant> = None;
+                let mut last_event_at: Option<Instant> = None;
+                // Tracks when the last full rebuild completed, for scheduled refresh.
+                let mut last_full_rebuild_at: Option<Instant> = None;
+                // Tracks when we last ran updatedb for the managed locate database.
+                let mut last_updatedb_at: Option<Instant> = None;
+                let mut locate_db_initialized = false;
+                let mut last_stall_restart_at: Option<Instant> = None;
 
                 // Pre-populate from disk cache for instant results on startup.
                 // If the cache is fresh (< 30 min), defer the rebuild so we don't thrash.
@@ -190,11 +190,15 @@ impl SearchService {
                         i.status = SearchIndexStatus::Ready;
                         if age < 1_800 {
                             // Fresh enough — skip the immediate rebuild, background watcher is enough.
-                            i.progress_text = Some(format!("Indexed {} files · {}", count, age_str));
+                            i.progress_text =
+                                Some(format!("Indexed {} files · {}", count, age_str));
                             needs_rebuild = false;
                             last_full_rebuild_at = Some(Instant::now()); // Treat as fresh rebuild.
                         } else {
-                            i.progress_text = Some(format!("Cached · {} files · {} · refreshing…", count, age_str));
+                            i.progress_text = Some(format!(
+                                "Cached · {} files · {} · refreshing…",
+                                count, age_str
+                            ));
                             // needs_rebuild stays true — silent background refresh begins.
                         }
                     }
@@ -262,24 +266,27 @@ impl SearchService {
                             |batch| {
                                 // Stream each batch into the shared index so queries return
                                 // partial results before the walk finishes.
-                                if let Ok(mut writer_guard) = db_writer_arc_for_batch.lock() {
-                                    if let Some(ref mut writer) = *writer_guard {
-                                        let _ = writer.insert_batch(&batch);
-                                        if let Some(last) = batch.last() {
-                                            if let Some(root) = roots
-                                                .iter()
-                                                .find(|r: &&PathBuf| last.path.starts_with(r.as_path()))
-                                            {
-                                                let _ = writer.set_scan_cursor(root, Some(&last.path));
-                                            }
-                                        }
+                                if let Ok(mut writer_guard) = db_writer_arc_for_batch.lock()
+                                    && let Some(ref mut writer) = *writer_guard
+                                {
+                                    let _ = writer.insert_batch(&batch);
+                                    if let Some(last) = batch.last()
+                                        && let Some(root) = roots
+                                            .iter()
+                                            .find(|r: &&PathBuf| last.path.starts_with(r.as_path()))
+                                    {
+                                        let _ = writer.set_scan_cursor(
+                                            root.as_path(),
+                                            Some(last.path.as_path()),
+                                        );
                                     }
                                 }
                                 let mut i = index.write().expect("index write");
                                 if let Some(last) = batch.last() {
                                     i.last_indexed_path = Some(last.path.clone());
                                 }
-                                i.building_indexed_items = i.building_indexed_items.saturating_add(batch.len());
+                                i.building_indexed_items =
+                                    i.building_indexed_items.saturating_add(batch.len());
                                 i.last_progress_unix_secs = Some(current_unix_secs());
                                 new_items.extend(batch);
                             },
@@ -289,10 +296,10 @@ impl SearchService {
                                     break;
                                 }
                                 // Clear scan cursors using the same Arc<Mutex<>>.
-                                if let Ok(mut writer_guard) = db_writer_arc.lock() {
-                                    if let Some(ref mut w) = *writer_guard {
-                                        let _ = w.clear_scan_cursors();
-                                    }
+                                if let Ok(mut writer_guard) = db_writer_arc.lock()
+                                    && let Some(ref mut w) = *writer_guard
+                                {
+                                    let _ = w.clear_scan_cursors();
                                 }
                                 let items_snapshot = {
                                     let mut i = index.write().expect("index write");
@@ -302,7 +309,11 @@ impl SearchService {
                                     i.active_root_index = 0;
                                     i.last_scan_completed_unix_secs = Some(current_unix_secs());
                                     i.last_scan_duration_ms = Some(
-                                        scan_started_instant.elapsed().as_millis().min(u128::from(u64::MAX)) as u64
+                                        scan_started_instant
+                                            .elapsed()
+                                            .as_millis()
+                                            .min(u128::from(u64::MAX))
+                                            as u64,
                                     );
                                     i.last_progress_unix_secs = Some(current_unix_secs());
                                     i.progress_text = Some(format!("Ready · {} indexed", total));
@@ -324,7 +335,11 @@ impl SearchService {
                                 i.active_root_index = 0;
                                 i.last_scan_completed_unix_secs = Some(current_unix_secs());
                                 i.last_scan_duration_ms = Some(
-                                    scan_started_instant.elapsed().as_millis().min(u128::from(u64::MAX)) as u64
+                                    scan_started_instant
+                                        .elapsed()
+                                        .as_millis()
+                                        .min(u128::from(u64::MAX))
+                                        as u64,
                                 );
                                 i.last_progress_unix_secs = Some(current_unix_secs());
                                 i.progress_text = None;
@@ -350,7 +365,11 @@ impl SearchService {
                             i.watcher_ready = true;
                             i.watcher_last_setup_unix_secs = Some(current_unix_secs());
                             i.watcher_last_error = if failed > 0 {
-                                Some(format!("Failed to watch {} location{}", failed, if failed == 1 { "" } else { "s" }))
+                                Some(format!(
+                                    "Failed to watch {} location{}",
+                                    failed,
+                                    if failed == 1 { "" } else { "s" }
+                                ))
                             } else {
                                 None
                             };
@@ -361,34 +380,37 @@ impl SearchService {
                         last_full_rebuild_at = Some(Instant::now());
                     }
 
-                // Scheduled refresh: trigger a silent rebuild when the interval elapses.
-                {
-                    let cfg_snap = config.read().expect("cfg read");
-                    let (status, last_progress) = {
-                        let idx = index.read().expect("index read");
-                        (idx.status, idx.last_progress_unix_secs)
-                    };
-                    if matches!(status, SearchIndexStatus::Indexing) {
-                        let now_secs = current_unix_secs();
-                        if let Some(last) = last_progress {
-                            let age = now_secs.saturating_sub(last);
-                            let cooldown = last_stall_restart_at
-                                .map(|t| t.elapsed().as_secs() < INDEX_STALL_RESTART_COOLDOWN_SECS)
-                                .unwrap_or(false);
-                            if age > INDEX_STALL_SECS && !cooldown {
-                                last_stall_restart_at = Some(Instant::now());
-                                needs_rebuild = true;
-                                if let Ok(mut i) = index.write() {
-                                    i.progress_text = Some("Stalled · restarting index…".to_string());
+                    // Scheduled refresh: trigger a silent rebuild when the interval elapses.
+                    {
+                        let cfg_snap = config.read().expect("cfg read");
+                        let (status, last_progress) = {
+                            let idx = index.read().expect("index read");
+                            (idx.status, idx.last_progress_unix_secs)
+                        };
+                        if matches!(status, SearchIndexStatus::Indexing) {
+                            let now_secs = current_unix_secs();
+                            if let Some(last) = last_progress {
+                                let age = now_secs.saturating_sub(last);
+                                let cooldown = last_stall_restart_at
+                                    .map(|t| {
+                                        t.elapsed().as_secs() < INDEX_STALL_RESTART_COOLDOWN_SECS
+                                    })
+                                    .unwrap_or(false);
+                                if age > INDEX_STALL_SECS && !cooldown {
+                                    last_stall_restart_at = Some(Instant::now());
+                                    needs_rebuild = true;
+                                    if let Ok(mut i) = index.write() {
+                                        i.progress_text =
+                                            Some("Stalled · restarting index…".to_string());
+                                    }
                                 }
                             }
                         }
-                    }
-                    let interval_secs = cfg_snap.refresh_interval_hours as u64 * 3_600;
-                    if interval_secs > 0 {
-                        let due = last_full_rebuild_at
-                            .map(|t| t.elapsed().as_secs() >= interval_secs)
-                            .unwrap_or(false);
+                        let interval_secs = cfg_snap.refresh_interval_hours as u64 * 3_600;
+                        if interval_secs > 0 {
+                            let due = last_full_rebuild_at
+                                .map(|t| t.elapsed().as_secs() >= interval_secs)
+                                .unwrap_or(false);
                             if due {
                                 needs_rebuild = true;
                             }
@@ -424,7 +446,9 @@ impl SearchService {
                             locate_db_initialized = true;
                             if locate_due {
                                 let roots = effective_roots(&cfg_snap);
-                                let root = roots.into_iter().next()
+                                let root = roots
+                                    .into_iter()
+                                    .next()
                                     .unwrap_or_else(ottrin_core::default_home_dir);
                                 run_user_updatedb(root);
                                 last_updatedb_at = Some(Instant::now());
@@ -453,7 +477,9 @@ impl SearchService {
                     }
 
                     // After 500ms of quiet, apply pending events.
-                    if last_event_at.map(|t| t.elapsed() >= Duration::from_millis(500)).unwrap_or(false)
+                    if last_event_at
+                        .map(|t| t.elapsed() >= Duration::from_millis(500))
+                        .unwrap_or(false)
                         && !pending.is_empty()
                     {
                         if pending.len() > INCREMENTAL_REBUILD_THRESHOLD {
@@ -557,11 +583,11 @@ impl SearchService {
             // Parse CapEff from /proc/self/status — no extra deps required.
             if let Ok(text) = std::fs::read_to_string("/proc/self/status") {
                 for line in text.lines() {
-                    if let Some(rest) = line.strip_prefix("CapEff:\t") {
-                        if let Ok(cap_eff) = u64::from_str_radix(rest.trim(), 16) {
-                            const CAP_SYS_ADMIN: u64 = 1 << 21;
-                            return cap_eff & CAP_SYS_ADMIN != 0;
-                        }
+                    if let Some(rest) = line.strip_prefix("CapEff:\t")
+                        && let Ok(cap_eff) = u64::from_str_radix(rest.trim(), 16)
+                    {
+                        const CAP_SYS_ADMIN: u64 = 1 << 21;
+                        return cap_eff & CAP_SYS_ADMIN != 0;
                     }
                 }
             }
@@ -650,40 +676,43 @@ impl SearchService {
                 .map(|root| !root_is_indexed(root, &cfg))
                 .unwrap_or(false);
 
-        let mut matched: Vec<(i64, SearchResultItem)> = if matches!(query.scope, SearchScope::CurrentFolder)
-            && (matches!(status, SearchIndexStatus::Unavailable | SearchIndexStatus::Indexing)
-                || current_folder_outside_index)
-        {
-            query_current_folder_fallback(&query, &expr, &cfg)
-        } else if matches!(query.scope, SearchScope::Global)
-            && matches!(status, SearchIndexStatus::Indexing)
-            && idx.items.is_empty()
-        {
-            let roots = ordered_query_roots(&query, &cfg);
-            let target_hits = query.limit.saturating_mul(6).max(200);
-            query_global_fallback(
-                &query,
-                &expr,
-                &roots,
-                &cfg,
-                24_000,
-                target_hits,
-                Duration::from_millis(140),
-            )
-        } else {
-            idx.items
-                .iter()
-                .filter(|item| scope_match(&query, item))
-                .filter(|item| query.include_hidden_system || !item.name.starts_with('.'))
-                .filter_map(|item| {
-                    if eval_expr(&expr, item) {
-                        Some((relevance_score(&query, item), item.clone()))
-                    } else {
-                        None
-                    }
-                })
-                .collect()
-        };
+        let mut matched: Vec<(i64, SearchResultItem)> =
+            if matches!(query.scope, SearchScope::CurrentFolder)
+                && (matches!(
+                    status,
+                    SearchIndexStatus::Unavailable | SearchIndexStatus::Indexing
+                ) || current_folder_outside_index)
+            {
+                query_current_folder_fallback(&query, &expr, &cfg)
+            } else if matches!(query.scope, SearchScope::Global)
+                && matches!(status, SearchIndexStatus::Indexing)
+                && idx.items.is_empty()
+            {
+                let roots = ordered_query_roots(&query, &cfg);
+                let target_hits = query.limit.saturating_mul(6).max(200);
+                query_global_fallback(
+                    &query,
+                    &expr,
+                    &roots,
+                    &cfg,
+                    24_000,
+                    target_hits,
+                    Duration::from_millis(140),
+                )
+            } else {
+                idx.items
+                    .iter()
+                    .filter(|item| scope_match(&query, item))
+                    .filter(|item| query.include_hidden_system || !item.name.starts_with('.'))
+                    .filter_map(|item| {
+                        if eval_expr(&expr, item) {
+                            Some((relevance_score(&query, item), item.clone()))
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
+            };
 
         if matches!(query.scope, SearchScope::Global)
             && matches!(status, SearchIndexStatus::Indexing)
@@ -691,7 +720,8 @@ impl SearchService {
             && query.text.trim().len() >= 2
         {
             let roots = ordered_query_roots(&query, &cfg);
-            let mut seen: HashSet<PathBuf> = matched.iter().map(|(_, item)| item.path.clone()).collect();
+            let mut seen: HashSet<PathBuf> =
+                matched.iter().map(|(_, item)| item.path.clone()).collect();
             let supplement_hits = query.limit.clamp(64, 256);
             for (score, item) in query_global_fallback(
                 &query,
@@ -712,7 +742,8 @@ impl SearchService {
         }
 
         if global_root_outside_index && query.text.trim().len() >= 2 {
-            let mut seen: HashSet<PathBuf> = matched.iter().map(|(_, item)| item.path.clone()).collect();
+            let mut seen: HashSet<PathBuf> =
+                matched.iter().map(|(_, item)| item.path.clone()).collect();
             for (score, item) in query_current_folder_fallback(&query, &expr, &cfg) {
                 if seen.insert(item.path.clone()) {
                     matched.push((score, item));
@@ -736,7 +767,8 @@ impl SearchService {
                 query.include_hidden_system,
                 query.limit.saturating_sub(matched.len()).max(50),
             );
-            let mut seen: HashSet<PathBuf> = matched.iter().map(|(_, item)| item.path.clone()).collect();
+            let mut seen: HashSet<PathBuf> =
+                matched.iter().map(|(_, item)| item.path.clone()).collect();
             for item in locate_hits {
                 if eval_expr(&expr, &item) && seen.insert(item.path.clone()) {
                     matched.push((relevance_score(&query, &item), item));
@@ -748,8 +780,11 @@ impl SearchService {
         // Only runs when query is a single bare word and exact results are sparse.
         if is_simple_single_word(&query.text) && matched.len() < query.limit {
             let q = query.text.trim();
-            let mut seen: HashSet<PathBuf> = matched.iter().map(|(_, item)| item.path.clone()).collect();
-            for item in idx.items.iter()
+            let mut seen: HashSet<PathBuf> =
+                matched.iter().map(|(_, item)| item.path.clone()).collect();
+            for item in idx
+                .items
+                .iter()
                 .filter(|item| scope_match(&query, item))
                 .filter(|item| query.include_hidden_system || !item.name.starts_with('.'))
             {
@@ -771,12 +806,14 @@ impl SearchService {
             let roots = ordered_query_roots(&query, &cfg);
             let content_limit = query.limit.max(50);
             let rg_items = query_content_ripgrep(
+                &expr,
                 query.text.trim(),
                 &roots,
                 query.include_hidden_system,
                 content_limit,
             );
-            let mut seen: HashSet<PathBuf> = matched.iter().map(|(_, item)| item.path.clone()).collect();
+            let mut seen: HashSet<PathBuf> =
+                matched.iter().map(|(_, item)| item.path.clone()).collect();
             for item in rg_items {
                 if scope_match(&query, &item) && seen.insert(item.path.clone()) {
                     // Content matches get a high base score — they are strong signals
@@ -813,13 +850,14 @@ impl Drop for SearchService {
 }
 
 fn effective_roots(cfg: &SearchConfig) -> Vec<PathBuf> {
-    let mut roots = if !cfg.include_roots.is_empty() {
+    let roots = if !cfg.include_roots.is_empty() {
         cfg.include_roots.clone()
     } else {
         default_roots()
     };
     #[cfg(target_os = "linux")]
     {
+        let mut roots = roots;
         let mounts = Path::new("/proc/mounts");
         if mounts.exists()
             && let Ok(text) = std::fs::read_to_string(mounts)
@@ -836,18 +874,22 @@ fn effective_roots(cfg: &SearchConfig) -> Vec<PathBuf> {
                         if !p.starts_with(&root) || !seen.insert(p.clone()) {
                             continue;
                         }
-                        if let (Some(rdev), Ok(mmeta)) = (root_dev, std::fs::metadata(&p)) {
-                            if mmeta.dev() == rdev {
-                                continue; // same filesystem; already covered by root
-                            }
+                        if let (Some(rdev), Ok(mmeta)) = (root_dev, std::fs::metadata(&p))
+                            && mmeta.dev() == rdev
+                        {
+                            continue; // same filesystem; already covered by root
                         }
                         roots.push(p);
                     }
                 }
             }
         }
+        roots
     }
-    roots
+    #[cfg(not(target_os = "linux"))]
+    {
+        roots
+    }
 }
 
 fn ordered_query_roots(query: &SearchQuery, cfg: &SearchConfig) -> Vec<PathBuf> {
@@ -901,7 +943,9 @@ pub fn default_roots() -> Vec<PathBuf> {
                 let mnt = parts.next();
                 if let Some(m) = mnt {
                     let p = PathBuf::from(m);
-                    if (p.starts_with("/media") || p.starts_with("/mnt") || p.starts_with("/run/media"))
+                    if (p.starts_with("/media")
+                        || p.starts_with("/mnt")
+                        || p.starts_with("/run/media"))
                         && seen.insert(p.clone())
                     {
                         roots.push(p);
@@ -942,7 +986,7 @@ where
             eprintln!("build_index: root={} exists={}", r.display(), r.exists());
         }
     }
-    let placeholder_root = roots.get(0).cloned().unwrap_or_else(PathBuf::new);
+    let placeholder_root = roots.first().cloned().unwrap_or_else(PathBuf::new);
     on_progress(ProgressUpdate {
         message: "Indexing · preparing filters…".to_string(),
         active_root: placeholder_root,
@@ -1005,17 +1049,13 @@ where
                     continue;
                 }
                 if skipping {
-                    if let Some(cursor) = resume_cursor.as_ref() {
-                        if path == cursor.as_path() {
-                            skipping = false;
-                            cursor_found = true;
-                        }
+                    if let Some(cursor) = resume_cursor.as_ref()
+                        && path == cursor.as_path()
+                    {
+                        skipping = false;
+                        cursor_found = true;
                     }
-                    if skipping {
-                        continue;
-                    } else {
-                        continue;
-                    }
+                    continue;
                 }
                 root_seen = root_seen.saturating_add(1);
                 let name = entry.file_name().to_string_lossy().to_string();
@@ -1036,7 +1076,11 @@ where
                 } else {
                     EntryKind::Other
                 };
-                let size = if matches!(kind, EntryKind::File) { Some(meta.len()) } else { None };
+                let size = if matches!(kind, EntryKind::File) {
+                    Some(meta.len())
+                } else {
+                    None
+                };
                 let modified = meta
                     .modified()
                     .ok()
@@ -1048,7 +1092,11 @@ where
                     name,
                     kind,
                     is_executable: detect_executable(&meta),
-                    symlink_target_is_dir: if matches!(kind, EntryKind::Symlink) { Some(meta.is_dir()) } else { None },
+                    symlink_target_is_dir: if matches!(kind, EntryKind::Symlink) {
+                        Some(meta.is_dir())
+                    } else {
+                        None
+                    },
                     size_bytes: size,
                     modified_unix_secs: modified,
                     content_snippet: None,
@@ -1062,7 +1110,12 @@ where
 
                 if batch.len() >= STREAM_BATCH_SIZE {
                     on_progress(ProgressUpdate {
-                        message: format_progress(root_idx + 1, roots_total, total_indexed, root_seen),
+                        message: format_progress(
+                            root_idx + 1,
+                            roots_total,
+                            total_indexed,
+                            root_seen,
+                        ),
                         active_root: root.clone(),
                         active_root_index: root_idx + 1,
                         total_roots: roots_total,
@@ -1102,7 +1155,11 @@ fn index_cache_path() -> PathBuf {
     #[cfg(target_os = "windows")]
     let cache_root = std::env::var("LOCALAPPDATA")
         .map(PathBuf::from)
-        .unwrap_or_else(|_| ottrin_core::default_home_dir().join("AppData").join("Local"));
+        .unwrap_or_else(|_| {
+            ottrin_core::default_home_dir()
+                .join("AppData")
+                .join("Local")
+        });
     #[cfg(not(target_os = "windows"))]
     let cache_root = std::env::var("XDG_CACHE_HOME")
         .map(PathBuf::from)
@@ -1158,12 +1215,11 @@ fn save_index_to_disk(items: Vec<SearchResultItem>) {
 /// Load a previously persisted index from disk. Returns `None` if unavailable or corrupt.
 fn load_index_from_disk() -> Option<Vec<SearchResultItem>> {
     let db_path = search_db_path();
-    if let Ok(db) = SearchDb::open(db_path) {
-        if let Ok(items) = db.load_items() {
-            if !items.is_empty() {
-                return Some(items);
-            }
-        }
+    if let Ok(db) = SearchDb::open(db_path)
+        && let Ok(items) = db.load_items()
+        && !items.is_empty()
+    {
+        return Some(items);
     }
     let path = index_cache_path();
     let data = std::fs::read(&path).ok()?;
@@ -1177,14 +1233,17 @@ fn load_index_from_disk() -> Option<Vec<SearchResultItem>> {
 /// Returns how many seconds ago the on-disk index was last written.
 fn index_cache_age_secs() -> Option<u64> {
     let db_path = search_db_path();
-    if let Ok(mtime) = std::fs::metadata(&db_path).and_then(|m| m.modified()) {
-        if let Ok(age) = SystemTime::now().duration_since(mtime) {
-            return Some(age.as_secs());
-        }
+    if let Ok(mtime) = std::fs::metadata(&db_path).and_then(|m| m.modified())
+        && let Ok(age) = SystemTime::now().duration_since(mtime)
+    {
+        return Some(age.as_secs());
     }
     let path = index_cache_path();
     let mtime = std::fs::metadata(&path).ok()?.modified().ok()?;
-    SystemTime::now().duration_since(mtime).ok().map(|d| d.as_secs())
+    SystemTime::now()
+        .duration_since(mtime)
+        .ok()
+        .map(|d| d.as_secs())
 }
 
 /// Human-readable age string used in status messages.
@@ -1249,8 +1308,10 @@ pub fn run_user_updatedb(root: PathBuf) {
         let db = locate_db_path();
         let _ = std::process::Command::new("updatedb")
             .args(["-l", "0"])
-            .arg("-U").arg(&root)
-            .arg("-o").arg(&db)
+            .arg("-U")
+            .arg(&root)
+            .arg("-o")
+            .arg(&db)
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
             .status();
@@ -1260,7 +1321,10 @@ pub fn run_user_updatedb(root: PathBuf) {
 /// How many seconds ago Ottrin's locate.db was last updated (mtime).
 pub fn locate_db_age_secs() -> Option<u64> {
     let mtime = std::fs::metadata(locate_db_path()).ok()?.modified().ok()?;
-    SystemTime::now().duration_since(mtime).ok().map(|d| d.as_secs())
+    SystemTime::now()
+        .duration_since(mtime)
+        .ok()
+        .map(|d| d.as_secs())
 }
 
 /// Age of the system locate database in seconds (Linux), if found.
@@ -1351,20 +1415,19 @@ pub fn locate_schedule_status() -> LocateScheduleStatus {
 /// Detect whether the system locate database is scheduled (systemd timer or cron).
 pub fn system_locate_schedule_status() -> SystemLocateScheduleStatus {
     let timer_names = ["plocate-updatedb.timer", "mlocate.timer", "updatedb.timer"];
-    if command_exists("systemctl") {
-        if let Ok(out) = std::process::Command::new("systemctl")
+    if command_exists("systemctl")
+        && let Ok(out) = std::process::Command::new("systemctl")
             .args(["list-timers", "--all", "--no-legend"])
             .output()
-        {
-            let text = String::from_utf8_lossy(&out.stdout);
-            for name in &timer_names {
-                if text.contains(name) {
-                    return SystemLocateScheduleStatus {
-                        source: Some("systemd".to_string()),
-                        detail: Some((*name).to_string()),
-                        needs_setup: false,
-                    };
-                }
+    {
+        let text = String::from_utf8_lossy(&out.stdout);
+        for name in &timer_names {
+            if text.contains(name) {
+                return SystemLocateScheduleStatus {
+                    source: Some("systemd".to_string()),
+                    detail: Some((*name).to_string()),
+                    needs_setup: false,
+                };
             }
         }
     }
@@ -1449,10 +1512,8 @@ fn install_systemd_user_timer(interval_hours: u32, root: &str, db: &str) -> Resu
         interval = interval_hours
     );
 
-    std::fs::write(unit_dir.join("ottrin-updatedb.service"), service)
-        .map_err(|e| e.to_string())?;
-    std::fs::write(unit_dir.join("ottrin-updatedb.timer"), timer)
-        .map_err(|e| e.to_string())?;
+    std::fs::write(unit_dir.join("ottrin-updatedb.service"), service).map_err(|e| e.to_string())?;
+    std::fs::write(unit_dir.join("ottrin-updatedb.timer"), timer).map_err(|e| e.to_string())?;
 
     // Reload and enable
     for args in [
@@ -1485,7 +1546,10 @@ fn install_crontab_entry(interval_hours: u32, root: &str, db: &str) -> Result<St
 
     let entry = format!(
         "{tag}\n0 */{interval} * * * updatedb -l 0 -U {root} -o {db}\n",
-        tag = tag, interval = interval_hours, root = root, db = db
+        tag = tag,
+        interval = interval_hours,
+        root = root,
+        db = db
     );
     let new_crontab = format!("{}\n{}", existing.trim_end(), entry);
 
@@ -1520,7 +1584,8 @@ fn query_system_locate(
     // Build the command: our own DB takes priority so results are always fresh.
     let output = if our_db.exists() && command_exists("locate") {
         std::process::Command::new("locate")
-            .arg("-d").arg(&our_db)
+            .arg("-d")
+            .arg(&our_db)
             .args(["-i", text])
             .output()
     } else if command_exists("plocate") {
@@ -1579,9 +1644,14 @@ fn make_item_from_path(path: &Path) -> Option<SearchResultItem> {
         EntryKind::Other
     };
     let name = path.file_name()?.to_string_lossy().to_string();
-    let size = if matches!(kind, EntryKind::File) { Some(meta.len()) } else { None };
+    let size = if matches!(kind, EntryKind::File) {
+        Some(meta.len())
+    } else {
+        None
+    };
     let modified = meta
-        .modified().ok()
+        .modified()
+        .ok()
         .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
         .map(|d| d.as_secs());
     let mut item = SearchResultItem {
@@ -1590,7 +1660,11 @@ fn make_item_from_path(path: &Path) -> Option<SearchResultItem> {
         name,
         kind,
         is_executable: detect_executable(&meta),
-        symlink_target_is_dir: if matches!(kind, EntryKind::Symlink) { Some(meta.is_dir()) } else { None },
+        symlink_target_is_dir: if matches!(kind, EntryKind::Symlink) {
+            Some(meta.is_dir())
+        } else {
+            None
+        },
         size_bytes: size,
         modified_unix_secs: modified,
         content_snippet: None,
@@ -1604,7 +1678,11 @@ fn make_item_from_path(path: &Path) -> Option<SearchResultItem> {
 
 /// Apply a batch of `NotifyAction`s to the index without re-walking the filesystem.
 /// Handles create/modify (upsert) and delete (remove + all children) efficiently.
-fn apply_incremental(items: &mut Vec<SearchResultItem>, actions: &[NotifyAction], cfg: &SearchConfig) {
+fn apply_incremental(
+    items: &mut Vec<SearchResultItem>,
+    actions: &[NotifyAction],
+    cfg: &SearchConfig,
+) {
     let include = build_globset(&cfg.include_globs).unwrap_or_else(|_| empty_globset());
     let exclude = build_globset(&cfg.exclude_globs).unwrap_or_else(|_| empty_globset());
     let roots = effective_roots(cfg);
@@ -1613,9 +1691,7 @@ fn apply_incremental(items: &mut Vec<SearchResultItem>, actions: &[NotifyAction]
         match action {
             NotifyAction::Remove(path) => {
                 // Remove the exact path and everything under it (directory removal).
-                items.retain(|item| {
-                    item.path != *path && !item.path.starts_with(path)
-                });
+                items.retain(|item| item.path != *path && !item.path.starts_with(path));
             }
             NotifyAction::Upsert(path) => {
                 // Remove stale entry (may or may not exist).
@@ -1625,13 +1701,20 @@ fn apply_incremental(items: &mut Vec<SearchResultItem>, actions: &[NotifyAction]
                     continue; // Outside all indexed roots — ignore.
                 };
                 // Apply the same filters used during full index build.
-                if !should_keep_path(path, root, cfg.include_hidden_system, &include, &exclude, &cfg.exclude_roots) {
+                if !should_keep_path(
+                    path,
+                    root,
+                    cfg.include_hidden_system,
+                    &include,
+                    &exclude,
+                    &cfg.exclude_roots,
+                ) {
                     continue;
                 }
-                if let Some(item) = make_item_from_path(path) {
-                    if cfg.include_hidden_system || !item.name.starts_with('.') {
-                        items.push(item);
-                    }
+                if let Some(item) = make_item_from_path(path)
+                    && (cfg.include_hidden_system || !item.name.starts_with('.'))
+                {
+                    items.push(item);
                 }
             }
         }
@@ -1656,14 +1739,20 @@ fn apply_incremental_to_db(actions: &[NotifyAction], cfg: &SearchConfig) {
                 let Some(root) = roots.iter().find(|r| path.starts_with(r.as_path())) else {
                     continue;
                 };
-                if !should_keep_path(path, root, cfg.include_hidden_system, &include, &exclude, &cfg.exclude_roots)
-                {
+                if !should_keep_path(
+                    path,
+                    root,
+                    cfg.include_hidden_system,
+                    &include,
+                    &exclude,
+                    &cfg.exclude_roots,
+                ) {
                     continue;
                 }
-                if let Some(item) = make_item_from_path(path) {
-                    if cfg.include_hidden_system || !item.name.starts_with('.') {
-                        let _ = writer.upsert_item(&item);
-                    }
+                if let Some(item) = make_item_from_path(path)
+                    && (cfg.include_hidden_system || !item.name.starts_with('.'))
+                {
+                    let _ = writer.upsert_item(&item);
                 }
             }
         }
@@ -1695,7 +1784,11 @@ fn scope_match(query: &SearchQuery, item: &SearchResultItem) -> bool {
     }
 }
 
-fn query_current_folder_fallback(query: &SearchQuery, expr: &Expr, cfg: &SearchConfig) -> Vec<(i64, SearchResultItem)> {
+fn query_current_folder_fallback(
+    query: &SearchQuery,
+    expr: &Expr,
+    cfg: &SearchConfig,
+) -> Vec<(i64, SearchResultItem)> {
     let Some(root) = &query.root_path else {
         return Vec::new();
     };
@@ -1725,7 +1818,10 @@ fn query_current_folder_fallback(query: &SearchQuery, expr: &Expr, cfg: &SearchC
             )
         });
     for entry in walker.filter_map(Result::ok) {
-        if visited >= max_visited || out.len() >= target_hits || started.elapsed() >= Duration::from_millis(120) {
+        if visited >= max_visited
+            || out.len() >= target_hits
+            || started.elapsed() >= Duration::from_millis(120)
+        {
             break;
         }
         let path = entry.path();
@@ -1751,7 +1847,11 @@ fn query_current_folder_fallback(query: &SearchQuery, expr: &Expr, cfg: &SearchC
         } else {
             EntryKind::Other
         };
-        let size = if matches!(kind, EntryKind::File) { Some(meta.len()) } else { None };
+        let size = if matches!(kind, EntryKind::File) {
+            Some(meta.len())
+        } else {
+            None
+        };
         let modified = meta
             .modified()
             .ok()
@@ -1873,7 +1973,8 @@ fn query_global_fallback_pass(
             )
         });
         for entry in walker.filter_map(Result::ok) {
-            if *visited >= max_visited || out.len() >= target_hits || started.elapsed() >= max_time {
+            if *visited >= max_visited || out.len() >= target_hits || started.elapsed() >= max_time
+            {
                 return;
             }
             let path = entry.path();
@@ -1900,7 +2001,11 @@ fn query_global_fallback_pass(
             } else {
                 EntryKind::Other
             };
-            let size = if matches!(kind, EntryKind::File) { Some(meta.len()) } else { None };
+            let size = if matches!(kind, EntryKind::File) {
+                Some(meta.len())
+            } else {
+                None
+            };
             let modified = meta
                 .modified()
                 .ok()
@@ -1932,7 +2037,12 @@ fn query_global_fallback_pass(
     }
 }
 
-fn format_progress(root_idx: usize, roots_total: usize, indexed: usize, _root_seen: usize) -> String {
+fn format_progress(
+    root_idx: usize,
+    roots_total: usize,
+    indexed: usize,
+    _root_seen: usize,
+) -> String {
     // Show a clear count-based progress instead of a misleading percentage.
     // We can't know total files ahead of time, so show indexed count + root progress.
     if roots_total <= 1 {
@@ -1940,9 +2050,7 @@ fn format_progress(root_idx: usize, roots_total: usize, indexed: usize, _root_se
     } else {
         format!(
             "Indexing · root {}/{} · {} files found",
-            root_idx,
-            roots_total,
-            indexed
+            root_idx, roots_total, indexed
         )
     }
 }
@@ -1967,7 +2075,9 @@ fn empty_globset() -> GlobSet {
 }
 
 fn root_is_indexed(root: &Path, cfg: &SearchConfig) -> bool {
-    effective_roots(cfg).into_iter().any(|indexed_root| root.starts_with(indexed_root))
+    effective_roots(cfg)
+        .into_iter()
+        .any(|indexed_root| root.starts_with(indexed_root))
 }
 
 fn should_keep_path(
@@ -2107,7 +2217,10 @@ fn tokenize(s: &str) -> Result<Vec<Tok>, SearchError> {
             }
             _ => {
                 let start = i;
-                while i < chars.len() && !chars[i].is_whitespace() && !['(', ')', '|', '!'].contains(&chars[i]) {
+                while i < chars.len()
+                    && !chars[i].is_whitespace()
+                    && !['(', ')', '|', '!'].contains(&chars[i])
+                {
                     i += 1;
                 }
                 out.push(Tok::Word(chars[start..i].iter().collect()));
@@ -2201,9 +2314,24 @@ fn parse_term(raw: &str) -> Result<Term, SearchError> {
     }
     if let Some((k, v)) = raw.split_once(':') {
         match k.to_ascii_lowercase().as_str() {
-            "name" => return Ok(Term::Contains { field: Field::Name, value: v.to_ascii_lowercase() }),
-            "path" => return Ok(Term::Contains { field: Field::Path, value: v.to_ascii_lowercase() }),
-            "ext" => return Ok(Term::Contains { field: Field::Ext, value: v.to_ascii_lowercase() }),
+            "name" => {
+                return Ok(Term::Contains {
+                    field: Field::Name,
+                    value: v.to_ascii_lowercase(),
+                });
+            }
+            "path" => {
+                return Ok(Term::Contains {
+                    field: Field::Path,
+                    value: v.to_ascii_lowercase(),
+                });
+            }
+            "ext" => {
+                return Ok(Term::Contains {
+                    field: Field::Ext,
+                    value: v.to_ascii_lowercase(),
+                });
+            }
             "type" => return Ok(Term::TypeIs(v.to_ascii_lowercase())),
             _ => {}
         }
@@ -2232,16 +2360,42 @@ fn eval_term(t: &Term, item: &SearchResultItem) -> bool {
             // Substring match on name OR path — grep-like behavior.
             // "cat" matches "angelcat.pdf", "cat_photo.jpg", "/cats/file.txt".
             // Multi-term AND queries ("angel cat pdf") match all terms independently.
-            Field::Any => name_l.contains(value.as_str()) || path_l.contains(value.as_str()),
+            Field::Any => {
+                name_l.contains(value.as_str())
+                    || path_l.contains(value.as_str())
+                    || item
+                        .content_snippet
+                        .as_ref()
+                        .map(|snippet| snippet.to_ascii_lowercase().contains(value.as_str()))
+                        .unwrap_or(false)
+            }
             Field::Name => name_l.contains(value.as_str()),
             Field::Path => path_l.contains(value.as_str()),
-            Field::Ext => item.path.extension().and_then(|e| e.to_str()).map(|e| e.eq_ignore_ascii_case(value)).unwrap_or(false),
+            Field::Ext => item
+                .path
+                .extension()
+                .and_then(|e| e.to_str())
+                .map(|e| e.eq_ignore_ascii_case(value))
+                .unwrap_or(false),
         },
         Term::Regex { field, regex } => match field {
-            Field::Any => regex.is_match(&item.name),
+            Field::Any => {
+                regex.is_match(&item.name)
+                    || regex.is_match(&item.path_str)
+                    || item
+                        .content_snippet
+                        .as_ref()
+                        .map(|snippet| regex.is_match(snippet))
+                        .unwrap_or(false)
+            }
             Field::Name => regex.is_match(&item.name),
             Field::Path => regex.is_match(&item.path_str),
-            Field::Ext => item.path.extension().and_then(|e| e.to_str()).map(|e| regex.is_match(e)).unwrap_or(false),
+            Field::Ext => item
+                .path
+                .extension()
+                .and_then(|e| e.to_str())
+                .map(|e| regex.is_match(e))
+                .unwrap_or(false),
         },
         Term::TypeIs(v) => match item.kind {
             EntryKind::File => v == "file",
@@ -2296,7 +2450,13 @@ fn fuzzy_subsequence_score(query: &str, text: &str) -> Option<i64> {
     let q_len = q.len() as i64;
     // Compact matches score higher; start-of-string bonus
     let compactness = (q_len * 200) / span;
-    let start_bonus: i64 = if first == 0 { 300 } else if first < 3 { 150 } else { 0 };
+    let start_bonus: i64 = if first == 0 {
+        300
+    } else if first < 3 {
+        150
+    } else {
+        0
+    };
     Some((compactness + start_bonus).clamp(100, 999))
 }
 
@@ -2314,75 +2474,81 @@ fn is_simple_single_word(text: &str) -> bool {
         && !t.starts_with('"')
 }
 
-/// Run ripgrep to find files whose *contents* match `pattern`.
+/// Run ripgrep to find files whose *contents* match whitespace-separated literal terms.
 /// Returns items with `content_snippet` populated (first matching line, trimmed).
-/// Falls back to an empty vec if rg is not on PATH or times out.
-pub fn query_content_ripgrep(
+/// Regex-style queries are intentionally left unchanged here.
+fn query_content_ripgrep(
+    expr: &Expr,
     pattern: &str,
     roots: &[PathBuf],
     include_hidden: bool,
     limit: usize,
 ) -> Vec<SearchResultItem> {
-    if pattern.trim().is_empty() || roots.is_empty() {
+    let trimmed = pattern.trim();
+    if trimmed.is_empty() || roots.is_empty() {
         return Vec::new();
     }
-    // First pass: get files with matches (-l)
-    let mut cmd = std::process::Command::new("rg");
-    cmd.arg("--files-with-matches")
-        .arg("--fixed-strings")
-        .arg("--max-count=1");
-    if include_hidden {
-        cmd.arg("--hidden");
-    }
-    cmd.arg("--").arg(pattern);
-    for root in roots {
-        cmd.arg(root);
-    }
-    let file_output = match cmd.output() {
-        Ok(o) if o.status.success() || !o.stdout.is_empty() => o,
-        _ => return Vec::new(),
-    };
-    let matching_paths: Vec<PathBuf> = std::str::from_utf8(&file_output.stdout)
-        .unwrap_or("")
-        .lines()
-        .filter(|l| !l.is_empty())
-        .take(limit)
-        .map(PathBuf::from)
-        .collect();
-    if matching_paths.is_empty() {
+    if trimmed.starts_with('/') && trimmed.ends_with('/') {
         return Vec::new();
     }
-    // Second pass: get one-line snippet per file
-    let mut snippets: std::collections::HashMap<PathBuf, String> = std::collections::HashMap::new();
-    let mut snippet_cmd = std::process::Command::new("rg");
-    snippet_cmd
-        .arg("--max-count=1")
-        .arg("--fixed-strings")
-        .arg("--no-heading")
-        .arg("--with-filename")
-        .arg("--line-number");
-    if include_hidden {
-        snippet_cmd.arg("--hidden");
-    }
-    snippet_cmd.arg("--").arg(pattern);
-    for p in &matching_paths {
-        snippet_cmd.arg(p);
-    }
-    if let Ok(snip_out) = snippet_cmd.output() {
-        for line in std::str::from_utf8(&snip_out.stdout).unwrap_or("").lines() {
-            // format: /path/to/file:lineno:matched text
-            if let Some(rest) = line.splitn(2, ':').nth(1) {
-                if let Some(text) = rest.splitn(2, ':').nth(1) {
-                    let path = PathBuf::from(line.splitn(2, ':').next().unwrap_or(""));
-                    snippets.entry(path).or_insert_with(|| text.trim().to_string());
-                }
-            }
+
+    let mut terms = Vec::new();
+    let mut seen_terms = HashSet::new();
+    for term in trimmed.split_whitespace() {
+        let term = term.to_ascii_lowercase();
+        if term.len() >= 2 && seen_terms.insert(term.clone()) {
+            terms.push(term);
         }
     }
-    matching_paths
+    if terms.is_empty() {
+        return Vec::new();
+    }
+
+    let mut matching_paths: Option<HashSet<PathBuf>> = None;
+    for term in &terms {
+        let mut cmd = std::process::Command::new("rg");
+        cmd.arg("--files-with-matches")
+            .arg("--fixed-strings")
+            .arg("--ignore-case")
+            .arg("--max-count=1");
+        if include_hidden {
+            cmd.arg("--hidden");
+        }
+        cmd.arg("-e").arg(term);
+        cmd.arg("--");
+        for root in roots {
+            cmd.arg(root);
+        }
+        let file_output = match cmd.output() {
+            Ok(o) if o.status.success() || !o.stdout.is_empty() => o,
+            _ => return Vec::new(),
+        };
+        let term_paths: HashSet<PathBuf> = std::str::from_utf8(&file_output.stdout)
+            .unwrap_or("")
+            .lines()
+            .filter(|l| !l.is_empty())
+            .map(PathBuf::from)
+            .collect();
+        if term_paths.is_empty() {
+            return Vec::new();
+        }
+        matching_paths = Some(match matching_paths.take() {
+            Some(existing) => existing.intersection(&term_paths).cloned().collect(),
+            None => term_paths,
+        });
+        if matching_paths.as_ref().is_none_or(|set| set.is_empty()) {
+            return Vec::new();
+        }
+    }
+
+    let mut matching_paths: Vec<PathBuf> = matching_paths.unwrap_or_default().into_iter().collect();
+    matching_paths.sort();
+    let mut items: Vec<SearchResultItem> = matching_paths
         .into_iter()
         .filter_map(|path| {
             let meta = std::fs::metadata(&path).ok()?;
+            let content = std::fs::read(&path).ok()?;
+            let content = String::from_utf8_lossy(&content).into_owned();
             let name = path.file_name()?.to_string_lossy().into_owned();
             let parent = path.parent().unwrap_or(Path::new("")).to_path_buf();
             let modified = meta
@@ -2390,7 +2556,6 @@ pub fn query_content_ripgrep(
                 .ok()
                 .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
                 .map(|d| d.as_secs());
-            let snippet = snippets.remove(&path);
             let mut item = SearchResultItem {
                 path: path.clone(),
                 parent_path: parent,
@@ -2400,24 +2565,60 @@ pub fn query_content_ripgrep(
                 symlink_target_is_dir: None,
                 size_bytes: Some(meta.len()),
                 modified_unix_secs: modified,
-                content_snippet: snippet,
+                content_snippet: None,
                 name_lower: String::new(),
                 path_str: String::new(),
                 path_lower: String::new(),
             };
             item.prepare();
+            item.content_snippet = Some(content.clone());
+            if !eval_expr(expr, &item) {
+                return None;
+            }
+            let snippet = content
+                .lines()
+                .find(|line| {
+                    let line_l = line.to_ascii_lowercase();
+                    terms.iter().all(|term| line_l.contains(term))
+                })
+                .or_else(|| {
+                    content.lines().find(|line| {
+                        let line_l = line.to_ascii_lowercase();
+                        terms.iter().any(|term| line_l.contains(term))
+                    })
+                })
+                .map(|line| line.trim().to_string())
+                .or_else(|| {
+                    content
+                        .lines()
+                        .find(|line| !line.trim().is_empty())
+                        .map(|line| line.trim().to_string())
+                });
+            item.content_snippet = snippet;
             Some(item)
         })
-        .collect()
+        .collect();
+    items.truncate(limit);
+    items
 }
 
 fn sort_results(v: &mut [(i64, SearchResultItem)], sort: SearchSort) {
     match sort {
-        SearchSort::Relevance => v.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.name.cmp(&b.1.name))),
+        SearchSort::Relevance => {
+            v.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.name.cmp(&b.1.name)))
+        }
         SearchSort::Name => v.sort_by(|a, b| a.1.name_lower.cmp(&b.1.name_lower)),
         SearchSort::Path => v.sort_by(|a, b| a.1.path.cmp(&b.1.path)),
-        SearchSort::Modified => v.sort_by(|a, b| b.1.modified_unix_secs.unwrap_or(0).cmp(&a.1.modified_unix_secs.unwrap_or(0))),
-        SearchSort::Size => v.sort_by(|a, b| b.1.size_bytes.unwrap_or(0).cmp(&a.1.size_bytes.unwrap_or(0))),
+        SearchSort::Modified => v.sort_by(|a, b| {
+            b.1.modified_unix_secs
+                .unwrap_or(0)
+                .cmp(&a.1.modified_unix_secs.unwrap_or(0))
+        }),
+        SearchSort::Size => v.sort_by(|a, b| {
+            b.1.size_bytes
+                .unwrap_or(0)
+                .cmp(&a.1.size_bytes.unwrap_or(0))
+        }),
     }
 }
 
@@ -2429,7 +2630,10 @@ mod tests {
     fn mk_item(path: &str, name: &str, kind: EntryKind) -> SearchResultItem {
         let mut item = SearchResultItem {
             path: PathBuf::from(path),
-            parent_path: PathBuf::from(path).parent().map(Path::to_path_buf).unwrap_or_default(),
+            parent_path: PathBuf::from(path)
+                .parent()
+                .map(Path::to_path_buf)
+                .unwrap_or_default(),
             name: name.to_string(),
             kind,
             is_executable: false,
@@ -2497,8 +2701,10 @@ mod tests {
 
     #[test]
     fn current_folder_outside_index_uses_fallback_even_when_index_ready() {
-        let indexed_root = std::env::temp_dir().join(format!("ottrin-indexed-{}", std::process::id()));
-        let outside_root = std::env::temp_dir().join(format!("ottrin-outside-{}", std::process::id()));
+        let indexed_root =
+            std::env::temp_dir().join(format!("ottrin-indexed-{}", std::process::id()));
+        let outside_root =
+            std::env::temp_dir().join(format!("ottrin-outside-{}", std::process::id()));
         let _ = fs::remove_dir_all(&indexed_root);
         let _ = fs::remove_dir_all(&outside_root);
         fs::create_dir_all(&indexed_root).expect("create indexed root");
@@ -2538,7 +2744,8 @@ mod tests {
 
     #[test]
     fn global_fallback_prioritizes_active_folder_hint() {
-        let home_like = std::env::temp_dir().join(format!("ottrin-search-home-{}", std::process::id()));
+        let home_like =
+            std::env::temp_dir().join(format!("ottrin-search-home-{}", std::process::id()));
         let preferred = home_like.join("pcloud");
         let _ = fs::remove_dir_all(&home_like);
         fs::create_dir_all(preferred.join("docs")).expect("create preferred dirs");
@@ -2578,26 +2785,217 @@ mod tests {
             Duration::from_millis(250),
         );
 
-        assert!(hits.iter().any(|(_, item)| item.path.ends_with("needle.txt")));
+        assert!(
+            hits.iter()
+                .any(|(_, item)| item.path.ends_with("needle.txt"))
+        );
 
         let _ = fs::remove_dir_all(&home_like);
+    }
+
+    #[test]
+    fn content_search_returns_content_matches_with_snippets() {
+        let root =
+            std::env::temp_dir().join(format!("ottrin-content-search-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+
+        let file_path = root.join("alpha.txt");
+        fs::write(&file_path, b"first line\nneedle appears here\nthird line\n")
+            .expect("create test file");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items.clear();
+        }
+
+        let filename_only = service.query(SearchQuery {
+            text: "needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: false,
+        });
+        assert!(filename_only.items.is_empty());
+
+        let base_query = SearchQuery {
+            text: "needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: false,
+        };
+        let response = service.query(SearchQuery {
+            content_search: true,
+            ..base_query
+        });
+
+        assert_eq!(response.total, 1);
+        assert_eq!(response.items.len(), 1);
+        let item = &response.items[0];
+        assert_eq!(item.path, file_path);
+        assert_eq!(item.name, "alpha.txt");
+        assert_eq!(item.content_snippet.as_deref(), Some("needle appears here"));
+
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn content_search_matches_multi_word_queries() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-search-multiword-{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+
+        let file_path = root.join("notes.txt");
+        fs::write(
+            &file_path,
+            b"alpha on the first line\nbeta on the second line\n",
+        )
+        .expect("create test file");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items.clear();
+        }
+
+        let response = service.query(SearchQuery {
+            text: "alpha beta".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert_eq!(response.total, 1);
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].path, file_path);
+
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn content_search_snippets_handle_colons_in_paths() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-search-colons-{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+
+        #[cfg(unix)]
+        let file_path = root.join("alpha:beta.txt");
+        #[cfg(windows)]
+        let file_path = root.join("alpha-beta.txt");
+        fs::write(&file_path, b"first line\nneedle appears here\nthird line\n")
+            .expect("create test file");
+
+        let expr = parse_query("needle").expect("parse query");
+        let results =
+            query_content_ripgrep(&expr, "needle", std::slice::from_ref(&root), false, 10);
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].path, file_path);
+        assert_eq!(
+            results[0].content_snippet.as_deref(),
+            Some("needle appears here")
+        );
+
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn content_search_honors_query_filters() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-search-filters-{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+
+        let file_path = root.join("alpha.txt");
+        fs::write(&file_path, b"needle inside a file\n").expect("create test file");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items.clear();
+        }
+
+        let response = service.query(SearchQuery {
+            text: "type:dir needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert!(response.items.is_empty());
+        assert_eq!(response.total, 0);
+
+        let _ = fs::remove_dir_all(&root);
     }
 
     #[test]
     fn plain_term_matches_name_and_path_as_substring() {
         let expr = parse_query("angel").expect("parse query");
         // Direct name match
-        let name_match = mk_item("/home/user/projects/angelcat", "angelcat", EntryKind::Directory);
+        let name_match = mk_item(
+            "/home/user/projects/angelcat",
+            "angelcat",
+            EntryKind::Directory,
+        );
         // Path match: "angel" appears inside a parent directory name
-        let path_match = mk_item("/home/user/angelcat/deep/file.txt", "file.txt", EntryKind::File);
+        let path_match = mk_item(
+            "/home/user/angelcat/deep/file.txt",
+            "file.txt",
+            EntryKind::File,
+        );
         // No match: "angel" appears neither in the name nor the path
-        let no_match = mk_item("/home/user/pictures/sunset.jpg", "sunset.jpg", EntryKind::File);
+        let no_match = mk_item(
+            "/home/user/pictures/sunset.jpg",
+            "sunset.jpg",
+            EntryKind::File,
+        );
         assert!(eval_expr(&expr, &name_match));
         assert!(eval_expr(&expr, &path_match));
         assert!(!eval_expr(&expr, &no_match));
     }
 
-    /// Benchmark: 500k synthetic items, query must return in <100ms.
+    /// Benchmark: 500k synthetic items. Debug/test builds keep this as a
+    /// correctness and regression smoke test; the strict budget is enforced in
+    /// release where optimizer noise is low enough to be meaningful.
     /// Run with: cargo test -p ottrin-search --release -- bench_query_500k --nocapture
     #[test]
     fn bench_query_500k() {
@@ -2605,7 +3003,11 @@ mod tests {
         // Build a realistic synthetic index: mix of files and directories.
         let mut items: Vec<SearchResultItem> = (0..N)
             .map(|i| {
-                let dir = format!("/home/user/projects/repo_{}/src/module_{}", i / 1000, i % 100);
+                let dir = format!(
+                    "/home/user/projects/repo_{}/src/module_{}",
+                    i / 1000,
+                    i % 100
+                );
                 let name = format!("file_{:06}.rs", i);
                 let path = format!("{}/{}", dir, name);
                 mk_item(&path, &name, EntryKind::File)
@@ -2613,7 +3015,11 @@ mod tests {
             .collect();
         // Sprinkle in a few items that match the query "needle".
         items[12345] = mk_item("/home/user/docs/needle.txt", "needle.txt", EntryKind::File);
-        items[99999] = mk_item("/home/user/projects/needle_lib/main.rs", "main.rs", EntryKind::File);
+        items[99999] = mk_item(
+            "/home/user/projects/needle_lib/main.rs",
+            "main.rs",
+            EntryKind::File,
+        );
 
         let query = SearchQuery {
             text: "needle".to_string(),
@@ -2641,12 +3047,22 @@ mod tests {
             .collect();
         let elapsed = start.elapsed();
 
-        println!("500k query: {}ms, {} hits", elapsed.as_millis(), matched.len());
-        assert!(
-            elapsed.as_millis() < 100,
-            "Query over 500k items took {}ms — exceeds 100ms budget",
-            elapsed.as_millis()
+        println!(
+            "500k query: {}ms, {} hits",
+            elapsed.as_millis(),
+            matched.len()
         );
-        assert!(matched.len() >= 2, "Expected at least 2 needle matches, got {}", matched.len());
+        let budget_ms = if cfg!(debug_assertions) { 250 } else { 100 };
+        assert!(
+            elapsed.as_millis() < budget_ms,
+            "Query over 500k items took {}ms — exceeds {}ms budget",
+            elapsed.as_millis(),
+            budget_ms
+        );
+        assert!(
+            matched.len() >= 2,
+            "Expected at least 2 needle matches, got {}",
+            matched.len()
+        );
     }
 }

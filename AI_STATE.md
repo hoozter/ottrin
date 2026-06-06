@@ -3,7 +3,7 @@ Name:
 Ottrin
 
 Purpose:
-Keyboard-first graphical file manager with Finder-style Miller columns, integrated file operations, search, previews, theming, and privileged-operation retry flows.
+Keyboard-first graphical file manager with Finder-style Miller columns, integrated file operations, indexed search, previews, theming, tandem panes, and privilege-aware retry flows.
 
 Main technologies:
 Rust
@@ -11,42 +11,28 @@ egui / eframe 0.33
 serde
 notify
 walkdir
+rusqlite
+
+VERIFIED BASELINE
+Verified on 2026-06-06 from `/home/campbell/Projects/Ottrin` on Linux:
+- `cargo check` passes.
+- `cargo test` passes.
+- `cargo test -p ottrin-search --release -- bench_query_500k --nocapture` passes at 30ms when run without competing release builds.
+- `cargo build --release` passes.
+- Release binary builds at `target/release/ottrin-app`.
+- `cargo clippy --workspace --all-targets -- -D warnings` passes.
+- `cargo check --target x86_64-pc-windows-gnu` passes locally after installing `mingw-w64`.
+- `cargo build --release --target x86_64-pc-windows-gnu -p ottrin-app -p ottrin-platform -p ottrin-search` passes locally.
+- Windows runtime behavior, UAC helper flow, and installer behavior still need real Windows smoke testing.
 
 CURRENT STATUS
-Workspace builds cleanly with `cargo build` (only deprecation warnings: close_menu, allocate_ui_at_rect).
-Core navigation, Miller/list/grid views, tabs, bookmarks, command-frame file operations, drop-folder workflow, theme presets/editor, privilege helper integration, indexed search, file previews, and the full search settings UI are implemented.
-Search diagnostics now track last progress timestamp and include a CLI indexer tool (`ottrin-index`) for command-line progress logs. Search settings UI has updated hierarchy, reduced borders, and added schedule detection for locate/updatedb.
-Indexer now builds the initial index before registering filesystem watchers to avoid stalls during watcher setup; indexing progress logs are visible in `ottrin-index`.
-Indexer watchdog now auto-restarts if indexing progress stalls, and the Search settings status card shows watcher setup/health.
-Search settings now estimate indexing progress using the previous scan count and reduce redundant indexing labels; summary strip is hidden on the Search tab. Appearance settings layout now stacks in compact widths.
-Indexing indicators are now confined to the Search settings page; the status card shows a moving spinner, file counts, and percent estimate (when available), and the sidebar/summary indicators are removed.
-Search status card layout is simplified to a single progress block (counts + percent + bar), removing the extra Status/Running/Auto-refresh columns to prevent overflow.
-Index status UI now shows a single summary block: Status line, `current/total` with percent, active path line, and a progress bar while indexing. Ready shows a green dot with 100%.
-Dev runs now auto-build and wire the privileged helper (unless OTTRIN_PRIV_HELPER or OTTRIN_DEV_HELPER_AUTOBUILD=0 is set).
-Search indexing now starts when the Search settings tab opens, and the status line shows the most recent indexed file path during scans.
-Index status now pins the path line to a fixed height and moves the percent into the status row to avoid layout shifts.
-Path line is now single-line with truncation and hover tooltip to avoid stretched/justified text.
-Path line now uses middle-ellipsis with left alignment to prevent bouncing while keeping full path on hover.
-Path line is now painted directly at the left edge to eliminate layout-driven horizontal bouncing.
-Packaging doc now explicitly states no-cargo runtime requirement and Windows installer targets (.exe now, MSIX later).
-Index status percent now uses a plocate/locate count estimate when no prior full scan exists, and the horizontal progress bar is removed.
-System locate DB age is now shown in Search settings, with a one-click option to install a daily updatedb cron job via pkexec when no system schedule is detected.
-Indexing walk now uses `same_file_system(true)` to avoid crossing into FUSE/network mounts when scanning a root like `/home`, preventing hangs on slow mounts.
-Search roots now auto-include mount points under the chosen roots (Linux) so FUSE mounts like pCloud get indexed as separate roots while still keeping scans safe.
-Search DB foundation now uses SQLite: schema + migration module in `ottrin-search`, batch writes during indexing, load-from-DB on startup, and incremental updates applied to the SQLite index (legacy JSON cache retained as fallback).
-Indexer now keeps the previous in-memory index active while a rebuild runs, swapping to the new index only once the scan completes.
-SQLite scan checkpoints are persisted per root so scans can resume after restart; missing cursors trigger a full rewalk of that root.
-Search settings now include an optional content indexing scope (enable toggle + include/exclude folders) to prepare for future full-text content extraction.
-
-Search settings overhaul (v0.2 Phase 1B/1C) is complete:
-- Live index status card with file count, progress during scan, last-scan timestamp
-- Framed editable lists for indexed locations, excluded folders, exclude/include globs
-- Default exclude patterns (editor scratch files, VCS dirs, Python cache, Trash)
-- Platform-default exclude roots (Linux: /proc /sys /dev /run) — removable by user
-- Supplemental results: plocate and private locate.db (updatedb) integration
-- Advanced section: daily updatedb cron installer (pkexec) + fanotify privileged daemon option
-- "Reset search settings to defaults" at page bottom — resets config only, does not clear index
-- Settings viewport scrollbar fixed (non-floating, 8px, visible track)
+Core navigation, Miller/list/grid views, tabs, bookmarks, command-frame file operations, drop-folder workflow, theme presets/editor, search settings, indexed search, previews, and privilege-helper plumbing are implemented.
+Search has a SQLite metadata store, schema migration, load-from-DB startup path, batch writes during indexing, scan checkpoints, watcher-driven updates, and fallback querying while indexing.
+Search performance has unit coverage for a 500k-item benchmark. Strict <100ms timing is enforced in release-mode benchmark runs; normal debug tests use a looser threshold to avoid timing jitter.
+Search panel has optional ripgrep-backed content search with snippets. It handles literal multi-word queries across lines and honors query filters.
+Tandem View is implemented: dual-pane central layout, draggable divider, per-side tab content and controls, activation via folder context action / Shift-click, active-side tracking, pinning, and copy/move to the opposite pane.
+Theme editor redesign is implemented: separate OS viewport, preview-first layout, click/hover region selection, region-specific controls, JSON import/export, and wrapped/bare theme payload support.
+Packaging strategy is documented, but release artifacts and installer smoke tests are not complete.
 
 ARCHITECTURE
 Rust workspace with focused crates:
@@ -60,51 +46,56 @@ crates/ottrin-copy for transfer queue state models
 
 IMPORTANT FILES
 Cargo.toml
+README.md
 docs/AI_AGENT_RULES.MD
 docs/ROADMAP.md
-docs/PROJECT.md
+docs/RELEASE_CHECKLIST.md
+docs/PACKAGING.md
+docs/PRIVILEGED_QA.md
 crates/ottrin-app/src/main.rs
 crates/ottrin-ui/src/lib.rs
 crates/ottrin-core/src/lib.rs
 crates/ottrin-platform/src/lib.rs
 crates/ottrin-platform/src/bin/ottrin-priv-helper.rs
 crates/ottrin-search/src/lib.rs
+crates/ottrin-search/src/db.rs
 crates/ottrin-preview/src/lib.rs
 crates/ottrin-copy/src/lib.rs
 
 DECISIONS
 The workspace is split into domain, UI, platform, search, preview, copy-queue, and app-entry crates rather than a monolith.
 The UI is egui/eframe-based and keeps Miller columns as the primary navigation model.
-Miller navigation uses Finder-style depth tracking with scroll freeze — see memory/miller_navigation.md for full spec.
-Search is handled by a dedicated local indexing service with watcher-driven rebuilds and fallback querying while indexing.
-Semantic file styling lives in shared/core concepts and is rendered centrally in the UI crate.
-Privileged operations are routed through a helper-based architecture instead of baking elevation into normal file-operation paths.
-Search engine never hardcodes exclusions — all excludes are user-controlled via SearchConfig (engine respects config only).
-Settings window is a separate egui ViewportId; style/scroll settings must be applied to its ctx, not the main ctx.
-`AI_STATE.md` is the authoritative operational state file and must be updated when roadmap status changes.
+Search engine exclusions come from `SearchConfig`; avoid hidden hardcoded ignore lists beyond platform defaults stored in config.
+Privileged operations route through helper processes; the main UI process stays unprivileged.
+Settings window and theme editor use separate egui viewports; style/scroll settings must be applied to the relevant viewport context.
+`AI_STATE.md`, `PLANS.md`, and `docs/ROADMAP.md` must stay synchronized when roadmap status changes.
 
 CURRENT ROADMAP
-1. Search engine foundation — COMPLETE. SQLite + resumable scanning + <100ms query on 500k files.
-2. Tandem View (dual-pane) — side-by-side tab display, pinning, independent navigation per side.
-3. Theme editor redesign (click-on-preview to edit, import/export).
-4. Space Preview → Quick Inspector (separate OS window, image/PDF/folder/media).
+1. Clean baseline and truthful state docs — COMPLETE.
+2. Release hardening — IN PROGRESS: Linux and Windows CI/build verification, manual workflow QA, packaging smoke tests.
+3. Quick Inspector — NEXT FEATURE: replace Space overlay with a separate OS window, then add richer image/PDF/folder/media inspectors.
+4. Usability polish: multi-select, tab drag-and-drop, context-menu QA, settings/cache cleanup, thumbnails.
 
-KNOWN ISSUES
-Rename, Delete, Copy, Cut in context menu close the menu but don't execute (clipboard model exists, no execute binding yet).
-Copy-to-target, Move-to-target in context menu are stubbed.
-Tab drag-and-drop not implemented.
-Multi-select not implemented (Ctrl+A selects last item only).
-popup_below_widget / toggle_popup / close_popup(id) are deprecated in egui 0.33 (use egui::Popup instead) — works but flagged.
-Preview overlay: text files show content; others show icon + "Open with default app" (no native open wired on all platforms yet).
-Tandem View not yet implemented.
+KNOWN ISSUES / UNVERIFIED AREAS
+- Windows build, UAC helper flow, and installer behavior are not verified locally.
+- Linux polkit helper packaging and privileged-operation QA still need real system tests.
+- Multi-select is not implemented.
+- Tab drag-and-drop is not implemented.
+- Space Preview is still an in-app overlay; Quick Inspector separate window is not implemented.
+- Preview support is limited: text and image paths are stronger than PDF/media/archive/font rich inspectors.
+- Context-menu file actions need a manual QA pass; tandem/drop-folder/current-folder copy/move actions are wired, but older docs reported Rename/Delete/Copy/Cut menu issues that must be rechecked in the app.
+- Packaging is documented but no fresh AppImage, deb/rpm, Windows portable, or Windows installer artifact has been produced in this baseline.
 
 NEXT TASK
-Tandem View (Phase 2A): data model and activation paths.
+Release-hardening baseline:
+1. Push or otherwise run the updated CI workflow and confirm Linux/Windows hosted results.
+2. Run manual Linux smoke QA for navigation, search, file operations, previews, tandem, and privilege helper.
+3. Verify Windows build and UAC helper path on Windows or CI.
+4. Produce and smoke-test first Linux and Windows artifacts.
 
 CONSTRAINTS
 Always start from `docs/AI_AGENT_RULES.MD`.
-Treat repository state and `AI_STATE.md` as authoritative, and verify docs against code when they conflict.
 Do not rely on prior chat context for project state.
 Do not create commits unless explicitly instructed.
 Prefer the existing Rust workspace and egui architecture; avoid major architectural changes unless they fit the project goals.
-Keep `AI_STATE.md`, `docs/ROADMAP.md`, and any other status files synchronized when project state changes.
+Keep `AI_STATE.md`, `PLANS.md`, and `docs/ROADMAP.md` accurate when status changes.

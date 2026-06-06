@@ -1,151 +1,168 @@
-# Ottrin Roadmap (Current)
+# Ottrin Roadmap
+
+Last verified: 2026-06-06 on Linux (`x86_64-unknown-linux-gnu`)
 
 ## Legend
 - [ ] Not started
 - [~] In progress
 - [x] Done
+- [?] Implemented or documented, but still needs manual/cross-platform verification
 
-## v0.1.0 — Foundation release (2026-03-26)
+## Current Baseline
+- [x] `cargo check`
+- [x] `cargo test`
+- [x] Release-mode 500k search benchmark: 30ms locally without competing builds
+- [x] `cargo build --release`
+- [x] Linux release binary builds locally
+- [x] Strict Clippy gate
+- [x] Local Windows GNU target check
+- [x] Local Windows GNU release build
+- [?] Windows CI workflow exists, but hosted run status is not verified in this local session
+- [ ] Windows runtime smoke test on an actual Windows machine
+- [ ] Linux package artifact smoke-tested
+- [ ] Windows package artifact smoke-tested
 
-**Changelog:** Initial release with stable core. Build issues fixed (PathBuf serialization, closure borrows). All tests pass and release binary builds.
+## v0.1.0 — Foundation
 
-### Core navigation and views
-- [x] Keyboard-first navigation (arrows, Enter, Backspace, Tab, Space)
-- [x] Column view with stable focus and path-aligned selection behavior
-- [x] Finder-style Miller navigation (depth tracking, scroll freeze, remembered path re-entry)
+### Core Navigation and Views
+- [x] Keyboard-first navigation
+- [x] Miller columns with stable focus and path-aligned selection
 - [x] List and Grid views
-- [x] Horizontal column auto-scroll (focus stays visible)
-- [x] Resizable column separators
 - [x] Tabs with per-tab history
 - [x] Bookmarks row and path/address bar
+- [x] Resizable Miller columns
 
-### File operations and command workflow
-- [x] Copy / move / delete (trash + permanent)
-- [x] Rename
-- [x] Integrated command frame with shell-style commands
-- [x] Drop Folder workflow with in-app folder picker
-- [x] Drop Folder recents and pinned model (core support)
+### File Operations
+- [x] Copy, move, rename, delete through platform command model
+- [x] Trash and permanent delete modes
+- [x] Integrated command frame for shell-like file commands
+- [x] Drop Folder workflow with recents and pinned model
+- [?] Context-menu Rename/Delete/Copy/Cut actions require manual QA
 
-### Privileged operations
-- [x] Privileged helper architecture
-- [x] Retry-as-admin flow for denied operations
-- [x] In-app helper status and setup surface
+### Privileged Operations
+- [x] Helper architecture and request/response model
+- [x] Linux `pkexec` execution path in code
+- [x] Windows PowerShell/UAC launcher path in code
+- [ ] Linux polkit packaging smoke test
+- [ ] Windows UAC/helper smoke test
 
-### Search foundation
-- [x] Dedicated search crate (`ottrin-search`)
-- [x] Indexed global/current-folder search modes
-- [x] Search query parser and sort modes
-- [x] Search panel integrated into smart sidebar
-- [x] Search result context actions (open/reveal/copy/move workflows)
+### Preview and Theming
+- [x] Text and image preview paths
+- [x] Metadata-oriented preview support for several file categories
+- [x] Theme preset engine and custom overrides
+- [x] Semantic file classification and centralized visual mapping
 
-### Theming and visual system
-- [x] Theme preset engine (Ottrin/Breeze/Adwaita/Windows 11/Solarized/Nord/G33k)
-- [x] Per-preset custom overrides persisted in config
-- [x] Semantic file classification + centralized visual mapping
-- [x] In-app theme editor with live preview + save/save-as/reset flow
+## v0.2 — Search Overhaul and Tandem View
 
-### Miller file preview
-- [x] Collapsible info panel with file type descriptions
-- [x] Expandable details (permissions, owner, dimensions, etc.)
-- [x] Clickable size cycling (KB/MB/GB/TB)
-- [x] Scroll capped — no infinite horizontal scroll
-- [x] Image preview with max-height constraint
+### Search Reliability
+- [x] Indexing progress moved from misleading percent to live file count
+- [x] Watcher-triggered re-index on filesystem changes
+- [x] Recursive walks through configured roots
+- [x] `Field::Any` matches name and full path
+- [x] Manual `rebuild_index()` method
+- [x] Current-folder fallback walk has unit coverage
+- [x] 500k-item query benchmark has unit coverage
+- [x] Release-mode benchmark passed locally at 30ms without competing builds
+- [?] Current-folder live walk needs large real-tree QA
+- [?] Search completeness needs manual QA on Linux and Windows home directories
 
----
+### Search Settings UI
+- [x] Live status card with counts, active root/path, and timestamps
+- [x] Editable include roots, excluded folders, include globs, and exclude globs
+- [x] Default exclude patterns and platform-default excluded roots
+- [x] Supplemental `plocate` and private `locate.db` integration
+- [x] Advanced updatedb/fanotify controls
+- [x] Reset search settings to defaults
+- [x] Search settings gear from search panel
+- [x] Non-floating settings scrollbar
+- [x] Ctrl+F focuses search panel from normal app flow
 
-## v0.2 — Search Overhaul + Tandem View
+### SQLite Search Foundation
+- [x] SQLite schema and migration module
+- [x] SQLite metadata index store
+- [x] Batch writes during indexing
+- [x] Load from SQLite on startup
+- [x] Resumable scan checkpoints
+- [x] Keep previous in-memory index active while rebuilding
+- [x] Incremental DB updates for watcher events
+- [x] Optional content indexing scope settings/storage
+- [x] Opt-in ripgrep-backed content search with snippets
+- [ ] True FTS5 content index
+- [ ] Background extraction queue and throttling
 
-### Search reliability
-- [x] Fixed indexing pipeline (0% stall → live file-count progress)
-- [x] File watcher (notify) triggers re-index on create/rename/delete
-- [x] Recursive walk of all indexed locations (WalkDir)
-- [x] Field::Any query matches full path, not just filename
-- [x] `rebuild_index()` method for manual re-scan
-- [ ] Benchmark: <100ms query on indexes of 500k+ files
-- [ ] "Current folder" scope uses live walk fallback — needs testing at scale
+### Tandem View
+- [x] Side-by-side tab display with draggable divider
+- [x] "Open in Tandem" via folder context action
+- [x] Shift-click two tabs to enter tandem
+- [x] Tab pinning
+- [x] Independent navigation, scroll, and sort per side
+- [x] Active-side keyboard routing
+- [x] Copy/move to opposite pane
+- [?] Full manual QA across Miller/List/Grid and tab switching
 
-### Search settings UI
-- [x] Live status card: file count, scan progress, active root, last-scan timestamp
-- [x] Framed editable list for indexed locations with per-row remove
-- [x] Framed editable list for excluded folders with per-row remove
-- [x] Exclude/include glob lists with add-pattern input and per-item remove
-- [x] Default exclude patterns in SearchConfig (editor scratch, VCS, Python cache, Trash)
-- [x] Platform-default exclude roots (Linux: /proc /sys /dev /run) — user-removable
-- [x] Supplemental results: plocate and private locate.db integration with availability detection
-- [x] Advanced section: daily updatedb cron (pkexec) + fanotify privileged-daemon option
-- [x] "Reset search settings to defaults" — config reset only, does not clear the index
-- [x] Gear icon in search panel opens Search settings tab
-- [x] Settings viewport scrollbar: non-floating, 8px, always visible
-- [ ] Ctrl+F shortcut to focus search panel from anywhere
+## v0.3 — Theme Editor and Quick Inspector
 
-### Search engine foundation (DB-backed)
-- [ ] SQLite index store for file metadata + crawl state
-- [ ] Resumable scanner with checkpoints (no restart-from-zero)
-- [ ] Keep previous index active while rebuilding
-- [ ] FTS5 content index (opt-in by folder)
-- [ ] Background extraction queue + throttling
-- [ ] Migration path from in-memory index to DB
+### Theme Editor Redesign
+- [x] Separate theme editor viewport
+- [x] Preview-first layout
+- [x] Hover/click preview regions
+- [x] Region-specific color editors
+- [x] Theme import/export as JSON
+- [x] Import support for wrapped `SavedTheme`, bare `SavedTheme`, and bare customization payloads
 
-### Tandem View (dual-pane)
-- [ ] Side-by-side tab display with draggable divider
-- [ ] "Open in Tandem" via right-click folder
-- [ ] Shift+click two tabs to enter tandem
-- [ ] Tab pinning (one side stays fixed while other rotates)
-- [ ] Independent navigation/scroll/sort per side
+### Quick Inspector
+- [ ] Replace Space overlay with separate OS-level window
+- [ ] Toggle/close with Space or Escape
+- [ ] Window title follows selected filename
+- [ ] Image inspector: zoom, pan, checkerboard transparency, EXIF, rotate
+- [ ] PDF inspector: rendered pages, navigation, thumbnail strip
+- [ ] Folder inspector: item counts, total size, type breakdown, sample thumbnails
+- [ ] Media inspector: duration, codec, resolution, bitrate metadata
+- [ ] Font inspector: preview text and multiple sizes
+- [ ] Archive inspector: content listing without extraction
 
----
+## v0.4 — Usability Polish
 
-## v0.3 — Theme Editor + Space Inspector
+### Settings and Cache
+- [ ] Show cache location
+- [ ] Clear cache with confirmation and freed-space display
+- [ ] Maximum cache size setting
+- [ ] Remove confusing/debug settings from user-facing views
+- [ ] Consistent settings layout pass
 
-### Theme editor redesign
-- [ ] Click-on-preview to edit: hover highlights regions, click opens editors
-- [ ] Single live preview (remove action preview)
-- [ ] Fix window clipping / sizing constraints
-- [ ] Theme import/export (.json)
+### Multi-Select and Actions
+- [ ] Ctrl+A multi-select
+- [ ] Shift-click range select
+- [ ] Rubber-band selection where appropriate
+- [ ] Multi-file context actions
+- [ ] Context-menu action/status-message polish
 
-### Space Preview → Quick Inspector
-- [ ] Separate OS window, not constrained by main app
-- [ ] Image: pixel-accurate zoom, pan, checkerboard, EXIF, rotate
-- [ ] PDF: rendered pages, navigation, thumbnail strip
-- [ ] Folders: item count, size, type breakdown, sample thumbnails
-- [ ] Media: metadata display (playback deferred)
-- [ ] Fonts: preview text entry
-- [ ] Archives: content listing
+### Tabs and Views
+- [ ] Tab drag-and-drop
+- [ ] Per-folder view presets
+- [ ] Column/profile persistence
 
----
+### Thumbnails
+- [ ] Thumbnail-as-icon toggle for Miller/List/Grid
+- [ ] Folder content preview thumbnails
+- [ ] Thumbnail cache invalidation
 
-## v0.4 — Polish + Thumbnails
+## v0.5 — Release Hardening
+- [ ] GitHub Actions or equivalent CI for Linux and Windows
+- [ ] Linux AppImage built and smoke-tested
+- [ ] Linux deb/rpm decision and packaging pass
+- [ ] Windows portable build created and smoke-tested
+- [ ] Windows installer candidate built and uninstall path verified
+- [ ] Startup/shutdown/crash-path stability pass
+- [ ] Manual regression checklist for navigation/search/file ops/tandem/previews
+- [x] Clippy cleanup pass for UI style lints
+- [ ] User quickstart and known-limitations docs
 
-### Settings and cache
-- [ ] Cache settings: location, clear, max size, explanation
-- [ ] General settings consistency pass
-
-### Thumbnail icons and folder previews
-- [ ] Thumbnail-as-icon toggle (Grid/Miller/List)
-- [ ] macOS-style folder content preview (composited thumbnails)
-- [ ] Lazy generation + cache with mtime invalidation
-- [ ] Scope: home folder by default, configurable
-
-### Usability
-- [ ] Per-folder view presets and column/profile persistence
-- [ ] Context menu and status messaging polish
-- [ ] Wire Rename/Delete/Copy/Cut context menu actions (stubs currently)
-- [ ] Multi-select (Ctrl+A, Shift+click, rubber band)
-
----
-
-## v0.5 Release hardening
-- [ ] Linux packaging pass (AppImage, deb, rpm)
-- [ ] Windows packaging + privilege/elevation QA
-- [ ] Startup/shutdown/crash-path stability hardening
-- [ ] Regression test coverage for navigation/search/file ops
-
----
-
-## Definition of "v1 workable"
+## Definition of "Daily-Driver Ready"
 - [ ] Navigation is stable and predictable in all view modes
-- [ ] Search is fast, complete, and trustworthy for common workloads
-- [ ] Tandem View works reliably for dual-pane workflows
-- [ ] Core file operations are robust with clear failure/retry UX
+- [ ] Search is fast, complete, and trustworthy for normal home/project trees
+- [ ] Tandem View is reliable enough for file-management workflows
+- [ ] File operations have clear success/failure/retry UX
 - [ ] Privileged operations are reliable on Linux and validated on Windows
-- [ ] No blocking UI freezes in normal workflows
+- [ ] Normal workflows do not block the UI for large folders or long scans
+- [ ] Linux and Windows users can install/run without Cargo

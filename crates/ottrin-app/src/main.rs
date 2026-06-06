@@ -66,7 +66,10 @@ fn ensure_dev_helper() {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let helper_name = "ottrin-priv-helper";
     let helper_path = if cfg!(target_os = "windows") {
-        manifest_dir.join("target").join("debug").join(format!("{helper_name}.exe"))
+        manifest_dir
+            .join("target")
+            .join("debug")
+            .join(format!("{helper_name}.exe"))
     } else {
         manifest_dir.join("target").join("debug").join(helper_name)
     };

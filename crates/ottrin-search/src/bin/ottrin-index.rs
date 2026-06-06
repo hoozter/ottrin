@@ -1,5 +1,5 @@
-use ottrin_core::{default_home_dir, SearchConfig};
 use ottrin_core::SearchIndexStatus;
+use ottrin_core::{SearchConfig, default_home_dir};
 use ottrin_search::SearchService;
 use std::path::PathBuf;
 use std::thread::sleep;
@@ -21,8 +21,10 @@ fn main() {
         println!("  {} ({})", root.display(), exists);
     }
 
-    let mut config = SearchConfig::default();
-    config.include_roots = roots;
+    let config = SearchConfig {
+        include_roots: roots,
+        ..SearchConfig::default()
+    };
     let service = SearchService::new(config);
     service.start();
 
@@ -33,18 +35,25 @@ fn main() {
             .duration_since(UNIX_EPOCH)
             .map(|d| d.as_secs())
             .unwrap_or(0);
-        let progress_age = diag.last_progress_unix_secs.map(|t| now_secs.saturating_sub(t));
+        let progress_age = diag
+            .last_progress_unix_secs
+            .map(|t| now_secs.saturating_sub(t));
         let line = format!(
             "status={:?} indexed={} detail={} root={} ({}/{}) configured={} watched={} last_progress={}",
             diag.status,
             diag.indexed_items,
             diag.detail.clone().unwrap_or_else(|| "-".to_string()),
-            diag.active_root.as_ref().map(|p| p.display().to_string()).unwrap_or_else(|| "-".to_string()),
+            diag.active_root
+                .as_ref()
+                .map(|p| p.display().to_string())
+                .unwrap_or_else(|| "-".to_string()),
             diag.active_root_index,
             diag.total_roots,
             diag.configured_root_count,
             diag.watched_root_count,
-            progress_age.map(|a| format!("{}s", a)).unwrap_or_else(|| "-".to_string()),
+            progress_age
+                .map(|a| format!("{}s", a))
+                .unwrap_or_else(|| "-".to_string()),
         );
         if line != last_line {
             println!("{line}");

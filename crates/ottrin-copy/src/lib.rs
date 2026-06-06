@@ -67,7 +67,11 @@ impl TransferQueue {
         self.default_policy = policy;
     }
 
-    pub fn enqueue(&mut self, command: FileCommand, destination: PathBuf) -> Result<u64, QueueError> {
+    pub fn enqueue(
+        &mut self,
+        command: FileCommand,
+        destination: PathBuf,
+    ) -> Result<u64, QueueError> {
         match command {
             FileCommand::Copy { .. } | FileCommand::Move { .. } => {
                 let id = self.next_id;
