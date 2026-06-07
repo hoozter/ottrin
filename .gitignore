@@ -1,0 +1,15 @@
+/target
+/.idea
+/.vscode
+.DS_Store
+Thumbs.db
+.claude/
+.github/*
+!.github/workflows/
+!.github/workflows/*.yml
+*.af
+common_extensions.txt
+/.cargo-home/
+# Deelab safe web
+.safe_web_inbox/
+.safe_web_sanitized/
