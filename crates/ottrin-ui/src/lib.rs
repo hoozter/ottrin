@@ -14133,7 +14133,6 @@ fn open_terminal_here(dir: &Path) {
                 return;
             }
         }
-        return;
     }
 
     // Linux / BSD — probe in order of reliability:
