@@ -212,7 +212,7 @@ impl PlatformOps for DefaultPlatform {
         }
         #[cfg(target_os = "windows")]
         {
-            return execute_privileged_windows(request);
+            execute_privileged_windows(request)
         }
         #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
@@ -259,7 +259,7 @@ impl PlatformOps for DefaultPlatform {
                     helper
                 ));
             }
-            return PrivilegedAvailability::Ready;
+            PrivilegedAvailability::Ready
         }
         #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
