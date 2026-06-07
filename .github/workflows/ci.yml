@@ -29,7 +29,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-            libxkbcommon-dev libssl-dev libgtk-3-dev
+            libxkbcommon-dev libssl-dev libgtk-3-dev ripgrep
+
+      - name: Install Windows test dependencies
+        if: runner.os == 'Windows'
+        run: choco install ripgrep --yes --no-progress
 
       - name: Cargo check
         run: cargo check --workspace --all-targets
