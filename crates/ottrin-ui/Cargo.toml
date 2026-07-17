@@ -7,7 +7,6 @@ authors.workspace = true
 
 [dependencies]
 ottrin-core = { path = "../ottrin-core" }
-ottrin-copy = { path = "../ottrin-copy" }
 ottrin-preview = { path = "../ottrin-preview" }
 ottrin-platform = { path = "../ottrin-platform" }
 ottrin-search = { path = "../ottrin-search" }

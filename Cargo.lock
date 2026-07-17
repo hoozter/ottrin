@@ -3040,18 +3040,11 @@ name = "ottrin-app"
 version = "0.1.0"
 dependencies = [
  "eframe",
- "ottrin-platform",
- "ottrin-ui",
-]
-
-[[package]]
-name = "ottrin-copy"
-version = "0.1.0"
-dependencies = [
+ "image",
  "ottrin-core",
  "ottrin-platform",
- "serde",
- "thiserror 2.0.18",
+ "ottrin-search",
+ "ottrin-ui",
 ]
 
 [[package]]
@@ -3066,6 +3059,7 @@ dependencies = [
 name = "ottrin-platform"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "opener",
  "ottrin-core",
  "serde_json",
@@ -3078,9 +3072,11 @@ dependencies = [
 name = "ottrin-preview"
 version = "0.1.0"
 dependencies = [
+ "image",
  "lofty",
  "lopdf",
  "ottrin-core",
+ "quick-xml",
  "serde",
  "thiserror 2.0.18",
  "zip",
@@ -3109,7 +3105,6 @@ dependencies = [
  "egui",
  "egui_extras",
  "image",
- "ottrin-copy",
  "ottrin-core",
  "ottrin-platform",
  "ottrin-preview",

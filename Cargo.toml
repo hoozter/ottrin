@@ -4,11 +4,11 @@ members = [
   "crates/ottrin-core",
   "crates/ottrin-platform",
   "crates/ottrin-search",
-  "crates/ottrin-copy",
   "crates/ottrin-preview",
   "crates/ottrin-ui",
 ]
 resolver = "2"
+default-members = ["crates/ottrin-app"]
 
 [workspace.package]
 version = "0.1.0"
