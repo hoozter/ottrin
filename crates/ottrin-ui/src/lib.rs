@@ -30,6 +30,8 @@ use std::time::{Duration, Instant};
 mod config;
 mod file_details;
 mod launcher;
+mod listing;
+mod preview_render;
 mod thumbnail_cache;
 
 use config::save_config;
@@ -38,6 +40,17 @@ use file_details::{
     InfoPanelDetails, build_info_panel_details, entry_kind_label, file_type_description,
 };
 use launcher::{install_terminal_launcher, launcher_status, remove_terminal_launcher};
+use listing::{
+    default_sort_direction, detect_executable, list_directory, nearest_existing_dir,
+    sibling_from_entries, sort_entries, sort_supports_direction,
+};
+use preview_render::{
+    GenericPreviewAction, compact_preview_metadata, inspector_icon_button,
+    preview_payload_for_copy, render_archive_body_preview, render_document_body_preview,
+    render_folder_body_preview, render_generic_body_preview, render_image_hover_nav,
+    render_metadata_card_preview, render_preview_footer, render_text_body_preview,
+    split_preview_extracted_text,
+};
 pub use thumbnail_cache::clear_preview_cache_storage;
 use thumbnail_cache::{
     build_thumbnail_bytes, clear_preview_cache_dir, load_cached_thumbnail,
@@ -94,8 +107,8 @@ const TANDEM_DIVIDER_WIDTH: f32 = 8.0;
 
 // ── Material Icons codepoints ──────────────────────────────────────────────
 // Font: MaterialSymbolsFilled.ttf (Apache 2.0, Material Symbols icon font)
-const MI_ARROW_BACK: &str = "\u{E5C4}";
-const MI_ARROW_FORWARD: &str = "\u{E5C8}";
+pub(crate) const MI_ARROW_BACK: &str = "\u{E5C4}";
+pub(crate) const MI_ARROW_FORWARD: &str = "\u{E5C8}";
 const MI_ARROW_UP: &str = "\u{E5D8}";
 const MI_CLOSE: &str = "\u{E5CD}";
 const MI_VIEW_COLUMN: &str = "\u{E8EC}"; // Miller columns
@@ -118,11 +131,11 @@ const MI_BOOKMARK: &str = "\u{E866}";
 const MI_SEARCH: &str = "\u{E8B6}";
 const MI_TERMINAL: &str = "\u{EB8E}";
 const MI_CLEAR: &str = "\u{E14C}";
-const MI_DELETE: &str = "\u{E872}";
-const MI_CONTENT_COPY: &str = "\u{E14D}";
+pub(crate) const MI_DELETE: &str = "\u{E872}";
+pub(crate) const MI_CONTENT_COPY: &str = "\u{E14D}";
 const MI_CONTENT_CUT: &str = "\u{E14E}";
 const MI_DRIVE_FILE_MOVE: &str = "\u{E9A8}";
-const MI_OPEN_IN_NEW: &str = "\u{E89E}";
+pub(crate) const MI_OPEN_IN_NEW: &str = "\u{E89E}";
 const MI_ROTATE_LEFT: &str = "\u{E419}";
 const MI_ROTATE_RIGHT: &str = "\u{E41A}";
 const MI_MORE_VERT: &str = "\u{E5D4}";
@@ -140,7 +153,7 @@ const MI_IMAGE: &str = "\u{E3F4}"; // image
 const MI_MOVIE: &str = "\u{E02C}"; // movie
 const MI_MUSIC_NOTE: &str = "\u{E405}"; // music_note / audio
 const MI_CODE: &str = "\u{E86F}"; // code
-const MI_FOLDER_ZIP: &str = "\u{EB2C}"; // folder_zip / archive
+pub(crate) const MI_FOLDER_ZIP: &str = "\u{EB2C}"; // folder_zip / archive
 const MI_SLIDESHOW: &str = "\u{E41B}"; // slideshow / presentation
 const MI_DESCRIPTION: &str = "\u{E873}"; // description / document
 const MI_TABLE_CHART: &str = "\u{E265}"; // table_chart / spreadsheet
@@ -149,38 +162,38 @@ const MI_VISIBILITY_OFF: &str = "\u{E8F5}"; // visibility_off (hide hidden)
 const MI_MOVE_TO_INBOX: &str = "\u{E168}"; // move_to_inbox (drop folder destination)
 const MI_DASHBOARD_CUSTOMIZE: &str = "\u{E99B}"; // dashboard_customize (view options)
 const MI_TUNE: &str = "\u{E429}"; // tune (display settings / scale)
-const MI_EDIT: &str = "\u{E3C9}"; // edit
+pub(crate) const MI_EDIT: &str = "\u{E3C9}"; // edit
 
 // ── Theme colours ─────────────────────────────────────────────────────────────
 
 #[derive(Clone, Copy)]
-struct Colors {
-    bg: Color32,
-    panel: Color32,
-    panel_raised: Color32,
-    toolbar_bg: Color32,
-    bookmarks_bg: Color32,
-    smart_panel_bg: Color32,
-    titlebar_bg: Color32,
-    border: Color32,
-    window_border: Color32,
-    window_border_width: f32,
-    heading: Color32,
-    folder: Color32,
-    file: Color32,
-    text: Color32,
-    text_dim: Color32,
-    text_muted: Color32,
-    accent: Color32,
-    accent_dim: Color32,
-    hover: Color32,
-    selected_bg: Color32,
-    row_alt: Color32,
-    error: Color32,
-    app_radius: u8,
-    border_radius: u8,
-    button_radius: u8,
-    font_scale: f32,
+pub(crate) struct Colors {
+    pub(crate) bg: Color32,
+    pub(crate) panel: Color32,
+    pub(crate) panel_raised: Color32,
+    pub(crate) toolbar_bg: Color32,
+    pub(crate) bookmarks_bg: Color32,
+    pub(crate) smart_panel_bg: Color32,
+    pub(crate) titlebar_bg: Color32,
+    pub(crate) border: Color32,
+    pub(crate) window_border: Color32,
+    pub(crate) window_border_width: f32,
+    pub(crate) heading: Color32,
+    pub(crate) folder: Color32,
+    pub(crate) file: Color32,
+    pub(crate) text: Color32,
+    pub(crate) text_dim: Color32,
+    pub(crate) text_muted: Color32,
+    pub(crate) accent: Color32,
+    pub(crate) accent_dim: Color32,
+    pub(crate) hover: Color32,
+    pub(crate) selected_bg: Color32,
+    pub(crate) row_alt: Color32,
+    pub(crate) error: Color32,
+    pub(crate) app_radius: u8,
+    pub(crate) border_radius: u8,
+    pub(crate) button_radius: u8,
+    pub(crate) font_scale: f32,
 }
 
 impl Colors {
@@ -919,12 +932,6 @@ enum PreviewKeyAction {
     Cut,
     Rename,
     CommandFrame,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum GenericPreviewAction {
-    Rename,
-    Delete,
 }
 
 // ── Clipboard ─────────────────────────────────────────────────────────────────
@@ -16443,155 +16450,6 @@ impl eframe::App for OttrinApp {
     }
 }
 
-// ── Directory listing worker ───────────────────────────────────────────────────
-
-fn list_directory(path: &Path, show_hidden: bool) -> Result<Vec<FileEntry>, String> {
-    use std::time::UNIX_EPOCH;
-
-    let read_dir = std::fs::read_dir(path).map_err(|e| format_list_dir_error(path, &e))?;
-
-    let mut entries = Vec::new();
-    for item in read_dir {
-        let item = match item {
-            Ok(i) => i,
-            Err(_) => continue,
-        };
-        let name = item.file_name().to_string_lossy().to_string();
-        if !show_hidden && name.starts_with('.') {
-            continue;
-        }
-        let file_type = match item.file_type() {
-            Ok(ft) => ft,
-            Err(_) => continue,
-        };
-        let meta = match item.metadata() {
-            Ok(m) => m,
-            Err(_) => continue,
-        };
-        let kind = if file_type.is_symlink() {
-            EntryKind::Symlink
-        } else if file_type.is_dir() {
-            EntryKind::Directory
-        } else if file_type.is_file() {
-            EntryKind::File
-        } else {
-            EntryKind::Other
-        };
-        let size_bytes = if matches!(kind, EntryKind::File) {
-            Some(meta.len())
-        } else {
-            None
-        };
-        let modified_unix_secs = meta
-            .modified()
-            .ok()
-            .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
-            .map(|d| d.as_secs());
-        let symlink_target_is_dir = if matches!(kind, EntryKind::Symlink) {
-            Some(meta.is_dir())
-        } else {
-            None
-        };
-        let is_executable = detect_executable(&meta);
-
-        entries.push(FileEntry {
-            name,
-            path: item.path(),
-            kind,
-            is_executable,
-            symlink_target_is_dir,
-            size_bytes,
-            modified_unix_secs,
-        });
-    }
-
-    Ok(entries)
-}
-
-fn detect_executable(meta: &std::fs::Metadata) -> bool {
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        meta.is_file() && (meta.permissions().mode() & 0o111 != 0)
-    }
-    #[cfg(not(unix))]
-    {
-        let _ = meta;
-        false
-    }
-}
-
-fn sort_entries(entries: &mut [FileEntry], config: &ottrin_core::SortConfig) {
-    use ottrin_core::SortBy;
-    // Directories always come first
-    entries.sort_by(|a, b| {
-        let a_dir = matches!(a.kind, EntryKind::Directory);
-        let b_dir = matches!(b.kind, EntryKind::Directory);
-        if a_dir != b_dir {
-            return b_dir.cmp(&a_dir); // dirs first
-        }
-        let ord = match config.by {
-            SortBy::Name => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
-            SortBy::Size => b
-                .size_bytes
-                .unwrap_or(0)
-                .cmp(&a.size_bytes.unwrap_or(0))
-                .then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase())),
-            SortBy::Modified => b
-                .modified_unix_secs
-                .unwrap_or(0)
-                .cmp(&a.modified_unix_secs.unwrap_or(0))
-                .then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase())),
-            SortBy::Kind => kind_sort_rank(a).cmp(&kind_sort_rank(b)).then_with(|| {
-                let a_name = a.name.to_lowercase();
-                let b_name = b.name.to_lowercase();
-                if config.ascending {
-                    a_name.cmp(&b_name)
-                } else {
-                    b_name.cmp(&a_name)
-                }
-            }),
-        };
-        match config.by {
-            SortBy::Name => {
-                if config.ascending {
-                    ord
-                } else {
-                    ord.reverse()
-                }
-            }
-            SortBy::Kind | SortBy::Size | SortBy::Modified => ord,
-        }
-    });
-}
-
-fn nearest_existing_dir(path: &Path) -> PathBuf {
-    let mut cursor = if path.is_dir() {
-        path.to_path_buf()
-    } else {
-        path.parent()
-            .map(Path::to_path_buf)
-            .unwrap_or_else(default_home_dir)
-    };
-    loop {
-        if cursor.is_dir() {
-            return cursor;
-        }
-        if !cursor.pop() {
-            return default_home_dir();
-        }
-    }
-}
-
-fn sibling_from_entries(entries: &[FileEntry], target: &Path) -> Option<PathBuf> {
-    let idx = entries.iter().position(|entry| entry.path == target)?;
-    if idx > 0 {
-        entries.get(idx - 1).map(|entry| entry.path.clone())
-    } else {
-        entries.get(idx + 1).map(|entry| entry.path.clone())
-    }
-}
-
 fn menu_item(ui: &mut egui::Ui, icon: &str, label: &str, c: &Colors) -> egui::Response {
     ui.add(
         egui::Button::new(
@@ -16733,383 +16591,6 @@ fn smart_panel_header(ui: &mut egui::Ui, c: &Colors, icon: &str, title: &str) {
     ui.add_space(8.0);
 }
 
-fn inspector_action_button(
-    ui: &mut egui::Ui,
-    icon: &str,
-    label: &str,
-    tooltip: &str,
-    c: Colors,
-) -> egui::Response {
-    ui.add(
-        egui::Button::new(
-            RichText::new(format!("{icon}  {label}"))
-                .size(11.5)
-                .color(c.text),
-        )
-        .fill(c.panel)
-        .stroke(Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.35)))
-        .corner_radius(6.0)
-        .min_size(Vec2::new(108.0, 30.0)),
-    )
-    .on_hover_text(tooltip)
-}
-
-fn inspector_icon_button(
-    ui: &mut egui::Ui,
-    icon: &str,
-    label: &str,
-    tooltip: &str,
-    c: Colors,
-) -> egui::Response {
-    ui.add(
-        egui::Button::new(RichText::new(icon).size(16.0).color(c.text))
-            .fill(c.panel)
-            .stroke(Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.35)))
-            .corner_radius(6.0)
-            .min_size(Vec2::new(30.0, 28.0)),
-    )
-    .on_hover_text(format!("{label}\n{tooltip}"))
-}
-
-fn compact_preview_metadata(name: &str, body: &str) -> String {
-    let mut parts = vec![name.to_string()];
-    parts.extend(
-        body.lines()
-            .filter_map(|line| {
-                let trimmed = line.trim();
-                if trimmed.is_empty()
-                    || trimmed.eq_ignore_ascii_case("Image preview available.")
-                    || trimmed.eq_ignore_ascii_case("Open externally for full editing.")
-                {
-                    None
-                } else if trimmed.ends_with('.') && !trimmed.contains(':') {
-                    Some(trimmed.trim_end_matches('.').to_string())
-                } else {
-                    Some(trimmed.to_string())
-                }
-            })
-            .take(3),
-    );
-    parts.join(" · ")
-}
-
-fn split_preview_extracted_text(body: &str) -> (&str, Option<&str>) {
-    const MARKER: &str = "\n\nExtracted text:\n";
-    if let Some((metadata, text)) = body.split_once(MARKER) {
-        (metadata, Some(text.trim()))
-    } else {
-        (body, None)
-    }
-}
-
-fn split_archive_listing(body: &str) -> (&str, Option<&str>) {
-    const MARKER: &str = "\nContents:\n";
-    if let Some((metadata, listing)) = body.split_once(MARKER) {
-        (metadata, Some(listing.trim()))
-    } else {
-        (body, None)
-    }
-}
-
-fn preview_payload_for_copy(preview: &PreviewData) -> Option<(&'static str, &'static str, &str)> {
-    match preview.kind {
-        PreviewKind::Text | PreviewKind::Pdf | PreviewKind::OfficeMetadata => {
-            let (_, extracted) = split_preview_extracted_text(&preview.body);
-            let payload = extracted.unwrap_or(preview.body.trim());
-            (!payload.is_empty()).then_some((MI_CONTENT_COPY, "Copy Text", payload))
-        }
-        PreviewKind::ArchiveMetadata => {
-            let (_, listing) = split_archive_listing(&preview.body);
-            listing
-                .filter(|payload| !payload.is_empty())
-                .map(|payload| (MI_CONTENT_COPY, "Copy File List", payload))
-        }
-        _ => None,
-    }
-}
-
-fn render_preview_footer(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
-    if body.trim().is_empty() {
-        return;
-    }
-    ui.add_space(6.0);
-    ui.with_layout(Layout::top_down(Align::Center), |ui| {
-        ui.label(
-            RichText::new(compact_preview_metadata(name, body))
-                .color(c.text_dim)
-                .size(11.0),
-        );
-    });
-}
-
-fn render_text_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
-    let (metadata, extracted) = split_preview_extracted_text(body);
-    let source = extracted.unwrap_or(body).trim();
-    let editor_h = (ui.available_height() - 30.0).max(160.0);
-    let mut text = source.to_string();
-    ui.add_sized(
-        [ui.available_width(), editor_h],
-        egui::TextEdit::multiline(&mut text)
-            .font(FontId::monospace(12.0))
-            .text_color(c.text)
-            .frame(true)
-            .interactive(true),
-    );
-    render_preview_footer(ui, c, name, metadata);
-}
-
-fn render_archive_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
-    let (metadata, listing) = split_archive_listing(body);
-    let listing = listing.unwrap_or("").trim();
-    if listing.is_empty() {
-        render_metadata_card_preview(ui, c, MI_FOLDER_ZIP, name, metadata);
-        return;
-    }
-    let editor_h = (ui.available_height() - 30.0).max(180.0);
-    let mut text = listing.to_string();
-    ui.add_sized(
-        [ui.available_width(), editor_h],
-        egui::TextEdit::multiline(&mut text)
-            .font(FontId::monospace(12.0))
-            .text_color(c.text)
-            .frame(true)
-            .interactive(true),
-    );
-    render_preview_footer(ui, c, name, metadata);
-}
-
-fn render_document_body_preview(ui: &mut egui::Ui, c: Colors, icon: &str, name: &str, body: &str) {
-    let (metadata, extracted) = split_preview_extracted_text(body);
-    if let Some(text) = extracted.filter(|text| !text.is_empty()) {
-        let editor_h = (ui.available_height() - 30.0).max(180.0);
-        let mut body = text.to_string();
-        ui.add_sized(
-            [ui.available_width(), editor_h],
-            egui::TextEdit::multiline(&mut body)
-                .font(FontId::monospace(12.0))
-                .text_color(c.text)
-                .frame(true)
-                .interactive(true),
-        );
-        render_preview_footer(ui, c, name, metadata);
-    } else {
-        render_metadata_card_preview(ui, c, icon, name, metadata);
-    }
-}
-
-fn render_folder_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
-    ui.add_space(16.0);
-    ui.with_layout(Layout::top_down(Align::Center), |ui| {
-        ui.label(RichText::new(MI_FOLDER_OPEN).size(58.0).color(c.folder));
-        ui.add_space(8.0);
-        ui.label(RichText::new(name).color(c.text).size(14.0));
-    });
-    ui.add_space(10.0);
-    let (metadata, sample) = if let Some((metadata, sample)) = body.split_once("\n\nSample:\n") {
-        (metadata, Some(sample))
-    } else {
-        (body, None)
-    };
-    for line in metadata.lines() {
-        if let Some((key, val)) = line.split_once(':') {
-            ui.horizontal(|ui| {
-                ui.label(
-                    RichText::new(format!("{key}:"))
-                        .color(c.text_muted)
-                        .size(11.5),
-                );
-                ui.label(RichText::new(val.trim()).color(c.text).size(11.5));
-            });
-        } else if !line.trim().is_empty() {
-            ui.label(RichText::new(line).color(c.text_dim).size(11.5));
-        }
-    }
-    if let Some(sample) = sample {
-        ui.add_space(10.0);
-        ui.label(
-            RichText::new("Sample contents")
-                .color(c.text)
-                .size(12.0)
-                .strong(),
-        );
-        let mut text = sample.to_string();
-        ui.add(
-            egui::TextEdit::multiline(&mut text)
-                .font(FontId::monospace(11.0))
-                .text_color(c.text_dim)
-                .frame(true)
-                .desired_rows(10)
-                .interactive(true),
-        );
-    }
-}
-
-fn render_generic_body_preview(
-    ui: &mut egui::Ui,
-    c: Colors,
-    path: &Path,
-    name: &str,
-    preview: &PreviewData,
-) -> Option<GenericPreviewAction> {
-    let mut action = None;
-    ui.add_space(20.0);
-    ui.with_layout(Layout::top_down(Align::Center), |ui| {
-        let icon = file_icon_for_path(path);
-        ui.label(RichText::new(icon).size(64.0));
-        ui.add_space(8.0);
-        ui.label(RichText::new(name).color(c.text).size(14.0));
-        if !preview.body.is_empty() {
-            ui.add_space(8.0);
-            render_preview_metadata_rows(ui, c, &preview.body);
-        }
-        ui.add_space(16.0);
-        ui.horizontal(|ui| {
-            if inspector_action_button(
-                ui,
-                MI_CONTENT_COPY,
-                "Copy Path",
-                "Copy this file path to the clipboard.",
-                c,
-            )
-            .clicked()
-            {
-                ui.ctx().copy_text(path.display().to_string());
-            }
-            if preview.open_external
-                && inspector_action_button(
-                    ui,
-                    MI_OPEN_IN_NEW,
-                    "Open",
-                    "Open this file with the system default app.",
-                    c,
-                )
-                .clicked()
-            {
-                ui.ctx().open_url(egui::OpenUrl {
-                    url: format!("file://{}", path.display()),
-                    new_tab: false,
-                });
-            }
-        });
-        ui.add_space(6.0);
-        ui.horizontal(|ui| {
-            if inspector_action_button(ui, MI_EDIT, "Rename", "Rename this file.", c).clicked() {
-                action = Some(GenericPreviewAction::Rename);
-            }
-            if inspector_action_button(
-                ui,
-                MI_DELETE,
-                "Move to Trash",
-                "Move this file to Trash with confirmation.",
-                c,
-            )
-            .clicked()
-            {
-                action = Some(GenericPreviewAction::Delete);
-            }
-        });
-    });
-    action
-}
-
-fn render_metadata_card_preview(
-    ui: &mut egui::Ui,
-    c: Colors,
-    icon: &str,
-    name: &str,
-    metadata: &str,
-) {
-    ui.with_layout(Layout::top_down(Align::Center), |ui| {
-        ui.add_space((ui.available_height() * 0.18).min(48.0));
-        ui.label(RichText::new(icon).size(58.0).color(c.folder));
-        ui.add_space(8.0);
-        ui.label(RichText::new(name).color(c.text).size(14.0));
-        ui.add_space(10.0);
-        render_preview_metadata_rows(ui, c, metadata);
-    });
-}
-
-fn render_preview_metadata_rows(ui: &mut egui::Ui, c: Colors, metadata: &str) {
-    for line in metadata.lines() {
-        let line = line.trim();
-        if line.is_empty() {
-            continue;
-        }
-        if let Some((key, val)) = line.split_once(':') {
-            ui.horizontal(|ui| {
-                ui.label(
-                    RichText::new(format!("{key}:"))
-                        .color(c.text_muted)
-                        .size(11.5),
-                );
-                ui.label(RichText::new(val.trim()).color(c.text).size(11.5));
-            });
-        } else {
-            ui.label(RichText::new(line).color(c.text_dim).size(11.5));
-        }
-    }
-}
-
-fn render_image_hover_nav(ui: &mut egui::Ui, c: Colors, image_rect: Rect) -> Option<isize> {
-    let pointer = ui.input(|input| input.pointer.hover_pos());
-    if !pointer
-        .map(|pos| image_rect.expand(8.0).contains(pos))
-        .unwrap_or(false)
-    {
-        return None;
-    }
-
-    let arrow_size = Vec2::new(42.0, 64.0);
-    let left_rect = Rect::from_center_size(
-        egui::pos2(image_rect.left() + 30.0, image_rect.center().y),
-        arrow_size,
-    );
-    let right_rect = Rect::from_center_size(
-        egui::pos2(image_rect.right() - 30.0, image_rect.center().y),
-        arrow_size,
-    );
-    let left = ui.interact(left_rect, ui.id().with("quick_prev_image"), Sense::click());
-    let right = ui.interact(right_rect, ui.id().with("quick_next_image"), Sense::click());
-
-    for (rect, response, icon) in [
-        (left_rect, &left, MI_ARROW_BACK),
-        (right_rect, &right, MI_ARROW_FORWARD),
-    ] {
-        let fill = if response.hovered() {
-            mix_color(c.selected_bg, c.panel_raised, 0.18)
-        } else {
-            Color32::from_rgba_unmultiplied(
-                c.panel_raised.r(),
-                c.panel_raised.g(),
-                c.panel_raised.b(),
-                176,
-            )
-        };
-        ui.painter().rect_filled(rect, 10.0, fill);
-        ui.painter().rect_stroke(
-            rect,
-            10.0,
-            Stroke::new(1.0, mix_color(c.border, c.accent, 0.25)),
-            egui::StrokeKind::Inside,
-        );
-        ui.painter().text(
-            rect.center(),
-            Align2::CENTER_CENTER,
-            icon,
-            FontId::proportional(24.0),
-            c.text,
-        );
-    }
-
-    if left.clicked() {
-        Some(-1)
-    } else if right.clicked() {
-        Some(1)
-    } else {
-        None
-    }
-}
-
 fn delete_choice_row(
     ui: &mut egui::Ui,
     c: &Colors,
@@ -17194,23 +16675,6 @@ fn delete_choice_row(
         );
     }
     response
-}
-
-fn sort_supports_direction(sort_by: SortBy) -> bool {
-    matches!(sort_by, SortBy::Name | SortBy::Kind)
-}
-
-fn default_sort_direction(sort_by: SortBy) -> bool {
-    matches!(sort_by, SortBy::Name | SortBy::Kind)
-}
-
-fn kind_sort_rank(entry: &FileEntry) -> u8 {
-    match entry.kind {
-        EntryKind::Directory => 0,
-        EntryKind::Symlink => 1,
-        EntryKind::File => 2,
-        EntryKind::Other => 3,
-    }
 }
 
 fn sanitize_theme_file_name(name: &str) -> String {
@@ -17553,25 +17017,6 @@ fn metadata_preview_snippet(body: &str, max_lines: usize, max_chars: usize) -> S
     out
 }
 
-fn format_list_dir_error(path: &Path, e: &std::io::Error) -> String {
-    use std::io::ErrorKind;
-    match e.kind() {
-        ErrorKind::PermissionDenied => {
-            format!(
-                "Permission denied\nYou don't have permission to read this folder:\n{}",
-                path.display()
-            )
-        }
-        ErrorKind::NotFound => {
-            format!(
-                "Folder not found\nThis folder no longer exists:\n{}",
-                path.display()
-            )
-        }
-        _ => format!("Could not open folder:\n{}\n({})", path.display(), e),
-    }
-}
-
 fn is_permission_denied_msg(msg: &str) -> bool {
     let m = msg.to_ascii_lowercase();
     m.contains("permission denied") || m.contains("access is denied")
@@ -17832,7 +17277,7 @@ fn open_terminal_here(dir: &Path) {
     }
 }
 
-fn mix_color(a: Color32, b: Color32, t: f32) -> Color32 {
+pub(crate) fn mix_color(a: Color32, b: Color32, t: f32) -> Color32 {
     let t = t.clamp(0.0, 1.0);
     let lerp = |x: u8, y: u8| -> u8 {
         ((x as f32 * (1.0 - t) + y as f32 * t).round()).clamp(0.0, 255.0) as u8
@@ -18396,7 +17841,7 @@ fn style_for_search_item(
     )
 }
 
-fn file_icon_for_path(path: &Path) -> &'static str {
+pub(crate) fn file_icon_for_path(path: &Path) -> &'static str {
     let sem = semantic_for_path(path);
     material_icon(icon_for_semantic(&sem, EntryVisualState::default()))
 }
