@@ -11,16 +11,17 @@ use ottrin_core::{
     AppConfig, AppState, CodeSubtype, ConflictAction, DeleteMode, EntryKind, FileCategory,
     FileCommand, FileEntry, FileSemantic, FolderKind, ListColumn, MillerColumnWidthMode,
     PrivilegedCommand, PrivilegedContext, PrivilegedPayload, PrivilegedRequest, PrivilegedStatus,
-    SavedTheme, SearchIndexStatus, SearchQuery, SearchResultItem, SearchScope, SearchSort, SortBy,
-    TandemSide, ThemeCustomization, ThemeMode, ThemePreset, ViewMode, classify_file,
-    default_home_dir, format_modified, format_size, format_size_units, platform_case_mode_current,
+    SavedTheme, SearchIndexStatus, SearchQuery, SearchResponse, SearchResultItem, SearchScope,
+    SearchSort, SortBy, TandemSide, ThemeCustomization, ThemeMode, ThemePreset, ViewMode,
+    classify_file, default_home_dir, format_modified, format_size, format_size_units,
+    platform_case_mode_current,
 };
-use ottrin_platform::{DefaultPlatform, PlatformOps, PrivilegedAvailability};
+use ottrin_platform::{DefaultPlatform, PlatformOps, PrivilegedAvailability, TrashItem};
 use ottrin_preview::{PreviewData, PreviewKind, PreviewRequest, load_preview};
 use ottrin_search::{SearchIndexDiagnostics, SearchService, default_roots as default_search_roots};
 use sha2::{Digest, Sha256};
 use std::collections::hash_map::DefaultHasher;
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::hash::{Hash, Hasher};
 use std::io::{Cursor, Read};
 #[cfg(unix)]
@@ -42,22 +43,43 @@ fn format_age_str(secs: u64) -> String {
     }
 }
 
+fn system_locate_schedule_guidance(
+    status: &ottrin_search::SystemLocateScheduleStatus,
+) -> &'static str {
+    let detail = status.detail.as_deref().unwrap_or_default();
+    if detail.contains("cron.weekly") {
+        "Weekly system updates are fine for mostly stable system paths. Use a daily schedule only if you rely on plocate for frequently changing system-wide results."
+    } else if detail.contains("cron.daily")
+        || detail.contains("timer")
+        || detail.contains("updatedb.timer")
+    {
+        "This is a good default for system path fallback. Ottrin's own SQLite index remains the main search source."
+    } else if status.managed_by_ottrin {
+        "Ottrin installed this system updatedb job for plocate fallback only; it does not update the SQLite index."
+    } else {
+        "Existing system maintenance detected. No extra setup is needed unless plocate results are stale."
+    }
+}
+
 const CUSTOM_TITLEBAR_HEIGHT: f32 = 36.0;
 const VIEW_CONTROLS_BAR_HEIGHT: f32 = 28.0;
 const STATUS_BAR_HEIGHT: f32 = 26.0;
 const SMART_PANEL_STRIP_WIDTH: f32 = 36.0;
+const HAIRLINE: f32 = 1.0;
+const MILLER_COLUMN_DIVIDER_WIDTH: f32 = 6.0;
 const MAX_CACHED_IMAGE_PREVIEWS: usize = 96;
 const PREVIEW_CACHE_BUCKET_SMALL: u32 = 256;
 const PREVIEW_CACHE_BUCKET_LARGE: u32 = 640;
 const PREVIEW_CACHE_BUCKET_XL: u32 = 1280;
+const PREVIEW_CACHE_ORIGINAL: u32 = 0;
+const PREVIEW_CACHE_SMALL_SVG: u32 = 96;
 const PREVIEW_REQUESTS_PER_FRAME: usize = 2;
 const MILLER_FIXED_WIDTH: f32 = 240.0;
 const TANDEM_PANE_HEADER_HEIGHT: f32 = 38.0;
 const TANDEM_DIVIDER_WIDTH: f32 = 8.0;
 
 // ── Material Icons codepoints ──────────────────────────────────────────────
-// Font: MaterialSymbolsFilled.ttf (Apache 2.0, derived from MaterialSymbolsOutlined variable font with FILL=1)
-#[allow(dead_code)]
+// Font: MaterialSymbolsFilled.ttf (Apache 2.0, Material Symbols icon font)
 const MI_ARROW_BACK: &str = "\u{E5C4}";
 const MI_ARROW_FORWARD: &str = "\u{E5C8}";
 const MI_ARROW_UP: &str = "\u{E5D8}";
@@ -82,12 +104,21 @@ const MI_BOOKMARK: &str = "\u{E866}";
 const MI_SEARCH: &str = "\u{E8B6}";
 const MI_TERMINAL: &str = "\u{EB8E}";
 const MI_CLEAR: &str = "\u{E14C}";
+const MI_DELETE: &str = "\u{E872}";
+const MI_CONTENT_COPY: &str = "\u{E14D}";
+const MI_CONTENT_CUT: &str = "\u{E14E}";
+const MI_DRIVE_FILE_MOVE: &str = "\u{E9A8}";
+const MI_OPEN_IN_NEW: &str = "\u{E89E}";
+const MI_ROTATE_LEFT: &str = "\u{E419}";
+const MI_ROTATE_RIGHT: &str = "\u{E41A}";
+const MI_MORE_VERT: &str = "\u{E5D4}";
 const MI_SETTINGS: &str = "\u{E8B8}";
 const MI_INFO: &str = "\u{E88E}";
 const MI_CHECK: &str = "\u{E5CA}";
 const MI_CREATE_FOLDER: &str = "\u{E2CC}";
 const MI_LOCK: &str = "\u{E897}";
 const MI_SETTINGS_BACKUP_RESTORE: &str = "\u{E8BA}";
+const MI_HISTORY: &str = "\u{E889}";
 
 // File-type icons
 const MI_PICTURE_PDF: &str = "\u{E415}"; // picture_as_pdf
@@ -102,6 +133,7 @@ const MI_TABLE_CHART: &str = "\u{E265}"; // table_chart / spreadsheet
 const MI_VISIBILITY: &str = "\u{E8F4}"; // visibility (show hidden)
 const MI_VISIBILITY_OFF: &str = "\u{E8F5}"; // visibility_off (hide hidden)
 const MI_MOVE_TO_INBOX: &str = "\u{E168}"; // move_to_inbox (drop folder destination)
+const MI_DASHBOARD_CUSTOMIZE: &str = "\u{E99B}"; // dashboard_customize (view options)
 const MI_TUNE: &str = "\u{E429}"; // tune (display settings / scale)
 const MI_EDIT: &str = "\u{E3C9}"; // edit
 
@@ -652,12 +684,84 @@ struct ListingResponse {
     result: Result<Vec<FileEntry>, String>,
 }
 
+#[derive(Debug)]
+struct TrashLoadResponse {
+    request_id: u64,
+    result: Result<Vec<TrashItem>, String>,
+}
+
+#[derive(Debug)]
+struct TrashEmptyResponse {
+    request_id: u64,
+    result: Result<(), String>,
+}
+
 /// Async file operation result.
 #[derive(Debug)]
 struct OpResult {
+    op_id: u64,
     tab_id: Option<u64>, // which tab should refresh after this op
+    cmd: FileCommand,
+    delete_nav: Vec<DeletePostNav>,
     error: Option<String>,
     retry_cmd: Option<FileCommand>,
+}
+
+#[derive(Debug, Clone)]
+struct PendingDelete {
+    tab_id: u64,
+    targets: Vec<PathBuf>,
+    requested_mode: DeleteMode,
+    selected: DeleteChoice,
+}
+
+#[derive(Debug, Clone)]
+struct PendingRename {
+    tab_id: u64,
+    source: PathBuf,
+    name_input: String,
+    request_focus: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DeleteChoice {
+    MoveToTrash,
+    Cancel,
+    DeletePermanently,
+}
+
+#[derive(Debug, Clone)]
+struct DeletePostNav {
+    tab_id: u64,
+    dir: PathBuf,
+    select_path: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum OperationStatus {
+    Queued,
+    Completed,
+    Failed,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum OperationRecoverability {
+    Restorable,
+    NotUndoable,
+    SessionTracked,
+    Informational,
+}
+
+#[derive(Debug, Clone)]
+struct OperationRecord {
+    id: u64,
+    title: String,
+    detail: String,
+    status: OperationStatus,
+    recoverability: OperationRecoverability,
+    queued_at: Instant,
+    finished_at: Option<Instant>,
+    message: Option<String>,
 }
 
 // ── Per-tab listing state ─────────────────────────────────────────────────────
@@ -683,6 +787,9 @@ struct TabUiState {
     main_sel: Option<usize>,
     left_sel: Option<usize>, // always points to current dir entry within parent
     right_sel: Option<usize>,
+    // Path-backed multi-selection for the current folder.
+    selected_paths: HashSet<PathBuf>,
+    selection_anchor: Option<PathBuf>,
     // Path-backed focus for Column view; more stable than fixed left/middle/right.
     miller_focus_dir: Option<PathBuf>,
     // Remember last selected child per directory, so navigating back/up can
@@ -763,12 +870,14 @@ struct PreviewOverlay {
     visible: bool,
     path: Option<PathBuf>,
     data: Option<PreviewData>,
+    image_actual_size: bool,
 }
 
 #[derive(Debug)]
 struct PreviewJobRequest {
     path: PathBuf,
     target_dim: u32,
+    cache_max_bytes: u64,
 }
 
 #[derive(Debug)]
@@ -776,6 +885,32 @@ struct PreviewJobResponse {
     path: PathBuf,
     target_dim: u32,
     bytes: Option<Vec<u8>>,
+}
+
+#[derive(Debug)]
+struct SearchQueryResponse {
+    request_id: u64,
+    query: SearchQuery,
+    root: Option<PathBuf>,
+    previously_selected_path: Option<PathBuf>,
+    response: SearchResponse,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PreviewKeyAction {
+    PrevItem,
+    NextItem,
+    Delete,
+    Copy,
+    Cut,
+    Rename,
+    CommandFrame,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum GenericPreviewAction {
+    Rename,
+    Delete,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -814,6 +949,19 @@ struct TargetDropdown {
     error: Option<String>,
 }
 
+#[derive(Debug, Default)]
+struct TrashPanelState {
+    items: Vec<TrashItem>,
+    selected: Option<usize>,
+    error: Option<String>,
+    loaded: bool,
+    loading: bool,
+    emptying: bool,
+    request_id: u64,
+    empty_request_id: u64,
+    empty_operation_id: Option<u64>,
+}
+
 // ── Right sidebar section ─────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -823,6 +971,8 @@ enum SidebarSection {
     Target,
     Info,
     Search,
+    Activity,
+    Trash,
 }
 
 // ── Settings tab ─────────────────────────────────────────────────────────────
@@ -975,9 +1125,11 @@ struct PrivilegedUiStatus {
     since: Instant,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct SearchUiState {
     query: String,
+    pending_query_since: Option<Instant>,
+    last_executed_query: String,
     scope: SearchScope,
     sort: SearchSort,
     include_hidden: bool,
@@ -993,7 +1145,6 @@ struct SearchUiState {
     exclude_glob_input: String,
     show_include_glob_input: bool,
     show_exclude_glob_input: bool,
-    panel_width: f32,
     /// Tracks index size seen on last render — when it grows, re-run the query
     /// so results update live as new batches arrive during indexing.
     last_seen_index_count: usize,
@@ -1001,6 +1152,45 @@ struct SearchUiState {
     content_search: bool,
     /// Cached preview for the currently selected search result.
     result_preview: Option<(PathBuf, PreviewData)>,
+    /// Runtime-visible result table columns: Name, Folder, Modified, Size.
+    result_columns: [bool; 4],
+    result_col_px: [f32; 4],
+    result_resize_start: Option<(usize, usize, f32, f32)>,
+    latest_request_id: u64,
+    search_inflight: bool,
+}
+
+impl Default for SearchUiState {
+    fn default() -> Self {
+        Self {
+            query: String::new(),
+            pending_query_since: None,
+            last_executed_query: String::new(),
+            scope: SearchScope::Global,
+            sort: SearchSort::Relevance,
+            include_hidden: false,
+            results: Vec::new(),
+            selected: None,
+            scroll_to_selected: false,
+            total: 0,
+            last_error: None,
+            request_focus: false,
+            input_focused: false,
+            last_query_root: None,
+            include_glob_input: String::new(),
+            exclude_glob_input: String::new(),
+            show_include_glob_input: false,
+            show_exclude_glob_input: false,
+            last_seen_index_count: 0,
+            content_search: false,
+            result_preview: None,
+            result_columns: [true, true, true, true],
+            result_col_px: [390.0, 220.0, 104.0, 82.0],
+            result_resize_start: None,
+            latest_request_id: 0,
+            search_inflight: false,
+        }
+    }
 }
 
 // ── Main app struct ───────────────────────────────────────────────────────────
@@ -1019,6 +1209,10 @@ pub struct OttrinApp {
     // File operation results
     op_tx: Sender<OpResult>,
     op_rx: Receiver<OpResult>,
+    trash_tx: Sender<TrashLoadResponse>,
+    trash_rx: Receiver<TrashLoadResponse>,
+    trash_empty_tx: Sender<TrashEmptyResponse>,
+    trash_empty_rx: Receiver<TrashEmptyResponse>,
 
     platform: Arc<DefaultPlatform>,
     clipboard: Option<Clipboard>,
@@ -1034,6 +1228,8 @@ pub struct OttrinApp {
     preview_rx: Receiver<PreviewJobResponse>,
     preview_inflight: HashSet<PathBuf>,
     preview_budget_remaining: usize,
+    search_result_tx: Sender<SearchQueryResponse>,
+    search_result_rx: Receiver<SearchQueryResponse>,
     info_panel_hashes: HashMap<PathBuf, String>,
     info_panel_hash_errors: HashMap<PathBuf, String>,
     info_panel_hash_inflight: Option<PathBuf>,
@@ -1041,12 +1237,17 @@ pub struct OttrinApp {
     hash_rx: Receiver<(PathBuf, Result<String, String>)>,
     target_dropdown: TargetDropdown,
     properties: PropertiesPopup,
+    pending_rename: Option<PendingRename>,
+    pending_delete: Option<PendingDelete>,
+    pending_empty_trash: bool,
     pending_privileged_retry: Option<(FileCommand, Option<u64>)>,
     privileged_availability: PrivilegedAvailability,
     privileged_status: Option<PrivilegedUiStatus>,
     search_service: SearchService,
     search_started: bool,
     search_ui: SearchUiState,
+    trash_panel: TrashPanelState,
+    operation_history: VecDeque<OperationRecord>,
 
     next_request_id: u64,
     sidebar: SidebarSection,
@@ -1065,6 +1266,8 @@ pub struct OttrinApp {
     settings_tab: SettingsTab,
     // Appearance: transient feedback for save/export actions.
     theme_status: Option<(String, bool, Instant)>,
+    cache_clear_confirm: bool,
+    app_cleanup_confirm: bool,
     // General transient status message (copy, context actions, etc).
     status_message: Option<UiStatusMessage>,
     // Dedicated per-theme editor popup state (KDE-style edit flow).
@@ -1084,6 +1287,7 @@ impl Default for OttrinApp {
 
 impl Drop for OttrinApp {
     fn drop(&mut self) {
+        self.persist_config();
         self.search_service.stop();
     }
 }
@@ -1120,12 +1324,14 @@ impl OttrinApp {
         let (listing_tx, listing_worker_rx) = mpsc::channel::<ListingRequest>();
         let (listing_worker_tx, listing_rx) = mpsc::channel::<ListingResponse>();
         let (op_tx, op_rx) = mpsc::channel::<OpResult>();
+        let (trash_tx, trash_rx) = mpsc::channel::<TrashLoadResponse>();
+        let (trash_empty_tx, trash_empty_rx) = mpsc::channel::<TrashEmptyResponse>();
         let (hash_tx, hash_rx) = mpsc::channel::<(PathBuf, Result<String, String>)>();
         let (preview_req_tx, preview_req_rx) = mpsc::channel::<PreviewJobRequest>();
         let (preview_res_tx, preview_res_rx) = mpsc::channel::<PreviewJobResponse>();
+        let (search_result_tx, search_result_rx) = mpsc::channel::<SearchQueryResponse>();
 
-        // Single long-lived listing worker thread — serialises requests.
-        // For a future improvement, use a thread pool.
+        // Single long-lived listing worker thread; later requests supersede stale responses.
         std::thread::spawn(move || {
             while let Ok(req) = listing_worker_rx.recv() {
                 let result = list_directory(&req.path, req.show_hidden);
@@ -1140,10 +1346,12 @@ impl OttrinApp {
         std::thread::spawn(move || {
             while let Ok(req) = preview_req_rx.recv() {
                 let cache_key = preview_cache_key(&req.path, req.target_dim);
-                let bytes = if let Some(bytes) = load_cached_thumbnail(&cache_key) {
+                let bytes = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                    std::fs::read(&req.path).ok()
+                } else if let Some(bytes) = load_cached_thumbnail(&cache_key) {
                     Some(bytes)
                 } else if let Some(bytes) = build_thumbnail_bytes(&req.path, req.target_dim) {
-                    persist_cached_thumbnail(&cache_key, &bytes);
+                    persist_cached_thumbnail(&cache_key, &bytes, req.cache_max_bytes);
                     Some(bytes)
                 } else {
                     std::fs::read(&req.path).ok()
@@ -1162,6 +1370,9 @@ impl OttrinApp {
             config,
             ..AppState::default()
         };
+        for tab in &mut state.tabs {
+            tab.view_mode = state.config.default_view_mode;
+        }
         if state.config.search.include_roots.is_empty() {
             state.config.search.include_roots = default_search_roots();
         }
@@ -1176,6 +1387,10 @@ impl OttrinApp {
             listing_rx,
             op_tx,
             op_rx,
+            trash_tx,
+            trash_rx,
+            trash_empty_tx,
+            trash_empty_rx,
             platform: Arc::new(DefaultPlatform),
             clipboard: None,
             command_frame: CommandFrame::default(),
@@ -1188,6 +1403,8 @@ impl OttrinApp {
             preview_rx: preview_res_rx,
             preview_inflight: HashSet::new(),
             preview_budget_remaining: PREVIEW_REQUESTS_PER_FRAME,
+            search_result_tx,
+            search_result_rx,
             info_panel_hashes: HashMap::new(),
             info_panel_hash_errors: HashMap::new(),
             info_panel_hash_inflight: None,
@@ -1195,6 +1412,9 @@ impl OttrinApp {
             hash_rx,
             target_dropdown: TargetDropdown::default(),
             properties: PropertiesPopup::default(),
+            pending_rename: None,
+            pending_delete: None,
+            pending_empty_trash: false,
             pending_privileged_retry: None,
             privileged_availability: PrivilegedAvailability::Unsupported(
                 "Status not initialized".to_string(),
@@ -1203,6 +1423,8 @@ impl OttrinApp {
             search_service: SearchService::new(search_config),
             search_started: false,
             search_ui: SearchUiState::default(),
+            trash_panel: TrashPanelState::default(),
+            operation_history: VecDeque::new(),
             next_request_id: 1,
             sidebar: SidebarSection::None,
             last_grid_cols: 4,
@@ -1212,6 +1434,8 @@ impl OttrinApp {
             show_settings: false,
             settings_tab: SettingsTab::General,
             theme_status: None,
+            cache_clear_confirm: false,
+            app_cleanup_confirm: false,
             status_message: None,
             theme_editor: ThemeEditorState::default(),
             drop_folder_confirm_until: None,
@@ -1228,7 +1452,6 @@ impl OttrinApp {
         app.search_ui.scope = app.state.config.search.default_scope;
         app.search_ui.sort = app.state.config.search.default_sort;
         app.search_ui.include_hidden = app.state.config.search.include_hidden_system;
-        app.search_ui.panel_width = 520.0;
         app.search_service
             .update_config(app.state.config.search.clone());
         app.refresh_active_tab();
@@ -1302,8 +1525,8 @@ impl OttrinApp {
         visuals.widgets.open.bg_stroke = Stroke::NONE;
         visuals.widgets.open.corner_radius = egui::CornerRadius::same(widget_radius);
         visuals.widgets.open.fg_stroke = Stroke::new(1.0, button_text);
-        visuals.selection.bg_fill = c.selected_bg;
-        visuals.selection.stroke = Stroke::NONE;
+        visuals.selection.bg_fill = mix_color(c.selected_bg, c.panel, 0.55);
+        visuals.selection.stroke = Stroke::new(1.0, c.text);
         ctx.set_visuals(visuals);
         ctx.style_mut(|style| {
             let mut scroll = egui::style::ScrollStyle::solid();
@@ -1312,15 +1535,15 @@ impl OttrinApp {
             // columns to "bounce" when a bar appears/disappears.
             scroll.floating = true;
             scroll.floating_allocated_width = 0.0;
-            scroll.bar_width = 6.0;
-            scroll.handle_min_length = 28.0;
+            scroll.bar_width = 8.0;
+            scroll.handle_min_length = 34.0;
             scroll.bar_outer_margin = 0.0;
             scroll.bar_inner_margin = 0.0;
             scroll.dormant_background_opacity = 0.0;
             scroll.active_background_opacity = 0.0;
             scroll.interact_background_opacity = 0.0;
-            scroll.dormant_handle_opacity = 0.9;
-            scroll.active_handle_opacity = 0.95;
+            scroll.dormant_handle_opacity = 1.0;
+            scroll.active_handle_opacity = 1.0;
             scroll.interact_handle_opacity = 1.0;
             style.spacing.scroll = scroll;
             style.text_styles.insert(
@@ -1351,6 +1574,10 @@ impl OttrinApp {
         });
     }
 
+    fn persist_config(&self) {
+        save_config(&self.state.config);
+    }
+
     fn reapply_theme(&mut self, ctx: &Context) {
         self.colors = Colors::for_config(&self.state.config);
         self.apply_theme_to_ctx(ctx);
@@ -1377,6 +1604,7 @@ impl OttrinApp {
                 let _ = self.preview_tx.send(PreviewJobRequest {
                     path: path.to_path_buf(),
                     target_dim,
+                    cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
                 self.preview_inflight.insert(path.to_path_buf());
                 self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
@@ -1385,11 +1613,129 @@ impl OttrinApp {
         }
         let bytes = self.image_preview_cache.get(&cache_key)?.clone();
         Some(
-            egui::Image::from_bytes(format!("bytes://{}", path.display()), bytes)
+            egui::Image::from_bytes(format!("bytes://preview/{cache_key}"), bytes)
                 .max_width(max_width)
                 .max_height(max_height)
                 .corner_radius(corner_radius),
         )
+    }
+
+    fn cached_original_image_preview_widget(
+        &mut self,
+        path: &Path,
+        max_width: f32,
+        max_height: f32,
+        corner_radius: u8,
+    ) -> Option<egui::Image<'static>> {
+        let cache_key = preview_cache_key(path, PREVIEW_CACHE_ORIGINAL);
+        if !self.image_preview_cache.contains_key(&cache_key) {
+            if !self.preview_inflight.contains(path) && self.preview_budget_remaining > 0 {
+                let _ = self.preview_tx.send(PreviewJobRequest {
+                    path: path.to_path_buf(),
+                    target_dim: PREVIEW_CACHE_ORIGINAL,
+                    cache_max_bytes: self.thumbnail_cache_max_bytes(),
+                });
+                self.preview_inflight.insert(path.to_path_buf());
+                self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
+            }
+            return None;
+        }
+        let bytes = self.image_preview_cache.get(&cache_key)?.clone();
+        Some(
+            egui::Image::from_bytes(format!("bytes://preview/{cache_key}"), bytes)
+                .max_width(max_width)
+                .max_height(max_height)
+                .corner_radius(corner_radius),
+        )
+    }
+
+    fn cached_original_image_actual_size_widget(
+        &mut self,
+        path: &Path,
+        corner_radius: u8,
+    ) -> Option<egui::Image<'static>> {
+        let cache_key = preview_cache_key(path, PREVIEW_CACHE_ORIGINAL);
+        if !self.image_preview_cache.contains_key(&cache_key) {
+            if !self.preview_inflight.contains(path) && self.preview_budget_remaining > 0 {
+                let _ = self.preview_tx.send(PreviewJobRequest {
+                    path: path.to_path_buf(),
+                    target_dim: PREVIEW_CACHE_ORIGINAL,
+                    cache_max_bytes: self.thumbnail_cache_max_bytes(),
+                });
+                self.preview_inflight.insert(path.to_path_buf());
+                self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
+            }
+            return None;
+        }
+        let bytes = self.image_preview_cache.get(&cache_key)?.clone();
+        Some(
+            egui::Image::from_bytes(format!("bytes://preview/{cache_key}"), bytes)
+                .corner_radius(corner_radius),
+        )
+    }
+
+    fn cached_thumbnail_widget(
+        &mut self,
+        path: &Path,
+        size: f32,
+        corner_radius: u8,
+    ) -> Option<egui::Image<'static>> {
+        if is_svg_path(path) {
+            let cache_key = preview_cache_key(path, PREVIEW_CACHE_SMALL_SVG);
+            if !self.image_preview_cache.contains_key(&cache_key) {
+                if let Ok(bytes) = std::fs::read(path) {
+                    self.image_preview_cache.insert(cache_key.clone(), bytes);
+                } else {
+                    return None;
+                }
+            }
+            let bytes = self.image_preview_cache.get(&cache_key)?.clone();
+            return Some(
+                egui::Image::from_bytes(format!("bytes://preview/{cache_key}.svg"), bytes)
+                    .max_width(size)
+                    .max_height(size)
+                    .corner_radius(corner_radius),
+            );
+        }
+        self.cached_image_preview_widget(path, size, size, corner_radius)
+    }
+
+    fn rotate_inspector_image(&mut self, path: &Path, clockwise: bool) {
+        let title = if clockwise {
+            "Rotate image right"
+        } else {
+            "Rotate image left"
+        };
+        let op_id = self.queue_activity_record_with_recoverability(
+            title,
+            path.display().to_string(),
+            OperationRecoverability::SessionTracked,
+        );
+        match rotate_image_file(path, clockwise) {
+            Ok(()) => {
+                self.image_preview_cache.clear();
+                if self.preview.path.as_deref() == Some(path) {
+                    self.preview.data = Some(load_preview(&PreviewRequest {
+                        path: path.to_path_buf(),
+                        kind_hint: EntryKind::File,
+                    }));
+                }
+                self.finish_operation_record(
+                    op_id,
+                    OperationStatus::Completed,
+                    Some("Saved rotated image".to_string()),
+                );
+                self.set_status_message("Saved rotated image", true, 3);
+            }
+            Err(err) => {
+                self.finish_operation_record(op_id, OperationStatus::Failed, Some(err.clone()));
+                self.set_status_message(format!("Rotate failed: {err}"), false, 5);
+            }
+        }
+    }
+
+    fn thumbnail_cache_max_bytes(&self) -> u64 {
+        u64::from(self.state.config.thumbnail_cache_max_mb) * 1024 * 1024
     }
 
     fn theme_mode_key(mode: ThemeMode) -> &'static str {
@@ -3947,6 +4293,8 @@ impl OttrinApp {
         if let Some(ui_state) = self.tab_ui.get_mut(&tab_id) {
             ui_state.main_sel = None;
             ui_state.left_sel = None;
+            ui_state.selected_paths.clear();
+            ui_state.selection_anchor = None;
             ui_state.right = ColumnState::default();
             ui_state.right_is_file = false;
             // Focus starts on the actual current directory column.
@@ -4107,7 +4455,9 @@ impl OttrinApp {
 
     fn poll_op_results(&mut self) {
         while let Ok(res) = self.op_rx.try_recv() {
+            let completed_cmd = res.cmd.clone();
             if let Some(err) = res.error {
+                self.finish_operation_record(res.op_id, OperationStatus::Failed, Some(err.clone()));
                 self.command_frame.error = Some(err);
                 self.command_frame.message = None;
                 self.command_frame.visible = true;
@@ -4118,7 +4468,14 @@ impl OttrinApp {
                 }
                 continue;
             }
+            self.finish_operation_record(res.op_id, OperationStatus::Completed, None);
             self.pending_privileged_retry = None;
+            if let FileCommand::Delete { targets, .. } = &completed_cmd {
+                self.repair_tabs_after_deleted_targets(targets, &res.delete_nav);
+                if self.trash_panel.loaded {
+                    self.refresh_trash_panel();
+                }
+            }
             if let Some(tab_id) = res.tab_id
                 && self.state.tab_by_id(tab_id).is_some()
             {
@@ -4137,11 +4494,67 @@ impl OttrinApp {
                 refresh_tabs.dedup();
                 for refresh_tab in refresh_tabs {
                     if let Some(tab) = self.state.tab_by_id(refresh_tab) {
-                        let dir = tab.current_dir.clone();
+                        let dir = nearest_existing_dir(&tab.current_dir);
                         self.refresh_tab(refresh_tab, dir);
                     }
                 }
             }
+        }
+    }
+
+    fn repair_tabs_after_deleted_targets(&mut self, targets: &[PathBuf], nav: &[DeletePostNav]) {
+        if targets.is_empty() {
+            return;
+        }
+        for plan in nav {
+            if self.state.tab_by_id(plan.tab_id).is_some() && plan.dir.exists() {
+                let dir = nearest_existing_dir(&plan.dir);
+                if let Some(tab) = self.state.tab_by_id_mut(plan.tab_id) {
+                    tab.current_dir = dir.clone();
+                    tab.history_back.retain(|path| {
+                        path.exists() && !targets.iter().any(|target| path.starts_with(target))
+                    });
+                    tab.history_forward.retain(|path| {
+                        path.exists() && !targets.iter().any(|target| path.starts_with(target))
+                    });
+                }
+                let ui_state = self.tab_ui.entry(plan.tab_id).or_default();
+                ui_state.pending_select_path = plan.select_path.clone();
+                self.refresh_tab(plan.tab_id, dir);
+            }
+        }
+        let mut repaired_tabs: Vec<(u64, PathBuf)> = Vec::new();
+        for tab in &mut self.state.tabs {
+            if nav.iter().any(|plan| plan.tab_id == tab.id) {
+                continue;
+            }
+            let inside_deleted = targets
+                .iter()
+                .any(|target| tab.current_dir.starts_with(target));
+            if inside_deleted || !tab.current_dir.exists() {
+                let fallback = targets
+                    .iter()
+                    .find(|target| tab.current_dir.starts_with(*target))
+                    .and_then(|target| target.parent().map(Path::to_path_buf))
+                    .unwrap_or_else(|| nearest_existing_dir(&tab.current_dir));
+                let repaired = nearest_existing_dir(&fallback);
+                tab.current_dir = repaired.clone();
+                tab.history_back.retain(|path| {
+                    path.exists() && !targets.iter().any(|target| path.starts_with(target))
+                });
+                tab.history_forward.retain(|path| {
+                    path.exists() && !targets.iter().any(|target| path.starts_with(target))
+                });
+                repaired_tabs.push((tab.id, repaired));
+            }
+        }
+        for (tab_id, dir) in repaired_tabs {
+            let ui_state = self.tab_ui.entry(tab_id).or_default();
+            ui_state.pending_select_path = None;
+            ui_state
+                .selection_memory
+                .retain(|dir, selected| dir.exists() && selected.exists());
+            self.refresh_tab(tab_id, dir);
         }
     }
 
@@ -4197,6 +4610,8 @@ impl OttrinApp {
         let selected = {
             let ui = self.tab_ui.entry(tab_id).or_default();
             ui.main_sel = Some(idx);
+            ui.selected_paths.clear();
+            ui.selection_anchor = None;
             ui.main
                 .entries
                 .get(idx)
@@ -4209,6 +4624,145 @@ impl OttrinApp {
                 .selection_memory
                 .insert(dir, path);
         }
+    }
+
+    fn extend_main_selection_to(&mut self, tab_id: u64, idx: usize) {
+        let selected = {
+            let ui = self.tab_ui.entry(tab_id).or_default();
+            if ui.main.entries.is_empty() {
+                return;
+            }
+            let clamped = idx.min(ui.main.entries.len() - 1);
+            let anchor = ui
+                .selection_anchor
+                .clone()
+                .or_else(|| {
+                    ui.main_sel
+                        .and_then(|cur| ui.main.entries.get(cur))
+                        .map(|entry| entry.path.clone())
+                })
+                .unwrap_or_else(|| ui.main.entries[clamped].path.clone());
+            let anchor_idx = ui
+                .main
+                .entries
+                .iter()
+                .position(|entry| entry.path == anchor)
+                .unwrap_or(clamped);
+            let (start, end) = if anchor_idx <= clamped {
+                (anchor_idx, clamped)
+            } else {
+                (clamped, anchor_idx)
+            };
+            ui.selected_paths.clear();
+            for entry in &ui.main.entries[start..=end] {
+                ui.selected_paths.insert(entry.path.clone());
+            }
+            ui.selection_anchor = Some(anchor);
+            ui.main_sel = Some(clamped);
+            ui.main
+                .entries
+                .get(clamped)
+                .map(|entry| (ui.main.dir.clone(), entry.path.clone()))
+        };
+        if let Some((dir, path)) = selected {
+            self.tab_ui
+                .entry(tab_id)
+                .or_default()
+                .selection_memory
+                .insert(dir, path);
+        }
+    }
+
+    fn set_main_selection_from_click(
+        &mut self,
+        tab_id: u64,
+        idx: usize,
+        modifiers: egui::Modifiers,
+    ) {
+        let (dir, selected_path, previous_path) = {
+            let ui = self.tab_ui.entry(tab_id).or_default();
+            let Some(entry) = ui.main.entries.get(idx) else {
+                return;
+            };
+            let previous_path = ui
+                .main_sel
+                .and_then(|prev_idx| ui.main.entries.get(prev_idx))
+                .map(|entry| entry.path.clone());
+            (ui.main.dir.clone(), entry.path.clone(), previous_path)
+        };
+
+        let ui = self.tab_ui.entry(tab_id).or_default();
+        ui.main_sel = Some(idx);
+        if modifiers.shift {
+            let anchor_idx = ui
+                .selection_anchor
+                .as_ref()
+                .and_then(|path| ui.main.entries.iter().position(|entry| &entry.path == path))
+                .unwrap_or(idx);
+            let (start, end) = if anchor_idx <= idx {
+                (anchor_idx, idx)
+            } else {
+                (idx, anchor_idx)
+            };
+            ui.selected_paths.clear();
+            for entry in &ui.main.entries[start..=end] {
+                ui.selected_paths.insert(entry.path.clone());
+            }
+            if ui.selection_anchor.is_none() {
+                ui.selection_anchor = Some(selected_path.clone());
+            }
+        } else if modifiers.command || modifiers.ctrl {
+            if ui.selected_paths.contains(&selected_path) {
+                ui.selected_paths.remove(&selected_path);
+                if ui.selected_paths.is_empty() {
+                    ui.selection_anchor = None;
+                    ui.main_sel = None;
+                }
+            } else {
+                if ui.selected_paths.is_empty()
+                    && let Some(prev) = previous_path
+                    && prev != selected_path
+                {
+                    ui.selected_paths.insert(prev);
+                }
+                ui.selected_paths.insert(selected_path.clone());
+                ui.selection_anchor = Some(selected_path.clone());
+            }
+        } else {
+            ui.selected_paths.clear();
+            ui.selected_paths.insert(selected_path.clone());
+            ui.selection_anchor = Some(selected_path.clone());
+        }
+        ui.selection_memory.insert(dir, selected_path);
+    }
+
+    fn selected_paths_for_tab(&mut self, tab_id: u64) -> Vec<PathBuf> {
+        let ui = self.tab_ui.entry(tab_id).or_default();
+        let mut paths = if !ui.selected_paths.is_empty() {
+            ui.main
+                .entries
+                .iter()
+                .filter(|entry| ui.selected_paths.contains(&entry.path))
+                .map(|entry| entry.path.clone())
+                .collect::<Vec<_>>()
+        } else {
+            ui.main_sel
+                .and_then(|idx| ui.main.entries.get(idx))
+                .map(|entry| vec![entry.path.clone()])
+                .unwrap_or_default()
+        };
+        paths.dedup();
+        paths
+    }
+
+    fn clear_multi_selection(&mut self, tab_id: u64) -> bool {
+        let ui = self.tab_ui.entry(tab_id).or_default();
+        if ui.selected_paths.is_empty() {
+            return false;
+        }
+        ui.selected_paths.clear();
+        ui.selection_anchor = None;
+        true
     }
 
     // Column-view live anchor: update active dir without pushing history.
@@ -4233,6 +4787,8 @@ impl OttrinApp {
             .map(|t| t.current_dir.clone())
             .unwrap_or_else(default_home_dir);
         ui.main_sel = None;
+        ui.selected_paths.clear();
+        ui.selection_anchor = None;
         ui.scroll_epoch = ui.scroll_epoch.wrapping_add(1);
     }
 
@@ -4666,7 +5222,6 @@ impl OttrinApp {
             let Some(link) = self.state.link_view.as_mut() else {
                 return;
             };
-            link.normalize_legacy();
             let tab_id = link.tab_id_for_side(side);
             link.active_side = side;
             tab_id
@@ -4681,7 +5236,6 @@ impl OttrinApp {
             let Some(link) = self.state.link_view.as_mut() else {
                 return;
             };
-            link.normalize_legacy();
             if !link.contains_tab(tab_id) {
                 return;
             }
@@ -4817,7 +5371,7 @@ impl OttrinApp {
         }
     }
 
-    fn select_next_entry(&mut self) {
+    fn select_next_entry(&mut self, extend: bool) {
         let tab_id = self.state.active_tab().id;
         let (len, cur_sel) = {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
@@ -4830,11 +5384,15 @@ impl OttrinApp {
             None => 0,
             Some(i) => (i + 1).min(len - 1),
         };
-        self.set_main_selection(tab_id, next);
+        if extend {
+            self.extend_main_selection_to(tab_id, next);
+        } else {
+            self.set_main_selection(tab_id, next);
+        }
         self.load_miller_right(tab_id);
     }
 
-    fn select_prev_entry(&mut self) {
+    fn select_prev_entry(&mut self, extend: bool) {
         let tab_id = self.state.active_tab().id;
         let (len, cur_sel) = {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
@@ -4848,11 +5406,15 @@ impl OttrinApp {
             Some(0) => 0,
             Some(i) => i - 1,
         };
-        self.set_main_selection(tab_id, prev);
+        if extend {
+            self.extend_main_selection_to(tab_id, prev);
+        } else {
+            self.set_main_selection(tab_id, prev);
+        }
         self.load_miller_right(tab_id);
     }
 
-    fn grid_move(&mut self, delta: isize) {
+    fn grid_move(&mut self, delta: isize, extend: bool) {
         let tab_id = self.state.active_tab().id;
         let (len, cur_sel) = {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
@@ -4863,8 +5425,71 @@ impl OttrinApp {
         }
         let cur = cur_sel.unwrap_or(0) as isize;
         let next = (cur + delta).clamp(0, len as isize - 1) as usize;
-        self.set_main_selection(tab_id, next);
+        if extend {
+            self.extend_main_selection_to(tab_id, next);
+        } else {
+            self.set_main_selection(tab_id, next);
+        }
         self.load_miller_right(tab_id);
+    }
+
+    fn select_adjacent_preview_item(&mut self, delta: isize) -> bool {
+        let Some(current_path) = self.preview.path.clone() else {
+            return false;
+        };
+        let tab_id = self.state.active_tab().id;
+        let view_mode = self
+            .state
+            .tab_by_id(tab_id)
+            .map(|tab| tab.view_mode)
+            .unwrap_or(ViewMode::Miller);
+
+        if matches!(view_mode, ViewMode::Miller) {
+            let (cols, current_col) = self.build_miller_model(tab_id, self.miller_col_count);
+            for (col_idx, col) in cols.iter().enumerate() {
+                if let Some(current_idx) = col
+                    .entries
+                    .iter()
+                    .position(|entry| entry.path == current_path)
+                    && let Some(next_idx) = adjacent_preview_index(&col.entries, current_idx, delta)
+                {
+                    self.set_miller_selection(
+                        tab_id,
+                        &col.dir,
+                        &col.entries,
+                        next_idx,
+                        col_idx == current_col,
+                    );
+                    let ui_state = self.tab_ui.entry(tab_id).or_default();
+                    ui_state.miller_focus_dir = Some(col.dir.clone());
+                    ui_state.miller_focus_hint = None;
+                    ui_state.miller_scroll_selected = true;
+                    if col_idx == current_col {
+                        ui_state.selected_paths.clear();
+                        ui_state.selection_anchor = None;
+                    }
+                    self.sync_preview_to_selection();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        let maybe_next = {
+            let ui_state = self.tab_ui.entry(tab_id).or_default();
+            ui_state
+                .main
+                .entries
+                .iter()
+                .position(|entry| entry.path == current_path)
+                .and_then(|idx| adjacent_preview_index(&ui_state.main.entries, idx, delta))
+        };
+        if let Some(next_idx) = maybe_next {
+            self.set_main_selection(tab_id, next_idx);
+            self.sync_preview_to_selection();
+            return true;
+        }
+        false
     }
 
     fn enter_selected(&mut self) {
@@ -5033,6 +5658,7 @@ impl OttrinApp {
             let is_miller = matches!(view, ViewMode::Miller);
             let tab_id = self.state.active_tab().id;
             let ctrl = input.modifiers.ctrl || input.modifiers.command;
+            let extend_selection = input.modifiers.shift;
 
             if ctrl && input.key_pressed(Key::F) {
                 self.sidebar = SidebarSection::Search;
@@ -5041,6 +5667,10 @@ impl OttrinApp {
                 self.command_frame.error = None;
                 self.command_frame.message = None;
                 self.search_ui.scroll_to_selected = true;
+            }
+            if ctrl && input.key_pressed(Key::Z) && !self.command_frame.visible {
+                self.sidebar = SidebarSection::Activity;
+                self.set_status_message("Activity history opened", true, 3);
             }
 
             // ── Navigation ──────────────────────────────────────────────────
@@ -5056,13 +5686,20 @@ impl OttrinApp {
                                 None => 0,
                                 Some(i) => (i + 1).min(col.entries.len() - 1),
                             };
-                            self.set_miller_selection(
-                                tab_id,
-                                &col.dir,
-                                &col.entries,
-                                next,
-                                focus_col == current_col,
-                            );
+                            if extend_selection && focus_col == current_col {
+                                self.extend_main_selection_to(tab_id, next);
+                            } else {
+                                self.set_miller_selection(
+                                    tab_id,
+                                    &col.dir,
+                                    &col.entries,
+                                    next,
+                                    focus_col == current_col,
+                                );
+                                if focus_col == current_col {
+                                    self.clear_multi_selection(tab_id);
+                                }
+                            }
                             let ui_state = self.tab_ui.entry(tab_id).or_default();
                             ui_state.miller_scroll_selected = true;
                             ui_state.miller_preview_depth = 1;
@@ -5072,9 +5709,9 @@ impl OttrinApp {
                         }
                     }
                 } else if is_grid {
-                    self.grid_move(self.last_grid_cols as isize);
+                    self.grid_move(self.last_grid_cols as isize, extend_selection);
                 } else {
-                    self.select_next_entry();
+                    self.select_next_entry(extend_selection);
                 }
             }
             if input.key_pressed(Key::ArrowUp) && !self.command_frame.visible {
@@ -5090,13 +5727,20 @@ impl OttrinApp {
                                 Some(0) => 0,
                                 Some(i) => i - 1,
                             };
-                            self.set_miller_selection(
-                                tab_id,
-                                &col.dir,
-                                &col.entries,
-                                prev,
-                                focus_col == current_col,
-                            );
+                            if extend_selection && focus_col == current_col {
+                                self.extend_main_selection_to(tab_id, prev);
+                            } else {
+                                self.set_miller_selection(
+                                    tab_id,
+                                    &col.dir,
+                                    &col.entries,
+                                    prev,
+                                    focus_col == current_col,
+                                );
+                                if focus_col == current_col {
+                                    self.clear_multi_selection(tab_id);
+                                }
+                            }
                             let ui_state = self.tab_ui.entry(tab_id).or_default();
                             ui_state.miller_scroll_selected = true;
                             ui_state.miller_preview_depth = 1;
@@ -5106,9 +5750,9 @@ impl OttrinApp {
                         }
                     }
                 } else if is_grid {
-                    self.grid_move(-(self.last_grid_cols as isize));
+                    self.grid_move(-(self.last_grid_cols as isize), extend_selection);
                 } else {
-                    self.select_prev_entry();
+                    self.select_prev_entry(extend_selection);
                 }
             }
             if input.key_pressed(Key::ArrowRight) && !self.command_frame.visible {
@@ -5181,7 +5825,7 @@ impl OttrinApp {
                         }
                     }
                 } else if is_grid {
-                    self.grid_move(1);
+                    self.grid_move(1, extend_selection);
                 } else {
                     self.enter_selected_folder_miller();
                 }
@@ -5223,7 +5867,7 @@ impl OttrinApp {
                         }
                     }
                 } else if is_grid {
-                    self.grid_move(-1);
+                    self.grid_move(-1, extend_selection);
                 } else {
                     self.navigate_active_up();
                 }
@@ -5267,8 +5911,9 @@ impl OttrinApp {
             if ctrl && input.key_pressed(Key::T) {
                 let home = default_home_dir();
                 let idx = self.state.new_tab(home.clone());
+                let tab_id = self.state.tabs[idx].id;
                 self.focus_tab_idx(idx);
-                self.refresh_tab(self.state.tabs.last().unwrap().id, home);
+                self.refresh_tab(tab_id, home);
             }
             if ctrl && input.key_pressed(Key::W) {
                 let idx = self.state.active_tab_idx;
@@ -5293,6 +5938,7 @@ impl OttrinApp {
 
             // ── Preview ───────────────────────────────────────────────────────
             if input.key_pressed(Key::Escape) {
+                let cleared_selection = self.clear_multi_selection(tab_id);
                 if self.sidebar == SidebarSection::Search {
                     self.sidebar = SidebarSection::None;
                     self.search_ui.request_focus = false;
@@ -5301,8 +5947,10 @@ impl OttrinApp {
                         Some(MillerFocusHint::CurrentDir);
                 }
                 self.preview.visible = false;
-                self.command_frame.visible = false;
-                self.command_frame.error = None;
+                if !cleared_selection {
+                    self.command_frame.visible = false;
+                    self.command_frame.error = None;
+                }
                 for bar in self.address_bars.values_mut() {
                     bar.editing = false;
                     bar.tab_id = None;
@@ -5358,9 +6006,9 @@ impl OttrinApp {
             }
             if input.key_pressed(Key::Delete) && !self.command_frame.visible {
                 if input.modifiers.shift {
-                    self.delete_selection(DeleteMode::Permanent);
+                    self.request_delete_selection(DeleteMode::Permanent);
                 } else {
-                    self.delete_selection(DeleteMode::Trash);
+                    self.request_delete_selection(DeleteMode::Trash);
                 }
             }
 
@@ -5376,6 +6024,7 @@ impl OttrinApp {
                 && !self.any_address_bar_editing()
                 && self.sidebar != SidebarSection::Search
                 && !self.show_settings
+                && self.pending_delete.is_none()
             {
                 for event in &input.events {
                     if let egui::Event::Text(text) = event {
@@ -5392,6 +6041,64 @@ impl OttrinApp {
                 }
             }
         });
+    }
+
+    fn handle_delete_confirmation_keyboard(&mut self, ctx: &Context) {
+        let Some(mut pending) = self.pending_delete.clone() else {
+            return;
+        };
+        let action = ctx.input_mut(|input| {
+            if input.consume_key(egui::Modifiers::NONE, Key::Escape) {
+                return Some(DeleteChoice::Cancel);
+            }
+            if input.consume_key(egui::Modifiers::NONE, Key::ArrowUp) {
+                pending.selected = match pending.selected {
+                    DeleteChoice::MoveToTrash => DeleteChoice::DeletePermanently,
+                    DeleteChoice::Cancel => DeleteChoice::MoveToTrash,
+                    DeleteChoice::DeletePermanently => DeleteChoice::Cancel,
+                };
+                self.pending_delete = Some(pending.clone());
+                return None;
+            }
+            if input.consume_key(egui::Modifiers::NONE, Key::ArrowDown) {
+                pending.selected = match pending.selected {
+                    DeleteChoice::MoveToTrash => DeleteChoice::Cancel,
+                    DeleteChoice::Cancel => DeleteChoice::DeletePermanently,
+                    DeleteChoice::DeletePermanently => DeleteChoice::MoveToTrash,
+                };
+                self.pending_delete = Some(pending.clone());
+                return None;
+            }
+            if input.consume_key(egui::Modifiers::NONE, Key::Enter) {
+                return Some(pending.selected);
+            }
+            None
+        });
+
+        if let Some(choice) = action {
+            self.activate_delete_choice(choice);
+        }
+    }
+
+    fn handle_empty_trash_confirmation_keyboard(&mut self, ctx: &Context) {
+        if !self.pending_empty_trash {
+            return;
+        }
+        let action = ctx.input_mut(|input| {
+            if input.consume_key(egui::Modifiers::NONE, Key::Escape) {
+                return Some(false);
+            }
+            if !self.trash_panel.emptying && input.consume_key(egui::Modifiers::NONE, Key::Enter) {
+                return Some(true);
+            }
+            None
+        });
+        if let Some(confirm) = action {
+            self.pending_empty_trash = false;
+            if confirm {
+                self.empty_trash_now();
+            }
+        }
     }
 
     fn dismiss_command_frame_if_inactive(&mut self, ctx: &Context) {
@@ -5433,11 +6140,77 @@ impl OttrinApp {
             let path = entry.path.clone();
             self.preview.path = Some(path.clone());
             self.preview.visible = true;
+            self.preview.image_actual_size = false;
             self.preview.data = Some(load_preview(&PreviewRequest {
                 path,
                 kind_hint: entry.kind,
             }));
         }
+    }
+
+    fn sync_preview_to_selection(&mut self) {
+        if !self.preview.visible {
+            return;
+        }
+        let Some(entry) = self.active_selected_entry() else {
+            return;
+        };
+        if self.preview.path.as_ref() == Some(&entry.path) {
+            return;
+        }
+        let path = entry.path.clone();
+        self.preview.path = Some(path.clone());
+        self.preview.image_actual_size = false;
+        self.preview.data = Some(load_preview(&PreviewRequest {
+            path,
+            kind_hint: entry.kind,
+        }));
+    }
+
+    fn handle_preview_key_action(&mut self, action: PreviewKeyAction) {
+        match action {
+            PreviewKeyAction::PrevItem => {
+                if !self.select_adjacent_preview_item(-1) {
+                    self.set_status_message("No previous previewable item", false, 2);
+                }
+            }
+            PreviewKeyAction::NextItem => {
+                if !self.select_adjacent_preview_item(1) {
+                    self.set_status_message("No next previewable item", false, 2);
+                }
+            }
+            PreviewKeyAction::Delete => {
+                if let Some(path) = self.preview.path.clone() {
+                    let tab_id = self.state.active_tab().id;
+                    self.request_delete_paths(tab_id, vec![path], DeleteMode::Trash);
+                }
+            }
+            PreviewKeyAction::Copy => self.copy_preview_path(false),
+            PreviewKeyAction::Cut => self.copy_preview_path(true),
+            PreviewKeyAction::Rename => self.begin_rename(),
+            PreviewKeyAction::CommandFrame => self.open_command_frame_with(""),
+        }
+    }
+
+    fn copy_preview_path(&mut self, cut: bool) {
+        if let Some(path) = self.preview.path.clone() {
+            self.clipboard = Some(Clipboard {
+                sources: vec![path],
+                cut,
+            });
+            self.set_status_message(if cut { "Cut 1 item" } else { "Copied 1 item" }, true, 3);
+        } else {
+            self.copy_selection(cut);
+        }
+    }
+
+    fn open_command_frame_with(&mut self, text: &str) {
+        self.command_frame.input = text.to_string();
+        self.command_frame.visible = true;
+        self.command_frame.request_focus = true;
+        self.command_frame.error = None;
+        self.command_frame.message = None;
+        self.command_frame.completions.clear();
     }
 
     fn ensure_search_started(&mut self) {
@@ -5604,8 +6377,7 @@ impl OttrinApp {
     }
 
     fn current_tandem_view(&self) -> Option<ottrin_core::LinkView> {
-        let mut link = self.state.link_view.clone()?;
-        link.normalize_legacy();
+        let link = self.state.link_view.clone()?;
         if link.left_tab_id == link.right_tab_id {
             return None;
         }
@@ -5728,14 +6500,23 @@ impl OttrinApp {
 
     fn copy_selection(&mut self, cut: bool) {
         let tab_id = self.state.active_tab().id;
-        let ui = self.tab_ui.entry(tab_id).or_default();
-        if let Some(idx) = ui.main_sel
-            && let Some(entry) = ui.main.entries.get(idx)
-        {
-            self.clipboard = Some(Clipboard {
-                sources: vec![entry.path.clone()],
-                cut,
-            });
+        let sources = self.selected_paths_for_tab(tab_id);
+        if !sources.is_empty() {
+            self.clipboard = Some(Clipboard { sources, cut });
+            let count = self
+                .clipboard
+                .as_ref()
+                .map(|c| c.sources.len())
+                .unwrap_or(0);
+            self.set_status_message(
+                if cut {
+                    format!("Cut {count} item{}", plural_s(count))
+                } else {
+                    format!("Copied {count} item{}", plural_s(count))
+                },
+                true,
+                3,
+            );
         }
     }
 
@@ -5763,44 +6544,171 @@ impl OttrinApp {
         }
     }
 
-    fn delete_selection(&mut self, mode: DeleteMode) {
+    fn request_delete_selection(&mut self, mode: DeleteMode) {
         let tab_id = self.state.active_tab().id;
-        let targets: Vec<PathBuf> = {
-            let ui = self.tab_ui.entry(tab_id).or_default();
-            ui.main_sel
-                .and_then(|i| ui.main.entries.get(i))
-                .map(|e| vec![e.path.clone()])
-                .unwrap_or_default()
-        };
+        let targets = self.selected_paths_for_tab(tab_id);
         if targets.is_empty() {
             return;
         }
+        self.request_delete_paths(tab_id, targets, mode);
+    }
+
+    fn request_delete_paths(&mut self, tab_id: u64, targets: Vec<PathBuf>, mode: DeleteMode) {
+        self.pending_delete = Some(PendingDelete {
+            tab_id,
+            targets,
+            requested_mode: mode,
+            selected: if matches!(mode, DeleteMode::Permanent) {
+                DeleteChoice::DeletePermanently
+            } else {
+                DeleteChoice::MoveToTrash
+            },
+        });
+    }
+
+    fn execute_delete(&mut self, pending: PendingDelete, mode: DeleteMode) {
+        let targets = pending.targets.clone();
+        let delete_nav = self.delete_post_nav_for(pending.tab_id, &targets);
         let cmd = FileCommand::Delete { targets, mode };
-        self.run_file_op(cmd, Some(tab_id));
+        self.run_file_op_with_delete_nav(cmd, Some(pending.tab_id), delete_nav);
+    }
+
+    fn activate_delete_choice(&mut self, choice: DeleteChoice) {
+        let Some(pending) = self.pending_delete.take() else {
+            return;
+        };
+        match choice {
+            DeleteChoice::MoveToTrash => self.execute_delete(pending, DeleteMode::Trash),
+            DeleteChoice::Cancel => {}
+            DeleteChoice::DeletePermanently => {
+                self.execute_delete(pending, DeleteMode::Permanent);
+            }
+        }
+    }
+
+    fn delete_post_nav_for(&self, tab_id: u64, targets: &[PathBuf]) -> Vec<DeletePostNav> {
+        let mut plans = Vec::new();
+        for tab in &self.state.tabs {
+            let directly_requested_tab = tab.id == tab_id;
+            let inside_deleted = targets
+                .iter()
+                .any(|target| tab.current_dir.starts_with(target));
+            if !directly_requested_tab && !inside_deleted {
+                continue;
+            }
+            let Some(target) = targets.iter().find(|target| {
+                tab.current_dir.starts_with(*target)
+                    || target.parent() == Some(tab.current_dir.as_path())
+            }) else {
+                continue;
+            };
+            let parent = target.parent().map(Path::to_path_buf);
+            if target.parent() == Some(tab.current_dir.as_path()) {
+                plans.push(DeletePostNav {
+                    tab_id: tab.id,
+                    dir: tab.current_dir.clone(),
+                    select_path: self.sibling_after_delete_for(tab.id, target),
+                });
+            } else if inside_deleted {
+                plans.push(DeletePostNav {
+                    tab_id: tab.id,
+                    dir: parent.unwrap_or_else(default_home_dir),
+                    select_path: self.sibling_after_delete_for(tab.id, target),
+                });
+            }
+        }
+        plans
+    }
+
+    fn sibling_after_delete_for(&self, tab_id: u64, target: &Path) -> Option<PathBuf> {
+        let parent = target.parent()?;
+        if let Some(ui_state) = self.tab_ui.get(&tab_id)
+            && ui_state.main.dir == parent
+        {
+            return sibling_from_entries(&ui_state.main.entries, target);
+        }
+        let mut entries = std::fs::read_dir(parent)
+            .ok()?
+            .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+            .collect::<Vec<_>>();
+        entries.sort_by(|a, b| {
+            a.file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("")
+                .to_lowercase()
+                .cmp(
+                    &b.file_name()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or("")
+                        .to_lowercase(),
+                )
+        });
+        let idx = entries.iter().position(|path| path == target)?;
+        if idx > 0 {
+            entries.get(idx - 1).cloned()
+        } else {
+            entries.get(idx + 1).cloned()
+        }
     }
 
     fn select_all(&mut self) {
-        // For now just select last item (multi-select is Phase 2)
         let tab_id = self.state.active_tab().id;
-        let len = self.tab_ui.entry(tab_id).or_default().main.entries.len();
-        if len > 0 {
-            self.set_main_selection(tab_id, len - 1);
+        let count = {
+            let ui = self.tab_ui.entry(tab_id).or_default();
+            ui.selected_paths = ui
+                .main
+                .entries
+                .iter()
+                .map(|entry| entry.path.clone())
+                .collect();
+            if ui.main.entries.is_empty() {
+                0
+            } else {
+                ui.main_sel = Some(0);
+                ui.selection_anchor = ui.main.entries.first().map(|entry| entry.path.clone());
+                ui.selected_paths.len()
+            }
+        };
+        if count > 0 {
+            self.set_status_message(format!("Selected {count} item{}", plural_s(count)), true, 3);
         }
     }
 
     fn begin_rename(&mut self) {
         let tab_id = self.state.active_tab().id;
-        let ui = self.tab_ui.entry(tab_id).or_default();
-        if let Some(idx) = ui.main_sel
-            && let Some(entry) = ui.main.entries.get(idx)
-        {
-            self.command_frame.input = format!("mv {} ", entry.name);
-            self.command_frame.visible = true;
-            self.command_frame.request_focus = true;
+        if let Some(entry) = self.active_selected_entry_for(tab_id) {
+            self.begin_rename_path(tab_id, entry.path);
         }
     }
 
+    fn begin_rename_path(&mut self, tab_id: u64, source: PathBuf) {
+        let name_input = source
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("")
+            .to_string();
+        if name_input.is_empty() {
+            return;
+        }
+        self.pending_rename = Some(PendingRename {
+            tab_id,
+            source,
+            name_input,
+            request_focus: true,
+        });
+    }
+
     fn run_file_op(&mut self, cmd: FileCommand, refresh_tab: Option<u64>) {
+        self.run_file_op_with_delete_nav(cmd, refresh_tab, Vec::new());
+    }
+
+    fn run_file_op_with_delete_nav(
+        &mut self,
+        cmd: FileCommand,
+        refresh_tab: Option<u64>,
+        delete_nav: Vec<DeletePostNav>,
+    ) {
+        let op_id = self.queue_operation_record(cmd.clone());
         let platform = Arc::clone(&self.platform);
         let op_tx = self.op_tx.clone();
         let retry_cmd = cmd.clone();
@@ -5818,11 +6726,62 @@ impl OttrinApp {
                 }
             };
             let _ = op_tx.send(OpResult {
+                op_id,
                 tab_id: refresh_tab,
+                cmd,
+                delete_nav,
                 error,
                 retry_cmd: retry,
             });
         });
+    }
+
+    fn queue_operation_record(&mut self, cmd: FileCommand) -> u64 {
+        self.queue_activity_record_with_recoverability(
+            operation_title(&cmd),
+            operation_detail(&cmd),
+            operation_recoverability(&cmd),
+        )
+    }
+
+    fn queue_activity_record_with_recoverability(
+        &mut self,
+        title: impl Into<String>,
+        detail: impl Into<String>,
+        recoverability: OperationRecoverability,
+    ) -> u64 {
+        let id = self.next_id();
+        self.operation_history.push_front(OperationRecord {
+            id,
+            title: title.into(),
+            detail: detail.into(),
+            status: OperationStatus::Queued,
+            recoverability,
+            queued_at: Instant::now(),
+            finished_at: None,
+            message: None,
+        });
+        while self.operation_history.len() > 100 {
+            self.operation_history.pop_back();
+        }
+        id
+    }
+
+    fn finish_operation_record(
+        &mut self,
+        op_id: u64,
+        status: OperationStatus,
+        message: Option<String>,
+    ) {
+        if let Some(record) = self
+            .operation_history
+            .iter_mut()
+            .find(|record| record.id == op_id)
+        {
+            record.status = status;
+            record.finished_at = Some(Instant::now());
+            record.message = message;
+        }
     }
 
     fn retry_file_op_with_privileges(
@@ -5835,6 +6794,7 @@ impl OttrinApp {
             text: "Requesting administrator access…".to_string(),
             since: Instant::now(),
         });
+        let repair_cmd = cmd.clone();
         let req = PrivilegedRequest {
             command: PrivilegedCommand::File(cmd),
             context: PrivilegedContext {
@@ -5848,9 +6808,12 @@ impl OttrinApp {
             .map_err(|e| e.to_string())?;
         match res.status {
             PrivilegedStatus::Success => {
+                if let FileCommand::Delete { targets, .. } = &repair_cmd {
+                    self.repair_tabs_after_deleted_targets(targets, &[]);
+                }
                 if let Some(tab_id) = refresh_tab {
                     if let Some(tab) = self.state.tab_by_id(tab_id) {
-                        self.refresh_tab(tab_id, tab.current_dir.clone());
+                        self.refresh_tab(tab_id, nearest_existing_dir(&tab.current_dir));
                     }
                 } else {
                     self.refresh_active_tab();
@@ -5899,6 +6862,8 @@ impl OttrinApp {
     }
 
     fn run_search_query(&mut self) {
+        self.search_ui.pending_query_since = None;
+        self.search_ui.last_executed_query = self.search_ui.query.clone();
         self.ensure_search_started();
         let previously_selected_path = self
             .search_ui
@@ -5913,6 +6878,7 @@ impl OttrinApp {
             self.search_ui.last_error = None;
             self.search_ui.last_query_root = root;
             self.search_ui.scroll_to_selected = false;
+            self.search_ui.search_inflight = false;
             return;
         }
         let q = SearchQuery {
@@ -5925,24 +6891,58 @@ impl OttrinApp {
             offset: 0,
             content_search: self.search_ui.content_search,
         };
-        let resp = self.search_service.query(q);
-        self.search_ui.last_query_root = root;
-        self.search_ui.last_error = resp.error;
-        if self.search_ui.last_error.is_none() {
-            self.search_ui.results = resp.items;
-            self.search_ui.total = resp.total;
-            let new_selected = previously_selected_path
-                .and_then(|path| self.search_ui.results.iter().position(|it| it.path == path))
-                .or(if self.search_ui.results.is_empty() {
-                    None
-                } else {
-                    Some(0)
-                });
-            if new_selected != self.search_ui.selected {
-                self.search_ui.result_preview = None;
+        let request_id = self.next_request_id;
+        self.next_request_id = self.next_request_id.saturating_add(1);
+        self.search_ui.latest_request_id = request_id;
+        self.search_ui.search_inflight = true;
+        let service = self.search_service.clone();
+        let tx = self.search_result_tx.clone();
+        let response_root = root.clone();
+        std::thread::spawn(move || {
+            let response = service.query(q.clone());
+            let _ = tx.send(SearchQueryResponse {
+                request_id,
+                query: q,
+                root: response_root,
+                previously_selected_path,
+                response,
+            });
+        });
+    }
+
+    fn poll_search_results(&mut self) {
+        while let Ok(result) = self.search_result_rx.try_recv() {
+            if result.request_id != self.search_ui.latest_request_id {
+                continue;
             }
-            self.search_ui.selected = new_selected;
-            self.search_ui.scroll_to_selected = true;
+            self.search_ui.search_inflight = false;
+            if result.query.text != self.search_ui.query
+                || result.query.scope != self.search_ui.scope
+                || result.query.sort != self.search_ui.sort
+                || result.query.include_hidden_system != self.search_ui.include_hidden
+                || result.query.content_search != self.search_ui.content_search
+            {
+                continue;
+            }
+            self.search_ui.last_query_root = result.root;
+            self.search_ui.last_error = result.response.error;
+            if self.search_ui.last_error.is_none() {
+                self.search_ui.results = result.response.items;
+                self.search_ui.total = result.response.total;
+                let new_selected = result
+                    .previously_selected_path
+                    .and_then(|path| self.search_ui.results.iter().position(|it| it.path == path))
+                    .or(if self.search_ui.results.is_empty() {
+                        None
+                    } else {
+                        Some(0)
+                    });
+                if new_selected != self.search_ui.selected {
+                    self.search_ui.result_preview = None;
+                }
+                self.search_ui.selected = new_selected;
+                self.search_ui.scroll_to_selected = true;
+            }
         }
     }
 
@@ -6561,8 +7561,8 @@ impl OttrinApp {
                     if new_tab_requested {
                         let home = default_home_dir();
                         let idx = self.state.new_tab(home.clone());
+                        let new_id = self.state.tabs[idx].id;
                         self.focus_tab_idx(idx);
-                        let new_id = self.state.tabs.last().unwrap().id;
                         self.refresh_tab(new_id, home);
                     }
 
@@ -6618,6 +7618,148 @@ impl OttrinApp {
         }
     }
 
+    fn render_view_options_menu(&mut self, ui: &mut egui::Ui, tab_id: u64, popup_id: egui::Id) {
+        let c = self.colors;
+        let view_mode = self
+            .state
+            .tab_by_id(tab_id)
+            .map(|tab| tab.view_mode)
+            .unwrap_or(ViewMode::Miller);
+        let sort = self
+            .state
+            .tab_by_id(tab_id)
+            .map(|tab| tab.sort)
+            .unwrap_or_default();
+        let current_dir = self
+            .state
+            .tab_by_id(tab_id)
+            .map(|tab| tab.current_dir.clone())
+            .unwrap_or_else(default_home_dir);
+
+        ui.set_min_width(224.0);
+        ui.style_mut().spacing.item_spacing.y = 1.0;
+        ui.visuals_mut().override_text_color = Some(c.text_muted);
+        ui.label(RichText::new("View Mode").size(11.5).color(c.text_dim));
+        for (mode, label, icon) in [
+            (ViewMode::Miller, "Column view", MI_VIEW_COLUMN),
+            (ViewMode::List, "List view", MI_VIEW_LIST),
+            (ViewMode::Grid, "Grid view", MI_APPS),
+        ] {
+            let selected = view_mode == mode;
+            let check = if selected { MI_CHECK } else { " " };
+            if menu_item(ui, check, &format!("{icon}  {label}"), &c).clicked() {
+                self.set_tab_view_mode(tab_id, mode);
+                egui::Popup::close_id(ui.ctx(), popup_id);
+            }
+        }
+
+        ui.add(egui::Separator::default().horizontal().spacing(4.0));
+        match view_mode {
+            ViewMode::Miller => {
+                ui.add_enabled(
+                    false,
+                    egui::Button::new(
+                        RichText::new(format!(
+                            "{MI_IMAGE}  Miller preview column handles previews"
+                        ))
+                        .size(12.5)
+                        .color(c.text_dim),
+                    )
+                    .frame(false)
+                    .min_size(Vec2::new(204.0, 26.0)),
+                );
+            }
+            ViewMode::List => {
+                let on = self.thumbnails_enabled_for(ViewMode::List, &current_dir);
+                let check = if on { MI_CHECK } else { " " };
+                if menu_item(ui, check, "Show thumbnails in this folder", &c).clicked() {
+                    self.set_folder_thumbnails(ViewMode::List, &current_dir, !on);
+                }
+            }
+            ViewMode::Grid => {
+                let on = self.thumbnails_enabled_for(ViewMode::Grid, &current_dir);
+                let check = if on { MI_CHECK } else { " " };
+                if menu_item(ui, check, "Show thumbnails in this folder", &c).clicked() {
+                    self.set_folder_thumbnails(ViewMode::Grid, &current_dir, !on);
+                }
+            }
+        }
+
+        let hidden_on = self.state.config.show_hidden_files;
+        let hidden_check = if hidden_on { MI_CHECK } else { " " };
+        if menu_item(ui, hidden_check, "Show hidden files", &c).clicked() {
+            self.state.config.show_hidden_files = !hidden_on;
+            if let Some(dir) = self.state.tab_by_id(tab_id).map(|t| t.current_dir.clone()) {
+                self.refresh_tab(tab_id, dir);
+            }
+        }
+
+        ui.add(egui::Separator::default().horizontal().spacing(4.0));
+        ui.label(RichText::new("Sort").size(11.5).color(c.text_dim));
+        for (sort_by, label) in [
+            (SortBy::Name, "Name"),
+            (SortBy::Kind, "Type"),
+            (SortBy::Size, "Size"),
+            (SortBy::Modified, "Modified"),
+        ] {
+            let selected = sort.by == sort_by;
+            let check = if selected { MI_CHECK } else { " " };
+            if menu_item(ui, check, label, &c).clicked() {
+                let dir = self.state.tab_by_id(tab_id).map(|t| t.current_dir.clone());
+                if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
+                    tab.sort.by = sort_by;
+                    tab.sort.ascending = default_sort_direction(sort_by);
+                }
+                if let Some(dir) = dir {
+                    self.refresh_tab(tab_id, dir);
+                }
+            }
+        }
+        if sort_supports_direction(sort.by) {
+            let label = if sort.ascending {
+                "Ascending"
+            } else {
+                "Descending"
+            };
+            if menu_item(ui, MI_SETTINGS_BACKUP_RESTORE, label, &c).clicked() {
+                let dir = self.state.tab_by_id(tab_id).map(|t| t.current_dir.clone());
+                if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
+                    tab.sort.ascending = !tab.sort.ascending;
+                }
+                if let Some(dir) = dir {
+                    self.refresh_tab(tab_id, dir);
+                }
+            }
+        }
+
+        if matches!(view_mode, ViewMode::List) {
+            ui.add(egui::Separator::default().horizontal().spacing(4.0));
+            ui.label(RichText::new("List Columns").size(11.5).color(c.text_dim));
+            for (col, label) in [
+                (ListColumn::Kind, "Type"),
+                (ListColumn::Size, "Size"),
+                (ListColumn::Modified, "Modified"),
+            ] {
+                let on = self.state.config.list_columns.contains(&col);
+                let check = if on { MI_CHECK } else { " " };
+                if menu_item(ui, check, label, &c).clicked() {
+                    if on {
+                        self.state.config.list_columns.retain(|c| c != &col);
+                    } else {
+                        self.state.config.list_columns.push(col);
+                    }
+                }
+            }
+        }
+
+        ui.add(egui::Separator::default().horizontal().spacing(4.0));
+        if menu_item(ui, MI_SETTINGS, "Global View Settings…", &c).clicked() {
+            self.settings_tab = SettingsTab::General;
+            self.show_settings = true;
+            egui::Popup::close_id(ui.ctx(), popup_id);
+        }
+    }
+
     /// Row 2: back/forward/up navigation, address bar, view toggle, theme toggle.
     fn render_nav_row(&mut self, ctx: &Context) {
         let c = self.colors;
@@ -6661,7 +7803,11 @@ impl OttrinApp {
                             .frame(false)
                             .min_size(Vec2::splat(30.0)),
                         )
-                        .on_hover_text("Back")
+                        .on_hover_text(if can_back {
+                            "Back to previous folder in this tab (Alt+Left)"
+                        } else {
+                            "Back history is empty. Open another folder in this tab first."
+                        })
                         .clicked()
                     {
                         self.navigate_active_back();
@@ -6675,7 +7821,11 @@ impl OttrinApp {
                             .frame(false)
                             .min_size(Vec2::splat(30.0)),
                         )
-                        .on_hover_text("Forward")
+                        .on_hover_text(if can_fwd {
+                            "Forward to next folder in this tab (Alt+Right)"
+                        } else {
+                            "Forward history is empty. Use Back first to create forward history."
+                        })
                         .clicked()
                     {
                         self.navigate_active_forward();
@@ -6687,7 +7837,7 @@ impl OttrinApp {
                                 .frame(false)
                                 .min_size(Vec2::splat(30.0)),
                         )
-                        .on_hover_text("Parent folder")
+                        .on_hover_text("Go to parent folder (Alt+Up)")
                         .clicked()
                     {
                         self.navigate_active_up();
@@ -6820,8 +7970,34 @@ impl OttrinApp {
                                 ViewMode::List => ViewMode::Grid,
                                 ViewMode::Grid => ViewMode::Miller,
                             };
-                            self.state.active_tab_mut().view_mode = next;
+                            self.set_tab_view_mode(active_tab_id, next);
                         }
+
+                        let view_options_popup_id = ui.make_persistent_id("view_options_menu");
+                        let view_options_btn = ui
+                            .add(
+                                egui::Button::new(
+                                    RichText::new(MI_DASHBOARD_CUSTOMIZE)
+                                        .size(19.0)
+                                        .color(c.text_muted),
+                                )
+                                .frame(false)
+                                .min_size(Vec2::splat(30.0)),
+                            )
+                            .on_hover_text("View Options");
+                        if view_options_btn.hovered() {
+                            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+                        }
+                        egui::Popup::menu(&view_options_btn)
+                            .id(view_options_popup_id)
+                            .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
+                            .show(|ui| {
+                                self.render_view_options_menu(
+                                    ui,
+                                    active_tab_id,
+                                    view_options_popup_id,
+                                );
+                            });
                         ui.add_space(6.0);
 
                         // Address bar fills the remaining width (leave 20px gap on left)
@@ -6880,11 +8056,6 @@ impl OttrinApp {
                     .inner_margin(egui::Margin::symmetric(8, 0)),
             )
             .show(ctx, |ui| {
-                ui.painter().hline(
-                    ui.max_rect().x_range(),
-                    ui.max_rect().bottom(),
-                    Stroke::new(1.0, mix_color(c.border, c.toolbar_bg, 0.5)),
-                );
                 ui.spacing_mut().item_spacing.x = 3.0;
                 ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                     let bookmarks = self.state.config.bookmarks.clone();
@@ -6913,16 +8084,8 @@ impl OttrinApp {
                         }
                         resp.context_menu(|ui| {
                             ui.visuals_mut().override_text_color = Some(c.text_muted);
-                            ui.set_min_width(160.0);
-                            if ui
-                                .add(
-                                    egui::Button::new(
-                                        RichText::new(format!("{} Remove \"{}\"", MI_CLEAR, name))
-                                            .size(13.0),
-                                    )
-                                    .frame(false)
-                                    .min_size(Vec2::new(160.0, 28.0)),
-                                )
+                            ui.set_min_width(188.0);
+                            if menu_item(ui, MI_CLEAR, &format!("Remove \"{}\"", name), &c)
                                 .clicked()
                             {
                                 remove_idx = Some(idx);
@@ -7083,26 +8246,21 @@ impl OttrinApp {
     }
 
     fn compute_smart_panel_layout(&mut self, avail: Rect) -> (Rect, Rect) {
-        let is_expanded = self.sidebar != SidebarSection::None;
-        let search_active = self.sidebar == SidebarSection::Search;
         let strip_w = SMART_PANEL_STRIP_WIDTH;
         // In Miller view, Info is rendered inline as the rightmost column
         // (Finder-style preview), so the sidebar only needs the icon strip.
         let is_miller = matches!(self.state.active_tab().view_mode, ViewMode::Miller);
         let sidebar_inline =
             is_miller && matches!(self.sidebar, SidebarSection::Info | SidebarSection::None);
+        let is_expanded = self.sidebar != SidebarSection::None && !sidebar_inline;
         let max_content_w = (avail.width() - 280.0).max(220.0);
         let content_w = if sidebar_inline || !is_expanded {
             0.0
-        } else if search_active {
-            let desired = if self.search_ui.panel_width > 1.0 {
-                self.search_ui.panel_width
-            } else {
-                520.0
-            };
-            desired.clamp(300.0, max_content_w)
         } else {
-            220.0
+            self.state
+                .config
+                .smart_panel_width
+                .clamp(260.0, max_content_w)
         };
         let panel_width = if content_w > 0.0 {
             strip_w + content_w
@@ -7113,15 +8271,16 @@ impl OttrinApp {
             egui::pos2(avail.max.x - panel_width, avail.min.y),
             Vec2::new(panel_width, avail.height()),
         );
-        let file_rect = Rect::from_min_max(avail.min, egui::pos2(panel_rect.min.x, avail.max.y));
+        // The file pane reserves the persistent icon strip; expanded smart-panel
+        // content opens as an overlay drawer instead of resizing file views.
+        let file_right = (avail.max.x - strip_w).max(avail.min.x);
+        let file_rect = Rect::from_min_max(avail.min, egui::pos2(file_right, avail.max.y));
         (file_rect, panel_rect)
     }
 
-    fn render_target_sidebar(&mut self, ctx: &Context) {
+    fn render_smart_panel(&mut self, ctx: &Context) {
         let c = self.colors;
         let target_set = self.state.config.target.is_set();
-        let is_expanded = self.sidebar != SidebarSection::None;
-        let search_active = self.sidebar == SidebarSection::Search;
         let Some(panel_rect) = self.smart_panel_rect else {
             return;
         };
@@ -7131,24 +8290,23 @@ impl OttrinApp {
         }
         // Always show the 36px icon strip; when expanded add content panel.
         let strip_w = SMART_PANEL_STRIP_WIDTH;
+        let is_miller = matches!(self.state.active_tab().view_mode, ViewMode::Miller);
+        let sidebar_inline =
+            is_miller && matches!(self.sidebar, SidebarSection::Info | SidebarSection::None);
+        let is_expanded = self.sidebar != SidebarSection::None && !sidebar_inline;
 
-        egui::Area::new(egui::Id::new("target_panel_area"))
+        egui::Area::new(egui::Id::new("smart_panel_area"))
             .order(egui::Order::Middle)
             .fixed_pos(panel_rect.min)
             .show(ctx, |ui| {
                 ui.set_min_size(panel_rect.size());
                 let full = Rect::from_min_size(ui.min_rect().min, panel_rect.size());
                 ui.painter().rect_filled(full, 0.0, c.smart_panel_bg);
-                // Left border — thin line separating panel from file view
-                ui.painter().vline(full.min.x, full.y_range(), Stroke::new(1.0, c.border));
                 let live_content_w = if is_expanded {
                     (full.width() - strip_w).max(0.0)
                 } else {
                     0.0
                 };
-                if is_expanded && search_active {
-                    self.search_ui.panel_width = live_content_w;
-                }
 
                 // ── Icon strip (always visible, rightmost 36px) ─────────────
                 let strip_rect = Rect::from_min_size(
@@ -7157,76 +8315,85 @@ impl OttrinApp {
                 );
                 // Strip background — slightly raised, with left border
                 ui.painter().rect_filled(strip_rect, 0.0, mix_color(c.smart_panel_bg, c.panel_raised, 0.3));
-                ui.painter().vline(strip_rect.min.x, strip_rect.y_range(), Stroke::new(1.0, c.border));
+                if live_content_w > 0.0 {
+                    ui.painter().vline(
+                        full.min.x,
+                        full.y_range(),
+                        Stroke::new(HAIRLINE, mix_color(c.border, c.smart_panel_bg, 0.45)),
+                    );
+                }
+                ui.painter().vline(
+                    strip_rect.min.x,
+                    strip_rect.y_range(),
+                    Stroke::new(HAIRLINE, mix_color(c.border, c.smart_panel_bg, 0.55)),
+                );
 
                 ui.scope_builder(UiBuilder::new().max_rect(strip_rect), |ui| {
                     ui.vertical_centered(|ui| {
                         ui.add_space(12.0);
 
-                        // Info icon — highlight when active
                         let info_active = self.sidebar == SidebarSection::Info;
-                        if info_active {
-                            ui.painter().rect_filled(
-                                Rect::from_min_size(egui::Pos2::new(strip_rect.min.x, ui.cursor().min.y - 2.0), Vec2::new(strip_w, 32.0)),
-                                4.0, c.selected_bg,
-                            );
-                            ui.painter().vline(strip_rect.min.x + 1.0,
-                                (ui.cursor().min.y - 2.0)..=(ui.cursor().min.y + 30.0),
-                                Stroke::new(2.0, c.accent));
-                        }
                         let info_col = if info_active { c.accent } else { c.text_muted };
-                        if ui.add(egui::Button::new(
-                            RichText::new(MI_DESCRIPTION).size(18.0).color(info_col)
-                        ).frame(false).min_size(Vec2::splat(28.0)))
-                        .on_hover_text("Info").clicked() {
+                        if smart_panel_icon_button(
+                            ui,
+                            strip_rect,
+                            SmartPanelIconButton {
+                                icon: MI_DESCRIPTION,
+                                icon_size: 18.0,
+                                icon_color: info_col,
+                                active: info_active,
+                                tooltip: if info_active { "Hide info panel" } else { "Show info panel" },
+                            },
+                            &c,
+                        )
+                        .clicked() {
                             self.sidebar = if info_active { SidebarSection::None } else { SidebarSection::Info };
                         }
 
                         ui.add_space(8.0);
 
-                        // Target icon — highlight when active or set
                         let target_active = self.sidebar == SidebarSection::Target;
-                        if target_active {
-                            ui.painter().rect_filled(
-                                Rect::from_min_size(egui::Pos2::new(strip_rect.min.x, ui.cursor().min.y - 2.0), Vec2::new(strip_w, 32.0)),
-                                4.0, c.selected_bg,
-                            );
-                            ui.painter().vline(strip_rect.min.x + 1.0,
-                                (ui.cursor().min.y - 2.0)..=(ui.cursor().min.y + 30.0),
-                                Stroke::new(2.0, c.accent));
-                        }
                         let target_col = if target_active { c.accent } else if target_set { c.accent_dim } else { c.text_muted };
-                        if ui.add(egui::Button::new(
-                            RichText::new(MI_MOVE_TO_INBOX).size(22.0).color(target_col)
-                        ).frame(false).min_size(Vec2::splat(30.0)))
-                        .on_hover_text(if target_set { "Drop Folder set" } else { "No drop folder set" }).clicked() {
+                        if smart_panel_icon_button(
+                            ui,
+                            strip_rect,
+                            SmartPanelIconButton {
+                                icon: MI_MOVE_TO_INBOX,
+                                icon_size: 22.0,
+                                icon_color: target_col,
+                                active: target_active,
+                                tooltip: if target_set { "Show drop-folder panel" } else { "Set or view drop folder" },
+                            },
+                            &c,
+                        )
+                        .clicked() {
                             self.sidebar = if target_active { SidebarSection::None } else { SidebarSection::Target };
                         }
                         ui.add_space(8.0);
                         let search_active = self.sidebar == SidebarSection::Search;
-                        if search_active {
-                            ui.painter().rect_filled(
-                                Rect::from_min_size(egui::Pos2::new(strip_rect.min.x, ui.cursor().min.y - 2.0), Vec2::new(strip_w, 32.0)),
-                                4.0, c.selected_bg,
-                            );
-                            ui.painter().vline(strip_rect.min.x + 1.0,
-                                (ui.cursor().min.y - 2.0)..=(ui.cursor().min.y + 30.0),
-                                Stroke::new(2.0, c.accent));
-                        }
                         let search_diag = self.search_service.diagnostics();
                         let search_col = if search_active {
                             c.accent
                         } else {
                             c.text_muted
                         };
-                        let mut btn = ui.add(egui::Button::new(
-                            RichText::new(MI_SEARCH).size(20.0).color(search_col)
-                        ).frame(false).min_size(Vec2::splat(30.0)));
-                        btn = btn.on_hover_text(search_diagnostics_tooltip(
+                        let search_tip = search_diagnostics_tooltip(
                             &search_diag,
                             self.search_ui.scope,
                             &self.state.active_tab().current_dir,
-                        ));
+                        );
+                        let btn = smart_panel_icon_button(
+                            ui,
+                            strip_rect,
+                            SmartPanelIconButton {
+                                icon: MI_SEARCH,
+                                icon_size: 20.0,
+                                icon_color: search_col,
+                                active: search_active,
+                                tooltip: &search_tip,
+                            },
+                            &c,
+                        );
                         if btn.clicked() {
                             self.sidebar = if search_active { SidebarSection::None } else { SidebarSection::Search };
                             if self.sidebar == SidebarSection::Search {
@@ -7237,6 +8404,52 @@ impl OttrinApp {
                                 self.run_search_query();
                             }
                         }
+                        let remaining = (strip_rect.bottom() - ui.cursor().min.y - 82.0).max(0.0);
+                        ui.add_space(remaining);
+                        let activity_active = self.sidebar == SidebarSection::Activity;
+                        let activity_col = if activity_active {
+                            c.accent
+                        } else if self.operation_history.iter().any(|op| op.status == OperationStatus::Queued) {
+                            c.accent_dim
+                        } else {
+                            c.text_muted
+                        };
+                        if smart_panel_icon_button(
+                            ui,
+                            strip_rect,
+                            SmartPanelIconButton {
+                                icon: MI_HISTORY,
+                                icon_size: 20.0,
+                                icon_color: activity_col,
+                                active: activity_active,
+                                tooltip: if activity_active { "Hide Activity panel" } else { "Show Activity" },
+                            },
+                            &c,
+                        )
+                        .clicked() {
+                            self.sidebar = if activity_active { SidebarSection::None } else { SidebarSection::Activity };
+                        }
+                        ui.add_space(8.0);
+                        let trash_active = self.sidebar == SidebarSection::Trash;
+                        let trash_col = if trash_active { c.accent } else { c.text_muted };
+                        if smart_panel_icon_button(
+                            ui,
+                            strip_rect,
+                            SmartPanelIconButton {
+                                icon: MI_DELETE,
+                                icon_size: 20.0,
+                                icon_color: trash_col,
+                                active: trash_active,
+                                tooltip: if trash_active { "Hide Trash panel" } else { "Show Trash" },
+                            },
+                            &c,
+                        )
+                        .clicked() {
+                            self.sidebar = if trash_active { SidebarSection::None } else { SidebarSection::Trash };
+                            if self.sidebar == SidebarSection::Trash {
+                                self.refresh_trash_panel();
+                            }
+                        }
                     });
                 });
 
@@ -7244,22 +8457,37 @@ impl OttrinApp {
 
                 // In Miller view, Info content is rendered inline as the
                 // rightmost column (Finder-style preview).
-                let is_miller = matches!(
-                    self.state.active_tab().view_mode,
-                    ViewMode::Miller
-                );
                 if is_miller && matches!(self.sidebar, SidebarSection::Info) {
                     return;
                 }
+
+                let max_content_w = (ctx.viewport_rect().width() - 280.0).max(220.0);
+                let resize_rect = Rect::from_min_max(
+                    egui::pos2(full.min.x - 3.0, full.min.y),
+                    egui::pos2(full.min.x + 5.0, full.max.y),
+                );
+                let resize_resp = ui.interact(
+                    resize_rect,
+                    egui::Id::new("smart_panel_width_resize"),
+                    Sense::click_and_drag(),
+                );
+                if resize_resp.dragged() {
+                    let dx = ui.ctx().input(|i| i.pointer.delta().x);
+                    let next = (self.state.config.smart_panel_width - dx).clamp(260.0, max_content_w);
+                    self.state.config.smart_panel_width = next;
+                    ui.ctx().request_repaint();
+                }
+                paint_resize_separator(ui, resize_rect, &resize_resp, &c);
 
                 // Single separator between content and strip only.
                 ui.painter().vline(full.max.x - strip_w, full.y_range(), Stroke::new(1.0, mix_color(c.border, c.smart_panel_bg, 0.45)));
 
                 // ── Content panel (left 220px when expanded) ────────────────
                 let content_pad = 8.0;
+                let content_right = full.min.x + live_content_w;
                 let content_rect = Rect::from_min_max(
                     egui::Pos2::new(full.min.x + content_pad, full.min.y + content_pad),
-                    egui::Pos2::new(full.min.x + live_content_w - content_pad, full.max.y - content_pad),
+                    egui::Pos2::new(content_right - content_pad, full.max.y - content_pad),
                 );
                 ui.scope_builder(UiBuilder::new().max_rect(content_rect), |ui| {
                     ui.set_clip_rect(content_rect);
@@ -7268,17 +8496,7 @@ impl OttrinApp {
 
                         // ── Info section ───────────────────────────────────────
                         SidebarSection::Info => {
-                            // Panel title bar
-                            ui.add_space(8.0);
-                            ui.horizontal(|ui| {
-                                ui.add_space(8.0);
-                                ui.label(RichText::new(MI_DESCRIPTION).size(13.0).color(c.text_dim));
-                                ui.add_space(4.0);
-                                ui.label(RichText::new("Info").color(c.text_dim).size(12.0).strong());
-                            });
-                            ui.add_space(6.0);
-                            ui.painter().hline(content_rect.x_range(), ui.cursor().min.y, Stroke::new(1.0, c.border));
-                            ui.add_space(8.0);
+                            smart_panel_header(ui, &c, MI_DESCRIPTION, "Info");
 
                             let selected = self.active_selected_entry();
 
@@ -7328,7 +8546,10 @@ impl OttrinApp {
                                                 const SNIPPET_MAX_CHARS: usize = 480;
                                                 let mut snippet = String::new();
                                                 let mut chars_left = SNIPPET_MAX_CHARS;
-                                                for (i, line) in preview.body.lines().enumerate() {
+                                                let (_, extracted) =
+                                                    split_preview_extracted_text(&preview.body);
+                                                let source = extracted.unwrap_or(&preview.body);
+                                                for (i, line) in source.lines().enumerate() {
                                                     if i >= 8 || chars_left == 0 {
                                                         break;
                                                     }
@@ -7622,17 +8843,7 @@ impl OttrinApp {
 
                         // ── Target section ─────────────────────────────────────
                         SidebarSection::Target => {
-                            // Panel title bar
-                            ui.add_space(8.0);
-                            ui.horizontal(|ui| {
-                                ui.add_space(8.0);
-                                ui.label(RichText::new(MI_MOVE_TO_INBOX).size(13.0).color(c.text_dim));
-                                ui.add_space(4.0);
-                                ui.label(RichText::new("Drop Folder").color(c.text_dim).size(12.0).strong());
-                            });
-                            ui.add_space(6.0);
-                            ui.painter().hline(content_rect.x_range(), ui.cursor().min.y, Stroke::new(1.0, c.border));
-                            ui.add_space(8.0);
+                            smart_panel_header(ui, &c, MI_MOVE_TO_INBOX, "Drop Folder");
 
                             let card_fill = if target_set {
                                 Color32::from_rgba_unmultiplied(c.accent.r(), c.accent.g(), c.accent.b(), 16)
@@ -7922,6 +9133,12 @@ impl OttrinApp {
                         SidebarSection::Search => {
                             self.render_search_sidebar(ui);
                         }
+                        SidebarSection::Activity => {
+                            self.render_activity_sidebar(ui);
+                        }
+                        SidebarSection::Trash => {
+                            self.render_trash_sidebar(ui);
+                        }
                     }
                 });
             });
@@ -7929,7 +9146,7 @@ impl OttrinApp {
 
     fn render_status_bar(&mut self, ctx: &Context) {
         let c = self.colors;
-        let bottom_bar_bg = mix_color(c.toolbar_bg, c.bg, 0.42);
+        let bottom_bar_bg = c.smart_panel_bg;
         let bottom_text = mix_color(c.text_muted, bottom_bar_bg, 0.38);
         let bottom_dim = mix_color(c.text_dim, bottom_bar_bg, 0.48);
         if let Some(st) = &self.privileged_status {
@@ -7956,11 +9173,6 @@ impl OttrinApp {
             )
             .show(ctx, |ui| {
                 ui.set_height(STATUS_BAR_HEIGHT);
-                ui.painter().hline(
-                    ui.max_rect().x_range(),
-                    ui.max_rect().top(),
-                    Stroke::new(1.0, mix_color(c.border, bottom_bar_bg, 0.5)),
-                );
                 ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                     // Command frame toggle — LEFT side (bar opens at the bottom-left)
                     let cf_color = if self.command_frame.visible {
@@ -8104,16 +9316,531 @@ impl OttrinApp {
             });
     }
 
+    fn refresh_trash_panel(&mut self) {
+        self.start_trash_panel_refresh(true);
+    }
+
+    fn start_trash_panel_refresh(&mut self, force: bool) {
+        if self.trash_panel.loading && !force {
+            return;
+        }
+        let request_id = self.next_id();
+        self.trash_panel.request_id = request_id;
+        self.trash_panel.loading = true;
+        self.trash_panel.error = None;
+        let platform = Arc::clone(&self.platform);
+        let tx = self.trash_tx.clone();
+        std::thread::spawn(move || {
+            let result = platform.list_trash().map_err(|err| err.to_string());
+            let _ = tx.send(TrashLoadResponse { request_id, result });
+        });
+    }
+
+    fn poll_trash_results(&mut self) {
+        while let Ok(resp) = self.trash_rx.try_recv() {
+            if resp.request_id != self.trash_panel.request_id {
+                continue;
+            }
+            self.trash_panel.loading = false;
+            self.trash_panel.loaded = true;
+            match resp.result {
+                Ok(items) => {
+                    self.trash_panel.items = items;
+                    self.trash_panel.error = None;
+                    if let Some(sel) = self.trash_panel.selected
+                        && sel >= self.trash_panel.items.len()
+                    {
+                        self.trash_panel.selected = self.trash_panel.items.len().checked_sub(1);
+                    }
+                }
+                Err(err) => {
+                    self.trash_panel.items.clear();
+                    self.trash_panel.selected = None;
+                    self.trash_panel.error = Some(err);
+                }
+            }
+        }
+        while let Ok(resp) = self.trash_empty_rx.try_recv() {
+            if resp.request_id != self.trash_panel.empty_request_id {
+                continue;
+            }
+            self.trash_panel.emptying = false;
+            let op_id = self.trash_panel.empty_operation_id.take();
+            match resp.result {
+                Ok(()) => {
+                    if let Some(op_id) = op_id {
+                        self.finish_operation_record(op_id, OperationStatus::Completed, None);
+                    }
+                    self.set_status_message("Trash emptied", true, 4);
+                    self.trash_panel.items.clear();
+                    self.trash_panel.selected = None;
+                    self.trash_panel.loaded = true;
+                    self.trash_panel.loading = false;
+                    self.trash_panel.error = None;
+                    self.start_trash_panel_refresh(false);
+                    self.refresh_active_tab();
+                }
+                Err(err) => {
+                    if let Some(op_id) = op_id {
+                        self.finish_operation_record(
+                            op_id,
+                            OperationStatus::Failed,
+                            Some(err.clone()),
+                        );
+                    }
+                    self.set_status_message(err, false, 6);
+                    self.trash_panel.loading = false;
+                    self.refresh_trash_panel();
+                }
+            }
+        }
+    }
+
+    fn trash_known_total_size(&self) -> (u64, usize) {
+        self.trash_panel
+            .items
+            .iter()
+            .fold((0_u64, 0_usize), |(total, unknown), item| {
+                if let Some(size) = item.size_bytes {
+                    (total.saturating_add(size), unknown)
+                } else {
+                    (total, unknown + 1)
+                }
+            })
+    }
+
+    fn render_trash_sidebar(&mut self, ui: &mut egui::Ui) {
+        if !self.trash_panel.loaded && !self.trash_panel.loading {
+            self.start_trash_panel_refresh(false);
+        }
+        let c = self.colors;
+        smart_panel_header(ui, &c, MI_DELETE, "Trash");
+        ui.horizontal(|ui| {
+            ui.add_space(10.0);
+            if ui
+                .add_sized([86.0, 26.0], egui::Button::new("Refresh"))
+                .clicked()
+            {
+                self.refresh_trash_panel();
+            }
+            let can_empty = !self.trash_panel.items.is_empty() && !self.trash_panel.emptying;
+            if ui
+                .add_enabled(
+                    can_empty,
+                    egui::Button::new(
+                        RichText::new(if self.trash_panel.emptying {
+                            "Emptying..."
+                        } else {
+                            "Empty"
+                        })
+                        .color(c.error),
+                    ),
+                )
+                .on_hover_text("Permanently delete everything currently in Trash.")
+                .clicked()
+            {
+                self.pending_empty_trash = true;
+            }
+        });
+        ui.add_space(8.0);
+        if let Some(err) = &self.trash_panel.error {
+            ui.label(RichText::new(err).color(c.error).size(11.0));
+            return;
+        }
+        let count = self.trash_panel.items.len();
+        let (known_total, unknown_size_count) = self.trash_known_total_size();
+        let item_count = if count == 1 {
+            "1 item".to_string()
+        } else {
+            format!("{count} items")
+        };
+        let size_summary = if known_total > 0 {
+            if unknown_size_count > 0 {
+                format!(
+                    " · {} known · {} unknown",
+                    format_size(known_total),
+                    unknown_size_count
+                )
+            } else {
+                format!(" · {}", format_size(known_total))
+            }
+        } else if unknown_size_count > 0 {
+            format!(" · {} unknown size", unknown_size_count)
+        } else {
+            String::new()
+        };
+        let loading_suffix = if self.trash_panel.loading {
+            if self.trash_panel.loaded {
+                " · refreshing"
+            } else {
+                " · loading"
+            }
+        } else if self.trash_panel.emptying {
+            " · emptying"
+        } else {
+            ""
+        };
+        ui.label(
+            RichText::new(format!("{item_count}{size_summary}{loading_suffix}"))
+                .color(c.text_muted)
+                .size(11.0),
+        );
+        ui.add_space(8.0);
+
+        let mut selected_now = self.trash_panel.selected;
+        ScrollArea::vertical().max_height(260.0).show(ui, |ui| {
+            if self.trash_panel.loading && !self.trash_panel.loaded {
+                ui.add_space(24.0);
+                ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                    ui.spinner();
+                    ui.label(
+                        RichText::new("Loading Trash")
+                            .color(c.text_muted)
+                            .size(12.0),
+                    );
+                });
+                return;
+            }
+            if self.trash_panel.items.is_empty() {
+                ui.add_space(24.0);
+                ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                    ui.label(RichText::new(MI_DELETE).size(28.0).color(c.text_muted));
+                    ui.label(
+                        RichText::new("Trash is empty")
+                            .color(c.text_muted)
+                            .size(12.0),
+                    );
+                });
+                return;
+            }
+            for (idx, item) in self.trash_panel.items.iter().enumerate() {
+                let selected = selected_now == Some(idx);
+                let fill = if selected {
+                    c.selected_bg
+                } else if idx % 2 == 0 {
+                    c.panel
+                } else {
+                    c.panel_raised
+                };
+                Frame::new()
+                    .fill(fill)
+                    .stroke(if selected {
+                        Stroke::new(1.0, c.accent)
+                    } else {
+                        Stroke::NONE
+                    })
+                    .corner_radius(5.0)
+                    .inner_margin(egui::Margin::symmetric(7, 6))
+                    .show(ui, |ui| {
+                        let resp = ui
+                            .horizontal(|ui| {
+                                let icon = match item.kind {
+                                    EntryKind::Directory => MI_FOLDER,
+                                    EntryKind::Symlink => MI_LINK,
+                                    _ => MI_FILE,
+                                };
+                                ui.label(RichText::new(icon).size(14.0).color(c.text_muted));
+                                ui.vertical(|ui| {
+                                    let width = ui.available_width();
+                                    let size_text = item
+                                        .size_bytes
+                                        .map(format_size)
+                                        .unwrap_or_else(|| "size unknown".to_string());
+                                    ui.horizontal(|ui| {
+                                        ui.set_width(width);
+                                        ui.label(
+                                            RichText::new(truncate_name(&item.name, 34))
+                                                .color(c.text)
+                                                .size(11.5),
+                                        );
+                                        ui.with_layout(
+                                            Layout::right_to_left(Align::Center),
+                                            |ui| {
+                                                ui.label(
+                                                    RichText::new(size_text)
+                                                        .color(c.text_muted)
+                                                        .size(10.0),
+                                                );
+                                            },
+                                        );
+                                    });
+                                    let meta = item
+                                        .deletion_date
+                                        .as_ref()
+                                        .map(|d| format!("Deleted {d}"))
+                                        .unwrap_or_else(|| "Deleted date unknown".to_string());
+                                    ui.label(
+                                        RichText::new(truncate_name(&meta, 46))
+                                            .color(c.text_muted)
+                                            .size(9.8),
+                                    );
+                                });
+                            })
+                            .response
+                            .on_hover_text(item.original_path.display().to_string());
+                        if resp.clicked() {
+                            selected_now = Some(idx);
+                        }
+                    });
+                ui.add_space(4.0);
+            }
+        });
+        self.trash_panel.selected = selected_now;
+
+        if let Some(item) = self
+            .trash_panel
+            .selected
+            .and_then(|idx| self.trash_panel.items.get(idx))
+            .cloned()
+        {
+            ui.add_space(10.0);
+            Frame::new()
+                .fill(c.panel)
+                .stroke(Stroke::new(1.0, c.border))
+                .corner_radius(6.0)
+                .inner_margin(egui::Margin::symmetric(10, 8))
+                .show(ui, |ui| {
+                    ui.set_width(ui.available_width());
+                    ui.label(
+                        RichText::new(truncate_name(&item.name, 42))
+                            .color(c.text)
+                            .size(12.0)
+                            .strong(),
+                    );
+                    ui.label(
+                        RichText::new("Original path")
+                            .color(c.text_muted)
+                            .size(10.0),
+                    );
+                    ui.label(
+                        RichText::new(item.original_path.display().to_string())
+                            .color(c.text_dim)
+                            .size(10.0),
+                    );
+                    if let Some(size) = item.size_bytes {
+                        ui.label(
+                            RichText::new(format!("Size: {}", format_size(size)))
+                                .color(c.text_muted)
+                                .size(10.0),
+                        );
+                    }
+                });
+            ui.add_space(8.0);
+            if ui
+                .add_sized([ui.available_width(), 28.0], egui::Button::new("Restore"))
+                .on_hover_text("Move this item back to its original path.")
+                .clicked()
+            {
+                let op_id = self.queue_activity_record_with_recoverability(
+                    "Restore from Trash",
+                    format!("{} to {}", item.name, item.original_path.display()),
+                    OperationRecoverability::Restorable,
+                );
+                match self.platform.restore_trash_item(&item) {
+                    Ok(()) => {
+                        self.finish_operation_record(op_id, OperationStatus::Completed, None);
+                        self.set_status_message("Restored from Trash", true, 4);
+                    }
+                    Err(err) => {
+                        let msg = err.to_string();
+                        self.finish_operation_record(
+                            op_id,
+                            OperationStatus::Failed,
+                            Some(msg.clone()),
+                        );
+                        self.set_status_message(msg, false, 6);
+                    }
+                }
+                self.refresh_trash_panel();
+                self.refresh_active_tab();
+            }
+            if ui
+                .add_sized(
+                    [ui.available_width(), 28.0],
+                    egui::Button::new(RichText::new("Delete Permanently").color(c.error)),
+                )
+                .on_hover_text("Permanently delete this trashed item.")
+                .clicked()
+            {
+                let op_id = self.queue_activity_record_with_recoverability(
+                    "Delete from Trash",
+                    item.name.clone(),
+                    OperationRecoverability::NotUndoable,
+                );
+                match self.platform.delete_trash_item_permanently(&item) {
+                    Ok(()) => {
+                        self.finish_operation_record(op_id, OperationStatus::Completed, None);
+                        self.set_status_message("Deleted from Trash", true, 4);
+                    }
+                    Err(err) => {
+                        let msg = err.to_string();
+                        self.finish_operation_record(
+                            op_id,
+                            OperationStatus::Failed,
+                            Some(msg.clone()),
+                        );
+                        self.set_status_message(msg, false, 6);
+                    }
+                }
+                self.refresh_trash_panel();
+                self.refresh_active_tab();
+            }
+        }
+    }
+
+    fn render_activity_sidebar(&mut self, ui: &mut egui::Ui) {
+        let c = self.colors;
+        smart_panel_header(ui, &c, MI_HISTORY, "Activity");
+        ui.horizontal(|ui| {
+            ui.add_space(10.0);
+            let queued = self
+                .operation_history
+                .iter()
+                .filter(|op| op.status == OperationStatus::Queued)
+                .count();
+            let failed = self
+                .operation_history
+                .iter()
+                .filter(|op| op.status == OperationStatus::Failed)
+                .count();
+            let summary = if queued > 0 {
+                format!("{queued} running")
+            } else if failed > 0 {
+                format!("{failed} failed")
+            } else {
+                format!("{} recorded", self.operation_history.len())
+            };
+            ui.label(RichText::new(summary).color(c.text_muted).size(11.0));
+            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                if ui
+                    .add_enabled(
+                        !self.operation_history.is_empty(),
+                        egui::Button::new("Clear"),
+                    )
+                    .on_hover_text("Clear this session's operation history.")
+                    .clicked()
+                {
+                    self.operation_history.clear();
+                }
+            });
+        });
+        ui.add_space(8.0);
+        ui.painter().hline(
+            ui.available_rect_before_wrap().x_range(),
+            ui.cursor().min.y,
+            Stroke::new(1.0, c.border),
+        );
+        ui.add_space(8.0);
+
+        if self.operation_history.is_empty() {
+            ui.add_space(24.0);
+            ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                ui.label(RichText::new(MI_HISTORY).size(28.0).color(c.text_muted));
+                ui.label(
+                    RichText::new("No file activity yet")
+                        .color(c.text_muted)
+                        .size(12.0),
+                );
+            });
+            return;
+        }
+
+        ScrollArea::vertical().show(ui, |ui| {
+            for record in &self.operation_history {
+                let (status_text, status_color, status_icon) = match record.status {
+                    OperationStatus::Queued => ("Queued", c.accent_dim, MI_HISTORY),
+                    OperationStatus::Completed => ("Done", c.accent, MI_CHECK),
+                    OperationStatus::Failed => ("Failed", c.error, MI_CLEAR),
+                };
+                Frame::new()
+                    .fill(c.panel)
+                    .stroke(Stroke::new(
+                        1.0,
+                        if record.status == OperationStatus::Failed {
+                            c.error
+                        } else {
+                            mix_color(c.border, c.panel, 0.35)
+                        },
+                    ))
+                    .corner_radius(6.0)
+                    .inner_margin(egui::Margin::symmetric(9, 8))
+                    .show(ui, |ui| {
+                        ui.set_width(ui.available_width());
+                        ui.horizontal(|ui| {
+                            ui.label(RichText::new(status_icon).size(14.0).color(status_color));
+                            ui.vertical(|ui| {
+                                ui.label(
+                                    RichText::new(&record.title)
+                                        .color(c.text)
+                                        .size(12.0)
+                                        .strong(),
+                                );
+                                ui.label(
+                                    RichText::new(&record.detail).color(c.text_muted).size(10.0),
+                                );
+                            });
+                            ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                                ui.label(RichText::new(status_text).color(status_color).size(10.0));
+                            });
+                        });
+                        if let Some(msg) = &record.message {
+                            ui.add_space(4.0);
+                            ui.label(RichText::new(msg).color(c.error).size(10.0));
+                        }
+                        if record.status == OperationStatus::Completed {
+                            let (label, color, tip) =
+                                operation_recoverability_label(record.recoverability, c);
+                            ui.add_space(4.0);
+                            ui.label(RichText::new(label).color(color).size(10.0))
+                                .on_hover_text(tip);
+                        }
+                        ui.add_space(4.0);
+                        let elapsed = record
+                            .finished_at
+                            .unwrap_or_else(Instant::now)
+                            .saturating_duration_since(record.queued_at);
+                        ui.label(
+                            RichText::new(format!("{} ago", format_duration_short(elapsed)))
+                                .color(c.text_muted)
+                                .size(9.5),
+                        );
+                    });
+                ui.add_space(6.0);
+            }
+        });
+    }
+
+    fn empty_trash_now(&mut self) {
+        if self.trash_panel.emptying {
+            return;
+        }
+        let request_id = self.next_id();
+        let op_id = self.queue_activity_record_with_recoverability(
+            "Empty Trash",
+            format!(
+                "{} item{}",
+                self.trash_panel.items.len(),
+                plural_s(self.trash_panel.items.len())
+            ),
+            OperationRecoverability::NotUndoable,
+        );
+        self.trash_panel.empty_request_id = request_id;
+        self.trash_panel.empty_operation_id = Some(op_id);
+        self.trash_panel.emptying = true;
+        self.trash_panel.error = None;
+        self.set_status_message("Emptying Trash...", true, 30);
+        let platform = Arc::clone(&self.platform);
+        let tx = self.trash_empty_tx.clone();
+        std::thread::spawn(move || {
+            let result = platform.empty_trash().map_err(|err| err.to_string());
+            let _ = tx.send(TrashEmptyResponse { request_id, result });
+        });
+    }
+
     fn render_search_sidebar(&mut self, ui: &mut egui::Ui) {
         let c = self.colors;
 
-        // ── Title heading ─────────────────────────────────────────────────
-        ui.add_space(16.0);
-        ui.horizontal(|ui| {
-            ui.add_space(10.0);
-            ui.label(RichText::new("Search").color(c.text).size(18.0).strong());
-        });
-        ui.add_space(12.0);
+        smart_panel_header(ui, &c, MI_SEARCH, "Search");
 
         // ── Search input — visually bordered, clearly an input ──────────
         let border_col = if self.search_ui.input_focused {
@@ -8159,10 +9886,21 @@ impl OttrinApp {
                     }
                     self.search_ui.input_focused = resp.has_focus();
                     if resp.changed() {
-                        self.run_search_query();
+                        self.search_ui.pending_query_since = Some(Instant::now());
+                        ui.ctx().request_repaint_after(Duration::from_millis(140));
                     }
                 });
             });
+
+        if let Some(since) = self.search_ui.pending_query_since
+            && since.elapsed() >= Duration::from_millis(120)
+            && self.search_ui.query != self.search_ui.last_executed_query
+        {
+            self.search_ui.pending_query_since = None;
+            self.run_search_query();
+        } else if self.search_ui.pending_query_since.is_some() {
+            ui.ctx().request_repaint_after(Duration::from_millis(80));
+        }
 
         ui.add_space(8.0);
 
@@ -8314,6 +10052,9 @@ impl OttrinApp {
                                     RichText::new(format!("Indexing files… ({}%)", pct))
                                         .color(c.text_muted)
                                         .size(11.0),
+                                )
+                                .on_hover_text(
+                                    "Estimated index progress. Ottrin can search indexed files while the scan continues.",
                                 );
                                 ui.add(egui::Spinner::new().size(12.0).color(c.accent));
                             });
@@ -8361,8 +10102,19 @@ impl OttrinApp {
                         RichText::new(format!("· indexing {}%", pct))
                             .color(c.accent)
                             .size(10.5),
+                    )
+                    .on_hover_text(
+                        "Estimated index progress. Results may keep expanding until indexing finishes.",
                     );
                     ui.add(egui::Spinner::new().size(10.0).color(c.accent));
+                } else if self.search_ui.search_inflight {
+                    ui.ctx().request_repaint_after(Duration::from_millis(50));
+                    ui.label(
+                        RichText::new("· searching")
+                            .color(c.text_muted)
+                            .size(10.5),
+                    );
+                    ui.add(egui::Spinner::new().size(10.0).color(c.text_muted));
                 }
             });
             if let Some(err) = &self.search_ui.last_error {
@@ -8388,19 +10140,44 @@ impl OttrinApp {
             let table_h =
                 (results_height - preview_panel_h - if has_preview { 10.0 } else { 0.0 }).max(80.0);
 
-            let table_w = ui.available_width().max(320.0);
-            let modified_w = 96.0;
-            let size_w = 78.0;
-            let fixed_w = modified_w + size_w + 18.0;
-            let flex_total = (table_w - fixed_w).max(180.0);
-            let mut name_w = (flex_total * 0.37).clamp(90.0, 300.0);
-            let mut folder_w = (flex_total - name_w).clamp(90.0, 460.0);
-            let used = name_w + folder_w;
-            if used > flex_total {
-                let scale = (flex_total / used).clamp(0.5, 1.0);
-                name_w *= scale;
-                folder_w *= scale;
+            self.search_ui.result_columns[0] = true;
+            if !self.search_ui.result_columns.iter().any(|visible| *visible) {
+                self.search_ui.result_columns = [true, true, true, true];
             }
+            let visible_cols = self.search_ui.result_columns;
+            let table_w = ui.available_width().max(320.0);
+            let mut col_widths = self.search_ui.result_col_px;
+            let resize_active = self.search_ui.result_resize_start.is_some();
+            if !resize_active && visible_cols[0] && col_widths[0] < 260.0 {
+                col_widths[0] = 360.0;
+            }
+            if !resize_active && visible_cols[1] && col_widths[1] < 120.0 {
+                col_widths[1] = 180.0;
+            }
+            let visible_total: f32 = col_widths
+                .iter()
+                .enumerate()
+                .filter(|(idx, _)| visible_cols[*idx])
+                .map(|(_, width)| *width)
+                .sum();
+            let max_total = (table_w - 8.0).max(220.0);
+            if !resize_active && visible_total > max_total {
+                let mut overflow = visible_total - max_total;
+                for idx in [1usize, 2, 3, 0] {
+                    if !visible_cols[idx] || overflow <= 0.0 {
+                        continue;
+                    }
+                    let min_w = search_result_column_min_width(idx);
+                    let shrink = (col_widths[idx] - min_w).max(0.0).min(overflow);
+                    col_widths[idx] -= shrink;
+                    overflow -= shrink;
+                }
+            } else if !resize_active && visible_total < max_total && visible_cols[0] {
+                col_widths[0] += max_total - visible_total;
+            }
+            self.search_ui.result_col_px = col_widths;
+            let name_w = col_widths[0];
+            let folder_w = col_widths[1];
 
             let mut pending_op: Option<FileCommand> = None;
             let mut open_parent: Option<PathBuf> = None;
@@ -8413,6 +10190,7 @@ impl OttrinApp {
                 .tandem_transfer_destination(self.state.active_tab().id)
                 .map(|(_, dir)| dir);
             let mut clicked_sort: Option<SearchSort> = None;
+            let mut column_visibility_changed = false;
 
             let mut table = TableBuilder::new(ui)
                 .id_salt("search_results_table")
@@ -8421,25 +10199,35 @@ impl OttrinApp {
                 .vscroll(true)
                 .scroll_bar_visibility(ScrollBarVisibility::VisibleWhenNeeded)
                 .max_scroll_height(table_h - 18.0)
-                .min_scrolled_height((table_h - 18.0).max(80.0))
-                .column(Column::exact(name_w).clip(true))
-                .column(Column::exact(folder_w).clip(true))
-                .column(Column::exact(modified_w).clip(true))
-                .column(Column::exact(size_w).clip(true));
+                .min_scrolled_height((table_h - 18.0).max(80.0));
+            if visible_cols[0] {
+                table = table.column(Column::exact(col_widths[0]).clip(true));
+            }
+            if visible_cols[1] {
+                table = table.column(Column::exact(col_widths[1]).clip(true));
+            }
+            if visible_cols[2] {
+                table = table.column(Column::exact(col_widths[2]).clip(true));
+            }
+            if visible_cols[3] {
+                table = table.column(Column::exact(col_widths[3]).clip(true));
+            }
             if self.search_ui.scroll_to_selected
                 && let Some(row) = self.search_ui.selected
             {
-                table = table.scroll_to_row(row, Some(egui::Align::Center));
+                table = table.scroll_to_row(row, None);
             }
 
             table
                 .header(22.0, |mut header| {
                     let mut header_col =
                         |header: &mut egui_extras::TableRow<'_, '_>,
+                         column_idx: usize,
                          label: &str,
                          sort: SearchSort,
                          right_align: bool| {
                             header.col(|ui| {
+                                let header_rect = ui.max_rect();
                                 let active = self.search_ui.sort == sort;
                                 let text = if active {
                                     format!("{label} ▲")
@@ -8462,15 +10250,115 @@ impl OttrinApp {
                                 if resp.hovered() {
                                     ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                 }
+                                let resp = resp.on_hover_text(format!(
+                                    "Sort search results by {label}.\nRight-click for visible columns."
+                                ));
                                 if resp.clicked() && self.search_ui.sort != sort {
                                     clicked_sort = Some(sort);
                                 }
+                                let visible_indices = search_visible_column_indices(visible_cols);
+                                if let Some(pos) =
+                                    visible_indices.iter().position(|idx| *idx == column_idx)
+                                    && pos + 1 < visible_indices.len()
+                                {
+                                    let sep_rect = Rect::from_min_size(
+                                        egui::Pos2::new(
+                                            header_rect.right() - 4.0,
+                                            header_rect.top() + 2.0,
+                                        ),
+                                        Vec2::new(8.0, header_rect.height() - 4.0),
+                                    );
+                                    let sep_resp = ui.interact(
+                                        sep_rect,
+                                        ui.id().with(("search_col_resize", column_idx)),
+                                        Sense::drag(),
+                                    );
+                                    paint_resize_separator(ui, sep_rect, &sep_resp, &c);
+                                    if sep_resp.drag_started() {
+                                        let right_idx = visible_indices[pos + 1];
+                                        self.search_ui.result_resize_start = Some((
+                                            column_idx,
+                                            right_idx,
+                                            self.search_ui.result_col_px[column_idx],
+                                            self.search_ui.result_col_px[right_idx],
+                                        ));
+                                    }
+                                    if sep_resp.dragged() {
+                                        let right_idx = visible_indices[pos + 1];
+                                        let (start_left, start_right) = self
+                                            .search_ui
+                                            .result_resize_start
+                                            .filter(|(left, right, _, _)| {
+                                                *left == column_idx && *right == right_idx
+                                            })
+                                            .map(|(_, _, left, right)| (left, right))
+                                            .unwrap_or((
+                                                self.search_ui.result_col_px[column_idx],
+                                                self.search_ui.result_col_px[right_idx],
+                                            ));
+                                        let left_min =
+                                            search_result_column_min_width(column_idx);
+                                        let right_min =
+                                            search_result_column_min_width(right_idx);
+                                        let left_room = start_left - left_min;
+                                        let right_room = start_right - right_min;
+                                        let dx = sep_resp.drag_delta().x;
+                                        let dx = dx.clamp(-left_room.max(0.0), right_room.max(0.0));
+                                        self.search_ui.result_col_px[column_idx] = start_left + dx;
+                                        self.search_ui.result_col_px[right_idx] = start_right - dx;
+                                        ui.ctx().request_repaint();
+                                    }
+                                    if !ui.ctx().input(|i| i.pointer.primary_down()) {
+                                        self.search_ui.result_resize_start = None;
+                                    }
+                                }
+                                resp.context_menu(|ui| {
+                                    ui.visuals_mut().override_text_color = Some(c.text_muted);
+                                    ui.set_min_width(170.0);
+                                    ui.label(
+                                        RichText::new("Visible columns")
+                                            .color(c.text)
+                                            .size(11.5)
+                                            .strong(),
+                                    );
+                                    ui.add_space(4.0);
+                                    for (idx, column_label) in [
+                                        (0, "Name"),
+                                        (1, "Folder"),
+                                        (2, "Modified"),
+                                        (3, "Size"),
+                                    ] {
+                                        let mut visible = self.search_ui.result_columns[idx];
+                                        let checkbox = egui::Checkbox::new(
+                                            &mut visible,
+                                            RichText::new(column_label)
+                                                .color(c.text_muted)
+                                                .size(11.5),
+                                        );
+                                        let resp = ui.add_enabled(idx != 0, checkbox);
+                                        if idx == 0 {
+                                            resp.on_hover_text("The Name column is always visible.");
+                                        } else if resp.changed() {
+                                            self.search_ui.result_columns[idx] = visible;
+                                            column_visibility_changed = true;
+                                        }
+                                    }
+                                });
+                                let _ = column_idx;
                             });
                         };
-                    header_col(&mut header, "Name", SearchSort::Name, false);
-                    header_col(&mut header, "Folder", SearchSort::Path, false);
-                    header_col(&mut header, "Modified", SearchSort::Modified, false);
-                    header_col(&mut header, "Size", SearchSort::Size, true);
+                    if visible_cols[0] {
+                        header_col(&mut header, 0, "Name", SearchSort::Name, false);
+                    }
+                    if visible_cols[1] {
+                        header_col(&mut header, 1, "Folder", SearchSort::Path, false);
+                    }
+                    if visible_cols[2] {
+                        header_col(&mut header, 2, "Modified", SearchSort::Modified, false);
+                    }
+                    if visible_cols[3] {
+                        header_col(&mut header, 3, "Size", SearchSort::Size, true);
+                    }
                 })
                 .body(|mut body| {
                     for (i, item) in self.search_ui.results.iter().enumerate() {
@@ -8491,7 +10379,7 @@ impl OttrinApp {
                                 &self.state.config,
                             );
                             let icon = material_icon(style.icon);
-                            let name_cap = ((name_w - 28.0) / 7.0).max(8.0) as usize;
+                            let name_cap = ((name_w - 28.0) / 7.0).max(10.0) as usize;
                             let folder_cap = ((folder_w - 12.0) / 6.4).max(10.0) as usize;
                             let modified_text = item
                                 .modified_unix_secs
@@ -8502,53 +10390,90 @@ impl OttrinApp {
                                 .map(format_size)
                                 .unwrap_or_else(|| "—".to_string());
 
-                            row.col(|ui| {
-                                ui.horizontal(|ui| {
-                                    ui.label(
-                                        RichText::new(icon).size(11.5).color(style.icon_color),
-                                    );
-                                    ui.vertical(|ui| {
-                                        ui.label(
-                                            RichText::new(truncate_name(&item.name, name_cap))
-                                                .size(11.5)
-                                                .color(style.text_color),
+                            if visible_cols[0] {
+                                row.col(|ui| {
+                                    if selected {
+                                        ui.painter().rect_filled(
+                                            ui.max_rect(),
+                                            2.0,
+                                            mix_color(c.selected_bg, c.accent, 0.08),
                                         );
-                                        // Show content match snippet inline when available
-                                        if let Some(snip) = &item.content_snippet {
-                                            let snip_cap =
-                                                ((name_w - 16.0) / 5.5).max(10.0) as usize;
+                                    }
+                                    ui.horizontal(|ui| {
+                                        ui.label(
+                                            RichText::new(icon).size(11.5).color(style.icon_color),
+                                        );
+                                        ui.vertical(|ui| {
                                             ui.label(
-                                                RichText::new(truncate_name(snip, snip_cap))
-                                                    .size(9.5)
-                                                    .color(c.text_muted)
-                                                    .italics(),
-                                            );
-                                        }
+                                                RichText::new(truncate_middle(&item.name, name_cap))
+                                                    .size(11.5)
+                                                    .color(style.text_color),
+                                            )
+                                            .on_hover_text(item.name.clone());
+                                            // Show content match snippet inline when available
+                                            if let Some(snip) = &item.content_snippet {
+                                                let snip_cap =
+                                                    ((name_w - 16.0) / 5.5).max(10.0) as usize;
+                                                ui.label(
+                                                    RichText::new(truncate_name(snip, snip_cap))
+                                                        .size(9.5)
+                                                        .color(c.text_muted)
+                                                        .italics(),
+                                                )
+                                                .on_hover_text(snip.clone());
+                                            }
+                                        });
                                     });
                                 });
-                            });
-                            row.col(|ui| {
-                                ui.label(
-                                    RichText::new(truncate_name(
-                                        &item.parent_path.display().to_string(),
-                                        folder_cap,
-                                    ))
-                                    .size(10.5)
-                                    .color(c.text_muted),
-                                );
-                            });
-                            row.col(|ui| {
-                                ui.label(
-                                    RichText::new(modified_text).size(10.5).color(c.text_muted),
-                                );
-                            });
-                            row.col(|ui| {
-                                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                            }
+                            if visible_cols[1] {
+                                row.col(|ui| {
+                                    if selected {
+                                        ui.painter().rect_filled(
+                                            ui.max_rect(),
+                                            2.0,
+                                            mix_color(c.selected_bg, c.accent, 0.08),
+                                        );
+                                    }
+                                    let full_path = item.parent_path.display().to_string();
                                     ui.label(
-                                        RichText::new(size_text).size(10.5).color(c.text_muted),
+                                        RichText::new(truncate_middle(&full_path, folder_cap))
+                                            .size(10.5)
+                                            .color(c.text_muted),
+                                    )
+                                    .on_hover_text(full_path);
+                                });
+                            }
+                            if visible_cols[2] {
+                                row.col(|ui| {
+                                    if selected {
+                                        ui.painter().rect_filled(
+                                            ui.max_rect(),
+                                            2.0,
+                                            mix_color(c.selected_bg, c.accent, 0.08),
+                                        );
+                                    }
+                                    ui.label(
+                                        RichText::new(modified_text).size(10.5).color(c.text_muted),
                                     );
                                 });
-                            });
+                            }
+                            if visible_cols[3] {
+                                row.col(|ui| {
+                                    if selected {
+                                        ui.painter().rect_filled(
+                                            ui.max_rect(),
+                                            2.0,
+                                            mix_color(c.selected_bg, c.accent, 0.08),
+                                        );
+                                    }
+                                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                                        ui.label(
+                                            RichText::new(size_text).size(10.5).color(c.text_muted),
+                                        );
+                                    });
+                                });
+                            }
 
                             let row_resp = row.response();
                             if row_resp.clicked() {
@@ -8561,6 +10486,7 @@ impl OttrinApp {
 
                             row_resp.context_menu(|ui| {
                                 ui.visuals_mut().override_text_color = Some(c.text_muted);
+                                ui.set_min_width(206.0);
                                 let path = item.path.clone();
                                 let parent = item.parent_path.clone();
                                 let same_as_current = parent == cur_dir;
@@ -8569,34 +10495,23 @@ impl OttrinApp {
                                 let same_as_tandem =
                                     tandem_target_dir.as_deref() == Some(parent.as_path());
 
-                                if ui
-                                    .button(RichText::new("Open").color(c.text_muted))
-                                    .clicked()
-                                {
+                                if menu_item(ui, MI_FOLDER_OPEN, "Open", &c).clicked() {
                                     open_entry_now = Some((path.clone(), item.kind));
                                     ui.close();
                                 }
-                                if ui
-                                    .button(
-                                        RichText::new("Open Folder Location").color(c.text_muted),
-                                    )
+                                if menu_item(ui, MI_OPEN_IN_NEW, "Open Folder Location", &c)
                                     .clicked()
                                 {
                                     open_parent = Some(parent.clone());
                                     ui.close();
                                 }
                                 if matches!(item.kind, EntryKind::Directory | EntryKind::Symlink)
-                                    && ui
-                                        .button(RichText::new("Open in Tandem").color(c.text_muted))
-                                        .clicked()
+                                    && menu_item(ui, MI_VIEW_COLUMN, "Open in Tandem", &c).clicked()
                                 {
                                     open_tandem_now = Some(path.clone());
                                     ui.close();
                                 }
-                                if ui
-                                    .button(RichText::new("Copy File Path").color(c.text_muted))
-                                    .clicked()
-                                {
+                                if menu_item(ui, MI_CONTENT_COPY, "Copy File Path", &c).clicked() {
                                     ui.ctx().copy_text(path.display().to_string());
                                     ui.close();
                                 }
@@ -8606,9 +10521,14 @@ impl OttrinApp {
                                     .add_enabled(
                                         !target_missing && !same_as_target,
                                         egui::Button::new(
-                                            RichText::new("Copy to Drop Folder")
-                                                .color(c.text_muted),
-                                        ),
+                                            RichText::new(format!(
+                                                "{MI_CONTENT_COPY}  Copy to Drop Folder"
+                                            ))
+                                            .size(12.5)
+                                            .color(c.text_muted),
+                                        )
+                                        .frame(false)
+                                        .min_size(Vec2::new(188.0, 26.0)),
                                     )
                                     .on_hover_text(if target_missing {
                                         "No drop folder set"
@@ -8631,9 +10551,14 @@ impl OttrinApp {
                                     .add_enabled(
                                         !target_missing && !same_as_target,
                                         egui::Button::new(
-                                            RichText::new("Move to Drop Folder")
-                                                .color(c.text_muted),
-                                        ),
+                                            RichText::new(format!(
+                                                "{MI_DRIVE_FILE_MOVE}  Move to Drop Folder"
+                                            ))
+                                            .size(12.5)
+                                            .color(c.text_muted),
+                                        )
+                                        .frame(false)
+                                        .min_size(Vec2::new(188.0, 26.0)),
                                     )
                                     .on_hover_text(if target_missing {
                                         "No drop folder set"
@@ -8657,9 +10582,14 @@ impl OttrinApp {
                                     .add_enabled(
                                         !same_as_current,
                                         egui::Button::new(
-                                            RichText::new("Copy to Current Folder")
-                                                .color(c.text_muted),
-                                        ),
+                                            RichText::new(format!(
+                                                "{MI_CONTENT_COPY}  Copy to Current Folder"
+                                            ))
+                                            .size(12.5)
+                                            .color(c.text_muted),
+                                        )
+                                        .frame(false)
+                                        .min_size(Vec2::new(188.0, 26.0)),
                                     )
                                     .on_hover_text(if same_as_current {
                                         "Already in destination"
@@ -8678,9 +10608,14 @@ impl OttrinApp {
                                     .add_enabled(
                                         !same_as_current,
                                         egui::Button::new(
-                                            RichText::new("Move to Current Folder")
-                                                .color(c.text_muted),
-                                        ),
+                                            RichText::new(format!(
+                                                "{MI_DRIVE_FILE_MOVE}  Move to Current Folder"
+                                            ))
+                                            .size(12.5)
+                                            .color(c.text_muted),
+                                        )
+                                        .frame(false)
+                                        .min_size(Vec2::new(188.0, 26.0)),
                                     )
                                     .on_hover_text(if same_as_current {
                                         "Already in destination"
@@ -8702,9 +10637,14 @@ impl OttrinApp {
                                         .add_enabled(
                                             !same_as_tandem,
                                             egui::Button::new(
-                                                RichText::new("Copy to Other Pane")
-                                                    .color(c.text_muted),
-                                            ),
+                                                RichText::new(format!(
+                                                    "{MI_CONTENT_COPY}  Copy to Other Pane"
+                                                ))
+                                                .size(12.5)
+                                                .color(c.text_muted),
+                                            )
+                                            .frame(false)
+                                            .min_size(Vec2::new(188.0, 26.0)),
                                         )
                                         .on_hover_text(if same_as_tandem {
                                             "Already in destination"
@@ -8726,9 +10666,14 @@ impl OttrinApp {
                                         .add_enabled(
                                             !same_as_tandem,
                                             egui::Button::new(
-                                                RichText::new("Move to Other Pane")
-                                                    .color(c.text_muted),
-                                            ),
+                                                RichText::new(format!(
+                                                    "{MI_DRIVE_FILE_MOVE}  Move to Other Pane"
+                                                ))
+                                                .size(12.5)
+                                                .color(c.text_muted),
+                                            )
+                                            .frame(false)
+                                            .min_size(Vec2::new(188.0, 26.0)),
                                         )
                                         .on_hover_text(if same_as_tandem {
                                             "Already in destination"
@@ -8754,6 +10699,19 @@ impl OttrinApp {
             if let Some(sort) = clicked_sort {
                 self.search_ui.sort = sort;
                 self.run_search_query();
+            }
+            if column_visibility_changed {
+                if matches!(self.search_ui.sort, SearchSort::Path)
+                    && !self.search_ui.result_columns[1]
+                    || matches!(self.search_ui.sort, SearchSort::Modified)
+                        && !self.search_ui.result_columns[2]
+                    || matches!(self.search_ui.sort, SearchSort::Size)
+                        && !self.search_ui.result_columns[3]
+                {
+                    self.search_ui.sort = SearchSort::Name;
+                    self.run_search_query();
+                }
+                ui.ctx().request_repaint();
             }
             self.search_ui.scroll_to_selected = false;
             if let Some(msg) = queued_status {
@@ -8853,8 +10811,10 @@ impl OttrinApp {
                         if let Some(pv) = preview {
                             match pv.kind {
                                 PreviewKind::Text => {
+                                    let (_, extracted) = split_preview_extracted_text(&pv.body);
+                                    let source = extracted.unwrap_or(&pv.body);
                                     let snippet: String =
-                                        pv.body.lines().take(5).collect::<Vec<_>>().join("\n");
+                                        source.lines().take(5).collect::<Vec<_>>().join("\n");
                                     ScrollArea::vertical()
                                         .id_salt("search_result_preview_text")
                                         .max_height(preview_panel_h - 70.0)
@@ -9087,59 +11047,114 @@ impl OttrinApp {
             .unwrap_or_else(|| current_dir.to_path_buf());
         let target_dir = self.state.config.target.current.clone();
         let target_missing = target_dir.is_none();
-        let same_as_target = target_dir.as_ref() == Some(&parent);
-        let same_as_current = parent == current_dir;
         let is_dir_like = matches!(kind, EntryKind::Directory | EntryKind::Symlink);
         let is_bookmarked = self.is_bookmarked(&path);
         let tandem_target_dir = self
             .tandem_transfer_destination(self.state.active_tab().id)
             .map(|(_, dir)| dir);
-        let same_as_tandem = tandem_target_dir.as_deref() == Some(current_dir);
+        let tab_id = self.state.active_tab().id;
+        let selected_paths = self.selected_paths_for_tab(tab_id);
+        let menu_sources = if selected_paths.len() > 1 && selected_paths.contains(&path) {
+            selected_paths
+        } else {
+            vec![path.clone()]
+        };
+        let menu_count = menu_sources.len();
+        let menu_target = if menu_count == 1 {
+            "Item".to_string()
+        } else {
+            format!("{menu_count} Items")
+        };
+        let all_sources_in_target = |target: &Path| {
+            menu_sources
+                .iter()
+                .all(|source| source.parent() == Some(target))
+        };
+        let same_as_target_set = target_dir
+            .as_deref()
+            .map(all_sources_in_target)
+            .unwrap_or(false);
+        let same_as_current_set = all_sources_in_target(current_dir);
+        let same_as_tandem_set = tandem_target_dir
+            .as_deref()
+            .map(all_sources_in_target)
+            .unwrap_or(false);
 
         response.context_menu(|ui| {
             ui.visuals_mut().override_text_color = Some(self.colors.text_muted);
-            let menu_col = self.colors.text_muted;
-            if ui.button(RichText::new("Open").color(menu_col)).clicked() {
+            ui.set_min_width(206.0);
+            let c = self.colors;
+            if menu_item(ui, MI_FOLDER_OPEN, "Open", &c).clicked() {
                 *open_entry = Some((path.clone(), kind));
                 ui.close();
             }
-            if ui
-                .button(RichText::new("Open Folder Location").color(menu_col))
-                .clicked()
-            {
+            if menu_count == 1 && menu_item(ui, MI_APPS, "Open With…", &c).clicked() {
+                ui.close();
+                self.open_with_application_dialog(&path);
+            }
+            if menu_item(ui, MI_OPEN_IN_NEW, "Open Folder Location", &c).clicked() {
                 *open_parent = Some(parent.clone());
                 ui.close();
             }
-            if is_dir_like
-                && ui
-                    .button(RichText::new("Open in Tandem").color(menu_col))
-                    .clicked()
-            {
+            if is_dir_like && menu_item(ui, MI_VIEW_COLUMN, "Open in Tandem", &c).clicked() {
                 *open_tandem = Some(path.clone());
                 ui.close();
             }
-            if ui
-                .button(RichText::new("Copy File Path").color(menu_col))
-                .clicked()
-            {
+            if menu_item(ui, MI_CONTENT_COPY, "Copy File Path", &c).clicked() {
                 ui.ctx().copy_text(path.display().to_string());
                 self.set_status_message("Copied file path", true, 3);
                 ui.close();
             }
+            if menu_count == 1 {
+                if menu_item(ui, MI_EDIT, "Rename…", &c).clicked() {
+                    self.begin_rename_path(tab_id, path.clone());
+                    ui.close();
+                }
+                if menu_item(ui, MI_DELETE, "Delete…", &c).clicked() {
+                    self.pending_delete = Some(PendingDelete {
+                        tab_id,
+                        targets: vec![path.clone()],
+                        requested_mode: DeleteMode::Trash,
+                        selected: DeleteChoice::MoveToTrash,
+                    });
+                    ui.close();
+                }
+            }
+            if menu_count > 1 {
+                if menu_item(ui, MI_CONTENT_COPY, &format!("Copy {menu_target}"), &c).clicked() {
+                    self.clipboard = Some(Clipboard {
+                        sources: menu_sources.clone(),
+                        cut: false,
+                    });
+                    self.set_status_message(format!("Copied {menu_count} items"), true, 3);
+                    ui.close();
+                }
+                if menu_item(ui, MI_CONTENT_CUT, &format!("Cut {menu_target}"), &c).clicked() {
+                    self.clipboard = Some(Clipboard {
+                        sources: menu_sources.clone(),
+                        cut: true,
+                    });
+                    self.set_status_message(format!("Cut {menu_count} items"), true, 3);
+                    ui.close();
+                }
+                if menu_item(ui, MI_DELETE, &format!("Delete {menu_target}…"), &c).clicked() {
+                    self.pending_delete = Some(PendingDelete {
+                        tab_id,
+                        targets: menu_sources.clone(),
+                        requested_mode: DeleteMode::Trash,
+                        selected: DeleteChoice::MoveToTrash,
+                    });
+                    ui.close();
+                }
+            }
             if is_dir_like {
                 if !is_bookmarked {
-                    if ui
-                        .button(RichText::new("Add to Shortcuts").color(menu_col))
-                        .clicked()
-                    {
+                    if menu_item(ui, MI_BOOKMARK, "Add to Shortcuts", &c).clicked() {
                         *add_bookmark = Some(path.clone());
                         self.set_status_message("Added to shortcuts", true, 3);
                         ui.close();
                     }
-                } else if ui
-                    .button(RichText::new("Remove from Shortcuts").color(menu_col))
-                    .clicked()
-                {
+                } else if menu_item(ui, MI_CLEAR, "Remove from Shortcuts", &c).clicked() {
                     *remove_bookmark = Some(path.clone());
                     self.set_status_message("Removed from shortcuts", true, 3);
                     ui.close();
@@ -9149,12 +11164,20 @@ impl OttrinApp {
 
             let copy_target_btn = ui
                 .add_enabled(
-                    !target_missing && !same_as_target,
-                    egui::Button::new(RichText::new("Copy to Drop Folder").color(menu_col)),
+                    !target_missing && !same_as_target_set,
+                    egui::Button::new(
+                        RichText::new(format!(
+                            "{MI_CONTENT_COPY}  Copy {menu_target} to Drop Folder"
+                        ))
+                        .size(12.5)
+                        .color(c.text_muted),
+                    )
+                    .frame(false)
+                    .min_size(Vec2::new(188.0, 26.0)),
                 )
                 .on_hover_text(if target_missing {
                     "No drop folder set"
-                } else if same_as_target {
+                } else if same_as_target_set {
                     "Already in destination"
                 } else {
                     ""
@@ -9162,7 +11185,7 @@ impl OttrinApp {
             if copy_target_btn.clicked() {
                 if let Some(dst) = target_dir.clone() {
                     *pending_op = Some(FileCommand::Copy {
-                        sources: vec![path.clone()],
+                        sources: menu_sources.clone(),
                         destination: dst,
                         conflict: ConflictAction::Rename,
                     });
@@ -9172,12 +11195,20 @@ impl OttrinApp {
             }
             let move_target_btn = ui
                 .add_enabled(
-                    !target_missing && !same_as_target,
-                    egui::Button::new(RichText::new("Move to Drop Folder").color(menu_col)),
+                    !target_missing && !same_as_target_set,
+                    egui::Button::new(
+                        RichText::new(format!(
+                            "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to Drop Folder"
+                        ))
+                        .size(12.5)
+                        .color(c.text_muted),
+                    )
+                    .frame(false)
+                    .min_size(Vec2::new(188.0, 26.0)),
                 )
                 .on_hover_text(if target_missing {
                     "No drop folder set"
-                } else if same_as_target {
+                } else if same_as_target_set {
                     "Already in destination"
                 } else {
                     ""
@@ -9185,7 +11216,7 @@ impl OttrinApp {
             if move_target_btn.clicked() {
                 if let Some(dst) = target_dir.clone() {
                     *pending_op = Some(FileCommand::Move {
-                        sources: vec![path.clone()],
+                        sources: menu_sources.clone(),
                         destination: dst,
                         conflict: ConflictAction::Rename,
                     });
@@ -9196,17 +11227,25 @@ impl OttrinApp {
 
             let copy_cur_btn = ui
                 .add_enabled(
-                    !same_as_current,
-                    egui::Button::new(RichText::new("Copy to Current Folder").color(menu_col)),
+                    !same_as_current_set,
+                    egui::Button::new(
+                        RichText::new(format!(
+                            "{MI_CONTENT_COPY}  Copy {menu_target} to Current Folder"
+                        ))
+                        .size(12.5)
+                        .color(c.text_muted),
+                    )
+                    .frame(false)
+                    .min_size(Vec2::new(188.0, 26.0)),
                 )
-                .on_hover_text(if same_as_current {
+                .on_hover_text(if same_as_current_set {
                     "Already in destination"
                 } else {
                     ""
                 });
             if copy_cur_btn.clicked() {
                 *pending_op = Some(FileCommand::Copy {
-                    sources: vec![path.clone()],
+                    sources: menu_sources.clone(),
                     destination: current_dir.to_path_buf(),
                     conflict: ConflictAction::Rename,
                 });
@@ -9214,17 +11253,25 @@ impl OttrinApp {
             }
             let move_cur_btn = ui
                 .add_enabled(
-                    !same_as_current,
-                    egui::Button::new(RichText::new("Move to Current Folder").color(menu_col)),
+                    !same_as_current_set,
+                    egui::Button::new(
+                        RichText::new(format!(
+                            "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to Current Folder"
+                        ))
+                        .size(12.5)
+                        .color(c.text_muted),
+                    )
+                    .frame(false)
+                    .min_size(Vec2::new(188.0, 26.0)),
                 )
-                .on_hover_text(if same_as_current {
+                .on_hover_text(if same_as_current_set {
                     "Already in destination"
                 } else {
                     ""
                 });
             if move_cur_btn.clicked() {
                 *pending_op = Some(FileCommand::Move {
-                    sources: vec![path.clone()],
+                    sources: menu_sources.clone(),
                     destination: current_dir.to_path_buf(),
                     conflict: ConflictAction::Rename,
                 });
@@ -9236,12 +11283,18 @@ impl OttrinApp {
                 let tandem_label = "Other Pane";
                 let copy_tandem_btn = ui
                     .add_enabled(
-                        !same_as_tandem,
+                        !same_as_tandem_set,
                         egui::Button::new(
-                            RichText::new(format!("Copy to {tandem_label}")).color(menu_col),
-                        ),
+                            RichText::new(format!(
+                                "{MI_CONTENT_COPY}  Copy {menu_target} to {tandem_label}"
+                            ))
+                            .size(12.5)
+                            .color(c.text_muted),
+                        )
+                        .frame(false)
+                        .min_size(Vec2::new(188.0, 26.0)),
                     )
-                    .on_hover_text(if same_as_tandem {
+                    .on_hover_text(if same_as_tandem_set {
                         "Already in destination"
                     } else {
                         ""
@@ -9249,7 +11302,7 @@ impl OttrinApp {
                 if copy_tandem_btn.clicked() {
                     if let Some(dst) = tandem_target_dir.clone() {
                         *pending_op = Some(FileCommand::Copy {
-                            sources: vec![path.clone()],
+                            sources: menu_sources.clone(),
                             destination: dst,
                             conflict: ConflictAction::Rename,
                         });
@@ -9259,12 +11312,18 @@ impl OttrinApp {
                 }
                 let move_tandem_btn = ui
                     .add_enabled(
-                        !same_as_tandem,
+                        !same_as_tandem_set,
                         egui::Button::new(
-                            RichText::new(format!("Move to {tandem_label}")).color(menu_col),
-                        ),
+                            RichText::new(format!(
+                                "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to {tandem_label}"
+                            ))
+                            .size(12.5)
+                            .color(c.text_muted),
+                        )
+                        .frame(false)
+                        .min_size(Vec2::new(188.0, 26.0)),
                     )
-                    .on_hover_text(if same_as_tandem {
+                    .on_hover_text(if same_as_tandem_set {
                         "Already in destination"
                     } else {
                         ""
@@ -9272,7 +11331,7 @@ impl OttrinApp {
                 if move_tandem_btn.clicked() {
                     if let Some(dst) = tandem_target_dir.clone() {
                         *pending_op = Some(FileCommand::Move {
-                            sources: vec![path.clone()],
+                            sources: menu_sources.clone(),
                             destination: dst,
                             conflict: ConflictAction::Rename,
                         });
@@ -9288,6 +11347,20 @@ impl OttrinApp {
         let input = self.command_frame.input.trim().to_string();
         let cwd = self.state.active_tab().current_dir.clone();
         self.command_frame.completions = compute_path_completions(&input, &cwd);
+    }
+
+    fn open_with_application_dialog(&mut self, path: &Path) {
+        let Some(application) = rfd::FileDialog::new().set_title("Open with").pick_file() else {
+            return;
+        };
+        match self.platform.open_with_application(path, &application) {
+            Ok(()) => self.set_status_message(
+                format!("Opened with {}", display_app_name(&application)),
+                true,
+                3,
+            ),
+            Err(err) => self.set_status_message(format!("Open with failed: {err}"), false, 5),
+        }
     }
 
     fn render_file_pane(&mut self, ctx: &Context) {
@@ -9316,13 +11389,67 @@ impl OttrinApp {
         }
     }
 
-    fn render_view_controls_row(
-        &mut self,
-        ui: &mut egui::Ui,
-        tab_id: u64,
-        bottom_bar_bg: Color32,
-        bottom_text: Color32,
-    ) {
+    fn set_tab_view_mode(&mut self, tab_id: u64, view_mode: ViewMode) {
+        let previous = self
+            .state
+            .tab_by_id(tab_id)
+            .map(|tab| tab.view_mode)
+            .unwrap_or(ViewMode::Miller);
+        if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
+            tab.view_mode = view_mode;
+        }
+        if matches!(previous, ViewMode::Miller)
+            && !matches!(view_mode, ViewMode::Miller)
+            && matches!(self.sidebar, SidebarSection::Info)
+        {
+            self.sidebar = SidebarSection::None;
+        }
+        self.state.config.default_view_mode = view_mode;
+        self.persist_config();
+    }
+
+    fn thumbnails_enabled_for(&self, view_mode: ViewMode, dir: &Path) -> bool {
+        let key = dir.display().to_string();
+        match view_mode {
+            ViewMode::Miller => false,
+            ViewMode::List => self
+                .state
+                .config
+                .folder_list_thumbnails
+                .get(&key)
+                .copied()
+                .unwrap_or(self.state.config.list_show_thumbnails),
+            ViewMode::Grid => self
+                .state
+                .config
+                .folder_grid_thumbnails
+                .get(&key)
+                .copied()
+                .unwrap_or(self.state.config.grid_show_thumbnails),
+        }
+    }
+
+    fn set_folder_thumbnails(&mut self, view_mode: ViewMode, dir: &Path, enabled: bool) {
+        let key = dir.display().to_string();
+        match view_mode {
+            ViewMode::Miller => {}
+            ViewMode::List => {
+                self.state
+                    .config
+                    .folder_list_thumbnails
+                    .insert(key, enabled);
+            }
+            ViewMode::Grid => {
+                self.state
+                    .config
+                    .folder_grid_thumbnails
+                    .insert(key, enabled);
+            }
+        }
+        self.persist_config();
+    }
+
+    fn render_view_controls_row(&mut self, ui: &mut egui::Ui, tab_id: u64, bottom_text: Color32) {
         let c = self.colors;
         let current_sort = self
             .state
@@ -9340,17 +11467,12 @@ impl OttrinApp {
             .map(|t| t.view_mode)
             .unwrap_or(ViewMode::Miller);
 
-        ui.painter().hline(
-            ui.max_rect().x_range(),
-            ui.max_rect().top(),
-            Stroke::new(1.0, mix_color(c.border, bottom_bar_bg, 0.5)),
-        );
         ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
             ui.label(RichText::new("Sort").size(11.5).color(bottom_text));
             ui.add_space(6.0);
 
             let mut sort_by = current_sort.by;
-            egui::ComboBox::from_id_salt(("sort_by", tab_id))
+            let sort_combo = egui::ComboBox::from_id_salt(("sort_by", tab_id))
                 .selected_text(
                     RichText::new(match sort_by {
                         SortBy::Name => "Name",
@@ -9384,6 +11506,9 @@ impl OttrinApp {
                         RichText::new("Modified").color(bottom_text),
                     );
                 });
+            sort_combo
+                .response
+                .on_hover_text("Choose which file attribute controls the order.");
 
             let mut asc = if sort_by == current_sort.by {
                 current_sort.ascending
@@ -9412,9 +11537,19 @@ impl OttrinApp {
                         .min_size(Vec2::new(72.0, 20.0)),
                 )
                 .on_hover_text(if sort_supports_direction {
-                    "Toggle sort direction"
+                    match sort_by {
+                        SortBy::Name => "Toggle name order between A-Z and Z-A.",
+                        SortBy::Kind => {
+                            "Toggle type order and the name order inside each type group."
+                        }
+                        SortBy::Size | SortBy::Modified => "Toggle sort direction",
+                    }
                 } else {
-                    "This sort mode uses a fixed direction"
+                    match sort_by {
+                        SortBy::Size => "Size is fixed to largest first.",
+                        SortBy::Modified => "Modified is fixed to newest first.",
+                        SortBy::Name | SortBy::Kind => "This sort mode uses a fixed direction.",
+                    }
                 })
                 .clicked()
             {
@@ -9482,7 +11617,11 @@ impl OttrinApp {
                         .frame(false)
                         .min_size(Vec2::splat(30.0)),
                 )
-                .on_hover_text("Back")
+                .on_hover_text(if can_back {
+                    "Back to previous folder in this pane (Alt+Left when active)"
+                } else {
+                    "Back history is empty for this pane."
+                })
                 .clicked()
             {
                 self.focus_tab(tab_id);
@@ -9495,7 +11634,11 @@ impl OttrinApp {
                         .frame(false)
                         .min_size(Vec2::splat(30.0)),
                 )
-                .on_hover_text("Forward")
+                .on_hover_text(if can_fwd {
+                    "Forward to next folder in this pane (Alt+Right when active)"
+                } else {
+                    "Forward history is empty. Use Back first to create forward history."
+                })
                 .clicked()
             {
                 self.focus_tab(tab_id);
@@ -9508,7 +11651,7 @@ impl OttrinApp {
                         .frame(false)
                         .min_size(Vec2::splat(30.0)),
                 )
-                .on_hover_text("Parent folder")
+                .on_hover_text("Go to parent folder (Alt+Up when active)")
                 .clicked()
             {
                 self.focus_tab(tab_id);
@@ -9541,10 +11684,29 @@ impl OttrinApp {
                     ViewMode::List => ViewMode::Grid,
                     ViewMode::Grid => ViewMode::Miller,
                 };
-                if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
-                    tab.view_mode = next;
-                }
+                self.set_tab_view_mode(tab_id, next);
             }
+            let view_options_popup_id = ui.make_persistent_id(("view_options_menu", tab_id));
+            let view_options_btn = ui
+                .add(
+                    egui::Button::new(
+                        RichText::new(MI_DASHBOARD_CUSTOMIZE)
+                            .size(18.0)
+                            .color(c.text_muted),
+                    )
+                    .frame(false)
+                    .min_size(Vec2::splat(30.0)),
+                )
+                .on_hover_text("View Options");
+            if view_options_btn.hovered() {
+                ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+            }
+            egui::Popup::menu(&view_options_btn)
+                .id(view_options_popup_id)
+                .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
+                .show(|ui| {
+                    self.render_view_options_menu(ui, tab_id, view_options_popup_id);
+                });
             if let Some(link) = self.current_tandem_view()
                 && link.contains_tab(tab_id)
             {
@@ -9613,7 +11775,7 @@ impl OttrinApp {
 
     fn render_single_file_pane(&mut self, ctx: &Context) {
         let c = self.colors;
-        let bottom_bar_bg = mix_color(c.toolbar_bg, c.bg, 0.42);
+        let bottom_bar_bg = c.toolbar_bg;
         let bottom_text = mix_color(c.text_muted, bottom_bar_bg, 0.38);
         let tab_id = self.state.active_tab().id;
         self.smart_panel_rect = None;
@@ -9626,7 +11788,7 @@ impl OttrinApp {
                     .inner_margin(egui::Margin::symmetric(10, 0)),
             )
             .show(ctx, |ui| {
-                self.render_view_controls_row(ui, tab_id, bottom_bar_bg, bottom_text);
+                self.render_view_controls_row(ui, tab_id, bottom_text);
             });
 
         let mut file_rect: Option<Rect> = None;
@@ -9642,7 +11804,7 @@ impl OttrinApp {
                 self.smart_panel_rect = Some(panel_rect);
                 file_rect = Some(file_rect_local);
                 ui.scope_builder(UiBuilder::new().max_rect(file_rect_local), |ui| {
-                    self.render_tab_contents(ui, tab_id, true);
+                    self.render_tab_contents(ui, tab_id, false);
                 });
             });
         self.file_pane_rect = file_rect.or(Some(pane.response.rect));
@@ -9674,7 +11836,7 @@ impl OttrinApp {
         ui.painter().rect_stroke(
             side_rect,
             0.0,
-            Stroke::new(1.0, mix_color(c.border, c.bg, 0.8)),
+            Stroke::new(HAIRLINE, mix_color(c.border, c.bg, 0.55)),
             egui::StrokeKind::Inside,
         );
 
@@ -9684,7 +11846,7 @@ impl OttrinApp {
         });
         ui.scope_builder(UiBuilder::new().max_rect(footer_rect), |ui| {
             ui.painter().rect_filled(ui.max_rect(), 0.0, bottom_bar_bg);
-            self.render_view_controls_row(ui, tab_id, bottom_bar_bg, bottom_text);
+            self.render_view_controls_row(ui, tab_id, bottom_text);
         });
         ui.scope_builder(UiBuilder::new().max_rect(content_rect), |ui| {
             self.render_tab_contents(ui, tab_id, false);
@@ -9693,7 +11855,7 @@ impl OttrinApp {
 
     fn render_tandem_file_pane(&mut self, ctx: &Context, left_tab_id: u64, right_tab_id: u64) {
         let c = self.colors;
-        let bottom_bar_bg = mix_color(c.toolbar_bg, c.bg, 0.42);
+        let bottom_bar_bg = c.toolbar_bg;
         let bottom_text = mix_color(c.text_muted, bottom_bar_bg, 0.38);
         self.smart_panel_rect = None;
         let pane = egui::CentralPanel::default()
@@ -9925,6 +12087,11 @@ impl OttrinApp {
             return;
         }
         let focus_col = self.effective_miller_focus_col(tab_id, &cols, current_col);
+        let selected_paths = self
+            .tab_ui
+            .get(&tab_id)
+            .map(|ui| ui.selected_paths.clone())
+            .unwrap_or_default();
         {
             let ui = self.tab_ui.entry(tab_id).or_default();
             ui.miller_focus_dir = Some(cols[focus_col].dir.clone());
@@ -9955,11 +12122,17 @@ impl OttrinApp {
 
         // Read saved horizontal offset BEFORE the ScrollArea renders.
         let saved_h_offset = self.tab_ui.entry(tab_id).or_default().miller_h_offset;
+        let show_horizontal_scrollbar =
+            ui.rect_contains_pointer(full) || scroll_left_nav || scroll_right_nav;
 
         let mut sa = ScrollArea::horizontal()
             .id_salt(("miller_h", tab_id))
             .auto_shrink([false, false])
-            .scroll_bar_visibility(ScrollBarVisibility::AlwaysVisible);
+            .scroll_bar_visibility(if show_horizontal_scrollbar {
+                ScrollBarVisibility::AlwaysVisible
+            } else {
+                ScrollBarVisibility::AlwaysHidden
+            });
 
         // On Up/Down: force the scroll offset BEFORE rendering so egui
         // never gets a chance to shift the viewport horizontally.
@@ -9970,7 +12143,7 @@ impl OttrinApp {
         let sa_output = sa.show(ui, |ui| {
             ui.set_min_height(h);
             ui.horizontal(|ui| {
-                let h_spacing = ui.style().spacing.item_spacing.x;
+                ui.spacing_mut().item_spacing.x = 0.0;
                 // Guarantee the horizontal layout is at least as wide as
                 // the high-water mark so egui never clamps the scroll offset.
                 let prev_hwm = self.tab_ui.entry(tab_id).or_default().miller_total_w_max;
@@ -9985,6 +12158,7 @@ impl OttrinApp {
                     .or_default()
                     .miller_preview_depth
                     .max(1);
+                let divider_fill = c.toolbar_bg;
                 for (col_idx, col) in cols.iter().enumerate() {
                     let mut width = if col_idx > current_col {
                         // Keep per-folder width stable across role changes
@@ -10013,6 +12187,8 @@ impl OttrinApp {
                             ScrollArea::vertical()
                                 .id_salt(("miller_col", tab_id, col.dir.clone(), epoch))
                                 .auto_shrink([false, false])
+                                .max_width(width)
+                                .min_scrolled_width(width)
                                 .show(ui, |ui| {
                                     ui.set_min_width(width);
                                     ui.set_max_width(width);
@@ -10054,7 +12230,10 @@ impl OttrinApp {
                                                 .unwrap_or(false);
                                         let is_column_selection = col.selected == Some(i)
                                             && (col_idx <= focus_col || preview_depth > 1);
-                                        let selected = is_path_row || is_column_selection;
+                                        let selected = is_path_row
+                                            || (col_idx == current_col
+                                                && selected_paths.contains(&entry.path))
+                                            || (selected_paths.is_empty() && is_column_selection);
                                         let opened_row = is_path_row
                                             || (col_idx < current_col && col.selected == Some(i));
                                         let resp = self.render_file_row(
@@ -10098,6 +12277,12 @@ impl OttrinApp {
                                                 self.set_tab_anchor_dir_live(
                                                     tab_id,
                                                     col.dir.clone(),
+                                                );
+                                            } else if col_idx == current_col {
+                                                let modifiers =
+                                                    ui.ctx().input(|input| input.modifiers);
+                                                self.set_main_selection_from_click(
+                                                    tab_id, i, modifiers,
                                                 );
                                             }
                                             ui.ctx().request_repaint();
@@ -10177,23 +12362,15 @@ impl OttrinApp {
                             }
                         }
                     }
-                    // Always show separator after each directory column
-                    // (the rightmost fill/preview column always follows).
+                    // A soft rail is real layout space, not an overlay, so
+                    // selected rows stop cleanly at column boundaries.
                     {
-                        ui.painter()
-                            .vline(rect.max.x, rect.y_range(), Stroke::new(1.0, c.border));
-                        let sep_rect = Rect::from_min_size(
-                            egui::Pos2::new(rect.max.x - 3.0, rect.min.y),
-                            Vec2::new(6.0, h),
-                        );
-                        let sep_resp = ui.interact(
-                            sep_rect,
-                            ui.id().with(("miller_sep", tab_id, col.dir.clone())),
+                        let (divider_rect, sep_resp) = ui.allocate_exact_size(
+                            Vec2::new(MILLER_COLUMN_DIVIDER_WIDTH, h),
                             Sense::drag(),
                         );
-                        if sep_resp.hovered() || sep_resp.dragged() {
-                            ui.ctx().set_cursor_icon(egui::CursorIcon::ResizeHorizontal);
-                        }
+                        ui.painter().rect_filled(divider_rect, 0.0, divider_fill);
+                        paint_resize_separator(ui, divider_rect, &sep_resp, &c);
                         if sep_resp.dragged() {
                             let dx = ui.ctx().input(|i| i.pointer.delta().x);
                             width = (width + dx).clamp(96.0, 560.0);
@@ -10220,24 +12397,17 @@ impl OttrinApp {
                 // Absolute X we need to fill to.
                 let fill_to = content_start + target_total;
 
-                let is_file_preview = focus_selected
+                if let Some(entry) = focus_selected
                     .as_ref()
-                    .map(|e| matches!(e.kind, EntryKind::File))
-                    .unwrap_or(false);
-
-                if is_file_preview {
+                    .filter(|entry| matches!(entry.kind, EntryKind::File))
+                {
                     // File preview: fill from cursor to visible right edge,
                     // at least one standard column wide, capped at viewport
                     // width to prevent infinite scroll feedback loops.
                     let visible_right = ui.clip_rect().max.x;
                     let preview_right = visible_right.max(cursor_x + col_w);
                     let fill_w = (preview_right - cursor_x).max(col_w).min(viewport_w);
-                    self.render_miller_file_preview(
-                        ui,
-                        focus_selected.as_ref().unwrap(),
-                        fill_w,
-                        h,
-                    );
+                    self.render_miller_file_preview(ui, entry, fill_w, h);
                 }
 
                 // ALWAYS pad with empty fill columns to reach fill_to.
@@ -10247,7 +12417,7 @@ impl OttrinApp {
                     let cur = ui.cursor().min.x;
                     let remaining = (fill_to - cur).max(0.0);
                     if remaining > 1.0 {
-                        let n_fill = ((remaining / (col_w + h_spacing)).ceil() as usize).max(1);
+                        let n_fill = ((remaining / col_w).ceil() as usize).max(1);
                         for fi in 0..n_fill {
                             let w = if fi == n_fill - 1 {
                                 (fill_to - ui.cursor().min.x).max(col_w)
@@ -10256,11 +12426,11 @@ impl OttrinApp {
                             };
                             let r = self.render_miller_empty_preview(ui, w, h);
                             if fi < n_fill - 1 {
-                                ui.painter().vline(
-                                    r.max.x,
-                                    r.y_range(),
-                                    Stroke::new(1.0, c.border),
+                                let (divider_rect, _) = ui.allocate_exact_size(
+                                    Vec2::new(MILLER_COLUMN_DIVIDER_WIDTH, r.height()),
+                                    Sense::hover(),
                                 );
+                                ui.painter().rect_filled(divider_rect, 0.0, divider_fill);
                             }
                         }
                     }
@@ -10372,6 +12542,7 @@ impl OttrinApp {
 
                 let mut preview_widget: Option<egui::Image<'static>> = None;
                 let mut text_snippet: Option<String> = None;
+                let mut metadata_icon: Option<&'static str> = None;
                 let max_preview_w = (width - pad * 2.0).max(96.0);
                 // Preview fills the space above the info panel
                 let max_preview_h = (height - info_total_h - 32.0).max(80.0);
@@ -10409,7 +12580,9 @@ impl OttrinApp {
                             const SNIPPET_MAX: usize = 800;
                             let mut snippet = String::new();
                             let mut left = SNIPPET_MAX;
-                            for (i, line) in preview.body.lines().enumerate() {
+                            let (_, extracted) = split_preview_extracted_text(&preview.body);
+                            let source = extracted.unwrap_or(&preview.body);
+                            for (i, line) in source.lines().enumerate() {
                                 if i >= 16 || left == 0 {
                                     break;
                                 }
@@ -10425,6 +12598,24 @@ impl OttrinApp {
                             }
                         }
                     }
+                    PreviewKind::Pdf
+                    | PreviewKind::OfficeMetadata
+                    | PreviewKind::ArchiveMetadata
+                    | PreviewKind::AudioMetadata
+                    | PreviewKind::VideoMetadata => {
+                        metadata_icon = Some(match preview.kind {
+                            PreviewKind::Pdf => MI_PICTURE_PDF,
+                            PreviewKind::OfficeMetadata => MI_DESCRIPTION,
+                            PreviewKind::ArchiveMetadata => MI_FOLDER_ZIP,
+                            PreviewKind::AudioMetadata => MI_MUSIC_NOTE,
+                            PreviewKind::VideoMetadata => MI_MOVIE,
+                            _ => MI_FILE,
+                        });
+                        let snippet = metadata_preview_snippet(&preview.body, 14, 900);
+                        if !snippet.is_empty() {
+                            text_snippet = Some(snippet);
+                        }
+                    }
                     _ => {}
                 }
 
@@ -10438,6 +12629,10 @@ impl OttrinApp {
                         if let Some(img) = preview_widget {
                             ui.add(img.max_height(max_preview_h).max_width(max_preview_w));
                         } else if let Some(mut snippet) = text_snippet {
+                            if let Some(meta_icon) = metadata_icon {
+                                ui.label(RichText::new(meta_icon).size(46.0).color(icon_color));
+                                ui.add_space(8.0);
+                            }
                             let text_w = (width - pad * 2.0).max(120.0);
                             let text_h = max_preview_h.min(preview_h * 0.7).max(60.0);
                             ui.add_sized(
@@ -10673,15 +12868,17 @@ impl OttrinApp {
             .tab_by_id(tab_id)
             .map(|t| t.sort)
             .unwrap_or_default();
-        let (entries, loading, error, sel) = {
+        let (entries, loading, error, sel, selected_paths) = {
             let s = self.tab_ui.entry(tab_id).or_default();
             (
                 s.main.entries.clone(),
                 s.main.loading,
                 s.main.error.clone(),
                 s.main_sel,
+                s.selected_paths.clone(),
             )
         };
+        let thumbnails_enabled = self.thumbnails_enabled_for(ViewMode::List, &current_dir);
         let mut visible_cols = self.state.config.list_columns.clone();
         if !visible_cols.contains(&ListColumn::Name) {
             visible_cols.insert(0, ListColumn::Name);
@@ -10800,11 +12997,18 @@ impl OttrinApp {
                 egui::Pos2::new(x, header_rect.min.y),
                 Vec2::new(w, header_rect.height()),
             );
-            let col_resp = ui.interact(
-                col_rect,
-                ui.id().with(("list_header_sort", tab_id, label)),
-                Sense::click(),
-            );
+            let col_resp = ui
+                .interact(
+                    col_rect,
+                    ui.id().with(("list_header_sort", tab_id, label)),
+                    Sense::click(),
+                )
+                .on_hover_text(match sort_by {
+                    SortBy::Name => "Sort by name. Click again to switch A-Z/Z-A.",
+                    SortBy::Kind => "Sort by type. Click again to switch group order.",
+                    SortBy::Size => "Sort by size. Largest files stay first.",
+                    SortBy::Modified => "Sort by modified time. Newest files stay first.",
+                });
             if col_resp.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                 ui.painter().rect_filled(col_rect, 0.0, c.hover);
@@ -10858,14 +13062,7 @@ impl OttrinApp {
                     ui.id().with(("list_col_resize", tab_id, idx)),
                     Sense::drag(),
                 );
-                if sep_resp.hovered() || sep_resp.dragged() {
-                    ui.ctx().set_cursor_icon(egui::CursorIcon::ResizeHorizontal);
-                    ui.painter().vline(
-                        sep_rect.center().x,
-                        sep_rect.y_range(),
-                        Stroke::new(1.0, c.border),
-                    );
-                }
+                paint_resize_separator(ui, sep_rect, &sep_resp, &c);
                 if sep_resp.dragged() {
                     let dx = ui.ctx().input(|i| i.pointer.delta().x);
                     let left_idx = col_index(visible_cols[idx]);
@@ -10888,7 +13085,8 @@ impl OttrinApp {
                     return;
                 }
                 for (i, entry) in entries.iter().enumerate() {
-                    let selected = sel == Some(i);
+                    let selected = selected_paths.contains(&entry.path)
+                        || (selected_paths.is_empty() && sel == Some(i));
                     let row_rect = Rect::from_min_size(
                         ui.cursor().min,
                         Vec2::new(ui.available_width(), row_h),
@@ -10910,7 +13108,8 @@ impl OttrinApp {
                     }
                     if response.clicked() {
                         self.focus_tab(tab_id);
-                        self.set_main_selection(tab_id, i);
+                        let modifiers = ui.ctx().input(|input| input.modifiers);
+                        self.set_main_selection_from_click(tab_id, i, modifiers);
                     }
                     if response.double_clicked() {
                         self.focus_tab(tab_id);
@@ -10957,20 +13156,53 @@ impl OttrinApp {
                         match col {
                             ListColumn::Name => {
                                 let icon_str = material_icon(style.icon);
-                                ui.painter().text(
-                                    egui::Pos2::new(x + 6.0, y),
-                                    Align2::LEFT_CENTER,
-                                    icon_str,
-                                    FontId::proportional(icon_size),
-                                    style.icon_color,
+                                let thumb_size = (row_h - 7.0).clamp(18.0, 32.0);
+                                let thumb_rect = Rect::from_center_size(
+                                    egui::pos2(x + 14.0, y),
+                                    Vec2::splat(thumb_size),
                                 );
+                                let painted_thumbnail =
+                                    thumbnails_enabled && image_thumbnail_candidate(entry);
+                                if painted_thumbnail {
+                                    paint_thumbnail_slot(ui, thumb_rect, c);
+                                    if let Some(img) =
+                                        self.cached_thumbnail_widget(&entry.path, thumb_size, 4)
+                                    {
+                                        paint_centered_image(ui, thumb_rect, img);
+                                    }
+                                }
+                                if !painted_thumbnail {
+                                    ui.painter().text(
+                                        egui::Pos2::new(x + 6.0, y),
+                                        Align2::LEFT_CENTER,
+                                        icon_str,
+                                        FontId::proportional(icon_size),
+                                        style.icon_color,
+                                    );
+                                }
+                                let name_rect = Rect::from_min_max(
+                                    egui::pos2(x + 28.0, row_rect.top()),
+                                    egui::pos2((x + w - 6.0).max(x + 30.0), row_rect.bottom()),
+                                );
+                                let name_cap = ((name_rect.width() / (name_size * 0.58)).floor()
+                                    as usize)
+                                    .max(8);
+                                let visible_name = truncate_middle(&entry.name, name_cap);
                                 ui.painter().text(
                                     egui::Pos2::new(x + 28.0, y),
                                     Align2::LEFT_CENTER,
-                                    &entry.name,
+                                    &visible_name,
                                     FontId::proportional(name_size),
                                     style.text_color,
                                 );
+                                if visible_name != entry.name {
+                                    ui.interact(
+                                        name_rect,
+                                        ui.id().with(("list_name_tip", tab_id, i)),
+                                        Sense::hover(),
+                                    )
+                                    .on_hover_text(entry.name.clone());
+                                }
                             }
                             ListColumn::Kind => {
                                 ui.painter().text(
@@ -11045,15 +13277,17 @@ impl OttrinApp {
         let mut open_tandem_now: Option<PathBuf> = None;
         let mut add_bookmark: Option<PathBuf> = None;
         let mut remove_bookmark: Option<PathBuf> = None;
-        let (entries, loading, error, sel) = {
+        let (entries, loading, error, sel, selected_paths) = {
             let s = self.tab_ui.entry(tab_id).or_default();
             (
                 s.main.entries.clone(),
                 s.main.loading,
                 s.main.error.clone(),
                 s.main_sel,
+                s.selected_paths.clone(),
             )
         };
+        let thumbnails_enabled = self.thumbnails_enabled_for(ViewMode::Grid, &current_dir);
         if loading {
             ui.with_layout(Layout::top_down(Align::Center), |ui| {
                 ui.add_space(32.0);
@@ -11083,18 +13317,22 @@ impl OttrinApp {
         let cell_inner = (icon_px * 1.18).max(84.0);
         let padding = (10.0 * scale).round().max(8.0);
         let side_padding = (padding * 1.2).max(18.0);
-        let available_w = ui.available_width();
+        let available_w = ui.available_width().min(ui.clip_rect().width());
         let usable_w = (available_w - side_padding * 2.0).max(cell_inner + padding);
-        let cols = ((usable_w / (cell_inner + padding)) as usize).max(1);
+        let cols = ((usable_w + padding) / (cell_inner + padding)).floor() as usize;
+        let cols = cols.max(1);
         self.last_grid_cols = cols;
 
         ScrollArea::vertical()
             .id_salt(("grid", tab_id))
+            .auto_shrink([false, false])
             .show(ui, |ui| {
+                ui.set_min_width(available_w);
                 ui.add_space(padding * 0.5);
                 let mut i = 0;
                 while i < entries.len() {
                     ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = 0.0;
                         ui.add_space(side_padding);
                         for col in 0..cols {
                             if i + col >= entries.len() {
@@ -11102,8 +13340,9 @@ impl OttrinApp {
                             }
                             let entry = &entries[i + col];
                             let idx = i + col;
-                            let selected = sel == Some(idx);
-                            let name = truncate_name(&entry.name, label_chars);
+                            let selected = selected_paths.contains(&entry.path)
+                                || (selected_paths.is_empty() && sel == Some(idx));
+                            let name = truncate_middle(&entry.name, label_chars);
 
                             // Allocate the entire cell rect for hover/click sensing
                             let icon_gap = (8.0 * scale.clamp(0.9, 1.35)).round();
@@ -11111,6 +13350,9 @@ impl OttrinApp {
                             let (cell_rect, cell_resp) = ui
                                 .allocate_exact_size(Vec2::new(cell_inner, cell_h), Sense::click());
                             let is_hovered = cell_resp.hovered();
+                            if name != entry.name {
+                                cell_resp.clone().on_hover_text(entry.name.clone());
+                            }
                             let style = style_for_entry(
                                 entry,
                                 EntryVisualState {
@@ -11151,13 +13393,29 @@ impl OttrinApp {
                             // Icon centered horizontally in cell
                             let icon_y = cell_rect.min.y + (8.0 * scale.clamp(0.9, 1.3));
                             let icon_cx = cell_rect.center().x;
-                            ui.painter().text(
-                                egui::Pos2::new(icon_cx, icon_y + icon_px * 0.5),
-                                Align2::CENTER_CENTER,
-                                icon,
-                                FontId::proportional(icon_px),
-                                icon_color,
+                            let icon_rect = Rect::from_center_size(
+                                egui::pos2(icon_cx, icon_y + icon_px * 0.5),
+                                Vec2::splat(icon_px),
                             );
+                            let painted_thumbnail =
+                                thumbnails_enabled && image_thumbnail_candidate(entry);
+                            if painted_thumbnail {
+                                paint_thumbnail_slot(ui, icon_rect, c);
+                                if let Some(img) =
+                                    self.cached_thumbnail_widget(&entry.path, icon_px, 6)
+                                {
+                                    paint_centered_image(ui, icon_rect, img);
+                                }
+                            }
+                            if !painted_thumbnail {
+                                ui.painter().text(
+                                    egui::Pos2::new(icon_cx, icon_y + icon_px * 0.5),
+                                    Align2::CENTER_CENTER,
+                                    icon,
+                                    FontId::proportional(icon_px),
+                                    icon_color,
+                                );
+                            }
 
                             // Label below icon
                             ui.painter().text(
@@ -11171,7 +13429,8 @@ impl OttrinApp {
                             // Handle click/double-click
                             if cell_resp.clicked() {
                                 self.focus_tab(tab_id);
-                                self.set_main_selection(tab_id, idx);
+                                let modifiers = ui.ctx().input(|input| input.modifiers);
+                                self.set_main_selection_from_click(tab_id, idx, modifiers);
                             }
                             if cell_resp.double_clicked() {
                                 self.focus_tab(tab_id);
@@ -11195,9 +13454,10 @@ impl OttrinApp {
                                 &mut remove_bookmark,
                             );
 
-                            ui.add_space(padding);
+                            if col + 1 < cols && i + col + 1 < entries.len() {
+                                ui.add_space(padding);
+                            }
                         }
-                        ui.add_space(side_padding);
                     });
                     i += cols;
                     ui.add_space(padding * 0.25);
@@ -11247,44 +13507,223 @@ impl OttrinApp {
             Some(p) => p,
             None => return,
         };
-        let name = preview.title.as_str();
+        let name = preview.title.clone();
+        let mut close_requested = false;
+        let builder = egui::ViewportBuilder::default()
+            .with_title(format!("Ottrin Quick Inspector - {name}"))
+            .with_inner_size([720.0, 560.0])
+            .with_min_inner_size([420.0, 320.0])
+            .with_resizable(true);
+        let vp_id = Self::quick_inspector_viewport_id();
 
-        egui::Window::new("preview_overlay")
-            .title_bar(false)
-            .resizable(true)
-            .collapsible(false)
-            .default_width(600.0)
-            .default_height(500.0)
-            .frame(
-                Frame::window(&ctx.style())
-                    .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, c.border))
-                    .corner_radius(10.0),
-            )
-            .show(ctx, |ui| {
-                ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                    // Header
-                    ui.horizontal(|ui| {
-                        let icon = file_icon_for_path(&path);
-                        ui.label(RichText::new(icon).size(18.0));
-                        ui.label(RichText::new(name).color(c.text).size(14.0));
-                        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                            if ui
-                                .add(
-                                    egui::Label::new(
-                                        RichText::new("X").color(c.text_muted).size(16.0),
-                                    )
-                                    .sense(Sense::click()),
-                                )
-                                .clicked()
-                            {
-                                self.preview.visible = false;
-                            }
-                        });
+        ctx.show_viewport_immediate(vp_id, builder, |inspector_ctx, class| {
+            self.apply_theme_to_ctx(inspector_ctx);
+            let _ = class;
+            if inspector_ctx.input(|i| i.viewport().close_requested()) {
+                close_requested = true;
+                return;
+            }
+            let inspector_modal_active =
+                self.pending_rename.is_some() || self.pending_delete.is_some();
+            if inspector_modal_active {
+                if self.pending_delete.is_some() {
+                    self.handle_delete_confirmation_keyboard(inspector_ctx);
+                }
+            } else {
+                let inspector_text_focused = inspector_ctx.wants_keyboard_input();
+                if inspector_ctx.input_mut(|i| {
+                    i.consume_key(egui::Modifiers::NONE, Key::Escape)
+                        || (!inspector_text_focused
+                            && !self.command_frame.visible
+                            && i.consume_key(egui::Modifiers::NONE, Key::Space))
+                }) {
+                    close_requested = true;
+                    return;
+                } else if self.command_frame.visible {
+                    inspector_ctx.input_mut(|i| {
+                        let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowRight);
+                        let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowDown);
+                        let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowLeft);
+                        let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowUp);
+                        let _ = i.consume_key(egui::Modifiers::NONE, Key::Delete);
                     });
-                    ui.separator();
+                } else if !inspector_text_focused {
+                    let command_text = inspector_ctx.input(|i| {
+                        if i.modifiers.any() {
+                            return None;
+                        }
+                        i.events.iter().find_map(|event| match event {
+                            egui::Event::Text(text) if !text.trim().is_empty() => {
+                                Some(text.clone())
+                            }
+                            _ => None,
+                        })
+                    });
+                    let key_action = inspector_ctx.input_mut(|i| {
+                        if i.consume_key(egui::Modifiers::NONE, Key::ArrowRight)
+                            || i.consume_key(egui::Modifiers::NONE, Key::ArrowDown)
+                        {
+                            Some(PreviewKeyAction::NextItem)
+                        } else if i.consume_key(egui::Modifiers::NONE, Key::ArrowLeft)
+                            || i.consume_key(egui::Modifiers::NONE, Key::ArrowUp)
+                        {
+                            Some(PreviewKeyAction::PrevItem)
+                        } else if i.consume_key(egui::Modifiers::NONE, Key::Delete) {
+                            Some(PreviewKeyAction::Delete)
+                        } else if i.consume_key(egui::Modifiers::CTRL, Key::C)
+                            || i.consume_key(egui::Modifiers::COMMAND, Key::C)
+                        {
+                            Some(PreviewKeyAction::Copy)
+                        } else if i.consume_key(egui::Modifiers::CTRL, Key::X)
+                            || i.consume_key(egui::Modifiers::COMMAND, Key::X)
+                        {
+                            Some(PreviewKeyAction::Cut)
+                        } else if i.consume_key(egui::Modifiers::CTRL, Key::L)
+                            || i.consume_key(egui::Modifiers::COMMAND, Key::L)
+                        {
+                            Some(PreviewKeyAction::CommandFrame)
+                        } else if i.consume_key(egui::Modifiers::NONE, Key::F2) {
+                            Some(PreviewKeyAction::Rename)
+                        } else {
+                            None
+                        }
+                    });
+                    if let Some(action) = key_action {
+                        self.handle_preview_key_action(action);
+                    } else if let Some(text) = command_text {
+                        self.open_command_frame_with(&text);
+                    }
+                }
+            }
+            self.render_command_frame(inspector_ctx);
+            egui::CentralPanel::default()
+                .frame(
+                    Frame::new()
+                        .fill(c.panel_raised)
+                        .stroke(Stroke::new(1.0, c.border))
+                        .inner_margin(egui::Margin::same(12)),
+                )
+                .show(inspector_ctx, |ui| {
+                    ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                        ui.horizontal(|ui| {
+                            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                                ui.menu_button(
+                                    RichText::new(MI_MORE_VERT).color(c.text).size(18.0),
+                                    |ui| {
+                                        if menu_item(ui, MI_CONTENT_COPY, "Copy Path", &c).clicked()
+                                        {
+                                            ui.ctx().copy_text(path.display().to_string());
+                                            self.set_status_message("Copied file path", true, 3);
+                                            ui.close();
+                                        }
+                                        if let Some((icon, label, payload)) =
+                                            preview_payload_for_copy(&preview)
+                                            && menu_item(ui, icon, label, &c).clicked()
+                                        {
+                                            ui.ctx().copy_text(payload.to_string());
+                                            self.set_status_message(
+                                                format!("{label} copied"),
+                                                true,
+                                                3,
+                                            );
+                                            ui.close();
+                                        }
+                                        if menu_item(ui, MI_CONTENT_COPY, "Copy", &c)
+                                            .on_hover_text("Copy this file for pasting in Ottrin.")
+                                            .clicked()
+                                        {
+                                            self.copy_preview_path(false);
+                                            ui.close();
+                                        }
+                                        if menu_item(ui, MI_CONTENT_CUT, "Cut", &c)
+                                            .on_hover_text("Cut this file for moving in Ottrin.")
+                                            .clicked()
+                                        {
+                                            self.copy_preview_path(true);
+                                            ui.close();
+                                        }
+                                        if menu_item(ui, MI_EDIT, "Rename", &c).clicked() {
+                                            self.begin_rename();
+                                            ui.close();
+                                        }
+                                        if menu_item(ui, MI_OPEN_IN_NEW, "Reveal", &c).clicked() {
+                                            match self.platform.reveal_in_system(&path) {
+                                                Ok(()) => self.set_status_message(
+                                                    "Revealed file",
+                                                    true,
+                                                    3,
+                                                ),
+                                                Err(err) => self.set_status_message(
+                                                    format!("Reveal failed: {err}"),
+                                                    false,
+                                                    5,
+                                                ),
+                                            }
+                                            ui.close();
+                                        }
+                                        if menu_item(ui, MI_DELETE, "Move to Trash", &c).clicked() {
+                                            let tab_id = self.state.active_tab().id;
+                                            self.request_delete_paths(
+                                                tab_id,
+                                                vec![path.clone()],
+                                                DeleteMode::Trash,
+                                            );
+                                            ui.close();
+                                        }
+                                    },
+                                )
+                                .response
+                                .on_hover_text("More actions");
+                                if matches!(preview.kind, PreviewKind::Image) {
+                                    if inspector_icon_button(
+                                        ui,
+                                        MI_ROTATE_RIGHT,
+                                        "Rotate Right",
+                                        "Rotate image right and save the file.",
+                                        c,
+                                    )
+                                    .clicked()
+                                    {
+                                        self.rotate_inspector_image(&path, true);
+                                    }
+                                    if inspector_icon_button(
+                                        ui,
+                                        MI_ROTATE_LEFT,
+                                        "Rotate Left",
+                                        "Rotate image left and save the file.",
+                                        c,
+                                    )
+                                    .clicked()
+                                    {
+                                        self.rotate_inspector_image(&path, false);
+                                    }
+                                    let sizing_label = if self.preview.image_actual_size {
+                                        "Fit"
+                                    } else {
+                                        "Actual Size"
+                                    };
+                                    let sizing_tip = if self.preview.image_actual_size {
+                                        "Fit this image to the inspector window."
+                                    } else {
+                                        "Show this image at its original pixel size."
+                                    };
+                                    if inspector_icon_button(
+                                        ui,
+                                        MI_VISIBILITY,
+                                        sizing_label,
+                                        sizing_tip,
+                                        c,
+                                    )
+                                    .clicked()
+                                    {
+                                        self.preview.image_actual_size =
+                                            !self.preview.image_actual_size;
+                                    }
+                                }
+                            });
+                        });
+                        ui.separator();
 
-                    ScrollArea::vertical().show(ui, |ui| {
                         match preview.kind {
                             PreviewKind::Text => {
                                 let is_svg = path
@@ -11293,260 +13732,124 @@ impl OttrinApp {
                                     .map(|e| e.eq_ignore_ascii_case("svg"))
                                     .unwrap_or(false);
                                 if is_svg {
-                                    let max_w = (ui.available_width() - 24.0).max(120.0);
-                                    let max_h = (ui.available_height() * 0.7).max(160.0);
-                                    ui.vertical_centered(|ui| {
-                                        ui.add_space(8.0);
-                                        if let Some(img) =
-                                            self.cached_image_preview_widget(&path, max_w, max_h, 8)
-                                        {
-                                            ui.add(img);
-                                            if !preview.body.is_empty() {
-                                                ui.add_space(8.0);
-                                                ui.label(
-                                                    RichText::new(&preview.body)
-                                                        .color(c.text_dim)
-                                                        .size(11.5),
-                                                );
+                                    ScrollArea::both().show(ui, |ui| {
+                                        let max_w = (ui.available_width() - 24.0).max(120.0);
+                                        let max_h = (ui.available_height() - 30.0).max(160.0);
+                                        ui.vertical_centered(|ui| {
+                                            ui.add_space(8.0);
+                                            if let Some(img) = self
+                                                .cached_image_preview_widget(&path, max_w, max_h, 8)
+                                            {
+                                                ui.add(img);
                                             }
-                                        }
+                                            render_preview_footer(ui, c, &name, &preview.body);
+                                        });
                                     });
+                                } else {
+                                    render_text_body_preview(ui, c, &name, &preview.body);
                                 }
-                                let mut text = preview.body.clone();
-                                ui.add(
-                                    egui::TextEdit::multiline(&mut text)
-                                        .font(FontId::monospace(12.0))
-                                        .text_color(c.text)
-                                        .frame(false)
-                                        .desired_rows(30)
-                                        .interactive(false),
-                                );
                             }
                             PreviewKind::Image => {
-                                let max_w = (ui.available_width() - 24.0).max(120.0);
-                                let max_h = (ui.available_height() * 0.7).max(160.0);
-                                ui.vertical_centered(|ui| {
-                                    ui.add_space(8.0);
-                                    if let Some(img) =
-                                        self.cached_image_preview_widget(&path, max_w, max_h, 8)
-                                    {
-                                        ui.add(img);
-                                    } else {
-                                        ui.label(
-                                            RichText::new("Image preview unavailable")
+                                ScrollArea::both().show(ui, |ui| {
+                                    let max_w = (ui.available_width() - 24.0).max(120.0);
+                                    let max_h = (ui.available_height() - 34.0).max(160.0);
+                                    ui.vertical_centered(|ui| {
+                                        let image = if self.preview.image_actual_size {
+                                            self.cached_original_image_actual_size_widget(&path, 8)
+                                                .or_else(|| {
+                                                    self.cached_image_preview_widget(
+                                                        &path, max_w, max_h, 8,
+                                                    )
+                                                })
+                                        } else {
+                                            self.cached_original_image_preview_widget(
+                                                &path, max_w, max_h, 8,
+                                            )
+                                            .or_else(
+                                                || {
+                                                    self.cached_image_preview_widget(
+                                                        &path, max_w, max_h, 8,
+                                                    )
+                                                },
+                                            )
+                                        };
+                                        if let Some(img) = image {
+                                            let image_resp = ui.add(img);
+                                            if let Some(delta) =
+                                                render_image_hover_nav(ui, c, image_resp.rect)
+                                            {
+                                                let _ = self.select_adjacent_preview_item(delta);
+                                            }
+                                        } else {
+                                            ui.label(
+                                                RichText::new("Image preview unavailable")
+                                                    .color(c.text_dim)
+                                                    .size(11.0),
+                                            );
+                                        }
+                                        if !preview.body.is_empty() {
+                                            ui.add_space(6.0);
+                                            ui.label(
+                                                RichText::new(compact_preview_metadata(
+                                                    &name,
+                                                    &preview.body,
+                                                ))
                                                 .color(c.text_dim)
                                                 .size(11.0),
-                                        );
-                                    }
-                                    ui.add_space(10.0);
-                                    if !preview.body.is_empty() {
-                                        ui.label(
-                                            RichText::new(&preview.body)
-                                                .color(c.text_dim)
-                                                .size(11.5),
-                                        );
-                                    }
+                                            );
+                                        }
+                                    });
                                 });
                             }
                             PreviewKind::ArchiveMetadata => {
-                                // Rich archive card: header + scrollable file listing
-                                ui.add_space(12.0);
-                                ui.horizontal(|ui| {
-                                    ui.label(
-                                        RichText::new(MI_FOLDER_ZIP).size(36.0).color(c.folder),
-                                    );
-                                    ui.add_space(6.0);
-                                    ui.vertical(|ui| {
-                                        ui.label(
-                                            RichText::new(name).color(c.text).size(14.0).strong(),
-                                        );
-                                        // First lines are summary (before "Contents:")
-                                        let body = &preview.body;
-                                        let (header, _listing) =
-                                            if let Some(pos) = body.find("\nContents:\n") {
-                                                (
-                                                    &body[..pos],
-                                                    Some(&body[pos + "\nContents:\n".len()..]),
-                                                )
-                                            } else {
-                                                (body.as_str(), None)
-                                            };
-                                        ui.label(
-                                            RichText::new(header.trim())
-                                                .color(c.text_dim)
-                                                .size(11.5),
-                                        );
-                                    });
-                                });
-                                // File listing in monospace
-                                let body = &preview.body;
-                                if let Some(pos) = body.find("\nContents:\n") {
-                                    let listing = &body[pos + "\nContents:\n".len()..];
-                                    if !listing.is_empty() {
-                                        ui.add_space(6.0);
-                                        ui.separator();
-                                        ui.add_space(4.0);
-                                        ui.label(
-                                            RichText::new("Contents")
-                                                .color(c.text_muted)
-                                                .size(11.0),
-                                        );
-                                        let mut text = listing.to_string();
-                                        ui.add(
-                                            egui::TextEdit::multiline(&mut text)
-                                                .font(FontId::monospace(11.0))
-                                                .text_color(c.text_dim)
-                                                .frame(false)
-                                                .desired_rows(16)
-                                                .interactive(false),
-                                        );
-                                    }
-                                }
-                                ui.add_space(12.0);
-                                ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                                    if ui.button("Open with default app").clicked() {
-                                        let _ = self.platform.reveal_in_system(&path);
-                                    }
-                                });
-                            }
-                            PreviewKind::AudioMetadata => {
-                                // Rich audio card: icon + structured metadata rows
-                                ui.add_space(12.0);
-                                ui.horizontal(|ui| {
-                                    ui.label(
-                                        RichText::new(MI_MUSIC_NOTE).size(36.0).color(c.folder),
-                                    );
-                                    ui.add_space(6.0);
-                                    ui.vertical(|ui| {
-                                        ui.label(
-                                            RichText::new(name).color(c.text).size(14.0).strong(),
-                                        );
-                                    });
-                                });
-                                ui.add_space(8.0);
-                                // Render each metadata line as a key-value row
-                                for line in preview.body.lines() {
-                                    if let Some((key, val)) = line.split_once(':') {
-                                        ui.horizontal(|ui| {
-                                            ui.label(
-                                                RichText::new(format!("{key}:"))
-                                                    .color(c.text_muted)
-                                                    .size(11.5),
-                                            );
-                                            ui.label(
-                                                RichText::new(val.trim()).color(c.text).size(11.5),
-                                            );
-                                        });
-                                    } else if !line.trim().is_empty() {
-                                        ui.label(RichText::new(line).color(c.text_dim).size(11.5));
-                                    }
-                                }
-                                ui.add_space(16.0);
-                                ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                                    if ui.button("Open with default app").clicked() {
-                                        let _ = self.platform.reveal_in_system(&path);
-                                    }
-                                });
+                                render_archive_body_preview(ui, c, &name, &preview.body);
                             }
                             PreviewKind::Pdf => {
-                                // Rich PDF card: icon + structured metadata
-                                ui.add_space(12.0);
-                                ui.horizontal(|ui| {
-                                    ui.label(
-                                        RichText::new(MI_PICTURE_PDF).size(36.0).color(c.folder),
-                                    );
-                                    ui.add_space(6.0);
-                                    ui.vertical(|ui| {
-                                        ui.label(
-                                            RichText::new(name).color(c.text).size(14.0).strong(),
-                                        );
-                                    });
-                                });
-                                ui.add_space(8.0);
-                                for line in preview.body.lines() {
-                                    if let Some((key, val)) = line.split_once(':') {
-                                        ui.horizontal(|ui| {
-                                            ui.label(
-                                                RichText::new(format!("{key}:"))
-                                                    .color(c.text_muted)
-                                                    .size(11.5),
-                                            );
-                                            ui.label(
-                                                RichText::new(val.trim()).color(c.text).size(11.5),
-                                            );
-                                        });
-                                    } else if !line.trim().is_empty() {
-                                        ui.label(RichText::new(line).color(c.text).size(11.5));
-                                    }
-                                }
-                                ui.add_space(16.0);
-                                ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                                    if ui.button("Open with default app").clicked() {
-                                        let _ = self.platform.reveal_in_system(&path);
-                                    }
-                                });
+                                render_document_body_preview(
+                                    ui,
+                                    c,
+                                    MI_PICTURE_PDF,
+                                    &name,
+                                    &preview.body,
+                                );
                             }
                             PreviewKind::VideoMetadata | PreviewKind::OfficeMetadata => {
-                                ui.add_space(20.0);
-                                ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                                    let icon = match preview.kind {
-                                        PreviewKind::VideoMetadata => MI_MOVIE,
-                                        PreviewKind::OfficeMetadata => MI_DESCRIPTION,
-                                        _ => MI_FILE,
-                                    };
-                                    ui.label(RichText::new(icon).size(58.0).color(c.folder));
-                                    ui.add_space(8.0);
-                                    ui.label(RichText::new(name).color(c.text).size(14.0));
-                                    if !preview.body.is_empty() {
-                                        ui.add_space(8.0);
-                                        for line in preview.body.lines() {
-                                            if let Some((key, val)) = line.split_once(':') {
-                                                ui.horizontal(|ui| {
-                                                    ui.label(
-                                                        RichText::new(format!("{key}:"))
-                                                            .color(c.text_muted)
-                                                            .size(11.5),
-                                                    );
-                                                    ui.label(
-                                                        RichText::new(val.trim())
-                                                            .color(c.text)
-                                                            .size(11.5),
-                                                    );
-                                                });
-                                            } else if !line.trim().is_empty() {
-                                                ui.label(
-                                                    RichText::new(line)
-                                                        .color(c.text_dim)
-                                                        .size(11.5),
-                                                );
-                                            }
-                                        }
-                                    }
-                                    ui.add_space(16.0);
-                                    if ui.button("Open with default app").clicked() {
-                                        let _ = self.platform.reveal_in_system(&path);
-                                    }
-                                });
+                                let icon = match preview.kind {
+                                    PreviewKind::VideoMetadata => MI_MOVIE,
+                                    PreviewKind::OfficeMetadata => MI_DESCRIPTION,
+                                    _ => MI_FILE,
+                                };
+                                render_document_body_preview(ui, c, icon, &name, &preview.body);
                             }
                             _ => {
-                                ui.add_space(20.0);
-                                ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                                    let icon = file_icon_for_path(&path);
-                                    ui.label(RichText::new(icon).size(64.0));
-                                    ui.add_space(8.0);
-                                    ui.label(RichText::new(name).color(c.text).size(14.0));
-                                    if !preview.body.is_empty() {
-                                        ui.add_space(8.0);
-                                        ui.label(
-                                            RichText::new(&preview.body)
-                                                .color(c.text_dim)
-                                                .size(11.5),
+                                ScrollArea::both().show(ui, |ui| match preview.kind {
+                                    PreviewKind::FolderMetadata => {
+                                        render_folder_body_preview(ui, c, &name, &preview.body);
+                                    }
+                                    PreviewKind::AudioMetadata => {
+                                        render_metadata_card_preview(
+                                            ui,
+                                            c,
+                                            MI_MUSIC_NOTE,
+                                            &name,
+                                            &preview.body,
                                         );
                                     }
-                                    if preview.open_external {
-                                        ui.add_space(16.0);
-                                        if ui.button("Open with default app").clicked() {
-                                            let _ = self.platform.reveal_in_system(&path);
+                                    _ => {
+                                        if let Some(action) = render_generic_body_preview(
+                                            ui, c, &path, &name, &preview,
+                                        ) {
+                                            match action {
+                                                GenericPreviewAction::Rename => self.begin_rename(),
+                                                GenericPreviewAction::Delete => {
+                                                    let tab_id = self.state.active_tab().id;
+                                                    self.request_delete_paths(
+                                                        tab_id,
+                                                        vec![path.clone()],
+                                                        DeleteMode::Trash,
+                                                    );
+                                                }
+                                            }
                                         }
                                     }
                                 });
@@ -11554,7 +13857,20 @@ impl OttrinApp {
                         }
                     });
                 });
-            });
+            if self.pending_rename.is_some() {
+                self.render_rename_modal(inspector_ctx);
+            }
+            if self.pending_delete.is_some() {
+                self.render_delete_confirmation(inspector_ctx);
+            }
+        });
+
+        if close_requested {
+            self.preview.visible = false;
+            self.preview.path = None;
+            self.preview.data = None;
+            ctx.send_viewport_cmd_to(vp_id, egui::ViewportCommand::Close);
+        }
     }
 
     fn render_properties_popup(&mut self, ctx: &Context) {
@@ -11705,6 +14021,381 @@ impl OttrinApp {
             });
     }
 
+    fn render_rename_modal(&mut self, ctx: &Context) {
+        let Some(mut pending) = self.pending_rename.clone() else {
+            return;
+        };
+        let c = self.colors;
+        let viewport = ctx.viewport_rect();
+        ctx.layer_painter(egui::LayerId::new(
+            egui::Order::Middle,
+            egui::Id::new("rename_modal_scrim"),
+        ))
+        .rect_filled(viewport, 0.0, Color32::from_rgba_unmultiplied(0, 0, 0, 72));
+
+        let original = pending
+            .source
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("")
+            .to_string();
+        let mut submit = false;
+        let mut cancel = false;
+        let mut error: Option<String> = None;
+        egui::Area::new(egui::Id::new("rename_modal"))
+            .order(egui::Order::Tooltip)
+            .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
+            .show(ctx, |ui| {
+                Frame::new()
+                    .fill(c.panel_raised)
+                    .stroke(Stroke::new(1.0, mix_color(c.border, c.text_dim, 0.35)))
+                    .shadow(Shadow {
+                        offset: [0, 10],
+                        blur: 28,
+                        spread: 0,
+                        color: Color32::from_rgba_unmultiplied(0, 0, 0, 120),
+                    })
+                    .corner_radius(8.0)
+                    .inner_margin(egui::Margin::symmetric(18, 16))
+                    .show(ui, |ui| {
+                        ui.set_width(viewport.width().clamp(300.0, 460.0));
+                        ui.horizontal(|ui| {
+                            ui.label(RichText::new(MI_EDIT).size(22.0).color(c.accent));
+                            ui.add_space(8.0);
+                            ui.vertical(|ui| {
+                                ui.label(RichText::new("Rename").color(c.text).size(15.0).strong());
+                                ui.label(
+                                    RichText::new("Enter a new name for this item")
+                                        .color(c.text_muted)
+                                        .size(10.8),
+                                );
+                            });
+                        });
+                        ui.add_space(12.0);
+                        let input_id = egui::Id::new("rename_name_input");
+                        let response = ui.add(
+                            egui::TextEdit::singleline(&mut pending.name_input)
+                                .id(input_id)
+                                .desired_width(ui.available_width())
+                                .font(FontId::proportional(13.0))
+                                .text_color(c.text),
+                        );
+                        if pending.request_focus {
+                            response.request_focus();
+                            let char_count = pending.name_input.chars().count();
+                            let mut te_state =
+                                egui::text_edit::TextEditState::load(ui.ctx(), input_id)
+                                    .unwrap_or_default();
+                            te_state
+                                .cursor
+                                .set_char_range(Some(CCursorRange::one(CCursor::new(char_count))));
+                            te_state.store(ui.ctx(), input_id);
+                            pending.request_focus = false;
+                        }
+                        let trimmed = pending.name_input.trim();
+                        if trimmed.is_empty() {
+                            error = Some("Name cannot be empty.".to_string());
+                        } else if trimmed.contains('/') || trimmed.contains('\\') {
+                            error = Some("Name cannot contain a path separator.".to_string());
+                        }
+                        if let Some(err) = &error {
+                            ui.add_space(6.0);
+                            ui.label(RichText::new(err).color(c.error).size(10.8));
+                        }
+                        ui.add_space(14.0);
+                        ui.horizontal(|ui| {
+                            if ui.button("Cancel").clicked() {
+                                cancel = true;
+                            }
+                            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                                let enabled = error.is_none() && pending.name_input != original;
+                                if ui
+                                    .add_enabled(enabled, egui::Button::new("Rename"))
+                                    .clicked()
+                                {
+                                    submit = true;
+                                }
+                            });
+                        });
+                    });
+            });
+
+        let key_action = ctx.input_mut(|input| {
+            if input.consume_key(egui::Modifiers::NONE, Key::Escape) {
+                Some(false)
+            } else if input.consume_key(egui::Modifiers::NONE, Key::Enter) {
+                Some(true)
+            } else {
+                None
+            }
+        });
+        if let Some(confirm) = key_action {
+            if confirm {
+                submit = true;
+            } else {
+                cancel = true;
+            }
+        }
+        if cancel {
+            self.pending_rename = None;
+        } else if submit && error.is_none() && pending.name_input != original {
+            let cmd = FileCommand::Rename {
+                source: pending.source.clone(),
+                new_name: pending.name_input.trim().to_string(),
+            };
+            self.pending_rename = None;
+            self.run_file_op(cmd, Some(pending.tab_id));
+        } else {
+            self.pending_rename = Some(pending);
+        }
+    }
+
+    fn render_delete_confirmation(&mut self, ctx: &Context) {
+        let Some(pending) = self.pending_delete.clone() else {
+            return;
+        };
+
+        let c = self.colors;
+        let target_count = pending.targets.len();
+        let title = if matches!(pending.requested_mode, DeleteMode::Permanent) {
+            "Delete permanently?"
+        } else {
+            "Move to trash?"
+        };
+        let primary_name = pending
+            .targets
+            .first()
+            .and_then(|p| p.file_name())
+            .and_then(|n| n.to_str())
+            .unwrap_or("selected item")
+            .to_string();
+        let target_line = if target_count == 1 {
+            primary_name
+        } else {
+            format!("{target_count} selected items")
+        };
+        let viewport = ctx.viewport_rect();
+        ctx.layer_painter(egui::LayerId::new(
+            egui::Order::Middle,
+            egui::Id::new("delete_modal_scrim"),
+        ))
+        .rect_filled(viewport, 0.0, Color32::from_rgba_unmultiplied(0, 0, 0, 82));
+
+        let mut clicked: Option<DeleteChoice> = None;
+        egui::Area::new(egui::Id::new("delete_confirmation_v2"))
+            .order(egui::Order::Foreground)
+            .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
+            .show(ctx, |ui| {
+                Frame::new()
+                    .fill(c.panel_raised)
+                    .stroke(Stroke::new(1.0, c.border))
+                    .corner_radius(8.0)
+                    .inner_margin(egui::Margin::symmetric(18, 16))
+                    .show(ui, |ui| {
+                        ui.set_width(420.0);
+                        ui.horizontal(|ui| {
+                            let icon_rect =
+                                ui.allocate_exact_size(Vec2::splat(34.0), Sense::hover()).0;
+                            ui.painter().rect_filled(
+                                icon_rect,
+                                6.0,
+                                Color32::from_rgba_unmultiplied(220, 80, 95, 32),
+                            );
+                            ui.painter().text(
+                                icon_rect.center(),
+                                Align2::CENTER_CENTER,
+                                MI_DELETE,
+                                FontId::proportional(19.0),
+                                c.error,
+                            );
+                            ui.add_space(8.0);
+                            ui.vertical(|ui| {
+                                ui.label(RichText::new(title).color(c.text).size(15.0).strong());
+                                ui.label(
+                                    RichText::new(if target_count == 1 {
+                                        "Choose what to do with this item"
+                                    } else {
+                                        "Choose what to do with these items"
+                                    })
+                                    .color(c.text_muted)
+                                    .size(10.8),
+                                );
+                            });
+                        });
+                        ui.add_space(12.0);
+                        Frame::new()
+                            .fill(c.panel)
+                            .stroke(Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.3)))
+                            .corner_radius(6.0)
+                            .inner_margin(egui::Margin::symmetric(10, 7))
+                            .show(ui, |ui| {
+                                ui.set_width(ui.available_width());
+                                ui.label(RichText::new(target_line).color(c.text).size(12.2));
+                            });
+                        ui.add_space(8.0);
+                        ui.label(
+                            RichText::new(
+                                if matches!(pending.requested_mode, DeleteMode::Permanent) {
+                                    "Permanent deletion cannot be undone from the trash."
+                                } else {
+                                    "Trash is safer. Use Up/Down, Enter, or Esc."
+                                },
+                            )
+                            .color(c.text_muted)
+                            .size(11.0),
+                        );
+                        ui.add_space(12.0);
+                        for choice in [
+                            DeleteChoice::MoveToTrash,
+                            DeleteChoice::Cancel,
+                            DeleteChoice::DeletePermanently,
+                        ] {
+                            if delete_choice_row(ui, &c, choice, pending.selected == choice)
+                                .clicked()
+                            {
+                                clicked = Some(choice);
+                            }
+                            ui.add_space(4.0);
+                        }
+                    });
+            });
+
+        if let Some(choice) = clicked {
+            self.activate_delete_choice(choice);
+        }
+    }
+
+    fn render_empty_trash_confirmation(&mut self, ctx: &Context) {
+        if !self.pending_empty_trash {
+            return;
+        }
+
+        let c = self.colors;
+        let count = self.trash_panel.items.len();
+        let viewport = ctx.viewport_rect();
+        ctx.layer_painter(egui::LayerId::new(
+            egui::Order::Middle,
+            egui::Id::new("empty_trash_modal_scrim"),
+        ))
+        .rect_filled(viewport, 0.0, Color32::from_rgba_unmultiplied(0, 0, 0, 82));
+
+        egui::Area::new(egui::Id::new("empty_trash_modal_blocker"))
+            .order(egui::Order::Foreground)
+            .fixed_pos(viewport.min)
+            .show(ctx, |ui| {
+                let _ = ui.allocate_exact_size(viewport.size(), Sense::click());
+            });
+
+        let mut close = false;
+        let mut confirm = false;
+        egui::Area::new(egui::Id::new("empty_trash_confirmation"))
+            .order(egui::Order::Tooltip)
+            .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
+            .show(ctx, |ui| {
+                Frame::new()
+                    .fill(c.panel_raised)
+                    .stroke(Stroke::new(1.0, mix_color(c.border, c.text_dim, 0.35)))
+                    .shadow(Shadow {
+                        offset: [0, 10],
+                        blur: 28,
+                        spread: 0,
+                        color: Color32::from_rgba_unmultiplied(0, 0, 0, 120),
+                    })
+                    .corner_radius(8.0)
+                    .inner_margin(egui::Margin::symmetric(18, 16))
+                    .show(ui, |ui| {
+                        ui.set_width(viewport.width().clamp(280.0, 420.0));
+                        ui.horizontal(|ui| {
+                            let icon_rect =
+                                ui.allocate_exact_size(Vec2::splat(34.0), Sense::hover()).0;
+                            ui.painter().rect_filled(
+                                icon_rect,
+                                6.0,
+                                Color32::from_rgba_unmultiplied(220, 80, 95, 32),
+                            );
+                            ui.painter().text(
+                                icon_rect.center(),
+                                Align2::CENTER_CENTER,
+                                MI_DELETE,
+                                FontId::proportional(19.0),
+                                c.error,
+                            );
+                            ui.add_space(8.0);
+                            ui.vertical(|ui| {
+                                ui.label(
+                                    RichText::new("Empty Trash?")
+                                        .color(c.text)
+                                        .size(15.0)
+                                        .strong(),
+                                );
+                                ui.label(
+                                    RichText::new("Permanently delete every item in Trash")
+                                        .color(c.text_muted)
+                                        .size(10.8),
+                                );
+                            });
+                        });
+                        ui.add_space(12.0);
+                        Frame::new()
+                            .fill(c.panel)
+                            .stroke(Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.3)))
+                            .corner_radius(6.0)
+                            .inner_margin(egui::Margin::symmetric(10, 7))
+                            .show(ui, |ui| {
+                                ui.set_width(ui.available_width());
+                                let label = if count == 1 {
+                                    "1 trashed item will be permanently deleted".to_string()
+                                } else {
+                                    format!("{count} trashed items will be permanently deleted")
+                                };
+                                ui.label(RichText::new(label).color(c.text).size(12.2));
+                            });
+                        ui.add_space(8.0);
+                        ui.label(
+                            RichText::new("This cannot be undone from Trash. Press Esc to cancel.")
+                                .color(c.text_muted)
+                                .size(11.0),
+                        );
+                        ui.add_space(12.0);
+                        if ui
+                            .add_sized(
+                                [ui.available_width(), 36.0],
+                                egui::Button::new(
+                                    RichText::new(format!("{MI_CLOSE}  Cancel")).color(c.text),
+                                ),
+                            )
+                            .clicked()
+                        {
+                            close = true;
+                        }
+                        ui.add_space(5.0);
+                        let empty_label = if self.trash_panel.emptying {
+                            format!("{MI_DELETE}  Emptying...")
+                        } else {
+                            format!("{MI_DELETE}  Empty Trash")
+                        };
+                        if ui
+                            .add_sized(
+                                [ui.available_width(), 36.0],
+                                egui::Button::new(RichText::new(empty_label).color(c.error)),
+                            )
+                            .clicked()
+                            && !self.trash_panel.emptying
+                        {
+                            confirm = true;
+                        }
+                    });
+            });
+
+        if close {
+            self.pending_empty_trash = false;
+        }
+        if confirm {
+            self.pending_empty_trash = false;
+            self.empty_trash_now();
+        }
+    }
+
     fn render_about_popup(&mut self, ctx: &Context) {
         if !self.show_about {
             return;
@@ -11806,27 +14497,15 @@ impl OttrinApp {
         egui::ViewportId::from_hash_of("ottrin-settings")
     }
 
+    fn quick_inspector_viewport_id() -> egui::ViewportId {
+        egui::ViewportId::from_hash_of("ottrin-quick-inspector")
+    }
+
     fn render_settings_modal_embedded(&mut self, ctx: &Context) -> bool {
         if !self.show_settings {
             return false;
         }
         let c = self.colors;
-        // Apply scroll style to this viewport's own ctx (separate from main ctx)
-        ctx.style_mut(|style| {
-            let mut scroll = egui::style::ScrollStyle::solid();
-            scroll.floating = false;
-            scroll.bar_width = 8.0;
-            scroll.handle_min_length = 36.0;
-            scroll.bar_outer_margin = 2.0;
-            scroll.bar_inner_margin = 1.0;
-            scroll.dormant_background_opacity = 0.15;
-            scroll.active_background_opacity = 0.25;
-            scroll.interact_background_opacity = 0.35;
-            scroll.dormant_handle_opacity = 0.45;
-            scroll.active_handle_opacity = 0.7;
-            scroll.interact_handle_opacity = 0.9;
-            style.spacing.scroll = scroll;
-        });
         let mut close_requested = false;
         let viewport_focused = ctx.input(|i| i.viewport().focused.unwrap_or(true));
         let (window_fill, window_title, shadow) = viewport_window_fill(c, viewport_focused);
@@ -11965,12 +14644,37 @@ impl OttrinApp {
                                                 .color(if sel { c.text } else { c.text_dim })
                                         ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0))).clicked() {
                                             self.state.config.default_view_mode = *mode;
+                                            self.persist_config();
                                         }
                                     }
+                                    ui.add_space(14.0);
+                                    ui.separator();
                                     ui.add_space(10.0);
-                                    ui.label(RichText::new("Tip: per-folder view presets are planned.")
-                                        .color(c.text_muted).size(11.0));
-
+                                    ui.label(RichText::new("Default thumbnail behavior").color(c.text).size(13.0).strong());
+                                    ui.label(
+                                        RichText::new("These defaults also change when you toggle thumbnails from View Options.")
+                                            .color(c.text_muted)
+                                            .size(11.0),
+                                    );
+                                    ui.add_space(6.0);
+                                    let grid_thumbs = self.state.config.grid_show_thumbnails;
+                                    let grid_check = if grid_thumbs { MI_CHECK } else { "  " };
+                                    if ui.add(egui::Button::new(
+                                        RichText::new(format!("{} Show thumbnails in Grid view", grid_check)).size(13.0)
+                                            .color(if grid_thumbs { c.text } else { c.text_dim })
+                                    ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0))).clicked() {
+                                        self.state.config.grid_show_thumbnails = !grid_thumbs;
+                                        self.persist_config();
+                                    }
+                                    let list_thumbs = self.state.config.list_show_thumbnails;
+                                    let list_check = if list_thumbs { MI_CHECK } else { "  " };
+                                    if ui.add(egui::Button::new(
+                                        RichText::new(format!("{} Show thumbnails in List view", list_check)).size(13.0)
+                                            .color(if list_thumbs { c.text } else { c.text_dim })
+                                    ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0))).clicked() {
+                                        self.state.config.list_show_thumbnails = !list_thumbs;
+                                        self.persist_config();
+                                    }
                                     ui.add_space(14.0);
                                     ui.separator();
                                     ui.add_space(10.0);
@@ -11995,6 +14699,105 @@ impl OttrinApp {
                                             .color(c.text_muted)
                                             .size(11.0),
                                     );
+
+                                    ui.add_space(14.0);
+                                    ui.separator();
+                                    ui.add_space(10.0);
+                                    ui.label(RichText::new("Terminal Launcher").color(c.text).size(13.0).strong());
+                                    ui.label(
+                                        RichText::new(launcher_status().unwrap_or_else(|| "Unavailable".to_string()))
+                                            .color(c.text_muted)
+                                            .size(11.0),
+                                    );
+                                    ui.add_space(6.0);
+                                    ui.horizontal(|ui| {
+                                        if ui.button("Install `ottrin` command").on_hover_text(
+                                            "Creates ~/.local/bin/ottrin as a symlink to this Ottrin build or AppImage. \
+                                             Use it to launch Ottrin from a terminal and to run `ottrin --uninstall`."
+                                        ).clicked() {
+                                            let (text, ok) = match install_terminal_launcher() {
+                                                Ok(msg) => (msg, true),
+                                                Err(err) => (err, false),
+                                            };
+                                            self.set_status_message(text, ok, 8);
+                                        }
+                                        if ui.button("Remove launcher").clicked() {
+                                            let (text, ok) = match remove_terminal_launcher() {
+                                                Ok(msg) => (msg, true),
+                                                Err(err) => (err, false),
+                                            };
+                                            self.set_status_message(text, ok, 6);
+                                        }
+                                    });
+
+                                    ui.add_space(14.0);
+                                    ui.separator();
+                                    ui.add_space(10.0);
+                                    ui.label(RichText::new("Cleanup").color(c.text).size(13.0).strong());
+                                    ui.label(
+                                        RichText::new(
+                                            "Use this before deleting an AppImage/portable build if you enabled background indexing or want Ottrin's generated data removed."
+                                        )
+                                        .color(c.text_muted)
+                                        .size(11.0),
+                                    );
+                                    ui.add_space(6.0);
+                                    let cleanup_label = if self.app_cleanup_confirm {
+                                        "Confirm cleanup"
+                                    } else {
+                                        "Cleanup Ottrin data"
+                                    };
+                                    if ui.add(egui::Button::new(
+                                        RichText::new(cleanup_label)
+                                            .size(12.0)
+                                            .color(if self.app_cleanup_confirm { c.error } else { c.text }),
+                                    ).stroke(Stroke::new(1.0, if self.app_cleanup_confirm { c.error } else { c.border }))).on_hover_text(
+                                        "Removes Ottrin's background index schedule, search database, private locate fallback database, thumbnail cache, and terminal launcher. It keeps your preferences unless you use the separate config button."
+                                    ).clicked() {
+                                        if self.app_cleanup_confirm {
+                                            let mut freed = 0_u64;
+                                            let mut errors = Vec::new();
+                                            match ottrin_search::SearchService::uninstall_sqlite_schedule() {
+                                                Ok(_) => {}
+                                                Err(err) => errors.push(err),
+                                            }
+                                            match ottrin_search::SearchService::clear_search_storage() {
+                                                Ok(bytes) => freed = freed.saturating_add(bytes),
+                                                Err(err) => errors.push(err),
+                                            }
+                                            freed = freed.saturating_add(clear_preview_cache_storage());
+                                            if let Err(err) = remove_terminal_launcher() {
+                                                errors.push(err);
+                                            }
+                                            self.app_cleanup_confirm = false;
+                                            if errors.is_empty() {
+                                                self.set_status_message(
+                                                    format!("Cleanup complete. Freed {}.", format_size(freed)),
+                                                    true,
+                                                    8,
+                                                );
+                                            } else {
+                                                self.set_status_message(errors.join(" · "), false, 10);
+                                            }
+                                        } else {
+                                            self.app_cleanup_confirm = true;
+                                        }
+                                    }
+                                    ui.add_space(4.0);
+                                    if ui.button("Remove preferences file").on_hover_text(
+                                        "Deletes Ottrin's saved preferences/config file. This does not remove your files."
+                                    ).clicked() {
+                                        let (text, ok) = match remove_config_file() {
+                                            Ok(bytes) => (format!("Removed preferences file, freed {}.", format_size(bytes)), true),
+                                            Err(err) => (err, false),
+                                        };
+                                        self.set_status_message(text, ok, 8);
+                                    }
+                                    if self.app_cleanup_confirm {
+                                        ui.label(RichText::new(
+                                            "Click Confirm cleanup to remove generated data and the background updater. Your files are not touched."
+                                        ).color(c.text_dim).size(10.5));
+                                    }
                                 }
                                 SettingsTab::Appearance => {
                                     self.render_appearance_settings(ui, ctx, c);
@@ -12099,7 +14902,12 @@ impl OttrinApp {
                                             ui.label(RichText::new(status_text).color(dot_col).size(11.0).strong());
                                             if let Some(pct) = status_pct {
                                                 ui.add_space(6.0);
-                                                ui.label(RichText::new(format!("{pct}%")).color(dot_col).size(11.0).strong());
+                                                ui.label(RichText::new(format!("{pct}%")).color(dot_col).size(11.0).strong())
+                                                    .on_hover_text(if is_indexing {
+                                                        "Estimated scan progress based on indexed files and the last completed index size."
+                                                    } else {
+                                                        "Index is ready. Search results are using the saved SQLite index."
+                                                    });
                                             }
                                         });
                                         ui.add_space(6.0);
@@ -12140,7 +14948,7 @@ impl OttrinApp {
                                         ui.label(RichText::new("Indexed locations").color(c.text).size(12.5).strong());
                                         ui.add_space(2.0);
                                         ui.label(RichText::new(
-                                            "Ottrin keeps an in-memory index of these folders. Subfolders are included automatically."
+                                            "Ottrin keeps a persistent SQLite-backed index of these folders. Subfolders are included automatically."
                                         ).color(c.text_muted).size(10.5));
                                         ui.add_space(8.0);
 
@@ -12621,44 +15429,202 @@ impl OttrinApp {
                                     });
 
                                     ui.add_space(12.0);
-                                    settings_section_icon(ui, c, MI_STORAGE, "Indexing & performance", "Background refresh and supplemental sources.", |ui| {
-                                        ui.horizontal(|ui| {
-                                            ui.label(RichText::new("Auto-refresh:").color(c.text_dim).size(11.5))
-                                                .on_hover_text("How often Ottrin rebuilds the full index while the app is running, in addition to inotify change events.");
-                                            let mut h = self.state.config.search.refresh_interval_hours;
-                                            egui::ComboBox::new("search_refresh_interval", "")
-                                                .selected_text(match h {
-                                                    0 => "On change only",
-                                                    1 => "Every hour",
-                                                    2 => "Every 2 hours",
-                                                    4 => "Every 4 hours",
-                                                    8 => "Every 8 hours",
-                                                    24 => "Daily",
-                                                    _ => "Custom",
-                                                })
-                                                .width(140.0)
-                                                .show_ui(ui, |ui| {
-                                                    ui.selectable_value(&mut h, 0, "On change only");
-                                                    ui.selectable_value(&mut h, 1, "Every hour");
-                                                    ui.selectable_value(&mut h, 2, "Every 2 hours");
-                                                    ui.selectable_value(&mut h, 4, "Every 4 hours");
-                                                    ui.selectable_value(&mut h, 8, "Every 8 hours");
-                                                    ui.selectable_value(&mut h, 24, "Daily");
-                                                });
-                                            if h != self.state.config.search.refresh_interval_hours {
-                                                self.state.config.search.refresh_interval_hours = h;
-                                                self.search_service.update_config(self.state.config.search.clone());
-                                            }
-                                        });
-
+                                    settings_section_icon(ui, c, MI_STORAGE, "Indexing & performance", "Recommended setup and startup fallbacks.", |ui| {
+                                        let locate_ok = ottrin_search::SearchService::system_locate_available();
+                                        let updatedb_ok = ottrin_search::SearchService::updatedb_available();
+                                        Frame::new()
+                                            .fill(mix_color(c.panel, c.accent, 0.08))
+                                            .stroke(Stroke::new(1.0, mix_color(c.border, c.accent, 0.28)))
+                                            .corner_radius(6.0)
+                                            .inner_margin(egui::Margin::symmetric(12, 10))
+                                            .show(ui, |ui| {
+                                                ui.set_width(ui.available_width());
+                                                ui.label(RichText::new("Search health").color(c.text).size(12.0).strong());
+                                                ui.add_space(6.0);
+                                                let diag = self.search_service.diagnostics();
+                                                let sqlite_sched = ottrin_search::SearchService::sqlite_schedule_status();
+                                                let ok_col = c.accent;
+                                                let warn_col = c.text_muted;
+                                                let bad_col = c.error;
+                                                let health_row = |ui: &mut egui::Ui, ok: Option<bool>, label: &str, detail: &str| {
+                                                    ui.horizontal(|ui| {
+                                                        let (icon, color) = match ok {
+                                                            Some(true) => (MI_CHECK, ok_col),
+                                                            Some(false) => (MI_CLEAR, bad_col),
+                                                            None => (MI_INFO, warn_col),
+                                                        };
+                                                        ui.label(RichText::new(icon).size(13.0).color(color));
+                                                        ui.label(RichText::new(label).color(c.text).size(11.5));
+                                                        ui.label(RichText::new(detail).color(c.text_muted).size(10.5));
+                                                    });
+                                                };
+                                                let sqlite_detail = if diag.indexed_items > 0 {
+                                                    format!("{} files indexed", diag.indexed_items)
+                                                } else {
+                                                    "building first index".to_string()
+                                                };
+                                                health_row(
+                                                    ui,
+                                                    Some(matches!(diag.status, SearchIndexStatus::Ready | SearchIndexStatus::Indexing)),
+                                                    "Ottrin SQLite index",
+                                                    &sqlite_detail,
+                                                );
+                                                health_row(
+                                                    ui,
+                                                    Some(diag.watcher_ready || matches!(diag.status, SearchIndexStatus::Indexing)),
+                                                    "File watcher",
+                                                    if diag.watcher_ready {
+                                                        "active while Ottrin is running"
+                                                    } else if matches!(diag.status, SearchIndexStatus::Indexing) {
+                                                        "starts after the first index is ready"
+                                                    } else {
+                                                        "not active; changes may need a rebuild"
+                                                    },
+                                                );
+                                                let sqlite_schedule_detail = if sqlite_sched.enabled {
+                                                    format!("{} ({})", sqlite_sched.source, sqlite_sched.detail)
+                                                } else {
+                                                    "not configured; changes made while Ottrin is closed need a later refresh".to_string()
+                                                };
+                                                health_row(
+                                                    ui,
+                                                    Some(sqlite_sched.enabled),
+                                                    "Background SQLite update",
+                                                    &sqlite_schedule_detail,
+                                                );
+                                                health_row(
+                                                    ui,
+                                                    if self.state.config.search.use_system_locate {
+                                                        Some(locate_ok)
+                                                    } else {
+                                                        None
+                                                    },
+                                                    "plocate fallback",
+                                                    if self.state.config.search.use_system_locate {
+                                                        if locate_ok { "enabled and available" } else { "enabled but not installed" }
+                                                    } else {
+                                                        "off; not needed for normal Ottrin search"
+                                                    },
+                                                );
+                                                let sys_age = ottrin_search::SearchService::system_locate_db_age_secs();
+                                                let locate_fresh = sys_age.map(|s| s < 86_400);
+                                                let system_locate_detail = if self.state.config.search.use_system_locate {
+                                                    sys_age
+                                                        .map(|s| format!("age {}", format_age_str(s)))
+                                                        .unwrap_or_else(|| "unknown age".to_string())
+                                                } else {
+                                                    "not used unless plocate fallback is enabled".to_string()
+                                                };
+                                                health_row(
+                                                    ui,
+                                                    if self.state.config.search.use_system_locate && locate_ok { locate_fresh } else { None },
+                                                    "System locate DB",
+                                                    &system_locate_detail,
+                                                );
+                                                health_row(
+                                                    ui,
+                                                    Some(updatedb_ok),
+                                                    "updatedb",
+                                                    if updatedb_ok { "available if you want Ottrin to refresh plocate" } else { "not installed; only needed for locate maintenance" },
+                                                );
+                                                health_row(
+                                                    ui,
+                                                    None,
+                                                    "fanotify",
+                                                    "not used by normal v1 search",
+                                                );
+                                            });
                                         ui.add_space(12.0);
-                                        ui.label(RichText::new("Supplemental results").color(c.text_dim).size(11.5).strong());
-                                        ui.label(RichText::new("Optional sources that fill gaps while the index is still warming up.")
+                                        ui.label(RichText::new("Recommended setup").color(c.text_dim).size(11.5).strong());
+                                        ui.label(RichText::new("Use Ottrin's SQLite index for everyday search. The watcher keeps it current while Ottrin is open. Locate fallbacks are only for optional path lookup, not better normal results.")
                                             .color(c.text_muted).size(10.5));
                                         ui.add_space(6.0);
 
                                         {
-                                            let locate_ok = ottrin_search::SearchService::system_locate_available();
+                                            Frame::new()
+                                                .fill(c.panel).corner_radius(6.0)
+                                                .inner_margin(egui::Margin::symmetric(12, 10))
+                                                .show(ui, |ui| {
+                                                    ui.set_width(ui.available_width());
+                                                    ui.horizontal(|ui| {
+                                                        ui.label(RichText::new(MI_STORAGE).color(c.accent).size(15.0));
+                                                        ui.label(RichText::new("Ottrin search index").color(c.text).size(12.0).strong());
+                                                        ui.label(RichText::new("default").color(c.text_muted).size(10.5).italics());
+                                                    });
+                                                    ui.add_space(3.0);
+                                                    ui.label(RichText::new(
+                                                        "This is the main search database. Ottrin loads it on startup, updates it live while open, and refreshes it every 4 hours while the app is running."
+                                                    ).color(c.text_muted).size(10.5));
+                                                    ui.label(RichText::new(
+                                                        "For best freshness after Ottrin has been closed, enable the background updater."
+                                                    ).color(c.text_muted).size(10.5));
+                                                    ui.add_space(8.0);
+                                                    ui.horizontal(|ui| {
+                                                        let sqlite_sched = ottrin_search::SearchService::sqlite_schedule_status();
+                                                        let status = if sqlite_sched.enabled {
+                                                            format!("Background updater: {} ({})", sqlite_sched.source, sqlite_sched.detail)
+                                                        } else {
+                                                            "Background updater: not configured".to_string()
+                                                        };
+                                                        ui.label(RichText::new(status)
+                                                            .color(if sqlite_sched.enabled { ok_col } else { warn_col })
+                                                            .size(10.8));
+                                                        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                                                            if ui.button("Refresh now").clicked() {
+                                                                self.search_service.rebuild_index();
+                                                                self.status_message = Some(UiStatusMessage {
+                                                                    text: "Search index refresh started.".to_string(),
+                                                                    ok: true,
+                                                                    until: Instant::now() + Duration::from_secs(5),
+                                                                });
+                                                            }
+                                                        });
+                                                    });
+                                                    ui.add_space(6.0);
+                                                    ui.horizontal(|ui| {
+                                                        let sqlite_sched = ottrin_search::SearchService::sqlite_schedule_status();
+                                                        let label = if sqlite_sched.enabled {
+                                                            "Disable background updater"
+                                                        } else {
+                                                            "Enable background updater"
+                                                        };
+                                                        if ui.add(
+                                                            egui::Button::new(RichText::new(label).size(12.0))
+                                                                .fill(c.panel_raised)
+                                                                .stroke(Stroke::new(1.0, c.border)),
+                                                        ).on_hover_text(
+                                                            "Installs or removes a user-level schedule that runs ottrin-index --rebuild every 4 hours. \
+                                                             Linux uses systemd --user or crontab; Windows uses Task Scheduler."
+                                                        ).clicked() {
+                                                            let (text, ok) = if sqlite_sched.enabled {
+                                                                match ottrin_search::SearchService::uninstall_sqlite_schedule() {
+                                                                    Ok(msg) => (msg, true),
+                                                                    Err(e) => (format!("Failed: {}", e), false),
+                                                                }
+                                                            } else {
+                                                                let roots = if self.state.config.search.include_roots.is_empty() {
+                                                                    default_search_roots()
+                                                                } else {
+                                                                    self.state.config.search.include_roots.clone()
+                                                                };
+                                                                match ottrin_search::SearchService::install_sqlite_schedule(4, &roots) {
+                                                                    Ok(msg) => (msg, true),
+                                                                    Err(e) => (format!("Failed: {}", e), false),
+                                                                }
+                                                            };
+                                                            self.status_message = Some(UiStatusMessage {
+                                                                text, ok,
+                                                                until: Instant::now() + Duration::from_secs(10),
+                                                            });
+                                                        }
+                                                        ui.label(RichText::new("Recommended for reliable search after restarts")
+                                                            .color(c.text_muted).size(10.5).italics());
+                                                    });
+                                                });
+                                        }
+                                        ui.add_space(6.0);
+
+                                        {
                                             Frame::new()
                                                 .fill(c.panel).corner_radius(6.0)
                                                 .inner_margin(egui::Margin::symmetric(12, 10))
@@ -12667,14 +15633,17 @@ impl OttrinApp {
                                                     let before = self.state.config.search.use_system_locate;
                                                     ui.add_enabled(locate_ok, egui::Checkbox::new(
                                                         &mut self.state.config.search.use_system_locate,
-                                                        "Use system locate database (plocate)",
+                                                        "Use system path fallback (plocate)",
                                                     ));
                                                     if before != self.state.config.search.use_system_locate {
                                                         self.search_service.update_config(self.state.config.search.clone());
                                                     }
                                                     ui.add_space(2.0);
                                                     ui.label(RichText::new(
-                                                        "Fills in extra results during first launch while the index warms up. No privileges needed; has no effect once the index is ready."
+                                                        "Why enable: optional path lookup from the operating system database, useful for broad system paths like /usr, /etc, or /var."
+                                                    ).color(c.text_muted).size(10.5));
+                                                    ui.label(RichText::new(
+                                                        "Leave off: it is not part of normal Ottrin search, does not improve the SQLite index, and cannot bypass permissions."
                                                     ).color(c.text_muted).size(10.5));
                                                     ui.add_space(4.0);
                                                     if locate_ok {
@@ -12688,17 +15657,22 @@ impl OttrinApp {
                                                             .size(10.5)
                                                             .color(if stale { warn_col } else { c.text_muted }));
                                                         let sys_sched = ottrin_search::SearchService::system_locate_schedule_status();
-                                                        if sys_sched.needs_setup {
-                                                            ui.label(RichText::new(
-                                                                "System updatedb schedule not detected — results may be stale. Recommended: enable a system updatedb schedule in Advanced."
-                                                            ).size(10.5).color(warn_col));
-                                                            if ottrin_search::SearchService::updatedb_available()
-                                                                && ui.add(egui::Button::new(
-                                                                    RichText::new("Install daily updatedb cron job via pkexec…").size(11.0)
-                                                                ).fill(c.panel_raised).stroke(Stroke::new(1.0, c.border))).clicked() {
-                                                                    let script = "#!/bin/sh\n/usr/bin/updatedb\n";
-                                                                    let cmd = format!(
-                                                                        "printf '{}' > /etc/cron.daily/ottrin-updatedb && chmod 755 /etc/cron.daily/ottrin-updatedb",
+                                                        let mut keep_system_locate_fresh = !sys_sched.needs_setup;
+                                                        let schedule_control_enabled = updatedb_ok
+                                                            && self.state.config.search.use_system_locate
+                                                            && (sys_sched.needs_setup || sys_sched.managed_by_ottrin);
+                                                        let schedule_resp = ui.add_enabled(
+                                                            schedule_control_enabled,
+                                                            egui::Checkbox::new(
+                                                                &mut keep_system_locate_fresh,
+                                                                "Keep plocate database fresh",
+                                                            ),
+                                                        );
+                                                        if schedule_resp.clicked() {
+                                                            if keep_system_locate_fresh {
+                                                                let script = "#!/bin/sh\n/usr/bin/updatedb\n";
+                                                                let cmd = format!(
+                                                                    "printf '{}' > /etc/cron.daily/ottrin-updatedb && chmod 755 /etc/cron.daily/ottrin-updatedb",
                                                                         script
                                                                     );
                                                                     let result = std::process::Command::new("pkexec")
@@ -12712,11 +15686,36 @@ impl OttrinApp {
                                                                         Ok(s) => (format!("pkexec exited with status {}", s), false),
                                                                         Err(e) => (format!("Failed to run pkexec: {}", e), false),
                                                                     };
-                                                                    self.status_message = Some(UiStatusMessage {
-                                                                        text, ok,
-                                                                        until: Instant::now() + Duration::from_secs(8),
-                                                                    });
+                                                                self.status_message = Some(UiStatusMessage {
+                                                                    text, ok,
+                                                                    until: Instant::now() + Duration::from_secs(8),
+                                                                });
+                                                            } else if sys_sched.managed_by_ottrin {
+                                                                let result = std::process::Command::new("pkexec")
+                                                                    .args(["rm", "-f", "/etc/cron.daily/ottrin-updatedb"])
+                                                                    .status();
+                                                                let (text, ok) = match result {
+                                                                    Ok(s) if s.success() => (
+                                                                        "Daily Ottrin updatedb cron job removed.".to_string(),
+                                                                        true,
+                                                                    ),
+                                                                    Ok(s) => (format!("pkexec exited with status {}", s), false),
+                                                                    Err(e) => (format!("Failed to run pkexec: {}", e), false),
+                                                                };
+                                                                self.status_message = Some(UiStatusMessage {
+                                                                    text, ok,
+                                                                    until: Instant::now() + Duration::from_secs(8),
+                                                                });
                                                             }
+                                                        }
+                                                        if !self.state.config.search.use_system_locate {
+                                                            ui.label(RichText::new(
+                                                                "System updatedb maintenance is not needed while plocate fallback is off."
+                                                            ).size(10.5).color(c.text_muted));
+                                                        } else if sys_sched.needs_setup {
+                                                            ui.label(RichText::new(
+                                                                "No updatedb schedule detected. Enable this only if you rely on system path fallback."
+                                                            ).size(10.5).color(warn_col));
                                                         } else {
                                                             let detail = match (sys_sched.source.as_deref(), sys_sched.detail.as_deref()) {
                                                                 (Some(src), Some(det)) => format!("System schedule detected: {} ({})", src, det),
@@ -12724,124 +15723,25 @@ impl OttrinApp {
                                                                 _ => "System schedule detected".to_string(),
                                                             };
                                                             ui.label(RichText::new(detail).size(10.5).color(c.text_muted));
+                                                            if !sys_sched.managed_by_ottrin {
+                                                                ui.label(RichText::new("Managed by the OS or distro package.")
+                                                                    .size(10.5).color(c.text_muted));
+                                                            }
+                                                            ui.label(RichText::new(system_locate_schedule_guidance(&sys_sched))
+                                                                .size(10.5).color(c.text_muted));
                                                         }
                                                     } else {
                                                         ui.label(RichText::new("plocate not found — install plocate to enable this").size(10.5).color(c.text_muted).italics());
-                                                        ui.label(RichText::new("Recommended dependencies: plocate (fast estimates) and mlocate/updatedb (for scheduled updates).")
+                                                        ui.label(RichText::new("Install plocate for path fallback; install updatedb/mlocate only if you want scheduled refreshes.")
                                                             .size(10.5).color(c.text_muted));
                                                     }
                                                 });
                                         }
 
-                                        ui.add_space(6.0);
-                                        {
-                                            let updatedb_ok = ottrin_search::SearchService::updatedb_available();
-                                            Frame::new()
-                                                .fill(c.panel).corner_radius(6.0)
-                                                .inner_margin(egui::Margin::symmetric(12, 10))
-                                                .show(ui, |ui| {
-                                                    ui.set_width(ui.available_width());
-                                                    let before_manage = self.state.config.search.manage_locate_db;
-                                                    ui.add_enabled(updatedb_ok, egui::Checkbox::new(
-                                                        &mut self.state.config.search.manage_locate_db,
-                                                        "Build a private locate database",
-                                                    ));
-                                                    if before_manage != self.state.config.search.manage_locate_db {
-                                                        self.search_service.update_config(self.state.config.search.clone());
-                                                    }
-                                                    ui.add_space(2.0);
-                                                    ui.label(RichText::new(
-                                                        "Enables instant results on cold launch before the index finishes building. Stores a private file list at ~/.cache/ottrin/locate.db — no root required. Ottrin refreshes it while the app is running; add a schedule to keep it fresh when Ottrin is closed."
-                                                    ).color(c.text_muted).size(10.5));
-                                                    ui.add_space(4.0);
-                                                    if updatedb_ok {
-                                                        ui.label(RichText::new("updatedb is installed and available").size(10.5).color(ok_col));
-                                                        let sched = ottrin_search::SearchService::locate_schedule_status();
-                                                        if sched.enabled {
-                                                            ui.label(RichText::new(format!("Schedule: {} ({})", sched.source, sched.detail))
-                                                                .size(10.5).color(c.text_muted));
-                                                        } else {
-                                                            ui.label(RichText::new("No user schedule detected — recommended for when Ottrin is closed.")
-                                                                .size(10.5).color(warn_col));
-                                                        }
-                                                    } else {
-                                                        ui.label(RichText::new("updatedb not found — install mlocate to enable this").size(10.5).color(c.text_muted).italics());
-                                                    }
-
-                                                if self.state.config.search.manage_locate_db && updatedb_ok {
-                                                    ui.add_space(8.0);
-                                                    ui.separator();
-                                                    ui.add_space(4.0);
-                                                    ui.horizontal(|ui| {
-                                                        ui.label(RichText::new("Update frequency:").color(c.text_dim).size(11.5));
-                                                        let mut h = self.state.config.search.locate_update_hours;
-                                                        egui::ComboBox::new("locate_update_freq", "")
-                                                            .selected_text(match h {
-                                                                0 => "First launch only",
-                                                                2 => "Every 2 hours",
-                                                                4 => "Every 4 hours",
-                                                                6 => "Every 6 hours",
-                                                                12 => "Every 12 hours",
-                                                                24 => "Daily",
-                                                                _ => "Custom",
-                                                            })
-                                                            .width(140.0)
-                                                            .show_ui(ui, |ui| {
-                                                                ui.selectable_value(&mut h, 0, "First launch only");
-                                                                ui.selectable_value(&mut h, 2, "Every 2 hours");
-                                                                ui.selectable_value(&mut h, 4, "Every 4 hours");
-                                                                ui.selectable_value(&mut h, 6, "Every 6 hours");
-                                                                ui.selectable_value(&mut h, 12, "Every 12 hours");
-                                                                ui.selectable_value(&mut h, 24, "Daily");
-                                                            });
-                                                        if h != self.state.config.search.locate_update_hours {
-                                                            self.state.config.search.locate_update_hours = h;
-                                                            self.search_service.update_config(self.state.config.search.clone());
-                                                        }
-                                                    });
-                                                    ui.add_space(4.0);
-                                                    ui.horizontal(|ui| {
-                                                        let age_label = ottrin_search::SearchService::locate_db_age_secs()
-                                                            .map(|s| format!("Last updated {}", format_age_str(s)))
-                                                            .unwrap_or_else(|| "Not built yet".to_string());
-                                                        ui.label(RichText::new(&age_label).color(c.text_muted).size(11.0));
-                                                        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                                            if ui.button("Update now").clicked() {
-                                                                let roots = self.state.config.search.include_roots.clone();
-                                                                let root = roots.into_iter().next()
-                                                                    .unwrap_or_else(|| ottrin_search::default_roots().into_iter().next().unwrap_or_default());
-                                                                ottrin_search::SearchService::run_user_updatedb(root);
-                                                            }
-                                                        });
-                                                    });
-                                                    ui.add_space(4.0);
-                                                    ui.horizontal(|ui| {
-                                                        if ui.button("Set up automatic schedule…").on_hover_text(
-                                                            "Installs a systemd user timer or crontab entry that keeps the                                                              locate database fresh on your chosen schedule, even when Ottrin is closed."
-                                                        ).clicked() {
-                                                            let h = self.state.config.search.locate_update_hours.max(1);
-                                                            let roots = self.state.config.search.include_roots.clone();
-                                                            let root = roots.into_iter().next()
-                                                                .unwrap_or_else(|| ottrin_search::default_roots().into_iter().next().unwrap_or_default());
-                                                            let (text, ok) = match ottrin_search::SearchService::install_locate_schedule(h, &root) {
-                                                                Ok(msg) => (msg, true),
-                                                                Err(e) => (format!("Failed: {}", e), false),
-                                                            };
-                                                            self.status_message = Some(UiStatusMessage {
-                                                                text, ok,
-                                                                until: Instant::now() + Duration::from_secs(8),
-                                                            });
-                                                        }
-                                                        ui.label(RichText::new("Works even when Ottrin is closed")
-                                                            .color(c.text_muted).size(10.5).italics());
-                                                    });
-                                                }
-                                            });
-                                        }
                                     });
 
                                     ui.add_space(12.0);
-                                    settings_section_icon(ui, c, MI_SETTINGS, "Advanced", "System-level improvements (optional).", |ui| {
+                                    settings_section_icon(ui, c, MI_SETTINGS, "Advanced", "System-level maintenance for special cases.", |ui| {
                                         let adv_parent = egui::collapsing_header::CollapsingState::load_with_default_open(
                                             ui.ctx(), ui.id().with("adv_parent"), false,
                                         );
@@ -12852,14 +15752,14 @@ impl OttrinApp {
                                                     .color(if adv_parent_open { c.text } else { c.text_dim })
                                                     .size(12.0).strong());
                                                 if !adv_parent_open {
-                                                    ui.label(RichText::new("updatedb cron · fanotify daemon")
+                                                    ui.label(RichText::new("system locate maintenance · fanotify")
                                                         .color(c.text_muted).size(10.5).italics());
                                                 }
                                             });
                                         }).body(|ui| {
                                             ui.add_space(4.0);
                                             ui.label(RichText::new(
-                                                "Optional improvements that require elevated privileges. Both are independent — enable either, neither, or both."
+                                            "Most users should leave these alone. These are system maintenance details, not better normal search quality."
                                             ).color(c.text_muted).size(10.5));
                                             ui.add_space(8.0);
 
@@ -12871,24 +15771,19 @@ impl OttrinApp {
                                         let upd_open = upd_state.is_open();
                                         upd_state.show_header(ui, |ui| {
                                             ui.horizontal(|ui| {
-                                                ui.label(RichText::new("Keep system locate database current")
+                                                ui.label(RichText::new("Maintain system locate database")
                                                     .color(if upd_open { c.text } else { c.text_dim }).size(11.5));
-                                                ui.label(RichText::new("recommended")
-                                                    .color(c.accent).size(10.0).italics());
+                                                ui.label(RichText::new("for system path fallback")
+                                                    .color(c.text_muted).size(10.0).italics());
                                             });
                                         }).body(|ui| {
                                             ui.add_space(6.0);
                                             ui.label(RichText::new(
-                                                "By default, your system's locate database (/var/lib/mlocate/mlocate.db) \
-                                                 is only rebuilt occasionally — or not at all on some desktop installs. \
-                                                 When it's stale, plocate results are stale too, making the locate \
-                                                 supplement much less useful."
+                                                "If plocate fallback is enabled, stale system locate data means stale fallback results."
                                             ).color(c.text_muted).size(10.5));
                                             ui.add_space(6.0);
                                             ui.label(RichText::new(
-                                                "You can schedule a daily root updatedb run to keep it fresh. \
-                                                 This is completely independent of Ottrin — it just improves the \
-                                                 system-wide locate database that any tool can query."
+                                                "Schedule root updatedb only if you want system-wide fallback paths kept fresh. It can create a large OS database and does not improve Ottrin's own index."
                                             ).color(c.text_muted).size(10.5));
                                             ui.add_space(8.0);
                                             ui.horizontal(|ui| {
@@ -12944,20 +15839,15 @@ impl OttrinApp {
                                         let priv_open = priv_state.is_open();
                                         priv_state.show_header(ui, |ui| {
                                             ui.horizontal(|ui| {
-                                                ui.label(RichText::new("Privileged indexing daemon (fanotify)")
+                                                ui.label(RichText::new("Privileged watcher service (fanotify)")
                                                     .color(if priv_open { c.text } else { c.text_dim }).size(11.5));
-                                                ui.label(RichText::new("opt-in")
+                                                ui.label(RichText::new("not required")
                                                     .color(c.text_muted).size(10.0).italics());
                                             });
                                         }).body(|ui| {
                                             ui.add_space(6.0);
                                             ui.label(RichText::new(
-                                                "By default, Ottrin watches each indexed folder individually using inotify. \
-                                                 This works well for most users. The privileged daemon (ottrin-indexd) \
-                                                 uses fanotify instead — a single kernel hook that covers an entire \
-                                                 filesystem mount. The difference matters when you have very deep trees, \
-                                                 heavy I/O, or hit inotify's per-user watch limit \
-                                                 (/proc/sys/fs/inotify/max_user_watches)."
+                                                "Ottrin currently uses the normal user-space watcher. Fanotify is outside the normal v1 search path and is only relevant for unusual systems that hit watcher limits. It does not bypass permissions or make protected files searchable."
                                             ).color(c.text_muted).size(10.5));
                                             ui.add_space(8.0);
                                             Frame::new()
@@ -12967,11 +15857,9 @@ impl OttrinApp {
                                                 .show(ui, |ui| {
                                                     ui.label(RichText::new("Security note").color(c.text).size(11.0).strong());
                                                     ui.label(RichText::new(
-                                                        "CAP_SYS_ADMIN is a powerful Linux capability. Ottrin requests it \
-                                                         only for ottrin-indexd — a read-only daemon with no network access \
-                                                         and no file-write operations. It lives on the binary (setcap), not \
-                                                         your session. Revoke at any time: \
-                                                         sudo setcap -r /path/to/ottrin-indexd"
+                                                        "CAP_SYS_ADMIN and CAP_DAC_READ_SEARCH are powerful Linux capabilities. \
+                                                         They should only be granted to a packaged, audited helper binary. \
+                                                         They do not replace normal authorization for opening, copying, moving, or deleting files."
                                                     ).color(c.text_muted).size(10.5));
                                                 });
                                             ui.add_space(8.0);
@@ -12980,7 +15868,7 @@ impl OttrinApp {
                                                 ui.horizontal(|ui| {
                                                     ui.label(RichText::new(MI_SEARCH).color(c.accent).size(14.0));
                                                     ui.add_space(4.0);
-                                                    ui.label(RichText::new("CAP_SYS_ADMIN detected — fanotify mode active.")
+                                                    ui.label(RichText::new("CAP_SYS_ADMIN detected for this process. No packaged fanotify service is enabled by this setting.")
                                                         .color(c.text).size(11.5));
                                                 });
                                             } else {
@@ -12988,27 +15876,12 @@ impl OttrinApp {
                                                     .color(c.text_dim).size(11.0));
                                                 ui.add_space(8.0);
                                                 ui.horizontal(|ui| {
-                                                    if ui.add(egui::Button::new(
-                                                        RichText::new("Grant via polkit…").size(12.0)
-                                                    ).fill(c.panel_raised).stroke(Stroke::new(1.0, c.border))).on_hover_text(
-                                                        "Runs:\n  setcap cap_sys_admin,cap_dac_read_search+ep <ottrin-indexd>\n\
-                                                         One-time setup. Revoke:\n  sudo setcap -r <ottrin-indexd>"
-                                                    ).clicked() {
-                                                        let helper = std::env::current_exe().ok()
-                                                            .and_then(|p| p.parent().map(|d| d.join("ottrin-indexd")));
-                                                        if let Some(path) = helper.filter(|p| p.exists()) {
-                                                            let _ = std::process::Command::new("pkexec")
-                                                                .args(["setcap", "cap_sys_admin,cap_dac_read_search+ep"])
-                                                                .arg(&path).spawn();
-                                                        } else {
-                                                            self.status_message = Some(UiStatusMessage {
-                                                                text: "ottrin-indexd not found next to ottrin. Install the full package first.".to_string(),
-                                                                ok: false,
-                                                                until: Instant::now() + Duration::from_secs(6),
-                                                            });
-                                                        }
-                                                    }
-                                                    ui.label(RichText::new("Requires pkexec + admin password")
+                                                    ui.add_enabled(false, egui::Button::new(
+                                                        RichText::new("Package helper not available in this build").size(12.0)
+                                                    )).on_hover_text(
+                                                        "Fanotify support needs a packaged ottrin-indexd helper. The current v1 path uses the normal user-space watcher."
+                                                    );
+                                                    ui.label(RichText::new("Leave off for v1")
                                                         .color(c.text_muted).size(10.5).italics());
                                                 });
                                             }
@@ -13045,61 +15918,9 @@ impl OttrinApp {
                                 }
                                 SettingsTab::Cache => {
                                     ui.label(RichText::new("Cache & Thumbnails").color(c.text).size(settings_title).strong());
-                                    ui.label(RichText::new("Current preview state and the next planned thumbnail/cache controls.")
+                                    ui.label(RichText::new("Disk usage controls for generated previews and thumbnails.")
                                         .color(c.text_muted).size(settings_subtitle));
                                     ui.add_space(12.0);
-                                    Frame::new()
-                                        .fill(c.panel_raised)
-                                        .stroke(Stroke::NONE)
-                                        .corner_radius(8.0)
-                                        .inner_margin(egui::Margin::symmetric(12, 10))
-                                        .show(ui, |ui| {
-                                            ui.label(RichText::new("In-memory preview state").color(c.text).size(12.0).strong());
-                                            ui.label(RichText::new("Ottrin keeps lightweight preview and metadata state in memory. Image thumbnails are cached on disk for faster reloads.")
-                                                .color(c.text_muted).size(10.6));
-                                            ui.add_space(8.0);
-                                            let preview_cached = self.info_panel_preview.as_ref().map(|(p, _)| p.display().to_string());
-                                            let detail_cached = self.info_panel_details.as_ref().map(|(p, _)| p.display().to_string());
-                                            let overlay_cached = self.preview.path.as_ref().map(|p| p.display().to_string());
-                                            let image_cache_count = self.image_preview_cache.len();
-
-                                            ui.horizontal(|ui| {
-                                                ui.label(RichText::new("Info preview").color(c.text_dim).size(11.0));
-                                                ui.add_space(8.0);
-                                                ui.label(RichText::new(preview_cached.unwrap_or_else(|| "Empty".to_string())).color(c.text_muted).size(11.0));
-                                            });
-                                            ui.horizontal(|ui| {
-                                                ui.label(RichText::new("Info details").color(c.text_dim).size(11.0));
-                                                ui.add_space(8.0);
-                                                ui.label(RichText::new(detail_cached.unwrap_or_else(|| "Empty".to_string())).color(c.text_muted).size(11.0));
-                                            });
-                                            ui.horizontal(|ui| {
-                                                ui.label(RichText::new("Preview overlay").color(c.text_dim).size(11.0));
-                                                ui.add_space(8.0);
-                                                ui.label(RichText::new(overlay_cached.unwrap_or_else(|| "Empty".to_string())).color(c.text_muted).size(11.0));
-                                            });
-                                            ui.horizontal(|ui| {
-                                                ui.label(RichText::new("Image byte cache").color(c.text_dim).size(11.0));
-                                                ui.add_space(8.0);
-                                                ui.label(RichText::new(format!("{} cached file(s)", image_cache_count)).color(c.text_muted).size(11.0));
-                                            });
-                                            ui.add_space(10.0);
-                                            ui.horizontal(|ui| {
-                                                if ui.add_sized([152.0, 28.0], egui::Button::new("Clear preview state")).clicked() {
-                                                    self.info_panel_preview = None;
-                                                    self.preview.data = None;
-                                                    self.preview.path = None;
-                                                    self.image_preview_cache.clear();
-                                                }
-                                                if ui.add_sized([154.0, 28.0], egui::Button::new("Clear metadata state")).clicked() {
-                                                    self.info_panel_details = None;
-                                                    self.info_panel_hashes.clear();
-                                                    self.info_panel_hash_errors.clear();
-                                                    self.info_panel_hash_inflight = None;
-                                                }
-                                            });
-                                        });
-                                    ui.add_space(10.0);
                                     Frame::new()
                                         .fill(c.panel_raised)
                                         .stroke(Stroke::NONE)
@@ -13116,9 +15937,11 @@ impl OttrinApp {
                                                     .color(c.text_muted)
                                                     .size(10.6),
                                             );
-                                            if let Some((count, bytes)) = stats {
+                                            let (cache_count, cache_bytes) =
+                                                stats.unwrap_or((0, 0));
+                                            if stats.is_some() {
                                                 ui.label(
-                                                    RichText::new(format!("Cached thumbnails: {} ({}).", count, format_size(bytes)))
+                                                    RichText::new(format!("Cached thumbnails: {} ({}).", cache_count, format_size(cache_bytes)))
                                                         .color(c.text_muted)
                                                         .size(10.6),
                                                 );
@@ -13131,11 +15954,75 @@ impl OttrinApp {
                                             }
                                             ui.add_space(6.0);
                                             ui.horizontal(|ui| {
-                                                if ui.add_sized([156.0, 28.0], egui::Button::new("Clear thumbnail cache")).clicked() {
-                                                    clear_preview_cache_dir();
+                                                ui.label(
+                                                    RichText::new("Maximum size")
+                                                        .color(c.text_dim)
+                                                        .size(11.0),
+                                                );
+                                                ui.add_space(8.0);
+                                                let mut mb = self.state.config.thumbnail_cache_max_mb;
+                                                egui::ComboBox::new(
+                                                    "thumbnail_cache_max_mb",
+                                                    "",
+                                                )
+                                                .selected_text(if mb == 0 {
+                                                    "Disabled".to_string()
+                                                } else {
+                                                    format!("{mb} MiB")
+                                                })
+                                                .show_ui(ui, |ui| {
+                                                    for (value, label) in [
+                                                        (0, "Disabled"),
+                                                        (128, "128 MiB"),
+                                                        (256, "256 MiB"),
+                                                        (512, "512 MiB"),
+                                                        (1024, "1 GiB"),
+                                                        (2048, "2 GiB"),
+                                                    ] {
+                                                        ui.selectable_value(&mut mb, value, label);
+                                                    }
+                                                });
+                                                if mb != self.state.config.thumbnail_cache_max_mb {
+                                                    self.state.config.thumbnail_cache_max_mb = mb;
+                                                    prune_preview_cache_dir(self.thumbnail_cache_max_bytes());
+                                                }
+                                            });
+                                            ui.add_space(6.0);
+                                            ui.horizontal(|ui| {
+                                                let clear_label = if self.cache_clear_confirm {
+                                                    "Confirm clear cache"
+                                                } else {
+                                                    "Clear thumbnail cache"
+                                                };
+                                                let clear_enabled = cache_count > 0;
+                                                if ui
+                                                    .add_enabled(
+                                                        clear_enabled,
+                                                        egui::Button::new(clear_label),
+                                                    )
+                                                    .clicked()
+                                                {
+                                                    if self.cache_clear_confirm {
+                                                        let freed = clear_preview_cache_dir();
+                                                        self.cache_clear_confirm = false;
+                                                        self.set_status_message(
+                                                            format!(
+                                                                "Cleared thumbnail cache, freed {}",
+                                                                format_size(freed)
+                                                            ),
+                                                            true,
+                                                            4,
+                                                        );
+                                                    } else {
+                                                        self.cache_clear_confirm = true;
+                                                    }
                                                 }
                                                 ui.label(
-                                                    RichText::new("Async budget controls for large folders are still pending.")
+                                                    RichText::new(if self.cache_clear_confirm {
+                                                        "Click again to delete cached thumbnail files."
+                                                    } else {
+                                                        "Async budget controls for large folders are still pending."
+                                                    })
                                                         .color(c.text_dim)
                                                         .size(10.2),
                                                 );
@@ -13256,10 +16143,20 @@ impl OttrinApp {
 
         // NOTE: do NOT add_space here — allocate_rect already advanced the cursor.
         // Adding space here was the cause of double-row-height spacing.
-        response
+        if label != entry.name {
+            response.on_hover_text(entry.name.clone())
+        } else {
+            response
+        }
     }
 
     fn handle_viewport_resize(&self, ctx: &Context) {
+        if self.pending_rename.is_some()
+            || self.pending_delete.is_some()
+            || self.pending_empty_trash
+        {
+            return;
+        }
         let (maximized, fullscreen) = ctx.input(|i| {
             let viewport = i.viewport();
             (
@@ -13308,7 +16205,9 @@ impl eframe::App for OttrinApp {
         // Process async results
         self.poll_listing_results();
         self.poll_op_results();
+        self.poll_trash_results();
         self.poll_hash_results();
+        self.poll_search_results();
         let preview_ready = self.poll_preview_jobs();
         self.sync_search_scope_root();
 
@@ -13318,7 +16217,11 @@ impl eframe::App for OttrinApp {
                 SearchIndexStatus::Indexing
             );
         let transient_status = self.privileged_status.is_some();
-        if search_indexing || transient_status {
+        if search_indexing
+            || transient_status
+            || self.trash_panel.loading
+            || self.trash_panel.emptying
+        {
             // Background work and expiring status messages still need periodic UI refresh,
             // but not at a game-loop rate.
             ctx.request_repaint_after(std::time::Duration::from_millis(250));
@@ -13327,12 +16230,25 @@ impl eframe::App for OttrinApp {
             ctx.request_repaint();
         }
 
-        // Handle keyboard before rendering
-        self.handle_keyboard(ctx);
-        self.dismiss_command_frame_if_inactive(ctx);
+        // Handle keyboard before rendering. Modal popups get first claim.
+        if self.pending_rename.is_some() {
+            // Rename modal handles its own text input and Enter/Escape.
+        } else if self.pending_delete.is_some() {
+            self.handle_delete_confirmation_keyboard(ctx);
+        } else if self.pending_empty_trash {
+            self.handle_empty_trash_confirmation_keyboard(ctx);
+        } else {
+            self.handle_keyboard(ctx);
+            self.dismiss_command_frame_if_inactive(ctx);
+        }
 
-        // Space to toggle preview — must consume before widgets see it
-        if !self.any_address_bar_editing() && !self.command_frame.visible {
+        // Space to toggle preview — must consume before widgets see it.
+        if self.pending_rename.is_none()
+            && self.pending_delete.is_none()
+            && !self.pending_empty_trash
+            && !self.any_address_bar_editing()
+            && !self.command_frame.visible
+        {
             let space = ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Space));
             if space {
                 if self.preview.visible {
@@ -13386,12 +16302,18 @@ impl eframe::App for OttrinApp {
         // Central file pane (fills remaining space)
         self.render_file_pane(ctx);
 
-        // Render right sidebar (target panel, collapsible) above the final content rect.
-        self.render_target_sidebar(ctx);
+        // Render right smart panel above the final content rect.
+        self.render_smart_panel(ctx);
 
         // Floating overlays
+        self.sync_preview_to_selection();
         self.render_preview_overlay(ctx);
         self.render_properties_popup(ctx);
+        if !self.preview.visible {
+            self.render_rename_modal(ctx);
+            self.render_delete_confirmation(ctx);
+        }
+        self.render_empty_trash_confirmation(ctx);
         self.render_about_popup(ctx);
         self.render_settings_modal(ctx);
         self.render_theme_editor_popup(ctx);
@@ -13521,7 +16443,7 @@ impl eframe::App for OttrinApp {
     }
 
     fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
-        save_config(&self.state.config);
+        self.persist_config();
     }
 }
 
@@ -13647,6 +16569,637 @@ fn sort_entries(entries: &mut [FileEntry], config: &ottrin_core::SortConfig) {
     });
 }
 
+fn nearest_existing_dir(path: &Path) -> PathBuf {
+    let mut cursor = if path.is_dir() {
+        path.to_path_buf()
+    } else {
+        path.parent()
+            .map(Path::to_path_buf)
+            .unwrap_or_else(default_home_dir)
+    };
+    loop {
+        if cursor.is_dir() {
+            return cursor;
+        }
+        if !cursor.pop() {
+            return default_home_dir();
+        }
+    }
+}
+
+fn sibling_from_entries(entries: &[FileEntry], target: &Path) -> Option<PathBuf> {
+    let idx = entries.iter().position(|entry| entry.path == target)?;
+    if idx > 0 {
+        entries.get(idx - 1).map(|entry| entry.path.clone())
+    } else {
+        entries.get(idx + 1).map(|entry| entry.path.clone())
+    }
+}
+
+fn menu_item(ui: &mut egui::Ui, icon: &str, label: &str, c: &Colors) -> egui::Response {
+    ui.add(
+        egui::Button::new(
+            RichText::new(format!("{icon}  {label}"))
+                .size(12.5)
+                .color(c.text_muted),
+        )
+        .frame(false)
+        .min_size(Vec2::new(188.0, 26.0)),
+    )
+}
+
+fn display_app_name(path: &Path) -> String {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .filter(|name| !name.is_empty())
+        .unwrap_or("selected app")
+        .to_string()
+}
+
+fn paint_thumbnail_slot(_ui: &egui::Ui, _rect: Rect, _c: Colors) {
+    // Keep a stable thumbnail slot for layout while letting the image itself
+    // carry the visual shape.
+}
+
+fn paint_centered_image(ui: &egui::Ui, rect: Rect, image: egui::Image<'static>) {
+    let inner = rect.shrink(4.0);
+    let image_size = image
+        .load_for_size(ui.ctx(), inner.size())
+        .ok()
+        .and_then(|texture| texture.size())
+        .unwrap_or(inner.size());
+    let scale = (inner.width() / image_size.x).min(inner.height() / image_size.y);
+    let paint_size = if image_size.x > 0.0 && image_size.y > 0.0 {
+        image_size * scale
+    } else {
+        inner.size()
+    };
+    let paint_rect = Rect::from_center_size(inner.center(), paint_size);
+    image.paint_at(ui, paint_rect);
+}
+
+fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
+    if !matches!(entry.kind, EntryKind::File) {
+        return false;
+    }
+    let is_image = classify_file(
+        &entry.path,
+        entry.kind,
+        entry.is_executable,
+        entry.symlink_target_is_dir,
+        platform_case_mode_current(),
+    )
+    .category
+        == FileCategory::Image;
+    is_image && thumbnail_supported_image_path(&entry.path)
+}
+
+fn thumbnail_supported_image_path(path: &Path) -> bool {
+    let ext = path
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .unwrap_or_default()
+        .to_ascii_lowercase();
+    matches!(
+        ext.as_str(),
+        "png" | "jpg" | "jpeg" | "gif" | "bmp" | "tif" | "tiff" | "webp" | "ico" | "avif" | "svg"
+    )
+}
+
+fn is_svg_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .map(|ext| ext.eq_ignore_ascii_case("svg"))
+        .unwrap_or(false)
+}
+
+struct SmartPanelIconButton<'a> {
+    icon: &'a str,
+    icon_size: f32,
+    icon_color: Color32,
+    active: bool,
+    tooltip: &'a str,
+}
+
+fn smart_panel_icon_button(
+    ui: &mut egui::Ui,
+    strip_rect: Rect,
+    spec: SmartPanelIconButton<'_>,
+    c: &Colors,
+) -> egui::Response {
+    if spec.active {
+        let y = ui.cursor().min.y - 2.0;
+        ui.painter().rect_filled(
+            Rect::from_min_size(
+                egui::Pos2::new(strip_rect.min.x, y),
+                Vec2::new(strip_rect.width(), 32.0),
+            ),
+            4.0,
+            c.selected_bg,
+        );
+        ui.painter().vline(
+            strip_rect.min.x + 1.0,
+            y..=(y + 32.0),
+            Stroke::new(2.0, c.accent),
+        );
+    }
+    let resp = ui
+        .add(
+            egui::Button::new(
+                RichText::new(spec.icon)
+                    .size(spec.icon_size)
+                    .color(spec.icon_color),
+            )
+            .frame(false)
+            .min_size(Vec2::splat(30.0)),
+        )
+        .on_hover_text(spec.tooltip);
+    if resp.hovered() {
+        ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+    }
+    resp
+}
+
+fn smart_panel_header(ui: &mut egui::Ui, c: &Colors, icon: &str, title: &str) {
+    ui.add_space(8.0);
+    ui.horizontal(|ui| {
+        ui.add_space(8.0);
+        ui.label(RichText::new(icon).size(14.0).color(c.text_dim));
+        ui.add_space(4.0);
+        ui.label(RichText::new(title).color(c.text).size(14.0).strong());
+    });
+    ui.add_space(8.0);
+    ui.painter().hline(
+        ui.available_rect_before_wrap().x_range(),
+        ui.cursor().min.y,
+        Stroke::new(1.0, c.border),
+    );
+    ui.add_space(8.0);
+}
+
+fn inspector_action_button(
+    ui: &mut egui::Ui,
+    icon: &str,
+    label: &str,
+    tooltip: &str,
+    c: Colors,
+) -> egui::Response {
+    ui.add(
+        egui::Button::new(
+            RichText::new(format!("{icon}  {label}"))
+                .size(11.5)
+                .color(c.text),
+        )
+        .fill(c.panel)
+        .stroke(Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.35)))
+        .corner_radius(6.0)
+        .min_size(Vec2::new(108.0, 30.0)),
+    )
+    .on_hover_text(tooltip)
+}
+
+fn inspector_icon_button(
+    ui: &mut egui::Ui,
+    icon: &str,
+    label: &str,
+    tooltip: &str,
+    c: Colors,
+) -> egui::Response {
+    ui.add(
+        egui::Button::new(RichText::new(icon).size(16.0).color(c.text))
+            .fill(c.panel)
+            .stroke(Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.35)))
+            .corner_radius(6.0)
+            .min_size(Vec2::new(30.0, 28.0)),
+    )
+    .on_hover_text(format!("{label}\n{tooltip}"))
+}
+
+fn compact_preview_metadata(name: &str, body: &str) -> String {
+    let mut parts = vec![name.to_string()];
+    parts.extend(
+        body.lines()
+            .filter_map(|line| {
+                let trimmed = line.trim();
+                if trimmed.is_empty()
+                    || trimmed.eq_ignore_ascii_case("Image preview available.")
+                    || trimmed.eq_ignore_ascii_case("Open externally for full editing.")
+                {
+                    None
+                } else if trimmed.ends_with('.') && !trimmed.contains(':') {
+                    Some(trimmed.trim_end_matches('.').to_string())
+                } else {
+                    Some(trimmed.to_string())
+                }
+            })
+            .take(3),
+    );
+    parts.join(" · ")
+}
+
+fn split_preview_extracted_text(body: &str) -> (&str, Option<&str>) {
+    const MARKER: &str = "\n\nExtracted text:\n";
+    if let Some((metadata, text)) = body.split_once(MARKER) {
+        (metadata, Some(text.trim()))
+    } else {
+        (body, None)
+    }
+}
+
+fn split_archive_listing(body: &str) -> (&str, Option<&str>) {
+    const MARKER: &str = "\nContents:\n";
+    if let Some((metadata, listing)) = body.split_once(MARKER) {
+        (metadata, Some(listing.trim()))
+    } else {
+        (body, None)
+    }
+}
+
+fn preview_payload_for_copy(preview: &PreviewData) -> Option<(&'static str, &'static str, &str)> {
+    match preview.kind {
+        PreviewKind::Text | PreviewKind::Pdf | PreviewKind::OfficeMetadata => {
+            let (_, extracted) = split_preview_extracted_text(&preview.body);
+            let payload = extracted.unwrap_or(preview.body.trim());
+            (!payload.is_empty()).then_some((MI_CONTENT_COPY, "Copy Text", payload))
+        }
+        PreviewKind::ArchiveMetadata => {
+            let (_, listing) = split_archive_listing(&preview.body);
+            listing
+                .filter(|payload| !payload.is_empty())
+                .map(|payload| (MI_CONTENT_COPY, "Copy File List", payload))
+        }
+        _ => None,
+    }
+}
+
+fn render_preview_footer(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
+    if body.trim().is_empty() {
+        return;
+    }
+    ui.add_space(6.0);
+    ui.with_layout(Layout::top_down(Align::Center), |ui| {
+        ui.label(
+            RichText::new(compact_preview_metadata(name, body))
+                .color(c.text_dim)
+                .size(11.0),
+        );
+    });
+}
+
+fn render_text_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
+    let (metadata, extracted) = split_preview_extracted_text(body);
+    let source = extracted.unwrap_or(body).trim();
+    let editor_h = (ui.available_height() - 30.0).max(160.0);
+    let mut text = source.to_string();
+    ui.add_sized(
+        [ui.available_width(), editor_h],
+        egui::TextEdit::multiline(&mut text)
+            .font(FontId::monospace(12.0))
+            .text_color(c.text)
+            .frame(true)
+            .interactive(true),
+    );
+    render_preview_footer(ui, c, name, metadata);
+}
+
+fn render_archive_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
+    let (metadata, listing) = split_archive_listing(body);
+    let listing = listing.unwrap_or("").trim();
+    if listing.is_empty() {
+        render_metadata_card_preview(ui, c, MI_FOLDER_ZIP, name, metadata);
+        return;
+    }
+    let editor_h = (ui.available_height() - 30.0).max(180.0);
+    let mut text = listing.to_string();
+    ui.add_sized(
+        [ui.available_width(), editor_h],
+        egui::TextEdit::multiline(&mut text)
+            .font(FontId::monospace(12.0))
+            .text_color(c.text)
+            .frame(true)
+            .interactive(true),
+    );
+    render_preview_footer(ui, c, name, metadata);
+}
+
+fn render_document_body_preview(ui: &mut egui::Ui, c: Colors, icon: &str, name: &str, body: &str) {
+    let (metadata, extracted) = split_preview_extracted_text(body);
+    if let Some(text) = extracted.filter(|text| !text.is_empty()) {
+        let editor_h = (ui.available_height() - 30.0).max(180.0);
+        let mut body = text.to_string();
+        ui.add_sized(
+            [ui.available_width(), editor_h],
+            egui::TextEdit::multiline(&mut body)
+                .font(FontId::monospace(12.0))
+                .text_color(c.text)
+                .frame(true)
+                .interactive(true),
+        );
+        render_preview_footer(ui, c, name, metadata);
+    } else {
+        render_metadata_card_preview(ui, c, icon, name, metadata);
+    }
+}
+
+fn render_folder_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
+    ui.add_space(16.0);
+    ui.with_layout(Layout::top_down(Align::Center), |ui| {
+        ui.label(RichText::new(MI_FOLDER_OPEN).size(58.0).color(c.folder));
+        ui.add_space(8.0);
+        ui.label(RichText::new(name).color(c.text).size(14.0));
+    });
+    ui.add_space(10.0);
+    let (metadata, sample) = if let Some((metadata, sample)) = body.split_once("\n\nSample:\n") {
+        (metadata, Some(sample))
+    } else {
+        (body, None)
+    };
+    for line in metadata.lines() {
+        if let Some((key, val)) = line.split_once(':') {
+            ui.horizontal(|ui| {
+                ui.label(
+                    RichText::new(format!("{key}:"))
+                        .color(c.text_muted)
+                        .size(11.5),
+                );
+                ui.label(RichText::new(val.trim()).color(c.text).size(11.5));
+            });
+        } else if !line.trim().is_empty() {
+            ui.label(RichText::new(line).color(c.text_dim).size(11.5));
+        }
+    }
+    if let Some(sample) = sample {
+        ui.add_space(10.0);
+        ui.label(
+            RichText::new("Sample contents")
+                .color(c.text)
+                .size(12.0)
+                .strong(),
+        );
+        let mut text = sample.to_string();
+        ui.add(
+            egui::TextEdit::multiline(&mut text)
+                .font(FontId::monospace(11.0))
+                .text_color(c.text_dim)
+                .frame(true)
+                .desired_rows(10)
+                .interactive(true),
+        );
+    }
+}
+
+fn render_generic_body_preview(
+    ui: &mut egui::Ui,
+    c: Colors,
+    path: &Path,
+    name: &str,
+    preview: &PreviewData,
+) -> Option<GenericPreviewAction> {
+    let mut action = None;
+    ui.add_space(20.0);
+    ui.with_layout(Layout::top_down(Align::Center), |ui| {
+        let icon = file_icon_for_path(path);
+        ui.label(RichText::new(icon).size(64.0));
+        ui.add_space(8.0);
+        ui.label(RichText::new(name).color(c.text).size(14.0));
+        if !preview.body.is_empty() {
+            ui.add_space(8.0);
+            render_preview_metadata_rows(ui, c, &preview.body);
+        }
+        ui.add_space(16.0);
+        ui.horizontal(|ui| {
+            if inspector_action_button(
+                ui,
+                MI_CONTENT_COPY,
+                "Copy Path",
+                "Copy this file path to the clipboard.",
+                c,
+            )
+            .clicked()
+            {
+                ui.ctx().copy_text(path.display().to_string());
+            }
+            if preview.open_external
+                && inspector_action_button(
+                    ui,
+                    MI_OPEN_IN_NEW,
+                    "Open",
+                    "Open this file with the system default app.",
+                    c,
+                )
+                .clicked()
+            {
+                ui.ctx().open_url(egui::OpenUrl {
+                    url: format!("file://{}", path.display()),
+                    new_tab: false,
+                });
+            }
+        });
+        ui.add_space(6.0);
+        ui.horizontal(|ui| {
+            if inspector_action_button(ui, MI_EDIT, "Rename", "Rename this file.", c).clicked() {
+                action = Some(GenericPreviewAction::Rename);
+            }
+            if inspector_action_button(
+                ui,
+                MI_DELETE,
+                "Move to Trash",
+                "Move this file to Trash with confirmation.",
+                c,
+            )
+            .clicked()
+            {
+                action = Some(GenericPreviewAction::Delete);
+            }
+        });
+    });
+    action
+}
+
+fn render_metadata_card_preview(
+    ui: &mut egui::Ui,
+    c: Colors,
+    icon: &str,
+    name: &str,
+    metadata: &str,
+) {
+    ui.with_layout(Layout::top_down(Align::Center), |ui| {
+        ui.add_space((ui.available_height() * 0.18).min(48.0));
+        ui.label(RichText::new(icon).size(58.0).color(c.folder));
+        ui.add_space(8.0);
+        ui.label(RichText::new(name).color(c.text).size(14.0));
+        ui.add_space(10.0);
+        render_preview_metadata_rows(ui, c, metadata);
+    });
+}
+
+fn render_preview_metadata_rows(ui: &mut egui::Ui, c: Colors, metadata: &str) {
+    for line in metadata.lines() {
+        let line = line.trim();
+        if line.is_empty() {
+            continue;
+        }
+        if let Some((key, val)) = line.split_once(':') {
+            ui.horizontal(|ui| {
+                ui.label(
+                    RichText::new(format!("{key}:"))
+                        .color(c.text_muted)
+                        .size(11.5),
+                );
+                ui.label(RichText::new(val.trim()).color(c.text).size(11.5));
+            });
+        } else {
+            ui.label(RichText::new(line).color(c.text_dim).size(11.5));
+        }
+    }
+}
+
+fn render_image_hover_nav(ui: &mut egui::Ui, c: Colors, image_rect: Rect) -> Option<isize> {
+    let pointer = ui.input(|input| input.pointer.hover_pos());
+    if !pointer
+        .map(|pos| image_rect.expand(8.0).contains(pos))
+        .unwrap_or(false)
+    {
+        return None;
+    }
+
+    let arrow_size = Vec2::new(42.0, 64.0);
+    let left_rect = Rect::from_center_size(
+        egui::pos2(image_rect.left() + 30.0, image_rect.center().y),
+        arrow_size,
+    );
+    let right_rect = Rect::from_center_size(
+        egui::pos2(image_rect.right() - 30.0, image_rect.center().y),
+        arrow_size,
+    );
+    let left = ui.interact(left_rect, ui.id().with("quick_prev_image"), Sense::click());
+    let right = ui.interact(right_rect, ui.id().with("quick_next_image"), Sense::click());
+
+    for (rect, response, icon) in [
+        (left_rect, &left, MI_ARROW_BACK),
+        (right_rect, &right, MI_ARROW_FORWARD),
+    ] {
+        let fill = if response.hovered() {
+            mix_color(c.selected_bg, c.panel_raised, 0.18)
+        } else {
+            Color32::from_rgba_unmultiplied(
+                c.panel_raised.r(),
+                c.panel_raised.g(),
+                c.panel_raised.b(),
+                176,
+            )
+        };
+        ui.painter().rect_filled(rect, 10.0, fill);
+        ui.painter().rect_stroke(
+            rect,
+            10.0,
+            Stroke::new(1.0, mix_color(c.border, c.accent, 0.25)),
+            egui::StrokeKind::Inside,
+        );
+        ui.painter().text(
+            rect.center(),
+            Align2::CENTER_CENTER,
+            icon,
+            FontId::proportional(24.0),
+            c.text,
+        );
+    }
+
+    if left.clicked() {
+        Some(-1)
+    } else if right.clicked() {
+        Some(1)
+    } else {
+        None
+    }
+}
+
+fn delete_choice_row(
+    ui: &mut egui::Ui,
+    c: &Colors,
+    choice: DeleteChoice,
+    selected: bool,
+) -> egui::Response {
+    let (icon, label, hint, text_col) = match choice {
+        DeleteChoice::MoveToTrash => (
+            MI_DELETE,
+            "Move to Trash",
+            "Safest option. You can restore it from the system trash.",
+            c.text,
+        ),
+        DeleteChoice::Cancel => (
+            MI_CLOSE,
+            "Cancel",
+            "Close this dialog without deleting anything.",
+            c.text_muted,
+        ),
+        DeleteChoice::DeletePermanently => (
+            MI_DELETE,
+            "Delete Permanently",
+            "Bypasses the trash and cannot be undone from Ottrin.",
+            c.error,
+        ),
+    };
+    let fill = if selected { c.selected_bg } else { c.panel };
+    let stroke = if selected {
+        Stroke::new(1.2, c.accent)
+    } else {
+        Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.35))
+    };
+    let row_h = if selected { 48.0 } else { 38.0 };
+    let (rect, response) =
+        ui.allocate_exact_size(Vec2::new(ui.available_width(), row_h), Sense::click());
+
+    ui.painter().rect_filled(
+        rect,
+        6.0,
+        if response.hovered() && !selected {
+            mix_color(fill, c.hover, 0.35)
+        } else {
+            fill
+        },
+    );
+    ui.painter()
+        .rect_stroke(rect, 6.0, stroke, egui::StrokeKind::Inside);
+    ui.painter().text(
+        egui::pos2(
+            rect.left() + 20.0,
+            rect.top() + if selected { 16.0 } else { row_h * 0.5 },
+        ),
+        Align2::CENTER_CENTER,
+        icon,
+        FontId::proportional(14.0),
+        text_col,
+    );
+    ui.painter().text(
+        egui::pos2(
+            rect.left() + 42.0,
+            rect.top() + if selected { 15.0 } else { row_h * 0.5 },
+        ),
+        Align2::LEFT_CENTER,
+        label,
+        FontId::proportional(12.6),
+        text_col,
+    );
+    if selected {
+        ui.painter().text(
+            egui::pos2(rect.left() + 42.0, rect.top() + 31.0),
+            Align2::LEFT_CENTER,
+            hint,
+            FontId::proportional(10.5),
+            c.text_muted,
+        );
+    }
+    if selected {
+        ui.painter().vline(
+            rect.left() + 2.0,
+            (rect.top() + 7.0)..=(rect.bottom() - 7.0),
+            Stroke::new(2.0, c.accent),
+        );
+    }
+    response
+}
+
 fn sort_supports_direction(sort_by: SortBy) -> bool {
     matches!(sort_by, SortBy::Name | SortBy::Kind)
 }
@@ -13760,6 +17313,13 @@ pub fn load_config() -> AppConfig {
     serde_json::from_slice(&bytes).unwrap_or_default()
 }
 
+pub fn remove_config_file() -> Result<u64, String> {
+    let Some(path) = config_path() else {
+        return Ok(0);
+    };
+    remove_file_counting_bytes(&path)
+}
+
 fn save_config(config: &AppConfig) {
     let path = match config_path() {
         Some(p) => p,
@@ -13792,6 +17352,194 @@ fn resolve_path(input: &str, cwd: &Path) -> PathBuf {
     } else {
         cwd.join(expanded)
     }
+}
+
+fn plural_s(count: usize) -> &'static str {
+    if count == 1 { "" } else { "s" }
+}
+
+fn format_duration_short(duration: Duration) -> String {
+    let secs = duration.as_secs();
+    if secs < 2 {
+        "just now".to_string()
+    } else if secs < 60 {
+        format!("{secs}s")
+    } else if secs < 3_600 {
+        format!("{}m", secs / 60)
+    } else {
+        format!("{}h", secs / 3_600)
+    }
+}
+
+fn operation_title(cmd: &FileCommand) -> &'static str {
+    match cmd {
+        FileCommand::CreateFile { .. } => "Create file",
+        FileCommand::CreateFolder { .. } => "Create folder",
+        FileCommand::Rename { .. } => "Rename",
+        FileCommand::Delete { mode, .. } => match mode {
+            DeleteMode::Trash => "Move to Trash",
+            DeleteMode::Permanent => "Delete permanently",
+        },
+        FileCommand::Copy { .. } => "Copy",
+        FileCommand::Move { .. } => "Move",
+        FileCommand::ShowProperties { .. } => "Properties",
+        FileCommand::Chmod { .. } => "Change permissions",
+        FileCommand::Symlink { .. } => "Create symlink",
+    }
+}
+
+fn operation_recoverability(cmd: &FileCommand) -> OperationRecoverability {
+    match cmd {
+        FileCommand::Delete {
+            mode: DeleteMode::Trash,
+            ..
+        } => OperationRecoverability::Restorable,
+        FileCommand::Delete {
+            mode: DeleteMode::Permanent,
+            ..
+        } => OperationRecoverability::NotUndoable,
+        FileCommand::ShowProperties { .. } => OperationRecoverability::Informational,
+        FileCommand::CreateFile { .. }
+        | FileCommand::CreateFolder { .. }
+        | FileCommand::Rename { .. }
+        | FileCommand::Copy { .. }
+        | FileCommand::Move { .. }
+        | FileCommand::Chmod { .. }
+        | FileCommand::Symlink { .. } => OperationRecoverability::SessionTracked,
+    }
+}
+
+fn operation_recoverability_label(
+    recoverability: OperationRecoverability,
+    c: Colors,
+) -> (&'static str, Color32, &'static str) {
+    match recoverability {
+        OperationRecoverability::Restorable => (
+            "Restorable",
+            c.accent,
+            "This action has a clear restore path in Ottrin or the system Trash.",
+        ),
+        OperationRecoverability::NotUndoable => (
+            "Not undoable",
+            c.error,
+            "This bypassed or emptied Trash and cannot be restored by Ottrin.",
+        ),
+        OperationRecoverability::SessionTracked => (
+            "Tracked this session",
+            c.text_muted,
+            "Ottrin records this action, but full undo for it is still future work.",
+        ),
+        OperationRecoverability::Informational => (
+            "Info only",
+            c.text_muted,
+            "This entry did not change files.",
+        ),
+    }
+}
+
+fn operation_detail(cmd: &FileCommand) -> String {
+    match cmd {
+        FileCommand::CreateFile { parent, name } | FileCommand::CreateFolder { parent, name } => {
+            format!("{name} in {}", parent.display())
+        }
+        FileCommand::Rename { source, new_name } => {
+            let old = source
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or("item");
+            format!("{old} -> {new_name}")
+        }
+        FileCommand::Delete { targets, .. } => operation_sources_detail(targets),
+        FileCommand::Copy {
+            sources,
+            destination,
+            ..
+        } => {
+            format!(
+                "{} to {}",
+                operation_sources_detail(sources),
+                destination.display()
+            )
+        }
+        FileCommand::Move {
+            sources,
+            destination,
+            ..
+        } => {
+            format!(
+                "{} to {}",
+                operation_sources_detail(sources),
+                destination.display()
+            )
+        }
+        FileCommand::ShowProperties { target }
+        | FileCommand::Chmod { target, .. }
+        | FileCommand::Symlink { target, .. } => target.display().to_string(),
+    }
+}
+
+fn operation_sources_detail(paths: &[PathBuf]) -> String {
+    if paths.len() == 1 {
+        paths
+            .first()
+            .and_then(|path| path.file_name())
+            .and_then(|name| name.to_str())
+            .map(str::to_string)
+            .unwrap_or_else(|| {
+                paths
+                    .first()
+                    .map(|path| path.display().to_string())
+                    .unwrap_or_else(|| "item".to_string())
+            })
+    } else {
+        format!("{} items", paths.len())
+    }
+}
+
+fn adjacent_preview_index(
+    entries: &[FileEntry],
+    current_idx: usize,
+    delta: isize,
+) -> Option<usize> {
+    if entries.is_empty() || current_idx >= entries.len() || delta == 0 {
+        return None;
+    }
+    let mut idx = current_idx as isize;
+    loop {
+        idx += delta.signum();
+        if idx < 0 || idx >= entries.len() as isize {
+            return None;
+        }
+        let candidate = &entries[idx as usize];
+        if previewable_entry(candidate) {
+            return Some(idx as usize);
+        }
+    }
+}
+
+fn previewable_entry(entry: &FileEntry) -> bool {
+    matches!(
+        entry.kind,
+        EntryKind::Directory | EntryKind::File | EntryKind::Symlink
+    )
+}
+
+fn search_result_column_min_width(idx: usize) -> f32 {
+    match idx {
+        0 => 180.0,
+        1 => 110.0,
+        2 => 82.0,
+        3 => 64.0,
+        _ => 80.0,
+    }
+}
+
+fn search_visible_column_indices(visible: [bool; 4]) -> Vec<usize> {
+    visible
+        .iter()
+        .enumerate()
+        .filter_map(|(idx, on)| on.then_some(idx))
+        .collect()
 }
 
 fn compute_path_completions(input: &str, cwd: &Path) -> Vec<String> {
@@ -13835,6 +17583,29 @@ fn compute_path_completions(input: &str, cwd: &Path) -> Vec<String> {
             }
         })
         .collect()
+}
+
+fn metadata_preview_snippet(body: &str, max_lines: usize, max_chars: usize) -> String {
+    let mut out = String::new();
+    let mut remaining = max_chars;
+    for (lines_added, line) in body
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .enumerate()
+    {
+        if lines_added >= max_lines || remaining == 0 {
+            break;
+        }
+        let trimmed = line.trim();
+        if !out.is_empty() {
+            out.push('\n');
+        }
+        let chunk: String = trimmed.chars().take(remaining).collect();
+        let taken = chunk.chars().count();
+        out.push_str(&chunk);
+        remaining = remaining.saturating_sub(taken);
+    }
+    out
 }
 
 fn format_list_dir_error(path: &Path, e: &std::io::Error) -> String {
@@ -13956,7 +17727,10 @@ fn load_cached_thumbnail(cache_key: &str) -> Option<Vec<u8>> {
     std::fs::read(path).ok()
 }
 
-fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8]) {
+fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8], max_bytes: u64) {
+    if max_bytes == 0 {
+        return;
+    }
     let Some(path) = preview_cache_path(cache_key) else {
         return;
     };
@@ -13964,6 +17738,7 @@ fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8]) {
         let _ = std::fs::create_dir_all(parent);
     }
     let _ = std::fs::write(path, bytes);
+    prune_preview_cache_dir(max_bytes);
 }
 
 fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
@@ -13979,6 +17754,21 @@ fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
         .write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)
         .ok()?;
     Some(bytes)
+}
+
+fn rotate_image_file(path: &Path, clockwise: bool) -> Result<(), String> {
+    let img = image::ImageReader::open(path)
+        .map_err(|err| err.to_string())?
+        .with_guessed_format()
+        .map_err(|err| err.to_string())?
+        .decode()
+        .map_err(|err| err.to_string())?;
+    let rotated = if clockwise {
+        img.rotate90()
+    } else {
+        img.rotate270()
+    };
+    rotated.save(path).map_err(|err| err.to_string())
 }
 
 fn compute_sha256(path: &Path) -> Result<String, String> {
@@ -14016,14 +17806,159 @@ fn preview_cache_stats() -> Option<(usize, u64)> {
     Some((count, total))
 }
 
-fn clear_preview_cache_dir() {
+fn prune_preview_cache_dir(max_bytes: u64) {
+    if max_bytes == 0 {
+        let _ = clear_preview_cache_dir();
+        return;
+    }
     let Some(dir) = preview_cache_dir() else {
         return;
     };
+    let Ok(entries) = std::fs::read_dir(&dir) else {
+        return;
+    };
+    let mut files = Vec::new();
+    let mut total = 0_u64;
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let Ok(meta) = entry.metadata() else {
+            continue;
+        };
+        if !meta.is_file() {
+            continue;
+        }
+        let modified = meta.modified().unwrap_or(std::time::UNIX_EPOCH);
+        total = total.saturating_add(meta.len());
+        files.push((path, meta.len(), modified));
+    }
+    if total <= max_bytes {
+        return;
+    }
+    files.sort_by_key(|(_, _, modified)| *modified);
+    for (path, len, _) in files {
+        if total <= max_bytes {
+            break;
+        }
+        if std::fs::remove_file(path).is_ok() {
+            total = total.saturating_sub(len);
+        }
+    }
+}
+
+fn clear_preview_cache_dir() -> u64 {
+    let Some(dir) = preview_cache_dir() else {
+        return 0;
+    };
+    let mut freed = 0_u64;
     if let Ok(entries) = std::fs::read_dir(&dir) {
         for entry in entries.flatten() {
-            let _ = std::fs::remove_file(entry.path());
+            let path = entry.path();
+            let bytes = entry.metadata().map(|m| m.len()).unwrap_or(0);
+            if std::fs::remove_file(path).is_ok() {
+                freed = freed.saturating_add(bytes);
+            }
         }
+    }
+    freed
+}
+
+pub fn clear_preview_cache_storage() -> u64 {
+    clear_preview_cache_dir()
+}
+
+fn remove_file_counting_bytes(path: &Path) -> Result<u64, String> {
+    match std::fs::metadata(path) {
+        Ok(meta) => {
+            let len = meta.len();
+            std::fs::remove_file(path)
+                .map_err(|e| format!("Failed to remove {}: {}", path.display(), e))?;
+            Ok(len)
+        }
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(0),
+        Err(err) => Err(format!("Failed to inspect {}: {}", path.display(), err)),
+    }
+}
+
+fn launcher_target_path() -> Option<PathBuf> {
+    if let Some(appimage) = std::env::var_os("APPIMAGE").map(PathBuf::from)
+        && appimage.exists()
+    {
+        return Some(appimage);
+    }
+    std::env::current_exe().ok()
+}
+
+fn launcher_link_path() -> PathBuf {
+    #[cfg(target_os = "windows")]
+    {
+        default_home_dir().join("ottrin.bat")
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        default_home_dir().join(".local").join("bin").join("ottrin")
+    }
+}
+
+fn launcher_status() -> Option<String> {
+    let link = launcher_link_path();
+    if link.exists() {
+        Some(format!("Installed at {}", link.display()))
+    } else {
+        Some(format!("Not installed. Suggested path: {}", link.display()))
+    }
+}
+
+fn install_terminal_launcher() -> Result<String, String> {
+    let link = launcher_link_path();
+    let target = launcher_target_path()
+        .ok_or_else(|| "Could not determine the current Ottrin executable path.".to_string())?;
+    if let Some(parent) = link.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("Failed to create {}: {}", parent.display(), e))?;
+    }
+    if link.exists() {
+        std::fs::remove_file(&link)
+            .map_err(|e| format!("Failed to replace {}: {}", link.display(), e))?;
+    }
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(&target, &link).map_err(|e| {
+            format!(
+                "Failed to create symlink {} -> {}: {}",
+                link.display(),
+                target.display(),
+                e
+            )
+        })?;
+        Ok(format!(
+            "Installed terminal launcher at {}. Make sure ~/.local/bin is in PATH.",
+            link.display()
+        ))
+    }
+    #[cfg(target_os = "windows")]
+    {
+        std::fs::write(
+            &link,
+            format!("@echo off\r\n\"{}\" %*\r\n", target.display()),
+        )
+        .map_err(|e| format!("Failed to write {}: {}", link.display(), e))?;
+        Ok(format!("Installed launcher script at {}.", link.display()))
+    }
+    #[cfg(not(any(unix, target_os = "windows")))]
+    {
+        let _ = (target, link);
+        Err("Terminal launcher installation is not supported on this platform yet.".to_string())
+    }
+}
+
+fn remove_terminal_launcher() -> Result<String, String> {
+    let link = launcher_link_path();
+    match std::fs::remove_file(&link) {
+        Ok(()) => Ok(format!("Removed terminal launcher at {}.", link.display())),
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+            Ok("No terminal launcher was installed.".to_string())
+        }
+        Err(err) => Err(format!("Failed to remove {}: {}", link.display(), err)),
     }
 }
 
@@ -14910,20 +18845,29 @@ fn item_chars_for_scale(scale: f32) -> f32 {
     (10.0 * scale).round().max(6.0)
 }
 
-fn truncate_name(name: &str, max_chars: usize) -> String {
-    let chars: Vec<char> = name.chars().collect();
-    if chars.len() <= max_chars {
-        name.to_string()
-    } else {
-        let stem: String = chars[..max_chars.saturating_sub(1)].iter().collect();
-        format!("{}…", stem)
+fn paint_resize_separator(ui: &egui::Ui, rect: Rect, response: &egui::Response, c: &Colors) {
+    let active = response.hovered() || response.dragged();
+    if active {
+        ui.ctx().set_cursor_icon(egui::CursorIcon::ResizeHorizontal);
+        ui.painter()
+            .vline(rect.center().x, rect.y_range(), Stroke::new(2.0, c.accent));
     }
+}
+
+fn truncate_name(name: &str, max_chars: usize) -> String {
+    truncate_middle(name, max_chars)
 }
 
 fn truncate_middle(name: &str, max_chars: usize) -> String {
     let chars: Vec<char> = name.chars().collect();
-    if chars.len() <= max_chars || max_chars <= 2 {
+    if chars.len() <= max_chars {
         return name.to_string();
+    }
+    if max_chars == 0 {
+        return String::new();
+    }
+    if max_chars <= 2 {
+        return "…".repeat(max_chars);
     }
     let keep = max_chars.saturating_sub(1);
     let left = keep / 2;
