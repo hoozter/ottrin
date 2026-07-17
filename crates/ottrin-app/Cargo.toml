@@ -6,6 +6,9 @@ license.workspace = true
 authors.workspace = true
 
 [dependencies]
+ottrin-core = { path = "../ottrin-core" }
+ottrin-search = { path = "../ottrin-search" }
 ottrin-ui = { path = "../ottrin-ui" }
 ottrin-platform = { path = "../ottrin-platform" }
 eframe.workspace = true
+image = "0.25"

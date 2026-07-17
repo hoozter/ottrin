@@ -1,9 +1,13 @@
 use eframe::{NativeOptions, egui};
+use ottrin_core::format_size;
 use ottrin_platform::set_privileged_helper_override;
-use ottrin_ui::{OttrinApp, load_config};
+use ottrin_ui::{OttrinApp, clear_preview_cache_storage, load_config, remove_config_file};
 use std::path::PathBuf;
 
 fn main() -> eframe::Result<()> {
+    if handle_cli_action() {
+        return Ok(());
+    }
     apply_cli_overrides();
     ensure_dev_helper();
 
@@ -16,7 +20,8 @@ fn main() -> eframe::Result<()> {
             .with_decorations(false)
             .with_transparent(true)
             .with_inner_size(window_size)
-            .with_min_inner_size([800.0, 500.0]),
+            .with_min_inner_size([800.0, 500.0])
+            .with_icon(load_window_icon()),
         ..Default::default()
     };
     eframe::run_native(
@@ -24,6 +29,96 @@ fn main() -> eframe::Result<()> {
         options,
         Box::new(|cc| Ok(Box::new(OttrinApp::new(cc)))),
     )
+}
+
+fn handle_cli_action() -> bool {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.iter().any(|arg| arg == "--help" || arg == "-h") {
+        println!("Ottrin");
+        println!("  --uninstall        Remove Ottrin background jobs and generated data");
+        println!("  --purge-config     With --uninstall, also remove saved preferences");
+        println!("  --helper-path PATH Developer override for privileged helper discovery");
+        return true;
+    }
+    if !args.iter().any(|arg| arg == "--uninstall") {
+        return false;
+    }
+
+    let purge_config = args.iter().any(|arg| arg == "--purge-config");
+    let mut freed = 0_u64;
+    let mut errors = Vec::new();
+
+    match ottrin_search::SearchService::uninstall_sqlite_schedule() {
+        Ok(msg) => println!("{msg}"),
+        Err(err) => errors.push(err),
+    }
+    match ottrin_search::SearchService::clear_search_storage() {
+        Ok(bytes) => {
+            freed = freed.saturating_add(bytes);
+            println!("Removed search storage: {}", format_size(bytes));
+        }
+        Err(err) => errors.push(err),
+    }
+    let preview_freed = clear_preview_cache_storage();
+    freed = freed.saturating_add(preview_freed);
+    println!("Removed thumbnail cache: {}", format_size(preview_freed));
+    match remove_terminal_launcher_file() {
+        Ok(msg) => println!("{msg}"),
+        Err(err) => errors.push(err),
+    }
+    if purge_config {
+        match remove_config_file() {
+            Ok(bytes) => {
+                freed = freed.saturating_add(bytes);
+                println!("Removed preferences: {}", format_size(bytes));
+            }
+            Err(err) => errors.push(err),
+        }
+    } else {
+        println!("Saved preferences kept. Use --uninstall --purge-config to remove them too.");
+    }
+
+    println!("Cleanup freed {}.", format_size(freed));
+    if errors.is_empty() {
+        true
+    } else {
+        eprintln!("Cleanup completed with errors:");
+        for err in errors {
+            eprintln!("  {err}");
+        }
+        std::process::exit(1);
+    }
+}
+
+fn remove_terminal_launcher_file() -> Result<String, String> {
+    let path = if cfg!(target_os = "windows") {
+        ottrin_core::default_home_dir().join("ottrin.bat")
+    } else {
+        ottrin_core::default_home_dir()
+            .join(".local")
+            .join("bin")
+            .join("ottrin")
+    };
+    match std::fs::remove_file(&path) {
+        Ok(()) => Ok(format!("Removed terminal launcher at {}.", path.display())),
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+            Ok("No terminal launcher was installed.".to_string())
+        }
+        Err(err) => Err(format!("Failed to remove {}: {}", path.display(), err)),
+    }
+}
+
+fn load_window_icon() -> egui::IconData {
+    let bytes = include_bytes!("../../../assets/icon.png");
+    let image = image::load_from_memory(bytes)
+        .expect("embedded Ottrin icon should decode")
+        .into_rgba8();
+    let (width, height) = image.dimensions();
+    egui::IconData {
+        rgba: image.into_raw(),
+        width,
+        height,
+    }
 }
 
 fn apply_cli_overrides() {

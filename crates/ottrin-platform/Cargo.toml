@@ -7,6 +7,7 @@ authors.workspace = true
 
 [dependencies]
 ottrin-core = { path = "../ottrin-core" }
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
 thiserror.workspace = true
 tracing.workspace = true
 trash = "5"

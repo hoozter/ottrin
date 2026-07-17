@@ -6,11 +6,44 @@ use std::thread::sleep;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 fn main() {
+    let mut force_rebuild = false;
+    let mut remove_schedule = false;
     let mut roots: Vec<PathBuf> = std::env::args()
         .skip(1)
-        .filter(|a| !a.starts_with("--"))
-        .map(PathBuf::from)
+        .filter_map(|a| {
+            if a == "--rebuild" || a == "--force" {
+                force_rebuild = true;
+                None
+            } else if a == "--remove-schedule" || a == "--uninstall-schedule" {
+                remove_schedule = true;
+                None
+            } else if a == "--help" || a == "-h" {
+                println!("Usage: ottrin-index [--rebuild] [--remove-schedule] [ROOT ...]");
+                println!("Builds or refreshes Ottrin's SQLite search index.");
+                println!("  --rebuild   Force a full rescan even if a saved index exists.");
+                println!("  --remove-schedule");
+                println!("              Remove Ottrin's background SQLite refresh schedule.");
+                std::process::exit(0);
+            } else if a.starts_with("--") {
+                eprintln!("unknown option: {a}");
+                std::process::exit(2);
+            } else {
+                Some(PathBuf::from(a))
+            }
+        })
         .collect();
+    if remove_schedule {
+        match SearchService::uninstall_sqlite_schedule() {
+            Ok(msg) => {
+                println!("{msg}");
+                std::process::exit(0);
+            }
+            Err(err) => {
+                eprintln!("{err}");
+                std::process::exit(1);
+            }
+        }
+    }
     if roots.is_empty() {
         roots.push(default_home_dir());
     }
@@ -27,8 +60,12 @@ fn main() {
     };
     let service = SearchService::new(config);
     service.start();
+    if force_rebuild {
+        service.rebuild_index();
+    }
 
     let mut last_line = String::new();
+    let mut saw_forced_rebuild = !force_rebuild;
     loop {
         let diag = service.diagnostics();
         let now_secs = SystemTime::now()
@@ -61,8 +98,15 @@ fn main() {
         }
 
         match diag.status {
-            SearchIndexStatus::Ready | SearchIndexStatus::Unavailable => break,
+            SearchIndexStatus::Ready | SearchIndexStatus::Unavailable => {
+                if saw_forced_rebuild || matches!(diag.status, SearchIndexStatus::Unavailable) {
+                    break;
+                }
+            }
             SearchIndexStatus::Indexing => {}
+        }
+        if matches!(diag.status, SearchIndexStatus::Indexing) {
+            saw_forced_rebuild = true;
         }
         sleep(Duration::from_millis(500));
     }

@@ -135,7 +135,15 @@ impl SearchDbWriter {
         {
             let mut stmt = tx.prepare_cached(
                 "INSERT INTO files (path, parent_path, name, kind, size_bytes, modified_unix_secs, is_executable, symlink_target_is_dir)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+                 ON CONFLICT(path) DO UPDATE SET
+                    parent_path=excluded.parent_path,
+                    name=excluded.name,
+                    kind=excluded.kind,
+                    size_bytes=excluded.size_bytes,
+                    modified_unix_secs=excluded.modified_unix_secs,
+                    is_executable=excluded.is_executable,
+                    symlink_target_is_dir=excluded.symlink_target_is_dir",
             )?;
             for item in items {
                 stmt.execute(params![
@@ -302,5 +310,64 @@ fn entry_kind_from_i64(value: i64) -> EntryKind {
         2 => EntryKind::Symlink,
         3 => EntryKind::Other,
         _ => EntryKind::File,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_db_path(name: &str) -> PathBuf {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        std::env::temp_dir().join(format!("ottrin-{name}-{nonce}.db"))
+    }
+
+    fn item(path: &str, size_bytes: u64) -> SearchResultItem {
+        let path = PathBuf::from(path);
+        let name = path
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        let parent_path = path.parent().map(Path::to_path_buf).unwrap_or_default();
+        let mut item = SearchResultItem {
+            path,
+            parent_path,
+            name,
+            kind: EntryKind::File,
+            size_bytes: Some(size_bytes),
+            modified_unix_secs: Some(1),
+            is_executable: false,
+            symlink_target_is_dir: None,
+            content_snippet: None,
+            name_lower: String::new(),
+            path_str: String::new(),
+            path_lower: String::new(),
+        };
+        item.prepare();
+        item
+    }
+
+    #[test]
+    fn insert_batch_upserts_existing_paths() {
+        let db_path = temp_db_path("batch-upsert");
+        let mut writer = SearchDbWriter::open(db_path.clone()).expect("open writer");
+
+        writer
+            .insert_batch(&[item("/tmp/ottrin-search/example.txt", 1)])
+            .expect("initial insert");
+        writer
+            .insert_batch(&[item("/tmp/ottrin-search/example.txt", 42)])
+            .expect("upsert existing path");
+
+        let db = SearchDb::open(db_path.clone()).expect("open reader");
+        let items = db.load_items().expect("load items");
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].size_bytes, Some(42));
+
+        let _ = std::fs::remove_file(db_path);
     }
 }

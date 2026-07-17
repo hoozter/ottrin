@@ -1,7 +1,9 @@
 use ottrin_core::{
     ConflictAction, DeleteMode, EntryKind, FileCommand, PrivilegedRequest, PrivilegedResponse,
 };
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::sync::{OnceLock, RwLock};
 use std::time::SystemTime;
 use thiserror::Error;
@@ -14,6 +16,20 @@ pub struct FileProperties {
     pub readonly: bool,
     pub created: Option<SystemTime>,
     pub modified: Option<SystemTime>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TrashItem {
+    pub id: OsString,
+    pub original_name: OsString,
+    pub original_parent: PathBuf,
+    pub trash_path: PathBuf,
+    pub original_path: PathBuf,
+    pub deletion_date: Option<String>,
+    pub time_deleted: i64,
+    pub name: String,
+    pub kind: EntryKind,
+    pub size_bytes: Option<u64>,
 }
 
 #[derive(Debug, Error)]
@@ -40,6 +56,8 @@ pub enum PrivilegedAvailability {
 pub trait PlatformOps: Send + Sync {
     fn delete_path(&self, target: &Path, mode: DeleteMode) -> Result<(), PlatformError>;
     fn reveal_in_system(&self, target: &Path) -> Result<(), PlatformError>;
+    fn open_with_application(&self, target: &Path, application: &Path)
+    -> Result<(), PlatformError>;
     fn execute_command(
         &self,
         command: &FileCommand,
@@ -123,6 +141,18 @@ impl PlatformOps for DefaultPlatform {
 
     fn reveal_in_system(&self, target: &Path) -> Result<(), PlatformError> {
         opener::open(target).map_err(|e| PlatformError::Io(e.to_string()))
+    }
+
+    fn open_with_application(
+        &self,
+        target: &Path,
+        application: &Path,
+    ) -> Result<(), PlatformError> {
+        Command::new(application)
+            .arg(target)
+            .spawn()
+            .map(|_| ())
+            .map_err(|e| PlatformError::Io(e.to_string()))
     }
 
     fn execute_command(
@@ -267,6 +297,24 @@ impl PlatformOps for DefaultPlatform {
                 "Integrated privilege management is not implemented on this platform.".to_string(),
             )
         }
+    }
+}
+
+impl DefaultPlatform {
+    pub fn list_trash(&self) -> Result<Vec<TrashItem>, PlatformError> {
+        list_trash_items()
+    }
+
+    pub fn restore_trash_item(&self, item: &TrashItem) -> Result<(), PlatformError> {
+        restore_trash_item(item)
+    }
+
+    pub fn delete_trash_item_permanently(&self, item: &TrashItem) -> Result<(), PlatformError> {
+        delete_trash_item_permanently(item)
+    }
+
+    pub fn empty_trash(&self) -> Result<(), PlatformError> {
+        empty_trash()
     }
 }
 
@@ -418,6 +466,280 @@ fn delete_permanent(target: &Path) -> Result<(), PlatformError> {
         }
         Err(e) => Err(PlatformError::Io(e.to_string())),
     }
+}
+
+fn list_trash_items() -> Result<Vec<TrashItem>, PlatformError> {
+    #[cfg(any(
+        target_os = "windows",
+        all(
+            unix,
+            not(target_os = "macos"),
+            not(target_os = "ios"),
+            not(target_os = "android")
+        )
+    ))]
+    {
+        let mut items = trash::os_limited::list()
+            .map_err(|e| PlatformError::Io(e.to_string()))?
+            .into_iter()
+            .map(system_trash_item_to_ottrin)
+            .collect::<Vec<_>>();
+        items.sort_by(|a, b| {
+            b.time_deleted
+                .cmp(&a.time_deleted)
+                .then_with(|| a.name.cmp(&b.name))
+        });
+        Ok(items)
+    }
+    #[cfg(not(any(
+        target_os = "windows",
+        all(
+            unix,
+            not(target_os = "macos"),
+            not(target_os = "ios"),
+            not(target_os = "android")
+        )
+    )))]
+    {
+        return Err(PlatformError::NotAvailable(
+            "Trash listing is not implemented on this platform yet",
+        ));
+    }
+}
+
+fn restore_trash_item(item: &TrashItem) -> Result<(), PlatformError> {
+    let parent = item.original_path.parent().ok_or_else(|| {
+        PlatformError::InvalidDestination(item.original_path.display().to_string())
+    })?;
+    ensure_existing_dir(parent)?;
+    if item.original_path.exists() {
+        return Err(PlatformError::DestinationExists(
+            item.original_path.display().to_string(),
+        ));
+    }
+    #[cfg(any(
+        target_os = "windows",
+        all(
+            unix,
+            not(target_os = "macos"),
+            not(target_os = "ios"),
+            not(target_os = "android")
+        )
+    ))]
+    {
+        trash::os_limited::restore_all([ottrin_trash_item_to_system(item)])
+            .map_err(|e| PlatformError::Io(e.to_string()))
+    }
+    #[cfg(not(any(
+        target_os = "windows",
+        all(
+            unix,
+            not(target_os = "macos"),
+            not(target_os = "ios"),
+            not(target_os = "android")
+        )
+    )))]
+    {
+        let _ = item;
+        Err(PlatformError::NotAvailable(
+            "Trash restore is not implemented on this platform yet",
+        ))
+    }
+}
+
+fn delete_trash_item_permanently(item: &TrashItem) -> Result<(), PlatformError> {
+    #[cfg(any(
+        target_os = "windows",
+        all(
+            unix,
+            not(target_os = "macos"),
+            not(target_os = "ios"),
+            not(target_os = "android")
+        )
+    ))]
+    {
+        trash::os_limited::purge_all([ottrin_trash_item_to_system(item)])
+            .map_err(|e| PlatformError::Io(e.to_string()))
+    }
+    #[cfg(not(any(
+        target_os = "windows",
+        all(
+            unix,
+            not(target_os = "macos"),
+            not(target_os = "ios"),
+            not(target_os = "android")
+        )
+    )))]
+    {
+        let _ = item;
+        Err(PlatformError::NotAvailable(
+            "Trash deletion is not implemented on this platform yet",
+        ))
+    }
+}
+
+fn empty_trash() -> Result<(), PlatformError> {
+    #[cfg(any(
+        target_os = "windows",
+        all(
+            unix,
+            not(target_os = "macos"),
+            not(target_os = "ios"),
+            not(target_os = "android")
+        )
+    ))]
+    {
+        let items = trash::os_limited::list().map_err(|e| PlatformError::Io(e.to_string()))?;
+        trash::os_limited::purge_all(items).map_err(|e| PlatformError::Io(e.to_string()))
+    }
+    #[cfg(not(any(
+        target_os = "windows",
+        all(
+            unix,
+            not(target_os = "macos"),
+            not(target_os = "ios"),
+            not(target_os = "android")
+        )
+    )))]
+    {
+        Err(PlatformError::NotAvailable(
+            "Trash listing is not implemented on this platform yet",
+        ))
+    }
+}
+
+#[cfg(any(
+    target_os = "windows",
+    all(
+        unix,
+        not(target_os = "macos"),
+        not(target_os = "ios"),
+        not(target_os = "android")
+    )
+))]
+fn system_trash_item_to_ottrin(item: trash::TrashItem) -> TrashItem {
+    let original_path = item.original_path();
+    let trash_path =
+        trash_file_path_for_system_item(&item).unwrap_or_else(|| PathBuf::from(&item.id));
+    let metadata = trash::os_limited::metadata(&item).ok();
+    let kind = trash_item_kind(&trash_path, metadata.as_ref());
+    let size_bytes = metadata.as_ref().and_then(|m| m.size.size());
+    let deletion_date = trash_deletion_date(&item);
+    TrashItem {
+        id: item.id,
+        original_name: item.name.clone(),
+        original_parent: item.original_parent,
+        trash_path,
+        original_path,
+        deletion_date,
+        time_deleted: item.time_deleted,
+        name: item.name.to_string_lossy().to_string(),
+        kind,
+        size_bytes,
+    }
+}
+
+#[cfg(any(
+    target_os = "windows",
+    all(
+        unix,
+        not(target_os = "macos"),
+        not(target_os = "ios"),
+        not(target_os = "android")
+    )
+))]
+fn ottrin_trash_item_to_system(item: &TrashItem) -> trash::TrashItem {
+    trash::TrashItem {
+        id: item.id.clone(),
+        name: item.original_name.clone(),
+        original_parent: item.original_parent.clone(),
+        time_deleted: item.time_deleted,
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn trash_file_path_for_system_item(item: &trash::TrashItem) -> Option<PathBuf> {
+    let info_path = PathBuf::from(&item.id);
+    let stem = info_path
+        .file_name()?
+        .to_str()?
+        .strip_suffix(".trashinfo")?;
+    let trash_root = info_path.parent()?.parent()?;
+    Some(trash_root.join("files").join(stem))
+}
+
+#[cfg(not(target_os = "linux"))]
+fn trash_file_path_for_system_item(_item: &trash::TrashItem) -> Option<PathBuf> {
+    None
+}
+
+#[cfg(any(
+    target_os = "windows",
+    all(
+        unix,
+        not(target_os = "macos"),
+        not(target_os = "ios"),
+        not(target_os = "android")
+    )
+))]
+fn trash_item_kind(trash_path: &Path, metadata: Option<&trash::TrashItemMetadata>) -> EntryKind {
+    if let Ok(meta) = std::fs::symlink_metadata(trash_path) {
+        if meta.file_type().is_symlink() {
+            EntryKind::Symlink
+        } else if meta.is_dir() {
+            EntryKind::Directory
+        } else if meta.is_file() {
+            EntryKind::File
+        } else {
+            EntryKind::Other
+        }
+    } else if metadata.and_then(|m| m.size.entries()).is_some() {
+        EntryKind::Directory
+    } else {
+        EntryKind::File
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn trash_deletion_date(item: &trash::TrashItem) -> Option<String> {
+    let info_path = PathBuf::from(&item.id);
+    let text = std::fs::read_to_string(info_path).ok()?;
+    parse_trashinfo_field(&text, "DeletionDate").or_else(|| format_unix_time(item.time_deleted))
+}
+
+#[cfg(not(target_os = "linux"))]
+fn trash_deletion_date(item: &trash::TrashItem) -> Option<String> {
+    format_unix_time(item.time_deleted)
+}
+
+#[cfg(any(
+    target_os = "windows",
+    all(
+        unix,
+        not(target_os = "macos"),
+        not(target_os = "ios"),
+        not(target_os = "android")
+    )
+))]
+fn format_unix_time(seconds: i64) -> Option<String> {
+    if seconds < 0 {
+        return None;
+    }
+    let dt = chrono::DateTime::from_timestamp(seconds, 0)?;
+    Some(
+        dt.with_timezone(&chrono::Local)
+            .format("%Y-%m-%dT%H:%M:%S")
+            .to_string(),
+    )
+}
+
+#[cfg(target_os = "linux")]
+fn parse_trashinfo_field(text: &str, field: &str) -> Option<String> {
+    let prefix = format!("{field}=");
+    text.lines().find_map(|line| {
+        line.strip_prefix(&prefix)
+            .map(|value| value.trim().to_string())
+    })
 }
 
 fn resolve_destination(

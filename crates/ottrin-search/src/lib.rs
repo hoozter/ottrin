@@ -135,6 +135,18 @@ pub struct SearchService {
     worker: Mutex<Option<JoinHandle<()>>>,
 }
 
+impl Clone for SearchService {
+    fn clone(&self) -> Self {
+        Self {
+            config: Arc::clone(&self.config),
+            index: Arc::clone(&self.index),
+            stop: Arc::clone(&self.stop),
+            rebuild: Arc::clone(&self.rebuild),
+            worker: Mutex::new(None),
+        }
+    }
+}
+
 impl SearchService {
     pub fn new(config: SearchConfig) -> Self {
         Self {
@@ -180,27 +192,23 @@ impl SearchService {
                 let mut last_stall_restart_at: Option<Instant> = None;
 
                 // Pre-populate from disk cache for instant results on startup.
-                // If the cache is fresh (< 30 min), defer the rebuild so we don't thrash.
+                // Startup should never launch a full home-tree rebuild just because
+                // the cache is older than the refresh interval. That makes normal
+                // development runs feel like search started from zero. Treat the
+                // loaded DB as the active index, then let the scheduled refresh timer
+                // decide later whether a background rebuild is due.
                 if let Some(cached) = load_index_from_disk() {
                     let count = cached.len();
                     let age = index_cache_age_secs().unwrap_or(u64::MAX);
                     let age_str = format_age(age);
+                    let cfg_at_start = config.read().expect("cfg read").clone();
                     if let Ok(mut i) = index.write() {
                         i.items = cached;
                         i.status = SearchIndexStatus::Ready;
-                        if age < 1_800 {
-                            // Fresh enough — skip the immediate rebuild, background watcher is enough.
-                            i.progress_text =
-                                Some(format!("Indexed {} files · {}", count, age_str));
-                            needs_rebuild = false;
-                            last_full_rebuild_at = Some(Instant::now()); // Treat as fresh rebuild.
-                        } else {
-                            i.progress_text = Some(format!(
-                                "Cached · {} files · {} · refreshing…",
-                                count, age_str
-                            ));
-                            // needs_rebuild stays true — silent background refresh begins.
-                        }
+                        i.progress_text = Some(format!("Indexed {} files · {}", count, age_str));
+                        needs_rebuild = false;
+                        last_full_rebuild_at = Some(Instant::now());
+                        last_cfg = Some(cfg_at_start);
                     }
                 }
 
@@ -417,21 +425,11 @@ impl SearchService {
                         }
 
                         // Managed locate database: run updatedb on first use and on schedule.
-                        // This gives near-instant locate query results, especially on cold start.
-                        // Completely opt-in; no root required for the user's own directories.
-                        //
-                        // Fanotify interaction: if CAP_SYS_ADMIN is present, fanotify is catching
-                        // all real-time changes, so we only need updatedb as a daily safety net
-                        // (catches anything fanotify may have missed across reboots). Without
-                        // fanotify, we run on the user-configured schedule.
+                        // This gives fallback query results on cold start. It is completely
+                        // opt-in and runs as the current user.
                         if cfg_snap.manage_locate_db && updatedb_available() {
-                            let has_fanotify = Self::privileged_indexing_available();
-                            let effective_interval_secs = if has_fanotify {
-                                // With fanotify: daily safety net regardless of user setting.
-                                86_400u64
-                            } else {
-                                cfg_snap.locate_update_hours as u64 * 3_600
-                            };
+                            let effective_interval_secs =
+                                cfg_snap.locate_update_hours as u64 * 3_600;
 
                             let locate_due = if !locate_db_initialized {
                                 // First run: check age of existing DB; rebuild if missing or >1h old.
@@ -554,9 +552,21 @@ impl SearchService {
         system_locate_schedule_status()
     }
 
+    pub fn sqlite_schedule_status() -> LocateScheduleStatus {
+        sqlite_schedule_status()
+    }
+
     /// Age of Ottrin's managed locate.db in seconds, if it exists.
     pub fn locate_db_age_secs() -> Option<u64> {
         locate_db_age_secs()
+    }
+
+    pub fn search_db_path() -> PathBuf {
+        search_db_path()
+    }
+
+    pub fn clear_search_storage() -> Result<u64, String> {
+        clear_search_storage()
     }
 
     /// Age of the system locate database in seconds, if detected.
@@ -570,13 +580,25 @@ impl SearchService {
         install_locate_schedule(interval_hours, root)
     }
 
+    pub fn install_sqlite_schedule(
+        interval_hours: u32,
+        roots: &[PathBuf],
+    ) -> Result<String, String> {
+        install_sqlite_schedule(interval_hours, roots)
+    }
+
+    pub fn uninstall_sqlite_schedule() -> Result<String, String> {
+        uninstall_sqlite_schedule()
+    }
+
     /// Trigger an updatedb run for the given root now (non-blocking).
     pub fn run_user_updatedb(root: PathBuf) {
         run_user_updatedb(root);
     }
 
-    /// Returns `true` if the process has `CAP_SYS_ADMIN` — required for fanotify filesystem-level
-    /// change notifications. On non-Linux platforms always returns `false`.
+    /// Returns `true` if the process has `CAP_SYS_ADMIN`, which is one prerequisite for
+    /// fanotify-based filesystem-level change notifications. On non-Linux platforms this always
+    /// returns `false`.
     pub fn privileged_indexing_available() -> bool {
         #[cfg(target_os = "linux")]
         {
@@ -1169,6 +1191,25 @@ fn index_cache_path() -> PathBuf {
     dir.join("search_index.json")
 }
 
+pub fn clear_search_storage() -> Result<u64, String> {
+    let mut freed = 0_u64;
+    #[cfg(target_os = "linux")]
+    let mut paths = vec![search_db_path(), index_cache_path(), locate_db_path()];
+    #[cfg(target_os = "linux")]
+    paths.push(appimage_index_wrapper_path());
+    #[cfg(not(target_os = "linux"))]
+    let paths = vec![search_db_path(), index_cache_path(), locate_db_path()];
+    for path in paths {
+        if let Ok(meta) = std::fs::metadata(&path) {
+            let len = meta.len();
+            std::fs::remove_file(&path)
+                .map_err(|e| format!("Failed to remove {}: {}", path.display(), e))?;
+            freed = freed.saturating_add(len);
+        }
+    }
+    Ok(freed)
+}
+
 fn estimate_total_items(cfg: &SearchConfig, roots: &[PathBuf]) -> Option<usize> {
     if roots.is_empty() {
         return None;
@@ -1269,12 +1310,8 @@ fn format_age(secs: u64) -> String {
 //   locate -d ~/.cache/ottrin/locate.db -i <query>
 // No root required. Runs as the current user. Opt-in.
 //
-// Windows: the equivalent is the NTFS USN journal.
-//   DeviceIoControl(volume, FSCTL_ENUM_USN_DATA, ...) gives the entire MFT
-//   in seconds. DeviceIoControl(volume, FSCTL_READ_USN_JOURNAL, ...) gives
-//   real-time change events. This is how "Everything" works and would replace
-//   both the directory walk and inotify on Windows entirely.
-//   See: crates/ottrin-search/src/platform/windows_usn.rs (TODO)
+// Windows can also use Task Scheduler for Ottrin's SQLite refresh. A deeper
+// NTFS USN journal integration is intentionally outside the current v1 path.
 
 /// Path where Ottrin stores its own mlocate database.
 fn locate_db_path() -> PathBuf {
@@ -1363,6 +1400,71 @@ pub struct SystemLocateScheduleStatus {
     pub source: Option<String>,
     pub detail: Option<String>,
     pub needs_setup: bool,
+    pub managed_by_ottrin: bool,
+}
+
+/// Detect whether Ottrin's primary SQLite index has a background refresh schedule.
+pub fn sqlite_schedule_status() -> LocateScheduleStatus {
+    #[cfg(target_os = "linux")]
+    {
+        let home = ottrin_core::default_home_dir();
+        let unit_dir = home.join(".config/systemd/user");
+        let timer_path = unit_dir.join("ottrin-index.timer");
+        if timer_path.exists() {
+            let enabled = if command_exists("systemctl") {
+                std::process::Command::new("systemctl")
+                    .args(["--user", "is-enabled", "ottrin-index.timer"])
+                    .status()
+                    .map(|s| s.success())
+                    .unwrap_or(true)
+            } else {
+                true
+            };
+            return LocateScheduleStatus {
+                source: "systemd user timer".to_string(),
+                enabled,
+                detail: if enabled {
+                    "Enabled".to_string()
+                } else {
+                    "Installed but disabled".to_string()
+                },
+            };
+        }
+
+        let crontab = std::process::Command::new("crontab")
+            .arg("-l")
+            .output()
+            .ok()
+            .and_then(|o| String::from_utf8(o.stdout).ok())
+            .unwrap_or_default();
+        if crontab.contains("# ottrin-index") {
+            return LocateScheduleStatus {
+                source: "crontab".to_string(),
+                enabled: true,
+                detail: "Entry found (# ottrin-index)".to_string(),
+            };
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        let output = std::process::Command::new("schtasks")
+            .args(["/Query", "/TN", "Ottrin Index"])
+            .output();
+        if output.map(|o| o.status.success()).unwrap_or(false) {
+            return LocateScheduleStatus {
+                source: "Windows Task Scheduler".to_string(),
+                enabled: true,
+                detail: "Task found: Ottrin Index".to_string(),
+            };
+        }
+    }
+
+    LocateScheduleStatus {
+        source: "none".to_string(),
+        enabled: false,
+        detail: "No background SQLite refresh schedule detected".to_string(),
+    }
 }
 
 /// Detect whether Ottrin's user-level locate schedule is installed (systemd user timer or crontab).
@@ -1414,6 +1516,16 @@ pub fn locate_schedule_status() -> LocateScheduleStatus {
 
 /// Detect whether the system locate database is scheduled (systemd timer or cron).
 pub fn system_locate_schedule_status() -> SystemLocateScheduleStatus {
+    let ottrin_cron = "/etc/cron.daily/ottrin-updatedb";
+    if std::fs::metadata(ottrin_cron).is_ok() {
+        return SystemLocateScheduleStatus {
+            source: Some("cron".to_string()),
+            detail: Some(ottrin_cron.to_string()),
+            needs_setup: false,
+            managed_by_ottrin: true,
+        };
+    }
+
     let timer_names = ["plocate-updatedb.timer", "mlocate.timer", "updatedb.timer"];
     if command_exists("systemctl")
         && let Ok(out) = std::process::Command::new("systemctl")
@@ -1427,6 +1539,7 @@ pub fn system_locate_schedule_status() -> SystemLocateScheduleStatus {
                     source: Some("systemd".to_string()),
                     detail: Some((*name).to_string()),
                     needs_setup: false,
+                    managed_by_ottrin: false,
                 };
             }
         }
@@ -1445,6 +1558,7 @@ pub fn system_locate_schedule_status() -> SystemLocateScheduleStatus {
                 source: Some("cron".to_string()),
                 detail: Some((*path).to_string()),
                 needs_setup: false,
+                managed_by_ottrin: false,
             };
         }
     }
@@ -1453,7 +1567,344 @@ pub fn system_locate_schedule_status() -> SystemLocateScheduleStatus {
         source: None,
         detail: None,
         needs_setup: true,
+        managed_by_ottrin: false,
     }
+}
+
+pub fn install_sqlite_schedule(interval_hours: u32, roots: &[PathBuf]) -> Result<String, String> {
+    let interval_hours = interval_hours.max(1);
+    let roots = if roots.is_empty() {
+        vec![ottrin_core::default_home_dir()]
+    } else {
+        roots.to_vec()
+    };
+    let indexer = find_ottrin_index_binary()
+        .ok_or_else(|| "Could not find ottrin-index next to Ottrin or on PATH.".to_string())?;
+
+    #[cfg(target_os = "linux")]
+    {
+        let has_systemd = std::process::Command::new("systemctl")
+            .args(["--user", "is-system-running"])
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .map(|s| s.success() || s.code() == Some(1))
+            .unwrap_or(false);
+        if has_systemd {
+            return install_sqlite_systemd_user_timer(interval_hours, &indexer, &roots);
+        }
+        install_sqlite_crontab_entry(interval_hours, &indexer, &roots)
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        install_sqlite_windows_task(interval_hours, &indexer, &roots)
+    }
+
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+    {
+        let _ = (interval_hours, roots, indexer);
+        Err(
+            "Background SQLite refresh scheduling is not supported on this platform yet."
+                .to_string(),
+        )
+    }
+}
+
+pub fn uninstall_sqlite_schedule() -> Result<String, String> {
+    #[cfg(target_os = "linux")]
+    {
+        let home = ottrin_core::default_home_dir();
+        let unit_dir = home.join(".config/systemd/user");
+        let service_path = unit_dir.join("ottrin-index.service");
+        let timer_path = unit_dir.join("ottrin-index.timer");
+        let mut changed = false;
+        if timer_path.exists() || service_path.exists() {
+            if command_exists("systemctl") {
+                let _ = std::process::Command::new("systemctl")
+                    .args(["--user", "disable", "--now", "ottrin-index.timer"])
+                    .status();
+            }
+            let _ = std::fs::remove_file(&timer_path);
+            let _ = std::fs::remove_file(&service_path);
+            if command_exists("systemctl") {
+                let _ = std::process::Command::new("systemctl")
+                    .args(["--user", "daemon-reload"])
+                    .status();
+            }
+            changed = true;
+        }
+        changed |= remove_crontab_block("# ottrin-index")?;
+        changed |= remove_appimage_index_wrapper()?;
+        if changed {
+            Ok("Background Ottrin index schedule removed.".to_string())
+        } else {
+            Ok("No background Ottrin index schedule was installed.".to_string())
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        let status = std::process::Command::new("schtasks")
+            .args(["/Delete", "/F", "/TN", "Ottrin Index"])
+            .status()
+            .map_err(|e| format!("Failed to run schtasks: {}", e))?;
+        if status.success() {
+            Ok("Background Ottrin index task removed.".to_string())
+        } else {
+            Ok("No background Ottrin index task was installed.".to_string())
+        }
+    }
+
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+    {
+        Ok("No background schedule support exists for this platform yet.".to_string())
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn remove_crontab_block(tag: &str) -> Result<bool, String> {
+    let output = std::process::Command::new("crontab")
+        .arg("-l")
+        .output()
+        .map_err(|e| format!("crontab not available: {}", e))?;
+    let existing = String::from_utf8_lossy(&output.stdout);
+    if !existing.contains(tag) {
+        return Ok(false);
+    }
+    let mut skip_next = false;
+    let mut kept = Vec::new();
+    for line in existing.lines() {
+        if skip_next {
+            skip_next = false;
+            continue;
+        }
+        if line.trim() == tag {
+            skip_next = true;
+            continue;
+        }
+        kept.push(line);
+    }
+    let new_crontab = kept.join("\n");
+    let mut child = std::process::Command::new("crontab")
+        .arg("-")
+        .stdin(std::process::Stdio::piped())
+        .spawn()
+        .map_err(|e| format!("crontab not available: {}", e))?;
+    if let Some(stdin) = child.stdin.take() {
+        use std::io::Write;
+        let mut stdin = stdin;
+        let _ = stdin.write_all(new_crontab.as_bytes());
+        let _ = stdin.write_all(b"\n");
+    }
+    let status = child.wait().map_err(|e| e.to_string())?;
+    if status.success() {
+        Ok(true)
+    } else {
+        Err(format!("crontab exited with {}", status))
+    }
+}
+
+fn find_ottrin_index_binary() -> Option<PathBuf> {
+    let exe_name = if cfg!(target_os = "windows") {
+        "ottrin-index.exe"
+    } else {
+        "ottrin-index"
+    };
+    #[cfg(target_os = "linux")]
+    if let Some(wrapper) = create_appimage_index_wrapper() {
+        return Some(wrapper);
+    }
+    if let Ok(current) = std::env::current_exe()
+        && let Some(dir) = current.parent()
+    {
+        let sibling = dir.join(exe_name);
+        if sibling.exists() {
+            return Some(sibling);
+        }
+    }
+    std::env::var_os("PATH").and_then(|paths| {
+        std::env::split_paths(&paths)
+            .map(|dir| dir.join(exe_name))
+            .find(|candidate| candidate.exists())
+    })
+}
+
+#[cfg(target_os = "linux")]
+fn appimage_index_wrapper_path() -> PathBuf {
+    let cache_root = std::env::var("XDG_CACHE_HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| ottrin_core::default_home_dir().join(".cache"));
+    cache_root.join("ottrin").join("ottrin-index-appimage")
+}
+
+#[cfg(target_os = "linux")]
+fn create_appimage_index_wrapper() -> Option<PathBuf> {
+    use std::os::unix::fs::PermissionsExt;
+
+    let appimage = std::env::var_os("APPIMAGE").map(PathBuf::from)?;
+    if !appimage.is_file() {
+        return None;
+    }
+    let wrapper = appimage_index_wrapper_path();
+    if let Some(parent) = wrapper.parent() {
+        std::fs::create_dir_all(parent).ok()?;
+    }
+    let script = format!(
+        "#!/bin/sh\nexec {} --ottrin-index \"$@\"\n",
+        shell_quote(&appimage.display().to_string())
+    );
+    std::fs::write(&wrapper, script).ok()?;
+    let mut perms = std::fs::metadata(&wrapper).ok()?.permissions();
+    perms.set_mode(0o755);
+    std::fs::set_permissions(&wrapper, perms).ok()?;
+    Some(wrapper)
+}
+
+#[cfg(target_os = "linux")]
+fn remove_appimage_index_wrapper() -> Result<bool, String> {
+    let path = appimage_index_wrapper_path();
+    match std::fs::remove_file(&path) {
+        Ok(()) => Ok(true),
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(err) => Err(format!("Failed to remove {}: {}", path.display(), err)),
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn install_sqlite_systemd_user_timer(
+    interval_hours: u32,
+    indexer: &Path,
+    roots: &[PathBuf],
+) -> Result<String, String> {
+    let home = ottrin_core::default_home_dir();
+    let unit_dir = home.join(".config/systemd/user");
+    std::fs::create_dir_all(&unit_dir)
+        .map_err(|e| format!("Cannot create systemd unit dir: {}", e))?;
+    let command = sqlite_refresh_shell_command(indexer, roots);
+    let service = format!(
+        "[Unit]\nDescription=Ottrin SQLite search index refresh\n\n\
+         [Service]\nType=oneshot\nExecStart=/bin/sh -lc {}\n",
+        shell_quote(&command)
+    );
+    let timer = format!(
+        "[Unit]\nDescription=Ottrin SQLite search index refresh timer\n\n\
+         [Timer]\nOnBootSec=2min\nOnUnitActiveSec={interval}h\nPersistent=true\n\n\
+         [Install]\nWantedBy=timers.target\n",
+        interval = interval_hours
+    );
+    std::fs::write(unit_dir.join("ottrin-index.service"), service).map_err(|e| e.to_string())?;
+    std::fs::write(unit_dir.join("ottrin-index.timer"), timer).map_err(|e| e.to_string())?;
+    for args in [
+        vec!["--user", "daemon-reload"],
+        vec!["--user", "enable", "--now", "ottrin-index.timer"],
+    ] {
+        let status = std::process::Command::new("systemctl")
+            .args(&args)
+            .status()
+            .map_err(|e| e.to_string())?;
+        if !status.success() {
+            return Err(format!("systemctl {:?} exited with {}", args, status));
+        }
+    }
+    Ok(format!(
+        "Background Ottrin index refresh enabled every {}h with systemd user timer.",
+        interval_hours
+    ))
+}
+
+#[cfg(target_os = "linux")]
+fn install_sqlite_crontab_entry(
+    interval_hours: u32,
+    indexer: &Path,
+    roots: &[PathBuf],
+) -> Result<String, String> {
+    let existing = std::process::Command::new("crontab")
+        .arg("-l")
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
+        .unwrap_or_default();
+    let tag = "# ottrin-index";
+    if existing.contains(tag) {
+        return Ok("Background Ottrin index crontab entry already installed.".to_string());
+    }
+    let command = sqlite_refresh_shell_command(indexer, roots);
+    let entry = format!(
+        "{tag}\n17 */{interval} * * * {command}\n",
+        interval = interval_hours
+    );
+    let new_crontab = format!("{}\n{}", existing.trim_end(), entry);
+    let mut child = std::process::Command::new("crontab")
+        .arg("-")
+        .stdin(std::process::Stdio::piped())
+        .spawn()
+        .map_err(|e| format!("crontab not available: {}", e))?;
+    if let Some(stdin) = child.stdin.take() {
+        use std::io::Write;
+        let mut stdin = stdin;
+        let _ = stdin.write_all(new_crontab.as_bytes());
+    }
+    let status = child.wait().map_err(|e| e.to_string())?;
+    if !status.success() {
+        return Err(format!("crontab exited with {}", status));
+    }
+    Ok(format!(
+        "Background Ottrin index refresh enabled every {}h with crontab.",
+        interval_hours
+    ))
+}
+
+#[cfg(target_os = "windows")]
+fn install_sqlite_windows_task(
+    interval_hours: u32,
+    indexer: &Path,
+    roots: &[PathBuf],
+) -> Result<String, String> {
+    let mut command = format!("\"{}\" --rebuild", indexer.display());
+    for root in roots {
+        command.push(' ');
+        command.push('"');
+        command.push_str(&root.display().to_string());
+        command.push('"');
+    }
+    let status = std::process::Command::new("schtasks")
+        .args([
+            "/Create",
+            "/F",
+            "/SC",
+            "HOURLY",
+            "/MO",
+            &interval_hours.to_string(),
+            "/TN",
+            "Ottrin Index",
+            "/TR",
+            &command,
+        ])
+        .status()
+        .map_err(|e| format!("Failed to run schtasks: {}", e))?;
+    if status.success() {
+        Ok(format!(
+            "Background Ottrin index refresh enabled every {}h with Windows Task Scheduler.",
+            interval_hours
+        ))
+    } else {
+        Err(format!("schtasks exited with {}", status))
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn sqlite_refresh_shell_command(indexer: &Path, roots: &[PathBuf]) -> String {
+    let mut command = format!("{} --rebuild", shell_quote(&indexer.display().to_string()));
+    for root in roots {
+        command.push(' ');
+        command.push_str(&shell_quote(&root.display().to_string()));
+    }
+    command
+}
+
+#[cfg(target_os = "linux")]
+fn shell_quote(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "'\\''"))
 }
 
 /// Install a persistent schedule that keeps the locate database fresh.
@@ -2097,8 +2548,22 @@ fn should_keep_path(
     if !include_hidden_system && path_has_hidden_component(path, root) {
         return false;
     }
+    if path_has_builtin_excluded_component(path, root) {
+        return false;
+    }
     let rel = normalized_rel_path(path, root);
     !exclude.is_match(rel.as_str()) || include.is_match(rel.as_str())
+}
+
+fn path_has_builtin_excluded_component(path: &Path, root: &Path) -> bool {
+    let rel = path.strip_prefix(root).unwrap_or(path);
+    rel.components().any(|component| {
+        let name = component.as_os_str().to_string_lossy();
+        matches!(
+            name.as_ref(),
+            ".git" | ".svn" | ".hg" | "node_modules" | "target" | "__pycache__" | ".Trash"
+        ) || name.starts_with(".Trash-")
+    })
 }
 
 fn normalized_rel_path(path: &Path, root: &Path) -> String {
@@ -2991,6 +3456,23 @@ mod tests {
         assert!(eval_expr(&expr, &name_match));
         assert!(eval_expr(&expr, &path_match));
         assert!(!eval_expr(&expr, &no_match));
+    }
+
+    #[test]
+    fn built_in_generated_folder_excludes_are_recursive() {
+        let root = Path::new("/home/campbell");
+        assert!(path_has_builtin_excluded_component(
+            Path::new("/home/campbell/Projects/Ottrin/target/debug/deps/file.d"),
+            root
+        ));
+        assert!(path_has_builtin_excluded_component(
+            Path::new("/home/campbell/site/node_modules/pkg/index.js"),
+            root
+        ));
+        assert!(!path_has_builtin_excluded_component(
+            Path::new("/home/campbell/Documents/target-notes.txt"),
+            root
+        ));
     }
 
     /// Benchmark: 500k synthetic items. Debug/test builds keep this as a

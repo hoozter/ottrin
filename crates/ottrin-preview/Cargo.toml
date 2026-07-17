@@ -12,3 +12,5 @@ serde.workspace = true
 zip = { version = "2", default-features = false, features = ["deflate"] }
 lofty = { version = "0.22", default-features = false }
 lopdf = "0.34"
+quick-xml = "0.38"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "tiff"] }

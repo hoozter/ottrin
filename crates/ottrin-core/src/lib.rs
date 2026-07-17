@@ -118,7 +118,7 @@ pub enum ViewMode {
     #[default]
     Miller, // Three-column Finder-style (default)
     List, // Single-pane sortable list
-    Grid, // Icon grid with thumbnails
+    Grid, // Icon grid
 }
 
 // ── Sort ──────────────────────────────────────────────────────────────────────
@@ -192,7 +192,8 @@ pub struct SearchConfig {
     pub default_sort: SearchSort,
     pub result_limit: usize,
     /// How often (in hours) to automatically rebuild the index in the background.
-    /// 0 = only rebuild on startup / file-change events / manual trigger.
+    /// 0 = only rebuild on file-change events / manual trigger.
+    /// Startup loads the saved SQLite index when available.
     pub refresh_interval_hours: u32,
     /// Supplement results with the system locate/plocate database when available.
     pub use_system_locate: bool,
@@ -224,12 +225,20 @@ impl Default for SearchConfig {
                 "*~".to_string(),
                 // VCS internals — binary objects, not user content
                 ".git/**".to_string(),
+                "**/.git/**".to_string(),
                 ".svn/**".to_string(),
+                "**/.svn/**".to_string(),
                 ".hg/**".to_string(),
+                "**/.hg/**".to_string(),
                 // Package manager dependencies — huge, not user files
                 "node_modules/**".to_string(),
+                "**/node_modules/**".to_string(),
+                // Build outputs — generated and often enormous
+                "target/**".to_string(),
+                "**/target/**".to_string(),
                 // Python bytecode — compiled artifacts, not source
                 "__pycache__/**".to_string(),
+                "**/__pycache__/**".to_string(),
                 "*.pyc".to_string(),
                 "*.pyo".to_string(),
                 // Trash directories
@@ -239,7 +248,7 @@ impl Default for SearchConfig {
             default_sort: SearchSort::Relevance,
             result_limit: 500,
             refresh_interval_hours: 4,
-            use_system_locate: true,
+            use_system_locate: false,
             manage_locate_db: false,
             locate_update_hours: 6,
         }
@@ -611,9 +620,6 @@ pub enum TandemSide {
 pub struct LinkView {
     pub left_tab_id: u64,
     pub right_tab_id: u64,
-    /// Legacy boolean from the earlier split-tab model. Kept for backward
-    /// compatibility and normalized into `pinned_tab_id` on load.
-    pub left_pinned: bool,
     /// If one tab is pinned, it stays fixed while the other side changes.
     pub pinned_tab_id: Option<u64>,
     pub active_side: TandemSide,
@@ -626,7 +632,6 @@ impl Default for LinkView {
         Self {
             left_tab_id: 0,
             right_tab_id: 0,
-            left_pinned: false,
             pinned_tab_id: None,
             active_side: TandemSide::Left,
             split_ratio: 0.5,
@@ -641,13 +646,6 @@ impl LinkView {
             right_tab_id: right_id,
             ..Self::default()
         }
-    }
-
-    pub fn normalize_legacy(&mut self) {
-        if self.pinned_tab_id.is_none() && self.left_pinned {
-            self.pinned_tab_id = Some(self.left_tab_id);
-        }
-        self.left_pinned = self.pinned_tab_id == Some(self.left_tab_id);
     }
 
     pub fn side_for_tab(&self, tab_id: u64) -> Option<TandemSide> {
@@ -700,7 +698,6 @@ impl LinkView {
 
     pub fn set_pinned_tab(&mut self, tab_id: Option<u64>) {
         self.pinned_tab_id = tab_id.filter(|tab_id| self.contains_tab(*tab_id));
-        self.left_pinned = self.pinned_tab_id == Some(self.left_tab_id);
     }
 }
 
@@ -738,6 +735,18 @@ pub struct AppConfig {
     pub command_frame_always_visible: bool,
     pub restore_session: bool,
     pub show_hidden_files: bool,
+    /// Show generated image thumbnails in List view.
+    #[serde(default)]
+    pub list_show_thumbnails: bool,
+    /// Show generated image thumbnails in Grid view.
+    #[serde(default)]
+    pub grid_show_thumbnails: bool,
+    /// Per-folder List thumbnail overrides, keyed by absolute folder path.
+    #[serde(default)]
+    pub folder_list_thumbnails: BTreeMap<String, bool>,
+    /// Per-folder Grid thumbnail overrides, keyed by absolute folder path.
+    #[serde(default)]
+    pub folder_grid_thumbnails: BTreeMap<String, bool>,
     pub target: TargetState,
     /// Tab directories to restore on next launch.
     pub last_session_dirs: Vec<PathBuf>,
@@ -752,9 +761,15 @@ pub struct AppConfig {
     pub folder_column_widths: BTreeMap<String, f32>,
     #[serde(default)]
     pub miller_column_width_mode: MillerColumnWidthMode,
+    /// Remembered content width for the shared smart panel drawer.
+    #[serde(default = "default_smart_panel_width")]
+    pub smart_panel_width: f32,
     /// Remembered main window size from last session.
     #[serde(default)]
     pub window_size: Option<[f32; 2]>,
+    /// Maximum thumbnail cache size in MiB. 0 disables disk thumbnail caching.
+    #[serde(default = "default_thumbnail_cache_max_mb")]
+    pub thumbnail_cache_max_mb: u32,
 }
 
 impl Default for AppConfig {
@@ -781,19 +796,33 @@ impl Default for AppConfig {
             command_frame_always_visible: false,
             restore_session: true,
             show_hidden_files: false,
+            list_show_thumbnails: false,
+            grid_show_thumbnails: false,
+            folder_list_thumbnails: BTreeMap::new(),
+            folder_grid_thumbnails: BTreeMap::new(),
             target: TargetState::default(),
             last_session_dirs: Vec::new(),
             bookmarks: Vec::new(),
             search: SearchConfig::default(),
             folder_column_widths: BTreeMap::new(),
             miller_column_width_mode: MillerColumnWidthMode::Fixed,
+            smart_panel_width: default_smart_panel_width(),
             window_size: None,
+            thumbnail_cache_max_mb: default_thumbnail_cache_max_mb(),
         }
     }
 }
 
 fn default_view_scale() -> f32 {
     1.0
+}
+
+fn default_smart_panel_width() -> f32 {
+    420.0
+}
+
+fn default_thumbnail_cache_max_mb() -> u32 {
+    512
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Default)]
@@ -843,7 +872,6 @@ impl AppState {
         let idx = idx.min(self.tabs.len().saturating_sub(1));
         self.active_tab_idx = idx;
         if let Some(link_view) = self.link_view.as_mut() {
-            link_view.normalize_legacy();
             let active_id = self.tabs[idx].id;
             link_view.set_active_tab(active_id);
         }
@@ -868,7 +896,6 @@ impl AppState {
         }
         let selected_id = self.tabs[idx].id;
         if let Some(link_view) = self.link_view.as_mut() {
-            link_view.normalize_legacy();
             if link_view.contains_tab(selected_id) {
                 self.active_tab_idx = idx;
                 link_view.set_active_tab(selected_id);
@@ -900,7 +927,6 @@ impl AppState {
         let left_id = self.tabs[left_idx].id;
         let right_id = self.tabs[right_idx].id;
         let mut link_view = LinkView::new(left_id, right_id);
-        link_view.normalize_legacy();
         link_view.set_active_tab(right_id);
         self.link_view = Some(link_view);
         self.active_tab_idx = right_idx;
@@ -1005,7 +1031,7 @@ pub enum FileCommand {
     },
 }
 
-// ── Privileged operations (planned integrated elevation) ────────────────────
+// ── Privileged operations ───────────────────────────────────────────────────
 
 /// Action that may require elevation, routed through a privileged helper.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -1507,26 +1533,10 @@ mod tests {
     }
 
     #[test]
-    fn link_view_normalizes_legacy_left_pin() {
-        let mut link = LinkView {
-            left_tab_id: 11,
-            right_tab_id: 22,
-            left_pinned: true,
-            pinned_tab_id: None,
-            active_side: TandemSide::Left,
-            split_ratio: 0.5,
-        };
-        link.normalize_legacy();
-        assert_eq!(link.pinned_tab_id, Some(11));
-        assert!(link.left_pinned);
-    }
-
-    #[test]
     fn link_view_tracks_pinned_side_and_reassigns_tabs() {
         let mut link = LinkView {
             left_tab_id: 11,
             right_tab_id: 22,
-            left_pinned: false,
             pinned_tab_id: Some(22),
             active_side: TandemSide::Right,
             split_ratio: 0.5,
@@ -1538,7 +1548,6 @@ mod tests {
 
         link.set_pinned_tab(Some(33));
         assert_eq!(link.pinned_tab_id, Some(33));
-        assert!(!link.left_pinned);
     }
 
     #[test]
