@@ -20,16 +20,30 @@ use ottrin_platform::{DefaultPlatform, PlatformOps, PrivilegedAvailability, Tras
 use ottrin_preview::{PreviewData, PreviewKind, PreviewRequest, load_preview};
 use ottrin_search::{SearchIndexDiagnostics, SearchService, default_roots as default_search_roots};
 use sha2::{Digest, Sha256};
-use std::collections::hash_map::DefaultHasher;
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::hash::{Hash, Hasher};
-use std::io::{Cursor, Read};
-#[cfg(unix)]
-use std::os::unix::fs::MetadataExt;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::time::{Duration, Instant};
+
+mod config;
+mod file_details;
+mod launcher;
+mod thumbnail_cache;
+
+use config::save_config;
+pub use config::{load_config, remove_config_file};
+use file_details::{
+    InfoPanelDetails, build_info_panel_details, entry_kind_label, file_type_description,
+};
+use launcher::{install_terminal_launcher, launcher_status, remove_terminal_launcher};
+pub use thumbnail_cache::clear_preview_cache_storage;
+use thumbnail_cache::{
+    build_thumbnail_bytes, clear_preview_cache_dir, load_cached_thumbnail,
+    persist_cached_thumbnail, preview_cache_dir, preview_cache_key, preview_cache_stats,
+    prune_preview_cache_dir,
+};
 
 fn format_age_str(secs: u64) -> String {
     if secs < 60 {
@@ -911,24 +925,6 @@ enum PreviewKeyAction {
 enum GenericPreviewAction {
     Rename,
     Delete,
-}
-
-#[derive(Debug, Clone, Default)]
-struct InfoPanelDetails {
-    readonly: bool,
-    child_count: Option<usize>,
-    extension: Option<String>,
-    created: Option<String>,
-    accessed: Option<String>,
-    permissions: Option<String>,
-    owner: Option<String>,
-    group: Option<String>,
-    symlink_target: Option<String>,
-    inode: Option<u64>,
-    device: Option<u64>,
-    links: Option<u64>,
-    image_dimensions: Option<String>,
-    image_format: Option<String>,
 }
 
 // ── Clipboard ─────────────────────────────────────────────────────────────────
@@ -17282,57 +17278,6 @@ fn decode_theme_import_json(
     })
 }
 
-// ── Config persistence ────────────────────────────────────────────────────────
-
-fn config_path() -> Option<PathBuf> {
-    #[cfg(target_os = "windows")]
-    let base = std::env::var_os("APPDATA").map(PathBuf::from)?;
-    #[cfg(not(target_os = "windows"))]
-    let base = std::env::var_os("XDG_CONFIG_HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| {
-            let mut h = default_home_dir();
-            h.push(".config");
-            h
-        });
-    let mut p = base;
-    p.push("ottrin");
-    p.push("config.json");
-    Some(p)
-}
-
-pub fn load_config() -> AppConfig {
-    let path = match config_path() {
-        Some(p) => p,
-        None => return AppConfig::default(),
-    };
-    let bytes = match std::fs::read(&path) {
-        Ok(b) => b,
-        Err(_) => return AppConfig::default(),
-    };
-    serde_json::from_slice(&bytes).unwrap_or_default()
-}
-
-pub fn remove_config_file() -> Result<u64, String> {
-    let Some(path) = config_path() else {
-        return Ok(0);
-    };
-    remove_file_counting_bytes(&path)
-}
-
-fn save_config(config: &AppConfig) {
-    let path = match config_path() {
-        Some(p) => p,
-        None => return,
-    };
-    if let Some(parent) = path.parent() {
-        let _ = std::fs::create_dir_all(parent);
-    }
-    if let Ok(json) = serde_json::to_string_pretty(config) {
-        let _ = std::fs::write(path, json);
-    }
-}
-
 // ── Helper utilities ──────────────────────────────────────────────────────────
 
 fn resolve_path(input: &str, cwd: &Path) -> PathBuf {
@@ -17684,78 +17629,6 @@ fn viewport_window_fill(colors: Colors, focused: bool) -> (Color32, Color32, Sha
     (window_fill, title_fill, shadow)
 }
 
-fn preview_cache_dir() -> Option<PathBuf> {
-    #[cfg(target_os = "windows")]
-    let base = std::env::var_os("LOCALAPPDATA").map(PathBuf::from)?;
-    #[cfg(not(target_os = "windows"))]
-    let base = std::env::var_os("XDG_CACHE_HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| {
-            let mut h = default_home_dir();
-            h.push(".cache");
-            h
-        });
-    let mut p = base;
-    p.push("ottrin");
-    p.push("preview_cache");
-    Some(p)
-}
-
-fn preview_cache_key(path: &Path, target_dim: u32) -> String {
-    let mut hasher = DefaultHasher::new();
-    path.hash(&mut hasher);
-    if let Ok(meta) = std::fs::metadata(path) {
-        meta.len().hash(&mut hasher);
-        if let Ok(mtime) = meta.modified()
-            && let Ok(dur) = mtime.duration_since(std::time::UNIX_EPOCH)
-        {
-            dur.as_secs().hash(&mut hasher);
-        }
-    }
-    target_dim.hash(&mut hasher);
-    format!("{:016x}_{}.png", hasher.finish(), target_dim)
-}
-
-fn preview_cache_path(cache_key: &str) -> Option<PathBuf> {
-    let mut dir = preview_cache_dir()?;
-    dir.push(cache_key);
-    Some(dir)
-}
-
-fn load_cached_thumbnail(cache_key: &str) -> Option<Vec<u8>> {
-    let path = preview_cache_path(cache_key)?;
-    std::fs::read(path).ok()
-}
-
-fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8], max_bytes: u64) {
-    if max_bytes == 0 {
-        return;
-    }
-    let Some(path) = preview_cache_path(cache_key) else {
-        return;
-    };
-    if let Some(parent) = path.parent() {
-        let _ = std::fs::create_dir_all(parent);
-    }
-    let _ = std::fs::write(path, bytes);
-    prune_preview_cache_dir(max_bytes);
-}
-
-fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
-    let img = image::ImageReader::open(path)
-        .ok()?
-        .with_guessed_format()
-        .ok()?
-        .decode()
-        .ok()?;
-    let thumb = img.thumbnail(target_dim, target_dim);
-    let mut bytes = Vec::new();
-    thumb
-        .write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)
-        .ok()?;
-    Some(bytes)
-}
-
 fn rotate_image_file(path: &Path, clockwise: bool) -> Result<(), String> {
     let img = image::ImageReader::open(path)
         .map_err(|err| err.to_string())?
@@ -17788,178 +17661,6 @@ fn compute_sha256(path: &Path) -> Result<String, String> {
         out.push_str(&format!("{:02x}", b));
     }
     Ok(out)
-}
-
-fn preview_cache_stats() -> Option<(usize, u64)> {
-    let dir = preview_cache_dir()?;
-    let mut count = 0usize;
-    let mut total = 0u64;
-    let entries = std::fs::read_dir(dir).ok()?;
-    for entry in entries.flatten() {
-        if let Ok(meta) = entry.metadata()
-            && meta.is_file()
-        {
-            count += 1;
-            total += meta.len();
-        }
-    }
-    Some((count, total))
-}
-
-fn prune_preview_cache_dir(max_bytes: u64) {
-    if max_bytes == 0 {
-        let _ = clear_preview_cache_dir();
-        return;
-    }
-    let Some(dir) = preview_cache_dir() else {
-        return;
-    };
-    let Ok(entries) = std::fs::read_dir(&dir) else {
-        return;
-    };
-    let mut files = Vec::new();
-    let mut total = 0_u64;
-    for entry in entries.flatten() {
-        let path = entry.path();
-        let Ok(meta) = entry.metadata() else {
-            continue;
-        };
-        if !meta.is_file() {
-            continue;
-        }
-        let modified = meta.modified().unwrap_or(std::time::UNIX_EPOCH);
-        total = total.saturating_add(meta.len());
-        files.push((path, meta.len(), modified));
-    }
-    if total <= max_bytes {
-        return;
-    }
-    files.sort_by_key(|(_, _, modified)| *modified);
-    for (path, len, _) in files {
-        if total <= max_bytes {
-            break;
-        }
-        if std::fs::remove_file(path).is_ok() {
-            total = total.saturating_sub(len);
-        }
-    }
-}
-
-fn clear_preview_cache_dir() -> u64 {
-    let Some(dir) = preview_cache_dir() else {
-        return 0;
-    };
-    let mut freed = 0_u64;
-    if let Ok(entries) = std::fs::read_dir(&dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            let bytes = entry.metadata().map(|m| m.len()).unwrap_or(0);
-            if std::fs::remove_file(path).is_ok() {
-                freed = freed.saturating_add(bytes);
-            }
-        }
-    }
-    freed
-}
-
-pub fn clear_preview_cache_storage() -> u64 {
-    clear_preview_cache_dir()
-}
-
-fn remove_file_counting_bytes(path: &Path) -> Result<u64, String> {
-    match std::fs::metadata(path) {
-        Ok(meta) => {
-            let len = meta.len();
-            std::fs::remove_file(path)
-                .map_err(|e| format!("Failed to remove {}: {}", path.display(), e))?;
-            Ok(len)
-        }
-        Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(0),
-        Err(err) => Err(format!("Failed to inspect {}: {}", path.display(), err)),
-    }
-}
-
-fn launcher_target_path() -> Option<PathBuf> {
-    if let Some(appimage) = std::env::var_os("APPIMAGE").map(PathBuf::from)
-        && appimage.exists()
-    {
-        return Some(appimage);
-    }
-    std::env::current_exe().ok()
-}
-
-fn launcher_link_path() -> PathBuf {
-    #[cfg(target_os = "windows")]
-    {
-        default_home_dir().join("ottrin.bat")
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        default_home_dir().join(".local").join("bin").join("ottrin")
-    }
-}
-
-fn launcher_status() -> Option<String> {
-    let link = launcher_link_path();
-    if link.exists() {
-        Some(format!("Installed at {}", link.display()))
-    } else {
-        Some(format!("Not installed. Suggested path: {}", link.display()))
-    }
-}
-
-fn install_terminal_launcher() -> Result<String, String> {
-    let link = launcher_link_path();
-    let target = launcher_target_path()
-        .ok_or_else(|| "Could not determine the current Ottrin executable path.".to_string())?;
-    if let Some(parent) = link.parent() {
-        std::fs::create_dir_all(parent)
-            .map_err(|e| format!("Failed to create {}: {}", parent.display(), e))?;
-    }
-    if link.exists() {
-        std::fs::remove_file(&link)
-            .map_err(|e| format!("Failed to replace {}: {}", link.display(), e))?;
-    }
-    #[cfg(unix)]
-    {
-        std::os::unix::fs::symlink(&target, &link).map_err(|e| {
-            format!(
-                "Failed to create symlink {} -> {}: {}",
-                link.display(),
-                target.display(),
-                e
-            )
-        })?;
-        Ok(format!(
-            "Installed terminal launcher at {}. Make sure ~/.local/bin is in PATH.",
-            link.display()
-        ))
-    }
-    #[cfg(target_os = "windows")]
-    {
-        std::fs::write(
-            &link,
-            format!("@echo off\r\n\"{}\" %*\r\n", target.display()),
-        )
-        .map_err(|e| format!("Failed to write {}: {}", link.display(), e))?;
-        Ok(format!("Installed launcher script at {}.", link.display()))
-    }
-    #[cfg(not(any(unix, target_os = "windows")))]
-    {
-        let _ = (target, link);
-        Err("Terminal launcher installation is not supported on this platform yet.".to_string())
-    }
-}
-
-fn remove_terminal_launcher() -> Result<String, String> {
-    let link = launcher_link_path();
-    match std::fs::remove_file(&link) {
-        Ok(()) => Ok(format!("Removed terminal launcher at {}.", link.display())),
-        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
-            Ok("No terminal launcher was installed.".to_string())
-        }
-        Err(err) => Err(format!("Failed to remove {}: {}", link.display(), err)),
-    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -18129,146 +17830,6 @@ fn open_terminal_here(dir: &Path) {
             }
         }
     }
-}
-
-fn entry_kind_label(kind: EntryKind) -> &'static str {
-    match kind {
-        EntryKind::Directory => "Folder",
-        EntryKind::File => "File",
-        EntryKind::Symlink => "Symlink",
-        EntryKind::Other => "Other",
-    }
-}
-
-/// Human-readable file type description based on extension.
-/// Returns e.g. "PNG Image", "Rust Source", "PDF Document".
-fn file_type_description(path: &std::path::Path, kind: EntryKind) -> String {
-    if kind == EntryKind::Directory {
-        return "Folder".into();
-    }
-    if kind == EntryKind::Symlink {
-        return "Symbolic Link".into();
-    }
-    let ext = path
-        .extension()
-        .and_then(|e| e.to_str())
-        .unwrap_or("")
-        .to_ascii_lowercase();
-    match ext.as_str() {
-        // Images
-        "png" => "PNG Image",
-        "jpg" | "jpeg" => "JPEG Image",
-        "gif" => "GIF Image",
-        "svg" => "SVG Image",
-        "webp" => "WebP Image",
-        "bmp" => "Bitmap Image",
-        "ico" => "Icon File",
-        "tiff" | "tif" => "TIFF Image",
-        "avif" => "AVIF Image",
-        "heic" | "heif" => "HEIC Image",
-        // Audio
-        "mp3" => "MP3 Audio",
-        "flac" => "FLAC Audio",
-        "wav" => "WAV Audio",
-        "ogg" => "Ogg Audio",
-        "m4a" | "aac" => "AAC Audio",
-        "opus" => "Opus Audio",
-        "wma" => "WMA Audio",
-        // Video
-        "mp4" | "m4v" => "MP4 Video",
-        "mkv" => "Matroska Video",
-        "avi" => "AVI Video",
-        "mov" => "QuickTime Video",
-        "webm" => "WebM Video",
-        "wmv" => "WMV Video",
-        "flv" => "Flash Video",
-        // Documents
-        "pdf" => "PDF Document",
-        "doc" | "docx" => "Word Document",
-        "xls" | "xlsx" => "Excel Spreadsheet",
-        "ppt" | "pptx" => "PowerPoint Presentation",
-        "odt" => "OpenDocument Text",
-        "ods" => "OpenDocument Spreadsheet",
-        "odp" => "OpenDocument Presentation",
-        "rtf" => "Rich Text Document",
-        "txt" => "Plain Text",
-        "md" | "markdown" => "Markdown Document",
-        "csv" => "CSV Data",
-        // Code
-        "rs" => "Rust Source",
-        "py" => "Python Script",
-        "js" => "JavaScript",
-        "ts" => "TypeScript",
-        "jsx" => "React JSX",
-        "tsx" => "React TSX",
-        "html" | "htm" => "HTML Document",
-        "css" => "CSS Stylesheet",
-        "scss" | "sass" => "Sass Stylesheet",
-        "json" => "JSON Data",
-        "xml" => "XML Document",
-        "yaml" | "yml" => "YAML Data",
-        "toml" => "TOML Config",
-        "sh" | "bash" => "Shell Script",
-        "zsh" => "Zsh Script",
-        "c" => "C Source",
-        "cpp" | "cc" | "cxx" => "C++ Source",
-        "h" | "hpp" => "C/C++ Header",
-        "java" => "Java Source",
-        "kt" => "Kotlin Source",
-        "go" => "Go Source",
-        "rb" => "Ruby Script",
-        "php" => "PHP Script",
-        "swift" => "Swift Source",
-        "lua" => "Lua Script",
-        "sql" => "SQL Script",
-        "r" => "R Script",
-        // Config
-        "ini" | "cfg" => "Config File",
-        "conf" => "Config File",
-        "env" => "Environment File",
-        "lock" => "Lock File",
-        "log" => "Log File",
-        // Archives
-        "zip" => "ZIP Archive",
-        "tar" => "Tar Archive",
-        "gz" | "gzip" => "GZip Archive",
-        "bz2" => "BZip2 Archive",
-        "xz" => "XZ Archive",
-        "7z" => "7-Zip Archive",
-        "rar" => "RAR Archive",
-        "zst" => "Zstandard Archive",
-        // Design
-        "afdesign" => "Affinity Designer File",
-        "afphoto" => "Affinity Photo File",
-        "psd" => "Photoshop Document",
-        "ai" => "Illustrator Document",
-        "sketch" => "Sketch File",
-        "fig" | "figma" => "Figma File",
-        "xcf" => "GIMP Image",
-        // Packages
-        "deb" => "Debian Package",
-        "rpm" => "RPM Package",
-        "appimage" => "AppImage",
-        "dmg" => "Disk Image",
-        "iso" => "ISO Disk Image",
-        "exe" => "Windows Executable",
-        "msi" => "Windows Installer",
-        // Fonts
-        "ttf" => "TrueType Font",
-        "otf" => "OpenType Font",
-        "woff" | "woff2" => "Web Font",
-        // Web
-        "wasm" => "WebAssembly",
-        "webmanifest" => "Web Manifest",
-        // Other
-        _ => {
-            if ext.is_empty() {
-                return "File".into();
-            }
-            return format!("{} File", ext.to_ascii_uppercase());
-        }
-    }
-    .into()
 }
 
 fn mix_color(a: Color32, b: Color32, t: f32) -> Color32 {
@@ -18970,139 +18531,6 @@ enum WmBtn {
     Close,
     Maximize,
     Minimize,
-}
-
-fn build_info_panel_details(path: &Path) -> InfoPanelDetails {
-    let meta = match std::fs::symlink_metadata(path) {
-        Ok(meta) => meta,
-        Err(_) => return InfoPanelDetails::default(),
-    };
-
-    let created = meta
-        .created()
-        .ok()
-        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-        .map(|d| format_modified(d.as_secs()));
-    let accessed = meta
-        .accessed()
-        .ok()
-        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-        .map(|d| format_modified(d.as_secs()));
-    let child_count = if meta.is_dir() {
-        std::fs::read_dir(path)
-            .ok()
-            .map(|it| it.filter_map(Result::ok).count())
-    } else {
-        None
-    };
-    let extension = if meta.is_file() {
-        Some(
-            path.extension()
-                .and_then(|e| e.to_str())
-                .filter(|s| !s.is_empty())
-                .unwrap_or("none")
-                .to_string(),
-        )
-    } else {
-        None
-    };
-    let symlink_target = if meta.file_type().is_symlink() {
-        std::fs::read_link(path)
-            .ok()
-            .map(|p| p.display().to_string())
-    } else {
-        None
-    };
-
-    #[cfg(unix)]
-    let permissions = Some(format_unix_permissions(&meta));
-    #[cfg(not(unix))]
-    let permissions = None;
-
-    #[cfg(unix)]
-    let (owner, group) = (
-        lookup_unix_user(meta.uid()).or_else(|| Some(meta.uid().to_string())),
-        lookup_unix_group(meta.gid()).or_else(|| Some(meta.gid().to_string())),
-    );
-    #[cfg(not(unix))]
-    let (owner, group) = (None, None);
-
-    #[cfg(unix)]
-    let (inode, device, links) = (Some(meta.ino()), Some(meta.dev()), Some(meta.nlink()));
-    #[cfg(not(unix))]
-    let (inode, device, links) = (None, None, None);
-
-    let mut image_dimensions = None;
-    let mut image_format = None;
-
-    if meta.is_file() && matches!(ottrin_preview::classify_path(path), PreviewKind::Image) {
-        if let Ok((w, h)) = image::image_dimensions(path) {
-            image_dimensions = Some(format!("{w} × {h}px"));
-        }
-        if let Ok(fmt) = image::ImageFormat::from_path(path) {
-            image_format = Some(format!("{:?}", fmt).to_ascii_uppercase());
-        }
-    }
-
-    InfoPanelDetails {
-        readonly: meta.permissions().readonly(),
-        child_count,
-        extension,
-        created,
-        accessed,
-        permissions,
-        owner,
-        group,
-        symlink_target,
-        inode,
-        device,
-        links,
-        image_dimensions,
-        image_format,
-    }
-}
-
-#[cfg(unix)]
-fn format_unix_permissions(meta: &std::fs::Metadata) -> String {
-    let mode = meta.mode() & 0o777;
-    let mut out = String::with_capacity(9);
-    for shift in [6, 3, 0] {
-        let part = ((mode >> shift) & 0o7) as u8;
-        out.push(if part & 0o4 != 0 { 'r' } else { '-' });
-        out.push(if part & 0o2 != 0 { 'w' } else { '-' });
-        out.push(if part & 0o1 != 0 { 'x' } else { '-' });
-    }
-    format!("{out} ({mode:03o})")
-}
-
-#[cfg(unix)]
-fn lookup_unix_user(uid: u32) -> Option<String> {
-    let text = std::fs::read_to_string("/etc/passwd").ok()?;
-    for line in text.lines() {
-        let mut parts = line.split(':');
-        let name = parts.next()?;
-        let _passwd = parts.next()?;
-        let uid_part = parts.next()?;
-        if uid_part.parse::<u32>().ok()? == uid {
-            return Some(name.to_string());
-        }
-    }
-    None
-}
-
-#[cfg(unix)]
-fn lookup_unix_group(gid: u32) -> Option<String> {
-    let text = std::fs::read_to_string("/etc/group").ok()?;
-    for line in text.lines() {
-        let mut parts = line.split(':');
-        let name = parts.next()?;
-        let _passwd = parts.next()?;
-        let gid_part = parts.next()?;
-        if gid_part.parse::<u32>().ok()? == gid {
-            return Some(name.to_string());
-        }
-    }
-    None
 }
 
 fn theme_editor_region_at_pos(
