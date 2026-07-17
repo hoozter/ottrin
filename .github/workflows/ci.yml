@@ -5,6 +5,9 @@ on:
     branches: ["**"]
   pull_request:
 
+env:
+  RUST_VERSION: "1.94.0"
+
 jobs:
   verify:
     strategy:
@@ -18,7 +21,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
 
       - name: Cache Rust build
         uses: Swatinem/rust-cache@v2
@@ -47,6 +52,28 @@ jobs:
       - name: Release build
         run: cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
 
+      - name: Prepare release-build artifact
+        shell: bash
+        run: |
+          mkdir -p ci-artifacts
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp target/release/ottrin-app.exe ci-artifacts/ottrin-app.exe
+            cp target/release/ottrin-priv-helper.exe ci-artifacts/ottrin-priv-helper.exe
+            cp target/release/ottrin-index.exe ci-artifacts/ottrin-index.exe
+          else
+            cp target/release/ottrin-app ci-artifacts/ottrin-app
+            cp target/release/ottrin-priv-helper ci-artifacts/ottrin-priv-helper
+            cp target/release/ottrin-index ci-artifacts/ottrin-index
+          fi
+
+      - name: Upload release-build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ottrin-release-${{ runner.os }}-${{ runner.arch }}
+          path: ci-artifacts/*
+          if-no-files-found: error
+          retention-days: 14
+
   search-performance:
     runs-on: ubuntu-latest
 
@@ -55,10 +82,23 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
 
       - name: Cache Rust build
         uses: Swatinem/rust-cache@v2
 
       - name: Release benchmark smoke test
-        run: cargo test -p ottrin-search --release -- bench_query_500k --nocapture
+        run: |
+          mkdir -p ci-artifacts
+          cargo test -p ottrin-search --release -- bench_query_500k --nocapture \
+            | tee ci-artifacts/search-benchmark.txt
+
+      - name: Upload benchmark artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ottrin-search-benchmark
+          path: ci-artifacts/search-benchmark.txt
+          if-no-files-found: error
+          retention-days: 14

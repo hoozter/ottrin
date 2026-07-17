@@ -7,17 +7,7 @@ A fast, keyboard-first file manager built in Rust with [egui](https://github.com
 [![CI](https://github.com/hoozter/ottrin/actions/workflows/ci.yml/badge.svg)](https://github.com/hoozter/ottrin/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/hoozter/ottrin)](https://github.com/hoozter/ottrin/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.85+-orange.svg)](https://www.rust-lang.org)
-
----
-
-## Screenshots
-
-![Miller columns view](docs/screenshots/miller-columns.png)
-*Miller columns — parent, current, and preview pane side-by-side*
-
-![Theme selector](docs/screenshots/themes.png)
-*Built-in theme presets with live editing*
+[![Rust](https://img.shields.io/badge/rust-1.94.0-orange.svg)](https://www.rust-lang.org)
 
 ---
 
@@ -28,8 +18,10 @@ Pre-built binaries for the [latest release](https://github.com/hoozter/ottrin/re
 | Platform | File |
 |----------|------|
 | Linux (x86\_64) | `Ottrin-x.y.z-x86_64.AppImage` |
-| macOS (Universal) | `Ottrin-x.y.z.dmg` |
-| Windows (x64) | `Ottrin-x.y.z-x64.msi` |
+| Linux portable | `Ottrin-x.y.z-linux-x86_64-portable.tar.gz` |
+| Windows portable (x64) | `Ottrin-x.y.z-windows-x64-portable.zip` |
+
+Windows MSI and macOS packages are planned, but the current v1 hardening path is Linux and Windows portable/AppImage artifacts first.
 
 ### Linux
 
@@ -46,13 +38,15 @@ sudo cp packaging/linux/org.ottrin.filesystem.policy \
     /usr/share/polkit-1/actions/
 ```
 
-### macOS
-
-Open the DMG, drag **Ottrin.app** to `/Applications`.
-
 ### Windows
 
-Run the MSI installer. Per-user install, no admin required.
+Unzip the portable package, then run:
+
+```powershell
+.\bin\ottrin.exe
+```
+
+Normal user-owned file operations do not require elevation. Denied operations use the bundled helper through the Windows UAC flow.
 
 ---
 
@@ -98,7 +92,7 @@ Run the MSI installer. Per-user install, no admin required.
 
 ## Build from Source
 
-Requires Rust 1.85+ (edition 2024).
+Requires Rust 1.94.0. CI and release workflows pin this exact toolchain for Linux, Windows, and macOS builds.
 
 ```sh
 git clone https://github.com/hoozter/ottrin.git
@@ -106,7 +100,13 @@ cd ottrin
 cargo run -p ottrin-app
 ```
 
-**Linux dependencies:**
+Build release packages into `dist/`:
+
+```sh
+./build-all.sh
+```
+
+Linux dependencies:
 
 ```sh
 sudo apt-get install -y \
@@ -124,7 +124,6 @@ sudo apt-get install -y \
 | `ottrin-ui` | egui application shell and all views |
 | `ottrin-core` | Domain models, commands, settings |
 | `ottrin-platform` | OS integrations (trash, shell actions, privileged helper flow) |
-| `ottrin-copy` | Copy/move queue with conflict policies |
 | `ottrin-search` | Indexed search, watcher sync, and fallback querying |
 | `ottrin-preview` | Preview request/response pipeline |
 
@@ -132,7 +131,7 @@ sudo apt-get install -y \
 
 ## Status
 
-v0.1.0 — core navigation, file operations, and views are working. Active development. See [ROADMAP.md](ROADMAP.md) for planned features.
+v0.1.0 is in release hardening. Linux AppImage/portable artifacts are the current Linux path, and Windows portable zip is the current Windows path. See [docs/USER_GUIDE.md](docs/USER_GUIDE.md), [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), and [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 
