@@ -1,3 +1,4 @@
+use fs2::FileExt;
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ottrin_core::{
     EntryKind, SearchConfig, SearchIndexStatus, SearchQuery, SearchResponse, SearchResultItem,
@@ -5,6 +6,7 @@ use ottrin_core::{
 };
 use regex::{Regex, RegexBuilder};
 use std::collections::HashSet;
+use std::fs::{File, OpenOptions};
 #[cfg(target_os = "linux")]
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
@@ -115,6 +117,7 @@ pub struct SearchService {
     config: Arc<RwLock<SearchConfig>>,
     index: Arc<RwLock<IndexState>>,
     worker: Option<worker::WorkerHandle>,
+    writer_lock: Option<File>,
     store_path: PathBuf,
     launcher: worker::ScanLauncher,
     watch_filesystem: bool,
@@ -136,6 +139,7 @@ impl SearchService {
             config: Arc::new(RwLock::new(config)),
             index: Arc::new(RwLock::new(IndexState::default())),
             worker: None,
+            writer_lock: None,
             store_path: search_db_path(),
             launcher: worker::real_launcher(),
             watch_filesystem: true,
@@ -152,6 +156,7 @@ impl SearchService {
             config: Arc::new(RwLock::new(config)),
             index: Arc::new(RwLock::new(IndexState::default())),
             worker: None,
+            writer_lock: None,
             store_path,
             launcher,
             watch_filesystem: false,
@@ -162,16 +167,21 @@ impl SearchService {
         if self.worker.is_some() {
             return;
         }
-        let store = match SearchStore::open(self.store_path.clone()) {
-            Ok(store) => store,
+        let writer_lock = match acquire_writer_lock(&self.store_path) {
+            Ok(lock) => lock,
             Err(error) => {
-                let mut index = self.index.write().expect("index write");
-                index.status = SearchIndexStatus::Unavailable;
-                index.last_error = Some(error.to_string());
-                index.progress_text = None;
+                self.record_unavailable(error);
                 return;
             }
         };
+        let store = match SearchStore::open(self.store_path.clone()) {
+            Ok(store) => store,
+            Err(error) => {
+                self.record_unavailable(error.to_string());
+                return;
+            }
+        };
+        self.writer_lock = Some(writer_lock);
         let config = self.config.read().expect("config read").clone();
         self.worker = Some(worker::spawn_with_runtime(
             config,
@@ -182,28 +192,49 @@ impl SearchService {
         ));
     }
 
+    fn record_unavailable(&self, error: String) {
+        let mut index = self.index.write().expect("index write");
+        index.status = SearchIndexStatus::Unavailable;
+        index.last_error = Some(error);
+        index.progress_text = None;
+    }
+
     fn stop_worker(&mut self) {
         if let Some(worker) = self.worker.take() {
             worker.stop();
         }
     }
 
+    fn release_writer_lock(&mut self) {
+        if let Some(lock) = self.writer_lock.take() {
+            let _ = FileExt::unlock(&lock);
+        }
+    }
+
     pub fn stop(&mut self) {
         self.stop_worker();
+        self.release_writer_lock();
     }
 
     pub fn clear_storage(&mut self) -> Result<u64, String> {
         self.stop_worker();
-        let mut freed = clear_sqlite_storage(&self.store_path)?;
-        if self.store_path == search_db_path() {
-            freed = freed.saturating_add(clear_search_storage()?);
+        if self.writer_lock.is_none() {
+            self.writer_lock = Some(acquire_writer_lock(&self.store_path)?);
         }
-        let mut index = self.index.write().expect("index write");
-        *index = IndexState::default();
-        index.status = SearchIndexStatus::Unavailable;
-        index.last_error = Some("Search storage was cleared".to_string());
-        index.progress_text = None;
-        Ok(freed)
+        let result = (|| {
+            let mut freed = clear_sqlite_storage(&self.store_path)?;
+            if self.store_path == search_db_path() {
+                freed = freed.saturating_add(clear_search_storage_unlocked()?);
+            }
+            let mut index = self.index.write().expect("index write");
+            *index = IndexState::default();
+            index.status = SearchIndexStatus::Unavailable;
+            index.last_error = Some("Search storage was cleared".to_string());
+            index.progress_text = None;
+            Ok(freed)
+        })();
+        self.release_writer_lock();
+        result
     }
 
     pub fn update_config(&mut self, cfg: SearchConfig) {
@@ -220,6 +251,14 @@ impl SearchService {
         if let Some(worker) = self.worker.as_ref() {
             worker.request_rebuild();
         }
+    }
+
+    /// Force a reindex and return only after that exact rebuild commits or fails.
+    pub fn rebuild_index_blocking(&mut self) -> Result<(), String> {
+        self.worker
+            .as_ref()
+            .ok_or_else(|| "Search service is not running".to_string())?
+            .rebuild_blocking()
     }
 
     /// Returns `true` if `plocate` or `locate` is on PATH (the system locate database is usable).
@@ -699,6 +738,34 @@ fn remove_file_if_present(path: &Path) -> Result<u64, String> {
     }
 }
 
+fn writer_lock_path(path: &Path) -> PathBuf {
+    let mut lock_path = path.as_os_str().to_os_string();
+    lock_path.push(".lock");
+    PathBuf::from(lock_path)
+}
+
+fn acquire_writer_lock(store_path: &Path) -> Result<File, String> {
+    let lock_path = writer_lock_path(store_path);
+    if let Some(parent) = lock_path.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|error| format!("Failed to create search lock directory: {error}"))?;
+    }
+    let lock = OpenOptions::new()
+        .create(true)
+        .truncate(false)
+        .read(true)
+        .write(true)
+        .open(&lock_path)
+        .map_err(|error| format!("Failed to open search writer lock: {error}"))?;
+    lock.try_lock_exclusive().map_err(|error| {
+        format!(
+            "Search index is already owned by another Ottrin process ({}): {error}",
+            lock_path.display()
+        )
+    })?;
+    Ok(lock)
+}
+
 fn clear_sqlite_storage(path: &Path) -> Result<u64, String> {
     let mut freed = remove_file_if_present(path)?;
     for suffix in ["-wal", "-shm", "-journal"] {
@@ -709,7 +776,7 @@ fn clear_sqlite_storage(path: &Path) -> Result<u64, String> {
     Ok(freed)
 }
 
-pub fn clear_search_storage() -> Result<u64, String> {
+fn clear_search_storage_unlocked() -> Result<u64, String> {
     let mut freed = clear_sqlite_storage(&search_db_path())?;
     #[cfg(target_os = "linux")]
     let mut paths = vec![index_cache_path(), locate_db_path()];
@@ -726,6 +793,13 @@ pub fn clear_search_storage() -> Result<u64, String> {
         }
     }
     Ok(freed)
+}
+
+pub fn clear_search_storage() -> Result<u64, String> {
+    let lock = acquire_writer_lock(&search_db_path())?;
+    let result = clear_search_storage_unlocked();
+    let _ = FileExt::unlock(&lock);
+    result
 }
 
 // ── Locate database management ─────────────────────────────────────────────────
@@ -2541,6 +2615,49 @@ mod tests {
 
         assert_eq!(starts.load(Ordering::Acquire), 1);
         service.stop();
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn one_writer_owns_storage_across_process_boundaries() {
+        let starts = Arc::new(AtomicUsize::new(0));
+        let db_path = temp_service_path("writer-lock");
+        let config = SearchConfig {
+            include_roots: vec![PathBuf::from("/controlled")],
+            ..SearchConfig::default()
+        };
+        let mut first = SearchService::new_with_runtime(
+            config.clone(),
+            db_path.clone(),
+            blocking_launcher(Arc::clone(&starts)),
+        );
+        let mut second = SearchService::new_with_runtime(
+            config,
+            db_path.clone(),
+            blocking_launcher(Arc::clone(&starts)),
+        );
+
+        first.start();
+        wait_until(Duration::from_secs(1), || {
+            starts.load(Ordering::Acquire) == 1
+        });
+        second.start();
+        assert_eq!(second.diagnostics().status, SearchIndexStatus::Unavailable);
+        assert!(
+            second
+                .diagnostics()
+                .last_error
+                .is_some_and(|error| error.contains("already owned"))
+        );
+        assert!(second.clear_storage().is_err());
+        assert_eq!(starts.load(Ordering::Acquire), 1);
+
+        first.stop();
+        second.start();
+        wait_until(Duration::from_secs(1), || {
+            starts.load(Ordering::Acquire) == 2
+        });
+        second.stop();
         let _ = fs::remove_file(db_path);
     }
 

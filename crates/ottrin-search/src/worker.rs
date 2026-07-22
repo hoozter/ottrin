@@ -69,7 +69,7 @@ pub(crate) type ScanLauncher = Arc<
 
 pub(crate) enum Command {
     UpdateConfig(SearchConfig),
-    Rebuild,
+    Rebuild(Option<mpsc::Sender<Result<(), String>>>),
     FilesystemEvent(Vec<PathBuf>),
     WatchBackendError {
         paths: Vec<PathBuf>,
@@ -113,7 +113,18 @@ impl WorkerHandle {
     }
 
     pub(crate) fn request_rebuild(&self) {
-        self.invalidate_and_send(Command::Rebuild);
+        self.invalidate_and_send(Command::Rebuild(None));
+    }
+
+    pub(crate) fn rebuild_blocking(&self) -> Result<(), String> {
+        let (done, completed) = mpsc::channel();
+        self.fence.invalidate();
+        self.commands
+            .send(Command::Rebuild(Some(done)))
+            .map_err(|_| "Search worker stopped before rebuild was requested".to_string())?;
+        completed
+            .recv()
+            .map_err(|_| "Search worker stopped before rebuild completed".to_string())?
     }
 
     #[cfg(test)]
@@ -142,6 +153,7 @@ struct ActiveScan {
     covered_event_revision: u64,
     cancelled: Arc<AtomicBool>,
     join: Option<JoinHandle<()>>,
+    completion: Option<mpsc::Sender<Result<(), String>>>,
 }
 
 struct WorkerLoop {
@@ -263,7 +275,7 @@ impl WorkerLoop {
                         self.install_plan(&mut watcher, &mut watched_roots);
                     }
                 }
-                Ok(Command::Rebuild) => self.start_scan(),
+                Ok(Command::Rebuild(completion)) => self.start_scan(completion),
                 Ok(Command::FilesystemEvent(paths)) => {
                     self.filesystem_event_revision = self.filesystem_event_revision.wrapping_add(1);
                     self.pending_paths.extend(paths);
@@ -349,7 +361,7 @@ impl WorkerLoop {
                 self.publish(snapshot);
                 self.last_full_rebuild_at = Some(Instant::now());
             }
-            Ok(None) => self.start_scan(),
+            Ok(None) => self.start_scan(None),
             Err(error) => {
                 let mut index = self.index.write().expect("index write");
                 index.last_error = Some(error);
@@ -359,7 +371,7 @@ impl WorkerLoop {
                     SearchIndexStatus::Indexing
                 };
                 drop(index);
-                self.start_scan();
+                self.start_scan(None);
             }
         }
     }
@@ -419,8 +431,11 @@ impl WorkerLoop {
         index.watcher_last_error = registry.last_error().map(str::to_string);
     }
 
-    fn start_scan(&mut self) {
+    fn start_scan(&mut self, completion: Option<mpsc::Sender<Result<(), String>>>) {
         let Some(plan) = self.current_plan.as_ref().cloned() else {
+            if let Some(completion) = completion {
+                let _ = completion.send(Err("Search plan is unavailable".to_string()));
+            }
             return;
         };
         self.cancel_active();
@@ -434,6 +449,7 @@ impl WorkerLoop {
             covered_event_revision: self.filesystem_event_revision,
             cancelled: Arc::clone(&cancelled),
             join: None,
+            completion,
         });
         {
             let mut index = self.index.write().expect("index write");
@@ -466,6 +482,9 @@ impl WorkerLoop {
             if let Some(join) = active.join.take() {
                 let _ = join.join();
             }
+            if let Some(completion) = active.completion.take() {
+                let _ = completion.send(Err("Requested rebuild was cancelled".to_string()));
+            }
         }
     }
 
@@ -496,9 +515,18 @@ impl WorkerLoop {
         if let Some(join) = active.join.take() {
             let _ = join.join();
         }
+        let completion = active.completion.take();
+        let complete = |result| {
+            if let Some(completion) = completion.as_ref() {
+                let _ = completion.send(result);
+            }
+        };
         match result {
             Ok(ScanOutcome::Completed(items)) => {
                 let Some(plan) = self.current_plan.as_ref() else {
+                    complete(Err(
+                        "Search plan became unavailable before commit".to_string()
+                    ));
                     return;
                 };
                 let expected_epoch = active.expected_epoch;
@@ -523,14 +551,17 @@ impl WorkerLoop {
                             self.filesystem_rebuild_deadline =
                                 Some(Instant::now() + EVENT_DEBOUNCE);
                         }
+                        complete(Ok(()));
                     }
                     Err(StoreBackendError::ActivationCancelled) => {
                         if !self.pending_paths.is_empty() {
                             self.filesystem_rebuild_deadline =
                                 Some(Instant::now() + EVENT_DEBOUNCE);
                         }
+                        complete(Err("Requested rebuild was superseded".to_string()));
                     }
                     Err(StoreBackendError::Other(error)) => {
+                        complete(Err(error.clone()));
                         self.record_failure(error);
                         if !self.pending_paths.is_empty() {
                             self.filesystem_rebuild_deadline =
@@ -540,11 +571,13 @@ impl WorkerLoop {
                 }
             }
             Ok(ScanOutcome::Cancelled) => {
+                complete(Err("Requested rebuild was cancelled".to_string()));
                 if !self.pending_paths.is_empty() {
                     self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
                 }
             }
             Err(error) => {
+                complete(Err(error.clone()));
                 self.record_failure(error);
                 if !self.pending_paths.is_empty() {
                     self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
@@ -618,7 +651,7 @@ impl WorkerLoop {
             return;
         }
         if self.pending_paths.len() > INCREMENTAL_REBUILD_THRESHOLD {
-            self.start_scan();
+            self.start_scan(None);
             return;
         }
         let Some(plan) = self.current_plan.as_ref() else {
@@ -795,7 +828,7 @@ impl WorkerLoop {
                 .is_some_and(|last| last.elapsed().as_secs() >= refresh_secs)
             && self.active_scan.is_none()
         {
-            self.start_scan();
+            self.start_scan(None);
         }
         if self.config.manage_locate_db && crate::updatedb_available() {
             let locate_secs = u64::from(self.config.locate_update_hours) * 3_600;
@@ -1067,6 +1100,30 @@ mod tests {
             launcher,
         );
         (worker, index, scans)
+    }
+
+    #[test]
+    fn blocking_rebuild_completes_only_after_its_snapshot_commits() {
+        let store = Arc::new(Mutex::new(MemoryStoreState::default()));
+        let (worker, index, scans) = start_controlled(config("/root"), Arc::clone(&store));
+        let initial = scans.recv_timeout(WAIT).expect("initial scan");
+        let worker = Arc::new(worker);
+        let waiting = Arc::clone(&worker);
+        let completed = std::thread::spawn(move || waiting.rebuild_blocking());
+
+        let requested = scans.recv_timeout(WAIT).expect("requested rebuild");
+        assert!(initial.cancelled.load(Ordering::Acquire));
+        assert!(!completed.is_finished());
+        requested.complete(vec![owned("/root", "committed.txt")]);
+
+        assert_eq!(completed.join().expect("join rebuild waiter"), Ok(()));
+        assert_eq!(
+            snapshot_items(&index),
+            vec![PathBuf::from("/root/committed.txt")]
+        );
+        Arc::try_unwrap(worker)
+            .unwrap_or_else(|_| panic!("worker references remain"))
+            .stop();
     }
 
     #[test]

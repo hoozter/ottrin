@@ -60,12 +60,21 @@ fn main() {
     };
     let mut service = SearchService::new(config);
     service.start();
-    if force_rebuild {
-        service.rebuild_index();
+    if matches!(service.diagnostics().status, SearchIndexStatus::Unavailable) {
+        let diag = service.diagnostics();
+        eprintln!(
+            "ottrin-index: {}",
+            diag.last_error
+                .unwrap_or_else(|| "search service unavailable".to_string())
+        );
+        std::process::exit(1);
+    }
+    if force_rebuild && let Err(error) = service.rebuild_index_blocking() {
+        eprintln!("ottrin-index: rebuild failed: {error}");
+        std::process::exit(1);
     }
 
     let mut last_line = String::new();
-    let mut saw_forced_rebuild = !force_rebuild;
     loop {
         let diag = service.diagnostics();
         let now_secs = SystemTime::now()
@@ -98,15 +107,16 @@ fn main() {
         }
 
         match diag.status {
-            SearchIndexStatus::Ready | SearchIndexStatus::Unavailable => {
-                if saw_forced_rebuild || matches!(diag.status, SearchIndexStatus::Unavailable) {
-                    break;
-                }
+            SearchIndexStatus::Ready => break,
+            SearchIndexStatus::Unavailable => {
+                eprintln!(
+                    "ottrin-index: {}",
+                    diag.last_error
+                        .unwrap_or_else(|| "search service unavailable".to_string())
+                );
+                std::process::exit(1);
             }
             SearchIndexStatus::Indexing => {}
-        }
-        if matches!(diag.status, SearchIndexStatus::Indexing) {
-            saw_forced_rebuild = true;
         }
         sleep(Duration::from_millis(500));
     }
