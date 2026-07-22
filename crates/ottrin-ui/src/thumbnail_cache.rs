@@ -1,3 +1,4 @@
+#[cfg(not(target_os = "windows"))]
 use ottrin_core::default_home_dir;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};

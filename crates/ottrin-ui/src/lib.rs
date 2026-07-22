@@ -15,7 +15,9 @@ use ottrin_core::{
     ThemeCustomization, ThemeMode, ThemePreset, ViewMode, classify_file, default_home_dir,
     format_modified, format_size, format_size_units, platform_case_mode_current,
 };
-use ottrin_platform::{DefaultPlatform, PlatformOps, PrivilegedAvailability, TrashItem};
+use ottrin_platform::{
+    DefaultPlatform, PlatformError, PlatformOps, PrivilegedAvailability, TrashItem,
+};
 use ottrin_preview::{PreviewData, PreviewKind, PreviewRequest, load_preview};
 use ottrin_search::{SearchIndexDiagnostics, SearchService, default_roots as default_search_roots};
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -167,7 +169,46 @@ struct OpResult {
     cmd: FileCommand,
     delete_nav: Vec<DeletePostNav>,
     error: Option<String>,
+    warning: Option<String>,
     retry_cmd: Option<FileCommand>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum FileOpOutcome {
+    Completed,
+    CompletedWithWarning(String),
+    Failed {
+        message: String,
+        privilege_retry: bool,
+    },
+}
+
+impl FileOpOutcome {
+    fn should_offer_privilege_retry(&self) -> bool {
+        matches!(
+            self,
+            Self::Failed {
+                privilege_retry: true,
+                ..
+            }
+        )
+    }
+}
+
+fn classify_file_op_result(result: Result<(), PlatformError>) -> FileOpOutcome {
+    match result {
+        Ok(()) => FileOpOutcome::Completed,
+        Err(error @ PlatformError::CommittedCleanupPending { .. }) => {
+            FileOpOutcome::CompletedWithWarning(error.to_string())
+        }
+        Err(error) => {
+            let message = error.to_string();
+            FileOpOutcome::Failed {
+                privilege_retry: is_permission_denied_msg(&message),
+                message,
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -3912,7 +3953,16 @@ impl OttrinApp {
                 }
                 continue;
             }
-            self.finish_operation_record(res.op_id, OperationStatus::Completed, None);
+            self.finish_operation_record(
+                res.op_id,
+                OperationStatus::Completed,
+                res.warning.clone(),
+            );
+            if let Some(warning) = res.warning {
+                self.command_frame.error = None;
+                self.command_frame.message = Some(warning);
+                self.command_frame.visible = true;
+            }
             self.pending_privileged_retry = None;
             if let FileCommand::Delete { targets, .. } = &completed_cmd {
                 self.repair_tabs_after_deleted_targets(targets, &res.delete_nav);
@@ -6157,16 +6207,13 @@ impl OttrinApp {
         let op_tx = self.op_tx.clone();
         let retry_cmd = cmd.clone();
         std::thread::spawn(move || {
-            let res = platform.execute_command(&cmd);
-            let (error, retry) = match res {
-                Ok(_) => (None, None),
-                Err(e) => {
-                    let msg = e.to_string();
-                    if is_permission_denied_msg(&msg) {
-                        (Some(msg), Some(retry_cmd))
-                    } else {
-                        (Some(msg), None)
-                    }
+            let outcome = classify_file_op_result(platform.execute_command(&cmd).map(|_| ()));
+            let privilege_retry = outcome.should_offer_privilege_retry();
+            let (error, warning, retry) = match outcome {
+                FileOpOutcome::Completed => (None, None, None),
+                FileOpOutcome::CompletedWithWarning(message) => (None, Some(message), None),
+                FileOpOutcome::Failed { message, .. } => {
+                    (Some(message), None, privilege_retry.then_some(retry_cmd))
                 }
             };
             let _ = op_tx.send(OpResult {
@@ -6175,6 +6222,7 @@ impl OttrinApp {
                 cmd,
                 delete_nav,
                 error,
+                warning,
                 retry_cmd: retry,
             });
         });
@@ -17537,6 +17585,17 @@ fn theme_preview_strip(ui: &mut egui::Ui, preview: Colors, width: f32, height: f
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn committed_cleanup_warning_is_completed_and_never_privilege_retryable() {
+        let outcome = classify_file_op_result(Err(PlatformError::CommittedCleanupPending {
+            transaction: "/tmp/recoverable-transaction".to_string(),
+            message: "permission denied during cleanup".to_string(),
+        }));
+
+        assert!(matches!(outcome, FileOpOutcome::CompletedWithWarning(_)));
+        assert!(!outcome.should_offer_privilege_retry());
+    }
 
     #[test]
     fn published_snapshot_revision_refreshes_an_open_query_even_at_same_count() {

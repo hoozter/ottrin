@@ -8,6 +8,9 @@ use std::sync::{OnceLock, RwLock};
 use std::time::SystemTime;
 use thiserror::Error;
 
+mod copy_transaction;
+use copy_transaction::copy_entry_transactional;
+
 #[derive(Debug, Clone)]
 pub struct FileProperties {
     pub path: PathBuf,
@@ -44,6 +47,18 @@ pub enum PlatformError {
     InvalidDestination(String),
     #[error("destination entry already exists: {0}")]
     DestinationExists(String),
+    #[error("safe overwrite of an existing entry is unsupported on this platform: {0}")]
+    UnsupportedSafeOverwrite(String),
+    #[error("copy committed, but cleanup is pending for transaction {transaction}: {message}")]
+    CommittedCleanupPending {
+        transaction: String,
+        message: String,
+    },
+    #[error("copy failed and transaction cleanup is pending at {transaction}: {message}")]
+    CleanupPending {
+        transaction: String,
+        message: String,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -202,9 +217,7 @@ impl PlatformOps for DefaultPlatform {
                     reject_directory_copy_into_itself(source, destination)?;
                 }
                 for source in sources {
-                    if let Some(target) = resolve_destination(source, destination, *conflict)? {
-                        copy_entry(source, &target)?;
-                    }
+                    copy_entry_transactional(source, destination, *conflict)?;
                 }
                 Ok(None)
             }
@@ -215,7 +228,8 @@ impl PlatformOps for DefaultPlatform {
             } => {
                 ensure_existing_dir(destination)?;
                 for source in sources {
-                    if let Some(target) = resolve_destination(source, destination, *conflict)? {
+                    if let Some(target) = resolve_move_destination(source, destination, *conflict)?
+                    {
                         move_entry(source, &target)?;
                     }
                 }
@@ -488,12 +502,10 @@ fn rename_without_replacement(source: &Path, target: &Path) -> Result<(), Platfo
 
 #[cfg(not(any(target_os = "linux", target_os = "windows")))]
 fn rename_without_replacement(source: &Path, target: &Path) -> Result<(), PlatformError> {
-    if std::fs::symlink_metadata(target).is_ok() {
-        return Err(PlatformError::DestinationExists(
-            target.display().to_string(),
-        ));
-    }
-    std::fs::rename(source, target).map_err(|error| PlatformError::Io(error.to_string()))
+    let _ = (source, target);
+    Err(PlatformError::NotAvailable(
+        "atomic no-replace publication is not implemented on this platform",
+    ))
 }
 
 fn validate_copy_source(source: &Path) -> Result<(), PlatformError> {
@@ -862,7 +874,7 @@ fn parse_trashinfo_field(text: &str, field: &str) -> Option<String> {
     })
 }
 
-fn resolve_destination(
+fn resolve_move_destination(
     source: &Path,
     destination_dir: &Path,
     conflict: ConflictAction,
@@ -892,22 +904,16 @@ fn resolve_destination(
 
 fn next_available_name(base: &Path) -> PathBuf {
     let parent = base.parent().map(Path::to_path_buf).unwrap_or_default();
-    let stem = base
-        .file_stem()
-        .and_then(|s| s.to_str())
-        .unwrap_or("item")
-        .to_string();
-    let ext = base
-        .extension()
-        .and_then(|e| e.to_str())
-        .map(str::to_string);
+    let stem = base.file_stem().unwrap_or(base.as_os_str());
+    let ext = base.extension();
 
     for i in 1.. {
-        let candidate_name = if let Some(ext) = &ext {
-            format!("{stem} ({i}).{ext}")
-        } else {
-            format!("{stem} ({i})")
-        };
+        let mut candidate_name = stem.to_os_string();
+        candidate_name.push(format!(" ({i})"));
+        if let Some(ext) = ext {
+            candidate_name.push(".");
+            candidate_name.push(ext);
+        }
         let candidate = parent.join(candidate_name);
         if std::fs::symlink_metadata(&candidate).is_err() {
             return candidate;
@@ -1123,6 +1129,29 @@ mod tests {
             std::fs::read_to_string(destination).unwrap(),
             "destination contents"
         );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn hardlink_self_copy_is_rejected_without_changing_the_entry() {
+        let dir = TestDir::new("copy-hardlink-self");
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir(&source_dir).unwrap();
+        std::fs::create_dir(&destination_dir).unwrap();
+        let source = source_dir.join("item.txt");
+        let destination = destination_dir.join("item.txt");
+        std::fs::write(&source, "original").unwrap();
+        std::fs::hard_link(&source, &destination).unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Copy {
+            sources: vec![source],
+            destination: destination_dir,
+            conflict: ConflictAction::Overwrite,
+        });
+
+        assert!(matches!(result, Err(PlatformError::InvalidDestination(_))));
+        assert_eq!(std::fs::read_to_string(destination).unwrap(), "original");
     }
 
     #[cfg(unix)]

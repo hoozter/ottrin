@@ -1,4 +1,6 @@
-use ottrin_core::{AppConfig, default_home_dir};
+use ottrin_core::AppConfig;
+#[cfg(not(target_os = "windows"))]
+use ottrin_core::default_home_dir;
 use std::path::{Path, PathBuf};
 
 fn config_path() -> Option<PathBuf> {

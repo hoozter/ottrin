@@ -3070,9 +3070,11 @@ name = "ottrin-platform"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "getrandom 0.3.4",
  "opener",
  "ottrin-core",
  "rustix 0.38.44",
+ "same-file",
  "serde_json",
  "thiserror 2.0.18",
  "tracing",
