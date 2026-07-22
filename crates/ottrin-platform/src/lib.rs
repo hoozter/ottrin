@@ -182,7 +182,7 @@ impl PlatformOps for DefaultPlatform {
                     .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
                 ensure_existing_dir(parent)?;
                 let target = parent.join(new_name);
-                std::fs::rename(source, target).map_err(|e| PlatformError::Io(e.to_string()))?;
+                rename_without_replacement(source, &target)?;
                 Ok(None)
             }
             FileCommand::Delete { targets, mode } => {
@@ -197,6 +197,10 @@ impl PlatformOps for DefaultPlatform {
                 conflict,
             } => {
                 ensure_existing_dir(destination)?;
+                for source in sources {
+                    validate_copy_source(source)?;
+                    reject_directory_copy_into_itself(source, destination)?;
+                }
                 for source in sources {
                     if let Some(target) = resolve_destination(source, destination, *conflict)? {
                         copy_entry(source, &target)?;
@@ -453,6 +457,122 @@ fn ensure_existing_dir(path: &Path) -> Result<(), PlatformError> {
             path.display().to_string(),
         ))
     }
+}
+
+#[cfg(target_os = "linux")]
+fn rename_without_replacement(source: &Path, target: &Path) -> Result<(), PlatformError> {
+    use rustix::fs::{CWD, RenameFlags, renameat_with};
+    use rustix::io::Errno;
+
+    renameat_with(CWD, source, CWD, target, RenameFlags::NOREPLACE).map_err(|error| {
+        if error == Errno::EXIST {
+            PlatformError::DestinationExists(target.display().to_string())
+        } else {
+            PlatformError::Io(error.to_string())
+        }
+    })
+}
+
+#[cfg(target_os = "windows")]
+fn rename_without_replacement(source: &Path, target: &Path) -> Result<(), PlatformError> {
+    std::fs::rename(source, target).map_err(|error| {
+        if error.kind() == std::io::ErrorKind::AlreadyExists
+            || std::fs::symlink_metadata(target).is_ok()
+        {
+            PlatformError::DestinationExists(target.display().to_string())
+        } else {
+            PlatformError::Io(error.to_string())
+        }
+    })
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+fn rename_without_replacement(source: &Path, target: &Path) -> Result<(), PlatformError> {
+    if std::fs::symlink_metadata(target).is_ok() {
+        return Err(PlatformError::DestinationExists(
+            target.display().to_string(),
+        ));
+    }
+    std::fs::rename(source, target).map_err(|error| PlatformError::Io(error.to_string()))
+}
+
+fn validate_copy_source(source: &Path) -> Result<(), PlatformError> {
+    let metadata = std::fs::symlink_metadata(source)
+        .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
+    if metadata.file_type().is_symlink() {
+        std::fs::read_link(source).map_err(|e| PlatformError::Io(e.to_string()))?;
+        return Ok(());
+    }
+    if metadata.is_file() {
+        return Ok(());
+    }
+    if !metadata.is_dir() {
+        return Err(PlatformError::InvalidSource(source.display().to_string()));
+    }
+    let children = std::fs::read_dir(source).map_err(|e| PlatformError::Io(e.to_string()))?;
+    for child in children {
+        let child = child.map_err(|e| PlatformError::Io(e.to_string()))?;
+        validate_copy_source(&child.path())?;
+    }
+    Ok(())
+}
+
+fn reject_directory_copy_into_itself(
+    source: &Path,
+    destination_dir: &Path,
+) -> Result<(), PlatformError> {
+    let metadata = match std::fs::symlink_metadata(source) {
+        Ok(metadata) => metadata,
+        Err(_) => return Ok(()),
+    };
+    if !metadata.is_dir() {
+        return Ok(());
+    }
+
+    let name = source
+        .file_name()
+        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
+    let target = destination_dir.join(name);
+    let lexical_source = absolute_lexical_path(source)?;
+    let lexical_target = absolute_lexical_path(&target)?;
+    let canonical_source =
+        std::fs::canonicalize(source).map_err(|e| PlatformError::Io(e.to_string()))?;
+    let canonical_target = std::fs::canonicalize(destination_dir)
+        .map_err(|e| PlatformError::Io(e.to_string()))?
+        .join(name);
+
+    if lexical_target.starts_with(&lexical_source)
+        || canonical_target.starts_with(&canonical_source)
+    {
+        Err(PlatformError::InvalidDestination(
+            target.display().to_string(),
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+fn absolute_lexical_path(path: &Path) -> Result<PathBuf, PlatformError> {
+    use std::path::Component;
+
+    let absolute = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir()
+            .map_err(|e| PlatformError::Io(e.to_string()))?
+            .join(path)
+    };
+    let mut normalized = PathBuf::new();
+    for component in absolute.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                normalized.pop();
+            }
+            component => normalized.push(component.as_os_str()),
+        }
+    }
+    Ok(normalized)
 }
 
 fn delete_permanent(target: &Path) -> Result<(), PlatformError> {
@@ -747,7 +867,7 @@ fn resolve_destination(
     destination_dir: &Path,
     conflict: ConflictAction,
 ) -> Result<Option<PathBuf>, PlatformError> {
-    if !source.exists() {
+    if std::fs::symlink_metadata(source).is_err() {
         return Err(PlatformError::InvalidSource(source.display().to_string()));
     }
 
@@ -756,7 +876,7 @@ fn resolve_destination(
         .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
     let destination = destination_dir.join(name);
 
-    if !destination.exists() {
+    if std::fs::symlink_metadata(&destination).is_err() {
         return Ok(Some(destination));
     }
 
@@ -789,7 +909,7 @@ fn next_available_name(base: &Path) -> PathBuf {
             format!("{stem} ({i})")
         };
         let candidate = parent.join(candidate_name);
-        if !candidate.exists() {
+        if std::fs::symlink_metadata(&candidate).is_err() {
             return candidate;
         }
     }
@@ -798,17 +918,45 @@ fn next_available_name(base: &Path) -> PathBuf {
 }
 
 fn copy_entry(source: &Path, destination: &Path) -> Result<(), PlatformError> {
-    if !source.exists() {
-        return Err(PlatformError::InvalidSource(source.display().to_string()));
-    }
-
-    let meta = std::fs::symlink_metadata(source).map_err(|e| PlatformError::Io(e.to_string()))?;
-    if meta.is_dir() {
+    let meta = std::fs::symlink_metadata(source)
+        .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
+    if meta.file_type().is_symlink() {
+        copy_symlink(source, destination)
+    } else if meta.is_dir() {
         copy_dir_recursive(source, destination)
-    } else {
+    } else if meta.is_file() {
         std::fs::copy(source, destination)
             .map(|_| ())
             .map_err(|e| PlatformError::Io(e.to_string()))
+    } else {
+        Err(PlatformError::InvalidSource(source.display().to_string()))
+    }
+}
+
+fn copy_symlink(source: &Path, destination: &Path) -> Result<(), PlatformError> {
+    let target = std::fs::read_link(source).map_err(|e| PlatformError::Io(e.to_string()))?;
+
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(target, destination)
+            .map_err(|e| PlatformError::Io(e.to_string()))
+    }
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::FileTypeExt;
+
+        let file_type = std::fs::symlink_metadata(source)
+            .map_err(|e| PlatformError::Io(e.to_string()))?
+            .file_type();
+        if file_type.is_symlink_dir() {
+            std::os::windows::fs::symlink_dir(target, destination)
+                .map_err(|e| PlatformError::Io(e.to_string()))
+        } else if file_type.is_symlink_file() {
+            std::os::windows::fs::symlink_file(target, destination)
+                .map_err(|e| PlatformError::Io(e.to_string()))
+        } else {
+            Err(PlatformError::InvalidSource(source.display().to_string()))
+        }
     }
 }
 
@@ -821,10 +969,11 @@ fn copy_dir_recursive(source_dir: &Path, target_dir: &Path) -> Result<(), Platfo
         let source = child.path();
         let target = target_dir.join(child.file_name());
 
-        let meta = child
-            .metadata()
-            .map_err(|e| PlatformError::Io(e.to_string()))?;
-        if meta.is_dir() {
+        let meta =
+            std::fs::symlink_metadata(&source).map_err(|e| PlatformError::Io(e.to_string()))?;
+        if meta.file_type().is_symlink() {
+            copy_symlink(&source, &target)?;
+        } else if meta.is_dir() {
             copy_dir_recursive(&source, &target)?;
         } else {
             std::fs::copy(&source, &target).map_err(|e| PlatformError::Io(e.to_string()))?;
@@ -835,7 +984,7 @@ fn copy_dir_recursive(source_dir: &Path, target_dir: &Path) -> Result<(), Platfo
 }
 
 fn move_entry(source: &Path, destination: &Path) -> Result<(), PlatformError> {
-    if !source.exists() {
+    if std::fs::symlink_metadata(source).is_err() {
         return Err(PlatformError::InvalidSource(source.display().to_string()));
     }
 
@@ -922,4 +1071,348 @@ fn read_properties(path: &Path) -> Result<FileProperties, PlatformError> {
         created: metadata.created().ok(),
         modified: metadata.modified().ok(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    static TEMP_ID: AtomicU64 = AtomicU64::new(0);
+
+    struct TestDir(PathBuf);
+
+    impl TestDir {
+        fn new(name: &str) -> Self {
+            let id = TEMP_ID.fetch_add(1, Ordering::Relaxed);
+            let path = std::env::temp_dir().join(format!(
+                "ottrin-platform-{name}-{}-{id}",
+                std::process::id()
+            ));
+            std::fs::create_dir(&path).expect("create test directory");
+            Self(path)
+        }
+
+        fn path(&self) -> &Path {
+            &self.0
+        }
+    }
+
+    impl Drop for TestDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[test]
+    fn rename_collision_does_not_overwrite_either_file() {
+        let dir = TestDir::new("rename-collision");
+        let source = dir.path().join("source.txt");
+        let destination = dir.path().join("destination.txt");
+        std::fs::write(&source, "source contents").unwrap();
+        std::fs::write(&destination, "destination contents").unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Rename {
+            source: source.clone(),
+            new_name: "destination.txt".to_string(),
+        });
+
+        assert!(matches!(result, Err(PlatformError::DestinationExists(_))));
+        assert_eq!(std::fs::read_to_string(source).unwrap(), "source contents");
+        assert_eq!(
+            std::fs::read_to_string(destination).unwrap(),
+            "destination contents"
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn copying_file_symlink_preserves_exact_link_target() {
+        use std::os::unix::fs::symlink;
+
+        let dir = TestDir::new("copy-file-symlink");
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir(&source_dir).unwrap();
+        std::fs::create_dir(&destination_dir).unwrap();
+        std::fs::write(source_dir.join("target.txt"), "contents").unwrap();
+        let source_link = source_dir.join("link.txt");
+        symlink("target.txt", &source_link).unwrap();
+
+        DefaultPlatform
+            .execute_command(&FileCommand::Copy {
+                sources: vec![source_link],
+                destination: destination_dir.clone(),
+                conflict: ConflictAction::Skip,
+            })
+            .unwrap();
+
+        let copied_link = destination_dir.join("link.txt");
+        assert!(
+            std::fs::symlink_metadata(&copied_link)
+                .unwrap()
+                .file_type()
+                .is_symlink()
+        );
+        assert_eq!(
+            std::fs::read_link(copied_link).unwrap(),
+            Path::new("target.txt")
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn recursive_copy_preserves_tree_symlinks_without_traversing_them() {
+        use std::os::unix::fs::symlink;
+
+        let dir = TestDir::new("copy-tree-symlinks");
+        let source = dir.path().join("tree");
+        let destination = dir.path().join("destination");
+        let outside = dir.path().join("outside");
+        std::fs::create_dir(&source).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::create_dir(&outside).unwrap();
+        std::fs::write(source.join("file.txt"), "file").unwrap();
+        std::fs::create_dir(source.join("real-dir")).unwrap();
+        std::fs::write(source.join("real-dir/nested.txt"), "nested").unwrap();
+        std::fs::write(outside.join("secret.txt"), "secret").unwrap();
+        symlink("file.txt", source.join("file-link")).unwrap();
+        symlink("real-dir", source.join("dir-link")).unwrap();
+        symlink("missing", source.join("dangling-link")).unwrap();
+        symlink(&outside, source.join("outside-link")).unwrap();
+        symlink(".", source.join("cycle-link")).unwrap();
+
+        DefaultPlatform
+            .execute_command(&FileCommand::Copy {
+                sources: vec![source],
+                destination: destination.clone(),
+                conflict: ConflictAction::Skip,
+            })
+            .unwrap();
+
+        let copied = destination.join("tree");
+        assert_eq!(
+            std::fs::read_to_string(copied.join("file.txt")).unwrap(),
+            "file"
+        );
+        assert_eq!(
+            std::fs::read_to_string(copied.join("real-dir/nested.txt")).unwrap(),
+            "nested"
+        );
+        for (name, target) in [
+            ("file-link", PathBuf::from("file.txt")),
+            ("dir-link", PathBuf::from("real-dir")),
+            ("dangling-link", PathBuf::from("missing")),
+            ("outside-link", outside),
+            ("cycle-link", PathBuf::from(".")),
+        ] {
+            let link = copied.join(name);
+            assert!(
+                std::fs::symlink_metadata(&link)
+                    .unwrap()
+                    .file_type()
+                    .is_symlink()
+            );
+            assert_eq!(std::fs::read_link(link).unwrap(), target);
+        }
+    }
+
+    #[test]
+    fn directory_copy_into_self_or_descendant_is_rejected_before_creation() {
+        let dir = TestDir::new("copy-into-self");
+        let source = dir.path().join("tree");
+        let descendant = source.join("nested");
+        std::fs::create_dir_all(&descendant).unwrap();
+        std::fs::write(source.join("file.txt"), "original").unwrap();
+
+        let descendant_target = descendant.join("tree");
+        let descendant_result = DefaultPlatform.execute_command(&FileCommand::Copy {
+            sources: vec![source.clone()],
+            destination: descendant,
+            conflict: ConflictAction::Skip,
+        });
+
+        assert!(matches!(
+            descendant_result,
+            Err(PlatformError::InvalidDestination(_))
+        ));
+        assert!(std::fs::symlink_metadata(&descendant_target).is_err());
+
+        let self_result = DefaultPlatform.execute_command(&FileCommand::Copy {
+            sources: vec![source.clone()],
+            destination: dir.path().to_path_buf(),
+            conflict: ConflictAction::Skip,
+        });
+
+        assert!(matches!(
+            self_result,
+            Err(PlatformError::InvalidDestination(_))
+        ));
+        assert_eq!(
+            std::fs::read_to_string(source.join("file.txt")).unwrap(),
+            "original"
+        );
+    }
+
+    #[test]
+    fn invalid_later_copy_source_is_rejected_before_any_source_is_copied() {
+        let dir = TestDir::new("copy-preflight");
+        let first_source = dir.path().join("first.txt");
+        let tree = dir.path().join("tree");
+        let destination = tree.join("destination");
+        std::fs::write(&first_source, "first").unwrap();
+        std::fs::create_dir_all(&destination).unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Copy {
+            sources: vec![first_source, tree],
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        });
+
+        assert!(matches!(result, Err(PlatformError::InvalidDestination(_))));
+        assert!(std::fs::symlink_metadata(destination.join("first.txt")).is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn unsupported_special_file_is_rejected_without_creating_destination() {
+        use std::os::unix::net::UnixListener;
+
+        let dir = TestDir::new("copy-special-file");
+        let source = dir.path().join("source.sock");
+        let destination = dir.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let _listener = UnixListener::bind(&source).unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Copy {
+            sources: vec![source],
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        });
+
+        assert!(matches!(result, Err(PlatformError::InvalidSource(_))));
+        assert!(std::fs::symlink_metadata(destination.join("source.sock")).is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn nested_special_file_is_rejected_before_destination_tree_is_created() {
+        use std::os::unix::net::UnixListener;
+
+        let dir = TestDir::new("copy-tree-special-file");
+        let source = dir.path().join("source");
+        let destination = dir.path().join("destination");
+        std::fs::create_dir(&source).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(source.join("first.txt"), "first").unwrap();
+        let _listener = UnixListener::bind(source.join("later.sock")).unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Copy {
+            sources: vec![source],
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        });
+
+        assert!(matches!(result, Err(PlatformError::InvalidSource(_))));
+        assert!(std::fs::symlink_metadata(destination.join("source")).is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn renamed_copy_target_skips_dangling_symlink_candidate() {
+        use std::os::unix::fs::symlink;
+
+        let dir = TestDir::new("copy-renamed-dangling-candidate");
+        let source_dir = dir.path().join("source");
+        let destination = dir.path().join("destination");
+        std::fs::create_dir(&source_dir).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        let source = source_dir.join("item.txt");
+        std::fs::write(&source, "source").unwrap();
+        std::fs::write(destination.join("item.txt"), "existing").unwrap();
+        symlink("redirected.txt", destination.join("item (1).txt")).unwrap();
+
+        DefaultPlatform
+            .execute_command(&FileCommand::Copy {
+                sources: vec![source],
+                destination: destination.clone(),
+                conflict: ConflictAction::Rename,
+            })
+            .unwrap();
+
+        assert_eq!(
+            std::fs::read_link(destination.join("item (1).txt")).unwrap(),
+            Path::new("redirected.txt")
+        );
+        assert!(std::fs::symlink_metadata(destination.join("redirected.txt")).is_err());
+        assert_eq!(
+            std::fs::read_to_string(destination.join("item (2).txt")).unwrap(),
+            "source"
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn dangling_symlink_is_accepted_as_copy_source() {
+        use std::os::unix::fs::symlink;
+
+        let dir = TestDir::new("copy-dangling-source");
+        let source = dir.path().join("dangling");
+        let destination = dir.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        symlink("missing-target", &source).unwrap();
+
+        DefaultPlatform
+            .execute_command(&FileCommand::Copy {
+                sources: vec![source],
+                destination: destination.clone(),
+                conflict: ConflictAction::Skip,
+            })
+            .unwrap();
+
+        let copied = destination.join("dangling");
+        assert!(
+            std::fs::symlink_metadata(&copied)
+                .unwrap()
+                .file_type()
+                .is_symlink()
+        );
+        assert_eq!(
+            std::fs::read_link(copied).unwrap(),
+            Path::new("missing-target")
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn dangling_symlink_is_accepted_as_move_source() {
+        use std::os::unix::fs::symlink;
+
+        let dir = TestDir::new("move-dangling-source");
+        let source = dir.path().join("dangling");
+        let destination = dir.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        symlink("missing-target", &source).unwrap();
+
+        DefaultPlatform
+            .execute_command(&FileCommand::Move {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Skip,
+            })
+            .unwrap();
+
+        assert!(std::fs::symlink_metadata(source).is_err());
+        let moved = destination.join("dangling");
+        assert!(
+            std::fs::symlink_metadata(&moved)
+                .unwrap()
+                .file_type()
+                .is_symlink()
+        );
+        assert_eq!(
+            std::fs::read_link(moved).unwrap(),
+            Path::new("missing-target")
+        );
+    }
 }

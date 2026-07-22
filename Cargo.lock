@@ -3072,6 +3072,7 @@ dependencies = [
  "chrono",
  "opener",
  "ottrin-core",
+ "rustix 0.38.44",
  "serde_json",
  "thiserror 2.0.18",
  "tracing",
