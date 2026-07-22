@@ -18,7 +18,9 @@ use thiserror::Error;
 use walkdir::WalkDir;
 
 mod db;
+mod plan;
 use db::{SearchDb, SearchDbWriter, search_db_path};
+use plan::ScanPlan;
 
 /// Publish this many indexed items to the shared index before the walk completes,
 /// so queries return partial results immediately (FSearch-style streaming).
@@ -190,6 +192,22 @@ impl SearchService {
                 let mut last_updatedb_at: Option<Instant> = None;
                 let mut locate_db_initialized = false;
                 let mut last_stall_restart_at: Option<Instant> = None;
+                let mut plan_config: Option<SearchConfig> = None;
+                let mut scan_plan: Option<ScanPlan> = None;
+
+                let cfg_at_start = config.read().expect("cfg read").clone();
+                match ScanPlan::new(&cfg_at_start) {
+                    Ok(plan) => {
+                        scan_plan = Some(plan);
+                        plan_config = Some(cfg_at_start.clone());
+                    }
+                    Err(error) => {
+                        let mut i = index.write().expect("index write");
+                        i.status = SearchIndexStatus::Unavailable;
+                        i.last_error = Some(error);
+                        i.progress_text = None;
+                    }
+                }
 
                 // Pre-populate from disk cache for instant results on startup.
                 // Startup should never launch a full home-tree rebuild just because
@@ -197,11 +215,12 @@ impl SearchService {
                 // development runs feel like search started from zero. Treat the
                 // loaded DB as the active index, then let the scheduled refresh timer
                 // decide later whether a background rebuild is due.
-                if let Some(cached) = load_index_from_disk() {
+                if scan_plan.is_some()
+                    && let Some(cached) = load_index_from_disk()
+                {
                     let count = cached.len();
                     let age = index_cache_age_secs().unwrap_or(u64::MAX);
                     let age_str = format_age(age);
-                    let cfg_at_start = config.read().expect("cfg read").clone();
                     if let Ok(mut i) = index.write() {
                         i.items = cached;
                         i.status = SearchIndexStatus::Ready;
@@ -224,10 +243,34 @@ impl SearchService {
                         needs_rebuild = true;
                     }
 
+                    if needs_rebuild && plan_config.as_ref() != Some(&cfg) {
+                        match ScanPlan::new(&cfg) {
+                            Ok(plan) => {
+                                scan_plan = Some(plan);
+                                plan_config = Some(cfg.clone());
+                            }
+                            Err(error) => {
+                                let mut i = index.write().expect("index write");
+                                i.status = SearchIndexStatus::Unavailable;
+                                i.last_error = Some(error);
+                                i.progress_text = None;
+                                scan_plan = None;
+                                plan_config = None;
+                                last_cfg = Some(cfg);
+                                needs_rebuild = false;
+                                continue;
+                            }
+                        }
+                    }
+                    let Some(scan_plan) = scan_plan.as_ref() else {
+                        std::thread::sleep(Duration::from_millis(100));
+                        continue;
+                    };
+
                     if needs_rebuild {
                         let scan_started = current_unix_secs();
                         let scan_started_instant = Instant::now();
-                        let roots = effective_roots(&cfg);
+                        let roots = scan_plan.roots();
                         {
                             let mut i = index.write().expect("index write");
                             i.status = SearchIndexStatus::Indexing;
@@ -240,7 +283,7 @@ impl SearchService {
                             i.last_indexed_path = None;
                             i.building_indexed_items = 0;
                             if i.last_completed_indexed_items.is_none() {
-                                i.estimated_total_items = estimate_total_items(&cfg, &roots);
+                                i.estimated_total_items = estimate_total_items(&cfg, roots);
                             } else {
                                 i.estimated_total_items = None;
                             }
@@ -261,7 +304,7 @@ impl SearchService {
                         let db_writer_arc = Arc::new(Mutex::new(db_writer));
                         let db_writer_arc_for_batch = Arc::clone(&db_writer_arc);
                         match build_index(
-                            &cfg,
+                            scan_plan,
                             &stop,
                             |progress| {
                                 let mut i = index.write().expect("index write");
@@ -279,14 +322,10 @@ impl SearchService {
                                 {
                                     let _ = writer.insert_batch(&batch);
                                     if let Some(last) = batch.last()
-                                        && let Some(root) = roots
-                                            .iter()
-                                            .find(|r: &&PathBuf| last.path.starts_with(r.as_path()))
+                                        && let Some(root) = scan_plan.root_for(&last.path)
                                     {
-                                        let _ = writer.set_scan_cursor(
-                                            root.as_path(),
-                                            Some(last.path.as_path()),
-                                        );
+                                        let _ =
+                                            writer.set_scan_cursor(root, Some(last.path.as_path()));
                                     }
                                 }
                                 let mut i = index.write().expect("index write");
@@ -359,7 +398,7 @@ impl SearchService {
                                 let _ = w.unwatch(&root);
                             }
                             let mut failed = 0usize;
-                            for root in &roots {
+                            for root in roots {
                                 if root.exists() {
                                     if w.watch(root, RecursiveMode::Recursive).is_ok() {
                                         watched_roots.push(root.clone());
@@ -484,11 +523,10 @@ impl SearchService {
                             // Too many events at once (large copy/extract) — full rebuild is cleaner.
                             needs_rebuild = true;
                         } else {
-                            let cfg_snap = config.read().expect("cfg read").clone();
-                            apply_incremental_to_db(&pending, &cfg_snap);
+                            apply_incremental_to_db(&pending, scan_plan);
                             let snap = {
                                 let mut idx = index.write().expect("index write");
-                                apply_incremental(&mut idx.items, &pending, &cfg_snap);
+                                apply_incremental(&mut idx.items, &pending, scan_plan);
                                 let count = idx.items.len();
                                 if matches!(idx.status, SearchIndexStatus::Ready) {
                                     idx.progress_text = Some(format!("Ready · {} indexed", count));
@@ -982,7 +1020,7 @@ pub fn default_roots() -> Vec<PathBuf> {
 /// Walk the configured roots, calling `on_batch` with every `STREAM_BATCH_SIZE` items so the UI
 /// can show progress while the rebuild runs.
 fn build_index<F, G>(
-    cfg: &SearchConfig,
+    plan: &ScanPlan,
     stop: &AtomicBool,
     mut on_progress: F,
     mut on_batch: G,
@@ -994,15 +1032,15 @@ where
     let debug = std::env::var("OTTRIN_INDEX_DEBUG").ok().is_some();
     let mut batch: Vec<SearchResultItem> = Vec::with_capacity(STREAM_BATCH_SIZE);
     let mut total_indexed = 0usize;
-    let roots = effective_roots(cfg);
-    let excluded_roots = cfg.exclude_roots.clone();
+    let roots = plan.roots().to_vec();
     let roots_total = roots.len().max(1);
     if debug {
+        eprintln!("build_index: plan={}", plan.identity());
         eprintln!(
             "build_index: roots={} include_globs={} exclude_globs={}",
             roots.len(),
-            cfg.include_globs.len(),
-            cfg.exclude_globs.len()
+            plan.include_globs().len(),
+            plan.exclude_globs().len()
         );
         for r in &roots {
             eprintln!("build_index: root={} exists={}", r.display(), r.exists());
@@ -1015,8 +1053,7 @@ where
         active_root_index: 0,
         total_roots: roots_total,
     });
-    let include = build_globset(&cfg.include_globs)?;
-    let exclude = build_globset(&cfg.exclude_globs)?;
+
     let resume_cursors = SearchDb::open(search_db_path())
         .ok()
         .and_then(|db| db.scan_cursors().ok())
@@ -1049,19 +1086,10 @@ where
         for pass in 0..passes {
             let mut skipping = resume_cursor.is_some() && pass == 0;
             let walker = WalkDir::new(&root)
-                .follow_links(false)
-                .same_file_system(true)
+                .follow_links(plan.follow_links())
+                .same_file_system(plan.same_file_system())
                 .into_iter()
-                .filter_entry(|entry| {
-                    should_keep_path(
-                        entry.path(),
-                        &root,
-                        cfg.include_hidden_system,
-                        &include,
-                        &exclude,
-                        &excluded_roots,
-                    )
-                });
+                .filter_entry(|entry| plan.includes_path_for_root(entry.path(), &root));
             for entry in walker.filter_map(Result::ok) {
                 if stop.load(Ordering::Relaxed) {
                     break;
@@ -1081,7 +1109,7 @@ where
                 }
                 root_seen = root_seen.saturating_add(1);
                 let name = entry.file_name().to_string_lossy().to_string();
-                if !cfg.include_hidden_system && name.starts_with('.') {
+                if !plan.includes_item_name(&name) {
                     continue;
                 }
                 let meta = match entry.metadata() {
@@ -2129,15 +2157,7 @@ fn make_item_from_path(path: &Path) -> Option<SearchResultItem> {
 
 /// Apply a batch of `NotifyAction`s to the index without re-walking the filesystem.
 /// Handles create/modify (upsert) and delete (remove + all children) efficiently.
-fn apply_incremental(
-    items: &mut Vec<SearchResultItem>,
-    actions: &[NotifyAction],
-    cfg: &SearchConfig,
-) {
-    let include = build_globset(&cfg.include_globs).unwrap_or_else(|_| empty_globset());
-    let exclude = build_globset(&cfg.exclude_globs).unwrap_or_else(|_| empty_globset());
-    let roots = effective_roots(cfg);
-
+fn apply_incremental(items: &mut Vec<SearchResultItem>, actions: &[NotifyAction], plan: &ScanPlan) {
     for action in actions {
         match action {
             NotifyAction::Remove(path) => {
@@ -2147,23 +2167,12 @@ fn apply_incremental(
             NotifyAction::Upsert(path) => {
                 // Remove stale entry (may or may not exist).
                 items.retain(|item| item.path != *path);
-                // Find which configured root owns this path.
-                let Some(root) = roots.iter().find(|r| path.starts_with(r.as_path())) else {
-                    continue; // Outside all indexed roots — ignore.
-                };
                 // Apply the same filters used during full index build.
-                if !should_keep_path(
-                    path,
-                    root,
-                    cfg.include_hidden_system,
-                    &include,
-                    &exclude,
-                    &cfg.exclude_roots,
-                ) {
+                if !plan.includes_path(path) {
                     continue;
                 }
                 if let Some(item) = make_item_from_path(path)
-                    && (cfg.include_hidden_system || !item.name.starts_with('.'))
+                    && plan.includes_item_name(&item.name)
                 {
                     items.push(item);
                 }
@@ -2172,14 +2181,11 @@ fn apply_incremental(
     }
 }
 
-fn apply_incremental_to_db(actions: &[NotifyAction], cfg: &SearchConfig) {
+fn apply_incremental_to_db(actions: &[NotifyAction], plan: &ScanPlan) {
     let mut writer = match SearchDbWriter::open(search_db_path()) {
         Ok(writer) => writer,
         Err(_) => return,
     };
-    let include = build_globset(&cfg.include_globs).unwrap_or_else(|_| empty_globset());
-    let exclude = build_globset(&cfg.exclude_globs).unwrap_or_else(|_| empty_globset());
-    let roots = effective_roots(cfg);
 
     for action in actions {
         match action {
@@ -2187,21 +2193,11 @@ fn apply_incremental_to_db(actions: &[NotifyAction], cfg: &SearchConfig) {
                 let _ = writer.remove_path_tree(path);
             }
             NotifyAction::Upsert(path) => {
-                let Some(root) = roots.iter().find(|r| path.starts_with(r.as_path())) else {
-                    continue;
-                };
-                if !should_keep_path(
-                    path,
-                    root,
-                    cfg.include_hidden_system,
-                    &include,
-                    &exclude,
-                    &cfg.exclude_roots,
-                ) {
+                if !plan.includes_path(path) {
                     continue;
                 }
                 if let Some(item) = make_item_from_path(path)
-                    && (cfg.include_hidden_system || !item.name.starts_with('.'))
+                    && plan.includes_item_name(&item.name)
                 {
                     let _ = writer.upsert_item(&item);
                 }
