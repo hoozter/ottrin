@@ -21,7 +21,9 @@ mod db;
 #[allow(dead_code)] // Slice 2 mutation API is intentionally isolated until worker integration.
 mod mutation;
 mod plan;
-use db::{SearchDb, SearchDbWriter, search_db_path};
+mod scanner;
+mod worker;
+use db::{SearchDb, SearchDbWriter, SearchStore, search_db_path};
 use plan::ScanPlan;
 
 /// Publish this many indexed items to the shared index before the walk completes,
@@ -41,6 +43,7 @@ pub enum SearchError {
 #[derive(Debug)]
 struct IndexState {
     items: Vec<SearchResultItem>,
+    snapshot_revision: u64,
     status: SearchIndexStatus,
     last_error: Option<String>,
     progress_text: Option<String>,
@@ -66,6 +69,7 @@ impl Default for IndexState {
     fn default() -> Self {
         Self {
             items: Vec::new(),
+            snapshot_revision: 0,
             status: SearchIndexStatus::Indexing,
             last_error: None,
             progress_text: None,
@@ -92,6 +96,8 @@ impl Default for IndexState {
 #[derive(Debug, Clone)]
 pub struct SearchIndexDiagnostics {
     pub status: SearchIndexStatus,
+    /// Monotonically advances whenever a complete query snapshot is replaced.
+    pub snapshot_revision: u64,
     pub detail: Option<String>,
     pub indexed_items: usize,
     pub last_completed_indexed_items: Option<usize>,
@@ -139,6 +145,7 @@ pub struct SearchService {
     stop: Arc<AtomicBool>,
     rebuild: Arc<AtomicBool>,
     worker: Mutex<Option<JoinHandle<()>>>,
+    event_worker: Mutex<Option<worker::WorkerHandle>>,
 }
 
 /// A cloneable, read-only view of the latest search snapshot.
@@ -159,10 +166,31 @@ impl SearchService {
             stop: Arc::new(AtomicBool::new(false)),
             rebuild: Arc::new(AtomicBool::new(false)),
             worker: Mutex::new(None),
+            event_worker: Mutex::new(None),
         }
     }
 
     pub fn start(&self) {
+        let mut slot = self.event_worker.lock().expect("event worker lock");
+        if slot.is_some() {
+            return;
+        }
+        let store = match SearchStore::open(search_db_path()) {
+            Ok(store) => store,
+            Err(error) => {
+                let mut index = self.index.write().expect("index write");
+                index.status = SearchIndexStatus::Unavailable;
+                index.last_error = Some(error.to_string());
+                index.progress_text = None;
+                return;
+            }
+        };
+        let config = self.config.read().expect("config read").clone();
+        *slot = Some(worker::spawn(config, Arc::clone(&self.index), store));
+    }
+
+    #[allow(dead_code)]
+    fn legacy_start(&self) {
         if self.worker.lock().expect("worker lock").is_some() {
             return;
         }
@@ -554,7 +582,8 @@ impl SearchService {
         *self.worker.lock().expect("worker lock") = Some(handle);
     }
 
-    pub fn stop(&self) {
+    #[allow(dead_code)]
+    fn legacy_stop(&self) {
         self.stop.store(true, Ordering::SeqCst);
         if let Some(h) = self.worker.lock().expect("worker lock").take() {
             std::thread::spawn(move || {
@@ -563,15 +592,36 @@ impl SearchService {
         }
     }
 
+    pub fn stop(&self) {
+        if let Some(worker) = self.event_worker.lock().expect("event worker lock").take() {
+            worker.stop();
+        }
+    }
+
     pub fn update_config(&self, cfg: SearchConfig) {
         if let Ok(mut c) = self.config.write() {
-            *c = cfg;
+            *c = cfg.clone();
+        }
+        if let Some(worker) = self
+            .event_worker
+            .lock()
+            .expect("event worker lock")
+            .as_ref()
+        {
+            worker.update_config(cfg);
         }
     }
 
     /// Force an immediate reindex regardless of config changes.
     pub fn rebuild_index(&self) {
-        self.rebuild.store(true, Ordering::SeqCst);
+        if let Some(worker) = self
+            .event_worker
+            .lock()
+            .expect("event worker lock")
+            .as_ref()
+        {
+            worker.request_rebuild();
+        }
     }
 
     /// Returns `true` if `plocate` or `locate` is on PATH (the system locate database is usable).
@@ -696,6 +746,7 @@ impl SearchHandle {
         };
         SearchIndexDiagnostics {
             status: idx.status,
+            snapshot_revision: idx.snapshot_revision,
             detail,
             indexed_items: if matches!(idx.status, SearchIndexStatus::Indexing) {
                 idx.building_indexed_items
@@ -796,33 +847,6 @@ impl SearchHandle {
                     })
                     .collect()
             };
-
-        if matches!(query.scope, SearchScope::Global)
-            && matches!(status, SearchIndexStatus::Indexing)
-            && !idx.items.is_empty()
-            && query.text.trim().len() >= 2
-        {
-            let roots = ordered_query_roots(&query, &cfg);
-            let mut seen: HashSet<PathBuf> =
-                matched.iter().map(|(_, item)| item.path.clone()).collect();
-            let supplement_hits = query.limit.clamp(64, 256);
-            for (score, item) in query_global_fallback(
-                &query,
-                &expr,
-                &roots,
-                &cfg,
-                30_000,
-                supplement_hits,
-                Duration::from_millis(120),
-            ) {
-                if seen.insert(item.path.clone()) {
-                    matched.push((score, item));
-                }
-                if matched.len() >= query.limit.saturating_mul(2).max(200) {
-                    break;
-                }
-            }
-        }
 
         if global_root_outside_index && query.text.trim().len() >= 2 {
             let mut seen: HashSet<PathBuf> =

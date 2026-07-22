@@ -584,9 +584,8 @@ struct SearchUiState {
     exclude_glob_input: String,
     show_include_glob_input: bool,
     show_exclude_glob_input: bool,
-    /// Tracks index size seen on last render — when it grows, re-run the query
-    /// so results update live as new batches arrive during indexing.
-    last_seen_index_count: usize,
+    /// Tracks the complete search snapshot used by the displayed results.
+    last_seen_snapshot_revision: u64,
     /// When true, run ripgrep content search in addition to filename search.
     content_search: bool,
     /// Cached preview for the currently selected search result.
@@ -620,7 +619,7 @@ impl Default for SearchUiState {
             exclude_glob_input: String::new(),
             show_include_glob_input: false,
             show_exclude_glob_input: false,
-            last_seen_index_count: 0,
+            last_seen_snapshot_revision: 0,
             content_search: false,
             result_preview: None,
             result_columns: [true, true, true, true],
@@ -630,6 +629,12 @@ impl Default for SearchUiState {
             search_inflight: false,
         }
     }
+}
+
+fn advance_search_snapshot(last_seen: &mut u64, current: u64, has_query: bool) -> bool {
+    let changed = *last_seen != current;
+    *last_seen = current;
+    has_query && changed
 }
 
 // ── Main app struct ───────────────────────────────────────────────────────────
@@ -9432,17 +9437,20 @@ impl OttrinApp {
         let results_height = ui.available_height().max(120.0);
         let diag = self.search_service.diagnostics();
 
-        // Live result refresh: while indexing, re-run query whenever a new batch
-        // arrives so results grow in real-time without needing user input.
-        if matches!(diag.status, SearchIndexStatus::Indexing) && !self.search_ui.query.is_empty() {
-            if diag.indexed_items != self.search_ui.last_seen_index_count {
-                self.search_ui.last_seen_index_count = diag.indexed_items;
-                self.run_search_query();
-            }
-            // Keep repainting so we poll for the next batch.
+        // Atomic rebuilds keep the previous snapshot queryable, then replace it all at once.
+        // Refresh on snapshot identity rather than item count so same-size replacements appear.
+        let has_query = !self.search_ui.query.is_empty();
+        if advance_search_snapshot(
+            &mut self.search_ui.last_seen_snapshot_revision,
+            diag.snapshot_revision,
+            has_query,
+        ) {
+            self.run_search_query();
+        }
+        if has_query {
+            // The worker has no UI context, so poll cheaply while search is open. Queries only
+            // rerun when the published revision changes.
             ui.ctx().request_repaint_after(Duration::from_millis(250));
-        } else {
-            self.search_ui.last_seen_index_count = diag.indexed_items;
         }
 
         if self.search_ui.query.is_empty() {
@@ -17529,6 +17537,16 @@ fn theme_preview_strip(ui: &mut egui::Ui, preview: Colors, width: f32, height: f
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn published_snapshot_revision_refreshes_an_open_query_even_at_same_count() {
+        let mut last_seen = 7;
+        assert!(advance_search_snapshot(&mut last_seen, 8, true));
+        assert_eq!(last_seen, 8);
+        assert!(!advance_search_snapshot(&mut last_seen, 8, true));
+        assert!(!advance_search_snapshot(&mut last_seen, 9, false));
+        assert_eq!(last_seen, 9);
+    }
 
     #[test]
     fn size_sort_is_fixed_descending() {

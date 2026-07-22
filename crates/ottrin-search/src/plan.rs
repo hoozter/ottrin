@@ -364,7 +364,13 @@ mod tests {
                 .as_deref()
                 .is_some_and(|error| error.contains("Invalid glob"))
         );
-        assert!(service.worker.lock().expect("worker lock").is_some());
+        assert!(
+            service
+                .event_worker
+                .lock()
+                .expect("event worker lock")
+                .is_some()
+        );
         service.update_config(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
@@ -379,10 +385,11 @@ mod tests {
             std::thread::sleep(std::time::Duration::from_millis(20));
         }
 
-        assert!(matches!(
-            service.diagnostics().status,
-            SearchIndexStatus::Ready
-        ));
+        let recovered = service.diagnostics();
+        assert!(
+            matches!(recovered.status, SearchIndexStatus::Ready),
+            "recovery diagnostics: {recovered:?}"
+        );
         service.stop();
         let _ = std::fs::remove_dir_all(root);
     }

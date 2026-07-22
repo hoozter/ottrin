@@ -1,4 +1,4 @@
-use crate::mutation::{GenerationSnapshot, IndexMutation, OwnedItem};
+use crate::mutation::{ActivationFence, GenerationSnapshot, IndexMutation, OwnedItem};
 use crate::plan::ScanPlan;
 use ottrin_core::{EntryKind, SearchResultItem};
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
@@ -175,7 +175,35 @@ impl SearchStore {
         plan: &ScanPlan,
         mutation: IndexMutation,
     ) -> Result<GenerationSnapshot, SearchDbError> {
-        self.commit_inner(plan, mutation, false)
+        self.commit_inner(plan, mutation, false, None, || {}, |_| {})
+    }
+
+    pub(crate) fn commit_guarded(
+        &mut self,
+        plan: &ScanPlan,
+        mutation: IndexMutation,
+        fence: &ActivationFence,
+        expected_epoch: u64,
+    ) -> Result<GenerationSnapshot, SearchDbError> {
+        self.commit_guarded_then(plan, mutation, fence, expected_epoch, |_| {})
+    }
+
+    pub(crate) fn commit_guarded_then(
+        &mut self,
+        plan: &ScanPlan,
+        mutation: IndexMutation,
+        fence: &ActivationFence,
+        expected_epoch: u64,
+        after_commit: impl FnOnce(&GenerationSnapshot),
+    ) -> Result<GenerationSnapshot, SearchDbError> {
+        self.commit_inner(
+            plan,
+            mutation,
+            false,
+            Some((fence, expected_epoch)),
+            || {},
+            after_commit,
+        )
     }
 
     #[cfg(test)]
@@ -184,7 +212,26 @@ impl SearchStore {
         plan: &ScanPlan,
         mutation: IndexMutation,
     ) -> Result<GenerationSnapshot, SearchDbError> {
-        self.commit_inner(plan, mutation, true)
+        self.commit_inner(plan, mutation, true, None, || {}, |_| {})
+    }
+
+    #[cfg(test)]
+    fn commit_guarded_with_before_activation_hook(
+        &mut self,
+        plan: &ScanPlan,
+        mutation: IndexMutation,
+        fence: &ActivationFence,
+        expected_epoch: u64,
+        before_activation: impl FnOnce(),
+    ) -> Result<GenerationSnapshot, SearchDbError> {
+        self.commit_inner(
+            plan,
+            mutation,
+            false,
+            Some((fence, expected_epoch)),
+            before_activation,
+            |_| {},
+        )
     }
 
     fn commit_inner(
@@ -192,6 +239,9 @@ impl SearchStore {
         plan: &ScanPlan,
         mutation: IndexMutation,
         fail_before_commit: bool,
+        activation: Option<(&ActivationFence, u64)>,
+        before_activation: impl FnOnce(),
+        after_commit: impl FnOnce(&GenerationSnapshot),
     ) -> Result<GenerationSnapshot, SearchDbError> {
         let tx = self.conn.transaction()?;
         let current = if matches!(&mutation, IndexMutation::ReplaceAll(_)) {
@@ -214,6 +264,15 @@ impl SearchStore {
             "UPDATE search_generations SET completed = 1 WHERE id = ?1",
             [generation],
         )?;
+        before_activation();
+        let activation_guard = activation.map(|(fence, expected_epoch)| {
+            let guard = fence.lock();
+            guard
+                .matches(expected_epoch)
+                .then_some(guard)
+                .ok_or(SearchDbError::ActivationCancelled)
+        });
+        let _activation_guard = activation_guard.transpose()?;
         tx.execute(
             "INSERT INTO search_store_state (singleton, active_generation_id) VALUES (1, ?1)
              ON CONFLICT(singleton) DO UPDATE SET active_generation_id = excluded.active_generation_id",
@@ -231,6 +290,7 @@ impl SearchStore {
             return Err(SearchDbError::InjectedFailure);
         }
         tx.commit()?;
+        after_commit(&snapshot);
         Ok(snapshot)
     }
 }
@@ -502,6 +562,8 @@ pub enum SearchDbError {
     PlanIdentityMismatch,
     #[error("injected failure before commit")]
     InjectedFailure,
+    #[error("candidate activation was cancelled")]
+    ActivationCancelled,
 }
 
 pub fn search_db_path() -> PathBuf {
@@ -641,9 +703,10 @@ mod tests {
 #[cfg(test)]
 mod generation_tests {
     use super::*;
-    use crate::mutation::{IndexMutation, OwnedItem};
+    use crate::mutation::{ActivationFence, IndexMutation, OwnedItem};
     use crate::plan::ScanPlan;
     use ottrin_core::SearchConfig;
+    use std::sync::Arc;
     use std::time::{SystemTime, UNIX_EPOCH};
 
     fn temp_db_path(name: &str) -> PathBuf {
@@ -804,6 +867,60 @@ mod generation_tests {
 
         assert!(matches!(error, SearchDbError::InjectedFailure));
         assert_eq!(store.load(&plan).expect("load"), Some(previous));
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn cancellation_before_activation_rolls_back_real_store_candidate() {
+        let db_path = temp_db_path("generation-cancel-before-activation");
+        let root = PathBuf::from("root");
+        let scan_plan = plan(&root);
+        let mut store = SearchStore::open(db_path.clone()).expect("open store");
+        let previous = store
+            .commit(
+                &scan_plan,
+                IndexMutation::ReplaceAll(vec![owned(&root, "old.txt", 1)]),
+            )
+            .expect("first generation");
+        let fence = Arc::new(ActivationFence::new());
+        let expected_epoch = fence.capture();
+        let commit_fence = Arc::clone(&fence);
+        let commit_root = root.clone();
+        let (entered_tx, entered_rx) = std::sync::mpsc::channel();
+        let (release_tx, release_rx) = std::sync::mpsc::channel();
+
+        let commit = std::thread::spawn(move || {
+            store.commit_guarded_with_before_activation_hook(
+                &scan_plan,
+                IndexMutation::ReplaceAll(vec![owned(&commit_root, "obsolete.txt", 2)]),
+                &commit_fence,
+                expected_epoch,
+                || {
+                    entered_tx.send(()).expect("signal candidate inserted");
+                    release_rx.recv().expect("release activation");
+                },
+            )
+        });
+        entered_rx
+            .recv_timeout(std::time::Duration::from_secs(2))
+            .expect("candidate insertion reached");
+        fence.invalidate();
+        release_tx.send(()).expect("release candidate");
+
+        assert!(matches!(
+            commit.join().expect("commit thread"),
+            Err(SearchDbError::ActivationCancelled)
+        ));
+        let mut reopened = SearchStore::open(db_path.clone()).expect("reopen store");
+        let load_plan = plan(&root);
+        assert_eq!(reopened.load(&load_plan).expect("load"), Some(previous));
+        let generation_count: i64 = reopened
+            .conn
+            .query_row("SELECT COUNT(*) FROM search_generations", [], |row| {
+                row.get(0)
+            })
+            .expect("count generations");
+        assert_eq!(generation_count, 1, "candidate transaction rolled back");
         let _ = std::fs::remove_file(db_path);
     }
 

@@ -1,6 +1,40 @@
 use ottrin_core::SearchResultItem;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
+use std::sync::{Mutex, MutexGuard};
+
+#[derive(Debug, Default)]
+pub(crate) struct ActivationFence {
+    epoch: Mutex<u64>,
+}
+
+impl ActivationFence {
+    pub(crate) fn new() -> Self {
+        Self::default()
+    }
+
+    pub(crate) fn capture(&self) -> u64 {
+        *self.epoch.lock().expect("activation fence")
+    }
+
+    pub(crate) fn invalidate(&self) -> u64 {
+        let mut epoch = self.epoch.lock().expect("activation fence");
+        *epoch = epoch.wrapping_add(1);
+        *epoch
+    }
+
+    pub(crate) fn lock(&self) -> ActivationFenceGuard<'_> {
+        ActivationFenceGuard(self.epoch.lock().expect("activation fence"))
+    }
+}
+
+pub(crate) struct ActivationFenceGuard<'a>(MutexGuard<'a, u64>);
+
+impl ActivationFenceGuard<'_> {
+    pub(crate) fn matches(&self, expected_epoch: u64) -> bool {
+        *self.0 == expected_epoch
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct OwnedItem {
