@@ -1,22 +1,29 @@
 use crate::db::SearchStore;
-use crate::mutation::{ActivationFence, GenerationSnapshot, IndexMutation, OwnedItem};
+use crate::mutation::{ActivationFence, GenerationSnapshot, IndexMutation};
 use crate::plan::ScanPlan;
 use crate::scanner::{ScanOutcome, ScanProgress};
+use crate::watch::WatchRegistry;
 use crate::{IndexState, current_unix_secs};
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use ottrin_core::{SearchConfig, SearchIndexStatus};
-use std::path::PathBuf;
+use std::collections::BTreeSet;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, RwLock, mpsc};
 use std::thread::JoinHandle;
 use std::time::{Duration, Instant};
 
+const EVENT_DEBOUNCE: Duration = Duration::from_millis(500);
+const WATCH_RETRY_INITIAL: Duration = Duration::from_secs(1);
+const WATCH_RETRY_MAXIMUM: Duration = Duration::from_secs(60);
+const INCREMENTAL_REBUILD_THRESHOLD: usize = 500;
+
 pub(crate) trait StoreBackend: Send {
     fn load(&mut self, plan: &ScanPlan) -> Result<Option<GenerationSnapshot>, String>;
-    fn replace_all_guarded(
+    fn commit_guarded(
         &mut self,
         plan: &ScanPlan,
-        items: Vec<OwnedItem>,
+        mutation: IndexMutation,
         fence: &ActivationFence,
         expected_epoch: u64,
         publish: &mut dyn FnMut(&GenerationSnapshot),
@@ -34,26 +41,22 @@ impl StoreBackend for SearchStore {
         SearchStore::load(self, plan).map_err(|error| error.to_string())
     }
 
-    fn replace_all_guarded(
+    fn commit_guarded(
         &mut self,
         plan: &ScanPlan,
-        items: Vec<OwnedItem>,
+        mutation: IndexMutation,
         fence: &ActivationFence,
         expected_epoch: u64,
         publish: &mut dyn FnMut(&GenerationSnapshot),
     ) -> Result<(), StoreBackendError> {
-        self.commit_guarded_then(
-            plan,
-            IndexMutation::ReplaceAll(items),
-            fence,
-            expected_epoch,
-            publish,
-        )
-        .map(|_| ())
-        .map_err(|error| match error {
-            crate::db::SearchDbError::ActivationCancelled => StoreBackendError::ActivationCancelled,
-            other => StoreBackendError::Other(other.to_string()),
-        })
+        self.commit_guarded_then(plan, mutation, fence, expected_epoch, publish)
+            .map(|_| ())
+            .map_err(|error| match error {
+                crate::db::SearchDbError::ActivationCancelled => {
+                    StoreBackendError::ActivationCancelled
+                }
+                other => StoreBackendError::Other(other.to_string()),
+            })
     }
 }
 
@@ -67,7 +70,11 @@ pub(crate) type ScanLauncher = Arc<
 pub(crate) enum Command {
     UpdateConfig(SearchConfig),
     Rebuild,
-    FilesystemEvent,
+    FilesystemEvent(Vec<PathBuf>),
+    WatchBackendError {
+        paths: Vec<PathBuf>,
+        error: String,
+    },
     ScanProgress {
         revision: u64,
         progress: ScanProgress,
@@ -111,7 +118,9 @@ impl WorkerHandle {
 
     #[cfg(test)]
     pub(crate) fn filesystem_event(&self) {
-        self.invalidate_and_send(Command::FilesystemEvent);
+        let _ = self
+            .commands
+            .send(Command::FilesystemEvent(vec![PathBuf::from("/root/event")]));
     }
 
     pub(crate) fn stop(&self) {
@@ -130,6 +139,7 @@ impl WorkerHandle {
 struct ActiveScan {
     revision: u64,
     expected_epoch: u64,
+    covered_event_revision: u64,
     cancelled: Arc<AtomicBool>,
     join: Option<JoinHandle<()>>,
 }
@@ -149,6 +159,10 @@ struct WorkerLoop {
     last_updatedb_at: Option<Instant>,
     locate_db_initialized: bool,
     filesystem_rebuild_deadline: Option<Instant>,
+    filesystem_event_revision: u64,
+    pending_paths: BTreeSet<PathBuf>,
+    watch_registry: Option<WatchRegistry>,
+    watch_clock_started: Instant,
 }
 
 pub(crate) fn spawn(
@@ -211,6 +225,10 @@ fn spawn_inner(
             last_updatedb_at: None,
             locate_db_initialized: false,
             filesystem_rebuild_deadline: None,
+            filesystem_event_revision: 0,
+            pending_paths: BTreeSet::new(),
+            watch_registry: None,
+            watch_clock_started: Instant::now(),
         };
         worker.run(receiver, watch_filesystem);
     });
@@ -244,9 +262,16 @@ impl WorkerLoop {
                     }
                 }
                 Ok(Command::Rebuild) => self.start_scan(),
-                Ok(Command::FilesystemEvent) => {
-                    self.filesystem_rebuild_deadline =
-                        Some(Instant::now() + Duration::from_millis(500));
+                Ok(Command::FilesystemEvent(paths)) => {
+                    self.filesystem_event_revision = self.filesystem_event_revision.wrapping_add(1);
+                    self.pending_paths.extend(paths);
+                    self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
+                }
+                Ok(Command::WatchBackendError { paths, error }) => {
+                    if let Some(registry) = self.watch_registry.as_mut() {
+                        registry.mark_paths_uncertain(&paths, &error);
+                    }
+                    self.update_watcher_diagnostics();
                 }
                 Ok(Command::ScanProgress { revision, progress }) => {
                     self.record_progress(revision, progress);
@@ -262,26 +287,34 @@ impl WorkerLoop {
                     self.cancel_active();
                     break;
                 }
-                Err(mpsc::RecvTimeoutError::Timeout) => self.run_schedules(),
+                Err(mpsc::RecvTimeoutError::Timeout) => {
+                    self.run_schedules(&mut watcher, &mut watched_roots);
+                }
             }
         }
     }
 
     fn make_watcher(&self) -> Option<RecommendedWatcher> {
         let commands = self.commands.clone();
-        let fence = Arc::clone(&self.fence);
         RecommendedWatcher::new(
-            move |result: notify::Result<notify::Event>| {
-                if result.as_ref().is_ok_and(|event| {
-                    matches!(
+            move |result: notify::Result<notify::Event>| match result {
+                Ok(event)
+                    if matches!(
                         event.kind,
                         notify::EventKind::Create(_)
                             | notify::EventKind::Modify(_)
                             | notify::EventKind::Remove(_)
-                    )
-                }) {
-                    fence.invalidate();
-                    let _ = commands.send(Command::FilesystemEvent);
+                    ) =>
+                {
+                    let _ = commands.send(Command::FilesystemEvent(event.paths));
+                }
+                Ok(_) => {}
+                Err(error) => {
+                    let paths = error.paths.clone();
+                    let _ = commands.send(Command::WatchBackendError {
+                        paths,
+                        error: error.to_string(),
+                    });
                 }
             },
             notify::Config::default(),
@@ -329,32 +362,58 @@ impl WorkerLoop {
     }
 
     fn configure_watcher(
-        &self,
+        &mut self,
         watcher: &mut Option<RecommendedWatcher>,
         watched_roots: &mut Vec<PathBuf>,
         plan: &ScanPlan,
     ) {
-        let Some(watcher) = watcher.as_mut() else {
-            return;
-        };
-        for root in watched_roots.drain(..) {
-            let _ = watcher.unwatch(&root);
-        }
-        let mut failures = 0;
-        for root in plan.roots() {
-            if root.exists() && watcher.watch(root, RecursiveMode::Recursive).is_ok() {
-                watched_roots.push(root.clone());
-            } else if root.exists() {
-                failures += 1;
+        if let Some(watcher) = watcher.as_mut() {
+            for root in watched_roots.drain(..) {
+                let _ = watcher.unwatch(&root);
             }
         }
+        let mut registry = WatchRegistry::new(
+            plan.roots().to_vec(),
+            WATCH_RETRY_INITIAL,
+            WATCH_RETRY_MAXIMUM,
+        );
+        let now = self.watch_clock_started.elapsed();
+        for root in plan.roots() {
+            if !root.exists() {
+                registry.record_watch_failure(root, now, "configured root unavailable");
+                self.pending_paths.insert(root.clone());
+                self.filesystem_event_revision = self.filesystem_event_revision.wrapping_add(1);
+                self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
+                continue;
+            }
+            match watcher.as_mut() {
+                Some(watcher) => match watcher.watch(root, RecursiveMode::Recursive) {
+                    Ok(()) => {
+                        registry.record_watch_success(root);
+                        watched_roots.push(root.clone());
+                    }
+                    Err(error) => registry.record_watch_failure(root, now, &error.to_string()),
+                },
+                None => registry.record_watch_failure(root, now, "watch backend unavailable"),
+            }
+        }
+        self.watch_registry = Some(registry);
+        self.index
+            .write()
+            .expect("index write")
+            .watcher_last_setup_unix_secs = Some(current_unix_secs());
+        self.update_watcher_diagnostics();
+    }
+
+    fn update_watcher_diagnostics(&self) {
+        let Some(registry) = self.watch_registry.as_ref() else {
+            return;
+        };
         let mut index = self.index.write().expect("index write");
-        index.configured_root_count = plan.roots().len();
-        index.watched_root_count = watched_roots.len();
-        index.watcher_ready = true;
-        index.watcher_last_setup_unix_secs = Some(current_unix_secs());
-        index.watcher_last_error =
-            (failures > 0).then(|| format!("Failed to watch {failures} locations"));
+        index.configured_root_count = registry.roots().count();
+        index.watched_root_count = registry.watched_roots().len();
+        index.watcher_ready = registry.ready_with(Path::exists);
+        index.watcher_last_error = registry.last_error().map(str::to_string);
     }
 
     fn start_scan(&mut self) {
@@ -369,6 +428,7 @@ impl WorkerLoop {
         self.active_scan = Some(ActiveScan {
             revision,
             expected_epoch,
+            covered_event_revision: self.filesystem_event_revision,
             cancelled: Arc::clone(&cancelled),
             join: None,
         });
@@ -443,9 +503,9 @@ impl WorkerLoop {
                 let mut publish = |snapshot: &GenerationSnapshot| {
                     publish_snapshot(&index, snapshot);
                 };
-                match self.store.replace_all_guarded(
+                match self.store.commit_guarded(
                     plan,
-                    items,
+                    IndexMutation::ReplaceAll(items),
                     &self.fence,
                     expected_epoch,
                     &mut publish,
@@ -453,13 +513,40 @@ impl WorkerLoop {
                     Ok(()) => {
                         self.has_snapshot = true;
                         self.last_full_rebuild_at = Some(Instant::now());
+                        if active.covered_event_revision == self.filesystem_event_revision {
+                            self.pending_paths.clear();
+                            self.filesystem_rebuild_deadline = None;
+                        } else if !self.pending_paths.is_empty() {
+                            self.filesystem_rebuild_deadline =
+                                Some(Instant::now() + EVENT_DEBOUNCE);
+                        }
                     }
-                    Err(StoreBackendError::ActivationCancelled) => {}
-                    Err(StoreBackendError::Other(error)) => self.record_failure(error),
+                    Err(StoreBackendError::ActivationCancelled) => {
+                        if !self.pending_paths.is_empty() {
+                            self.filesystem_rebuild_deadline =
+                                Some(Instant::now() + EVENT_DEBOUNCE);
+                        }
+                    }
+                    Err(StoreBackendError::Other(error)) => {
+                        self.record_failure(error);
+                        if !self.pending_paths.is_empty() {
+                            self.filesystem_rebuild_deadline =
+                                Some(Instant::now() + EVENT_DEBOUNCE);
+                        }
+                    }
                 }
             }
-            Ok(ScanOutcome::Cancelled) => {}
-            Err(error) => self.record_failure(error),
+            Ok(ScanOutcome::Cancelled) => {
+                if !self.pending_paths.is_empty() {
+                    self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
+                }
+            }
+            Err(error) => {
+                self.record_failure(error);
+                if !self.pending_paths.is_empty() {
+                    self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
+                }
+            }
         }
     }
 
@@ -482,13 +569,202 @@ impl WorkerLoop {
         index.last_progress_unix_secs = Some(current_unix_secs());
     }
 
-    fn run_schedules(&mut self) {
+    fn commit_mutation(&mut self, mutation: IndexMutation, expected_epoch: u64) -> bool {
+        let Some(plan) = self.current_plan.as_ref() else {
+            return false;
+        };
+        let index = Arc::clone(&self.index);
+        let mut publish = |snapshot: &GenerationSnapshot| publish_snapshot(&index, snapshot);
+        match self
+            .store
+            .commit_guarded(plan, mutation, &self.fence, expected_epoch, &mut publish)
+        {
+            Ok(()) => {
+                self.has_snapshot = true;
+                true
+            }
+            Err(StoreBackendError::ActivationCancelled) => false,
+            Err(StoreBackendError::Other(error)) => {
+                self.record_failure(error);
+                false
+            }
+        }
+    }
+
+    fn apply_pending_delta(&mut self) {
+        if self.pending_paths.is_empty() || self.active_scan.is_some() {
+            return;
+        }
+        if self.pending_paths.len() > INCREMENTAL_REBUILD_THRESHOLD {
+            self.start_scan();
+            return;
+        }
+        let Some(plan) = self.current_plan.as_ref() else {
+            return;
+        };
+        let expected_epoch = self.fence.capture();
+        let paths = self.pending_paths.iter().cloned().collect::<Vec<_>>();
+        let mut upserts = Vec::new();
+        let mut remove_trees = Vec::new();
+        let mut classified = BTreeSet::new();
+        for path in paths {
+            if plan.root_for(&path).is_none() {
+                classified.insert(path);
+                continue;
+            }
+            match crate::scanner::candidates_for_path(plan, &path) {
+                Ok(items) => {
+                    remove_trees.push(path.clone());
+                    upserts.extend(items);
+                    classified.insert(path);
+                }
+                Err(error) => {
+                    if let Some(registry) = self.watch_registry.as_mut() {
+                        registry.mark_paths_uncertain(std::slice::from_ref(&path), &error);
+                    }
+                }
+            }
+        }
+        let committed = if !upserts.is_empty() || !remove_trees.is_empty() {
+            self.commit_mutation(
+                IndexMutation::Delta {
+                    upserts,
+                    remove_trees,
+                },
+                expected_epoch,
+            )
+        } else {
+            true
+        };
+        if committed {
+            for path in classified {
+                self.pending_paths.remove(&path);
+            }
+        } else {
+            self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
+        }
+        self.update_watcher_diagnostics();
+    }
+
+    fn recover_root(&mut self, root: &Path) -> bool {
+        if self.active_scan.is_some() || !self.has_snapshot {
+            return false;
+        }
+        let Some(plan) = self.current_plan.as_ref().cloned() else {
+            return false;
+        };
+        let expected_epoch = self.fence.capture();
+        if let Some(registry) = self.watch_registry.as_mut() {
+            registry.begin_recovery(root);
+        }
+        let cancelled = AtomicBool::new(false);
+        let result = crate::scanner::scan_root(&plan, root, &cancelled);
+        let committed = match result {
+            Ok(ScanOutcome::Completed(items)) => self.commit_mutation(
+                IndexMutation::ReplaceRoot {
+                    root: root.to_path_buf(),
+                    items,
+                },
+                expected_epoch,
+            ),
+            Ok(ScanOutcome::Cancelled) => false,
+            Err(error) => {
+                self.record_failure(error);
+                false
+            }
+        };
+        if let Some(registry) = self.watch_registry.as_mut() {
+            if committed {
+                registry.complete_recovery(root);
+            } else {
+                registry.record_recovery_failure(
+                    root,
+                    self.watch_clock_started.elapsed(),
+                    "root recovery did not commit",
+                );
+            }
+        }
+        committed
+    }
+
+    fn run_schedules(
+        &mut self,
+        watcher: &mut Option<RecommendedWatcher>,
+        watched_roots: &mut Vec<PathBuf>,
+    ) {
+        let now = self.watch_clock_started.elapsed();
+        let disappeared = self
+            .watch_registry
+            .as_ref()
+            .map(WatchRegistry::watched_roots)
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|root| !root.exists())
+            .collect::<Vec<_>>();
+        for root in disappeared {
+            if let Some(watcher) = watcher.as_mut() {
+                let _ = watcher.unwatch(&root);
+            }
+            watched_roots.retain(|watched| watched != &root);
+            if let Some(registry) = self.watch_registry.as_mut() {
+                registry.record_watch_failure(&root, now, "configured root disappeared");
+            }
+            self.pending_paths.insert(root);
+            self.filesystem_event_revision = self.filesystem_event_revision.wrapping_add(1);
+            self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
+        }
+        let retries = self
+            .watch_registry
+            .as_ref()
+            .map(|registry| registry.due_retries(now))
+            .unwrap_or_default();
+        for root in retries {
+            if !root.exists() {
+                if let Some(registry) = self.watch_registry.as_mut() {
+                    registry.record_watch_failure(&root, now, "configured root unavailable");
+                }
+                continue;
+            }
+            let result = watcher
+                .as_mut()
+                .ok_or_else(|| "watch backend unavailable".to_string())
+                .and_then(|watcher| {
+                    watcher
+                        .watch(&root, RecursiveMode::Recursive)
+                        .map_err(|error| error.to_string())
+                });
+            if let Some(registry) = self.watch_registry.as_mut() {
+                match result {
+                    Ok(()) => {
+                        registry.record_retry_watch_success(&root);
+                        if !watched_roots.contains(&root) {
+                            watched_roots.push(root.clone());
+                        }
+                    }
+                    Err(error) => registry.record_watch_failure(&root, now, &error),
+                }
+            }
+        }
+        let recoveries = if self.has_snapshot && self.active_scan.is_none() {
+            self.watch_registry
+                .as_ref()
+                .map(|registry| registry.recovery_roots(now))
+                .unwrap_or_default()
+        } else {
+            Vec::new()
+        };
+        for root in recoveries {
+            self.recover_root(&root);
+        }
+        self.update_watcher_diagnostics();
+
         if self
             .filesystem_rebuild_deadline
             .is_some_and(|deadline| Instant::now() >= deadline)
+            && self.active_scan.is_none()
         {
             self.filesystem_rebuild_deadline = None;
-            self.start_scan();
+            self.apply_pending_delta();
         }
         let refresh_secs = u64::from(self.config.refresh_interval_hours) * 3_600;
         if refresh_secs > 0
@@ -606,10 +882,10 @@ mod tests {
                 .cloned())
         }
 
-        fn replace_all_guarded(
+        fn commit_guarded(
             &mut self,
             plan: &ScanPlan,
-            items: Vec<OwnedItem>,
+            mutation: IndexMutation,
             fence: &ActivationFence,
             expected_epoch: u64,
             publish: &mut dyn FnMut(&GenerationSnapshot),
@@ -620,6 +896,10 @@ mod tests {
             }
             let mut state = self.0.lock().expect("memory store");
             state.next_generation += 1;
+            let current = state.active.clone().unwrap_or_else(|| {
+                GenerationSnapshot::new(0, plan.identity().to_string(), Vec::new())
+            });
+            let items = current.apply(mutation).items().to_vec();
             let snapshot =
                 GenerationSnapshot::new(state.next_generation, plan.identity().to_string(), items);
             state.commits.push(plan.identity().to_string());
@@ -640,10 +920,10 @@ mod tests {
             self.inner.load(plan)
         }
 
-        fn replace_all_guarded(
+        fn commit_guarded(
             &mut self,
             plan: &ScanPlan,
-            items: Vec<OwnedItem>,
+            mutation: IndexMutation,
             fence: &ActivationFence,
             expected_epoch: u64,
             publish: &mut dyn FnMut(&GenerationSnapshot),
@@ -655,7 +935,35 @@ mod tests {
                 released = ready.wait(released).expect("release wait");
             }
             self.inner
-                .replace_all_guarded(plan, items, fence, expected_epoch, publish)
+                .commit_guarded(plan, mutation, fence, expected_epoch, publish)
+        }
+    }
+
+    struct OrderedStore {
+        inner: MemoryStore,
+        kinds: Arc<Mutex<Vec<&'static str>>>,
+    }
+
+    impl StoreBackend for OrderedStore {
+        fn load(&mut self, plan: &ScanPlan) -> Result<Option<GenerationSnapshot>, String> {
+            self.inner.load(plan)
+        }
+
+        fn commit_guarded(
+            &mut self,
+            plan: &ScanPlan,
+            mutation: IndexMutation,
+            fence: &ActivationFence,
+            expected_epoch: u64,
+            publish: &mut dyn FnMut(&GenerationSnapshot),
+        ) -> Result<(), StoreBackendError> {
+            self.kinds.lock().expect("kinds").push(match &mutation {
+                IndexMutation::ReplaceAll(_) => "replace-all",
+                IndexMutation::ReplaceRoot { .. } => "replace-root",
+                IndexMutation::Delta { .. } => "delta",
+            });
+            self.inner
+                .commit_guarded(plan, mutation, fence, expected_epoch, publish)
         }
     }
 
@@ -998,32 +1306,340 @@ mod tests {
     }
 
     #[test]
-    fn filesystem_event_conservatively_requests_full_rebuild() {
-        let cfg = config("/root");
+    fn notify_burst_commits_one_transactional_delta_generation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-worker-delta-{}-{:?}",
+            std::process::id(),
+            std::time::SystemTime::now()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        std::fs::write(root.join("new.txt"), b"new").expect("write event path");
+        let cfg = config(&root.to_string_lossy());
         let plan = ScanPlan::new(&cfg).expect("plan");
         let store = Arc::new(Mutex::new(MemoryStoreState {
             active: Some(GenerationSnapshot::new(
                 1,
                 plan.identity().to_string(),
-                vec![owned("/root", "old.txt")],
+                vec![owned(&root.to_string_lossy(), "old.txt")],
             )),
             commits: Vec::new(),
             next_generation: 1,
         }));
-        let (worker, _index, scans) = start_controlled(cfg, store);
+        let (worker, index, scans) = start_controlled(cfg, Arc::clone(&store));
         barrier(&worker.commands);
 
-        worker.filesystem_event();
-        worker.filesystem_event();
-        worker.filesystem_event();
-        let scan = scans.recv_timeout(WAIT).expect("full rebuild scan");
-        assert_eq!(scan.plan_identity, plan.identity());
+        for _ in 0..3 {
+            worker
+                .commands
+                .send(Command::FilesystemEvent(vec![root.join("new.txt")]))
+                .expect("event");
+        }
+        let deadline = Instant::now() + WAIT;
+        while Instant::now() < deadline && store.lock().expect("store").commits.is_empty() {
+            std::thread::sleep(Duration::from_millis(20));
+        }
+
+        assert_eq!(store.lock().expect("store").commits.len(), 1);
+        assert_eq!(
+            snapshot_items(&index),
+            vec![root.join("new.txt"), root.join("old.txt")]
+        );
+        assert!(scans.try_recv().is_err(), "delta launched a full scan");
+        worker.stop();
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn filtered_rename_event_removes_previously_indexed_path() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-worker-filtered-rename-{}-{:?}",
+            std::process::id(),
+            std::time::SystemTime::now()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        let old_path = root.join("visible.txt");
+        let filtered_path = root.join("renamed.tmp");
+        std::fs::write(&old_path, b"old").expect("write old");
+        let mut cfg = config(&root.to_string_lossy());
+        cfg.exclude_globs = vec!["*.tmp".to_string()];
+        let plan = ScanPlan::new(&cfg).expect("plan");
+        let store = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                1,
+                plan.identity().to_string(),
+                vec![owned(&root.to_string_lossy(), "visible.txt")],
+            )),
+            commits: Vec::new(),
+            next_generation: 1,
+        }));
+        let (worker, index, _scans) = start_controlled(cfg, Arc::clone(&store));
         barrier(&worker.commands);
-        assert!(
-            scans.try_recv().is_err(),
-            "watcher burst launched duplicates"
+        std::fs::rename(&old_path, &filtered_path).expect("rename");
+        worker
+            .commands
+            .send(Command::FilesystemEvent(vec![old_path, filtered_path]))
+            .expect("rename event");
+        let deadline = Instant::now() + WAIT;
+        while Instant::now() < deadline && store.lock().expect("store").commits.is_empty() {
+            std::thread::sleep(Duration::from_millis(20));
+        }
+
+        assert!(snapshot_items(&index).is_empty());
+        assert_eq!(store.lock().expect("store").commits.len(), 1);
+        worker.stop();
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn directory_notify_event_indexes_descendants_transactionally() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-worker-directory-event-{}-{:?}",
+            std::process::id(),
+            std::time::SystemTime::now()
+        ));
+        let moved = root.join("moved");
+        std::fs::create_dir_all(&moved).expect("create moved directory");
+        std::fs::write(moved.join("child.txt"), b"child").expect("write child");
+        let cfg = config(&root.to_string_lossy());
+        let plan = ScanPlan::new(&cfg).expect("plan");
+        let store = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                1,
+                plan.identity().to_string(),
+                Vec::new(),
+            )),
+            commits: Vec::new(),
+            next_generation: 1,
+        }));
+        let (worker, index, _scans) = start_controlled(cfg, Arc::clone(&store));
+        barrier(&worker.commands);
+        worker
+            .commands
+            .send(Command::FilesystemEvent(vec![moved.clone()]))
+            .expect("directory event");
+        let deadline = Instant::now() + WAIT;
+        while Instant::now() < deadline && store.lock().expect("store").commits.is_empty() {
+            std::thread::sleep(Duration::from_millis(20));
+        }
+
+        let paths = snapshot_items(&index);
+        assert!(paths.contains(&moved));
+        assert!(paths.contains(&moved.join("child.txt")));
+        assert_eq!(store.lock().expect("store").commits.len(), 1);
+        worker.stop();
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn large_burst_uses_one_full_transactional_generation_commit() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-worker-large-burst-{}-{:?}",
+            std::process::id(),
+            std::time::SystemTime::now()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        let cfg = config(&root.to_string_lossy());
+        let plan = ScanPlan::new(&cfg).expect("plan");
+        let store = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                1,
+                plan.identity().to_string(),
+                vec![owned(&root.to_string_lossy(), "old.txt")],
+            )),
+            commits: Vec::new(),
+            next_generation: 1,
+        }));
+        let (worker, _index, scans) = start_controlled(cfg, Arc::clone(&store));
+        barrier(&worker.commands);
+        let paths = (0..=INCREMENTAL_REBUILD_THRESHOLD)
+            .map(|index| root.join(format!("event-{index}")))
+            .collect();
+        worker
+            .commands
+            .send(Command::FilesystemEvent(paths))
+            .expect("large burst");
+        let scan = scans.recv_timeout(WAIT).expect("full scan");
+        assert!(store.lock().expect("store").commits.is_empty());
+        scan.complete(vec![owned(&root.to_string_lossy(), "fresh.txt")]);
+
+        assert_eq!(store.lock().expect("store").commits.len(), 1);
+        worker.stop();
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn failed_large_burst_rebuild_retains_dirty_trigger_until_success() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-worker-large-burst-retry-{}-{:?}",
+            std::process::id(),
+            std::time::SystemTime::now()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        let cfg = config(&root.to_string_lossy());
+        let plan = ScanPlan::new(&cfg).expect("plan");
+        let store = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                1,
+                plan.identity().to_string(),
+                Vec::new(),
+            )),
+            commits: Vec::new(),
+            next_generation: 1,
+        }));
+        let (worker, _index, scans) = start_controlled(cfg, Arc::clone(&store));
+        barrier(&worker.commands);
+        let paths = (0..=INCREMENTAL_REBUILD_THRESHOLD)
+            .map(|index| root.join(format!("event-{index}")))
+            .collect();
+        worker
+            .commands
+            .send(Command::FilesystemEvent(paths))
+            .expect("large burst");
+        scans
+            .recv_timeout(WAIT)
+            .expect("first scan")
+            .fail("scan failed");
+
+        let retry = scans.recv_timeout(WAIT).expect("retry scan");
+        retry.complete(vec![owned(&root.to_string_lossy(), "fresh.txt")]);
+        assert_eq!(store.lock().expect("store").commits.len(), 1);
+        worker.stop();
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn notify_delta_is_durable_before_memory_publication() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-worker-order-{}-{:?}",
+            std::process::id(),
+            std::time::SystemTime::now()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        std::fs::write(root.join("new.txt"), b"new").expect("write new");
+        let cfg = config(&root.to_string_lossy());
+        let plan = ScanPlan::new(&cfg).expect("plan");
+        let prior = owned(&root.to_string_lossy(), "old.txt");
+        let state = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                1,
+                plan.identity().to_string(),
+                vec![prior.clone()],
+            )),
+            commits: Vec::new(),
+            next_generation: 1,
+        }));
+        let (entered_tx, entered_rx) = mpsc::channel();
+        let release = Arc::new((Mutex::new(false), Condvar::new()));
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        let (launcher, _scans) = controlled_launcher();
+        let worker = spawn_with(
+            cfg,
+            Arc::clone(&index),
+            Box::new(BlockingStore {
+                inner: MemoryStore(Arc::clone(&state)),
+                entered: entered_tx,
+                release: Arc::clone(&release),
+            }),
+            launcher,
+        );
+        barrier(&worker.commands);
+        worker
+            .commands
+            .send(Command::FilesystemEvent(vec![root.join("new.txt")]))
+            .expect("event");
+        entered_rx.recv_timeout(WAIT).expect("delta commit entered");
+
+        assert_eq!(snapshot_items(&index), vec![prior.item().path.clone()]);
+        assert!(state.lock().expect("store").commits.is_empty());
+        let (lock, ready) = &*release;
+        *lock.lock().expect("release") = true;
+        ready.notify_one();
+        barrier(&worker.commands);
+        assert_eq!(state.lock().expect("store").commits.len(), 1);
+        assert_eq!(
+            snapshot_items(&index),
+            vec![root.join("new.txt"), root.join("old.txt")]
         );
         worker.stop();
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn recovered_root_commits_replace_root_before_queued_delta() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-worker-recover-{}-{:?}",
+            std::process::id(),
+            std::time::SystemTime::now()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        std::fs::write(root.join("scanned.txt"), b"scan").expect("write scan item");
+        let cfg = config(&root.to_string_lossy());
+        let plan = Arc::new(ScanPlan::new(&cfg).expect("plan"));
+        let prior = owned(&root.to_string_lossy(), "prior.txt");
+        let state = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                1,
+                plan.identity().to_string(),
+                vec![prior],
+            )),
+            commits: Vec::new(),
+            next_generation: 1,
+        }));
+        let kinds = Arc::new(Mutex::new(Vec::new()));
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        publish_snapshot(
+            &index,
+            state
+                .lock()
+                .expect("state")
+                .active
+                .as_ref()
+                .expect("active"),
+        );
+        let (commands, _receiver) = mpsc::channel();
+        let mut registry =
+            WatchRegistry::new(vec![root.clone()], WATCH_RETRY_INITIAL, WATCH_RETRY_MAXIMUM);
+        registry.record_watch_success(&root);
+        registry.mark_paths_uncertain(&[root.join("event")], "backend error");
+        let mut worker = WorkerLoop {
+            config: cfg,
+            index,
+            store: Box::new(OrderedStore {
+                inner: MemoryStore(state),
+                kinds: Arc::clone(&kinds),
+            }),
+            launcher: controlled_launcher().0,
+            commands,
+            fence: Arc::new(ActivationFence::new()),
+            current_plan: Some(plan),
+            active_scan: None,
+            revision: 0,
+            has_snapshot: true,
+            last_full_rebuild_at: None,
+            last_updatedb_at: None,
+            locate_db_initialized: false,
+            filesystem_rebuild_deadline: None,
+            filesystem_event_revision: 0,
+            pending_paths: BTreeSet::from([root.join("queued-delete.txt")]),
+            watch_registry: Some(registry),
+            watch_clock_started: Instant::now(),
+        };
+
+        assert!(worker.recover_root(&root));
+        worker.apply_pending_delta();
+
+        assert_eq!(
+            kinds.lock().expect("kinds").as_slice(),
+            &["replace-root", "delta"]
+        );
+        assert!(
+            worker
+                .watch_registry
+                .as_ref()
+                .expect("registry")
+                .is_healthy(&root)
+        );
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]
@@ -1041,7 +1657,7 @@ mod tests {
 
         let before_event = worker.fence.capture();
         worker.filesystem_event();
-        assert_eq!(worker.fence.capture(), before_event.wrapping_add(1));
+        assert_eq!(worker.fence.capture(), before_event);
 
         let fence = Arc::clone(&worker.fence);
         let before_stop = fence.capture();

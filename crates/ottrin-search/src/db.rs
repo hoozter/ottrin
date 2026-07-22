@@ -1011,6 +1011,47 @@ mod generation_tests {
     }
 
     #[test]
+    fn recursive_delta_delete_remains_gone_after_database_reopen() {
+        let db_path = temp_db_path("generation-recursive-delete-reopen");
+        let root = PathBuf::from("root");
+        let scan_plan = plan(&root);
+        let committed = {
+            let mut store = SearchStore::open(db_path.clone()).expect("open store");
+            store
+                .commit(
+                    &scan_plan,
+                    IndexMutation::ReplaceAll(vec![
+                        owned(&root, "tree/child.txt", 1),
+                        owned(&root, "tree/nested/grandchild.txt", 2),
+                        owned(&root, "keep.txt", 3),
+                    ]),
+                )
+                .expect("initial generation");
+            store
+                .commit(
+                    &scan_plan,
+                    IndexMutation::Delta {
+                        upserts: Vec::new(),
+                        remove_trees: vec![root.join("tree")],
+                    },
+                )
+                .expect("recursive delete")
+        };
+
+        let mut reopened = SearchStore::open(db_path.clone()).expect("reopen store");
+        assert_eq!(reopened.load(&scan_plan).expect("load"), Some(committed));
+        assert_eq!(
+            reopened
+                .load(&scan_plan)
+                .expect("load")
+                .expect("snapshot")
+                .items(),
+            &[owned(&root, "keep.txt", 3)]
+        );
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
     fn replace_root_commit_only_changes_the_named_root() {
         let db_path = temp_db_path("generation-replace-root");
         let parent = PathBuf::from("root");

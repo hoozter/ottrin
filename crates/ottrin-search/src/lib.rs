@@ -22,6 +22,7 @@ mod db;
 mod mutation;
 mod plan;
 mod scanner;
+mod watch;
 mod worker;
 use db::{SearchDb, SearchDbWriter, SearchStore, search_db_path};
 use plan::ScanPlan;
