@@ -14208,7 +14208,7 @@ impl OttrinApp {
                                                 Ok(_) => {}
                                                 Err(err) => errors.push(err),
                                             }
-                                            match ottrin_search::SearchService::clear_search_storage() {
+                                            match self.search_service.clear_storage() {
                                                 Ok(bytes) => freed = freed.saturating_add(bytes),
                                                 Err(err) => errors.push(err),
                                             }

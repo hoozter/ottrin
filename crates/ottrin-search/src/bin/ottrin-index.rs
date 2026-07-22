@@ -58,7 +58,7 @@ fn main() {
         include_roots: roots,
         ..SearchConfig::default()
     };
-    let service = SearchService::new(config);
+    let mut service = SearchService::new(config);
     service.start();
     if force_rebuild {
         service.rebuild_index();

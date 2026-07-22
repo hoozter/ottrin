@@ -2,52 +2,12 @@ use crate::mutation::{ActivationFence, GenerationSnapshot, IndexMutation, OwnedI
 use crate::plan::ScanPlan;
 use ottrin_core::{EntryKind, SearchResultItem};
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
-use std::collections::HashMap;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 /// Schema version for the on-disk search database.
-pub const SEARCH_DB_VERSION: u32 = 3;
-
-/// Draft schema for the SQLite-backed index (metadata + scan state).
-/// Content indexing will be added via FTS5 in a later step.
-pub const SEARCH_DB_SCHEMA: &str = r#"
-CREATE TABLE IF NOT EXISTS meta (
-    key TEXT PRIMARY KEY,
-    value TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS roots (
-    id INTEGER PRIMARY KEY,
-    path TEXT NOT NULL UNIQUE,
-    fs_id TEXT,
-    last_scan_unix_secs INTEGER,
-    last_scan_completed_unix_secs INTEGER
-);
-
-CREATE TABLE IF NOT EXISTS files (
-    id INTEGER PRIMARY KEY,
-    path TEXT NOT NULL UNIQUE,
-    parent_path TEXT,
-    name TEXT,
-    kind INTEGER,
-    size_bytes INTEGER,
-    modified_unix_secs INTEGER,
-    is_executable INTEGER,
-    symlink_target_is_dir INTEGER
-);
-
-CREATE TABLE IF NOT EXISTS scan_state (
-    id INTEGER PRIMARY KEY,
-    root_id INTEGER NOT NULL,
-    cursor TEXT,
-    last_progress_unix_secs INTEGER,
-    FOREIGN KEY(root_id) REFERENCES roots(id) ON DELETE CASCADE
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS scan_state_root_id_idx ON scan_state(root_id);
-"#;
+pub const SEARCH_DB_VERSION: u32 = 4;
 
 const GENERATION_SCHEMA: &str = r#"
 CREATE TABLE IF NOT EXISTS search_generations (
@@ -78,73 +38,6 @@ CREATE TABLE IF NOT EXISTS search_store_state (
     FOREIGN KEY (active_generation_id) REFERENCES search_generations(id)
 );
 "#;
-
-#[derive(Debug, Clone)]
-pub struct SearchDb {
-    pub path: PathBuf,
-}
-
-impl SearchDb {
-    pub fn open(path: PathBuf) -> Result<Self, SearchDbError> {
-        if let Some(parent) = path.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-        let conn = Connection::open(&path)?;
-        migrate(&conn)?;
-        Ok(Self { path })
-    }
-
-    pub fn load_items(&self) -> Result<Vec<SearchResultItem>, SearchDbError> {
-        let conn = Connection::open(&self.path)?;
-        migrate(&conn)?;
-        let mut stmt = conn.prepare(
-            "SELECT path, parent_path, name, kind, size_bytes, modified_unix_secs, is_executable, symlink_target_is_dir FROM files",
-        )?;
-        let rows = stmt.query_map([], |row| {
-            let kind: i64 = row.get(3)?;
-            let mut item = SearchResultItem {
-                path: PathBuf::from(row.get::<_, String>(0)?),
-                parent_path: PathBuf::from(row.get::<_, String>(1)?),
-                name: row.get(2)?,
-                kind: entry_kind_from_i64(kind),
-                size_bytes: row.get(4)?,
-                modified_unix_secs: row.get(5)?,
-                is_executable: row.get::<_, i64>(6)? != 0,
-                symlink_target_is_dir: row.get::<_, Option<i64>>(7)?.map(|v| v != 0),
-                content_snippet: None,
-                name_lower: String::new(),
-                path_str: String::new(),
-                path_lower: String::new(),
-            };
-            item.prepare();
-            Ok(item)
-        })?;
-        let mut out = Vec::new();
-        for row in rows {
-            out.push(row?);
-        }
-        Ok(out)
-    }
-
-    pub fn scan_cursors(&self) -> Result<HashMap<PathBuf, PathBuf>, SearchDbError> {
-        let conn = Connection::open(&self.path)?;
-        migrate(&conn)?;
-        let mut stmt = conn.prepare(
-            "SELECT roots.path, scan_state.cursor FROM scan_state JOIN roots ON roots.id = scan_state.root_id WHERE scan_state.cursor IS NOT NULL",
-        )?;
-        let rows = stmt.query_map([], |row| {
-            let root_path: String = row.get(0)?;
-            let cursor: String = row.get(1)?;
-            Ok((PathBuf::from(root_path), PathBuf::from(cursor)))
-        })?;
-        let mut out = HashMap::new();
-        for row in rows {
-            let (root, cursor) = row?;
-            out.insert(root, cursor);
-        }
-        Ok(out)
-    }
-}
 
 #[allow(dead_code)] // Slice 2 storage API is intentionally isolated until worker integration.
 pub(crate) struct SearchStore {
@@ -423,131 +316,6 @@ fn decode_path(bytes: Vec<u8>) -> rusqlite::Result<PathBuf> {
     Ok(PathBuf::from(OsString::from_wide(&wide)))
 }
 
-pub struct SearchDbWriter {
-    conn: Connection,
-}
-
-impl SearchDbWriter {
-    pub fn open(path: PathBuf) -> Result<Self, SearchDbError> {
-        if let Some(parent) = path.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-        let conn = Connection::open(&path)?;
-        migrate(&conn)?;
-        Ok(Self { conn })
-    }
-
-    pub fn insert_batch(&mut self, items: &[SearchResultItem]) -> Result<(), SearchDbError> {
-        if items.is_empty() {
-            return Ok(());
-        }
-        let tx = self.conn.transaction()?;
-        {
-            let mut stmt = tx.prepare_cached(
-                "INSERT INTO files (path, parent_path, name, kind, size_bytes, modified_unix_secs, is_executable, symlink_target_is_dir)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
-                 ON CONFLICT(path) DO UPDATE SET
-                    parent_path=excluded.parent_path,
-                    name=excluded.name,
-                    kind=excluded.kind,
-                    size_bytes=excluded.size_bytes,
-                    modified_unix_secs=excluded.modified_unix_secs,
-                    is_executable=excluded.is_executable,
-                    symlink_target_is_dir=excluded.symlink_target_is_dir",
-            )?;
-            for item in items {
-                stmt.execute(params![
-                    item.path.to_string_lossy().to_string(),
-                    item.parent_path.to_string_lossy().to_string(),
-                    item.name,
-                    entry_kind_to_i64(item.kind),
-                    item.size_bytes,
-                    item.modified_unix_secs,
-                    if item.is_executable { 1 } else { 0 },
-                    item.symlink_target_is_dir.map(|v| if v { 1 } else { 0 }),
-                ])?;
-            }
-        }
-        tx.commit()?;
-        Ok(())
-    }
-
-    pub fn upsert_item(&mut self, item: &SearchResultItem) -> Result<(), SearchDbError> {
-        self.conn.execute(
-            "INSERT INTO files (path, parent_path, name, kind, size_bytes, modified_unix_secs, is_executable, symlink_target_is_dir)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
-             ON CONFLICT(path) DO UPDATE SET
-                parent_path=excluded.parent_path,
-                name=excluded.name,
-                kind=excluded.kind,
-                size_bytes=excluded.size_bytes,
-                modified_unix_secs=excluded.modified_unix_secs,
-                is_executable=excluded.is_executable,
-                symlink_target_is_dir=excluded.symlink_target_is_dir",
-            params![
-                item.path.to_string_lossy().to_string(),
-                item.parent_path.to_string_lossy().to_string(),
-                item.name,
-                entry_kind_to_i64(item.kind),
-                item.size_bytes,
-                item.modified_unix_secs,
-                if item.is_executable { 1 } else { 0 },
-                item.symlink_target_is_dir.map(|v| if v { 1 } else { 0 }),
-            ],
-        )?;
-        Ok(())
-    }
-
-    pub fn remove_path_tree(&mut self, path: &Path) -> Result<(), SearchDbError> {
-        let path_str = path.to_string_lossy();
-        let prefix = format!("{}/%", path_str.trim_end_matches('/'));
-        self.conn.execute(
-            "DELETE FROM files WHERE path = ?1 OR path LIKE ?2",
-            params![path_str.as_ref(), prefix],
-        )?;
-        Ok(())
-    }
-
-    pub fn set_scan_cursor(
-        &mut self,
-        root: &Path,
-        cursor: Option<&Path>,
-    ) -> Result<(), SearchDbError> {
-        let root_id = self.root_id(root)?;
-        let cursor_text = cursor.map(|p| p.to_string_lossy().to_string());
-        let now = current_unix_secs();
-        self.conn.execute(
-            "INSERT INTO scan_state (root_id, cursor, last_progress_unix_secs)
-             VALUES (?1, ?2, ?3)
-             ON CONFLICT(root_id) DO UPDATE SET
-                cursor=excluded.cursor,
-                last_progress_unix_secs=excluded.last_progress_unix_secs",
-            params![root_id, cursor_text, now],
-        )?;
-        Ok(())
-    }
-
-    pub fn clear_scan_cursors(&mut self) -> Result<(), SearchDbError> {
-        self.conn
-            .execute("UPDATE scan_state SET cursor = NULL", [])?;
-        Ok(())
-    }
-
-    fn root_id(&mut self, root: &Path) -> Result<i64, SearchDbError> {
-        let root_text = root.to_string_lossy().to_string();
-        self.conn.execute(
-            "INSERT INTO roots (path) VALUES (?1) ON CONFLICT(path) DO NOTHING",
-            params![root_text],
-        )?;
-        let id: i64 = self.conn.query_row(
-            "SELECT id FROM roots WHERE path = ?1",
-            params![root_text],
-            |row| row.get(0),
-        )?;
-        Ok(id)
-    }
-}
-
 #[derive(Debug, Error)]
 pub enum SearchDbError {
     #[error("sqlite error: {0}")]
@@ -587,40 +355,21 @@ pub fn search_db_path() -> PathBuf {
 fn migrate(conn: &Connection) -> Result<(), SearchDbError> {
     let version: u32 = conn.query_row("PRAGMA user_version", [], |row| row.get(0))?;
     match version {
-        0 => {
-            conn.execute_batch(SEARCH_DB_SCHEMA)?;
+        0..=3 | SEARCH_DB_VERSION => {
             conn.execute_batch(GENERATION_SCHEMA)?;
-            conn.execute("PRAGMA user_version = 3", [])?;
-            Ok(())
-        }
-        1 => {
-            conn.execute(
-                "CREATE UNIQUE INDEX IF NOT EXISTS scan_state_root_id_idx ON scan_state(root_id)",
-                [],
+            conn.execute_batch(
+                "DROP TABLE IF EXISTS scan_state;
+                 DROP TABLE IF EXISTS roots;
+                 DROP TABLE IF EXISTS files;
+                 DROP TABLE IF EXISTS meta;",
             )?;
-            conn.execute_batch(GENERATION_SCHEMA)?;
-            conn.execute("PRAGMA user_version = 3", [])?;
-            Ok(())
         }
-        2 => {
-            conn.execute_batch(GENERATION_SCHEMA)?;
-            conn.execute("PRAGMA user_version = 3", [])?;
-            Ok(())
-        }
-        SEARCH_DB_VERSION => {
-            conn.execute_batch(GENERATION_SCHEMA)?;
-            Ok(())
-        }
-        other => Err(SearchDbError::UnsupportedVersion(other)),
+        other => return Err(SearchDbError::UnsupportedVersion(other)),
     }
-}
-
-fn current_unix_secs() -> u64 {
-    use std::time::{SystemTime, UNIX_EPOCH};
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_secs())
-        .unwrap_or(0)
+    if version != SEARCH_DB_VERSION {
+        conn.execute("PRAGMA user_version = 4", [])?;
+    }
+    Ok(())
 }
 
 fn entry_kind_to_i64(kind: EntryKind) -> i64 {
@@ -654,48 +403,20 @@ mod tests {
         std::env::temp_dir().join(format!("ottrin-{name}-{nonce}.db"))
     }
 
-    fn item(path: &str, size_bytes: u64) -> SearchResultItem {
-        let path = PathBuf::from(path);
-        let name = path
-            .file_name()
-            .map(|n| n.to_string_lossy().into_owned())
-            .unwrap_or_default();
-        let parent_path = path.parent().map(Path::to_path_buf).unwrap_or_default();
-        let mut item = SearchResultItem {
-            path,
-            parent_path,
-            name,
-            kind: EntryKind::File,
-            size_bytes: Some(size_bytes),
-            modified_unix_secs: Some(1),
-            is_executable: false,
-            symlink_target_is_dir: None,
-            content_snippet: None,
-            name_lower: String::new(),
-            path_str: String::new(),
-            path_lower: String::new(),
-        };
-        item.prepare();
-        item
-    }
-
     #[test]
-    fn insert_batch_upserts_existing_paths() {
-        let db_path = temp_db_path("batch-upsert");
-        let mut writer = SearchDbWriter::open(db_path.clone()).expect("open writer");
-
-        writer
-            .insert_batch(&[item("/tmp/ottrin-search/example.txt", 1)])
-            .expect("initial insert");
-        writer
-            .insert_batch(&[item("/tmp/ottrin-search/example.txt", 42)])
-            .expect("upsert existing path");
-
-        let db = SearchDb::open(db_path.clone()).expect("open reader");
-        let items = db.load_items().expect("load items");
-        assert_eq!(items.len(), 1);
-        assert_eq!(items[0].size_bytes, Some(42));
-
+    fn fresh_database_has_no_legacy_persistence_schema() {
+        let db_path = temp_db_path("no-legacy-persistence");
+        let _store = SearchStore::open(db_path.clone()).expect("open store");
+        let conn = Connection::open(&db_path).expect("open database");
+        let table_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master
+                 WHERE type = 'table' AND name IN ('scan_state', 'roots', 'files', 'meta')",
+                [],
+                |row| row.get(0),
+            )
+            .expect("inspect schema");
+        assert_eq!(table_count, 0);
         let _ = std::fs::remove_file(db_path);
     }
 }
@@ -1099,29 +820,30 @@ mod generation_tests {
     }
 
     #[test]
-    fn v2_database_is_never_promoted_to_a_complete_generation() {
+    fn v2_database_is_not_promoted_and_legacy_rows_are_dropped() {
         let db_path = temp_db_path("legacy-v2");
         let root = PathBuf::from("root");
         let plan = plan(&root);
         let conn = Connection::open(&db_path).expect("open legacy database");
-        conn.execute_batch(SEARCH_DB_SCHEMA)
-            .expect("create v2 schema");
-        conn.execute("PRAGMA user_version = 2", [])
-            .expect("mark v2");
-        conn.execute(
-            "INSERT INTO files (path, parent_path, name, kind, size_bytes, modified_unix_secs, is_executable) VALUES ('legacy.txt', '', 'legacy.txt', 0, 1, 1, 0)",
-            [],
+        conn.execute_batch(
+            "CREATE TABLE files (path TEXT PRIMARY KEY);
+             INSERT INTO files(path) VALUES ('legacy.txt');
+             PRAGMA user_version = 2;",
         )
-        .expect("insert legacy row");
+        .expect("create v2 schema");
         drop(conn);
 
         let mut store = SearchStore::open(db_path.clone()).expect("migrate store");
         assert_eq!(store.load(&plan).expect("load"), None);
-        let legacy_count: i64 = Connection::open(&db_path)
+        let legacy_tables: i64 = Connection::open(&db_path)
             .expect("open migrated database")
-            .query_row("SELECT COUNT(*) FROM files", [], |row| row.get(0))
-            .expect("legacy rows retained");
-        assert_eq!(legacy_count, 1);
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'files'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("inspect legacy schema");
+        assert_eq!(legacy_tables, 0);
         let _ = std::fs::remove_file(db_path);
     }
 }

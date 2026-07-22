@@ -1,6 +1,6 @@
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use ottrin_core::SearchConfig;
-use serde_json::json;
+use std::fmt::Write;
 use std::path::{Path, PathBuf};
 
 const FILTER_POLICY_VERSION: u32 = 1;
@@ -16,8 +16,7 @@ pub(crate) struct ScanPlan {
     roots: Vec<PathBuf>,
     excluded_roots: Vec<PathBuf>,
     include_hidden_system: bool,
-    include_globs: Vec<String>,
-    exclude_globs: Vec<String>,
+
     include: GlobSet,
     exclude: GlobSet,
     identity: String,
@@ -56,8 +55,6 @@ impl ScanPlan {
             roots,
             excluded_roots,
             include_hidden_system: config.include_hidden_system,
-            include_globs,
-            exclude_globs,
             include,
             exclude,
             identity,
@@ -80,14 +77,6 @@ impl ScanPlan {
         SAME_FILE_SYSTEM
     }
 
-    pub(crate) fn include_globs(&self) -> &[String] {
-        &self.include_globs
-    }
-
-    pub(crate) fn exclude_globs(&self) -> &[String] {
-        &self.exclude_globs
-    }
-
     pub(crate) fn root_for(&self, path: &Path) -> Option<&Path> {
         self.roots
             .iter()
@@ -96,6 +85,7 @@ impl ScanPlan {
             .map(PathBuf::as_path)
     }
 
+    #[cfg(test)]
     pub(crate) fn includes_path(&self, path: &Path) -> bool {
         self.root_for(path)
             .is_some_and(|root| self.includes_path_for_root(path, root))
@@ -171,19 +161,39 @@ fn canonical_identity(
     canonical_roots.sort();
     let mut canonical_excluded_roots = excluded_roots.to_vec();
     canonical_excluded_roots.sort();
-    serde_json::to_string(&json!({
-        "descriptor_version": 1,
-        "filter_policy_version": FILTER_POLICY_VERSION,
-        "path_encoding": PATH_ENCODING,
-        "roots": canonical_roots.iter().map(|path| encode_path(path)).collect::<Vec<_>>(),
-        "excluded_roots": canonical_excluded_roots.iter().map(|path| encode_path(path)).collect::<Vec<_>>(),
-        "include_hidden_system": include_hidden_system,
-        "include_globs": include_globs,
-        "exclude_globs": exclude_globs,
-        "follow_links": FOLLOW_LINKS,
-        "same_file_system": SAME_FILE_SYSTEM,
-    }))
-    .expect("scan plan descriptor is serializable")
+    let mut identity = String::new();
+    write!(
+        identity,
+        "descriptor=1;filter={FILTER_POLICY_VERSION};encoding={PATH_ENCODING};hidden={include_hidden_system};follow={FOLLOW_LINKS};samefs={SAME_FILE_SYSTEM};"
+    )
+    .expect("writing to String cannot fail");
+    append_identity_list(
+        &mut identity,
+        "roots",
+        canonical_roots.iter().map(|path| encode_path(path)),
+    );
+    append_identity_list(
+        &mut identity,
+        "excluded",
+        canonical_excluded_roots
+            .iter()
+            .map(|path| encode_path(path)),
+    );
+    append_identity_list(&mut identity, "include", include_globs.iter().cloned());
+    append_identity_list(&mut identity, "exclude", exclude_globs.iter().cloned());
+    identity
+}
+
+fn append_identity_list(
+    identity: &mut String,
+    label: &str,
+    values: impl IntoIterator<Item = String>,
+) {
+    write!(identity, "{label}=").expect("writing to String cannot fail");
+    for value in values {
+        write!(identity, "{}:{value}", value.len()).expect("writing to String cannot fail");
+    }
+    identity.push(';');
 }
 
 #[cfg(unix)]
@@ -335,7 +345,7 @@ mod tests {
             std::time::SystemTime::now()
         ));
         std::fs::create_dir_all(&root).expect("create plan recovery root");
-        let service = SearchService::new(SearchConfig {
+        let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             include_globs: vec!["[".to_string()],
             use_system_locate: false,
@@ -364,13 +374,7 @@ mod tests {
                 .as_deref()
                 .is_some_and(|error| error.contains("Invalid glob"))
         );
-        assert!(
-            service
-                .event_worker
-                .lock()
-                .expect("event worker lock")
-                .is_some()
-        );
+        assert!(service.worker.is_some());
         service.update_config(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,

@@ -52,7 +52,7 @@ fn handle_cli_action() -> bool {
         Ok(msg) => println!("{msg}"),
         Err(err) => errors.push(err),
     }
-    match ottrin_search::SearchService::clear_search_storage() {
+    match ottrin_search::clear_search_storage() {
         Ok(bytes) => {
             freed = freed.saturating_add(bytes);
             println!("Removed search storage: {}", format_size(bytes));

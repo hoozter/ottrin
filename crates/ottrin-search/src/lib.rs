@@ -1,5 +1,4 @@
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use ottrin_core::{
     EntryKind, SearchConfig, SearchIndexStatus, SearchQuery, SearchResponse, SearchResultItem,
     SearchScope, SearchSort,
@@ -8,11 +7,10 @@ use regex::{Regex, RegexBuilder};
 use std::collections::HashSet;
 #[cfg(target_os = "linux")]
 use std::os::unix::fs::MetadataExt;
-use std::panic::AssertUnwindSafe;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex, RwLock};
-use std::thread::JoinHandle;
+#[cfg(test)]
+use std::sync::Mutex;
+use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 use walkdir::WalkDir;
@@ -24,14 +22,8 @@ mod plan;
 mod scanner;
 mod watch;
 mod worker;
-use db::{SearchDb, SearchDbWriter, SearchStore, search_db_path};
-use plan::ScanPlan;
+use db::{SearchStore, search_db_path};
 
-/// Publish this many indexed items to the shared index before the walk completes,
-/// so queries return partial results immediately (FSearch-style streaming).
-const STREAM_BATCH_SIZE: usize = 2_000;
-const INDEX_STALL_SECS: u64 = 600;
-const INDEX_STALL_RESTART_COOLDOWN_SECS: u64 = 1_800;
 #[cfg(test)]
 static SEARCH_SERVICE_TEST_LOCK: Mutex<()> = Mutex::new(());
 
@@ -43,7 +35,7 @@ pub enum SearchError {
 
 #[derive(Debug)]
 struct IndexState {
-    items: Vec<SearchResultItem>,
+    items: Arc<Vec<SearchResultItem>>,
     snapshot_revision: u64,
     status: SearchIndexStatus,
     last_error: Option<String>,
@@ -69,7 +61,7 @@ struct IndexState {
 impl Default for IndexState {
     fn default() -> Self {
         Self {
-            items: Vec::new(),
+            items: Arc::new(Vec::new()),
             snapshot_revision: 0,
             status: SearchIndexStatus::Indexing,
             last_error: None,
@@ -119,34 +111,13 @@ pub struct SearchIndexDiagnostics {
     pub last_error: Option<String>,
 }
 
-#[derive(Debug, Clone)]
-struct ProgressUpdate {
-    message: String,
-    active_root: PathBuf,
-    active_root_index: usize,
-    total_roots: usize,
-}
-
-/// A targeted filesystem change that can be applied to the index without a full rebuild.
-#[derive(Debug)]
-enum NotifyAction {
-    /// A path was created or modified — upsert one entry.
-    Upsert(PathBuf),
-    /// A path was removed — delete it and all children from the index.
-    Remove(PathBuf),
-}
-
-/// If a single debounce window delivers more events than this, fall back to a full rebuild
-/// rather than applying thousands of individual deltas (e.g. large directory move/extract).
-const INCREMENTAL_REBUILD_THRESHOLD: usize = 500;
-
 pub struct SearchService {
     config: Arc<RwLock<SearchConfig>>,
     index: Arc<RwLock<IndexState>>,
-    stop: Arc<AtomicBool>,
-    rebuild: Arc<AtomicBool>,
-    worker: Mutex<Option<JoinHandle<()>>>,
-    event_worker: Mutex<Option<worker::WorkerHandle>>,
+    worker: Option<worker::WorkerHandle>,
+    store_path: PathBuf,
+    launcher: worker::ScanLauncher,
+    watch_filesystem: bool,
 }
 
 /// A cloneable, read-only view of the latest search snapshot.
@@ -164,19 +135,34 @@ impl SearchService {
         Self {
             config: Arc::new(RwLock::new(config)),
             index: Arc::new(RwLock::new(IndexState::default())),
-            stop: Arc::new(AtomicBool::new(false)),
-            rebuild: Arc::new(AtomicBool::new(false)),
-            worker: Mutex::new(None),
-            event_worker: Mutex::new(None),
+            worker: None,
+            store_path: search_db_path(),
+            launcher: worker::real_launcher(),
+            watch_filesystem: true,
         }
     }
 
-    pub fn start(&self) {
-        let mut slot = self.event_worker.lock().expect("event worker lock");
-        if slot.is_some() {
+    #[cfg(test)]
+    fn new_with_runtime(
+        config: SearchConfig,
+        store_path: PathBuf,
+        launcher: worker::ScanLauncher,
+    ) -> Self {
+        Self {
+            config: Arc::new(RwLock::new(config)),
+            index: Arc::new(RwLock::new(IndexState::default())),
+            worker: None,
+            store_path,
+            launcher,
+            watch_filesystem: false,
+        }
+    }
+
+    pub fn start(&mut self) {
+        if self.worker.is_some() {
             return;
         }
-        let store = match SearchStore::open(search_db_path()) {
+        let store = match SearchStore::open(self.store_path.clone()) {
             Ok(store) => store,
             Err(error) => {
                 let mut index = self.index.write().expect("index write");
@@ -187,440 +173,51 @@ impl SearchService {
             }
         };
         let config = self.config.read().expect("config read").clone();
-        *slot = Some(worker::spawn(config, Arc::clone(&self.index), store));
+        self.worker = Some(worker::spawn_with_runtime(
+            config,
+            Arc::clone(&self.index),
+            store,
+            Arc::clone(&self.launcher),
+            self.watch_filesystem,
+        ));
     }
 
-    #[allow(dead_code)]
-    fn legacy_start(&self) {
-        if self.worker.lock().expect("worker lock").is_some() {
-            return;
-        }
-        self.stop.store(false, Ordering::SeqCst);
-        let config = Arc::clone(&self.config);
-        let index = Arc::clone(&self.index);
-        let stop = Arc::clone(&self.stop);
-        let rebuild_flag = Arc::clone(&self.rebuild);
-        let handle = std::thread::spawn(move || {
-            let index_for_panic = Arc::clone(&index);
-            let result = std::panic::catch_unwind(AssertUnwindSafe(|| {
-                let (tx, rx) = std::sync::mpsc::channel::<notify::Result<notify::Event>>();
-                let mut watcher = RecommendedWatcher::new(
-                    move |res| {
-                        let _ = tx.send(res);
-                    },
-                    notify::Config::default(),
-                )
-                .ok();
-                let mut last_cfg: Option<SearchConfig> = None;
-                let mut watched_roots: Vec<PathBuf> = Vec::new();
-                let mut needs_rebuild = true;
-                // Incremental update state: events are debounced over 500ms before applying.
-                let mut pending: Vec<NotifyAction> = Vec::new();
-                let mut last_event_at: Option<Instant> = None;
-                // Tracks when the last full rebuild completed, for scheduled refresh.
-                let mut last_full_rebuild_at: Option<Instant> = None;
-                // Tracks when we last ran updatedb for the managed locate database.
-                let mut last_updatedb_at: Option<Instant> = None;
-                let mut locate_db_initialized = false;
-                let mut last_stall_restart_at: Option<Instant> = None;
-                let mut plan_config: Option<SearchConfig> = None;
-                let mut scan_plan: Option<ScanPlan> = None;
-
-                let cfg_at_start = config.read().expect("cfg read").clone();
-                match ScanPlan::new(&cfg_at_start) {
-                    Ok(plan) => {
-                        scan_plan = Some(plan);
-                        plan_config = Some(cfg_at_start.clone());
-                    }
-                    Err(error) => {
-                        let mut i = index.write().expect("index write");
-                        i.status = SearchIndexStatus::Unavailable;
-                        i.last_error = Some(error);
-                        i.progress_text = None;
-                    }
-                }
-
-                // Pre-populate from disk cache for instant results on startup.
-                // Startup should never launch a full home-tree rebuild just because
-                // the cache is older than the refresh interval. That makes normal
-                // development runs feel like search started from zero. Treat the
-                // loaded DB as the active index, then let the scheduled refresh timer
-                // decide later whether a background rebuild is due.
-                if scan_plan.is_some()
-                    && let Some(cached) = load_index_from_disk()
-                {
-                    let count = cached.len();
-                    let age = index_cache_age_secs().unwrap_or(u64::MAX);
-                    let age_str = format_age(age);
-                    if let Ok(mut i) = index.write() {
-                        i.items = cached;
-                        i.status = SearchIndexStatus::Ready;
-                        i.progress_text = Some(format!("Indexed {} files · {}", count, age_str));
-                        needs_rebuild = false;
-                        last_full_rebuild_at = Some(Instant::now());
-                        last_cfg = Some(cfg_at_start);
-                    }
-                }
-
-                loop {
-                    if stop.load(Ordering::SeqCst) {
-                        break;
-                    }
-                    let cfg = config.read().expect("cfg read").clone();
-                    if last_cfg.as_ref() != Some(&cfg) {
-                        needs_rebuild = true;
-                    }
-                    if rebuild_flag.swap(false, Ordering::SeqCst) {
-                        needs_rebuild = true;
-                    }
-
-                    if needs_rebuild && plan_config.as_ref() != Some(&cfg) {
-                        match ScanPlan::new(&cfg) {
-                            Ok(plan) => {
-                                scan_plan = Some(plan);
-                                plan_config = Some(cfg.clone());
-                            }
-                            Err(error) => {
-                                let mut i = index.write().expect("index write");
-                                i.status = SearchIndexStatus::Unavailable;
-                                i.last_error = Some(error);
-                                i.progress_text = None;
-                                scan_plan = None;
-                                plan_config = None;
-                                last_cfg = Some(cfg);
-                                needs_rebuild = false;
-                                continue;
-                            }
-                        }
-                    }
-                    let Some(scan_plan) = scan_plan.as_ref() else {
-                        std::thread::sleep(Duration::from_millis(100));
-                        continue;
-                    };
-
-                    if needs_rebuild {
-                        let scan_started = current_unix_secs();
-                        let scan_started_instant = Instant::now();
-                        let roots = scan_plan.roots();
-                        {
-                            let mut i = index.write().expect("index write");
-                            i.status = SearchIndexStatus::Indexing;
-                            i.last_error = None;
-                            i.configured_root_count = roots.len();
-                            i.watched_root_count = 0;
-                            i.watcher_ready = false;
-                            i.watcher_last_setup_unix_secs = None;
-                            i.watcher_last_error = None;
-                            i.last_indexed_path = None;
-                            i.building_indexed_items = 0;
-                            if i.last_completed_indexed_items.is_none() {
-                                i.estimated_total_items = estimate_total_items(&cfg, roots);
-                            } else {
-                                i.estimated_total_items = None;
-                            }
-                            i.active_root = None;
-                            i.active_root_index = 0;
-                            i.total_roots = roots.len();
-                            i.last_scan_started_unix_secs = Some(scan_started);
-                            i.last_scan_completed_unix_secs = None;
-                            i.last_scan_duration_ms = None;
-                            i.last_progress_unix_secs = Some(scan_started);
-                            i.progress_text = Some("Indexing · scanning…".to_string());
-                        }
-                        // Reset pending incremental events before streaming a new index build.
-                        pending.clear();
-                        last_event_at = None;
-                        let mut new_items: Vec<SearchResultItem> = Vec::new();
-                        let db_writer = SearchDbWriter::open(search_db_path()).ok();
-                        let db_writer_arc = Arc::new(Mutex::new(db_writer));
-                        let db_writer_arc_for_batch = Arc::clone(&db_writer_arc);
-                        match build_index(
-                            scan_plan,
-                            &stop,
-                            |progress| {
-                                let mut i = index.write().expect("index write");
-                                i.progress_text = Some(progress.message);
-                                i.active_root = Some(progress.active_root);
-                                i.active_root_index = progress.active_root_index;
-                                i.total_roots = progress.total_roots;
-                                i.last_progress_unix_secs = Some(current_unix_secs());
-                            },
-                            |batch| {
-                                // Stream each batch into the shared index so queries return
-                                // partial results before the walk finishes.
-                                if let Ok(mut writer_guard) = db_writer_arc_for_batch.lock()
-                                    && let Some(ref mut writer) = *writer_guard
-                                {
-                                    let _ = writer.insert_batch(&batch);
-                                    if let Some(last) = batch.last()
-                                        && let Some(root) = scan_plan.root_for(&last.path)
-                                    {
-                                        let _ =
-                                            writer.set_scan_cursor(root, Some(last.path.as_path()));
-                                    }
-                                }
-                                let mut i = index.write().expect("index write");
-                                if let Some(last) = batch.last() {
-                                    i.last_indexed_path = Some(last.path.clone());
-                                }
-                                i.building_indexed_items =
-                                    i.building_indexed_items.saturating_add(batch.len());
-                                i.last_progress_unix_secs = Some(current_unix_secs());
-                                new_items.extend(batch);
-                            },
-                        ) {
-                            Ok(total) => {
-                                if stop.load(Ordering::SeqCst) {
-                                    break;
-                                }
-                                // Clear scan cursors using the same Arc<Mutex<>>.
-                                if let Ok(mut writer_guard) = db_writer_arc.lock()
-                                    && let Some(ref mut w) = *writer_guard
-                                {
-                                    let _ = w.clear_scan_cursors();
-                                }
-                                let items_snapshot = {
-                                    let mut i = index.write().expect("index write");
-                                    i.status = SearchIndexStatus::Ready;
-                                    i.last_error = None;
-                                    i.active_root = None;
-                                    i.active_root_index = 0;
-                                    i.last_scan_completed_unix_secs = Some(current_unix_secs());
-                                    i.last_scan_duration_ms = Some(
-                                        scan_started_instant
-                                            .elapsed()
-                                            .as_millis()
-                                            .min(u128::from(u64::MAX))
-                                            as u64,
-                                    );
-                                    i.last_progress_unix_secs = Some(current_unix_secs());
-                                    i.progress_text = Some(format!("Ready · {} indexed", total));
-                                    i.last_completed_indexed_items = Some(total);
-                                    i.items = std::mem::take(&mut new_items);
-                                    i.items.clone()
-                                };
-                                // Persist to disk in background — next launch gets instant results.
-                                save_index_to_disk(items_snapshot);
-                            }
-                            Err(e) => {
-                                if stop.load(Ordering::SeqCst) {
-                                    break;
-                                }
-                                let mut i = index.write().expect("index write");
-                                i.status = SearchIndexStatus::Unavailable;
-                                i.last_error = Some(e.clone());
-                                i.active_root = None;
-                                i.active_root_index = 0;
-                                i.last_scan_completed_unix_secs = Some(current_unix_secs());
-                                i.last_scan_duration_ms = Some(
-                                    scan_started_instant
-                                        .elapsed()
-                                        .as_millis()
-                                        .min(u128::from(u64::MAX))
-                                        as u64,
-                                );
-                                i.last_progress_unix_secs = Some(current_unix_secs());
-                                i.progress_text = None;
-                            }
-                        }
-
-                        if let Some(w) = watcher.as_mut() {
-                            for root in watched_roots.drain(..) {
-                                let _ = w.unwatch(&root);
-                            }
-                            let mut failed = 0usize;
-                            for root in roots {
-                                if root.exists() {
-                                    if w.watch(root, RecursiveMode::Recursive).is_ok() {
-                                        watched_roots.push(root.clone());
-                                    } else {
-                                        failed = failed.saturating_add(1);
-                                    }
-                                }
-                            }
-                            let mut i = index.write().expect("index write");
-                            i.watched_root_count = watched_roots.len();
-                            i.watcher_ready = true;
-                            i.watcher_last_setup_unix_secs = Some(current_unix_secs());
-                            i.watcher_last_error = if failed > 0 {
-                                Some(format!(
-                                    "Failed to watch {} location{}",
-                                    failed,
-                                    if failed == 1 { "" } else { "s" }
-                                ))
-                            } else {
-                                None
-                            };
-                        }
-
-                        last_cfg = Some(cfg);
-                        needs_rebuild = false;
-                        last_full_rebuild_at = Some(Instant::now());
-                    }
-
-                    // Scheduled refresh: trigger a silent rebuild when the interval elapses.
-                    {
-                        let cfg_snap = config.read().expect("cfg read");
-                        let (status, last_progress) = {
-                            let idx = index.read().expect("index read");
-                            (idx.status, idx.last_progress_unix_secs)
-                        };
-                        if matches!(status, SearchIndexStatus::Indexing) {
-                            let now_secs = current_unix_secs();
-                            if let Some(last) = last_progress {
-                                let age = now_secs.saturating_sub(last);
-                                let cooldown = last_stall_restart_at
-                                    .map(|t| {
-                                        t.elapsed().as_secs() < INDEX_STALL_RESTART_COOLDOWN_SECS
-                                    })
-                                    .unwrap_or(false);
-                                if age > INDEX_STALL_SECS && !cooldown {
-                                    last_stall_restart_at = Some(Instant::now());
-                                    needs_rebuild = true;
-                                    if let Ok(mut i) = index.write() {
-                                        i.progress_text =
-                                            Some("Stalled · restarting index…".to_string());
-                                    }
-                                }
-                            }
-                        }
-                        let interval_secs = cfg_snap.refresh_interval_hours as u64 * 3_600;
-                        if interval_secs > 0 {
-                            let due = last_full_rebuild_at
-                                .map(|t| t.elapsed().as_secs() >= interval_secs)
-                                .unwrap_or(false);
-                            if due {
-                                needs_rebuild = true;
-                            }
-                        }
-
-                        // Managed locate database: run updatedb on first use and on schedule.
-                        // This gives fallback query results on cold start. It is completely
-                        // opt-in and runs as the current user.
-                        if cfg_snap.manage_locate_db && updatedb_available() {
-                            let effective_interval_secs =
-                                cfg_snap.locate_update_hours as u64 * 3_600;
-
-                            let locate_due = if !locate_db_initialized {
-                                // First run: check age of existing DB; rebuild if missing or >1h old.
-                                locate_db_age_secs().map(|a| a > 3_600).unwrap_or(true)
-                            } else if effective_interval_secs > 0 {
-                                last_updatedb_at
-                                    .map(|t| t.elapsed().as_secs() >= effective_interval_secs)
-                                    .unwrap_or(false)
-                            } else {
-                                false
-                            };
-                            locate_db_initialized = true;
-                            if locate_due {
-                                let roots = effective_roots(&cfg_snap);
-                                let root = roots
-                                    .into_iter()
-                                    .next()
-                                    .unwrap_or_else(ottrin_core::default_home_dir);
-                                run_user_updatedb(root);
-                                last_updatedb_at = Some(Instant::now());
-                            }
-                        }
-                    }
-
-                    // Collect notify events; use a short timeout so we can check debounce frequently.
-                    match rx.recv_timeout(Duration::from_millis(100)) {
-                        Ok(Ok(event)) => {
-                            for path in event.paths {
-                                let action = if matches!(event.kind, notify::EventKind::Remove(_)) {
-                                    NotifyAction::Remove(path)
-                                } else {
-                                    NotifyAction::Upsert(path)
-                                };
-                                pending.push(action);
-                            }
-                            last_event_at = Some(Instant::now());
-                        }
-                        Ok(Err(_)) => {}
-                        Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {}
-                        Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
-                            std::thread::sleep(Duration::from_millis(200));
-                        }
-                    }
-
-                    // After 500ms of quiet, apply pending events.
-                    if last_event_at
-                        .map(|t| t.elapsed() >= Duration::from_millis(500))
-                        .unwrap_or(false)
-                        && !pending.is_empty()
-                    {
-                        if pending.len() > INCREMENTAL_REBUILD_THRESHOLD {
-                            // Too many events at once (large copy/extract) — full rebuild is cleaner.
-                            needs_rebuild = true;
-                        } else {
-                            apply_incremental_to_db(&pending, scan_plan);
-                            let snap = {
-                                let mut idx = index.write().expect("index write");
-                                apply_incremental(&mut idx.items, &pending, scan_plan);
-                                let count = idx.items.len();
-                                if matches!(idx.status, SearchIndexStatus::Ready) {
-                                    idx.progress_text = Some(format!("Ready · {} indexed", count));
-                                }
-                                idx.items.clone()
-                            };
-                            // Persist updated index in background.
-                            save_index_to_disk(snap);
-                        }
-                        pending.clear();
-                        last_event_at = None;
-                    }
-                }
-            }));
-            if result.is_err() {
-                let mut i = index_for_panic.write().expect("index write");
-                i.status = SearchIndexStatus::Unavailable;
-                i.last_error = Some("Indexer thread panicked".to_string());
-                i.last_progress_unix_secs = Some(current_unix_secs());
-                i.progress_text = Some("Indexer crashed · restart to retry".to_string());
-            }
-        });
-        *self.worker.lock().expect("worker lock") = Some(handle);
-    }
-
-    #[allow(dead_code)]
-    fn legacy_stop(&self) {
-        self.stop.store(true, Ordering::SeqCst);
-        if let Some(h) = self.worker.lock().expect("worker lock").take() {
-            std::thread::spawn(move || {
-                let _ = h.join();
-            });
-        }
-    }
-
-    pub fn stop(&self) {
-        if let Some(worker) = self.event_worker.lock().expect("event worker lock").take() {
+    fn stop_worker(&mut self) {
+        if let Some(worker) = self.worker.take() {
             worker.stop();
         }
     }
 
-    pub fn update_config(&self, cfg: SearchConfig) {
+    pub fn stop(&mut self) {
+        self.stop_worker();
+    }
+
+    pub fn clear_storage(&mut self) -> Result<u64, String> {
+        self.stop_worker();
+        let mut freed = clear_sqlite_storage(&self.store_path)?;
+        if self.store_path == search_db_path() {
+            freed = freed.saturating_add(clear_search_storage()?);
+        }
+        let mut index = self.index.write().expect("index write");
+        *index = IndexState::default();
+        index.status = SearchIndexStatus::Unavailable;
+        index.last_error = Some("Search storage was cleared".to_string());
+        index.progress_text = None;
+        Ok(freed)
+    }
+
+    pub fn update_config(&mut self, cfg: SearchConfig) {
         if let Ok(mut c) = self.config.write() {
             *c = cfg.clone();
         }
-        if let Some(worker) = self
-            .event_worker
-            .lock()
-            .expect("event worker lock")
-            .as_ref()
-        {
+        if let Some(worker) = self.worker.as_ref() {
             worker.update_config(cfg);
         }
     }
 
     /// Force an immediate reindex regardless of config changes.
-    pub fn rebuild_index(&self) {
-        if let Some(worker) = self
-            .event_worker
-            .lock()
-            .expect("event worker lock")
-            .as_ref()
-        {
+    pub fn rebuild_index(&mut self) {
+        if let Some(worker) = self.worker.as_ref() {
             worker.request_rebuild();
         }
     }
@@ -654,10 +251,6 @@ impl SearchService {
 
     pub fn search_db_path() -> PathBuf {
         search_db_path()
-    }
-
-    pub fn clear_search_storage() -> Result<u64, String> {
-        clear_search_storage()
     }
 
     /// Age of the system locate database in seconds, if detected.
@@ -774,8 +367,10 @@ impl SearchHandle {
     }
 
     pub fn query(&self, query: SearchQuery) -> SearchResponse {
-        let idx = self.index.read().expect("index read");
-        let status = idx.status;
+        let (status, items) = {
+            let idx = self.index.read().expect("index read");
+            (idx.status, Arc::clone(&idx.items))
+        };
         let cfg = self.config.read().expect("cfg read").clone();
         if query.text.trim().is_empty() {
             return SearchResponse {
@@ -821,7 +416,7 @@ impl SearchHandle {
                 query_current_folder_fallback(&query, &expr, &cfg)
             } else if matches!(query.scope, SearchScope::Global)
                 && matches!(status, SearchIndexStatus::Indexing)
-                && idx.items.is_empty()
+                && items.is_empty()
             {
                 let roots = ordered_query_roots(&query, &cfg);
                 let target_hits = query.limit.saturating_mul(6).max(200);
@@ -835,7 +430,7 @@ impl SearchHandle {
                     Duration::from_millis(140),
                 )
             } else {
-                idx.items
+                items
                     .iter()
                     .filter(|item| scope_match(&query, item))
                     .filter(|item| query.include_hidden_system || !item.name.starts_with('.'))
@@ -866,7 +461,7 @@ impl SearchHandle {
         // the user has opted in, and we have budget (index empty or still building).
         // Zero privilege required — we just read the database the OS already maintains.
         let budget_remaining = matched.len() < query.limit && query.text.trim().len() >= 2;
-        let index_thin = matches!(status, SearchIndexStatus::Indexing) && idx.items.len() < 5_000;
+        let index_thin = matches!(status, SearchIndexStatus::Indexing) && items.len() < 5_000;
         if cfg.use_system_locate && budget_remaining && (index_thin || matched.is_empty()) {
             let roots = effective_roots(&cfg);
             let locate_hits = query_system_locate(
@@ -890,8 +485,7 @@ impl SearchHandle {
             let q = query.text.trim();
             let mut seen: HashSet<PathBuf> =
                 matched.iter().map(|(_, item)| item.path.clone()).collect();
-            for item in idx
-                .items
+            for item in items
                 .iter()
                 .filter(|item| scope_match(&query, item))
                 .filter(|item| query.include_hidden_system || !item.name.starts_with('.'))
@@ -1065,181 +659,6 @@ pub fn default_roots() -> Vec<PathBuf> {
     }
 }
 
-/// Walk the configured roots, calling `on_batch` with every `STREAM_BATCH_SIZE` items so the UI
-/// can show progress while the rebuild runs.
-fn build_index<F, G>(
-    plan: &ScanPlan,
-    stop: &AtomicBool,
-    mut on_progress: F,
-    mut on_batch: G,
-) -> Result<usize, String>
-where
-    F: FnMut(ProgressUpdate),
-    G: FnMut(Vec<SearchResultItem>),
-{
-    let debug = std::env::var("OTTRIN_INDEX_DEBUG").ok().is_some();
-    let mut batch: Vec<SearchResultItem> = Vec::with_capacity(STREAM_BATCH_SIZE);
-    let mut total_indexed = 0usize;
-    let roots = plan.roots().to_vec();
-    let roots_total = roots.len().max(1);
-    if debug {
-        eprintln!("build_index: plan={}", plan.identity());
-        eprintln!(
-            "build_index: roots={} include_globs={} exclude_globs={}",
-            roots.len(),
-            plan.include_globs().len(),
-            plan.exclude_globs().len()
-        );
-        for r in &roots {
-            eprintln!("build_index: root={} exists={}", r.display(), r.exists());
-        }
-    }
-    let placeholder_root = roots.first().cloned().unwrap_or_else(PathBuf::new);
-    on_progress(ProgressUpdate {
-        message: "Indexing · preparing filters…".to_string(),
-        active_root: placeholder_root,
-        active_root_index: 0,
-        total_roots: roots_total,
-    });
-
-    let resume_cursors = SearchDb::open(search_db_path())
-        .ok()
-        .and_then(|db| db.scan_cursors().ok())
-        .unwrap_or_default();
-    if debug {
-        eprintln!("build_index: globsets built");
-    }
-
-    for (root_idx, root) in roots.into_iter().enumerate() {
-        if stop.load(Ordering::Relaxed) {
-            break;
-        }
-        let total_before_root = total_indexed;
-        let mut root_seen = 0usize;
-        on_progress(ProgressUpdate {
-            message: format_progress(root_idx + 1, roots_total, total_indexed, root_seen),
-            active_root: root.clone(),
-            active_root_index: root_idx + 1,
-            total_roots: roots_total,
-        });
-        if !root.exists() {
-            if debug {
-                eprintln!("build_index: skip missing root {}", root.display());
-            }
-            continue;
-        }
-        let resume_cursor = resume_cursors.get(&root).cloned();
-        let mut cursor_found = false;
-        let passes = if resume_cursor.is_some() { 2 } else { 1 };
-        for pass in 0..passes {
-            let mut skipping = resume_cursor.is_some() && pass == 0;
-            let walker = WalkDir::new(&root)
-                .follow_links(plan.follow_links())
-                .same_file_system(plan.same_file_system())
-                .into_iter()
-                .filter_entry(|entry| plan.includes_path_for_root(entry.path(), &root));
-            for entry in walker.filter_map(Result::ok) {
-                if stop.load(Ordering::Relaxed) {
-                    break;
-                }
-                let path = entry.path();
-                if path == root {
-                    continue;
-                }
-                if skipping {
-                    if let Some(cursor) = resume_cursor.as_ref()
-                        && path == cursor.as_path()
-                    {
-                        skipping = false;
-                        cursor_found = true;
-                    }
-                    continue;
-                }
-                root_seen = root_seen.saturating_add(1);
-                let name = entry.file_name().to_string_lossy().to_string();
-                if !plan.includes_item_name(&name) {
-                    continue;
-                }
-                let meta = match entry.metadata() {
-                    Ok(m) => m,
-                    Err(_) => continue,
-                };
-                let file_type = entry.file_type();
-                let kind = if file_type.is_symlink() {
-                    EntryKind::Symlink
-                } else if file_type.is_dir() {
-                    EntryKind::Directory
-                } else if file_type.is_file() {
-                    EntryKind::File
-                } else {
-                    EntryKind::Other
-                };
-                let size = if matches!(kind, EntryKind::File) {
-                    Some(meta.len())
-                } else {
-                    None
-                };
-                let modified = meta
-                    .modified()
-                    .ok()
-                    .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
-                    .map(|d| d.as_secs());
-                let mut item = SearchResultItem {
-                    path: path.to_path_buf(),
-                    parent_path: path.parent().map(Path::to_path_buf).unwrap_or_default(),
-                    name,
-                    kind,
-                    is_executable: detect_executable(&meta),
-                    symlink_target_is_dir: if matches!(kind, EntryKind::Symlink) {
-                        Some(meta.is_dir())
-                    } else {
-                        None
-                    },
-                    size_bytes: size,
-                    modified_unix_secs: modified,
-                    content_snippet: None,
-                    name_lower: String::new(),
-                    path_str: String::new(),
-                    path_lower: String::new(),
-                };
-                item.prepare();
-                batch.push(item);
-                total_indexed += 1;
-
-                if batch.len() >= STREAM_BATCH_SIZE {
-                    on_progress(ProgressUpdate {
-                        message: format_progress(
-                            root_idx + 1,
-                            roots_total,
-                            total_indexed,
-                            root_seen,
-                        ),
-                        active_root: root.clone(),
-                        active_root_index: root_idx + 1,
-                        total_roots: roots_total,
-                    });
-                    on_batch(std::mem::take(&mut batch));
-                    batch = Vec::with_capacity(STREAM_BATCH_SIZE);
-                }
-            }
-            if stop.load(Ordering::Relaxed) {
-                break;
-            }
-            if pass == 0 && resume_cursor.is_some() && !cursor_found {
-                root_seen = 0;
-                total_indexed = total_before_root;
-            } else {
-                break;
-            }
-        }
-    }
-    // Flush final partial batch
-    if !batch.is_empty() {
-        on_batch(batch);
-    }
-    Ok(total_indexed)
-}
-
 fn current_unix_secs() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -1267,14 +686,37 @@ fn index_cache_path() -> PathBuf {
     dir.join("search_index.json")
 }
 
+fn remove_file_if_present(path: &Path) -> Result<u64, String> {
+    match std::fs::metadata(path) {
+        Ok(metadata) => {
+            let len = metadata.len();
+            std::fs::remove_file(path)
+                .map_err(|error| format!("Failed to remove {}: {error}", path.display()))?;
+            Ok(len)
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(0),
+        Err(error) => Err(format!("Failed to inspect {}: {error}", path.display())),
+    }
+}
+
+fn clear_sqlite_storage(path: &Path) -> Result<u64, String> {
+    let mut freed = remove_file_if_present(path)?;
+    for suffix in ["-wal", "-shm", "-journal"] {
+        let mut sidecar = path.as_os_str().to_os_string();
+        sidecar.push(suffix);
+        freed = freed.saturating_add(remove_file_if_present(Path::new(&sidecar))?);
+    }
+    Ok(freed)
+}
+
 pub fn clear_search_storage() -> Result<u64, String> {
-    let mut freed = 0_u64;
+    let mut freed = clear_sqlite_storage(&search_db_path())?;
     #[cfg(target_os = "linux")]
-    let mut paths = vec![search_db_path(), index_cache_path(), locate_db_path()];
+    let mut paths = vec![index_cache_path(), locate_db_path()];
     #[cfg(target_os = "linux")]
     paths.push(appimage_index_wrapper_path());
     #[cfg(not(target_os = "linux"))]
-    let paths = vec![search_db_path(), index_cache_path(), locate_db_path()];
+    let paths = vec![index_cache_path(), locate_db_path()];
     for path in paths {
         if let Ok(meta) = std::fs::metadata(&path) {
             let len = meta.len();
@@ -1284,96 +726,6 @@ pub fn clear_search_storage() -> Result<u64, String> {
         }
     }
     Ok(freed)
-}
-
-fn estimate_total_items(cfg: &SearchConfig, roots: &[PathBuf]) -> Option<usize> {
-    if roots.is_empty() {
-        return None;
-    }
-    if !system_locate_available() && !cfg.manage_locate_db {
-        return None;
-    }
-    let root = roots[0].clone();
-    locate_count(&root)
-}
-
-fn locate_count(root: &Path) -> Option<usize> {
-    let root_str = root.display().to_string();
-    let output = if command_exists("plocate") {
-        std::process::Command::new("plocate")
-            .args(["-c", &root_str])
-            .output()
-            .ok()?
-    } else if command_exists("locate") {
-        std::process::Command::new("locate")
-            .args(["-c", &root_str])
-            .output()
-            .ok()?
-    } else {
-        return None;
-    };
-    if !output.status.success() {
-        return None;
-    }
-    let text = String::from_utf8_lossy(&output.stdout);
-    text.trim().parse::<usize>().ok()
-}
-
-/// Serialize the index to disk in a background thread so the UI is never blocked.
-fn save_index_to_disk(items: Vec<SearchResultItem>) {
-    std::thread::spawn(move || {
-        let path = index_cache_path();
-        if let Ok(data) = serde_json::to_vec(&items) {
-            let _ = std::fs::write(&path, &data);
-        }
-    });
-}
-
-/// Load a previously persisted index from disk. Returns `None` if unavailable or corrupt.
-fn load_index_from_disk() -> Option<Vec<SearchResultItem>> {
-    let db_path = search_db_path();
-    if let Ok(db) = SearchDb::open(db_path)
-        && let Ok(items) = db.load_items()
-        && !items.is_empty()
-    {
-        return Some(items);
-    }
-    let path = index_cache_path();
-    let data = std::fs::read(&path).ok()?;
-    let mut items: Vec<SearchResultItem> = serde_json::from_slice(&data).ok()?;
-    for item in &mut items {
-        item.prepare();
-    }
-    Some(items)
-}
-
-/// Returns how many seconds ago the on-disk index was last written.
-fn index_cache_age_secs() -> Option<u64> {
-    let db_path = search_db_path();
-    if let Ok(mtime) = std::fs::metadata(&db_path).and_then(|m| m.modified())
-        && let Ok(age) = SystemTime::now().duration_since(mtime)
-    {
-        return Some(age.as_secs());
-    }
-    let path = index_cache_path();
-    let mtime = std::fs::metadata(&path).ok()?.modified().ok()?;
-    SystemTime::now()
-        .duration_since(mtime)
-        .ok()
-        .map(|d| d.as_secs())
-}
-
-/// Human-readable age string used in status messages.
-fn format_age(secs: u64) -> String {
-    if secs < 60 {
-        "just now".to_string()
-    } else if secs < 3_600 {
-        format!("{}m ago", secs / 60)
-    } else if secs < 86_400 {
-        format!("{}h ago", secs / 3_600)
-    } else {
-        format!("{}d ago", secs / 86_400)
-    }
 }
 
 // ── Locate database management ─────────────────────────────────────────────────
@@ -2201,57 +1553,6 @@ fn make_item_from_path(path: &Path) -> Option<SearchResultItem> {
     };
     item.prepare();
     Some(item)
-}
-
-/// Apply a batch of `NotifyAction`s to the index without re-walking the filesystem.
-/// Handles create/modify (upsert) and delete (remove + all children) efficiently.
-fn apply_incremental(items: &mut Vec<SearchResultItem>, actions: &[NotifyAction], plan: &ScanPlan) {
-    for action in actions {
-        match action {
-            NotifyAction::Remove(path) => {
-                // Remove the exact path and everything under it (directory removal).
-                items.retain(|item| item.path != *path && !item.path.starts_with(path));
-            }
-            NotifyAction::Upsert(path) => {
-                // Remove stale entry (may or may not exist).
-                items.retain(|item| item.path != *path);
-                // Apply the same filters used during full index build.
-                if !plan.includes_path(path) {
-                    continue;
-                }
-                if let Some(item) = make_item_from_path(path)
-                    && plan.includes_item_name(&item.name)
-                {
-                    items.push(item);
-                }
-            }
-        }
-    }
-}
-
-fn apply_incremental_to_db(actions: &[NotifyAction], plan: &ScanPlan) {
-    let mut writer = match SearchDbWriter::open(search_db_path()) {
-        Ok(writer) => writer,
-        Err(_) => return,
-    };
-
-    for action in actions {
-        match action {
-            NotifyAction::Remove(path) => {
-                let _ = writer.remove_path_tree(path);
-            }
-            NotifyAction::Upsert(path) => {
-                if !plan.includes_path(path) {
-                    continue;
-                }
-                if let Some(item) = make_item_from_path(path)
-                    && plan.includes_item_name(&item.name)
-                {
-                    let _ = writer.upsert_item(&item);
-                }
-            }
-        }
-    }
 }
 
 fn build_globset(patterns: &[String]) -> Result<GlobSet, String> {
@@ -3135,6 +2436,42 @@ fn sort_results(v: &mut [(i64, SearchResultItem)], sort: SearchSort) {
 mod tests {
     use super::*;
     use std::fs;
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+
+    fn temp_service_path(name: &str) -> PathBuf {
+        std::env::temp_dir().join(format!(
+            "ottrin-search-service-{name}-{}-{:?}.db",
+            std::process::id(),
+            SystemTime::now()
+        ))
+    }
+
+    fn blocking_launcher(starts: Arc<AtomicUsize>) -> worker::ScanLauncher {
+        Arc::new(move |_plan, cancelled, _revision, _commands| {
+            starts.fetch_add(1, Ordering::AcqRel);
+            Some(std::thread::spawn(move || {
+                while !cancelled.load(Ordering::Acquire) {
+                    std::thread::sleep(Duration::from_millis(1));
+                }
+            }))
+        })
+    }
+
+    fn tracked_blocking_launcher(
+        starts: Arc<AtomicUsize>,
+        exits: Arc<AtomicUsize>,
+    ) -> worker::ScanLauncher {
+        Arc::new(move |_plan, cancelled, _revision, _commands| {
+            starts.fetch_add(1, Ordering::AcqRel);
+            let exits = Arc::clone(&exits);
+            Some(std::thread::spawn(move || {
+                while !cancelled.load(Ordering::Acquire) {
+                    std::thread::sleep(Duration::from_millis(1));
+                }
+                exits.fetch_add(1, Ordering::AcqRel);
+            }))
+        })
+    }
 
     fn query_by_name(name: &str) -> SearchQuery {
         SearchQuery {
@@ -3183,6 +2520,217 @@ mod tests {
     }
 
     #[test]
+    fn start_is_idempotent() {
+        let starts = Arc::new(AtomicUsize::new(0));
+        let db_path = temp_service_path("start-idempotent");
+        let mut service = SearchService::new_with_runtime(
+            SearchConfig {
+                include_roots: vec![PathBuf::from("/controlled")],
+                ..SearchConfig::default()
+            },
+            db_path.clone(),
+            blocking_launcher(Arc::clone(&starts)),
+        );
+
+        service.start();
+        wait_until(Duration::from_secs(1), || {
+            starts.load(Ordering::Acquire) == 1
+        });
+        service.start();
+        std::thread::sleep(Duration::from_millis(20));
+
+        assert_eq!(starts.load(Ordering::Acquire), 1);
+        service.stop();
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn lifecycle_stress_loop() {
+        let starts = Arc::new(AtomicUsize::new(0));
+        let exits = Arc::new(AtomicUsize::new(0));
+        let db_path = temp_service_path("stress");
+        let mut service = SearchService::new_with_runtime(
+            SearchConfig {
+                include_roots: vec![PathBuf::from("/controlled")],
+                ..SearchConfig::default()
+            },
+            db_path.clone(),
+            tracked_blocking_launcher(Arc::clone(&starts), Arc::clone(&exits)),
+        );
+
+        for expected in 1..=100 {
+            service.start();
+            service.start();
+            wait_until(Duration::from_secs(1), || {
+                starts.load(Ordering::Acquire) == expected
+            });
+            service.stop();
+            service.stop();
+        }
+
+        assert_eq!(starts.load(Ordering::Acquire), 100);
+        assert_eq!(exits.load(Ordering::Acquire), 100);
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn stop_is_idempotent_and_joins_worker_and_scan() {
+        let starts = Arc::new(AtomicUsize::new(0));
+        let exits = Arc::new(AtomicUsize::new(0));
+        let db_path = temp_service_path("stop-idempotent");
+        let mut service = SearchService::new_with_runtime(
+            SearchConfig {
+                include_roots: vec![PathBuf::from("/controlled")],
+                ..SearchConfig::default()
+            },
+            db_path.clone(),
+            tracked_blocking_launcher(Arc::clone(&starts), Arc::clone(&exits)),
+        );
+        service.start();
+        wait_until(Duration::from_secs(1), || {
+            starts.load(Ordering::Acquire) == 1
+        });
+
+        service.stop();
+        service.stop();
+
+        assert_eq!(exits.load(Ordering::Acquire), 1, "stop must join the scan");
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn service_restarts_after_stop() {
+        let starts = Arc::new(AtomicUsize::new(0));
+        let db_path = temp_service_path("restart");
+        let mut service = SearchService::new_with_runtime(
+            SearchConfig {
+                include_roots: vec![PathBuf::from("/controlled")],
+                ..SearchConfig::default()
+            },
+            db_path.clone(),
+            blocking_launcher(Arc::clone(&starts)),
+        );
+        service.start();
+        wait_until(Duration::from_secs(1), || {
+            starts.load(Ordering::Acquire) == 1
+        });
+        service.stop();
+        service.start();
+        wait_until(Duration::from_secs(1), || {
+            starts.load(Ordering::Acquire) == 2
+        });
+        service.stop();
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn drop_cancels_and_joins_a_blocked_scan_bounded() {
+        let starts = Arc::new(AtomicUsize::new(0));
+        let exits = Arc::new(AtomicUsize::new(0));
+        let db_path = temp_service_path("drop-blocked");
+        let mut service = SearchService::new_with_runtime(
+            SearchConfig {
+                include_roots: vec![PathBuf::from("/controlled")],
+                ..SearchConfig::default()
+            },
+            db_path.clone(),
+            tracked_blocking_launcher(Arc::clone(&starts), Arc::clone(&exits)),
+        );
+        service.start();
+        wait_until(Duration::from_secs(1), || {
+            starts.load(Ordering::Acquire) == 1
+        });
+
+        let handle = service.handle();
+        let began = Instant::now();
+        drop(service);
+
+        assert!(began.elapsed() < Duration::from_secs(1));
+        assert_eq!(exits.load(Ordering::Acquire), 1, "drop must join the scan");
+        let diagnostics = handle.diagnostics();
+        assert!(matches!(diagnostics.status, SearchIndexStatus::Unavailable));
+
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn concurrent_query_handle_does_not_block_stop() {
+        let starts = Arc::new(AtomicUsize::new(0));
+        let db_path = temp_service_path("query-stop");
+        let mut service = SearchService::new_with_runtime(
+            SearchConfig {
+                include_roots: vec![PathBuf::from("/controlled")],
+                ..SearchConfig::default()
+            },
+            db_path.clone(),
+            blocking_launcher(Arc::clone(&starts)),
+        );
+        service.start();
+        wait_until(Duration::from_secs(1), || {
+            starts.load(Ordering::Acquire) == 1
+        });
+        let query = service.handle();
+        let running = Arc::new(AtomicBool::new(true));
+        let queries = Arc::new(AtomicUsize::new(0));
+        let query_running = Arc::clone(&running);
+        let query_count = Arc::clone(&queries);
+        let query_thread = std::thread::spawn(move || {
+            while query_running.load(Ordering::Acquire) {
+                let _ = query.query(query_by_name("needle"));
+                query_count.fetch_add(1, Ordering::AcqRel);
+            }
+        });
+        wait_until(Duration::from_secs(1), || {
+            queries.load(Ordering::Acquire) > 0
+        });
+
+        let began = Instant::now();
+        service.stop();
+        assert!(began.elapsed() < Duration::from_secs(1));
+
+        running.store(false, Ordering::Release);
+        query_thread.join().expect("query thread");
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn clear_storage_stops_owner_and_leaves_empty_unavailable_state() {
+        let starts = Arc::new(AtomicUsize::new(0));
+        let exits = Arc::new(AtomicUsize::new(0));
+        let db_path = temp_service_path("clear-storage");
+        let mut service = SearchService::new_with_runtime(
+            SearchConfig {
+                include_roots: vec![PathBuf::from("/controlled")],
+                ..SearchConfig::default()
+            },
+            db_path.clone(),
+            tracked_blocking_launcher(Arc::clone(&starts), Arc::clone(&exits)),
+        );
+        service.start();
+        wait_until(Duration::from_secs(1), || {
+            starts.load(Ordering::Acquire) == 1
+        });
+        assert!(db_path.exists());
+        let sidecars = ["-wal", "-shm", "-journal"].map(|suffix| {
+            let mut path = db_path.as_os_str().to_os_string();
+            path.push(suffix);
+            let path = PathBuf::from(path);
+            fs::write(&path, b"stale sqlite sidecar").expect("create sidecar");
+            path
+        });
+
+        service.clear_storage().expect("clear owned storage");
+
+        assert_eq!(exits.load(Ordering::Acquire), 1);
+        assert!(!db_path.exists());
+        assert!(sidecars.iter().all(|path| !path.exists()));
+        let diagnostics = service.diagnostics();
+        assert!(matches!(diagnostics.status, SearchIndexStatus::Unavailable));
+        assert_eq!(diagnostics.indexed_items, 0);
+        assert!(service.query(query_by_name("anything")).items.is_empty());
+    }
+
+    #[test]
     fn parser_rejects_invalid_regex() {
         let err = parse_query("/[/").expect_err("should reject invalid regex");
         assert!(err.to_string().contains("Invalid regex"));
@@ -3201,7 +2749,7 @@ mod tests {
         fs::create_dir_all(&root).expect("create handle ownership root");
         fs::write(root.join("initial.txt"), b"initial").expect("create initial file");
 
-        let service = SearchService::new(SearchConfig {
+        let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
             ..SearchConfig::default()
@@ -3231,15 +2779,15 @@ mod tests {
 
     #[test]
     fn query_handle_outlives_stopped_and_dropped_owner_snapshot() {
-        let service = SearchService::new(SearchConfig::default());
+        let mut service = SearchService::new(SearchConfig::default());
         {
             let mut index = service.index.write().expect("index write");
             index.status = SearchIndexStatus::Ready;
-            index.items = vec![mk_item(
+            index.items = Arc::new(vec![mk_item(
                 "/snapshot/retained-result.txt",
                 "retained-result.txt",
                 EntryKind::File,
-            )];
+            )]);
         }
         let handle = service.handle();
 
@@ -3316,7 +2864,7 @@ mod tests {
         {
             let mut idx = service.index.write().expect("index write");
             idx.status = SearchIndexStatus::Ready;
-            idx.items.clear();
+            idx.items = Arc::new(Vec::new());
             idx.configured_root_count = 1;
             idx.watched_root_count = 1;
             idx.total_roots = 1;
@@ -3410,7 +2958,7 @@ mod tests {
         {
             let mut idx = service.index.write().expect("index write");
             idx.status = SearchIndexStatus::Ready;
-            idx.items.clear();
+            idx.items = Arc::new(Vec::new());
         }
 
         let filename_only = service.query(SearchQuery {
@@ -3474,7 +3022,7 @@ mod tests {
         {
             let mut idx = service.index.write().expect("index write");
             idx.status = SearchIndexStatus::Ready;
-            idx.items.clear();
+            idx.items = Arc::new(Vec::new());
         }
 
         let response = service.query(SearchQuery {
@@ -3545,7 +3093,7 @@ mod tests {
         {
             let mut idx = service.index.write().expect("index write");
             idx.status = SearchIndexStatus::Ready;
-            idx.items.clear();
+            idx.items = Arc::new(Vec::new());
         }
 
         let response = service.query(SearchQuery {

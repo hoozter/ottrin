@@ -92,7 +92,7 @@ pub(crate) struct WorkerHandle {
     pub(crate) commands: mpsc::Sender<Command>,
     fence: Arc<ActivationFence>,
     desired_plan_identity: Mutex<Option<String>>,
-    join: Mutex<Option<JoinHandle<()>>>,
+    join: Option<JoinHandle<()>>,
 }
 
 impl WorkerHandle {
@@ -123,9 +123,9 @@ impl WorkerHandle {
             .send(Command::FilesystemEvent(vec![PathBuf::from("/root/event")]));
     }
 
-    pub(crate) fn stop(&self) {
+    pub(crate) fn stop(mut self) {
         self.invalidate_and_send(Command::Stop);
-        if let Some(join) = self.join.lock().expect("worker join lock").take() {
+        if let Some(join) = self.join.take() {
             let _ = join.join();
         }
     }
@@ -165,15 +165,17 @@ struct WorkerLoop {
     watch_clock_started: Instant,
 }
 
-pub(crate) fn spawn(
+pub(crate) fn spawn_with_runtime(
     config: SearchConfig,
     index: Arc<RwLock<IndexState>>,
     store: SearchStore,
+    launcher: ScanLauncher,
+    watch_filesystem: bool,
 ) -> WorkerHandle {
-    spawn_inner(config, index, Box::new(store), real_launcher(), true)
+    spawn_inner(config, index, Box::new(store), launcher, watch_filesystem)
 }
 
-fn real_launcher() -> ScanLauncher {
+pub(crate) fn real_launcher() -> ScanLauncher {
     Arc::new(|plan, cancelled, revision, commands| {
         Some(std::thread::spawn(move || {
             let progress_commands = commands.clone();
@@ -236,7 +238,7 @@ fn spawn_inner(
         commands,
         fence,
         desired_plan_identity: Mutex::new(desired_plan_identity),
-        join: Mutex::new(Some(join)),
+        join: Some(join),
     }
 }
 
@@ -285,6 +287,7 @@ impl WorkerLoop {
                 }
                 Ok(Command::Stop) | Err(mpsc::RecvTimeoutError::Disconnected) => {
                     self.cancel_active();
+                    self.record_stopped();
                     break;
                 }
                 Err(mpsc::RecvTimeoutError::Timeout) => {
@@ -569,6 +572,25 @@ impl WorkerLoop {
         index.last_progress_unix_secs = Some(current_unix_secs());
     }
 
+    fn record_stopped(&self) {
+        let mut index = self.index.write().expect("index write");
+        index.status = if self.has_snapshot {
+            SearchIndexStatus::Ready
+        } else {
+            SearchIndexStatus::Unavailable
+        };
+        if !self.has_snapshot && index.last_error.is_none() {
+            index.last_error = Some("Search indexing is stopped".to_string());
+        }
+        index.progress_text = None;
+        index.building_indexed_items = 0;
+        index.active_root = None;
+        index.active_root_index = 0;
+        index.watched_root_count = 0;
+        index.watcher_ready = false;
+        index.last_progress_unix_secs = Some(current_unix_secs());
+    }
+
     fn commit_mutation(&mut self, mutation: IndexMutation, expected_epoch: u64) -> bool {
         let Some(plan) = self.current_plan.as_ref() else {
             return false;
@@ -808,7 +830,7 @@ fn publish_snapshot(index: &RwLock<IndexState>, snapshot: &GenerationSnapshot) {
         .collect::<Vec<_>>();
     let count = items.len();
     let mut index = index.write().expect("index write");
-    index.items = items;
+    index.items = Arc::new(items);
     index.snapshot_revision = index.snapshot_revision.wrapping_add(1);
     index.status = SearchIndexStatus::Ready;
     index.last_error = None;
