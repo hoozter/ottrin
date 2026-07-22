@@ -29,6 +29,8 @@ use plan::ScanPlan;
 const STREAM_BATCH_SIZE: usize = 2_000;
 const INDEX_STALL_SECS: u64 = 600;
 const INDEX_STALL_RESTART_COOLDOWN_SECS: u64 = 1_800;
+#[cfg(test)]
+static SEARCH_SERVICE_TEST_LOCK: Mutex<()> = Mutex::new(());
 
 #[derive(Debug, Error)]
 pub enum SearchError {
@@ -139,16 +141,14 @@ pub struct SearchService {
     worker: Mutex<Option<JoinHandle<()>>>,
 }
 
-impl Clone for SearchService {
-    fn clone(&self) -> Self {
-        Self {
-            config: Arc::clone(&self.config),
-            index: Arc::clone(&self.index),
-            stop: Arc::clone(&self.stop),
-            rebuild: Arc::clone(&self.rebuild),
-            worker: Mutex::new(None),
-        }
-    }
+/// A cloneable, read-only view of the latest search snapshot.
+///
+/// Handles do not own worker lifecycle or rebuild/configuration controls, so they can be sent to
+/// short-lived query tasks and can remain queryable after their [`SearchService`] owner stops.
+#[derive(Clone)]
+pub struct SearchHandle {
+    config: Arc<RwLock<SearchConfig>>,
+    index: Arc<RwLock<IndexState>>,
 }
 
 impl SearchService {
@@ -661,6 +661,27 @@ impl SearchService {
         }
     }
 
+    pub fn handle(&self) -> SearchHandle {
+        SearchHandle {
+            config: Arc::clone(&self.config),
+            index: Arc::clone(&self.index),
+        }
+    }
+
+    pub fn index_status(&self) -> (SearchIndexStatus, Option<String>) {
+        self.handle().index_status()
+    }
+
+    pub fn diagnostics(&self) -> SearchIndexDiagnostics {
+        self.handle().diagnostics()
+    }
+
+    pub fn query(&self, query: SearchQuery) -> SearchResponse {
+        self.handle().query(query)
+    }
+}
+
+impl SearchHandle {
     pub fn index_status(&self) -> (SearchIndexStatus, Option<String>) {
         let snapshot = self.diagnostics();
         (snapshot.status, snapshot.detail)
@@ -3090,6 +3111,30 @@ mod tests {
     use super::*;
     use std::fs;
 
+    fn query_by_name(name: &str) -> SearchQuery {
+        SearchQuery {
+            text: name.to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: true,
+            sort: SearchSort::Relevance,
+            limit: 50,
+            offset: 0,
+            content_search: false,
+        }
+    }
+
+    fn wait_until(timeout: Duration, mut predicate: impl FnMut() -> bool) {
+        let deadline = Instant::now() + timeout;
+        while Instant::now() < deadline {
+            if predicate() {
+                return;
+            }
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        assert!(predicate(), "condition was not met before timeout");
+    }
+
     fn mk_item(path: &str, name: &str, kind: EntryKind) -> SearchResultItem {
         let mut item = SearchResultItem {
             path: PathBuf::from(path),
@@ -3116,6 +3161,71 @@ mod tests {
     fn parser_rejects_invalid_regex() {
         let err = parse_query("/[/").expect_err("should reject invalid regex");
         assert!(err.to_string().contains("Invalid regex"));
+    }
+
+    #[test]
+    fn dropping_query_handles_does_not_stop_owner_rebuilds() {
+        let _guard = SEARCH_SERVICE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-search-handle-owner-{}-{:?}",
+            std::process::id(),
+            SystemTime::now()
+        ));
+        fs::create_dir_all(&root).expect("create handle ownership root");
+        fs::write(root.join("initial.txt"), b"initial").expect("create initial file");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        service.start();
+        wait_until(Duration::from_secs(5), || {
+            matches!(service.diagnostics().status, SearchIndexStatus::Ready)
+        });
+
+        drop(service.handle());
+        let handles = vec![service.handle(), service.handle(), service.handle()];
+        drop(handles);
+
+        fs::write(root.join("explicit-revision.txt"), b"revision").expect("create revision file");
+        service.rebuild_index();
+        wait_until(Duration::from_secs(5), || {
+            service
+                .query(query_by_name("explicit-revision"))
+                .items
+                .iter()
+                .any(|item| item.name == "explicit-revision.txt")
+        });
+
+        service.stop();
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn query_handle_outlives_stopped_and_dropped_owner_snapshot() {
+        let service = SearchService::new(SearchConfig::default());
+        {
+            let mut index = service.index.write().expect("index write");
+            index.status = SearchIndexStatus::Ready;
+            index.items = vec![mk_item(
+                "/snapshot/retained-result.txt",
+                "retained-result.txt",
+                EntryKind::File,
+            )];
+        }
+        let handle = service.handle();
+
+        service.stop();
+        drop(service);
+
+        let response = handle.query(query_by_name("retained-result"));
+        assert!(matches!(response.status, SearchIndexStatus::Ready));
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].name, "retained-result.txt");
+        assert_eq!(handle.diagnostics().indexed_items, 1);
     }
 
     #[test]

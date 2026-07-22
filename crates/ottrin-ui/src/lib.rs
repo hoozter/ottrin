@@ -6334,11 +6334,11 @@ impl OttrinApp {
         self.next_request_id = self.next_request_id.saturating_add(1);
         self.search_ui.latest_request_id = request_id;
         self.search_ui.search_inflight = true;
-        let service = self.search_service.clone();
+        let search = self.search_service.handle();
         let tx = self.search_result_tx.clone();
         let response_root = root.clone();
         std::thread::spawn(move || {
-            let response = service.query(q.clone());
+            let response = search.query(q.clone());
             let _ = tx.send(SearchQueryResponse {
                 request_id,
                 query: q,

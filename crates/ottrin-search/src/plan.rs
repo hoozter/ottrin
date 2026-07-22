@@ -326,6 +326,9 @@ mod tests {
 
     #[test]
     fn invalid_startup_plan_recovers_after_config_is_corrected() {
+        let _guard = crate::SEARCH_SERVICE_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         let root = std::env::temp_dir().join(format!(
             "ottrin-plan-recovery-{}-{:?}",
             std::process::id(),
