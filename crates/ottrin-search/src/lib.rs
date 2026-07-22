@@ -18,6 +18,8 @@ use thiserror::Error;
 use walkdir::WalkDir;
 
 mod db;
+#[allow(dead_code)] // Slice 2 mutation API is intentionally isolated until worker integration.
+mod mutation;
 mod plan;
 use db::{SearchDb, SearchDbWriter, search_db_path};
 use plan::ScanPlan;
