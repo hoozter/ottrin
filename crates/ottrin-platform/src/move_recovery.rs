@@ -384,8 +384,13 @@ pub enum LinuxLoadClaimIntentRestartError {
         durable_central: Box<ClaimIntentRecord>,
         local: Box<ClaimIntentRecord>,
     },
-    #[error("recovery journals do not belong to the requested transaction")]
-    RequestedTransactionMismatch,
+    #[error(
+        "central recovery journal transaction {recorded:?} does not match requested transaction {requested:?}"
+    )]
+    RequestedTransactionMismatch {
+        requested: [u8; 16],
+        recorded: [u8; 16],
+    },
 }
 
 #[cfg(target_os = "linux")]
@@ -784,9 +789,6 @@ impl LinuxJournalDirectory {
             .map_err(LinuxLoadClaimIntentRestartError::LocalRead)?;
         let claim_intent = ClaimIntentRecord::parse(&central)
             .map_err(LinuxLoadClaimIntentRestartError::CentralCorrupt)?;
-        if claim_intent.transaction_id != encode_hex(&transaction_id) {
-            return Err(LinuxLoadClaimIntentRestartError::RequestedTransactionMismatch);
-        }
         let decode_transaction_id = |encoded: &str| {
             let decoded = decode_hex(encoded)
                 .expect("validated recovery records have hexadecimal transaction IDs");
@@ -794,6 +796,15 @@ impl LinuxJournalDirectory {
             transaction_id.copy_from_slice(&decoded);
             transaction_id
         };
+        let central_transaction_id = decode_transaction_id(&claim_intent.transaction_id);
+        if central_transaction_id != transaction_id {
+            return Err(
+                LinuxLoadClaimIntentRestartError::RequestedTransactionMismatch {
+                    requested: transaction_id,
+                    recorded: central_transaction_id,
+                },
+            );
+        }
         match ClaimIntentRecord::parse(&local) {
             Ok(local_claim_intent) => {
                 let local_transaction_id =
@@ -2613,6 +2624,79 @@ mod tests {
             )
         );
         assert_eq!(std::fs::read(&source_path).unwrap(), b"must remain");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn restart_loader_reports_requested_and_recorded_central_transaction_ids() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-mismatched-central-transaction-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let recorded_prepared = PreparedRecord::new_linux(
+            [0xe5; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let recorded_claim = ClaimIntentRecord::from_prepared(&recorded_prepared).unwrap();
+        central
+            .replace_named("d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5.journal", &recorded_claim)
+            .unwrap();
+        local.persist_local_claim_intent(&recorded_claim).unwrap();
+        let central_before = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_before = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+
+        let loaded = central.load_claim_intent_restart_state(&local, [0xd5; 16]);
+
+        assert_eq!(
+            loaded,
+            Err(
+                LinuxLoadClaimIntentRestartError::RequestedTransactionMismatch {
+                    requested: [0xd5; 16],
+                    recorded: [0xe5; 16],
+                }
+            )
+        );
+        let central_after = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_after = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(central_after, central_before);
+        assert_eq!(local_after, local_before);
         std::fs::remove_dir_all(root).unwrap();
     }
 
