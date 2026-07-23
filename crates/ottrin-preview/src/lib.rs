@@ -6,6 +6,10 @@ use std::path::PathBuf;
 
 const EXTRACTED_TEXT_MARKER: &str = "\n\nExtracted text:\n";
 const EXTRACTED_TEXT_LIMIT: usize = 24_000;
+const MAX_OFFICE_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
+const MAX_OFFICE_PARTS: usize = 4_096;
+const MAX_OFFICE_XML_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_SHARED_STRINGS: usize = 4_096;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PreviewKind {
@@ -77,7 +81,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         "mp4" | "mkv" | "webm" | "mov" | "avi" | "m4v" => PreviewKind::VideoMetadata,
         "mp3" | "flac" | "wav" | "ogg" | "m4a" | "aac" => PreviewKind::AudioMetadata,
         "zip" | "tar" | "gz" | "xz" | "bz2" | "7z" | "rar" => PreviewKind::ArchiveMetadata,
-        "doc" | "docx" | "xls" | "xlsx" | "ppt" | "pptx" | "odt" | "ods" | "odp" => {
+        "doc" | "docx" | "xls" | "xlsx" | "xlsm" | "ppt" | "pptx" | "odt" | "ods" | "odp" => {
             PreviewKind::OfficeMetadata
         }
         _ => PreviewKind::Unsupported,
@@ -604,11 +608,16 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
         .and_then(|s| s.to_str())
         .unwrap_or("")
         .to_ascii_lowercase();
-    let is_ooxml = matches!(ext.as_str(), "docx" | "xlsx" | "pptx");
+    let is_ooxml = matches!(ext.as_str(), "docx" | "xlsx" | "xlsm" | "pptx");
 
+    let package_is_bounded = std::fs::metadata(path)
+        .map(|metadata| metadata.len() <= MAX_OFFICE_PACKAGE_BYTES)
+        .unwrap_or(false);
     if is_ooxml
+        && package_is_bounded
         && let Ok(file) = std::fs::File::open(path)
         && let Ok(mut archive) = zip::ZipArchive::new(file)
+        && archive.len() <= MAX_OFFICE_PARTS
     {
         let mut lines = vec![
             format!("Filetype: {} document", ext.to_ascii_uppercase()),
@@ -625,10 +634,11 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
                 lines.push(format!("Modified: {}", format_modified(dur.as_secs())));
             }
         }
-        let extracted_text = if ext == "docx" {
-            extract_docx_text(&mut archive)
-        } else {
-            None
+        let extracted_text = match ext.as_str() {
+            "docx" => extract_docx_text(&mut archive),
+            "xlsx" | "xlsm" => extract_xlsx_text(&mut archive),
+            "pptx" => extract_pptx_text(&mut archive),
+            _ => None,
         };
         let body = if let Some(text) = extracted_text {
             format!(
@@ -664,12 +674,7 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
 fn extract_docx_text<R: std::io::Read + std::io::Seek>(
     archive: &mut zip::ZipArchive<R>,
 ) -> Option<String> {
-    let mut xml = String::new();
-    archive
-        .by_name("word/document.xml")
-        .ok()?
-        .read_to_string(&mut xml)
-        .ok()?;
+    let xml = zip_entry_text(archive, "word/document.xml")?;
 
     let mut reader = quick_xml::Reader::from_str(&xml);
     reader.config_mut().trim_text(true);
@@ -688,7 +693,9 @@ fn extract_docx_text<R: std::io::Read + std::io::Seek>(
                 _ => {}
             },
             Ok(quick_xml::events::Event::End(event)) => {
-                if matches!(event.name().as_ref(), b"w:p" | b"w:tr") {
+                if event.name().as_ref() == b"w:tc" {
+                    text.push('\t');
+                } else if matches!(event.name().as_ref(), b"w:p" | b"w:tr") {
                     text.push('\n');
                 }
             }
@@ -700,29 +707,390 @@ fn extract_docx_text<R: std::io::Read + std::io::Seek>(
     normalized_preview_text(&text)
 }
 
+fn zip_entry_text<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+    name: &str,
+) -> Option<String> {
+    let entry = archive.by_name(name).ok()?;
+    if entry.size() > MAX_OFFICE_XML_BYTES {
+        return None;
+    }
+    let mut limited = entry.take(MAX_OFFICE_XML_BYTES + 1);
+    let mut xml = String::new();
+    limited.read_to_string(&mut xml).ok()?;
+    (xml.len() as u64 <= MAX_OFFICE_XML_BYTES).then_some(xml)
+}
+
+fn extract_tag_text(xml: &str, tag: &[u8]) -> Option<String> {
+    let mut reader = quick_xml::Reader::from_str(xml);
+    reader.config_mut().trim_text(true);
+    let mut inside = false;
+    let mut text = String::new();
+    loop {
+        match reader.read_event() {
+            Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == tag => {
+                inside = true;
+            }
+            Ok(quick_xml::events::Event::End(event)) if event.name().as_ref() == tag => {
+                inside = false;
+                text.push('\n');
+            }
+            Ok(quick_xml::events::Event::Text(event)) if inside => {
+                if let Ok(chunk) = event.decode() {
+                    text.push_str(&chunk);
+                }
+            }
+            Ok(quick_xml::events::Event::Eof) => break,
+            Err(_) => return None,
+            _ => {}
+        }
+    }
+    normalized_preview_text(&text)
+}
+
+fn extract_pptx_text<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> Option<String> {
+    let mut slides = (0..archive.len())
+        .filter_map(|index| {
+            archive
+                .by_index_raw(index)
+                .ok()
+                .map(|entry| entry.name().to_string())
+        })
+        .filter(|name| name.starts_with("ppt/slides/slide") && name.ends_with(".xml"))
+        .collect::<Vec<_>>();
+    slides.sort_by_key(|name| {
+        name.trim_start_matches("ppt/slides/slide")
+            .trim_end_matches(".xml")
+            .parse::<u32>()
+            .unwrap_or(u32::MAX)
+    });
+
+    let mut out = String::new();
+    for (index, name) in slides.into_iter().take(24).enumerate() {
+        let Some(xml) = zip_entry_text(archive, &name) else {
+            continue;
+        };
+        let Some(text) = extract_tag_text(&xml, b"a:t") else {
+            continue;
+        };
+        let prefix = if out.is_empty() { "" } else { "\n\n" };
+        if !append_bounded_preview_text(&mut out, &format!("{prefix}Slide {}\n{text}", index + 1)) {
+            break;
+        }
+    }
+    normalized_preview_text(&out)
+}
+
+fn extract_xlsx_text<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> Option<String> {
+    let shared_strings = zip_entry_text(archive, "xl/sharedStrings.xml")
+        .and_then(|xml| extract_xlsx_shared_strings(&xml))
+        .unwrap_or_default();
+    let sheets = xlsx_sheet_entries(archive);
+
+    let mut out = String::new();
+    for (label, name) in sheets.into_iter().take(12) {
+        let Some(xml) = zip_entry_text(archive, &name) else {
+            continue;
+        };
+        let Some(table) = extract_xlsx_sheet(&xml, &shared_strings) else {
+            continue;
+        };
+        let prefix = if out.is_empty() { "" } else { "\n\n" };
+        if !append_bounded_preview_text(&mut out, &format!("{prefix}Sheet: {label}\n{table}")) {
+            break;
+        }
+    }
+    normalized_preview_text(&out)
+}
+
+fn xlsx_sheet_entries<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> Vec<(String, String)> {
+    let workbook = zip_entry_text(archive, "xl/workbook.xml");
+    let relationships = zip_entry_text(archive, "xl/_rels/workbook.xml.rels");
+    if let (Some(workbook), Some(relationships)) = (workbook, relationships) {
+        let mut targets = std::collections::HashMap::new();
+        let mut reader = quick_xml::Reader::from_str(&relationships);
+        loop {
+            match reader.read_event() {
+                Ok(quick_xml::events::Event::Empty(event))
+                | Ok(quick_xml::events::Event::Start(event))
+                    if event.name().as_ref() == b"Relationship" =>
+                {
+                    let mut id = None;
+                    let mut target = None;
+                    for attribute in event.attributes().flatten() {
+                        match attribute.key.as_ref() {
+                            b"Id" => id = attribute.unescape_value().ok().map(|v| v.into_owned()),
+                            b"Target" => {
+                                target = attribute.unescape_value().ok().map(|v| v.into_owned())
+                            }
+                            _ => {}
+                        }
+                    }
+                    if let (Some(id), Some(target)) = (id, target) {
+                        let target = target.trim_start_matches('/');
+                        let path = if target.starts_with("xl/") {
+                            target.to_string()
+                        } else {
+                            format!("xl/{target}")
+                        };
+                        targets.insert(id, path);
+                    }
+                }
+                Ok(quick_xml::events::Event::Eof) | Err(_) => break,
+                _ => {}
+            }
+        }
+
+        let mut sheets = Vec::new();
+        let mut reader = quick_xml::Reader::from_str(&workbook);
+        loop {
+            match reader.read_event() {
+                Ok(quick_xml::events::Event::Empty(event))
+                | Ok(quick_xml::events::Event::Start(event))
+                    if event.name().as_ref() == b"sheet" =>
+                {
+                    let mut name = None;
+                    let mut relationship = None;
+                    for attribute in event.attributes().flatten() {
+                        match attribute.key.as_ref() {
+                            b"name" => {
+                                name = attribute.unescape_value().ok().map(|v| v.into_owned())
+                            }
+                            b"r:id" => {
+                                relationship =
+                                    attribute.unescape_value().ok().map(|v| v.into_owned())
+                            }
+                            _ => {}
+                        }
+                    }
+                    if let (Some(name), Some(path)) =
+                        (name, relationship.and_then(|id| targets.get(&id).cloned()))
+                    {
+                        sheets.push((name, path));
+                    }
+                }
+                Ok(quick_xml::events::Event::Eof) | Err(_) => break,
+                _ => {}
+            }
+        }
+        if !sheets.is_empty() {
+            return sheets;
+        }
+    }
+
+    let mut fallback = (0..archive.len())
+        .filter_map(|index| {
+            archive
+                .by_index_raw(index)
+                .ok()
+                .map(|entry| entry.name().to_string())
+        })
+        .filter(|name| name.starts_with("xl/worksheets/sheet") && name.ends_with(".xml"))
+        .collect::<Vec<_>>();
+    fallback.sort_by_key(|name| {
+        name.trim_start_matches("xl/worksheets/sheet")
+            .trim_end_matches(".xml")
+            .parse::<u32>()
+            .unwrap_or(u32::MAX)
+    });
+    fallback
+        .into_iter()
+        .enumerate()
+        .map(|(index, path)| ((index + 1).to_string(), path))
+        .collect()
+}
+
+fn extract_xlsx_shared_strings(xml: &str) -> Option<Vec<String>> {
+    let mut reader = quick_xml::Reader::from_str(xml);
+    reader.config_mut().trim_text(true);
+    let mut strings = Vec::new();
+    let mut current = String::new();
+    let mut in_text = false;
+    let mut stored_characters = 0usize;
+    loop {
+        match reader.read_event() {
+            Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == b"t" => {
+                in_text = true;
+            }
+            Ok(quick_xml::events::Event::End(event)) if event.name().as_ref() == b"t" => {
+                in_text = false;
+            }
+            Ok(quick_xml::events::Event::End(event)) if event.name().as_ref() == b"si" => {
+                stored_characters += current.chars().count();
+                strings.push(std::mem::take(&mut current));
+                if strings.len() >= MAX_SHARED_STRINGS || stored_characters >= EXTRACTED_TEXT_LIMIT
+                {
+                    break;
+                }
+            }
+            Ok(quick_xml::events::Event::Text(event)) if in_text => {
+                let chunk = event.decode().ok()?;
+                let remaining = EXTRACTED_TEXT_LIMIT
+                    .saturating_sub(stored_characters + current.chars().count());
+                current.extend(chunk.chars().take(remaining));
+            }
+            Ok(quick_xml::events::Event::Eof) => break,
+            Err(_) => return None,
+            _ => {}
+        }
+    }
+    Some(strings)
+}
+
+fn extract_xlsx_sheet(xml: &str, shared_strings: &[String]) -> Option<String> {
+    let mut reader = quick_xml::Reader::from_str(xml);
+    reader.config_mut().trim_text(true);
+    let mut out = String::new();
+    let mut cell_type = None::<String>;
+    let mut value = String::new();
+    let mut collecting = false;
+    let mut row_cells = Vec::<String>::new();
+    let mut cell_column = None;
+    let mut rows = 0usize;
+    loop {
+        match reader.read_event() {
+            Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == b"row" => {
+                row_cells.clear();
+                rows += 1;
+            }
+            Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == b"c" => {
+                cell_type = None;
+                cell_column = None;
+                for attribute in event.attributes().flatten() {
+                    match attribute.key.as_ref() {
+                        b"t" => {
+                            cell_type = String::from_utf8(attribute.value.into_owned()).ok();
+                        }
+                        b"r" => {
+                            cell_column = std::str::from_utf8(attribute.value.as_ref())
+                                .ok()
+                                .and_then(xlsx_column_index);
+                        }
+                        _ => {}
+                    }
+                }
+                value.clear();
+            }
+            Ok(quick_xml::events::Event::Start(event))
+                if matches!(event.name().as_ref(), b"v" | b"t") =>
+            {
+                collecting = true;
+            }
+            Ok(quick_xml::events::Event::End(event))
+                if matches!(event.name().as_ref(), b"v" | b"t") =>
+            {
+                collecting = false;
+            }
+            Ok(quick_xml::events::Event::Text(event)) if collecting => {
+                value.push_str(&event.decode().ok()?);
+            }
+            Ok(quick_xml::events::Event::End(event)) if event.name().as_ref() == b"c" => {
+                let value = if cell_type.as_deref() == Some("s") {
+                    value
+                        .parse::<usize>()
+                        .ok()
+                        .and_then(|index| shared_strings.get(index))
+                        .cloned()
+                        .unwrap_or_else(|| value.clone())
+                } else {
+                    value.clone()
+                };
+                let column = cell_column.unwrap_or(row_cells.len()).min(63);
+                if row_cells.len() <= column {
+                    row_cells.resize(column + 1, String::new());
+                }
+                row_cells[column] = value;
+            }
+            Ok(quick_xml::events::Event::End(event)) if event.name().as_ref() == b"row" => {
+                while row_cells.last().is_some_and(String::is_empty) {
+                    row_cells.pop();
+                }
+                for (index, cell) in row_cells.iter().enumerate() {
+                    if index > 0 && !append_bounded_preview_text(&mut out, "\t") {
+                        break;
+                    }
+                    if !append_bounded_preview_text(&mut out, cell) {
+                        break;
+                    }
+                }
+                if !append_bounded_preview_text(&mut out, "\n")
+                    || out.chars().count() >= EXTRACTED_TEXT_LIMIT
+                    || rows >= 80
+                {
+                    break;
+                }
+            }
+            Ok(quick_xml::events::Event::Eof) => break,
+            Err(_) => return None,
+            _ => {}
+        }
+    }
+    normalized_preview_text(&out)
+}
+
+fn xlsx_column_index(reference: &str) -> Option<usize> {
+    let mut column = 0usize;
+    let mut found = false;
+    for byte in reference.bytes() {
+        if !byte.is_ascii_alphabetic() {
+            break;
+        }
+        found = true;
+        column = column
+            .checked_mul(26)?
+            .checked_add(usize::from(byte.to_ascii_uppercase() - b'A') + 1)?;
+    }
+    found.then(|| column.saturating_sub(1))
+}
+
 fn normalized_preview_text(text: &str) -> Option<String> {
     let mut out = String::new();
     let mut previous_blank = false;
+    let mut characters = 0usize;
     for line in text.lines() {
         let trimmed = line.trim();
         if trimmed.is_empty() {
-            if !previous_blank && !out.is_empty() {
+            if !previous_blank && !out.is_empty() && characters < EXTRACTED_TEXT_LIMIT {
                 out.push('\n');
+                characters += 1;
                 previous_blank = true;
             }
             continue;
         }
         if !out.is_empty() && !out.ends_with('\n') {
+            if characters >= EXTRACTED_TEXT_LIMIT {
+                break;
+            }
             out.push('\n');
+            characters += 1;
         }
-        out.push_str(trimmed);
+        let remaining = EXTRACTED_TEXT_LIMIT.saturating_sub(characters);
+        let mut chars = trimmed.chars();
+        out.extend(chars.by_ref().take(remaining));
+        characters += trimmed.chars().take(remaining).count();
         previous_blank = false;
+        if chars.next().is_some() || characters >= EXTRACTED_TEXT_LIMIT {
+            break;
+        }
     }
     if out.trim().is_empty() {
         None
     } else {
         Some(out)
     }
+}
+
+fn append_bounded_preview_text(out: &mut String, text: &str) -> bool {
+    let remaining = EXTRACTED_TEXT_LIMIT.saturating_sub(out.chars().count());
+    let mut chars = text.chars();
+    out.extend(chars.by_ref().take(remaining));
+    chars.next().is_none()
 }
 
 fn limit_preview_text(text: &str) -> String {
@@ -838,6 +1206,34 @@ mod tests {
     }
 
     #[test]
+    fn office_text_normalization_and_aggregation_are_bounded() {
+        let oversized = "x".repeat(EXTRACTED_TEXT_LIMIT * 2);
+        let normalized = normalized_preview_text(&oversized).expect("normalized text");
+        assert_eq!(normalized.chars().count(), EXTRACTED_TEXT_LIMIT);
+
+        let mut aggregate = String::new();
+        assert!(!append_bounded_preview_text(&mut aggregate, &oversized));
+        assert_eq!(aggregate.chars().count(), EXTRACTED_TEXT_LIMIT);
+
+        let shared = format!("<sst><si><t>{oversized}</t></si><si><t>ignored</t></si></sst>");
+        let strings = extract_xlsx_shared_strings(&shared).expect("shared strings");
+        assert_eq!(
+            strings
+                .iter()
+                .map(|value| value.chars().count())
+                .sum::<usize>(),
+            EXTRACTED_TEXT_LIMIT
+        );
+
+        let cells = (0..64)
+            .map(|_| "<c t=\"s\"><v>0</v></c>")
+            .collect::<String>();
+        let sheet = format!("<worksheet><sheetData><row>{cells}</row></sheetData></worksheet>");
+        let table = extract_xlsx_sheet(&sheet, &strings).expect("bounded table");
+        assert_eq!(table.chars().count(), EXTRACTED_TEXT_LIMIT);
+    }
+
+    #[test]
     fn text_preview_includes_metadata_and_copyable_text() {
         let path = temp_path("sample.rs");
         std::fs::write(&path, "fn main() {}\nprintln!(\"hi\");\n").expect("write");
@@ -891,6 +1287,88 @@ mod tests {
         assert!(preview.body.contains("Contents:"));
         assert!(preview.body.contains("docs/readme.txt"));
 
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn xlsx_preview_contains_sheet_cells_in_reading_order() {
+        let path = temp_path("workbook.xlsx");
+        {
+            let file = std::fs::File::create(&path).expect("create xlsx");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("xl/sharedStrings.xml", options)
+                .expect("strings");
+            zip.write_all(br#"<sst><si><t>Name</t></si><si><t>Ada</t></si></sst>"#)
+                .expect("write strings");
+            zip.start_file("xl/workbook.xml", options)
+                .expect("workbook");
+            zip.write_all(br#"<workbook xmlns:r="relationships"><sheets><sheet name="Quarter 1" r:id="rId7"/></sheets></workbook>"#)
+                .expect("write workbook");
+            zip.start_file("xl/_rels/workbook.xml.rels", options)
+                .expect("relationships");
+            zip.write_all(br#"<Relationships><Relationship Id="rId7" Target="worksheets/sheet1.xml"/></Relationships>"#)
+                .expect("write relationships");
+            zip.start_file("xl/worksheets/sheet1.xml", options)
+                .expect("sheet");
+            zip.write_all(
+                br#"<worksheet><sheetData><row><c r="A1" t="s"><v>0</v></c><c r="C1"><v>Score</v></c></row><row><c r="A2" t="s"><v>1</v></c><c r="C2"><v>42</v></c></row></sheetData></worksheet>"#,
+            )
+            .expect("write sheet");
+            zip.finish().expect("finish");
+        }
+
+        let preview = preview_office("workbook.xlsx".to_string(), &path);
+
+        assert!(preview.body.contains(EXTRACTED_TEXT_MARKER));
+        assert!(preview.body.contains("Sheet: Quarter 1"));
+        assert!(preview.body.contains("Name\t\tScore"));
+        assert!(preview.body.contains("Ada\t\t42"));
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn pptx_preview_separates_slide_text() {
+        let path = temp_path("slides.pptx");
+        {
+            let file = std::fs::File::create(&path).expect("create pptx");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("ppt/slides/slide1.xml", options)
+                .expect("slide");
+            zip.write_all(br#"<p:sld><a:t>Launch plan</a:t><a:t>Ready for v1</a:t></p:sld>"#)
+                .expect("write slide");
+            zip.finish().expect("finish");
+        }
+
+        let preview = preview_office("slides.pptx".to_string(), &path);
+
+        assert!(preview.body.contains("Slide 1"));
+        assert!(preview.body.contains("Launch plan"));
+        assert!(preview.body.contains("Ready for v1"));
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn office_preview_rejects_oversized_decompressed_xml_part() {
+        let path = temp_path("oversized.docx");
+        {
+            let file = std::fs::File::create(&path).expect("create docx");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default()
+                .compression_method(zip::CompressionMethod::Deflated);
+            zip.start_file("word/document.xml", options)
+                .expect("document");
+            zip.write_all(&vec![b'x'; MAX_OFFICE_XML_BYTES as usize + 1])
+                .expect("write oversized XML");
+            zip.finish().expect("finish");
+        }
+
+        let preview = preview_office("oversized.docx".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::OfficeMetadata);
+        assert!(!preview.body.contains(EXTRACTED_TEXT_MARKER));
+        assert!(preview.body.contains("Internal parts: 1"));
         let _ = std::fs::remove_file(path);
     }
 }
