@@ -2,6 +2,9 @@ use serde::{Deserialize, Deserializer, Serialize};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
+#[cfg(target_os = "linux")]
+use rustix::fd::OwnedFd;
+
 pub const JOURNAL_SCHEMA_MAJOR: u16 = 1;
 pub const JOURNAL_SCHEMA_MINOR: u16 = 0;
 
@@ -46,6 +49,52 @@ pub enum JournalError {
     WrongPlatformEncoding,
     #[error("invalid native path units")]
     InvalidNativePathUnits,
+    #[error("journal I/O failed: {0}")]
+    Io(String),
+}
+
+#[cfg(target_os = "linux")]
+pub struct LinuxJournalDirectory {
+    directory: OwnedFd,
+}
+
+#[cfg(target_os = "linux")]
+impl LinuxJournalDirectory {
+    pub fn open(path: &Path) -> Result<Self, JournalError> {
+        use rustix::fs::{CWD, Mode, OFlags, openat};
+
+        let directory = openat(
+            CWD,
+            path,
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|error| JournalError::Io(error.to_string()))?;
+        Ok(Self { directory })
+    }
+
+    pub fn replace(&self, header: &JournalHeader) -> Result<(), JournalError> {
+        use rustix::fs::{Mode, OFlags, fsync, openat, renameat};
+        use std::fs::File;
+        use std::io::Write;
+
+        let encoded = serde_json::to_vec(header)
+            .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
+        let next = openat(
+            &self.directory,
+            "journal.next",
+            OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::CLOEXEC,
+            Mode::RUSR | Mode::WUSR,
+        )
+        .map_err(|error| JournalError::Io(error.to_string()))?;
+        let mut next = File::from(next);
+        next.write_all(&encoded)
+            .and_then(|()| next.sync_all())
+            .map_err(|error| JournalError::Io(error.to_string()))?;
+        renameat(&self.directory, "journal.next", &self.directory, "journal")
+            .map_err(|error| JournalError::Io(error.to_string()))?;
+        fsync(&self.directory).map_err(|error| JournalError::Io(error.to_string()))
+    }
 }
 
 impl NativePath {
@@ -99,14 +148,14 @@ impl NativePath {
             if self.encoding != NativePathEncoding::WindowsUtf16Le {
                 return Err(JournalError::WrongPlatformEncoding);
             }
-            if self.units_hex.len() % 4 != 0 {
+            if !self.units_hex.len().is_multiple_of(4) {
                 return Err(JournalError::InvalidNativePathUnits);
             }
             let units = self
                 .units_hex
                 .as_bytes()
                 .chunks_exact(4)
-                .map(|digits| decode_u16_hex(digits))
+                .map(decode_u16_hex)
                 .collect::<Result<Vec<_>, _>>()?;
             Ok(PathBuf::from(OsString::from_wide(&units)))
         }
@@ -328,5 +377,29 @@ mod tests {
             "unexpected": true
         }"#;
         assert!(serde_json::from_slice::<NativePath>(json).is_err());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn open_journal_directory_cannot_be_retargeted_by_path_replacement() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-journal-anchor-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let original = root.join("journal-directory");
+        let moved = root.join("moved-journal-directory");
+        std::fs::create_dir_all(&original).unwrap();
+
+        let directory = LinuxJournalDirectory::open(&original).unwrap();
+        std::fs::rename(&original, &moved).unwrap();
+        std::fs::create_dir(&original).unwrap();
+
+        let header = JournalHeader::new([0x5a; 16]);
+        directory.replace(&header).unwrap();
+
+        let persisted = std::fs::read(moved.join("journal")).unwrap();
+        assert_eq!(JournalHeader::parse(&persisted).unwrap(), header);
+        assert!(!original.join("journal").exists());
+        std::fs::remove_dir_all(root).unwrap();
     }
 }
