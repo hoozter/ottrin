@@ -22,6 +22,59 @@ pub struct NativePath {
     units_hex: String,
 }
 
+#[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum JournalPhase {
+    Prepared,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum LinuxFileType {
+    Regular,
+    Directory,
+    Symlink,
+    Other,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LinuxStableIdentity {
+    device: u64,
+    inode: u64,
+    file_type: LinuxFileType,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+pub struct PreparedRecord {
+    schema_major: u16,
+    schema_minor: u16,
+    transaction_id: String,
+    phase: JournalPhase,
+    source_parent: NativePath,
+    original_name: NativePath,
+    source_parent_identity: LinuxStableIdentity,
+    source_entry_identity: LinuxStableIdentity,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawPreparedRecord {
+    schema_major: u16,
+    schema_minor: u16,
+    transaction_id: String,
+    phase: JournalPhase,
+    source_parent: NativePath,
+    original_name: NativePath,
+    source_parent_identity: LinuxStableIdentity,
+    source_entry_identity: LinuxStableIdentity,
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct JournalHeader {
     schema_major: u16,
@@ -49,6 +102,10 @@ pub enum JournalError {
     WrongPlatformEncoding,
     #[error("invalid native path units")]
     InvalidNativePathUnits,
+    #[error("invalid prepared source path")]
+    InvalidPreparedSourcePath,
+    #[error("invalid Linux stable identity")]
+    InvalidLinuxIdentity,
     #[error("journal I/O failed: {0}")]
     Io(String),
 }
@@ -196,6 +253,94 @@ impl JournalHeader {
         let raw: RawJournalHeader = serde_json::from_slice(bytes)
             .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
         Self::try_from(raw)
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl LinuxStableIdentity {
+    pub fn new(device: u64, inode: u64, file_type: LinuxFileType) -> Self {
+        Self {
+            device,
+            inode,
+            file_type,
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl PreparedRecord {
+    pub fn new_linux(
+        transaction_id: [u8; 16],
+        source_parent: &Path,
+        original_name: &Path,
+        source_parent_identity: LinuxStableIdentity,
+        source_entry_identity: LinuxStableIdentity,
+    ) -> Result<Self, JournalError> {
+        Self::try_from(RawPreparedRecord {
+            schema_major: JOURNAL_SCHEMA_MAJOR,
+            schema_minor: JOURNAL_SCHEMA_MINOR,
+            transaction_id: encode_hex(&transaction_id),
+            phase: JournalPhase::Prepared,
+            source_parent: NativePath::encode(source_parent),
+            original_name: NativePath::encode(original_name),
+            source_parent_identity,
+            source_entry_identity,
+        })
+    }
+
+    pub fn parse(bytes: &[u8]) -> Result<Self, JournalError> {
+        let raw: RawPreparedRecord = serde_json::from_slice(bytes)
+            .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
+        Self::try_from(raw)
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl TryFrom<RawPreparedRecord> for PreparedRecord {
+    type Error = JournalError;
+
+    fn try_from(raw: RawPreparedRecord) -> Result<Self, Self::Error> {
+        JournalHeader::try_from(RawJournalHeader {
+            schema_major: raw.schema_major,
+            schema_minor: raw.schema_minor,
+            transaction_id: raw.transaction_id.clone(),
+        })?;
+        let source_parent = raw.source_parent.decode()?;
+        let original_name = raw.original_name.decode()?;
+        let mut original_components = original_name.components();
+        if !source_parent.is_absolute()
+            || !matches!(
+                original_components.next(),
+                Some(std::path::Component::Normal(_))
+            )
+            || original_components.next().is_some()
+        {
+            return Err(JournalError::InvalidPreparedSourcePath);
+        }
+        if raw.source_parent_identity.file_type != LinuxFileType::Directory {
+            return Err(JournalError::InvalidLinuxIdentity);
+        }
+        Ok(Self {
+            schema_major: raw.schema_major,
+            schema_minor: raw.schema_minor,
+            transaction_id: raw.transaction_id,
+            phase: raw.phase,
+            source_parent: raw.source_parent,
+            original_name: raw.original_name,
+            source_parent_identity: raw.source_parent_identity,
+            source_entry_identity: raw.source_entry_identity,
+        })
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl<'de> Deserialize<'de> for PreparedRecord {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let raw = RawPreparedRecord::deserialize(deserializer)?;
+        Self::try_from(raw).map_err(serde::de::Error::custom)
     }
 }
 
@@ -348,6 +493,53 @@ mod tests {
                 Err(JournalError::InvalidTransactionId)
             );
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_record_persists_lossless_linux_source_identity() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+
+        let source_parent = PathBuf::from(OsString::from_vec(b"/source\x80".to_vec()));
+        let original_name = PathBuf::from(OsString::from_vec(b"item\xff".to_vec()));
+        let record = PreparedRecord::new_linux(
+            [0x42; 16],
+            &source_parent,
+            &original_name,
+            LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+        )
+        .unwrap();
+
+        let encoded = serde_json::to_vec(&record).unwrap();
+        let parsed = PreparedRecord::parse(&encoded).unwrap();
+        assert_eq!(parsed, record);
+        assert_eq!(parsed.phase, JournalPhase::Prepared);
+        assert_eq!(parsed.source_parent.decode().unwrap(), source_parent);
+        assert_eq!(parsed.original_name.decode().unwrap(), original_name);
+        assert_eq!(parsed.source_parent_identity.device, 11);
+        assert_eq!(parsed.source_parent_identity.inode, 22);
+        assert_eq!(parsed.source_entry_identity.inode, 33);
+
+        let invalid = String::from_utf8(encoded)
+            .unwrap()
+            .replace("\"file_type\":\"directory\"", "\"file_type\":\"regular\"");
+        assert!(serde_json::from_str::<PreparedRecord>(&invalid).is_err());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_record_rejects_root_as_original_name() {
+        let result = PreparedRecord::new_linux(
+            [0x43; 16],
+            Path::new("/source"),
+            Path::new("/"),
+            LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+        );
+
+        assert_eq!(result, Err(JournalError::InvalidPreparedSourcePath));
     }
 
     #[test]
