@@ -60,7 +60,7 @@ Stable identities validate a located object; they do not necessarily locate it a
 
 Use a versioned schema with atomic replacement:
 
-1. Write `journal.next` with create-new semantics.
+1. Write a private `journal.next-<random-128-bit-id>` entry with create-new semantics. A stale temporary entry from an interrupted update is retained for recovery and cannot block later replacement.
 2. Flush the file.
 3. Rename it over `journal` using a platform atomic replacement primitive.
 4. Flush the containing directory where the platform supports directory durability.

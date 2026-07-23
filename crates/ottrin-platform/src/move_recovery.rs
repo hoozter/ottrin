@@ -80,9 +80,12 @@ impl LinuxJournalDirectory {
 
         let encoded = serde_json::to_vec(header)
             .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
+        let mut random = [0_u8; 16];
+        getrandom::fill(&mut random).map_err(|error| JournalError::Io(error.to_string()))?;
+        let next_name = format!("journal.next-{}", encode_hex(&random));
         let next = openat(
             &self.directory,
-            "journal.next",
+            next_name.as_str(),
             OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::CLOEXEC,
             Mode::RUSR | Mode::WUSR,
         )
@@ -91,8 +94,13 @@ impl LinuxJournalDirectory {
         next.write_all(&encoded)
             .and_then(|()| next.sync_all())
             .map_err(|error| JournalError::Io(error.to_string()))?;
-        renameat(&self.directory, "journal.next", &self.directory, "journal")
-            .map_err(|error| JournalError::Io(error.to_string()))?;
+        renameat(
+            &self.directory,
+            next_name.as_str(),
+            &self.directory,
+            "journal",
+        )
+        .map_err(|error| JournalError::Io(error.to_string()))?;
         fsync(&self.directory).map_err(|error| JournalError::Io(error.to_string()))
     }
 }
@@ -377,6 +385,27 @@ mod tests {
             "unexpected": true
         }"#;
         assert!(serde_json::from_slice::<NativePath>(json).is_err());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn stale_fixed_next_entry_does_not_block_journal_replacement() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-journal-stale-next-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let stale = b"interrupted journal update";
+        std::fs::write(root.join("journal.next"), stale).unwrap();
+
+        let directory = LinuxJournalDirectory::open(&root).unwrap();
+        let header = JournalHeader::new([0x6b; 16]);
+        directory.replace(&header).unwrap();
+
+        let persisted = std::fs::read(root.join("journal")).unwrap();
+        assert_eq!(JournalHeader::parse(&persisted).unwrap(), header);
+        assert_eq!(std::fs::read(root.join("journal.next")).unwrap(), stale);
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(target_os = "linux")]
