@@ -209,6 +209,49 @@ pub struct LinuxJournalDirectory {
 }
 
 #[cfg(target_os = "linux")]
+/// Exclusive authority for Move recovery and ClaimIntent journal mutation.
+///
+/// A journal directory cannot advance ClaimIntent without first acquiring this token:
+///
+/// ```compile_fail
+/// use ottrin_platform::move_recovery::{LinuxJournalDirectory, PreparedRecord};
+///
+/// fn advance_without_lock(
+///     central: &LinuxJournalDirectory,
+///     local: &LinuxJournalDirectory,
+///     prepared: &PreparedRecord,
+/// ) {
+///     let _ = central.advance_to_claim_intent_with_local(local, prepared);
+/// }
+/// ```
+///
+/// ```compile_fail
+/// use ottrin_platform::move_recovery::{LinuxJournalDirectory, PreparedRecord};
+///
+/// fn prepare_without_lock(
+///     central: &LinuxJournalDirectory,
+///     local: &LinuxJournalDirectory,
+///     prepared: &PreparedRecord,
+/// ) {
+///     let _ = central.prepare_with_local(local, prepared);
+/// }
+/// ```
+#[derive(Debug)]
+pub struct LinuxRecoveryLock<'a> {
+    central: &'a LinuxJournalDirectory,
+    _lock: OwnedFd,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxRecoveryLockError {
+    #[error("another recovery context owns the exclusive recovery lock")]
+    Contended,
+    #[error("recovery lock failed: {0}")]
+    Io(String),
+}
+
+#[cfg(target_os = "linux")]
 #[derive(Debug)]
 pub struct LinuxSourceParentDirectory {
     directory: OwnedFd,
@@ -650,19 +693,44 @@ impl LinuxJournalDirectory {
         Ok(Self { directory })
     }
 
-    pub fn replace(&self, header: &JournalHeader) -> Result<(), JournalError> {
+    pub fn try_lock_recovery(&self) -> Result<LinuxRecoveryLock<'_>, LinuxRecoveryLockError> {
+        use rustix::fs::{FlockOperation, Mode, OFlags, flock, openat};
+
+        let lock = openat(
+            &self.directory,
+            ".",
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|error| LinuxRecoveryLockError::Io(error.to_string()))?;
+        flock(&lock, FlockOperation::NonBlockingLockExclusive).map_err(|error| {
+            if error == rustix::io::Errno::AGAIN {
+                LinuxRecoveryLockError::Contended
+            } else {
+                LinuxRecoveryLockError::Io(error.to_string())
+            }
+        })?;
+        Ok(LinuxRecoveryLock {
+            central: self,
+            _lock: lock,
+        })
+    }
+
+    #[cfg(test)]
+    fn replace(&self, header: &JournalHeader) -> Result<(), JournalError> {
         self.replace_named("journal", header)
     }
 
-    pub fn persist_discovery_header(&self, header: &JournalHeader) -> Result<(), JournalError> {
+    #[cfg(test)]
+    fn persist_discovery_header(&self, header: &JournalHeader) -> Result<(), JournalError> {
         self.replace_named(&format!("{}.journal", header.transaction_id), header)
     }
 
-    pub fn persist_prepared(&self, record: &PreparedRecord) -> Result<(), JournalError> {
+    fn persist_prepared(&self, record: &PreparedRecord) -> Result<(), JournalError> {
         self.replace_named(&format!("{}.journal", record.transaction_id), record)
     }
 
-    pub fn persist_local_prepared(&self, record: &PreparedRecord) -> Result<(), JournalError> {
+    fn persist_local_prepared(&self, record: &PreparedRecord) -> Result<(), JournalError> {
         self.replace_named("journal", record)
     }
 
@@ -674,7 +742,7 @@ impl LinuxJournalDirectory {
         self.replace_named("journal", record)
     }
 
-    pub fn prepare_with_local(
+    fn prepare_with_local(
         &self,
         local: &Self,
         record: &PreparedRecord,
@@ -685,64 +753,6 @@ impl LinuxJournalDirectory {
             .persist_local_prepared(record)
             .map_err(LinuxPrepareJournalsError::CentralOnly)?;
         Ok(LinuxPreparedJournals::MatchingPair)
-    }
-
-    pub fn advance_to_claim_intent_with_local(
-        &self,
-        local: &Self,
-        prepared: &PreparedRecord,
-    ) -> Result<LinuxClaimIntentJournals, LinuxAdvanceClaimIntentError> {
-        let decoded = decode_hex(&prepared.transaction_id)
-            .expect("validated prepared transaction IDs are hexadecimal");
-        let mut transaction_id = [0_u8; 16];
-        transaction_id.copy_from_slice(&decoded);
-        let claim_intent = ClaimIntentRecord::from_prepared(prepared)
-            .map_err(LinuxAdvanceClaimIntentError::InvalidClaimIntent)?;
-        match self.load_prepared_record_pair(local, transaction_id) {
-            Ok(anchored) => {
-                if anchored != *prepared {
-                    return Err(LinuxAdvanceClaimIntentError::SuppliedPreparedMismatch);
-                }
-                self.persist_claim_intent(&claim_intent)
-                    .map_err(LinuxAdvanceClaimIntentError::CentralUpdateUncertain)?;
-            }
-            Err(prepared_error) => {
-                let central_bytes = self
-                    .read_named(&format!("{}.journal", prepared.transaction_id))
-                    .map_err(|error| {
-                        LinuxAdvanceClaimIntentError::PreparedPair(
-                            LinuxLoadPreparedPairError::CentralRead(error),
-                        )
-                    })?;
-                let local_bytes = local.read_named("journal").map_err(|error| {
-                    LinuxAdvanceClaimIntentError::PreparedPair(
-                        LinuxLoadPreparedPairError::LocalRead(error),
-                    )
-                })?;
-                let central_claim = ClaimIntentRecord::parse(&central_bytes).ok();
-                let local_claim = ClaimIntentRecord::parse(&local_bytes).ok();
-                let local_prepared = PreparedRecord::parse(&local_bytes).ok();
-                if central_claim.as_ref() == Some(&claim_intent)
-                    && local_claim.as_ref() == Some(&claim_intent)
-                {
-                    return Ok(LinuxClaimIntentJournals::MatchingPair);
-                }
-                if central_claim.as_ref() != Some(&claim_intent)
-                    || local_prepared.as_ref() != Some(prepared)
-                {
-                    return Err(LinuxAdvanceClaimIntentError::PreparedPair(prepared_error));
-                }
-            }
-        }
-        local
-            .persist_local_claim_intent(&claim_intent)
-            .map_err(
-                |error| LinuxAdvanceClaimIntentError::CentralDurableLocalUpdateUncertain {
-                    error,
-                    durable_central: Box::new(claim_intent.clone()),
-                },
-            )?;
-        Ok(LinuxClaimIntentJournals::MatchingPair)
     }
 
     pub fn load_prepared_pair(
@@ -986,6 +996,80 @@ impl LinuxJournalDirectory {
         renameat(&self.directory, next_name.as_str(), &self.directory, name)
             .map_err(|error| JournalError::Io(error.to_string()))?;
         fsync(&self.directory).map_err(|error| JournalError::Io(error.to_string()))
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl LinuxRecoveryLock<'_> {
+    pub fn prepare_with_local(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        record: &PreparedRecord,
+    ) -> Result<LinuxPreparedJournals, LinuxPrepareJournalsError> {
+        self.central.prepare_with_local(local, record)
+    }
+
+    pub fn advance_to_claim_intent_with_local(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        prepared: &PreparedRecord,
+    ) -> Result<LinuxClaimIntentJournals, LinuxAdvanceClaimIntentError> {
+        let decoded = decode_hex(&prepared.transaction_id)
+            .expect("validated prepared transaction IDs are hexadecimal");
+        let mut transaction_id = [0_u8; 16];
+        transaction_id.copy_from_slice(&decoded);
+        let claim_intent = ClaimIntentRecord::from_prepared(prepared)
+            .map_err(LinuxAdvanceClaimIntentError::InvalidClaimIntent)?;
+        match self
+            .central
+            .load_prepared_record_pair(local, transaction_id)
+        {
+            Ok(anchored) => {
+                if anchored != *prepared {
+                    return Err(LinuxAdvanceClaimIntentError::SuppliedPreparedMismatch);
+                }
+                self.central
+                    .persist_claim_intent(&claim_intent)
+                    .map_err(LinuxAdvanceClaimIntentError::CentralUpdateUncertain)?;
+            }
+            Err(prepared_error) => {
+                let central_bytes = self
+                    .central
+                    .read_named(&format!("{}.journal", prepared.transaction_id))
+                    .map_err(|error| {
+                        LinuxAdvanceClaimIntentError::PreparedPair(
+                            LinuxLoadPreparedPairError::CentralRead(error),
+                        )
+                    })?;
+                let local_bytes = local.read_named("journal").map_err(|error| {
+                    LinuxAdvanceClaimIntentError::PreparedPair(
+                        LinuxLoadPreparedPairError::LocalRead(error),
+                    )
+                })?;
+                let central_claim = ClaimIntentRecord::parse(&central_bytes).ok();
+                let local_claim = ClaimIntentRecord::parse(&local_bytes).ok();
+                let local_prepared = PreparedRecord::parse(&local_bytes).ok();
+                if central_claim.as_ref() == Some(&claim_intent)
+                    && local_claim.as_ref() == Some(&claim_intent)
+                {
+                    return Ok(LinuxClaimIntentJournals::MatchingPair);
+                }
+                if central_claim.as_ref() != Some(&claim_intent)
+                    || local_prepared.as_ref() != Some(prepared)
+                {
+                    return Err(LinuxAdvanceClaimIntentError::PreparedPair(prepared_error));
+                }
+            }
+        }
+        local
+            .persist_local_claim_intent(&claim_intent)
+            .map_err(
+                |error| LinuxAdvanceClaimIntentError::CentralDurableLocalUpdateUncertain {
+                    error,
+                    durable_central: Box::new(claim_intent.clone()),
+                },
+            )?;
+        Ok(LinuxClaimIntentJournals::MatchingPair)
     }
 }
 
@@ -2489,7 +2573,8 @@ mod tests {
         std::fs::write(central_path.join(central_stale_name), b"central stale").unwrap();
         std::fs::write(local_path.join(local_stale_name), b"local stale").unwrap();
 
-        let advanced = central.advance_to_claim_intent_with_local(&local, &record);
+        let mut recovery = central.try_lock_recovery().unwrap();
+        let advanced = recovery.advance_to_claim_intent_with_local(&local, &record);
 
         assert_eq!(advanced, Ok(LinuxClaimIntentJournals::MatchingPair));
         let central_bytes =
@@ -2539,6 +2624,8 @@ mod tests {
         .unwrap();
         central.prepare_with_local(&local, &prepared).unwrap();
         central
+            .try_lock_recovery()
+            .unwrap()
             .advance_to_claim_intent_with_local(&local, &prepared)
             .unwrap();
         let central_before = std::fs::read_dir(&central_path)
@@ -2923,6 +3010,85 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    fn recovery_lock_rejects_a_second_context_without_changing_journals() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-recovery-lock-contention-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let first_context = LinuxJournalDirectory::open(&central_path).unwrap();
+        let second_context = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let transaction_id = [0xda; 16];
+        let prepared = PreparedRecord::new_linux(
+            transaction_id,
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-dadadadadadadadadadadadadadadada"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        first_context.prepare_with_local(&local, &prepared).unwrap();
+        let central_journal = central_path.join("dadadadadadadadadadadadadadadada.journal");
+        let local_journal = local_path.join("journal");
+        let central_before = std::fs::read(&central_journal).unwrap();
+        let local_before = std::fs::read(&local_journal).unwrap();
+
+        let held = first_context.try_lock_recovery().unwrap();
+        let contended = second_context.try_lock_recovery();
+
+        assert!(matches!(contended, Err(LinuxRecoveryLockError::Contended)));
+        assert_eq!(std::fs::read(&central_journal).unwrap(), central_before);
+        assert_eq!(std::fs::read(&local_journal).unwrap(), local_before);
+        drop(held);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_rejects_reacquisition_through_the_same_context() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-recovery-lock-same-context-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let context = LinuxJournalDirectory::open(&root).unwrap();
+
+        let held = context.try_lock_recovery().unwrap();
+        let contended = context.try_lock_recovery();
+
+        assert!(matches!(contended, Err(LinuxRecoveryLockError::Contended)));
+        drop(held);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_is_released_when_its_raii_token_is_dropped() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-recovery-lock-release-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let first_context = LinuxJournalDirectory::open(&root).unwrap();
+        let second_context = LinuxJournalDirectory::open(&root).unwrap();
+
+        let held = first_context.try_lock_recovery().unwrap();
+        drop(held);
+        let reacquired = second_context.try_lock_recovery();
+
+        assert!(reacquired.is_ok());
+        drop(reacquired);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn claim_intent_advance_rejects_same_id_with_different_source_evidence() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-move-claim-intent-substitution-{}",
@@ -2956,7 +3122,8 @@ mod tests {
         .unwrap();
         central.prepare_with_local(&local, &persisted).unwrap();
 
-        let result = central.advance_to_claim_intent_with_local(&local, &substituted);
+        let mut recovery = central.try_lock_recovery().unwrap();
+        let result = recovery.advance_to_claim_intent_with_local(&local, &substituted);
 
         assert_eq!(
             result,
@@ -3008,7 +3175,8 @@ mod tests {
         let expected = ClaimIntentRecord::from_prepared(&record).unwrap();
         std::fs::set_permissions(&local_path, std::fs::Permissions::from_mode(0o500)).unwrap();
 
-        let result = central.advance_to_claim_intent_with_local(&local, &record);
+        let mut recovery = central.try_lock_recovery().unwrap();
+        let result = recovery.advance_to_claim_intent_with_local(&local, &record);
 
         let Err(LinuxAdvanceClaimIntentError::CentralDurableLocalUpdateUncertain {
             error: JournalError::Io(_),
@@ -3030,7 +3198,7 @@ mod tests {
         std::fs::set_permissions(&local_path, std::fs::Permissions::from_mode(0o700)).unwrap();
 
         assert_eq!(
-            central.advance_to_claim_intent_with_local(&local, &record),
+            recovery.advance_to_claim_intent_with_local(&local, &record),
             Ok(LinuxClaimIntentJournals::MatchingPair)
         );
         let completed_local =
