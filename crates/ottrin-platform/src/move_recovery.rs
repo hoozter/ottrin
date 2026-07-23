@@ -138,12 +138,16 @@ impl LinuxJournalDirectory {
         self.replace_named(&format!("{}.journal", header.transaction_id), header)
     }
 
-    fn replace_named(&self, name: &str, header: &JournalHeader) -> Result<(), JournalError> {
+    pub fn persist_prepared(&self, record: &PreparedRecord) -> Result<(), JournalError> {
+        self.replace_named(&format!("{}.journal", record.transaction_id), record)
+    }
+
+    fn replace_named<T: Serialize>(&self, name: &str, record: &T) -> Result<(), JournalError> {
         use rustix::fs::{Mode, OFlags, fsync, openat, renameat};
         use std::fs::File;
         use std::io::Write;
 
-        let encoded = serde_json::to_vec(header)
+        let encoded = serde_json::to_vec(record)
             .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
         let mut random = [0_u8; 16];
         getrandom::fill(&mut random).map_err(|error| JournalError::Io(error.to_string()))?;
@@ -604,6 +608,34 @@ mod tests {
             let persisted = std::fs::read(root.join(name)).unwrap();
             assert_eq!(JournalHeader::parse(&persisted).unwrap(), expected);
         }
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_record_is_persisted_as_complete_central_discovery_record() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-prepared-discovery-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+
+        let record = PreparedRecord::new_linux(
+            [0x56; 16],
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 11, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 13, LinuxFileType::Regular),
+        )
+        .unwrap();
+        let directory = LinuxJournalDirectory::open(&root).unwrap();
+        directory.persist_prepared(&record).unwrap();
+
+        let expected_path = root.join("56565656565656565656565656565656.journal");
+        let persisted = std::fs::read(expected_path).unwrap();
+        assert_eq!(PreparedRecord::parse(&persisted).unwrap(), record);
+        assert!(JournalHeader::parse(&persisted).is_err());
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
         std::fs::remove_dir_all(root).unwrap();
     }
 
