@@ -13,7 +13,7 @@ Implemented:
 - Tabs, bookmarks, path navigation, and keyboard-first movement.
 - Tandem View with side-by-side panes and pane-to-pane copy.
 - Multi-select for current-folder selections.
-- File operations: copy, rename, trash, permanent delete, create file/folder, and command-frame actions. Move mutation is disabled until a durable recovery design is implemented.
+- File operations: copy, rename, trash, permanent delete, create file/folder, and command-frame actions. Move mutation remains disabled until the handle-owned, journaled protocol in [Durable Move Recovery Design](MOVE_RECOVERY_DESIGN.md) is implemented and proven per platform and conflict mode.
 - Context menus with default open, open-with-application, folder location, path copy, rename/delete, bookmarks, and copy destinations.
 - Smart panel sections for Info, Drop Folder, Search, Activity, and Trash.
 - Cross-platform Trash panel implementation with Linux Freedesktop trash support and Windows Recycle Bin backend.
@@ -30,6 +30,8 @@ Still needs real QA before v1:
 - Real Windows runtime smoke for portable zip: launch, navigation, file operations, Trash/Recycling Bin, search, Quick Inspector, UAC/helper behavior, and background updater.
 - Real Windows install/uninstall smoke for the installer candidate.
 - Final release notes and known limitations review.
+
+Move re-enablement is deliberately separate from ordinary workflow QA. Its journal, recovery, crash-test, and platform gates are defined in [Durable Move Recovery Design](MOVE_RECOVERY_DESIGN.md); no mode is enabled merely because another mode or platform passes.
 
 ## V1 Release Gate
 
