@@ -287,6 +287,33 @@ pub enum LinuxPrepareJournalsError {
 }
 
 #[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum LinuxClaimIntentJournals {
+    MatchingPair,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxAdvanceClaimIntentError {
+    #[error("prepared journal pair cannot advance: {0}")]
+    PreparedPair(LinuxLoadPreparedPairError),
+    #[error("claim-intent evidence is invalid: {0}")]
+    InvalidClaimIntent(JournalError),
+    #[error("central claim-intent update did not confirm durability; inspect the journal: {0}")]
+    CentralUpdateUncertain(JournalError),
+    #[error("supplied prepared evidence does not match the anchored journal pair")]
+    SuppliedPreparedMismatch,
+    #[error(
+        "central claim-intent journal is durable but the source-local update is uncertain: {error}"
+    )]
+    CentralDurableLocalUpdateUncertain {
+        #[source]
+        error: JournalError,
+        durable_central: Box<ClaimIntentRecord>,
+    },
+}
+
+#[cfg(target_os = "linux")]
 #[derive(Debug, Error, Eq, PartialEq)]
 pub enum LinuxPreparedPairError {
     #[error("central prepared journal is corrupt: {0}")]
@@ -592,6 +619,14 @@ impl LinuxJournalDirectory {
         self.replace_named("journal", record)
     }
 
+    fn persist_claim_intent(&self, record: &ClaimIntentRecord) -> Result<(), JournalError> {
+        self.replace_named(&format!("{}.journal", record.transaction_id), record)
+    }
+
+    fn persist_local_claim_intent(&self, record: &ClaimIntentRecord) -> Result<(), JournalError> {
+        self.replace_named("journal", record)
+    }
+
     pub fn prepare_with_local(
         &self,
         local: &Self,
@@ -605,18 +640,85 @@ impl LinuxJournalDirectory {
         Ok(LinuxPreparedJournals::MatchingPair)
     }
 
+    pub fn advance_to_claim_intent_with_local(
+        &self,
+        local: &Self,
+        prepared: &PreparedRecord,
+    ) -> Result<LinuxClaimIntentJournals, LinuxAdvanceClaimIntentError> {
+        let decoded = decode_hex(&prepared.transaction_id)
+            .expect("validated prepared transaction IDs are hexadecimal");
+        let mut transaction_id = [0_u8; 16];
+        transaction_id.copy_from_slice(&decoded);
+        let claim_intent = ClaimIntentRecord::from_prepared(prepared)
+            .map_err(LinuxAdvanceClaimIntentError::InvalidClaimIntent)?;
+        match self.load_prepared_record_pair(local, transaction_id) {
+            Ok(anchored) => {
+                if anchored != *prepared {
+                    return Err(LinuxAdvanceClaimIntentError::SuppliedPreparedMismatch);
+                }
+                self.persist_claim_intent(&claim_intent)
+                    .map_err(LinuxAdvanceClaimIntentError::CentralUpdateUncertain)?;
+            }
+            Err(prepared_error) => {
+                let central_bytes = self
+                    .read_named(&format!("{}.journal", prepared.transaction_id))
+                    .map_err(|error| {
+                        LinuxAdvanceClaimIntentError::PreparedPair(
+                            LinuxLoadPreparedPairError::CentralRead(error),
+                        )
+                    })?;
+                let local_bytes = local.read_named("journal").map_err(|error| {
+                    LinuxAdvanceClaimIntentError::PreparedPair(
+                        LinuxLoadPreparedPairError::LocalRead(error),
+                    )
+                })?;
+                let central_claim = ClaimIntentRecord::parse(&central_bytes).ok();
+                let local_claim = ClaimIntentRecord::parse(&local_bytes).ok();
+                let local_prepared = PreparedRecord::parse(&local_bytes).ok();
+                if central_claim.as_ref() == Some(&claim_intent)
+                    && local_claim.as_ref() == Some(&claim_intent)
+                {
+                    return Ok(LinuxClaimIntentJournals::MatchingPair);
+                }
+                if central_claim.as_ref() != Some(&claim_intent)
+                    || local_prepared.as_ref() != Some(prepared)
+                {
+                    return Err(LinuxAdvanceClaimIntentError::PreparedPair(prepared_error));
+                }
+            }
+        }
+        local
+            .persist_local_claim_intent(&claim_intent)
+            .map_err(
+                |error| LinuxAdvanceClaimIntentError::CentralDurableLocalUpdateUncertain {
+                    error,
+                    durable_central: Box::new(claim_intent.clone()),
+                },
+            )?;
+        Ok(LinuxClaimIntentJournals::MatchingPair)
+    }
+
     pub fn load_prepared_pair(
         &self,
         local: &Self,
         transaction_id: [u8; 16],
     ) -> Result<LinuxPreparedJournals, LinuxLoadPreparedPairError> {
+        self.load_prepared_record_pair(local, transaction_id)
+            .map(|_| LinuxPreparedJournals::MatchingPair)
+    }
+
+    fn load_prepared_record_pair(
+        &self,
+        local: &Self,
+        transaction_id: [u8; 16],
+    ) -> Result<PreparedRecord, LinuxLoadPreparedPairError> {
         let central = self
             .read_named(&format!("{}.journal", encode_hex(&transaction_id)))
             .map_err(LinuxLoadPreparedPairError::CentralRead)?;
         let local = local
             .read_named("journal")
             .map_err(LinuxLoadPreparedPairError::LocalRead)?;
-        let matching = validate_prepared_pair(&central, &local)
+        validate_prepared_pair(&central, &local)
             .map_err(LinuxLoadPreparedPairError::InvalidPair)?;
         let central_record = PreparedRecord::parse(&central).map_err(|error| {
             LinuxLoadPreparedPairError::InvalidPair(LinuxPreparedPairError::CentralCorrupt(error))
@@ -624,10 +726,14 @@ impl LinuxJournalDirectory {
         if central_record.transaction_id != encode_hex(&transaction_id) {
             return Err(LinuxLoadPreparedPairError::RequestedTransactionMismatch);
         }
-        Ok(matching)
+        Ok(central_record)
     }
 
     pub fn discover_prepared(&self) -> Result<Vec<[u8; 16]>, LinuxDiscoverPreparedError> {
+        self.discover_pending()
+    }
+
+    pub fn discover_pending(&self) -> Result<Vec<[u8; 16]>, LinuxDiscoverPreparedError> {
         use rustix::fs::Dir;
 
         let mut directory = Dir::read_from(&self.directory)
@@ -671,22 +777,28 @@ impl LinuxJournalDirectory {
                         name: name.to_owned(),
                         error,
                     })?;
-            let record = PreparedRecord::parse(&encoded).map_err(|error| {
-                LinuxDiscoverPreparedError::InvalidRecord {
-                    name: name.to_owned(),
-                    error,
-                }
-            })?;
+            let record_transaction_id_hex = match PreparedRecord::parse(&encoded) {
+                Ok(record) => record.transaction_id,
+                Err(prepared_error) => match ClaimIntentRecord::parse(&encoded) {
+                    Ok(record) => record.transaction_id,
+                    Err(_) => {
+                        return Err(LinuxDiscoverPreparedError::InvalidRecord {
+                            name: name.to_owned(),
+                            error: prepared_error,
+                        });
+                    }
+                },
+            };
             let filename_decoded =
                 decode_hex(std::str::from_utf8(stem).expect("validated journal stems are ASCII"))
                     .expect("validated journal stems are hexadecimal");
             let mut filename_transaction_id = [0_u8; 16];
             filename_transaction_id.copy_from_slice(&filename_decoded);
-            let record_decoded = decode_hex(&record.transaction_id)
-                .expect("validated prepared record has a hexadecimal transaction ID");
+            let record_decoded = decode_hex(&record_transaction_id_hex)
+                .expect("validated recovery records have hexadecimal transaction IDs");
             let mut record_transaction_id = [0_u8; 16];
             record_transaction_id.copy_from_slice(&record_decoded);
-            if record.transaction_id.as_bytes() != stem {
+            if record_transaction_id_hex.as_bytes() != stem {
                 return Err(LinuxDiscoverPreparedError::FilenameTransactionMismatch {
                     filename: filename_transaction_id,
                     record: record_transaction_id,
@@ -2216,6 +2328,182 @@ mod tests {
         let result = validate_prepared_pair(&encoded, &encoded);
 
         assert_eq!(result, Ok(LinuxPreparedJournals::MatchingPair));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn anchored_prepared_pair_advances_to_identical_claim_intent_without_source_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-claim-intent-pair-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let source_path = root.join("source-item");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&source_path, b"must not be mutated").unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let record = PreparedRecord::new_linux(
+            [0xd1; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &record).unwrap();
+        let central_stale_name =
+            "d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1.journal.next-11111111111111111111111111111111";
+        let local_stale_name = "journal.next-22222222222222222222222222222222";
+        std::fs::write(central_path.join(central_stale_name), b"central stale").unwrap();
+        std::fs::write(local_path.join(local_stale_name), b"local stale").unwrap();
+
+        let advanced = central.advance_to_claim_intent_with_local(&local, &record);
+
+        assert_eq!(advanced, Ok(LinuxClaimIntentJournals::MatchingPair));
+        let central_bytes =
+            std::fs::read(central_path.join("d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1.journal")).unwrap();
+        let local_bytes = std::fs::read(local_path.join("journal")).unwrap();
+        assert_eq!(central_bytes, local_bytes);
+        let claim_intent = ClaimIntentRecord::parse(&central_bytes).unwrap();
+        assert_eq!(
+            claim_intent,
+            ClaimIntentRecord::from_prepared(&record).unwrap()
+        );
+        assert_eq!(
+            std::fs::read(central_path.join(central_stale_name)).unwrap(),
+            b"central stale"
+        );
+        assert_eq!(
+            std::fs::read(local_path.join(local_stale_name)).unwrap(),
+            b"local stale"
+        );
+        assert_eq!(std::fs::read(source_path).unwrap(), b"must not be mutated");
+        assert_eq!(central.discover_pending(), Ok(vec![[0xd1; 16]]));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn claim_intent_advance_rejects_same_id_with_different_source_evidence() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-claim-intent-substitution-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let persisted = PreparedRecord::new_linux(
+            [0xd3; 16],
+            &root,
+            Path::new("real-source"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let substituted = PreparedRecord::new_linux(
+            [0xd3; 16],
+            &root,
+            Path::new("different-source"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 99, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &persisted).unwrap();
+
+        let result = central.advance_to_claim_intent_with_local(&local, &substituted);
+
+        assert_eq!(
+            result,
+            Err(LinuxAdvanceClaimIntentError::SuppliedPreparedMismatch)
+        );
+        assert_eq!(
+            PreparedRecord::parse(
+                &std::fs::read(central_path.join("d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3.journal"),)
+                    .unwrap()
+            )
+            .unwrap(),
+            persisted
+        );
+        assert_eq!(
+            PreparedRecord::parse(&std::fs::read(local_path.join("journal")).unwrap()).unwrap(),
+            persisted
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn local_claim_intent_failure_returns_exact_durable_central_evidence() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-claim-intent-partial-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let source_path = root.join("source-item");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&source_path, b"must remain").unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let record = PreparedRecord::new_linux(
+            [0xd2; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &record).unwrap();
+        let expected = ClaimIntentRecord::from_prepared(&record).unwrap();
+        std::fs::set_permissions(&local_path, std::fs::Permissions::from_mode(0o500)).unwrap();
+
+        let result = central.advance_to_claim_intent_with_local(&local, &record);
+
+        let Err(LinuxAdvanceClaimIntentError::CentralDurableLocalUpdateUncertain {
+            error: JournalError::Io(_),
+            durable_central,
+        }) = result
+        else {
+            panic!("local persistence failure must expose exact durable central evidence");
+        };
+        assert_eq!(*durable_central, expected);
+        let central_record = ClaimIntentRecord::parse(
+            &std::fs::read(central_path.join("d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2.journal")).unwrap(),
+        )
+        .unwrap();
+        let local_record =
+            PreparedRecord::parse(&std::fs::read(local_path.join("journal")).unwrap()).unwrap();
+        assert_eq!(central_record, expected);
+        assert_eq!(local_record, record);
+        assert_eq!(std::fs::read(&source_path).unwrap(), b"must remain");
+        std::fs::set_permissions(&local_path, std::fs::Permissions::from_mode(0o700)).unwrap();
+
+        assert_eq!(
+            central.advance_to_claim_intent_with_local(&local, &record),
+            Ok(LinuxClaimIntentJournals::MatchingPair)
+        );
+        let completed_local =
+            ClaimIntentRecord::parse(&std::fs::read(local_path.join("journal")).unwrap()).unwrap();
+        assert_eq!(completed_local, expected);
+        assert_eq!(std::fs::read(&source_path).unwrap(), b"must remain");
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(target_os = "linux")]
