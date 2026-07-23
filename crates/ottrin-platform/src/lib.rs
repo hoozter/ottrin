@@ -10,6 +10,7 @@ use thiserror::Error;
 
 mod copy_transaction;
 use copy_transaction::{CopyPublication, copy_entry_transactional};
+pub mod move_recovery;
 mod move_transaction;
 use move_transaction::move_entry_transactional;
 

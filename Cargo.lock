@@ -3075,6 +3075,7 @@ dependencies = [
  "ottrin-core",
  "rustix 0.38.44",
  "same-file",
+ "serde",
  "serde_json",
  "thiserror 2.0.18",
  "tracing",
