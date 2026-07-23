@@ -5,7 +5,7 @@ use thiserror::Error;
 #[cfg(target_os = "linux")]
 use rustix::fd::OwnedFd;
 
-pub const JOURNAL_SCHEMA_MAJOR: u16 = 1;
+pub const JOURNAL_SCHEMA_MAJOR: u16 = 2;
 pub const JOURNAL_SCHEMA_MINOR: u16 = 0;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -59,6 +59,8 @@ pub struct PreparedRecord {
     original_name: NativePath,
     source_parent_identity: LinuxStableIdentity,
     source_entry_identity: LinuxStableIdentity,
+    source_transaction_name: NativePath,
+    source_transaction_identity: LinuxStableIdentity,
 }
 
 #[cfg(target_os = "linux")]
@@ -73,6 +75,8 @@ struct RawPreparedRecord {
     original_name: NativePath,
     source_parent_identity: LinuxStableIdentity,
     source_entry_identity: LinuxStableIdentity,
+    source_transaction_name: NativePath,
+    source_transaction_identity: LinuxStableIdentity,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
@@ -498,6 +502,8 @@ impl PreparedRecord {
         original_name: &Path,
         source_parent_identity: LinuxStableIdentity,
         source_entry_identity: LinuxStableIdentity,
+        source_transaction_name: &Path,
+        source_transaction_identity: LinuxStableIdentity,
     ) -> Result<Self, JournalError> {
         Self::try_from(RawPreparedRecord {
             schema_major: JOURNAL_SCHEMA_MAJOR,
@@ -508,6 +514,8 @@ impl PreparedRecord {
             original_name: NativePath::encode(original_name),
             source_parent_identity,
             source_entry_identity,
+            source_transaction_name: NativePath::encode(source_transaction_name),
+            source_transaction_identity,
         })
     }
 
@@ -530,17 +538,27 @@ impl TryFrom<RawPreparedRecord> for PreparedRecord {
         })?;
         let source_parent = raw.source_parent.decode()?;
         let original_name = raw.original_name.decode()?;
+        let source_transaction_name = raw.source_transaction_name.decode()?;
         let mut original_components = original_name.components();
+        let mut transaction_components = source_transaction_name.components();
         if !source_parent.is_absolute()
             || !matches!(
                 original_components.next(),
                 Some(std::path::Component::Normal(_))
             )
             || original_components.next().is_some()
+            || !matches!(
+                transaction_components.next(),
+                Some(std::path::Component::Normal(_))
+            )
+            || transaction_components.next().is_some()
+            || source_transaction_name.file_name() != Some(source_transaction_name.as_os_str())
         {
             return Err(JournalError::InvalidPreparedSourcePath);
         }
-        if raw.source_parent_identity.file_type != LinuxFileType::Directory {
+        if raw.source_parent_identity.file_type != LinuxFileType::Directory
+            || raw.source_transaction_identity.file_type != LinuxFileType::Directory
+        {
             return Err(JournalError::InvalidLinuxIdentity);
         }
         Ok(Self {
@@ -552,6 +570,8 @@ impl TryFrom<RawPreparedRecord> for PreparedRecord {
             original_name: raw.original_name,
             source_parent_identity: raw.source_parent_identity,
             source_entry_identity: raw.source_entry_identity,
+            source_transaction_name: raw.source_transaction_name,
+            source_transaction_identity: raw.source_transaction_identity,
         })
     }
 }
@@ -667,7 +687,7 @@ mod tests {
     #[test]
     fn unknown_header_fields_are_rejected() {
         let json = br#"{
-            "schema_major": 1,
+            "schema_major": 2,
             "schema_minor": 0,
             "transaction_id": "00000000000000000000000000000000",
             "unexpected": true
@@ -681,21 +701,21 @@ mod tests {
     #[test]
     fn unsupported_major_version_is_rejected() {
         let json = br#"{
-            "schema_major": 2,
+            "schema_major": 3,
             "schema_minor": 0,
             "transaction_id": "00000000000000000000000000000000"
         }"#;
         assert_eq!(
             JournalHeader::parse(json),
-            Err(JournalError::UnsupportedSchema { major: 2, minor: 0 })
+            Err(JournalError::UnsupportedSchema { major: 3, minor: 0 })
         );
     }
 
     #[test]
     fn direct_serde_deserialization_enforces_header_invariants() {
         for json in [
-            br#"{"schema_major":2,"schema_minor":0,"transaction_id":"00000000000000000000000000000000"}"#.as_slice(),
-            br#"{"schema_major":1,"schema_minor":0,"transaction_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}"#.as_slice(),
+            br#"{"schema_major":3,"schema_minor":0,"transaction_id":"00000000000000000000000000000000"}"#.as_slice(),
+            br#"{"schema_major":2,"schema_minor":0,"transaction_id":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}"#.as_slice(),
         ] {
             assert!(serde_json::from_slice::<JournalHeader>(json).is_err());
         }
@@ -709,7 +729,7 @@ mod tests {
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         ] {
             let json = format!(
-                r#"{{"schema_major":1,"schema_minor":0,"transaction_id":"{transaction_id}"}}"#
+                r#"{{"schema_major":2,"schema_minor":0,"transaction_id":"{transaction_id}"}}"#
             );
             assert_eq!(
                 JournalHeader::parse(json.as_bytes()),
@@ -732,6 +752,8 @@ mod tests {
             &original_name,
             LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
             LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(11, 44, LinuxFileType::Directory),
         )
         .unwrap();
 
@@ -753,6 +775,91 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    fn prepared_record_round_trips_source_transaction_directory_identity() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+
+        let transaction_name = PathBuf::from(OsString::from_vec(
+            b".ottrin-move-42424242424242424242424242424242\x80".to_vec(),
+        ));
+        let encoded = serde_json::json!({
+            "schema_major": 2,
+            "schema_minor": 0,
+            "transaction_id": "42424242424242424242424242424242",
+            "phase": "prepared",
+            "source_parent": {"encoding": "unix-bytes", "units_hex": "2f736f75726365"},
+            "original_name": {"encoding": "unix-bytes", "units_hex": "6974656d"},
+            "source_parent_identity": {"device": 11, "inode": 22, "file_type": "directory"},
+            "source_entry_identity": {"device": 11, "inode": 33, "file_type": "regular"},
+            "source_transaction_name": NativePath::encode(&transaction_name),
+            "source_transaction_identity": {"device": 11, "inode": 44, "file_type": "directory"}
+        });
+
+        let parsed = PreparedRecord::parse(&serde_json::to_vec(&encoded).unwrap()).unwrap();
+
+        assert_eq!(
+            parsed.source_transaction_name.decode().unwrap(),
+            transaction_name
+        );
+        assert_eq!(parsed.source_transaction_identity.device, 11);
+        assert_eq!(parsed.source_transaction_identity.inode, 44);
+        assert_eq!(
+            parsed.source_transaction_identity.file_type,
+            LinuxFileType::Directory
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_record_schema_marks_transaction_identity_as_breaking_change() {
+        let record = PreparedRecord::new_linux(
+            [0x43; 16],
+            Path::new("/source"),
+            Path::new("item"),
+            LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(11, 44, LinuxFileType::Directory),
+        )
+        .unwrap();
+
+        assert_eq!(record.schema_major, 2);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_record_rejects_non_directory_transaction_identity() {
+        let result = PreparedRecord::new_linux(
+            [0x43; 16],
+            Path::new("/source"),
+            Path::new("item"),
+            LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(11, 44, LinuxFileType::Regular),
+        );
+
+        assert_eq!(result, Err(JournalError::InvalidLinuxIdentity));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_record_rejects_transaction_name_with_separator() {
+        let result = PreparedRecord::new_linux(
+            [0x43; 16],
+            Path::new("/source"),
+            Path::new("item"),
+            LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test/"),
+            LinuxStableIdentity::new(11, 44, LinuxFileType::Directory),
+        );
+
+        assert_eq!(result, Err(JournalError::InvalidPreparedSourcePath));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn prepared_record_rejects_root_as_original_name() {
         let result = PreparedRecord::new_linux(
             [0x43; 16],
@@ -760,6 +867,8 @@ mod tests {
             Path::new("/"),
             LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
             LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(11, 44, LinuxFileType::Directory),
         );
 
         assert_eq!(result, Err(JournalError::InvalidPreparedSourcePath));
@@ -845,6 +954,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 11, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 13, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
         let directory = LinuxJournalDirectory::open(&root).unwrap();
@@ -873,6 +984,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 11, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 13, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
         let directory = LinuxJournalDirectory::open(&root).unwrap();
@@ -989,6 +1102,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 11, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 13, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
         let name = "58585858585858585858585858585858.journal";
@@ -1030,6 +1145,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 17, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 19, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
 
@@ -1062,6 +1179,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 23, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 29, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
 
@@ -1098,6 +1217,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 31, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 37, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
 
@@ -1134,6 +1255,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
         central
@@ -1176,6 +1299,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
         central.prepare_with_local(&local, &record).unwrap();
@@ -1217,6 +1342,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
         local.persist_local_prepared(&record).unwrap();
@@ -1258,6 +1385,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
         central.persist_prepared(&record).unwrap();
@@ -1300,6 +1429,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
         let local = PreparedRecord::new_linux(
@@ -1308,6 +1439,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
 
@@ -1328,6 +1461,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
 
@@ -1350,6 +1485,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
 
@@ -1372,6 +1509,8 @@ mod tests {
             Path::new("original-name"),
             LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
             LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-test"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
         )
         .unwrap();
         let encoded = serde_json::to_vec(&record).unwrap();
