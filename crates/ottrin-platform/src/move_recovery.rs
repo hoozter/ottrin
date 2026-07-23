@@ -131,6 +131,30 @@ pub enum LinuxPrepareJournalsError {
 }
 
 #[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxPreparedPairError {
+    #[error("central prepared journal is corrupt: {0}")]
+    CentralCorrupt(JournalError),
+    #[error("source-local prepared journal is corrupt: {0}")]
+    LocalCorrupt(JournalError),
+    #[error("central and source-local prepared journals disagree")]
+    Mismatch,
+}
+
+#[cfg(target_os = "linux")]
+pub fn validate_prepared_pair(
+    central: &[u8],
+    local: &[u8],
+) -> Result<LinuxPreparedJournals, LinuxPreparedPairError> {
+    let central = PreparedRecord::parse(central).map_err(LinuxPreparedPairError::CentralCorrupt)?;
+    let local = PreparedRecord::parse(local).map_err(LinuxPreparedPairError::LocalCorrupt)?;
+    if central != local {
+        return Err(LinuxPreparedPairError::Mismatch);
+    }
+    Ok(LinuxPreparedJournals::MatchingPair)
+}
+
+#[cfg(target_os = "linux")]
 impl LinuxJournalDirectory {
     pub fn open(path: &Path) -> Result<Self, JournalError> {
         use rustix::fs::{CWD, Mode, OFlags, openat};
@@ -773,6 +797,96 @@ mod tests {
         assert_eq!(PreparedRecord::parse(&central_record).unwrap(), record);
         assert!(!local_path.exists());
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_pair_validation_rejects_disagreeing_valid_records() {
+        let central = PreparedRecord::new_linux(
+            [0xcd; 16],
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+        )
+        .unwrap();
+        let local = PreparedRecord::new_linux(
+            [0xef; 16],
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+        )
+        .unwrap();
+
+        let result = validate_prepared_pair(
+            &serde_json::to_vec(&central).unwrap(),
+            &serde_json::to_vec(&local).unwrap(),
+        );
+
+        assert_eq!(result, Err(LinuxPreparedPairError::Mismatch));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_pair_validation_identifies_central_corruption() {
+        let local = PreparedRecord::new_linux(
+            [0xcd; 16],
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+        )
+        .unwrap();
+
+        let result = validate_prepared_pair(b"not-json", &serde_json::to_vec(&local).unwrap());
+
+        assert!(matches!(
+            result,
+            Err(LinuxPreparedPairError::CentralCorrupt(
+                JournalError::InvalidJson(_)
+            ))
+        ));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_pair_validation_identifies_local_corruption() {
+        let central = PreparedRecord::new_linux(
+            [0xcd; 16],
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+        )
+        .unwrap();
+
+        let result = validate_prepared_pair(&serde_json::to_vec(&central).unwrap(), b"not-json");
+
+        assert!(matches!(
+            result,
+            Err(LinuxPreparedPairError::LocalCorrupt(
+                JournalError::InvalidJson(_)
+            ))
+        ));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_pair_validation_accepts_matching_valid_records() {
+        let record = PreparedRecord::new_linux(
+            [0xcd; 16],
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+        )
+        .unwrap();
+        let encoded = serde_json::to_vec(&record).unwrap();
+
+        let result = validate_prepared_pair(&encoded, &encoded);
+
+        assert_eq!(result, Ok(LinuxPreparedJournals::MatchingPair));
     }
 
     #[cfg(target_os = "linux")]
