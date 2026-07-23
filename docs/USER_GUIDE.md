@@ -25,6 +25,10 @@ Unzip `Ottrin-*-windows-x64-portable.zip`, then run:
 .\bin\ottrin.exe
 ```
 
+### Windows Installer
+
+Run `Ottrin-*-windows-x64-setup.exe` to install under the current user's local application directory. The installer creates Start Menu shortcuts and does not request administrator access. Its uninstaller removes scheduled/background integration and generated search/preview data before removing the application; saved preferences are retained. If background cleanup cannot start or fails, uninstall stops before deleting application files. If application-file deletion cannot complete, Installed Apps registration is retained so uninstall can be retried.
+
 Windows MSI and macOS packages are not part of the current v1 release path.
 
 ## Basic Navigation
@@ -38,7 +42,7 @@ Windows MSI and macOS packages are not part of the current v1 release path.
 | Space | Open Quick Inspector |
 | Delete | Move selected item to Trash |
 | Shift+Delete | Permanently delete selected item |
-| Ctrl+C / Ctrl+X | Copy / cut |
+| Ctrl+C / Ctrl+X | Copy / cut (Move is disabled in the current hardening build) |
 | Ctrl+V | Paste |
 | F2 | Rename |
 | F5 | Refresh current folder |
@@ -55,7 +59,7 @@ Search freshness uses three mechanisms:
 | File watcher | No | Updates results while Ottrin is running |
 | Background updater | Yes | Reconciles changes made while Ottrin was closed |
 
-System locate/plocate is optional. It can help discover system paths, but it can be stale and does not grant permission to read, preview, copy, move, or delete protected files.
+System locate/plocate is optional. It can help discover system paths, but it can be stale and does not grant permission to read, preview, copy, or delete protected files.
 
 Built-in generated-folder skips such as `.git`, `node_modules`, `target`, `__pycache__`, and Trash directories keep indexing practical. If you need to search one of those trees, adjust search settings instead of relying on the watcher.
 
@@ -64,6 +68,12 @@ Built-in generated-folder skips such as `.git`, `node_modules`, `target`, `__pyc
 Open the Trash section in the smart panel to review trashed items, restore items, permanently delete selected trash entries, or empty Trash. Empty Trash asks for confirmation and runs in the background.
 
 Permanent deletion cannot be undone from Ottrin.
+
+## Quick Inspector
+
+Press Space on a selected item to open Quick Inspector. Ottrin previews common text and image formats directly, extracts PDF text and metadata, extracts DOCX document content, displays XLSX/XLSM worksheets as bounded tabular text, separates PPTX content by slide, and lists ZIP contents.
+
+Damaged, encrypted, or unsupported PDFs may show metadata without extracted text. Legacy binary Office formats such as `.doc`, `.xls`, and `.ppt` currently show metadata and can be opened in their associated desktop application.
 
 ## Privileged Operations
 
@@ -109,8 +119,8 @@ ottrin-index --remove-schedule
 - Windows UAC/helper behavior still needs real Windows validation.
 - Linux polkit helper packaging needs real system smoke testing.
 - Linux portable and AppImage artifacts have shallow launch smoke coverage; full packaged workflow QA is still pending.
-- Quick Inspector covers text/code, image, PDF text extraction, DOCX text extraction, ZIP/archive listings, bounded folder summaries, and generic metadata, but the full keyboard/file-type matrix still needs manual QA.
-- Rendered PDF pages, richer Office extraction, text/code/PDF/video document thumbnails, recursive folder sizing/thumbnails, media playback, HEIC/HEIF and camera RAW thumbnails, and text/code edit mode are future work.
+- Quick Inspector covers text/code, images, PDF text/metadata, DOCX content, XLSX/XLSM worksheets, PPTX slide text, ZIP/archive listings, bounded folder summaries, and generic metadata, but the full keyboard/file-type matrix still needs manual QA.
+- PDF page navigation, faithful Office layout rendering, text/code/PDF/video document thumbnails, recursive folder sizing/thumbnails, media playback, HEIC/HEIF and camera RAW thumbnails, and text/code edit mode are future work.
 - Multi-select is implemented, but still needs manual QA across Miller/List/Grid.
 - Tab drag-and-drop is not implemented.
 - Operation Activity records session file operations and labels whether entries are restorable or not undoable. Full undo execution is not implemented.

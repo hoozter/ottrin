@@ -20,8 +20,9 @@ Pre-built binaries for the [latest release](https://github.com/hoozter/ottrin/re
 | Linux (x86\_64) | `Ottrin-x.y.z-x86_64.AppImage` |
 | Linux portable | `Ottrin-x.y.z-linux-x86_64-portable.tar.gz` |
 | Windows portable (x64) | `Ottrin-x.y.z-windows-x64-portable.zip` |
+| Windows installer (x64) | `Ottrin-x.y.z-windows-x64-setup.exe` |
 
-Windows MSI and macOS packages are planned, but the current v1 hardening path is Linux and Windows portable/AppImage artifacts first.
+Windows MSI and macOS packages are planned; the current v1 hardening path is Linux AppImage/portable plus Windows portable and per-user installer artifacts.
 
 ### Linux
 
@@ -40,7 +41,7 @@ sudo cp packaging/linux/org.ottrin.filesystem.policy \
 
 ### Windows
 
-Unzip the portable package, then run:
+Run the per-user installer, or unzip the portable package and run:
 
 ```powershell
 .\bin\ottrin.exe
@@ -63,10 +64,10 @@ Normal user-owned file operations do not require elevation. Denied operations us
 - **Tabs** — multiple locations open at once, full navigation history per tab
 - **Theme system** — built-in presets (Ottrin, Breeze, Adwaita, Windows 11, Solarized, Nord, G33k) with live editing and custom save/load
 - **Semantic file styling** — file and folder types are classified and styled consistently across views
-- **Drop Folder workflow** — quick copy/move destination with recents and pinned entries
+- **Drop Folder workflow** — quick copy destination with recents and pinned entries
 - **Integrated privilege management** — denied operations can retry via helper flow
 - **Global search** — indexed search with scope switching and per-result actions
-- **Preview system** — text inline, images in-app, and metadata cards for PDF/audio/video/archive/office formats (Space bar)
+- **Preview system** — text and images in-app, PDF text/metadata, DOCX content, XLSX/XLSM worksheet tables, PPTX slide text, and rich archive/media metadata (Space bar)
 
 ---
 
@@ -81,7 +82,7 @@ Normal user-owned file operations do not require elevation. Denied operations us
 | Space | Preview file |
 | Esc | Close preview / command frame |
 | F5 | Refresh current directory |
-| Ctrl+C / Ctrl+X | Copy / Cut |
+| Ctrl+C / Ctrl+X | Copy / Cut (Move is disabled in the current hardening build) |
 | Ctrl+V | Paste |
 | Delete | Move to trash |
 | Shift+Delete | Permanently delete |
@@ -92,7 +93,7 @@ Normal user-owned file operations do not require elevation. Denied operations us
 
 ## Build from Source
 
-Requires Rust 1.94.0. CI and release workflows pin this exact toolchain for Linux, Windows, and macOS builds.
+Requires Rust 1.94.0. CI and release workflows pin this exact toolchain for Linux and Windows builds. macOS packaging is deferred.
 
 ```sh
 git clone https://github.com/hoozter/ottrin.git
@@ -131,7 +132,7 @@ sudo apt-get install -y \
 
 ## Status
 
-v0.1.0 is in release hardening. Linux AppImage/portable artifacts are the current Linux path, and Windows portable zip is the current Windows path. See [docs/USER_GUIDE.md](docs/USER_GUIDE.md), [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), and [docs/ROADMAP.md](docs/ROADMAP.md).
+v0.1.0 is in release hardening. Linux AppImage/portable artifacts and Windows portable/installer artifacts are the current release path. See [docs/USER_GUIDE.md](docs/USER_GUIDE.md), [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), and [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 

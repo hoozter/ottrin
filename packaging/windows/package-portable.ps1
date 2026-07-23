@@ -22,7 +22,7 @@ Copy-Item "$BuildDir\ottrin-index.exe" "$Stage\bin\ottrin-index.exe"
 Copy-Item "$Root\assets\icon.svg", "$Root\assets\icon.png", "$Root\assets\logo.svg" "$Stage\assets\"
 Copy-Item "$Root\README.md" "$Stage\"
 if (Test-Path "$Root\LICENSE") { Copy-Item "$Root\LICENSE" "$Stage\" }
-Copy-Item "$Root\docs\USER_GUIDE.md", "$Root\docs\DEVELOPMENT.md", "$Root\docs\ROADMAP.md" "$Stage\docs\"
+Copy-Item "$Root\docs\USER_GUIDE.md", "$Root\docs\DEVELOPMENT.md", "$Root\docs\ROADMAP.md", "$Root\docs\RELEASE_NOTES.md", "$Root\docs\RELEASE_CHECKLIST.md" "$Stage\docs\"
 
 @"
 # Running Ottrin Portable on Windows

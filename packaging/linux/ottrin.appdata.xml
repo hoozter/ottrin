@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.ottrin.Ottrin</id>
+  <name>Ottrin</name>
+  <summary>Keyboard-first file manager with Miller columns</summary>
+  <developer id="org.ottrin">
+    <name>Ottrin contributors</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>
+      Ottrin is a fast, keyboard-first desktop file manager with Miller,
+      List, and Grid views, indexed search, transactional file operations,
+      Tandem View, and rich file previews.
+    </p>
+  </description>
+  <launchable type="desktop-id">org.ottrin.Ottrin.desktop</launchable>
+  <provides>
+    <binary>ottrin</binary>
+  </provides>
+  <categories>
+    <category>System</category>
+    <category>FileTools</category>
+    <category>FileManager</category>
+  </categories>
+  <url type="homepage">https://github.com/hoozter/ottrin</url>
+  <releases>
+    <release version="0.1.0" date="2026-07-23"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

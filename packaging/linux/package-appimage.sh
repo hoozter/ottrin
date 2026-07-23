@@ -7,6 +7,7 @@ DIST_DIR="$ROOT/dist"
 APPDIR="$DIST_DIR/AppDir"
 APPIMAGE="$DIST_DIR/Ottrin-$VERSION-x86_64.AppImage"
 APPIMAGETOOL="${APPIMAGETOOL:-$DIST_DIR/appimagetool-x86_64.AppImage}"
+APPIMAGETOOL_SHA256="${APPIMAGETOOL_SHA256:-b90f4a8b18967545fda78a445b27680a1642f1ef9488ced28b65398f2be7add2}"
 
 cd "$ROOT"
 cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
@@ -17,6 +18,7 @@ mkdir -p "$APPDIR/usr/libexec/ottrin"
 mkdir -p "$APPDIR/usr/share/applications"
 mkdir -p "$APPDIR/usr/share/icons/hicolor/scalable/apps"
 mkdir -p "$APPDIR/usr/share/icons/hicolor/256x256/apps"
+mkdir -p "$APPDIR/usr/share/metainfo"
 mkdir -p "$APPDIR/usr/share/polkit-1/actions"
 
 install -m 0755 "$ROOT/target/release/ottrin-app" "$APPDIR/usr/bin/ottrin"
@@ -24,19 +26,20 @@ install -m 0755 "$ROOT/target/release/ottrin-index" "$APPDIR/usr/bin/ottrin-inde
 install -m 0755 "$ROOT/target/release/ottrin-priv-helper" "$APPDIR/usr/libexec/ottrin/ottrin-priv-helper"
 install -m 0644 "$ROOT/assets/icon.svg" "$APPDIR/usr/share/icons/hicolor/scalable/apps/ottrin.svg"
 install -m 0644 "$ROOT/assets/icon.png" "$APPDIR/usr/share/icons/hicolor/256x256/apps/ottrin.png"
+install -m 0644 "$ROOT/packaging/linux/ottrin.appdata.xml" "$APPDIR/usr/share/metainfo/org.ottrin.Ottrin.appdata.xml"
 install -m 0644 "$ROOT/packaging/linux/org.ottrin.filesystem.policy" "$APPDIR/usr/share/polkit-1/actions/"
 
-cat > "$APPDIR/ottrin.desktop" <<'DESKTOP'
+cat > "$APPDIR/org.ottrin.Ottrin.desktop" <<'DESKTOP'
 [Desktop Entry]
 Name=Ottrin
 Comment=Keyboard-first file manager
 Exec=ottrin
 Icon=ottrin
 Type=Application
-Categories=System;FileManager;
+Categories=System;FileTools;FileManager;
 Keywords=files;manager;miller;
 DESKTOP
-cp "$APPDIR/ottrin.desktop" "$APPDIR/usr/share/applications/ottrin.desktop"
+cp "$APPDIR/org.ottrin.Ottrin.desktop" "$APPDIR/usr/share/applications/org.ottrin.Ottrin.desktop"
 
 cat > "$APPDIR/AppRun" <<'APPRUN'
 #!/bin/sh
@@ -59,6 +62,8 @@ if [ ! -x "$APPIMAGETOOL" ]; then
     -O "$APPIMAGETOOL"
   chmod +x "$APPIMAGETOOL"
 fi
+
+printf '%s  %s\n' "$APPIMAGETOOL_SHA256" "$APPIMAGETOOL" | sha256sum -c -
 
 rm -f "$APPIMAGE"
 ARCH=x86_64 "$APPIMAGETOOL" "$APPDIR" "$APPIMAGE"

@@ -23,7 +23,8 @@ cp "$ROOT/README.md" "$STAGE/"
 if [ -f "$ROOT/LICENSE" ]; then
   cp "$ROOT/LICENSE" "$STAGE/"
 fi
-cp "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" "$ROOT/docs/ROADMAP.md" "$STAGE/docs/"
+cp "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" "$ROOT/docs/ROADMAP.md" \
+  "$ROOT/docs/RELEASE_NOTES.md" "$ROOT/docs/RELEASE_CHECKLIST.md" "$STAGE/docs/"
 
 cat > "$STAGE/RUNNING.md" <<'EOF'
 # Running Ottrin Portable on Windows

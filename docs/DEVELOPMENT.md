@@ -74,7 +74,13 @@ Windows portable from PowerShell:
 .\packaging\windows\package-portable.ps1
 ```
 
-Linux AppImage is the first public Linux package target. Native `.deb` and `.rpm` packages are deferred until after the first portable/AppImage smoke-test cycle. Windows portable zip is the current Windows artifact; MSI work remains.
+Windows installer from an extracted portable payload (requires NSIS):
+
+```powershell
+.\packaging\windows\package-installer.ps1 -Stage .\dist\Ottrin-0.1.0-windows-x64
+```
+
+Linux AppImage is the first public Linux package target. Native `.deb` and `.rpm` packages are deferred until after the first portable/AppImage smoke-test cycle. Windows ships a portable zip and an NSIS per-user installer candidate; MSI work remains.
 
 ## Privileged Helper Model
 
@@ -101,9 +107,9 @@ Runtime helper discovery checks explicit override, environment variable, app dir
 
 - Navigate Miller/List/Grid, tabs, bookmarks, and address bar.
 - Search first index, restart from DB, rebuild, current-folder search, content search, and result actions.
-- Create, rename, copy, move, trash delete, and permanent delete.
-- Tandem activation, pinning, side switching, and pane-to-pane copy/move.
-- Quick Inspector for text, image, PDF, DOCX, archive, folder, and generic fallback files.
+- Create, rename, copy, trash delete, and permanent delete; verify that Move fails before mutation until durable recovery is implemented.
+- Tandem activation, pinning, side switching, and pane-to-pane copy.
+- Quick Inspector for text, image, PDF text/metadata, DOCX, XLSX/XLSM, PPTX, archive, folder, and generic fallback files.
 - Privileged helper smoke with helper and policy installed.
 - Helper-missing and policy-misconfigured error paths.
 
@@ -127,6 +133,9 @@ Runtime helper discovery checks explicit override, environment variable, app dir
 
 Before a public v1 release:
 
+- Run `./scripts/release-preflight.sh` for the repeatable, non-publishing local
+  gate. Use `--source-only` before artifacts exist, or
+  `--require-optional-tools` on a fully provisioned release workstation.
 - `cargo fmt --check`, workspace check/test, strict Clippy, and release build pass.
 - Linux and Windows CI are green.
 - Linux AppImage and portable tarball are checksum-verified and smoke-tested from clean artifacts.
