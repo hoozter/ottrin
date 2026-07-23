@@ -198,9 +198,10 @@ impl FileOpOutcome {
 fn classify_file_op_result(result: Result<(), PlatformError>) -> FileOpOutcome {
     match result {
         Ok(()) => FileOpOutcome::Completed,
-        Err(error @ PlatformError::CommittedCleanupPending { .. }) => {
-            FileOpOutcome::CompletedWithWarning(error.to_string())
-        }
+        Err(
+            error @ (PlatformError::CommittedCleanupPending { .. }
+            | PlatformError::PartialBatch { .. }),
+        ) => FileOpOutcome::CompletedWithWarning(error.to_string()),
         Err(error) => {
             let message = error.to_string();
             FileOpOutcome::Failed {
@@ -3970,27 +3971,46 @@ impl OttrinApp {
                     self.refresh_trash_panel();
                 }
             }
-            if let Some(tab_id) = res.tab_id
-                && self.state.tab_by_id(tab_id).is_some()
+            let mut refresh_tabs = res.tab_id.into_iter().collect::<Vec<_>>();
+            if let FileCommand::Copy {
+                sources,
+                destination,
+                ..
+            }
+            | FileCommand::Move {
+                sources,
+                destination,
+                ..
+            } = &completed_cmd
             {
-                let mut refresh_tabs = vec![tab_id];
-                if let Some(link) = self.state.link_view.as_ref()
-                    && link.contains_tab(tab_id)
-                {
-                    let other_tab_id = if link.left_tab_id == tab_id {
-                        link.right_tab_id
-                    } else {
-                        link.left_tab_id
-                    };
-                    refresh_tabs.push(other_tab_id);
-                }
-                refresh_tabs.sort_unstable();
-                refresh_tabs.dedup();
-                for refresh_tab in refresh_tabs {
-                    if let Some(tab) = self.state.tab_by_id(refresh_tab) {
-                        let dir = nearest_existing_dir(&tab.current_dir);
-                        self.refresh_tab(refresh_tab, dir);
+                for tab in &self.state.tabs {
+                    let shows_source = sources
+                        .iter()
+                        .filter_map(|source| source.parent())
+                        .any(|parent| parent == tab.current_dir);
+                    if tab.current_dir == *destination || shows_source {
+                        refresh_tabs.push(tab.id);
                     }
+                }
+            }
+            if let Some(link) = self.state.link_view.as_ref() {
+                let linked = refresh_tabs.clone();
+                for tab_id in linked {
+                    if link.contains_tab(tab_id) {
+                        refresh_tabs.push(if link.left_tab_id == tab_id {
+                            link.right_tab_id
+                        } else {
+                            link.left_tab_id
+                        });
+                    }
+                }
+            }
+            refresh_tabs.sort_unstable();
+            refresh_tabs.dedup();
+            for refresh_tab in refresh_tabs {
+                if let Some(tab) = self.state.tab_by_id(refresh_tab) {
+                    let dir = nearest_existing_dir(&tab.current_dir);
+                    self.refresh_tab(refresh_tab, dir);
                 }
             }
         }
@@ -17591,6 +17611,20 @@ mod tests {
         let outcome = classify_file_op_result(Err(PlatformError::CommittedCleanupPending {
             transaction: "/tmp/recoverable-transaction".to_string(),
             message: "permission denied during cleanup".to_string(),
+        }));
+
+        assert!(matches!(outcome, FileOpOutcome::CompletedWithWarning(_)));
+        assert!(!outcome.should_offer_privilege_retry());
+    }
+
+    #[test]
+    fn partial_batch_is_completed_with_warning_and_never_privilege_retryable() {
+        let outcome = classify_file_op_result(Err(PlatformError::PartialBatch {
+            completed: 1,
+            total: 2,
+            stopped_source: PathBuf::from("second"),
+            recovery_paths: Vec::new(),
+            message: "permission denied".to_string(),
         }));
 
         assert!(matches!(outcome, FileOpOutcome::CompletedWithWarning(_)));

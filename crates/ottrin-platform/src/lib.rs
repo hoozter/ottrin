@@ -9,7 +9,9 @@ use std::time::SystemTime;
 use thiserror::Error;
 
 mod copy_transaction;
-use copy_transaction::copy_entry_transactional;
+use copy_transaction::{CopyPublication, copy_entry_transactional};
+mod move_transaction;
+use move_transaction::move_entry_transactional;
 
 #[derive(Debug, Clone)]
 pub struct FileProperties {
@@ -47,9 +49,15 @@ pub enum PlatformError {
     InvalidDestination(String),
     #[error("destination entry already exists: {0}")]
     DestinationExists(String),
+    #[error("safe copy is unsupported on this platform: {0}")]
+    UnsupportedSafeCopy(String),
     #[error("safe overwrite of an existing entry is unsupported on this platform: {0}")]
     UnsupportedSafeOverwrite(String),
-    #[error("copy committed, but cleanup is pending for transaction {transaction}: {message}")]
+    #[error("safe cross-device move cleanup is unsupported on this platform: {0}")]
+    UnsupportedSafeCrossDeviceMove(String),
+    #[error("handle-anchored safe move is unsupported on this platform: {0}")]
+    UnsupportedSafeMove(String),
+    #[error("filesystem operation committed, but cleanup is pending at {transaction}: {message}")]
     CommittedCleanupPending {
         transaction: String,
         message: String,
@@ -57,6 +65,16 @@ pub enum PlatformError {
     #[error("copy failed and transaction cleanup is pending at {transaction}: {message}")]
     CleanupPending {
         transaction: String,
+        message: String,
+    },
+    #[error(
+        "batch completed {completed} of {total} items, then stopped at {stopped_source}: {message}"
+    )]
+    PartialBatch {
+        completed: usize,
+        total: usize,
+        stopped_source: PathBuf,
+        recovery_paths: Vec<PathBuf>,
         message: String,
     },
 }
@@ -216,9 +234,7 @@ impl PlatformOps for DefaultPlatform {
                     validate_copy_source(source)?;
                     reject_directory_copy_into_itself(source, destination)?;
                 }
-                for source in sources {
-                    copy_entry_transactional(source, destination, *conflict)?;
-                }
+                execute_copy_batch(sources, destination, *conflict)?;
                 Ok(None)
             }
             FileCommand::Move {
@@ -228,11 +244,12 @@ impl PlatformOps for DefaultPlatform {
             } => {
                 ensure_existing_dir(destination)?;
                 for source in sources {
-                    if let Some(target) = resolve_move_destination(source, destination, *conflict)?
-                    {
-                        move_entry(source, &target)?;
-                    }
+                    validate_copy_source(source)?;
+                    reject_directory_copy_into_itself(source, destination)?;
                 }
+                execute_batch(sources, |source| {
+                    move_entry_transactional(source, destination, *conflict)
+                })?;
                 Ok(None)
             }
             FileCommand::ShowProperties { target } => {
@@ -315,6 +332,122 @@ impl PlatformOps for DefaultPlatform {
                 "Integrated privilege management is not implemented on this platform.".to_string(),
             )
         }
+    }
+}
+
+fn error_recovery_paths(error: &PlatformError) -> Vec<PathBuf> {
+    match error {
+        PlatformError::CleanupPending { transaction, .. }
+        | PlatformError::CommittedCleanupPending { transaction, .. } => {
+            vec![PathBuf::from(transaction)]
+        }
+        PlatformError::PartialBatch { recovery_paths, .. } => recovery_paths.clone(),
+        _ => Vec::new(),
+    }
+}
+
+fn message_with_recovery(error: &PlatformError, recovery_paths: &[PathBuf]) -> String {
+    if recovery_paths.is_empty() {
+        error.to_string()
+    } else {
+        format!(
+            "{}; retained transaction stages: {}",
+            error,
+            recovery_paths
+                .iter()
+                .map(|path| path.display().to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    }
+}
+
+fn execute_batch(
+    sources: &[PathBuf],
+    mut execute: impl FnMut(&Path) -> Result<(), PlatformError>,
+) -> Result<(), PlatformError> {
+    let total = sources.len();
+    for (index, source) in sources.iter().enumerate() {
+        if let Err(error) = execute(source) {
+            let current_committed = matches!(
+                error,
+                PlatformError::CommittedCleanupPending { .. } | PlatformError::PartialBatch { .. }
+            );
+            let completed = index + usize::from(current_committed);
+            if total > 1 && completed > 0 {
+                let recovery_paths = error_recovery_paths(&error);
+                return Err(PlatformError::PartialBatch {
+                    completed,
+                    total,
+                    stopped_source: source.clone(),
+                    message: message_with_recovery(&error, &recovery_paths),
+                    recovery_paths,
+                });
+            }
+            return Err(error);
+        }
+    }
+    Ok(())
+}
+
+fn execute_copy_batch(
+    sources: &[PathBuf],
+    destination: &Path,
+    conflict: ConflictAction,
+) -> Result<(), PlatformError> {
+    execute_copy_batch_with(sources, |source| {
+        copy_entry_transactional(source, destination, conflict)
+    })
+}
+
+fn execute_copy_batch_with(
+    sources: &[PathBuf],
+    mut execute: impl FnMut(&Path) -> Result<CopyPublication, PlatformError>,
+) -> Result<(), PlatformError> {
+    let total = sources.len();
+    let mut retained = Vec::new();
+    for (index, source) in sources.iter().enumerate() {
+        match execute(source) {
+            Ok(CopyPublication::Published {
+                retained_transaction,
+            }) => retained.push(retained_transaction),
+            Ok(CopyPublication::Skipped {
+                retained_transaction: Some(transaction),
+            }) => retained.push(transaction),
+            Ok(CopyPublication::Skipped {
+                retained_transaction: None,
+            }) => {}
+            Err(error) => {
+                let current_committed =
+                    matches!(error, PlatformError::CommittedCleanupPending { .. });
+                let completed = index + usize::from(current_committed);
+                if total > 1 && completed > 0 {
+                    let mut recovery_paths = retained.clone();
+                    recovery_paths.extend(error_recovery_paths(&error));
+                    return Err(PlatformError::PartialBatch {
+                        completed,
+                        total,
+                        stopped_source: source.clone(),
+                        message: message_with_recovery(&error, &recovery_paths),
+                        recovery_paths,
+                    });
+                }
+                return Err(error);
+            }
+        }
+    }
+    if retained.is_empty() {
+        Ok(())
+    } else {
+        Err(PlatformError::CommittedCleanupPending {
+            transaction: retained
+                .iter()
+                .map(|path| path.display().to_string())
+                .collect::<Vec<_>>()
+                .join(", "),
+            message: "copy completed; private transaction stages were retained because pathname-based cleanup cannot prove ownership"
+                .into(),
+        })
     }
 }
 
@@ -874,34 +1007,7 @@ fn parse_trashinfo_field(text: &str, field: &str) -> Option<String> {
     })
 }
 
-fn resolve_move_destination(
-    source: &Path,
-    destination_dir: &Path,
-    conflict: ConflictAction,
-) -> Result<Option<PathBuf>, PlatformError> {
-    if std::fs::symlink_metadata(source).is_err() {
-        return Err(PlatformError::InvalidSource(source.display().to_string()));
-    }
-
-    let name = source
-        .file_name()
-        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
-    let destination = destination_dir.join(name);
-
-    if std::fs::symlink_metadata(&destination).is_err() {
-        return Ok(Some(destination));
-    }
-
-    match conflict {
-        ConflictAction::Skip => Ok(None),
-        ConflictAction::Overwrite => {
-            delete_permanent(&destination)?;
-            Ok(Some(destination))
-        }
-        ConflictAction::Rename => Ok(Some(next_available_name(&destination))),
-    }
-}
-
+#[cfg(target_os = "linux")]
 fn next_available_name(base: &Path) -> PathBuf {
     let parent = base.parent().map(Path::to_path_buf).unwrap_or_default();
     let stem = base.file_stem().unwrap_or(base.as_os_str());
@@ -923,6 +1029,7 @@ fn next_available_name(base: &Path) -> PathBuf {
     base.to_path_buf()
 }
 
+#[cfg(target_os = "linux")]
 fn copy_entry(source: &Path, destination: &Path) -> Result<(), PlatformError> {
     let meta = std::fs::symlink_metadata(source)
         .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
@@ -939,6 +1046,7 @@ fn copy_entry(source: &Path, destination: &Path) -> Result<(), PlatformError> {
     }
 }
 
+#[cfg(target_os = "linux")]
 fn copy_symlink(source: &Path, destination: &Path) -> Result<(), PlatformError> {
     let target = std::fs::read_link(source).map_err(|e| PlatformError::Io(e.to_string()))?;
 
@@ -966,6 +1074,7 @@ fn copy_symlink(source: &Path, destination: &Path) -> Result<(), PlatformError> 
     }
 }
 
+#[cfg(target_os = "linux")]
 fn copy_dir_recursive(source_dir: &Path, target_dir: &Path) -> Result<(), PlatformError> {
     std::fs::create_dir_all(target_dir).map_err(|e| PlatformError::Io(e.to_string()))?;
 
@@ -987,21 +1096,6 @@ fn copy_dir_recursive(source_dir: &Path, target_dir: &Path) -> Result<(), Platfo
     }
 
     Ok(())
-}
-
-fn move_entry(source: &Path, destination: &Path) -> Result<(), PlatformError> {
-    if std::fs::symlink_metadata(source).is_err() {
-        return Err(PlatformError::InvalidSource(source.display().to_string()));
-    }
-
-    match std::fs::rename(source, destination) {
-        Ok(()) => Ok(()),
-        Err(_) => {
-            copy_entry(source, destination)?;
-            delete_permanent(source)?;
-            Ok(())
-        }
-    }
 }
 
 fn chmod_path(path: &Path, mode_str: &str) -> Result<(), String> {
@@ -1082,6 +1176,66 @@ fn read_properties(path: &Path) -> Result<FileProperties, PlatformError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn copy_batch_failure_after_a_completed_item_is_typed_as_partial_completion() {
+        let sources = vec![PathBuf::from("first"), PathBuf::from("second")];
+        let mut calls = 0;
+
+        let result = execute_batch(&sources, |_| {
+            calls += 1;
+            if calls == 2 {
+                Err(PlatformError::Io("permission denied".into()))
+            } else {
+                Ok(())
+            }
+        });
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::PartialBatch {
+                completed: 1,
+                total: 2,
+                ref stopped_source,
+                ..
+            }) if stopped_source == Path::new("second")
+        ));
+    }
+
+    #[test]
+    fn move_batch_committed_warning_counts_the_stopped_item_as_completed() {
+        let sources = vec![PathBuf::from("first"), PathBuf::from("second")];
+        let result = execute_batch(&sources, |source| {
+            if source == Path::new("first") {
+                Ok(())
+            } else {
+                Err(PlatformError::CommittedCleanupPending {
+                    transaction: "quarantine".into(),
+                    message: "cleanup pending".into(),
+                })
+            }
+        });
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::PartialBatch {
+                completed: 2,
+                total: 2,
+                ref stopped_source,
+                ..
+            }) if stopped_source == Path::new("second")
+        ));
+    }
+
+    #[test]
+    fn batch_failure_before_any_completion_retains_normal_error_semantics() {
+        let sources = vec![PathBuf::from("first"), PathBuf::from("second")];
+        let result = execute_batch(&sources, |_| {
+            Err(PlatformError::Io("permission denied".into()))
+        });
+
+        assert!(matches!(result, Err(PlatformError::Io(_))));
+    }
     use std::sync::atomic::{AtomicU64, Ordering};
 
     static TEMP_ID: AtomicU64 = AtomicU64::new(0);
@@ -1108,6 +1262,16 @@ mod tests {
         fn drop(&mut self) {
             let _ = std::fs::remove_dir_all(&self.0);
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    fn assert_copy_completed_with_retained_stage(
+        result: Result<Option<FileProperties>, PlatformError>,
+    ) {
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { .. })
+        ));
     }
 
     #[test]
@@ -1168,13 +1332,13 @@ mod tests {
         let source_link = source_dir.join("link.txt");
         symlink("target.txt", &source_link).unwrap();
 
-        DefaultPlatform
-            .execute_command(&FileCommand::Copy {
+        assert_copy_completed_with_retained_stage(DefaultPlatform.execute_command(
+            &FileCommand::Copy {
                 sources: vec![source_link],
                 destination: destination_dir.clone(),
                 conflict: ConflictAction::Skip,
-            })
-            .unwrap();
+            },
+        ));
 
         let copied_link = destination_dir.join("link.txt");
         assert!(
@@ -1211,13 +1375,13 @@ mod tests {
         symlink(&outside, source.join("outside-link")).unwrap();
         symlink(".", source.join("cycle-link")).unwrap();
 
-        DefaultPlatform
-            .execute_command(&FileCommand::Copy {
+        assert_copy_completed_with_retained_stage(DefaultPlatform.execute_command(
+            &FileCommand::Copy {
                 sources: vec![source],
                 destination: destination.clone(),
                 conflict: ConflictAction::Skip,
-            })
-            .unwrap();
+            },
+        ));
 
         let copied = destination.join("tree");
         assert_eq!(
@@ -1361,13 +1525,13 @@ mod tests {
         std::fs::write(destination.join("item.txt"), "existing").unwrap();
         symlink("redirected.txt", destination.join("item (1).txt")).unwrap();
 
-        DefaultPlatform
-            .execute_command(&FileCommand::Copy {
+        assert_copy_completed_with_retained_stage(DefaultPlatform.execute_command(
+            &FileCommand::Copy {
                 sources: vec![source],
                 destination: destination.clone(),
                 conflict: ConflictAction::Rename,
-            })
-            .unwrap();
+            },
+        ));
 
         assert_eq!(
             std::fs::read_link(destination.join("item (1).txt")).unwrap(),
@@ -1391,13 +1555,13 @@ mod tests {
         std::fs::create_dir(&destination).unwrap();
         symlink("missing-target", &source).unwrap();
 
-        DefaultPlatform
-            .execute_command(&FileCommand::Copy {
+        assert_copy_completed_with_retained_stage(DefaultPlatform.execute_command(
+            &FileCommand::Copy {
                 sources: vec![source],
                 destination: destination.clone(),
                 conflict: ConflictAction::Skip,
-            })
-            .unwrap();
+            },
+        ));
 
         let copied = destination.join("dangling");
         assert!(
@@ -1412,36 +1576,103 @@ mod tests {
         );
     }
 
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn copy_batch_publishes_every_item_before_reporting_retained_stages() {
+        let dir = TestDir::new("copy-retained-stages");
+        let source_dir = dir.path().join("source");
+        let destination = dir.path().join("destination");
+        std::fs::create_dir(&source_dir).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        let first = source_dir.join("first");
+        let second = source_dir.join("second");
+        std::fs::write(&first, "one").unwrap();
+        std::fs::write(&second, "two").unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Copy {
+            sources: vec![first, second],
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        });
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { .. })
+        ));
+        assert_eq!(
+            std::fs::read_to_string(destination.join("first")).unwrap(),
+            "one"
+        );
+        assert_eq!(
+            std::fs::read_to_string(destination.join("second")).unwrap(),
+            "two"
+        );
+    }
+
+    #[test]
+    fn partial_copy_batch_reports_every_retained_recovery_path() {
+        let dir = TestDir::new("partial-copy-recovery-paths");
+        let first_stage = dir.path().join("first-stage");
+        let second_stage = dir.path().join("second-stage");
+        std::fs::create_dir(&first_stage).unwrap();
+        std::fs::create_dir(&second_stage).unwrap();
+        std::fs::write(first_stage.join("candidate"), "displaced-original").unwrap();
+        let sources = vec![PathBuf::from("first"), PathBuf::from("second")];
+
+        let result = execute_copy_batch_with(&sources, |source| {
+            if source == Path::new("first") {
+                Ok(CopyPublication::Published {
+                    retained_transaction: first_stage.clone(),
+                })
+            } else {
+                Err(PlatformError::CleanupPending {
+                    transaction: second_stage.display().to_string(),
+                    message: "injected staging failure".into(),
+                })
+            }
+        });
+
+        match result {
+            Err(PlatformError::PartialBatch {
+                completed,
+                recovery_paths,
+                message,
+                ..
+            }) => {
+                assert_eq!(completed, 1);
+                assert_eq!(recovery_paths, vec![first_stage.clone(), second_stage]);
+                assert!(message.contains(&first_stage.display().to_string()));
+                assert_eq!(
+                    std::fs::read_to_string(first_stage.join("candidate")).unwrap(),
+                    "displaced-original"
+                );
+            }
+            other => panic!("expected typed partial batch, got {other:?}"),
+        }
+    }
+
     #[cfg(unix)]
     #[test]
-    fn dangling_symlink_is_accepted_as_move_source() {
+    fn move_is_rejected_before_mutating_even_for_a_valid_symlink_source() {
         use std::os::unix::fs::symlink;
 
-        let dir = TestDir::new("move-dangling-source");
+        let dir = TestDir::new("move-safe-rejection");
         let source = dir.path().join("dangling");
         let destination = dir.path().join("destination");
         std::fs::create_dir(&destination).unwrap();
         symlink("missing-target", &source).unwrap();
 
-        DefaultPlatform
-            .execute_command(&FileCommand::Move {
-                sources: vec![source.clone()],
-                destination: destination.clone(),
-                conflict: ConflictAction::Skip,
-            })
-            .unwrap();
+        let result = DefaultPlatform.execute_command(&FileCommand::Move {
+            sources: vec![source.clone()],
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        });
 
-        assert!(std::fs::symlink_metadata(source).is_err());
-        let moved = destination.join("dangling");
-        assert!(
-            std::fs::symlink_metadata(&moved)
-                .unwrap()
-                .file_type()
-                .is_symlink()
-        );
+        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
         assert_eq!(
-            std::fs::read_link(moved).unwrap(),
+            std::fs::read_link(&source).unwrap(),
             Path::new("missing-target")
         );
+        assert!(std::fs::symlink_metadata(destination.join("dangling")).is_err());
     }
 }

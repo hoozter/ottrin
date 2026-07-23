@@ -1,18 +1,31 @@
-use super::{ConflictAction, PlatformError, copy_entry, next_available_name};
+use super::{ConflictAction, PlatformError};
+#[cfg(target_os = "linux")]
+use super::{copy_entry, next_available_name};
 #[cfg(target_os = "linux")]
 use std::ffi::OsStr;
-use std::ffi::OsString;
-use std::path::Path;
 #[cfg(any(target_os = "linux", test))]
-use std::path::PathBuf;
+use std::ffi::OsString;
+use std::path::{Path, PathBuf};
 
+#[cfg(target_os = "linux")]
 const CANDIDATE: &str = "candidate";
+
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(super) enum CopyPublication {
+    Published {
+        retained_transaction: PathBuf,
+    },
+    Skipped {
+        retained_transaction: Option<PathBuf>,
+    },
+}
 
 pub(super) fn copy_entry_transactional(
     source: &Path,
     destination_dir: &Path,
     conflict: ConflictAction,
-) -> Result<(), PlatformError> {
+) -> Result<CopyPublication, PlatformError> {
     #[cfg(target_os = "linux")]
     {
         linux::copy(source, destination_dir, conflict)
@@ -23,6 +36,7 @@ pub(super) fn copy_entry_transactional(
     }
 }
 
+#[cfg(any(target_os = "linux", test))]
 fn random_transaction_name() -> Result<OsString, PlatformError> {
     let mut random = [0_u8; 16];
     getrandom::fill(&mut random).map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -64,6 +78,7 @@ fn reject_self_copy(source: &Path, target: &Path) -> Result<(), PlatformError> {
     Ok(())
 }
 
+#[cfg(target_os = "linux")]
 fn flush_tree_bottom_up(path: &Path) -> Result<(), PlatformError> {
     let metadata =
         std::fs::symlink_metadata(path).map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -97,10 +112,10 @@ fn flush_tree_bottom_up(path: &Path) -> Result<(), PlatformError> {
 #[cfg(target_os = "linux")]
 mod linux {
     use super::*;
-    use rustix::fd::{AsFd, AsRawFd, OwnedFd};
+    use rustix::fd::{AsRawFd, OwnedFd};
     use rustix::fs::{
         AtFlags, CWD, FileType, Mode, OFlags, RenameFlags, fstat, mkdirat, openat, renameat_with,
-        statat, unlinkat,
+        statat,
     };
     use rustix::io::Errno;
 
@@ -108,7 +123,30 @@ mod linux {
         parent: OwnedFd,
         stage: OwnedFd,
         name: OsString,
-        committed: bool,
+    }
+
+    struct PinnedEntry(OwnedFd);
+
+    impl PinnedEntry {
+        fn open(parent: &OwnedFd, name: &OsStr) -> Result<Option<Self>, PlatformError> {
+            match openat(
+                parent,
+                name,
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            ) {
+                Ok(fd) => Ok(Some(Self(fd))),
+                Err(Errno::NOENT) => Ok(None),
+                Err(error) => Err(PlatformError::Io(error.to_string())),
+            }
+        }
+
+        fn matches(&self, parent: &OwnedFd, name: &OsStr) -> Result<bool, PlatformError> {
+            let expected = fstat(&self.0).map_err(|error| PlatformError::Io(error.to_string()))?;
+            let actual = statat(parent, name, AtFlags::SYMLINK_NOFOLLOW)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            Ok(expected.st_dev == actual.st_dev && expected.st_ino == actual.st_ino)
+        }
     }
 
     impl Transaction {
@@ -130,14 +168,10 @@ mod linux {
                 match mkdirat(&parent, &name, Mode::RUSR | Mode::WUSR | Mode::XUSR) {
                     Ok(()) => {
                         if let Err(message) = hook(TestPoint::AfterStageCreated) {
-                            let cleanup = unlinkat(&parent, &name, AtFlags::REMOVEDIR);
-                            return Err(PlatformError::Io(match cleanup {
-                                Ok(()) => message.into(),
-                                Err(error) => format!(
-                                    "{message}; failed to remove unopened stage {}: {error}",
-                                    canonical.join(&name).display()
-                                ),
-                            }));
+                            return Err(PlatformError::CleanupPending {
+                                transaction: canonical.join(&name).display().to_string(),
+                                message: message.into(),
+                            });
                         }
                         let stage = match openat(
                             &parent,
@@ -147,14 +181,10 @@ mod linux {
                         ) {
                             Ok(stage) => stage,
                             Err(error) => {
-                                let cleanup = unlinkat(&parent, &name, AtFlags::REMOVEDIR);
-                                return Err(PlatformError::Io(match cleanup {
-                                    Ok(()) => error.to_string(),
-                                    Err(cleanup_error) => format!(
-                                        "{error}; failed to remove unopened stage {}: {cleanup_error}",
-                                        canonical.join(&name).display()
-                                    ),
-                                }));
+                                return Err(PlatformError::CleanupPending {
+                                    transaction: canonical.join(&name).display().to_string(),
+                                    message: error.to_string(),
+                                });
                             }
                         };
                         let validation = (|| {
@@ -174,35 +204,22 @@ mod linux {
                         let valid = match validation {
                             Ok(valid) => valid,
                             Err(error) => {
-                                drop(stage);
-                                let cleanup = unlinkat(&parent, &name, AtFlags::REMOVEDIR);
-                                return Err(match cleanup {
-                                    Ok(()) => error,
-                                    Err(cleanup_error) => PlatformError::CleanupPending {
-                                        transaction: canonical.join(&name).display().to_string(),
-                                        message: format!("{error}; {cleanup_error}"),
-                                    },
+                                return Err(PlatformError::CleanupPending {
+                                    transaction: canonical.join(&name).display().to_string(),
+                                    message: error.to_string(),
                                 });
                             }
                         };
                         if !valid {
-                            drop(stage);
-                            let cleanup = unlinkat(&parent, &name, AtFlags::REMOVEDIR);
-                            return Err(PlatformError::Io(match cleanup {
-                                Ok(()) => {
-                                    "staging directory identity or permissions changed".into()
-                                }
-                                Err(error) => format!(
-                                    "staging directory validation failed and cleanup is pending at {}: {error}",
-                                    canonical.join(&name).display()
-                                ),
-                            }));
+                            return Err(PlatformError::CleanupPending {
+                                transaction: canonical.join(&name).display().to_string(),
+                                message: "staging directory identity or permissions changed".into(),
+                            });
                         }
                         return Ok(Self {
                             parent,
                             stage,
                             name,
-                            committed: false,
                         });
                     }
                     Err(Errno::EXIST) => continue,
@@ -225,97 +242,15 @@ mod linux {
                 .join(&self.name)
         }
 
-        fn remove_stage(&self) -> Result<(), PlatformError> {
-            unlinkat(&self.parent, &self.name, AtFlags::REMOVEDIR)
-                .map_err(|error| PlatformError::Io(error.to_string()))
-        }
-
-        fn abort_cleanup(&mut self) -> Result<(), PlatformError> {
-            let candidate = self.candidate_path();
-            let result = if std::fs::symlink_metadata(&candidate).is_ok() {
-                super::super::delete_permanent(&candidate)
-            } else {
-                Ok(())
-            }
-            .and_then(|()| self.remove_stage())
-            .and_then(|()| {
-                rustix::fs::fsync(&self.parent)
-                    .map_err(|error| PlatformError::Io(error.to_string()))
-            });
-            // An explicit result path now owns any cleanup error/recovery path.
-            // Do not let Drop silently retry and potentially erase that evidence.
-            self.committed = true;
-            result
-        }
-
-        fn abort(mut self, original: PlatformError) -> PlatformError {
-            let recovery = self.recovery_path();
-            match self.abort_cleanup() {
-                Ok(()) => original,
-                Err(cleanup) => PlatformError::CleanupPending {
-                    transaction: recovery.display().to_string(),
-                    message: format!("{original}; {cleanup}"),
-                },
+        fn abandon(self, original: PlatformError) -> PlatformError {
+            PlatformError::CleanupPending {
+                transaction: self.recovery_path().display().to_string(),
+                message: original.to_string(),
             }
         }
 
-        fn cancel(mut self) -> Result<(), PlatformError> {
-            let recovery = self.recovery_path();
-            self.abort_cleanup()
-                .map_err(|error| PlatformError::CleanupPending {
-                    transaction: recovery.display().to_string(),
-                    message: error.to_string(),
-                })
-        }
-
-        fn cleanup(
-            mut self,
-            displaced: bool,
-            hook: &mut impl FnMut(TestPoint) -> Result<(), &'static str>,
-        ) -> Result<(), PlatformError> {
-            if displaced {
-                remove_displaced(&self.candidate_path(), hook)?;
-            }
-            self.remove_stage()?;
-            hook(TestPoint::BeforeFinalParentSync)
-                .map_err(|message| PlatformError::Io(message.into()))?;
-            rustix::fs::fsync(&self.parent)
-                .map_err(|error| PlatformError::Io(error.to_string()))?;
-            self.committed = false;
-            Ok(())
-        }
-    }
-
-    fn remove_displaced(
-        path: &Path,
-        hook: &mut impl FnMut(TestPoint) -> Result<(), &'static str>,
-    ) -> Result<(), PlatformError> {
-        let metadata = std::fs::symlink_metadata(path)
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
-        if metadata.is_dir() && !metadata.file_type().is_symlink() {
-            for entry in
-                std::fs::read_dir(path).map_err(|error| PlatformError::Io(error.to_string()))?
-            {
-                let entry = entry.map_err(|error| PlatformError::Io(error.to_string()))?;
-                remove_displaced(&entry.path(), hook)?;
-            }
-            hook(TestPoint::DuringCleanup).map_err(|message| PlatformError::Io(message.into()))?;
-            std::fs::remove_dir(path).map_err(|error| PlatformError::Io(error.to_string()))
-        } else {
-            hook(TestPoint::DuringCleanup).map_err(|message| PlatformError::Io(message.into()))?;
-            std::fs::remove_file(path).map_err(|error| PlatformError::Io(error.to_string()))
-        }
-    }
-
-    impl Drop for Transaction {
-        fn drop(&mut self) {
-            if !self.committed {
-                let candidate = self.candidate_path();
-                if std::fs::symlink_metadata(&candidate).is_ok() {
-                    let _ = super::super::delete_permanent(&candidate);
-                }
-                let _ = self.remove_stage();
-            }
+        fn retain(self) -> PathBuf {
+            self.recovery_path()
         }
     }
 
@@ -325,10 +260,8 @@ mod linux {
         AfterStageCreated,
         AfterStaged,
         BeforeExchange,
+        BeforeDisplacedIdentityCheck,
         AfterExchange,
-        BeforeCleanup,
-        DuringCleanup,
-        BeforeFinalParentSync,
     }
 
     #[cfg(not(test))]
@@ -337,17 +270,15 @@ mod linux {
         AfterStageCreated,
         AfterStaged,
         BeforeExchange,
+        BeforeDisplacedIdentityCheck,
         AfterExchange,
-        BeforeCleanup,
-        DuringCleanup,
-        BeforeFinalParentSync,
     }
 
     pub(super) fn copy(
         source: &Path,
         destination_dir: &Path,
         conflict: ConflictAction,
-    ) -> Result<(), PlatformError> {
+    ) -> Result<CopyPublication, PlatformError> {
         copy_impl(source, destination_dir, conflict, |_| Ok(()))
     }
 
@@ -357,7 +288,7 @@ mod linux {
         destination_dir: &Path,
         conflict: ConflictAction,
         hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
-    ) -> Result<(), PlatformError> {
+    ) -> Result<CopyPublication, PlatformError> {
         copy_impl(source, destination_dir, conflict, hook)
     }
 
@@ -366,24 +297,30 @@ mod linux {
         destination_dir: &Path,
         conflict: ConflictAction,
         mut hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
-    ) -> Result<(), PlatformError> {
+    ) -> Result<CopyPublication, PlatformError> {
+        let name = source
+            .file_name()
+            .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
+        let initial_target = destination_dir.join(name);
+        reject_self_copy(source, &initial_target)?;
+        if conflict == ConflictAction::Skip && std::fs::symlink_metadata(&initial_target).is_ok() {
+            return Ok(CopyPublication::Skipped {
+                retained_transaction: None,
+            });
+        }
         let transaction = Transaction::create(destination_dir, &mut hook)?;
-        let name = match source.file_name() {
-            Some(name) => name,
-            None => {
-                return Err(
-                    transaction.abort(PlatformError::InvalidSource(source.display().to_string()))
-                );
-            }
-        };
         let base_target = transaction.parent_path(name);
         if let Err(error) = reject_self_copy(source, &base_target) {
-            return Err(transaction.abort(error));
+            return Err(transaction.abandon(error));
         }
-
-        if conflict == ConflictAction::Skip && std::fs::symlink_metadata(&base_target).is_ok() {
-            return transaction.cancel();
-        }
+        let expected_target = if conflict == ConflictAction::Overwrite {
+            match PinnedEntry::open(&transaction.parent, name) {
+                Ok(expected) => expected,
+                Err(error) => return Err(transaction.abandon(error)),
+            }
+        } else {
+            None
+        };
         let mut target_name = match conflict {
             ConflictAction::Rename if std::fs::symlink_metadata(&base_target).is_ok() => {
                 next_available_name(&base_target)
@@ -411,10 +348,9 @@ mod linux {
             hook(TestPoint::AfterStaged).map_err(|message| PlatformError::Io(message.into()))
         })();
         if let Err(error) = stage_result {
-            return Err(transaction.abort(error));
+            return Err(transaction.abandon(error));
         }
 
-        let mut displaced = false;
         loop {
             match renameat_with(
                 &transaction.stage,
@@ -425,16 +361,20 @@ mod linux {
             ) {
                 Ok(()) => break,
                 Err(Errno::EXIST) => match conflict {
-                    ConflictAction::Skip => return transaction.cancel(),
+                    ConflictAction::Skip => {
+                        return Ok(CopyPublication::Skipped {
+                            retained_transaction: Some(transaction.retain()),
+                        });
+                    }
                     ConflictAction::Rename => {
-                        target_name = next_available_name(&transaction.parent_path(&target_name))
+                        target_name = next_available_name(&base_target)
                             .file_name()
                             .expect("rename candidate has a file name")
                             .to_os_string();
                     }
                     ConflictAction::Overwrite => {
                         if let Err(message) = hook(TestPoint::BeforeExchange) {
-                            return Err(transaction.abort(PlatformError::Io(message.into())));
+                            return Err(transaction.abandon(PlatformError::Io(message.into())));
                         }
                         match renameat_with(
                             &transaction.stage,
@@ -444,10 +384,47 @@ mod linux {
                             RenameFlags::EXCHANGE,
                         ) {
                             Ok(()) => {
-                                displaced = true;
+                                if let Err(message) = hook(TestPoint::BeforeDisplacedIdentityCheck)
+                                {
+                                    return Err(PlatformError::CommittedCleanupPending {
+                                        transaction: transaction
+                                            .recovery_path()
+                                            .display()
+                                            .to_string(),
+                                        message: message.into(),
+                                    });
+                                }
+                                let displaced_identity = expected_target.as_ref().map_or_else(
+                                    || Ok(false),
+                                    |expected| {
+                                        expected.matches(&transaction.stage, OsStr::new(CANDIDATE))
+                                    },
+                                );
+                                match displaced_identity {
+                                    Ok(true) => {}
+                                    Ok(false) => {
+                                        return Err(PlatformError::CommittedCleanupPending {
+                                            transaction: transaction
+                                                .recovery_path()
+                                                .display()
+                                                .to_string(),
+                                            message: "destination changed concurrently; displaced entry was preserved"
+                                                .into(),
+                                        });
+                                    }
+                                    Err(error) => {
+                                        return Err(PlatformError::CommittedCleanupPending {
+                                            transaction: transaction
+                                                .recovery_path()
+                                                .display()
+                                                .to_string(),
+                                            message: format!(
+                                                "could not verify displaced destination identity; entry was preserved: {error}"
+                                            ),
+                                        });
+                                    }
+                                }
                                 if let Err(message) = hook(TestPoint::AfterExchange) {
-                                    let mut transaction = transaction;
-                                    transaction.committed = true;
                                     return Err(PlatformError::CommittedCleanupPending {
                                         transaction: transaction
                                             .recovery_path()
@@ -460,38 +437,27 @@ mod linux {
                             }
                             Err(Errno::NOENT) => continue,
                             Err(error) => {
-                                return Err(transaction.abort(PlatformError::Io(error.to_string())));
+                                return Err(
+                                    transaction.abandon(PlatformError::Io(error.to_string()))
+                                );
                             }
                         }
                     }
                 },
                 Err(error) => {
-                    return Err(transaction.abort(PlatformError::Io(error.to_string())));
+                    return Err(transaction.abandon(PlatformError::Io(error.to_string())));
                 }
             }
         }
 
-        transaction.parent.as_fd();
-        let mut transaction = transaction;
-        transaction.committed = true;
         rustix::fs::fsync(&transaction.parent).map_err(|error| {
             PlatformError::CommittedCleanupPending {
                 transaction: transaction.recovery_path().display().to_string(),
                 message: error.to_string(),
             }
         })?;
-        let transaction_name = transaction.recovery_path().display().to_string();
-        if let Err(message) = hook(TestPoint::BeforeCleanup) {
-            return Err(PlatformError::CommittedCleanupPending {
-                transaction: transaction_name,
-                message: message.into(),
-            });
-        }
-        transaction.cleanup(displaced, &mut hook).map_err(|error| {
-            PlatformError::CommittedCleanupPending {
-                transaction: transaction_name,
-                message: error.to_string(),
-            }
+        Ok(CopyPublication::Published {
+            retained_transaction: transaction.retain(),
         })
     }
 }
@@ -500,65 +466,21 @@ mod linux {
 mod portable {
     use super::*;
 
-    /// Conservative fallback used outside Linux.
-    ///
-    /// The staging directory is path-based and inherits platform ACL defaults; it is
-    /// deliberately not described as private or handle-anchored. Native Windows ACL
-    /// and handle anchoring are deferred. Existing-target overwrite is rejected, and
-    /// publication of an initially absent target uses a no-replace rename so a racer
-    /// cannot be clobbered or deleted.
     pub(super) fn copy(
         source: &Path,
         destination_dir: &Path,
-        conflict: ConflictAction,
-    ) -> Result<(), PlatformError> {
+        _conflict: ConflictAction,
+    ) -> Result<CopyPublication, PlatformError> {
+        std::fs::symlink_metadata(source)
+            .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
         let name = source
             .file_name()
             .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
         let base_target = destination_dir.join(name);
         reject_self_copy(source, &base_target)?;
-        let base_exists = std::fs::symlink_metadata(&base_target).is_ok();
-        if base_exists && conflict == ConflictAction::Skip {
-            return Ok(());
-        }
-        if base_exists && conflict == ConflictAction::Overwrite {
-            return Err(PlatformError::UnsupportedSafeOverwrite(
-                base_target.display().to_string(),
-            ));
-        }
-        let target = if base_exists && conflict == ConflictAction::Rename {
-            next_available_name(&base_target)
-        } else {
-            base_target
-        };
-
-        let stage = loop {
-            let candidate = destination_dir.join(random_transaction_name()?);
-            match std::fs::create_dir(&candidate) {
-                Ok(()) => break candidate,
-                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
-                Err(error) => return Err(PlatformError::Io(error.to_string())),
-            }
-        };
-        let candidate = stage.join(CANDIDATE);
-        let result = (|| {
-            copy_entry(source, &candidate)?;
-            flush_tree_bottom_up(&candidate)?;
-            super::super::rename_without_replacement(&candidate, &target)
-        })();
-        let cleanup = std::fs::remove_dir_all(&stage);
-        match (result, cleanup) {
-            (Ok(()), Ok(())) => Ok(()),
-            (Ok(()), Err(error)) => Err(PlatformError::CommittedCleanupPending {
-                transaction: stage.display().to_string(),
-                message: error.to_string(),
-            }),
-            (Err(error), Ok(())) => Err(error),
-            (Err(error), Err(cleanup)) => Err(PlatformError::CleanupPending {
-                transaction: stage.display().to_string(),
-                message: format!("{error}; {cleanup}"),
-            }),
-        }
+        Err(PlatformError::UnsupportedSafeCopy(
+            source.display().to_string(),
+        ))
     }
 
     #[cfg(test)]
@@ -575,7 +497,7 @@ mod portable {
         }
 
         #[test]
-        fn existing_target_overwrite_is_rejected_without_modification() {
+        fn every_copy_mode_is_rejected_without_modification() {
             let root = fixture("overwrite");
             let source_dir = root.join("source");
             let destination = root.join("destination");
@@ -585,32 +507,19 @@ mod portable {
             std::fs::write(&source, "new").unwrap();
             std::fs::write(destination.join("item"), "old").unwrap();
 
-            let result = copy(&source, &destination, ConflictAction::Overwrite);
-
-            assert!(matches!(
-                result,
-                Err(PlatformError::UnsupportedSafeOverwrite(_))
-            ));
-            assert_eq!(
-                std::fs::read_to_string(destination.join("item")).unwrap(),
-                "old"
-            );
-            std::fs::remove_dir_all(root).unwrap();
-        }
-
-        #[test]
-        fn absent_target_publication_does_not_clobber_a_racer() {
-            let root = fixture("no-clobber");
-            let candidate = root.join("candidate");
-            let target = root.join("target");
-            std::fs::write(&candidate, "candidate").unwrap();
-            std::fs::write(&target, "racer").unwrap();
-
-            let result = super::super::super::rename_without_replacement(&candidate, &target);
-
-            assert!(result.is_err());
-            assert_eq!(std::fs::read_to_string(&target).unwrap(), "racer");
-            assert_eq!(std::fs::read_to_string(&candidate).unwrap(), "candidate");
+            for conflict in [
+                ConflictAction::Skip,
+                ConflictAction::Rename,
+                ConflictAction::Overwrite,
+            ] {
+                let result = copy(&source, &destination, conflict);
+                assert!(matches!(result, Err(PlatformError::UnsupportedSafeCopy(_))));
+                assert_eq!(std::fs::read_to_string(&source).unwrap(), "new");
+                assert_eq!(
+                    std::fs::read_to_string(destination.join("item")).unwrap(),
+                    "old"
+                );
+            }
             std::fs::remove_dir_all(root).unwrap();
         }
     }
@@ -655,6 +564,15 @@ mod tests {
             .collect()
     }
 
+    fn retained_transaction(result: Result<CopyPublication, PlatformError>) -> PathBuf {
+        match result {
+            Ok(CopyPublication::Published {
+                retained_transaction,
+            }) => retained_transaction,
+            other => panic!("expected published copy with retained transaction, got {other:?}"),
+        }
+    }
+
     #[test]
     fn deterministic_failure_never_publishes_partial_output() {
         let root = TestDir::new("failure");
@@ -671,9 +589,9 @@ mod tests {
                 Ok(())
             }
         });
-        assert!(matches!(result, Err(PlatformError::Io(_))));
+        assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
         assert!(!destination.join("item").exists());
-        assert!(transactions(&destination).is_empty());
+        assert_eq!(transactions(&destination).len(), 1);
     }
 
     #[test]
@@ -694,12 +612,12 @@ mod tests {
                 }
             });
 
-        assert!(matches!(result, Err(PlatformError::Io(_))));
+        assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
         assert_eq!(
             std::fs::read_to_string(destination.join("item")).unwrap(),
             "old-complete"
         );
-        assert!(transactions(&destination).is_empty());
+        assert_eq!(transactions(&destination).len(), 1);
     }
 
     #[test]
@@ -729,8 +647,8 @@ mod tests {
     }
 
     #[test]
-    fn cleanup_failure_is_typed_and_keeps_displaced_entry() {
-        let root = TestDir::new("cleanup");
+    fn overwrite_is_typed_warning_and_keeps_displaced_entry() {
+        let root = TestDir::new("retained-overwrite");
         let source = root.0.join("item");
         let destination = root.0.join("destination");
         std::fs::create_dir(&destination).unwrap();
@@ -739,25 +657,9 @@ mod tests {
         std::fs::create_dir(destination.join("item")).unwrap();
         std::fs::write(destination.join("item/old-one"), "old-one").unwrap();
         std::fs::write(destination.join("item/old-two"), "old-two").unwrap();
-        let mut cleanup_steps = 0;
         let result =
-            copy_with_test_hook(&source, &destination, ConflictAction::Overwrite, |point| {
-                if point == TestPoint::DuringCleanup {
-                    cleanup_steps += 1;
-                    if cleanup_steps == 2 {
-                        return Err("permission denied while removing displaced data");
-                    }
-                    Ok(())
-                } else {
-                    Ok(())
-                }
-            });
-        let recovery = match result {
-            Err(PlatformError::CommittedCleanupPending { transaction, .. }) => {
-                PathBuf::from(transaction)
-            }
-            other => panic!("expected committed cleanup warning, got {other:?}"),
-        };
+            copy_with_test_hook(&source, &destination, ConflictAction::Overwrite, |_| Ok(()));
+        let recovery = retained_transaction(result);
         assert_eq!(
             std::fs::read_to_string(destination.join("item/new")).unwrap(),
             "new"
@@ -767,15 +669,11 @@ mod tests {
             .unwrap()
             .collect::<Result<Vec<_>, _>>()
             .unwrap();
-        assert_eq!(
-            remainder.len(),
-            1,
-            "one displaced child remains recoverable"
-        );
+        assert_eq!(remainder.len(), 2, "the displaced tree remains recoverable");
     }
 
     #[test]
-    fn stage_open_failure_removes_the_just_created_stage() {
+    fn stage_open_failure_retains_the_just_created_stage() {
         let root = TestDir::new("stage-open-failure");
         let source = root.0.join("item");
         let destination = root.0.join("destination");
@@ -788,33 +686,9 @@ mod tests {
                 .ok_or("injected stage open failure")
         });
 
-        assert!(matches!(result, Err(PlatformError::Io(_))));
-        assert!(transactions(&destination).is_empty());
+        assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
+        assert_eq!(transactions(&destination).len(), 1);
         assert!(!destination.join("item").exists());
-    }
-
-    #[test]
-    fn cleanup_success_syncs_parent_after_removing_transaction() {
-        let root = TestDir::new("cleanup-parent-sync");
-        let source = root.0.join("item");
-        let destination = root.0.join("destination");
-        std::fs::create_dir(&source).unwrap();
-        std::fs::write(source.join("new"), "new").unwrap();
-        std::fs::create_dir(&destination).unwrap();
-        std::fs::create_dir(destination.join("item")).unwrap();
-        std::fs::write(destination.join("item/old"), "old").unwrap();
-        let mut reached_final_sync = false;
-
-        copy_with_test_hook(&source, &destination, ConflictAction::Overwrite, |point| {
-            if point == TestPoint::BeforeFinalParentSync {
-                assert!(transactions(&destination).is_empty());
-                reached_final_sync = true;
-            }
-            Ok(())
-        })
-        .unwrap();
-
-        assert!(reached_final_sync);
     }
 
     #[test]
@@ -827,15 +701,84 @@ mod tests {
         std::fs::write(&source, "new-complete").unwrap();
         std::fs::write(&target, "old-complete").unwrap();
 
-        copy_with_test_hook(&source, &destination, ConflictAction::Overwrite, |point| {
-            if matches!(point, TestPoint::BeforeExchange | TestPoint::AfterExchange) {
-                let value = std::fs::read_to_string(&target).unwrap();
-                assert!(value == "old-complete" || value == "new-complete");
-            }
-            Ok(())
-        })
-        .unwrap();
+        let result =
+            copy_with_test_hook(&source, &destination, ConflictAction::Overwrite, |point| {
+                if matches!(point, TestPoint::BeforeExchange | TestPoint::AfterExchange) {
+                    let value = std::fs::read_to_string(&target).unwrap();
+                    assert!(value == "old-complete" || value == "new-complete");
+                }
+                Ok(())
+            });
+        let recovery = retained_transaction(result);
         assert_eq!(std::fs::read_to_string(target).unwrap(), "new-complete");
+        assert_eq!(
+            std::fs::read_to_string(recovery.join(CANDIDATE)).unwrap(),
+            "old-complete"
+        );
+    }
+
+    #[test]
+    fn overwrite_destination_racer_is_preserved_after_exchange() {
+        let root = TestDir::new("overwrite-racer");
+        let source = root.0.join("item");
+        let destination = root.0.join("destination");
+        let target = destination.join("item");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&source, "new-complete").unwrap();
+        std::fs::write(&target, "old-complete").unwrap();
+
+        let result =
+            copy_with_test_hook(&source, &destination, ConflictAction::Overwrite, |point| {
+                if point == TestPoint::BeforeExchange {
+                    std::fs::remove_file(&target).unwrap();
+                    std::fs::write(&target, "racer").unwrap();
+                }
+                Ok(())
+            });
+
+        let recovery = match result {
+            Err(PlatformError::CommittedCleanupPending { transaction, .. }) => {
+                PathBuf::from(transaction)
+            }
+            other => panic!("expected committed warning, got {other:?}"),
+        };
+        assert_eq!(std::fs::read_to_string(target).unwrap(), "new-complete");
+        assert_eq!(
+            std::fs::read_to_string(recovery.join(CANDIDATE)).unwrap(),
+            "racer"
+        );
+    }
+
+    #[test]
+    fn post_exchange_identity_check_failure_retains_displaced_entry() {
+        let root = TestDir::new("identity-check-failure");
+        let source = root.0.join("item");
+        let destination = root.0.join("destination");
+        let target = destination.join("item");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&source, "new-complete").unwrap();
+        std::fs::write(&target, "old-complete").unwrap();
+
+        let result =
+            copy_with_test_hook(&source, &destination, ConflictAction::Overwrite, |point| {
+                if point == TestPoint::BeforeDisplacedIdentityCheck {
+                    Err("injected displaced identity check failure")
+                } else {
+                    Ok(())
+                }
+            });
+
+        let recovery = match result {
+            Err(PlatformError::CommittedCleanupPending { transaction, .. }) => {
+                PathBuf::from(transaction)
+            }
+            other => panic!("expected committed warning, got {other:?}"),
+        };
+        assert_eq!(std::fs::read_to_string(target).unwrap(), "new-complete");
+        assert_eq!(
+            std::fs::read_to_string(recovery.join(CANDIDATE)).unwrap(),
+            "old-complete"
+        );
     }
 
     #[test]
@@ -914,12 +857,15 @@ mod tests {
                     &destination,
                     ConflictAction::Overwrite,
                 );
-                result.unwrap();
-                assert!(transactions(&destination).is_empty());
+                let recovery = retained_transaction(result);
                 let metadata = std::fs::symlink_metadata(&target).unwrap();
                 assert_eq!(metadata.is_file(), source_kind == 0);
                 assert_eq!(metadata.is_dir(), source_kind == 1);
                 assert_eq!(metadata.file_type().is_symlink(), source_kind == 2);
+                let displaced = std::fs::symlink_metadata(recovery.join(CANDIDATE)).unwrap();
+                assert_eq!(displaced.is_file(), destination_kind == 0);
+                assert_eq!(displaced.is_dir(), destination_kind == 1);
+                assert_eq!(displaced.file_type().is_symlink(), destination_kind == 2);
             }
         }
     }
