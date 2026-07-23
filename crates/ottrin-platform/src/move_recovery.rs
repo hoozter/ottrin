@@ -3050,6 +3050,101 @@ mod tests {
     }
 
     #[cfg(target_os = "linux")]
+    fn spawn_recovery_lock_holder(central_path: &Path, root: &Path) -> std::process::Child {
+        use std::process::Command;
+        use std::time::{Duration, Instant};
+
+        let ready_path = root.join("child-ready");
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .arg("--exact")
+            .arg("move_recovery::tests::recovery_lock_child_process_helper")
+            .arg("--nocapture")
+            .env("OTTRIN_RECOVERY_LOCK_CHILD_ROOT", central_path)
+            .env("OTTRIN_RECOVERY_LOCK_CHILD_READY", &ready_path)
+            .spawn()
+            .unwrap();
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while !ready_path.exists() {
+            if let Some(status) = child.try_wait().unwrap() {
+                panic!("recovery-lock child exited before readiness: {status}");
+            }
+            if Instant::now() >= deadline {
+                child.kill().unwrap();
+                let _ = child.wait();
+                panic!("recovery-lock child did not signal readiness");
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        child
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_child_process_helper() {
+        let Some(root) = std::env::var_os("OTTRIN_RECOVERY_LOCK_CHILD_ROOT") else {
+            return;
+        };
+        let ready = std::env::var_os("OTTRIN_RECOVERY_LOCK_CHILD_READY").unwrap();
+        let central = LinuxJournalDirectory::open(Path::new(&root)).unwrap();
+        let _held = central.try_lock_recovery().unwrap();
+        std::fs::write(ready, b"locked").unwrap();
+        loop {
+            std::thread::park();
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_is_released_after_a_lock_holding_process_is_killed() {
+        use std::os::unix::process::ExitStatusExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-recovery-lock-process-death-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        std::fs::create_dir_all(&central_path).unwrap();
+        let journal_path = central_path.join("existing.journal");
+        std::fs::write(&journal_path, b"must not change").unwrap();
+        let central_entries_before = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name())
+            .collect::<Vec<_>>();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+
+        let mut child = spawn_recovery_lock_holder(&central_path, &root);
+        let (result_sender, result_receiver) = std::sync::mpsc::channel();
+        let contender_path = central_path.clone();
+        let contender = std::thread::spawn(move || {
+            let central = LinuxJournalDirectory::open(&contender_path).unwrap();
+            result_sender
+                .send(central.try_lock_recovery().map(drop))
+                .unwrap();
+        });
+        let contended = result_receiver.recv_timeout(std::time::Duration::from_secs(1));
+        child.kill().unwrap();
+        let killed = child.wait().unwrap();
+        contender.join().unwrap();
+
+        assert!(matches!(
+            contended,
+            Ok(Err(LinuxRecoveryLockError::Contended))
+        ));
+        assert_eq!(killed.signal(), Some(9));
+
+        let reacquired = central.try_lock_recovery();
+        assert!(reacquired.is_ok());
+        assert_eq!(std::fs::read(&journal_path).unwrap(), b"must not change");
+        let central_entries_after = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name())
+            .collect::<Vec<_>>();
+        assert_eq!(central_entries_after, central_entries_before);
+        drop(reacquired);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
     #[test]
     fn recovery_lock_rejects_reacquisition_through_the_same_context() {
         let root = std::env::temp_dir().join(format!(
