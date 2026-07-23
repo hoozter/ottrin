@@ -164,6 +164,29 @@ pub enum LinuxLoadPreparedPairError {
 }
 
 #[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxDiscoverPreparedError {
+    #[error("central journal directory could not be read: {0}")]
+    DirectoryRead(String),
+    #[error("central journal filename bytes are invalid: {0:?}")]
+    InvalidFilename(Vec<u8>),
+    #[error("central prepared journal {name} could not be read: {error}")]
+    JournalRead {
+        name: String,
+        error: LinuxJournalReadError,
+    },
+    #[error("central prepared journal {name} is invalid: {error}")]
+    InvalidRecord { name: String, error: JournalError },
+    #[error(
+        "central journal filename transaction ID {filename:?} and record transaction ID {record:?} disagree"
+    )]
+    FilenameTransactionMismatch {
+        filename: [u8; 16],
+        record: [u8; 16],
+    },
+}
+
+#[cfg(target_os = "linux")]
 pub fn validate_prepared_pair(
     central: &[u8],
     local: &[u8],
@@ -240,6 +263,77 @@ impl LinuxJournalDirectory {
             return Err(LinuxLoadPreparedPairError::RequestedTransactionMismatch);
         }
         Ok(matching)
+    }
+
+    pub fn discover_prepared(&self) -> Result<Vec<[u8; 16]>, LinuxDiscoverPreparedError> {
+        use rustix::fs::Dir;
+
+        let mut directory = Dir::read_from(&self.directory)
+            .map_err(|error| LinuxDiscoverPreparedError::DirectoryRead(error.to_string()))?;
+        let mut transaction_ids = Vec::new();
+        while let Some(entry) = directory.read() {
+            let entry = entry
+                .map_err(|error| LinuxDiscoverPreparedError::DirectoryRead(error.to_string()))?;
+            let name = entry.file_name().to_bytes();
+            let valid_stale_update = name.len() == 78
+                && name[0..32]
+                    .iter()
+                    .all(|byte| matches!(byte, b'0'..=b'9' | b'a'..=b'f'))
+                && &name[32..46] == b".journal.next-"
+                && name[46..]
+                    .iter()
+                    .all(|byte| matches!(byte, b'0'..=b'9' | b'a'..=b'f'));
+            if valid_stale_update {
+                continue;
+            }
+            if name
+                .windows(b".journal.next".len())
+                .any(|window| window == b".journal.next")
+            {
+                return Err(LinuxDiscoverPreparedError::InvalidFilename(name.to_vec()));
+            }
+            let Some(stem) = name.strip_suffix(b".journal") else {
+                continue;
+            };
+            if stem.len() != 32
+                || !stem
+                    .iter()
+                    .all(|byte| matches!(byte, b'0'..=b'9' | b'a'..=b'f'))
+            {
+                return Err(LinuxDiscoverPreparedError::InvalidFilename(name.to_vec()));
+            }
+            let name = std::str::from_utf8(name).expect("validated journal names are ASCII");
+            let encoded =
+                self.read_named(name)
+                    .map_err(|error| LinuxDiscoverPreparedError::JournalRead {
+                        name: name.to_owned(),
+                        error,
+                    })?;
+            let record = PreparedRecord::parse(&encoded).map_err(|error| {
+                LinuxDiscoverPreparedError::InvalidRecord {
+                    name: name.to_owned(),
+                    error,
+                }
+            })?;
+            let filename_decoded =
+                decode_hex(std::str::from_utf8(stem).expect("validated journal stems are ASCII"))
+                    .expect("validated journal stems are hexadecimal");
+            let mut filename_transaction_id = [0_u8; 16];
+            filename_transaction_id.copy_from_slice(&filename_decoded);
+            let record_decoded = decode_hex(&record.transaction_id)
+                .expect("validated prepared record has a hexadecimal transaction ID");
+            let mut record_transaction_id = [0_u8; 16];
+            record_transaction_id.copy_from_slice(&record_decoded);
+            if record.transaction_id.as_bytes() != stem {
+                return Err(LinuxDiscoverPreparedError::FilenameTransactionMismatch {
+                    filename: filename_transaction_id,
+                    record: record_transaction_id,
+                });
+            }
+            transaction_ids.push(record_transaction_id);
+        }
+        transaction_ids.sort_unstable();
+        Ok(transaction_ids)
     }
 
     fn read_named(&self, name: &str) -> Result<Vec<u8>, LinuxJournalReadError> {
@@ -760,6 +854,158 @@ mod tests {
         let persisted = std::fs::read(expected_path).unwrap();
         assert_eq!(PreparedRecord::parse(&persisted).unwrap(), record);
         assert!(JournalHeader::parse(&persisted).is_err());
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn central_discovery_ignores_stale_updates_and_returns_valid_transaction_without_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-discover-stale-update-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let transaction_id = [0x57; 16];
+        let record = PreparedRecord::new_linux(
+            transaction_id,
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 11, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 13, LinuxFileType::Regular),
+        )
+        .unwrap();
+        let directory = LinuxJournalDirectory::open(&root).unwrap();
+        directory.persist_prepared(&record).unwrap();
+        let stale_name =
+            "57575757575757575757575757575757.journal.next-58585858585858585858585858585858";
+        let stale = b"interrupted update";
+        std::fs::write(root.join(stale_name), stale).unwrap();
+        let journal_path = root.join("57575757575757575757575757575757.journal");
+        let journal_before = std::fs::read(&journal_path).unwrap();
+
+        let discovered = directory.discover_prepared();
+
+        assert_eq!(discovered, Ok(vec![transaction_id]));
+        assert_eq!(std::fs::read(journal_path).unwrap(), journal_before);
+        assert_eq!(std::fs::read(root.join(stale_name)).unwrap(), stale);
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 2);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn central_discovery_surfaces_malformed_journal_filename_without_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-discover-malformed-name-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let name = "not-a-transaction.journal";
+        let contents = b"retained malformed record";
+        std::fs::write(root.join(name), contents).unwrap();
+        let directory = LinuxJournalDirectory::open(&root).unwrap();
+
+        let discovered = directory.discover_prepared();
+
+        assert_eq!(
+            discovered,
+            Err(LinuxDiscoverPreparedError::InvalidFilename(
+                name.as_bytes().to_vec()
+            ))
+        );
+        assert_eq!(std::fs::read(root.join(name)).unwrap(), contents);
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn central_discovery_reports_malformed_non_utf8_filename_losslessly_without_mutation() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-discover-non-utf8-name-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let name_bytes = b"bad-\x80.journal".to_vec();
+        let name = OsString::from_vec(name_bytes.clone());
+        let contents = b"retained non-UTF-8 record";
+        std::fs::write(root.join(&name), contents).unwrap();
+        let directory = LinuxJournalDirectory::open(&root).unwrap();
+
+        let discovered = directory.discover_prepared();
+
+        assert_eq!(
+            discovered,
+            Err(LinuxDiscoverPreparedError::InvalidFilename(name_bytes))
+        );
+        assert_eq!(std::fs::read(root.join(name)).unwrap(), contents);
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn central_discovery_surfaces_malformed_stale_update_name_without_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-discover-malformed-update-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let name = "57575757575757575757575757575757.journal.next-invalid";
+        let contents = b"retained malformed update";
+        std::fs::write(root.join(name), contents).unwrap();
+        let directory = LinuxJournalDirectory::open(&root).unwrap();
+
+        let discovered = directory.discover_prepared();
+
+        assert_eq!(
+            discovered,
+            Err(LinuxDiscoverPreparedError::InvalidFilename(
+                name.as_bytes().to_vec()
+            ))
+        );
+        assert_eq!(std::fs::read(root.join(name)).unwrap(), contents);
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn central_discovery_surfaces_filename_record_transaction_mismatch_without_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-discover-id-mismatch-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let filename_transaction_id = [0x58; 16];
+        let record_transaction_id = [0x59; 16];
+        let record = PreparedRecord::new_linux(
+            record_transaction_id,
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 11, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 13, LinuxFileType::Regular),
+        )
+        .unwrap();
+        let name = "58585858585858585858585858585858.journal";
+        let encoded = serde_json::to_vec(&record).unwrap();
+        std::fs::write(root.join(name), &encoded).unwrap();
+        let directory = LinuxJournalDirectory::open(&root).unwrap();
+
+        let discovered = directory.discover_prepared();
+
+        assert_eq!(
+            discovered,
+            Err(LinuxDiscoverPreparedError::FilenameTransactionMismatch {
+                filename: filename_transaction_id,
+                record: record_transaction_id,
+            })
+        );
+        assert_eq!(std::fs::read(root.join(name)).unwrap(), encoded);
         assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
         std::fs::remove_dir_all(root).unwrap();
     }
