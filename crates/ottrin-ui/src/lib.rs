@@ -392,6 +392,137 @@ struct PreviewJobResponse {
     bytes: Option<Vec<u8>>,
 }
 
+#[derive(Debug, Default)]
+struct PreviewLoadSlot {
+    generation: u64,
+    desired: Option<(PathBuf, EntryKind)>,
+    inflight: Option<u64>,
+    completed: Option<u64>,
+}
+
+impl PreviewLoadSlot {
+    fn select(&mut self, path: PathBuf, kind: EntryKind) -> u64 {
+        if self.desired.as_ref() != Some(&(path.clone(), kind)) {
+            self.generation = self.generation.wrapping_add(1).max(1);
+            self.desired = Some((path, kind));
+            self.inflight = None;
+            self.completed = None;
+        }
+        self.generation
+    }
+
+    fn mark_enqueued(&mut self, generation: u64) {
+        if generation == self.generation {
+            self.inflight = Some(generation);
+        }
+    }
+
+    fn invalidate(&mut self) {
+        self.generation = self.generation.wrapping_add(1).max(1);
+        self.inflight = None;
+        self.completed = None;
+    }
+
+    fn mark_response(&mut self, generation: u64, accepted: bool) {
+        if self.inflight == Some(generation) {
+            self.inflight = None;
+        }
+        if accepted && generation == self.generation {
+            self.completed = Some(generation);
+        }
+    }
+
+    fn next_request(&self) -> Option<u64> {
+        (self.desired.is_some()
+            && self.inflight != Some(self.generation)
+            && self.completed != Some(self.generation))
+        .then_some(self.generation)
+    }
+
+    fn is_pending(&self) -> bool {
+        self.desired.is_some() && self.completed != Some(self.generation)
+    }
+
+    fn accepts(&self, generation: u64, path: &Path) -> bool {
+        generation == self.generation
+            && self
+                .desired
+                .as_ref()
+                .is_some_and(|(desired, _)| desired == path)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PreviewTarget {
+    Overlay,
+    InfoPanel,
+    SearchResult,
+}
+
+impl PreviewTarget {
+    fn index(self) -> usize {
+        match self {
+            Self::Overlay => 0,
+            Self::InfoPanel => 1,
+            Self::SearchResult => 2,
+        }
+    }
+}
+
+#[derive(Debug)]
+struct PreviewLoadRequest {
+    target: PreviewTarget,
+    generation: u64,
+    request: PreviewRequest,
+}
+
+#[derive(Debug)]
+struct PreviewLoadResponse {
+    target: PreviewTarget,
+    generation: u64,
+    path: PathBuf,
+    data: PreviewData,
+}
+
+fn spawn_preview_loader_with<F>(
+    loader: F,
+) -> (
+    mpsc::SyncSender<PreviewLoadRequest>,
+    Receiver<PreviewLoadResponse>,
+)
+where
+    F: Fn(&PreviewRequest) -> PreviewData + Send + 'static,
+{
+    let (request_tx, request_rx) = mpsc::sync_channel::<PreviewLoadRequest>(1);
+    let (response_tx, response_rx) = mpsc::channel::<PreviewLoadResponse>();
+    std::thread::spawn(move || {
+        while let Ok(job) = request_rx.recv() {
+            let path = job.request.path.clone();
+            let data = loader(&job.request);
+            let _ = response_tx.send(PreviewLoadResponse {
+                target: job.target,
+                generation: job.generation,
+                path,
+                data,
+            });
+        }
+    });
+    (request_tx, response_rx)
+}
+
+fn loading_preview_data(path: &Path) -> PreviewData {
+    PreviewData {
+        title: path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("Preview")
+            .to_string(),
+        kind: PreviewKind::Unsupported,
+        body: "Loading preview…".to_string(),
+        open_external: false,
+    }
+}
+
 #[derive(Debug)]
 struct SearchQueryResponse {
     request_id: u64,
@@ -714,6 +845,9 @@ pub struct OttrinApp {
     preview_rx: Receiver<PreviewJobResponse>,
     preview_inflight: HashSet<PathBuf>,
     preview_budget_remaining: usize,
+    preview_load_tx: mpsc::SyncSender<PreviewLoadRequest>,
+    preview_load_rx: Receiver<PreviewLoadResponse>,
+    preview_load_slots: [PreviewLoadSlot; 3],
     search_result_tx: Sender<SearchQueryResponse>,
     search_result_rx: Receiver<SearchQueryResponse>,
     info_panel_hashes: HashMap<PathBuf, String>,
@@ -815,6 +949,7 @@ impl OttrinApp {
         let (hash_tx, hash_rx) = mpsc::channel::<(PathBuf, Result<String, String>)>();
         let (preview_req_tx, preview_req_rx) = mpsc::channel::<PreviewJobRequest>();
         let (preview_res_tx, preview_res_rx) = mpsc::channel::<PreviewJobResponse>();
+        let (preview_load_tx, preview_load_rx) = spawn_preview_loader_with(load_preview);
         let (search_result_tx, search_result_rx) = mpsc::channel::<SearchQueryResponse>();
 
         // Single long-lived listing worker thread; later requests supersede stale responses.
@@ -889,6 +1024,9 @@ impl OttrinApp {
             preview_rx: preview_res_rx,
             preview_inflight: HashSet::new(),
             preview_budget_remaining: PREVIEW_REQUESTS_PER_FRAME,
+            preview_load_tx,
+            preview_load_rx,
+            preview_load_slots: std::array::from_fn(|_| PreviewLoadSlot::default()),
             search_result_tx,
             search_result_rx,
             info_panel_hashes: HashMap::new(),
@@ -1201,10 +1339,13 @@ impl OttrinApp {
             Ok(()) => {
                 self.image_preview_cache.clear();
                 if self.preview.path.as_deref() == Some(path) {
-                    self.preview.data = Some(load_preview(&PreviewRequest {
-                        path: path.to_path_buf(),
-                        kind_hint: EntryKind::File,
-                    }));
+                    self.preview.data = None;
+                    self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
+                    self.request_preview_load(
+                        PreviewTarget::Overlay,
+                        path.to_path_buf(),
+                        EntryKind::File,
+                    );
                 }
                 self.finish_operation_record(
                     op_id,
@@ -4088,6 +4229,53 @@ impl OttrinApp {
         }
     }
 
+    fn request_preview_load(&mut self, target: PreviewTarget, path: PathBuf, kind: EntryKind) {
+        let slot_index = target.index();
+        let generation = self.preview_load_slots[slot_index].select(path.clone(), kind);
+        if self.preview_load_slots[slot_index].next_request() != Some(generation) {
+            return;
+        }
+        let job = PreviewLoadRequest {
+            target,
+            generation,
+            request: PreviewRequest {
+                path,
+                kind_hint: kind,
+            },
+        };
+        match self.preview_load_tx.try_send(job) {
+            Ok(()) => self.preview_load_slots[slot_index].mark_enqueued(generation),
+            Err(mpsc::TrySendError::Full(_)) => {}
+            Err(mpsc::TrySendError::Disconnected(_)) => {
+                self.set_status_message("Preview loader stopped unexpectedly", false, 5);
+            }
+        }
+    }
+
+    fn poll_preview_loads(&mut self) -> bool {
+        let mut changed = false;
+        while let Ok(response) = self.preview_load_rx.try_recv() {
+            let slot_index = response.target.index();
+            let accepted =
+                self.preview_load_slots[slot_index].accepts(response.generation, &response.path);
+            self.preview_load_slots[slot_index].mark_response(response.generation, accepted);
+            if !accepted {
+                continue;
+            }
+            match response.target {
+                PreviewTarget::Overlay => self.preview.data = Some(response.data),
+                PreviewTarget::InfoPanel => {
+                    self.info_panel_preview = Some((response.path, response.data));
+                }
+                PreviewTarget::SearchResult => {
+                    self.search_ui.result_preview = Some((response.path, response.data));
+                }
+            }
+            changed = true;
+        }
+        changed
+    }
+
     fn poll_preview_jobs(&mut self) -> bool {
         let mut changed = false;
         while let Ok(resp) = self.preview_rx.try_recv() {
@@ -5655,10 +5843,9 @@ impl OttrinApp {
             self.preview.path = Some(path.clone());
             self.preview.visible = true;
             self.preview.image_actual_size = false;
-            self.preview.data = Some(load_preview(&PreviewRequest {
-                path,
-                kind_hint: entry.kind,
-            }));
+            self.preview.data = None;
+            self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
+            self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
         }
     }
 
@@ -5675,10 +5862,8 @@ impl OttrinApp {
         let path = entry.path.clone();
         self.preview.path = Some(path.clone());
         self.preview.image_actual_size = false;
-        self.preview.data = Some(load_preview(&PreviewRequest {
-            path,
-            kind_hint: entry.kind,
-        }));
+        self.preview.data = None;
+        self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
     }
 
     fn handle_preview_key_action(&mut self, action: PreviewKeyAction) {
@@ -5760,12 +5945,9 @@ impl OttrinApp {
         {
             return preview.clone();
         }
-        let preview = load_preview(&PreviewRequest {
-            path: entry.path.clone(),
-            kind_hint: entry.kind,
-        });
-        self.info_panel_preview = Some((entry.path.clone(), preview.clone()));
-        preview
+        self.info_panel_preview = None;
+        self.request_preview_load(PreviewTarget::InfoPanel, entry.path.clone(), entry.kind);
+        loading_preview_data(&entry.path)
     }
 
     fn middle_ellipsis(ui: &egui::Ui, text: &str, max_width: f32, font: &FontId) -> String {
@@ -10265,12 +10447,13 @@ impl OttrinApp {
                         .as_ref()
                         .map(|(_, p)| p.clone())
                 } else {
-                    let loaded = load_preview(&PreviewRequest {
-                        path: item.path.clone(),
-                        kind_hint: item.kind,
-                    });
-                    self.search_ui.result_preview = Some((item.path.clone(), loaded.clone()));
-                    Some(loaded)
+                    self.search_ui.result_preview = None;
+                    self.request_preview_load(
+                        PreviewTarget::SearchResult,
+                        item.path.clone(),
+                        item.kind,
+                    );
+                    Some(loading_preview_data(&item.path))
                 };
 
                 ui.add_space(4.0);
@@ -13013,15 +13196,13 @@ impl OttrinApp {
             } else {
                 EntryKind::File
             };
-            self.preview.data = Some(load_preview(&PreviewRequest {
-                path: path.clone(),
-                kind_hint,
-            }));
+            self.request_preview_load(PreviewTarget::Overlay, path.clone(), kind_hint);
         }
-        let preview = match self.preview.data.clone() {
-            Some(p) => p,
-            None => return,
-        };
+        let preview = self
+            .preview
+            .data
+            .clone()
+            .unwrap_or_else(|| loading_preview_data(&path));
         let name = preview.title.clone();
         let mut close_requested = false;
         let builder = egui::ViewportBuilder::default()
@@ -15723,7 +15904,7 @@ impl eframe::App for OttrinApp {
         self.poll_trash_results();
         self.poll_hash_results();
         self.poll_search_results();
-        let preview_ready = self.poll_preview_jobs();
+        let preview_ready = self.poll_preview_jobs() | self.poll_preview_loads();
         self.sync_search_scope_root();
 
         let search_indexing = self.search_started
@@ -15833,6 +16014,17 @@ impl eframe::App for OttrinApp {
         self.render_settings_modal(ctx);
         self.render_theme_editor_popup(ctx);
         self.handle_viewport_resize(ctx);
+
+        // Preview requests are created while rendering above. Schedule the next poll only after
+        // every surface has had a chance to enqueue, otherwise an idle event loop can miss the
+        // first request and never observe its response.
+        if self
+            .preview_load_slots
+            .iter()
+            .any(PreviewLoadSlot::is_pending)
+        {
+            ctx.request_repaint_after(std::time::Duration::from_millis(50));
+        }
 
         // Paint rounded border with transparent corners on the main viewport.
         // The GL callback runs first to fix the alpha channel, then the
@@ -17733,5 +17925,63 @@ mod tests {
         assert_eq!(entries[0].name, "docs");
         assert_eq!(entries[1].name, "beta.txt");
         assert_eq!(entries[2].name, "alpha.txt");
+    }
+
+    #[test]
+    fn preview_slot_rejects_a_response_for_a_superseded_selection() {
+        let mut slot = PreviewLoadSlot::default();
+        let first = slot.select(PathBuf::from("/tmp/first.docx"), EntryKind::File);
+        slot.mark_enqueued(first);
+
+        let second = slot.select(PathBuf::from("/tmp/second.xlsx"), EntryKind::File);
+
+        assert_ne!(first, second);
+        assert!(!slot.accepts(first, Path::new("/tmp/first.docx")));
+        assert!(slot.accepts(second, Path::new("/tmp/second.xlsx")));
+        slot.mark_enqueued(second);
+        slot.mark_response(second, true);
+        assert_eq!(slot.next_request(), None);
+        assert!(!slot.is_pending());
+
+        slot.invalidate();
+        let refreshed = slot.select(PathBuf::from("/tmp/second.xlsx"), EntryKind::File);
+        assert_ne!(second, refreshed);
+        assert_eq!(slot.next_request(), Some(refreshed));
+        assert!(slot.is_pending());
+    }
+
+    #[test]
+    fn preview_loader_bounds_pending_work_to_one_request() {
+        let (started_tx, started_rx) = mpsc::channel();
+        let (release_tx, release_rx) = mpsc::channel();
+        let (tx, rx) = spawn_preview_loader_with(move |request| {
+            started_tx.send(()).expect("announce started load");
+            release_rx.recv().expect("release blocked load");
+            load_preview(request)
+        });
+        let request = |generation, name: &str| PreviewLoadRequest {
+            target: PreviewTarget::Overlay,
+            generation,
+            request: PreviewRequest {
+                path: PathBuf::from(name),
+                kind_hint: EntryKind::File,
+            },
+        };
+
+        tx.try_send(request(1, "/tmp/first.txt"))
+            .expect("start first load");
+        started_rx.recv().expect("worker started");
+        tx.try_send(request(2, "/tmp/second.txt"))
+            .expect("one queued load");
+        assert!(matches!(
+            tx.try_send(request(3, "/tmp/third.txt")),
+            Err(mpsc::TrySendError::Full(_))
+        ));
+
+        release_tx.send(()).expect("release first load");
+        release_tx.send(()).expect("release second load");
+        drop(tx);
+        assert!(rx.recv().is_ok());
+        assert!(rx.recv().is_ok());
     }
 }
