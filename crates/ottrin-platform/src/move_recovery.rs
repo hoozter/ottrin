@@ -142,6 +142,28 @@ pub enum LinuxPreparedPairError {
 }
 
 #[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxJournalReadError {
+    #[error("journal is missing")]
+    Missing,
+    #[error("journal read failed: {0}")]
+    Io(String),
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxLoadPreparedPairError {
+    #[error("central prepared journal could not be read: {0}")]
+    CentralRead(LinuxJournalReadError),
+    #[error("source-local prepared journal could not be read: {0}")]
+    LocalRead(LinuxJournalReadError),
+    #[error("prepared journal pair is invalid: {0}")]
+    InvalidPair(LinuxPreparedPairError),
+    #[error("prepared journals do not belong to the requested transaction")]
+    RequestedTransactionMismatch,
+}
+
+#[cfg(target_os = "linux")]
 pub fn validate_prepared_pair(
     central: &[u8],
     local: &[u8],
@@ -196,6 +218,53 @@ impl LinuxJournalDirectory {
             .persist_local_prepared(record)
             .map_err(LinuxPrepareJournalsError::CentralOnly)?;
         Ok(LinuxPreparedJournals::MatchingPair)
+    }
+
+    pub fn load_prepared_pair(
+        &self,
+        local: &Self,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxPreparedJournals, LinuxLoadPreparedPairError> {
+        let central = self
+            .read_named(&format!("{}.journal", encode_hex(&transaction_id)))
+            .map_err(LinuxLoadPreparedPairError::CentralRead)?;
+        let local = local
+            .read_named("journal")
+            .map_err(LinuxLoadPreparedPairError::LocalRead)?;
+        let matching = validate_prepared_pair(&central, &local)
+            .map_err(LinuxLoadPreparedPairError::InvalidPair)?;
+        let central_record = PreparedRecord::parse(&central).map_err(|error| {
+            LinuxLoadPreparedPairError::InvalidPair(LinuxPreparedPairError::CentralCorrupt(error))
+        })?;
+        if central_record.transaction_id != encode_hex(&transaction_id) {
+            return Err(LinuxLoadPreparedPairError::RequestedTransactionMismatch);
+        }
+        Ok(matching)
+    }
+
+    fn read_named(&self, name: &str) -> Result<Vec<u8>, LinuxJournalReadError> {
+        use rustix::fs::{Mode, OFlags, openat};
+        use std::fs::File;
+        use std::io::Read;
+
+        let journal = openat(
+            &self.directory,
+            name,
+            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|error| {
+            if error == rustix::io::Errno::NOENT {
+                LinuxJournalReadError::Missing
+            } else {
+                LinuxJournalReadError::Io(error.to_string())
+            }
+        })?;
+        let mut encoded = Vec::new();
+        File::from(journal)
+            .read_to_end(&mut encoded)
+            .map_err(|error| LinuxJournalReadError::Io(error.to_string()))?;
+        Ok(encoded)
     }
 
     fn replace_named<T: Serialize>(&self, name: &str, record: &T) -> Result<(), JournalError> {
@@ -796,6 +865,183 @@ mod tests {
             std::fs::read(central_path.join("bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc.journal")).unwrap();
         assert_eq!(PreparedRecord::parse(&central_record).unwrap(), record);
         assert!(!local_path.exists());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_pair_load_rejects_matching_records_for_another_transaction() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-wrong-transaction-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let requested_transaction_id = [0xd1; 16];
+        let other_record = PreparedRecord::new_linux(
+            [0xd2; 16],
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+        )
+        .unwrap();
+        central
+            .replace_named("d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1.journal", &other_record)
+            .unwrap();
+        local.persist_local_prepared(&other_record).unwrap();
+
+        let result = central.load_prepared_pair(&local, requested_transaction_id);
+
+        assert_eq!(
+            result,
+            Err(LinuxLoadPreparedPairError::RequestedTransactionMismatch)
+        );
+        assert!(
+            central_path
+                .join("d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1.journal")
+                .exists()
+        );
+        assert!(local_path.join("journal").exists());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_pair_load_accepts_matching_anchored_records_without_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-matching-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let transaction_id = [0xd0; 16];
+        let record = PreparedRecord::new_linux(
+            transaction_id,
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &record).unwrap();
+        let central_before =
+            std::fs::read(central_path.join("d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0.journal")).unwrap();
+        let local_before = std::fs::read(local_path.join("journal")).unwrap();
+
+        let result = central.load_prepared_pair(&local, transaction_id);
+
+        assert_eq!(result, Ok(LinuxPreparedJournals::MatchingPair));
+        assert_eq!(
+            std::fs::read(central_path.join("d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0.journal")).unwrap(),
+            central_before
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            local_before
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_pair_load_reports_missing_central_without_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-missing-central-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let transaction_id = [0xcf; 16];
+        let record = PreparedRecord::new_linux(
+            transaction_id,
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+        )
+        .unwrap();
+        local.persist_local_prepared(&record).unwrap();
+        let local_before = std::fs::read(local_path.join("journal")).unwrap();
+
+        let result = central.load_prepared_pair(&local, transaction_id);
+
+        assert_eq!(
+            result,
+            Err(LinuxLoadPreparedPairError::CentralRead(
+                LinuxJournalReadError::Missing
+            ))
+        );
+        assert_eq!(std::fs::read_dir(&central_path).unwrap().count(), 0);
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            local_before
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_pair_load_reports_missing_local_without_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-missing-local-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let transaction_id = [0xce; 16];
+        let record = PreparedRecord::new_linux(
+            transaction_id,
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+        )
+        .unwrap();
+        central.persist_prepared(&record).unwrap();
+        let central_before = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name())
+            .collect::<Vec<_>>();
+
+        let result = central.load_prepared_pair(&local, transaction_id);
+
+        assert_eq!(
+            result,
+            Err(LinuxLoadPreparedPairError::LocalRead(
+                LinuxJournalReadError::Missing
+            ))
+        );
+        let central_after = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name())
+            .collect::<Vec<_>>();
+        assert_eq!(central_after, central_before);
+        assert_eq!(std::fs::read_dir(&local_path).unwrap().count(), 0);
+        assert_eq!(
+            PreparedRecord::parse(
+                &std::fs::read(central_path.join("cececececececececececececececece.journal"))
+                    .unwrap()
+            )
+            .unwrap(),
+            record
+        );
         std::fs::remove_dir_all(root).unwrap();
     }
 
