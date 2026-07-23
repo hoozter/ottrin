@@ -27,6 +27,31 @@ pub struct NativePath {
 #[serde(rename_all = "kebab-case")]
 pub enum JournalPhase {
     Prepared,
+    ClaimIntent,
+    Claimed,
+    UnexpectedClaimRetained,
+    PendingDestination,
+    Published,
+}
+
+#[cfg(target_os = "linux")]
+impl JournalPhase {
+    pub fn validate_transition(self, to: Self) -> Result<(), JournalError> {
+        if self == to
+            || matches!(
+                (self, to),
+                (Self::Prepared, Self::ClaimIntent)
+                    | (Self::ClaimIntent, Self::Claimed)
+                    | (Self::ClaimIntent, Self::UnexpectedClaimRetained)
+                    | (Self::Claimed, Self::PendingDestination)
+                    | (Self::PendingDestination, Self::Published)
+            )
+        {
+            Ok(())
+        } else {
+            Err(JournalError::InvalidPhaseTransition { from: self, to })
+        }
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -110,6 +135,15 @@ pub enum JournalError {
     InvalidPreparedSourcePath,
     #[error("invalid Linux stable identity")]
     InvalidLinuxIdentity,
+    #[cfg(target_os = "linux")]
+    #[error("invalid journal phase transition from {from:?} to {to:?}")]
+    InvalidPhaseTransition {
+        from: JournalPhase,
+        to: JournalPhase,
+    },
+    #[cfg(target_os = "linux")]
+    #[error("prepared journal cannot contain phase {0:?}")]
+    InvalidPreparedPhase(JournalPhase),
     #[error("source transaction name already exists")]
     SourceTransactionExists,
     #[error("journal I/O failed: {0}")]
@@ -818,6 +852,9 @@ impl TryFrom<RawPreparedRecord> for PreparedRecord {
             schema_minor: raw.schema_minor,
             transaction_id: raw.transaction_id.clone(),
         })?;
+        if raw.phase != JournalPhase::Prepared {
+            return Err(JournalError::InvalidPreparedPhase(raw.phase));
+        }
         let source_parent = raw.source_parent.decode()?;
         let original_name = raw.original_name.decode()?;
         let source_transaction_name = raw.source_transaction_name.decode()?;
@@ -1018,6 +1055,110 @@ mod tests {
                 Err(JournalError::InvalidTransactionId)
             );
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn journal_phases_reject_every_undocumented_edge() {
+        let phases = [
+            JournalPhase::Prepared,
+            JournalPhase::ClaimIntent,
+            JournalPhase::Claimed,
+            JournalPhase::UnexpectedClaimRetained,
+            JournalPhase::PendingDestination,
+            JournalPhase::Published,
+        ];
+        for from in phases {
+            for to in phases {
+                let documented = from == to
+                    || matches!(
+                        (from, to),
+                        (JournalPhase::Prepared, JournalPhase::ClaimIntent)
+                            | (JournalPhase::ClaimIntent, JournalPhase::Claimed)
+                            | (
+                                JournalPhase::ClaimIntent,
+                                JournalPhase::UnexpectedClaimRetained
+                            )
+                            | (JournalPhase::Claimed, JournalPhase::PendingDestination)
+                            | (JournalPhase::PendingDestination, JournalPhase::Published)
+                    );
+                if !documented {
+                    assert_eq!(
+                        from.validate_transition(to),
+                        Err(JournalError::InvalidPhaseTransition { from, to })
+                    );
+                }
+            }
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_phase_advances_to_durable_claim_intent() {
+        assert_eq!(
+            JournalPhase::Prepared.validate_transition(JournalPhase::ClaimIntent),
+            Ok(())
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn journal_phases_accept_the_durable_forward_sequence() {
+        for (from, to) in [
+            (JournalPhase::ClaimIntent, JournalPhase::Claimed),
+            (JournalPhase::Claimed, JournalPhase::PendingDestination),
+            (JournalPhase::PendingDestination, JournalPhase::Published),
+        ] {
+            assert_eq!(from.validate_transition(to), Ok(()));
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn claim_intent_can_advance_to_unexpected_claim_retention() {
+        assert_eq!(
+            JournalPhase::ClaimIntent.validate_transition(JournalPhase::UnexpectedClaimRetained),
+            Ok(())
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn journal_phase_can_be_rewritten_without_phase_regression() {
+        for phase in [
+            JournalPhase::Prepared,
+            JournalPhase::ClaimIntent,
+            JournalPhase::Claimed,
+            JournalPhase::UnexpectedClaimRetained,
+            JournalPhase::PendingDestination,
+            JournalPhase::Published,
+        ] {
+            assert_eq!(phase.validate_transition(phase), Ok(()));
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_record_rejects_a_later_phase_without_required_fields() {
+        let encoded = serde_json::json!({
+            "schema_major": 2,
+            "schema_minor": 0,
+            "transaction_id": "42424242424242424242424242424242",
+            "phase": "claim-intent",
+            "source_parent": {"encoding": "unix-bytes", "units_hex": "2f736f75726365"},
+            "original_name": {"encoding": "unix-bytes", "units_hex": "6974656d"},
+            "source_parent_identity": {"device": 11, "inode": 22, "file_type": "directory"},
+            "source_entry_identity": {"device": 11, "inode": 33, "file_type": "regular"},
+            "source_transaction_name": {"encoding": "unix-bytes", "units_hex": "2e6f747472696e2d6d6f76652d74657374"},
+            "source_transaction_identity": {"device": 11, "inode": 44, "file_type": "directory"}
+        });
+
+        assert_eq!(
+            PreparedRecord::parse(&serde_json::to_vec(&encoded).unwrap()),
+            Err(JournalError::InvalidPreparedPhase(
+                JournalPhase::ClaimIntent
+            ))
+        );
     }
 
     #[cfg(target_os = "linux")]
