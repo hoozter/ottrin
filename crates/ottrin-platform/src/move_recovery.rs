@@ -142,6 +142,10 @@ impl LinuxJournalDirectory {
         self.replace_named(&format!("{}.journal", record.transaction_id), record)
     }
 
+    pub fn persist_local_prepared(&self, record: &PreparedRecord) -> Result<(), JournalError> {
+        self.replace_named("journal", record)
+    }
+
     fn replace_named<T: Serialize>(&self, name: &str, record: &T) -> Result<(), JournalError> {
         use rustix::fs::{Mode, OFlags, fsync, openat, renameat};
         use std::fs::File;
@@ -636,6 +640,39 @@ mod tests {
         assert_eq!(PreparedRecord::parse(&persisted).unwrap(), record);
         assert!(JournalHeader::parse(&persisted).is_err());
         assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_record_is_persisted_to_anchored_source_local_journal() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-local-prepared-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let original = root.join("source-transaction");
+        let moved = root.join("moved-source-transaction");
+        std::fs::create_dir_all(&original).unwrap();
+
+        let directory = LinuxJournalDirectory::open(&original).unwrap();
+        std::fs::rename(&original, &moved).unwrap();
+        std::fs::create_dir(&original).unwrap();
+        let record = PreparedRecord::new_linux(
+            [0x78; 16],
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 17, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 19, LinuxFileType::Regular),
+        )
+        .unwrap();
+
+        directory.persist_local_prepared(&record).unwrap();
+
+        let persisted = std::fs::read(moved.join("journal")).unwrap();
+        assert_eq!(PreparedRecord::parse(&persisted).unwrap(), record);
+        assert!(JournalHeader::parse(&persisted).is_err());
+        assert!(!original.join("journal").exists());
+        assert_eq!(std::fs::read_dir(&moved).unwrap().count(), 1);
         std::fs::remove_dir_all(root).unwrap();
     }
 
