@@ -116,6 +116,21 @@ pub struct LinuxJournalDirectory {
 }
 
 #[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum LinuxPreparedJournals {
+    MatchingPair,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxPrepareJournalsError {
+    #[error("central prepared journal failed: {0}")]
+    Central(JournalError),
+    #[error("central prepared journal is durable but source-local journal failed: {0}")]
+    CentralOnly(JournalError),
+}
+
+#[cfg(target_os = "linux")]
 impl LinuxJournalDirectory {
     pub fn open(path: &Path) -> Result<Self, JournalError> {
         use rustix::fs::{CWD, Mode, OFlags, openat};
@@ -144,6 +159,19 @@ impl LinuxJournalDirectory {
 
     pub fn persist_local_prepared(&self, record: &PreparedRecord) -> Result<(), JournalError> {
         self.replace_named("journal", record)
+    }
+
+    pub fn prepare_with_local(
+        &self,
+        local: &Self,
+        record: &PreparedRecord,
+    ) -> Result<LinuxPreparedJournals, LinuxPrepareJournalsError> {
+        self.persist_prepared(record)
+            .map_err(LinuxPrepareJournalsError::Central)?;
+        local
+            .persist_local_prepared(record)
+            .map_err(LinuxPrepareJournalsError::CentralOnly)?;
+        Ok(LinuxPreparedJournals::MatchingPair)
     }
 
     fn replace_named<T: Serialize>(&self, name: &str, record: &T) -> Result<(), JournalError> {
@@ -673,6 +701,77 @@ mod tests {
         assert!(JournalHeader::parse(&persisted).is_err());
         assert!(!original.join("journal").exists());
         assert_eq!(std::fs::read_dir(&moved).unwrap().count(), 1);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn prepared_journals_persist_the_same_record_centrally_and_source_locally() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-prepared-pair-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let record = PreparedRecord::new_linux(
+            [0x9a; 16],
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 23, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 29, LinuxFileType::Regular),
+        )
+        .unwrap();
+
+        let prepared = central.prepare_with_local(&local, &record).unwrap();
+
+        assert_eq!(prepared, LinuxPreparedJournals::MatchingPair);
+        for path in [
+            central_path.join("9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a.journal"),
+            local_path.join("journal"),
+        ] {
+            let persisted = std::fs::read(path).unwrap();
+            assert_eq!(PreparedRecord::parse(&persisted).unwrap(), record);
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn local_failure_reports_a_durable_central_only_preparation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-central-only-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        std::fs::remove_dir(&local_path).unwrap();
+        let record = PreparedRecord::new_linux(
+            [0xbc; 16],
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 31, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 37, LinuxFileType::Regular),
+        )
+        .unwrap();
+
+        let result = central.prepare_with_local(&local, &record);
+
+        assert!(matches!(
+            result,
+            Err(LinuxPrepareJournalsError::CentralOnly(JournalError::Io(_)))
+        ));
+        let central_record =
+            std::fs::read(central_path.join("bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc.journal")).unwrap();
+        assert_eq!(PreparedRecord::parse(&central_record).unwrap(), record);
+        assert!(!local_path.exists());
         std::fs::remove_dir_all(root).unwrap();
     }
 
