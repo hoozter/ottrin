@@ -461,6 +461,37 @@ pub enum LinuxResumeClaimIntentError {
 }
 
 #[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum LinuxClaimedTopology {
+    Missing {
+        expected: LinuxStableIdentity,
+    },
+    ExpectedIdentity(LinuxStableIdentity),
+    UnexpectedIdentity {
+        expected: LinuxStableIdentity,
+        observed: LinuxStableIdentity,
+    },
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxObserveClaimedError {
+    #[error("claim-intent restart evidence is unsafe: {0}")]
+    Restart(#[from] LinuxLoadClaimIntentRestartError),
+    #[error("source-local claim-intent journal has not reached the durable central state")]
+    JournalsNotMatching,
+    #[error(
+        "source transaction identity differs from the durable claim-intent: expected {expected:?}, observed {observed:?}"
+    )]
+    TransactionIdentityMismatch {
+        expected: LinuxStableIdentity,
+        observed: LinuxStableIdentity,
+    },
+    #[error("claimed topology could not be observed: {0}")]
+    Io(String),
+}
+
+#[cfg(target_os = "linux")]
 #[derive(Debug, Error, Eq, PartialEq)]
 pub enum LinuxDiscoverPreparedError {
     #[error("central journal directory could not be read: {0}")]
@@ -1060,6 +1091,66 @@ impl LinuxRecoveryLock<'_> {
             }
         }
         Ok(LinuxClaimIntentJournals::MatchingPair)
+    }
+
+    pub fn observe_claimed_after_restart(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxClaimedTopology, LinuxObserveClaimedError> {
+        use rustix::fs::{FileType, Mode, OFlags, fstat, openat};
+
+        let (expected, expected_transaction) = match self
+            .central
+            .load_claim_intent_restart_state(local, transaction_id)?
+        {
+            LinuxClaimIntentRestartState::MatchingPair(record) => (
+                record.expected_source_identity,
+                record.source_transaction_identity,
+            ),
+            LinuxClaimIntentRestartState::CentralClaimIntentLocalPrepared { .. } => {
+                return Err(LinuxObserveClaimedError::JournalsNotMatching);
+            }
+        };
+        let transaction_stat = fstat(&local.directory)
+            .map_err(|error| LinuxObserveClaimedError::Io(error.to_string()))?;
+        let observed_transaction = LinuxStableIdentity::new(
+            transaction_stat.st_dev,
+            transaction_stat.st_ino,
+            LinuxFileType::Directory,
+        );
+        if observed_transaction != expected_transaction {
+            return Err(LinuxObserveClaimedError::TransactionIdentityMismatch {
+                expected: expected_transaction,
+                observed: observed_transaction,
+            });
+        }
+        let claimed = match openat(
+            &local.directory,
+            "claimed",
+            OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        ) {
+            Ok(claimed) => claimed,
+            Err(error) if error == rustix::io::Errno::NOENT => {
+                return Ok(LinuxClaimedTopology::Missing { expected });
+            }
+            Err(error) => return Err(LinuxObserveClaimedError::Io(error.to_string())),
+        };
+        let stat =
+            fstat(&claimed).map_err(|error| LinuxObserveClaimedError::Io(error.to_string()))?;
+        let file_type = match FileType::from_raw_mode(stat.st_mode) {
+            FileType::RegularFile => LinuxFileType::Regular,
+            FileType::Directory => LinuxFileType::Directory,
+            FileType::Symlink => LinuxFileType::Symlink,
+            _ => LinuxFileType::Other,
+        };
+        let observed = LinuxStableIdentity::new(stat.st_dev, stat.st_ino, file_type);
+        if observed == expected {
+            Ok(LinuxClaimedTopology::ExpectedIdentity(observed))
+        } else {
+            Ok(LinuxClaimedTopology::UnexpectedIdentity { expected, observed })
+        }
     }
 
     pub fn advance_to_claim_intent_with_local(
@@ -2764,6 +2855,483 @@ mod tests {
             )
         );
         assert_eq!(std::fs::read(&source_path).unwrap(), b"must remain");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_reports_unexpected_claim_identity_without_mutation() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-observe-unexpected-claim-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let expected_path = root.join("expected-source");
+        let claimed_path = local_path.join("claimed");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&expected_path, b"expected").unwrap();
+        std::fs::write(&claimed_path, b"unexpected must remain").unwrap();
+        let expected_metadata = std::fs::symlink_metadata(&expected_path).unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let expected_identity = LinuxStableIdentity::new(
+            expected_metadata.dev(),
+            expected_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let unexpected_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xe7; 16],
+            &root,
+            Path::new("expected-source"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            expected_identity,
+            Path::new(".ottrin-move-e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        central
+            .try_lock_recovery()
+            .unwrap()
+            .advance_to_claim_intent_with_local(&local, &prepared)
+            .unwrap();
+        let central_before = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_before = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+
+        let observed = central
+            .try_lock_recovery()
+            .unwrap()
+            .observe_claimed_after_restart(&local, [0xe7; 16]);
+
+        assert_eq!(
+            observed,
+            Ok(LinuxClaimedTopology::UnexpectedIdentity {
+                expected: expected_identity,
+                observed: unexpected_identity,
+            })
+        );
+        let central_after = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_after = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(central_after, central_before);
+        assert_eq!(local_after, local_before);
+        assert_eq!(
+            std::fs::read(&claimed_path).unwrap(),
+            b"unexpected must remain"
+        );
+        assert_eq!(std::fs::read(&expected_path).unwrap(), b"expected");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_observes_claimed_symlinks_without_following_them() {
+        use std::os::unix::fs::{MetadataExt, symlink};
+
+        for (transaction_id, target_exists) in [([0xeb; 16], true), ([0xec; 16], false)] {
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-move-observe-claimed-symlink-{}-{}",
+                target_exists,
+                encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+            ));
+            let central_path = root.join("central");
+            let local_path = root.join("local");
+            let target_path = root.join("target");
+            let claimed_path = local_path.join("claimed");
+            std::fs::create_dir_all(&central_path).unwrap();
+            std::fs::create_dir_all(&local_path).unwrap();
+            if target_exists {
+                std::fs::write(&target_path, b"target must remain").unwrap();
+            }
+            symlink(&target_path, &claimed_path).unwrap();
+            let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+            let observed_symlink = LinuxStableIdentity::new(
+                claimed_metadata.dev(),
+                claimed_metadata.ino(),
+                LinuxFileType::Symlink,
+            );
+            let expected_identity = if target_exists {
+                let target_metadata = std::fs::symlink_metadata(&target_path).unwrap();
+                LinuxStableIdentity::new(
+                    target_metadata.dev(),
+                    target_metadata.ino(),
+                    LinuxFileType::Regular,
+                )
+            } else {
+                LinuxStableIdentity::new(38, 867_5310, LinuxFileType::Regular)
+            };
+            let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+            let local_identity = LinuxStableIdentity::new(
+                local_metadata.dev(),
+                local_metadata.ino(),
+                LinuxFileType::Directory,
+            );
+            let central = LinuxJournalDirectory::open(&central_path).unwrap();
+            let local = LinuxJournalDirectory::open(&local_path).unwrap();
+            let transaction_name =
+                PathBuf::from(format!(".ottrin-move-{}", encode_hex(&transaction_id)));
+            let prepared = PreparedRecord::new_linux(
+                transaction_id,
+                &root,
+                Path::new("source-item"),
+                LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+                expected_identity,
+                &transaction_name,
+                local_identity,
+            )
+            .unwrap();
+            central.prepare_with_local(&local, &prepared).unwrap();
+            {
+                let mut recovery = central.try_lock_recovery().unwrap();
+                recovery
+                    .advance_to_claim_intent_with_local(&local, &prepared)
+                    .unwrap();
+            }
+            let journal_before = std::fs::read(local_path.join("journal")).unwrap();
+
+            let observed = {
+                let mut recovery = central.try_lock_recovery().unwrap();
+                recovery.observe_claimed_after_restart(&local, transaction_id)
+            };
+
+            assert_eq!(
+                observed,
+                Ok(LinuxClaimedTopology::UnexpectedIdentity {
+                    expected: expected_identity,
+                    observed: observed_symlink,
+                })
+            );
+            assert_eq!(
+                std::fs::symlink_metadata(&claimed_path).unwrap().ino(),
+                claimed_metadata.ino()
+            );
+            assert_eq!(
+                std::fs::read(local_path.join("journal")).unwrap(),
+                journal_before
+            );
+            if target_exists {
+                assert_eq!(std::fs::read(&target_path).unwrap(), b"target must remain");
+            } else {
+                assert!(!target_path.exists());
+            }
+            std::fs::remove_dir_all(root).unwrap();
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_rejects_a_substituted_local_transaction_directory() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-observe-substituted-local-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let substituted_path = root.join("substituted-local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::create_dir_all(&substituted_path).unwrap();
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let claimed_path = substituted_path.join("claimed");
+        std::fs::write(&claimed_path, b"must not become recovery evidence").unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let expected_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let substituted_metadata = std::fs::symlink_metadata(&substituted_path).unwrap();
+        let substituted_identity = LinuxStableIdentity::new(
+            substituted_metadata.dev(),
+            substituted_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let substituted = LinuxJournalDirectory::open(&substituted_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xea; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            expected_identity,
+            Path::new(".ottrin-move-eaeaeaeaeaeaeaeaeaeaeaeaeaeaeaea"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        central
+            .try_lock_recovery()
+            .unwrap()
+            .advance_to_claim_intent_with_local(&local, &prepared)
+            .unwrap();
+        std::fs::copy(local_path.join("journal"), substituted_path.join("journal")).unwrap();
+        let central_before = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let substituted_before = std::fs::read_dir(&substituted_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+
+        let observed = central
+            .try_lock_recovery()
+            .unwrap()
+            .observe_claimed_after_restart(&substituted, [0xea; 16]);
+
+        assert_eq!(
+            observed,
+            Err(LinuxObserveClaimedError::TransactionIdentityMismatch {
+                expected: local_identity,
+                observed: substituted_identity,
+            })
+        );
+        let central_after = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let substituted_after = std::fs::read_dir(&substituted_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(central_after, central_before);
+        assert_eq!(substituted_after, substituted_before);
+        assert_eq!(
+            std::fs::read(&claimed_path).unwrap(),
+            b"must not become recovery evidence"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_reports_expected_claim_identity_without_mutation() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-observe-expected-claim-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let claimed_path = local_path.join("claimed");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"expected must remain").unwrap();
+        let metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let expected_identity =
+            LinuxStableIdentity::new(metadata.dev(), metadata.ino(), LinuxFileType::Regular);
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xe8; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            expected_identity,
+            Path::new(".ottrin-move-e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        central
+            .try_lock_recovery()
+            .unwrap()
+            .advance_to_claim_intent_with_local(&local, &prepared)
+            .unwrap();
+        let central_before = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_before = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+
+        let observed = central
+            .try_lock_recovery()
+            .unwrap()
+            .observe_claimed_after_restart(&local, [0xe8; 16]);
+
+        assert_eq!(
+            observed,
+            Ok(LinuxClaimedTopology::ExpectedIdentity(expected_identity))
+        );
+        let central_after = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_after = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(central_after, central_before);
+        assert_eq!(local_after, local_before);
+        assert_eq!(
+            std::fs::read(&claimed_path).unwrap(),
+            b"expected must remain"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_reports_missing_claim_without_mutation() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-observe-missing-claim-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let expected_identity = LinuxStableIdentity::new(38, 867_5309, LinuxFileType::Regular);
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xe9; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            expected_identity,
+            Path::new(".ottrin-move-e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9e9"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        central
+            .try_lock_recovery()
+            .unwrap()
+            .advance_to_claim_intent_with_local(&local, &prepared)
+            .unwrap();
+        let central_before = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_before = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+
+        let observed = central
+            .try_lock_recovery()
+            .unwrap()
+            .observe_claimed_after_restart(&local, [0xe9; 16]);
+
+        assert_eq!(
+            observed,
+            Ok(LinuxClaimedTopology::Missing {
+                expected: expected_identity,
+            })
+        );
+        let central_after = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_after = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(central_after, central_before);
+        assert_eq!(local_after, local_before);
+        assert!(!local_path.join("claimed").exists());
         std::fs::remove_dir_all(root).unwrap();
     }
 
