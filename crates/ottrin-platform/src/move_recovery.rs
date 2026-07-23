@@ -74,6 +74,14 @@ impl LinuxJournalDirectory {
     }
 
     pub fn replace(&self, header: &JournalHeader) -> Result<(), JournalError> {
+        self.replace_named("journal", header)
+    }
+
+    pub fn persist_discovery_header(&self, header: &JournalHeader) -> Result<(), JournalError> {
+        self.replace_named(&format!("{}.journal", header.transaction_id), header)
+    }
+
+    fn replace_named(&self, name: &str, header: &JournalHeader) -> Result<(), JournalError> {
         use rustix::fs::{Mode, OFlags, fsync, openat, renameat};
         use std::fs::File;
         use std::io::Write;
@@ -82,7 +90,7 @@ impl LinuxJournalDirectory {
             .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
         let mut random = [0_u8; 16];
         getrandom::fill(&mut random).map_err(|error| JournalError::Io(error.to_string()))?;
-        let next_name = format!("journal.next-{}", encode_hex(&random));
+        let next_name = format!("{name}.next-{}", encode_hex(&random));
         let next = openat(
             &self.directory,
             next_name.as_str(),
@@ -94,13 +102,8 @@ impl LinuxJournalDirectory {
         next.write_all(&encoded)
             .and_then(|()| next.sync_all())
             .map_err(|error| JournalError::Io(error.to_string()))?;
-        renameat(
-            &self.directory,
-            next_name.as_str(),
-            &self.directory,
-            "journal",
-        )
-        .map_err(|error| JournalError::Io(error.to_string()))?;
+        renameat(&self.directory, next_name.as_str(), &self.directory, name)
+            .map_err(|error| JournalError::Io(error.to_string()))?;
         fsync(&self.directory).map_err(|error| JournalError::Io(error.to_string()))
     }
 }
@@ -385,6 +388,31 @@ mod tests {
             "unexpected": true
         }"#;
         assert!(serde_json::from_slice::<NativePath>(json).is_err());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn transaction_headers_create_independent_central_discovery_records() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-central-discovery-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+
+        let directory = LinuxJournalDirectory::open(&root).unwrap();
+        let first = JournalHeader::new([0x12; 16]);
+        let second = JournalHeader::new([0x34; 16]);
+        directory.persist_discovery_header(&first).unwrap();
+        directory.persist_discovery_header(&second).unwrap();
+
+        for (name, expected) in [
+            ("12121212121212121212121212121212.journal", first),
+            ("34343434343434343434343434343434.journal", second),
+        ] {
+            let persisted = std::fs::read(root.join(name)).unwrap();
+            assert_eq!(JournalHeader::parse(&persisted).unwrap(), expected);
+        }
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(target_os = "linux")]
