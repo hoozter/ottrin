@@ -252,6 +252,15 @@ pub enum LinuxRecoveryLockError {
 }
 
 #[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxCentralRootOpenError {
+    #[error(
+        "configured recovery-root authority is unavailable until pathname replacement cannot create a second lock domain"
+    )]
+    StableIdentityAuthorityUnavailable,
+}
+
+#[cfg(target_os = "linux")]
 #[derive(Debug)]
 pub struct LinuxSourceParentDirectory {
     directory: OwnedFd,
@@ -433,6 +442,21 @@ pub enum LinuxLoadClaimIntentRestartError {
     RequestedTransactionMismatch {
         requested: [u8; 16],
         recorded: [u8; 16],
+    },
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxResumeClaimIntentError {
+    #[error("claim-intent restart evidence is unsafe: {0}")]
+    Restart(#[from] LinuxLoadClaimIntentRestartError),
+    #[error(
+        "central claim-intent is durable but the source-local restart update is uncertain: {error}"
+    )]
+    LocalUpdateUncertain {
+        #[source]
+        error: JournalError,
+        durable_central: Box<ClaimIntentRecord>,
     },
 }
 
@@ -679,6 +703,10 @@ impl LinuxRetainedSourceTransaction {
 
 #[cfg(target_os = "linux")]
 impl LinuxJournalDirectory {
+    pub fn open_configured(_path: &Path) -> Result<Self, LinuxCentralRootOpenError> {
+        Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)
+    }
+
     #[cfg(test)]
     fn open(path: &Path) -> Result<Self, JournalError> {
         use rustix::fs::{CWD, Mode, OFlags, openat};
@@ -1007,6 +1035,31 @@ impl LinuxRecoveryLock<'_> {
         record: &PreparedRecord,
     ) -> Result<LinuxPreparedJournals, LinuxPrepareJournalsError> {
         self.central.prepare_with_local(local, record)
+    }
+
+    pub fn resume_claim_intent_with_local(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxClaimIntentJournals, LinuxResumeClaimIntentError> {
+        match self
+            .central
+            .load_claim_intent_restart_state(local, transaction_id)?
+        {
+            LinuxClaimIntentRestartState::MatchingPair(_) => {}
+            LinuxClaimIntentRestartState::CentralClaimIntentLocalPrepared {
+                claim_intent,
+                prepared: _,
+            } => {
+                local
+                    .persist_local_claim_intent(&claim_intent)
+                    .map_err(|error| LinuxResumeClaimIntentError::LocalUpdateUncertain {
+                        error,
+                        durable_central: Box::new(claim_intent),
+                    })?;
+            }
+        }
+        Ok(LinuxClaimIntentJournals::MatchingPair)
     }
 
     pub fn advance_to_claim_intent_with_local(
@@ -2716,6 +2769,84 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    fn recovery_lock_completes_a_partial_claim_intent_pair_after_restart() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-resume-partial-claim-intent-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xe4; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        central.persist_claim_intent(&claim_intent).unwrap();
+
+        let mut recovery = central.try_lock_recovery().unwrap();
+        let resumed = recovery.resume_claim_intent_with_local(&local, [0xe4; 16]);
+
+        assert_eq!(resumed, Ok(LinuxClaimIntentJournals::MatchingPair));
+        assert_eq!(
+            central.load_claim_intent_restart_state(&local, [0xe4; 16]),
+            Ok(LinuxClaimIntentRestartState::MatchingPair(
+                claim_intent.clone()
+            ))
+        );
+        let central_after_first = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_after_first = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+
+        let repeated = recovery.resume_claim_intent_with_local(&local, [0xe4; 16]);
+
+        assert_eq!(repeated, Ok(LinuxClaimIntentJournals::MatchingPair));
+        assert_eq!(
+            central.load_claim_intent_restart_state(&local, [0xe4; 16]),
+            Ok(LinuxClaimIntentRestartState::MatchingPair(claim_intent))
+        );
+        let central_after_repeat = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_after_repeat = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(central_after_repeat, central_after_first);
+        assert_eq!(local_after_repeat, local_after_first);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn restart_loader_reports_requested_and_recorded_central_transaction_ids() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-move-load-mismatched-central-transaction-{}",
@@ -3141,6 +3272,35 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(central_entries_after, central_entries_before);
         drop(reacquired);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn configured_central_root_opening_stays_fail_closed_across_path_replacement() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-configured-central-root-replacement-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let configured = root.join("moves");
+        let displaced = root.join("moves-displaced");
+        std::fs::create_dir_all(&configured).unwrap();
+
+        let first = LinuxJournalDirectory::open_configured(&configured);
+        std::fs::rename(&configured, &displaced).unwrap();
+        std::fs::create_dir(&configured).unwrap();
+        let replacement = LinuxJournalDirectory::open_configured(&configured);
+
+        assert!(matches!(
+            first,
+            Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)
+        ));
+        assert!(matches!(
+            replacement,
+            Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)
+        ));
+        assert!(std::fs::read_dir(&configured).unwrap().next().is_none());
+        assert!(std::fs::read_dir(&displaced).unwrap().next().is_none());
         std::fs::remove_dir_all(root).unwrap();
     }
 
