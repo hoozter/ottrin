@@ -110,13 +110,89 @@ pub enum JournalError {
     InvalidPreparedSourcePath,
     #[error("invalid Linux stable identity")]
     InvalidLinuxIdentity,
+    #[error("source transaction name already exists")]
+    SourceTransactionExists,
     #[error("journal I/O failed: {0}")]
     Io(String),
 }
 
 #[cfg(target_os = "linux")]
+/// Handle-relative journal mutation authority created only inside trusted recovery code.
+///
+/// Arbitrary pathnames cannot be promoted to journal authority:
+///
+/// ```compile_fail
+/// use ottrin_platform::move_recovery::LinuxJournalDirectory;
+/// use std::path::Path;
+///
+/// let _ = LinuxJournalDirectory::open(Path::new("."));
+/// ```
+#[derive(Debug)]
 pub struct LinuxJournalDirectory {
     directory: OwnedFd,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug)]
+pub struct LinuxSourceParentDirectory {
+    directory: OwnedFd,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug)]
+struct LinuxIdentityHandle {
+    _directory: OwnedFd,
+}
+
+#[cfg(target_os = "linux")]
+/// An observed source-transaction candidate without ownership or mutation authority.
+///
+/// The retained identity descriptor is deliberately not exposed to callers:
+///
+/// ```compile_fail
+/// use ottrin_platform::move_recovery::LinuxSourceParentDirectory;
+/// use std::path::Path;
+///
+/// let parent = LinuxSourceParentDirectory::open(Path::new(".")).unwrap();
+/// let candidate = parent.create_transaction([0_u8; 16]).unwrap();
+/// let _ = candidate.identity_handle();
+/// ```
+#[derive(Debug)]
+pub struct LinuxUnprovenSourceTransaction {
+    name: PathBuf,
+    observed_identity: LinuxStableIdentity,
+    _identity_handle: Option<LinuxIdentityHandle>,
+}
+
+#[cfg(target_os = "linux")]
+/// Source-transaction evidence retained after setup failure, without journal authority.
+///
+/// ```compile_fail
+/// use ottrin_platform::move_recovery::LinuxRetainedSourceTransaction;
+///
+/// fn promote(retained: &LinuxRetainedSourceTransaction) {
+///     let _ = retained.journal_directory();
+/// }
+/// ```
+#[derive(Debug)]
+pub struct LinuxRetainedSourceTransaction {
+    name: PathBuf,
+    parent_directory: LinuxSourceParentDirectory,
+    identity: Option<LinuxStableIdentity>,
+    _identity_handle: Option<LinuxIdentityHandle>,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error)]
+pub enum LinuxCreateSourceTransactionError {
+    #[error(transparent)]
+    Creation(JournalError),
+    #[error("source transaction was created but setup failed: {failure}")]
+    Retained {
+        #[source]
+        failure: JournalError,
+        retained: LinuxRetainedSourceTransaction,
+    },
 }
 
 #[cfg(target_os = "linux")]
@@ -204,8 +280,214 @@ pub fn validate_prepared_pair(
 }
 
 #[cfg(target_os = "linux")]
-impl LinuxJournalDirectory {
+impl LinuxSourceParentDirectory {
     pub fn open(path: &Path) -> Result<Self, JournalError> {
+        use rustix::fs::{CWD, Mode, OFlags, openat};
+
+        let directory = openat(
+            CWD,
+            path,
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|error| JournalError::Io(error.to_string()))?;
+        Ok(Self { directory })
+    }
+
+    pub fn create_transaction(
+        &self,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxUnprovenSourceTransaction, LinuxCreateSourceTransactionError> {
+        self.create_transaction_with_hooks(transaction_id, || Ok(()), || Ok(()))
+    }
+
+    #[cfg(test)]
+    fn create_transaction_with_post_create<F>(
+        &self,
+        transaction_id: [u8; 16],
+        post_create: F,
+    ) -> Result<LinuxUnprovenSourceTransaction, LinuxCreateSourceTransactionError>
+    where
+        F: FnOnce() -> Result<(), JournalError>,
+    {
+        self.create_transaction_with_hooks(transaction_id, post_create, || Ok(()))
+    }
+
+    fn create_transaction_with_hooks<F, G>(
+        &self,
+        transaction_id: [u8; 16],
+        post_create: F,
+        post_identity_open: G,
+    ) -> Result<LinuxUnprovenSourceTransaction, LinuxCreateSourceTransactionError>
+    where
+        F: FnOnce() -> Result<(), JournalError>,
+        G: FnOnce() -> Result<(), JournalError>,
+    {
+        use rustix::fs::{AtFlags, FileType, Mode, OFlags, fstat, mkdirat, openat, statat};
+
+        let name = PathBuf::from(format!(".ottrin-move-{}", encode_hex(&transaction_id)));
+        let mut retained_parent = Some(LinuxSourceParentDirectory {
+            directory: rustix::io::fcntl_dupfd_cloexec(&self.directory, 0).map_err(|error| {
+                LinuxCreateSourceTransactionError::Creation(JournalError::Io(error.to_string()))
+            })?,
+        });
+        mkdirat(&self.directory, &name, Mode::RUSR | Mode::WUSR | Mode::XUSR).map_err(|error| {
+            let failure = if error == rustix::io::Errno::EXIST {
+                JournalError::SourceTransactionExists
+            } else {
+                JournalError::Io(error.to_string())
+            };
+            LinuxCreateSourceTransactionError::Creation(failure)
+        })?;
+        post_create().map_err(|failure| {
+            Self::retained_error(
+                &mut retained_parent,
+                name.clone(),
+                failure,
+                None,
+                None,
+                None,
+            )
+        })?;
+        let identity_directory = openat(
+            &self.directory,
+            &name,
+            OFlags::PATH | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|error| {
+            Self::retained_error(
+                &mut retained_parent,
+                name.clone(),
+                JournalError::Io(error.to_string()),
+                None,
+                None,
+                None,
+            )
+        })?;
+        let opened = match fstat(&identity_directory) {
+            Ok(opened) => opened,
+            Err(error) => {
+                return Err(Self::retained_error(
+                    &mut retained_parent,
+                    name,
+                    JournalError::Io(error.to_string()),
+                    Some(identity_directory),
+                    None,
+                    None,
+                ));
+            }
+        };
+        let named = match statat(&self.directory, &name, AtFlags::SYMLINK_NOFOLLOW) {
+            Ok(named) => named,
+            Err(error) => {
+                return Err(Self::retained_error(
+                    &mut retained_parent,
+                    name,
+                    JournalError::Io(error.to_string()),
+                    Some(identity_directory),
+                    None,
+                    None,
+                ));
+            }
+        };
+        if FileType::from_raw_mode(opened.st_mode) != FileType::Directory
+            || opened.st_uid != rustix::process::geteuid().as_raw()
+            || opened.st_dev != named.st_dev
+            || opened.st_ino != named.st_ino
+        {
+            return Err(Self::retained_error(
+                &mut retained_parent,
+                name,
+                JournalError::InvalidLinuxIdentity,
+                Some(identity_directory),
+                None,
+                None,
+            ));
+        }
+        let identity =
+            LinuxStableIdentity::new(opened.st_dev, opened.st_ino, LinuxFileType::Directory);
+        if let Err(failure) = post_identity_open() {
+            return Err(Self::retained_error(
+                &mut retained_parent,
+                name,
+                failure,
+                Some(identity_directory),
+                Some(identity),
+                None,
+            ));
+        }
+        Ok(LinuxUnprovenSourceTransaction {
+            name,
+            observed_identity: identity,
+            _identity_handle: Some(LinuxIdentityHandle {
+                _directory: identity_directory,
+            }),
+        })
+    }
+
+    fn retained_error(
+        parent: &mut Option<LinuxSourceParentDirectory>,
+        name: PathBuf,
+        failure: JournalError,
+        identity_directory: Option<OwnedFd>,
+        identity: Option<LinuxStableIdentity>,
+        unverified_journal_directory: Option<OwnedFd>,
+    ) -> LinuxCreateSourceTransactionError {
+        // A directory opened from the current pathname is not journal authority until every
+        // identity check succeeds. Dropping it here prevents retained failures from exposing a
+        // mutable LinuxJournalDirectory capability for a replacement entry.
+        drop(unverified_journal_directory);
+        LinuxCreateSourceTransactionError::Retained {
+            failure,
+            retained: LinuxRetainedSourceTransaction {
+                name,
+                parent_directory: parent
+                    .take()
+                    .expect("the retained parent is consumed only on an error return"),
+                identity,
+                _identity_handle: identity_directory.map(|directory| LinuxIdentityHandle {
+                    _directory: directory,
+                }),
+            },
+        }
+    }
+
+    pub fn sync(&self) -> Result<(), JournalError> {
+        rustix::fs::fsync(&self.directory).map_err(|error| JournalError::Io(error.to_string()))
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl LinuxUnprovenSourceTransaction {
+    pub fn name(&self) -> &Path {
+        &self.name
+    }
+
+    pub fn observed_identity(&self) -> LinuxStableIdentity {
+        self.observed_identity
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl LinuxRetainedSourceTransaction {
+    pub fn name(&self) -> &Path {
+        &self.name
+    }
+
+    pub fn identity(&self) -> Option<LinuxStableIdentity> {
+        self.identity
+    }
+
+    pub fn parent_directory(&self) -> &LinuxSourceParentDirectory {
+        &self.parent_directory
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl LinuxJournalDirectory {
+    #[cfg(test)]
+    fn open(path: &Path) -> Result<Self, JournalError> {
         use rustix::fs::{CWD, Mode, OFlags, openat};
 
         let directory = openat(
@@ -1538,6 +1820,335 @@ mod tests {
         let persisted = std::fs::read(root.join("journal")).unwrap();
         assert_eq!(JournalHeader::parse(&persisted).unwrap(), header);
         assert_eq!(std::fs::read(root.join("journal.next")).unwrap(), stale);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn source_transaction_is_created_through_anchored_parent_with_verified_identity() {
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-source-transaction-anchor-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let original_parent = root.join("source-parent");
+        let moved_parent = root.join("moved-source-parent");
+        std::fs::create_dir_all(&original_parent).unwrap();
+        let parent = LinuxSourceParentDirectory::open(&original_parent).unwrap();
+        std::fs::rename(&original_parent, &moved_parent).unwrap();
+        std::fs::create_dir(&original_parent).unwrap();
+
+        let transaction_id = [0xab; 16];
+        let transaction = parent.create_transaction(transaction_id).unwrap();
+
+        let expected_name = ".ottrin-move-abababababababababababababababab";
+        let created = moved_parent.join(expected_name);
+        let metadata = std::fs::symlink_metadata(&created).unwrap();
+        assert!(!original_parent.join(expected_name).exists());
+        assert!(metadata.is_dir());
+        assert_eq!(metadata.permissions().mode() & 0o777, 0o700);
+        assert_eq!(transaction.name(), Path::new(expected_name));
+        assert_eq!(
+            transaction.observed_identity(),
+            LinuxStableIdentity::new(metadata.dev(), metadata.ino(), LinuxFileType::Directory)
+        );
+
+        assert!(transaction._identity_handle.is_some());
+        assert!(!created.join("journal").exists());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn source_parent_sync_uses_the_anchored_directory_after_path_replacement() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-source-parent-sync-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let original_parent = root.join("source-parent");
+        let moved_parent = root.join("moved-source-parent");
+        std::fs::create_dir_all(&original_parent).unwrap();
+        let parent = LinuxSourceParentDirectory::open(&original_parent).unwrap();
+        std::fs::rename(&original_parent, &moved_parent).unwrap();
+        std::fs::create_dir(&original_parent).unwrap();
+
+        parent.sync().unwrap();
+
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn source_transaction_replacement_after_creation_is_only_an_unproven_candidate() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-source-transaction-unproven-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let transaction_name = ".ottrin-move-b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2";
+        let transaction_path = root.join(transaction_name);
+        let replacement = root.join("same-euid-replacement");
+        std::fs::create_dir(&replacement).unwrap();
+        std::fs::write(replacement.join("not-owned-by-ottrin"), b"retain").unwrap();
+        let replacement_metadata = std::fs::symlink_metadata(&replacement).unwrap();
+        let parent = LinuxSourceParentDirectory::open(&root).unwrap();
+
+        let candidate: LinuxUnprovenSourceTransaction = parent
+            .create_transaction_with_post_create([0xb2; 16], || {
+                std::fs::remove_dir(&transaction_path).unwrap();
+                std::fs::rename(&replacement, &transaction_path).unwrap();
+                Ok(())
+            })
+            .unwrap();
+
+        assert_eq!(candidate.name(), Path::new(transaction_name));
+        assert_eq!(
+            candidate.observed_identity(),
+            LinuxStableIdentity::new(
+                replacement_metadata.dev(),
+                replacement_metadata.ino(),
+                LinuxFileType::Directory,
+            )
+        );
+        assert!(candidate._identity_handle.is_some());
+        assert_eq!(
+            std::fs::read(transaction_path.join("not-owned-by-ottrin")).unwrap(),
+            b"retain"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn unproven_source_transaction_does_not_chmod_a_replacement() {
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-source-transaction-unproven-mode-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let transaction_path = root.join(".ottrin-move-b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3");
+        let replacement = root.join("same-euid-replacement");
+        std::fs::create_dir(&replacement).unwrap();
+        std::fs::set_permissions(&replacement, std::fs::Permissions::from_mode(0o750)).unwrap();
+        let replacement_metadata = std::fs::symlink_metadata(&replacement).unwrap();
+        let parent = LinuxSourceParentDirectory::open(&root).unwrap();
+
+        let candidate = parent
+            .create_transaction_with_post_create([0xb3; 16], || {
+                std::fs::remove_dir(&transaction_path).unwrap();
+                std::fs::rename(&replacement, &transaction_path).unwrap();
+                Ok(())
+            })
+            .unwrap();
+
+        assert_eq!(
+            candidate.observed_identity(),
+            LinuxStableIdentity::new(
+                replacement_metadata.dev(),
+                replacement_metadata.ino(),
+                LinuxFileType::Directory,
+            )
+        );
+        assert_eq!(
+            std::fs::symlink_metadata(&transaction_path)
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777,
+            0o750
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn source_transaction_reports_retained_name_when_post_create_setup_fails() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-source-transaction-retained-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let parent = LinuxSourceParentDirectory::open(&root).unwrap();
+
+        let result = parent.create_transaction_with_post_create([0xaf; 16], || {
+            Err(JournalError::Io("injected post-create failure".to_owned()))
+        });
+
+        let Err(LinuxCreateSourceTransactionError::Retained { failure, retained }) = result else {
+            panic!("a post-create failure must retain explicit transaction ownership");
+        };
+        assert_eq!(
+            failure,
+            JournalError::Io("injected post-create failure".to_owned())
+        );
+        assert_eq!(
+            retained.name(),
+            Path::new(".ottrin-move-afafafafafafafafafafafafafafafaf")
+        );
+        assert!(retained.identity().is_none());
+        assert!(root.join(retained.name()).is_dir());
+        drop(parent);
+        retained.parent_directory().sync().unwrap();
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn source_transaction_retains_identity_handle_separately_after_identity_open_failure() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-source-transaction-retained-identity-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let parent = LinuxSourceParentDirectory::open(&root).unwrap();
+
+        let result = parent.create_transaction_with_hooks(
+            [0xb0; 16],
+            || Ok(()),
+            || {
+                Err(JournalError::Io(
+                    "injected identity-open failure".to_owned(),
+                ))
+            },
+        );
+
+        let Err(LinuxCreateSourceTransactionError::Retained { failure, retained }) = result else {
+            panic!("a post-identity-open failure must retain identity ownership");
+        };
+        assert_eq!(
+            failure,
+            JournalError::Io("injected identity-open failure".to_owned())
+        );
+        assert!(retained.identity().is_some());
+        assert!(retained._identity_handle.is_some());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn unproven_source_transaction_does_not_create_a_journal() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-source-transaction-no-journal-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let parent = LinuxSourceParentDirectory::open(&root).unwrap();
+
+        let candidate = parent.create_transaction([0xb1; 16]).unwrap();
+
+        assert!(candidate._identity_handle.is_some());
+        assert!(!root.join(candidate.name()).join("journal").exists());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn unproven_source_transaction_preserves_restrictive_umask_result() {
+        const CHILD_ENV: &str = "OTTRIN_TEST_RESTRICTIVE_MOVE_UMASK";
+        if std::env::var_os(CHILD_ENV).is_none() {
+            let status = std::process::Command::new(std::env::current_exe().unwrap())
+                .arg("--exact")
+                .arg("move_recovery::tests::unproven_source_transaction_preserves_restrictive_umask_result")
+                .arg("--nocapture")
+                .env(CHILD_ENV, "1")
+                .status()
+                .unwrap();
+            assert!(status.success());
+            return;
+        }
+
+        use std::os::unix::fs::PermissionsExt;
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-source-transaction-umask-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let parent = LinuxSourceParentDirectory::open(&root).unwrap();
+        rustix::process::umask(rustix::fs::Mode::from_raw_mode(0o777));
+
+        let transaction = parent.create_transaction([0xae; 16]).unwrap();
+
+        let metadata = std::fs::symlink_metadata(root.join(transaction.name())).unwrap();
+        assert_eq!(metadata.permissions().mode() & 0o777, 0o000);
+        std::fs::set_permissions(
+            root.join(transaction.name()),
+            std::fs::Permissions::from_mode(0o700),
+        )
+        .unwrap();
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn source_transaction_rejects_an_existing_directory_without_mutation() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-source-transaction-existing-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let transaction_id = [0xac; 16];
+        let existing = root.join(".ottrin-move-acacacacacacacacacacacacacacacac");
+        std::fs::create_dir(&existing).unwrap();
+        std::fs::write(existing.join("retained"), b"not Ottrin-owned").unwrap();
+        let identity_before = std::fs::symlink_metadata(&existing).unwrap().ino();
+        let parent = LinuxSourceParentDirectory::open(&root).unwrap();
+
+        let result = parent.create_transaction(transaction_id);
+
+        let Err(error) = result else {
+            panic!("an existing transaction name must be rejected");
+        };
+        assert_eq!(error.to_string(), "source transaction name already exists");
+        assert_eq!(
+            std::fs::symlink_metadata(&existing).unwrap().ino(),
+            identity_before
+        );
+        assert_eq!(
+            std::fs::read(existing.join("retained")).unwrap(),
+            b"not Ottrin-owned"
+        );
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn source_transaction_rejects_an_existing_symlink_without_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-source-transaction-symlink-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let transaction_id = [0xad; 16];
+        let existing = root.join(".ottrin-move-adadadadadadadadadadadadadadadad");
+        let target = root.join("symlink-target");
+        std::fs::create_dir(&target).unwrap();
+        std::fs::write(target.join("retained"), b"not Ottrin-owned").unwrap();
+        std::os::unix::fs::symlink(&target, &existing).unwrap();
+        let link_before = std::fs::read_link(&existing).unwrap();
+        let parent = LinuxSourceParentDirectory::open(&root).unwrap();
+
+        let result = parent.create_transaction(transaction_id);
+
+        assert!(matches!(
+            result,
+            Err(LinuxCreateSourceTransactionError::Creation(
+                JournalError::SourceTransactionExists
+            ))
+        ));
+        assert_eq!(std::fs::read_link(&existing).unwrap(), link_before);
+        assert_eq!(
+            std::fs::read(target.join("retained")).unwrap(),
+            b"not Ottrin-owned"
+        );
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 2);
         std::fs::remove_dir_all(root).unwrap();
     }
 
