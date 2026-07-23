@@ -347,6 +347,48 @@ pub enum LinuxLoadPreparedPairError {
 }
 
 #[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum LinuxClaimIntentRestartState {
+    MatchingPair(ClaimIntentRecord),
+    CentralClaimIntentLocalPrepared {
+        claim_intent: ClaimIntentRecord,
+        prepared: PreparedRecord,
+    },
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxLoadClaimIntentRestartError {
+    #[error("central claim-intent journal could not be read: {0}")]
+    CentralRead(LinuxJournalReadError),
+    #[error("source-local recovery journal could not be read: {0}")]
+    LocalRead(LinuxJournalReadError),
+    #[error("central claim-intent journal is invalid: {0}")]
+    CentralCorrupt(JournalError),
+    #[error(
+        "source-local journal is neither a valid claim-intent ({claim_intent}) nor prepared record ({prepared})"
+    )]
+    LocalCorrupt {
+        claim_intent: JournalError,
+        prepared: JournalError,
+    },
+    #[error("source-local transaction does not match the central transaction")]
+    LocalTransactionMismatch { central: [u8; 16], local: [u8; 16] },
+    #[error("source-local prepared evidence disagrees with the durable central claim-intent")]
+    PreparedEvidenceMismatch {
+        durable_central: Box<ClaimIntentRecord>,
+        local: Box<PreparedRecord>,
+    },
+    #[error("source-local claim-intent evidence disagrees with the durable central claim-intent")]
+    ClaimIntentEvidenceMismatch {
+        durable_central: Box<ClaimIntentRecord>,
+        local: Box<ClaimIntentRecord>,
+    },
+    #[error("recovery journals do not belong to the requested transaction")]
+    RequestedTransactionMismatch,
+}
+
+#[cfg(target_os = "linux")]
 #[derive(Debug, Error, Eq, PartialEq)]
 pub enum LinuxDiscoverPreparedError {
     #[error("central journal directory could not be read: {0}")]
@@ -727,6 +769,80 @@ impl LinuxJournalDirectory {
             return Err(LinuxLoadPreparedPairError::RequestedTransactionMismatch);
         }
         Ok(central_record)
+    }
+
+    pub fn load_claim_intent_restart_state(
+        &self,
+        local: &Self,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxClaimIntentRestartState, LinuxLoadClaimIntentRestartError> {
+        let central = self
+            .read_named(&format!("{}.journal", encode_hex(&transaction_id)))
+            .map_err(LinuxLoadClaimIntentRestartError::CentralRead)?;
+        let local = local
+            .read_named("journal")
+            .map_err(LinuxLoadClaimIntentRestartError::LocalRead)?;
+        let claim_intent = ClaimIntentRecord::parse(&central)
+            .map_err(LinuxLoadClaimIntentRestartError::CentralCorrupt)?;
+        if claim_intent.transaction_id != encode_hex(&transaction_id) {
+            return Err(LinuxLoadClaimIntentRestartError::RequestedTransactionMismatch);
+        }
+        let decode_transaction_id = |encoded: &str| {
+            let decoded = decode_hex(encoded)
+                .expect("validated recovery records have hexadecimal transaction IDs");
+            let mut transaction_id = [0_u8; 16];
+            transaction_id.copy_from_slice(&decoded);
+            transaction_id
+        };
+        match ClaimIntentRecord::parse(&local) {
+            Ok(local_claim_intent) => {
+                let local_transaction_id =
+                    decode_transaction_id(&local_claim_intent.transaction_id);
+                if local_transaction_id != transaction_id {
+                    return Err(LinuxLoadClaimIntentRestartError::LocalTransactionMismatch {
+                        central: transaction_id,
+                        local: local_transaction_id,
+                    });
+                }
+                if local_claim_intent == claim_intent {
+                    Ok(LinuxClaimIntentRestartState::MatchingPair(claim_intent))
+                } else {
+                    Err(
+                        LinuxLoadClaimIntentRestartError::ClaimIntentEvidenceMismatch {
+                            durable_central: Box::new(claim_intent),
+                            local: Box::new(local_claim_intent),
+                        },
+                    )
+                }
+            }
+            Err(claim_intent_error) => match PreparedRecord::parse(&local) {
+                Ok(prepared) => {
+                    let local_transaction_id = decode_transaction_id(&prepared.transaction_id);
+                    if local_transaction_id != transaction_id {
+                        return Err(LinuxLoadClaimIntentRestartError::LocalTransactionMismatch {
+                            central: transaction_id,
+                            local: local_transaction_id,
+                        });
+                    }
+                    if ClaimIntentRecord::from_prepared(&prepared).as_ref() != Ok(&claim_intent) {
+                        return Err(LinuxLoadClaimIntentRestartError::PreparedEvidenceMismatch {
+                            durable_central: Box::new(claim_intent),
+                            local: Box::new(prepared),
+                        });
+                    }
+                    Ok(
+                        LinuxClaimIntentRestartState::CentralClaimIntentLocalPrepared {
+                            claim_intent,
+                            prepared,
+                        },
+                    )
+                }
+                Err(prepared_error) => Err(LinuxLoadClaimIntentRestartError::LocalCorrupt {
+                    claim_intent: claim_intent_error,
+                    prepared: prepared_error,
+                }),
+            },
+        }
     }
 
     pub fn discover_prepared(&self) -> Result<Vec<[u8; 16]>, LinuxDiscoverPreparedError> {
@@ -2384,6 +2500,340 @@ mod tests {
         );
         assert_eq!(std::fs::read(source_path).unwrap(), b"must not be mutated");
         assert_eq!(central.discover_pending(), Ok(vec![[0xd1; 16]]));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn matching_claim_intent_pair_loads_exact_record_without_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-claim-intent-pair-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xd4; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        central
+            .advance_to_claim_intent_with_local(&local, &prepared)
+            .unwrap();
+        let central_before = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_before = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+
+        let loaded = central.load_claim_intent_restart_state(&local, [0xd4; 16]);
+
+        assert_eq!(
+            loaded,
+            Ok(LinuxClaimIntentRestartState::MatchingPair(
+                ClaimIntentRecord::from_prepared(&prepared).unwrap()
+            ))
+        );
+        let central_after = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_after = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(central_after, central_before);
+        assert_eq!(local_after, local_before);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn restart_loader_returns_exact_central_claim_and_local_prepared_evidence() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-partial-claim-intent-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let source_path = root.join("source-item");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&source_path, b"must remain").unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xd5; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        central.persist_claim_intent(&claim_intent).unwrap();
+
+        let loaded = central.load_claim_intent_restart_state(&local, [0xd5; 16]);
+
+        assert_eq!(
+            loaded,
+            Ok(
+                LinuxClaimIntentRestartState::CentralClaimIntentLocalPrepared {
+                    claim_intent,
+                    prepared,
+                }
+            )
+        );
+        assert_eq!(std::fs::read(&source_path).unwrap(), b"must remain");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn restart_loader_preserves_both_local_corruption_diagnostics() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-corrupt-local-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xd7; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        central.persist_claim_intent(&claim_intent).unwrap();
+        std::fs::write(local_path.join("journal"), b"not-json").unwrap();
+
+        let loaded = central.load_claim_intent_restart_state(&local, [0xd7; 16]);
+
+        assert!(matches!(
+            loaded,
+            Err(LinuxLoadClaimIntentRestartError::LocalCorrupt {
+                claim_intent: JournalError::InvalidJson(_),
+                prepared: JournalError::InvalidJson(_),
+            })
+        ));
+        assert_eq!(
+            ClaimIntentRecord::parse(
+                &std::fs::read(central_path.join("d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7d7.journal"))
+                    .unwrap()
+            )
+            .unwrap(),
+            claim_intent
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            b"not-json"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn restart_loader_rejects_a_different_local_transaction_without_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-mismatched-transaction-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let central_prepared = PreparedRecord::new_linux(
+            [0xd6; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central
+            .prepare_with_local(&local, &central_prepared)
+            .unwrap();
+        central
+            .persist_claim_intent(&ClaimIntentRecord::from_prepared(&central_prepared).unwrap())
+            .unwrap();
+        let different_local = PreparedRecord::new_linux(
+            [0xe6; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        local.persist_local_prepared(&different_local).unwrap();
+        let central_before =
+            std::fs::read(central_path.join("d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6.journal")).unwrap();
+        let local_before = std::fs::read(local_path.join("journal")).unwrap();
+
+        let loaded = central.load_claim_intent_restart_state(&local, [0xd6; 16]);
+
+        assert_eq!(
+            loaded,
+            Err(LinuxLoadClaimIntentRestartError::LocalTransactionMismatch {
+                central: [0xd6; 16],
+                local: [0xe6; 16],
+            })
+        );
+        assert_eq!(
+            std::fs::read(central_path.join("d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6.journal")).unwrap(),
+            central_before
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            local_before
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn restart_loader_returns_both_records_for_same_transaction_prepared_mismatch() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-mismatched-prepared-evidence-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let anchored = PreparedRecord::new_linux(
+            [0xd8; 16],
+            &root,
+            Path::new("anchored-source"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &anchored).unwrap();
+        let durable_central = ClaimIntentRecord::from_prepared(&anchored).unwrap();
+        central.persist_claim_intent(&durable_central).unwrap();
+        let substituted_local = PreparedRecord::new_linux(
+            [0xd8; 16],
+            &root,
+            Path::new("substituted-source"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 99, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        local.persist_local_prepared(&substituted_local).unwrap();
+
+        let loaded = central.load_claim_intent_restart_state(&local, [0xd8; 16]);
+
+        assert_eq!(
+            loaded,
+            Err(LinuxLoadClaimIntentRestartError::PreparedEvidenceMismatch {
+                durable_central: Box::new(durable_central),
+                local: Box::new(substituted_local),
+            })
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn restart_loader_returns_both_records_for_same_transaction_claim_mismatch() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-mismatched-claim-evidence-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let anchored = PreparedRecord::new_linux(
+            [0xd9; 16],
+            &root,
+            Path::new("anchored-source"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &anchored).unwrap();
+        let durable_central = ClaimIntentRecord::from_prepared(&anchored).unwrap();
+        central.persist_claim_intent(&durable_central).unwrap();
+        let substituted = PreparedRecord::new_linux(
+            [0xd9; 16],
+            &root,
+            Path::new("substituted-source"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 99, LinuxFileType::Regular),
+            Path::new(".ottrin-move-d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let substituted_local = ClaimIntentRecord::from_prepared(&substituted).unwrap();
+        local
+            .persist_local_claim_intent(&substituted_local)
+            .unwrap();
+
+        let loaded = central.load_claim_intent_restart_state(&local, [0xd9; 16]);
+
+        assert_eq!(
+            loaded,
+            Err(
+                LinuxLoadClaimIntentRestartError::ClaimIntentEvidenceMismatch {
+                    durable_central: Box::new(durable_central),
+                    local: Box::new(substituted_local),
+                }
+            )
+        );
         std::fs::remove_dir_all(root).unwrap();
     }
 
