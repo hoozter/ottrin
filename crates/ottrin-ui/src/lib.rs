@@ -66,9 +66,9 @@ use theme_colors::{Colors, apply_contrast, mix_color, parse_hex_rgb, shift_hsva}
 use theme_import::{decode_theme_import_json, sanitize_theme_file_name, theme_name_from_path};
 pub use thumbnail_cache::clear_preview_cache_storage;
 use thumbnail_cache::{
-    build_thumbnail_bytes, clear_preview_cache_dir, load_cached_thumbnail,
-    persist_cached_thumbnail, preview_cache_dir, preview_cache_key, preview_cache_stats,
-    prune_preview_cache_dir,
+    ImagePreviewCacheEntry, build_thumbnail_bytes, clear_preview_cache_dir, fallback_preview_bytes,
+    load_cached_thumbnail, persist_cached_thumbnail, preview_cache_dir, preview_cache_key,
+    preview_cache_stats, prune_preview_cache_dir,
 };
 use window_chrome::{
     WmBtn, cursor_icon_for_resize_direction, render_custom_titlebar, resize_direction_for_pos,
@@ -840,7 +840,7 @@ pub struct OttrinApp {
     preview: PreviewOverlay,
     info_panel_preview: Option<(PathBuf, PreviewData)>,
     info_panel_details: Option<(PathBuf, InfoPanelDetails)>,
-    image_preview_cache: HashMap<String, Vec<u8>>,
+    image_preview_cache: HashMap<String, ImagePreviewCacheEntry>,
     preview_tx: Sender<PreviewJobRequest>,
     preview_rx: Receiver<PreviewJobResponse>,
     preview_inflight: HashSet<PathBuf>,
@@ -968,14 +968,14 @@ impl OttrinApp {
             while let Ok(req) = preview_req_rx.recv() {
                 let cache_key = preview_cache_key(&req.path, req.target_dim);
                 let bytes = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                    std::fs::read(&req.path).ok()
+                    fallback_preview_bytes(&req.path, None)
                 } else if let Some(bytes) = load_cached_thumbnail(&cache_key) {
                     Some(bytes)
                 } else if let Some(bytes) = build_thumbnail_bytes(&req.path, req.target_dim) {
                     persist_cached_thumbnail(&cache_key, &bytes, req.cache_max_bytes);
                     Some(bytes)
                 } else {
-                    std::fs::read(&req.path).ok()
+                    fallback_preview_bytes(&req.path, None)
                 };
                 let _ = preview_res_tx.send(PreviewJobResponse {
                     path: req.path,
@@ -1235,7 +1235,7 @@ impl OttrinApp {
             }
             return None;
         }
-        let bytes = self.image_preview_cache.get(&cache_key)?.clone();
+        let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
         Some(
             egui::Image::from_bytes(format!("bytes://preview/{cache_key}"), bytes)
                 .max_width(max_width)
@@ -1264,7 +1264,7 @@ impl OttrinApp {
             }
             return None;
         }
-        let bytes = self.image_preview_cache.get(&cache_key)?.clone();
+        let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
         Some(
             egui::Image::from_bytes(format!("bytes://preview/{cache_key}"), bytes)
                 .max_width(max_width)
@@ -1291,7 +1291,7 @@ impl OttrinApp {
             }
             return None;
         }
-        let bytes = self.image_preview_cache.get(&cache_key)?.clone();
+        let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
         Some(
             egui::Image::from_bytes(format!("bytes://preview/{cache_key}"), bytes)
                 .corner_radius(corner_radius),
@@ -1308,12 +1308,13 @@ impl OttrinApp {
             let cache_key = preview_cache_key(path, PREVIEW_CACHE_SMALL_SVG);
             if !self.image_preview_cache.contains_key(&cache_key) {
                 if let Ok(bytes) = std::fs::read(path) {
-                    self.image_preview_cache.insert(cache_key.clone(), bytes);
+                    self.image_preview_cache
+                        .insert(cache_key.clone(), ImagePreviewCacheEntry::Ready(bytes));
                 } else {
                     return None;
                 }
             }
-            let bytes = self.image_preview_cache.get(&cache_key)?.clone();
+            let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
             return Some(
                 egui::Image::from_bytes(format!("bytes://preview/{cache_key}.svg"), bytes)
                     .max_width(size)
@@ -4280,14 +4281,13 @@ impl OttrinApp {
         let mut changed = false;
         while let Ok(resp) = self.preview_rx.try_recv() {
             self.preview_inflight.remove(&resp.path);
-            if let Some(bytes) = resp.bytes {
-                if self.image_preview_cache.len() >= MAX_CACHED_IMAGE_PREVIEWS {
-                    self.image_preview_cache.clear();
-                }
-                let key = preview_cache_key(&resp.path, resp.target_dim);
-                self.image_preview_cache.insert(key, bytes);
-                changed = true;
+            if self.image_preview_cache.len() >= MAX_CACHED_IMAGE_PREVIEWS {
+                self.image_preview_cache.clear();
             }
+            let key = preview_cache_key(&resp.path, resp.target_dim);
+            self.image_preview_cache
+                .insert(key, ImagePreviewCacheEntry::from_response(resp.bytes));
+            changed = true;
         }
         changed
     }
@@ -5838,14 +5838,42 @@ impl OttrinApp {
     }
 
     fn open_preview(&mut self) {
-        if let Some(entry) = self.active_selected_entry() {
-            let path = entry.path.clone();
-            self.preview.path = Some(path.clone());
-            self.preview.visible = true;
-            self.preview.image_actual_size = false;
-            self.preview.data = None;
-            self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
-            self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
+        let Some(entry) = self.selected_entry_for_preview() else {
+            return;
+        };
+        let path = entry.path.clone();
+        self.preview.path = Some(path.clone());
+        self.preview.visible = true;
+        self.preview.image_actual_size = false;
+        self.preview.data = None;
+        self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
+        self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
+    }
+
+    fn selected_entry_for_preview(&mut self) -> Option<FileEntry> {
+        if matches!(self.sidebar, SidebarSection::Search) {
+            self.search_ui_selected_entry()
+        } else {
+            self.active_selected_entry()
+        }
+    }
+
+    fn search_ui_selected_entry(&self) -> Option<FileEntry> {
+        self.search_ui
+            .selected
+            .and_then(|i| self.search_ui.results.get(i))
+            .map(Self::search_result_to_entry)
+    }
+
+    fn search_result_to_entry(item: &SearchResultItem) -> FileEntry {
+        FileEntry {
+            name: item.name.clone(),
+            path: item.path.clone(),
+            kind: item.kind,
+            is_executable: item.is_executable,
+            symlink_target_is_dir: item.symlink_target_is_dir,
+            size_bytes: item.size_bytes,
+            modified_unix_secs: item.modified_unix_secs,
         }
     }
 
@@ -5853,7 +5881,7 @@ impl OttrinApp {
         if !self.preview.visible {
             return;
         }
-        let Some(entry) = self.active_selected_entry() else {
+        let Some(entry) = self.selected_entry_for_preview() else {
             return;
         };
         if self.preview.path.as_ref() == Some(&entry.path) {
@@ -9872,14 +9900,12 @@ impl OttrinApp {
             let mut open_parent: Option<PathBuf> = None;
             let mut open_entry_now: Option<(PathBuf, EntryKind)> = None;
             let mut open_tandem_now: Option<PathBuf> = None;
-            let mut queued_status: Option<&'static str> = None;
+            let mut add_bookmark: Option<PathBuf> = None;
+            let mut remove_bookmark: Option<PathBuf> = None;
             let cur_dir = self.state.active_tab().current_dir.clone();
-            let target_dir = self.state.config.target.current.clone();
-            let tandem_target_dir = self
-                .tandem_transfer_destination(self.state.active_tab().id)
-                .map(|(_, dir)| dir);
             let mut clicked_sort: Option<SearchSort> = None;
             let mut column_visibility_changed = false;
+            let search_results = self.search_ui.results.clone();
 
             let mut table = TableBuilder::new(ui)
                 .id_salt("search_results_table")
@@ -10050,7 +10076,7 @@ impl OttrinApp {
                     }
                 })
                 .body(|mut body| {
-                    for (i, item) in self.search_ui.results.iter().enumerate() {
+                    for (i, item) in search_results.iter().enumerate() {
                         let selected = self.search_ui.selected == Some(i);
                         body.row(24.0, |mut row| {
                             row.set_selected(selected);
@@ -10173,214 +10199,19 @@ impl OttrinApp {
                                 open_entry_now = Some((item.path.clone(), item.kind));
                             }
 
-                            row_resp.context_menu(|ui| {
-                                ui.visuals_mut().override_text_color = Some(c.text_muted);
-                                ui.set_min_width(206.0);
-                                let path = item.path.clone();
-                                let parent = item.parent_path.clone();
-                                let same_as_current = parent == cur_dir;
-                                let target_missing = target_dir.is_none();
-                                let same_as_target = target_dir.as_ref() == Some(&parent);
-                                let same_as_tandem =
-                                    tandem_target_dir.as_deref() == Some(parent.as_path());
-
-                                if menu_item(ui, MI_FOLDER_OPEN, "Open", &c).clicked() {
-                                    open_entry_now = Some((path.clone(), item.kind));
-                                    ui.close();
-                                }
-                                if menu_item(ui, MI_OPEN_IN_NEW, "Open Folder Location", &c)
-                                    .clicked()
-                                {
-                                    open_parent = Some(parent.clone());
-                                    ui.close();
-                                }
-                                if matches!(item.kind, EntryKind::Directory | EntryKind::Symlink)
-                                    && menu_item(ui, MI_VIEW_COLUMN, "Open in Tandem", &c).clicked()
-                                {
-                                    open_tandem_now = Some(path.clone());
-                                    ui.close();
-                                }
-                                if menu_item(ui, MI_CONTENT_COPY, "Copy File Path", &c).clicked() {
-                                    ui.ctx().copy_text(path.display().to_string());
-                                    ui.close();
-                                }
-                                ui.separator();
-
-                                let copy_target_btn = ui
-                                    .add_enabled(
-                                        !target_missing && !same_as_target,
-                                        egui::Button::new(
-                                            RichText::new(format!(
-                                                "{MI_CONTENT_COPY}  Copy to Drop Folder"
-                                            ))
-                                            .size(12.5)
-                                            .color(c.text_muted),
-                                        )
-                                        .frame(false)
-                                        .min_size(Vec2::new(188.0, 26.0)),
-                                    )
-                                    .on_hover_text(if target_missing {
-                                        "No drop folder set"
-                                    } else if same_as_target {
-                                        "Already in destination"
-                                    } else {
-                                        ""
-                                    });
-                                if copy_target_btn.clicked() {
-                                    if let Some(dst) = target_dir.clone() {
-                                        pending_op = Some(FileCommand::Copy {
-                                            sources: vec![path.clone()],
-                                            destination: dst,
-                                            conflict: ConflictAction::Rename,
-                                        });
-                                    }
-                                    ui.close();
-                                }
-                                let move_target_btn = ui
-                                    .add_enabled(
-                                        !target_missing && !same_as_target,
-                                        egui::Button::new(
-                                            RichText::new(format!(
-                                                "{MI_DRIVE_FILE_MOVE}  Move to Drop Folder"
-                                            ))
-                                            .size(12.5)
-                                            .color(c.text_muted),
-                                        )
-                                        .frame(false)
-                                        .min_size(Vec2::new(188.0, 26.0)),
-                                    )
-                                    .on_hover_text(if target_missing {
-                                        "No drop folder set"
-                                    } else if same_as_target {
-                                        "Already in destination"
-                                    } else {
-                                        ""
-                                    });
-                                if move_target_btn.clicked() {
-                                    if let Some(dst) = target_dir.clone() {
-                                        pending_op = Some(FileCommand::Move {
-                                            sources: vec![path.clone()],
-                                            destination: dst,
-                                            conflict: ConflictAction::Rename,
-                                        });
-                                    }
-                                    ui.close();
-                                }
-
-                                let copy_cur_btn = ui
-                                    .add_enabled(
-                                        !same_as_current,
-                                        egui::Button::new(
-                                            RichText::new(format!(
-                                                "{MI_CONTENT_COPY}  Copy to Current Folder"
-                                            ))
-                                            .size(12.5)
-                                            .color(c.text_muted),
-                                        )
-                                        .frame(false)
-                                        .min_size(Vec2::new(188.0, 26.0)),
-                                    )
-                                    .on_hover_text(if same_as_current {
-                                        "Already in destination"
-                                    } else {
-                                        ""
-                                    });
-                                if copy_cur_btn.clicked() {
-                                    pending_op = Some(FileCommand::Copy {
-                                        sources: vec![path.clone()],
-                                        destination: cur_dir.clone(),
-                                        conflict: ConflictAction::Rename,
-                                    });
-                                    ui.close();
-                                }
-                                let move_cur_btn = ui
-                                    .add_enabled(
-                                        !same_as_current,
-                                        egui::Button::new(
-                                            RichText::new(format!(
-                                                "{MI_DRIVE_FILE_MOVE}  Move to Current Folder"
-                                            ))
-                                            .size(12.5)
-                                            .color(c.text_muted),
-                                        )
-                                        .frame(false)
-                                        .min_size(Vec2::new(188.0, 26.0)),
-                                    )
-                                    .on_hover_text(if same_as_current {
-                                        "Already in destination"
-                                    } else {
-                                        ""
-                                    });
-                                if move_cur_btn.clicked() {
-                                    pending_op = Some(FileCommand::Move {
-                                        sources: vec![path.clone()],
-                                        destination: cur_dir.clone(),
-                                        conflict: ConflictAction::Rename,
-                                    });
-                                    ui.close();
-                                }
-
-                                if tandem_target_dir.is_some() {
-                                    ui.separator();
-                                    let copy_tandem_btn = ui
-                                        .add_enabled(
-                                            !same_as_tandem,
-                                            egui::Button::new(
-                                                RichText::new(format!(
-                                                    "{MI_CONTENT_COPY}  Copy to Other Pane"
-                                                ))
-                                                .size(12.5)
-                                                .color(c.text_muted),
-                                            )
-                                            .frame(false)
-                                            .min_size(Vec2::new(188.0, 26.0)),
-                                        )
-                                        .on_hover_text(if same_as_tandem {
-                                            "Already in destination"
-                                        } else {
-                                            ""
-                                        });
-                                    if copy_tandem_btn.clicked() {
-                                        if let Some(dst) = tandem_target_dir.clone() {
-                                            pending_op = Some(FileCommand::Copy {
-                                                sources: vec![path.clone()],
-                                                destination: dst,
-                                                conflict: ConflictAction::Rename,
-                                            });
-                                        }
-                                        queued_status = Some("Queued copy to other pane");
-                                        ui.close();
-                                    }
-                                    let move_tandem_btn = ui
-                                        .add_enabled(
-                                            !same_as_tandem,
-                                            egui::Button::new(
-                                                RichText::new(format!(
-                                                    "{MI_DRIVE_FILE_MOVE}  Move to Other Pane"
-                                                ))
-                                                .size(12.5)
-                                                .color(c.text_muted),
-                                            )
-                                            .frame(false)
-                                            .min_size(Vec2::new(188.0, 26.0)),
-                                        )
-                                        .on_hover_text(if same_as_tandem {
-                                            "Already in destination"
-                                        } else {
-                                            ""
-                                        });
-                                    if move_tandem_btn.clicked() {
-                                        if let Some(dst) = tandem_target_dir.clone() {
-                                            pending_op = Some(FileCommand::Move {
-                                                sources: vec![path.clone()],
-                                                destination: dst,
-                                                conflict: ConflictAction::Rename,
-                                            });
-                                        }
-                                        queued_status = Some("Queued move to other pane");
-                                        ui.close();
-                                    }
-                                }
+                            row_resp.context_menu(|_ui| {
+                                let search_entry = Self::search_result_to_entry(item);
+                                self.entry_context_menu(
+                                    &row_resp,
+                                    &search_entry,
+                                    &cur_dir,
+                                    &mut pending_op,
+                                    &mut open_parent,
+                                    &mut open_entry_now,
+                                    &mut open_tandem_now,
+                                    &mut add_bookmark,
+                                    &mut remove_bookmark,
+                                );
                             });
                         });
                     }
@@ -10403,9 +10234,6 @@ impl OttrinApp {
                 ui.ctx().request_repaint();
             }
             self.search_ui.scroll_to_selected = false;
-            if let Some(msg) = queued_status {
-                self.set_status_message(msg, true, 3);
-            }
             if let Some(cmd) = pending_op {
                 let tab_id = self.state.active_tab().id;
                 self.run_file_op(cmd, Some(tab_id));
@@ -10419,6 +10247,12 @@ impl OttrinApp {
             }
             if let Some(path) = open_tandem_now {
                 self.open_directory_in_tandem(path);
+            }
+            if let Some(path) = add_bookmark {
+                self.add_bookmark_for_path(path);
+            }
+            if let Some(path) = remove_bookmark {
+                self.remove_bookmark_for_path(&path);
             }
 
             // ── Preview pane for selected result ─────────────────────────────
@@ -10500,7 +10334,7 @@ impl OttrinApp {
                         // Text preview snippet or image indicator
                         if let Some(pv) = preview {
                             match pv.kind {
-                                PreviewKind::Image => {
+                                PreviewKind::Image | PreviewKind::Pdf => {
                                     let avail_w = ui.available_width().max(60.0);
                                     let max_h = preview_panel_h - 70.0;
                                     if let Some(img) = self
@@ -12236,7 +12070,7 @@ impl OttrinApp {
 
                 let preview = self.cached_info_preview(entry);
                 match preview.kind {
-                    PreviewKind::Image => {
+                    PreviewKind::Image | PreviewKind::Pdf => {
                         if let Some(img) = self.cached_image_preview_widget(
                             &entry.path,
                             max_preview_w,
@@ -12244,6 +12078,16 @@ impl OttrinApp {
                             8,
                         ) {
                             preview_widget = Some(img);
+                        } else {
+                            let snippet = metadata_preview_snippet(&preview.body, 14, 900);
+                            metadata_icon = Some(if matches!(preview.kind, PreviewKind::Pdf) {
+                                MI_PICTURE_PDF
+                            } else {
+                                MI_IMAGE
+                            });
+                            if !snippet.is_empty() {
+                                text_snippet = Some(snippet);
+                            }
                         }
                     }
                     PreviewKind::Text => {
@@ -12285,8 +12129,7 @@ impl OttrinApp {
                             }
                         }
                     }
-                    PreviewKind::Pdf
-                    | PreviewKind::OfficeMetadata
+                    PreviewKind::OfficeMetadata
                     | PreviewKind::ArchiveMetadata
                     | PreviewKind::AudioMetadata
                     | PreviewKind::VideoMetadata => {
@@ -12852,9 +12695,22 @@ impl OttrinApp {
                                     thumbnails_enabled && image_thumbnail_candidate(entry);
                                 if painted_thumbnail {
                                     paint_thumbnail_slot(ui, thumb_rect, c);
-                                    if let Some(img) =
-                                        self.cached_thumbnail_widget(&entry.path, thumb_size, 4)
+                                    let thumb = if entry
+                                        .path
+                                        .extension()
+                                        .and_then(|ext| ext.to_str())
+                                        .is_some_and(|ext| ext.eq_ignore_ascii_case("pdf"))
                                     {
+                                        self.cached_image_preview_widget(
+                                            &entry.path,
+                                            thumb_size,
+                                            thumb_size,
+                                            4,
+                                        )
+                                    } else {
+                                        self.cached_thumbnail_widget(&entry.path, thumb_size, 4)
+                                    };
+                                    if let Some(img) = thumb {
                                         paint_centered_image(ui, thumb_rect, img);
                                     }
                                 }
@@ -13088,9 +12944,22 @@ impl OttrinApp {
                                 thumbnails_enabled && image_thumbnail_candidate(entry);
                             if painted_thumbnail {
                                 paint_thumbnail_slot(ui, icon_rect, c);
-                                if let Some(img) =
-                                    self.cached_thumbnail_widget(&entry.path, icon_px, 6)
+                                let thumb = if entry
+                                    .path
+                                    .extension()
+                                    .and_then(|ext| ext.to_str())
+                                    .is_some_and(|ext| ext.eq_ignore_ascii_case("pdf"))
                                 {
+                                    self.cached_image_preview_widget(
+                                        &entry.path,
+                                        icon_px,
+                                        icon_px,
+                                        6,
+                                    )
+                                } else {
+                                    self.cached_thumbnail_widget(&entry.path, icon_px, 6)
+                                };
+                                if let Some(img) = thumb {
                                     paint_centered_image(ui, icon_rect, img);
                                 }
                             }
@@ -13434,29 +13303,47 @@ impl OttrinApp {
                                     render_text_body_preview(ui, c, &name, &preview.body);
                                 }
                             }
-                            PreviewKind::Image => {
+                            PreviewKind::Image | PreviewKind::Pdf => {
                                 ScrollArea::both().show(ui, |ui| {
                                     let max_w = (ui.available_width() - 24.0).max(120.0);
                                     let max_h = (ui.available_height() - 34.0).max(160.0);
                                     ui.vertical_centered(|ui| {
+                                        let is_svg = preview.kind == PreviewKind::Image
+                                            && path
+                                                .extension()
+                                                .and_then(|e| e.to_str())
+                                                .map(|e| e.eq_ignore_ascii_case("svg"))
+                                                .unwrap_or(false);
                                         let image = if self.preview.image_actual_size {
-                                            self.cached_original_image_actual_size_widget(&path, 8)
+                                            if is_svg {
+                                                self.cached_image_preview_widget(
+                                                    &path, max_w, max_h, 8,
+                                                )
+                                            } else {
+                                                self.cached_original_image_actual_size_widget(
+                                                    &path, 8,
+                                                )
                                                 .or_else(|| {
                                                     self.cached_image_preview_widget(
                                                         &path, max_w, max_h, 8,
                                                     )
                                                 })
+                                            }
                                         } else {
-                                            self.cached_original_image_preview_widget(
-                                                &path, max_w, max_h, 8,
-                                            )
-                                            .or_else(
-                                                || {
+                                            if is_svg {
+                                                self.cached_image_preview_widget(
+                                                    &path, max_w, max_h, 8,
+                                                )
+                                            } else {
+                                                self.cached_original_image_preview_widget(
+                                                    &path, max_w, max_h, 8,
+                                                )
+                                                .or_else(|| {
                                                     self.cached_image_preview_widget(
                                                         &path, max_w, max_h, 8,
                                                     )
-                                                },
-                                            )
+                                                })
+                                            }
                                         };
                                         if let Some(img) = image {
                                             let image_resp = ui.add(img);
@@ -13467,9 +13354,15 @@ impl OttrinApp {
                                             }
                                         } else {
                                             ui.label(
-                                                RichText::new("Image preview unavailable")
-                                                    .color(c.text_dim)
-                                                    .size(11.0),
+                                                RichText::new(
+                                                    if preview.kind == PreviewKind::Image {
+                                                        "Image preview unavailable"
+                                                    } else {
+                                                        "PDF preview unavailable"
+                                                    },
+                                                )
+                                                .color(c.text_dim)
+                                                .size(11.0),
                                             );
                                         }
                                         if !preview.body.is_empty() {
@@ -13488,15 +13381,6 @@ impl OttrinApp {
                             }
                             PreviewKind::ArchiveMetadata => {
                                 render_archive_body_preview(ui, c, &name, &preview.body);
-                            }
-                            PreviewKind::Pdf => {
-                                render_document_body_preview(
-                                    ui,
-                                    c,
-                                    MI_PICTURE_PDF,
-                                    &name,
-                                    &preview.body,
-                                );
                             }
                             PreviewKind::VideoMetadata | PreviewKind::OfficeMetadata => {
                                 let icon = match preview.kind {
@@ -16189,16 +16073,18 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
     if !matches!(entry.kind, EntryKind::File) {
         return false;
     }
-    let is_image = classify_file(
-        &entry.path,
-        entry.kind,
-        entry.is_executable,
-        entry.symlink_target_is_dir,
-        platform_case_mode_current(),
-    )
-    .category
-        == FileCategory::Image;
-    is_image && thumbnail_supported_image_path(&entry.path)
+    let is_visual = matches!(
+        classify_file(
+            &entry.path,
+            entry.kind,
+            entry.is_executable,
+            entry.symlink_target_is_dir,
+            platform_case_mode_current(),
+        )
+        .category,
+        FileCategory::Image | FileCategory::Pdf
+    );
+    is_visual && thumbnail_supported_image_path(&entry.path)
 }
 
 fn thumbnail_supported_image_path(path: &Path) -> bool {
@@ -16209,7 +16095,18 @@ fn thumbnail_supported_image_path(path: &Path) -> bool {
         .to_ascii_lowercase();
     matches!(
         ext.as_str(),
-        "png" | "jpg" | "jpeg" | "gif" | "bmp" | "tif" | "tiff" | "webp" | "ico" | "avif" | "svg"
+        "png"
+            | "jpg"
+            | "jpeg"
+            | "gif"
+            | "bmp"
+            | "tif"
+            | "tiff"
+            | "webp"
+            | "ico"
+            | "avif"
+            | "svg"
+            | "pdf"
     )
 }
 
@@ -18021,6 +17918,133 @@ mod tests {
                 "specialized kind leaked into compact text: {kind:?}"
             );
         }
+    }
+
+    #[test]
+    fn image_thumbnail_candidate_includes_images_and_pdfs_only() {
+        let image_entry = FileEntry {
+            name: "cover.jpg".to_string(),
+            path: PathBuf::from("/tmp/cover.jpg"),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: Some(1024),
+            modified_unix_secs: None,
+        };
+        let pdf_entry = FileEntry {
+            name: "manual.PDF".to_string(),
+            path: PathBuf::from("/tmp/manual.PDF"),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: Some(2048),
+            modified_unix_secs: None,
+        };
+        let office_entry = FileEntry {
+            name: "budget.xlsx".to_string(),
+            path: PathBuf::from("/tmp/budget.xlsx"),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: Some(2048),
+            modified_unix_secs: None,
+        };
+
+        assert!(image_thumbnail_candidate(&image_entry));
+        assert!(image_thumbnail_candidate(&pdf_entry));
+        assert!(!image_thumbnail_candidate(&office_entry));
+    }
+
+    #[test]
+    fn thumbnail_supported_image_path_includes_pdf_and_excludes_office() {
+        assert!(thumbnail_supported_image_path(Path::new(
+            "/tmp/sample.webp"
+        )));
+        assert!(thumbnail_supported_image_path(Path::new("/tmp/sample.PDF")));
+        assert!(!thumbnail_supported_image_path(Path::new(
+            "/tmp/report.docx"
+        )));
+    }
+
+    #[test]
+    fn search_result_entry_conversion_keeps_path_and_kind() {
+        let result = SearchResultItem {
+            path: PathBuf::from("/tmp/report.pdf"),
+            parent_path: PathBuf::from("/tmp"),
+            name: "report.pdf".to_string(),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: Some(4096),
+            modified_unix_secs: Some(1_700_000_000),
+            content_snippet: Some("hello".to_string()),
+            name_lower: "report.pdf".to_string(),
+            path_str: String::new(),
+            path_lower: String::new(),
+        };
+
+        let entry = OttrinApp::search_result_to_entry(&result);
+        assert_eq!(entry.name, result.name);
+        assert_eq!(entry.path, result.path);
+        assert_eq!(entry.kind, result.kind);
+        assert_eq!(entry.size_bytes, result.size_bytes);
+        assert_eq!(entry.modified_unix_secs, result.modified_unix_secs);
+    }
+
+    #[test]
+    fn open_preview_targets_selected_search_result_when_search_sidebar_is_active() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.tab_ui.entry(tab_id).or_default().main_sel = Some(0);
+        app.tab_ui.entry(tab_id).or_default().main.entries = vec![FileEntry {
+            name: "active-folder".to_string(),
+            path: PathBuf::from("/tmp/active-folder"),
+            kind: EntryKind::Directory,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: None,
+            modified_unix_secs: None,
+        }];
+        app.search_ui.results = vec![
+            SearchResultItem {
+                path: PathBuf::from("/tmp/search.txt"),
+                parent_path: PathBuf::from("/tmp"),
+                name: "search.txt".to_string(),
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: Some(256),
+                modified_unix_secs: None,
+                content_snippet: None,
+                name_lower: String::new(),
+                path_str: String::new(),
+                path_lower: String::new(),
+            },
+            SearchResultItem {
+                path: PathBuf::from("/tmp/other.txt"),
+                parent_path: PathBuf::from("/tmp"),
+                name: "other.txt".to_string(),
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: Some(128),
+                modified_unix_secs: None,
+                content_snippet: None,
+                name_lower: String::new(),
+                path_str: String::new(),
+                path_lower: String::new(),
+            },
+        ];
+        app.search_ui.selected = Some(0);
+        app.sidebar = SidebarSection::Search;
+
+        app.open_preview();
+        assert_eq!(app.preview.path, Some(PathBuf::from("/tmp/search.txt")));
+        assert!(app.preview.visible);
+
+        app.search_ui.selected = Some(1);
+        app.sync_preview_to_selection();
+        assert_eq!(app.preview.path, Some(PathBuf::from("/tmp/other.txt")));
     }
 
     #[test]
