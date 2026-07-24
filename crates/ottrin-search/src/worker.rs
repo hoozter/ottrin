@@ -6,7 +6,7 @@ use crate::watch::WatchRegistry;
 use crate::{IndexState, current_unix_secs};
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use ottrin_core::{SearchConfig, SearchIndexStatus};
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, VecDeque};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, RwLock, mpsc};
@@ -67,6 +67,8 @@ pub(crate) type ScanLauncher = Arc<
         + 'static,
 >;
 
+type WatchSetupHook = Arc<dyn Fn() + Send + Sync + 'static>;
+
 pub(crate) enum Command {
     UpdateConfig(SearchConfig),
     Rebuild(Option<mpsc::Sender<Result<(), String>>>),
@@ -91,7 +93,7 @@ pub(crate) enum Command {
 pub(crate) struct WorkerHandle {
     pub(crate) commands: mpsc::Sender<Command>,
     fence: Arc<ActivationFence>,
-    desired_plan_identity: Mutex<Option<String>>,
+    desired_plan_identity: Arc<Mutex<Option<String>>>,
     join: Option<JoinHandle<()>>,
 }
 
@@ -163,6 +165,7 @@ struct WorkerLoop {
     launcher: ScanLauncher,
     commands: mpsc::Sender<Command>,
     fence: Arc<ActivationFence>,
+    desired_plan_identity: Arc<Mutex<Option<String>>>,
     current_plan: Option<Arc<ScanPlan>>,
     active_scan: Option<ActiveScan>,
     revision: u64,
@@ -175,6 +178,14 @@ struct WorkerLoop {
     pending_paths: BTreeSet<PathBuf>,
     watch_registry: Option<WatchRegistry>,
     watch_clock_started: Instant,
+    before_watch_setup: Option<WatchSetupHook>,
+}
+
+struct WatchSetupOutcome {
+    watcher: Option<RecommendedWatcher>,
+    watched_roots: Vec<PathBuf>,
+    registry: WatchRegistry,
+    unavailable_roots: Vec<PathBuf>,
 }
 
 pub(crate) fn spawn_with_runtime(
@@ -184,7 +195,14 @@ pub(crate) fn spawn_with_runtime(
     launcher: ScanLauncher,
     watch_filesystem: bool,
 ) -> WorkerHandle {
-    spawn_inner(config, index, Box::new(store), launcher, watch_filesystem)
+    spawn_inner(
+        config,
+        index,
+        Box::new(store),
+        launcher,
+        watch_filesystem,
+        None,
+    )
 }
 
 pub(crate) fn real_launcher() -> ScanLauncher {
@@ -206,7 +224,25 @@ fn spawn_with(
     store: Box<dyn StoreBackend>,
     launcher: ScanLauncher,
 ) -> WorkerHandle {
-    spawn_inner(config, index, store, launcher, false)
+    spawn_inner(config, index, store, launcher, false, None)
+}
+
+#[cfg(test)]
+fn spawn_with_watch_setup_hook(
+    config: SearchConfig,
+    index: Arc<RwLock<IndexState>>,
+    store: Box<dyn StoreBackend>,
+    launcher: ScanLauncher,
+    before_watch_setup: WatchSetupHook,
+) -> WorkerHandle {
+    spawn_inner(
+        config,
+        index,
+        store,
+        launcher,
+        false,
+        Some(before_watch_setup),
+    )
 }
 
 fn spawn_inner(
@@ -215,10 +251,14 @@ fn spawn_inner(
     store: Box<dyn StoreBackend>,
     launcher: ScanLauncher,
     watch_filesystem: bool,
+    before_watch_setup: Option<WatchSetupHook>,
 ) -> WorkerHandle {
-    let desired_plan_identity = ScanPlan::new(&config)
-        .ok()
-        .map(|plan| plan.identity().to_string());
+    let desired_plan_identity = Arc::new(Mutex::new(
+        ScanPlan::new(&config)
+            .ok()
+            .map(|plan| plan.identity().to_string()),
+    ));
+    let loop_desired_plan_identity = Arc::clone(&desired_plan_identity);
     let (commands, receiver) = mpsc::channel();
     let loop_commands = commands.clone();
     let fence = Arc::new(ActivationFence::new());
@@ -231,6 +271,7 @@ fn spawn_inner(
             launcher,
             commands: loop_commands,
             fence: loop_fence,
+            desired_plan_identity: loop_desired_plan_identity,
             current_plan: None,
             active_scan: None,
             revision: 0,
@@ -243,13 +284,14 @@ fn spawn_inner(
             pending_paths: BTreeSet::new(),
             watch_registry: None,
             watch_clock_started: Instant::now(),
+            before_watch_setup,
         };
         worker.run(receiver, watch_filesystem);
     });
     WorkerHandle {
         commands,
         fence,
-        desired_plan_identity: Mutex::new(desired_plan_identity),
+        desired_plan_identity,
         join: Some(join),
     }
 }
@@ -258,10 +300,22 @@ impl WorkerLoop {
     fn run(&mut self, receiver: mpsc::Receiver<Command>, watch_filesystem: bool) {
         let mut watcher = watch_filesystem.then(|| self.make_watcher()).flatten();
         let mut watched_roots = Vec::new();
-        self.install_plan(&mut watcher, &mut watched_roots);
+        let mut pending_commands = VecDeque::new();
+        if !self.install_plan(
+            &mut watcher,
+            &mut watched_roots,
+            &receiver,
+            &mut pending_commands,
+        ) {
+            return;
+        }
 
         loop {
-            match receiver.recv_timeout(Duration::from_millis(100)) {
+            let command = pending_commands
+                .pop_front()
+                .map(Ok)
+                .unwrap_or_else(|| receiver.recv_timeout(Duration::from_millis(100)));
+            match command {
                 Ok(Command::UpdateConfig(config)) => {
                     let identity_changed = ScanPlan::new(&config)
                         .ok()
@@ -271,8 +325,15 @@ impl WorkerLoop {
                             .as_ref()
                             .map(|plan| plan.identity().to_string());
                     self.config = config;
-                    if identity_changed {
-                        self.install_plan(&mut watcher, &mut watched_roots);
+                    if identity_changed
+                        && !self.install_plan(
+                            &mut watcher,
+                            &mut watched_roots,
+                            &receiver,
+                            &mut pending_commands,
+                        )
+                    {
+                        return;
                     }
                 }
                 Ok(Command::Rebuild(completion)) => self.start_scan(completion),
@@ -341,7 +402,9 @@ impl WorkerLoop {
         &mut self,
         watcher: &mut Option<RecommendedWatcher>,
         watched_roots: &mut Vec<PathBuf>,
-    ) {
+        receiver: &mpsc::Receiver<Command>,
+        pending_commands: &mut VecDeque<Command>,
+    ) -> bool {
         self.cancel_active();
         let plan = match ScanPlan::new(&self.config) {
             Ok(plan) => Arc::new(plan),
@@ -351,16 +414,30 @@ impl WorkerLoop {
                 index.status = SearchIndexStatus::Unavailable;
                 index.last_error = Some(error);
                 index.progress_text = None;
-                return;
+                return true;
             }
         };
-        self.configure_watcher(watcher, watched_roots, &plan);
         self.current_plan = Some(Arc::clone(&plan));
-        match self.store.load(&plan) {
+        let load_result = self.store.load(&plan);
+        match &load_result {
             Ok(Some(snapshot)) => {
-                self.publish(snapshot);
+                self.publish(snapshot.clone());
                 self.last_full_rebuild_at = Some(Instant::now());
             }
+            Ok(None) | Err(_) => {
+                let mut index = self.index.write().expect("index write");
+                index.status = SearchIndexStatus::Indexing;
+                index.progress_text = Some("Indexing · preparing filesystem watcher…".to_string());
+                index.active_root = None;
+                index.active_root_index = 0;
+                index.total_roots = plan.roots().len();
+            }
+        }
+        if !self.configure_watcher(watcher, watched_roots, &plan, receiver, pending_commands) {
+            return false;
+        }
+        match load_result {
+            Ok(Some(_)) => {}
             Ok(None) => self.start_scan(None),
             Err(error) => {
                 let mut index = self.index.write().expect("index write");
@@ -374,6 +451,7 @@ impl WorkerLoop {
                 self.start_scan(None);
             }
         }
+        true
     }
 
     fn configure_watcher(
@@ -381,43 +459,104 @@ impl WorkerLoop {
         watcher: &mut Option<RecommendedWatcher>,
         watched_roots: &mut Vec<PathBuf>,
         plan: &ScanPlan,
-    ) {
-        if let Some(watcher) = watcher.as_mut() {
-            for root in watched_roots.drain(..) {
-                let _ = watcher.unwatch(&root);
-            }
-        }
-        let mut registry = WatchRegistry::new(
-            plan.roots().to_vec(),
-            WATCH_RETRY_INITIAL,
-            WATCH_RETRY_MAXIMUM,
-        );
+        receiver: &mpsc::Receiver<Command>,
+        pending_commands: &mut VecDeque<Command>,
+    ) -> bool {
+        let mut setup_watcher = watcher.take();
+        let mut setup_watched_roots = std::mem::take(watched_roots);
+        let roots = plan.roots().to_vec();
         let now = self.watch_clock_started.elapsed();
-        for root in plan.roots() {
-            if !root.exists() {
-                registry.record_watch_failure(root, now, "configured root unavailable");
-                self.pending_paths.insert(root.clone());
-                self.filesystem_event_revision = self.filesystem_event_revision.wrapping_add(1);
-                self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
-                continue;
+        let hook = self.before_watch_setup.clone();
+        let cancelled = Arc::new(AtomicBool::new(false));
+        let setup_cancelled = Arc::clone(&cancelled);
+        let (finished_tx, finished_rx) = mpsc::channel();
+        std::thread::spawn(move || {
+            if let Some(hook) = hook {
+                hook();
             }
-            match watcher.as_mut() {
-                Some(watcher) => match watcher.watch(root, RecursiveMode::Recursive) {
-                    Ok(()) => {
-                        registry.record_watch_success(root);
-                        watched_roots.push(root.clone());
-                    }
-                    Err(error) => registry.record_watch_failure(root, now, &error.to_string()),
-                },
-                None => registry.record_watch_failure(root, now, "watch backend unavailable"),
+            if setup_cancelled.load(Ordering::Acquire) {
+                return;
             }
+            if let Some(watcher) = setup_watcher.as_mut() {
+                for root in setup_watched_roots.drain(..) {
+                    let _ = watcher.unwatch(&root);
+                }
+            }
+            let mut registry =
+                WatchRegistry::new(roots.clone(), WATCH_RETRY_INITIAL, WATCH_RETRY_MAXIMUM);
+            let mut unavailable_roots = Vec::new();
+            for root in &roots {
+                if setup_cancelled.load(Ordering::Acquire) {
+                    return;
+                }
+                if !root.exists() {
+                    registry.record_watch_failure(root, now, "configured root unavailable");
+                    unavailable_roots.push(root.clone());
+                    continue;
+                }
+                match setup_watcher.as_mut() {
+                    Some(watcher) => match watcher.watch(root, RecursiveMode::Recursive) {
+                        Ok(()) => {
+                            registry.record_watch_success(root);
+                            setup_watched_roots.push(root.clone());
+                        }
+                        Err(error) => registry.record_watch_failure(root, now, &error.to_string()),
+                    },
+                    None => registry.record_watch_failure(root, now, "watch backend unavailable"),
+                }
+            }
+            if setup_cancelled.load(Ordering::Acquire) {
+                return;
+            }
+            let _ = finished_tx.send(WatchSetupOutcome {
+                watcher: setup_watcher,
+                watched_roots: setup_watched_roots,
+                registry,
+                unavailable_roots,
+            });
+        });
+
+        let outcome = loop {
+            match finished_rx.try_recv() {
+                Ok(outcome) => break outcome,
+                Err(mpsc::TryRecvError::Disconnected) => return false,
+                Err(mpsc::TryRecvError::Empty) => {}
+            }
+            match receiver.recv_timeout(Duration::from_millis(10)) {
+                Ok(Command::Stop) | Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    cancelled.store(true, Ordering::Release);
+                    self.cancel_active();
+                    self.record_stopped();
+                    return false;
+                }
+                Ok(command) => pending_commands.push_back(command),
+                Err(mpsc::RecvTimeoutError::Timeout) => {}
+            }
+        };
+        cancelled.store(true, Ordering::Release);
+        *watcher = outcome.watcher;
+        *watched_roots = outcome.watched_roots;
+        let desired_identity = self
+            .desired_plan_identity
+            .lock()
+            .expect("desired plan identity");
+        let setup_is_current = desired_identity.as_deref() == Some(plan.identity());
+        drop(desired_identity);
+        if !setup_is_current {
+            return true;
         }
-        self.watch_registry = Some(registry);
+        for root in outcome.unavailable_roots {
+            self.pending_paths.insert(root);
+            self.filesystem_event_revision = self.filesystem_event_revision.wrapping_add(1);
+            self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
+        }
+        self.watch_registry = Some(outcome.registry);
         self.index
             .write()
             .expect("index write")
             .watcher_last_setup_unix_secs = Some(current_unix_secs());
         self.update_watcher_diagnostics();
+        true
     }
 
     fn update_watcher_diagnostics(&self) {
@@ -1143,6 +1282,171 @@ mod tests {
     }
 
     #[test]
+    fn saved_snapshot_is_queryable_while_watcher_setup_is_blocked() {
+        let cfg = config("/root");
+        let plan = ScanPlan::new(&cfg).expect("plan");
+        let prior = owned("/root", "prior.txt");
+        let store = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                4,
+                plan.identity().to_string(),
+                vec![prior.clone()],
+            )),
+            commits: Vec::new(),
+            next_generation: 4,
+        }));
+        let entered = mpsc::channel();
+        let release = Arc::new((Mutex::new(false), Condvar::new()));
+        let hook_release = Arc::clone(&release);
+        let hook = Arc::new(move || {
+            entered.0.send(()).expect("signal watcher setup");
+            let (lock, ready) = &*hook_release;
+            let mut released = lock.lock().expect("watch setup release");
+            while !*released {
+                released = ready.wait(released).expect("watch setup wait");
+            }
+        });
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        let (launcher, _scans) = controlled_launcher();
+        let worker = spawn_with_watch_setup_hook(
+            cfg,
+            Arc::clone(&index),
+            Box::new(MemoryStore(store)),
+            launcher,
+            hook,
+        );
+        entered.1.recv_timeout(WAIT).expect("watch setup entered");
+
+        let items_while_blocked = snapshot_items(&index);
+        let status_while_blocked = index.read().expect("index").status;
+        let (lock, ready) = &*release;
+        *lock.lock().expect("watch setup release") = true;
+        ready.notify_all();
+        worker.stop();
+
+        assert_eq!(items_while_blocked, vec![prior.item().path.clone()]);
+        assert_eq!(status_while_blocked, SearchIndexStatus::Ready);
+    }
+
+    #[test]
+    fn stop_completes_while_watcher_setup_is_blocked() {
+        let cfg = config("/root");
+        let plan = ScanPlan::new(&cfg).expect("plan");
+        let store = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                4,
+                plan.identity().to_string(),
+                vec![owned("/root", "prior.txt")],
+            )),
+            commits: Vec::new(),
+            next_generation: 4,
+        }));
+        let entered = mpsc::channel();
+        let release = Arc::new((Mutex::new(false), Condvar::new()));
+        let hook_release = Arc::clone(&release);
+        let hook = Arc::new(move || {
+            entered.0.send(()).expect("signal watcher setup");
+            let (lock, ready) = &*hook_release;
+            let mut released = lock.lock().expect("watch setup release");
+            while !*released {
+                released = ready.wait(released).expect("watch setup wait");
+            }
+        });
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        let (launcher, _scans) = controlled_launcher();
+        let worker =
+            spawn_with_watch_setup_hook(cfg, index, Box::new(MemoryStore(store)), launcher, hook);
+        entered.1.recv_timeout(WAIT).expect("watch setup entered");
+        let (stopped_tx, stopped_rx) = mpsc::channel();
+        let stop_thread = std::thread::spawn(move || {
+            worker.stop();
+            stopped_tx.send(()).expect("signal stopped");
+        });
+
+        let stopped_while_blocked = stopped_rx.recv_timeout(Duration::from_millis(100)).is_ok();
+        let (lock, ready) = &*release;
+        *lock.lock().expect("watch setup release") = true;
+        ready.notify_all();
+        stop_thread.join().expect("stop thread");
+
+        assert!(
+            stopped_while_blocked,
+            "worker stop waited for blocked watcher setup"
+        );
+    }
+
+    #[test]
+    fn superseded_watcher_setup_never_publishes_stale_diagnostics() {
+        let initial = config("/root-a");
+        let initial_plan = ScanPlan::new(&initial).expect("initial plan");
+        let store = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                4,
+                initial_plan.identity().to_string(),
+                vec![owned("/root-a", "prior.txt")],
+            )),
+            commits: Vec::new(),
+            next_generation: 4,
+        }));
+        let (first_entered_tx, first_entered_rx) = mpsc::channel();
+        let (second_entered_tx, second_entered_rx) = mpsc::channel();
+        let first_release = Arc::new((Mutex::new(false), Condvar::new()));
+        let second_release = Arc::new((Mutex::new(false), Condvar::new()));
+        let hook_first_release = Arc::clone(&first_release);
+        let hook_second_release = Arc::clone(&second_release);
+        let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let hook_calls = Arc::clone(&calls);
+        let hook = Arc::new(move || {
+            let (entered, release) = match hook_calls.fetch_add(1, Ordering::AcqRel) {
+                0 => (&first_entered_tx, &hook_first_release),
+                1 => (&second_entered_tx, &hook_second_release),
+                _ => return,
+            };
+            entered.send(()).expect("signal watcher setup");
+            let (lock, ready) = &**release;
+            let mut released = lock.lock().expect("watch setup release");
+            while !*released {
+                released = ready.wait(released).expect("watch setup wait");
+            }
+        });
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        let (launcher, _scans) = controlled_launcher();
+        let worker = spawn_with_watch_setup_hook(
+            initial,
+            Arc::clone(&index),
+            Box::new(MemoryStore(store)),
+            launcher,
+            hook,
+        );
+        first_entered_rx
+            .recv_timeout(WAIT)
+            .expect("initial watcher setup entered");
+        let mut replacement = config("/root-b");
+        replacement.include_roots.push(PathBuf::from("/root-c"));
+        worker.update_config(replacement);
+        let (lock, ready) = &*first_release;
+        *lock.lock().expect("first setup release") = true;
+        ready.notify_all();
+        second_entered_rx
+            .recv_timeout(WAIT)
+            .expect("replacement watcher setup entered");
+
+        assert_eq!(index.read().expect("index").configured_root_count, 0);
+
+        let (lock, ready) = &*second_release;
+        *lock.lock().expect("second setup release") = true;
+        ready.notify_all();
+        let (barrier_tx, barrier_rx) = mpsc::channel();
+        worker
+            .commands
+            .send(Command::Barrier(barrier_tx))
+            .expect("queue barrier");
+        barrier_rx.recv_timeout(WAIT).expect("worker barrier");
+        assert_eq!(index.read().expect("index").configured_root_count, 2);
+        worker.stop();
+    }
+
+    #[test]
     fn failed_scan_keeps_previous_generation_queryable() {
         let cfg = config("/root");
         let plan = ScanPlan::new(&cfg).expect("plan");
@@ -1690,6 +1994,7 @@ mod tests {
             launcher: controlled_launcher().0,
             commands,
             fence: Arc::new(ActivationFence::new()),
+            desired_plan_identity: Arc::new(Mutex::new(Some(plan.identity().to_string()))),
             current_plan: Some(plan),
             active_scan: None,
             revision: 0,
@@ -1702,6 +2007,7 @@ mod tests {
             pending_paths: BTreeSet::from([root.join("queued-delete.txt")]),
             watch_registry: Some(registry),
             watch_clock_started: Instant::now(),
+            before_watch_setup: None,
         };
 
         assert!(worker.recover_root(&root));

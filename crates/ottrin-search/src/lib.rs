@@ -29,6 +29,23 @@ use db::{SearchStore, search_db_path};
 #[cfg(test)]
 static SEARCH_SERVICE_TEST_LOCK: Mutex<()> = Mutex::new(());
 
+#[cfg(test)]
+fn default_search_store_path() -> PathBuf {
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_nanos())
+        .unwrap_or_default();
+    std::env::temp_dir().join(format!(
+        "ottrin-search-test-{}-{unique}.db",
+        std::process::id()
+    ))
+}
+
+#[cfg(not(test))]
+fn default_search_store_path() -> PathBuf {
+    search_db_path()
+}
+
 #[derive(Debug, Error)]
 pub enum SearchError {
     #[error("search parser error: {0}")]
@@ -140,7 +157,7 @@ impl SearchService {
             index: Arc::new(RwLock::new(IndexState::default())),
             worker: None,
             writer_lock: None,
-            store_path: search_db_path(),
+            store_path: default_search_store_path(),
             launcher: worker::real_launcher(),
             watch_filesystem: true,
         }
@@ -2591,6 +2608,13 @@ mod tests {
         };
         item.prepare();
         item
+    }
+
+    #[test]
+    fn default_test_service_never_uses_the_user_search_database() {
+        let service = SearchService::new(SearchConfig::default());
+
+        assert_ne!(service.store_path, search_db_path());
     }
 
     #[test]
