@@ -8218,7 +8218,12 @@ impl OttrinApp {
                                         PreviewKind::Image => {
                                             let max_w = (ui.available_width() - 28.0).max(96.0);
                                             let max_h = 132.0;
-                                            if let Some(img) = self.cached_image_preview_widget(&entry.path, max_w, max_h, 8) {
+                                            if let Some(img) = self.cached_image_preview_widget(
+                                                &entry.path,
+                                                max_w,
+                                                max_h,
+                                                8,
+                                            ) {
                                                 preview_widget = Some(img);
                                             }
                                         }
@@ -8230,36 +8235,23 @@ impl OttrinApp {
                                                 .map(|e| e.eq_ignore_ascii_case("svg"))
                                                 .unwrap_or(false);
                                             if is_svg {
-                                                let max_w = (ui.available_width() - 28.0).max(96.0);
+                                                let max_w =
+                                                    (ui.available_width() - 28.0).max(96.0);
                                                 let max_h = 132.0;
-                                                if let Some(img) = self.cached_image_preview_widget(&entry.path, max_w, max_h, 8) {
+                                                if let Some(img) = self.cached_image_preview_widget(
+                                                    &entry.path,
+                                                    max_w,
+                                                    max_h,
+                                                    8,
+                                                ) {
                                                     preview_widget = Some(img);
-                                                }
-                                            }
-                                            if preview_widget.is_none() {
-                                                const SNIPPET_MAX_CHARS: usize = 480;
-                                                let mut snippet = String::new();
-                                                let mut chars_left = SNIPPET_MAX_CHARS;
-                                                let (_, extracted) =
-                                                    split_preview_extracted_text(&preview.body);
-                                                let source = extracted.unwrap_or(&preview.body);
-                                                for (i, line) in source.lines().enumerate() {
-                                                    if i >= 8 || chars_left == 0 {
-                                                        break;
-                                                    }
-                                                    if i > 0 {
-                                                        snippet.push('\n');
-                                                    }
-                                                    let take = line.len().min(chars_left);
-                                                    snippet.push_str(&line[..take]);
-                                                    chars_left = chars_left.saturating_sub(take);
-                                                }
-                                                if !snippet.is_empty() {
-                                                    text_snippet = Some(snippet);
                                                 }
                                             }
                                         }
                                         _ => {}
+                                    }
+                                    if preview_widget.is_none() {
+                                        text_snippet = compact_preview_snippet(&preview, 8, 480);
                                     }
                                 }
                                 ui.add_space(4.0);
@@ -10508,23 +10500,6 @@ impl OttrinApp {
                         // Text preview snippet or image indicator
                         if let Some(pv) = preview {
                             match pv.kind {
-                                PreviewKind::Text => {
-                                    let (_, extracted) = split_preview_extracted_text(&pv.body);
-                                    let source = extracted.unwrap_or(&pv.body);
-                                    let snippet: String =
-                                        source.lines().take(5).collect::<Vec<_>>().join("\n");
-                                    ScrollArea::vertical()
-                                        .id_salt("search_result_preview_text")
-                                        .max_height(preview_panel_h - 70.0)
-                                        .show(ui, |ui| {
-                                            ui.label(
-                                                RichText::new(snippet)
-                                                    .size(10.5)
-                                                    .color(c.text_muted)
-                                                    .font(FontId::monospace(10.5)),
-                                            );
-                                        });
-                                }
                                 PreviewKind::Image => {
                                     let avail_w = ui.available_width().max(60.0);
                                     let max_h = preview_panel_h - 70.0;
@@ -10538,7 +10513,21 @@ impl OttrinApp {
                                         );
                                     }
                                 }
-                                _ => {}
+                                _ => {
+                                    if let Some(snippet) = compact_preview_snippet(&pv, 5, 480) {
+                                        ScrollArea::vertical()
+                                            .id_salt("search_result_preview_text")
+                                            .max_height(preview_panel_h - 70.0)
+                                            .show(ui, |ui| {
+                                                ui.label(
+                                                    RichText::new(snippet)
+                                                        .size(10.5)
+                                                        .color(c.text_muted)
+                                                        .font(FontId::monospace(10.5)),
+                                                );
+                                            });
+                                    }
+                                }
                             }
                         }
                     });
@@ -16657,6 +16646,25 @@ fn metadata_preview_snippet(body: &str, max_lines: usize, max_chars: usize) -> S
     out
 }
 
+fn compact_preview_snippet(
+    preview: &PreviewData,
+    max_lines: usize,
+    max_chars: usize,
+) -> Option<String> {
+    let source = match preview.kind {
+        PreviewKind::Text | PreviewKind::Pdf | PreviewKind::OfficeMetadata => {
+            let (_, extracted) = split_preview_extracted_text(&preview.body);
+            extracted.unwrap_or(&preview.body)
+        }
+        PreviewKind::ArchiveMetadata | PreviewKind::AudioMetadata | PreviewKind::VideoMetadata => {
+            &preview.body
+        }
+        PreviewKind::Image | PreviewKind::FolderMetadata | PreviewKind::Unsupported => return None,
+    };
+    let snippet = metadata_preview_snippet(source, max_lines, max_chars);
+    (!snippet.is_empty()).then_some(snippet)
+}
+
 fn is_permission_denied_msg(msg: &str) -> bool {
     let m = msg.to_ascii_lowercase();
     m.contains("permission denied") || m.contains("access is denied")
@@ -17948,6 +17956,71 @@ mod tests {
         assert_ne!(second, refreshed);
         assert_eq!(slot.next_request(), Some(refreshed));
         assert!(slot.is_pending());
+    }
+
+    #[test]
+    fn compact_preview_snippet_exposes_document_and_metadata_previews() {
+        for (kind, body, expected) in [
+            (
+                PreviewKind::Text,
+                "Text file.\n\nExtracted text:\nVisible café 文本",
+                "Visible café 文本",
+            ),
+            (
+                PreviewKind::Pdf,
+                "PDF document.\nPages: 2\n\nExtracted text:\nVisible report text",
+                "Visible report text",
+            ),
+            (
+                PreviewKind::OfficeMetadata,
+                "Office document.\n\nExtracted text:\nVisible document text",
+                "Visible document text",
+            ),
+            (
+                PreviewKind::ArchiveMetadata,
+                "ZIP archive.\nContents: 3 files",
+                "ZIP archive.\nContents: 3 files",
+            ),
+            (
+                PreviewKind::AudioMetadata,
+                "Audio file.\nArtist: Example",
+                "Audio file.\nArtist: Example",
+            ),
+            (
+                PreviewKind::VideoMetadata,
+                "Video file.\nSize: 42 MB",
+                "Video file.\nSize: 42 MB",
+            ),
+        ] {
+            let preview = PreviewData {
+                title: "fixture".to_string(),
+                kind,
+                body: body.to_string(),
+                open_external: true,
+            };
+            assert_eq!(
+                compact_preview_snippet(&preview, 5, 120).as_deref(),
+                Some(expected),
+                "missing compact preview for {kind:?}"
+            );
+        }
+
+        for kind in [
+            PreviewKind::Image,
+            PreviewKind::FolderMetadata,
+            PreviewKind::Unsupported,
+        ] {
+            let preview = PreviewData {
+                title: "fixture".to_string(),
+                kind,
+                body: "must stay on its specialized path".to_string(),
+                open_external: false,
+            };
+            assert!(
+                compact_preview_snippet(&preview, 5, 120).is_none(),
+                "specialized kind leaked into compact text: {kind:?}"
+            );
+        }
     }
 
     #[test]

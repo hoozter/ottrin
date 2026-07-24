@@ -18,13 +18,14 @@ Implemented:
 - Smart panel sections for Info, Drop Folder, Search, Activity, and Trash.
 - Cross-platform Trash panel implementation with Linux Freedesktop trash support and Windows Recycle Bin backend.
 - SQLite-backed indexed search with watcher updates, background updater scheduling, generated-folder skips, result actions, content search snippets, and column resizing.
-- Quick Inspector as a separate Space-triggered viewport with image, text/code, PDF text/metadata, DOCX content, XLSX/XLSM worksheet tables, PPTX slide text, archive, folder, and generic file inspectors.
+- Quick Inspector as a separate Space-triggered viewport with visual image previews plus text/code, PDF text/metadata, DOCX content, XLSX/XLSM worksheet tables, PPTX slide text, archive, folder, and generic file inspectors. PDF and Office output is currently extracted text/metadata, not a rendered page or faithful document layout.
 - Theme presets and custom theme editing.
 - Linux portable tarball, Linux AppImage, Windows portable zip, and per-user Windows installer packaging scripts.
 - Strict formatting, tests, and Clippy gates.
 
-Still needs real QA before v1:
+## Still needs implementation or real QA before v1:
 
+- Real visual previews for common PDF, Word, and Excel files, with packaged Linux and Windows rendering dependencies and bounded failure handling. Extracted text alone does not satisfy this gate.
 - Linux manual workflow QA across navigation, file operations, search, Tandem View, multi-select, Quick Inspector, context menus, thumbnail view options, and status messages.
 - Linux privileged helper and polkit smoke test from packaged layout.
 - Real Windows runtime smoke for portable zip: launch, navigation, file operations, Trash/Recycling Bin, search, Quick Inspector, UAC/helper behavior, and background updater.
@@ -49,8 +50,8 @@ V1 should not ship until:
 These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 
 - Text/code editing in Quick Inspector.
-- Multi-page PDF navigation and faithful Office layout rendering.
-- Rich file thumbnails beyond images: generated text/code preview cards, rendered PDF first-page thumbnails, video frame thumbnails, and Office/document thumbnails where platform support or dependencies make sense.
+- Multi-page PDF navigation and advanced Office navigation/editing beyond the bounded visual preview required for v1.
+- Rich file thumbnails beyond the common-document v1 preview gate: generated text/code preview cards, video frame thumbnails, and broader document thumbnails where platform support or dependencies make sense.
 - Recursive folder size thumbnails and folder thumbnail collages.
 - Native desktop application discovery for richer Open With menus.
 - Media playback and advanced image tools.
