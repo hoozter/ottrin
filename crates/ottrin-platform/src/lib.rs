@@ -1730,6 +1730,48 @@ mod tests {
 
     #[cfg(unix)]
     #[test]
+    fn move_directory_is_rejected_before_mutating_for_all_conflict_actions() {
+        for conflict in [
+            ConflictAction::Skip,
+            ConflictAction::Overwrite,
+            ConflictAction::Rename,
+        ] {
+            let dir = TestDir::new("move-safe-dir-conflict-matrix");
+            let source = dir.path().join("source-dir");
+            let source_file = source.join("inner.txt");
+            let destination = dir.path().join("destination");
+            let destination_conflict = destination.join("source-dir");
+
+            std::fs::create_dir(&source).unwrap();
+            std::fs::write(&source_file, "nested").unwrap();
+            std::fs::create_dir(&destination).unwrap();
+            std::fs::create_dir(&destination_conflict).unwrap();
+            std::fs::write(
+                destination_conflict.join("retained.txt"),
+                "destination retained",
+            )
+            .unwrap();
+
+            let result = DefaultPlatform.execute_command(&FileCommand::Move {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict,
+            });
+
+            assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
+            assert!(source.exists());
+            assert!(source_file.exists());
+            assert_eq!(std::fs::read_to_string(&source_file).unwrap(), "nested");
+            assert!(destination_conflict.exists());
+            assert!(
+                std::fs::read_to_string(destination_conflict.join("retained.txt")).unwrap()
+                    == "destination retained"
+            );
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
     fn move_is_rejected_before_mutating_even_for_a_valid_symlink_source() {
         use std::os::unix::fs::symlink;
 

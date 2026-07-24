@@ -998,8 +998,118 @@ impl LinuxRetainedSourceTransaction {
 
 #[cfg(target_os = "linux")]
 impl LinuxJournalDirectory {
-    pub fn open_configured(_path: &Path) -> Result<Self, LinuxCentralRootOpenError> {
-        Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)
+    pub fn open_configured(path: &Path) -> Result<Self, LinuxCentralRootOpenError> {
+        use rustix::fs::{
+            AtFlags, FileType, Mode, OFlags, fstat, fsync as fsync_directory, openat, renameat,
+            statat,
+        };
+        use rustix::process::geteuid;
+
+        #[derive(Serialize, Deserialize)]
+        struct CentralRootAnchor {
+            device: u64,
+            inode: u64,
+        }
+
+        const ANCHOR: &str = ".ottrin-move-recovery-root";
+
+        let directory_name = path
+            .file_name()
+            .ok_or(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+        let parent_path = path.parent().unwrap_or_else(|| Path::new("."));
+
+        let parent = openat(
+            rustix::fs::CWD,
+            parent_path,
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+        let directory = openat(
+            &parent,
+            directory_name,
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+
+        let observed_directory = fstat(&directory)
+            .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+        if FileType::from_raw_mode(observed_directory.st_mode) != FileType::Directory
+            || observed_directory.st_uid != geteuid().as_raw()
+        {
+            return Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable);
+        }
+
+        let named = statat(&parent, directory_name, AtFlags::SYMLINK_NOFOLLOW)
+            .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+        if named.st_dev != observed_directory.st_dev || named.st_ino != observed_directory.st_ino {
+            return Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable);
+        }
+
+        // A stable marker in the parent directory prevents path-replacement attacks:
+        // replacing the root path recreates it as a different inode and fails this
+        // identity check.
+        match openat(
+            &parent,
+            ANCHOR,
+            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        ) {
+            Ok(anchor_file) => {
+                use std::io::Read;
+
+                let mut encoded = Vec::new();
+                std::fs::File::from(anchor_file)
+                    .read_to_end(&mut encoded)
+                    .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+                if encoded.is_empty() {
+                    return Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable);
+                }
+                let persisted: CentralRootAnchor = serde_json::from_slice(&encoded)
+                    .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+                if persisted.device != observed_directory.st_dev
+                    || persisted.inode != observed_directory.st_ino
+                {
+                    return Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable);
+                }
+            }
+            Err(error) if error == rustix::io::Errno::NOENT => {
+                use std::io::Write;
+
+                let mut random = [0_u8; 16];
+                getrandom::fill(&mut random)
+                    .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+                let next_name = format!("{ANCHOR}.next-{}", encode_hex(&random));
+                let next = openat(
+                    &parent,
+                    next_name.as_str(),
+                    OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::CLOEXEC,
+                    Mode::RUSR | Mode::WUSR,
+                )
+                .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+                let encoded = serde_json::to_vec(&CentralRootAnchor {
+                    device: observed_directory.st_dev,
+                    inode: observed_directory.st_ino,
+                })
+                .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+
+                let mut file = std::fs::File::from(next);
+                file.write_all(&encoded)
+                    .and_then(|()| file.sync_all())
+                    .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+
+                renameat(&parent, next_name.as_str(), &parent, ANCHOR)
+                    .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+                fsync_directory(&parent)
+                    .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+            }
+            Err(_) => {
+                return Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable);
+            }
+        };
+
+        Ok(Self { directory })
     }
 
     #[cfg(test)]
@@ -7539,16 +7649,121 @@ mod tests {
         std::fs::create_dir(&configured).unwrap();
         let replacement = LinuxJournalDirectory::open_configured(&configured);
 
-        assert!(matches!(
-            first,
-            Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)
-        ));
+        assert!(first.is_ok());
+        drop(first);
         assert!(matches!(
             replacement,
             Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)
         ));
+        assert!(root.join(".ottrin-move-recovery-root").exists());
         assert!(std::fs::read_dir(&configured).unwrap().next().is_none());
         assert!(std::fs::read_dir(&displaced).unwrap().next().is_none());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn configured_central_root_opening_rejects_corrupted_anchor() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-configured-central-root-corrupt-anchor-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let configured = root.join("moves");
+        std::fs::create_dir_all(&configured).unwrap();
+
+        let first = LinuxJournalDirectory::open_configured(&configured);
+        assert!(first.is_ok());
+        drop(first);
+
+        let anchor = root.join(".ottrin-move-recovery-root");
+        assert!(anchor.is_file());
+        std::fs::write(&anchor, b"{invalid-json").unwrap();
+
+        assert!(matches!(
+            LinuxJournalDirectory::open_configured(&configured),
+            Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)
+        ));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn configured_central_root_opening_rejects_identity_mismatch_anchor() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-configured-central-root-anchor-mismatch-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let configured = root.join("moves");
+        std::fs::create_dir_all(&configured).unwrap();
+
+        let first = LinuxJournalDirectory::open_configured(&configured);
+        assert!(first.is_ok());
+        let anchor = root.join(".ottrin-move-recovery-root");
+        let metadata = std::fs::metadata(&configured).unwrap();
+        drop(first);
+
+        std::fs::write(
+            &anchor,
+            serde_json::to_vec(&serde_json::json!({
+                "device": metadata.dev() + 1,
+                "inode": metadata.ino() + 1,
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+
+        assert!(matches!(
+            LinuxJournalDirectory::open_configured(&configured),
+            Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)
+        ));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn configured_central_root_opening_rejects_replaced_parent() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-configured-central-root-replaced-parent-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let real_parent = root.join("real-parent");
+        let link_parent = root.join("parent-link");
+        let configured = link_parent.join("moves");
+        std::fs::create_dir_all(&real_parent).unwrap();
+        std::os::unix::fs::symlink(&real_parent, &link_parent).unwrap();
+        std::fs::create_dir(&configured).unwrap();
+
+        assert!(matches!(
+            LinuxJournalDirectory::open_configured(&configured),
+            Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)
+        ));
+
+        // prove the linked path is no longer treated as stable even without replacement.
+        let hard_replacement = root.join("real-parent-replacement");
+        std::fs::rename(&real_parent, &hard_replacement).unwrap();
+        assert!(std::fs::read_dir(&real_parent).is_err());
+
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn configured_central_root_opening_rejects_non_directory_path() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-configured-central-root-not-directory-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let configured = root.join("moves-file");
+        std::fs::create_dir_all(&root).unwrap();
+        std::fs::write(&configured, b"not-a-directory").unwrap();
+
+        assert!(matches!(
+            LinuxJournalDirectory::open_configured(&configured),
+            Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)
+        ));
+
         std::fs::remove_dir_all(root).unwrap();
     }
 
