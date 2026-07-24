@@ -426,14 +426,10 @@ pub enum LinuxAdvanceClaimIntentError {
 pub enum LinuxAdvanceClaimedError {
     #[error("claim-intent restart evidence is unsafe: {0}")]
     Restart(#[from] LinuxLoadClaimIntentRestartError),
+    #[error("claimed restart evidence is unsafe: {0}")]
+    ClaimedRestart(#[from] LinuxLoadClaimedRestartError),
     #[error("central claimed restart journal could not be read: {0}")]
     CentralClaimedRead(LinuxJournalReadError),
-    #[error("source-local claimed restart journal could not be read: {0}")]
-    LocalClaimedRead(LinuxJournalReadError),
-    #[error("central claimed journal does not belong to the requested transaction")]
-    CentralClaimedTransactionMismatch,
-    #[error("source-local evidence disagrees with the durable central claimed journal")]
-    CentralClaimedLocalEvidenceMismatch,
     #[error("source-local claim-intent journal has not reached the durable central state")]
     JournalsNotMatching,
     #[error("claimed topology could not be observed safely: {0}")]
@@ -492,6 +488,58 @@ pub enum LinuxClaimIntentRestartState {
     CentralClaimIntentLocalPrepared {
         claim_intent: ClaimIntentRecord,
         prepared: PreparedRecord,
+    },
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum LinuxClaimedRestartState {
+    MatchingPair {
+        central: ClaimedRecord,
+        local: ClaimedRecord,
+    },
+    CentralClaimedLocalClaimIntent {
+        claimed: ClaimedRecord,
+        claim_intent: ClaimIntentRecord,
+    },
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxLoadClaimedRestartError {
+    #[error("central claimed journal could not be read: {0}")]
+    CentralRead(LinuxJournalReadError),
+    #[error("source-local recovery journal could not be read: {0}")]
+    LocalRead(LinuxJournalReadError),
+    #[error("central claimed journal is invalid: {0}")]
+    CentralCorrupt(JournalError),
+    #[error(
+        "source-local journal is neither a valid claimed ({claimed}) nor claim-intent record ({claim_intent})"
+    )]
+    LocalCorrupt {
+        claimed: JournalError,
+        claim_intent: JournalError,
+    },
+    #[error(
+        "central recovery journal transaction {recorded:?} does not match requested transaction {requested:?}"
+    )]
+    RequestedTransactionMismatch {
+        requested: [u8; 16],
+        recorded: [u8; 16],
+    },
+    #[error("source-local transaction does not match the central transaction")]
+    LocalTransactionMismatch { central: [u8; 16], local: [u8; 16] },
+    #[error("source-local claimed evidence disagrees with the durable central claimed journal")]
+    ClaimedEvidenceMismatch {
+        durable_central: Box<ClaimedRecord>,
+        local: Box<ClaimedRecord>,
+    },
+    #[error(
+        "source-local claim-intent evidence disagrees with the durable central claimed journal"
+    )]
+    ClaimIntentEvidenceMismatch {
+        durable_central: Box<ClaimedRecord>,
+        local: Box<ClaimIntentRecord>,
     },
 }
 
@@ -1116,6 +1164,87 @@ impl LinuxJournalDirectory {
         }
     }
 
+    pub fn load_claimed_restart_state(
+        &self,
+        local: &Self,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxClaimedRestartState, LinuxLoadClaimedRestartError> {
+        let central = self
+            .read_named(&format!("{}.journal", encode_hex(&transaction_id)))
+            .map_err(LinuxLoadClaimedRestartError::CentralRead)?;
+        let local = local
+            .read_named("journal")
+            .map_err(LinuxLoadClaimedRestartError::LocalRead)?;
+        let claimed =
+            ClaimedRecord::parse(&central).map_err(LinuxLoadClaimedRestartError::CentralCorrupt)?;
+        let decode_transaction_id = |encoded: &str| {
+            let decoded = decode_hex(encoded)
+                .expect("validated recovery records have hexadecimal transaction IDs");
+            let mut decoded_transaction_id = [0_u8; 16];
+            decoded_transaction_id.copy_from_slice(&decoded);
+            decoded_transaction_id
+        };
+        let central_transaction_id = decode_transaction_id(&claimed.transaction_id);
+        if central_transaction_id != transaction_id {
+            return Err(LinuxLoadClaimedRestartError::RequestedTransactionMismatch {
+                requested: transaction_id,
+                recorded: central_transaction_id,
+            });
+        }
+        match ClaimedRecord::parse(&local) {
+            Ok(local_claimed) => {
+                let local_transaction_id = decode_transaction_id(&local_claimed.transaction_id);
+                if local_transaction_id != transaction_id {
+                    return Err(LinuxLoadClaimedRestartError::LocalTransactionMismatch {
+                        central: transaction_id,
+                        local: local_transaction_id,
+                    });
+                }
+                if local_claimed != claimed {
+                    return Err(LinuxLoadClaimedRestartError::ClaimedEvidenceMismatch {
+                        durable_central: Box::new(claimed),
+                        local: Box::new(local_claimed),
+                    });
+                }
+                Ok(LinuxClaimedRestartState::MatchingPair {
+                    central: claimed,
+                    local: local_claimed,
+                })
+            }
+            Err(claimed_error) => match ClaimIntentRecord::parse(&local) {
+                Ok(claim_intent) => {
+                    let local_transaction_id = decode_transaction_id(&claim_intent.transaction_id);
+                    if local_transaction_id != transaction_id {
+                        return Err(LinuxLoadClaimedRestartError::LocalTransactionMismatch {
+                            central: transaction_id,
+                            local: local_transaction_id,
+                        });
+                    }
+                    if ClaimedRecord::from_claim_intent(
+                        &claim_intent,
+                        claimed.claimed_source_identity,
+                    )
+                    .as_ref()
+                        != Ok(&claimed)
+                    {
+                        return Err(LinuxLoadClaimedRestartError::ClaimIntentEvidenceMismatch {
+                            durable_central: Box::new(claimed),
+                            local: Box::new(claim_intent),
+                        });
+                    }
+                    Ok(LinuxClaimedRestartState::CentralClaimedLocalClaimIntent {
+                        claimed,
+                        claim_intent,
+                    })
+                }
+                Err(claim_intent_error) => Err(LinuxLoadClaimedRestartError::LocalCorrupt {
+                    claimed: claimed_error,
+                    claim_intent: claim_intent_error,
+                }),
+            },
+        }
+    }
+
     pub fn discover_prepared(&self) -> Result<Vec<[u8; 16]>, LinuxDiscoverPreparedError> {
         self.discover_pending()
     }
@@ -1297,32 +1426,24 @@ impl LinuxRecoveryLock<'_> {
             .central
             .read_named(&central_name)
             .map_err(LinuxAdvanceClaimedError::CentralClaimedRead)?;
-        if let Ok(claimed) = ClaimedRecord::parse(&central_bytes) {
-            if claimed.transaction_id != encode_hex(&transaction_id) {
-                return Err(LinuxAdvanceClaimedError::CentralClaimedTransactionMismatch);
-            }
-            let local_bytes = local
-                .read_named("journal")
-                .map_err(LinuxAdvanceClaimedError::LocalClaimedRead)?;
-            if ClaimedRecord::parse(&local_bytes).as_ref() == Ok(&claimed) {
-                return Ok(LinuxClaimedJournals::MatchingPair);
-            }
-            let matching_claim_intent = ClaimIntentRecord::parse(&local_bytes)
-                .and_then(|record| {
-                    ClaimedRecord::from_claim_intent(&record, claimed.claimed_source_identity)
-                })
-                .as_ref()
-                == Ok(&claimed);
-            if !matching_claim_intent {
-                return Err(LinuxAdvanceClaimedError::CentralClaimedLocalEvidenceMismatch);
-            }
-            local.persist_local_claimed(&claimed).map_err(|error| {
-                LinuxAdvanceClaimedError::CentralDurableLocalUpdateUncertain {
-                    error,
-                    durable_central: Box::new(claimed),
+        if ClaimedRecord::parse(&central_bytes).is_ok() {
+            return match self
+                .central
+                .load_claimed_restart_state(local, transaction_id)?
+            {
+                LinuxClaimedRestartState::MatchingPair { .. } => {
+                    Ok(LinuxClaimedJournals::MatchingPair)
                 }
-            })?;
-            return Ok(LinuxClaimedJournals::MatchingPair);
+                LinuxClaimedRestartState::CentralClaimedLocalClaimIntent { claimed, .. } => {
+                    local.persist_local_claimed(&claimed).map_err(|error| {
+                        LinuxAdvanceClaimedError::CentralDurableLocalUpdateUncertain {
+                            error,
+                            durable_central: Box::new(claimed),
+                        }
+                    })?;
+                    Ok(LinuxClaimedJournals::MatchingPair)
+                }
+            };
         }
         let claim_intent = match self
             .central
@@ -3742,6 +3863,79 @@ mod tests {
             b"claimed source must remain"
         );
         drop(recovery);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn claimed_restart_loader_returns_exact_matching_and_partial_evidence_without_mutation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-claimed-restart-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xb3; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        central.persist_claim_intent(&claim_intent).unwrap();
+        local.persist_local_claim_intent(&claim_intent).unwrap();
+        let claimed = ClaimedRecord::from_claim_intent(
+            &claim_intent,
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+        )
+        .unwrap();
+        central.persist_claimed(&claimed).unwrap();
+        let central_before =
+            std::fs::read(central_path.join("b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3.journal")).unwrap();
+        let local_claim_intent_before = std::fs::read(local_path.join("journal")).unwrap();
+
+        assert_eq!(
+            central.load_claimed_restart_state(&local, [0xb3; 16]),
+            Ok(LinuxClaimedRestartState::CentralClaimedLocalClaimIntent {
+                claimed: claimed.clone(),
+                claim_intent: claim_intent.clone(),
+            })
+        );
+        assert_eq!(
+            std::fs::read(central_path.join("b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3.journal")).unwrap(),
+            central_before
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            local_claim_intent_before
+        );
+
+        local.persist_local_claimed(&claimed).unwrap();
+        let local_claimed_before = std::fs::read(local_path.join("journal")).unwrap();
+        assert_eq!(
+            central.load_claimed_restart_state(&local, [0xb3; 16]),
+            Ok(LinuxClaimedRestartState::MatchingPair {
+                central: claimed.clone(),
+                local: claimed,
+            })
+        );
+        assert_eq!(
+            std::fs::read(central_path.join("b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3.journal")).unwrap(),
+            central_before
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            local_claimed_before
+        );
         std::fs::remove_dir_all(root).unwrap();
     }
 
