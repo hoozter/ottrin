@@ -438,7 +438,16 @@ pub enum LinuxAdvanceClaimedError {
     UnsafeTopology(LinuxClaimedTopology),
     #[error("claimed evidence is invalid: {0}")]
     InvalidClaimed(JournalError),
-    #[error("central claimed update did not confirm durability; inspect the journal: {0}")]
+    #[error(
+        "central claimed update was rejected before rename; the exact claim-intent pair remains durable: {error}"
+    )]
+    CentralUpdateRejected {
+        #[source]
+        error: JournalError,
+        durable_central_claim_intent: Box<ClaimIntentRecord>,
+        durable_local_claim_intent: Box<ClaimIntentRecord>,
+    },
+    #[error("central claimed update was renamed but directory durability is uncertain: {0}")]
     CentralUpdateUncertain(JournalError),
     #[error("central claimed journal is durable but the source-local update is uncertain: {error}")]
     CentralDurableLocalUpdateUncertain {
@@ -466,6 +475,22 @@ pub enum LinuxJournalReadError {
     Missing,
     #[error("journal read failed: {0}")]
     Io(String),
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Eq, PartialEq)]
+enum LinuxJournalReplaceError {
+    BeforeRename(JournalError),
+    AfterRename(JournalError),
+}
+
+#[cfg(target_os = "linux")]
+impl LinuxJournalReplaceError {
+    fn into_inner(self) -> JournalError {
+        match self {
+            Self::BeforeRename(error) | Self::AfterRename(error) => error,
+        }
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -1040,8 +1065,22 @@ impl LinuxJournalDirectory {
         self.replace_named("journal", record)
     }
 
+    #[cfg(test)]
     fn persist_claimed(&self, record: &ClaimedRecord) -> Result<(), JournalError> {
         self.replace_named(&format!("{}.journal", record.transaction_id), record)
+    }
+
+    fn persist_claimed_staged(
+        &self,
+        record: &ClaimedRecord,
+    ) -> Result<(), LinuxJournalReplaceError> {
+        use rustix::fs::fsync;
+
+        self.replace_named_staged_with_sync(
+            &format!("{}.journal", record.transaction_id),
+            record,
+            || fsync(&self.directory).map_err(|error| JournalError::Io(error.to_string())),
+        )
     }
 
     fn persist_local_claimed(&self, record: &ClaimedRecord) -> Result<(), JournalError> {
@@ -1365,14 +1404,35 @@ impl LinuxJournalDirectory {
     }
 
     fn replace_named<T: Serialize>(&self, name: &str, record: &T) -> Result<(), JournalError> {
-        use rustix::fs::{Mode, OFlags, fsync, openat, renameat};
+        use rustix::fs::fsync;
+
+        self.replace_named_staged_with_sync(name, record, || {
+            fsync(&self.directory).map_err(|error| JournalError::Io(error.to_string()))
+        })
+        .map_err(LinuxJournalReplaceError::into_inner)
+    }
+
+    fn replace_named_staged_with_sync<T, F>(
+        &self,
+        name: &str,
+        record: &T,
+        sync_directory: F,
+    ) -> Result<(), LinuxJournalReplaceError>
+    where
+        T: Serialize,
+        F: FnOnce() -> Result<(), JournalError>,
+    {
+        use rustix::fs::{Mode, OFlags, openat, renameat};
         use std::fs::File;
         use std::io::Write;
 
-        let encoded = serde_json::to_vec(record)
-            .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
+        let encoded = serde_json::to_vec(record).map_err(|error| {
+            LinuxJournalReplaceError::BeforeRename(JournalError::InvalidJson(error.to_string()))
+        })?;
         let mut random = [0_u8; 16];
-        getrandom::fill(&mut random).map_err(|error| JournalError::Io(error.to_string()))?;
+        getrandom::fill(&mut random).map_err(|error| {
+            LinuxJournalReplaceError::BeforeRename(JournalError::Io(error.to_string()))
+        })?;
         let next_name = format!("{name}.next-{}", encode_hex(&random));
         let next = openat(
             &self.directory,
@@ -1380,14 +1440,19 @@ impl LinuxJournalDirectory {
             OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::CLOEXEC,
             Mode::RUSR | Mode::WUSR,
         )
-        .map_err(|error| JournalError::Io(error.to_string()))?;
+        .map_err(|error| {
+            LinuxJournalReplaceError::BeforeRename(JournalError::Io(error.to_string()))
+        })?;
         let mut next = File::from(next);
         next.write_all(&encoded)
             .and_then(|()| next.sync_all())
-            .map_err(|error| JournalError::Io(error.to_string()))?;
-        renameat(&self.directory, next_name.as_str(), &self.directory, name)
-            .map_err(|error| JournalError::Io(error.to_string()))?;
-        fsync(&self.directory).map_err(|error| JournalError::Io(error.to_string()))
+            .map_err(|error| {
+                LinuxJournalReplaceError::BeforeRename(JournalError::Io(error.to_string()))
+            })?;
+        renameat(&self.directory, next_name.as_str(), &self.directory, name).map_err(|error| {
+            LinuxJournalReplaceError::BeforeRename(JournalError::Io(error.to_string()))
+        })?;
+        sync_directory().map_err(LinuxJournalReplaceError::AfterRename)
     }
 }
 
@@ -1431,6 +1496,32 @@ impl LinuxRecoveryLock<'_> {
         local: &LinuxJournalDirectory,
         transaction_id: [u8; 16],
     ) -> Result<LinuxClaimedJournals, LinuxAdvanceClaimedError> {
+        self.advance_to_claimed_with_local_inner(local, transaction_id, || {})
+    }
+
+    #[cfg(test)]
+    fn advance_to_claimed_with_local_after_central<F>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+        after_central: F,
+    ) -> Result<LinuxClaimedJournals, LinuxAdvanceClaimedError>
+    where
+        F: FnOnce(),
+    {
+        self.advance_to_claimed_with_local_inner(local, transaction_id, after_central)
+    }
+
+    fn advance_to_claimed_with_local_inner<F>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+        after_central: F,
+    ) -> Result<LinuxClaimedJournals, LinuxAdvanceClaimedError>
+    where
+        F: FnOnce(),
+    {
+        let mut after_central = Some(after_central);
         let central_name = format!("{}.journal", encode_hex(&transaction_id));
         let central_bytes = self
             .central
@@ -1445,6 +1536,10 @@ impl LinuxRecoveryLock<'_> {
                     Ok(LinuxClaimedJournals::MatchingPair)
                 }
                 LinuxClaimedRestartState::CentralClaimedLocalClaimIntent { claimed, .. } => {
+                    after_central
+                        .take()
+                        .expect("claimed durability callback runs at most once")(
+                    );
                     local.persist_local_claimed(&claimed).map_err(|error| {
                         LinuxAdvanceClaimedError::CentralDurableLocalUpdateUncertain {
                             error,
@@ -1474,8 +1569,22 @@ impl LinuxRecoveryLock<'_> {
         let claimed = ClaimedRecord::from_claim_intent(&claim_intent, claimed_identity)
             .map_err(LinuxAdvanceClaimedError::InvalidClaimed)?;
         self.central
-            .persist_claimed(&claimed)
-            .map_err(LinuxAdvanceClaimedError::CentralUpdateUncertain)?;
+            .persist_claimed_staged(&claimed)
+            .map_err(|failure| match failure {
+                LinuxJournalReplaceError::BeforeRename(error) => {
+                    LinuxAdvanceClaimedError::CentralUpdateRejected {
+                        error,
+                        durable_central_claim_intent: Box::new(claim_intent.clone()),
+                        durable_local_claim_intent: Box::new(claim_intent),
+                    }
+                }
+                LinuxJournalReplaceError::AfterRename(error) => {
+                    LinuxAdvanceClaimedError::CentralUpdateUncertain(error)
+                }
+            })?;
+        after_central
+            .take()
+            .expect("claimed durability callback runs at most once")();
         local.persist_local_claimed(&claimed).map_err(|error| {
             LinuxAdvanceClaimedError::CentralDurableLocalUpdateUncertain {
                 error,
@@ -3783,6 +3892,256 @@ mod tests {
         );
         assert!(!root.join("source-item").exists());
         assert_eq!(central.discover_pending(), Ok(vec![[0xb1; 16]]));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn central_claimed_persistence_failure_returns_exact_unchanged_claim_intent_pair() {
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-central-claimed-failure-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let claimed_path = local_path.join("claimed");
+        let destination_path = root.join("destination");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"claimed source must remain").unwrap();
+        std::fs::write(&destination_path, b"destination must remain").unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let claimed_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let transaction_id = [0xb7; 16];
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            transaction_id,
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            claimed_identity,
+            Path::new(".ottrin-move-b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        let mut recovery = central.try_lock_recovery().unwrap();
+        recovery
+            .advance_to_claim_intent_with_local(&local, &prepared)
+            .unwrap();
+        let expected_claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let central_journal_path =
+            central_path.join(format!("{}.journal", encode_hex(&transaction_id)));
+        let local_journal_path = local_path.join("journal");
+        let central_before = std::fs::read(&central_journal_path).unwrap();
+        let local_before = std::fs::read(&local_journal_path).unwrap();
+        std::fs::set_permissions(&central_path, std::fs::Permissions::from_mode(0o500)).unwrap();
+
+        let failed = recovery.advance_to_claimed_with_local(&local, transaction_id);
+
+        let Err(LinuxAdvanceClaimedError::CentralUpdateRejected {
+            error: JournalError::Io(_),
+            durable_central_claim_intent,
+            durable_local_claim_intent,
+        }) = failed
+        else {
+            panic!("central persistence failure must retain the exact durable claim-intent pair");
+        };
+        assert_eq!(*durable_central_claim_intent, expected_claim_intent);
+        assert_eq!(*durable_local_claim_intent, expected_claim_intent);
+        assert_eq!(
+            std::fs::read(&central_journal_path).unwrap(),
+            central_before
+        );
+        assert_eq!(std::fs::read(&local_journal_path).unwrap(), local_before);
+        assert_eq!(
+            std::fs::read(&claimed_path).unwrap(),
+            b"claimed source must remain"
+        );
+        assert_eq!(
+            std::fs::read(&destination_path).unwrap(),
+            b"destination must remain"
+        );
+        assert!(!root.join("source-item").exists());
+        std::fs::set_permissions(&central_path, std::fs::Permissions::from_mode(0o700)).unwrap();
+        drop(recovery);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn claimed_replacement_distinguishes_post_rename_directory_sync_failure() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-claimed-post-rename-failure-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let transaction_id = [0xb9; 16];
+        let prepared = PreparedRecord::new_linux(
+            transaction_id,
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let claimed =
+            ClaimedRecord::from_claim_intent(&claim_intent, prepared.source_entry_identity)
+                .unwrap();
+        let directory = LinuxJournalDirectory::open(&root).unwrap();
+        directory.persist_claim_intent(&claim_intent).unwrap();
+
+        let result = directory.replace_named_staged_with_sync(
+            &format!("{}.journal", encode_hex(&transaction_id)),
+            &claimed,
+            || Err(JournalError::Io("injected directory sync failure".into())),
+        );
+
+        assert_eq!(
+            result,
+            Err(LinuxJournalReplaceError::AfterRename(JournalError::Io(
+                "injected directory sync failure".into()
+            )))
+        );
+        assert_eq!(
+            ClaimedRecord::parse(
+                &std::fs::read(root.join(format!("{}.journal", encode_hex(&transaction_id))))
+                    .unwrap()
+            )
+            .unwrap(),
+            claimed
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    fn run_central_claimed_sigkill_child(root: &Path) {
+        use std::os::unix::fs::MetadataExt;
+
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let claimed_path = local_path.join("claimed");
+        std::fs::create_dir(&central_path).unwrap();
+        std::fs::create_dir(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"claimed source must remain").unwrap();
+        std::fs::write(root.join("destination"), b"destination must remain").unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let transaction_id = [0xb8; 16];
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            transaction_id,
+            root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(
+                claimed_metadata.dev(),
+                claimed_metadata.ino(),
+                LinuxFileType::Regular,
+            ),
+            Path::new(".ottrin-move-b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8"),
+            LinuxStableIdentity::new(
+                local_metadata.dev(),
+                local_metadata.ino(),
+                LinuxFileType::Directory,
+            ),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        let mut recovery = central.try_lock_recovery().unwrap();
+        recovery
+            .advance_to_claim_intent_with_local(&local, &prepared)
+            .unwrap();
+        let _ =
+            recovery.advance_to_claimed_with_local_after_central(&local, transaction_id, || {
+                let _ = rustix::process::kill_process(
+                    rustix::process::getpid(),
+                    rustix::process::Signal::Kill,
+                );
+                panic!("SIGKILL did not terminate the claimed-journal child");
+            });
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn process_termination_after_central_claimed_flush_retains_exact_restart_evidence() {
+        use std::os::unix::process::ExitStatusExt;
+        use std::process::Command;
+
+        if std::env::var_os("OTTRIN_MOVE_CENTRAL_CLAIMED_KILL_CHILD").as_deref()
+            == Some(std::ffi::OsStr::new("1"))
+        {
+            let root = std::env::var_os("OTTRIN_MOVE_CENTRAL_CLAIMED_KILL_ROOT").unwrap();
+            run_central_claimed_sigkill_child(Path::new(&root));
+            panic!("claimed-journal child returned without being killed");
+        }
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-central-claimed-kill-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let status = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "move_recovery::tests::process_termination_after_central_claimed_flush_retains_exact_restart_evidence",
+                "--nocapture",
+            ])
+            .env("OTTRIN_MOVE_CENTRAL_CLAIMED_KILL_CHILD", "1")
+            .env("OTTRIN_MOVE_CENTRAL_CLAIMED_KILL_ROOT", &root)
+            .status()
+            .unwrap();
+        assert_eq!(status.signal(), Some(9));
+
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let central_journal_path =
+            central_path.join(format!("{}.journal", encode_hex(&[0xb8; 16])));
+        let local_journal_path = local_path.join("journal");
+        let central_before = std::fs::read(&central_journal_path).unwrap();
+        let local_before = std::fs::read(&local_journal_path).unwrap();
+        let claimed = ClaimedRecord::parse(&central_before).unwrap();
+        let claim_intent = ClaimIntentRecord::parse(&local_before).unwrap();
+
+        assert_eq!(
+            central.load_claimed_restart_state(&local, [0xb8; 16]),
+            Ok(LinuxClaimedRestartState::CentralClaimedLocalClaimIntent {
+                claimed,
+                claim_intent,
+            })
+        );
+        assert_eq!(
+            std::fs::read(&central_journal_path).unwrap(),
+            central_before
+        );
+        assert_eq!(std::fs::read(&local_journal_path).unwrap(), local_before);
+        assert_eq!(
+            std::fs::read(local_path.join("claimed")).unwrap(),
+            b"claimed source must remain"
+        );
+        assert_eq!(
+            std::fs::read(root.join("destination")).unwrap(),
+            b"destination must remain"
+        );
+        assert!(!root.join("source-item").exists());
         std::fs::remove_dir_all(root).unwrap();
     }
 
