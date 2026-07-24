@@ -4097,6 +4097,148 @@ mod tests {
     }
 
     #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_claim_evidence_preserves_directory_entry_kind_and_payload() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-claim-directory-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let source_parent_path = root.join("source-parent");
+        let transaction_name = ".ottrin-move-a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6";
+        let local_path = source_parent_path.join(transaction_name);
+        let original_name = Path::new("source-directory");
+        let original_path = source_parent_path.join(original_name);
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::create_dir(&original_path).unwrap();
+        std::fs::write(original_path.join("payload"), b"directory payload").unwrap();
+        let stable_identity = |path: &Path, file_type| {
+            let metadata = std::fs::symlink_metadata(path).unwrap();
+            LinuxStableIdentity::new(metadata.dev(), metadata.ino(), file_type)
+        };
+        let source_identity = stable_identity(&original_path, LinuxFileType::Directory);
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let source_parent = LinuxSourceParentDirectory::open(&source_parent_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xa6; 16],
+            &source_parent_path,
+            original_name,
+            stable_identity(&source_parent_path, LinuxFileType::Directory),
+            source_identity,
+            Path::new(transaction_name),
+            stable_identity(&local_path, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+
+        let claimed = {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery
+                .advance_to_claim_intent_with_local(&local, &prepared)
+                .unwrap();
+            recovery.claim_source_after_intent(&source_parent, &local, [0xa6; 16])
+        };
+
+        assert_eq!(
+            claimed,
+            Ok(LinuxClaimedTopology::ExpectedIdentity {
+                original_name: original_name.to_path_buf(),
+                identity: source_identity,
+            })
+        );
+        assert_eq!(
+            stable_identity(&local_path.join("claimed"), LinuxFileType::Directory),
+            source_identity
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("claimed/payload")).unwrap(),
+            b"directory payload"
+        );
+        assert!(!original_path.exists());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_claim_evidence_preserves_multiply_linked_file_identity() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-claim-hard-link-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let source_parent_path = root.join("source-parent");
+        let transaction_name = ".ottrin-move-a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7";
+        let local_path = source_parent_path.join(transaction_name);
+        let original_name = Path::new("source-item");
+        let original_path = source_parent_path.join(original_name);
+        let sibling_path = source_parent_path.join("surviving-link");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&original_path, b"linked payload").unwrap();
+        std::fs::hard_link(&original_path, &sibling_path).unwrap();
+        let stable_identity = |path: &Path, file_type| {
+            let metadata = std::fs::symlink_metadata(path).unwrap();
+            LinuxStableIdentity::new(metadata.dev(), metadata.ino(), file_type)
+        };
+        let source_identity = stable_identity(&original_path, LinuxFileType::Regular);
+        assert_eq!(
+            stable_identity(&sibling_path, LinuxFileType::Regular),
+            source_identity
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let source_parent = LinuxSourceParentDirectory::open(&source_parent_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xa7; 16],
+            &source_parent_path,
+            original_name,
+            stable_identity(&source_parent_path, LinuxFileType::Directory),
+            source_identity,
+            Path::new(transaction_name),
+            stable_identity(&local_path, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+
+        let claimed = {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery
+                .advance_to_claim_intent_with_local(&local, &prepared)
+                .unwrap();
+            recovery.claim_source_after_intent(&source_parent, &local, [0xa7; 16])
+        };
+
+        assert_eq!(
+            claimed,
+            Ok(LinuxClaimedTopology::ExpectedIdentity {
+                original_name: original_name.to_path_buf(),
+                identity: source_identity,
+            })
+        );
+        assert_eq!(
+            stable_identity(&local_path.join("claimed"), LinuxFileType::Regular),
+            source_identity
+        );
+        assert_eq!(
+            stable_identity(&sibling_path, LinuxFileType::Regular),
+            source_identity
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("claimed")).unwrap(),
+            b"linked payload"
+        );
+        assert_eq!(std::fs::read(sibling_path).unwrap(), b"linked payload");
+        assert!(!original_path.exists());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
     fn run_claim_sigkill_child(root: &Path) {
         use std::os::unix::ffi::OsStringExt;
         use std::os::unix::fs::MetadataExt;
@@ -4215,6 +4357,133 @@ mod tests {
         );
         assert!(!original_path.exists());
         assert_eq!(std::fs::read(claimed_path).unwrap(), b"source payload");
+        assert_eq!(
+            std::fs::read(&central_journal_path).unwrap(),
+            central_journal_before
+        );
+        assert_eq!(
+            std::fs::read(&local_journal_path).unwrap(),
+            local_journal_before
+        );
+        assert_eq!(
+            std::fs::read(root.join("destination")).unwrap(),
+            b"destination must remain"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    fn run_pre_claim_sigkill_child(root: &Path) {
+        use std::os::unix::ffi::OsStringExt;
+        use std::os::unix::fs::MetadataExt;
+
+        let central_path = root.join("central");
+        let source_parent_path = root.join("source-parent");
+        let transaction_name = ".ottrin-move-a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8";
+        let local_path = source_parent_path.join(transaction_name);
+        let original_name =
+            PathBuf::from(std::ffi::OsString::from_vec(b"source-item-\xff".to_vec()));
+        let original_path = source_parent_path.join(&original_name);
+        std::fs::create_dir(&central_path).unwrap();
+        std::fs::create_dir(&source_parent_path).unwrap();
+        std::fs::create_dir(&local_path).unwrap();
+        std::fs::write(&original_path, b"source payload").unwrap();
+        std::fs::write(root.join("destination"), b"destination must remain").unwrap();
+        let stable_identity = |path: &Path, file_type| {
+            let metadata = std::fs::symlink_metadata(path).unwrap();
+            LinuxStableIdentity::new(metadata.dev(), metadata.ino(), file_type)
+        };
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xa8; 16],
+            &source_parent_path,
+            &original_name,
+            stable_identity(&source_parent_path, LinuxFileType::Directory),
+            stable_identity(&original_path, LinuxFileType::Regular),
+            Path::new(transaction_name),
+            stable_identity(&local_path, LinuxFileType::Directory),
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        let mut recovery = central.try_lock_recovery().unwrap();
+        recovery
+            .advance_to_claim_intent_with_local(&local, &prepared)
+            .unwrap();
+        let _ =
+            rustix::process::kill_process(rustix::process::getpid(), rustix::process::Signal::Kill);
+        panic!("SIGKILL did not terminate the pre-claim child");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn process_termination_before_claim_rename_recovers_original_and_missing_claim() {
+        use std::os::unix::ffi::OsStringExt;
+        use std::os::unix::fs::MetadataExt;
+        use std::os::unix::process::ExitStatusExt;
+        use std::process::Command;
+
+        if std::env::var_os("OTTRIN_MOVE_PRE_CLAIM_KILL_CHILD").as_deref()
+            == Some(std::ffi::OsStr::new("1"))
+        {
+            let root = std::env::var_os("OTTRIN_MOVE_PRE_CLAIM_KILL_ROOT").unwrap();
+            run_pre_claim_sigkill_child(Path::new(&root));
+            panic!("pre-claim child returned without being killed");
+        }
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-pre-claim-process-kill-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let status = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "move_recovery::tests::process_termination_before_claim_rename_recovers_original_and_missing_claim",
+                "--nocapture",
+            ])
+            .env("OTTRIN_MOVE_PRE_CLAIM_KILL_CHILD", "1")
+            .env("OTTRIN_MOVE_PRE_CLAIM_KILL_ROOT", &root)
+            .status()
+            .unwrap();
+        assert_eq!(status.signal(), Some(9));
+
+        let central_path = root.join("central");
+        let source_parent_path = root.join("source-parent");
+        let transaction_name = ".ottrin-move-a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8";
+        let local_path = source_parent_path.join(transaction_name);
+        let original_name =
+            PathBuf::from(std::ffi::OsString::from_vec(b"source-item-\xff".to_vec()));
+        let original_path = source_parent_path.join(&original_name);
+        let metadata = std::fs::symlink_metadata(&original_path).unwrap();
+        let source_identity =
+            LinuxStableIdentity::new(metadata.dev(), metadata.ino(), LinuxFileType::Regular);
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let source_parent = LinuxSourceParentDirectory::open(&source_parent_path).unwrap();
+        let central_journal_path =
+            central_path.join(format!("{}.journal", encode_hex(&[0xa8; 16])));
+        let local_journal_path = local_path.join("journal");
+        let central_journal_before = std::fs::read(&central_journal_path).unwrap();
+        let local_journal_before = std::fs::read(&local_journal_path).unwrap();
+        let observed = {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            (
+                recovery.observe_original_after_restart(&source_parent, &local, [0xa8; 16]),
+                recovery.observe_claimed_after_restart(&local, [0xa8; 16]),
+            )
+        };
+
+        assert_eq!(
+            observed,
+            (
+                Ok(LinuxOriginalTopology::ExpectedIdentity(source_identity)),
+                Ok(LinuxClaimedTopology::Missing {
+                    expected: source_identity,
+                }),
+            )
+        );
+        assert_eq!(std::fs::read(&original_path).unwrap(), b"source payload");
+        assert!(!local_path.join("claimed").exists());
         assert_eq!(
             std::fs::read(&central_journal_path).unwrap(),
             central_journal_before
