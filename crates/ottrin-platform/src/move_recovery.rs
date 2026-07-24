@@ -492,6 +492,46 @@ pub enum LinuxObserveClaimedError {
 }
 
 #[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum LinuxOriginalTopology {
+    Missing {
+        expected: LinuxStableIdentity,
+    },
+    ExpectedIdentity(LinuxStableIdentity),
+    UnexpectedIdentity {
+        expected: LinuxStableIdentity,
+        observed: LinuxStableIdentity,
+    },
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxObserveOriginalError {
+    #[error("claim-intent restart evidence is unsafe: {0}")]
+    Restart(#[from] LinuxLoadClaimIntentRestartError),
+    #[error("source-local claim-intent journal has not reached the durable central state")]
+    JournalsNotMatching,
+    #[error(
+        "source transaction identity differs from the durable claim-intent: expected {expected:?}, observed {observed:?}"
+    )]
+    TransactionIdentityMismatch {
+        expected: LinuxStableIdentity,
+        observed: LinuxStableIdentity,
+    },
+    #[error(
+        "source parent identity differs from the durable claim-intent: expected {expected:?}, observed {observed:?}"
+    )]
+    SourceParentIdentityMismatch {
+        expected: LinuxStableIdentity,
+        observed: LinuxStableIdentity,
+    },
+    #[error("durable original-source name is invalid: {0}")]
+    InvalidOriginalName(JournalError),
+    #[error("original-source topology could not be observed: {0}")]
+    Io(String),
+}
+
+#[cfg(target_os = "linux")]
 #[derive(Debug, Error, Eq, PartialEq)]
 pub enum LinuxDiscoverPreparedError {
     #[error("central journal directory could not be read: {0}")]
@@ -1150,6 +1190,85 @@ impl LinuxRecoveryLock<'_> {
             Ok(LinuxClaimedTopology::ExpectedIdentity(observed))
         } else {
             Ok(LinuxClaimedTopology::UnexpectedIdentity { expected, observed })
+        }
+    }
+
+    pub fn observe_original_after_restart(
+        &mut self,
+        source_parent: &LinuxSourceParentDirectory,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxOriginalTopology, LinuxObserveOriginalError> {
+        use rustix::fs::{FileType, Mode, OFlags, fstat, openat};
+
+        let (expected_parent, expected_transaction, expected, original_name) = match self
+            .central
+            .load_claim_intent_restart_state(local, transaction_id)?
+        {
+            LinuxClaimIntentRestartState::MatchingPair(record) => (
+                record.source_parent_identity,
+                record.source_transaction_identity,
+                record.expected_source_identity,
+                record.original_name,
+            ),
+            LinuxClaimIntentRestartState::CentralClaimIntentLocalPrepared { .. } => {
+                return Err(LinuxObserveOriginalError::JournalsNotMatching);
+            }
+        };
+        let transaction_stat = fstat(&local.directory)
+            .map_err(|error| LinuxObserveOriginalError::Io(error.to_string()))?;
+        let observed_transaction = LinuxStableIdentity::new(
+            transaction_stat.st_dev,
+            transaction_stat.st_ino,
+            LinuxFileType::Directory,
+        );
+        if observed_transaction != expected_transaction {
+            return Err(LinuxObserveOriginalError::TransactionIdentityMismatch {
+                expected: expected_transaction,
+                observed: observed_transaction,
+            });
+        }
+        let parent_stat = fstat(&source_parent.directory)
+            .map_err(|error| LinuxObserveOriginalError::Io(error.to_string()))?;
+        let observed_parent = LinuxStableIdentity::new(
+            parent_stat.st_dev,
+            parent_stat.st_ino,
+            LinuxFileType::Directory,
+        );
+        if observed_parent != expected_parent {
+            return Err(LinuxObserveOriginalError::SourceParentIdentityMismatch {
+                expected: expected_parent,
+                observed: observed_parent,
+            });
+        }
+        let original_name = original_name
+            .decode()
+            .map_err(LinuxObserveOriginalError::InvalidOriginalName)?;
+        let original = match openat(
+            &source_parent.directory,
+            &original_name,
+            OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        ) {
+            Ok(original) => original,
+            Err(error) if error == rustix::io::Errno::NOENT => {
+                return Ok(LinuxOriginalTopology::Missing { expected });
+            }
+            Err(error) => return Err(LinuxObserveOriginalError::Io(error.to_string())),
+        };
+        let stat =
+            fstat(&original).map_err(|error| LinuxObserveOriginalError::Io(error.to_string()))?;
+        let file_type = match FileType::from_raw_mode(stat.st_mode) {
+            FileType::RegularFile => LinuxFileType::Regular,
+            FileType::Directory => LinuxFileType::Directory,
+            FileType::Symlink => LinuxFileType::Symlink,
+            _ => LinuxFileType::Other,
+        };
+        let observed = LinuxStableIdentity::new(stat.st_dev, stat.st_ino, file_type);
+        if observed == expected {
+            Ok(LinuxOriginalTopology::ExpectedIdentity(observed))
+        } else {
+            Ok(LinuxOriginalTopology::UnexpectedIdentity { expected, observed })
         }
     }
 
@@ -3022,9 +3141,9 @@ mod tests {
             central.prepare_with_local(&local, &prepared).unwrap();
             {
                 let mut recovery = central.try_lock_recovery().unwrap();
-                recovery
-                    .advance_to_claim_intent_with_local(&local, &prepared)
-                    .unwrap();
+                let advanced = recovery.advance_to_claim_intent_with_local(&local, &prepared);
+                drop(recovery);
+                advanced.unwrap();
             }
             let journal_before = std::fs::read(local_path.join("journal")).unwrap();
 
@@ -3080,6 +3199,8 @@ mod tests {
         );
         let claimed_path = substituted_path.join("claimed");
         std::fs::write(&claimed_path, b"must not become recovery evidence").unwrap();
+        let original_path = root.join("source-item");
+        std::fs::hard_link(&claimed_path, &original_path).unwrap();
         let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
         let expected_identity = LinuxStableIdentity::new(
             claimed_metadata.dev(),
@@ -3092,25 +3213,33 @@ mod tests {
             substituted_metadata.ino(),
             LinuxFileType::Directory,
         );
+        let root_metadata = std::fs::symlink_metadata(&root).unwrap();
+        let root_identity = LinuxStableIdentity::new(
+            root_metadata.dev(),
+            root_metadata.ino(),
+            LinuxFileType::Directory,
+        );
         let central = LinuxJournalDirectory::open(&central_path).unwrap();
         let local = LinuxJournalDirectory::open(&local_path).unwrap();
         let substituted = LinuxJournalDirectory::open(&substituted_path).unwrap();
+        let source_parent = LinuxSourceParentDirectory::open(&root).unwrap();
         let prepared = PreparedRecord::new_linux(
             [0xea; 16],
             &root,
             Path::new("source-item"),
-            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            root_identity,
             expected_identity,
             Path::new(".ottrin-move-eaeaeaeaeaeaeaeaeaeaeaeaeaeaeaea"),
             local_identity,
         )
         .unwrap();
         central.prepare_with_local(&local, &prepared).unwrap();
-        central
-            .try_lock_recovery()
-            .unwrap()
-            .advance_to_claim_intent_with_local(&local, &prepared)
-            .unwrap();
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            let advanced = recovery.advance_to_claim_intent_with_local(&local, &prepared);
+            drop(recovery);
+            advanced.unwrap();
+        }
         std::fs::copy(local_path.join("journal"), substituted_path.join("journal")).unwrap();
         let central_before = std::fs::read_dir(&central_path)
             .unwrap()
@@ -3127,14 +3256,27 @@ mod tests {
             })
             .collect::<std::collections::BTreeMap<_, _>>();
 
-        let observed = central
-            .try_lock_recovery()
-            .unwrap()
-            .observe_claimed_after_restart(&substituted, [0xea; 16]);
+        let observed = {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            let observed = recovery.observe_claimed_after_restart(&substituted, [0xea; 16]);
+            drop(recovery);
+            observed
+        };
 
         assert_eq!(
             observed,
             Err(LinuxObserveClaimedError::TransactionIdentityMismatch {
+                expected: local_identity,
+                observed: substituted_identity,
+            })
+        );
+        let observed_original = {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery.observe_original_after_restart(&source_parent, &substituted, [0xea; 16])
+        };
+        assert_eq!(
+            observed_original,
+            Err(LinuxObserveOriginalError::TransactionIdentityMismatch {
                 expected: local_identity,
                 observed: substituted_identity,
             })
@@ -3160,6 +3302,461 @@ mod tests {
             b"must not become recovery evidence"
         );
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_rejects_a_substituted_source_parent_before_observing_original() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-observe-substituted-source-parent-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let source_parent_path = root.join("source-parent");
+        let substituted_parent_path = root.join("substituted-parent");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::create_dir_all(&source_parent_path).unwrap();
+        std::fs::create_dir_all(&substituted_parent_path).unwrap();
+        let original_path = source_parent_path.join("source-item");
+        let substituted_original_path = substituted_parent_path.join("source-item");
+        std::fs::write(&original_path, b"source must remain").unwrap();
+        std::fs::hard_link(&original_path, &substituted_original_path).unwrap();
+        let source_parent_metadata = std::fs::symlink_metadata(&source_parent_path).unwrap();
+        let source_parent_identity = LinuxStableIdentity::new(
+            source_parent_metadata.dev(),
+            source_parent_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let substituted_parent_metadata =
+            std::fs::symlink_metadata(&substituted_parent_path).unwrap();
+        let substituted_parent_identity = LinuxStableIdentity::new(
+            substituted_parent_metadata.dev(),
+            substituted_parent_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let source_metadata = std::fs::symlink_metadata(&original_path).unwrap();
+        let source_identity = LinuxStableIdentity::new(
+            source_metadata.dev(),
+            source_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let substituted_parent =
+            LinuxSourceParentDirectory::open(&substituted_parent_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xed; 16],
+            &source_parent_path,
+            Path::new("source-item"),
+            source_parent_identity,
+            source_identity,
+            Path::new(".ottrin-move-edededededededededededededededed"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            let advanced = recovery.advance_to_claim_intent_with_local(&local, &prepared);
+            drop(recovery);
+            advanced.unwrap();
+        }
+        let central_before = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_before = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+
+        let observed = {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery.observe_original_after_restart(&substituted_parent, &local, [0xed; 16])
+        };
+
+        assert_eq!(
+            observed,
+            Err(LinuxObserveOriginalError::SourceParentIdentityMismatch {
+                expected: source_parent_identity,
+                observed: substituted_parent_identity,
+            })
+        );
+        let central_after = std::fs::read_dir(&central_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        let local_after = std::fs::read_dir(&local_path)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (entry.file_name(), std::fs::read(entry.path()).unwrap())
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        assert_eq!(central_after, central_before);
+        assert_eq!(local_after, local_before);
+        assert_eq!(
+            std::fs::read(&original_path).unwrap(),
+            b"source must remain"
+        );
+        assert_eq!(
+            std::fs::read(&substituted_original_path).unwrap(),
+            b"source must remain"
+        );
+        assert_eq!(
+            std::fs::symlink_metadata(&source_parent_path)
+                .unwrap()
+                .ino(),
+            source_parent_metadata.ino()
+        );
+        assert_eq!(
+            std::fs::symlink_metadata(&substituted_parent_path)
+                .unwrap()
+                .ino(),
+            substituted_parent_metadata.ino()
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_reports_unexpected_original_identity_without_mutation() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-observe-unexpected-original-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let source_parent_path = root.join("source-parent");
+        let expected_path = root.join("expected-source");
+        let original_path = source_parent_path.join("source-item");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::create_dir_all(&source_parent_path).unwrap();
+        std::fs::write(&expected_path, b"expected must remain").unwrap();
+        std::fs::write(&original_path, b"unexpected must remain").unwrap();
+        let stable_identity = |path: &Path, file_type| {
+            let metadata = std::fs::symlink_metadata(path).unwrap();
+            LinuxStableIdentity::new(metadata.dev(), metadata.ino(), file_type)
+        };
+        let source_parent_identity = stable_identity(&source_parent_path, LinuxFileType::Directory);
+        let expected_identity = stable_identity(&expected_path, LinuxFileType::Regular);
+        let unexpected_identity = stable_identity(&original_path, LinuxFileType::Regular);
+        let local_identity = stable_identity(&local_path, LinuxFileType::Directory);
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let source_parent = LinuxSourceParentDirectory::open(&source_parent_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xee; 16],
+            &source_parent_path,
+            Path::new("source-item"),
+            source_parent_identity,
+            expected_identity,
+            Path::new(".ottrin-move-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            let advanced = recovery.advance_to_claim_intent_with_local(&local, &prepared);
+            drop(recovery);
+            advanced.unwrap();
+        }
+        let central_journal_before =
+            std::fs::read(central_path.join(format!("{}.journal", encode_hex(&[0xee; 16]))))
+                .unwrap();
+        let local_journal_before = std::fs::read(local_path.join("journal")).unwrap();
+
+        let observed = {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery.observe_original_after_restart(&source_parent, &local, [0xee; 16])
+        };
+
+        assert_eq!(
+            observed,
+            Ok(LinuxOriginalTopology::UnexpectedIdentity {
+                expected: expected_identity,
+                observed: unexpected_identity,
+            })
+        );
+        assert_eq!(
+            std::fs::read(central_path.join(format!("{}.journal", encode_hex(&[0xee; 16]))))
+                .unwrap(),
+            central_journal_before
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            local_journal_before
+        );
+        assert_eq!(
+            std::fs::read(&expected_path).unwrap(),
+            b"expected must remain"
+        );
+        assert_eq!(
+            std::fs::read(&original_path).unwrap(),
+            b"unexpected must remain"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_reports_expected_original_identity_without_mutation() {
+        use std::os::unix::ffi::OsStringExt;
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-observe-expected-original-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let source_parent_path = root.join("source-parent");
+        let original_name = PathBuf::from(std::ffi::OsString::from_vec(b"source-\xff".to_vec()));
+        let original_path = source_parent_path.join(&original_name);
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::create_dir_all(&source_parent_path).unwrap();
+        std::fs::write(&original_path, b"source must remain").unwrap();
+        let stable_identity = |path: &Path, file_type| {
+            let metadata = std::fs::symlink_metadata(path).unwrap();
+            LinuxStableIdentity::new(metadata.dev(), metadata.ino(), file_type)
+        };
+        let source_parent_identity = stable_identity(&source_parent_path, LinuxFileType::Directory);
+        let source_identity = stable_identity(&original_path, LinuxFileType::Regular);
+        let local_identity = stable_identity(&local_path, LinuxFileType::Directory);
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let source_parent = LinuxSourceParentDirectory::open(&source_parent_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xef; 16],
+            &source_parent_path,
+            &original_name,
+            source_parent_identity,
+            source_identity,
+            Path::new(".ottrin-move-efefefefefefefefefefefefefefefef"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            let advanced = recovery.advance_to_claim_intent_with_local(&local, &prepared);
+            drop(recovery);
+            advanced.unwrap();
+        }
+        let central_journal_path =
+            central_path.join(format!("{}.journal", encode_hex(&[0xef; 16])));
+        let central_journal_before = std::fs::read(&central_journal_path).unwrap();
+        let local_journal_before = std::fs::read(local_path.join("journal")).unwrap();
+
+        let observed = {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery.observe_original_after_restart(&source_parent, &local, [0xef; 16])
+        };
+
+        assert_eq!(
+            observed,
+            Ok(LinuxOriginalTopology::ExpectedIdentity(source_identity))
+        );
+        assert_eq!(
+            std::fs::read(&central_journal_path).unwrap(),
+            central_journal_before
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            local_journal_before
+        );
+        assert_eq!(
+            std::fs::read(&original_path).unwrap(),
+            b"source must remain"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_reports_missing_original_without_mutation() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-observe-missing-original-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let source_parent_path = root.join("source-parent");
+        let expected_path = root.join("expected-source");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::create_dir_all(&source_parent_path).unwrap();
+        std::fs::write(&expected_path, b"expected must remain").unwrap();
+        let stable_identity = |path: &Path, file_type| {
+            let metadata = std::fs::symlink_metadata(path).unwrap();
+            LinuxStableIdentity::new(metadata.dev(), metadata.ino(), file_type)
+        };
+        let source_parent_identity = stable_identity(&source_parent_path, LinuxFileType::Directory);
+        let expected_identity = stable_identity(&expected_path, LinuxFileType::Regular);
+        let local_identity = stable_identity(&local_path, LinuxFileType::Directory);
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let source_parent = LinuxSourceParentDirectory::open(&source_parent_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0xf0; 16],
+            &source_parent_path,
+            Path::new("source-item"),
+            source_parent_identity,
+            expected_identity,
+            Path::new(".ottrin-move-f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            let advanced = recovery.advance_to_claim_intent_with_local(&local, &prepared);
+            drop(recovery);
+            advanced.unwrap();
+        }
+        let central_before = std::fs::read_dir(&central_path).unwrap().count();
+        let local_journal_before = std::fs::read(local_path.join("journal")).unwrap();
+
+        let observed = {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery.observe_original_after_restart(&source_parent, &local, [0xf0; 16])
+        };
+
+        assert_eq!(
+            observed,
+            Ok(LinuxOriginalTopology::Missing {
+                expected: expected_identity,
+            })
+        );
+        assert_eq!(
+            std::fs::read_dir(&central_path).unwrap().count(),
+            central_before
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            local_journal_before
+        );
+        assert_eq!(std::fs::read_dir(&source_parent_path).unwrap().count(), 0);
+        assert_eq!(
+            std::fs::read(&expected_path).unwrap(),
+            b"expected must remain"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_observes_original_symlinks_without_following_them() {
+        use std::os::unix::fs::{MetadataExt, symlink};
+
+        for (transaction_id, target_exists) in [([0xf1; 16], true), ([0xf2; 16], false)] {
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-move-observe-original-symlink-{}-{}",
+                target_exists,
+                encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+            ));
+            let central_path = root.join("central");
+            let local_path = root.join("local");
+            let source_parent_path = root.join("source-parent");
+            let expected_path = root.join("expected-source");
+            let target_path = root.join("target");
+            let original_path = source_parent_path.join("source-item");
+            std::fs::create_dir_all(&central_path).unwrap();
+            std::fs::create_dir_all(&local_path).unwrap();
+            std::fs::create_dir_all(&source_parent_path).unwrap();
+            std::fs::write(&expected_path, b"expected must remain").unwrap();
+            if target_exists {
+                std::fs::write(&target_path, b"target must remain").unwrap();
+            }
+            symlink(&target_path, &original_path).unwrap();
+            let stable_identity = |path: &Path, file_type| {
+                let metadata = std::fs::symlink_metadata(path).unwrap();
+                LinuxStableIdentity::new(metadata.dev(), metadata.ino(), file_type)
+            };
+            let source_parent_identity =
+                stable_identity(&source_parent_path, LinuxFileType::Directory);
+            let expected_identity = stable_identity(&expected_path, LinuxFileType::Regular);
+            let symlink_identity = stable_identity(&original_path, LinuxFileType::Symlink);
+            let local_identity = stable_identity(&local_path, LinuxFileType::Directory);
+            let central = LinuxJournalDirectory::open(&central_path).unwrap();
+            let local = LinuxJournalDirectory::open(&local_path).unwrap();
+            let source_parent = LinuxSourceParentDirectory::open(&source_parent_path).unwrap();
+            let prepared = PreparedRecord::new_linux(
+                transaction_id,
+                &source_parent_path,
+                Path::new("source-item"),
+                source_parent_identity,
+                expected_identity,
+                Path::new(&format!(".ottrin-move-{}", encode_hex(&transaction_id))),
+                local_identity,
+            )
+            .unwrap();
+            central.prepare_with_local(&local, &prepared).unwrap();
+            {
+                let mut recovery = central.try_lock_recovery().unwrap();
+                let advanced = recovery.advance_to_claim_intent_with_local(&local, &prepared);
+                drop(recovery);
+                advanced.unwrap();
+            }
+            let central_journal_path =
+                central_path.join(format!("{}.journal", encode_hex(&transaction_id)));
+            let central_journal_before = std::fs::read(&central_journal_path).unwrap();
+            let local_journal_before = std::fs::read(local_path.join("journal")).unwrap();
+
+            let observed = {
+                let mut recovery = central.try_lock_recovery().unwrap();
+                recovery.observe_original_after_restart(&source_parent, &local, transaction_id)
+            };
+
+            assert_eq!(
+                observed,
+                Ok(LinuxOriginalTopology::UnexpectedIdentity {
+                    expected: expected_identity,
+                    observed: symlink_identity,
+                })
+            );
+            assert_eq!(
+                std::fs::read(&central_journal_path).unwrap(),
+                central_journal_before
+            );
+            assert_eq!(
+                std::fs::read(local_path.join("journal")).unwrap(),
+                local_journal_before
+            );
+            assert_eq!(std::fs::read_link(&original_path).unwrap(), target_path);
+            if target_exists {
+                assert_eq!(std::fs::read(&target_path).unwrap(), b"target must remain");
+            } else {
+                assert!(!target_path.exists());
+            }
+            std::fs::remove_dir_all(root).unwrap();
+        }
     }
 
     #[cfg(target_os = "linux")]
