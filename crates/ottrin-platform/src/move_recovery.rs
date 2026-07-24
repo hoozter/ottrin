@@ -137,6 +137,41 @@ struct RawClaimIntentRecord {
     expected_source_identity: LinuxStableIdentity,
 }
 
+#[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+pub struct ClaimedRecord {
+    schema_major: u16,
+    schema_minor: u16,
+    transaction_id: String,
+    phase: JournalPhase,
+    source_parent: NativePath,
+    original_name: NativePath,
+    source_parent_identity: LinuxStableIdentity,
+    source_entry_identity: LinuxStableIdentity,
+    source_transaction_name: NativePath,
+    source_transaction_identity: LinuxStableIdentity,
+    expected_source_identity: LinuxStableIdentity,
+    claimed_source_identity: LinuxStableIdentity,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawClaimedRecord {
+    schema_major: u16,
+    schema_minor: u16,
+    transaction_id: String,
+    phase: JournalPhase,
+    source_parent: NativePath,
+    original_name: NativePath,
+    source_parent_identity: LinuxStableIdentity,
+    source_entry_identity: LinuxStableIdentity,
+    source_transaction_name: NativePath,
+    source_transaction_identity: LinuxStableIdentity,
+    expected_source_identity: LinuxStableIdentity,
+    claimed_source_identity: LinuxStableIdentity,
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct JournalHeader {
     schema_major: u16,
@@ -183,6 +218,12 @@ pub enum JournalError {
     #[cfg(target_os = "linux")]
     #[error("claim-intent expected source identity does not match the prepared source identity")]
     MismatchedExpectedSourceIdentity,
+    #[cfg(target_os = "linux")]
+    #[error("claimed journal cannot contain phase {0:?}")]
+    InvalidClaimedPhase(JournalPhase),
+    #[cfg(target_os = "linux")]
+    #[error("claimed source identity does not match the expected source identity")]
+    MismatchedClaimedSourceIdentity,
     #[cfg(target_os = "linux")]
     #[error("source transaction name does not match the transaction ID")]
     MismatchedSourceTransactionName,
@@ -1831,6 +1872,74 @@ impl TryFrom<RawClaimIntentRecord> for ClaimIntentRecord {
 }
 
 #[cfg(target_os = "linux")]
+impl ClaimedRecord {
+    pub fn from_claim_intent(
+        claim_intent: &ClaimIntentRecord,
+        claimed_source_identity: LinuxStableIdentity,
+    ) -> Result<Self, JournalError> {
+        if claimed_source_identity != claim_intent.expected_source_identity {
+            return Err(JournalError::MismatchedClaimedSourceIdentity);
+        }
+        Ok(Self {
+            schema_major: claim_intent.schema_major,
+            schema_minor: claim_intent.schema_minor,
+            transaction_id: claim_intent.transaction_id.clone(),
+            phase: JournalPhase::Claimed,
+            source_parent: claim_intent.source_parent.clone(),
+            original_name: claim_intent.original_name.clone(),
+            source_parent_identity: claim_intent.source_parent_identity,
+            source_entry_identity: claim_intent.source_entry_identity,
+            source_transaction_name: claim_intent.source_transaction_name.clone(),
+            source_transaction_identity: claim_intent.source_transaction_identity,
+            expected_source_identity: claim_intent.expected_source_identity,
+            claimed_source_identity,
+        })
+    }
+
+    pub fn parse(bytes: &[u8]) -> Result<Self, JournalError> {
+        let raw: RawClaimedRecord = serde_json::from_slice(bytes)
+            .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
+        Self::try_from(raw)
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl TryFrom<RawClaimedRecord> for ClaimedRecord {
+    type Error = JournalError;
+
+    fn try_from(raw: RawClaimedRecord) -> Result<Self, Self::Error> {
+        if raw.phase != JournalPhase::Claimed {
+            return Err(JournalError::InvalidClaimedPhase(raw.phase));
+        }
+        let claim_intent = ClaimIntentRecord::try_from(RawClaimIntentRecord {
+            schema_major: raw.schema_major,
+            schema_minor: raw.schema_minor,
+            transaction_id: raw.transaction_id,
+            phase: JournalPhase::ClaimIntent,
+            source_parent: raw.source_parent,
+            original_name: raw.original_name,
+            source_parent_identity: raw.source_parent_identity,
+            source_entry_identity: raw.source_entry_identity,
+            source_transaction_name: raw.source_transaction_name,
+            source_transaction_identity: raw.source_transaction_identity,
+            expected_source_identity: raw.expected_source_identity,
+        })?;
+        Self::from_claim_intent(&claim_intent, raw.claimed_source_identity)
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl<'de> Deserialize<'de> for ClaimedRecord {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let raw = RawClaimedRecord::deserialize(deserializer)?;
+        Self::try_from(raw).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(target_os = "linux")]
 fn validate_source_transaction_name(
     transaction_id: &str,
     source_transaction_name: &NativePath,
@@ -2196,6 +2305,127 @@ mod tests {
             ClaimIntentRecord::parse(&serde_json::to_vec(&missing_expected).unwrap()),
             Err(JournalError::InvalidJson(_))
         ));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn claimed_schema_preserves_claim_intent_evidence_and_verified_identity() {
+        let prepared = PreparedRecord::new_linux(
+            [0x45; 16],
+            Path::new("/source"),
+            Path::new("item"),
+            LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+            Path::new(".ottrin-move-45454545454545454545454545454545"),
+            LinuxStableIdentity::new(11, 44, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+
+        let record = ClaimedRecord::from_claim_intent(
+            &claim_intent,
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+        )
+        .unwrap();
+        let encoded = serde_json::to_value(&record).unwrap();
+        let parsed = ClaimedRecord::parse(&serde_json::to_vec(&encoded).unwrap()).unwrap();
+        let claim_intent_json = serde_json::to_value(&claim_intent).unwrap();
+
+        assert_eq!(parsed, record);
+        assert_eq!(encoded["phase"], serde_json::json!("claimed"));
+        assert_eq!(
+            encoded["claimed_source_identity"],
+            claim_intent_json["expected_source_identity"]
+        );
+        for field in [
+            "schema_major",
+            "schema_minor",
+            "transaction_id",
+            "source_parent",
+            "original_name",
+            "source_parent_identity",
+            "source_entry_identity",
+            "source_transaction_name",
+            "source_transaction_identity",
+            "expected_source_identity",
+        ] {
+            assert_eq!(encoded[field], claim_intent_json[field], "field {field}");
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn claimed_record_rejects_phase_inappropriate_evidence() {
+        let prepared = PreparedRecord::new_linux(
+            [0x46; 16],
+            Path::new("/source"),
+            Path::new("item"),
+            LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+            Path::new(".ottrin-move-46464646464646464646464646464646"),
+            LinuxStableIdentity::new(11, 44, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let mut encoded = serde_json::to_value(
+            ClaimedRecord::from_claim_intent(&claim_intent, prepared.source_entry_identity)
+                .unwrap(),
+        )
+        .unwrap();
+        encoded["phase"] = serde_json::json!("claim-intent");
+
+        assert_eq!(
+            ClaimedRecord::parse(&serde_json::to_vec(&encoded).unwrap()),
+            Err(JournalError::InvalidClaimedPhase(JournalPhase::ClaimIntent))
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn claimed_record_rejects_identity_that_differs_from_claim_intent() {
+        let prepared = PreparedRecord::new_linux(
+            [0x47; 16],
+            Path::new("/source"),
+            Path::new("item"),
+            LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+            Path::new(".ottrin-move-47474747474747474747474747474747"),
+            LinuxStableIdentity::new(11, 44, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+
+        assert_eq!(
+            ClaimedRecord::from_claim_intent(
+                &claim_intent,
+                LinuxStableIdentity::new(11, 34, LinuxFileType::Regular),
+            ),
+            Err(JournalError::MismatchedClaimedSourceIdentity)
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn direct_claimed_deserialization_validates_claimed_identity() {
+        let prepared = PreparedRecord::new_linux(
+            [0x48; 16],
+            Path::new("/source"),
+            Path::new("item"),
+            LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+            Path::new(".ottrin-move-48484848484848484848484848484848"),
+            LinuxStableIdentity::new(11, 44, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let mut encoded = serde_json::to_value(
+            ClaimedRecord::from_claim_intent(&claim_intent, prepared.source_entry_identity)
+                .unwrap(),
+        )
+        .unwrap();
+        encoded["claimed_source_identity"]["inode"] = serde_json::json!(34);
+
+        assert!(serde_json::from_value::<ClaimedRecord>(encoded).is_err());
     }
 
     #[cfg(target_os = "linux")]
