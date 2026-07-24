@@ -1654,6 +1654,82 @@ mod tests {
 
     #[cfg(unix)]
     #[test]
+    fn move_is_rejected_before_mutating_even_for_a_valid_file_source() {
+        let dir = TestDir::new("move-safe-rejection-file");
+        let source = dir.path().join("source.txt");
+        let destination = dir.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&source, "original contents").unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Move {
+            sources: vec![source.clone()],
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        });
+
+        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
+        assert_eq!(
+            std::fs::read_to_string(&source).unwrap(),
+            "original contents"
+        );
+        assert!(std::fs::symlink_metadata(destination.join("source.txt")).is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn move_is_rejected_before_mutating_even_for_a_valid_directory_source() {
+        let dir = TestDir::new("move-safe-rejection-directory");
+        let source = dir.path().join("source-dir");
+        let source_file = source.join("inner.txt");
+        let destination = dir.path().join("destination");
+        std::fs::create_dir(&source).unwrap();
+        std::fs::write(&source_file, "keep-safe").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Move {
+            sources: vec![source.clone()],
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        });
+
+        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
+        assert!(source.exists());
+        assert!(source_file.exists());
+        assert!(std::fs::read_to_string(source_file).unwrap() == "keep-safe");
+        assert!(std::fs::read_dir(&destination).unwrap().next().is_none());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn move_is_rejected_before_mutating_for_all_conflict_actions() {
+        for conflict in [
+            ConflictAction::Skip,
+            ConflictAction::Overwrite,
+            ConflictAction::Rename,
+        ] {
+            let dir = TestDir::new("move-safe-rejection-conflict-matrix");
+            let source = dir.path().join("source.txt");
+            let destination = dir.path().join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            std::fs::write(&source, "original contents").unwrap();
+
+            let result = DefaultPlatform.execute_command(&FileCommand::Move {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict,
+            });
+
+            assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
+            assert_eq!(
+                std::fs::read_to_string(&source).unwrap(),
+                "original contents"
+            );
+            assert!(std::fs::symlink_metadata(destination.join("source.txt")).is_err());
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
     fn move_is_rejected_before_mutating_even_for_a_valid_symlink_source() {
         use std::os::unix::fs::symlink;
 
