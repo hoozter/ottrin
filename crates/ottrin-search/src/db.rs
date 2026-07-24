@@ -4,6 +4,7 @@ use ottrin_core::{EntryKind, SearchResultItem};
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 use thiserror::Error;
 
 /// Schema version for the on-disk search database.
@@ -61,6 +62,14 @@ impl SearchStore {
         plan: &ScanPlan,
     ) -> Result<Option<GenerationSnapshot>, SearchDbError> {
         load_generation(&self.conn, plan)
+    }
+
+    pub(crate) fn load_cancellable(
+        &mut self,
+        plan: &ScanPlan,
+        cancelled: &AtomicBool,
+    ) -> Result<Option<GenerationSnapshot>, SearchDbError> {
+        load_generation_inner(&self.conn, plan, Some(cancelled))
     }
 
     pub(crate) fn commit(
@@ -221,6 +230,17 @@ fn load_generation(
     conn: &Connection,
     plan: &ScanPlan,
 ) -> Result<Option<GenerationSnapshot>, SearchDbError> {
+    load_generation_inner(conn, plan, None)
+}
+
+fn load_generation_inner(
+    conn: &Connection,
+    plan: &ScanPlan,
+    cancelled: Option<&AtomicBool>,
+) -> Result<Option<GenerationSnapshot>, SearchDbError> {
+    if cancelled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
+        return Err(SearchDbError::LoadCancelled);
+    }
     let active = conn
         .query_row(
             "SELECT g.id, g.plan_identity, g.completed, g.item_count
@@ -268,7 +288,13 @@ fn load_generation(
         item.prepare();
         Ok(OwnedItem::new(decode_path(row.get(2)?)?, item))
     })?;
-    let items = rows.collect::<Result<Vec<_>, _>>()?;
+    let mut items = Vec::with_capacity(usize::try_from(expected_count).unwrap_or(0));
+    for row in rows {
+        if cancelled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
+            return Err(SearchDbError::LoadCancelled);
+        }
+        items.push(row?);
+    }
     if i64::try_from(items.len()).ok() != Some(expected_count) {
         return Err(SearchDbError::InvalidGeneration(format!(
             "active generation expected {expected_count} items but loaded {}",
@@ -332,6 +358,8 @@ pub enum SearchDbError {
     InjectedFailure,
     #[error("candidate activation was cancelled")]
     ActivationCancelled,
+    #[error("generation load was cancelled")]
+    LoadCancelled,
 }
 
 pub fn search_db_path() -> PathBuf {

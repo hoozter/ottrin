@@ -19,7 +19,11 @@ const WATCH_RETRY_MAXIMUM: Duration = Duration::from_secs(60);
 const INCREMENTAL_REBUILD_THRESHOLD: usize = 500;
 
 pub(crate) trait StoreBackend: Send {
-    fn load(&mut self, plan: &ScanPlan) -> Result<Option<GenerationSnapshot>, String>;
+    fn load(
+        &mut self,
+        plan: &ScanPlan,
+        cancelled: &AtomicBool,
+    ) -> Result<Option<GenerationSnapshot>, String>;
     fn commit_guarded(
         &mut self,
         plan: &ScanPlan,
@@ -37,8 +41,13 @@ pub(crate) enum StoreBackendError {
 }
 
 impl StoreBackend for SearchStore {
-    fn load(&mut self, plan: &ScanPlan) -> Result<Option<GenerationSnapshot>, String> {
-        SearchStore::load(self, plan).map_err(|error| error.to_string())
+    fn load(
+        &mut self,
+        plan: &ScanPlan,
+        cancelled: &AtomicBool,
+    ) -> Result<Option<GenerationSnapshot>, String> {
+        self.load_cancellable(plan, cancelled)
+            .map_err(|error| error.to_string())
     }
 
     fn commit_guarded(
@@ -94,6 +103,7 @@ pub(crate) struct WorkerHandle {
     pub(crate) commands: mpsc::Sender<Command>,
     fence: Arc<ActivationFence>,
     desired_plan_identity: Arc<Mutex<Option<String>>>,
+    shutdown: Arc<AtomicBool>,
     join: Option<JoinHandle<()>>,
 }
 
@@ -137,6 +147,7 @@ impl WorkerHandle {
     }
 
     pub(crate) fn stop(mut self) {
+        self.shutdown.store(true, Ordering::Release);
         self.invalidate_and_send(Command::Stop);
         if let Some(join) = self.join.take() {
             let _ = join.join();
@@ -166,6 +177,7 @@ struct WorkerLoop {
     commands: mpsc::Sender<Command>,
     fence: Arc<ActivationFence>,
     desired_plan_identity: Arc<Mutex<Option<String>>>,
+    shutdown: Arc<AtomicBool>,
     current_plan: Option<Arc<ScanPlan>>,
     active_scan: Option<ActiveScan>,
     revision: u64,
@@ -259,6 +271,8 @@ fn spawn_inner(
             .map(|plan| plan.identity().to_string()),
     ));
     let loop_desired_plan_identity = Arc::clone(&desired_plan_identity);
+    let shutdown = Arc::new(AtomicBool::new(false));
+    let loop_shutdown = Arc::clone(&shutdown);
     let (commands, receiver) = mpsc::channel();
     let loop_commands = commands.clone();
     let fence = Arc::new(ActivationFence::new());
@@ -272,6 +286,7 @@ fn spawn_inner(
             commands: loop_commands,
             fence: loop_fence,
             desired_plan_identity: loop_desired_plan_identity,
+            shutdown: loop_shutdown,
             current_plan: None,
             active_scan: None,
             revision: 0,
@@ -292,6 +307,7 @@ fn spawn_inner(
         commands,
         fence,
         desired_plan_identity,
+        shutdown,
         join: Some(join),
     }
 }
@@ -418,7 +434,7 @@ impl WorkerLoop {
             }
         };
         self.current_plan = Some(Arc::clone(&plan));
-        let load_result = self.store.load(&plan);
+        let load_result = self.store.load(&plan, &self.shutdown);
         match &load_result {
             Ok(Some(snapshot)) => {
                 self.publish(snapshot.clone());
@@ -1067,7 +1083,11 @@ mod tests {
     struct MemoryStore(Arc<Mutex<MemoryStoreState>>);
 
     impl StoreBackend for MemoryStore {
-        fn load(&mut self, plan: &ScanPlan) -> Result<Option<GenerationSnapshot>, String> {
+        fn load(
+            &mut self,
+            plan: &ScanPlan,
+            _cancelled: &AtomicBool,
+        ) -> Result<Option<GenerationSnapshot>, String> {
             let state = self.0.lock().expect("memory store");
             Ok(state
                 .active
@@ -1110,8 +1130,12 @@ mod tests {
     }
 
     impl StoreBackend for BlockingStore {
-        fn load(&mut self, plan: &ScanPlan) -> Result<Option<GenerationSnapshot>, String> {
-            self.inner.load(plan)
+        fn load(
+            &mut self,
+            plan: &ScanPlan,
+            _cancelled: &AtomicBool,
+        ) -> Result<Option<GenerationSnapshot>, String> {
+            self.inner.load(plan, _cancelled)
         }
 
         fn commit_guarded(
@@ -1133,14 +1157,47 @@ mod tests {
         }
     }
 
+    struct BlockingLoadStore {
+        entered: mpsc::Sender<()>,
+    }
+
+    impl StoreBackend for BlockingLoadStore {
+        fn load(
+            &mut self,
+            _plan: &ScanPlan,
+            cancelled: &AtomicBool,
+        ) -> Result<Option<GenerationSnapshot>, String> {
+            self.entered.send(()).expect("signal load entered");
+            while !cancelled.load(Ordering::Acquire) {
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            Err("generation load was cancelled".to_string())
+        }
+
+        fn commit_guarded(
+            &mut self,
+            _plan: &ScanPlan,
+            _mutation: IndexMutation,
+            _fence: &ActivationFence,
+            _expected_epoch: u64,
+            _publish: &mut dyn FnMut(&GenerationSnapshot),
+        ) -> Result<(), StoreBackendError> {
+            panic!("blocked startup load must not commit")
+        }
+    }
+
     struct OrderedStore {
         inner: MemoryStore,
         kinds: Arc<Mutex<Vec<&'static str>>>,
     }
 
     impl StoreBackend for OrderedStore {
-        fn load(&mut self, plan: &ScanPlan) -> Result<Option<GenerationSnapshot>, String> {
-            self.inner.load(plan)
+        fn load(
+            &mut self,
+            plan: &ScanPlan,
+            _cancelled: &AtomicBool,
+        ) -> Result<Option<GenerationSnapshot>, String> {
+            self.inner.load(plan, _cancelled)
         }
 
         fn commit_guarded(
@@ -1326,6 +1383,35 @@ mod tests {
 
         assert_eq!(items_while_blocked, vec![prior.item().path.clone()]);
         assert_eq!(status_while_blocked, SearchIndexStatus::Ready);
+    }
+
+    #[test]
+    fn stop_completes_while_generation_load_is_blocked() {
+        let (entered_tx, entered_rx) = mpsc::channel();
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        let (launcher, scans) = controlled_launcher();
+        let worker = spawn_with(
+            config("/root"),
+            index,
+            Box::new(BlockingLoadStore {
+                entered: entered_tx,
+            }),
+            launcher,
+        );
+        entered_rx.recv_timeout(WAIT).expect("load entered");
+        let (stopped_tx, stopped_rx) = mpsc::channel();
+        std::thread::spawn(move || {
+            worker.stop();
+            let _ = stopped_tx.send(());
+        });
+
+        stopped_rx
+            .recv_timeout(WAIT)
+            .expect("stop returned after cancelling generation load");
+        assert!(
+            scans.try_recv().is_err(),
+            "shutdown cancellation must not launch a rebuild"
+        );
     }
 
     #[test]
@@ -1995,6 +2081,7 @@ mod tests {
             commands,
             fence: Arc::new(ActivationFence::new()),
             desired_plan_identity: Arc::new(Mutex::new(Some(plan.identity().to_string()))),
+            shutdown: Arc::new(AtomicBool::new(false)),
             current_plan: Some(plan),
             active_scan: None,
             revision: 0,
