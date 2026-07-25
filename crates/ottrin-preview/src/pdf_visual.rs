@@ -35,7 +35,7 @@ pub fn render_pdf_first_page_png(path: &Path, target_dim: u32) -> Result<Vec<u8>
     render_pdf_first_page_png_from_dirs(
         path,
         target_dim,
-        pdfium_library_dirs_from(env_dir, executable_dir),
+        pdfium_library_dirs_from(env_dir, executable_dir, development_pdfium_dir()),
     )
 }
 
@@ -83,6 +83,7 @@ pub fn render_pdf_first_page_png_with_library(
 fn pdfium_library_dirs_from(
     env_dir: Option<PathBuf>,
     executable_dir: Option<PathBuf>,
+    development_dir: Option<PathBuf>,
 ) -> Vec<PathBuf> {
     let mut dirs = Vec::new();
     if let Some(env_dir) = env_dir {
@@ -94,7 +95,29 @@ fn pdfium_library_dirs_from(
         dirs.push(executable_dir.join("pdfium"));
         dirs.push(executable_dir);
     }
+    if let Some(development_dir) = development_dir {
+        dirs.push(development_dir.join("lib"));
+        dirs.push(development_dir);
+    }
     dirs
+}
+
+#[cfg(debug_assertions)]
+fn development_pdfium_dir() -> Option<PathBuf> {
+    let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let platform_dir = if cfg!(target_os = "windows") {
+        format!("Ottrin-{}-windows-x86_64", env!("CARGO_PKG_VERSION"))
+    } else if cfg!(target_os = "linux") && cfg!(target_arch = "x86_64") {
+        format!("Ottrin-{}-linux-x86_64", env!("CARGO_PKG_VERSION"))
+    } else {
+        return None;
+    };
+    Some(workspace.join("dist").join(platform_dir).join("bin/pdfium"))
+}
+
+#[cfg(not(debug_assertions))]
+fn development_pdfium_dir() -> Option<PathBuf> {
+    None
 }
 
 fn find_pdfium_library_from(dirs: Vec<PathBuf>) -> Option<PathBuf> {
@@ -122,6 +145,7 @@ mod tests {
         let dirs = pdfium_library_dirs_from(
             Some(PathBuf::from("/override")),
             Some(PathBuf::from("/opt/ottrin")),
+            Some(PathBuf::from("/workspace/runtime/pdfium")),
         );
 
         assert_eq!(
@@ -132,6 +156,8 @@ mod tests {
                 PathBuf::from("/opt/ottrin/pdfium/lib"),
                 PathBuf::from("/opt/ottrin/pdfium"),
                 PathBuf::from("/opt/ottrin"),
+                PathBuf::from("/workspace/runtime/pdfium/lib"),
+                PathBuf::from("/workspace/runtime/pdfium"),
             ]
         );
     }

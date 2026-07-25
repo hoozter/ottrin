@@ -1,4 +1,6 @@
-use ottrin_preview::{PdfVisualError, render_pdf_first_page_png_with_library};
+use ottrin_preview::{
+    PdfVisualError, render_pdf_first_page_png, render_pdf_first_page_png_with_library,
+};
 use std::path::Path;
 
 #[test]
@@ -46,6 +48,20 @@ fn packaged_runtime_renders_bounded_non_blank_first_page_png() {
         image.to_luma8().pixels().any(|pixel| pixel[0] < 240),
         "fixture text must produce non-white pixels"
     );
+    std::fs::remove_file(fixture).expect("remove PDF fixture");
+}
+
+#[test]
+#[ignore = "requires the development package produced by build-all.sh"]
+fn debug_runtime_discovers_packaged_pdfium_automatically() {
+    let fixture = std::env::temp_dir().join(format!(
+        "ottrin-pdf-debug-runtime-{}.pdf",
+        std::process::id()
+    ));
+    std::fs::write(&fixture, pdf_fixture()).expect("write PDF fixture");
+    let png = render_pdf_first_page_png(&fixture, 512)
+        .expect("debug runtime should discover the workspace packaged PDFium");
+    assert!(png.starts_with(b"\x89PNG\r\n\x1a\n"));
     std::fs::remove_file(fixture).expect("remove PDF fixture");
 }
 
