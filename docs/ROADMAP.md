@@ -17,16 +17,15 @@ Implemented:
 - Context menus with default open, open-with-application, folder location, path copy, rename/delete, bookmarks, and copy destinations.
 - Smart panel sections for Info, Drop Folder, Search, Activity, and Trash.
 - Cross-platform Trash panel implementation with Linux Freedesktop trash support and Windows Recycle Bin backend.
-- SQLite-backed indexed search with watcher updates, background updater scheduling, generated-folder skips, content search snippets, and column resizing. Complete result interaction remains a v1 gate: mouse selection, open actions, context menus, and Space-triggered full preview.
-- Quick Inspector as a separate Space-triggered viewport with visual image previews plus text/code, PDF text/metadata, DOCX content, XLSX/XLSM worksheet tables, PPTX slide text, archive, folder, and generic file inspectors. PDF and Office output is currently extracted text/metadata, not a rendered page or faithful document layout.
+- SQLite-backed indexed search with watcher updates, background updater scheduling, generated-folder skips, content search snippets, column resizing, click selection, double-click/Enter opening, shared right-click actions, and Space-triggered full preview.
+- Quick Inspector as a separate Space-triggered viewport with visual image and bounded first-page PDF previews plus extracted PDF text/metadata, text/code, DOCX content, XLSX/XLSM worksheet tables, PPTX slide text, archive, folder, and generic file inspectors. Office output is extracted text/metadata, not a faithful document layout.
 - Theme presets and custom theme editing.
 - Linux portable tarball, Linux AppImage, Windows portable zip, and per-user Windows installer packaging scripts.
 - Strict formatting, tests, and Clippy gates.
 
 ## Still needs implementation or real QA before v1:
 
-- Real visual previews for common PDF, Word, and Excel files, with packaged Linux and Windows rendering dependencies and bounded failure handling. Extracted text alone does not satisfy this gate.
-- Complete search-result interaction: click to select, double-click/Enter to open, right-click context menu, and Space to open the full Quick Inspector. The small inline thumbnail alone does not satisfy the search preview gate.
+- Real visual previews for Word and Excel files. PDFs use bounded first-page visuals with packaged Linux and Windows PDFium runtimes, negative caching, and extracted-text fallback; malformed, encrypted, or unrenderable PDFs remain metadata/text-only.
 - Linux manual workflow QA across navigation, file operations, search, Tandem View, multi-select, Quick Inspector, context menus, thumbnail view options, and status messages.
 - Linux privileged helper and polkit smoke test from packaged layout.
 - Real Windows runtime smoke for portable zip: launch, navigation, file operations, Trash/Recycling Bin, search, Quick Inspector, UAC/helper behavior, and background updater.

@@ -80,6 +80,9 @@ for entry in \
   '/bin/ottrin$' \
   '/bin/ottrin-index$' \
   '/bin/ottrin-priv-helper$' \
+  '/bin/pdfium/lib/libpdfium\.so$' \
+  '/bin/pdfium/LICENSE$' \
+  '/bin/pdfium/licenses/pdfium\.txt$' \
   '/assets/icon\.svg$' \
   '/packaging/linux/org\.ottrin\.filesystem\.policy$' \
   '/README\.md$' \
@@ -96,6 +99,9 @@ for entry in \
   '/bin/ottrin\.exe$' \
   '/bin/ottrin-index\.exe$' \
   '/bin/ottrin-priv-helper\.exe$' \
+  '/bin/pdfium/pdfium\.dll$' \
+  '/bin/pdfium/LICENSE$' \
+  '/bin/pdfium/licenses/pdfium\.txt$' \
   '/assets/icon\.svg$' \
   '/README\.md$' \
   '/docs/USER_GUIDE\.md$' \
@@ -162,6 +168,9 @@ for entry in \
   'usr/bin/ottrin' \
   'usr/bin/ottrin-index' \
   'usr/libexec/ottrin/ottrin-priv-helper' \
+  'usr/bin/pdfium/lib/libpdfium.so' \
+  'usr/bin/pdfium/LICENSE' \
+  'usr/bin/pdfium/licenses/pdfium.txt' \
   'usr/share/applications/org.ottrin.Ottrin.desktop' \
   'usr/share/metainfo/org.ottrin.Ottrin.appdata.xml' \
   'usr/share/polkit-1/actions/org.ottrin.filesystem.policy'; do
@@ -170,5 +179,12 @@ for entry in \
     exit 1
   fi
 done
+
+if [[ "$(tar -tzf "$LINUX_ARCHIVE" | grep -c '/bin/pdfium/lib/libpdfium.so$')" -lt 1 ]]; then
+  printf 'Linux portable archive missing PDFium runtime library.\n' >&2
+  exit 1
+fi
+
+require_zip_entry '/bin/pdfium/pdfium\.dll$'
 
 printf 'Verified release artifacts in %s\n' "$DIST_DIR"

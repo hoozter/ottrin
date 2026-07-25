@@ -5,6 +5,28 @@ use std::hash::{Hash, Hasher};
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
 
+#[derive(Debug, Clone)]
+pub(crate) enum ImagePreviewCacheEntry {
+    Ready(Vec<u8>),
+    Unavailable,
+}
+
+impl ImagePreviewCacheEntry {
+    pub(crate) fn from_response(bytes: Option<Vec<u8>>) -> Self {
+        match bytes {
+            Some(bytes) => Self::Ready(bytes),
+            None => Self::Unavailable,
+        }
+    }
+
+    pub(crate) fn bytes(&self) -> Option<&[u8]> {
+        match self {
+            Self::Ready(bytes) => Some(bytes),
+            Self::Unavailable => None,
+        }
+    }
+}
+
 pub(crate) fn preview_cache_dir() -> Option<PathBuf> {
     #[cfg(target_os = "windows")]
     let base = std::env::var_os("LOCALAPPDATA").map(PathBuf::from)?;
@@ -30,7 +52,7 @@ pub(crate) fn preview_cache_key(path: &Path, target_dim: u32) -> String {
         if let Ok(mtime) = meta.modified()
             && let Ok(dur) = mtime.duration_since(std::time::UNIX_EPOCH)
         {
-            dur.as_secs().hash(&mut hasher);
+            dur.hash(&mut hasher);
         }
     }
     target_dim.hash(&mut hasher);
@@ -63,6 +85,46 @@ pub(crate) fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8], max_bytes:
 }
 
 pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
+    build_thumbnail_bytes_with_pdf_renderer(path, target_dim, |path, target_dim| {
+        ottrin_preview::render_pdf_first_page_png(path, target_dim).ok()
+    })
+}
+
+pub(crate) fn fallback_preview_bytes(path: &Path, generated: Option<Vec<u8>>) -> Option<Vec<u8>> {
+    if generated.is_some() {
+        return generated;
+    }
+    if is_pdf_path(path) {
+        return None;
+    }
+    std::fs::read(path).ok()
+}
+
+pub(crate) fn full_preview_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
+    full_preview_bytes_with_pdf_renderer(path, target_dim, |path, target_dim| {
+        ottrin_preview::render_pdf_first_page_png(path, target_dim).ok()
+    })
+}
+
+fn full_preview_bytes_with_pdf_renderer(
+    path: &Path,
+    target_dim: u32,
+    render_pdf: impl FnOnce(&Path, u32) -> Option<Vec<u8>>,
+) -> Option<Vec<u8>> {
+    if is_pdf_path(path) {
+        return render_pdf(path, target_dim);
+    }
+    std::fs::read(path).ok()
+}
+
+fn build_thumbnail_bytes_with_pdf_renderer(
+    path: &Path,
+    target_dim: u32,
+    render_pdf: impl FnOnce(&Path, u32) -> Option<Vec<u8>>,
+) -> Option<Vec<u8>> {
+    if is_pdf_path(path) {
+        return render_pdf(path, target_dim);
+    }
     let img = image::ImageReader::open(path)
         .ok()?
         .with_guessed_format()
@@ -75,6 +137,12 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
         .write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)
         .ok()?;
     Some(bytes)
+}
+
+fn is_pdf_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("pdf"))
 }
 
 pub(crate) fn preview_cache_stats() -> Option<(usize, u64)> {
@@ -151,4 +219,59 @@ pub(crate) fn clear_preview_cache_dir() -> u64 {
 
 pub fn clear_preview_cache_storage() -> u64 {
     clear_preview_cache_dir()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pdf_thumbnail_uses_visual_renderer_case_insensitively() {
+        let path = Path::new("report.PDF");
+        let bytes = build_thumbnail_bytes_with_pdf_renderer(path, 384, |actual, target| {
+            assert_eq!(actual, path);
+            assert_eq!(target, 384);
+            Some(vec![1, 2, 3])
+        });
+
+        assert_eq!(bytes, Some(vec![1, 2, 3]));
+    }
+
+    #[test]
+    fn failed_preview_response_is_storable_without_exposing_image_bytes() {
+        let entry = ImagePreviewCacheEntry::from_response(None);
+
+        assert!(entry.bytes().is_none());
+    }
+
+    #[test]
+    fn successful_preview_response_exposes_image_bytes() {
+        let entry = ImagePreviewCacheEntry::from_response(Some(vec![1, 2, 3]));
+
+        assert_eq!(entry.bytes(), Some(&[1, 2, 3][..]));
+    }
+
+    #[test]
+    fn failed_pdf_render_does_not_fallback_to_raw_document_bytes() {
+        let path =
+            std::env::temp_dir().join(format!("ottrin-pdf-fallback-{}.PDF", std::process::id()));
+        std::fs::write(&path, b"%PDF fixture").expect("write PDF fixture");
+
+        let bytes = fallback_preview_bytes(&path, None);
+
+        assert!(bytes.is_none());
+        std::fs::remove_file(path).expect("remove PDF fixture");
+    }
+
+    #[test]
+    fn full_pdf_preview_uses_bounded_renderer_not_raw_document_bytes() {
+        let path = Path::new("report.pdf");
+        let bytes = full_preview_bytes_with_pdf_renderer(path, 2_048, |actual, target| {
+            assert_eq!(actual, path);
+            assert_eq!(target, 2_048);
+            Some(b"rendered-png".to_vec())
+        });
+
+        assert_eq!(bytes, Some(b"rendered-png".to_vec()));
+    }
 }

@@ -67,8 +67,8 @@ use theme_import::{decode_theme_import_json, sanitize_theme_file_name, theme_nam
 pub use thumbnail_cache::clear_preview_cache_storage;
 use thumbnail_cache::{
     ImagePreviewCacheEntry, build_thumbnail_bytes, clear_preview_cache_dir, fallback_preview_bytes,
-    load_cached_thumbnail, persist_cached_thumbnail, preview_cache_dir, preview_cache_key,
-    preview_cache_stats, prune_preview_cache_dir,
+    full_preview_bytes, load_cached_thumbnail, persist_cached_thumbnail, preview_cache_dir,
+    preview_cache_key, preview_cache_stats, prune_preview_cache_dir,
 };
 use window_chrome::{
     WmBtn, cursor_icon_for_resize_direction, render_custom_titlebar, resize_direction_for_pos,
@@ -968,7 +968,7 @@ impl OttrinApp {
             while let Ok(req) = preview_req_rx.recv() {
                 let cache_key = preview_cache_key(&req.path, req.target_dim);
                 let bytes = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                    fallback_preview_bytes(&req.path, None)
+                    full_preview_bytes(&req.path, PREVIEW_CACHE_BUCKET_XL)
                 } else if let Some(bytes) = load_cached_thumbnail(&cache_key) {
                     Some(bytes)
                 } else if let Some(bytes) = build_thumbnail_bytes(&req.path, req.target_dim) {

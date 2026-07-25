@@ -45,7 +45,7 @@ interactive workflow, polkit-dialog, Windows runtime, UAC, or installer sign-off
 - [ ] Copy, overwrite, rename, multi-select, Trash, permanent delete, and partial-batch warnings pass; Move rejects without mutation.
 - [ ] Tandem View pane-to-pane copy passes, and Move reports unsupported without mutation.
 - [ ] Search initial index, restart, watcher update, rebuild, scope changes, content search, and result actions pass.
-- [ ] Quick Inspector passes text, image, PDF text/metadata, DOCX, XLSX/XLSM, PPTX, archive, folder, and generic files.
+- [ ] Quick Inspector passes text, image, rendered-PDF first-page plus text/metadata fallback, DOCX, XLSX/XLSM, PPTX, archive, folder, and generic files.
 - [ ] Privileged helper allow, cancel, missing-helper, and misconfigured-policy paths pass.
 
 ## Windows Artifact QA
@@ -55,7 +55,7 @@ interactive workflow, polkit-dialog, Windows runtime, UAC, or installer sign-off
 - [ ] Uninstall removes the app, shortcuts, scheduled/background integration, generated search data, and preview cache while retaining saved preferences.
 - [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass.
 - [ ] Search indexing, restart, watcher updates, and background updater scheduling/removal pass.
-- [ ] Quick Inspector passes the Windows file-type matrix, including PDF text/metadata and malformed/encrypted PDF fallback paths.
+- [ ] Quick Inspector passes the Windows file-type matrix, including rendered PDF first pages plus malformed/encrypted PDF text/metadata fallback paths.
 - [ ] UAC allow, cancel, helper-missing, and denied-operation paths pass.
 - [ ] Uninstall cleanup commands remove scheduled/background integration without deleting user files; cleanup launch/failure stops before application deletion, and incomplete file deletion retains Installed Apps registration for retry.
 

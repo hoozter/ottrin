@@ -9,6 +9,32 @@ $BuildDir = Join-Path $Root "target\$Target\release"
 $DistDir = Join-Path $Root "dist"
 $Stage = Join-Path $DistDir "Ottrin-$Version-windows-x64"
 $Archive = Join-Path $DistDir "Ottrin-$Version-windows-x64-portable.zip"
+$PdfiumUrl = "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7961/pdfium-win-x64.tgz"
+$PdfiumSha256 = "88276459349b291c41f10422dad0210f007c04d919c8fa56472b6b7c6406adf4"
+
+function Resolve-PdfiumRuntime {
+    param([string]$Destination)
+    $tmp = Join-Path $Root "dist\.pdfium-temp"
+    New-Item -ItemType Directory -Force -Path $tmp | Out-Null
+    $archive = Join-Path $tmp "pdfium.tgz"
+    if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
+        & curl.exe -L $PdfiumUrl -o $archive
+    } else {
+        Invoke-WebRequest -Uri $PdfiumUrl -OutFile $archive
+    }
+    $actual = (Get-FileHash -Algorithm SHA256 $archive).Hash.ToLowerInvariant()
+    if ($actual -ne $PdfiumSha256.ToLowerInvariant()) {
+        throw "PDFium checksum mismatch: expected $PdfiumSha256, got $actual"
+    }
+    $extract = Join-Path $tmp "extract"
+    New-Item -ItemType Directory -Force -Path $extract | Out-Null
+    & tar -xzf $archive -C $extract
+
+    New-Item -ItemType Directory -Force -Path $Destination | Out-Null
+    Copy-Item (Join-Path $extract "bin\*") $Destination -Recurse
+    Copy-Item (Join-Path $extract "LICENSE") $Destination
+    Copy-Item (Join-Path $extract "licenses") $Destination -Recurse
+}
 
 Set-Location $Root
 cargo build --release --target $Target -p ottrin-app -p ottrin-platform -p ottrin-search
@@ -19,6 +45,7 @@ New-Item -ItemType Directory -Force -Path "$Stage\bin", "$Stage\assets", "$Stage
 Copy-Item "$BuildDir\ottrin-app.exe" "$Stage\bin\ottrin.exe"
 Copy-Item "$BuildDir\ottrin-priv-helper.exe" "$Stage\bin\ottrin-priv-helper.exe"
 Copy-Item "$BuildDir\ottrin-index.exe" "$Stage\bin\ottrin-index.exe"
+Resolve-PdfiumRuntime (Join-Path $Stage "bin\pdfium")
 Copy-Item "$Root\assets\icon.svg", "$Root\assets\icon.png", "$Root\assets\logo.svg" "$Stage\assets\"
 Copy-Item "$Root\README.md" "$Stage\"
 if (Test-Path "$Root\LICENSE") { Copy-Item "$Root\LICENSE" "$Stage\" }

@@ -4,6 +4,11 @@ use std::io::Read;
 use std::path::Path;
 use std::path::PathBuf;
 
+mod pdf_visual;
+pub use pdf_visual::{
+    PdfVisualError, render_pdf_first_page_png, render_pdf_first_page_png_with_library,
+};
+
 const EXTRACTED_TEXT_MARKER: &str = "\n\nExtracted text:\n";
 const EXTRACTED_TEXT_LIMIT: usize = 24_000;
 const MAX_OFFICE_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;

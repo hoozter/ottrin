@@ -1,0 +1,186 @@
+use pdfium_render::prelude::*;
+use std::io::Cursor;
+use std::path::{Path, PathBuf};
+
+const PDFIUM_DIR_ENV: &str = "OTTRIN_PDFIUM_DIR";
+const MAX_PDF_VISUAL_BYTES: u64 = 128 * 1024 * 1024;
+
+#[derive(Debug, thiserror::Error)]
+pub enum PdfVisualError {
+    #[error("could not inspect PDF input: {0}")]
+    InputMetadata(String),
+    #[error("PDF input is too large for a visual preview ({actual} bytes; limit {limit} bytes)")]
+    InputTooLarge { actual: u64, limit: u64 },
+    #[error(
+        "PDFium runtime is unavailable; set {PDFIUM_DIR_ENV} or package pdfium/lib beside Ottrin"
+    )]
+    RuntimeUnavailable,
+    #[error("could not load PDFium runtime: {0}")]
+    RuntimeLoad(String),
+    #[error("could not load PDF: {0}")]
+    DocumentLoad(String),
+    #[error("PDF has no pages")]
+    EmptyDocument,
+    #[error("could not render PDF page: {0}")]
+    Render(String),
+    #[error("could not encode PDF preview: {0}")]
+    Encode(String),
+}
+
+pub fn render_pdf_first_page_png(path: &Path, target_dim: u32) -> Result<Vec<u8>, PdfVisualError> {
+    let env_dir = std::env::var_os(PDFIUM_DIR_ENV).map(PathBuf::from);
+    let executable_dir = std::env::current_exe()
+        .ok()
+        .and_then(|path| path.parent().map(Path::to_path_buf));
+    render_pdf_first_page_png_from_dirs(
+        path,
+        target_dim,
+        pdfium_library_dirs_from(env_dir, executable_dir),
+    )
+}
+
+pub fn render_pdf_first_page_png_with_library(
+    path: &Path,
+    target_dim: u32,
+    library: &Path,
+) -> Result<Vec<u8>, PdfVisualError> {
+    let input_size = std::fs::metadata(path)
+        .map_err(|error| PdfVisualError::InputMetadata(error.to_string()))?
+        .len();
+    if input_size > MAX_PDF_VISUAL_BYTES {
+        return Err(PdfVisualError::InputTooLarge {
+            actual: input_size,
+            limit: MAX_PDF_VISUAL_BYTES,
+        });
+    }
+    let target_dim = target_dim.clamp(64, 2_048) as i32;
+    let bindings = Pdfium::bind_to_library(library)
+        .map_err(|error| PdfVisualError::RuntimeLoad(error.to_string()))?;
+    let pdfium = Pdfium::new(bindings);
+    let document = pdfium
+        .load_pdf_from_file(path, None)
+        .map_err(|error| PdfVisualError::DocumentLoad(error.to_string()))?;
+    let page = document
+        .pages()
+        .get(0)
+        .map_err(|_| PdfVisualError::EmptyDocument)?;
+    let image = page
+        .render_with_config(
+            &PdfRenderConfig::new()
+                .set_target_width(target_dim)
+                .set_maximum_height(target_dim),
+        )
+        .map_err(|error| PdfVisualError::Render(error.to_string()))?
+        .as_image()
+        .map_err(|error| PdfVisualError::Render(error.to_string()))?;
+    let mut bytes = Vec::new();
+    image
+        .write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)
+        .map_err(|error| PdfVisualError::Encode(error.to_string()))?;
+    Ok(bytes)
+}
+
+fn pdfium_library_dirs_from(
+    env_dir: Option<PathBuf>,
+    executable_dir: Option<PathBuf>,
+) -> Vec<PathBuf> {
+    let mut dirs = Vec::new();
+    if let Some(env_dir) = env_dir {
+        dirs.push(env_dir.clone());
+        dirs.push(env_dir.join("lib"));
+    }
+    if let Some(executable_dir) = executable_dir {
+        dirs.push(executable_dir.join("pdfium/lib"));
+        dirs.push(executable_dir.join("pdfium"));
+        dirs.push(executable_dir);
+    }
+    dirs
+}
+
+fn find_pdfium_library_from(dirs: Vec<PathBuf>) -> Option<PathBuf> {
+    dirs.into_iter()
+        .map(|dir| Pdfium::pdfium_platform_library_name_at_path(&dir))
+        .find(|path| path.is_file())
+}
+
+fn render_pdf_first_page_png_from_dirs(
+    path: &Path,
+    target_dim: u32,
+    dirs: Vec<PathBuf>,
+) -> Result<Vec<u8>, PdfVisualError> {
+    let library = find_pdfium_library_from(dirs).ok_or(PdfVisualError::RuntimeUnavailable)?;
+    render_pdf_first_page_png_with_library(path, target_dim, &library)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn runtime_candidates_prefer_override_then_packaged_layout() {
+        let dirs = pdfium_library_dirs_from(
+            Some(PathBuf::from("/override")),
+            Some(PathBuf::from("/opt/ottrin")),
+        );
+
+        assert_eq!(
+            dirs,
+            vec![
+                PathBuf::from("/override"),
+                PathBuf::from("/override/lib"),
+                PathBuf::from("/opt/ottrin/pdfium/lib"),
+                PathBuf::from("/opt/ottrin/pdfium"),
+                PathBuf::from("/opt/ottrin"),
+            ]
+        );
+    }
+
+    #[test]
+    fn runtime_selection_uses_first_existing_platform_library() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-pdfium-candidate-{}-{}",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        let runtime_dir = root.join("runtime");
+        std::fs::create_dir_all(&runtime_dir).expect("create runtime fixture");
+        let runtime = Pdfium::pdfium_platform_library_name_at_path(&runtime_dir);
+        std::fs::write(&runtime, b"fixture").expect("write runtime fixture");
+
+        let selected = find_pdfium_library_from(vec![root.join("missing"), runtime_dir]);
+
+        assert_eq!(selected, Some(runtime.clone()));
+        std::fs::remove_dir_all(root).expect("remove runtime fixture");
+    }
+
+    #[test]
+    fn empty_runtime_capability_fails_without_system_fallback() {
+        let error = render_pdf_first_page_png_from_dirs(Path::new("missing.pdf"), 256, vec![])
+            .expect_err("empty capability set must fail closed");
+
+        assert!(matches!(error, PdfVisualError::RuntimeUnavailable));
+    }
+
+    #[test]
+    fn oversized_pdf_is_rejected_before_pdfium_load() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-oversized-pdf-{}-{}.pdf",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        let file = std::fs::File::create(&path).expect("create oversized fixture");
+        file.set_len(MAX_PDF_VISUAL_BYTES + 1)
+            .expect("size oversized fixture");
+
+        let error = render_pdf_first_page_png_with_library(
+            &path,
+            256,
+            Path::new("/definitely/missing/libpdfium.so"),
+        )
+        .expect_err("oversized input must be rejected before runtime loading");
+
+        assert!(matches!(error, PdfVisualError::InputTooLarge { .. }));
+        std::fs::remove_file(path).expect("remove oversized fixture");
+    }
+}
