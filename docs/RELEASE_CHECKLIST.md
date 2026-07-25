@@ -12,13 +12,17 @@ Every item must be checked against the exact artifact intended for release. A so
 - [x] Release artifact checksums verify.
 - [x] Archive inspection confirms the app, indexer, privileged helper, policy/assets, and user documentation are present.
 
-Local automated gates and artifact inspection last passed on 2026-07-23. CI and
+Local automated gates and artifact inspection last passed on 2026-07-25. CI and
 the clean-machine/manual gates below remain required against the eventual
 release commit and artifacts.
 
-### Local Preflight Evidence (2026-07-23)
+### Local Preflight Evidence (2026-07-25)
 
-- The workspace test run passed 132 tests.
+- Workspace all-target tests, strict Clippy, and the workspace build passed after
+  the bounded PDF and Office visual-preview milestones.
+- The checksum-verified packaged Linux PDFium runtime rendered a bounded,
+  non-blank first-page PNG; missing runtime remains a fail-closed text/metadata
+  fallback.
 - The strict artifact verifier accepted one version-matched Linux portable
   archive, AppImage, Windows portable archive, and NSIS installer; all four
   checksums passed.

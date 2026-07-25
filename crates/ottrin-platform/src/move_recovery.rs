@@ -6507,6 +6507,9 @@ mod tests {
             LinuxStableIdentity::new(metadata.dev(), metadata.ino(), file_type)
         };
         let expected_identity = stable_identity(&original_path, LinuxFileType::Regular);
+        // Keep the unlinked source inode alive so the replacement cannot reuse
+        // it and accidentally satisfy the identity check this test exercises.
+        let _original_handle = std::fs::File::open(&original_path).unwrap();
         let central = LinuxJournalDirectory::open(&central_path).unwrap();
         let local = LinuxJournalDirectory::open(&local_path).unwrap();
         let source_parent = LinuxSourceParentDirectory::open(&source_parent_path).unwrap();
