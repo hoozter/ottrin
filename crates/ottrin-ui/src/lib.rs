@@ -10334,7 +10334,9 @@ impl OttrinApp {
                         // Text preview snippet or image indicator
                         if let Some(pv) = preview {
                             match pv.kind {
-                                PreviewKind::Image | PreviewKind::Pdf => {
+                                PreviewKind::Image
+                                | PreviewKind::Pdf
+                                | PreviewKind::OfficeMetadata => {
                                     let avail_w = ui.available_width().max(60.0);
                                     let max_h = preview_panel_h - 70.0;
                                     if let Some(img) = self
@@ -10343,7 +10345,15 @@ impl OttrinApp {
                                         ui.add(img);
                                     } else {
                                         ui.label(
-                                            RichText::new("Image").size(10.5).color(c.text_muted),
+                                            RichText::new(
+                                                if matches!(pv.kind, PreviewKind::OfficeMetadata) {
+                                                    "Office visual preview unavailable"
+                                                } else {
+                                                    "Image preview unavailable"
+                                                },
+                                            )
+                                            .size(10.5)
+                                            .color(c.text_muted),
                                         );
                                     }
                                 }
@@ -12070,7 +12080,7 @@ impl OttrinApp {
 
                 let preview = self.cached_info_preview(entry);
                 match preview.kind {
-                    PreviewKind::Image | PreviewKind::Pdf => {
+                    PreviewKind::Image | PreviewKind::Pdf | PreviewKind::OfficeMetadata => {
                         if let Some(img) = self.cached_image_preview_widget(
                             &entry.path,
                             max_preview_w,
@@ -12080,10 +12090,10 @@ impl OttrinApp {
                             preview_widget = Some(img);
                         } else {
                             let snippet = metadata_preview_snippet(&preview.body, 14, 900);
-                            metadata_icon = Some(if matches!(preview.kind, PreviewKind::Pdf) {
-                                MI_PICTURE_PDF
-                            } else {
-                                MI_IMAGE
+                            metadata_icon = Some(match preview.kind {
+                                PreviewKind::Pdf => MI_PICTURE_PDF,
+                                PreviewKind::OfficeMetadata => MI_DESCRIPTION,
+                                _ => MI_IMAGE,
                             });
                             if !snippet.is_empty() {
                                 text_snippet = Some(snippet);
@@ -12129,8 +12139,7 @@ impl OttrinApp {
                             }
                         }
                     }
-                    PreviewKind::OfficeMetadata
-                    | PreviewKind::ArchiveMetadata
+                    PreviewKind::ArchiveMetadata
                     | PreviewKind::AudioMetadata
                     | PreviewKind::VideoMetadata => {
                         metadata_icon = Some(match preview.kind {
@@ -13303,7 +13312,7 @@ impl OttrinApp {
                                     render_text_body_preview(ui, c, &name, &preview.body);
                                 }
                             }
-                            PreviewKind::Image | PreviewKind::Pdf => {
+                            PreviewKind::Image | PreviewKind::Pdf | PreviewKind::OfficeMetadata => {
                                 ScrollArea::both().show(ui, |ui| {
                                     let max_w = (ui.available_width() - 24.0).max(120.0);
                                     let max_h = (ui.available_height() - 34.0).max(160.0);
@@ -13354,13 +13363,16 @@ impl OttrinApp {
                                             }
                                         } else {
                                             ui.label(
-                                                RichText::new(
-                                                    if preview.kind == PreviewKind::Image {
+                                                RichText::new(match preview.kind {
+                                                    PreviewKind::Image => {
                                                         "Image preview unavailable"
-                                                    } else {
-                                                        "PDF preview unavailable"
-                                                    },
-                                                )
+                                                    }
+                                                    PreviewKind::Pdf => "PDF preview unavailable",
+                                                    PreviewKind::OfficeMetadata => {
+                                                        "Office visual preview unavailable"
+                                                    }
+                                                    _ => unreachable!(),
+                                                })
                                                 .color(c.text_dim)
                                                 .size(11.0),
                                             );
@@ -13382,10 +13394,9 @@ impl OttrinApp {
                             PreviewKind::ArchiveMetadata => {
                                 render_archive_body_preview(ui, c, &name, &preview.body);
                             }
-                            PreviewKind::VideoMetadata | PreviewKind::OfficeMetadata => {
+                            PreviewKind::VideoMetadata => {
                                 let icon = match preview.kind {
                                     PreviewKind::VideoMetadata => MI_MOVIE,
-                                    PreviewKind::OfficeMetadata => MI_DESCRIPTION,
                                     _ => MI_FILE,
                                 };
                                 render_document_body_preview(ui, c, icon, &name, &preview.body);
@@ -16082,7 +16093,10 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
             platform_case_mode_current(),
         )
         .category,
-        FileCategory::Image | FileCategory::Pdf
+        FileCategory::Image
+            | FileCategory::Pdf
+            | FileCategory::Document
+            | FileCategory::Spreadsheet
     );
     is_visual && thumbnail_supported_image_path(&entry.path)
 }
@@ -16107,6 +16121,9 @@ fn thumbnail_supported_image_path(path: &Path) -> bool {
             | "avif"
             | "svg"
             | "pdf"
+            | "docx"
+            | "xlsx"
+            | "xlsm"
     )
 }
 
@@ -17921,7 +17938,7 @@ mod tests {
     }
 
     #[test]
-    fn image_thumbnail_candidate_includes_images_and_pdfs_only() {
+    fn image_thumbnail_candidate_includes_supported_images_pdfs_and_office_visuals_only() {
         let image_entry = FileEntry {
             name: "cover.jpg".to_string(),
             path: PathBuf::from("/tmp/cover.jpg"),
@@ -17952,17 +17969,23 @@ mod tests {
 
         assert!(image_thumbnail_candidate(&image_entry));
         assert!(image_thumbnail_candidate(&pdf_entry));
-        assert!(!image_thumbnail_candidate(&office_entry));
+        assert!(image_thumbnail_candidate(&office_entry));
     }
 
     #[test]
-    fn thumbnail_supported_image_path_includes_pdf_and_excludes_office() {
+    fn thumbnail_supported_image_path_includes_pdf_and_supported_office_visuals() {
         assert!(thumbnail_supported_image_path(Path::new(
             "/tmp/sample.webp"
         )));
         assert!(thumbnail_supported_image_path(Path::new("/tmp/sample.PDF")));
-        assert!(!thumbnail_supported_image_path(Path::new(
+        assert!(thumbnail_supported_image_path(Path::new(
             "/tmp/report.docx"
+        )));
+        assert!(thumbnail_supported_image_path(Path::new(
+            "/tmp/report.XLSX"
+        )));
+        assert!(!thumbnail_supported_image_path(Path::new(
+            "/tmp/presentation.pptx"
         )));
     }
 

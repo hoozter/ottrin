@@ -18,14 +18,13 @@ Implemented:
 - Smart panel sections for Info, Drop Folder, Search, Activity, and Trash.
 - Cross-platform Trash panel implementation with Linux Freedesktop trash support and Windows Recycle Bin backend.
 - SQLite-backed indexed search with watcher updates, background updater scheduling, generated-folder skips, content search snippets, column resizing, click selection, double-click/Enter opening, shared right-click actions, and Space-triggered full preview.
-- Quick Inspector as a separate Space-triggered viewport with visual image and bounded first-page PDF previews plus extracted PDF text/metadata, text/code, DOCX content, XLSX/XLSM worksheet tables, PPTX slide text, archive, folder, and generic file inspectors. Office output is extracted text/metadata, not a faithful document layout.
+- Quick Inspector as a separate Space-triggered viewport with visual image, bounded first-page PDF previews, and bounded DOCX/XLSX/XLSM content-preview PNGs; it retains extracted PDF/Office text and metadata fallbacks. Office output is a truthful content preview, not a faithful document layout.
 - Theme presets and custom theme editing.
 - Linux portable tarball, Linux AppImage, Windows portable zip, and per-user Windows installer packaging scripts.
 - Strict formatting, tests, and Clippy gates.
 
 ## Still needs implementation or real QA before v1:
 
-- Real visual previews for Word and Excel files. PDFs use bounded first-page visuals with packaged Linux and Windows PDFium runtimes, negative caching, and extracted-text fallback; malformed, encrypted, or unrenderable PDFs remain metadata/text-only.
 - Linux manual workflow QA across navigation, file operations, search, Tandem View, multi-select, Quick Inspector, context menus, thumbnail view options, and status messages.
 - Linux privileged helper and polkit smoke test from packaged layout.
 - Real Windows runtime smoke for portable zip: launch, navigation, file operations, Trash/Recycling Bin, search, Quick Inspector, UAC/helper behavior, and background updater.
@@ -50,7 +49,7 @@ V1 should not ship until:
 These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 
 - Text/code editing in Quick Inspector.
-- Multi-page PDF navigation and advanced Office navigation/editing beyond the bounded visual preview required for v1.
+- Multi-page PDF navigation and advanced Office navigation/editing or faithful Office layout beyond the bounded content preview required for v1.
 - Rich file thumbnails beyond the common-document v1 preview gate: generated text/code preview cards, video frame thumbnails, and broader document thumbnails where platform support or dependencies make sense.
 - Recursive folder size thumbnails and folder thumbnail collages.
 - Native desktop application discovery for richer Open With menus.

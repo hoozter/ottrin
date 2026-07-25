@@ -85,8 +85,12 @@ pub(crate) fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8], max_bytes:
 }
 
 pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
-    build_thumbnail_bytes_with_pdf_renderer(path, target_dim, |path, target_dim| {
-        ottrin_preview::render_pdf_first_page_png(path, target_dim).ok()
+    build_thumbnail_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
+        if is_pdf_path(path) {
+            ottrin_preview::render_pdf_first_page_png(path, target_dim).ok()
+        } else {
+            ottrin_preview::render_office_content_preview_png(path, target_dim).ok()
+        }
     })
 }
 
@@ -94,36 +98,40 @@ pub(crate) fn fallback_preview_bytes(path: &Path, generated: Option<Vec<u8>>) ->
     if generated.is_some() {
         return generated;
     }
-    if is_pdf_path(path) {
+    if is_pdf_path(path) || is_office_visual_path(path) {
         return None;
     }
     std::fs::read(path).ok()
 }
 
 pub(crate) fn full_preview_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
-    full_preview_bytes_with_pdf_renderer(path, target_dim, |path, target_dim| {
-        ottrin_preview::render_pdf_first_page_png(path, target_dim).ok()
+    full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
+        if is_pdf_path(path) {
+            ottrin_preview::render_pdf_first_page_png(path, target_dim).ok()
+        } else {
+            ottrin_preview::render_office_content_preview_png(path, target_dim).ok()
+        }
     })
 }
 
-fn full_preview_bytes_with_pdf_renderer(
+fn full_preview_bytes_with_visual_renderer(
     path: &Path,
     target_dim: u32,
-    render_pdf: impl FnOnce(&Path, u32) -> Option<Vec<u8>>,
+    render_visual: impl FnOnce(&Path, u32) -> Option<Vec<u8>>,
 ) -> Option<Vec<u8>> {
-    if is_pdf_path(path) {
-        return render_pdf(path, target_dim);
+    if is_pdf_path(path) || is_office_visual_path(path) {
+        return render_visual(path, target_dim);
     }
     std::fs::read(path).ok()
 }
 
-fn build_thumbnail_bytes_with_pdf_renderer(
+fn build_thumbnail_bytes_with_visual_renderer(
     path: &Path,
     target_dim: u32,
-    render_pdf: impl FnOnce(&Path, u32) -> Option<Vec<u8>>,
+    render_visual: impl FnOnce(&Path, u32) -> Option<Vec<u8>>,
 ) -> Option<Vec<u8>> {
-    if is_pdf_path(path) {
-        return render_pdf(path, target_dim);
+    if is_pdf_path(path) || is_office_visual_path(path) {
+        return render_visual(path, target_dim);
     }
     let img = image::ImageReader::open(path)
         .ok()?
@@ -143,6 +151,12 @@ fn is_pdf_path(path: &Path) -> bool {
     path.extension()
         .and_then(|ext| ext.to_str())
         .is_some_and(|ext| ext.eq_ignore_ascii_case("pdf"))
+}
+
+fn is_office_visual_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .is_some_and(|ext| matches!(ext.to_ascii_lowercase().as_str(), "docx" | "xlsx" | "xlsm"))
 }
 
 pub(crate) fn preview_cache_stats() -> Option<(usize, u64)> {
@@ -228,7 +242,7 @@ mod tests {
     #[test]
     fn pdf_thumbnail_uses_visual_renderer_case_insensitively() {
         let path = Path::new("report.PDF");
-        let bytes = build_thumbnail_bytes_with_pdf_renderer(path, 384, |actual, target| {
+        let bytes = build_thumbnail_bytes_with_visual_renderer(path, 384, |actual, target| {
             assert_eq!(actual, path);
             assert_eq!(target, 384);
             Some(vec![1, 2, 3])
@@ -266,7 +280,19 @@ mod tests {
     #[test]
     fn full_pdf_preview_uses_bounded_renderer_not_raw_document_bytes() {
         let path = Path::new("report.pdf");
-        let bytes = full_preview_bytes_with_pdf_renderer(path, 2_048, |actual, target| {
+        let bytes = full_preview_bytes_with_visual_renderer(path, 2_048, |actual, target| {
+            assert_eq!(actual, path);
+            assert_eq!(target, 2_048);
+            Some(b"rendered-png".to_vec())
+        });
+
+        assert_eq!(bytes, Some(b"rendered-png".to_vec()));
+    }
+
+    #[test]
+    fn office_preview_uses_visual_renderer_not_raw_package_bytes() {
+        let path = Path::new("report.XLSX");
+        let bytes = full_preview_bytes_with_visual_renderer(path, 2_048, |actual, target| {
             assert_eq!(actual, path);
             assert_eq!(target, 2_048);
             Some(b"rendered-png".to_vec())

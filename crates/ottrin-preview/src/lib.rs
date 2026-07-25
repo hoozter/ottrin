@@ -15,6 +15,25 @@ const MAX_OFFICE_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_OFFICE_PARTS: usize = 4_096;
 const MAX_OFFICE_XML_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_SHARED_STRINGS: usize = 4_096;
+const OFFICE_VISUAL_TEXT_LIMIT: usize = 4_096;
+
+#[derive(Debug, thiserror::Error)]
+pub enum OfficeVisualError {
+    #[error("Office format has no bounded visual renderer")]
+    UnsupportedFormat,
+    #[error("could not inspect Office input: {0}")]
+    InputMetadata(String),
+    #[error("Office input is too large for a visual preview ({actual} bytes; limit {limit} bytes)")]
+    InputTooLarge { actual: u64, limit: u64 },
+    #[error("could not open Office package: {0}")]
+    Package(String),
+    #[error("Office package has too many parts ({actual}; limit {limit})")]
+    TooManyParts { actual: usize, limit: usize },
+    #[error("Office document has no safe extractable content")]
+    NoContent,
+    #[error("could not encode Office visual preview: {0}")]
+    Encode(String),
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PreviewKind {
@@ -90,6 +109,204 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
             PreviewKind::OfficeMetadata
         }
         _ => PreviewKind::Unsupported,
+    }
+}
+
+/// Renders bounded extracted DOCX/XLSX/XLSM content as a PNG. This is a
+/// content preview, not a faithful Office layout engine; unsupported or
+/// malformed packages fail closed so callers retain the metadata/text view.
+pub fn render_office_content_preview_png(
+    path: &Path,
+    target_dim: u32,
+) -> Result<Vec<u8>, OfficeVisualError> {
+    let ext = path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .unwrap_or_default()
+        .to_ascii_lowercase();
+    if !matches!(ext.as_str(), "docx" | "xlsx" | "xlsm") {
+        return Err(OfficeVisualError::UnsupportedFormat);
+    }
+    let input_size = std::fs::metadata(path)
+        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?
+        .len();
+    if input_size > MAX_OFFICE_PACKAGE_BYTES {
+        return Err(OfficeVisualError::InputTooLarge {
+            actual: input_size,
+            limit: MAX_OFFICE_PACKAGE_BYTES,
+        });
+    }
+    let file =
+        std::fs::File::open(path).map_err(|error| OfficeVisualError::Package(error.to_string()))?;
+    let mut archive = zip::ZipArchive::new(file)
+        .map_err(|error| OfficeVisualError::Package(error.to_string()))?;
+    if archive.len() > MAX_OFFICE_PARTS {
+        return Err(OfficeVisualError::TooManyParts {
+            actual: archive.len(),
+            limit: MAX_OFFICE_PARTS,
+        });
+    }
+    let text = match ext.as_str() {
+        "docx" => extract_docx_text(&mut archive),
+        "xlsx" | "xlsm" => extract_xlsx_text(&mut archive),
+        _ => None,
+    }
+    .ok_or(OfficeVisualError::NoContent)?;
+    render_office_content_png(&text, &ext, target_dim)
+}
+
+fn render_office_content_png(
+    text: &str,
+    format: &str,
+    target_dim: u32,
+) -> Result<Vec<u8>, OfficeVisualError> {
+    use image::{ImageEncoder, Rgba, RgbaImage};
+
+    let text = text
+        .chars()
+        .take(OFFICE_VISUAL_TEXT_LIMIT)
+        .collect::<String>();
+    let dimension = target_dim.clamp(64, 2_048);
+    let mut image = RgbaImage::from_pixel(dimension, dimension, Rgba([250, 250, 248, 255]));
+    let margin = (dimension / 12).clamp(6, 48);
+    let header_height = (dimension / 9).clamp(12, 96);
+    fill_rect(
+        &mut image,
+        margin,
+        margin,
+        dimension - margin,
+        margin + header_height,
+        [42, 92, 154, 255],
+    );
+    let body_top = margin + header_height + (margin / 2);
+    let body_bottom = dimension.saturating_sub(margin);
+    if format == "docx" {
+        render_document_lines(
+            &mut image,
+            &text,
+            margin,
+            body_top,
+            dimension - margin,
+            body_bottom,
+        );
+    } else {
+        render_sheet_grid(
+            &mut image,
+            &text,
+            margin,
+            body_top,
+            dimension - margin,
+            body_bottom,
+        );
+    }
+    let mut bytes = Vec::new();
+    image::codecs::png::PngEncoder::new(&mut bytes)
+        .write_image(
+            image.as_raw(),
+            dimension,
+            dimension,
+            image::ExtendedColorType::Rgba8,
+        )
+        .map_err(|error| OfficeVisualError::Encode(error.to_string()))?;
+    Ok(bytes)
+}
+
+fn fill_rect(
+    image: &mut image::RgbaImage,
+    left: u32,
+    top: u32,
+    right: u32,
+    bottom: u32,
+    color: [u8; 4],
+) {
+    for y in top.min(image.height())..bottom.min(image.height()) {
+        for x in left.min(image.width())..right.min(image.width()) {
+            image.put_pixel(x, y, image::Rgba(color));
+        }
+    }
+}
+
+fn render_document_lines(
+    image: &mut image::RgbaImage,
+    text: &str,
+    left: u32,
+    top: u32,
+    right: u32,
+    bottom: u32,
+) {
+    let line_height = ((bottom.saturating_sub(top)) / 18).clamp(3, 24);
+    for (index, line) in text.lines().take(18).enumerate() {
+        let y = top + index as u32 * line_height;
+        let width =
+            ((line.chars().take(96).count() as u32 * (right - left) / 96).max(8)).min(right - left);
+        fill_rect(
+            image,
+            left,
+            y,
+            left + width,
+            y + (line_height / 3).max(2),
+            [82, 86, 92, 255],
+        );
+    }
+}
+
+fn render_sheet_grid(
+    image: &mut image::RgbaImage,
+    text: &str,
+    left: u32,
+    top: u32,
+    right: u32,
+    bottom: u32,
+) {
+    let rows = text
+        .lines()
+        .filter(|line| !line.starts_with("Sheet:"))
+        .take(12)
+        .collect::<Vec<_>>();
+    let row_count = rows.len().max(1) as u32;
+    let max_columns = rows
+        .iter()
+        .map(|line| line.split('\t').count())
+        .max()
+        .unwrap_or(1)
+        .clamp(1, 8) as u32;
+    let row_height = ((bottom.saturating_sub(top)) / (row_count + 1)).clamp(4, 48);
+    let column_width = ((right - left) / max_columns).max(4);
+    for row in 0..=row_count {
+        fill_rect(
+            image,
+            left,
+            top + row * row_height,
+            right,
+            top + row * row_height + 1,
+            [174, 181, 190, 255],
+        );
+    }
+    for column in 0..=max_columns {
+        fill_rect(
+            image,
+            left + column * column_width,
+            top,
+            left + column * column_width + 1,
+            top + row_count * row_height,
+            [174, 181, 190, 255],
+        );
+    }
+    for (row, line) in rows.iter().enumerate() {
+        for (column, value) in line.split('\t').take(max_columns as usize).enumerate() {
+            let inset = (row_height / 5).max(1);
+            let width = ((value.chars().take(24).count() as u32 * (column_width - 2 * inset) / 24)
+                .max(2))
+            .min(column_width - 2 * inset);
+            fill_rect(
+                image,
+                left + column as u32 * column_width + inset,
+                top + row as u32 * row_height + inset,
+                left + column as u32 * column_width + inset + width,
+                top + row as u32 * row_height + inset + (row_height / 4).max(1),
+                [82, 86, 92, 255],
+            );
+        }
     }
 }
 
@@ -1199,6 +1416,7 @@ fn file_kind_label(path: &Path) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use image::GenericImageView;
     use std::io::Write;
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -1329,6 +1547,35 @@ mod tests {
         assert!(preview.body.contains("Sheet: Quarter 1"));
         assert!(preview.body.contains("Name\t\tScore"));
         assert!(preview.body.contains("Ada\t\t42"));
+        let png = render_office_content_preview_png(&path, 256).expect("bounded visual PNG");
+        let decoded = image::load_from_memory(&png).expect("decode visual PNG");
+        assert_eq!(decoded.dimensions(), (256, 256));
+        assert!(
+            decoded
+                .pixels()
+                .any(|(_, _, pixel)| pixel.0 != [250, 250, 248, 255])
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn docx_visual_preview_is_bounded_png_not_package_bytes() {
+        let path = temp_path("letter.docx");
+        {
+            let file = std::fs::File::create(&path).expect("create docx");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("word/document.xml", options)
+                .expect("document");
+            zip.write_all(br#"<w:document><w:body><w:p><w:r><w:t>Ottrin visual preview</w:t></w:r></w:p></w:body></w:document>"#)
+                .expect("write document");
+            zip.finish().expect("finish");
+        }
+
+        let png = render_office_content_preview_png(&path, 1).expect("bounded visual PNG");
+        let decoded = image::load_from_memory(&png).expect("decode visual PNG");
+        assert_eq!(decoded.dimensions(), (64, 64));
+        assert_ne!(png, std::fs::read(&path).expect("read package"));
         let _ = std::fs::remove_file(path);
     }
 
@@ -1374,6 +1621,10 @@ mod tests {
         assert_eq!(preview.kind, PreviewKind::OfficeMetadata);
         assert!(!preview.body.contains(EXTRACTED_TEXT_MARKER));
         assert!(preview.body.contains("Internal parts: 1"));
+        assert!(matches!(
+            render_office_content_preview_png(&path, 256),
+            Err(OfficeVisualError::NoContent)
+        ));
         let _ = std::fs::remove_file(path);
     }
 }
