@@ -4,7 +4,7 @@ use egui::style::ScrollAnimation;
 use egui::text::{CCursor, CCursorRange};
 use egui::{
     Align, Align2, Color32, Context, FontId, Frame, Key, Layout, Rect, RichText, ScrollArea, Sense,
-    Shadow, Stroke, UiBuilder, Vec2,
+    Shadow, Stroke, UiBuilder, Vec2, WidgetInfo, WidgetType,
 };
 use egui_extras::{Column, TableBuilder};
 use ottrin_core::{
@@ -5841,6 +5841,10 @@ impl OttrinApp {
         let Some(entry) = self.selected_entry_for_preview() else {
             return;
         };
+        self.open_preview_entry(entry);
+    }
+
+    fn open_preview_entry(&mut self, entry: FileEntry) {
         let path = entry.path.clone();
         self.preview.path = Some(path.clone());
         self.preview.visible = true;
@@ -7585,6 +7589,8 @@ impl OttrinApp {
                                 .min_size(Vec2::splat(30.0)),
                             )
                             .on_hover_text("Menu");
+                        menu_btn
+                            .widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, "Menu"));
                         if menu_btn.hovered() {
                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                         }
@@ -7634,6 +7640,117 @@ impl OttrinApp {
 
                                 ui.add(egui::Separator::default().horizontal().spacing(4.0));
 
+                                let can_copy = self.active_selected_entry().is_some();
+                                if ui
+                                    .add_enabled(
+                                        can_copy,
+                                        egui::Button::new(
+                                            RichText::new(format!(
+                                                "{} Open Selection",
+                                                MI_FOLDER_OPEN
+                                            ))
+                                            .size(13.0),
+                                        )
+                                        .frame(false)
+                                        .min_size(Vec2::new(190.0, 28.0)),
+                                    )
+                                    .clicked()
+                                {
+                                    if let Some(entry) = self.active_selected_entry() {
+                                        self.open_entry(entry.path, entry.kind);
+                                    }
+                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
+                                }
+                                if ui
+                                    .add_enabled(
+                                        can_copy,
+                                        egui::Button::new(
+                                            RichText::new(format!(
+                                                "{} Copy Selection",
+                                                MI_CONTENT_COPY
+                                            ))
+                                            .size(13.0),
+                                        )
+                                        .frame(false)
+                                        .min_size(Vec2::new(190.0, 28.0)),
+                                    )
+                                    .clicked()
+                                {
+                                    self.copy_selection(false);
+                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
+                                }
+                                if ui
+                                    .add_enabled(
+                                        can_copy,
+                                        egui::Button::new(
+                                            RichText::new(format!(
+                                                "{} Quick Inspector Selection",
+                                                MI_VISIBILITY
+                                            ))
+                                            .size(13.0),
+                                        )
+                                        .frame(false)
+                                        .min_size(Vec2::new(190.0, 28.0)),
+                                    )
+                                    .clicked()
+                                {
+                                    self.open_preview();
+                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
+                                }
+                                if ui
+                                    .add_enabled(
+                                        can_copy,
+                                        egui::Button::new(
+                                            RichText::new(format!("{} Rename Selection…", MI_EDIT))
+                                                .size(13.0),
+                                        )
+                                        .frame(false)
+                                        .min_size(Vec2::new(190.0, 28.0)),
+                                    )
+                                    .clicked()
+                                {
+                                    self.begin_rename();
+                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
+                                }
+                                if ui
+                                    .add_enabled(
+                                        can_copy,
+                                        egui::Button::new(
+                                            RichText::new(format!(
+                                                "{} Delete Selection…",
+                                                MI_DELETE
+                                            ))
+                                            .size(13.0),
+                                        )
+                                        .frame(false)
+                                        .min_size(Vec2::new(190.0, 28.0)),
+                                    )
+                                    .clicked()
+                                {
+                                    self.request_delete_selection(DeleteMode::Trash);
+                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
+                                }
+                                if ui
+                                    .add_enabled(
+                                        self.clipboard.is_some(),
+                                        egui::Button::new(
+                                            RichText::new(format!(
+                                                "{} Paste into Current Folder",
+                                                MI_CONTENT_PASTE
+                                            ))
+                                            .size(13.0),
+                                        )
+                                        .frame(false)
+                                        .min_size(Vec2::new(190.0, 28.0)),
+                                    )
+                                    .clicked()
+                                {
+                                    self.paste_clipboard();
+                                    egui::Popup::close_id(ui.ctx(), menu_popup_id);
+                                }
+
+                                ui.add(egui::Separator::default().horizontal().spacing(4.0));
+
                                 // ── Settings ───────────────────────────────────
                                 if ui
                                     .add(
@@ -7676,7 +7793,7 @@ impl OttrinApp {
                             ViewMode::List => (MI_VIEW_LIST, "Switch to Grid view"),
                             ViewMode::Grid => (MI_APPS, "Switch to Column view"),
                         };
-                        if ui
+                        let view_btn = ui
                             .add(
                                 egui::Button::new(
                                     RichText::new(view_icon).size(20.0).color(c.text_muted),
@@ -7684,9 +7801,15 @@ impl OttrinApp {
                                 .frame(false)
                                 .min_size(Vec2::splat(30.0)),
                             )
-                            .on_hover_text(view_tip)
-                            .clicked()
-                        {
+                            .on_hover_text(view_tip);
+                        view_btn.widget_info(|| {
+                            WidgetInfo::labeled(
+                                WidgetType::Button,
+                                true,
+                                view_toggle_accessibility_label(view),
+                            )
+                        });
+                        if view_btn.clicked() {
                             let next = match view {
                                 ViewMode::Miller => ViewMode::List,
                                 ViewMode::List => ViewMode::Grid,
@@ -7707,6 +7830,9 @@ impl OttrinApp {
                                 .min_size(Vec2::splat(30.0)),
                             )
                             .on_hover_text("View Options");
+                        view_options_btn.widget_info(|| {
+                            WidgetInfo::labeled(WidgetType::Button, true, "View Options")
+                        });
                         if view_options_btn.hovered() {
                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                         }
@@ -10619,6 +10745,10 @@ impl OttrinApp {
                 *open_entry = Some((path.clone(), kind));
                 ui.close();
             }
+            if menu_item(ui, MI_VISIBILITY, "Quick Inspector", &c).clicked() {
+                self.open_preview_entry(entry.clone());
+                ui.close();
+            }
             if menu_count == 1 && menu_item(ui, MI_APPS, "Open With…", &c).clicked() {
                 ui.close();
                 self.open_with_application_dialog(&path);
@@ -10637,6 +10767,22 @@ impl OttrinApp {
                 ui.close();
             }
             if menu_count == 1 {
+                if menu_item(ui, MI_CONTENT_COPY, "Copy Item", &c).clicked() {
+                    self.clipboard = Some(Clipboard {
+                        sources: vec![path.clone()],
+                        cut: false,
+                    });
+                    self.set_status_message("Copied 1 item", true, 3);
+                    ui.close();
+                }
+                if menu_item(ui, MI_CONTENT_CUT, "Cut Item", &c).clicked() {
+                    self.clipboard = Some(Clipboard {
+                        sources: vec![path.clone()],
+                        cut: true,
+                    });
+                    self.set_status_message("Cut 1 item", true, 3);
+                    ui.close();
+                }
                 if menu_item(ui, MI_EDIT, "Rename…", &c).clicked() {
                     self.begin_rename_path(tab_id, path.clone());
                     ui.close();
@@ -11200,15 +11346,21 @@ impl OttrinApp {
                 ViewMode::List => (MI_VIEW_LIST, "Switch to Grid view"),
                 ViewMode::Grid => (MI_APPS, "Switch to Column view"),
             };
-            if ui
+            let view_btn = ui
                 .add(
                     egui::Button::new(RichText::new(view_icon).size(20.0).color(c.text_muted))
                         .frame(false)
                         .min_size(Vec2::splat(30.0)),
                 )
-                .on_hover_text(view_tip)
-                .clicked()
-            {
+                .on_hover_text(view_tip);
+            view_btn.widget_info(|| {
+                WidgetInfo::labeled(
+                    WidgetType::Button,
+                    true,
+                    view_toggle_accessibility_label(view),
+                )
+            });
+            if view_btn.clicked() {
                 self.focus_tab(tab_id);
                 let next = match view {
                     ViewMode::Miller => ViewMode::List,
@@ -11229,6 +11381,8 @@ impl OttrinApp {
                     .min_size(Vec2::splat(30.0)),
                 )
                 .on_hover_text("View Options");
+            view_options_btn
+                .widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, "View Options"));
             if view_options_btn.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
             }
@@ -12642,6 +12796,14 @@ impl OttrinApp {
                     }
 
                     let response = ui.allocate_rect(row_rect, Sense::click());
+                    response.widget_info(|| {
+                        WidgetInfo::selected(
+                            WidgetType::Button,
+                            true,
+                            selected,
+                            entry.name.as_str(),
+                        )
+                    });
                     if response.hovered() && !selected {
                         ui.painter().rect_filled(row_rect, 0.0, c.hover);
                     }
@@ -12901,6 +13063,14 @@ impl OttrinApp {
                             let cell_h = icon_px + icon_gap + label_sz * 2.2 + 18.0;
                             let (cell_rect, cell_resp) = ui
                                 .allocate_exact_size(Vec2::new(cell_inner, cell_h), Sense::click());
+                            cell_resp.widget_info(|| {
+                                WidgetInfo::selected(
+                                    WidgetType::Button,
+                                    true,
+                                    selected,
+                                    entry.name.as_str(),
+                                )
+                            });
                             let is_hovered = cell_resp.hovered();
                             if name != entry.name {
                                 cell_resp.clone().on_hover_text(entry.name.clone());
@@ -15669,6 +15839,9 @@ impl OttrinApp {
         }
 
         let response = ui.allocate_rect(row_rect, Sense::click());
+        response.widget_info(|| {
+            WidgetInfo::selected(WidgetType::Button, true, selected, entry.name.as_str())
+        });
 
         if response.hovered() && !selected {
             ui.painter().rect_filled(row_rect, 0.0, c.hover);
@@ -16080,6 +16253,14 @@ fn paint_centered_image(ui: &egui::Ui, rect: Rect, image: egui::Image<'static>) 
     image.paint_at(ui, paint_rect);
 }
 
+fn view_toggle_accessibility_label(view: ViewMode) -> &'static str {
+    match view {
+        ViewMode::Miller => "Switch to List view",
+        ViewMode::List => "Switch to Grid view",
+        ViewMode::Grid => "Switch to Column view",
+    }
+}
+
 fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
     if !matches!(entry.kind, EntryKind::File) {
         return false;
@@ -16233,6 +16414,7 @@ fn delete_choice_row(
     let row_h = if selected { 48.0 } else { 38.0 };
     let (rect, response) =
         ui.allocate_exact_size(Vec2::new(ui.available_width(), row_h), Sense::click());
+    response.widget_info(|| WidgetInfo::selected(WidgetType::Button, true, selected, label));
 
     ui.painter().rect_filled(
         rect,
@@ -17987,6 +18169,22 @@ mod tests {
         assert!(!thumbnail_supported_image_path(Path::new(
             "/tmp/presentation.pptx"
         )));
+    }
+
+    #[test]
+    fn view_toggle_accessibility_labels_describe_the_next_view() {
+        assert_eq!(
+            view_toggle_accessibility_label(ViewMode::Miller),
+            "Switch to List view"
+        );
+        assert_eq!(
+            view_toggle_accessibility_label(ViewMode::List),
+            "Switch to Grid view"
+        );
+        assert_eq!(
+            view_toggle_accessibility_label(ViewMode::Grid),
+            "Switch to Column view"
+        );
     }
 
     #[test]

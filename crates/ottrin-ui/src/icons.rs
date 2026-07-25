@@ -26,6 +26,7 @@ pub(crate) const MI_TERMINAL: &str = "\u{EB8E}";
 pub(crate) const MI_CLEAR: &str = "\u{E14C}";
 pub(crate) const MI_DELETE: &str = "\u{E872}";
 pub(crate) const MI_CONTENT_COPY: &str = "\u{E14D}";
+pub(crate) const MI_CONTENT_PASTE: &str = "\u{E14F}";
 pub(crate) const MI_CONTENT_CUT: &str = "\u{E14E}";
 pub(crate) const MI_DRIVE_FILE_MOVE: &str = "\u{E9A8}";
 pub(crate) const MI_OPEN_IN_NEW: &str = "\u{E89E}";
