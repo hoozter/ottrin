@@ -10497,9 +10497,7 @@ impl OttrinApp {
                         // Text preview snippet or image indicator
                         if let Some(pv) = preview {
                             match pv.kind {
-                                PreviewKind::Image
-                                | PreviewKind::Pdf
-                                | PreviewKind::OfficeMetadata => {
+                                PreviewKind::Image | PreviewKind::Pdf => {
                                     let avail_w = ui.available_width().max(60.0);
                                     let max_h = preview_panel_h - 70.0;
                                     if let Some(img) = self
@@ -10508,15 +10506,9 @@ impl OttrinApp {
                                         ui.add(img);
                                     } else {
                                         ui.label(
-                                            RichText::new(
-                                                if matches!(pv.kind, PreviewKind::OfficeMetadata) {
-                                                    "Office visual preview unavailable"
-                                                } else {
-                                                    "Image preview unavailable"
-                                                },
-                                            )
-                                            .size(10.5)
-                                            .color(c.text_muted),
+                                            RichText::new("Image preview unavailable")
+                                                .size(10.5)
+                                                .color(c.text_muted),
                                         );
                                     }
                                 }
@@ -12271,7 +12263,7 @@ impl OttrinApp {
 
                 let preview = self.cached_info_preview(entry);
                 match preview.kind {
-                    PreviewKind::Image | PreviewKind::Pdf | PreviewKind::OfficeMetadata => {
+                    PreviewKind::Image | PreviewKind::Pdf => {
                         if let Some(img) = self.cached_image_preview_widget(
                             &entry.path,
                             max_preview_w,
@@ -12283,7 +12275,6 @@ impl OttrinApp {
                             let snippet = metadata_preview_snippet(&preview.body, 14, 900);
                             metadata_icon = Some(match preview.kind {
                                 PreviewKind::Pdf => MI_PICTURE_PDF,
-                                PreviewKind::OfficeMetadata => MI_DESCRIPTION,
                                 _ => MI_IMAGE,
                             });
                             if !snippet.is_empty() {
@@ -12334,8 +12325,6 @@ impl OttrinApp {
                     | PreviewKind::AudioMetadata
                     | PreviewKind::VideoMetadata => {
                         metadata_icon = Some(match preview.kind {
-                            PreviewKind::Pdf => MI_PICTURE_PDF,
-                            PreviewKind::OfficeMetadata => MI_DESCRIPTION,
                             PreviewKind::ArchiveMetadata => MI_FOLDER_ZIP,
                             PreviewKind::AudioMetadata => MI_MUSIC_NOTE,
                             PreviewKind::VideoMetadata => MI_MOVIE,
@@ -13458,12 +13447,7 @@ impl OttrinApp {
                                 }
                             }
                             let is_zoomable_document =
-                                matches!(preview.kind, PreviewKind::Image | PreviewKind::Pdf)
-                                    || (preview.kind == PreviewKind::OfficeMetadata
-                                        && path
-                                            .extension()
-                                            .and_then(|ext| ext.to_str())
-                                            .is_some_and(|ext| ext.eq_ignore_ascii_case("docx")));
+                                matches!(preview.kind, PreviewKind::Image | PreviewKind::Pdf);
                             if is_zoomable_document {
                                 if ui
                                     .small_button("Fit")
@@ -16369,10 +16353,7 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
             platform_case_mode_current(),
         )
         .category,
-        FileCategory::Image
-            | FileCategory::Pdf
-            | FileCategory::Document
-            | FileCategory::Spreadsheet
+        FileCategory::Image | FileCategory::Pdf
     );
     is_visual && thumbnail_supported_image_path(&entry.path)
 }
@@ -16397,9 +16378,6 @@ fn thumbnail_supported_image_path(path: &Path) -> bool {
             | "avif"
             | "svg"
             | "pdf"
-            | "docx"
-            | "xlsx"
-            | "xlsm"
     )
 }
 
@@ -18223,7 +18201,7 @@ mod tests {
     }
 
     #[test]
-    fn image_thumbnail_candidate_includes_supported_visual_formats() {
+    fn image_thumbnail_candidate_includes_supported_formats_only() {
         let image_entry = FileEntry {
             name: "cover.jpg".to_string(),
             path: PathBuf::from("/tmp/cover.jpg"),
@@ -18254,7 +18232,7 @@ mod tests {
 
         assert!(image_thumbnail_candidate(&image_entry));
         assert!(image_thumbnail_candidate(&pdf_entry));
-        assert!(image_thumbnail_candidate(&office_entry));
+        assert!(!image_thumbnail_candidate(&office_entry));
         assert!(!image_thumbnail_candidate(&FileEntry {
             name: "legacy.doc".to_string(),
             path: PathBuf::from("/tmp/legacy.doc"),
@@ -18267,18 +18245,18 @@ mod tests {
     }
 
     #[test]
-    fn thumbnail_supported_image_path_includes_renderable_office_formats() {
+    fn thumbnail_supported_image_path_includes_supported_formats_only() {
         assert!(thumbnail_supported_image_path(Path::new(
             "/tmp/sample.webp"
         )));
         assert!(thumbnail_supported_image_path(Path::new("/tmp/sample.PDF")));
-        assert!(thumbnail_supported_image_path(Path::new(
+        assert!(!thumbnail_supported_image_path(Path::new(
             "/tmp/report.docx"
         )));
-        assert!(thumbnail_supported_image_path(Path::new(
+        assert!(!thumbnail_supported_image_path(Path::new(
             "/tmp/report.XLSX"
         )));
-        assert!(thumbnail_supported_image_path(Path::new(
+        assert!(!thumbnail_supported_image_path(Path::new(
             "/tmp/report.xlsm"
         )));
         assert!(!thumbnail_supported_image_path(Path::new(
@@ -18394,6 +18372,67 @@ mod tests {
         app.search_ui.selected = Some(1);
         app.sync_preview_to_selection();
         assert_eq!(app.preview.path, Some(PathBuf::from("/tmp/other.txt")));
+    }
+
+    #[test]
+    fn enter_on_search_results_opens_selected_directory() {
+        let mut app = OttrinApp::default();
+        let target = PathBuf::from("/tmp/search-results-enter");
+        app.search_ui.results = vec![SearchResultItem {
+            path: target.clone(),
+            parent_path: PathBuf::from("/tmp"),
+            name: "search-enter".to_string(),
+            kind: EntryKind::Directory,
+            is_executable: false,
+            symlink_target_is_dir: Some(true),
+            size_bytes: Some(1024),
+            modified_unix_secs: None,
+            content_snippet: None,
+            name_lower: "search-enter".to_string(),
+            path_str: target.to_string_lossy().to_string(),
+            path_lower: target.to_string_lossy().to_string(),
+        }];
+        app.search_ui.selected = Some(0);
+        app.sidebar = SidebarSection::Search;
+
+        app.open_search_selected();
+
+        assert_eq!(
+            app.state.active_tab().current_dir,
+            target,
+            "Enter on a selected search row should open that directory in the active tab"
+        );
+    }
+
+    #[test]
+    fn search_result_parent_open_command_uses_selected_result_parent() {
+        let mut app = OttrinApp::default();
+        let target_parent = PathBuf::from("/tmp/parent-open");
+        let child_path = target_parent.join("child-entry");
+        app.search_ui.results = vec![SearchResultItem {
+            path: child_path,
+            parent_path: target_parent.clone(),
+            name: "search-parent".to_string(),
+            kind: EntryKind::Directory,
+            is_executable: false,
+            symlink_target_is_dir: Some(true),
+            size_bytes: Some(4096),
+            modified_unix_secs: None,
+            content_snippet: None,
+            name_lower: "search-parent".to_string(),
+            path_str: "/tmp/parent-open/child-entry".to_string(),
+            path_lower: "/tmp/parent-open/child-entry".to_string(),
+        }];
+        app.search_ui.selected = Some(0);
+        app.sidebar = SidebarSection::Search;
+
+        app.open_search_selected_parent();
+
+        assert_eq!(
+            app.state.active_tab().current_dir,
+            target_parent,
+            "Alt+Enter path and open-parent action should navigate to search result parent."
+        );
     }
 
     #[test]
