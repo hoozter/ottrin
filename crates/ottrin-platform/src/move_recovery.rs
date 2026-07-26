@@ -781,6 +781,33 @@ pub enum LinuxCrossDeviceOverwriteCleanupPlan {
     ClaimedSourceAbsentUnlinkedManualReview,
 }
 
+/// Read-only result for inspecting the source transaction after its claimed source was unlinked.
+///
+/// The transaction still owns its local durable journal, so this is deliberately not a removal
+/// capability. It only proves the narrow topology a later recursive cleanup would need to
+/// revalidate before any mutation can be considered.
+#[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum LinuxClaimedSourceDirectoryCleanupPlan {
+    JournalOnlyManualReview,
+}
+
+/// Failure while read-only inspecting a source transaction for future directory cleanup.
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxInspectClaimedSourceDirectoryCleanupError {
+    #[error("retained overwrite inspection is unsafe: {0}")]
+    Retained(#[from] LinuxInspectCrossDeviceOverwriteRetainedError),
+    #[error("claimed-source directory cleanup requires matching claimed-source-unlinked evidence")]
+    NotClaimedSourceUnlinked,
+    #[error("source transaction contains an unexpected descendant: {0:?}")]
+    UnexpectedDescendant(Vec<u8>),
+    #[error("source transaction local journal is not a regular non-symlink file")]
+    JournalNotRegular,
+    #[error("could not inspect source transaction topology: {0}")]
+    Io(String),
+}
+
 /// Opaque, handle-relative proof that the retained claimed source was re-opened after a complete
 /// cleanup-pending inspection. This is deliberately not a deletion capability: it owns no
 /// mutation operation and dropping it changes neither data nor journals.
@@ -3625,6 +3652,75 @@ impl LinuxRecoveryLock<'_> {
                 LinuxCrossDeviceOverwriteCleanupPlan::ClaimedSourceAbsentUnlinkedManualReview,
             ),
         }
+    }
+
+    /// Read-only inspect the source transaction after a durably recorded claimed-source unlink.
+    ///
+    /// Every lookup stays relative to the already-opened transaction handle. The only permitted
+    /// descendant is the non-symlink local journal; any extra entry is retained for manual
+    /// review. No deletion handle or runtime Move integration is exposed here.
+    pub fn plan_claimed_source_directory_cleanup(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<
+        LinuxClaimedSourceDirectoryCleanupPlan,
+        LinuxInspectClaimedSourceDirectoryCleanupError,
+    > {
+        use rustix::fs::{Dir, FileType, Mode, OFlags, fstat, openat};
+
+        let mut directory = Dir::read_from(&local.directory).map_err(|error| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+        })?;
+        let mut found_journal = false;
+        while let Some(entry) = directory.read() {
+            let entry = entry.map_err(|error| {
+                LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+            })?;
+            let name = entry.file_name();
+            let bytes = name.to_bytes();
+            if matches!(bytes, b"." | b"..") {
+                continue;
+            }
+            if bytes != b"journal" || found_journal {
+                return Err(
+                    LinuxInspectClaimedSourceDirectoryCleanupError::UnexpectedDescendant(
+                        bytes.to_vec(),
+                    ),
+                );
+            }
+            let journal = openat(
+                &local.directory,
+                "journal",
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .map_err(|error| {
+                LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+            })?;
+            let stat = fstat(&journal).map_err(|error| {
+                LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+            })?;
+            if FileType::from_raw_mode(stat.st_mode) != FileType::RegularFile {
+                return Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalNotRegular);
+            }
+            found_journal = true;
+        }
+        if !found_journal {
+            return Err(
+                LinuxInspectClaimedSourceDirectoryCleanupError::UnexpectedDescendant(Vec::new()),
+            );
+        }
+        if self.inspect_cross_device_overwrite_retained_state(
+            local,
+            destination_parent,
+            transaction_id,
+        )? != LinuxCrossDeviceOverwriteRetainedState::ClaimedSourceAbsentUnlinked
+        {
+            return Err(LinuxInspectClaimedSourceDirectoryCleanupError::NotClaimedSourceUnlinked);
+        }
+        Ok(LinuxClaimedSourceDirectoryCleanupPlan::JournalOnlyManualReview)
     }
 
     /// Re-opens the retained claimed source only after the complete cleanup-pending inspection.
@@ -8002,6 +8098,59 @@ mod tests {
                 [0x42; 16],
             ),
             Ok(LinuxCrossDeviceOverwriteCleanupPlan::ClaimedSourceAbsentUnlinkedManualReview)
+        );
+        // A future recursive removal of the now-empty source transaction must first prove
+        // that the transaction still contains only its matching local journal. This remains
+        // planning-only: unexpected descendants and a symlink substituted for the journal
+        // are rejected without changing either journal or retained destination data.
+        assert_eq!(
+            recovery.plan_claimed_source_directory_cleanup(&local, &destination_parent, [0x42; 16]),
+            Ok(LinuxClaimedSourceDirectoryCleanupPlan::JournalOnlyManualReview)
+        );
+        let central_before_directory_cleanup_plan = std::fs::read(&central_journal).unwrap();
+        let local_before_directory_cleanup_plan = std::fs::read(&local_journal).unwrap();
+        std::fs::write(
+            local_path.join("unexpected-descendant"),
+            b"must not be removed",
+        )
+        .unwrap();
+        assert_eq!(
+            recovery.plan_claimed_source_directory_cleanup(&local, &destination_parent, [0x42; 16]),
+            Err(
+                LinuxInspectClaimedSourceDirectoryCleanupError::UnexpectedDescendant(
+                    b"unexpected-descendant".to_vec()
+                )
+            )
+        );
+        std::fs::remove_file(local_path.join("unexpected-descendant")).unwrap();
+        let local_journal_backup = local_path.join("journal-backup");
+        std::fs::rename(&local_journal, &local_journal_backup).unwrap();
+        std::os::unix::fs::symlink(&local_journal_backup, &local_journal).unwrap();
+        assert_eq!(
+            recovery.plan_claimed_source_directory_cleanup(&local, &destination_parent, [0x42; 16]),
+            Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalNotRegular)
+        );
+        std::fs::remove_file(&local_journal).unwrap();
+        std::fs::rename(&local_journal_backup, &local_journal).unwrap();
+        local
+            .persist_local_published(&published.clone().into_claimed_source_deletion_pending())
+            .unwrap();
+        assert!(matches!(
+            recovery.plan_claimed_source_directory_cleanup(&local, &destination_parent, [0x42; 16]),
+            Err(LinuxInspectClaimedSourceDirectoryCleanupError::Retained(
+                LinuxInspectCrossDeviceOverwriteRetainedError::IncompleteEvidence
+            ))
+        ));
+        local
+            .persist_local_published(&claimed_source_unlinked)
+            .unwrap();
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_before_directory_cleanup_plan
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_before_directory_cleanup_plan
         );
         assert_eq!(
             std::fs::read(&published_target).unwrap(),
