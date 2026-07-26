@@ -771,6 +771,27 @@ pub enum LinuxClaimedSourceDeletionPreflightError {
     ClaimedSourceIdentityMismatch,
 }
 
+/// Failure while attempting the separately-durable claimed-source unlink.
+///
+/// This operation is deliberately not connected to runtime Move handling. It only permits an
+/// exact matching `ClaimedSourceDeletionPending` pair, re-opens both authority handles without
+/// following links, and leaves post-unlink restart classification to the existing read-only
+/// retained-state inspector.
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxClaimedSourceUnlinkError {
+    #[error("retained overwrite inspection is unsafe: {0}")]
+    Inspect(#[from] LinuxInspectCrossDeviceOverwriteRetainedError),
+    #[error("claimed-source unlink requires matching claimed-source-deletion-pending evidence")]
+    NotClaimedSourceDeletionPending,
+    #[error("claimed-source unlink could not reopen verified authority: {0}")]
+    Io(String),
+    #[error("claimed-source transaction directory changed before unlink")]
+    SourceTransactionIdentityMismatch,
+    #[error("claimed source changed before unlink")]
+    ClaimedSourceIdentityMismatch,
+}
+
 #[cfg(target_os = "linux")]
 #[derive(Debug, Error, Eq, PartialEq)]
 pub enum LinuxInspectCrossDeviceOverwriteRetainedError {
@@ -3508,6 +3529,131 @@ impl LinuxRecoveryLock<'_> {
             _source_transaction: source_transaction,
             _claimed_source: claimed_source,
         })
+    }
+
+    /// Attempts the first source cleanup only after exact matching first-deletion evidence.
+    ///
+    /// This is intentionally isolated from runtime Move handling. The unlink is relative to the
+    /// re-opened transaction directory, refuses symlink traversal, and has no post-unlink
+    /// journal marker yet; a successful unlink therefore remains restart-classification-only.
+    pub fn attempt_cross_device_overwrite_claimed_source_unlink(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<(), LinuxClaimedSourceUnlinkError> {
+        self.attempt_cross_device_overwrite_claimed_source_unlink_inner(
+            local,
+            destination_parent,
+            transaction_id,
+            |source_transaction, claimed_is_directory| {
+                use rustix::fs::{AtFlags, unlinkat};
+
+                let flags = if claimed_is_directory {
+                    AtFlags::REMOVEDIR
+                } else {
+                    AtFlags::empty()
+                };
+                unlinkat(source_transaction, "claimed", flags)
+                    .map_err(|error| LinuxClaimedSourceUnlinkError::Io(error.to_string()))
+            },
+        )
+    }
+
+    #[cfg(test)]
+    fn attempt_cross_device_overwrite_claimed_source_unlink_after_validation<F>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        after_validation: F,
+    ) -> Result<(), LinuxClaimedSourceUnlinkError>
+    where
+        F: FnOnce(),
+    {
+        self.attempt_cross_device_overwrite_claimed_source_unlink_inner(
+            local,
+            destination_parent,
+            transaction_id,
+            |_, _| {
+                after_validation();
+                Ok(())
+            },
+        )
+    }
+
+    fn attempt_cross_device_overwrite_claimed_source_unlink_inner<F>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        unlink: F,
+    ) -> Result<(), LinuxClaimedSourceUnlinkError>
+    where
+        F: FnOnce(&OwnedFd, bool) -> Result<(), LinuxClaimedSourceUnlinkError>,
+    {
+        use rustix::{
+            fs::{FileType, Mode, OFlags, fstat, openat},
+            io::dup,
+        };
+
+        let published = match self
+            .central
+            .load_published_restart_state(local, transaction_id)
+        {
+            Ok(LinuxPublishedRestartState::MatchingPair(published))
+                if published.phase == JournalPhase::ClaimedSourceDeletionPending =>
+            {
+                published
+            }
+            Ok(_) => return Err(LinuxClaimedSourceUnlinkError::NotClaimedSourceDeletionPending),
+            Err(error) => return Err(LinuxClaimedSourceUnlinkError::Inspect(error.into())),
+        };
+        if self.inspect_cross_device_overwrite_retained_state(
+            local,
+            destination_parent,
+            transaction_id,
+        )?
+            != LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedClaimedSourceDeletionPending
+        {
+            return Err(LinuxClaimedSourceUnlinkError::NotClaimedSourceDeletionPending);
+        }
+        let source_transaction = dup(&local.directory)
+            .map_err(|error| LinuxClaimedSourceUnlinkError::Io(error.to_string()))?;
+        let transaction_stat = fstat(&source_transaction)
+            .map_err(|error| LinuxClaimedSourceUnlinkError::Io(error.to_string()))?;
+        let transaction_identity = LinuxStableIdentity::new(
+            transaction_stat.st_dev,
+            transaction_stat.st_ino,
+            LinuxFileType::Directory,
+        );
+        if transaction_identity != published.source_transaction_identity {
+            return Err(LinuxClaimedSourceUnlinkError::SourceTransactionIdentityMismatch);
+        }
+        let claimed = openat(
+            &source_transaction,
+            "claimed",
+            OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|error| LinuxClaimedSourceUnlinkError::Io(error.to_string()))?;
+        let claimed_stat = fstat(&claimed)
+            .map_err(|error| LinuxClaimedSourceUnlinkError::Io(error.to_string()))?;
+        let claimed_file_type = match FileType::from_raw_mode(claimed_stat.st_mode) {
+            FileType::RegularFile => LinuxFileType::Regular,
+            FileType::Directory => LinuxFileType::Directory,
+            FileType::Symlink => LinuxFileType::Symlink,
+            _ => LinuxFileType::Other,
+        };
+        if LinuxStableIdentity::new(claimed_stat.st_dev, claimed_stat.st_ino, claimed_file_type)
+            != published.claimed_source_identity
+        {
+            return Err(LinuxClaimedSourceUnlinkError::ClaimedSourceIdentityMismatch);
+        }
+        unlink(
+            &source_transaction,
+            claimed_file_type == LinuxFileType::Directory,
+        )
     }
 
     pub fn observe_original_after_restart(
@@ -7480,6 +7626,73 @@ mod tests {
             std::fs::read(&local_journal).unwrap(),
             local_after_deletion_pending
         );
+        // The actual claimed-source unlink is a separate, handle-relative step. It must reject
+        // any evidence other than the exact matching durable first-deletion pair before it can
+        // touch the retained source.
+        local
+            .persist_local_published(&published.clone().into_cleanup_pending())
+            .unwrap();
+        assert!(matches!(
+            recovery.attempt_cross_device_overwrite_claimed_source_unlink_after_validation(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+                || {},
+            ),
+            Err(LinuxClaimedSourceUnlinkError::NotClaimedSourceDeletionPending)
+        ));
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_after_deletion_pending
+        );
+        local
+            .persist_local_published(&published.clone().into_claimed_source_deletion_pending())
+            .unwrap();
+        // Simulate a successful handle-relative unlink before its distinct post-unlink marker.
+        // Restart classification must remain review-only and retain the unrelated exchange data.
+        let unlink_backup = root.join("claimed-after-simulated-unlink");
+        assert_eq!(
+            recovery.attempt_cross_device_overwrite_claimed_source_unlink_after_validation(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+                || std::fs::rename(&claimed_path, &unlink_backup).unwrap(),
+            ),
+            Ok(())
+        );
+        assert_eq!(
+            recovery.inspect_cross_device_overwrite_retained_state(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Ok(LinuxCrossDeviceOverwriteRetainedState::ClaimedSourceAbsentDeletionPending)
+        );
+        assert_eq!(
+            recovery.plan_cross_device_overwrite_retained_cleanup(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Ok(LinuxCrossDeviceOverwriteCleanupPlan::ClaimedSourceAbsentDeletionPendingManualReview)
+        );
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_after_deletion_pending
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_after_deletion_pending
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::rename(&unlink_backup, &claimed_path).unwrap();
         // The durable phase does not relax source identity matching: a substituted claimed
         // source remains fail-closed while the unaffected retained entries and journals stay
         // intact for restart inspection.
