@@ -85,6 +85,9 @@ function Resolve-GraphicsCompatibilityRuntime {
     }
     Copy-Item $dxil $BinDestination
     & tar -xzf $mesaSource -C $NoticeDestination --strip-components=1 mesa-mesa-26.1.3/docs/license.rst mesa-mesa-26.1.3/licenses
+    if ($LASTEXITCODE -ne 0) {
+        throw "Mesa license extraction from the pinned source archive failed."
+    }
     Copy-Item (Join-Path $tmp "pal1000-LICENSE.txt") (Join-Path $NoticeDestination "pal1000-LICENSE.txt")
     Copy-Item (Join-Path $tmp "dxc\LICENSE-MS.txt") (Join-Path $NoticeDestination "Microsoft-DXC-LICENSE-MS.txt")
     @"

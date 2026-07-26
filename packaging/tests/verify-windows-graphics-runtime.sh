@@ -31,6 +31,7 @@ for literal in \
   '$MesaLibEglSha256 = "ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"' \
   '$MesaLibGlesv2Sha256 = "649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"' \
   '$MesaLibGalliumWglSha256 = "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"' \
+  'Mesa license extraction from the pinned source archive failed.' \
   'Mesa DLL checksum mismatch after extracting the pinned Mesa archive'; do
   require_literal "$POWERSHELL_PACKAGER" "$literal"
 done
