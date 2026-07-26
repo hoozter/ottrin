@@ -788,6 +788,12 @@ pub enum LinuxAdvanceClaimedSourceUnlinkedError {
         durable_central: Box<PublishedRecord>,
     },
     #[error(
+        "central claimed-source-unlinked marker is durable but the anchored source transaction changed before matching local persistence"
+    )]
+    CentralDurableSourceTransactionChanged {
+        durable_central: Box<PublishedRecord>,
+    },
+    #[error(
         "central claimed-source-unlinked update succeeded but source-local update is uncertain: {error}"
     )]
     CentralDurableLocalUpdateUncertain {
@@ -3329,11 +3335,13 @@ impl LinuxRecoveryLock<'_> {
     pub fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local(
         &mut self,
         local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
     ) -> Result<LinuxPublishedJournals, LinuxAdvanceClaimedSourceUnlinkedError> {
         self.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner(
             local,
+            source_parent,
             destination_parent,
             transaction_id,
             || {},
@@ -3347,6 +3355,7 @@ impl LinuxRecoveryLock<'_> {
     >(
         &mut self,
         local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
         after_central: F,
@@ -3356,6 +3365,7 @@ impl LinuxRecoveryLock<'_> {
     {
         self.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner(
             local,
+            source_parent,
             destination_parent,
             transaction_id,
             after_central,
@@ -3373,6 +3383,7 @@ impl LinuxRecoveryLock<'_> {
     >(
         &mut self,
         local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
         after_central: F,
@@ -3382,6 +3393,7 @@ impl LinuxRecoveryLock<'_> {
     {
         self.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner(
             local,
+            source_parent,
             destination_parent,
             transaction_id,
             after_central,
@@ -3393,11 +3405,13 @@ impl LinuxRecoveryLock<'_> {
     fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_failure(
         &mut self,
         local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
     ) -> Result<LinuxPublishedJournals, LinuxAdvanceClaimedSourceUnlinkedError> {
         self.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner_with_persistence(
             local,
+            source_parent,
             destination_parent,
             transaction_id,
             || {},
@@ -3409,6 +3423,7 @@ impl LinuxRecoveryLock<'_> {
     fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner<F, G>(
         &mut self,
         local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
         after_central: F,
@@ -3420,6 +3435,7 @@ impl LinuxRecoveryLock<'_> {
     {
         self.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner_with_persistence(
             local,
+            source_parent,
             destination_parent,
             transaction_id,
             after_central,
@@ -3428,6 +3444,7 @@ impl LinuxRecoveryLock<'_> {
         )
     }
 
+    #[allow(clippy::too_many_arguments)] // Test-only persistence seams keep the durable boundary explicit.
     fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner_with_persistence<
         F,
         G,
@@ -3435,6 +3452,7 @@ impl LinuxRecoveryLock<'_> {
     >(
         &mut self,
         local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
         after_central: F,
@@ -3649,6 +3667,42 @@ impl LinuxRecoveryLock<'_> {
                     },
                 );
             }
+        }
+        let source_transaction_name = unlinked.source_transaction_name.decode().map_err(|_| {
+            LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceTransactionChanged {
+                durable_central: Box::new(unlinked.clone()),
+            }
+        })?;
+        let source_transaction = rustix::fs::openat(
+            &source_parent.directory,
+            &source_transaction_name,
+            rustix::fs::OFlags::PATH
+                | rustix::fs::OFlags::DIRECTORY
+                | rustix::fs::OFlags::NOFOLLOW
+                | rustix::fs::OFlags::CLOEXEC,
+            rustix::fs::Mode::empty(),
+        )
+        .map_err(|_| {
+            LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceTransactionChanged {
+                durable_central: Box::new(unlinked.clone()),
+            }
+        })?;
+        let source_transaction_stat = rustix::fs::fstat(&source_transaction).map_err(|_| {
+            LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceTransactionChanged {
+                durable_central: Box::new(unlinked.clone()),
+            }
+        })?;
+        if LinuxStableIdentity::new(
+            source_transaction_stat.st_dev,
+            source_transaction_stat.st_ino,
+            LinuxFileType::Directory,
+        ) != unlinked.source_transaction_identity
+        {
+            return Err(
+                LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceTransactionChanged {
+                    durable_central: Box::new(unlinked),
+                },
+            );
         }
         persist_local(local, &unlinked).map_err(|error| {
             LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableLocalUpdateUncertain {
@@ -9459,6 +9513,7 @@ mod tests {
         assert!(matches!(
             recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_failure(
                 &local,
+                &source_parent,
                 &destination_parent,
                 [0x42; 16],
             ),
@@ -9516,6 +9571,7 @@ mod tests {
         assert!(matches!(
             recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_persistence(
                 &local,
+                &source_parent,
                 &destination_parent,
                 [0x42; 16],
                 || {
@@ -9561,6 +9617,7 @@ mod tests {
         assert!(matches!(
             recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_persistence(
                 &local,
+                &source_parent,
                 &destination_parent,
                 [0x42; 16],
                 || std::fs::write(&central_journal, b"corrupted durable post-unlink evidence").unwrap(),
@@ -9599,6 +9656,7 @@ mod tests {
         assert!(matches!(
             recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_persistence(
                 &local,
+                &source_parent,
                 &destination_parent,
                 [0x42; 16],
                 || {
@@ -9644,6 +9702,7 @@ mod tests {
         assert!(matches!(
             recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_persistence(
                 &local,
+                &source_parent,
                 &destination_parent,
                 [0x42; 16],
                 || {
@@ -9686,6 +9745,7 @@ mod tests {
         assert!(matches!(
             recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_persistence(
                 &local,
+                &source_parent,
                 &destination_parent,
                 [0x42; 16],
                 || std::fs::rename(&unlink_backup, &claimed_path).unwrap(),
@@ -9709,9 +9769,46 @@ mod tests {
         );
         std::fs::rename(&claimed_path, &unlink_backup).unwrap();
         std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
+        // A durable post-unlink marker must not let a replacement source-transaction
+        // directory inherit the matching local persistence merely because the old anchored
+        // descriptor still contains plausible journal evidence.
+        let reparented_local_after_unlinked = root.join("reparented-local-after-unlinked");
         assert!(matches!(
-            recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_local_failure(
+            recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_persistence(
                 &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || std::fs::rename(&local_path, &reparented_local_after_unlinked).unwrap(),
+            ),
+            Err(LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceTransactionChanged { .. })
+        ));
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::CentralClaimedSourceUnlinkedLocalClaimedSourceDeletionPending {
+                claimed_source_unlinked: claimed_source_unlinked.clone(),
+                claimed_source_deletion_pending: published.clone().into_claimed_source_deletion_pending(),
+            })
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::rename(&reparented_local_after_unlinked, &local_path).unwrap();
+        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::MatchingPair(
+                published.clone().into_claimed_source_deletion_pending()
+            ))
+        );
+        let failed = recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_local_failure(
+                &local,
+                &source_parent,
                 &destination_parent,
                 [0x42; 16],
                 || {
@@ -9725,9 +9822,16 @@ mod tests {
                     assert_eq!(std::fs::read(&published_target).unwrap(), b"new target after exchange");
                     assert_eq!(std::fs::read(&retained_displaced).unwrap(), b"displaced target retained");
                 },
+            );
+        assert!(
+            matches!(
+                failed,
+                Err(
+                    LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableLocalUpdateUncertain { .. }
+                )
             ),
-            Err(LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableLocalUpdateUncertain { .. })
-        ));
+            "unexpected result: {failed:?}"
+        );
         local
             .persist_local_published(&claimed_source_unlinked)
             .unwrap();
