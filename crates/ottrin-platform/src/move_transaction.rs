@@ -96,6 +96,26 @@ fn move_with_hooks(
         },
     );
 
+    // Cross-device Overwrite has no durable displaced-entry lifecycle yet. Decide that before
+    // creating a recovery root or claiming the source so an unsupported request is truly
+    // non-mutating for both the source and the occupied destination.
+    let destination_parent_metadata = std::fs::symlink_metadata(destination_dir)
+        .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
+    let is_cross_device = match hook(TestPoint::ClassifyCrossDevice) {
+        Ok(()) => source_parent_metadata.dev() != destination_parent_metadata.dev(),
+        Err("force cross-device move") => true,
+        Err(message) => {
+            return Err(PlatformError::Io(format!(
+                "move test hook failed: {message}"
+            )));
+        }
+    };
+    if is_cross_device && conflict == ConflictAction::Overwrite {
+        return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+            source.display().to_string(),
+        ));
+    }
+
     let recovery_root = default_recovery_root()?;
     std::fs::create_dir_all(&recovery_root)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -161,23 +181,6 @@ fn move_with_hooks(
         })?;
     hook(TestPoint::Claim)
         .map_err(|message| PlatformError::Io(format!("move test hook failed: {message}")))?;
-    let destination_parent_metadata = std::fs::symlink_metadata(destination_dir)
-        .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
-    let is_cross_device = match hook(TestPoint::ClassifyCrossDevice) {
-        Ok(()) => source_parent_metadata.dev() != destination_parent_metadata.dev(),
-        Err("force cross-device move") => true,
-        Err(message) => {
-            return Err(PlatformError::Io(format!(
-                "move test hook failed: {message}"
-            )));
-        }
-    };
-    if is_cross_device && conflict == ConflictAction::Overwrite {
-        return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
-            source.display().to_string(),
-        ));
-    }
-
     let claimed_path = local_path.join("claimed");
     let mut destination_name = source_name.to_os_string();
     let mut destination_target = destination_dir.join(&destination_name);
@@ -882,5 +885,42 @@ mod tests {
             std::fs::read(destination.join("source")).unwrap(),
             b"payload"
         );
+    }
+
+    #[test]
+    fn cross_filesystem_overwrite_is_rejected_before_claiming_source_or_destination() {
+        let dir = TestDir::new("overwrite-rejected-before-claim");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "source payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("source"), "displaced destination payload").unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Overwrite,
+            |point| match point {
+                TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                _ => Ok(()),
+            },
+        );
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::UnsupportedSafeCrossDeviceMove(_))
+        ));
+        assert_eq!(std::fs::read(&source).unwrap(), b"source payload");
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"displaced destination payload"
+        );
+        assert!(std::fs::read_dir(&dir.0).unwrap().all(|entry| {
+            !entry
+                .unwrap()
+                .file_name()
+                .to_string_lossy()
+                .starts_with(".ottrin-move-")
+        }));
     }
 }
