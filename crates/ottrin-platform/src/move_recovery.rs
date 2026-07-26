@@ -3002,11 +3002,14 @@ impl LinuxRecoveryLock<'_> {
             destination_parent,
             transaction_id,
             || {},
+            |local, unlinked| local.persist_local_published(unlinked),
         )
     }
 
     #[cfg(test)]
-    fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central<F>(
+    fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_local_failure<
+        F,
+    >(
         &mut self,
         local: &LinuxJournalDirectory,
         destination_parent: &LinuxSourceParentDirectory,
@@ -3021,18 +3024,25 @@ impl LinuxRecoveryLock<'_> {
             destination_parent,
             transaction_id,
             after_central,
+            |_, _| {
+                Err(JournalError::Io(
+                    "injected local post-unlink journal failure".into(),
+                ))
+            },
         )
     }
 
-    fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner<F>(
+    fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner<F, G>(
         &mut self,
         local: &LinuxJournalDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
         after_central: F,
+        persist_local: G,
     ) -> Result<LinuxPublishedJournals, LinuxAdvanceClaimedSourceUnlinkedError>
     where
         F: FnOnce(),
+        G: FnOnce(&LinuxJournalDirectory, &PublishedRecord) -> Result<(), JournalError>,
     {
         if self.inspect_cross_device_overwrite_retained_state(
             local,
@@ -3065,7 +3075,7 @@ impl LinuxRecoveryLock<'_> {
                 LinuxAdvanceClaimedSourceUnlinkedError::CentralUpdateUncertain(failure.into_inner())
             })?;
         after_central();
-        local.persist_local_published(&unlinked).map_err(|error| {
+        persist_local(local, &unlinked).map_err(|error| {
             LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableLocalUpdateUncertain {
                 error,
                 durable_central: Box::new(unlinked),
@@ -7862,8 +7872,8 @@ mod tests {
         // revalidated with the claimed source absent. A central-only interruption is still
         // classification-only, and neither retained destination participant can change.
         let claimed_source_unlinked = published.clone().into_claimed_source_unlinked();
-        assert_eq!(
-            recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central(
+        assert!(matches!(
+            recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_local_failure(
                 &local,
                 &destination_parent,
                 [0x42; 16],
@@ -7879,8 +7889,11 @@ mod tests {
                     assert_eq!(std::fs::read(&retained_displaced).unwrap(), b"displaced target retained");
                 },
             ),
-            Ok(LinuxPublishedJournals::MatchingPair)
-        );
+            Err(LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableLocalUpdateUncertain { .. })
+        ));
+        local
+            .persist_local_published(&claimed_source_unlinked)
+            .unwrap();
         assert_eq!(
             recovery.inspect_cross_device_overwrite_retained_state(
                 &local,
