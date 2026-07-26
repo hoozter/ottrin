@@ -3313,6 +3313,14 @@ impl LinuxRecoveryLock<'_> {
             return Err(LinuxClaimedSourceDeletionPreflightError::CleanupNotPending);
         }
         after_inspection();
+        if self.inspect_cross_device_overwrite_retained_state(
+            local,
+            destination_parent,
+            transaction_id,
+        )? != LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedCleanupPending
+        {
+            return Err(LinuxClaimedSourceDeletionPreflightError::CleanupNotPending);
+        }
         let published = match self
             .central
             .load_published_restart_state(local, transaction_id)
@@ -7171,7 +7179,9 @@ mod tests {
                     std::fs::write(claimed_path.join("nested-source"), b"replacement").unwrap();
                 },
             ),
-            Err(LinuxClaimedSourceDeletionPreflightError::ClaimedSourceIdentityMismatch)
+            Err(LinuxClaimedSourceDeletionPreflightError::Inspect(
+                LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceIdentityMismatch
+            ))
         ));
         assert_eq!(
             std::fs::read(&central_journal).unwrap(),
@@ -7191,6 +7201,39 @@ mod tests {
         );
         std::fs::remove_dir_all(&claimed_path).unwrap();
         std::fs::rename(&claimed_backup, &claimed_path).unwrap();
+        // The preflight cannot retain authority if a non-source participant changes in the same
+        // post-inspection window: the complete topology must be revalidated before return.
+        let target_backup_after_inspection = root.join("target-before-preflight-replacement");
+        let central_before_target_replacement = std::fs::read(&central_journal).unwrap();
+        let local_before_target_replacement = std::fs::read(&local_journal).unwrap();
+        assert!(matches!(
+            recovery.preflight_cross_device_overwrite_claimed_source_deletion_after_inspection(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+                || {
+                    std::fs::rename(&published_target, &target_backup_after_inspection).unwrap();
+                    std::fs::write(&published_target, b"replacement target").unwrap();
+                },
+            ),
+            Err(LinuxClaimedSourceDeletionPreflightError::Inspect(
+                LinuxInspectCrossDeviceOverwriteRetainedError::PublishedTargetIdentityMismatch
+            ))
+        ));
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_before_target_replacement
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_before_target_replacement
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::remove_file(&published_target).unwrap();
+        std::fs::rename(&target_backup_after_inspection, &published_target).unwrap();
         assert_eq!(
             recovery
                 .advance_cross_device_overwrite_to_cleanup_pending_with_local(&local, [0x42; 16]),
