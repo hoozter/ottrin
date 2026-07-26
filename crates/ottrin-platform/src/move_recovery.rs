@@ -711,6 +711,29 @@ pub enum LinuxCrossDeviceOverwriteCleanupPlan {
     CleanupPendingManualReview,
 }
 
+/// Opaque, handle-relative proof that the retained claimed source was re-opened after a complete
+/// cleanup-pending inspection. This is deliberately not a deletion capability: it owns no
+/// mutation operation and dropping it changes neither data nor journals.
+#[cfg(target_os = "linux")]
+pub struct LinuxClaimedSourceDeletionPreflight {
+    _source_transaction: OwnedFd,
+    _claimed_source: OwnedFd,
+}
+
+/// Failure while preparing the first prospective retained-source deletion.
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxClaimedSourceDeletionPreflightError {
+    #[error("retained overwrite inspection is unsafe: {0}")]
+    Inspect(#[from] LinuxInspectCrossDeviceOverwriteRetainedError),
+    #[error("claimed-source deletion preflight requires a matching cleanup-pending journal pair")]
+    CleanupNotPending,
+    #[error("claimed-source deletion preflight could not reopen the verified handle: {0}")]
+    Io(String),
+    #[error("claimed-source changed after cleanup-pending inspection")]
+    ClaimedSourceIdentityMismatch,
+}
+
 #[cfg(target_os = "linux")]
 #[derive(Debug, Error, Eq, PartialEq)]
 pub enum LinuxInspectCrossDeviceOverwriteRetainedError {
@@ -3226,6 +3249,70 @@ impl LinuxRecoveryLock<'_> {
                 Ok(LinuxCrossDeviceOverwriteCleanupPlan::CleanupPendingManualReview)
             }
         }
+    }
+
+    /// Re-opens the retained claimed source only after the complete cleanup-pending inspection.
+    ///
+    /// This intentionally has no deletion method or runtime integration. It is the narrow
+    /// pre-mutation boundary for a future one-at-a-time cleanup lifecycle, so an interruption
+    /// immediately after it leaves all retained data and both journals untouched.
+    pub fn preflight_cross_device_overwrite_claimed_source_deletion(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxClaimedSourceDeletionPreflight, LinuxClaimedSourceDeletionPreflightError> {
+        use rustix::{
+            fs::{FileType, Mode, OFlags, fstat, openat},
+            io::dup,
+        };
+
+        if self.inspect_cross_device_overwrite_retained_state(
+            local,
+            destination_parent,
+            transaction_id,
+        )? != LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedCleanupPending
+        {
+            return Err(LinuxClaimedSourceDeletionPreflightError::CleanupNotPending);
+        }
+        let published = match self
+            .central
+            .load_published_restart_state(local, transaction_id)
+            .map_err(LinuxInspectCrossDeviceOverwriteRetainedError::Restart)?
+        {
+            LinuxPublishedRestartState::MatchingPair(published) => published,
+            LinuxPublishedRestartState::CentralCleanupPendingLocalPublished { .. }
+            | LinuxPublishedRestartState::CentralPublishedLocalPending { .. }
+            | LinuxPublishedRestartState::CentralPublishedLocalClaimed { .. } => {
+                return Err(LinuxClaimedSourceDeletionPreflightError::CleanupNotPending);
+            }
+        };
+        let source_transaction = dup(&local.directory)
+            .map_err(|error| LinuxClaimedSourceDeletionPreflightError::Io(error.to_string()))?;
+        let claimed_source = openat(
+            &source_transaction,
+            "claimed",
+            OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|error| LinuxClaimedSourceDeletionPreflightError::Io(error.to_string()))?;
+        let stat = fstat(&claimed_source)
+            .map_err(|error| LinuxClaimedSourceDeletionPreflightError::Io(error.to_string()))?;
+        let file_type = match FileType::from_raw_mode(stat.st_mode) {
+            FileType::RegularFile => LinuxFileType::Regular,
+            FileType::Directory => LinuxFileType::Directory,
+            FileType::Symlink => LinuxFileType::Symlink,
+            _ => LinuxFileType::Other,
+        };
+        if LinuxStableIdentity::new(stat.st_dev, stat.st_ino, file_type)
+            != published.claimed_source_identity
+        {
+            return Err(LinuxClaimedSourceDeletionPreflightError::ClaimedSourceIdentityMismatch);
+        }
+        Ok(LinuxClaimedSourceDeletionPreflight {
+            _source_transaction: source_transaction,
+            _claimed_source: claimed_source,
+        })
     }
 
     pub fn observe_original_after_restart(
@@ -6994,6 +7081,41 @@ mod tests {
                 [0x42; 16],
             ),
             Ok(LinuxCrossDeviceOverwriteCleanupPlan::CleanupPendingManualReview)
+        );
+        // Simulate a stop at the exact boundary after the first prospective deletion has been
+        // preflighted, but before any mutation. Dropping this opaque capability must leave the
+        // durable evidence and every retained entry byte-for-byte intact.
+        let central_journal = central_path.join("42424242424242424242424242424242.journal");
+        let local_journal = local_path.join("journal");
+        let central_before_preflight = std::fs::read(&central_journal).unwrap();
+        let local_before_preflight = std::fs::read(&local_journal).unwrap();
+        let preflight = recovery
+            .preflight_cross_device_overwrite_claimed_source_deletion(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            )
+            .unwrap();
+        drop(preflight);
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_before_preflight
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_before_preflight
+        );
+        assert_eq!(
+            std::fs::read(&claimed_child).unwrap(),
+            b"source retained pending cleanup"
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
         );
         assert_eq!(
             recovery
