@@ -1,7 +1,8 @@
 #[cfg(target_os = "linux")]
 use super::move_recovery;
 use super::{
-    copy_entry, ConflictAction, PlatformError, next_available_name, reject_directory_copy_into_itself,
+    ConflictAction, PlatformError, copy_entry, next_available_name,
+    reject_directory_copy_into_itself,
 };
 #[cfg(target_os = "linux")]
 use std::os::unix::fs::MetadataExt;
@@ -42,6 +43,7 @@ pub(crate) enum TestPoint {
     ClassifyCrossDevice,
     PendingDestination,
     Publication,
+    BeforeSourceCleanup,
 }
 
 #[cfg(target_os = "linux")]
@@ -165,7 +167,9 @@ fn move_with_hooks(
         Ok(()) => source_parent_metadata.dev() != destination_parent_metadata.dev(),
         Err("force cross-device move") => true,
         Err(message) => {
-            return Err(PlatformError::Io(format!("move test hook failed: {message}")));
+            return Err(PlatformError::Io(format!(
+                "move test hook failed: {message}"
+            )));
         }
     };
     if is_cross_device && conflict == ConflictAction::Overwrite {
@@ -181,19 +185,17 @@ fn move_with_hooks(
     if is_cross_device {
         let destination_parent = move_recovery::LinuxSourceParentDirectory::open(destination_dir)
             .map_err(|error| PlatformError::CommittedCleanupPending {
+            transaction: local_path.display().to_string(),
+            message: format!("destination transaction parent open failed: {error}"),
+        })?;
+        let destination_transaction = destination_parent
+            .create_transaction(recovery_transaction_id)
+            .map_err(|error| PlatformError::CommittedCleanupPending {
                 transaction: local_path.display().to_string(),
-                message: format!("destination transaction parent open failed: {error}"),
+                message: format!("destination transaction creation failed: {error}"),
             })?;
-        let destination_transaction =
-            destination_parent
-                .create_transaction(recovery_transaction_id)
-                .map_err(|error| PlatformError::CommittedCleanupPending {
-                    transaction: local_path.display().to_string(),
-                    message: format!("destination transaction creation failed: {error}"),
-                })?;
         let destination_transaction_identity = destination_transaction.observed_identity();
-        let destination_transaction_path =
-            destination_dir.join(destination_transaction.name());
+        let destination_transaction_path = destination_dir.join(destination_transaction.name());
         let mut staged_destination_identity = None;
         let destination_tree_snapshot = source_tree_snapshot_for_path(&claimed_path)?;
 
@@ -201,11 +203,12 @@ fn move_with_hooks(
             if staged_destination_identity.is_none() {
                 let staged_destination_path =
                     destination_transaction_path.join(CROSS_DEVICE_STAGED_NAME);
-                copy_entry(&claimed_path, &staged_destination_path)
-                    .map_err(|error| PlatformError::CommittedCleanupPending {
+                copy_entry(&claimed_path, &staged_destination_path).map_err(|error| {
+                    PlatformError::CommittedCleanupPending {
                         transaction: local_path.display().to_string(),
                         message: format!("cross-device stage copy failed: {error}"),
-                    })?;
+                    }
+                })?;
                 flush_tree_bottom_up(&staged_destination_path).map_err(|error| {
                     PlatformError::CommittedCleanupPending {
                         transaction: local_path.display().to_string(),
@@ -214,8 +217,7 @@ fn move_with_hooks(
                 })?;
                 let staged_metadata = std::fs::symlink_metadata(&staged_destination_path)
                     .map_err(|error| PlatformError::Io(error.to_string()))?;
-                staged_destination_identity =
-                    Some(stable_identity_from_metadata(&staged_metadata));
+                staged_destination_identity = Some(stable_identity_from_metadata(&staged_metadata));
             }
 
             let destination_transaction_path_path = destination_transaction_path.as_path();
@@ -226,20 +228,23 @@ fn move_with_hooks(
                     &local,
                     recovery_transaction_id,
                     destination_name.as_ref(),
-                    Some(destination_transaction.name()),
-                    Some(destination_transaction_identity),
-                    Some(destination_tree_snapshot.clone()),
-                    Some(staged_identity),
+                    move_recovery::PendingDestinationMetadata {
+                        destination_transaction_name: Some(
+                            destination_transaction.name().to_path_buf(),
+                        ),
+                        destination_transaction_identity: Some(destination_transaction_identity),
+                        source_tree_snapshot: Some(destination_tree_snapshot.clone()),
+                        staged_destination_identity: Some(staged_identity),
+                    },
                 )
                 .map_err(|error| PlatformError::CommittedCleanupPending {
                     transaction: local_path.display().to_string(),
                     message: format!("pending destination persistence failed: {error}"),
                 })?;
-            hook(TestPoint::PendingDestination)
-                .map_err(|message| {
-                    PlatformError::Io(format!("move test hook failed: {message}"))
-                })?;
-            flush_tree_bottom_up(&destination_transaction_path_path).map_err(|error| {
+            hook(TestPoint::PendingDestination).map_err(|message| {
+                PlatformError::Io(format!("move test hook failed: {message}"))
+            })?;
+            flush_tree_bottom_up(destination_transaction_path_path).map_err(|error| {
                 PlatformError::CommittedCleanupPending {
                     transaction: local_path.display().to_string(),
                     message: format!("cross-device transaction flush failed: {error}"),
@@ -247,11 +252,9 @@ fn move_with_hooks(
             })?;
             std::fs::File::open(destination_dir)
                 .and_then(|directory| directory.sync_all())
-                .map_err(|error| {
-                    PlatformError::CommittedCleanupPending {
-                        transaction: local_path.display().to_string(),
-                        message: format!("destination parent flush failed: {error}"),
-                    }
+                .map_err(|error| PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("destination parent flush failed: {error}"),
                 })?;
 
             let staged_candidate = destination_transaction_path.join(CROSS_DEVICE_STAGED_NAME);
@@ -289,9 +292,11 @@ fn move_with_hooks(
                             &staged_candidate,
                             &destination_target,
                         )
-                        .map_err(|publish_error| PlatformError::CommittedCleanupPending {
-                            transaction: local_path.display().to_string(),
-                            message: format!("publication failed: {publish_error}"),
+                        .map_err(|publish_error| {
+                            PlatformError::CommittedCleanupPending {
+                                transaction: local_path.display().to_string(),
+                                message: format!("publication failed: {publish_error}"),
+                            }
                         })?;
                         break;
                     }
@@ -323,15 +328,18 @@ fn move_with_hooks(
 
         let destination_identity = staged_destination_identity
             .ok_or_else(|| PlatformError::InvalidSource(claimed_path.display().to_string()))?;
-        let destination_metadata = std::fs::symlink_metadata(&destination_target)
-            .map_err(|error| PlatformError::CommittedCleanupPending {
-                transaction: local_path.display().to_string(),
-                message: format!("cross-device destination identity check failed: {error}"),
+        let destination_metadata =
+            std::fs::symlink_metadata(&destination_target).map_err(|error| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("cross-device destination identity check failed: {error}"),
+                }
             })?;
         if destination_identity != stable_identity_from_metadata(&destination_metadata) {
             return Err(PlatformError::CommittedCleanupPending {
                 transaction: local_path.display().to_string(),
-                message: "cross-device destination identity changed before source cleanup".to_string(),
+                message: "cross-device destination identity changed before source cleanup"
+                    .to_string(),
             });
         }
         if !verify_source_tree_snapshot(&claimed_path, &destination_tree_snapshot)
@@ -343,24 +351,28 @@ fn move_with_hooks(
             });
         }
 
-        remove_source_entry(&claimed_path).map_err(|error| PlatformError::CommittedCleanupPending {
-            transaction: local_path.display().to_string(),
-            message: format!("cross-device source cleanup failed: {error}"),
-        })?;
-
         recovery
             .advance_to_published_with_local(&local, recovery_transaction_id)
             .map_err(|error| PlatformError::CommittedCleanupPending {
                 transaction: local_path.display().to_string(),
                 message: format!("publication durable state failed: {error}"),
             })?;
+        hook(TestPoint::BeforeSourceCleanup).map_err(|message| {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("move test hook failed: {message}"),
+            }
+        })?;
+
+        remove_source_entry(&claimed_path).map_err(|error| {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("cross-device source cleanup failed: {error}"),
+            }
+        })?;
 
         let _ = std::fs::remove_dir_all(destination_transaction_path);
-        let _ = cleanup_transaction_journals(
-            &recovery_root,
-            &local_path,
-            &recovery_transaction_id,
-        );
+        let _ = cleanup_transaction_journals(&recovery_root, &local_path, &recovery_transaction_id);
         return Ok(());
     }
 
@@ -382,9 +394,9 @@ fn move_with_hooks(
             Ok(()) => {
                 break;
             }
-                Err(publish_error) if publish_error.kind() == std::io::ErrorKind::AlreadyExists => {
-                    if conflict == ConflictAction::Skip {
-                        restore_claimed_to_source(
+            Err(publish_error) if publish_error.kind() == std::io::ErrorKind::AlreadyExists => {
+                if conflict == ConflictAction::Skip {
+                    restore_claimed_to_source(
                         source_parent_path,
                         source_name,
                         &claimed_path,
@@ -402,28 +414,30 @@ fn move_with_hooks(
                         &recovery_transaction_id,
                     );
                     return Ok(());
-                    }
+                }
 
-                    if conflict == ConflictAction::Overwrite {
-                        publish_claimed_to_destination_with_exchange(
-                            &claimed_path,
-                            &destination_target,
-                        )
-                        .map_err(|publish_error| PlatformError::CommittedCleanupPending {
+                if conflict == ConflictAction::Overwrite {
+                    publish_claimed_to_destination_with_exchange(
+                        &claimed_path,
+                        &destination_target,
+                    )
+                    .map_err(|publish_error| {
+                        PlatformError::CommittedCleanupPending {
                             transaction: local_path.display().to_string(),
                             message: format!("publication failed: {publish_error}"),
-                        })?;
-                        break;
-                    }
+                        }
+                    })?;
+                    break;
+                }
 
-                    destination_name = next_available_name(&destination_target)
-                        .file_name()
-                        .expect("candidate has a file name")
-                        .to_os_string();
-                    destination_target = destination_dir.join(&destination_name);
-                    if conflict == ConflictAction::Rename {
-                        continue;
-                    }
+                destination_name = next_available_name(&destination_target)
+                    .file_name()
+                    .expect("candidate has a file name")
+                    .to_os_string();
+                destination_target = destination_dir.join(&destination_name);
+                if conflict == ConflictAction::Rename {
+                    continue;
+                }
                 return Err(PlatformError::CleanupPending {
                     transaction: local_path.display().to_string(),
                     message: "publication conflict occurred for unsupported conflict mode"
@@ -576,10 +590,14 @@ fn collect_source_tree_snapshot(
     let relative = source_path
         .strip_prefix(root)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
-    entries.push((relative.to_path_buf(), stable_identity_from_metadata(&metadata)));
+    entries.push((
+        relative.to_path_buf(),
+        stable_identity_from_metadata(&metadata),
+    ));
 
     if metadata.is_dir() {
-        for child in std::fs::read_dir(source_path).map_err(|error| PlatformError::Io(error.to_string()))?
+        for child in
+            std::fs::read_dir(source_path).map_err(|error| PlatformError::Io(error.to_string()))?
         {
             let child = child.map_err(|error| PlatformError::Io(error.to_string()))?;
             collect_source_tree_snapshot(&child.path(), root, entries)?;
@@ -599,8 +617,8 @@ fn verify_source_tree_snapshot(
 
 #[cfg(target_os = "linux")]
 fn flush_tree_bottom_up(path: &Path) -> Result<(), PlatformError> {
-    let metadata = std::fs::symlink_metadata(path)
-        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let metadata =
+        std::fs::symlink_metadata(path).map_err(|error| PlatformError::Io(error.to_string()))?;
     if metadata.file_type().is_symlink() {
         return Ok(());
     }
@@ -719,20 +737,21 @@ mod tests {
         std::fs::write(&source, "payload").unwrap();
         std::fs::create_dir(&destination).unwrap();
 
-        let result = move_entry_transactional_with_test_hook(&source, &destination, ConflictAction::Skip, |point| {
-            match point {
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| match point {
                 TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
                 TestPoint::Publication => Err("publication hook failure"),
                 _ => Ok(()),
-            }
-        });
-        assert!(
-            matches!(
-                result,
-                Err(PlatformError::Io(message))
-                    if message == "move test hook failed: publication hook failure"
-            )
+            },
         );
+        assert!(matches!(
+            result,
+            Err(PlatformError::Io(message))
+                if message == "move test hook failed: publication hook failure"
+        ));
 
         let local_transaction = std::fs::read_dir(dir.0.clone())
             .unwrap()
@@ -740,9 +759,9 @@ mod tests {
             .find(|entry| {
                 entry.path().is_dir()
                     && entry
-                    .file_name()
-                    .to_string_lossy()
-                    .starts_with(".ottrin-move-")
+                        .file_name()
+                        .to_string_lossy()
+                        .starts_with(".ottrin-move-")
             })
             .expect("local transaction must exist");
         let local_transaction_name = local_transaction.file_name();
@@ -768,5 +787,70 @@ mod tests {
         assert!(!central_journal["destination_transaction_name"].is_null());
         assert!(!central_journal["source_tree_snapshot"].is_null());
         assert!(!central_journal["staged_destination_identity"].is_null());
+    }
+
+    #[test]
+    fn cross_filesystem_move_durably_records_publication_before_source_cleanup() {
+        let dir = TestDir::new("published-before-cleanup");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| match point {
+                TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                TestPoint::BeforeSourceCleanup => Err("stop before source cleanup"),
+                _ => Ok(()),
+            },
+        );
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { message, .. })
+                if message == "move test hook failed: stop before source cleanup"
+        ));
+
+        let local_transaction = std::fs::read_dir(&dir.0)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| {
+                entry.path().is_dir()
+                    && entry
+                        .file_name()
+                        .to_string_lossy()
+                        .starts_with(".ottrin-move-")
+            })
+            .expect("local transaction must remain for recovery");
+        let local_path = local_transaction.path();
+        let transaction_id = local_transaction
+            .file_name()
+            .to_string_lossy()
+            .trim_start_matches(".ottrin-move-")
+            .to_owned();
+        let local_journal: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(local_path.join("journal")).unwrap()).unwrap();
+        let central_journal: serde_json::Value = serde_json::from_slice(
+            &std::fs::read(
+                default_recovery_root()
+                    .unwrap()
+                    .join(format!("{transaction_id}.journal")),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
+        assert_eq!(local_journal["phase"], "published");
+        assert_eq!(central_journal["phase"], "published");
+        assert_eq!(
+            std::fs::read(local_path.join("claimed")).unwrap(),
+            b"payload"
+        );
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"payload"
+        );
     }
 }

@@ -8,6 +8,43 @@ use rustix::fd::OwnedFd;
 pub const JOURNAL_SCHEMA_MAJOR: u16 = 2;
 pub const JOURNAL_SCHEMA_MINOR: u16 = 0;
 
+#[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SourceTreeSnapshotEntry {
+    path: NativePath,
+    identity: LinuxStableIdentity,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SourceTreeSnapshot {
+    entries: Vec<SourceTreeSnapshotEntry>,
+}
+
+#[cfg(target_os = "linux")]
+impl SourceTreeSnapshotEntry {
+    pub fn new(path: &Path, identity: LinuxStableIdentity) -> Self {
+        Self {
+            path: NativePath::encode(path),
+            identity,
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl SourceTreeSnapshot {
+    pub fn from_entries(entries: Vec<(PathBuf, LinuxStableIdentity)>) -> Self {
+        Self {
+            entries: entries
+                .into_iter()
+                .map(|(path, identity)| SourceTreeSnapshotEntry::new(&path, identity))
+                .collect(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum NativePathEncoding {
@@ -172,6 +209,96 @@ struct RawClaimedRecord {
     claimed_source_identity: LinuxStableIdentity,
 }
 
+#[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+pub struct PendingDestinationRecord {
+    schema_major: u16,
+    schema_minor: u16,
+    transaction_id: String,
+    phase: JournalPhase,
+    source_parent: NativePath,
+    original_name: NativePath,
+    source_parent_identity: LinuxStableIdentity,
+    source_entry_identity: LinuxStableIdentity,
+    source_transaction_name: NativePath,
+    source_transaction_identity: LinuxStableIdentity,
+    expected_source_identity: LinuxStableIdentity,
+    claimed_source_identity: LinuxStableIdentity,
+    destination_transaction_name: Option<NativePath>,
+    destination_transaction_identity: Option<LinuxStableIdentity>,
+    source_tree_snapshot: Option<SourceTreeSnapshot>,
+    staged_destination_identity: Option<LinuxStableIdentity>,
+    pending_destination_name: NativePath,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+pub struct PublishedRecord {
+    schema_major: u16,
+    schema_minor: u16,
+    transaction_id: String,
+    phase: JournalPhase,
+    source_parent: NativePath,
+    original_name: NativePath,
+    source_parent_identity: LinuxStableIdentity,
+    source_entry_identity: LinuxStableIdentity,
+    source_transaction_name: NativePath,
+    source_transaction_identity: LinuxStableIdentity,
+    expected_source_identity: LinuxStableIdentity,
+    claimed_source_identity: LinuxStableIdentity,
+    destination_transaction_name: Option<NativePath>,
+    destination_transaction_identity: Option<LinuxStableIdentity>,
+    source_tree_snapshot: Option<SourceTreeSnapshot>,
+    staged_destination_identity: Option<LinuxStableIdentity>,
+    pending_destination_name: NativePath,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawPendingDestinationRecord {
+    schema_major: u16,
+    schema_minor: u16,
+    transaction_id: String,
+    phase: JournalPhase,
+    source_parent: NativePath,
+    original_name: NativePath,
+    source_parent_identity: LinuxStableIdentity,
+    source_entry_identity: LinuxStableIdentity,
+    source_transaction_name: NativePath,
+    source_transaction_identity: LinuxStableIdentity,
+    expected_source_identity: LinuxStableIdentity,
+    claimed_source_identity: LinuxStableIdentity,
+    destination_transaction_name: Option<NativePath>,
+    destination_transaction_identity: Option<LinuxStableIdentity>,
+    source_tree_snapshot: Option<SourceTreeSnapshot>,
+    staged_destination_identity: Option<LinuxStableIdentity>,
+    pending_destination_name: NativePath,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawPublishedRecord {
+    schema_major: u16,
+    schema_minor: u16,
+    transaction_id: String,
+    phase: JournalPhase,
+    source_parent: NativePath,
+    original_name: NativePath,
+    source_parent_identity: LinuxStableIdentity,
+    source_entry_identity: LinuxStableIdentity,
+    source_transaction_name: NativePath,
+    source_transaction_identity: LinuxStableIdentity,
+    expected_source_identity: LinuxStableIdentity,
+    claimed_source_identity: LinuxStableIdentity,
+    destination_transaction_name: Option<NativePath>,
+    destination_transaction_identity: Option<LinuxStableIdentity>,
+    source_tree_snapshot: Option<SourceTreeSnapshot>,
+    staged_destination_identity: Option<LinuxStableIdentity>,
+    pending_destination_name: NativePath,
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct JournalHeader {
     schema_major: u16,
@@ -221,6 +348,12 @@ pub enum JournalError {
     #[cfg(target_os = "linux")]
     #[error("claimed journal cannot contain phase {0:?}")]
     InvalidClaimedPhase(JournalPhase),
+    #[cfg(target_os = "linux")]
+    #[error("pending-destination journal cannot contain phase {0:?}")]
+    InvalidPendingDestinationPhase(JournalPhase),
+    #[cfg(target_os = "linux")]
+    #[error("published journal cannot contain phase {0:?}")]
+    InvalidPublishedPhase(JournalPhase),
     #[cfg(target_os = "linux")]
     #[error("claimed source identity does not match the expected source identity")]
     MismatchedClaimedSourceIdentity,
@@ -455,6 +588,71 @@ pub enum LinuxAdvanceClaimedError {
         error: JournalError,
         durable_central: Box<ClaimedRecord>,
     },
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxAdvancePendingDestinationError {
+    #[error("pending-destination journal pair cannot advance: {0}")]
+    PendingDestinationPair(LinuxLoadPendingDestinationRestartError),
+    #[error("pending-destination evidence is invalid: {0}")]
+    InvalidPendingDestination(JournalError),
+    #[error(
+        "central pending-destination update did not confirm durability; inspect the journal: {0}"
+    )]
+    CentralUpdateUncertain(JournalError),
+    #[error(
+        "central pending-destination update succeeded but source-local update is uncertain: {error}"
+    )]
+    CentralDurableLocalUpdateUncertain {
+        #[source]
+        error: JournalError,
+        durable_central: Box<PendingDestinationRecord>,
+    },
+    #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+    #[error("supplied claimed evidence does not match the anchored journal pair")]
+    SuppliedClaimedMismatch,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum LinuxPendingDestinationJournals {
+    MatchingPair,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Default)]
+pub struct PendingDestinationMetadata {
+    pub destination_transaction_name: Option<PathBuf>,
+    pub destination_transaction_identity: Option<LinuxStableIdentity>,
+    pub source_tree_snapshot: Option<SourceTreeSnapshot>,
+    pub staged_destination_identity: Option<LinuxStableIdentity>,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxAdvancePublishedError {
+    #[error("pending-destination journal pair cannot advance: {0}")]
+    PendingDestinationPair(LinuxLoadPendingDestinationRestartError),
+    #[error("published evidence is invalid: {0}")]
+    InvalidPublished(JournalError),
+    #[error("central published update did not confirm durability; inspect the journal: {0}")]
+    CentralUpdateUncertain(JournalError),
+    #[error("central published update succeeded but source-local update is uncertain: {error}")]
+    CentralDurableLocalUpdateUncertain {
+        #[source]
+        error: JournalError,
+        durable_central: Box<PublishedRecord>,
+    },
+    #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+    #[error("supplied pending evidence does not match the anchored journal pair")]
+    SuppliedPendingMismatch,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum LinuxPublishedJournals {
+    MatchingPair,
 }
 
 #[cfg(target_os = "linux")]
@@ -775,6 +973,187 @@ pub enum LinuxDiscoverPreparedError {
     FilenameTransactionMismatch {
         filename: [u8; 16],
         record: [u8; 16],
+    },
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[allow(clippy::large_enum_variant)]
+pub enum LinuxPendingDestinationRestartState {
+    MatchingPair(PendingDestinationRecord),
+    CentralPendingDestinationLocalClaimed {
+        pending: PendingDestinationRecord,
+        claimed: ClaimedRecord,
+    },
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+#[allow(clippy::large_enum_variant)]
+pub enum LinuxPublishedRestartState {
+    MatchingPair(PublishedRecord),
+    CentralPublishedLocalPending {
+        published: PublishedRecord,
+        pending: PendingDestinationRecord,
+    },
+    CentralPublishedLocalClaimed {
+        published: PublishedRecord,
+        claimed: ClaimedRecord,
+    },
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxLoadPendingDestinationRestartError {
+    #[error("central pending-destination journal could not be read: {0}")]
+    CentralRead(LinuxJournalReadError),
+    #[error("source-local pending-destination journal could not be read: {0}")]
+    LocalRead(LinuxJournalReadError),
+    #[error("central pending-destination journal is invalid: {0}")]
+    CentralCorrupt(JournalError),
+    #[error(
+        "source-local record is neither a valid pending-destination ({pending}) nor claimed ({claimed}) record"
+    )]
+    LocalCorrupt {
+        pending: JournalError,
+        claimed: JournalError,
+    },
+    #[error(
+        "central recovery journal transaction {recorded:?} does not match requested transaction {requested:?}"
+    )]
+    RequestedTransactionMismatch {
+        requested: [u8; 16],
+        recorded: [u8; 16],
+    },
+    #[error("source-local pending-destination transaction does not match the central transaction")]
+    PendingDestinationTransactionMismatch {
+        durable_central: Box<PendingDestinationRecord>,
+        local: Box<PendingDestinationRecord>,
+    },
+    #[error(
+        "source-local claimed transaction does not match the central pending-destination journal"
+    )]
+    ClaimedTransactionMismatch {
+        durable_central: Box<PendingDestinationRecord>,
+        local: Box<ClaimedRecord>,
+    },
+    #[error(
+        "source-local pending-destination evidence disagrees with the durable central pending-destination journal"
+    )]
+    PendingDestinationEvidenceMismatch {
+        durable_central: Box<PendingDestinationRecord>,
+        local: Box<PendingDestinationRecord>,
+    },
+    #[error(
+        "source-local claimed evidence disagrees with the durable central pending-destination journal"
+    )]
+    ClaimedEvidenceMismatch {
+        durable_central: Box<PendingDestinationRecord>,
+        local: Box<ClaimedRecord>,
+    },
+    #[error(
+        "source-local claimed identity does not match durable pending-destination claimed identity"
+    )]
+    MismatchedClaimedSourceIdentity,
+    #[error(
+        "source-local pending destination name does not match durable pending destination name"
+    )]
+    MismatchedPendingDestinationName,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxLoadPublishedRestartError {
+    #[error("central published journal could not be read: {0}")]
+    CentralRead(LinuxJournalReadError),
+    #[error("source-local published journal could not be read: {0}")]
+    LocalRead(LinuxJournalReadError),
+    #[error("central published journal is invalid: {0}")]
+    CentralCorrupt(JournalError),
+    #[error(
+        "source-local record is neither a valid published ({published}) nor pending-destination ({pending}) nor claimed ({claimed}) record"
+    )]
+    LocalCorrupt {
+        published: JournalError,
+        pending: JournalError,
+        claimed: JournalError,
+    },
+    #[error(
+        "central recovery journal transaction {recorded:?} does not match requested transaction {requested:?}"
+    )]
+    RequestedTransactionMismatch {
+        requested: [u8; 16],
+        recorded: [u8; 16],
+    },
+    #[error("source-local published transaction does not match the central transaction")]
+    PublishedTransactionMismatch {
+        durable_central: Box<PublishedRecord>,
+        local: Box<PublishedRecord>,
+    },
+    #[error(
+        "source-local pending-destination transaction does not match the central published journal"
+    )]
+    PendingDestinationTransactionMismatch {
+        durable_central: Box<PublishedRecord>,
+        local: Box<PendingDestinationRecord>,
+    },
+    #[error("source-local claimed transaction does not match the central published journal")]
+    ClaimedTransactionMismatch {
+        durable_central: Box<PublishedRecord>,
+        local: Box<ClaimedRecord>,
+    },
+    #[error(
+        "source-local pending-destination evidence disagrees with the durable central published journal"
+    )]
+    PendingDestinationEvidenceMismatch {
+        durable_central: Box<PublishedRecord>,
+        local: Box<PendingDestinationRecord>,
+    },
+    #[error("source-local claimed evidence disagrees with the durable central published journal")]
+    ClaimedEvidenceMismatch {
+        durable_central: Box<PublishedRecord>,
+        local: Box<ClaimedRecord>,
+    },
+    #[error("source-local published evidence disagrees with the durable central published journal")]
+    PublishedEvidenceMismatch {
+        durable_central: Box<PublishedRecord>,
+        local: Box<PublishedRecord>,
+    },
+    #[error("source-local claimed identity does not match durable published claimed identity")]
+    MismatchedClaimedSourceIdentity,
+    #[error(
+        "source-local pending destination name does not match durable pending destination name"
+    )]
+    MismatchedPendingDestinationName,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxResumePublishedError {
+    #[error("published restart evidence is unsafe: {0}")]
+    Restart(#[from] LinuxLoadPublishedRestartError),
+    #[error(
+        "central published is durable but the source-local restart update is uncertain: {error}"
+    )]
+    LocalUpdateUncertain {
+        #[source]
+        error: JournalError,
+        durable_central: Box<PublishedRecord>,
+    },
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxResumePendingDestinationError {
+    #[error("pending-destination restart evidence is unsafe: {0}")]
+    Restart(#[from] LinuxLoadPendingDestinationRestartError),
+    #[error(
+        "central pending-destination is durable but the source-local restart update is uncertain: {error}"
+    )]
+    LocalUpdateUncertain {
+        #[source]
+        error: JournalError,
+        durable_central: Box<PendingDestinationRecord>,
     },
 }
 
@@ -1197,6 +1576,56 @@ impl LinuxJournalDirectory {
         self.replace_named("journal", record)
     }
 
+    #[cfg(test)]
+    fn persist_pending_destination(
+        &self,
+        record: &PendingDestinationRecord,
+    ) -> Result<(), JournalError> {
+        self.replace_named(&format!("{}.journal", record.transaction_id), record)
+    }
+
+    fn persist_local_pending_destination(
+        &self,
+        record: &PendingDestinationRecord,
+    ) -> Result<(), JournalError> {
+        self.replace_named("journal", record)
+    }
+
+    fn persist_pending_destination_staged(
+        &self,
+        record: &PendingDestinationRecord,
+    ) -> Result<(), LinuxJournalReplaceError> {
+        use rustix::fs::fsync;
+
+        self.replace_named_staged_with_sync(
+            &format!("{}.journal", record.transaction_id),
+            record,
+            || fsync(&self.directory).map_err(|error| JournalError::Io(error.to_string())),
+        )
+    }
+
+    #[cfg(test)]
+    fn persist_published(&self, record: &PublishedRecord) -> Result<(), JournalError> {
+        self.replace_named(&format!("{}.journal", record.transaction_id), record)
+    }
+
+    fn persist_local_published(&self, record: &PublishedRecord) -> Result<(), JournalError> {
+        self.replace_named("journal", record)
+    }
+
+    fn persist_published_staged(
+        &self,
+        record: &PublishedRecord,
+    ) -> Result<(), LinuxJournalReplaceError> {
+        use rustix::fs::fsync;
+
+        self.replace_named_staged_with_sync(
+            &format!("{}.journal", record.transaction_id),
+            record,
+            || fsync(&self.directory).map_err(|error| JournalError::Io(error.to_string())),
+        )
+    }
+
     fn prepare_with_local(
         &self,
         local: &Self,
@@ -1404,6 +1833,267 @@ impl LinuxJournalDirectory {
         }
     }
 
+    pub fn load_pending_destination_restart_state(
+        &self,
+        local: &Self,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxPendingDestinationRestartState, LinuxLoadPendingDestinationRestartError> {
+        let central = self
+            .read_named(&format!("{}.journal", encode_hex(&transaction_id)))
+            .map_err(LinuxLoadPendingDestinationRestartError::CentralRead)?;
+        let local = local
+            .read_named("journal")
+            .map_err(LinuxLoadPendingDestinationRestartError::LocalRead)?;
+        let pending = PendingDestinationRecord::parse(&central)
+            .map_err(LinuxLoadPendingDestinationRestartError::CentralCorrupt)?;
+        let decode_transaction_id = |encoded: &str| {
+            let decoded = decode_hex(encoded)
+                .expect("validated recovery records have hexadecimal transaction IDs");
+            let mut decoded_transaction_id = [0_u8; 16];
+            decoded_transaction_id.copy_from_slice(&decoded);
+            decoded_transaction_id
+        };
+        let central_transaction_id = decode_transaction_id(&pending.transaction_id);
+        if central_transaction_id != transaction_id {
+            return Err(
+                LinuxLoadPendingDestinationRestartError::RequestedTransactionMismatch {
+                    requested: transaction_id,
+                    recorded: central_transaction_id,
+                },
+            );
+        }
+        let core_equal = |left: &PendingDestinationRecord, right: &PendingDestinationRecord| {
+            left.schema_major == right.schema_major
+                && left.schema_minor == right.schema_minor
+                && left.transaction_id == right.transaction_id
+                && left.source_parent == right.source_parent
+                && left.original_name == right.original_name
+                && left.source_parent_identity == right.source_parent_identity
+                && left.source_entry_identity == right.source_entry_identity
+                && left.source_transaction_name == right.source_transaction_name
+                && left.source_transaction_identity == right.source_transaction_identity
+                && left.expected_source_identity == right.expected_source_identity
+                && left.claimed_source_identity == right.claimed_source_identity
+                && left.destination_transaction_name == right.destination_transaction_name
+                && left.destination_transaction_identity == right.destination_transaction_identity
+                && left.source_tree_snapshot == right.source_tree_snapshot
+                && left.staged_destination_identity == right.staged_destination_identity
+                && left.phase == right.phase
+        };
+        match PendingDestinationRecord::parse(&local) {
+            Ok(local_pending) => {
+                let local_transaction_id = decode_transaction_id(&local_pending.transaction_id);
+                if local_transaction_id != transaction_id {
+                    return Err(
+                        LinuxLoadPendingDestinationRestartError::PendingDestinationTransactionMismatch {
+                            durable_central: Box::new(pending),
+                            local: Box::new(local_pending),
+                        },
+                    );
+                }
+                if local_pending != pending {
+                    if core_equal(&local_pending, &pending) {
+                        return Err(LinuxLoadPendingDestinationRestartError::MismatchedPendingDestinationName);
+                    }
+                    return Err(LinuxLoadPendingDestinationRestartError::PendingDestinationEvidenceMismatch {
+                        durable_central: Box::new(pending),
+                        local: Box::new(local_pending),
+                    });
+                }
+                Ok(LinuxPendingDestinationRestartState::MatchingPair(pending))
+            }
+            Err(pending_error) => match ClaimedRecord::parse(&local) {
+                Ok(local_claimed) => {
+                    let local_transaction_id = decode_transaction_id(&local_claimed.transaction_id);
+                    if local_transaction_id != transaction_id {
+                        return Err(
+                            LinuxLoadPendingDestinationRestartError::ClaimedTransactionMismatch {
+                                durable_central: Box::new(pending),
+                                local: Box::new(local_claimed),
+                            },
+                        );
+                    }
+                    if local_claimed.claimed_source_identity != pending.claimed_source_identity {
+                        return Err(
+                            LinuxLoadPendingDestinationRestartError::MismatchedClaimedSourceIdentity,
+                        );
+                    }
+                    let pending_destination_name = pending
+                        .pending_destination_name
+                        .decode()
+                        .expect("validated pending-destination records decode their pending destination names");
+                    let expected = PendingDestinationRecord::from_claimed(
+                        &local_claimed,
+                        &pending_destination_name,
+                    )
+                    .expect(
+                        "validated pending-destination claim must preserve identity relationships",
+                    );
+                    if expected != pending {
+                        return Err(
+                            LinuxLoadPendingDestinationRestartError::ClaimedEvidenceMismatch {
+                                durable_central: Box::new(pending),
+                                local: Box::new(local_claimed),
+                            },
+                        );
+                    }
+                    Ok(LinuxPendingDestinationRestartState::CentralPendingDestinationLocalClaimed {
+                        pending,
+                        claimed: local_claimed,
+                    })
+                }
+                Err(claimed_error) => Err(LinuxLoadPendingDestinationRestartError::LocalCorrupt {
+                    pending: pending_error,
+                    claimed: claimed_error,
+                }),
+            },
+        }
+    }
+
+    pub fn load_published_restart_state(
+        &self,
+        local: &Self,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxPublishedRestartState, LinuxLoadPublishedRestartError> {
+        let central = self
+            .read_named(&format!("{}.journal", encode_hex(&transaction_id)))
+            .map_err(LinuxLoadPublishedRestartError::CentralRead)?;
+        let local = local
+            .read_named("journal")
+            .map_err(LinuxLoadPublishedRestartError::LocalRead)?;
+        let published = PublishedRecord::parse(&central)
+            .map_err(LinuxLoadPublishedRestartError::CentralCorrupt)?;
+        let decode_transaction_id = |encoded: &str| {
+            let decoded = decode_hex(encoded)
+                .expect("validated recovery records have hexadecimal transaction IDs");
+            let mut decoded_transaction_id = [0_u8; 16];
+            decoded_transaction_id.copy_from_slice(&decoded);
+            decoded_transaction_id
+        };
+        let central_transaction_id = decode_transaction_id(&published.transaction_id);
+        if central_transaction_id != transaction_id {
+            return Err(
+                LinuxLoadPublishedRestartError::RequestedTransactionMismatch {
+                    requested: transaction_id,
+                    recorded: central_transaction_id,
+                },
+            );
+        }
+        match PublishedRecord::parse(&local) {
+            Ok(local_published) => {
+                let local_transaction_id = decode_transaction_id(&local_published.transaction_id);
+                if local_transaction_id != transaction_id {
+                    return Err(
+                        LinuxLoadPublishedRestartError::PublishedTransactionMismatch {
+                            durable_central: Box::new(published),
+                            local: Box::new(local_published),
+                        },
+                    );
+                }
+                if local_published != published {
+                    if local_published.pending_destination_name
+                        != published.pending_destination_name
+                    {
+                        return Err(
+                            LinuxLoadPublishedRestartError::MismatchedPendingDestinationName,
+                        );
+                    }
+                    return Err(LinuxLoadPublishedRestartError::PublishedEvidenceMismatch {
+                        durable_central: Box::new(published),
+                        local: Box::new(local_published),
+                    });
+                }
+                Ok(LinuxPublishedRestartState::MatchingPair(published))
+            }
+            Err(published_error) => match PendingDestinationRecord::parse(&local) {
+                Ok(local_pending) => {
+                    let local_transaction_id = decode_transaction_id(&local_pending.transaction_id);
+                    if local_transaction_id != transaction_id {
+                        return Err(
+                            LinuxLoadPublishedRestartError::PendingDestinationTransactionMismatch {
+                                durable_central: Box::new(published),
+                                local: Box::new(local_pending),
+                            },
+                        );
+                    }
+                    if local_pending.claimed_source_identity != published.claimed_source_identity {
+                        return Err(
+                            LinuxLoadPublishedRestartError::MismatchedClaimedSourceIdentity,
+                        );
+                    }
+                    let expected = PublishedRecord::from_pending(&local_pending)
+                        .expect("validated pending-destination records are publish-safe");
+                    if expected != published {
+                        if local_pending.pending_destination_name
+                            != published.pending_destination_name
+                        {
+                            return Err(
+                                LinuxLoadPublishedRestartError::MismatchedPendingDestinationName,
+                            );
+                        }
+                        return Err(
+                            LinuxLoadPublishedRestartError::PendingDestinationEvidenceMismatch {
+                                durable_central: Box::new(published),
+                                local: Box::new(local_pending),
+                            },
+                        );
+                    }
+                    Ok(LinuxPublishedRestartState::CentralPublishedLocalPending {
+                        published,
+                        pending: local_pending,
+                    })
+                }
+                Err(pending_error) => match ClaimedRecord::parse(&local) {
+                    Ok(local_claimed) => {
+                        let local_transaction_id =
+                            decode_transaction_id(&local_claimed.transaction_id);
+                        if local_transaction_id != transaction_id {
+                            return Err(
+                                LinuxLoadPublishedRestartError::ClaimedTransactionMismatch {
+                                    durable_central: Box::new(published),
+                                    local: Box::new(local_claimed),
+                                },
+                            );
+                        }
+                        if local_claimed.claimed_source_identity
+                            != published.claimed_source_identity
+                        {
+                            return Err(
+                                LinuxLoadPublishedRestartError::MismatchedClaimedSourceIdentity,
+                            );
+                        }
+                        let pending_destination_name = published
+                            .pending_destination_name
+                            .decode()
+                            .expect("validated published records decode their pending destination names");
+                        let expected = PublishedRecord::from_claimed(
+                            &local_claimed,
+                            &pending_destination_name,
+                        )
+                        .expect(
+                            "validated published records should be producible from a matching claimed record",
+                        );
+                        if expected != published {
+                            return Err(LinuxLoadPublishedRestartError::ClaimedEvidenceMismatch {
+                                durable_central: Box::new(published),
+                                local: Box::new(local_claimed),
+                            });
+                        }
+                        Ok(LinuxPublishedRestartState::CentralPublishedLocalClaimed {
+                            published,
+                            claimed: local_claimed,
+                        })
+                    }
+                    Err(claimed_error) => Err(LinuxLoadPublishedRestartError::LocalCorrupt {
+                        published: published_error,
+                        pending: pending_error,
+                        claimed: claimed_error,
+                    }),
+                },
+            },
+        }
+    }
+
     pub fn discover_prepared(&self) -> Result<Vec<[u8; 16]>, LinuxDiscoverPreparedError> {
         self.discover_pending()
     }
@@ -1458,12 +2148,18 @@ impl LinuxJournalDirectory {
                     Ok(record) => record.transaction_id,
                     Err(_) => match ClaimedRecord::parse(&encoded) {
                         Ok(record) => record.transaction_id,
-                        Err(_) => {
-                            return Err(LinuxDiscoverPreparedError::InvalidRecord {
-                                name: name.to_owned(),
-                                error: prepared_error,
-                            });
-                        }
+                        Err(_) => match PendingDestinationRecord::parse(&encoded) {
+                            Ok(record) => record.transaction_id,
+                            Err(_) => match PublishedRecord::parse(&encoded) {
+                                Ok(record) => record.transaction_id,
+                                Err(_) => {
+                                    return Err(LinuxDiscoverPreparedError::InvalidRecord {
+                                        name: name.to_owned(),
+                                        error: prepared_error,
+                                    });
+                                }
+                            },
+                        },
                     },
                 },
             };
@@ -1601,6 +2297,69 @@ impl LinuxRecoveryLock<'_> {
         Ok(LinuxClaimIntentJournals::MatchingPair)
     }
 
+    pub fn resume_pending_destination_with_local(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxPendingDestinationJournals, LinuxResumePendingDestinationError> {
+        match self
+            .central
+            .load_pending_destination_restart_state(local, transaction_id)?
+        {
+            LinuxPendingDestinationRestartState::MatchingPair(_) => {}
+            LinuxPendingDestinationRestartState::CentralPendingDestinationLocalClaimed {
+                pending,
+                claimed: _,
+            } => {
+                local
+                    .persist_local_pending_destination(&pending)
+                    .map_err(
+                        |error| LinuxResumePendingDestinationError::LocalUpdateUncertain {
+                            error,
+                            durable_central: Box::new(pending),
+                        },
+                    )?;
+            }
+        }
+        Ok(LinuxPendingDestinationJournals::MatchingPair)
+    }
+
+    pub fn resume_published_with_local(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxPublishedJournals, LinuxResumePublishedError> {
+        match self
+            .central
+            .load_published_restart_state(local, transaction_id)?
+        {
+            LinuxPublishedRestartState::MatchingPair(_) => {}
+            LinuxPublishedRestartState::CentralPublishedLocalPending {
+                published,
+                pending: _,
+            } => {
+                local.persist_local_published(&published).map_err(|error| {
+                    LinuxResumePublishedError::LocalUpdateUncertain {
+                        error,
+                        durable_central: Box::new(published),
+                    }
+                })?;
+            }
+            LinuxPublishedRestartState::CentralPublishedLocalClaimed {
+                published,
+                claimed: _,
+            } => {
+                local.persist_local_published(&published).map_err(|error| {
+                    LinuxResumePublishedError::LocalUpdateUncertain {
+                        error,
+                        durable_central: Box::new(published),
+                    }
+                })?;
+            }
+        }
+        Ok(LinuxPublishedJournals::MatchingPair)
+    }
+
     pub fn advance_to_claimed_with_local(
         &mut self,
         local: &LinuxJournalDirectory,
@@ -1613,6 +2372,169 @@ impl LinuxRecoveryLock<'_> {
             || {},
             None::<fn() -> Result<(), JournalError>>,
         )
+    }
+
+    pub fn advance_to_pending_destination_with_local(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+        pending_destination_name: &Path,
+    ) -> Result<LinuxPendingDestinationJournals, LinuxAdvancePendingDestinationError> {
+        self.advance_to_pending_destination_with_local_with_metadata(
+            local,
+            transaction_id,
+            pending_destination_name,
+            PendingDestinationMetadata::default(),
+        )
+    }
+
+    pub fn advance_to_pending_destination_with_local_with_metadata(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+        pending_destination_name: &Path,
+        metadata: PendingDestinationMetadata,
+    ) -> Result<LinuxPendingDestinationJournals, LinuxAdvancePendingDestinationError> {
+        let requested_destination = NativePath::encode(pending_destination_name);
+        let pending = match self
+            .central
+            .load_claimed_restart_state(local, transaction_id)
+        {
+            Ok(state) => match state {
+                LinuxClaimedRestartState::MatchingPair { central, .. } => {
+                    PendingDestinationRecord::from_claimed(&central, pending_destination_name)
+                        .map_err(LinuxAdvancePendingDestinationError::InvalidPendingDestination)?
+                }
+                LinuxClaimedRestartState::CentralClaimedLocalClaimIntent { .. } => {
+                    return Err(LinuxAdvancePendingDestinationError::SuppliedClaimedMismatch);
+                }
+            },
+            Err(_) => {
+                match self
+                    .central
+                    .load_pending_destination_restart_state(local, transaction_id)
+                    .map_err(LinuxAdvancePendingDestinationError::PendingDestinationPair)?
+                {
+                    LinuxPendingDestinationRestartState::MatchingPair(pending) => {
+                        if pending.pending_destination_name == requested_destination {
+                            return Ok(LinuxPendingDestinationJournals::MatchingPair);
+                        }
+                        let claimed = ClaimedRecord::try_from(RawClaimedRecord {
+                            schema_major: pending.schema_major,
+                            schema_minor: pending.schema_minor,
+                            transaction_id: pending.transaction_id.clone(),
+                            phase: JournalPhase::Claimed,
+                            source_parent: pending.source_parent.clone(),
+                            original_name: pending.original_name.clone(),
+                            source_parent_identity: pending.source_parent_identity,
+                            source_entry_identity: pending.source_entry_identity,
+                            source_transaction_name: pending.source_transaction_name.clone(),
+                            source_transaction_identity: pending.source_transaction_identity,
+                            expected_source_identity: pending.expected_source_identity,
+                            claimed_source_identity: pending.claimed_source_identity,
+                        })
+                        .map_err(
+                            LinuxAdvancePendingDestinationError::InvalidPendingDestination,
+                        )?;
+                        PendingDestinationRecord::from_claimed(&claimed, pending_destination_name)
+                            .map_err(
+                                LinuxAdvancePendingDestinationError::InvalidPendingDestination,
+                            )?
+                    }
+                    LinuxPendingDestinationRestartState::CentralPendingDestinationLocalClaimed {
+                        pending,
+                        ..
+                    } => {
+                        if pending.pending_destination_name == requested_destination {
+                            return Ok(LinuxPendingDestinationJournals::MatchingPair);
+                        }
+                        let claimed = ClaimedRecord::try_from(RawClaimedRecord {
+                            schema_major: pending.schema_major,
+                            schema_minor: pending.schema_minor,
+                            transaction_id: pending.transaction_id.clone(),
+                            phase: JournalPhase::Claimed,
+                            source_parent: pending.source_parent.clone(),
+                            original_name: pending.original_name.clone(),
+                            source_parent_identity: pending.source_parent_identity,
+                            source_entry_identity: pending.source_entry_identity,
+                            source_transaction_name: pending.source_transaction_name.clone(),
+                            source_transaction_identity: pending.source_transaction_identity,
+                            expected_source_identity: pending.expected_source_identity,
+                            claimed_source_identity: pending.claimed_source_identity,
+                        })
+                        .map_err(
+                            LinuxAdvancePendingDestinationError::InvalidPendingDestination,
+                        )?;
+                        PendingDestinationRecord::from_claimed(&claimed, pending_destination_name)
+                            .map_err(
+                                LinuxAdvancePendingDestinationError::InvalidPendingDestination,
+                            )?
+                    }
+                }
+            }
+        };
+        let pending = pending
+            .with_destination_transaction_data(
+                metadata.destination_transaction_name.as_deref(),
+                metadata.destination_transaction_identity,
+                metadata.source_tree_snapshot,
+                metadata.staged_destination_identity,
+            )
+            .ok_or(
+                LinuxAdvancePendingDestinationError::InvalidPendingDestination(
+                    JournalError::InvalidJson(
+                        "incomplete destination transaction data".to_string(),
+                    ),
+                ),
+            )?;
+
+        self.central
+            .persist_pending_destination_staged(&pending)
+            .map_err(|failure| {
+                LinuxAdvancePendingDestinationError::CentralUpdateUncertain(failure.into_inner())
+            })?;
+        local
+            .persist_local_pending_destination(&pending)
+            .map_err(|error| {
+                LinuxAdvancePendingDestinationError::CentralDurableLocalUpdateUncertain {
+                    error,
+                    durable_central: Box::new(pending),
+                }
+            })?;
+        Ok(LinuxPendingDestinationJournals::MatchingPair)
+    }
+
+    pub fn advance_to_published_with_local(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxPublishedJournals, LinuxAdvancePublishedError> {
+        let pending = match self
+            .central
+            .load_pending_destination_restart_state(local, transaction_id)
+            .map_err(LinuxAdvancePublishedError::PendingDestinationPair)?
+        {
+            LinuxPendingDestinationRestartState::MatchingPair(pending) => pending,
+            LinuxPendingDestinationRestartState::CentralPendingDestinationLocalClaimed {
+                ..
+            } => {
+                return Err(LinuxAdvancePublishedError::SuppliedPendingMismatch);
+            }
+        };
+        let published = PublishedRecord::from_pending(&pending)
+            .map_err(LinuxAdvancePublishedError::InvalidPublished)?;
+        self.central
+            .persist_published_staged(&published)
+            .map_err(|failure| {
+                LinuxAdvancePublishedError::CentralUpdateUncertain(failure.into_inner())
+            })?;
+        local.persist_local_published(&published).map_err(|error| {
+            LinuxAdvancePublishedError::CentralDurableLocalUpdateUncertain {
+                error,
+                durable_central: Box::new(published),
+            }
+        })?;
+        Ok(LinuxPublishedJournals::MatchingPair)
     }
 
     #[cfg(test)]
@@ -2443,6 +3365,289 @@ impl ClaimedRecord {
 }
 
 #[cfg(target_os = "linux")]
+impl PendingDestinationRecord {
+    pub fn from_claimed(
+        claimed: &ClaimedRecord,
+        pending_destination_name: &Path,
+    ) -> Result<Self, JournalError> {
+        Self::try_from(RawPendingDestinationRecord {
+            schema_major: claimed.schema_major,
+            schema_minor: claimed.schema_minor,
+            transaction_id: claimed.transaction_id.clone(),
+            phase: JournalPhase::PendingDestination,
+            source_parent: claimed.source_parent.clone(),
+            original_name: claimed.original_name.clone(),
+            source_parent_identity: claimed.source_parent_identity,
+            source_entry_identity: claimed.source_entry_identity,
+            source_transaction_name: claimed.source_transaction_name.clone(),
+            source_transaction_identity: claimed.source_transaction_identity,
+            expected_source_identity: claimed.expected_source_identity,
+            claimed_source_identity: claimed.claimed_source_identity,
+            destination_transaction_name: None,
+            destination_transaction_identity: None,
+            source_tree_snapshot: None,
+            staged_destination_identity: None,
+            pending_destination_name: NativePath::encode(pending_destination_name),
+        })
+    }
+
+    pub fn parse(bytes: &[u8]) -> Result<Self, JournalError> {
+        let raw: RawPendingDestinationRecord = serde_json::from_slice(bytes)
+            .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
+        Self::try_from(raw)
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl TryFrom<RawPendingDestinationRecord> for PendingDestinationRecord {
+    type Error = JournalError;
+
+    fn try_from(raw: RawPendingDestinationRecord) -> Result<Self, Self::Error> {
+        if raw.phase != JournalPhase::PendingDestination {
+            return Err(JournalError::InvalidPendingDestinationPhase(raw.phase));
+        }
+        let transaction_id = raw.transaction_id.clone();
+        let claimed = ClaimedRecord::try_from(RawClaimedRecord {
+            schema_major: raw.schema_major,
+            schema_minor: raw.schema_minor,
+            transaction_id,
+            phase: JournalPhase::Claimed,
+            source_parent: raw.source_parent,
+            original_name: raw.original_name,
+            source_parent_identity: raw.source_parent_identity,
+            source_entry_identity: raw.source_entry_identity,
+            source_transaction_name: raw.source_transaction_name,
+            source_transaction_identity: raw.source_transaction_identity,
+            expected_source_identity: raw.expected_source_identity,
+            claimed_source_identity: raw.claimed_source_identity,
+        })?;
+        let _pending_destination_name = raw.pending_destination_name.decode()?;
+        Ok(Self {
+            schema_major: claimed.schema_major,
+            schema_minor: claimed.schema_minor,
+            transaction_id: raw.transaction_id,
+            phase: JournalPhase::PendingDestination,
+            source_parent: claimed.source_parent,
+            original_name: claimed.original_name,
+            source_parent_identity: claimed.source_parent_identity,
+            source_entry_identity: claimed.source_entry_identity,
+            source_transaction_name: claimed.source_transaction_name,
+            source_transaction_identity: claimed.source_transaction_identity,
+            expected_source_identity: claimed.expected_source_identity,
+            claimed_source_identity: claimed.claimed_source_identity,
+            destination_transaction_name: raw.destination_transaction_name,
+            destination_transaction_identity: raw.destination_transaction_identity,
+            source_tree_snapshot: raw.source_tree_snapshot,
+            staged_destination_identity: raw.staged_destination_identity,
+            pending_destination_name: raw.pending_destination_name,
+        })
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl<'de> Deserialize<'de> for PendingDestinationRecord {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let raw = RawPendingDestinationRecord::deserialize(deserializer)?;
+        Self::try_from(raw).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl PublishedRecord {
+    pub fn from_pending(pending: &PendingDestinationRecord) -> Result<Self, JournalError> {
+        Self::try_from(RawPublishedRecord {
+            schema_major: pending.schema_major,
+            schema_minor: pending.schema_minor,
+            transaction_id: pending.transaction_id.clone(),
+            phase: JournalPhase::Published,
+            source_parent: pending.source_parent.clone(),
+            original_name: pending.original_name.clone(),
+            source_parent_identity: pending.source_parent_identity,
+            source_entry_identity: pending.source_entry_identity,
+            source_transaction_name: pending.source_transaction_name.clone(),
+            source_transaction_identity: pending.source_transaction_identity,
+            expected_source_identity: pending.expected_source_identity,
+            claimed_source_identity: pending.claimed_source_identity,
+            destination_transaction_name: pending.destination_transaction_name.clone(),
+            destination_transaction_identity: pending.destination_transaction_identity,
+            source_tree_snapshot: pending.source_tree_snapshot.clone(),
+            staged_destination_identity: pending.staged_destination_identity,
+            pending_destination_name: pending.pending_destination_name.clone(),
+        })
+    }
+
+    pub fn from_claimed(
+        claimed: &ClaimedRecord,
+        pending_destination_name: &Path,
+    ) -> Result<Self, JournalError> {
+        Self::try_from(RawPublishedRecord {
+            schema_major: claimed.schema_major,
+            schema_minor: claimed.schema_minor,
+            transaction_id: claimed.transaction_id.clone(),
+            phase: JournalPhase::Published,
+            source_parent: claimed.source_parent.clone(),
+            original_name: claimed.original_name.clone(),
+            source_parent_identity: claimed.source_parent_identity,
+            source_entry_identity: claimed.source_entry_identity,
+            source_transaction_name: claimed.source_transaction_name.clone(),
+            source_transaction_identity: claimed.source_transaction_identity,
+            expected_source_identity: claimed.expected_source_identity,
+            claimed_source_identity: claimed.claimed_source_identity,
+            destination_transaction_name: None,
+            destination_transaction_identity: None,
+            source_tree_snapshot: None,
+            staged_destination_identity: None,
+            pending_destination_name: NativePath::encode(pending_destination_name),
+        })
+    }
+
+    pub fn parse(bytes: &[u8]) -> Result<Self, JournalError> {
+        let raw: RawPublishedRecord = serde_json::from_slice(bytes)
+            .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
+        Self::try_from(raw)
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl TryFrom<RawPublishedRecord> for PublishedRecord {
+    type Error = JournalError;
+
+    fn try_from(raw: RawPublishedRecord) -> Result<Self, Self::Error> {
+        if raw.phase != JournalPhase::Published {
+            return Err(JournalError::InvalidPublishedPhase(raw.phase));
+        }
+        let claimed = ClaimedRecord::try_from(RawClaimedRecord {
+            schema_major: raw.schema_major,
+            schema_minor: raw.schema_minor,
+            transaction_id: raw.transaction_id.clone(),
+            phase: JournalPhase::Claimed,
+            source_parent: raw.source_parent,
+            original_name: raw.original_name,
+            source_parent_identity: raw.source_parent_identity,
+            source_entry_identity: raw.source_entry_identity,
+            source_transaction_name: raw.source_transaction_name,
+            source_transaction_identity: raw.source_transaction_identity,
+            expected_source_identity: raw.expected_source_identity,
+            claimed_source_identity: raw.claimed_source_identity,
+        })?;
+        let _pending_destination_name = raw.pending_destination_name.decode()?;
+        Ok(Self {
+            schema_major: claimed.schema_major,
+            schema_minor: claimed.schema_minor,
+            transaction_id: raw.transaction_id,
+            phase: JournalPhase::Published,
+            source_parent: claimed.source_parent,
+            original_name: claimed.original_name,
+            source_parent_identity: claimed.source_parent_identity,
+            source_entry_identity: claimed.source_entry_identity,
+            source_transaction_name: claimed.source_transaction_name,
+            source_transaction_identity: claimed.source_transaction_identity,
+            expected_source_identity: claimed.expected_source_identity,
+            claimed_source_identity: claimed.claimed_source_identity,
+            destination_transaction_name: raw.destination_transaction_name,
+            destination_transaction_identity: raw.destination_transaction_identity,
+            source_tree_snapshot: raw.source_tree_snapshot,
+            staged_destination_identity: raw.staged_destination_identity,
+            pending_destination_name: raw.pending_destination_name,
+        })
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl PendingDestinationRecord {
+    pub fn with_destination_transaction(
+        mut self,
+        destination_transaction_name: &Path,
+        destination_transaction_identity: LinuxStableIdentity,
+    ) -> Self {
+        self.destination_transaction_name = Some(NativePath::encode(destination_transaction_name));
+        self.destination_transaction_identity = Some(destination_transaction_identity);
+        self
+    }
+
+    pub fn with_source_tree_snapshot(mut self, source_tree_snapshot: SourceTreeSnapshot) -> Self {
+        self.source_tree_snapshot = Some(source_tree_snapshot);
+        self
+    }
+
+    pub fn with_staged_destination_identity(
+        mut self,
+        staged_destination_identity: LinuxStableIdentity,
+    ) -> Self {
+        self.staged_destination_identity = Some(staged_destination_identity);
+        self
+    }
+
+    pub fn with_destination_transaction_data(
+        mut self,
+        destination_transaction_name: Option<&Path>,
+        destination_transaction_identity: Option<LinuxStableIdentity>,
+        source_tree_snapshot: Option<SourceTreeSnapshot>,
+        staged_destination_identity: Option<LinuxStableIdentity>,
+    ) -> Option<Self> {
+        match (
+            destination_transaction_name,
+            destination_transaction_identity,
+        ) {
+            (Some(_), None) | (None, Some(_)) => {
+                return None;
+            }
+            (Some(name), Some(identity)) => {
+                self = self.with_destination_transaction(name, identity);
+            }
+            (None, None) => {}
+        }
+        if let Some(source_tree_snapshot) = source_tree_snapshot {
+            self = self.with_source_tree_snapshot(source_tree_snapshot);
+        }
+        if let Some(staged_destination_identity) = staged_destination_identity {
+            self = self.with_staged_destination_identity(staged_destination_identity);
+        }
+        Some(self)
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl PublishedRecord {
+    pub fn with_destination_transaction(
+        mut self,
+        destination_transaction_name: &Path,
+        destination_transaction_identity: LinuxStableIdentity,
+    ) -> Self {
+        self.destination_transaction_name = Some(NativePath::encode(destination_transaction_name));
+        self.destination_transaction_identity = Some(destination_transaction_identity);
+        self
+    }
+
+    pub fn with_source_tree_snapshot(mut self, source_tree_snapshot: SourceTreeSnapshot) -> Self {
+        self.source_tree_snapshot = Some(source_tree_snapshot);
+        self
+    }
+
+    pub fn with_staged_destination_identity(
+        mut self,
+        staged_destination_identity: LinuxStableIdentity,
+    ) -> Self {
+        self.staged_destination_identity = Some(staged_destination_identity);
+        self
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl<'de> Deserialize<'de> for PublishedRecord {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let raw = RawPublishedRecord::deserialize(deserializer)?;
+        Self::try_from(raw).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(target_os = "linux")]
 impl TryFrom<RawClaimedRecord> for ClaimedRecord {
     type Error = JournalError;
 
@@ -3012,6 +4217,78 @@ mod tests {
         assert_eq!(
             ClaimIntentRecord::parse(&serde_json::to_vec(&encoded).unwrap()),
             Err(JournalError::MismatchedExpectedSourceIdentity)
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn pending_destination_schema_preserves_claimed_identity_and_lossless_target_name() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+
+        let prepared = PreparedRecord::new_linux(
+            [0x49; 16],
+            Path::new("/source"),
+            Path::new("item"),
+            LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+            Path::new(".ottrin-move-49494949494949494949494949494949"),
+            LinuxStableIdentity::new(11, 44, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let claimed =
+            ClaimedRecord::from_claim_intent(&claim_intent, prepared.source_entry_identity)
+                .unwrap();
+        let pending_destination_name = Path::new(&OsString::from_vec(
+            b"destination-\xff-with-lossy-name".to_vec(),
+        ))
+        .to_path_buf();
+        let record =
+            PendingDestinationRecord::from_claimed(&claimed, &pending_destination_name).unwrap();
+        let encoded = serde_json::to_vec(&record).unwrap();
+        let parsed = PendingDestinationRecord::parse(&encoded).unwrap();
+
+        assert_eq!(parsed, record);
+        assert_eq!(parsed.phase, JournalPhase::PendingDestination);
+        assert_eq!(
+            parsed.claimed_source_identity,
+            prepared.source_entry_identity
+        );
+        assert_eq!(
+            parsed.pending_destination_name.decode().unwrap(),
+            pending_destination_name
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn pending_destination_record_rejects_phase_inappropriate_evidence() {
+        let prepared = PreparedRecord::new_linux(
+            [0x4a; 16],
+            Path::new("/source"),
+            Path::new("item"),
+            LinuxStableIdentity::new(11, 22, LinuxFileType::Directory),
+            LinuxStableIdentity::new(11, 33, LinuxFileType::Regular),
+            Path::new(".ottrin-move-4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a"),
+            LinuxStableIdentity::new(11, 44, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let claimed =
+            ClaimedRecord::from_claim_intent(&claim_intent, prepared.source_entry_identity)
+                .unwrap();
+        let mut encoded = serde_json::to_value(
+            PendingDestinationRecord::from_claimed(&claimed, Path::new("destination")).unwrap(),
+        )
+        .unwrap();
+        encoded["phase"] = serde_json::json!("claimed");
+
+        assert_eq!(
+            PendingDestinationRecord::parse(&serde_json::to_vec(&encoded).unwrap()),
+            Err(JournalError::InvalidPendingDestinationPhase(
+                JournalPhase::Claimed
+            ))
         );
     }
 
@@ -3917,6 +5194,1099 @@ mod tests {
         );
         assert_eq!(std::fs::read(source_path).unwrap(), b"must not be mutated");
         assert_eq!(central.discover_pending(), Ok(vec![[0xd1; 16]]));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_advances_matching_claimed_pair_to_identical_pending_destination_record() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-advance-pending-destination-pair-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let claimed_path = local_path.join("claimed");
+        let destination_name =
+            PathBuf::from(OsString::from_vec(b"pending-destination-\xff".to_vec()));
+        let local_destination_root = root.join("destination");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"claimed source must remain").unwrap();
+        std::fs::write(&local_destination_root, b"destination must remain").unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let claimed_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0x11; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            claimed_identity,
+            Path::new(".ottrin-move-11111111111111111111111111111111"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let claimed = ClaimedRecord::from_claim_intent(&claim_intent, claimed_identity).unwrap();
+        let pending_path = central_path.join("11111111111111111111111111111111.journal");
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery
+                .advance_to_claim_intent_with_local(&local, &prepared)
+                .unwrap();
+            recovery
+                .advance_to_claimed_with_local(&local, [0x11; 16])
+                .unwrap();
+        }
+        let central_before = std::fs::read(&pending_path).unwrap();
+        assert!(ClaimedRecord::parse(&central_before).is_ok());
+        assert!(PendingDestinationRecord::parse(&central_before).is_err());
+
+        let advanced = {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery.advance_to_pending_destination_with_local(
+                &local,
+                [0x11; 16],
+                &destination_name,
+            )
+        };
+        let expected = PendingDestinationRecord::from_claimed(&claimed, &destination_name).unwrap();
+
+        assert_eq!(advanced, Ok(LinuxPendingDestinationJournals::MatchingPair));
+        let central_bytes = std::fs::read(&pending_path).unwrap();
+        let local_bytes = std::fs::read(local_path.join("journal")).unwrap();
+        assert_eq!(central_bytes, local_bytes);
+        assert_eq!(
+            PendingDestinationRecord::parse(&central_bytes).unwrap(),
+            expected
+        );
+        assert!(ClaimedRecord::parse(&central_bytes).is_err());
+        assert!(PendingDestinationRecord::parse(&central_bytes).is_ok());
+        assert_ne!(central_before, central_bytes);
+        assert_eq!(
+            PendingDestinationRecord::parse(&central_bytes)
+                .unwrap()
+                .pending_destination_name
+                .decode()
+                .unwrap(),
+            destination_name
+        );
+        assert_eq!(central.discover_pending(), Ok(vec![[0x11; 16]]));
+        assert_eq!(
+            std::fs::read(&claimed_path).unwrap(),
+            b"claimed source must remain"
+        );
+        assert_eq!(
+            std::fs::read(&local_destination_root).unwrap(),
+            b"destination must remain"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_advances_matching_pending_pair_to_matching_pending_pair_with_updated_destination()
+     {
+        use std::os::unix::fs::MetadataExt;
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-advance-pending-pair-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let claimed_path = local_path.join("claimed");
+        let initial_destination = Path::new("destination-target");
+        let updated_destination = Path::new("destination-target(1)");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"claimed source must remain").unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let claimed_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0x23; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            claimed_identity,
+            Path::new(".ottrin-move-23232323232323232323232323232323"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery
+                .advance_to_claim_intent_with_local(&local, &prepared)
+                .unwrap();
+            recovery
+                .advance_to_claimed_with_local(&local, [0x23; 16])
+                .unwrap();
+            recovery
+                .advance_to_pending_destination_with_local(&local, [0x23; 16], initial_destination)
+                .unwrap();
+        }
+
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            let updated = recovery
+                .advance_to_pending_destination_with_local(&local, [0x23; 16], updated_destination)
+                .unwrap();
+            assert_eq!(updated, LinuxPendingDestinationJournals::MatchingPair);
+        }
+
+        let expected = {
+            let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+            let claimed =
+                ClaimedRecord::from_claim_intent(&claim_intent, claimed_identity).unwrap();
+            PendingDestinationRecord::from_claimed(&claimed, updated_destination).unwrap()
+        };
+        let journal_path = central_path.join("23232323232323232323232323232323.journal");
+        assert_eq!(
+            central.load_pending_destination_restart_state(&local, [0x23; 16]),
+            Ok(LinuxPendingDestinationRestartState::MatchingPair(
+                expected.clone()
+            ))
+        );
+        assert_eq!(
+            std::fs::read(&journal_path).unwrap(),
+            std::fs::read(local_path.join("journal")).unwrap()
+        );
+        let actual =
+            PendingDestinationRecord::parse(&std::fs::read(&journal_path).unwrap()).unwrap();
+        assert_eq!(
+            actual.pending_destination_name.decode().unwrap(),
+            updated_destination
+        );
+        assert_eq!(actual, expected);
+        assert_eq!(
+            std::fs::read(&claimed_path).unwrap(),
+            b"claimed source must remain"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn pending_destination_advance_reports_partial_state_and_resumes_safely_on_restart() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+        use std::os::unix::fs::MetadataExt;
+        use std::os::unix::fs::PermissionsExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-pending-destination-restart-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let claimed_path = local_path.join("claimed");
+        let destination_name = PathBuf::from(OsString::from_vec(b"resume-target-\xff".to_vec()));
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"claimed source must remain").unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let claimed_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0x12; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            claimed_identity,
+            Path::new(".ottrin-move-12121212121212121212121212121212"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery
+                .advance_to_claim_intent_with_local(&local, &prepared)
+                .unwrap();
+            recovery
+                .advance_to_claimed_with_local(&local, [0x12; 16])
+                .unwrap();
+        }
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let claimed = ClaimedRecord::from_claim_intent(&claim_intent, claimed_identity).unwrap();
+        let expected = PendingDestinationRecord::from_claimed(&claimed, &destination_name).unwrap();
+        let central_path_name = central_path.join("12121212121212121212121212121212.journal");
+        let local_path_name = local_path.join("journal");
+        let central_before = std::fs::read(&central_path_name).unwrap();
+        let local_before = std::fs::read(&local_path_name).unwrap();
+        let mut recovery = central.try_lock_recovery().unwrap();
+        std::fs::set_permissions(&local_path, std::fs::Permissions::from_mode(0o500)).unwrap();
+
+        let failed = recovery.advance_to_pending_destination_with_local(
+            &local,
+            [0x12; 16],
+            &destination_name,
+        );
+        let Err(LinuxAdvancePendingDestinationError::CentralDurableLocalUpdateUncertain {
+            error: JournalError::Io(_),
+            durable_central,
+        }) = failed
+        else {
+            panic!(
+                "local persistence failure must expose exact durable pending-destination evidence"
+            );
+        };
+        assert_eq!(*durable_central, expected);
+        let central_after = std::fs::read(&central_path_name).unwrap();
+        assert_ne!(central_after, central_before);
+        assert_eq!(central_after, serde_json::to_vec(&expected).unwrap());
+        assert_eq!(std::fs::read(&local_path_name).unwrap(), local_before);
+        assert_eq!(
+            central.load_pending_destination_restart_state(&local, [0x12; 16]),
+            Ok(
+                LinuxPendingDestinationRestartState::CentralPendingDestinationLocalClaimed {
+                    pending: expected.clone(),
+                    claimed: claimed.clone(),
+                }
+            )
+        );
+        std::fs::set_permissions(&local_path, std::fs::Permissions::from_mode(0o700)).unwrap();
+
+        assert_eq!(
+            recovery.resume_pending_destination_with_local(&local, [0x12; 16]),
+            Ok(LinuxPendingDestinationJournals::MatchingPair)
+        );
+        assert_eq!(
+            central.load_pending_destination_restart_state(&local, [0x12; 16]),
+            Ok(LinuxPendingDestinationRestartState::MatchingPair(
+                expected.clone()
+            ))
+        );
+        assert_eq!(
+            std::fs::read(&central_path_name).unwrap(),
+            std::fs::read(&local_path_name).unwrap()
+        );
+        assert_eq!(
+            PendingDestinationRecord::parse(&std::fs::read(&local_path_name).unwrap()).unwrap(),
+            expected
+        );
+        drop(recovery);
+        assert_eq!(
+            std::fs::read(&claimed_path).unwrap(),
+            b"claimed source must remain"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn pending_destination_advance_reports_central_update_uncertainty_without_mutation() {
+        use std::os::unix::fs::MetadataExt;
+        use std::os::unix::fs::PermissionsExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-pending-destination-central-failure-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let claimed_path = local_path.join("claimed");
+        let destination_name = Path::new("pending-destination");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"claimed source must remain").unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let claimed_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let transaction_id = [0x26; 16];
+        let prepared = PreparedRecord::new_linux(
+            transaction_id,
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            claimed_identity,
+            Path::new(".ottrin-move-26262626262626262626262626262626"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery
+                .advance_to_claim_intent_with_local(&local, &prepared)
+                .unwrap();
+            recovery
+                .advance_to_claimed_with_local(&local, transaction_id)
+                .unwrap();
+        }
+
+        let central_before =
+            std::fs::read(central_path.join(format!("{}.journal", encode_hex(&transaction_id))))
+                .unwrap();
+        let local_before = std::fs::read(local_path.join("journal")).unwrap();
+
+        let mut recovery = central.try_lock_recovery().unwrap();
+        std::fs::set_permissions(&central_path, std::fs::Permissions::from_mode(0o500)).unwrap();
+
+        let failed = recovery.advance_to_pending_destination_with_local(
+            &local,
+            transaction_id,
+            destination_name,
+        );
+
+        assert!(matches!(
+            failed,
+            Err(LinuxAdvancePendingDestinationError::CentralUpdateUncertain(
+                JournalError::Io(_)
+            ))
+        ));
+
+        let central_after =
+            std::fs::read(central_path.join(format!("{}.journal", encode_hex(&transaction_id))))
+                .unwrap();
+        assert_eq!(central_after, central_before);
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            local_before
+        );
+        std::fs::set_permissions(&central_path, std::fs::Permissions::from_mode(0o700)).unwrap();
+
+        let claimed_state = central
+            .load_claimed_restart_state(&local, transaction_id)
+            .unwrap_or_else(|error| {
+                panic!(
+                    "claimed restart state must stay loadable after central write failure: {error}"
+                )
+            });
+        assert!(matches!(
+            claimed_state,
+            LinuxClaimedRestartState::MatchingPair { .. }
+        ));
+        assert_eq!(
+            std::fs::read(&claimed_path).unwrap(),
+            b"claimed source must remain"
+        );
+        assert_eq!(central.discover_pending(), Ok(vec![transaction_id]));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn pending_destination_advance_with_metadata_round_trips() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-pending-destination-metadata-roundtrip-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let claimed_path = local_path.join("claimed");
+        let destination_name = PathBuf::from(OsString::from_vec(b"destination-\xff".to_vec()));
+        let destination_transaction_name = Path::new(".ottrin-move-destination-transaction");
+        let destination_transaction_identity =
+            LinuxStableIdentity::new(44, 55, LinuxFileType::Directory);
+        let staged_destination_identity = LinuxStableIdentity::new(66, 77, LinuxFileType::Regular);
+        let snapshot = SourceTreeSnapshot {
+            entries: vec![SourceTreeSnapshotEntry {
+                path: NativePath::encode(Path::new("claimed-child")),
+                identity: LinuxStableIdentity::new(77, 88, LinuxFileType::Regular),
+            }],
+        };
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"claimed source must remain").unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let claimed_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0x31; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            claimed_identity,
+            Path::new(".ottrin-move-31313131313131313131313131313131"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery
+                .advance_to_claim_intent_with_local(&local, &prepared)
+                .unwrap();
+            recovery
+                .advance_to_claimed_with_local(&local, [0x31; 16])
+                .unwrap();
+            let advanced = recovery
+                .advance_to_pending_destination_with_local_with_metadata(
+                    &local,
+                    [0x31; 16],
+                    &destination_name,
+                    PendingDestinationMetadata {
+                        destination_transaction_name: Some(
+                            destination_transaction_name.to_path_buf(),
+                        ),
+                        destination_transaction_identity: Some(destination_transaction_identity),
+                        source_tree_snapshot: Some(snapshot.clone()),
+                        staged_destination_identity: Some(staged_destination_identity),
+                    },
+                )
+                .unwrap();
+            assert_eq!(advanced, LinuxPendingDestinationJournals::MatchingPair);
+        }
+
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let claimed =
+            ClaimedRecord::from_claim_intent(&claim_intent, prepared.source_entry_identity)
+                .unwrap();
+        let expected = PendingDestinationRecord::from_claimed(&claimed, &destination_name)
+            .unwrap()
+            .with_destination_transaction(
+                destination_transaction_name,
+                destination_transaction_identity,
+            )
+            .with_source_tree_snapshot(snapshot)
+            .with_staged_destination_identity(staged_destination_identity);
+
+        assert_eq!(
+            central.load_pending_destination_restart_state(&local, [0x31; 16]),
+            Ok(LinuxPendingDestinationRestartState::MatchingPair(
+                expected.clone()
+            ))
+        );
+        assert_eq!(
+            PendingDestinationRecord::parse(
+                &std::fs::read(central_path.join("31313131313131313131313131313131.journal"))
+                    .unwrap()
+            )
+            .unwrap(),
+            expected.clone()
+        );
+        assert_eq!(
+            PendingDestinationRecord::parse(&std::fs::read(local_path.join("journal")).unwrap())
+                .unwrap(),
+            expected
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn pending_destination_advance_rejects_incomplete_metadata() {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-pending-destination-metadata-incomplete-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let claimed_path = local_path.join("claimed");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"claimed source must remain").unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let claimed_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let prepared = PreparedRecord::new_linux(
+            [0x32; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            claimed_identity,
+            Path::new(".ottrin-move-32323232323232323232323232323232"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        let mut recovery = central.try_lock_recovery().unwrap();
+        recovery
+            .advance_to_claim_intent_with_local(&local, &prepared)
+            .unwrap();
+        recovery
+            .advance_to_claimed_with_local(&local, [0x32; 16])
+            .unwrap();
+
+        let failed = recovery.advance_to_pending_destination_with_local_with_metadata(
+            &local,
+            [0x32; 16],
+            Path::new("destination"),
+            PendingDestinationMetadata {
+                destination_transaction_name: Some(PathBuf::from(".ottrin-move-missing-id")),
+                ..PendingDestinationMetadata::default()
+            },
+        );
+
+        assert!(matches!(
+            failed,
+            Err(
+                LinuxAdvancePendingDestinationError::InvalidPendingDestination(
+                    JournalError::InvalidJson(_)
+                )
+            )
+        ));
+        assert!(matches!(
+            central.load_pending_destination_restart_state(&local, [0x32; 16]),
+            Err(LinuxLoadPendingDestinationRestartError::CentralCorrupt(_))
+        ));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn pending_destination_restart_rejects_core_matching_destination_name_mismatch() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-pending-name-mismatch-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0x13; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-13131313131313131313131313131313"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let claimed =
+            ClaimedRecord::from_claim_intent(&claim_intent, prepared.source_entry_identity)
+                .unwrap();
+        let durable_pending =
+            PendingDestinationRecord::from_claimed(&claimed, Path::new("expected-destination"))
+                .unwrap();
+        let local_pending =
+            PendingDestinationRecord::from_claimed(&claimed, Path::new("observed-destination"))
+                .unwrap();
+        central
+            .persist_pending_destination(&durable_pending)
+            .unwrap();
+        local
+            .persist_local_pending_destination(&local_pending)
+            .unwrap();
+        let loaded = central.load_pending_destination_restart_state(&local, [0x13; 16]);
+        assert_eq!(
+            loaded,
+            Err(LinuxLoadPendingDestinationRestartError::MismatchedPendingDestinationName)
+        );
+        assert_eq!(
+            std::fs::read(central_path.join("13131313131313131313131313131313.journal")).unwrap(),
+            serde_json::to_vec(&durable_pending).unwrap()
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            serde_json::to_vec(&local_pending).unwrap()
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn pending_destination_restart_rejects_mismatched_claimed_identity() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-pending-claimed-identity-mismatch-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0x14; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-14141414141414141414141414141414"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let durable_claimed =
+            ClaimedRecord::from_claim_intent(&claim_intent, prepared.source_entry_identity)
+                .unwrap();
+        let mut local_claimed_encoded = serde_json::to_value(&durable_claimed).unwrap();
+        let local_claimed_identity =
+            serde_json::to_value(LinuxStableIdentity::new(7, 99, LinuxFileType::Regular)).unwrap();
+        local_claimed_encoded["expected_source_identity"] = local_claimed_identity.clone();
+        local_claimed_encoded["source_entry_identity"] = local_claimed_identity.clone();
+        local_claimed_encoded["claimed_source_identity"] = local_claimed_identity;
+        let local_claimed: ClaimedRecord = serde_json::from_value(local_claimed_encoded).unwrap();
+        let durable_pending = PendingDestinationRecord::from_claimed(
+            &durable_claimed,
+            Path::new("pending-destination"),
+        )
+        .unwrap();
+        central
+            .persist_pending_destination(&durable_pending)
+            .unwrap();
+        local.persist_local_claimed(&local_claimed).unwrap();
+        let loaded = central.load_pending_destination_restart_state(&local, [0x14; 16]);
+        assert_eq!(
+            loaded,
+            Err(LinuxLoadPendingDestinationRestartError::MismatchedClaimedSourceIdentity)
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_lock_advances_matching_pending_destination_pair_to_identical_published_record() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-advance-published-pair-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let claimed_path = local_path.join("claimed");
+        let destination_name =
+            PathBuf::from(OsString::from_vec(b"published-destination-\xff".to_vec()));
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"claimed source must remain").unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let claimed_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0x21; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            claimed_identity,
+            Path::new(".ottrin-move-21212121212121212121212121212121"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery
+                .advance_to_claim_intent_with_local(&local, &prepared)
+                .unwrap();
+            recovery
+                .advance_to_claimed_with_local(&local, [0x21; 16])
+                .unwrap();
+            recovery
+                .advance_to_pending_destination_with_local(&local, [0x21; 16], &destination_name)
+                .unwrap();
+            recovery
+                .advance_to_published_with_local(&local, [0x21; 16])
+                .unwrap();
+        }
+
+        let expected_pending = PendingDestinationRecord::from_claimed(
+            &ClaimedRecord::from_claim_intent(
+                &ClaimIntentRecord::from_prepared(&prepared).unwrap(),
+                claimed_identity,
+            )
+            .unwrap(),
+            &destination_name,
+        )
+        .unwrap();
+        let expected = PublishedRecord::from_pending(&expected_pending).unwrap();
+
+        let journal_path = central_path.join("21212121212121212121212121212121.journal");
+        let central_bytes = std::fs::read(&journal_path).unwrap();
+        let local_bytes = std::fs::read(local_path.join("journal")).unwrap();
+
+        assert_eq!(central_bytes, local_bytes);
+        assert_eq!(
+            PublishedRecord::parse(&central_bytes).unwrap(),
+            expected.clone()
+        );
+        assert_eq!(
+            PublishedRecord::parse(&central_bytes)
+                .unwrap()
+                .pending_destination_name
+                .decode()
+                .unwrap(),
+            destination_name,
+        );
+        assert_eq!(central.discover_pending(), Ok(vec![[0x21; 16]]));
+        assert_eq!(
+            std::fs::read(&claimed_path).unwrap(),
+            b"claimed source must remain"
+        );
+        assert_eq!(PublishedRecord::parse(&central_bytes).unwrap(), expected);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn published_advance_reports_partial_state_and_resumes_safely_on_restart() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+        use std::os::unix::fs::MetadataExt;
+        use std::os::unix::fs::PermissionsExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-published-restart-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let claimed_path = local_path.join("claimed");
+        let destination_name = PathBuf::from(OsString::from_vec(b"resume-published-\xff".to_vec()));
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"claimed source must remain").unwrap();
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let claimed_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0x22; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            claimed_identity,
+            Path::new(".ottrin-move-22222222222222222222222222222222"),
+            local_identity,
+        )
+        .unwrap();
+        central.prepare_with_local(&local, &prepared).unwrap();
+        {
+            let mut recovery = central.try_lock_recovery().unwrap();
+            recovery
+                .advance_to_claim_intent_with_local(&local, &prepared)
+                .unwrap();
+            recovery
+                .advance_to_claimed_with_local(&local, [0x22; 16])
+                .unwrap();
+            recovery
+                .advance_to_pending_destination_with_local(&local, [0x22; 16], &destination_name)
+                .unwrap();
+        }
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let claimed = ClaimedRecord::from_claim_intent(&claim_intent, claimed_identity).unwrap();
+        let expected_pending =
+            PendingDestinationRecord::from_claimed(&claimed, &destination_name).unwrap();
+        let expected = PublishedRecord::from_pending(&expected_pending).unwrap();
+
+        let journal_path = central_path.join("22222222222222222222222222222222.journal");
+        let central_before = std::fs::read(&journal_path).unwrap();
+        let local_path_name = local_path.join("journal");
+        let local_before = std::fs::read(&local_path_name).unwrap();
+
+        let mut recovery = central.try_lock_recovery().unwrap();
+        std::fs::set_permissions(&local_path, std::fs::Permissions::from_mode(0o500)).unwrap();
+
+        let failed = recovery.advance_to_published_with_local(&local, [0x22; 16]);
+        let Err(LinuxAdvancePublishedError::CentralDurableLocalUpdateUncertain {
+            error: JournalError::Io(_),
+            durable_central,
+        }) = failed
+        else {
+            panic!("local persistence failure must expose exact durable published evidence");
+        };
+        assert_eq!(*durable_central, expected);
+
+        assert_eq!(
+            std::fs::read(&journal_path).unwrap(),
+            serde_json::to_vec(&expected).unwrap()
+        );
+        assert_ne!(std::fs::read(&journal_path).unwrap(), central_before);
+        assert_ne!(std::fs::read(&journal_path).unwrap(), local_before);
+        assert_eq!(std::fs::read(&local_path_name).unwrap(), local_before);
+
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x22; 16]),
+            Ok(LinuxPublishedRestartState::CentralPublishedLocalPending {
+                published: expected.clone(),
+                pending: expected_pending,
+            })
+        );
+        std::fs::set_permissions(&local_path, std::fs::Permissions::from_mode(0o700)).unwrap();
+
+        assert_eq!(
+            recovery.resume_published_with_local(&local, [0x22; 16]),
+            Ok(LinuxPublishedJournals::MatchingPair)
+        );
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x22; 16]),
+            Ok(LinuxPublishedRestartState::MatchingPair(expected.clone()))
+        );
+        assert_eq!(
+            std::fs::read(&journal_path).unwrap(),
+            std::fs::read(&local_path_name).unwrap(),
+        );
+        drop(recovery);
+        assert_eq!(
+            std::fs::read(&claimed_path).unwrap(),
+            b"claimed source must remain"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn published_restart_rejects_matching_destination_name_mismatch() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-published-name-mismatch-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0x23; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-23232323232323232323232323232323"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let durable_claimed =
+            ClaimedRecord::from_claim_intent(&claim_intent, prepared.source_entry_identity)
+                .unwrap();
+        let durable_pending = PendingDestinationRecord::from_claimed(
+            &durable_claimed,
+            Path::new("expected-destination"),
+        )
+        .unwrap();
+        let local_pending = PendingDestinationRecord::from_claimed(
+            &durable_claimed,
+            Path::new("observed-destination"),
+        )
+        .unwrap();
+        let durable_published = PublishedRecord::from_pending(&durable_pending).unwrap();
+        central.persist_published(&durable_published).unwrap();
+        local
+            .persist_local_pending_destination(&local_pending)
+            .unwrap();
+
+        let loaded = central.load_published_restart_state(&local, [0x23; 16]);
+        assert_eq!(
+            loaded,
+            Err(LinuxLoadPublishedRestartError::MismatchedPendingDestinationName)
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn published_restart_rejects_mismatched_claimed_identity() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-published-claimed-identity-mismatch-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0x24; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Regular),
+            Path::new(".ottrin-move-24242424242424242424242424242424"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let durable_claimed =
+            ClaimedRecord::from_claim_intent(&claim_intent, prepared.source_entry_identity)
+                .unwrap();
+        let pending =
+            PendingDestinationRecord::from_claimed(&durable_claimed, Path::new("pending")).unwrap();
+        let durable_published = PublishedRecord::from_pending(&pending).unwrap();
+        central.persist_published(&durable_published).unwrap();
+
+        let mut local_claimed_encoded = serde_json::to_value(&durable_claimed).unwrap();
+        let local_claimed_identity =
+            serde_json::to_value(LinuxStableIdentity::new(7, 99, LinuxFileType::Regular)).unwrap();
+        local_claimed_encoded["expected_source_identity"] = local_claimed_identity.clone();
+        local_claimed_encoded["source_entry_identity"] = local_claimed_identity.clone();
+        local_claimed_encoded["claimed_source_identity"] = local_claimed_identity;
+        let local_claimed: ClaimedRecord = serde_json::from_value(local_claimed_encoded).unwrap();
+        local.persist_local_claimed(&local_claimed).unwrap();
+
+        let loaded = central.load_published_restart_state(&local, [0x24; 16]);
+        assert_eq!(
+            loaded,
+            Err(LinuxLoadPublishedRestartError::MismatchedClaimedSourceIdentity)
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn published_restart_rejects_mismatched_transaction_identity() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-load-published-transaction-mismatch-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        let prepared = PreparedRecord::new_linux(
+            [0x25; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Directory),
+            Path::new(".ottrin-move-25252525252525252525252525252525"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claim_intent = ClaimIntentRecord::from_prepared(&prepared).unwrap();
+        let durable_claimed =
+            ClaimedRecord::from_claim_intent(&claim_intent, prepared.source_entry_identity)
+                .unwrap();
+        let pending =
+            PendingDestinationRecord::from_claimed(&durable_claimed, Path::new("pending")).unwrap();
+        let durable_published = PublishedRecord::from_pending(&pending).unwrap();
+        central.persist_published(&durable_published).unwrap();
+
+        let local_prepared = PreparedRecord::new_linux(
+            [0x26; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 43, LinuxFileType::Directory),
+            Path::new(".ottrin-move-26262626262626262626262626262626"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let local_claim_intent = ClaimIntentRecord::from_prepared(&local_prepared).unwrap();
+        let local_claimed = ClaimedRecord::from_claim_intent(
+            &local_claim_intent,
+            local_prepared.source_entry_identity,
+        )
+        .unwrap();
+        let local_pending =
+            PendingDestinationRecord::from_claimed(&local_claimed, Path::new("pending")).unwrap();
+        local
+            .persist_local_pending_destination(&local_pending)
+            .unwrap();
+
+        let loaded = central.load_published_restart_state(&local, [0x25; 16]);
+        assert_eq!(
+            loaded,
+            Err(
+                LinuxLoadPublishedRestartError::PendingDestinationTransactionMismatch {
+                    durable_central: Box::new(durable_published),
+                    local: Box::new(local_pending),
+                }
+            )
+        );
         std::fs::remove_dir_all(root).unwrap();
     }
 
