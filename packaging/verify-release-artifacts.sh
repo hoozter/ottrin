@@ -159,6 +159,55 @@ for artifact in "$LINUX_APPIMAGE" "$WINDOWS_INSTALLER"; do
   fi
 done
 
+if ! command -v 7z >/dev/null 2>&1; then
+  printf '7z is required to inspect the Windows installer payload.\n' >&2
+  exit 1
+fi
+
+if ! INSTALLER_CONTENTS="$(7z l "$WINDOWS_INSTALLER")"; then
+  printf 'Windows installer is not a readable NSIS archive: %s\n' "$WINDOWS_INSTALLER" >&2
+  exit 1
+fi
+
+require_installer_entry() {
+  local entry="$1"
+  if ! awk -v entry="$entry" '$NF == entry { found = 1 } END { exit !found }' \
+    <<<"$INSTALLER_CONTENTS"; then
+    printf 'Windows installer is missing: %s\n' "$entry" >&2
+    exit 1
+  fi
+}
+
+for entry in \
+  'bin/ottrin.exe' \
+  'bin/ottrin-index.exe' \
+  'bin/ottrin-priv-helper.exe' \
+  'bin/pdfium/pdfium.dll' \
+  'bin/libEGL.dll' \
+  'bin/libGLESv2.dll' \
+  'bin/libgallium_wgl.dll' \
+  'bin/dxil.dll' \
+  'third-party-notices/MANIFEST.txt' \
+  'third-party-notices/mesa3d-26.1.3/docs/license.rst' \
+  'third-party-notices/mesa3d-26.1.3/licenses/MIT' \
+  'third-party-notices/pal1000-LICENSE.txt' \
+  'third-party-notices/Microsoft-DXC-LICENSE-MS.txt' \
+  'docs/USER_GUIDE.md' \
+  'docs/RELEASE_NOTES.md' \
+  'docs/RELEASE_CHECKLIST.md'; do
+  require_installer_entry "$entry"
+done
+
+for relative_path in \
+  'docs/USER_GUIDE.md' \
+  'docs/RELEASE_NOTES.md' \
+  'docs/RELEASE_CHECKLIST.md'; do
+  if ! 7z x -so "$WINDOWS_INSTALLER" "$relative_path" | cmp -s - "$ROOT/$relative_path"; then
+    printf 'Windows installer contains stale content: %s\n' "$relative_path" >&2
+    exit 1
+  fi
+done
+
 APPIMAGE_EXTRACT_DIR="$(mktemp -d)"
 cleanup() {
   rm -rf -- "$APPIMAGE_EXTRACT_DIR"
