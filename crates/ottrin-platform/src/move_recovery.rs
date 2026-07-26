@@ -717,6 +717,12 @@ pub enum LinuxAdvanceClaimedSourceDeletionPendingError {
         durable_central: Box<PublishedRecord>,
     },
     #[error(
+        "central first-deletion marker is durable but the source-local journal contents changed before its matching persistence"
+    )]
+    CentralDurableLocalJournalContentChanged {
+        durable_central: Box<PublishedRecord>,
+    },
+    #[error(
         "central claimed-source-deletion-pending update did not confirm durability; inspect the journal: {0}"
     )]
     CentralUpdateUncertain(JournalError),
@@ -3217,6 +3223,18 @@ impl LinuxRecoveryLock<'_> {
         {
             return Err(
                 LinuxAdvanceClaimedSourceDeletionPendingError::CentralDurableLocalJournalChanged {
+                    durable_central: Box::new(deletion_pending),
+                },
+            );
+        }
+        if local.read_named("journal").map_err(|_| {
+            LinuxAdvanceClaimedSourceDeletionPendingError::CentralDurableLocalJournalContentChanged {
+                durable_central: Box::new(deletion_pending.clone()),
+            }
+        })? != preflight.local_journal_contents
+        {
+            return Err(
+                LinuxAdvanceClaimedSourceDeletionPendingError::CentralDurableLocalJournalContentChanged {
                     durable_central: Box::new(deletion_pending),
                 },
             );
@@ -8976,6 +8994,48 @@ mod tests {
         local
             .persist_local_published(&published.clone().into_cleanup_pending())
             .unwrap();
+        // Identity is not enough once central durability has been established: a same-inode
+        // local-journal edit in the last interval must remain central-only restart evidence.
+        let local_before_central_only_content_boundary = std::fs::read(&local_journal).unwrap();
+        let preflight = recovery
+            .preflight_cross_device_overwrite_claimed_source_deletion(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            )
+            .unwrap();
+        assert!(matches!(
+            recovery.advance_cross_device_overwrite_to_claimed_source_deletion_pending_with_local_after_central_persistence(
+                &local,
+                [0x42; 16],
+                preflight,
+                || {
+                    std::fs::write(
+                        &local_journal,
+                        [local_before_central_only_content_boundary.as_slice(), b"\n"].concat(),
+                    )
+                    .unwrap();
+                },
+            ),
+            Err(LinuxAdvanceClaimedSourceDeletionPendingError::CentralDurableLocalJournalContentChanged { .. })
+        ));
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::CentralClaimedSourceDeletionPendingLocalCleanupPending {
+                claimed_source_deletion_pending: published.clone().into_claimed_source_deletion_pending(),
+                cleanup_pending: published.clone().into_cleanup_pending(),
+            })
+        );
+        assert_eq!(
+            std::fs::read(&claimed_child).unwrap(),
+            b"source retained pending cleanup"
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        std::fs::write(&central_journal, &central_before_central_only_boundary).unwrap();
+        std::fs::write(&local_journal, &local_before_central_only_content_boundary).unwrap();
         let preflight = recovery
             .preflight_cross_device_overwrite_claimed_source_deletion(
                 &local,
