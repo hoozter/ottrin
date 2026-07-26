@@ -3967,6 +3967,61 @@ impl LinuxRecoveryLock<'_> {
                 LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch,
             );
         }
+        // The prospective preflight must not hide a final transaction-topology race behind its
+        // generic no-mutation result. Re-scan the anchored directory and re-read its sole
+        // journal after the final named-identity validation, so a future lifecycle has an
+        // explicit fail-closed boundary to preserve.
+        let mut final_directory = Dir::read_from(&local.directory).map_err(|error| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+        })?;
+        let mut final_found_journal = false;
+        while let Some(entry) = final_directory.read() {
+            let entry = entry.map_err(|error| {
+                LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+            })?;
+            let name = entry.file_name();
+            let bytes = name.to_bytes();
+            if matches!(bytes, b"." | b"..") {
+                continue;
+            }
+            if bytes != b"journal" || final_found_journal {
+                return Err(
+                    LinuxInspectClaimedSourceDirectoryCleanupError::UnexpectedDescendant(
+                        bytes.to_vec(),
+                    ),
+                );
+            }
+            let journal = openat(
+                &local.directory,
+                "journal",
+                OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .map_err(|_| LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged)?;
+            let stat = fstat(&journal).map_err(|error| {
+                LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+            })?;
+            if FileType::from_raw_mode(stat.st_mode) != FileType::RegularFile {
+                return Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged);
+            }
+            let identity =
+                LinuxStableIdentity::new(stat.st_dev, stat.st_ino, LinuxFileType::Regular);
+            let mut contents = Vec::new();
+            std::fs::File::from(journal)
+                .read_to_end(&mut contents)
+                .map_err(|error| {
+                    LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+                })?;
+            if (identity, contents) != journal_baseline {
+                return Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged);
+            }
+            final_found_journal = true;
+        }
+        if !final_found_journal {
+            return Err(
+                LinuxInspectClaimedSourceDirectoryCleanupError::UnexpectedDescendant(Vec::new()),
+            );
+        }
         Ok(LinuxClaimedSourceDirectoryCleanupPlan::JournalOnlyManualReview)
     }
 
@@ -8480,6 +8535,23 @@ mod tests {
             ))
         );
         std::fs::rename(&final_preflight_reparented_local_path, &local_path).unwrap();
+        let final_unexpected_descendant = local_path.join("final-unexpected-descendant");
+        assert_eq!(
+            recovery.preflight_claimed_source_directory_cleanup_after_final_boundary(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || {},
+                || std::fs::write(&final_unexpected_descendant, b"must not be removed").unwrap(),
+            ),
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::UnexpectedDescendant(
+                    b"final-unexpected-descendant".to_vec()
+                )
+            ))
+        );
+        std::fs::remove_file(&final_unexpected_descendant).unwrap();
         assert_eq!(
             recovery.preflight_claimed_source_directory_cleanup(
                 &local,
