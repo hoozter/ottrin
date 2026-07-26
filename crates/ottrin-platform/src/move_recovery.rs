@@ -683,6 +683,8 @@ pub enum LinuxInspectCrossDeviceOverwriteRetainedError {
     SourceTransactionIdentityMismatch,
     #[error("retained claimed source identity does not match the published journal")]
     ClaimedSourceIdentityMismatch,
+    #[error("retained claimed source tree does not match the published journal snapshot")]
+    ClaimedSourceSnapshotMismatch,
     #[error("published destination target identity does not match the published journal")]
     PublishedTargetIdentityMismatch,
     #[error(
@@ -2932,16 +2934,18 @@ impl LinuxRecoveryLock<'_> {
         let (
             destination_transaction_name,
             destination_transaction_identity,
+            source_tree_snapshot,
             staged_destination_identity,
             observed_displaced_destination_identity,
         ) = match (
             published.destination_transaction_name.as_ref(),
             published.destination_transaction_identity,
+            published.source_tree_snapshot.as_ref(),
             published.staged_destination_identity,
             published.observed_displaced_destination_identity,
         ) {
-            (Some(name), Some(transaction), Some(staged), Some(displaced)) => {
-                (name, transaction, staged, displaced)
+            (Some(name), Some(transaction), Some(snapshot), Some(staged), Some(displaced)) => {
+                (name, transaction, snapshot, staged, displaced)
             }
             _ => return Err(LinuxInspectCrossDeviceOverwriteRetainedError::IncompleteEvidence),
         };
@@ -2978,10 +2982,93 @@ impl LinuxRecoveryLock<'_> {
             )
             .map_err(|error| LinuxInspectCrossDeviceOverwriteRetainedError::Io(error.to_string()))
         };
-        let claimed = open(&local.directory, Path::new("claimed"))?;
+        let claimed = if published.claimed_source_identity.file_type == LinuxFileType::Directory {
+            openat(
+                &local.directory,
+                "claimed",
+                OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .map_err(|error| LinuxInspectCrossDeviceOverwriteRetainedError::Io(error.to_string()))?
+        } else {
+            open(&local.directory, Path::new("claimed"))?
+        };
         if identity(&claimed)? != published.claimed_source_identity {
             return Err(
                 LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceIdentityMismatch,
+            );
+        }
+        fn snapshot_from_opened_root(root: &OwnedFd) -> Result<SourceTreeSnapshot, String> {
+            use rustix::fs::{Dir, FileType, Mode, OFlags, fstat, openat};
+            use std::os::unix::ffi::OsStringExt;
+
+            fn stable_identity(fd: &OwnedFd) -> Result<LinuxStableIdentity, String> {
+                let stat = fstat(fd).map_err(|error| error.to_string())?;
+                let file_type = match FileType::from_raw_mode(stat.st_mode) {
+                    FileType::RegularFile => LinuxFileType::Regular,
+                    FileType::Directory => LinuxFileType::Directory,
+                    FileType::Symlink => LinuxFileType::Symlink,
+                    _ => LinuxFileType::Other,
+                };
+                Ok(LinuxStableIdentity::new(
+                    stat.st_dev,
+                    stat.st_ino,
+                    file_type,
+                ))
+            }
+
+            fn collect(
+                directory: &OwnedFd,
+                relative: &Path,
+                entries: &mut Vec<(PathBuf, LinuxStableIdentity)>,
+            ) -> Result<(), String> {
+                entries.push((relative.to_path_buf(), stable_identity(directory)?));
+                if stable_identity(directory)?.file_type != LinuxFileType::Directory {
+                    return Ok(());
+                }
+                let mut read = Dir::read_from(directory).map_err(|error| error.to_string())?;
+                while let Some(entry) = read.read() {
+                    let entry = entry.map_err(|error| error.to_string())?;
+                    let name_bytes = entry.file_name().to_bytes();
+                    if matches!(name_bytes, b"." | b"..") {
+                        continue;
+                    }
+                    let name = PathBuf::from(std::ffi::OsString::from_vec(name_bytes.to_vec()));
+                    let child_relative = relative.join(&name);
+                    let child = openat(
+                        directory,
+                        &name,
+                        OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                        Mode::empty(),
+                    )
+                    .map_err(|error| error.to_string())?;
+                    if stable_identity(&child)?.file_type == LinuxFileType::Directory {
+                        let child_directory = openat(
+                            directory,
+                            &name,
+                            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                            Mode::empty(),
+                        )
+                        .map_err(|error| error.to_string())?;
+                        collect(&child_directory, &child_relative, entries)?;
+                    } else {
+                        entries.push((child_relative, stable_identity(&child)?));
+                    }
+                }
+                Ok(())
+            }
+
+            let mut entries = Vec::new();
+            collect(root, Path::new(""), &mut entries)?;
+            entries.sort_by(|(left, _), (right, _)| left.cmp(right));
+            Ok(SourceTreeSnapshot::from_entries(entries))
+        }
+        if snapshot_from_opened_root(&claimed)
+            .map_err(LinuxInspectCrossDeviceOverwriteRetainedError::Io)?
+            != *source_tree_snapshot
+        {
+            return Err(
+                LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceSnapshotMismatch,
             );
         }
         let pending_name = published
@@ -6460,7 +6547,9 @@ mod tests {
         std::fs::create_dir_all(&central_path).unwrap();
         std::fs::create_dir_all(&destination_transaction_path).unwrap();
         std::fs::create_dir_all(&local_path).unwrap();
-        std::fs::write(&claimed_path, b"source retained pending cleanup").unwrap();
+        std::fs::create_dir_all(&claimed_path).unwrap();
+        let claimed_child = claimed_path.join("nested-source");
+        std::fs::write(&claimed_child, b"source retained pending cleanup").unwrap();
         std::fs::write(&published_target, b"new target after exchange").unwrap();
         std::fs::write(&retained_displaced, b"displaced target retained").unwrap();
 
@@ -6468,8 +6557,20 @@ mod tests {
         let claimed_identity = LinuxStableIdentity::new(
             claimed_metadata.dev(),
             claimed_metadata.ino(),
-            LinuxFileType::Regular,
+            LinuxFileType::Directory,
         );
+        let claimed_child_metadata = std::fs::symlink_metadata(&claimed_child).unwrap();
+        let claimed_snapshot = SourceTreeSnapshot::from_entries(vec![
+            (PathBuf::new(), claimed_identity),
+            (
+                PathBuf::from("nested-source"),
+                LinuxStableIdentity::new(
+                    claimed_child_metadata.dev(),
+                    claimed_child_metadata.ino(),
+                    LinuxFileType::Regular,
+                ),
+            ),
+        ]);
         let destination_transaction_metadata =
             std::fs::symlink_metadata(&destination_transaction_path).unwrap();
         let destination_transaction_identity = LinuxStableIdentity::new(
@@ -6518,6 +6619,7 @@ mod tests {
             Path::new(".ottrin-move-destination"),
             destination_transaction_identity,
         )
+        .with_source_tree_snapshot(claimed_snapshot)
         .with_staged_destination_identity(published_identity)
         .with_expected_displaced_destination_identity(displaced_identity);
         let central = LinuxJournalDirectory::open(&central_path).unwrap();
@@ -6543,7 +6645,7 @@ mod tests {
             Ok(LinuxPublishedRestartState::MatchingPair(published))
         );
         assert_eq!(
-            std::fs::read(&claimed_path).unwrap(),
+            std::fs::read(&claimed_child).unwrap(),
             b"source retained pending cleanup"
         );
         assert_eq!(
@@ -6565,24 +6667,25 @@ mod tests {
             Ok(LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedRetained)
         );
 
-        let claimed_backup = root.join("claimed-backup");
-        let target_backup = root.join("target-backup");
-        let displaced_backup = root.join("displaced-backup");
-        std::fs::hard_link(&claimed_path, &claimed_backup).unwrap();
-        std::fs::hard_link(&published_target, &target_backup).unwrap();
-        std::fs::hard_link(&retained_displaced, &displaced_backup).unwrap();
-        std::fs::remove_file(&claimed_path).unwrap();
-        std::fs::write(&claimed_path, b"substituted claimed source").unwrap();
+        let claimed_child_backup = root.join("claimed-child-backup");
+        std::fs::hard_link(&claimed_child, &claimed_child_backup).unwrap();
+        std::fs::remove_file(&claimed_child).unwrap();
+        std::fs::write(&claimed_child, b"substituted nested claimed source").unwrap();
         assert!(matches!(
             recovery.inspect_cross_device_overwrite_retained_state(
                 &local,
                 &destination_parent,
                 [0x42; 16],
             ),
-            Err(LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceIdentityMismatch)
+            Err(LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceSnapshotMismatch)
         ));
-        std::fs::remove_file(&claimed_path).unwrap();
-        std::fs::hard_link(&claimed_backup, &claimed_path).unwrap();
+        std::fs::remove_file(&claimed_child).unwrap();
+        std::fs::hard_link(&claimed_child_backup, &claimed_child).unwrap();
+
+        let target_backup = root.join("target-backup");
+        let displaced_backup = root.join("displaced-backup");
+        std::fs::hard_link(&published_target, &target_backup).unwrap();
+        std::fs::hard_link(&retained_displaced, &displaced_backup).unwrap();
 
         std::fs::remove_file(&published_target).unwrap();
         std::fs::write(&published_target, b"substituted published target").unwrap();
