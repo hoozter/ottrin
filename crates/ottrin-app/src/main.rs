@@ -1,8 +1,18 @@
 use eframe::{NativeOptions, egui};
-use ottrin_core::format_size;
+use ottrin_core::{SearchIndexStatus, SearchQuery, format_size};
 use ottrin_platform::set_privileged_helper_override;
 use ottrin_ui::{OttrinApp, clear_preview_cache_storage, load_config, remove_config_file};
 use std::path::PathBuf;
+use std::thread::sleep;
+use std::time::{Duration, Instant};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum HeadlessAction {
+    IndexStatus,
+    IndexRebuild,
+    Search(String),
+    Invalid(String),
+}
 
 fn renderer_for_target(is_windows: bool) -> eframe::Renderer {
     if is_windows {
@@ -63,6 +73,16 @@ fn handle_cli_action() -> bool {
         println!("  --purge-config     With --uninstall, also remove saved preferences");
         println!("  --helper-path PATH Developer override for privileged helper discovery");
         println!("  --renderer opengl  Recovery override for a compatible OpenGL driver");
+        println!("  --index status     Print the persisted-search service status");
+        println!("  --index rebuild    Rebuild the configured search index and wait for it");
+        println!("  --search QUERY     Search the configured index after it is ready");
+        return true;
+    }
+    if let Some(action) = cli_headless_action(&args) {
+        if let Err(error) = run_headless_action(action) {
+            eprintln!("ottrin: {error}");
+            std::process::exit(1);
+        }
         return true;
     }
     if !args.iter().any(|arg| arg == "--uninstall") {
@@ -112,6 +132,126 @@ fn handle_cli_action() -> bool {
             eprintln!("  {err}");
         }
         std::process::exit(1);
+    }
+}
+
+fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--index" => {
+                return Some(match args.get(index + 1).map(String::as_str) {
+                    Some("status") => HeadlessAction::IndexStatus,
+                    Some("rebuild") => HeadlessAction::IndexRebuild,
+                    Some(value) => {
+                        HeadlessAction::Invalid(format!("unknown index action: {value}"))
+                    }
+                    None => {
+                        HeadlessAction::Invalid("--index requires status or rebuild".to_string())
+                    }
+                });
+            }
+            "--search" => {
+                return Some(
+                    match args.get(index + 1).filter(|value| !value.is_empty()) {
+                        Some(query) => HeadlessAction::Search(query.clone()),
+                        None => HeadlessAction::Invalid("--search requires a query".to_string()),
+                    },
+                );
+            }
+            _ => index += 1,
+        }
+    }
+    None
+}
+
+fn configured_search_service() -> ottrin_search::SearchService {
+    let mut config = load_config().search;
+    if config.include_roots.is_empty() {
+        config.include_roots = ottrin_search::default_roots();
+    }
+    ottrin_search::SearchService::new(config)
+}
+
+fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
+    if let HeadlessAction::Invalid(error) = &action {
+        return Err(error.clone());
+    }
+    let mut service = configured_search_service();
+    service.start();
+    if matches!(service.diagnostics().status, SearchIndexStatus::Unavailable) {
+        return Err(service
+            .diagnostics()
+            .last_error
+            .unwrap_or_else(|| "search service unavailable".to_string()));
+    }
+
+    let result = match action {
+        HeadlessAction::IndexStatus => {
+            print_index_diagnostics(&service.diagnostics());
+            Ok(())
+        }
+        HeadlessAction::IndexRebuild => {
+            service.rebuild_index_blocking()?;
+            print_index_diagnostics(&service.diagnostics());
+            Ok(())
+        }
+        HeadlessAction::Search(query) => {
+            wait_for_index_ready(&service)?;
+            let config = load_config().search;
+            let response = service.query(SearchQuery {
+                text: query,
+                scope: config.default_scope,
+                root_path: None,
+                include_hidden_system: config.include_hidden_system,
+                sort: config.default_sort,
+                limit: config.result_limit.max(1),
+                offset: 0,
+                content_search: false,
+            });
+            println!("status={:?}", response.status);
+            println!("total={}", response.total);
+            for item in response.items {
+                println!("result={}", item.path.display());
+            }
+            response.error.map_or(Ok(()), Err)
+        }
+        HeadlessAction::Invalid(_) => unreachable!("invalid actions return before service startup"),
+    };
+    service.stop();
+    result
+}
+
+fn wait_for_index_ready(service: &ottrin_search::SearchService) -> Result<(), String> {
+    let deadline = Instant::now() + Duration::from_secs(30);
+    loop {
+        let diagnostics = service.diagnostics();
+        match diagnostics.status {
+            SearchIndexStatus::Ready => return Ok(()),
+            SearchIndexStatus::Unavailable => {
+                return Err(diagnostics
+                    .last_error
+                    .unwrap_or_else(|| "search service unavailable".to_string()));
+            }
+            SearchIndexStatus::Indexing if Instant::now() >= deadline => {
+                return Err("search index did not become ready within 30 seconds".to_string());
+            }
+            SearchIndexStatus::Indexing => sleep(Duration::from_millis(50)),
+        }
+    }
+}
+
+fn print_index_diagnostics(diagnostics: &ottrin_search::SearchIndexDiagnostics) {
+    println!("status={:?}", diagnostics.status);
+    println!("indexed_items={}", diagnostics.indexed_items);
+    println!("snapshot_revision={}", diagnostics.snapshot_revision);
+    println!("configured_roots={}", diagnostics.configured_root_count);
+    println!("watched_roots={}", diagnostics.watched_root_count);
+    if let Some(detail) = &diagnostics.detail {
+        println!("detail={detail}");
+    }
+    if let Some(error) = &diagnostics.last_error {
+        println!("error={error}");
     }
 }
 
@@ -261,6 +401,22 @@ mod tests {
         assert_eq!(
             cli_renderer_override(&["--renderer=opengl".into()]),
             Some("opengl".into())
+        );
+    }
+
+    #[test]
+    fn headless_index_actions_are_recognized_before_the_gui_starts() {
+        assert_eq!(
+            cli_headless_action(&["--index".into(), "status".into()]),
+            Some(HeadlessAction::IndexStatus)
+        );
+        assert_eq!(
+            cli_headless_action(&["--index".into(), "rebuild".into()]),
+            Some(HeadlessAction::IndexRebuild)
+        );
+        assert_eq!(
+            cli_headless_action(&["--search".into(), "invoice".into()]),
+            Some(HeadlessAction::Search("invoice".into()))
         );
     }
 }
