@@ -3114,6 +3114,8 @@ dependencies = [
 name = "ottrin-preview"
 version = "0.1.0"
 dependencies = [
+ "ab_glyph",
+ "epaint_default_fonts",
  "image",
  "lofty",
  "lopdf",

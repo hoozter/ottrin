@@ -167,44 +167,49 @@ fn render_office_content_png(
         .take(OFFICE_VISUAL_TEXT_LIMIT)
         .collect::<String>();
     let dimension = target_dim.clamp(64, 2_048);
-    let mut image = RgbaImage::from_pixel(dimension, dimension, Rgba([250, 250, 248, 255]));
-    let margin = (dimension / 12).clamp(6, 48);
-    let header_height = (dimension / 9).clamp(12, 96);
-    fill_rect(
-        &mut image,
-        margin,
-        margin,
-        dimension - margin,
-        margin + header_height,
-        [42, 92, 154, 255],
-    );
-    let body_top = margin + header_height + (margin / 2);
-    let body_bottom = dimension.saturating_sub(margin);
+    let width = if format == "docx" {
+        (dimension as f32 * 8.5 / 11.0).round() as u32
+    } else {
+        dimension
+    };
+    let height = dimension;
+    let mut image = RgbaImage::from_pixel(width, height, Rgba([255, 255, 255, 255]));
+    let margin = (width / 9).clamp(6, 96);
     if format == "docx" {
-        render_document_lines(
+        render_document_text(
             &mut image,
             &text,
             margin,
-            body_top,
-            dimension - margin,
-            body_bottom,
+            margin,
+            width - margin,
+            height.saturating_sub(margin),
         );
     } else {
+        let header_height = (dimension / 9).clamp(12, 96);
+        fill_rect(
+            &mut image,
+            margin,
+            margin,
+            dimension - margin,
+            margin + header_height,
+            [42, 92, 154, 255],
+        );
+        let body_top = margin + header_height + (margin / 2);
         render_sheet_grid(
             &mut image,
             &text,
             margin,
             body_top,
             dimension - margin,
-            body_bottom,
+            dimension.saturating_sub(margin),
         );
     }
     let mut bytes = Vec::new();
     image::codecs::png::PngEncoder::new(&mut bytes)
         .write_image(
             image.as_raw(),
-            dimension,
-            dimension,
+            width,
+            height,
             image::ExtendedColorType::Rgba8,
         )
         .map_err(|error| OfficeVisualError::Encode(error.to_string()))?;
@@ -226,7 +231,7 @@ fn fill_rect(
     }
 }
 
-fn render_document_lines(
+fn render_document_text(
     image: &mut image::RgbaImage,
     text: &str,
     left: u32,
@@ -234,19 +239,64 @@ fn render_document_lines(
     right: u32,
     bottom: u32,
 ) {
-    let line_height = ((bottom.saturating_sub(top)) / 18).clamp(3, 24);
-    for (index, line) in text.lines().take(18).enumerate() {
-        let y = top + index as u32 * line_height;
-        let width =
-            ((line.chars().take(96).count() as u32 * (right - left) / 96).max(8)).min(right - left);
-        fill_rect(
-            image,
-            left,
-            y,
-            left + width,
-            y + (line_height / 3).max(2),
-            [82, 86, 92, 255],
-        );
+    use ab_glyph::{Font, FontArc, Glyph, PxScale, ScaleFont, point};
+
+    let Ok(font) = FontArc::try_from_slice(epaint_default_fonts::UBUNTU_LIGHT) else {
+        return;
+    };
+    let font_size = (image.width() as f32 / 54.0).clamp(7.0, 30.0);
+    let scale = PxScale::from(font_size);
+    let scaled = font.as_scaled(scale);
+    let line_height = (scaled.height() * 1.35).max(font_size + 2.0);
+    let max_width = right.saturating_sub(left) as f32;
+    let mut x = left as f32;
+    let mut baseline = top as f32 + scaled.ascent();
+    let mut previous = None;
+
+    for ch in text.chars() {
+        if ch == '\n' {
+            x = left as f32;
+            baseline += line_height;
+            previous = None;
+            if baseline > bottom as f32 {
+                break;
+            }
+            continue;
+        }
+        let id = scaled.glyph_id(ch);
+        let kern = previous.map_or(0.0, |prior| scaled.kern(prior, id));
+        let advance = scaled.h_advance(id);
+        if x + kern + advance > left as f32 + max_width && x > left as f32 {
+            x = left as f32;
+            baseline += line_height;
+            if baseline > bottom as f32 {
+                break;
+            }
+        }
+        x += kern;
+        let glyph = Glyph {
+            id,
+            scale,
+            position: point(x, baseline),
+        };
+        if let Some(outlined) = font.outline_glyph(glyph) {
+            let bounds = outlined.px_bounds();
+            outlined.draw(|gx, gy, coverage| {
+                let px = bounds.min.x.floor() as i32 + gx as i32;
+                let py = bounds.min.y.floor() as i32 + gy as i32;
+                if px >= 0 && py >= 0 && (px as u32) < image.width() && (py as u32) < image.height()
+                {
+                    let shade = (255.0 * (1.0 - coverage * 0.88)).round() as u8;
+                    image.put_pixel(
+                        px as u32,
+                        py as u32,
+                        image::Rgba([shade, shade, shade, 255]),
+                    );
+                }
+            });
+        }
+        x += advance;
+        previous = Some(id);
     }
 }
 
@@ -1574,7 +1624,13 @@ mod tests {
 
         let png = render_office_content_preview_png(&path, 1).expect("bounded visual PNG");
         let decoded = image::load_from_memory(&png).expect("decode visual PNG");
-        assert_eq!(decoded.dimensions(), (64, 64));
+        assert_eq!(decoded.dimensions(), (49, 64));
+        assert!(
+            decoded
+                .pixels()
+                .any(|(_, _, pixel)| pixel.0 != [255, 255, 255, 255]),
+            "DOCX preview must rasterize readable glyphs, not an empty page"
+        );
         assert_ne!(png, std::fs::read(&path).expect("read package"));
         let _ = std::fs::remove_file(path);
     }

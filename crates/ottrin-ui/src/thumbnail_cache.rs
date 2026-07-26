@@ -87,9 +87,27 @@ pub(crate) fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8], max_bytes:
 pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
     build_thumbnail_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
         if is_pdf_path(path) {
-            ottrin_preview::render_pdf_first_page_png(path, target_dim).ok()
+            match ottrin_preview::render_pdf_first_page_png(path, target_dim) {
+                Ok(bytes) => Some(bytes),
+                Err(error) => {
+                    eprintln!(
+                        "PDF thumbnail render failed for {}: {error}",
+                        path.display()
+                    );
+                    None
+                }
+            }
         } else {
-            ottrin_preview::render_office_content_preview_png(path, target_dim).ok()
+            match ottrin_preview::render_office_content_preview_png(path, target_dim) {
+                Ok(bytes) => Some(bytes),
+                Err(error) => {
+                    eprintln!(
+                        "Office thumbnail render failed for {}: {error}",
+                        path.display()
+                    );
+                    None
+                }
+            }
         }
     })
 }
@@ -107,9 +125,24 @@ pub(crate) fn fallback_preview_bytes(path: &Path, generated: Option<Vec<u8>>) ->
 pub(crate) fn full_preview_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
     full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
         if is_pdf_path(path) {
-            ottrin_preview::render_pdf_first_page_png(path, target_dim).ok()
+            match ottrin_preview::render_pdf_first_page_png(path, target_dim) {
+                Ok(bytes) => Some(bytes),
+                Err(error) => {
+                    eprintln!("PDF preview render failed for {}: {error}", path.display());
+                    None
+                }
+            }
         } else {
-            ottrin_preview::render_office_content_preview_png(path, target_dim).ok()
+            match ottrin_preview::render_office_content_preview_png(path, target_dim) {
+                Ok(bytes) => Some(bytes),
+                Err(error) => {
+                    eprintln!(
+                        "Office preview render failed for {}: {error}",
+                        path.display()
+                    );
+                    None
+                }
+            }
         }
     })
 }
