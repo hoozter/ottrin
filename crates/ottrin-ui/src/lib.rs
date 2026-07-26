@@ -299,6 +299,7 @@ fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) 
                         JournalPhase::UnexpectedClaimRetained => "unexpected claim retained",
                         JournalPhase::PendingDestination => "pending destination",
                         JournalPhase::Published => "published",
+                        JournalPhase::CleanupPending => "cleanup pending",
                     },
                 })
                 .collect(),

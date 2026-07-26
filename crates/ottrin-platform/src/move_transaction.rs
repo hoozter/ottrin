@@ -1,15 +1,17 @@
 #[cfg(target_os = "linux")]
 use super::move_recovery;
-use super::{
-    ConflictAction, PlatformError, copy_entry, next_available_name,
-    reject_directory_copy_into_itself,
-};
+use super::{ConflictAction, PlatformError, reject_directory_copy_into_itself};
+#[cfg(target_os = "linux")]
+use super::{copy_entry, next_available_name};
 #[cfg(target_os = "linux")]
 use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 
 #[cfg(target_os = "linux")]
 const CROSS_DEVICE_STAGED_NAME: &str = "candidate";
+
+#[cfg(all(test, target_os = "linux"))]
+static TEST_MOVE_SERIALIZER: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 /// Move a single entry with safe runtime semantics on supported platforms.
 #[cfg(not(target_os = "linux"))]
@@ -53,6 +55,11 @@ fn move_with_hooks(
     conflict: ConflictAction,
     mut hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
 ) -> Result<(), PlatformError> {
+    #[cfg(test)]
+    let _test_move_guard = TEST_MOVE_SERIALIZER
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
     std::fs::symlink_metadata(source)
         .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
     let source_name = source
@@ -471,6 +478,7 @@ fn move_with_hooks(
     Ok(())
 }
 
+#[cfg(target_os = "linux")]
 fn transaction_id_hex(transaction_id: &[u8; 16]) -> String {
     transaction_id
         .iter()
@@ -478,6 +486,7 @@ fn transaction_id_hex(transaction_id: &[u8; 16]) -> String {
         .collect()
 }
 
+#[cfg(target_os = "linux")]
 fn cleanup_transaction_journals(
     recovery_root: &Path,
     local_path: &Path,
@@ -659,6 +668,7 @@ fn remove_source_entry(claimed_path: &Path) -> Result<(), String> {
     Err("unsupported source tree entry type".into())
 }
 
+#[cfg(target_os = "linux")]
 fn default_recovery_root() -> Result<std::path::PathBuf, PlatformError> {
     let base = std::env::var_os("XDG_STATE_HOME")
         .or_else(|| {

@@ -17,7 +17,8 @@ Usage:
 
 Options:
   --linux-only       Build Linux portable and AppImage only.
-  --with-windows    Also build the Windows portable zip. Fails if the target is unavailable.
+  --with-windows    Also build the Windows portable zip and NSIS setup executable.
+                    Fails if the Rust target or NSIS is unavailable.
   --no-appimage     Skip the Linux AppImage.
   --no-linux        Skip Linux portable/AppImage artifacts.
   --help            Show this help.
@@ -94,6 +95,9 @@ if [[ "$build_windows" == true || ( "$build_windows" == auto && "$windows_target
     exit 1
   fi
   run_packager "Building Windows portable zip" "$ROOT/packaging/windows/package-portable.sh"
+  if [[ "$build_windows" == true ]]; then
+    run_packager "Building Windows NSIS installer" "$ROOT/packaging/windows/package-installer.sh"
+  fi
 elif [[ "$build_windows" == auto ]]; then
   printf '\n==> Skipping Windows portable zip; target not installed (%s)\n' "$WINDOWS_TARGET"
   printf '    Run ./build-all.sh --with-windows after: rustup target add %s\n' "$WINDOWS_TARGET"

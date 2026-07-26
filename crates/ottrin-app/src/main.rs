@@ -4,6 +4,14 @@ use ottrin_platform::set_privileged_helper_override;
 use ottrin_ui::{OttrinApp, clear_preview_cache_storage, load_config, remove_config_file};
 use std::path::PathBuf;
 
+fn renderer_for_target(is_windows: bool) -> eframe::Renderer {
+    if is_windows {
+        eframe::Renderer::Wgpu
+    } else {
+        eframe::Renderer::Glow
+    }
+}
+
 fn main() -> eframe::Result<()> {
     if handle_cli_action() {
         return Ok(());
@@ -15,6 +23,7 @@ fn main() -> eframe::Result<()> {
     let window_size = config.window_size.unwrap_or([1024.0, 680.0]);
 
     let options = NativeOptions {
+        renderer: renderer_for_target(cfg!(target_os = "windows")),
         viewport: egui::ViewportBuilder::default()
             .with_title("Ottrin")
             .with_decorations(false)
@@ -180,5 +189,15 @@ fn ensure_dev_helper() {
 
     if status.map(|s| s.success()).unwrap_or(false) && helper_path.is_file() {
         set_privileged_helper_override(Some(helper_path));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn windows_renderer_does_not_require_opengl() {
+        assert_eq!(renderer_for_target(true), eframe::Renderer::Wgpu);
     }
 }
