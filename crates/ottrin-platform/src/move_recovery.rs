@@ -1101,6 +1101,13 @@ pub enum LinuxPendingDestinationRestartState {
 #[allow(clippy::large_enum_variant)]
 pub enum LinuxPublishedRestartState {
     MatchingPair(PublishedRecord),
+    /// The central pre-cleanup marker is durable, but the local journal is still at the prior
+    /// published record. This is retained-only evidence; it must not trigger implicit repair or
+    /// cleanup.
+    CentralCleanupPendingLocalPublished {
+        cleanup_pending: PublishedRecord,
+        published: PublishedRecord,
+    },
     CentralPublishedLocalPending {
         published: PublishedRecord,
         pending: PendingDestinationRecord,
@@ -1249,6 +1256,8 @@ pub enum LinuxResumePublishedError {
         error: JournalError,
         durable_central: Box<PublishedRecord>,
     },
+    #[error("cleanup-pending restart evidence requires explicit manual review")]
+    CleanupPendingRequiresManualReview,
 }
 
 #[cfg(target_os = "linux")]
@@ -2114,6 +2123,17 @@ impl LinuxJournalDirectory {
                     );
                 }
                 if local_published != published {
+                    if published.phase == JournalPhase::CleanupPending
+                        && local_published.phase == JournalPhase::Published
+                        && local_published.clone().into_cleanup_pending() == published
+                    {
+                        return Ok(
+                            LinuxPublishedRestartState::CentralCleanupPendingLocalPublished {
+                                cleanup_pending: published,
+                                published: local_published,
+                            },
+                        );
+                    }
                     if local_published.pending_destination_name
                         != published.pending_destination_name
                     {
@@ -2475,6 +2495,9 @@ impl LinuxRecoveryLock<'_> {
             .load_published_restart_state(local, transaction_id)?
         {
             LinuxPublishedRestartState::MatchingPair(_) => {}
+            LinuxPublishedRestartState::CentralCleanupPendingLocalPublished { .. } => {
+                return Err(LinuxResumePublishedError::CleanupPendingRequiresManualReview);
+            }
             LinuxPublishedRestartState::CentralPublishedLocalPending {
                 published,
                 pending: _,
@@ -3001,7 +3024,8 @@ impl LinuxRecoveryLock<'_> {
             .load_published_restart_state(local, transaction_id)?
         {
             LinuxPublishedRestartState::MatchingPair(published) => published,
-            LinuxPublishedRestartState::CentralPublishedLocalPending { .. }
+            LinuxPublishedRestartState::CentralCleanupPendingLocalPublished { .. }
+            | LinuxPublishedRestartState::CentralPublishedLocalPending { .. }
             | LinuxPublishedRestartState::CentralPublishedLocalClaimed { .. } => {
                 return Err(LinuxInspectCrossDeviceOverwriteRetainedError::IncompleteEvidence);
             }
@@ -6631,6 +6655,90 @@ mod tests {
             Err(JournalError::InvalidJson(message))
                 if message.contains("observed displaced destination identity")
         ));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cleanup_pending_restart_classifies_central_durable_local_published_without_cleanup() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-cleanup-pending-central-durable-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+
+        let claimed = ClaimedRecord::from_claim_intent(
+            &ClaimIntentRecord::from_prepared(
+                &PreparedRecord::new_linux(
+                    [0x43; 16],
+                    Path::new("/source-parent"),
+                    Path::new("source-item"),
+                    LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+                    LinuxStableIdentity::new(7, 42, LinuxFileType::Directory),
+                    Path::new(".ottrin-move-43434343434343434343434343434343"),
+                    LinuxStableIdentity::new(7, 43, LinuxFileType::Directory),
+                )
+                .unwrap(),
+            )
+            .unwrap(),
+            LinuxStableIdentity::new(7, 42, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let displaced_identity = LinuxStableIdentity::new(8, 51, LinuxFileType::Regular);
+        let published = PublishedRecord::from_pending(
+            &PendingDestinationRecord::from_claimed(&claimed, Path::new("target"))
+                .unwrap()
+                .with_destination_transaction(
+                    Path::new(".ottrin-move-destination"),
+                    LinuxStableIdentity::new(8, 52, LinuxFileType::Directory),
+                )
+                .with_source_tree_snapshot(SourceTreeSnapshot::from_entries(vec![]))
+                .with_staged_destination_identity(LinuxStableIdentity::new(
+                    8,
+                    53,
+                    LinuxFileType::Directory,
+                ))
+                .with_expected_displaced_destination_identity(displaced_identity),
+        )
+        .unwrap()
+        .with_observed_displaced_destination_identity(displaced_identity);
+        let cleanup_pending = published.clone().into_cleanup_pending();
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+
+        // Simulate a stop after the central cleanup-pending replacement is durable and before
+        // the local journal replacement. No source data or cleanup operation is involved.
+        central.persist_published(&cleanup_pending).unwrap();
+        local.persist_local_published(&published).unwrap();
+        let central_before =
+            std::fs::read(central_path.join("43434343434343434343434343434343.journal")).unwrap();
+        let local_before = std::fs::read(local_path.join("journal")).unwrap();
+
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x43; 16]),
+            Ok(
+                LinuxPublishedRestartState::CentralCleanupPendingLocalPublished {
+                    cleanup_pending,
+                    published,
+                }
+            )
+        );
+        let mut recovery = central.try_lock_recovery().unwrap();
+        assert_eq!(
+            recovery.resume_published_with_local(&local, [0x43; 16]),
+            Err(LinuxResumePublishedError::CleanupPendingRequiresManualReview)
+        );
+        assert_eq!(
+            std::fs::read(central_path.join("43434343434343434343434343434343.journal")).unwrap(),
+            central_before
+        );
+        assert_eq!(
+            std::fs::read(local_path.join("journal")).unwrap(),
+            local_before
+        );
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(target_os = "linux")]
