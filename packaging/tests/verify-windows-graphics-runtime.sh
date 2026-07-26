@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BASH_PACKAGER="$ROOT/packaging/windows/package-portable.sh"
 POWERSHELL_PACKAGER="$ROOT/packaging/windows/package-portable.ps1"
+ARTIFACT_VERIFIER="$ROOT/packaging/verify-release-artifacts.sh"
 
 require_literal() {
   local file="$1"
@@ -32,4 +33,13 @@ for literal in \
   '$MesaLibGalliumWglSha256 = "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"' \
   'Mesa DLL checksum mismatch after extracting the pinned Mesa archive'; do
   require_literal "$POWERSHELL_PACKAGER" "$literal"
+done
+
+# The final artifact verifier must independently pin DXIL too: a release
+# checksum only authenticates whatever is presented alongside it.
+for literal in \
+  'DXIL_SHA256="cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"' \
+  'verify_portable_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\''' \
+  'verify_installer_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\'''; do
+  require_literal "$ARTIFACT_VERIFIER" "$literal"
 done
