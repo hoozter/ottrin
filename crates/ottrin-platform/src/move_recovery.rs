@@ -812,6 +812,20 @@ pub enum LinuxInspectClaimedSourceDirectoryCleanupError {
     Io(String),
 }
 
+/// Failure while considering a future source-transaction directory cleanup.
+///
+/// This boundary intentionally returns no capability. It first runs the complete read-only
+/// inspection so a final topology, journal, or transaction-name race remains observable; even
+/// a clean inspection then rejects mutation until recursive cleanup has its own proven lifecycle.
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxClaimedSourceDirectoryCleanupPreflightError {
+    #[error("claimed-source directory cleanup inspection is unsafe: {0}")]
+    Inspect(#[from] LinuxInspectClaimedSourceDirectoryCleanupError),
+    #[error("claimed-source directory cleanup mutation is not implemented")]
+    MutationUnsupported,
+}
+
 /// Opaque, handle-relative proof that the retained claimed source was re-opened after a complete
 /// cleanup-pending inspection. This is deliberately not a deletion capability: it owns no
 /// mutation operation and dropping it changes neither data nor journals.
@@ -3681,6 +3695,76 @@ impl LinuxRecoveryLock<'_> {
             transaction_id,
             || {},
         )
+    }
+
+    /// Executes the complete read-only directory-cleanup preflight, then rejects mutation.
+    ///
+    /// There is deliberately no opaque deletion handle or recursive removal operation here.
+    /// Keeping the preflight separately typed ensures future mutation work cannot accidentally
+    /// treat a manual-review plan as authority.
+    pub fn preflight_claimed_source_directory_cleanup(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<(), LinuxClaimedSourceDirectoryCleanupPreflightError> {
+        self.preflight_claimed_source_directory_cleanup_inner(
+            local,
+            source_parent,
+            destination_parent,
+            transaction_id,
+            || {},
+            || {},
+        )
+    }
+
+    #[cfg(test)]
+    fn preflight_claimed_source_directory_cleanup_after_final_boundary<F, G>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        after_topology_inspection: F,
+        after_final_journal_revalidation: G,
+    ) -> Result<(), LinuxClaimedSourceDirectoryCleanupPreflightError>
+    where
+        F: FnOnce(),
+        G: FnOnce(),
+    {
+        self.preflight_claimed_source_directory_cleanup_inner(
+            local,
+            source_parent,
+            destination_parent,
+            transaction_id,
+            after_topology_inspection,
+            after_final_journal_revalidation,
+        )
+    }
+
+    fn preflight_claimed_source_directory_cleanup_inner<F, G>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        after_topology_inspection: F,
+        after_final_journal_revalidation: G,
+    ) -> Result<(), LinuxClaimedSourceDirectoryCleanupPreflightError>
+    where
+        F: FnOnce(),
+        G: FnOnce(),
+    {
+        self.plan_claimed_source_directory_cleanup_inner_with_final_boundary(
+            local,
+            source_parent,
+            destination_parent,
+            transaction_id,
+            after_topology_inspection,
+            after_final_journal_revalidation,
+        )?;
+        Err(LinuxClaimedSourceDirectoryCleanupPreflightError::MutationUnsupported)
     }
 
     fn plan_claimed_source_directory_cleanup_inner<F>(
@@ -8377,6 +8461,34 @@ mod tests {
             Err(LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch)
         );
         std::fs::rename(&final_reparented_local_path, &local_path).unwrap();
+        // A prospective directory-cleanup preflight must never turn the final validated name
+        // into mutation authority. A reparent immediately after the final journal validation
+        // is still surfaced as a typed rejection, and the no-race path is explicitly refused
+        // until a separately-proven cleanup lifecycle exists.
+        let final_preflight_reparented_local_path = root.join("final-preflight-reparented-local");
+        assert_eq!(
+            recovery.preflight_claimed_source_directory_cleanup_after_final_boundary(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || {},
+                || std::fs::rename(&local_path, &final_preflight_reparented_local_path).unwrap(),
+            ),
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch
+            ))
+        );
+        std::fs::rename(&final_preflight_reparented_local_path, &local_path).unwrap();
+        assert_eq!(
+            recovery.preflight_claimed_source_directory_cleanup(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::MutationUnsupported)
+        );
         local
             .persist_local_published(&published.clone().into_claimed_source_deletion_pending())
             .unwrap();
