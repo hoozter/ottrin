@@ -679,6 +679,16 @@ fn default_recovery_root() -> Result<std::path::PathBuf, PlatformError> {
 /// This is intentionally incapable of creating an anchor, journal, transaction directory, or
 /// cleanup side effect. A missing root simply means there are no durable Move transactions yet.
 #[cfg(target_os = "linux")]
+pub(super) fn discover_retained_move_transactions()
+-> Result<Vec<move_recovery::LinuxDiscoveredMoveTransaction>, PlatformError> {
+    discover_retained_move_transactions_at(&default_recovery_root()?)
+}
+
+/// Reads retained Move recovery status from an existing configured recovery root.
+///
+/// This is intentionally incapable of creating an anchor, journal, transaction directory, or
+/// cleanup side effect. A missing root simply means there are no durable Move transactions yet.
+#[cfg(target_os = "linux")]
 pub(super) fn discover_retained_move_transactions_at(
     recovery_root: &Path,
 ) -> Result<Vec<move_recovery::LinuxDiscoveredMoveTransaction>, PlatformError> {

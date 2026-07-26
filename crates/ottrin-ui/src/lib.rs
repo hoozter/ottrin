@@ -18,6 +18,8 @@ use ottrin_core::{
 use ottrin_platform::{
     DefaultPlatform, PlatformError, PlatformOps, PrivilegedAvailability, TrashItem,
 };
+#[cfg(target_os = "linux")]
+use ottrin_platform::{discover_retained_move_transactions, move_recovery::JournalPhase};
 use ottrin_preview::{PreviewData, PreviewKind, PreviewRequest, load_preview};
 use ottrin_search::{SearchIndexDiagnostics, SearchService, default_roots as default_search_roots};
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -267,6 +269,48 @@ struct OperationRecord {
     queued_at: Instant,
     finished_at: Option<Instant>,
     message: Option<String>,
+}
+
+/// Durable Move evidence discovered at startup. This deliberately contains no filesystem path
+/// or action capability: retained journals remain manual-only until a later recovery design can
+/// prove identity-safe mutation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct RetainedMoveActivity {
+    transaction_id: String,
+    phase: &'static str,
+}
+
+#[cfg(target_os = "linux")]
+fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) {
+    match discover_retained_move_transactions() {
+        Ok(transactions) => (
+            transactions
+                .into_iter()
+                .map(|transaction| RetainedMoveActivity {
+                    transaction_id: transaction
+                        .transaction_id
+                        .iter()
+                        .map(|byte| format!("{byte:02x}"))
+                        .collect(),
+                    phase: match transaction.phase {
+                        JournalPhase::Prepared => "prepared",
+                        JournalPhase::ClaimIntent => "claim intent",
+                        JournalPhase::Claimed => "claimed",
+                        JournalPhase::UnexpectedClaimRetained => "unexpected claim retained",
+                        JournalPhase::PendingDestination => "pending destination",
+                        JournalPhase::Published => "published",
+                    },
+                })
+                .collect(),
+            None,
+        ),
+        Err(error) => (Vec::new(), Some(error.to_string())),
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) {
+    (Vec::new(), None)
 }
 
 // ── Per-tab listing state ─────────────────────────────────────────────────────
@@ -874,6 +918,8 @@ pub struct OttrinApp {
     search_ui: SearchUiState,
     trash_panel: TrashPanelState,
     operation_history: VecDeque<OperationRecord>,
+    retained_move_activity: Vec<RetainedMoveActivity>,
+    retained_move_activity_error: Option<String>,
 
     next_request_id: u64,
     sidebar: SidebarSection,
@@ -1005,6 +1051,7 @@ impl OttrinApp {
         }
         state.config.folder_column_widths.clear();
         let search_config = state.config.search.clone();
+        let (retained_move_activity, retained_move_activity_error) = load_retained_move_activity();
 
         let mut app = Self {
             state,
@@ -1055,6 +1102,8 @@ impl OttrinApp {
             search_ui: SearchUiState::default(),
             trash_panel: TrashPanelState::default(),
             operation_history: VecDeque::new(),
+            retained_move_activity,
+            retained_move_activity_error,
             next_request_id: 1,
             sidebar: SidebarSection::None,
             last_grid_cols: 4,
@@ -9587,7 +9636,17 @@ impl OttrinApp {
                 .iter()
                 .filter(|op| op.status == OperationStatus::Failed)
                 .count();
-            let summary = if queued > 0 {
+            let summary = if !self.retained_move_activity.is_empty() {
+                format!(
+                    "{} retained Move journal{}",
+                    self.retained_move_activity.len(),
+                    if self.retained_move_activity.len() == 1 {
+                        ""
+                    } else {
+                        "s"
+                    }
+                )
+            } else if queued > 0 {
                 format!("{queued} running")
             } else if failed > 0 {
                 format!("{failed} failed")
@@ -9616,7 +9675,49 @@ impl OttrinApp {
         );
         ui.add_space(8.0);
 
-        if self.operation_history.is_empty() {
+        if let Some(error) = &self.retained_move_activity_error {
+            ui.label(
+                RichText::new(format!("Retained Move status unavailable: {error}"))
+                    .color(c.error)
+                    .size(10.0),
+            );
+            ui.add_space(8.0);
+        }
+
+        if !self.retained_move_activity.is_empty() {
+            for retained in &self.retained_move_activity {
+                Frame::new()
+                    .fill(c.panel)
+                    .stroke(Stroke::new(1.0, mix_color(c.border, c.panel, 0.35)))
+                    .corner_radius(6.0)
+                    .inner_margin(egui::Margin::symmetric(9, 8))
+                    .show(ui, |ui| {
+                        ui.set_width(ui.available_width());
+                        ui.horizontal(|ui| {
+                            ui.label(RichText::new(MI_HISTORY).size(14.0).color(c.accent_dim));
+                            ui.vertical(|ui| {
+                                ui.label(
+                                    RichText::new("Retained Move recovery")
+                                        .color(c.text)
+                                        .size(12.0)
+                                        .strong(),
+                                );
+                                ui.label(
+                                    RichText::new(format!(
+                                        "Transaction {} · {} · manual review only",
+                                        retained.transaction_id, retained.phase
+                                    ))
+                                    .color(c.text_muted)
+                                    .size(10.0),
+                                );
+                            });
+                        });
+                    });
+                ui.add_space(6.0);
+            }
+        }
+
+        if self.operation_history.is_empty() && self.retained_move_activity.is_empty() {
             ui.add_space(24.0);
             ui.with_layout(Layout::top_down(Align::Center), |ui| {
                 ui.label(RichText::new(MI_HISTORY).size(28.0).color(c.text_muted));

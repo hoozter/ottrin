@@ -22,6 +22,16 @@ pub fn discover_retained_move_transactions_at(
     move_transaction::discover_retained_move_transactions_at(recovery_root)
 }
 
+/// Lists retained Linux Move journals at Ottrin's configured state-home recovery root.
+///
+/// This is a read-only status facade: it never creates the configured state home, recovery
+/// root, journal, anchor, or transaction directory, and never attempts cleanup.
+#[cfg(target_os = "linux")]
+pub fn discover_retained_move_transactions()
+-> Result<Vec<move_recovery::LinuxDiscoveredMoveTransaction>, PlatformError> {
+    move_transaction::discover_retained_move_transactions()
+}
+
 #[derive(Debug, Clone)]
 pub struct FileProperties {
     pub path: PathBuf,
@@ -2063,5 +2073,28 @@ mod tests {
 
         assert!(matches!(result, Err(PlatformError::Io(_))));
         assert!(!unanchored_root.join(".ottrin-move-recovery-root").exists());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn default_retained_move_status_uses_isolated_state_home_without_initializing_it() {
+        static STATE_HOME_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+        let _lock = STATE_HOME_LOCK.lock().unwrap();
+        let dir = TestDir::new("default-move-retained-status");
+        let state_home = dir.path().join("state-home");
+        let previous = std::env::var_os("XDG_STATE_HOME");
+        // Environment changes are process-global. This test serializes its own mutation and the
+        // focused command is run with one test thread so the configured root stays isolated.
+        unsafe { std::env::set_var("XDG_STATE_HOME", &state_home) };
+
+        let result = discover_retained_move_transactions();
+
+        match previous {
+            Some(value) => unsafe { std::env::set_var("XDG_STATE_HOME", value) },
+            None => unsafe { std::env::remove_var("XDG_STATE_HOME") },
+        }
+        assert!(result.unwrap().is_empty());
+        assert!(!state_home.exists());
     }
 }
