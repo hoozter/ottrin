@@ -8647,6 +8647,40 @@ mod tests {
             ))
         );
         std::fs::rename(&after_final_topology_reparented_local_path, &local_path).unwrap();
+        // A new, plausible journal-only directory at the durable name must not inherit the
+        // original transaction's cleanup authority after the final topology observation.
+        let after_final_topology_replaced_local_path =
+            root.join("after-final-topology-replaced-local");
+        let original_local_journal_bytes = std::fs::read(&local_journal).unwrap();
+        assert_eq!(
+            recovery.preflight_claimed_source_directory_cleanup_after_final_topology_scan(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                (
+                    || {},
+                    || {},
+                    || {
+                        std::fs::rename(&local_path, &after_final_topology_replaced_local_path)
+                            .unwrap();
+                        std::fs::create_dir(&local_path).unwrap();
+                        std::fs::write(local_path.join("journal"), b"plausible replacement")
+                            .unwrap();
+                    },
+                ),
+            ),
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch
+            ))
+        );
+        std::fs::remove_file(local_path.join("journal")).unwrap();
+        std::fs::remove_dir(&local_path).unwrap();
+        std::fs::rename(&after_final_topology_replaced_local_path, &local_path).unwrap();
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            original_local_journal_bytes
+        );
         assert_eq!(
             recovery.preflight_claimed_source_directory_cleanup(
                 &local,
