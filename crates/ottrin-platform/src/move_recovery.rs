@@ -9438,6 +9438,50 @@ mod tests {
         std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
         std::fs::remove_file(&local_journal).unwrap();
         std::fs::rename(&local_after_unlinked_central_backup, &local_journal).unwrap();
+        // Identity alone is insufficient after central durability: an in-place local-journal
+        // edit must also remain central-only restart evidence, without disturbing either
+        // retained destination participant.
+        let local_before_unlinked_central_content_boundary = std::fs::read(&local_journal).unwrap();
+        assert!(matches!(
+            recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_persistence(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+                || {
+                    std::fs::write(
+                        &local_journal,
+                        [
+                            local_before_unlinked_central_content_boundary.as_slice(),
+                            b"\n",
+                        ]
+                        .concat(),
+                    )
+                    .unwrap();
+                },
+            ),
+            Err(LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableLocalJournalContentChanged { .. })
+        ));
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::CentralClaimedSourceUnlinkedLocalClaimedSourceDeletionPending {
+                claimed_source_unlinked: claimed_source_unlinked.clone(),
+                claimed_source_deletion_pending: published.clone().into_claimed_source_deletion_pending(),
+            })
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
+        std::fs::write(
+            &local_journal,
+            &local_before_unlinked_central_content_boundary,
+        )
+        .unwrap();
         assert!(matches!(
             recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_local_failure(
                 &local,
