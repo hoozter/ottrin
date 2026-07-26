@@ -9806,6 +9806,48 @@ mod tests {
                 published.clone().into_claimed_source_deletion_pending()
             ))
         );
+        // A byte-identical replacement at the anchored name is equally untrusted: the old
+        // local descriptor must not grant the new directory matching-persistence authority.
+        let substituted_local_after_unlinked = root.join("substituted-local-after-unlinked");
+        let local_after_unlinked_backup = root.join("local-after-unlinked-backup");
+        std::fs::create_dir(&substituted_local_after_unlinked).unwrap();
+        std::fs::write(
+            substituted_local_after_unlinked.join("journal"),
+            std::fs::read(&local_journal).unwrap(),
+        )
+        .unwrap();
+        assert!(matches!(
+            recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_persistence(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || {
+                    std::fs::rename(&local_path, &local_after_unlinked_backup).unwrap();
+                    std::fs::rename(&substituted_local_after_unlinked, &local_path).unwrap();
+                },
+            ),
+            Err(LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceTransactionChanged { .. })
+        ));
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::CentralClaimedSourceUnlinkedLocalClaimedSourceDeletionPending {
+                claimed_source_unlinked: claimed_source_unlinked.clone(),
+                claimed_source_deletion_pending: published.clone().into_claimed_source_deletion_pending(),
+            })
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::remove_file(local_path.join("journal")).unwrap();
+        std::fs::remove_dir(&local_path).unwrap();
+        std::fs::rename(&local_after_unlinked_backup, &local_path).unwrap();
+        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
         let failed = recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_local_failure(
                 &local,
                 &source_parent,
