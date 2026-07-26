@@ -794,6 +794,12 @@ pub enum LinuxAdvanceClaimedSourceUnlinkedError {
         durable_central: Box<PublishedRecord>,
     },
     #[error(
+        "central claimed-source-unlinked marker is durable but the source parent changed before matching local persistence"
+    )]
+    CentralDurableSourceParentChanged {
+        durable_central: Box<PublishedRecord>,
+    },
+    #[error(
         "central claimed-source-unlinked update succeeded but source-local update is uncertain: {error}"
     )]
     CentralDurableLocalUpdateUncertain {
@@ -3667,6 +3673,37 @@ impl LinuxRecoveryLock<'_> {
                     },
                 );
             }
+        }
+        let source_parent_path = unlinked.source_parent.decode().map_err(|_| {
+            LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceParentChanged {
+                durable_central: Box::new(unlinked.clone()),
+            }
+        })?;
+        let reopened_source_parent = LinuxSourceParentDirectory::open(&source_parent_path)
+            .map_err(|_| {
+                LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceParentChanged {
+                    durable_central: Box::new(unlinked.clone()),
+                }
+            })?;
+        let reopened_source_parent_stat = rustix::fs::fstat(&reopened_source_parent.directory)
+            .map_err(|_| {
+                LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceParentChanged {
+                    durable_central: Box::new(unlinked.clone()),
+                }
+            })?;
+        if rustix::fs::FileType::from_raw_mode(reopened_source_parent_stat.st_mode)
+            != rustix::fs::FileType::Directory
+            || LinuxStableIdentity::new(
+                reopened_source_parent_stat.st_dev,
+                reopened_source_parent_stat.st_ino,
+                LinuxFileType::Directory,
+            ) != unlinked.source_parent_identity
+        {
+            return Err(
+                LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceParentChanged {
+                    durable_central: Box::new(unlinked),
+                },
+            );
         }
         let source_transaction_name = unlinked.source_transaction_name.decode().map_err(|_| {
             LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceTransactionChanged {
@@ -8685,11 +8722,17 @@ mod tests {
             local_metadata.ino(),
             LinuxFileType::Directory,
         );
+        let source_parent_metadata = std::fs::symlink_metadata(&root).unwrap();
+        let source_parent_identity = LinuxStableIdentity::new(
+            source_parent_metadata.dev(),
+            source_parent_metadata.ino(),
+            LinuxFileType::Directory,
+        );
         let prepared = PreparedRecord::new_linux(
             [0x42; 16],
             &root,
             Path::new("source-item"),
-            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            source_parent_identity,
             claimed_identity,
             Path::new(".ottrin-move-42424242424242424242424242424242"),
             local_identity,
@@ -9806,6 +9849,41 @@ mod tests {
                 published.clone().into_claimed_source_deletion_pending()
             ))
         );
+        // The transaction directory's identity is insufficient if the recorded source-parent
+        // path itself is replaced after the central marker becomes durable. The old parent
+        // descriptor must not authorize matching local persistence through an unlinked path.
+        let replaced_source_parent_after_unlinked = root.with_extension("replaced-after-unlinked");
+        assert!(matches!(
+            recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_persistence(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || {
+                    std::fs::rename(&root, &replaced_source_parent_after_unlinked).unwrap();
+                    std::fs::create_dir(&root).unwrap();
+                },
+            ),
+            Err(LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableSourceParentChanged { .. })
+        ));
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::CentralClaimedSourceUnlinkedLocalClaimedSourceDeletionPending {
+                claimed_source_unlinked: claimed_source_unlinked.clone(),
+                claimed_source_deletion_pending: published.clone().into_claimed_source_deletion_pending(),
+            })
+        );
+        std::fs::remove_dir(&root).unwrap();
+        std::fs::rename(&replaced_source_parent_after_unlinked, &root).unwrap();
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
         // A byte-identical replacement at the anchored name is equally untrusted: the old
         // local descriptor must not grant the new directory matching-persistence authority.
         let substituted_local_after_unlinked = root.join("substituted-local-after-unlinked");
