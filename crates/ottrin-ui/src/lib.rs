@@ -54,9 +54,9 @@ use listing::{
 use preview_render::{
     GenericPreviewAction, compact_preview_metadata, inspector_icon_button,
     preview_payload_for_copy, render_archive_body_preview, render_document_body_preview,
-    render_folder_body_preview, render_generic_body_preview, render_image_hover_nav,
-    render_metadata_card_preview, render_preview_footer, render_text_body_preview,
-    split_preview_extracted_text,
+    render_docx_page_preview, render_folder_body_preview, render_generic_body_preview,
+    render_image_hover_nav, render_metadata_card_preview, render_preview_footer,
+    render_text_body_preview, split_preview_extracted_text,
 };
 use semantic_style::{
     EntryVisualState, file_icon_for_path, material_icon, semantic_for_path, semantic_palette,
@@ -114,7 +114,7 @@ const MILLER_COLUMN_DIVIDER_WIDTH: f32 = 6.0;
 const MAX_CACHED_IMAGE_PREVIEWS: usize = 96;
 const PREVIEW_CACHE_BUCKET_SMALL: u32 = 256;
 const PREVIEW_CACHE_BUCKET_LARGE: u32 = 640;
-const PREVIEW_CACHE_BUCKET_XL: u32 = 1280;
+const PREVIEW_CACHE_BUCKET_XL: u32 = 2048;
 const PREVIEW_CACHE_ORIGINAL: u32 = 0;
 const PREVIEW_CACHE_SMALL_SVG: u32 = 96;
 const PREVIEW_REQUESTS_PER_FRAME: usize = 2;
@@ -375,7 +375,13 @@ struct PreviewOverlay {
     visible: bool,
     path: Option<PathBuf>,
     data: Option<PreviewData>,
-    image_actual_size: bool,
+    visual_fit: bool,
+    visual_zoom: f32,
+    /// The Space press that opens a native child viewport can also be
+    /// delivered to that viewport. Ignore Space briefly after opening so that
+    /// press cannot immediately close it. A time guard does not depend on the
+    /// child viewport receiving the corresponding key-release event.
+    space_close_ready_at: Option<Instant>,
 }
 
 #[derive(Debug)]
@@ -1273,9 +1279,10 @@ impl OttrinApp {
         )
     }
 
-    fn cached_original_image_actual_size_widget(
+    fn cached_original_image_zoom_widget(
         &mut self,
         path: &Path,
+        zoom: f32,
         corner_radius: u8,
     ) -> Option<egui::Image<'static>> {
         let cache_key = preview_cache_key(path, PREVIEW_CACHE_ORIGINAL);
@@ -1292,8 +1299,14 @@ impl OttrinApp {
             return None;
         }
         let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
+        let decoded = image::load_from_memory(&bytes).ok()?;
+        let size = Vec2::new(
+            decoded.width() as f32 * zoom,
+            decoded.height() as f32 * zoom,
+        );
         Some(
             egui::Image::from_bytes(format!("bytes://preview/{cache_key}"), bytes)
+                .fit_to_exact_size(size)
                 .corner_radius(corner_radius),
         )
     }
@@ -5648,7 +5661,7 @@ impl OttrinApp {
                     self.tab_ui.entry(tab_id).or_default().miller_focus_hint =
                         Some(MillerFocusHint::CurrentDir);
                 }
-                self.preview.visible = false;
+                self.close_preview(ctx);
                 if !cleared_selection {
                     self.command_frame.visible = false;
                     self.command_frame.error = None;
@@ -5844,11 +5857,21 @@ impl OttrinApp {
         self.open_preview_entry(entry);
     }
 
+    fn close_preview(&mut self, ctx: &Context) {
+        self.preview.visible = false;
+        self.preview.path = None;
+        self.preview.data = None;
+        self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
+        ctx.request_repaint();
+    }
+
     fn open_preview_entry(&mut self, entry: FileEntry) {
         let path = entry.path.clone();
         self.preview.path = Some(path.clone());
         self.preview.visible = true;
-        self.preview.image_actual_size = false;
+        self.preview.space_close_ready_at = Some(Instant::now() + Duration::from_millis(180));
+        self.preview.visual_fit = true;
+        self.preview.visual_zoom = 1.0;
         self.preview.data = None;
         self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
         self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
@@ -5893,7 +5916,8 @@ impl OttrinApp {
         }
         let path = entry.path.clone();
         self.preview.path = Some(path.clone());
-        self.preview.image_actual_size = false;
+        self.preview.visual_fit = true;
+        self.preview.visual_zoom = 1.0;
         self.preview.data = None;
         self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
     }
@@ -8242,6 +8266,13 @@ impl OttrinApp {
                             },
                             &c,
                         );
+                        btn.widget_info(|| {
+                            WidgetInfo::labeled(
+                                WidgetType::Button,
+                                true,
+                                SEARCH_TOGGLE_ACCESSIBILITY_LABEL,
+                            )
+                        });
                         if btn.clicked() {
                             self.sidebar = if search_active { SidebarSection::None } else { SidebarSection::Search };
                             if self.sidebar == SidebarSection::Search {
@@ -10316,7 +10347,15 @@ impl OttrinApp {
                                 });
                             }
 
-                            let row_resp = row.response();
+                            let row_resp = row.response().interact(Sense::click());
+                            row_resp.widget_info(|| {
+                                WidgetInfo::selected(
+                                    WidgetType::Button,
+                                    true,
+                                    selected,
+                                    search_result_accessibility_label(&item.name),
+                                )
+                            });
                             if row_resp.clicked() {
                                 self.search_ui.selected = Some(i);
                                 self.search_ui.scroll_to_selected = true;
@@ -10325,20 +10364,18 @@ impl OttrinApp {
                                 open_entry_now = Some((item.path.clone(), item.kind));
                             }
 
-                            row_resp.context_menu(|_ui| {
-                                let search_entry = Self::search_result_to_entry(item);
-                                self.entry_context_menu(
-                                    &row_resp,
-                                    &search_entry,
-                                    &cur_dir,
-                                    &mut pending_op,
-                                    &mut open_parent,
-                                    &mut open_entry_now,
-                                    &mut open_tandem_now,
-                                    &mut add_bookmark,
-                                    &mut remove_bookmark,
-                                );
-                            });
+                            let search_entry = Self::search_result_to_entry(item);
+                            self.entry_context_menu(
+                                &row_resp,
+                                &search_entry,
+                                &cur_dir,
+                                &mut pending_op,
+                                &mut open_parent,
+                                &mut open_entry_now,
+                                &mut open_tandem_now,
+                                &mut add_bookmark,
+                                &mut remove_bookmark,
+                            );
                         });
                     }
                 });
@@ -13218,6 +13255,7 @@ impl OttrinApp {
         }
     }
 
+    #[allow(deprecated)]
     fn render_preview_overlay(&mut self, ctx: &Context) {
         if !self.preview.visible {
             return;
@@ -13242,384 +13280,439 @@ impl OttrinApp {
             .unwrap_or_else(|| loading_preview_data(&path));
         let name = preview.title.clone();
         let mut close_requested = false;
-        let builder = egui::ViewportBuilder::default()
-            .with_title(format!("Ottrin Quick Inspector - {name}"))
-            .with_inner_size([720.0, 560.0])
-            .with_min_inner_size([420.0, 320.0])
-            .with_resizable(true);
-        let vp_id = Self::quick_inspector_viewport_id();
-
-        ctx.show_viewport_immediate(vp_id, builder, |inspector_ctx, class| {
-            self.apply_theme_to_ctx(inspector_ctx);
-            let _ = class;
-            if inspector_ctx.input(|i| i.viewport().close_requested()) {
-                close_requested = true;
+        let inspector_ctx = ctx;
+        self.apply_theme_to_ctx(inspector_ctx);
+        let inspector_modal_active = self.pending_rename.is_some() || self.pending_delete.is_some();
+        if inspector_modal_active {
+            if self.pending_delete.is_some() {
+                self.handle_delete_confirmation_keyboard(inspector_ctx);
+            }
+        } else {
+            let escape =
+                inspector_ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Escape));
+            let space_pressed = inspector_ctx.input(|i| i.key_pressed(Key::Space));
+            let space_close = !self.command_frame.visible
+                && preview_space_should_close(
+                    self.preview.space_close_ready_at,
+                    Instant::now(),
+                    space_pressed,
+                );
+            if escape || space_close {
+                self.close_preview(ctx);
                 return;
-            }
-            let inspector_modal_active =
-                self.pending_rename.is_some() || self.pending_delete.is_some();
-            if inspector_modal_active {
-                if self.pending_delete.is_some() {
-                    self.handle_delete_confirmation_keyboard(inspector_ctx);
-                }
-            } else {
-                let inspector_text_focused = inspector_ctx.wants_keyboard_input();
-                if inspector_ctx.input_mut(|i| {
-                    i.consume_key(egui::Modifiers::NONE, Key::Escape)
-                        || (!inspector_text_focused
-                            && !self.command_frame.visible
-                            && i.consume_key(egui::Modifiers::NONE, Key::Space))
-                }) {
-                    close_requested = true;
-                    return;
-                } else if self.command_frame.visible {
-                    inspector_ctx.input_mut(|i| {
-                        let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowRight);
-                        let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowDown);
-                        let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowLeft);
-                        let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowUp);
-                        let _ = i.consume_key(egui::Modifiers::NONE, Key::Delete);
-                    });
-                } else if !inspector_text_focused {
-                    let command_text = inspector_ctx.input(|i| {
-                        if i.modifiers.any() {
-                            return None;
-                        }
-                        i.events.iter().find_map(|event| match event {
-                            egui::Event::Text(text) if !text.trim().is_empty() => {
-                                Some(text.clone())
-                            }
-                            _ => None,
-                        })
-                    });
-                    let key_action = inspector_ctx.input_mut(|i| {
-                        if i.consume_key(egui::Modifiers::NONE, Key::ArrowRight)
-                            || i.consume_key(egui::Modifiers::NONE, Key::ArrowDown)
-                        {
-                            Some(PreviewKeyAction::NextItem)
-                        } else if i.consume_key(egui::Modifiers::NONE, Key::ArrowLeft)
-                            || i.consume_key(egui::Modifiers::NONE, Key::ArrowUp)
-                        {
-                            Some(PreviewKeyAction::PrevItem)
-                        } else if i.consume_key(egui::Modifiers::NONE, Key::Delete) {
-                            Some(PreviewKeyAction::Delete)
-                        } else if i.consume_key(egui::Modifiers::CTRL, Key::C)
-                            || i.consume_key(egui::Modifiers::COMMAND, Key::C)
-                        {
-                            Some(PreviewKeyAction::Copy)
-                        } else if i.consume_key(egui::Modifiers::CTRL, Key::X)
-                            || i.consume_key(egui::Modifiers::COMMAND, Key::X)
-                        {
-                            Some(PreviewKeyAction::Cut)
-                        } else if i.consume_key(egui::Modifiers::CTRL, Key::L)
-                            || i.consume_key(egui::Modifiers::COMMAND, Key::L)
-                        {
-                            Some(PreviewKeyAction::CommandFrame)
-                        } else if i.consume_key(egui::Modifiers::NONE, Key::F2) {
-                            Some(PreviewKeyAction::Rename)
-                        } else {
-                            None
-                        }
-                    });
-                    if let Some(action) = key_action {
-                        self.handle_preview_key_action(action);
-                    } else if let Some(text) = command_text {
-                        self.open_command_frame_with(&text);
+            } else if self.command_frame.visible {
+                inspector_ctx.input_mut(|i| {
+                    let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowRight);
+                    let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowDown);
+                    let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowLeft);
+                    let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowUp);
+                    let _ = i.consume_key(egui::Modifiers::NONE, Key::Delete);
+                });
+            } else if !inspector_ctx.wants_keyboard_input() {
+                let command_text = inspector_ctx.input(|i| {
+                    if i.modifiers.any() {
+                        return None;
                     }
+                    i.events.iter().find_map(|event| match event {
+                        egui::Event::Text(text) if !text.trim().is_empty() => Some(text.clone()),
+                        _ => None,
+                    })
+                });
+                let key_action = inspector_ctx.input_mut(|i| {
+                    if i.consume_key(egui::Modifiers::NONE, Key::ArrowRight)
+                        || i.consume_key(egui::Modifiers::NONE, Key::ArrowDown)
+                    {
+                        Some(PreviewKeyAction::NextItem)
+                    } else if i.consume_key(egui::Modifiers::NONE, Key::ArrowLeft)
+                        || i.consume_key(egui::Modifiers::NONE, Key::ArrowUp)
+                    {
+                        Some(PreviewKeyAction::PrevItem)
+                    } else if i.consume_key(egui::Modifiers::NONE, Key::Delete) {
+                        Some(PreviewKeyAction::Delete)
+                    } else if i.consume_key(egui::Modifiers::CTRL, Key::C)
+                        || i.consume_key(egui::Modifiers::COMMAND, Key::C)
+                    {
+                        Some(PreviewKeyAction::Copy)
+                    } else if i.consume_key(egui::Modifiers::CTRL, Key::X)
+                        || i.consume_key(egui::Modifiers::COMMAND, Key::X)
+                    {
+                        Some(PreviewKeyAction::Cut)
+                    } else if i.consume_key(egui::Modifiers::CTRL, Key::L)
+                        || i.consume_key(egui::Modifiers::COMMAND, Key::L)
+                    {
+                        Some(PreviewKeyAction::CommandFrame)
+                    } else if i.consume_key(egui::Modifiers::NONE, Key::F2) {
+                        Some(PreviewKeyAction::Rename)
+                    } else {
+                        None
+                    }
+                });
+                if let Some(action) = key_action {
+                    self.handle_preview_key_action(action);
+                } else if let Some(text) = command_text {
+                    self.open_command_frame_with(&text);
                 }
             }
-            self.render_command_frame(inspector_ctx);
-            egui::CentralPanel::default()
-                .frame(
-                    Frame::new()
-                        .fill(c.panel_raised)
-                        .stroke(Stroke::new(1.0, c.border))
-                        .inner_margin(egui::Margin::same(12)),
-                )
-                .show(inspector_ctx, |ui| {
-                    ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                        ui.horizontal(|ui| {
-                            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                ui.menu_button(
-                                    RichText::new(MI_MORE_VERT).color(c.text).size(18.0),
-                                    |ui| {
-                                        if menu_item(ui, MI_CONTENT_COPY, "Copy Path", &c).clicked()
-                                        {
-                                            ui.ctx().copy_text(path.display().to_string());
-                                            self.set_status_message("Copied file path", true, 3);
-                                            ui.close();
-                                        }
-                                        if let Some((icon, label, payload)) =
-                                            preview_payload_for_copy(&preview)
-                                            && menu_item(ui, icon, label, &c).clicked()
-                                        {
-                                            ui.ctx().copy_text(payload.to_string());
-                                            self.set_status_message(
-                                                format!("{label} copied"),
-                                                true,
-                                                3,
-                                            );
-                                            ui.close();
-                                        }
-                                        if menu_item(ui, MI_CONTENT_COPY, "Copy", &c)
-                                            .on_hover_text("Copy this file for pasting in Ottrin.")
-                                            .clicked()
-                                        {
-                                            self.copy_preview_path(false);
-                                            ui.close();
-                                        }
-                                        if menu_item(ui, MI_CONTENT_CUT, "Cut", &c)
-                                            .on_hover_text("Cut this file for moving in Ottrin.")
-                                            .clicked()
-                                        {
-                                            self.copy_preview_path(true);
-                                            ui.close();
-                                        }
-                                        if menu_item(ui, MI_EDIT, "Rename", &c).clicked() {
-                                            self.begin_rename();
-                                            ui.close();
-                                        }
-                                        if menu_item(ui, MI_OPEN_IN_NEW, "Reveal", &c).clicked() {
-                                            match self.platform.reveal_in_system(&path) {
-                                                Ok(()) => self.set_status_message(
-                                                    "Revealed file",
-                                                    true,
-                                                    3,
-                                                ),
-                                                Err(err) => self.set_status_message(
-                                                    format!("Reveal failed: {err}"),
-                                                    false,
-                                                    5,
-                                                ),
+        }
+        self.render_command_frame(inspector_ctx);
+        let mut inspector_open = true;
+        egui::Window::new(format!("Quick Inspector — {name}"))
+            .id(egui::Id::new("quick_inspector_window"))
+            .open(&mut inspector_open)
+            .default_size([720.0, 560.0])
+            .min_size([420.0, 320.0])
+            .resizable(true)
+            .collapsible(false)
+            .frame(
+                Frame::new()
+                    .fill(c.panel_raised)
+                    .stroke(Stroke::new(1.0, c.border))
+                    .inner_margin(egui::Margin::same(12)),
+            )
+            .show(inspector_ctx, |ui| {
+                ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                    ui.horizontal(|ui| {
+                        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                            ui.menu_button(
+                                RichText::new(MI_MORE_VERT).color(c.text).size(18.0),
+                                |ui| {
+                                    if menu_item(ui, MI_CONTENT_COPY, "Copy Path", &c).clicked() {
+                                        ui.ctx().copy_text(path.display().to_string());
+                                        self.set_status_message("Copied file path", true, 3);
+                                        ui.close();
+                                    }
+                                    if let Some((icon, label, payload)) =
+                                        preview_payload_for_copy(&preview)
+                                        && menu_item(ui, icon, label, &c).clicked()
+                                    {
+                                        ui.ctx().copy_text(payload.to_string());
+                                        self.set_status_message(format!("{label} copied"), true, 3);
+                                        ui.close();
+                                    }
+                                    if menu_item(ui, MI_CONTENT_COPY, "Copy", &c)
+                                        .on_hover_text("Copy this file for pasting in Ottrin.")
+                                        .clicked()
+                                    {
+                                        self.copy_preview_path(false);
+                                        ui.close();
+                                    }
+                                    if menu_item(ui, MI_CONTENT_CUT, "Cut", &c)
+                                        .on_hover_text("Cut this file for moving in Ottrin.")
+                                        .clicked()
+                                    {
+                                        self.copy_preview_path(true);
+                                        ui.close();
+                                    }
+                                    if menu_item(ui, MI_EDIT, "Rename", &c).clicked() {
+                                        self.begin_rename();
+                                        ui.close();
+                                    }
+                                    if menu_item(ui, MI_OPEN_IN_NEW, "Reveal", &c).clicked() {
+                                        match self.platform.reveal_in_system(&path) {
+                                            Ok(()) => {
+                                                self.set_status_message("Revealed file", true, 3)
                                             }
-                                            ui.close();
+                                            Err(err) => self.set_status_message(
+                                                format!("Reveal failed: {err}"),
+                                                false,
+                                                5,
+                                            ),
                                         }
-                                        if menu_item(ui, MI_DELETE, "Move to Trash", &c).clicked() {
-                                            let tab_id = self.state.active_tab().id;
-                                            self.request_delete_paths(
-                                                tab_id,
-                                                vec![path.clone()],
-                                                DeleteMode::Trash,
-                                            );
-                                            ui.close();
-                                        }
-                                    },
+                                        ui.close();
+                                    }
+                                    if menu_item(ui, MI_DELETE, "Move to Trash", &c).clicked() {
+                                        let tab_id = self.state.active_tab().id;
+                                        self.request_delete_paths(
+                                            tab_id,
+                                            vec![path.clone()],
+                                            DeleteMode::Trash,
+                                        );
+                                        ui.close();
+                                    }
+                                },
+                            )
+                            .response
+                            .on_hover_text("More actions");
+                            if matches!(preview.kind, PreviewKind::Image) {
+                                if inspector_icon_button(
+                                    ui,
+                                    MI_ROTATE_RIGHT,
+                                    "Rotate Right",
+                                    "Rotate image right and save the file.",
+                                    c,
                                 )
-                                .response
-                                .on_hover_text("More actions");
-                                if matches!(preview.kind, PreviewKind::Image) {
-                                    if inspector_icon_button(
-                                        ui,
-                                        MI_ROTATE_RIGHT,
-                                        "Rotate Right",
-                                        "Rotate image right and save the file.",
-                                        c,
+                                .clicked()
+                                {
+                                    self.rotate_inspector_image(&path, true);
+                                }
+                                if inspector_icon_button(
+                                    ui,
+                                    MI_ROTATE_LEFT,
+                                    "Rotate Left",
+                                    "Rotate image left and save the file.",
+                                    c,
+                                )
+                                .clicked()
+                                {
+                                    self.rotate_inspector_image(&path, false);
+                                }
+                            }
+                            let is_zoomable_document =
+                                matches!(preview.kind, PreviewKind::Image | PreviewKind::Pdf)
+                                    || (preview.kind == PreviewKind::OfficeMetadata
+                                        && path
+                                            .extension()
+                                            .and_then(|ext| ext.to_str())
+                                            .is_some_and(|ext| ext.eq_ignore_ascii_case("docx")));
+                            if is_zoomable_document {
+                                if ui
+                                    .small_button("Fit")
+                                    .on_hover_text("Fit the whole page or image in the inspector.")
+                                    .clicked()
+                                {
+                                    self.preview.visual_fit = true;
+                                }
+                                if ui
+                                    .small_button("100%")
+                                    .on_hover_text(
+                                        "Show the page or image at its natural size and scroll.",
                                     )
                                     .clicked()
-                                    {
-                                        self.rotate_inspector_image(&path, true);
-                                    }
-                                    if inspector_icon_button(
-                                        ui,
-                                        MI_ROTATE_LEFT,
-                                        "Rotate Left",
-                                        "Rotate image left and save the file.",
-                                        c,
-                                    )
-                                    .clicked()
-                                    {
-                                        self.rotate_inspector_image(&path, false);
-                                    }
-                                    let sizing_label = if self.preview.image_actual_size {
-                                        "Fit"
+                                {
+                                    self.preview.visual_fit = false;
+                                    self.preview.visual_zoom = 1.0;
+                                }
+                                if ui.small_button("−").on_hover_text("Zoom out").clicked() {
+                                    self.preview.visual_fit = false;
+                                    self.preview.visual_zoom =
+                                        (self.preview.visual_zoom / 1.2).clamp(0.1, 8.0);
+                                }
+                                ui.label(
+                                    RichText::new(if self.preview.visual_fit {
+                                        "Fit".to_string()
                                     } else {
-                                        "Actual Size"
-                                    };
-                                    let sizing_tip = if self.preview.image_actual_size {
-                                        "Fit this image to the inspector window."
+                                        format!(
+                                            "{}%",
+                                            (self.preview.visual_zoom * 100.0).round() as u32
+                                        )
+                                    })
+                                    .color(c.text_dim)
+                                    .size(10.5),
+                                );
+                                if ui.small_button("+").on_hover_text("Zoom in").clicked() {
+                                    self.preview.visual_fit = false;
+                                    self.preview.visual_zoom =
+                                        (self.preview.visual_zoom * 1.2).clamp(0.1, 8.0);
+                                }
+                            }
+                        });
+                    });
+                    ui.separator();
+
+                    let inspector_hovered = ui.rect_contains_pointer(ui.max_rect());
+                    let gesture_zoom = inspector_ctx.input(|input| input.zoom_delta());
+                    if inspector_hovered && (gesture_zoom - 1.0).abs() > 0.001 {
+                        self.preview.visual_fit = false;
+                        self.preview.visual_zoom =
+                            (self.preview.visual_zoom * gesture_zoom).clamp(0.1, 8.0);
+                    }
+
+                    match preview.kind {
+                        PreviewKind::Text => {
+                            let is_svg = path
+                                .extension()
+                                .and_then(|e| e.to_str())
+                                .map(|e| e.eq_ignore_ascii_case("svg"))
+                                .unwrap_or(false);
+                            if is_svg {
+                                ScrollArea::both().show(ui, |ui| {
+                                    let max_w = (ui.available_width() - 24.0).max(120.0);
+                                    let max_h = (ui.available_height() - 30.0).max(160.0);
+                                    ui.vertical_centered(|ui| {
+                                        ui.add_space(8.0);
+                                        if let Some(img) =
+                                            self.cached_image_preview_widget(&path, max_w, max_h, 8)
+                                        {
+                                            ui.add(img);
+                                        }
+                                        render_preview_footer(ui, c, &name, &preview.body);
+                                    });
+                                });
+                            } else {
+                                render_text_body_preview(ui, c, &name, &preview.body);
+                            }
+                        }
+                        PreviewKind::Image | PreviewKind::Pdf => {
+                            ScrollArea::both().show(ui, |ui| {
+                                let max_w = (ui.available_width() - 24.0).max(120.0);
+                                let max_h = (ui.available_height() - 34.0).max(160.0);
+                                ui.vertical_centered(|ui| {
+                                    let is_svg = preview.kind == PreviewKind::Image
+                                        && path
+                                            .extension()
+                                            .and_then(|e| e.to_str())
+                                            .map(|e| e.eq_ignore_ascii_case("svg"))
+                                            .unwrap_or(false);
+                                    let image = if !self.preview.visual_fit {
+                                        if is_svg {
+                                            self.cached_image_preview_widget(&path, max_w, max_h, 8)
+                                        } else {
+                                            self.cached_original_image_zoom_widget(
+                                                &path,
+                                                self.preview.visual_zoom,
+                                                8,
+                                            )
+                                            .or_else(
+                                                || {
+                                                    self.cached_image_preview_widget(
+                                                        &path, max_w, max_h, 8,
+                                                    )
+                                                },
+                                            )
+                                        }
                                     } else {
-                                        "Show this image at its original pixel size."
+                                        if is_svg {
+                                            self.cached_image_preview_widget(&path, max_w, max_h, 8)
+                                        } else {
+                                            self.cached_original_image_preview_widget(
+                                                &path, max_w, max_h, 8,
+                                            )
+                                            .or_else(
+                                                || {
+                                                    self.cached_image_preview_widget(
+                                                        &path, max_w, max_h, 8,
+                                                    )
+                                                },
+                                            )
+                                        }
                                     };
-                                    if inspector_icon_button(
+                                    let image_available = image.is_some();
+                                    if let Some(img) = image {
+                                        let image_resp = ui.add(img);
+                                        if let Some(delta) =
+                                            render_image_hover_nav(ui, c, image_resp.rect)
+                                        {
+                                            let _ = self.select_adjacent_preview_item(delta);
+                                        }
+                                    } else {
+                                        if preview.kind == PreviewKind::Pdf {
+                                            let (metadata, _) =
+                                                split_preview_extracted_text(&preview.body);
+                                            render_metadata_card_preview(
+                                                ui,
+                                                c,
+                                                MI_PICTURE_PDF,
+                                                &name,
+                                                &format!(
+                                                    "{metadata}\nVisual PDF rendering failed. Open externally to inspect this file."
+                                                ),
+                                            );
+                                        } else {
+                                            ui.label(
+                                                RichText::new("Image preview unavailable")
+                                                    .color(c.text_dim)
+                                                    .size(11.0),
+                                            );
+                                        }
+                                    }
+                                    if image_available && !preview.body.is_empty() {
+                                        ui.add_space(6.0);
+                                        ui.label(
+                                            RichText::new(compact_preview_metadata(
+                                                &name,
+                                                &preview.body,
+                                            ))
+                                            .color(c.text_dim)
+                                            .size(11.0),
+                                        );
+                                    }
+                                });
+                            });
+                        }
+                        PreviewKind::OfficeMetadata => {
+                            let is_docx = path
+                                .extension()
+                                .and_then(|ext| ext.to_str())
+                                .is_some_and(|ext| ext.eq_ignore_ascii_case("docx"));
+                            if is_docx {
+                                ScrollArea::both().drag_to_scroll(true).show(ui, |ui| {
+                                    render_docx_page_preview(
                                         ui,
-                                        MI_VISIBILITY,
-                                        sizing_label,
-                                        sizing_tip,
                                         c,
-                                    )
-                                    .clicked()
+                                        &name,
+                                        &preview.body,
+                                        self.preview.visual_fit,
+                                        self.preview.visual_zoom,
+                                    );
+                                });
+                            } else {
+                                render_document_body_preview(
+                                    ui,
+                                    c,
+                                    MI_DESCRIPTION,
+                                    &name,
+                                    &preview.body,
+                                );
+                            }
+                        }
+                        PreviewKind::ArchiveMetadata => {
+                            render_archive_body_preview(ui, c, &name, &preview.body);
+                        }
+                        PreviewKind::VideoMetadata => {
+                            let icon = match preview.kind {
+                                PreviewKind::VideoMetadata => MI_MOVIE,
+                                _ => MI_FILE,
+                            };
+                            render_document_body_preview(ui, c, icon, &name, &preview.body);
+                        }
+                        _ => {
+                            ScrollArea::both().show(ui, |ui| match preview.kind {
+                                PreviewKind::FolderMetadata => {
+                                    render_folder_body_preview(ui, c, &name, &preview.body);
+                                }
+                                PreviewKind::AudioMetadata => {
+                                    render_metadata_card_preview(
+                                        ui,
+                                        c,
+                                        MI_MUSIC_NOTE,
+                                        &name,
+                                        &preview.body,
+                                    );
+                                }
+                                _ => {
+                                    if let Some(action) =
+                                        render_generic_body_preview(ui, c, &path, &name, &preview)
                                     {
-                                        self.preview.image_actual_size =
-                                            !self.preview.image_actual_size;
+                                        match action {
+                                            GenericPreviewAction::Rename => self.begin_rename(),
+                                            GenericPreviewAction::Delete => {
+                                                let tab_id = self.state.active_tab().id;
+                                                self.request_delete_paths(
+                                                    tab_id,
+                                                    vec![path.clone()],
+                                                    DeleteMode::Trash,
+                                                );
+                                            }
+                                        }
                                     }
                                 }
                             });
-                        });
-                        ui.separator();
-
-                        match preview.kind {
-                            PreviewKind::Text => {
-                                let is_svg = path
-                                    .extension()
-                                    .and_then(|e| e.to_str())
-                                    .map(|e| e.eq_ignore_ascii_case("svg"))
-                                    .unwrap_or(false);
-                                if is_svg {
-                                    ScrollArea::both().show(ui, |ui| {
-                                        let max_w = (ui.available_width() - 24.0).max(120.0);
-                                        let max_h = (ui.available_height() - 30.0).max(160.0);
-                                        ui.vertical_centered(|ui| {
-                                            ui.add_space(8.0);
-                                            if let Some(img) = self
-                                                .cached_image_preview_widget(&path, max_w, max_h, 8)
-                                            {
-                                                ui.add(img);
-                                            }
-                                            render_preview_footer(ui, c, &name, &preview.body);
-                                        });
-                                    });
-                                } else {
-                                    render_text_body_preview(ui, c, &name, &preview.body);
-                                }
-                            }
-                            PreviewKind::Image | PreviewKind::Pdf | PreviewKind::OfficeMetadata => {
-                                ScrollArea::both().show(ui, |ui| {
-                                    let max_w = (ui.available_width() - 24.0).max(120.0);
-                                    let max_h = (ui.available_height() - 34.0).max(160.0);
-                                    ui.vertical_centered(|ui| {
-                                        let is_svg = preview.kind == PreviewKind::Image
-                                            && path
-                                                .extension()
-                                                .and_then(|e| e.to_str())
-                                                .map(|e| e.eq_ignore_ascii_case("svg"))
-                                                .unwrap_or(false);
-                                        let image = if self.preview.image_actual_size {
-                                            if is_svg {
-                                                self.cached_image_preview_widget(
-                                                    &path, max_w, max_h, 8,
-                                                )
-                                            } else {
-                                                self.cached_original_image_actual_size_widget(
-                                                    &path, 8,
-                                                )
-                                                .or_else(|| {
-                                                    self.cached_image_preview_widget(
-                                                        &path, max_w, max_h, 8,
-                                                    )
-                                                })
-                                            }
-                                        } else {
-                                            if is_svg {
-                                                self.cached_image_preview_widget(
-                                                    &path, max_w, max_h, 8,
-                                                )
-                                            } else {
-                                                self.cached_original_image_preview_widget(
-                                                    &path, max_w, max_h, 8,
-                                                )
-                                                .or_else(|| {
-                                                    self.cached_image_preview_widget(
-                                                        &path, max_w, max_h, 8,
-                                                    )
-                                                })
-                                            }
-                                        };
-                                        if let Some(img) = image {
-                                            let image_resp = ui.add(img);
-                                            if let Some(delta) =
-                                                render_image_hover_nav(ui, c, image_resp.rect)
-                                            {
-                                                let _ = self.select_adjacent_preview_item(delta);
-                                            }
-                                        } else {
-                                            ui.label(
-                                                RichText::new(match preview.kind {
-                                                    PreviewKind::Image => {
-                                                        "Image preview unavailable"
-                                                    }
-                                                    PreviewKind::Pdf => "PDF preview unavailable",
-                                                    PreviewKind::OfficeMetadata => {
-                                                        "Office visual preview unavailable"
-                                                    }
-                                                    _ => unreachable!(),
-                                                })
-                                                .color(c.text_dim)
-                                                .size(11.0),
-                                            );
-                                        }
-                                        if !preview.body.is_empty() {
-                                            ui.add_space(6.0);
-                                            ui.label(
-                                                RichText::new(compact_preview_metadata(
-                                                    &name,
-                                                    &preview.body,
-                                                ))
-                                                .color(c.text_dim)
-                                                .size(11.0),
-                                            );
-                                        }
-                                    });
-                                });
-                            }
-                            PreviewKind::ArchiveMetadata => {
-                                render_archive_body_preview(ui, c, &name, &preview.body);
-                            }
-                            PreviewKind::VideoMetadata => {
-                                let icon = match preview.kind {
-                                    PreviewKind::VideoMetadata => MI_MOVIE,
-                                    _ => MI_FILE,
-                                };
-                                render_document_body_preview(ui, c, icon, &name, &preview.body);
-                            }
-                            _ => {
-                                ScrollArea::both().show(ui, |ui| match preview.kind {
-                                    PreviewKind::FolderMetadata => {
-                                        render_folder_body_preview(ui, c, &name, &preview.body);
-                                    }
-                                    PreviewKind::AudioMetadata => {
-                                        render_metadata_card_preview(
-                                            ui,
-                                            c,
-                                            MI_MUSIC_NOTE,
-                                            &name,
-                                            &preview.body,
-                                        );
-                                    }
-                                    _ => {
-                                        if let Some(action) = render_generic_body_preview(
-                                            ui, c, &path, &name, &preview,
-                                        ) {
-                                            match action {
-                                                GenericPreviewAction::Rename => self.begin_rename(),
-                                                GenericPreviewAction::Delete => {
-                                                    let tab_id = self.state.active_tab().id;
-                                                    self.request_delete_paths(
-                                                        tab_id,
-                                                        vec![path.clone()],
-                                                        DeleteMode::Trash,
-                                                    );
-                                                }
-                                            }
-                                        }
-                                    }
-                                });
-                            }
                         }
-                    });
+                    }
                 });
-            if self.pending_rename.is_some() {
-                self.render_rename_modal(inspector_ctx);
-            }
-            if self.pending_delete.is_some() {
-                self.render_delete_confirmation(inspector_ctx);
-            }
-        });
+            });
+        if !inspector_open {
+            close_requested = true;
+        }
+        if self.pending_rename.is_some() {
+            self.render_rename_modal(inspector_ctx);
+        }
+        if self.pending_delete.is_some() {
+            self.render_delete_confirmation(inspector_ctx);
+        }
 
         if close_requested {
-            self.preview.visible = false;
-            self.preview.path = None;
-            self.preview.data = None;
-            ctx.send_viewport_cmd_to(vp_id, egui::ViewportCommand::Close);
+            self.close_preview(ctx);
         }
     }
 
@@ -14245,10 +14338,6 @@ impl OttrinApp {
 
     fn settings_viewport_id() -> egui::ViewportId {
         egui::ViewportId::from_hash_of("ottrin-settings")
-    }
-
-    fn quick_inspector_viewport_id() -> egui::ViewportId {
-        egui::ViewportId::from_hash_of("ottrin-quick-inspector")
     }
 
     fn render_settings_modal_embedded(&mut self, ctx: &Context) -> bool {
@@ -16005,7 +16094,7 @@ impl eframe::App for OttrinApp {
             let space = ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Space));
             if space {
                 if self.preview.visible {
-                    self.preview.visible = false;
+                    self.close_preview(ctx);
                 } else {
                     self.open_preview();
                 }
@@ -16260,6 +16349,12 @@ fn view_toggle_accessibility_label(view: ViewMode) -> &'static str {
         ViewMode::Grid => "Switch to Column view",
     }
 }
+
+fn search_result_accessibility_label(name: &str) -> String {
+    format!("Search result: {name}")
+}
+
+const SEARCH_TOGGLE_ACCESSIBILITY_LABEL: &str = "Toggle Search";
 
 fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
     if !matches!(entry.kind, EntryKind::File) {
@@ -16649,6 +16744,14 @@ fn adjacent_preview_index(
             return Some(idx as usize);
         }
     }
+}
+
+fn preview_space_should_close(
+    ready_at: Option<Instant>,
+    now: Instant,
+    space_pressed: bool,
+) -> bool {
+    space_pressed && ready_at.is_some_and(|ready_at| now >= ready_at)
 }
 
 fn previewable_entry(entry: &FileEntry) -> bool {
@@ -18120,7 +18223,7 @@ mod tests {
     }
 
     #[test]
-    fn image_thumbnail_candidate_includes_supported_images_pdfs_and_office_visuals_only() {
+    fn image_thumbnail_candidate_includes_supported_visual_formats() {
         let image_entry = FileEntry {
             name: "cover.jpg".to_string(),
             path: PathBuf::from("/tmp/cover.jpg"),
@@ -18152,10 +18255,19 @@ mod tests {
         assert!(image_thumbnail_candidate(&image_entry));
         assert!(image_thumbnail_candidate(&pdf_entry));
         assert!(image_thumbnail_candidate(&office_entry));
+        assert!(!image_thumbnail_candidate(&FileEntry {
+            name: "legacy.doc".to_string(),
+            path: PathBuf::from("/tmp/legacy.doc"),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: Some(1024),
+            modified_unix_secs: None,
+        }));
     }
 
     #[test]
-    fn thumbnail_supported_image_path_includes_pdf_and_supported_office_visuals() {
+    fn thumbnail_supported_image_path_includes_renderable_office_formats() {
         assert!(thumbnail_supported_image_path(Path::new(
             "/tmp/sample.webp"
         )));
@@ -18165,6 +18277,9 @@ mod tests {
         )));
         assert!(thumbnail_supported_image_path(Path::new(
             "/tmp/report.XLSX"
+        )));
+        assert!(thumbnail_supported_image_path(Path::new(
+            "/tmp/report.xlsm"
         )));
         assert!(!thumbnail_supported_image_path(Path::new(
             "/tmp/presentation.pptx"
@@ -18185,6 +18300,19 @@ mod tests {
             view_toggle_accessibility_label(ViewMode::Grid),
             "Switch to Column view"
         );
+    }
+
+    #[test]
+    fn search_result_accessibility_label_is_unambiguous() {
+        assert_eq!(
+            search_result_accessibility_label("sample.json"),
+            "Search result: sample.json"
+        );
+    }
+
+    #[test]
+    fn search_toggle_accessibility_label_is_stable() {
+        assert_eq!(SEARCH_TOGGLE_ACCESSIBILITY_LABEL, "Toggle Search");
     }
 
     #[test]
@@ -18266,6 +18394,16 @@ mod tests {
         app.search_ui.selected = Some(1);
         app.sync_preview_to_selection();
         assert_eq!(app.preview.path, Some(PathBuf::from("/tmp/other.txt")));
+    }
+
+    #[test]
+    fn quick_inspector_ignores_only_the_opening_space_event() {
+        let opened_at = Instant::now();
+        let ready_at = opened_at + Duration::from_millis(180);
+
+        assert!(!preview_space_should_close(Some(ready_at), opened_at, true));
+        assert!(!preview_space_should_close(Some(ready_at), ready_at, false));
+        assert!(preview_space_should_close(Some(ready_at), ready_at, true));
     }
 
     #[test]

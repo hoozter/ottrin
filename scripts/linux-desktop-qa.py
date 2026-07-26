@@ -152,6 +152,52 @@ def context_menu_entry(window_id: str, name: str):
     time.sleep(0.35)
 
 
+def search_result_node(name: str):
+    candidates = []
+    for item in named_nodes(f"Search result: {name}"):
+        if pyatspi.STATE_SHOWING not in item.getState().getStates():
+            continue
+        try:
+            rect = item.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+        except NotImplementedError:
+            continue
+        if rect.width > 0 and rect.height > 0:
+            candidates.append((rect.width * rect.height, item))
+    return max(candidates, default=(0, None), key=lambda candidate: candidate[0])[1]
+
+
+def click_search_result(window_id: str, name: str, button: str = "1"):
+    node = wait_for(
+        lambda: search_result_node(name), f"visible search result {name!r}"
+    )
+    rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+    run("xdotool", "windowactivate", "--sync", window_id)
+    run(
+        "xdotool",
+        "mousemove",
+        str(rect.x + rect.width // 2),
+        str(rect.y + rect.height // 2),
+        "click",
+        button,
+    )
+    time.sleep(0.35)
+
+
+def write_visible_accessibility_tree(evidence: Path, name: str):
+    app = ottrin_app()
+    lines = []
+    if app is not None:
+        for node in all_nodes(app):
+            try:
+                states = node.getState().getStates()
+                if pyatspi.STATE_SHOWING not in states:
+                    continue
+                lines.append(f"{node.getRoleName()} | {node.name or ''}")
+            except Exception:
+                continue
+    (evidence / f"{name}.a11y.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def double_click_entry(window_id: str, name: str):
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
     rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
@@ -332,34 +378,27 @@ def screenshot(evidence: Path, name: str):
     wait_for(lambda: target.is_file() and target.stat().st_size > 0, f"screenshot {target}")
 
 
-def close_quick_inspector(main_window_id: str):
-    inspector_id = run(
-        "xdotool",
-        "search",
-        "--name",
-        "^Ottrin Quick Inspector -",
-        capture=True,
-    ).stdout.strip().splitlines()[-1]
-    run("xdotool", "windowactivate", "--sync", inspector_id)
-    run("xdotool", "key", "--clearmodifiers", "Escape")
+def quick_inspector_visible(filename: str):
+    title = f"Quick Inspector — {filename}"
+    return any(node.name == title for node in visible_named_nodes(title))
+
+
+def close_quick_inspector(main_window_id: str, filename: str):
+    xkey(main_window_id, "space")
     wait_for(
-        lambda: not run(
-            "xdotool",
-            "search",
-            "--name",
-            "^Ottrin Quick Inspector -",
-            capture=True,
-            check=False,
-        ).stdout.strip(),
+        lambda: not quick_inspector_visible(filename),
         "Quick Inspector close",
     )
-    run("xdotool", "windowactivate", "--sync", main_window_id)
 
 
 def create_preview_fixtures(project_root: Path, documents: Path):
     shutil.copy2(
         project_root / ".hermes/spikes/pdfium-preview/fixture.pdf",
         documents / "preview.pdf",
+    )
+    shutil.copy2(
+        project_root / ".hermes/spikes/pdfium-preview/fixture.pdf",
+        documents / "preview-second.pdf",
     )
     with zipfile.ZipFile(documents / "letter.docx", "w") as archive:
         archive.writestr(
@@ -408,20 +447,27 @@ def open_quick_inspector(
     screenshot_name: str,
 ):
     invoke_context_action(main_window_id, filename, "Quick Inspector")
-    title_pattern = f"^Ottrin Quick Inspector - {filename}$"
     wait_for(
-        lambda: run(
-            "xdotool",
-            "search",
-            "--name",
-            title_pattern,
-            capture=True,
-            check=False,
-        ).stdout.strip(),
+        lambda: quick_inspector_visible(filename),
         f"Quick Inspector for {filename}",
     )
+    if Path(filename).suffix.lower() in {".png", ".jpg", ".jpeg", ".pdf", ".docx"}:
+        wait_for(
+            lambda: any(
+                node.getRoleName() == "push button"
+                for node in visible_named_nodes("Fit")
+            ),
+            f"Fit control for {filename}",
+        )
+        wait_for(
+            lambda: any(
+                node.getRoleName() == "push button"
+                for node in visible_named_nodes("100%")
+            ),
+            f"100% control for {filename}",
+        )
     screenshot(evidence, screenshot_name)
-    close_quick_inspector(main_window_id)
+    close_quick_inspector(main_window_id, filename)
 
 
 def a11y_enabled() -> bool:
@@ -545,6 +591,7 @@ def main() -> int:
             "delete-me.txt",
             "image.png",
             "preview.pdf",
+            "preview-second.pdf",
             "letter.docx",
             "workbook.xlsx",
             "macros.xlsm",
@@ -560,6 +607,52 @@ def main() -> int:
         assert observed == expected, (observed, expected)
         passed("address-navigation", f"Opened {documents} and exposed all fixture entries.")
         screenshot(evidence, "01-miller-documents")
+
+        # Exercise search while the main file view has a stable keyboard focus;
+        # later workflow steps intentionally open menus and dialogs.
+        click_accessible_name("Toggle Search", "push button")
+        search_field = wait_for(
+            lambda: next(
+                (
+                    node
+                    for node in all_nodes(ottrin_app())
+                    if node.getRoleName() in {"entry", "text"}
+                    and pyatspi.STATE_FOCUSED in node.getState().getStates()
+                ),
+                None,
+            ),
+            "focused search field",
+        )
+        assert search_field is not None
+        run("xdotool", "type", "--clearmodifiers", "--delay", "1", "sample.json")
+        wait_for(
+            lambda: len(visible_named_nodes("sample.json")) >= 2,
+            "search result for sample.json",
+            timeout=15.0,
+        )
+        passed("search", "Found sample.json through the packaged filename search interface.")
+        click_search_result(window_id, "sample.json")
+        xkey(window_id, "space")
+        wait_for(
+            lambda: quick_inspector_visible("sample.json"),
+            "Quick Inspector from selected search result",
+        )
+        close_quick_inspector(window_id, "sample.json")
+        passed(
+            "search-space-preview",
+            "Selected a search result and opened its full Quick Inspector with Space.",
+        )
+        click_search_result(window_id, "sample.json", "3")
+        screenshot(evidence, "01a-search-result-context")
+        write_visible_accessibility_tree(evidence, "01a-search-result-context")
+        click_accessible_suffix("Copy Item")
+        passed(
+            "search-context-actions",
+            "Opened the shared search-result context menu and copied its selected item.",
+        )
+        screenshot(evidence, "01a-search-result")
+        xkey(window_id, "Escape")
+        wait_for(lambda: visible_entry("notes.txt"), "Documents after search")
 
         click_accessible_name(VIEW_TO_LIST, "push button")
         wait_for(lambda: visible_entry("notes.txt"), "List-view entries")
@@ -577,15 +670,7 @@ def main() -> int:
         invoke_context_action(window_id, "notes.txt", "Copy Item")
         double_click_entry(window_id, "Subfolder")
         wait_for(
-            lambda: next(
-                (
-                    node
-                    for node in all_nodes(ottrin_app())
-                    if node.getRoleName() == "push button"
-                    and (node.name or "").endswith("Subfolder")
-                ),
-                None,
-            ),
+            lambda: visible_entry("notes.txt") and not visible_entry("delete-me.txt"),
             "Subfolder navigation",
         )
         click_named_control(window_id, "Menu")
@@ -599,38 +684,29 @@ def main() -> int:
         wait_for(lambda: visible_entry("notes.txt"), "Documents after copy")
         invoke_context_action(window_id, "notes.txt", "Quick Inspector")
         wait_for(
-            lambda: run(
-                "xdotool",
-                "search",
-                "--name",
-                "Ottrin Quick Inspector",
-                capture=True,
-                check=False,
-            ).stdout.strip(),
+            lambda: quick_inspector_visible("notes.txt"),
             "Quick Inspector viewport",
         )
         passed("quick-inspector-text", "Opened the packaged text preview from its accessible menu.")
         screenshot(evidence, "05-quick-inspector-text")
-        close_quick_inspector(window_id)
+        close_quick_inspector(window_id, "notes.txt")
 
         invoke_context_action(window_id, "image.png", "Quick Inspector")
         wait_for(
-            lambda: run(
-                "xdotool",
-                "search",
-                "--name",
-                "^Ottrin Quick Inspector - image.png$",
-                capture=True,
-                check=False,
-            ).stdout.strip(),
+            lambda: quick_inspector_visible("image.png"),
             "image Quick Inspector viewport",
         )
         passed("quick-inspector-image", "Opened the packaged image preview.")
         screenshot(evidence, "06-quick-inspector-image")
-        close_quick_inspector(window_id)
+        close_quick_inspector(window_id, "image.png")
 
         preview_matrix = [
             ("preview.pdf", "07-quick-inspector-pdf", "rendered PDF plus metadata"),
+            (
+                "preview-second.pdf",
+                "07a-quick-inspector-second-pdf",
+                "second rendered PDF in the same process",
+            ),
             ("letter.docx", "08-quick-inspector-docx", "DOCX"),
             ("workbook.xlsx", "09-quick-inspector-xlsx", "XLSX"),
             ("macros.xlsm", "10-quick-inspector-xlsm", "XLSM"),
@@ -690,33 +766,6 @@ def main() -> int:
         )
         click_accessible_name("\ue2c7 Documents", "push button")
         wait_for(lambda: visible_entry("sample.json"), "Documents after multi-copy")
-
-        xkey(window_id, "ctrl+f")
-        search_field = wait_for(
-            lambda: next(
-                (
-                    node
-                    for node in all_nodes(ottrin_app())
-                    if node.getRoleName() in {"entry", "text"}
-                    and pyatspi.STATE_FOCUSED in node.getState().getStates()
-                ),
-                None,
-            ),
-            "focused search field",
-        )
-        assert search_field is not None
-        run("xdotool", "type", "--clearmodifiers", "--delay", "1", "sample.json")
-        wait_for(
-            lambda: len(visible_named_nodes("sample.json")) >= 2,
-            "search result for sample.json",
-            timeout=15.0,
-        )
-        passed(
-            "search",
-            "Found sample.json through the packaged filename search interface.",
-        )
-        screenshot(evidence, "16-search-result")
-        xkey(window_id, "Escape")
 
         xkey(window_id, "ctrl+t")
         wait_for(lambda: visible_entry("Documents"), "new-tab home listing")

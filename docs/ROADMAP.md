@@ -18,7 +18,7 @@ Implemented:
 - Smart panel sections for Info, Drop Folder, Search, Activity, and Trash.
 - Cross-platform Trash panel implementation with Linux Freedesktop trash support and Windows Recycle Bin backend.
 - SQLite-backed indexed search with watcher updates, background updater scheduling, generated-folder skips, content search snippets, column resizing, click selection, double-click/Enter opening, shared right-click actions, and Space-triggered full preview.
-- Quick Inspector as a separate Space-triggered viewport with visual image, bounded first-page PDF previews, and bounded DOCX/XLSX/XLSM content-preview PNGs; it retains extracted PDF/Office text and metadata fallbacks. Office output is a truthful content preview, not a faithful document layout.
+- Quick Inspector as a full Space-triggered window with visual image, bounded first-page PDF previews, and bounded DOCX/XLSX/XLSM content-preview PNGs; it retains extracted PDF/Office text and metadata fallbacks. Office output is a truthful content preview, not a faithful document layout.
 - Theme presets and custom theme editing.
 - Linux portable tarball, Linux AppImage, Windows portable zip, and per-user Windows installer packaging scripts.
 - Strict formatting, tests, and Clippy gates.

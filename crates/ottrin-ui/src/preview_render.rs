@@ -184,6 +184,63 @@ pub(crate) fn render_document_body_preview(
     }
 }
 
+#[allow(deprecated)]
+pub(crate) fn render_docx_page_preview(
+    ui: &mut egui::Ui,
+    c: Colors,
+    name: &str,
+    body: &str,
+    fit: bool,
+    zoom: f32,
+) {
+    let (metadata, extracted) = split_preview_extracted_text(body);
+    let Some(text) = extracted.filter(|text| !text.is_empty()) else {
+        render_metadata_card_preview(ui, c, MI_OPEN_IN_NEW, name, metadata);
+        return;
+    };
+
+    const PAGE_WIDTH: f32 = 816.0;
+    const PAGE_HEIGHT: f32 = 1056.0;
+    let fit_scale = (ui.available_width() / PAGE_WIDTH)
+        .min((ui.available_height().max(240.0) - 8.0) / PAGE_HEIGHT)
+        .clamp(0.2, 1.0);
+    let scale = if fit { fit_scale } else { zoom.clamp(0.1, 8.0) };
+    let page_size = Vec2::new(PAGE_WIDTH * scale, PAGE_HEIGHT * scale);
+    let margin = 72.0 * scale;
+    let font_size = (15.0 * scale).max(4.0);
+
+    ui.vertical_centered(|ui| {
+        let page = egui::Frame::new()
+            .fill(Color32::WHITE)
+            .stroke(Stroke::new(1.0, Color32::from_gray(190)))
+            .inner_margin(egui::Margin::same(0))
+            .show(ui, |ui| {
+                ui.set_min_size(page_size);
+                ui.set_max_size(page_size);
+                ui.allocate_ui_at_rect(
+                    Rect::from_min_max(
+                        ui.min_rect().min + Vec2::splat(margin),
+                        ui.min_rect().min + page_size - Vec2::splat(margin),
+                    ),
+                    |ui| {
+                        ui.add(
+                            egui::Label::new(
+                                RichText::new(text)
+                                    .font(FontId::proportional(font_size))
+                                    .color(Color32::from_rgb(28, 28, 30)),
+                            )
+                            .wrap()
+                            .selectable(true),
+                        );
+                    },
+                );
+            });
+        page.response
+            .on_hover_text("Ctrl+wheel or pinch to zoom. Drag or scroll to pan.");
+        render_preview_footer(ui, c, name, metadata);
+    });
+}
+
 pub(crate) fn render_folder_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
     ui.add_space(16.0);
     ui.with_layout(Layout::top_down(Align::Center), |ui| {
