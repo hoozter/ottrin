@@ -8980,6 +8980,38 @@ mod tests {
             ))
         );
         std::fs::rename(&removed_central_journal, &central_journal).unwrap();
+        // Even byte-identical replacement after the final durable reload is a different
+        // authority object. The final anchored re-open must reject it before the preflight
+        // can return its generic no-mutation result.
+        let central_before_final_reload_substitution = std::fs::read(&central_journal).unwrap();
+        let substituted_central_journal_after_final_reload =
+            root.join("substituted-central-journal-after-final-reload");
+        assert_eq!(
+            recovery.preflight_claimed_source_directory_cleanup_after_final_central_reload(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || {
+                    std::fs::rename(
+                        &central_journal,
+                        &substituted_central_journal_after_final_reload,
+                    )
+                    .unwrap();
+                    std::fs::write(&central_journal, &central_before_final_reload_substitution)
+                        .unwrap();
+                },
+            ),
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::CentralJournalChanged
+            ))
+        );
+        std::fs::remove_file(&central_journal).unwrap();
+        std::fs::rename(
+            &substituted_central_journal_after_final_reload,
+            &central_journal,
+        )
+        .unwrap();
         // A new, plausible journal-only directory at the durable name must not inherit the
         // original transaction's cleanup authority after the final topology observation.
         let after_final_topology_replaced_local_path =
