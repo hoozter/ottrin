@@ -2603,6 +2603,46 @@ impl LinuxRecoveryLock<'_> {
         Ok(LinuxPublishedJournals::MatchingPair)
     }
 
+    /// Records an already-observed displaced destination after a cross-device overwrite
+    /// exchange. This transition is recovery scaffolding only; runtime overwrite remains
+    /// fail-closed until retained-entry cleanup is implemented and verified.
+    pub fn advance_to_published_with_observed_displaced_identity_with_local(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+        observed_displaced_destination_identity: LinuxStableIdentity,
+    ) -> Result<LinuxPublishedJournals, LinuxAdvancePublishedError> {
+        let pending = match self
+            .central
+            .load_pending_destination_restart_state(local, transaction_id)
+            .map_err(LinuxAdvancePublishedError::PendingDestinationPair)?
+        {
+            LinuxPendingDestinationRestartState::MatchingPair(pending) => pending,
+            LinuxPendingDestinationRestartState::CentralPendingDestinationLocalClaimed {
+                ..
+            } => {
+                return Err(LinuxAdvancePublishedError::SuppliedPendingMismatch);
+            }
+        };
+        let published = PublishedRecord::from_pending_with_observed_displaced_identity(
+            &pending,
+            observed_displaced_destination_identity,
+        )
+        .map_err(LinuxAdvancePublishedError::InvalidPublished)?;
+        self.central
+            .persist_published_staged(&published)
+            .map_err(|failure| {
+                LinuxAdvancePublishedError::CentralUpdateUncertain(failure.into_inner())
+            })?;
+        local.persist_local_published(&published).map_err(|error| {
+            LinuxAdvancePublishedError::CentralDurableLocalUpdateUncertain {
+                error,
+                durable_central: Box::new(published),
+            }
+        })?;
+        Ok(LinuxPublishedJournals::MatchingPair)
+    }
+
     #[cfg(test)]
     fn advance_to_claimed_with_local_after_central<F>(
         &mut self,
@@ -3548,6 +3588,22 @@ impl PublishedRecord {
             observed_displaced_destination_identity: None,
             pending_destination_name: pending.pending_destination_name.clone(),
         })
+    }
+
+    pub fn from_pending_with_observed_displaced_identity(
+        pending: &PendingDestinationRecord,
+        observed_displaced_destination_identity: LinuxStableIdentity,
+    ) -> Result<Self, JournalError> {
+        if pending.expected_displaced_destination_identity
+            != Some(observed_displaced_destination_identity)
+        {
+            return Err(JournalError::InvalidJson(
+                "observed displaced destination identity does not match the pinned expected identity"
+                    .to_string(),
+            ));
+        }
+        Ok(Self::from_pending(pending)?
+            .with_observed_displaced_destination_identity(observed_displaced_destination_identity))
     }
 
     pub fn from_claimed(
@@ -6243,6 +6299,123 @@ mod tests {
             Err(JournalError::InvalidJson(message))
                 if message.contains("observed displaced destination identity")
         ));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_device_overwrite_exchange_interruption_retains_all_entries_with_matching_published_evidence()
+     {
+        use std::os::unix::fs::MetadataExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-overwrite-exchange-interruption-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let central_path = root.join("central");
+        let local_path = root.join("local");
+        let destination_path = root.join("destination");
+        let destination_transaction_path = destination_path.join(".ottrin-move-destination");
+        let claimed_path = local_path.join("claimed");
+        let published_target = destination_path.join("source-item");
+        let retained_displaced = destination_transaction_path.join("candidate");
+        std::fs::create_dir_all(&central_path).unwrap();
+        std::fs::create_dir_all(&destination_transaction_path).unwrap();
+        std::fs::create_dir_all(&local_path).unwrap();
+        std::fs::write(&claimed_path, b"source retained pending cleanup").unwrap();
+        std::fs::write(&published_target, b"new target after exchange").unwrap();
+        std::fs::write(&retained_displaced, b"displaced target retained").unwrap();
+
+        let claimed_metadata = std::fs::symlink_metadata(&claimed_path).unwrap();
+        let claimed_identity = LinuxStableIdentity::new(
+            claimed_metadata.dev(),
+            claimed_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let destination_transaction_metadata =
+            std::fs::symlink_metadata(&destination_transaction_path).unwrap();
+        let destination_transaction_identity = LinuxStableIdentity::new(
+            destination_transaction_metadata.dev(),
+            destination_transaction_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let published_metadata = std::fs::symlink_metadata(&published_target).unwrap();
+        let published_identity = LinuxStableIdentity::new(
+            published_metadata.dev(),
+            published_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let displaced_metadata = std::fs::symlink_metadata(&retained_displaced).unwrap();
+        let displaced_identity = LinuxStableIdentity::new(
+            displaced_metadata.dev(),
+            displaced_metadata.ino(),
+            LinuxFileType::Regular,
+        );
+        let local_metadata = std::fs::symlink_metadata(&local_path).unwrap();
+        let local_identity = LinuxStableIdentity::new(
+            local_metadata.dev(),
+            local_metadata.ino(),
+            LinuxFileType::Directory,
+        );
+        let prepared = PreparedRecord::new_linux(
+            [0x42; 16],
+            &root,
+            Path::new("source-item"),
+            LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+            claimed_identity,
+            Path::new(".ottrin-move-42424242424242424242424242424242"),
+            local_identity,
+        )
+        .unwrap();
+        let pending = PendingDestinationRecord::from_claimed(
+            &ClaimedRecord::from_claim_intent(
+                &ClaimIntentRecord::from_prepared(&prepared).unwrap(),
+                claimed_identity,
+            )
+            .unwrap(),
+            Path::new("source-item"),
+        )
+        .unwrap()
+        .with_destination_transaction(
+            Path::new(".ottrin-move-destination"),
+            destination_transaction_identity,
+        )
+        .with_staged_destination_identity(published_identity)
+        .with_expected_displaced_destination_identity(displaced_identity);
+        let central = LinuxJournalDirectory::open(&central_path).unwrap();
+        let local = LinuxJournalDirectory::open(&local_path).unwrap();
+        central.persist_pending_destination(&pending).unwrap();
+        local.persist_local_pending_destination(&pending).unwrap();
+
+        let mut recovery = central.try_lock_recovery().unwrap();
+        assert_eq!(
+            recovery.advance_to_published_with_observed_displaced_identity_with_local(
+                &local,
+                [0x42; 16],
+                displaced_identity,
+            ),
+            Ok(LinuxPublishedJournals::MatchingPair)
+        );
+
+        let published = PublishedRecord::from_pending(&pending)
+            .unwrap()
+            .with_observed_displaced_destination_identity(displaced_identity);
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::MatchingPair(published))
+        );
+        assert_eq!(
+            std::fs::read(&claimed_path).unwrap(),
+            b"source retained pending cleanup"
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(target_os = "linux")]
