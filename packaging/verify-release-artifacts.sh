@@ -9,6 +9,8 @@ MESA_LIBGLESV2_SHA256="649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079e
 MESA_LIBGALLIUM_WGL_SHA256="a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"
 DXIL_SHA256="cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"
 
+"$ROOT/packaging/tests/verify-release-checklist-provenance.sh"
+
 find_one() {
   local pattern="$1"
   local label="$2"

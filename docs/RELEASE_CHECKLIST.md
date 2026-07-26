@@ -13,11 +13,11 @@ Every item must be checked against the exact artifact intended for release. A so
 - [x] Archive inspection confirms the app, indexer, privileged helper, policy/assets, and user documentation are present.
 - [x] Both Windows artifacts contain the same checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`libEGL.dll`, `libGLESv2.dll`, `libgallium_wgl.dll`, and `dxil.dll`) plus its complete Mesa, pal1000, and Microsoft notices under `third-party-notices/`. WGPU remains the default; `--renderer opengl` / `OTTRIN_RENDERER=opengl` is the explicit recovery selector for the bundled runtime.
 
-Local automated gates and artifact inspection last passed on 2026-07-25. CI and
+Local automated gates and artifact inspection last passed on 2026-07-27. CI and
 the clean-machine/manual gates below remain required against the eventual
 release commit and artifacts.
 
-### Local Preflight Evidence (2026-07-25)
+### Local Preflight Evidence (refreshed 2026-07-27)
 
 - Workspace all-target tests, strict Clippy, and the workspace build passed after
   the bounded PDF and Office visual-preview milestones.
@@ -27,6 +27,9 @@ release commit and artifacts.
 - The strict artifact verifier accepted one version-matched Linux portable
   archive, AppImage, Windows portable archive, and NSIS installer; all four
   checksums passed.
+- A fresh isolated artifact set was also reverified on 2026-07-27, including
+  the pinned Mesa/DXC payloads and bundled release documentation. This remains
+  integrity evidence only; it does not waive the physical acceptance gates.
 - AppImage payload inspection confirmed the app, indexer, privileged helper,
   desktop entry, AppStream metadata, and polkit policy.
 - The freshly packaged Linux portable executable and AppImage each remained
