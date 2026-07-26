@@ -808,6 +808,8 @@ pub enum LinuxInspectClaimedSourceDirectoryCleanupError {
     JournalNotRegular,
     #[error("source transaction local journal changed during cleanup planning")]
     JournalChanged,
+    #[error("central published journal changed during cleanup planning")]
+    CentralJournalChanged,
     #[error("could not inspect source transaction topology: {0}")]
     Io(String),
 }
@@ -3928,6 +3930,25 @@ impl LinuxRecoveryLock<'_> {
             .map_err(|error| {
                 LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
             })?;
+        let central_journal_name = format!("{}.journal", encode_hex(&transaction_id));
+        let central_journal = openat(
+            &self.central.directory,
+            &central_journal_name,
+            OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|_| LinuxInspectClaimedSourceDirectoryCleanupError::CentralJournalChanged)?;
+        let central_stat = fstat(&central_journal).map_err(|error| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+        })?;
+        if FileType::from_raw_mode(central_stat.st_mode) != FileType::RegularFile {
+            return Err(LinuxInspectClaimedSourceDirectoryCleanupError::CentralJournalChanged);
+        }
+        let central_journal_identity = LinuxStableIdentity::new(
+            central_stat.st_dev,
+            central_stat.st_ino,
+            LinuxFileType::Regular,
+        );
         let named = openat(
             &source_parent.directory,
             &transaction_name,
@@ -4077,6 +4098,28 @@ impl LinuxRecoveryLock<'_> {
             })?;
         if (identity, contents) != journal_baseline {
             return Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged);
+        }
+        // Central durable evidence is authority too. Re-open it through the anchored central
+        // directory after the final local topology observation so a byte-identical replacement
+        // cannot inherit the original journal's authority.
+        let central_journal = openat(
+            &self.central.directory,
+            &central_journal_name,
+            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|_| LinuxInspectClaimedSourceDirectoryCleanupError::CentralJournalChanged)?;
+        let central_stat = fstat(&central_journal).map_err(|error| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+        })?;
+        if FileType::from_raw_mode(central_stat.st_mode) != FileType::RegularFile
+            || LinuxStableIdentity::new(
+                central_stat.st_dev,
+                central_stat.st_ino,
+                LinuxFileType::Regular,
+            ) != central_journal_identity
+        {
+            return Err(LinuxInspectClaimedSourceDirectoryCleanupError::CentralJournalChanged);
         }
         match self
             .central
@@ -8740,8 +8783,8 @@ mod tests {
             ))
         ));
         std::fs::write(&central_journal, central_before_final_topology_change).unwrap();
-        // A parseable but stale central phase is also not authority. It must be classified as
-        // central/local durable-evidence disagreement at the same final boundary.
+        // A parseable but stale central phase is also not authority. Its atomic central-journal
+        // replacement is caught by the final anchored identity check before it can be parsed.
         let central_mismatch = recovery
             .preflight_claimed_source_directory_cleanup_after_final_topology_scan(
                 &local,
@@ -8761,14 +8804,37 @@ mod tests {
         assert!(matches!(
             central_mismatch,
             Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
-                LinuxInspectClaimedSourceDirectoryCleanupError::Retained(
-                    LinuxInspectCrossDeviceOverwriteRetainedError::Restart(
-                        LinuxLoadPublishedRestartError::PublishedEvidenceMismatch { .. }
-                    )
-                )
+                LinuxInspectClaimedSourceDirectoryCleanupError::CentralJournalChanged
             ))
         ));
         central.persist_published(&claimed_source_unlinked).unwrap();
+        // Byte-identical central replacement is still a different durable object. The
+        // prospective preflight must not accept a replacement journal merely because its
+        // parsed record agrees with the source-local evidence.
+        let central_before_identity_substitution = std::fs::read(&central_journal).unwrap();
+        let substituted_central_journal = root.join("substituted-central-journal");
+        assert_eq!(
+            recovery.preflight_claimed_source_directory_cleanup_after_final_topology_scan(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                (
+                    || {},
+                    || {},
+                    || {
+                        std::fs::rename(&central_journal, &substituted_central_journal).unwrap();
+                        std::fs::write(&central_journal, &central_before_identity_substitution)
+                            .unwrap();
+                    },
+                ),
+            ),
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::CentralJournalChanged
+            ))
+        );
+        std::fs::remove_file(&central_journal).unwrap();
+        std::fs::rename(&substituted_central_journal, &central_journal).unwrap();
         // A new, plausible journal-only directory at the durable name must not inherit the
         // original transaction's cleanup authority after the final topology observation.
         let after_final_topology_replaced_local_path =
