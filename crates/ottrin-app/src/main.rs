@@ -1,7 +1,8 @@
 use eframe::{NativeOptions, egui};
-use ottrin_core::{SearchIndexStatus, SearchQuery, format_size};
-use ottrin_platform::set_privileged_helper_override;
+use ottrin_core::{ConflictAction, FileCommand, SearchIndexStatus, SearchQuery, format_size};
+use ottrin_platform::{DefaultPlatform, PlatformOps, set_privileged_helper_override};
 use ottrin_ui::{OttrinApp, clear_preview_cache_storage, load_config, remove_config_file};
+use std::collections::HashSet;
 use std::path::PathBuf;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -12,6 +13,7 @@ enum HeadlessAction {
     IndexRebuild,
     Search(String),
     DropStatus,
+    DropCopy(Vec<PathBuf>),
     Invalid(String),
 }
 
@@ -78,6 +80,7 @@ fn handle_cli_action() -> bool {
         println!("  --index rebuild    Rebuild the configured search index and wait for it");
         println!("  --search QUERY     Search the configured index after it is ready");
         println!("  --drop status      Print configured Drop Folder state without changing it");
+        println!("  --drop copy PATH…  Copy paths into the configured Drop Folder");
         return true;
     }
     if let Some(action) = cli_headless_action(&args) {
@@ -164,8 +167,11 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
             "--drop" => {
                 return Some(match args.get(index + 1).map(String::as_str) {
                     Some("status") => HeadlessAction::DropStatus,
+                    Some("copy") => HeadlessAction::DropCopy(
+                        args[index + 2..].iter().map(PathBuf::from).collect(),
+                    ),
                     Some(value) => HeadlessAction::Invalid(format!("unknown drop action: {value}")),
-                    None => HeadlessAction::Invalid("--drop requires status".to_string()),
+                    None => HeadlessAction::Invalid("--drop requires status or copy".to_string()),
                 });
             }
             _ => index += 1,
@@ -186,9 +192,13 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     if let HeadlessAction::Invalid(error) = &action {
         return Err(error.clone());
     }
-    if matches!(action, HeadlessAction::DropStatus) {
-        print_drop_status(&load_config().target);
-        return Ok(());
+    match action {
+        HeadlessAction::DropStatus => {
+            print_drop_status(&load_config().target);
+            return Ok(());
+        }
+        HeadlessAction::DropCopy(sources) => return run_drop_copy(sources),
+        _ => {}
     }
     let mut service = configured_search_service();
     service.start();
@@ -229,11 +239,53 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
             }
             response.error.map_or(Ok(()), Err)
         }
-        HeadlessAction::DropStatus => unreachable!("drop status returns before service startup"),
+        HeadlessAction::DropStatus | HeadlessAction::DropCopy(_) => {
+            unreachable!("drop actions return before service startup")
+        }
         HeadlessAction::Invalid(_) => unreachable!("invalid actions return before service startup"),
     };
     service.stop();
     result
+}
+
+/// Executes only the existing production Copy command.  In particular, this
+/// headless surface has no Move variant, never creates a Drop Folder, and asks
+/// the platform layer to preflight every source before it publishes anything.
+fn run_drop_copy(sources: Vec<PathBuf>) -> Result<(), String> {
+    if sources.is_empty() {
+        return Err("--drop copy requires at least one source path".to_string());
+    }
+
+    let destination = load_config()
+        .target
+        .current
+        .ok_or_else(|| "no Drop Folder is configured".to_string())?;
+    if !destination.is_dir() {
+        return Err(format!(
+            "configured Drop Folder is not an existing directory: {}",
+            destination.display()
+        ));
+    }
+
+    let mut seen = HashSet::new();
+    for source in &sources {
+        let identity = std::fs::canonicalize(source).unwrap_or_else(|_| source.clone());
+        if !seen.insert(identity) {
+            return Err(format!(
+                "duplicate Drop Folder source: {}",
+                source.display()
+            ));
+        }
+    }
+
+    DefaultPlatform
+        .execute_command(&FileCommand::Copy {
+            sources,
+            destination,
+            conflict: ConflictAction::Rename,
+        })
+        .map(|_| ())
+        .map_err(|error| error.to_string())
 }
 
 fn print_drop_status(target: &ottrin_core::TargetState) {
@@ -445,6 +497,18 @@ mod tests {
         assert_eq!(
             cli_headless_action(&["--drop".into(), "status".into()]),
             Some(HeadlessAction::DropStatus)
+        );
+        assert_eq!(
+            cli_headless_action(&[
+                "--drop".into(),
+                "copy".into(),
+                "one.txt".into(),
+                "two.txt".into(),
+            ]),
+            Some(HeadlessAction::DropCopy(vec![
+                PathBuf::from("one.txt"),
+                PathBuf::from("two.txt"),
+            ]))
         );
     }
 }
