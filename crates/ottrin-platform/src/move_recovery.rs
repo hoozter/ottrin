@@ -70,6 +70,7 @@ pub enum JournalPhase {
     PendingDestination,
     Published,
     CleanupPending,
+    ClaimedSourceDeletionPending,
 }
 
 #[cfg(target_os = "linux")]
@@ -84,6 +85,7 @@ impl JournalPhase {
                     | (Self::Claimed, Self::PendingDestination)
                     | (Self::PendingDestination, Self::Published)
                     | (Self::Published, Self::CleanupPending)
+                    | (Self::CleanupPending, Self::ClaimedSourceDeletionPending)
             )
         {
             Ok(())
@@ -1135,6 +1137,13 @@ pub enum LinuxPublishedRestartState {
         cleanup_pending: PublishedRecord,
         published: PublishedRecord,
     },
+    /// The central journal has durably recorded the first prospective deletion boundary, while
+    /// the source-local journal still records cleanup-pending. This is retained-only evidence
+    /// and must not authorize deletion or automatic repair.
+    CentralClaimedSourceDeletionPendingLocalCleanupPending {
+        claimed_source_deletion_pending: PublishedRecord,
+        cleanup_pending: PublishedRecord,
+    },
     CentralPublishedLocalPending {
         published: PublishedRecord,
         pending: PendingDestinationRecord,
@@ -2161,6 +2170,20 @@ impl LinuxJournalDirectory {
                             },
                         );
                     }
+                    if published.phase == JournalPhase::ClaimedSourceDeletionPending
+                        && local_published.phase == JournalPhase::CleanupPending
+                        && local_published
+                            .clone()
+                            .into_claimed_source_deletion_pending()
+                            == published
+                    {
+                        return Ok(
+                            LinuxPublishedRestartState::CentralClaimedSourceDeletionPendingLocalCleanupPending {
+                                claimed_source_deletion_pending: published,
+                                cleanup_pending: local_published,
+                            },
+                        );
+                    }
                     if local_published.pending_destination_name
                         != published.pending_destination_name
                     {
@@ -2522,7 +2545,10 @@ impl LinuxRecoveryLock<'_> {
             .load_published_restart_state(local, transaction_id)?
         {
             LinuxPublishedRestartState::MatchingPair(_) => {}
-            LinuxPublishedRestartState::CentralCleanupPendingLocalPublished { .. } => {
+            LinuxPublishedRestartState::CentralCleanupPendingLocalPublished { .. }
+            | LinuxPublishedRestartState::CentralClaimedSourceDeletionPendingLocalCleanupPending {
+                ..
+            } => {
                 return Err(LinuxResumePublishedError::CleanupPendingRequiresManualReview);
             }
             LinuxPublishedRestartState::CentralPublishedLocalPending {
@@ -3052,6 +3078,9 @@ impl LinuxRecoveryLock<'_> {
         {
             LinuxPublishedRestartState::MatchingPair(published) => published,
             LinuxPublishedRestartState::CentralCleanupPendingLocalPublished { .. }
+            | LinuxPublishedRestartState::CentralClaimedSourceDeletionPendingLocalCleanupPending {
+                ..
+            }
             | LinuxPublishedRestartState::CentralPublishedLocalPending { .. }
             | LinuxPublishedRestartState::CentralPublishedLocalClaimed { .. } => {
                 return Err(LinuxInspectCrossDeviceOverwriteRetainedError::IncompleteEvidence);
@@ -3328,6 +3357,9 @@ impl LinuxRecoveryLock<'_> {
         {
             LinuxPublishedRestartState::MatchingPair(published) => published,
             LinuxPublishedRestartState::CentralCleanupPendingLocalPublished { .. }
+            | LinuxPublishedRestartState::CentralClaimedSourceDeletionPendingLocalCleanupPending {
+                ..
+            }
             | LinuxPublishedRestartState::CentralPublishedLocalPending { .. }
             | LinuxPublishedRestartState::CentralPublishedLocalClaimed { .. } => {
                 return Err(LinuxClaimedSourceDeletionPreflightError::CleanupNotPending);
@@ -4058,6 +4090,11 @@ impl PublishedRecord {
         self
     }
 
+    fn into_claimed_source_deletion_pending(mut self) -> Self {
+        self.phase = JournalPhase::ClaimedSourceDeletionPending;
+        self
+    }
+
     pub fn from_pending(pending: &PendingDestinationRecord) -> Result<Self, JournalError> {
         Self::try_from(RawPublishedRecord {
             schema_major: pending.schema_major,
@@ -4140,7 +4177,9 @@ impl TryFrom<RawPublishedRecord> for PublishedRecord {
     fn try_from(raw: RawPublishedRecord) -> Result<Self, Self::Error> {
         if !matches!(
             raw.phase,
-            JournalPhase::Published | JournalPhase::CleanupPending
+            JournalPhase::Published
+                | JournalPhase::CleanupPending
+                | JournalPhase::ClaimedSourceDeletionPending
         ) {
             return Err(JournalError::InvalidPublishedPhase(raw.phase));
         }
@@ -4602,6 +4641,7 @@ mod tests {
             JournalPhase::PendingDestination,
             JournalPhase::Published,
             JournalPhase::CleanupPending,
+            JournalPhase::ClaimedSourceDeletionPending,
         ];
         for from in phases {
             for to in phases {
@@ -4617,6 +4657,10 @@ mod tests {
                             | (JournalPhase::Claimed, JournalPhase::PendingDestination)
                             | (JournalPhase::PendingDestination, JournalPhase::Published)
                             | (JournalPhase::Published, JournalPhase::CleanupPending)
+                            | (
+                                JournalPhase::CleanupPending,
+                                JournalPhase::ClaimedSourceDeletionPending
+                            )
                     );
                 if !documented {
                     assert_eq!(
@@ -7000,7 +7044,7 @@ mod tests {
             .with_observed_displaced_destination_identity(displaced_identity);
         assert_eq!(
             central.load_published_restart_state(&local, [0x42; 16]),
-            Ok(LinuxPublishedRestartState::MatchingPair(published))
+            Ok(LinuxPublishedRestartState::MatchingPair(published.clone()))
         );
         assert_eq!(
             std::fs::read(&claimed_child).unwrap(),
@@ -7270,6 +7314,35 @@ mod tests {
         );
         std::fs::remove_file(&retained_displaced).unwrap();
         std::fs::rename(&displaced_backup_after_inspection, &retained_displaced).unwrap();
+        // Simulate interruption after the first claimed-source-deletion phase becomes durable
+        // centrally but before the matching local journal update. This phase remains
+        // classification-only: all three retained entries must remain recoverable.
+        let claimed_source_deletion_pending =
+            published.clone().into_claimed_source_deletion_pending();
+        central
+            .persist_published(&claimed_source_deletion_pending)
+            .unwrap();
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(
+                LinuxPublishedRestartState::CentralClaimedSourceDeletionPendingLocalCleanupPending {
+                    claimed_source_deletion_pending,
+                    cleanup_pending: published.clone().into_cleanup_pending(),
+                }
+            )
+        );
+        assert_eq!(
+            std::fs::read(&claimed_child).unwrap(),
+            b"source retained pending cleanup"
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
         assert_eq!(
             recovery
                 .advance_cross_device_overwrite_to_cleanup_pending_with_local(&local, [0x42; 16]),
