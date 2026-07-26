@@ -61,7 +61,7 @@ interactive workflow, polkit-dialog, Windows runtime, UAC, or installer sign-off
 - [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass.
 - [ ] Search indexing, restart, watcher updates, and background updater scheduling/removal pass.
 - [ ] Quick Inspector passes the Windows file-type matrix, including rendered PDF first pages plus malformed/encrypted PDF text/metadata fallback paths.
-- [ ] If the graphics compatibility payload is shipped, native-driver and bundled-OpenGL launch paths each pass on their intended physical/virtual or remote adapters, including the documented recovery override.
+- [ ] If the graphics compatibility payload is shipped, native-driver and bundled-OpenGL launch paths each pass on their intended physical/virtual or remote adapters, including `--renderer opengl` / `OTTRIN_RENDERER=opengl` recovery selection.
 - [ ] UAC allow, cancel, helper-missing, and denied-operation paths pass.
 - [ ] Uninstall cleanup commands remove scheduled/background integration without deleting user files; cleanup launch/failure stops before application deletion, and incomplete file deletion retains Installed Apps registration for retry.
 

@@ -12,6 +12,18 @@ fn renderer_for_target(is_windows: bool) -> eframe::Renderer {
     }
 }
 
+/// Keeps the native WGPU path as the default while allowing an explicit recovery
+/// route for Windows adapters that need an OpenGL driver supplied by the user.
+fn renderer_for_target_with_override(
+    is_windows: bool,
+    renderer_override: Option<&str>,
+) -> eframe::Renderer {
+    match renderer_override.map(str::trim) {
+        Some(value) if value.eq_ignore_ascii_case("opengl") => eframe::Renderer::Glow,
+        _ => renderer_for_target(is_windows),
+    }
+}
+
 fn main() -> eframe::Result<()> {
     if handle_cli_action() {
         return Ok(());
@@ -23,7 +35,10 @@ fn main() -> eframe::Result<()> {
     let window_size = config.window_size.unwrap_or([1024.0, 680.0]);
 
     let options = NativeOptions {
-        renderer: renderer_for_target(cfg!(target_os = "windows")),
+        renderer: renderer_for_target_with_override(
+            cfg!(target_os = "windows"),
+            graphics_renderer_override().as_deref(),
+        ),
         viewport: egui::ViewportBuilder::default()
             .with_title("Ottrin")
             .with_decorations(false)
@@ -47,6 +62,7 @@ fn handle_cli_action() -> bool {
         println!("  --uninstall        Remove Ottrin background jobs and generated data");
         println!("  --purge-config     With --uninstall, also remove saved preferences");
         println!("  --helper-path PATH Developer override for privileged helper discovery");
+        println!("  --renderer opengl  Recovery override for a compatible OpenGL driver");
         return true;
     }
     if !args.iter().any(|arg| arg == "--uninstall") {
@@ -97,6 +113,29 @@ fn handle_cli_action() -> bool {
         }
         std::process::exit(1);
     }
+}
+
+fn graphics_renderer_override() -> Option<String> {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    cli_renderer_override(&args).or_else(|| std::env::var("OTTRIN_RENDERER").ok())
+}
+
+fn cli_renderer_override(args: &[String]) -> Option<String> {
+    let mut index = 0;
+    while index < args.len() {
+        if args[index] == "--renderer" {
+            if let Some(value) = args.get(index + 1).filter(|value| !value.is_empty()) {
+                return Some(value.clone());
+            }
+            index += 1;
+        } else if let Some(value) = args[index].strip_prefix("--renderer=")
+            && !value.is_empty()
+        {
+            return Some(value.to_owned());
+        }
+        index += 1;
+    }
+    None
 }
 
 fn remove_terminal_launcher_file() -> Result<String, String> {
@@ -199,5 +238,29 @@ mod tests {
     #[test]
     fn windows_renderer_does_not_require_opengl() {
         assert_eq!(renderer_for_target(true), eframe::Renderer::Wgpu);
+    }
+
+    #[test]
+    fn graphics_recovery_override_can_select_opengl_without_changing_windows_default() {
+        assert_eq!(
+            renderer_for_target_with_override(true, Some("opengl")),
+            eframe::Renderer::Glow
+        );
+        assert_eq!(
+            renderer_for_target_with_override(true, Some("unsupported")),
+            eframe::Renderer::Wgpu
+        );
+    }
+
+    #[test]
+    fn graphics_recovery_override_accepts_both_cli_forms() {
+        assert_eq!(
+            cli_renderer_override(&["--renderer".into(), "opengl".into()]),
+            Some("opengl".into())
+        );
+        assert_eq!(
+            cli_renderer_override(&["--renderer=opengl".into()]),
+            Some("opengl".into())
+        );
     }
 }
