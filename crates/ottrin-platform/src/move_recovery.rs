@@ -8891,6 +8891,30 @@ mod tests {
             ))
         ));
         std::fs::write(&central_journal, central_before_final_content_change).unwrap();
+        // A syntactically valid but different central phase written through the same inode is
+        // evidence mismatch too; it must not be mistaken for a clean prospective preflight.
+        central
+            .persist_published(&published.clone().into_cleanup_pending())
+            .unwrap();
+        let central_cleanup_pending_bytes = std::fs::read(&central_journal).unwrap();
+        central.persist_published(&claimed_source_unlinked).unwrap();
+        assert!(matches!(
+            recovery.preflight_claimed_source_directory_cleanup_after_final_central_revalidation(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || std::fs::write(&central_journal, &central_cleanup_pending_bytes).unwrap(),
+            ),
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::Retained(
+                    LinuxInspectCrossDeviceOverwriteRetainedError::Restart(
+                        LinuxLoadPublishedRestartError::PublishedEvidenceMismatch { .. }
+                    )
+                )
+            ))
+        ));
+        central.persist_published(&claimed_source_unlinked).unwrap();
         // A new, plausible journal-only directory at the durable name must not inherit the
         // original transaction's cleanup authority after the final topology observation.
         let after_final_topology_replaced_local_path =
