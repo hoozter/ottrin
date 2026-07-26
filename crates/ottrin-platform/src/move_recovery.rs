@@ -683,6 +683,32 @@ pub enum LinuxAdvanceCleanupPendingError {
     },
 }
 
+/// Failure while durably recording the claimed-source deletion boundary.
+///
+/// This remains journal-only and consumes a preflight token; it still performs no deletion.
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxAdvanceClaimedSourceDeletionPendingError {
+    #[error("claimed-source preflight belongs to another transaction")]
+    PreflightTransactionMismatch,
+    #[error("cleanup-pending journal pair cannot enter claimed-source-deletion-pending: {0}")]
+    PublishedPair(LinuxLoadPublishedRestartError),
+    #[error("claimed-source-deletion-pending requires a matching cleanup-pending journal pair")]
+    NotCleanupPending,
+    #[error(
+        "central claimed-source-deletion-pending update did not confirm durability; inspect the journal: {0}"
+    )]
+    CentralUpdateUncertain(JournalError),
+    #[error(
+        "central claimed-source-deletion-pending update succeeded but source-local update is uncertain: {error}"
+    )]
+    CentralDurableLocalUpdateUncertain {
+        #[source]
+        error: JournalError,
+        durable_central: Box<PublishedRecord>,
+    },
+}
+
 #[cfg(target_os = "linux")]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LinuxPublishedJournals {
@@ -718,6 +744,7 @@ pub enum LinuxCrossDeviceOverwriteCleanupPlan {
 /// mutation operation and dropping it changes neither data nor journals.
 #[cfg(target_os = "linux")]
 pub struct LinuxClaimedSourceDeletionPreflight {
+    transaction_id: [u8; 16],
     _source_transaction: OwnedFd,
     _claimed_source: OwnedFd,
 }
@@ -2831,6 +2858,51 @@ impl LinuxRecoveryLock<'_> {
         Ok(LinuxPublishedJournals::MatchingPair)
     }
 
+    /// Records the first prospective claimed-source deletion boundary after consuming the
+    /// opaque, handle-relative preflight token. This is journal-only: it neither unlinks data
+    /// nor exposes a deletion operation.
+    pub fn advance_cross_device_overwrite_to_claimed_source_deletion_pending_with_local(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+        preflight: LinuxClaimedSourceDeletionPreflight,
+    ) -> Result<LinuxPublishedJournals, LinuxAdvanceClaimedSourceDeletionPendingError> {
+        if preflight.transaction_id != transaction_id {
+            return Err(
+                LinuxAdvanceClaimedSourceDeletionPendingError::PreflightTransactionMismatch,
+            );
+        }
+        let cleanup_pending = match self
+            .central
+            .load_published_restart_state(local, transaction_id)
+            .map_err(LinuxAdvanceClaimedSourceDeletionPendingError::PublishedPair)?
+        {
+            LinuxPublishedRestartState::MatchingPair(published)
+                if published.phase == JournalPhase::CleanupPending =>
+            {
+                published
+            }
+            _ => return Err(LinuxAdvanceClaimedSourceDeletionPendingError::NotCleanupPending),
+        };
+        let deletion_pending = cleanup_pending.into_claimed_source_deletion_pending();
+        self.central
+            .persist_published_staged(&deletion_pending)
+            .map_err(|failure| {
+                LinuxAdvanceClaimedSourceDeletionPendingError::CentralUpdateUncertain(
+                    failure.into_inner(),
+                )
+            })?;
+        local
+            .persist_local_published(&deletion_pending)
+            .map_err(|error| {
+                LinuxAdvanceClaimedSourceDeletionPendingError::CentralDurableLocalUpdateUncertain {
+                    error,
+                    durable_central: Box::new(deletion_pending),
+                }
+            })?;
+        Ok(LinuxPublishedJournals::MatchingPair)
+    }
+
     #[cfg(test)]
     fn advance_to_claimed_with_local_after_central<F>(
         &mut self,
@@ -3388,6 +3460,7 @@ impl LinuxRecoveryLock<'_> {
             return Err(LinuxClaimedSourceDeletionPreflightError::ClaimedSourceIdentityMismatch);
         }
         Ok(LinuxClaimedSourceDeletionPreflight {
+            transaction_id,
             _source_transaction: source_transaction,
             _claimed_source: claimed_source,
         })
@@ -7314,6 +7387,43 @@ mod tests {
         );
         std::fs::remove_file(&retained_displaced).unwrap();
         std::fs::rename(&displaced_backup_after_inspection, &retained_displaced).unwrap();
+        let preflight = recovery
+            .preflight_cross_device_overwrite_claimed_source_deletion(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            )
+            .unwrap();
+        assert_eq!(
+            recovery.advance_cross_device_overwrite_to_claimed_source_deletion_pending_with_local(
+                &local, [0x42; 16], preflight,
+            ),
+            Ok(LinuxPublishedJournals::MatchingPair)
+        );
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::MatchingPair(
+                published.clone().into_claimed_source_deletion_pending()
+            ))
+        );
+        assert_eq!(
+            std::fs::read(&claimed_child).unwrap(),
+            b"source retained pending cleanup"
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        central
+            .persist_published(&published.clone().into_cleanup_pending())
+            .unwrap();
+        local
+            .persist_local_published(&published.clone().into_cleanup_pending())
+            .unwrap();
         // Simulate interruption after the first claimed-source-deletion phase becomes durable
         // centrally but before the matching local journal update. This phase remains
         // classification-only: all three retained entries must remain recoverable.
