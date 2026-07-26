@@ -806,6 +806,8 @@ pub enum LinuxInspectClaimedSourceDirectoryCleanupError {
     UnexpectedDescendant(Vec<u8>),
     #[error("source transaction local journal is not a regular non-symlink file")]
     JournalNotRegular,
+    #[error("source transaction local journal changed during cleanup planning")]
+    JournalChanged,
     #[error("could not inspect source transaction topology: {0}")]
     Io(String),
 }
@@ -3672,12 +3674,37 @@ impl LinuxRecoveryLock<'_> {
         LinuxClaimedSourceDirectoryCleanupPlan,
         LinuxInspectClaimedSourceDirectoryCleanupError,
     > {
+        self.plan_claimed_source_directory_cleanup_inner(
+            local,
+            source_parent,
+            destination_parent,
+            transaction_id,
+            || {},
+        )
+    }
+
+    fn plan_claimed_source_directory_cleanup_inner<F>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        after_topology_inspection: F,
+    ) -> Result<
+        LinuxClaimedSourceDirectoryCleanupPlan,
+        LinuxInspectClaimedSourceDirectoryCleanupError,
+    >
+    where
+        F: FnOnce(),
+    {
         use rustix::fs::{Dir, FileType, Mode, OFlags, fstat, openat};
+        use std::io::Read;
 
         let mut directory = Dir::read_from(&local.directory).map_err(|error| {
             LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
         })?;
         let mut found_journal = false;
+        let mut journal_baseline = None;
         while let Some(entry) = directory.read() {
             let entry = entry.map_err(|error| {
                 LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
@@ -3709,6 +3736,24 @@ impl LinuxRecoveryLock<'_> {
             if FileType::from_raw_mode(stat.st_mode) != FileType::RegularFile {
                 return Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalNotRegular);
             }
+            let identity =
+                LinuxStableIdentity::new(stat.st_dev, stat.st_ino, LinuxFileType::Regular);
+            let journal = openat(
+                &local.directory,
+                "journal",
+                OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .map_err(|error| {
+                LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+            })?;
+            let mut contents = Vec::new();
+            std::fs::File::from(journal)
+                .read_to_end(&mut contents)
+                .map_err(|error| {
+                    LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+                })?;
+            journal_baseline = Some((identity, contents));
             found_journal = true;
         }
         if !found_journal {
@@ -3716,6 +3761,8 @@ impl LinuxRecoveryLock<'_> {
                 LinuxInspectClaimedSourceDirectoryCleanupError::UnexpectedDescendant(Vec::new()),
             );
         }
+        let journal_baseline = journal_baseline.expect("found journal has a baseline");
+        after_topology_inspection();
         if self.inspect_cross_device_overwrite_retained_state(
             local,
             destination_parent,
@@ -3763,6 +3810,29 @@ impl LinuxRecoveryLock<'_> {
             return Err(
                 LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch,
             );
+        }
+        let journal = openat(
+            &local.directory,
+            "journal",
+            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|_| LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged)?;
+        let stat = fstat(&journal).map_err(|error| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+        })?;
+        if FileType::from_raw_mode(stat.st_mode) != FileType::RegularFile {
+            return Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged);
+        }
+        let identity = LinuxStableIdentity::new(stat.st_dev, stat.st_ino, LinuxFileType::Regular);
+        let mut contents = Vec::new();
+        std::fs::File::from(journal)
+            .read_to_end(&mut contents)
+            .map_err(|error| {
+                LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+            })?;
+        if (identity, contents) != journal_baseline {
+            return Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged);
         }
         Ok(LinuxClaimedSourceDirectoryCleanupPlan::JournalOnlyManualReview)
     }
@@ -8169,6 +8239,25 @@ mod tests {
             Err(LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch)
         );
         std::fs::rename(&reparented_local_path, &local_path).unwrap();
+        // A newly named directory with a plausible local journal is not recovery evidence:
+        // the anchored handle and durable transaction identity must reject it before it can
+        // acquire any cleanup authority.
+        let replaced_local_path = root.join("replacement-local");
+        std::fs::rename(&local_path, &replaced_local_path).unwrap();
+        std::fs::create_dir(&local_path).unwrap();
+        std::fs::write(local_path.join("journal"), b"plausible replacement journal").unwrap();
+        assert_eq!(
+            recovery.plan_claimed_source_directory_cleanup(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Err(LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch)
+        );
+        std::fs::remove_file(local_path.join("journal")).unwrap();
+        std::fs::remove_dir(&local_path).unwrap();
+        std::fs::rename(&replaced_local_path, &local_path).unwrap();
         let central_before_directory_cleanup_plan = std::fs::read(&central_journal).unwrap();
         let local_before_directory_cleanup_plan = std::fs::read(&local_journal).unwrap();
         std::fs::write(
@@ -8204,6 +8293,26 @@ mod tests {
         );
         std::fs::remove_file(&local_journal).unwrap();
         std::fs::rename(&local_journal_backup, &local_journal).unwrap();
+        // The final plan boundary must not accept a byte-identical journal substituted after
+        // topology inspection: parsing matching evidence alone cannot promote a replacement
+        // inode into cleanup authority.
+        let journal_bytes = std::fs::read(&local_journal).unwrap();
+        let replaced_journal_backup = local_path.join("journal-before-replacement");
+        assert_eq!(
+            recovery.plan_claimed_source_directory_cleanup_inner(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || {
+                    std::fs::rename(&local_journal, &replaced_journal_backup).unwrap();
+                    std::fs::write(&local_journal, &journal_bytes).unwrap();
+                },
+            ),
+            Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged)
+        );
+        std::fs::remove_file(&local_journal).unwrap();
+        std::fs::rename(&replaced_journal_backup, &local_journal).unwrap();
         local
             .persist_local_published(&published.clone().into_claimed_source_deletion_pending())
             .unwrap();
