@@ -695,6 +695,9 @@ pub enum LinuxPublishedJournals {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LinuxCrossDeviceOverwriteRetainedState {
     IdentityVerifiedRetained,
+    /// Every retained entry still matches durable evidence after the pre-cleanup marker.
+    /// This remains review-only and conveys no deletion authority.
+    IdentityVerifiedCleanupPending,
 }
 
 /// Read-only cleanup planning result for a retained cross-device Overwrite.
@@ -705,6 +708,7 @@ pub enum LinuxCrossDeviceOverwriteRetainedState {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LinuxCrossDeviceOverwriteCleanupPlan {
     RetainForManualReview,
+    CleanupPendingManualReview,
 }
 
 #[cfg(target_os = "linux")]
@@ -3030,9 +3034,6 @@ impl LinuxRecoveryLock<'_> {
                 return Err(LinuxInspectCrossDeviceOverwriteRetainedError::IncompleteEvidence);
             }
         };
-        if published.phase == JournalPhase::CleanupPending {
-            return Err(LinuxInspectCrossDeviceOverwriteRetainedError::CleanupPhaseAlreadyRecorded);
-        }
         let (
             destination_transaction_name,
             destination_transaction_identity,
@@ -3198,7 +3199,11 @@ impl LinuxRecoveryLock<'_> {
                 LinuxInspectCrossDeviceOverwriteRetainedError::DisplacedCandidateIdentityMismatch,
             );
         }
-        Ok(LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedRetained)
+        Ok(if published.phase == JournalPhase::CleanupPending {
+            LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedCleanupPending
+        } else {
+            LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedRetained
+        })
     }
 
     /// Classifies a retained cross-device Overwrite for manual review without changing it.
@@ -3209,12 +3214,18 @@ impl LinuxRecoveryLock<'_> {
         transaction_id: [u8; 16],
     ) -> Result<LinuxCrossDeviceOverwriteCleanupPlan, LinuxInspectCrossDeviceOverwriteRetainedError>
     {
-        self.inspect_cross_device_overwrite_retained_state(
+        match self.inspect_cross_device_overwrite_retained_state(
             local,
             destination_parent,
             transaction_id,
-        )?;
-        Ok(LinuxCrossDeviceOverwriteCleanupPlan::RetainForManualReview)
+        )? {
+            LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedRetained => {
+                Ok(LinuxCrossDeviceOverwriteCleanupPlan::RetainForManualReview)
+            }
+            LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedCleanupPending => {
+                Ok(LinuxCrossDeviceOverwriteCleanupPlan::CleanupPendingManualReview)
+            }
+        }
     }
 
     pub fn observe_original_after_restart(
@@ -6968,14 +6979,22 @@ mod tests {
             std::fs::read(&retained_displaced).unwrap(),
             b"displaced target retained"
         );
-        assert!(matches!(
+        assert_eq!(
             recovery.inspect_cross_device_overwrite_retained_state(
                 &local,
                 &destination_parent,
                 [0x42; 16],
             ),
-            Err(LinuxInspectCrossDeviceOverwriteRetainedError::CleanupPhaseAlreadyRecorded)
-        ));
+            Ok(LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedCleanupPending)
+        );
+        assert_eq!(
+            recovery.plan_cross_device_overwrite_retained_cleanup(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Ok(LinuxCrossDeviceOverwriteCleanupPlan::CleanupPendingManualReview)
+        );
         assert_eq!(
             recovery
                 .advance_cross_device_overwrite_to_cleanup_pending_with_local(&local, [0x42; 16]),
