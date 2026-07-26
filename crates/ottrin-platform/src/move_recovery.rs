@@ -3716,7 +3716,7 @@ impl LinuxRecoveryLock<'_> {
             source_parent,
             destination_parent,
             transaction_id,
-            (|| {}, || {}, || {}),
+            (|| {}, || {}, || {}, || {}),
         )
     }
 
@@ -3743,7 +3743,29 @@ impl LinuxRecoveryLock<'_> {
                 after_topology_inspection,
                 after_final_journal_revalidation,
                 || {},
+                || {},
             ),
+        )
+    }
+
+    #[cfg(test)]
+    fn preflight_claimed_source_directory_cleanup_after_final_central_revalidation<F>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        after_final_central_revalidation: F,
+    ) -> Result<(), LinuxClaimedSourceDirectoryCleanupPreflightError>
+    where
+        F: FnOnce(),
+    {
+        self.preflight_claimed_source_directory_cleanup_inner(
+            local,
+            source_parent,
+            destination_parent,
+            transaction_id,
+            (|| {}, || {}, || {}, after_final_central_revalidation),
         )
     }
 
@@ -3766,22 +3788,23 @@ impl LinuxRecoveryLock<'_> {
             source_parent,
             destination_parent,
             transaction_id,
-            boundaries,
+            (boundaries.0, boundaries.1, boundaries.2, || {}),
         )
     }
 
-    fn preflight_claimed_source_directory_cleanup_inner<F, G, H>(
+    fn preflight_claimed_source_directory_cleanup_inner<F, G, H, I>(
         &mut self,
         local: &LinuxJournalDirectory,
         source_parent: &LinuxSourceParentDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
-        boundaries: (F, G, H),
+        boundaries: (F, G, H, I),
     ) -> Result<(), LinuxClaimedSourceDirectoryCleanupPreflightError>
     where
         F: FnOnce(),
         G: FnOnce(),
         H: FnOnce(),
+        I: FnOnce(),
     {
         self.plan_claimed_source_directory_cleanup_inner_with_final_boundary(
             local,
@@ -3812,17 +3835,17 @@ impl LinuxRecoveryLock<'_> {
             source_parent,
             destination_parent,
             transaction_id,
-            (after_topology_inspection, || {}, || {}),
+            (after_topology_inspection, || {}, || {}, || {}),
         )
     }
 
-    fn plan_claimed_source_directory_cleanup_inner_with_final_boundary<F, G, H>(
+    fn plan_claimed_source_directory_cleanup_inner_with_final_boundary<F, G, H, I>(
         &mut self,
         local: &LinuxJournalDirectory,
         source_parent: &LinuxSourceParentDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
-        boundaries: (F, G, H),
+        boundaries: (F, G, H, I),
     ) -> Result<
         LinuxClaimedSourceDirectoryCleanupPlan,
         LinuxInspectClaimedSourceDirectoryCleanupError,
@@ -3831,6 +3854,7 @@ impl LinuxRecoveryLock<'_> {
         F: FnOnce(),
         G: FnOnce(),
         H: FnOnce(),
+        I: FnOnce(),
     {
         use rustix::fs::{Dir, FileType, Mode, OFlags, fstat, openat};
         use std::io::Read;
@@ -3839,6 +3863,7 @@ impl LinuxRecoveryLock<'_> {
             after_topology_inspection,
             after_final_journal_revalidation,
             after_final_topology_scan,
+            after_final_central_revalidation,
         ) = boundaries;
 
         let mut directory = Dir::read_from(&local.directory).map_err(|error| {
@@ -4121,6 +4146,7 @@ impl LinuxRecoveryLock<'_> {
         {
             return Err(LinuxInspectClaimedSourceDirectoryCleanupError::CentralJournalChanged);
         }
+        after_final_central_revalidation();
         match self
             .central
             .load_published_restart_state(local, transaction_id)
@@ -8648,6 +8674,7 @@ mod tests {
                     || {},
                     || std::fs::rename(&local_path, &final_reparented_local_path).unwrap(),
                     || {},
+                    || {},
                 ),
             ),
             Err(LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch)
@@ -8835,6 +8862,35 @@ mod tests {
         );
         std::fs::remove_file(&central_journal).unwrap();
         std::fs::rename(&substituted_central_journal, &central_journal).unwrap();
+        // Stable central identity alone is not sufficient: a write through the same inode
+        // after its final identity check must still be surfaced as durable-evidence corruption,
+        // never hidden by the preflight's generic no-mutation result.
+        let central_before_final_content_change = std::fs::read(&central_journal).unwrap();
+        let central_content_failure = recovery
+            .preflight_claimed_source_directory_cleanup_after_final_central_revalidation(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || {
+                    std::fs::write(
+                        &central_journal,
+                        b"corrupt central journal after final identity check",
+                    )
+                    .unwrap()
+                },
+            );
+        assert!(matches!(
+            central_content_failure,
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::Retained(
+                    LinuxInspectCrossDeviceOverwriteRetainedError::Restart(
+                        LinuxLoadPublishedRestartError::CentralCorrupt(_)
+                    )
+                )
+            ))
+        ));
+        std::fs::write(&central_journal, central_before_final_content_change).unwrap();
         // A new, plausible journal-only directory at the durable name must not inherit the
         // original transaction's cleanup authority after the final topology observation.
         let after_final_topology_replaced_local_path =
