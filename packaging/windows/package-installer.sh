@@ -5,7 +5,6 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
 STAGE="${1:-$DIST_DIR/Ottrin-$VERSION-windows-x64}"
-INSTALLER="$DIST_DIR/Ottrin-$VERSION-windows-x64-setup.exe"
 MAKENSIS="${MAKENSIS:-}"
 
 if [[ ! -d "$STAGE" ]]; then
@@ -14,6 +13,9 @@ if [[ ! -d "$STAGE" ]]; then
   exit 1
 fi
 STAGE="$(cd "$STAGE" && pwd)"
+mkdir -p "$DIST_DIR"
+DIST_DIR="$(cd "$DIST_DIR" && pwd)"
+INSTALLER="$DIST_DIR/Ottrin-$VERSION-windows-x64-setup.exe"
 
 required=(
   bin/ottrin.exe
@@ -54,7 +56,6 @@ if [[ -z "$MAKENSIS" ]]; then
   fi
 fi
 
-mkdir -p "$DIST_DIR"
 rm -f "$INSTALLER" "$INSTALLER.sha256"
 "$MAKENSIS" \
   "-DVERSION=$VERSION" \
