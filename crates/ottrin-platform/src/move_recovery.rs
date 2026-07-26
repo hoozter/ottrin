@@ -3697,6 +3697,32 @@ impl LinuxRecoveryLock<'_> {
     where
         F: FnOnce(),
     {
+        self.plan_claimed_source_directory_cleanup_inner_with_final_boundary(
+            local,
+            source_parent,
+            destination_parent,
+            transaction_id,
+            after_topology_inspection,
+            || {},
+        )
+    }
+
+    fn plan_claimed_source_directory_cleanup_inner_with_final_boundary<F, G>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        after_topology_inspection: F,
+        after_final_journal_revalidation: G,
+    ) -> Result<
+        LinuxClaimedSourceDirectoryCleanupPlan,
+        LinuxInspectClaimedSourceDirectoryCleanupError,
+    >
+    where
+        F: FnOnce(),
+        G: FnOnce(),
+    {
         use rustix::fs::{Dir, FileType, Mode, OFlags, fstat, openat};
         use std::io::Read;
 
@@ -3791,7 +3817,7 @@ impl LinuxRecoveryLock<'_> {
             })?;
         let named = openat(
             &source_parent.directory,
-            transaction_name,
+            &transaction_name,
             OFlags::PATH | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
             Mode::empty(),
         )
@@ -3833,6 +3859,29 @@ impl LinuxRecoveryLock<'_> {
             })?;
         if (identity, contents) != journal_baseline {
             return Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged);
+        }
+        after_final_journal_revalidation();
+        let named = openat(
+            &source_parent.directory,
+            &transaction_name,
+            OFlags::PATH | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|_| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch
+        })?;
+        let named_stat = fstat(&named).map_err(|error| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+        })?;
+        if LinuxStableIdentity::new(
+            named_stat.st_dev,
+            named_stat.st_ino,
+            LinuxFileType::Directory,
+        ) != published.source_transaction_identity
+        {
+            return Err(
+                LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch,
+            );
         }
         Ok(LinuxClaimedSourceDirectoryCleanupPlan::JournalOnlyManualReview)
     }
@@ -8313,6 +8362,21 @@ mod tests {
         );
         std::fs::remove_file(&local_journal).unwrap();
         std::fs::rename(&replaced_journal_backup, &local_journal).unwrap();
+        // The source-parent name must still resolve to the durable transaction identity after
+        // the journal's final validation; otherwise a stale plan could outlive a reparent.
+        let final_reparented_local_path = root.join("final-reparented-local");
+        assert_eq!(
+            recovery.plan_claimed_source_directory_cleanup_inner_with_final_boundary(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || {},
+                || std::fs::rename(&local_path, &final_reparented_local_path).unwrap(),
+            ),
+            Err(LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch)
+        );
+        std::fs::rename(&final_reparented_local_path, &local_path).unwrap();
         local
             .persist_local_published(&published.clone().into_claimed_source_deletion_pending())
             .unwrap();
