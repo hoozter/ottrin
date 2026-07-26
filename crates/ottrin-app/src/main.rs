@@ -11,6 +11,7 @@ enum HeadlessAction {
     IndexStatus,
     IndexRebuild,
     Search(String),
+    DropStatus,
     Invalid(String),
 }
 
@@ -76,6 +77,7 @@ fn handle_cli_action() -> bool {
         println!("  --index status     Print the persisted-search service status");
         println!("  --index rebuild    Rebuild the configured search index and wait for it");
         println!("  --search QUERY     Search the configured index after it is ready");
+        println!("  --drop status      Print configured Drop Folder state without changing it");
         return true;
     }
     if let Some(action) = cli_headless_action(&args) {
@@ -159,6 +161,13 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
                     },
                 );
             }
+            "--drop" => {
+                return Some(match args.get(index + 1).map(String::as_str) {
+                    Some("status") => HeadlessAction::DropStatus,
+                    Some(value) => HeadlessAction::Invalid(format!("unknown drop action: {value}")),
+                    None => HeadlessAction::Invalid("--drop requires status".to_string()),
+                });
+            }
             _ => index += 1,
         }
     }
@@ -176,6 +185,10 @@ fn configured_search_service() -> ottrin_search::SearchService {
 fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     if let HeadlessAction::Invalid(error) = &action {
         return Err(error.clone());
+    }
+    if matches!(action, HeadlessAction::DropStatus) {
+        print_drop_status(&load_config().target);
+        return Ok(());
     }
     let mut service = configured_search_service();
     service.start();
@@ -216,10 +229,21 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
             }
             response.error.map_or(Ok(()), Err)
         }
+        HeadlessAction::DropStatus => unreachable!("drop status returns before service startup"),
         HeadlessAction::Invalid(_) => unreachable!("invalid actions return before service startup"),
     };
     service.stop();
     result
+}
+
+fn print_drop_status(target: &ottrin_core::TargetState) {
+    println!("configured={}", target.current.is_some());
+    println!("pinned={}", target.pinned.len());
+    println!("recent={}", target.recent.len());
+    if let Some(path) = &target.current {
+        println!("path={}", path.display());
+        println!("is_directory={}", path.is_dir());
+    }
 }
 
 fn wait_for_index_ready(service: &ottrin_search::SearchService) -> Result<(), String> {
@@ -417,6 +441,10 @@ mod tests {
         assert_eq!(
             cli_headless_action(&["--search".into(), "invoice".into()]),
             Some(HeadlessAction::Search("invoice".into()))
+        );
+        assert_eq!(
+            cli_headless_action(&["--drop".into(), "status".into()]),
+            Some(HeadlessAction::DropStatus)
         );
     }
 }
