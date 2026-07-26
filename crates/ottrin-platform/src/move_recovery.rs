@@ -702,6 +702,8 @@ pub enum LinuxAdvanceClaimedSourceDeletionPendingError {
     NotCleanupPending,
     #[error("central cleanup-pending journal changed after first-deletion preflight")]
     CentralJournalChanged,
+    #[error("central cleanup-pending journal contents changed after first-deletion preflight")]
+    CentralJournalContentChanged,
     #[error("source-local cleanup-pending journal changed after first-deletion preflight")]
     LocalJournalChanged,
     #[error("source-local cleanup-pending journal contents changed after first-deletion preflight")]
@@ -843,6 +845,7 @@ pub enum LinuxClaimedSourceDirectoryCleanupPreflightError {
 pub struct LinuxClaimedSourceDeletionPreflight {
     transaction_id: [u8; 16],
     central_journal_identity: LinuxStableIdentity,
+    central_journal_contents: Vec<u8>,
     local_journal_identity: LinuxStableIdentity,
     local_journal_contents: Vec<u8>,
     claimed_source_identity: LinuxStableIdentity,
@@ -3086,6 +3089,18 @@ impl LinuxRecoveryLock<'_> {
         {
             return Err(LinuxAdvanceClaimedSourceDeletionPendingError::CentralJournalChanged);
         }
+        if self
+            .central
+            .read_named(&central_journal_name)
+            .map_err(|_| {
+                LinuxAdvanceClaimedSourceDeletionPendingError::CentralJournalContentChanged
+            })?
+            != preflight.central_journal_contents
+        {
+            return Err(
+                LinuxAdvanceClaimedSourceDeletionPendingError::CentralJournalContentChanged,
+            );
+        }
         let local_journal = rustix::fs::openat(
             &preflight._source_transaction,
             "journal",
@@ -4455,6 +4470,10 @@ impl LinuxRecoveryLock<'_> {
         if FileType::from_raw_mode(central_stat.st_mode) != FileType::RegularFile {
             return Err(LinuxClaimedSourceDeletionPreflightError::CleanupNotPending);
         }
+        let central_journal_contents = self
+            .central
+            .read_named(&central_journal_name)
+            .map_err(|error| LinuxClaimedSourceDeletionPreflightError::Io(error.to_string()))?;
         let local_journal = openat(
             &local.directory,
             "journal",
@@ -4498,6 +4517,7 @@ impl LinuxRecoveryLock<'_> {
                 central_stat.st_ino,
                 LinuxFileType::Regular,
             ),
+            central_journal_contents,
             local_journal_identity: LinuxStableIdentity::new(
                 local_stat.st_dev,
                 local_stat.st_ino,
@@ -8779,6 +8799,48 @@ mod tests {
         assert_eq!(
             std::fs::read(&local_journal).unwrap(),
             local_before_local_journal_content_boundary
+        );
+        assert_eq!(
+            std::fs::read(&claimed_child).unwrap(),
+            b"source retained pending cleanup"
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        // The central journal's bytes are equally authoritative after the last matching-pair
+        // reload; same-inode corruption must not be overwritten by the staged marker update.
+        let central_before_central_journal_content_boundary =
+            std::fs::read(&central_journal).unwrap();
+        let local_before_central_journal_content_boundary = std::fs::read(&local_journal).unwrap();
+        let preflight = recovery
+            .preflight_cross_device_overwrite_claimed_source_deletion(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            )
+            .unwrap();
+        assert_eq!(
+            recovery.advance_cross_device_overwrite_to_claimed_source_deletion_pending_with_local_after_final_validation(
+                &local,
+                [0x42; 16],
+                preflight,
+                || std::fs::write(&central_journal, b"corrupted central cleanup-pending evidence").unwrap(),
+            ),
+            Err(LinuxAdvanceClaimedSourceDeletionPendingError::CentralJournalContentChanged)
+        );
+        std::fs::write(
+            &central_journal,
+            &central_before_central_journal_content_boundary,
+        )
+        .unwrap();
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_before_central_journal_content_boundary
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_before_central_journal_content_boundary
         );
         assert_eq!(
             std::fs::read(&claimed_child).unwrap(),
