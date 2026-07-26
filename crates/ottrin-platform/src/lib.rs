@@ -14,6 +14,14 @@ pub mod move_recovery;
 mod move_transaction;
 use move_transaction::move_entry_transactional;
 
+/// Lists retained Linux Move journals without creating recovery state or attempting cleanup.
+#[cfg(target_os = "linux")]
+pub fn discover_retained_move_transactions_at(
+    recovery_root: &Path,
+) -> Result<Vec<move_recovery::LinuxDiscoveredMoveTransaction>, PlatformError> {
+    move_transaction::discover_retained_move_transactions_at(recovery_root)
+}
+
 #[derive(Debug, Clone)]
 pub struct FileProperties {
     pub path: PathBuf,
@@ -2034,5 +2042,26 @@ mod tests {
             Path::new("missing-target")
         );
         assert!(!source.exists());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn retained_move_status_facade_never_initializes_an_unanchored_root() {
+        let dir = TestDir::new("move-retained-status");
+        let missing_root = dir.path().join("missing");
+
+        assert!(
+            discover_retained_move_transactions_at(&missing_root)
+                .unwrap()
+                .is_empty()
+        );
+        assert!(!missing_root.exists());
+
+        let unanchored_root = dir.path().join("unanchored");
+        std::fs::create_dir(&unanchored_root).unwrap();
+        let result = discover_retained_move_transactions_at(&unanchored_root);
+
+        assert!(matches!(result, Err(PlatformError::Io(_))));
+        assert!(!unanchored_root.join(".ottrin-move-recovery-root").exists());
     }
 }

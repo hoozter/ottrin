@@ -1404,6 +1404,18 @@ impl LinuxRetainedSourceTransaction {
 #[cfg(target_os = "linux")]
 impl LinuxJournalDirectory {
     pub fn open_configured(path: &Path) -> Result<Self, LinuxCentralRootOpenError> {
+        Self::open_configured_inner(path, true)
+    }
+
+    /// Opens an already-anchored recovery root without creating an anchor or any journal data.
+    pub fn open_configured_read_only(path: &Path) -> Result<Self, LinuxCentralRootOpenError> {
+        Self::open_configured_inner(path, false)
+    }
+
+    fn open_configured_inner(
+        path: &Path,
+        initialize_anchor: bool,
+    ) -> Result<Self, LinuxCentralRootOpenError> {
         use rustix::fs::{
             AtFlags, FileType, Mode, OFlags, fstat, fsync as fsync_directory, openat, renameat,
             statat,
@@ -1479,7 +1491,7 @@ impl LinuxJournalDirectory {
                     return Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable);
                 }
             }
-            Err(error) if error == rustix::io::Errno::NOENT => {
+            Err(error) if error == rustix::io::Errno::NOENT && initialize_anchor => {
                 use std::io::Write;
 
                 let mut random = [0_u8; 16];

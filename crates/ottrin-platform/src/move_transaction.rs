@@ -674,6 +674,26 @@ fn default_recovery_root() -> Result<std::path::PathBuf, PlatformError> {
     Ok(base.join("ottrin").join("moves"))
 }
 
+/// Reads retained Move recovery status from an existing configured recovery root.
+///
+/// This is intentionally incapable of creating an anchor, journal, transaction directory, or
+/// cleanup side effect. A missing root simply means there are no durable Move transactions yet.
+#[cfg(target_os = "linux")]
+pub(super) fn discover_retained_move_transactions_at(
+    recovery_root: &Path,
+) -> Result<Vec<move_recovery::LinuxDiscoveredMoveTransaction>, PlatformError> {
+    match std::fs::symlink_metadata(recovery_root) {
+        Ok(_) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(error) => return Err(PlatformError::Io(error.to_string())),
+    }
+    let central = move_recovery::LinuxJournalDirectory::open_configured_read_only(recovery_root)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    central
+        .discover_move_transactions()
+        .map_err(|error| PlatformError::Io(error.to_string()))
+}
+
 #[cfg(target_os = "linux")]
 #[cfg(test)]
 pub(super) fn move_entry_transactional_with_test_hook(
