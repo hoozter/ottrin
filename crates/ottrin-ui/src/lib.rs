@@ -6719,6 +6719,19 @@ impl OttrinApp {
         }
     }
 
+    fn select_search_row(&mut self, idx: usize) {
+        if idx >= self.search_ui.results.len() {
+            return;
+        }
+        if self.search_ui.selected == Some(idx) {
+            self.search_ui.scroll_to_selected = true;
+            return;
+        }
+        self.search_ui.selected = Some(idx);
+        self.search_ui.scroll_to_selected = true;
+        self.search_ui.result_preview = None;
+    }
+
     fn request_info_hash(&mut self, path: PathBuf) {
         if self.info_panel_hashes.contains_key(&path) {
             return;
@@ -10357,10 +10370,13 @@ impl OttrinApp {
                                 )
                             });
                             if row_resp.clicked() {
-                                self.search_ui.selected = Some(i);
-                                self.search_ui.scroll_to_selected = true;
+                                self.select_search_row(i);
+                            }
+                            if row_resp.secondary_clicked() {
+                                self.select_search_row(i);
                             }
                             if row_resp.double_clicked() {
+                                self.select_search_row(i);
                                 open_entry_now = Some((item.path.clone(), item.kind));
                             }
 
@@ -18372,6 +18388,55 @@ mod tests {
         app.search_ui.selected = Some(1);
         app.sync_preview_to_selection();
         assert_eq!(app.preview.path, Some(PathBuf::from("/tmp/other.txt")));
+    }
+
+    #[test]
+    fn right_click_search_row_selects_it_for_followup_actions() {
+        let mut app = OttrinApp::default();
+        app.search_ui.results = vec![
+            SearchResultItem {
+                path: PathBuf::from("/tmp/search-0"),
+                parent_path: PathBuf::from("/tmp"),
+                name: "search-0".to_string(),
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: Some(64),
+                modified_unix_secs: None,
+                content_snippet: None,
+                name_lower: "search-0".to_string(),
+                path_str: "/tmp/search-0".to_string(),
+                path_lower: "/tmp/search-0".to_string(),
+            },
+            SearchResultItem {
+                path: PathBuf::from("/tmp/search-1"),
+                parent_path: PathBuf::from("/tmp"),
+                name: "search-1".to_string(),
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: Some(128),
+                modified_unix_secs: None,
+                content_snippet: None,
+                name_lower: "search-1".to_string(),
+                path_str: "/tmp/search-1".to_string(),
+                path_lower: "/tmp/search-1".to_string(),
+            },
+        ];
+        app.search_ui.result_preview = Some((
+            PathBuf::from("/tmp/search-0"),
+            loading_preview_data(Path::new("/tmp/search-0")),
+        ));
+        app.search_ui.selected = Some(0);
+
+        app.select_search_row(1);
+
+        assert_eq!(app.search_ui.selected, Some(1));
+        assert!(app.search_ui.scroll_to_selected);
+        assert_eq!(
+            app.search_ui.result_preview, None,
+            "Selecting a different row should invalidate stale preview cache"
+        );
     }
 
     #[test]
