@@ -714,6 +714,31 @@ pub enum LinuxAdvanceClaimedSourceDeletionPendingError {
     },
 }
 
+/// Failure while durably recording that the claimed source is absent after unlink.
+///
+/// This remains restart classification evidence only. It does not expose runtime Move handling
+/// or grant authority for any further cleanup.
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxAdvanceClaimedSourceUnlinkedError {
+    #[error("retained overwrite inspection is unsafe: {0}")]
+    Inspect(#[from] LinuxInspectCrossDeviceOverwriteRetainedError),
+    #[error("claimed-source-unlinked requires matching claimed-source-deletion-pending evidence")]
+    NotClaimedSourceDeletionPending,
+    #[error(
+        "central claimed-source-unlinked update did not confirm durability; inspect the journal: {0}"
+    )]
+    CentralUpdateUncertain(JournalError),
+    #[error(
+        "central claimed-source-unlinked update succeeded but source-local update is uncertain: {error}"
+    )]
+    CentralDurableLocalUpdateUncertain {
+        #[source]
+        error: JournalError,
+        durable_central: Box<PublishedRecord>,
+    },
+}
+
 #[cfg(target_os = "linux")]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LinuxPublishedJournals {
@@ -2958,6 +2983,94 @@ impl LinuxRecoveryLock<'_> {
                     durable_central: Box::new(deletion_pending),
                 }
             })?;
+        Ok(LinuxPublishedJournals::MatchingPair)
+    }
+
+    /// Records the post-unlink boundary only after the absent claimed source and every retained
+    /// destination participant have been revalidated against an exact matching journal pair.
+    ///
+    /// This is durable restart evidence only; it neither enables runtime cross-device Overwrite
+    /// nor authorizes another cleanup operation.
+    pub fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxPublishedJournals, LinuxAdvanceClaimedSourceUnlinkedError> {
+        self.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner(
+            local,
+            destination_parent,
+            transaction_id,
+            || {},
+        )
+    }
+
+    #[cfg(test)]
+    fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central<F>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        after_central: F,
+    ) -> Result<LinuxPublishedJournals, LinuxAdvanceClaimedSourceUnlinkedError>
+    where
+        F: FnOnce(),
+    {
+        self.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner(
+            local,
+            destination_parent,
+            transaction_id,
+            after_central,
+        )
+    }
+
+    fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner<F>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        after_central: F,
+    ) -> Result<LinuxPublishedJournals, LinuxAdvanceClaimedSourceUnlinkedError>
+    where
+        F: FnOnce(),
+    {
+        if self.inspect_cross_device_overwrite_retained_state(
+            local,
+            destination_parent,
+            transaction_id,
+        )? != LinuxCrossDeviceOverwriteRetainedState::ClaimedSourceAbsentDeletionPending
+        {
+            return Err(LinuxAdvanceClaimedSourceUnlinkedError::NotClaimedSourceDeletionPending);
+        }
+        let deletion_pending = match self
+            .central
+            .load_published_restart_state(local, transaction_id)
+            .map_err(LinuxInspectCrossDeviceOverwriteRetainedError::Restart)?
+        {
+            LinuxPublishedRestartState::MatchingPair(published)
+                if published.phase == JournalPhase::ClaimedSourceDeletionPending =>
+            {
+                published
+            }
+            _ => {
+                return Err(
+                    LinuxAdvanceClaimedSourceUnlinkedError::NotClaimedSourceDeletionPending,
+                );
+            }
+        };
+        let unlinked = deletion_pending.into_claimed_source_unlinked();
+        self.central
+            .persist_published_staged(&unlinked)
+            .map_err(|failure| {
+                LinuxAdvanceClaimedSourceUnlinkedError::CentralUpdateUncertain(failure.into_inner())
+            })?;
+        after_central();
+        local.persist_local_published(&unlinked).map_err(|error| {
+            LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableLocalUpdateUncertain {
+                error,
+                durable_central: Box::new(unlinked),
+            }
+        })?;
         Ok(LinuxPublishedJournals::MatchingPair)
     }
 
@@ -7745,20 +7858,29 @@ mod tests {
             ),
             Ok(LinuxCrossDeviceOverwriteCleanupPlan::ClaimedSourceAbsentDeletionPendingManualReview)
         );
-        // A later durable post-unlink marker must classify a central-only interruption without
-        // authorizing repair, while the matching pair remains a separate read-only state.
+        // The post-unlink marker is persistable only after the complete retained topology is
+        // revalidated with the claimed source absent. A central-only interruption is still
+        // classification-only, and neither retained destination participant can change.
         let claimed_source_unlinked = published.clone().into_claimed_source_unlinked();
-        central.persist_published(&claimed_source_unlinked).unwrap();
         assert_eq!(
-            central.load_published_restart_state(&local, [0x42; 16]),
-            Ok(LinuxPublishedRestartState::CentralClaimedSourceUnlinkedLocalClaimedSourceDeletionPending {
-                claimed_source_unlinked: claimed_source_unlinked.clone(),
-                claimed_source_deletion_pending: published.clone().into_claimed_source_deletion_pending(),
-            })
+            recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+                || {
+                    assert_eq!(
+                        central.load_published_restart_state(&local, [0x42; 16]),
+                        Ok(LinuxPublishedRestartState::CentralClaimedSourceUnlinkedLocalClaimedSourceDeletionPending {
+                            claimed_source_unlinked: claimed_source_unlinked.clone(),
+                            claimed_source_deletion_pending: published.clone().into_claimed_source_deletion_pending(),
+                        })
+                    );
+                    assert_eq!(std::fs::read(&published_target).unwrap(), b"new target after exchange");
+                    assert_eq!(std::fs::read(&retained_displaced).unwrap(), b"displaced target retained");
+                },
+            ),
+            Ok(LinuxPublishedJournals::MatchingPair)
         );
-        local
-            .persist_local_published(&claimed_source_unlinked)
-            .unwrap();
         assert_eq!(
             recovery.inspect_cross_device_overwrite_retained_state(
                 &local,
