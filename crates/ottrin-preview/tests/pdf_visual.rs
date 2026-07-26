@@ -52,6 +52,24 @@ fn packaged_runtime_renders_bounded_non_blank_first_page_png() {
 }
 
 #[test]
+#[ignore = "requires the pinned packaged PDFium runtime"]
+fn packaged_runtime_renders_more_than_one_pdf_per_process() {
+    let library = packaged_pdfium_library().expect("packaged PDFium runtime");
+    let first = std::env::temp_dir().join(format!("ottrin-pdf-first-{}.pdf", std::process::id()));
+    let second = std::env::temp_dir().join(format!("ottrin-pdf-second-{}.pdf", std::process::id()));
+    std::fs::write(&first, pdf_fixture()).expect("write first PDF fixture");
+    std::fs::write(&second, pdf_fixture()).expect("write second PDF fixture");
+
+    render_pdf_first_page_png_with_library(&first, 512, &library)
+        .expect("render first PDF in process");
+    render_pdf_first_page_png_with_library(&second, 512, &library)
+        .expect("reuse process-wide PDFium binding for second PDF");
+
+    let _ = std::fs::remove_file(first);
+    let _ = std::fs::remove_file(second);
+}
+
+#[test]
 #[ignore = "requires the development package produced by build-all.sh"]
 fn debug_runtime_discovers_packaged_pdfium_automatically() {
     let fixture = std::env::temp_dir().join(format!(
@@ -63,6 +81,16 @@ fn debug_runtime_discovers_packaged_pdfium_automatically() {
         .expect("debug runtime should discover the workspace packaged PDFium");
     assert!(png.starts_with(b"\x89PNG\r\n\x1a\n"));
     std::fs::remove_file(fixture).expect("remove PDF fixture");
+}
+
+fn packaged_pdfium_library() -> Option<std::path::PathBuf> {
+    std::env::var_os("OTTRIN_TEST_PDFIUM_LIBRARY")
+        .map(std::path::PathBuf::from)
+        .and_then(|path| {
+            std::fs::canonicalize(&path)
+                .or_else(|_| std::env::current_dir().map(|cwd| cwd.join(path)))
+                .ok()
+        })
 }
 
 fn pdf_fixture() -> Vec<u8> {

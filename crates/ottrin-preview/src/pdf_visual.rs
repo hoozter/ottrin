@@ -54,9 +54,16 @@ pub fn render_pdf_first_page_png_with_library(
         });
     }
     let target_dim = target_dim.clamp(64, 2_048) as i32;
-    let bindings = Pdfium::bind_to_library(library)
-        .map_err(|error| PdfVisualError::RuntimeLoad(error.to_string()))?;
-    let pdfium = Pdfium::new(bindings);
+    let pdfium = match Pdfium::bind_to_library(library) {
+        Ok(bindings) => Pdfium::new(bindings),
+        // pdfium-render promotes the first binding into a process-wide
+        // OnceCell. Every later bind attempt reports this sentinel even
+        // though the existing binding is healthy and intentionally reusable.
+        // Treating it as a render failure made only the first PDF viewed in an
+        // Ottrin process work.
+        Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium::default(),
+        Err(error) => return Err(PdfVisualError::RuntimeLoad(error.to_string())),
+    };
     let document = pdfium
         .load_pdf_from_file(path, None)
         .map_err(|error| PdfVisualError::DocumentLoad(error.to_string()))?;
