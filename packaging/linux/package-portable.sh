@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 BUILD_DIR="$ROOT/target/release"
-DIST_DIR="$ROOT/dist"
+DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
 STAGE="$DIST_DIR/Ottrin-$VERSION-linux-x86_64"
 ARCHIVE="$DIST_DIR/Ottrin-$VERSION-linux-x86_64-portable.tar.gz"
 

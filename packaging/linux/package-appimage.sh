@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
-DIST_DIR="$ROOT/dist"
+DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
 APPDIR="$DIST_DIR/AppDir"
 APPIMAGE="$DIST_DIR/Ottrin-$VERSION-x86_64.AppImage"
 APPIMAGETOOL="${APPIMAGETOOL:-$DIST_DIR/appimagetool-x86_64.AppImage}"
