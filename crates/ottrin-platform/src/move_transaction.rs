@@ -238,6 +238,7 @@ fn move_with_hooks(
                         destination_transaction_identity: Some(destination_transaction_identity),
                         source_tree_snapshot: Some(destination_tree_snapshot.clone()),
                         staged_destination_identity: Some(staged_identity),
+                        expected_displaced_destination_identity: None,
                     },
                 )
                 .map_err(|error| PlatformError::CommittedCleanupPending {

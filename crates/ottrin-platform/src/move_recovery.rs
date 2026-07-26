@@ -228,6 +228,7 @@ pub struct PendingDestinationRecord {
     destination_transaction_identity: Option<LinuxStableIdentity>,
     source_tree_snapshot: Option<SourceTreeSnapshot>,
     staged_destination_identity: Option<LinuxStableIdentity>,
+    expected_displaced_destination_identity: Option<LinuxStableIdentity>,
     pending_destination_name: NativePath,
 }
 
@@ -250,6 +251,7 @@ pub struct PublishedRecord {
     destination_transaction_identity: Option<LinuxStableIdentity>,
     source_tree_snapshot: Option<SourceTreeSnapshot>,
     staged_destination_identity: Option<LinuxStableIdentity>,
+    expected_displaced_destination_identity: Option<LinuxStableIdentity>,
     pending_destination_name: NativePath,
 }
 
@@ -273,6 +275,7 @@ struct RawPendingDestinationRecord {
     destination_transaction_identity: Option<LinuxStableIdentity>,
     source_tree_snapshot: Option<SourceTreeSnapshot>,
     staged_destination_identity: Option<LinuxStableIdentity>,
+    expected_displaced_destination_identity: Option<LinuxStableIdentity>,
     pending_destination_name: NativePath,
 }
 
@@ -296,6 +299,7 @@ struct RawPublishedRecord {
     destination_transaction_identity: Option<LinuxStableIdentity>,
     source_tree_snapshot: Option<SourceTreeSnapshot>,
     staged_destination_identity: Option<LinuxStableIdentity>,
+    expected_displaced_destination_identity: Option<LinuxStableIdentity>,
     pending_destination_name: NativePath,
 }
 
@@ -627,6 +631,7 @@ pub struct PendingDestinationMetadata {
     pub destination_transaction_identity: Option<LinuxStableIdentity>,
     pub source_tree_snapshot: Option<SourceTreeSnapshot>,
     pub staged_destination_identity: Option<LinuxStableIdentity>,
+    pub expected_displaced_destination_identity: Option<LinuxStableIdentity>,
 }
 
 #[cfg(target_os = "linux")]
@@ -1916,6 +1921,8 @@ impl LinuxJournalDirectory {
                 && left.destination_transaction_identity == right.destination_transaction_identity
                 && left.source_tree_snapshot == right.source_tree_snapshot
                 && left.staged_destination_identity == right.staged_destination_identity
+                && left.expected_displaced_destination_identity
+                    == right.expected_displaced_destination_identity
                 && left.phase == right.phase
         };
         match PendingDestinationRecord::parse(&local) {
@@ -2535,6 +2542,7 @@ impl LinuxRecoveryLock<'_> {
                 metadata.destination_transaction_identity,
                 metadata.source_tree_snapshot,
                 metadata.staged_destination_identity,
+                metadata.expected_displaced_destination_identity,
             )
             .ok_or(
                 LinuxAdvancePendingDestinationError::InvalidPendingDestination(
@@ -3443,6 +3451,7 @@ impl PendingDestinationRecord {
             destination_transaction_identity: None,
             source_tree_snapshot: None,
             staged_destination_identity: None,
+            expected_displaced_destination_identity: None,
             pending_destination_name: NativePath::encode(pending_destination_name),
         })
     }
@@ -3495,6 +3504,7 @@ impl TryFrom<RawPendingDestinationRecord> for PendingDestinationRecord {
             destination_transaction_identity: raw.destination_transaction_identity,
             source_tree_snapshot: raw.source_tree_snapshot,
             staged_destination_identity: raw.staged_destination_identity,
+            expected_displaced_destination_identity: raw.expected_displaced_destination_identity,
             pending_destination_name: raw.pending_destination_name,
         })
     }
@@ -3531,6 +3541,8 @@ impl PublishedRecord {
             destination_transaction_identity: pending.destination_transaction_identity,
             source_tree_snapshot: pending.source_tree_snapshot.clone(),
             staged_destination_identity: pending.staged_destination_identity,
+            expected_displaced_destination_identity: pending
+                .expected_displaced_destination_identity,
             pending_destination_name: pending.pending_destination_name.clone(),
         })
     }
@@ -3556,6 +3568,7 @@ impl PublishedRecord {
             destination_transaction_identity: None,
             source_tree_snapshot: None,
             staged_destination_identity: None,
+            expected_displaced_destination_identity: None,
             pending_destination_name: NativePath::encode(pending_destination_name),
         })
     }
@@ -3607,6 +3620,7 @@ impl TryFrom<RawPublishedRecord> for PublishedRecord {
             destination_transaction_identity: raw.destination_transaction_identity,
             source_tree_snapshot: raw.source_tree_snapshot,
             staged_destination_identity: raw.staged_destination_identity,
+            expected_displaced_destination_identity: raw.expected_displaced_destination_identity,
             pending_destination_name: raw.pending_destination_name,
         })
     }
@@ -3637,12 +3651,22 @@ impl PendingDestinationRecord {
         self
     }
 
+    pub fn with_expected_displaced_destination_identity(
+        mut self,
+        expected_displaced_destination_identity: LinuxStableIdentity,
+    ) -> Self {
+        self.expected_displaced_destination_identity =
+            Some(expected_displaced_destination_identity);
+        self
+    }
+
     pub fn with_destination_transaction_data(
         mut self,
         destination_transaction_name: Option<&Path>,
         destination_transaction_identity: Option<LinuxStableIdentity>,
         source_tree_snapshot: Option<SourceTreeSnapshot>,
         staged_destination_identity: Option<LinuxStableIdentity>,
+        expected_displaced_destination_identity: Option<LinuxStableIdentity>,
     ) -> Option<Self> {
         match (
             destination_transaction_name,
@@ -3661,6 +3685,13 @@ impl PendingDestinationRecord {
         }
         if let Some(staged_destination_identity) = staged_destination_identity {
             self = self.with_staged_destination_identity(staged_destination_identity);
+        }
+        if let Some(expected_displaced_destination_identity) =
+            expected_displaced_destination_identity
+        {
+            self = self.with_expected_displaced_destination_identity(
+                expected_displaced_destination_identity,
+            );
         }
         Some(self)
     }
@@ -3688,6 +3719,15 @@ impl PublishedRecord {
         staged_destination_identity: LinuxStableIdentity,
     ) -> Self {
         self.staged_destination_identity = Some(staged_destination_identity);
+        self
+    }
+
+    pub fn with_expected_displaced_destination_identity(
+        mut self,
+        expected_displaced_destination_identity: LinuxStableIdentity,
+    ) -> Self {
+        self.expected_displaced_destination_identity =
+            Some(expected_displaced_destination_identity);
         self
     }
 }
@@ -5793,6 +5833,15 @@ mod tests {
                         destination_transaction_identity: Some(destination_transaction_identity),
                         source_tree_snapshot: Some(snapshot.clone()),
                         staged_destination_identity: Some(staged_destination_identity),
+                        // Cross-device Overwrite must pin the occupied destination before any
+                        // exchange can be considered. This is persistence-only: runtime
+                        // cross-device Overwrite remains rejected until its full lifecycle is
+                        // implemented.
+                        expected_displaced_destination_identity: Some(LinuxStableIdentity::new(
+                            99,
+                            100,
+                            LinuxFileType::Regular,
+                        )),
                     },
                 )
                 .unwrap();
@@ -5810,7 +5859,12 @@ mod tests {
                 destination_transaction_identity,
             )
             .with_source_tree_snapshot(snapshot)
-            .with_staged_destination_identity(staged_destination_identity);
+            .with_staged_destination_identity(staged_destination_identity)
+            .with_expected_displaced_destination_identity(LinuxStableIdentity::new(
+                99,
+                100,
+                LinuxFileType::Regular,
+            ));
 
         assert_eq!(
             central.load_pending_destination_restart_state(&local, [0x31; 16]),
@@ -5829,8 +5883,25 @@ mod tests {
         assert_eq!(
             PendingDestinationRecord::parse(&std::fs::read(local_path.join("journal")).unwrap())
                 .unwrap(),
-            expected
+            expected.clone()
         );
+        let mismatched_displaced_identity = expected
+            .clone()
+            .with_expected_displaced_destination_identity(LinuxStableIdentity::new(
+                101,
+                102,
+                LinuxFileType::Regular,
+            ));
+        local
+            .persist_local_pending_destination(&mismatched_displaced_identity)
+            .unwrap();
+        assert!(matches!(
+            central.load_pending_destination_restart_state(&local, [0x31; 16]),
+            Err(LinuxLoadPendingDestinationRestartError::PendingDestinationEvidenceMismatch {
+                durable_central,
+                local,
+            }) if *durable_central == expected && *local == mismatched_displaced_identity
+        ));
         std::fs::remove_dir_all(root).unwrap();
     }
 
