@@ -800,6 +800,8 @@ pub enum LinuxInspectClaimedSourceDirectoryCleanupError {
     Retained(#[from] LinuxInspectCrossDeviceOverwriteRetainedError),
     #[error("claimed-source directory cleanup requires matching claimed-source-unlinked evidence")]
     NotClaimedSourceUnlinked,
+    #[error("source transaction is no longer named by its anchored source parent")]
+    SourceTransactionPlacementMismatch,
     #[error("source transaction contains an unexpected descendant: {0:?}")]
     UnexpectedDescendant(Vec<u8>),
     #[error("source transaction local journal is not a regular non-symlink file")]
@@ -3396,7 +3398,8 @@ impl LinuxRecoveryLock<'_> {
 
         let published = match self
             .central
-            .load_published_restart_state(local, transaction_id)?
+            .load_published_restart_state(local, transaction_id)
+            .map_err(LinuxInspectCrossDeviceOverwriteRetainedError::Restart)?
         {
             LinuxPublishedRestartState::MatchingPair(published) => published,
             LinuxPublishedRestartState::CentralCleanupPendingLocalPublished { .. }
@@ -3662,6 +3665,7 @@ impl LinuxRecoveryLock<'_> {
     pub fn plan_claimed_source_directory_cleanup(
         &mut self,
         local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
     ) -> Result<
@@ -3719,6 +3723,46 @@ impl LinuxRecoveryLock<'_> {
         )? != LinuxCrossDeviceOverwriteRetainedState::ClaimedSourceAbsentUnlinked
         {
             return Err(LinuxInspectClaimedSourceDirectoryCleanupError::NotClaimedSourceUnlinked);
+        }
+        let published = match self
+            .central
+            .load_published_restart_state(local, transaction_id)
+            .map_err(LinuxInspectCrossDeviceOverwriteRetainedError::Restart)?
+        {
+            LinuxPublishedRestartState::MatchingPair(published) => published,
+            _ => {
+                return Err(
+                    LinuxInspectClaimedSourceDirectoryCleanupError::NotClaimedSourceUnlinked,
+                );
+            }
+        };
+        let transaction_name = published
+            .source_transaction_name
+            .decode()
+            .map_err(|error| {
+                LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+            })?;
+        let named = openat(
+            &source_parent.directory,
+            transaction_name,
+            OFlags::PATH | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|_| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch
+        })?;
+        let named_stat = fstat(&named).map_err(|error| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+        })?;
+        if LinuxStableIdentity::new(
+            named_stat.st_dev,
+            named_stat.st_ino,
+            LinuxFileType::Directory,
+        ) != published.source_transaction_identity
+        {
+            return Err(
+                LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch,
+            );
         }
         Ok(LinuxClaimedSourceDirectoryCleanupPlan::JournalOnlyManualReview)
     }
@@ -6145,7 +6189,7 @@ mod tests {
             encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
         ));
         let central_path = root.join("central");
-        let local_path = root.join("local");
+        let local_path = root.join(".ottrin-move-42424242424242424242424242424242");
         std::fs::create_dir_all(&central_path).unwrap();
         std::fs::create_dir(&local_path).unwrap();
         let central = LinuxJournalDirectory::open(&central_path).unwrap();
@@ -7533,7 +7577,7 @@ mod tests {
             encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
         ));
         let central_path = root.join("central");
-        let local_path = root.join("local");
+        let local_path = root.join(".ottrin-move-42424242424242424242424242424242");
         let destination_path = root.join("destination");
         let destination_transaction_path = destination_path.join(".ottrin-move-destination");
         let claimed_path = local_path.join("claimed");
@@ -7652,6 +7696,7 @@ mod tests {
             b"displaced target retained"
         );
 
+        let source_parent = LinuxSourceParentDirectory::open(&root).unwrap();
         let destination_parent = LinuxSourceParentDirectory::open(&destination_path).unwrap();
         assert_eq!(
             recovery.inspect_cross_device_overwrite_retained_state(
@@ -8104,9 +8149,26 @@ mod tests {
         // planning-only: unexpected descendants and a symlink substituted for the journal
         // are rejected without changing either journal or retained destination data.
         assert_eq!(
-            recovery.plan_claimed_source_directory_cleanup(&local, &destination_parent, [0x42; 16]),
+            recovery.plan_claimed_source_directory_cleanup(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+            ),
             Ok(LinuxClaimedSourceDirectoryCleanupPlan::JournalOnlyManualReview)
         );
+        let reparented_local_path = root.join("reparented-local");
+        std::fs::rename(&local_path, &reparented_local_path).unwrap();
+        assert_eq!(
+            recovery.plan_claimed_source_directory_cleanup(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Err(LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch)
+        );
+        std::fs::rename(&reparented_local_path, &local_path).unwrap();
         let central_before_directory_cleanup_plan = std::fs::read(&central_journal).unwrap();
         let local_before_directory_cleanup_plan = std::fs::read(&local_journal).unwrap();
         std::fs::write(
@@ -8115,7 +8177,12 @@ mod tests {
         )
         .unwrap();
         assert_eq!(
-            recovery.plan_claimed_source_directory_cleanup(&local, &destination_parent, [0x42; 16]),
+            recovery.plan_claimed_source_directory_cleanup(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+            ),
             Err(
                 LinuxInspectClaimedSourceDirectoryCleanupError::UnexpectedDescendant(
                     b"unexpected-descendant".to_vec()
@@ -8127,7 +8194,12 @@ mod tests {
         std::fs::rename(&local_journal, &local_journal_backup).unwrap();
         std::os::unix::fs::symlink(&local_journal_backup, &local_journal).unwrap();
         assert_eq!(
-            recovery.plan_claimed_source_directory_cleanup(&local, &destination_parent, [0x42; 16]),
+            recovery.plan_claimed_source_directory_cleanup(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+            ),
             Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalNotRegular)
         );
         std::fs::remove_file(&local_journal).unwrap();
@@ -8136,7 +8208,12 @@ mod tests {
             .persist_local_published(&published.clone().into_claimed_source_deletion_pending())
             .unwrap();
         assert!(matches!(
-            recovery.plan_claimed_source_directory_cleanup(&local, &destination_parent, [0x42; 16]),
+            recovery.plan_claimed_source_directory_cleanup(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+            ),
             Err(LinuxInspectClaimedSourceDirectoryCleanupError::Retained(
                 LinuxInspectCrossDeviceOverwriteRetainedError::IncompleteEvidence
             ))
