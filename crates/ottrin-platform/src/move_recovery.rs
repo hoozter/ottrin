@@ -8740,6 +8740,35 @@ mod tests {
             ))
         ));
         std::fs::write(&central_journal, central_before_final_topology_change).unwrap();
+        // A parseable but stale central phase is also not authority. It must be classified as
+        // central/local durable-evidence disagreement at the same final boundary.
+        let central_mismatch = recovery
+            .preflight_claimed_source_directory_cleanup_after_final_topology_scan(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                (
+                    || {},
+                    || {},
+                    || {
+                        central
+                            .persist_published(&published.clone().into_cleanup_pending())
+                            .unwrap()
+                    },
+                ),
+            );
+        assert!(matches!(
+            central_mismatch,
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::Retained(
+                    LinuxInspectCrossDeviceOverwriteRetainedError::Restart(
+                        LinuxLoadPublishedRestartError::PublishedEvidenceMismatch { .. }
+                    )
+                )
+            ))
+        ));
+        central.persist_published(&claimed_source_unlinked).unwrap();
         // A new, plausible journal-only directory at the durable name must not inherit the
         // original transaction's cleanup authority after the final topology observation.
         let after_final_topology_replaced_local_path =
