@@ -17,6 +17,7 @@ require_line() {
 require_line 'Local automated gates and artifact inspection last passed on 2026-07-27.'
 require_line '- [ ] Linux and Windows CI are green for the release commit.'
 require_line '- [ ] Portable zip launches on a real Windows desktop.'
+require_line '- [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; Move rejects without mutation.'
 require_line '- [ ] Privileged helper allow, cancel, missing-helper, and misconfigured-policy paths pass.'
 
 printf 'Verified release checklist evidence provenance.\n'
