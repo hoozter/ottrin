@@ -15,6 +15,9 @@ $MesaUrl = "https://github.com/pal1000/mesa-dist-win/releases/download/26.1.3/me
 $MesaSha256 = "80d5add64254c839b4c784bdab6a2b504e448675604b0fe54a9bce3c543303a7"
 $MesaSourceUrl = "https://gitlab.freedesktop.org/mesa/mesa/-/archive/mesa-26.1.3/mesa-mesa-26.1.3.tar.gz"
 $MesaSourceSha256 = "4ef7c87feb15966d5645ec55728020632d2f54becb42ce546d4a12bfc5275dd1"
+$MesaLibEglSha256 = "ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"
+$MesaLibGlesv2Sha256 = "649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"
+$MesaLibGalliumWglSha256 = "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"
 $PalLicenseUrl = "https://raw.githubusercontent.com/pal1000/mesa-dist-win/26.1.3/LICENSE"
 $PalLicenseSha256 = "9cd0121dc070f0ac65c1fc266bee74bdbbc22cea4210ae72ae0c1f076448d4cc"
 $DxcUrl = "https://github.com/microsoft/DirectXShaderCompiler/releases/download/v1.9.2602.24/dxc_2026_05_27.zip"
@@ -63,8 +66,17 @@ function Resolve-GraphicsCompatibilityRuntime {
     Get-VerifiedFile $DxcUrl $DxcSha256 $dxcArchive
     $sevenZip = Get-Command 7z.exe -ErrorAction SilentlyContinue
     if (-not $sevenZip) { throw "7z.exe is required to extract the pinned Mesa graphics compatibility archive." }
-    foreach ($dll in @("libEGL.dll", "libGLESv2.dll", "libgallium_wgl.dll")) {
+    $mesaDllChecksums = @{
+        "libEGL.dll" = $MesaLibEglSha256
+        "libGLESv2.dll" = $MesaLibGlesv2Sha256
+        "libgallium_wgl.dll" = $MesaLibGalliumWglSha256
+    }
+    foreach ($dll in $mesaDllChecksums.Keys) {
         & $sevenZip.Source e "-o$BinDestination" -y $mesaArchive "x64/$dll" | Out-Null
+        $actual = (Get-FileHash -Algorithm SHA256 (Join-Path $BinDestination $dll)).Hash.ToLowerInvariant()
+        if ($actual -ne $mesaDllChecksums[$dll].ToLowerInvariant()) {
+            throw "Mesa DLL checksum mismatch after extracting the pinned Mesa archive: $dll"
+        }
     }
     Expand-Archive -Path $dxcArchive -DestinationPath (Join-Path $tmp "dxc")
     $dxil = Join-Path $tmp "dxc\bin\x64\dxil.dll"
@@ -82,6 +94,9 @@ Mesa archive: $MesaUrl
 Mesa archive SHA-256: $MesaSha256
 Mesa source archive: $MesaSourceUrl
 Mesa source archive SHA-256: $MesaSourceSha256
+libEGL.dll SHA-256: $MesaLibEglSha256
+libGLESv2.dll SHA-256: $MesaLibGlesv2Sha256
+libgallium_wgl.dll SHA-256: $MesaLibGalliumWglSha256
 pal1000 license: $PalLicenseUrl
 pal1000 license SHA-256: $PalLicenseSha256
 Microsoft DXC archive: $DxcUrl

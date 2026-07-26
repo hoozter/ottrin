@@ -4,6 +4,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="${1:-dist}"
 VERSION="$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')"
+MESA_LIBEGL_SHA256="ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"
+MESA_LIBGLESV2_SHA256="649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"
+MESA_LIBGALLIUM_WGL_SHA256="a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"
 
 find_one() {
   local pattern="$1"
@@ -152,6 +155,21 @@ for relative_path in \
   fi
 done
 
+verify_portable_mesa_dll() {
+  local expected="$1"
+  local entry="$2"
+  local actual
+  actual="$(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/$entry" | sha256sum | awk '{print $1}')"
+  if [[ "$actual" != "$expected" ]]; then
+    printf 'Windows portable archive contains an unexpected Mesa DLL: %s\n' "$entry" >&2
+    exit 1
+  fi
+}
+
+verify_portable_mesa_dll "$MESA_LIBEGL_SHA256" 'bin/libEGL.dll'
+verify_portable_mesa_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dll'
+verify_portable_mesa_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
+
 for artifact in "$LINUX_APPIMAGE" "$WINDOWS_INSTALLER"; do
   if [[ ! -s "$artifact" ]]; then
     printf 'release artifact is empty: %s\n' "$artifact" >&2
@@ -207,6 +225,21 @@ for relative_path in \
     exit 1
   fi
 done
+
+verify_installer_mesa_dll() {
+  local expected="$1"
+  local entry="$2"
+  local actual
+  actual="$(7z x -so "$WINDOWS_INSTALLER" "$entry" | sha256sum | awk '{print $1}')"
+  if [[ "$actual" != "$expected" ]]; then
+    printf 'Windows installer contains an unexpected Mesa DLL: %s\n' "$entry" >&2
+    exit 1
+  fi
+}
+
+verify_installer_mesa_dll "$MESA_LIBEGL_SHA256" 'bin/libEGL.dll'
+verify_installer_mesa_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dll'
+verify_installer_mesa_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
 
 APPIMAGE_EXTRACT_DIR="$(mktemp -d)"
 cleanup() {
