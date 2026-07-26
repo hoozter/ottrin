@@ -4052,6 +4052,32 @@ impl LinuxRecoveryLock<'_> {
             );
         }
         after_final_topology_scan();
+        // The scan only proves what was present while it ran. Re-open the journal through the
+        // anchored transaction handle before returning so an update or replacement in the last
+        // observation window is a typed race, never an apparently valid manual-review plan.
+        let journal = openat(
+            &local.directory,
+            "journal",
+            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|_| LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged)?;
+        let stat = fstat(&journal).map_err(|error| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+        })?;
+        if FileType::from_raw_mode(stat.st_mode) != FileType::RegularFile {
+            return Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged);
+        }
+        let identity = LinuxStableIdentity::new(stat.st_dev, stat.st_ino, LinuxFileType::Regular);
+        let mut contents = Vec::new();
+        std::fs::File::from(journal)
+            .read_to_end(&mut contents)
+            .map_err(|error| {
+                LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+            })?;
+        if (identity, contents) != journal_baseline {
+            return Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged);
+        }
         let named = openat(
             &source_parent.directory,
             &transaction_name,
@@ -8647,6 +8673,28 @@ mod tests {
             ))
         );
         std::fs::rename(&after_final_topology_reparented_local_path, &local_path).unwrap();
+        // The final topology scan does not freeze the journal. A changed local record after
+        // that scan must be classified as a journal race, rather than falling through to the
+        // generic prospective no-mutation result.
+        let journal_before_final_topology_change = std::fs::read(&local_journal).unwrap();
+        assert_eq!(
+            recovery.preflight_claimed_source_directory_cleanup_after_final_topology_scan(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                (
+                    || {},
+                    || {},
+                    || std::fs::write(&local_journal, b"modified after final topology scan")
+                        .unwrap(),
+                ),
+            ),
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged
+            ))
+        );
+        std::fs::write(&local_journal, journal_before_final_topology_change).unwrap();
         // A new, plausible journal-only directory at the durable name must not inherit the
         // original transaction's cleanup authority after the final topology observation.
         let after_final_topology_replaced_local_path =
