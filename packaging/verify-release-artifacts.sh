@@ -8,6 +8,14 @@ MESA_LIBEGL_SHA256="ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453
 MESA_LIBGLESV2_SHA256="649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"
 MESA_LIBGALLIUM_WGL_SHA256="a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"
 DXIL_SHA256="cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"
+MESA_URL="https://github.com/pal1000/mesa-dist-win/releases/download/26.1.3/mesa3d-26.1.3-release-mingw.7z"
+MESA_SHA256="80d5add64254c839b4c784bdab6a2b504e448675604b0fe54a9bce3c543303a7"
+MESA_SOURCE_URL="https://gitlab.freedesktop.org/mesa/mesa/-/archive/mesa-26.1.3/mesa-mesa-26.1.3.tar.gz"
+MESA_SOURCE_SHA256="4ef7c87feb15966d5645ec55728020632d2f54becb42ce546d4a12bfc5275dd1"
+PAL_LICENSE_URL="https://raw.githubusercontent.com/pal1000/mesa-dist-win/26.1.3/LICENSE"
+PAL_LICENSE_SHA256="9cd0121dc070f0ac65c1fc266bee74bdbbc22cea4210ae72ae0c1f076448d4cc"
+DXC_URL="https://github.com/microsoft/DirectXShaderCompiler/releases/download/v1.9.2602.24/dxc_2026_05_27.zip"
+DXC_SHA256="cf658aacf070d3045e31b8f1f8a696c2945f37c1095019481ef7c513368db3b4"
 
 "$ROOT/packaging/tests/verify-release-checklist-provenance.sh"
 
@@ -169,10 +177,48 @@ verify_portable_graphics_runtime_dll() {
   fi
 }
 
+verify_graphics_runtime_notice_manifest() {
+  local artifact_label="$1"
+  local manifest="$2"
+  local expected
+  for expected in \
+    'Ottrin Windows graphics compatibility runtime' \
+    "Mesa archive: $MESA_URL" \
+    "Mesa archive SHA-256: $MESA_SHA256" \
+    "Mesa source archive: $MESA_SOURCE_URL" \
+    "Mesa source archive SHA-256: $MESA_SOURCE_SHA256" \
+    "libEGL.dll SHA-256: $MESA_LIBEGL_SHA256" \
+    "libGLESv2.dll SHA-256: $MESA_LIBGLESV2_SHA256" \
+    "libgallium_wgl.dll SHA-256: $MESA_LIBGALLIUM_WGL_SHA256" \
+    "pal1000 license: $PAL_LICENSE_URL" \
+    "pal1000 license SHA-256: $PAL_LICENSE_SHA256" \
+    "Microsoft DXC archive: $DXC_URL" \
+    "Microsoft DXC archive SHA-256: $DXC_SHA256" \
+    "dxil.dll SHA-256: $DXIL_SHA256" \
+    'Included Mesa DLLs: libEGL.dll, libGLESv2.dll, libgallium_wgl.dll'; do
+    if ! grep -Fqx "$expected" <<<"$manifest"; then
+      printf '%s graphics-runtime notice manifest is missing: %s\\n' \
+        "$artifact_label" "$expected" >&2
+      exit 1
+    fi
+  done
+}
+
+verify_portable_graphics_runtime_notice_manifest() {
+  local manifest
+  if ! manifest="$(unzip -p "$WINDOWS_ARCHIVE" \
+    "Ottrin-$VERSION-windows-x64/third-party-notices/MANIFEST.txt")"; then
+    printf 'Windows portable archive is missing the graphics-runtime notice manifest.\\n' >&2
+    exit 1
+  fi
+  verify_graphics_runtime_notice_manifest 'Windows portable archive' "$manifest"
+}
+
 verify_portable_graphics_runtime_dll "$MESA_LIBEGL_SHA256" 'bin/libEGL.dll'
 verify_portable_graphics_runtime_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dll'
 verify_portable_graphics_runtime_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
 verify_portable_graphics_runtime_dll "$DXIL_SHA256" 'bin/dxil.dll'
+verify_portable_graphics_runtime_notice_manifest
 
 for artifact in "$LINUX_APPIMAGE" "$WINDOWS_INSTALLER"; do
   if [[ ! -s "$artifact" ]]; then
@@ -241,10 +287,20 @@ verify_installer_graphics_runtime_dll() {
   fi
 }
 
+verify_installer_graphics_runtime_notice_manifest() {
+  local manifest
+  if ! manifest="$(7z x -so "$WINDOWS_INSTALLER" third-party-notices/MANIFEST.txt)"; then
+    printf 'Windows installer is missing the graphics-runtime notice manifest.\\n' >&2
+    exit 1
+  fi
+  verify_graphics_runtime_notice_manifest 'Windows installer' "$manifest"
+}
+
 verify_installer_graphics_runtime_dll "$MESA_LIBEGL_SHA256" 'bin/libEGL.dll'
 verify_installer_graphics_runtime_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dll'
 verify_installer_graphics_runtime_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
 verify_installer_graphics_runtime_dll "$DXIL_SHA256" 'bin/dxil.dll'
+verify_installer_graphics_runtime_notice_manifest
 
 APPIMAGE_EXTRACT_DIR="$(mktemp -d)"
 cleanup() {
