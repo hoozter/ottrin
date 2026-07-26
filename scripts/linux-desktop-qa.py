@@ -115,6 +115,51 @@ def click_accessible_name(name: str, role: str | None = None):
     time.sleep(0.35)
 
 
+def click_view_toggle(window_id: str, name: str, next_name: str):
+    """Advance the view switch and prove the next state reached AT-SPI.
+
+    Some AT-SPI bridges acknowledge an egui button action without delivering
+    the pointer event.  Use that action first, then retry once through the
+    existing X11 route if its accessible label did not advance.
+    """
+    node = wait_for(
+        lambda: next(
+            (
+                item
+                for item in named_nodes(name)
+                if item.getRoleName() == "push button"
+                and pyatspi.STATE_SHOWING in item.getState().getStates()
+            ),
+            None,
+        ),
+        f"view switch {name!r}",
+    )
+    rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+    if not node.queryAction().doAction(0):
+        raise AssertionError(f"AT-SPI click failed for view switch {name!r}")
+    try:
+        wait_for(
+            lambda: visible_named_nodes(next_name),
+            f"view transition from {name!r} to {next_name!r}",
+            timeout=2.0,
+        )
+    except AssertionError:
+        run("xdotool", "windowactivate", "--sync", window_id)
+        run(
+            "xdotool",
+            "mousemove",
+            str(rect.x + rect.width // 2),
+            str(rect.y + rect.height // 2),
+            "click",
+            "1",
+        )
+        wait_for(
+            lambda: visible_named_nodes(next_name),
+            f"X11 view transition from {name!r} to {next_name!r}",
+        )
+    time.sleep(0.35)
+
+
 def click_accessible_suffix(suffix: str, role: str | None = None):
     node = wait_for(
         lambda: next(
@@ -654,18 +699,18 @@ def main() -> int:
         xkey(window_id, "Escape")
         wait_for(lambda: visible_entry("notes.txt"), "Documents after search")
 
-        click_accessible_name(VIEW_TO_LIST, "push button")
+        click_view_toggle(window_id, VIEW_TO_LIST, VIEW_TO_GRID)
         wait_for(lambda: visible_entry("notes.txt"), "List-view entries")
         passed("list-view", "Cycled from Miller to List with named selectable rows.")
         screenshot(evidence, "02-list-documents")
 
-        click_accessible_name(VIEW_TO_GRID, "push button")
+        click_view_toggle(window_id, VIEW_TO_GRID, VIEW_TO_COLUMN)
         wait_for(lambda: visible_entry("notes.txt"), "Grid-view entries")
         passed("grid-view", "Cycled from List to Grid with named selectable cells.")
         screenshot(evidence, "03-grid-documents")
 
-        click_accessible_name(VIEW_TO_COLUMN, "push button")
-        click_accessible_name(VIEW_TO_LIST, "push button")
+        click_view_toggle(window_id, VIEW_TO_COLUMN, VIEW_TO_LIST)
+        click_view_toggle(window_id, VIEW_TO_LIST, VIEW_TO_GRID)
         wait_for(lambda: visible_entry("notes.txt"), "List view for workflow matrix")
         invoke_context_action(window_id, "notes.txt", "Copy Item")
         double_click_entry(window_id, "Subfolder")
@@ -722,7 +767,7 @@ def main() -> int:
                 f"Opened the packaged {description} preview for {filename}.",
             )
 
-        click_accessible_name(VIEW_TO_GRID, "push button")
+        click_view_toggle(window_id, VIEW_TO_GRID, VIEW_TO_COLUMN)
         wait_for(lambda: visible_entry("trash-me.txt"), "trash fixture")
         invoke_context_action(window_id, "trash-me.txt", "Delete…")
         # The dialog opens with Move to Trash selected. Confirm through the
@@ -736,8 +781,8 @@ def main() -> int:
         )
         passed("trash-delete", "Moved only the disposable fixture into isolated XDG Trash.")
 
-        click_accessible_name(VIEW_TO_COLUMN, "push button")
-        click_accessible_name(VIEW_TO_LIST, "push button")
+        click_view_toggle(window_id, VIEW_TO_COLUMN, VIEW_TO_LIST)
+        click_view_toggle(window_id, VIEW_TO_LIST, VIEW_TO_GRID)
         wait_for(lambda: visible_entry("delete-me.txt"), "delete fixture")
         invoke_context_action(window_id, "delete-me.txt", "Delete…")
         # The confirmation choices expose accessible names. Select the explicit
