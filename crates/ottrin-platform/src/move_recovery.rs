@@ -7556,6 +7556,38 @@ mod tests {
             std::fs::read(&retained_displaced).unwrap(),
             b"displaced target retained"
         );
+        // An absent claimed source does not relax validation of the rest of the retained
+        // topology. A substituted published target must remain fail-closed, with both
+        // journals and the transaction-owned displaced candidate untouched.
+        let absent_claimed_target_backup = root.join("target-absent-claimed-replacement");
+        std::fs::rename(&published_target, &absent_claimed_target_backup).unwrap();
+        std::fs::write(
+            &published_target,
+            b"substituted target while claimed is absent",
+        )
+        .unwrap();
+        assert!(matches!(
+            recovery.inspect_cross_device_overwrite_retained_state(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Err(LinuxInspectCrossDeviceOverwriteRetainedError::PublishedTargetIdentityMismatch)
+        ));
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_after_deletion_pending
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_after_deletion_pending
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::remove_file(&published_target).unwrap();
+        std::fs::rename(&absent_claimed_target_backup, &published_target).unwrap();
         std::fs::rename(&absent_claimed_source_backup, &claimed_path).unwrap();
         assert_eq!(
             std::fs::read(&claimed_child).unwrap(),
