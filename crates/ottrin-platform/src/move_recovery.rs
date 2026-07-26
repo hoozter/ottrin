@@ -782,6 +782,12 @@ pub enum LinuxAdvanceClaimedSourceUnlinkedError {
         durable_central: Box<PublishedRecord>,
     },
     #[error(
+        "central claimed-source-unlinked marker is durable but the claimed source reappeared before matching local persistence"
+    )]
+    CentralDurableClaimedSourceChanged {
+        durable_central: Box<PublishedRecord>,
+    },
+    #[error(
         "central claimed-source-unlinked update succeeded but source-local update is uncertain: {error}"
     )]
     CentralDurableLocalUpdateUncertain {
@@ -3628,6 +3634,21 @@ impl LinuxRecoveryLock<'_> {
                     durable_central: Box::new(unlinked),
                 },
             );
+        }
+        match rustix::fs::openat(
+            &local.directory,
+            "claimed",
+            rustix::fs::OFlags::PATH | rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::CLOEXEC,
+            rustix::fs::Mode::empty(),
+        ) {
+            Err(error) if error == rustix::io::Errno::NOENT => {}
+            Ok(_) | Err(_) => {
+                return Err(
+                    LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableClaimedSourceChanged {
+                        durable_central: Box::new(unlinked),
+                    },
+                );
+            }
         }
         persist_local(local, &unlinked).map_err(|error| {
             LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableLocalUpdateUncertain {
@@ -9660,6 +9681,34 @@ mod tests {
             &local_before_unlinked_central_content_boundary,
         )
         .unwrap();
+        // A claimed source must remain absent after the durable post-unlink marker. A
+        // byte-identical reappearance is not authority for the matching local persistence.
+        assert!(matches!(
+            recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_persistence(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+                || std::fs::rename(&unlink_backup, &claimed_path).unwrap(),
+            ),
+            Err(LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableClaimedSourceChanged { .. })
+        ));
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::CentralClaimedSourceUnlinkedLocalClaimedSourceDeletionPending {
+                claimed_source_unlinked: claimed_source_unlinked.clone(),
+                claimed_source_deletion_pending: published.clone().into_claimed_source_deletion_pending(),
+            })
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::rename(&claimed_path, &unlink_backup).unwrap();
+        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
         assert!(matches!(
             recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_local_failure(
                 &local,
