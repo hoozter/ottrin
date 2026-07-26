@@ -9012,6 +9012,24 @@ mod tests {
             &central_journal,
         )
         .unwrap();
+        // The last central durable reload also cannot make a reparented source transaction
+        // authoritative. The final source-parent reopen must reject the stale pathname.
+        let reparented_local_after_final_central_reload =
+            root.join("reparented-local-after-final-central-reload");
+        assert_eq!(
+            recovery.preflight_claimed_source_directory_cleanup_after_final_central_reload(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || std::fs::rename(&local_path, &reparented_local_after_final_central_reload)
+                    .unwrap(),
+            ),
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch
+            ))
+        );
+        std::fs::rename(&reparented_local_after_final_central_reload, &local_path).unwrap();
         // A new, plausible journal-only directory at the durable name must not inherit the
         // original transaction's cleanup authority after the final topology observation.
         let after_final_topology_replaced_local_path =
