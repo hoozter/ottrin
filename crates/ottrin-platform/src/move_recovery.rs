@@ -3032,6 +3032,23 @@ impl LinuxRecoveryLock<'_> {
         )
     }
 
+    #[cfg(test)]
+    fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_failure(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxPublishedJournals, LinuxAdvanceClaimedSourceUnlinkedError> {
+        self.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner_with_persistence(
+            local,
+            destination_parent,
+            transaction_id,
+            || {},
+            |_, _| Err(JournalError::Io("injected central post-unlink journal failure".into())),
+            |local, unlinked| local.persist_local_published(unlinked),
+        )
+    }
+
     fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner<F, G>(
         &mut self,
         local: &LinuxJournalDirectory,
@@ -3043,6 +3060,34 @@ impl LinuxRecoveryLock<'_> {
     where
         F: FnOnce(),
         G: FnOnce(&LinuxJournalDirectory, &PublishedRecord) -> Result<(), JournalError>,
+    {
+        self.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner_with_persistence(
+            local,
+            destination_parent,
+            transaction_id,
+            after_central,
+            |central, unlinked| central.persist_published_staged(unlinked).map_err(LinuxJournalReplaceError::into_inner),
+            persist_local,
+        )
+    }
+
+    fn advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_inner_with_persistence<
+        F,
+        G,
+        H,
+    >(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        after_central: F,
+        persist_central: H,
+        persist_local: G,
+    ) -> Result<LinuxPublishedJournals, LinuxAdvanceClaimedSourceUnlinkedError>
+    where
+        F: FnOnce(),
+        G: FnOnce(&LinuxJournalDirectory, &PublishedRecord) -> Result<(), JournalError>,
+        H: FnOnce(&LinuxJournalDirectory, &PublishedRecord) -> Result<(), JournalError>,
     {
         if self.inspect_cross_device_overwrite_retained_state(
             local,
@@ -3069,11 +3114,8 @@ impl LinuxRecoveryLock<'_> {
             }
         };
         let unlinked = deletion_pending.into_claimed_source_unlinked();
-        self.central
-            .persist_published_staged(&unlinked)
-            .map_err(|failure| {
-                LinuxAdvanceClaimedSourceUnlinkedError::CentralUpdateUncertain(failure.into_inner())
-            })?;
+        persist_central(self.central, &unlinked)
+            .map_err(LinuxAdvanceClaimedSourceUnlinkedError::CentralUpdateUncertain)?;
         after_central();
         persist_local(local, &unlinked).map_err(|error| {
             LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableLocalUpdateUncertain {
@@ -7867,6 +7909,57 @@ mod tests {
                 [0x42; 16],
             ),
             Ok(LinuxCrossDeviceOverwriteCleanupPlan::ClaimedSourceAbsentDeletionPendingManualReview)
+        );
+        // If the central post-unlink marker cannot establish durability, neither journal may
+        // advance. The absent claimed source and retained exchange topology remain strictly
+        // inspection-only; no automatic recovery is permitted from the prior exact pair.
+        let central_before_unlinked_persistence = std::fs::read(&central_journal).unwrap();
+        let local_before_unlinked_persistence = std::fs::read(&local_journal).unwrap();
+        assert!(matches!(
+            recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_failure(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Err(LinuxAdvanceClaimedSourceUnlinkedError::CentralUpdateUncertain(JournalError::Io(_)))
+        ));
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_before_unlinked_persistence
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_before_unlinked_persistence
+        );
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::MatchingPair(
+                published.clone().into_claimed_source_deletion_pending()
+            ))
+        );
+        assert_eq!(
+            recovery.inspect_cross_device_overwrite_retained_state(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Ok(LinuxCrossDeviceOverwriteRetainedState::ClaimedSourceAbsentDeletionPending)
+        );
+        assert_eq!(
+            recovery.plan_cross_device_overwrite_retained_cleanup(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Ok(LinuxCrossDeviceOverwriteCleanupPlan::ClaimedSourceAbsentDeletionPendingManualReview)
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
         );
         // The post-unlink marker is persistable only after the complete retained topology is
         // revalidated with the claimed source absent. A central-only interruption is still
