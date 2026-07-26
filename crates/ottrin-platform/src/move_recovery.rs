@@ -729,6 +729,9 @@ pub enum LinuxCrossDeviceOverwriteRetainedState {
     /// The first claimed-source deletion boundary is durable in both journals, but the claimed
     /// source remains present and identity-verified. This remains inspection-only.
     IdentityVerifiedClaimedSourceDeletionPending,
+    /// The claimed source is absent after the durable first-deletion marker, while every other
+    /// retained exchange entry remains identity-verified. This remains inspection-only.
+    ClaimedSourceAbsentDeletionPending,
 }
 
 /// Read-only cleanup planning result for a retained cross-device Overwrite.
@@ -741,6 +744,7 @@ pub enum LinuxCrossDeviceOverwriteCleanupPlan {
     RetainForManualReview,
     CleanupPendingManualReview,
     ClaimedSourceDeletionPendingManualReview,
+    ClaimedSourceAbsentDeletionPendingManualReview,
 }
 
 /// Opaque, handle-relative proof that the retained claimed source was re-opened after a complete
@@ -3220,15 +3224,30 @@ impl LinuxRecoveryLock<'_> {
                 OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
                 Mode::empty(),
             )
-            .map_err(|error| LinuxInspectCrossDeviceOverwriteRetainedError::Io(error.to_string()))?
+            .map(Some)
         } else {
-            open(&local.directory, Path::new("claimed"))?
+            openat(
+                &local.directory,
+                "claimed",
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .map(Some)
         };
-        if identity(&claimed)? != published.claimed_source_identity {
-            return Err(
-                LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceIdentityMismatch,
-            );
-        }
+        let claimed = match claimed {
+            Ok(claimed) => claimed,
+            Err(error)
+                if error == rustix::io::Errno::NOENT
+                    && published.phase == JournalPhase::ClaimedSourceDeletionPending =>
+            {
+                None
+            }
+            Err(error) => {
+                return Err(LinuxInspectCrossDeviceOverwriteRetainedError::Io(
+                    error.to_string(),
+                ));
+            }
+        };
         fn snapshot_from_opened_root(root: &OwnedFd) -> Result<SourceTreeSnapshot, String> {
             use rustix::fs::{Dir, FileType, Mode, OFlags, fstat, openat};
             use std::os::unix::ffi::OsStringExt;
@@ -3294,13 +3313,20 @@ impl LinuxRecoveryLock<'_> {
             entries.sort_by(|(left, _), (right, _)| left.cmp(right));
             Ok(SourceTreeSnapshot::from_entries(entries))
         }
-        if snapshot_from_opened_root(&claimed)
-            .map_err(LinuxInspectCrossDeviceOverwriteRetainedError::Io)?
-            != *source_tree_snapshot
-        {
-            return Err(
-                LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceSnapshotMismatch,
-            );
+        if let Some(claimed) = claimed.as_ref() {
+            if identity(claimed)? != published.claimed_source_identity {
+                return Err(
+                    LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceIdentityMismatch,
+                );
+            }
+            if snapshot_from_opened_root(claimed)
+                .map_err(LinuxInspectCrossDeviceOverwriteRetainedError::Io)?
+                != *source_tree_snapshot
+            {
+                return Err(
+                    LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceSnapshotMismatch,
+                );
+            }
         }
         let pending_name = published
             .pending_destination_name
@@ -3332,7 +3358,11 @@ impl LinuxRecoveryLock<'_> {
                 LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedCleanupPending
             }
             JournalPhase::ClaimedSourceDeletionPending => {
-                LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedClaimedSourceDeletionPending
+                if claimed.is_some() {
+                    LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedClaimedSourceDeletionPending
+                } else {
+                    LinuxCrossDeviceOverwriteRetainedState::ClaimedSourceAbsentDeletionPending
+                }
             }
             _ => LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedRetained,
         })
@@ -3360,6 +3390,9 @@ impl LinuxRecoveryLock<'_> {
             LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedClaimedSourceDeletionPending => {
                 Ok(LinuxCrossDeviceOverwriteCleanupPlan::ClaimedSourceDeletionPendingManualReview)
             }
+            LinuxCrossDeviceOverwriteRetainedState::ClaimedSourceAbsentDeletionPending => Ok(
+                LinuxCrossDeviceOverwriteCleanupPlan::ClaimedSourceAbsentDeletionPendingManualReview,
+            ),
         }
     }
 
@@ -7484,6 +7517,46 @@ mod tests {
         );
         std::fs::remove_dir_all(&claimed_path).unwrap();
         std::fs::rename(&claimed_after_deletion_pending_backup, &claimed_path).unwrap();
+        // Simulate a stop after a future handle-relative unlink but before its separate durable
+        // post-unlink marker. Restart classification must stay read-only and preserve the
+        // remaining exchange evidence.
+        let absent_claimed_source_backup = root.join("claimed-absent-after-deletion-pending");
+        std::fs::rename(&claimed_path, &absent_claimed_source_backup).unwrap();
+        assert_eq!(
+            recovery.inspect_cross_device_overwrite_retained_state(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Ok(LinuxCrossDeviceOverwriteRetainedState::ClaimedSourceAbsentDeletionPending)
+        );
+        assert_eq!(
+            recovery.plan_cross_device_overwrite_retained_cleanup(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Ok(
+                LinuxCrossDeviceOverwriteCleanupPlan::ClaimedSourceAbsentDeletionPendingManualReview
+            )
+        );
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_after_deletion_pending
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_after_deletion_pending
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::rename(&absent_claimed_source_backup, &claimed_path).unwrap();
         assert_eq!(
             std::fs::read(&claimed_child).unwrap(),
             b"source retained pending cleanup"
