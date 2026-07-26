@@ -726,6 +726,9 @@ pub enum LinuxCrossDeviceOverwriteRetainedState {
     /// Every retained entry still matches durable evidence after the pre-cleanup marker.
     /// This remains review-only and conveys no deletion authority.
     IdentityVerifiedCleanupPending,
+    /// The first claimed-source deletion boundary is durable in both journals, but the claimed
+    /// source remains present and identity-verified. This remains inspection-only.
+    IdentityVerifiedClaimedSourceDeletionPending,
 }
 
 /// Read-only cleanup planning result for a retained cross-device Overwrite.
@@ -737,6 +740,7 @@ pub enum LinuxCrossDeviceOverwriteRetainedState {
 pub enum LinuxCrossDeviceOverwriteCleanupPlan {
     RetainForManualReview,
     CleanupPendingManualReview,
+    ClaimedSourceDeletionPendingManualReview,
 }
 
 /// Opaque, handle-relative proof that the retained claimed source was re-opened after a complete
@@ -3323,10 +3327,14 @@ impl LinuxRecoveryLock<'_> {
                 LinuxInspectCrossDeviceOverwriteRetainedError::DisplacedCandidateIdentityMismatch,
             );
         }
-        Ok(if published.phase == JournalPhase::CleanupPending {
-            LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedCleanupPending
-        } else {
-            LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedRetained
+        Ok(match published.phase {
+            JournalPhase::CleanupPending => {
+                LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedCleanupPending
+            }
+            JournalPhase::ClaimedSourceDeletionPending => {
+                LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedClaimedSourceDeletionPending
+            }
+            _ => LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedRetained,
         })
     }
 
@@ -3348,6 +3356,9 @@ impl LinuxRecoveryLock<'_> {
             }
             LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedCleanupPending => {
                 Ok(LinuxCrossDeviceOverwriteCleanupPlan::CleanupPendingManualReview)
+            }
+            LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedClaimedSourceDeletionPending => {
+                Ok(LinuxCrossDeviceOverwriteCleanupPlan::ClaimedSourceDeletionPendingManualReview)
             }
         }
     }
@@ -7405,6 +7416,36 @@ mod tests {
             Ok(LinuxPublishedRestartState::MatchingPair(
                 published.clone().into_claimed_source_deletion_pending()
             ))
+        );
+        // A stop immediately after the matching journal-only persistence must remain fully
+        // inspectable and must not mutate either journal or any retained entry.
+        let central_after_deletion_pending = std::fs::read(&central_journal).unwrap();
+        let local_after_deletion_pending = std::fs::read(&local_journal).unwrap();
+        assert_eq!(
+            recovery.inspect_cross_device_overwrite_retained_state(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Ok(
+                LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedClaimedSourceDeletionPending
+            )
+        );
+        assert_eq!(
+            recovery.plan_cross_device_overwrite_retained_cleanup(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Ok(LinuxCrossDeviceOverwriteCleanupPlan::ClaimedSourceDeletionPendingManualReview)
+        );
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_after_deletion_pending
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_after_deletion_pending
         );
         assert_eq!(
             std::fs::read(&claimed_child).unwrap(),
