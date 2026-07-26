@@ -8552,6 +8552,21 @@ mod tests {
             ))
         );
         std::fs::remove_file(&final_unexpected_descendant).unwrap();
+        let final_journal_bytes = std::fs::read(&local_journal).unwrap();
+        assert_eq!(
+            recovery.preflight_claimed_source_directory_cleanup_after_final_boundary(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                || {},
+                || std::fs::write(&local_journal, b"modified after final journal check").unwrap(),
+            ),
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged
+            ))
+        );
+        std::fs::write(&local_journal, final_journal_bytes).unwrap();
         assert_eq!(
             recovery.preflight_claimed_source_directory_cleanup(
                 &local,
