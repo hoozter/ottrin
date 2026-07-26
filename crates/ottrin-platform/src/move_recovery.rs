@@ -69,6 +69,7 @@ pub enum JournalPhase {
     UnexpectedClaimRetained,
     PendingDestination,
     Published,
+    CleanupPending,
 }
 
 #[cfg(target_os = "linux")]
@@ -82,6 +83,7 @@ impl JournalPhase {
                     | (Self::ClaimIntent, Self::UnexpectedClaimRetained)
                     | (Self::Claimed, Self::PendingDestination)
                     | (Self::PendingDestination, Self::Published)
+                    | (Self::Published, Self::CleanupPending)
             )
         {
             Ok(())
@@ -656,6 +658,29 @@ pub enum LinuxAdvancePublishedError {
     SuppliedPendingMismatch,
 }
 
+/// Failure while durably marking a verified cross-device Overwrite for a future cleanup.
+///
+/// This transition is deliberately journal-only. A successful result does not authorize any
+/// deletion; it merely makes a pre-deletion interruption explicit and restart-classifiable.
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxAdvanceCleanupPendingError {
+    #[error("published journal pair cannot enter cleanup-pending: {0}")]
+    PublishedPair(LinuxLoadPublishedRestartError),
+    #[error("cleanup-pending requires a matching published journal pair")]
+    NotPublished,
+    #[error("central cleanup-pending update did not confirm durability; inspect the journal: {0}")]
+    CentralUpdateUncertain(JournalError),
+    #[error(
+        "central cleanup-pending update succeeded but source-local update is uncertain: {error}"
+    )]
+    CentralDurableLocalUpdateUncertain {
+        #[source]
+        error: JournalError,
+        durable_central: Box<PublishedRecord>,
+    },
+}
+
 #[cfg(target_os = "linux")]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LinuxPublishedJournals {
@@ -689,6 +714,10 @@ pub enum LinuxInspectCrossDeviceOverwriteRetainedError {
     Restart(#[from] LinuxLoadPublishedRestartError),
     #[error("published evidence does not describe a complete cross-device overwrite exchange")]
     IncompleteEvidence,
+    #[error(
+        "retained cleanup has already been durably marked and requires separate restart classification"
+    )]
+    CleanupPhaseAlreadyRecorded,
     #[error("retained source transaction directory identity does not match the published journal")]
     SourceTransactionIdentityMismatch,
     #[error("retained claimed source identity does not match the published journal")]
@@ -2260,7 +2289,7 @@ impl LinuxJournalDirectory {
                         Err(_) => match PendingDestinationRecord::parse(&encoded) {
                             Ok(record) => (record.transaction_id, JournalPhase::PendingDestination),
                             Err(_) => match PublishedRecord::parse(&encoded) {
-                                Ok(record) => (record.transaction_id, JournalPhase::Published),
+                                Ok(record) => (record.transaction_id, record.phase),
                                 Err(_) => {
                                     return Err(LinuxDiscoverPreparedError::InvalidRecord {
                                         name: name.to_owned(),
@@ -2690,6 +2719,42 @@ impl LinuxRecoveryLock<'_> {
         Ok(LinuxPublishedJournals::MatchingPair)
     }
 
+    /// Durably records the boundary before any retained cross-device Overwrite entry could be
+    /// deleted. This performs no cleanup and deliberately exposes no deletion capability.
+    pub fn advance_cross_device_overwrite_to_cleanup_pending_with_local(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxPublishedJournals, LinuxAdvanceCleanupPendingError> {
+        let published = match self
+            .central
+            .load_published_restart_state(local, transaction_id)
+            .map_err(LinuxAdvanceCleanupPendingError::PublishedPair)?
+        {
+            LinuxPublishedRestartState::MatchingPair(published)
+                if published.phase == JournalPhase::Published =>
+            {
+                published
+            }
+            _ => return Err(LinuxAdvanceCleanupPendingError::NotPublished),
+        };
+        let cleanup_pending = published.into_cleanup_pending();
+        self.central
+            .persist_published_staged(&cleanup_pending)
+            .map_err(|failure| {
+                LinuxAdvanceCleanupPendingError::CentralUpdateUncertain(failure.into_inner())
+            })?;
+        local
+            .persist_local_published(&cleanup_pending)
+            .map_err(|error| {
+                LinuxAdvanceCleanupPendingError::CentralDurableLocalUpdateUncertain {
+                    error,
+                    durable_central: Box::new(cleanup_pending),
+                }
+            })?;
+        Ok(LinuxPublishedJournals::MatchingPair)
+    }
+
     #[cfg(test)]
     fn advance_to_claimed_with_local_after_central<F>(
         &mut self,
@@ -2941,6 +3006,9 @@ impl LinuxRecoveryLock<'_> {
                 return Err(LinuxInspectCrossDeviceOverwriteRetainedError::IncompleteEvidence);
             }
         };
+        if published.phase == JournalPhase::CleanupPending {
+            return Err(LinuxInspectCrossDeviceOverwriteRetainedError::CleanupPhaseAlreadyRecorded);
+        }
         let (
             destination_transaction_name,
             destination_transaction_identity,
@@ -3817,6 +3885,11 @@ impl<'de> Deserialize<'de> for PendingDestinationRecord {
 
 #[cfg(target_os = "linux")]
 impl PublishedRecord {
+    fn into_cleanup_pending(mut self) -> Self {
+        self.phase = JournalPhase::CleanupPending;
+        self
+    }
+
     pub fn from_pending(pending: &PendingDestinationRecord) -> Result<Self, JournalError> {
         Self::try_from(RawPublishedRecord {
             schema_major: pending.schema_major,
@@ -3897,7 +3970,10 @@ impl TryFrom<RawPublishedRecord> for PublishedRecord {
     type Error = JournalError;
 
     fn try_from(raw: RawPublishedRecord) -> Result<Self, Self::Error> {
-        if raw.phase != JournalPhase::Published {
+        if !matches!(
+            raw.phase,
+            JournalPhase::Published | JournalPhase::CleanupPending
+        ) {
             return Err(JournalError::InvalidPublishedPhase(raw.phase));
         }
         if let Some(observed) = raw.observed_displaced_destination_identity
@@ -3927,7 +4003,7 @@ impl TryFrom<RawPublishedRecord> for PublishedRecord {
             schema_major: claimed.schema_major,
             schema_minor: claimed.schema_minor,
             transaction_id: raw.transaction_id,
-            phase: JournalPhase::Published,
+            phase: raw.phase,
             source_parent: claimed.source_parent,
             original_name: claimed.original_name,
             source_parent_identity: claimed.source_parent_identity,
@@ -4357,6 +4433,7 @@ mod tests {
             JournalPhase::UnexpectedClaimRetained,
             JournalPhase::PendingDestination,
             JournalPhase::Published,
+            JournalPhase::CleanupPending,
         ];
         for from in phases {
             for to in phases {
@@ -4371,6 +4448,7 @@ mod tests {
                             )
                             | (JournalPhase::Claimed, JournalPhase::PendingDestination)
                             | (JournalPhase::PendingDestination, JournalPhase::Published)
+                            | (JournalPhase::Published, JournalPhase::CleanupPending)
                     );
                 if !documented {
                     assert_eq!(
@@ -4398,6 +4476,7 @@ mod tests {
             (JournalPhase::ClaimIntent, JournalPhase::Claimed),
             (JournalPhase::Claimed, JournalPhase::PendingDestination),
             (JournalPhase::PendingDestination, JournalPhase::Published),
+            (JournalPhase::Published, JournalPhase::CleanupPending),
         ] {
             assert_eq!(from.validate_transition(to), Ok(()));
         }
@@ -4422,6 +4501,7 @@ mod tests {
             JournalPhase::UnexpectedClaimRetained,
             JournalPhase::PendingDestination,
             JournalPhase::Published,
+            JournalPhase::CleanupPending,
         ] {
             assert_eq!(phase.validate_transition(phase), Ok(()));
         }
@@ -6744,6 +6824,55 @@ mod tests {
             ),
             Err(LinuxInspectCrossDeviceOverwriteRetainedError::DisplacedCandidateIdentityMismatch)
         ));
+
+        std::fs::remove_file(&retained_displaced).unwrap();
+        std::fs::hard_link(&displaced_backup, &retained_displaced).unwrap();
+        // A stop before either future deletion must have a durable, identity-pinned phase while
+        // preserving the claimed source, published target, and displaced candidate verbatim.
+        assert_eq!(
+            recovery
+                .advance_cross_device_overwrite_to_cleanup_pending_with_local(&local, [0x42; 16],),
+            Ok(LinuxPublishedJournals::MatchingPair)
+        );
+        assert!(matches!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::MatchingPair(PublishedRecord {
+                phase: JournalPhase::CleanupPending,
+                ..
+            }))
+        ));
+        assert_eq!(
+            central.discover_move_transactions(),
+            Ok(vec![LinuxDiscoveredMoveTransaction {
+                transaction_id: [0x42; 16],
+                phase: JournalPhase::CleanupPending,
+            }])
+        );
+        assert_eq!(
+            std::fs::read(&claimed_child).unwrap(),
+            b"source retained pending cleanup"
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        assert!(matches!(
+            recovery.inspect_cross_device_overwrite_retained_state(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Err(LinuxInspectCrossDeviceOverwriteRetainedError::CleanupPhaseAlreadyRecorded)
+        ));
+        assert_eq!(
+            recovery
+                .advance_cross_device_overwrite_to_cleanup_pending_with_local(&local, [0x42; 16]),
+            Err(LinuxAdvanceCleanupPendingError::NotPublished)
+        );
         std::fs::remove_dir_all(root).unwrap();
     }
 
