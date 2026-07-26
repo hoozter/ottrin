@@ -3714,8 +3714,7 @@ impl LinuxRecoveryLock<'_> {
             source_parent,
             destination_parent,
             transaction_id,
-            || {},
-            || {},
+            (|| {}, || {}, || {}),
         )
     }
 
@@ -3738,31 +3737,56 @@ impl LinuxRecoveryLock<'_> {
             source_parent,
             destination_parent,
             transaction_id,
-            after_topology_inspection,
-            after_final_journal_revalidation,
+            (
+                after_topology_inspection,
+                after_final_journal_revalidation,
+                || {},
+            ),
         )
     }
 
-    fn preflight_claimed_source_directory_cleanup_inner<F, G>(
+    #[cfg(test)]
+    fn preflight_claimed_source_directory_cleanup_after_final_topology_scan<F, G, H>(
         &mut self,
         local: &LinuxJournalDirectory,
         source_parent: &LinuxSourceParentDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
-        after_topology_inspection: F,
-        after_final_journal_revalidation: G,
+        boundaries: (F, G, H),
     ) -> Result<(), LinuxClaimedSourceDirectoryCleanupPreflightError>
     where
         F: FnOnce(),
         G: FnOnce(),
+        H: FnOnce(),
+    {
+        self.preflight_claimed_source_directory_cleanup_inner(
+            local,
+            source_parent,
+            destination_parent,
+            transaction_id,
+            boundaries,
+        )
+    }
+
+    fn preflight_claimed_source_directory_cleanup_inner<F, G, H>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        source_parent: &LinuxSourceParentDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        boundaries: (F, G, H),
+    ) -> Result<(), LinuxClaimedSourceDirectoryCleanupPreflightError>
+    where
+        F: FnOnce(),
+        G: FnOnce(),
+        H: FnOnce(),
     {
         self.plan_claimed_source_directory_cleanup_inner_with_final_boundary(
             local,
             source_parent,
             destination_parent,
             transaction_id,
-            after_topology_inspection,
-            after_final_journal_revalidation,
+            boundaries,
         )?;
         Err(LinuxClaimedSourceDirectoryCleanupPreflightError::MutationUnsupported)
     }
@@ -3786,19 +3810,17 @@ impl LinuxRecoveryLock<'_> {
             source_parent,
             destination_parent,
             transaction_id,
-            after_topology_inspection,
-            || {},
+            (after_topology_inspection, || {}, || {}),
         )
     }
 
-    fn plan_claimed_source_directory_cleanup_inner_with_final_boundary<F, G>(
+    fn plan_claimed_source_directory_cleanup_inner_with_final_boundary<F, G, H>(
         &mut self,
         local: &LinuxJournalDirectory,
         source_parent: &LinuxSourceParentDirectory,
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
-        after_topology_inspection: F,
-        after_final_journal_revalidation: G,
+        boundaries: (F, G, H),
     ) -> Result<
         LinuxClaimedSourceDirectoryCleanupPlan,
         LinuxInspectClaimedSourceDirectoryCleanupError,
@@ -3806,9 +3828,16 @@ impl LinuxRecoveryLock<'_> {
     where
         F: FnOnce(),
         G: FnOnce(),
+        H: FnOnce(),
     {
         use rustix::fs::{Dir, FileType, Mode, OFlags, fstat, openat};
         use std::io::Read;
+
+        let (
+            after_topology_inspection,
+            after_final_journal_revalidation,
+            after_final_topology_scan,
+        ) = boundaries;
 
         let mut directory = Dir::read_from(&local.directory).map_err(|error| {
             LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
@@ -4020,6 +4049,29 @@ impl LinuxRecoveryLock<'_> {
         if !final_found_journal {
             return Err(
                 LinuxInspectClaimedSourceDirectoryCleanupError::UnexpectedDescendant(Vec::new()),
+            );
+        }
+        after_final_topology_scan();
+        let named = openat(
+            &source_parent.directory,
+            &transaction_name,
+            OFlags::PATH | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|_| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch
+        })?;
+        let named_stat = fstat(&named).map_err(|error| {
+            LinuxInspectClaimedSourceDirectoryCleanupError::Io(error.to_string())
+        })?;
+        if LinuxStableIdentity::new(
+            named_stat.st_dev,
+            named_stat.st_ino,
+            LinuxFileType::Directory,
+        ) != published.source_transaction_identity
+        {
+            return Err(
+                LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch,
             );
         }
         Ok(LinuxClaimedSourceDirectoryCleanupPlan::JournalOnlyManualReview)
@@ -8510,8 +8562,11 @@ mod tests {
                 &source_parent,
                 &destination_parent,
                 [0x42; 16],
-                || {},
-                || std::fs::rename(&local_path, &final_reparented_local_path).unwrap(),
+                (
+                    || {},
+                    || std::fs::rename(&local_path, &final_reparented_local_path).unwrap(),
+                    || {},
+                ),
             ),
             Err(LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch)
         );
@@ -8567,6 +8622,31 @@ mod tests {
             ))
         );
         std::fs::write(&local_journal, final_journal_bytes).unwrap();
+        // The final topology scan itself is still only an observation. A reparent immediately
+        // after it must be surfaced as a typed rejection instead of being obscured by the
+        // prospective preflight's generic no-mutation outcome.
+        let after_final_topology_reparented_local_path =
+            root.join("after-final-topology-reparented-local");
+        assert_eq!(
+            recovery.preflight_claimed_source_directory_cleanup_after_final_topology_scan(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                (
+                    || {},
+                    || {},
+                    || {
+                        std::fs::rename(&local_path, &after_final_topology_reparented_local_path)
+                            .unwrap()
+                    },
+                ),
+            ),
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::SourceTransactionPlacementMismatch
+            ))
+        );
+        std::fs::rename(&after_final_topology_reparented_local_path, &local_path).unwrap();
         assert_eq!(
             recovery.preflight_claimed_source_directory_cleanup(
                 &local,
