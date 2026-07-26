@@ -115,7 +115,7 @@ ottrin-index --remove-schedule
 
 ## Current Limitations
 
-- Windows builds pass CI and archive inspection, but real Windows desktop runtime smoke testing is still pending.
+- Windows builds pass local package checks and archive inspection, but exact-release-commit CI and real Windows desktop runtime smoke testing are still pending.
 - Windows UAC/helper behavior still needs real Windows validation.
 - Windows builds default to WGPU with the system graphics driver. The portable ZIP and installer include a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime for virtual, remote, and problematic adapters. Use the explicit recovery override `ottrin.exe --renderer opengl` (or `OTTRIN_RENDERER=opengl`) to select it; its Mesa, pal1000, and Microsoft notices are bundled in `third-party-notices/`.
 - Linux polkit helper packaging needs real system smoke testing.
