@@ -7447,6 +7447,43 @@ mod tests {
             std::fs::read(&local_journal).unwrap(),
             local_after_deletion_pending
         );
+        // The durable phase does not relax source identity matching: a substituted claimed
+        // source remains fail-closed while the unaffected retained entries and journals stay
+        // intact for restart inspection.
+        let claimed_after_deletion_pending_backup = root.join("claimed-after-deletion-pending");
+        std::fs::rename(&claimed_path, &claimed_after_deletion_pending_backup).unwrap();
+        std::fs::create_dir(&claimed_path).unwrap();
+        std::fs::write(
+            claimed_path.join("nested-source"),
+            b"substituted after phase",
+        )
+        .unwrap();
+        assert!(matches!(
+            recovery.inspect_cross_device_overwrite_retained_state(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Err(LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceIdentityMismatch)
+        ));
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_after_deletion_pending
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_after_deletion_pending
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::remove_dir_all(&claimed_path).unwrap();
+        std::fs::rename(&claimed_after_deletion_pending_backup, &claimed_path).unwrap();
         assert_eq!(
             std::fs::read(&claimed_child).unwrap(),
             b"source retained pending cleanup"
