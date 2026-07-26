@@ -3262,6 +3262,43 @@ impl LinuxRecoveryLock<'_> {
         destination_parent: &LinuxSourceParentDirectory,
         transaction_id: [u8; 16],
     ) -> Result<LinuxClaimedSourceDeletionPreflight, LinuxClaimedSourceDeletionPreflightError> {
+        self.preflight_cross_device_overwrite_claimed_source_deletion_inner(
+            local,
+            destination_parent,
+            transaction_id,
+            || {},
+        )
+    }
+
+    #[cfg(test)]
+    fn preflight_cross_device_overwrite_claimed_source_deletion_after_inspection<F>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        after_inspection: F,
+    ) -> Result<LinuxClaimedSourceDeletionPreflight, LinuxClaimedSourceDeletionPreflightError>
+    where
+        F: FnOnce(),
+    {
+        self.preflight_cross_device_overwrite_claimed_source_deletion_inner(
+            local,
+            destination_parent,
+            transaction_id,
+            after_inspection,
+        )
+    }
+
+    fn preflight_cross_device_overwrite_claimed_source_deletion_inner<F>(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+        after_inspection: F,
+    ) -> Result<LinuxClaimedSourceDeletionPreflight, LinuxClaimedSourceDeletionPreflightError>
+    where
+        F: FnOnce(),
+    {
         use rustix::{
             fs::{FileType, Mode, OFlags, fstat, openat},
             io::dup,
@@ -3275,6 +3312,7 @@ impl LinuxRecoveryLock<'_> {
         {
             return Err(LinuxClaimedSourceDeletionPreflightError::CleanupNotPending);
         }
+        after_inspection();
         let published = match self
             .central
             .load_published_restart_state(local, transaction_id)
@@ -7117,6 +7155,42 @@ mod tests {
             std::fs::read(&retained_displaced).unwrap(),
             b"displaced target retained"
         );
+        // An attacker replacing `claimed` after the complete inspection but before its
+        // handle-relative reopen must not receive a preflight token or alter any other data.
+        let claimed_backup = root.join("claimed-before-preflight-replacement");
+        let central_before_replacement = std::fs::read(&central_journal).unwrap();
+        let local_before_replacement = std::fs::read(&local_journal).unwrap();
+        assert!(matches!(
+            recovery.preflight_cross_device_overwrite_claimed_source_deletion_after_inspection(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+                || {
+                    std::fs::rename(&claimed_path, &claimed_backup).unwrap();
+                    std::fs::create_dir(&claimed_path).unwrap();
+                    std::fs::write(claimed_path.join("nested-source"), b"replacement").unwrap();
+                },
+            ),
+            Err(LinuxClaimedSourceDeletionPreflightError::ClaimedSourceIdentityMismatch)
+        ));
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_before_replacement
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_before_replacement
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
+        std::fs::remove_dir_all(&claimed_path).unwrap();
+        std::fs::rename(&claimed_backup, &claimed_path).unwrap();
         assert_eq!(
             recovery
                 .advance_cross_device_overwrite_to_cleanup_pending_with_local(&local, [0x42; 16]),
