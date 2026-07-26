@@ -977,6 +977,32 @@ pub enum LinuxDiscoverPreparedError {
 }
 
 #[cfg(target_os = "linux")]
+/// Read-only status for a durable Move journal discovered in the central recovery root.
+///
+/// This intentionally exposes only the transaction ID and its validated durable phase.
+/// It does not expose source or destination path hints, nor does it grant journal or cleanup
+/// authority. Callers must treat every result as retained for manual recovery until a later,
+/// identity-verified recovery action is implemented.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct LinuxDiscoveredMoveTransaction {
+    pub transaction_id: [u8; 16],
+    pub phase: JournalPhase,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum LinuxMoveRecoveryDisposition {
+    RetainedForManualRecovery,
+}
+
+#[cfg(target_os = "linux")]
+impl LinuxDiscoveredMoveTransaction {
+    pub fn disposition(self) -> LinuxMoveRecoveryDisposition {
+        LinuxMoveRecoveryDisposition::RetainedForManualRecovery
+    }
+}
+
+#[cfg(target_os = "linux")]
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[allow(clippy::large_enum_variant)]
 pub enum LinuxPendingDestinationRestartState {
@@ -2099,11 +2125,26 @@ impl LinuxJournalDirectory {
     }
 
     pub fn discover_pending(&self) -> Result<Vec<[u8; 16]>, LinuxDiscoverPreparedError> {
+        self.discover_move_transactions().map(|transactions| {
+            transactions
+                .into_iter()
+                .map(|entry| entry.transaction_id)
+                .collect()
+        })
+    }
+
+    /// Enumerate validated durable Move journals without granting recovery authority.
+    ///
+    /// Discovery is deliberately read-only: malformed or inconsistent evidence is surfaced as
+    /// an error and every valid entry remains retained for manual recovery.
+    pub fn discover_move_transactions(
+        &self,
+    ) -> Result<Vec<LinuxDiscoveredMoveTransaction>, LinuxDiscoverPreparedError> {
         use rustix::fs::Dir;
 
         let mut directory = Dir::read_from(&self.directory)
             .map_err(|error| LinuxDiscoverPreparedError::DirectoryRead(error.to_string()))?;
-        let mut transaction_ids = Vec::new();
+        let mut transactions = Vec::new();
         while let Some(entry) = directory.read() {
             let entry = entry
                 .map_err(|error| LinuxDiscoverPreparedError::DirectoryRead(error.to_string()))?;
@@ -2142,16 +2183,16 @@ impl LinuxJournalDirectory {
                         name: name.to_owned(),
                         error,
                     })?;
-            let record_transaction_id_hex = match PreparedRecord::parse(&encoded) {
-                Ok(record) => record.transaction_id,
+            let (record_transaction_id_hex, phase) = match PreparedRecord::parse(&encoded) {
+                Ok(record) => (record.transaction_id, JournalPhase::Prepared),
                 Err(prepared_error) => match ClaimIntentRecord::parse(&encoded) {
-                    Ok(record) => record.transaction_id,
+                    Ok(record) => (record.transaction_id, JournalPhase::ClaimIntent),
                     Err(_) => match ClaimedRecord::parse(&encoded) {
-                        Ok(record) => record.transaction_id,
+                        Ok(record) => (record.transaction_id, JournalPhase::Claimed),
                         Err(_) => match PendingDestinationRecord::parse(&encoded) {
-                            Ok(record) => record.transaction_id,
+                            Ok(record) => (record.transaction_id, JournalPhase::PendingDestination),
                             Err(_) => match PublishedRecord::parse(&encoded) {
-                                Ok(record) => record.transaction_id,
+                                Ok(record) => (record.transaction_id, JournalPhase::Published),
                                 Err(_) => {
                                     return Err(LinuxDiscoverPreparedError::InvalidRecord {
                                         name: name.to_owned(),
@@ -2178,10 +2219,13 @@ impl LinuxJournalDirectory {
                     record: record_transaction_id,
                 });
             }
-            transaction_ids.push(record_transaction_id);
+            transactions.push(LinuxDiscoveredMoveTransaction {
+                transaction_id: record_transaction_id,
+                phase,
+            });
         }
-        transaction_ids.sort_unstable();
-        Ok(transaction_ids)
+        transactions.sort_unstable_by_key(|entry| entry.transaction_id);
+        Ok(transactions)
     }
 
     fn read_named(&self, name: &str) -> Result<Vec<u8>, LinuxJournalReadError> {
@@ -4621,6 +4665,54 @@ mod tests {
         assert_eq!(std::fs::read(journal_path).unwrap(), journal_before);
         assert_eq!(std::fs::read(root.join(stale_name)).unwrap(), stale);
         assert_eq!(std::fs::read_dir(&root).unwrap().count(), 2);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn central_discovery_reports_validated_phase_as_manual_recovery_without_paths() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-discover-status-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let transaction_id = [0x5a; 16];
+        let prepared = PreparedRecord::new_linux(
+            transaction_id,
+            Path::new("/source-parent"),
+            Path::new("original-name"),
+            LinuxStableIdentity::new(7, 11, LinuxFileType::Directory),
+            LinuxStableIdentity::new(7, 13, LinuxFileType::Regular),
+            Path::new(".ottrin-move-5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a"),
+            LinuxStableIdentity::new(7, 97, LinuxFileType::Directory),
+        )
+        .unwrap();
+        let claimed = ClaimedRecord::from_claim_intent(
+            &ClaimIntentRecord::from_prepared(&prepared).unwrap(),
+            LinuxStableIdentity::new(7, 13, LinuxFileType::Regular),
+        )
+        .unwrap();
+        let published =
+            PublishedRecord::from_claimed(&claimed, Path::new("destination-name")).unwrap();
+        let directory = LinuxJournalDirectory::open(&root).unwrap();
+        directory.persist_published(&published).unwrap();
+        let journal_path = root.join("5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a.journal");
+        let journal_before = std::fs::read(&journal_path).unwrap();
+
+        let discovered = directory.discover_move_transactions();
+
+        assert_eq!(
+            discovered,
+            Ok(vec![LinuxDiscoveredMoveTransaction {
+                transaction_id,
+                phase: JournalPhase::Published,
+            }])
+        );
+        assert_eq!(
+            discovered.unwrap()[0].disposition(),
+            LinuxMoveRecoveryDisposition::RetainedForManualRecovery
+        );
+        assert_eq!(std::fs::read(journal_path).unwrap(), journal_before);
         std::fs::remove_dir_all(root).unwrap();
     }
 
