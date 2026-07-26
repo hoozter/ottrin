@@ -776,6 +776,12 @@ pub enum LinuxAdvanceClaimedSourceUnlinkedError {
         durable_central: Box<PublishedRecord>,
     },
     #[error(
+        "central claimed-source-unlinked marker is durable but the central journal contents changed before matching local persistence"
+    )]
+    CentralDurableCentralJournalContentChanged {
+        durable_central: Box<PublishedRecord>,
+    },
+    #[error(
         "central claimed-source-unlinked update succeeded but source-local update is uncertain: {error}"
     )]
     CentralDurableLocalUpdateUncertain {
@@ -3527,6 +3533,13 @@ impl LinuxRecoveryLock<'_> {
                 },
             );
         }
+        let central_journal_contents = self.central.read_named(&central_journal_name).map_err(
+            |_| {
+                LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableCentralJournalContentChanged {
+                    durable_central: Box::new(unlinked.clone()),
+                }
+            },
+        )?;
         after_central();
         let central_journal = rustix::fs::openat(
             &self.central.directory,
@@ -3554,6 +3567,22 @@ impl LinuxRecoveryLock<'_> {
         {
             return Err(
                 LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableCentralJournalChanged {
+                    durable_central: Box::new(unlinked),
+                },
+            );
+        }
+        if self
+            .central
+            .read_named(&central_journal_name)
+            .map_err(|_| {
+                LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableCentralJournalContentChanged {
+                    durable_central: Box::new(unlinked.clone()),
+                }
+            })?
+            != central_journal_contents
+        {
+            return Err(
+                LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableCentralJournalContentChanged {
                     durable_central: Box::new(unlinked),
                 },
             );
@@ -9505,6 +9534,38 @@ mod tests {
         );
         std::fs::remove_file(&central_journal).unwrap();
         std::fs::rename(&central_after_unlinked_persistence_backup, &central_journal).unwrap();
+        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
+        // The durable central journal must also be content-stable before matching local
+        // persistence; an in-place edit remains central-only restart evidence.
+        assert!(matches!(
+            recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_persistence(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+                || std::fs::write(&central_journal, b"corrupted durable post-unlink evidence").unwrap(),
+            ),
+            Err(LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableCentralJournalContentChanged { .. })
+        ));
+        std::fs::write(
+            &central_journal,
+            serde_json::to_vec(&claimed_source_unlinked).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::CentralClaimedSourceUnlinkedLocalClaimedSourceDeletionPending {
+                claimed_source_unlinked: claimed_source_unlinked.clone(),
+                claimed_source_deletion_pending: published.clone().into_claimed_source_deletion_pending(),
+            })
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced).unwrap(),
+            b"displaced target retained"
+        );
         std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
         // Once the central post-unlink marker is durable, a byte-identical local-journal
         // replacement must not be overwritten by its matching local persistence. The durable
