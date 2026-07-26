@@ -11,7 +11,7 @@ Every item must be checked against the exact artifact intended for release. A so
 - [ ] Linux and Windows CI are green for the release commit.
 - [x] Release artifact checksums verify.
 - [x] Archive inspection confirms the app, indexer, privileged helper, policy/assets, and user documentation are present.
-- [ ] If a Windows graphics compatibility payload is shipped, both the portable zip and installer contain the same checksum-pinned DLL manifest and complete third-party/Microsoft redistribution notices. Until then, no Mesa DLL payload is bundled; the documented `--renderer opengl` / `OTTRIN_RENDERER=opengl` selector remains only a user-supplied-driver recovery override.
+- [x] Both Windows artifacts contain the same checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`libEGL.dll`, `libGLESv2.dll`, `libgallium_wgl.dll`, and `dxil.dll`) plus its complete Mesa, pal1000, and Microsoft notices under `third-party-notices/`. WGPU remains the default; `--renderer opengl` / `OTTRIN_RENDERER=opengl` is the explicit recovery selector for the bundled runtime.
 
 Local automated gates and artifact inspection last passed on 2026-07-25. CI and
 the clean-machine/manual gates below remain required against the eventual

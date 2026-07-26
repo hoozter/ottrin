@@ -7,7 +7,7 @@ param(
 $ErrorActionPreference = "Stop"
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $Stage = (Resolve-Path $Stage).Path
-$DistDir = Join-Path $Root "dist"
+$DistDir = if ($env:OTTRIN_DIST_DIR) { $env:OTTRIN_DIST_DIR } else { Join-Path $Root "dist" }
 
 if (-not $Version) {
     $CargoToml = Get-Content (Join-Path $Root "Cargo.toml")
@@ -22,6 +22,15 @@ $RequiredFiles = @(
     "bin\pdfium\pdfium.dll",
     "bin\pdfium\LICENSE",
     "bin\pdfium\licenses\pdfium.txt",
+    "bin\libEGL.dll",
+    "bin\libGLESv2.dll",
+    "bin\libgallium_wgl.dll",
+    "bin\dxil.dll",
+    "third-party-notices\MANIFEST.txt",
+    "third-party-notices\mesa3d-26.1.3\docs\license.rst",
+    "third-party-notices\mesa3d-26.1.3\licenses\MIT",
+    "third-party-notices\pal1000-LICENSE.txt",
+    "third-party-notices\Microsoft-DXC-LICENSE-MS.txt",
     "README.md",
     "docs\USER_GUIDE.md",
     "docs\RELEASE_NOTES.md",

@@ -10,6 +10,27 @@ STAGE="$DIST_DIR/Ottrin-$VERSION-windows-x64"
 ARCHIVE="$DIST_DIR/Ottrin-$VERSION-windows-x64-portable.zip"
 PDFIUM_URL="https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7961/pdfium-win-x64.tgz"
 PDFIUM_SHA256="88276459349b291c41f10422dad0210f007c04d919c8fa56472b6b7c6406adf4"
+MESA_URL="https://github.com/pal1000/mesa-dist-win/releases/download/26.1.3/mesa3d-26.1.3-release-mingw.7z"
+MESA_SHA256="80d5add64254c839b4c784bdab6a2b504e448675604b0fe54a9bce3c543303a7"
+MESA_SOURCE_URL="https://gitlab.freedesktop.org/mesa/mesa/-/archive/mesa-26.1.3/mesa-mesa-26.1.3.tar.gz"
+MESA_SOURCE_SHA256="4ef7c87feb15966d5645ec55728020632d2f54becb42ce546d4a12bfc5275dd1"
+PAL_LICENSE_URL="https://raw.githubusercontent.com/pal1000/mesa-dist-win/26.1.3/LICENSE"
+PAL_LICENSE_SHA256="9cd0121dc070f0ac65c1fc266bee74bdbbc22cea4210ae72ae0c1f076448d4cc"
+DXC_URL="https://github.com/microsoft/DirectXShaderCompiler/releases/download/v1.9.2602.24/dxc_2026_05_27.zip"
+DXC_SHA256="cf658aacf070d3045e31b8f1f8a696c2945f37c1095019481ef7c513368db3b4"
+DXIL_SHA256="cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"
+
+download_verified() {
+    local url="$1"
+    local expected="$2"
+    local destination="$3"
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL "$url" -o "$destination"
+    else
+        wget -q "$url" -O "$destination"
+    fi
+    printf '%s  %s\n' "$expected" "$destination" | sha256sum -c -
+}
 
 download_verify_and_package_pdfium() {
     local target_pdfium_dir="$1"
@@ -19,12 +40,7 @@ download_verify_and_package_pdfium() {
     local extract_dir="$tmp_dir/extract"
     mkdir -p "$extract_dir"
 
-    if command -v curl >/dev/null 2>&1; then
-        curl -fsSL "$PDFIUM_URL" -o "$archive"
-    else
-        wget -q "$PDFIUM_URL" -O "$archive"
-    fi
-    printf '%s  %s\n' "$PDFIUM_SHA256" "$archive" | sha256sum -c -
+    download_verified "$PDFIUM_URL" "$PDFIUM_SHA256" "$archive"
     tar -xzf "$archive" -C "$extract_dir"
 
     mkdir -p "$target_pdfium_dir"
@@ -33,16 +49,60 @@ download_verify_and_package_pdfium() {
     rm -rf "$tmp_dir"
 }
 
+package_graphics_compatibility_runtime() {
+    local target_bin="$1"
+    local target_notices="$2"
+    local tmp_dir
+    tmp_dir="$(mktemp -d)"
+    local mesa_archive="$tmp_dir/mesa.7z"
+    local mesa_source="$tmp_dir/mesa-source.tar.gz"
+    local dxc_archive="$tmp_dir/dxc.zip"
+
+    download_verified "$MESA_URL" "$MESA_SHA256" "$mesa_archive"
+    download_verified "$MESA_SOURCE_URL" "$MESA_SOURCE_SHA256" "$mesa_source"
+    download_verified "$PAL_LICENSE_URL" "$PAL_LICENSE_SHA256" "$tmp_dir/pal1000-LICENSE.txt"
+    download_verified "$DXC_URL" "$DXC_SHA256" "$dxc_archive"
+
+    mkdir -p "$tmp_dir/dxc" "$target_notices/mesa3d-26.1.3"
+    for dll in libEGL.dll libGLESv2.dll libgallium_wgl.dll; do
+        7z e -bd -y "-o$target_bin" "$mesa_archive" "x64/$dll" >/dev/null
+    done
+    unzip -q "$dxc_archive" -d "$tmp_dir/dxc"
+    printf '%s  %s\n' "$DXIL_SHA256" "$tmp_dir/dxc/bin/x64/dxil.dll" | sha256sum -c -
+    cp "$tmp_dir/dxc/bin/x64/dxil.dll" "$target_bin/dxil.dll"
+
+    tar -xzf "$mesa_source" -C "$target_notices/mesa3d-26.1.3" --strip-components=1 \
+        mesa-mesa-26.1.3/docs/license.rst mesa-mesa-26.1.3/licenses
+    cp "$tmp_dir/pal1000-LICENSE.txt" "$target_notices/pal1000-LICENSE.txt"
+    cp "$tmp_dir/dxc/LICENSE-MS.txt" "$target_notices/Microsoft-DXC-LICENSE-MS.txt"
+    cat > "$target_notices/MANIFEST.txt" <<EOF
+Ottrin Windows graphics compatibility runtime
+
+Mesa archive: $MESA_URL
+Mesa archive SHA-256: $MESA_SHA256
+Mesa source archive: $MESA_SOURCE_URL
+Mesa source archive SHA-256: $MESA_SOURCE_SHA256
+pal1000 license: $PAL_LICENSE_URL
+pal1000 license SHA-256: $PAL_LICENSE_SHA256
+Microsoft DXC archive: $DXC_URL
+Microsoft DXC archive SHA-256: $DXC_SHA256
+dxil.dll SHA-256: $DXIL_SHA256
+Included Mesa DLLs: libEGL.dll, libGLESv2.dll, libgallium_wgl.dll
+EOF
+    rm -rf "$tmp_dir"
+}
+
 cd "$ROOT"
 cargo build --release --target "$TARGET" -p ottrin-app -p ottrin-platform -p ottrin-search
 
 rm -rf "$STAGE"
-mkdir -p "$STAGE/bin" "$STAGE/assets" "$STAGE/docs"
+mkdir -p "$STAGE/bin" "$STAGE/assets" "$STAGE/docs" "$STAGE/third-party-notices"
 
 cp "$BUILD_DIR/ottrin-app.exe" "$STAGE/bin/ottrin.exe"
 cp "$BUILD_DIR/ottrin-priv-helper.exe" "$STAGE/bin/ottrin-priv-helper.exe"
 cp "$BUILD_DIR/ottrin-index.exe" "$STAGE/bin/ottrin-index.exe"
 download_verify_and_package_pdfium "$STAGE/bin/pdfium"
+package_graphics_compatibility_runtime "$STAGE/bin" "$STAGE/third-party-notices"
 cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/logo.svg" "$STAGE/assets/"
 cp "$ROOT/README.md" "$STAGE/"
 if [ -f "$ROOT/LICENSE" ]; then

@@ -102,6 +102,15 @@ for entry in \
   '/bin/pdfium/pdfium\.dll$' \
   '/bin/pdfium/LICENSE$' \
   '/bin/pdfium/licenses/pdfium\.txt$' \
+  '/bin/libEGL\.dll$' \
+  '/bin/libGLESv2\.dll$' \
+  '/bin/libgallium_wgl\.dll$' \
+  '/bin/dxil\.dll$' \
+  '/third-party-notices/MANIFEST\.txt$' \
+  '/third-party-notices/mesa3d-26\.1\.3/docs/license\.rst$' \
+  '/third-party-notices/mesa3d-26\.1\.3/licenses/MIT$' \
+  '/third-party-notices/pal1000-LICENSE\.txt$' \
+  '/third-party-notices/Microsoft-DXC-LICENSE-MS\.txt$' \
   '/assets/icon\.svg$' \
   '/README\.md$' \
   '/docs/USER_GUIDE\.md$' \
