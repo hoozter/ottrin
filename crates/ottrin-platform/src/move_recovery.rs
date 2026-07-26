@@ -723,6 +723,12 @@ pub enum LinuxAdvanceClaimedSourceDeletionPendingError {
         durable_central: Box<PublishedRecord>,
     },
     #[error(
+        "central first-deletion marker is durable but the claimed source changed before matching local persistence"
+    )]
+    CentralDurableClaimedSourceChanged {
+        durable_central: Box<PublishedRecord>,
+    },
+    #[error(
         "central claimed-source-deletion-pending update did not confirm durability; inspect the journal: {0}"
     )]
     CentralUpdateUncertain(JournalError),
@@ -3235,6 +3241,41 @@ impl LinuxRecoveryLock<'_> {
         {
             return Err(
                 LinuxAdvanceClaimedSourceDeletionPendingError::CentralDurableLocalJournalContentChanged {
+                    durable_central: Box::new(deletion_pending),
+                },
+            );
+        }
+        let claimed_source = rustix::fs::openat(
+            &preflight._source_transaction,
+            "claimed",
+            rustix::fs::OFlags::PATH | rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::CLOEXEC,
+            rustix::fs::Mode::empty(),
+        )
+        .map_err(|_| {
+            LinuxAdvanceClaimedSourceDeletionPendingError::CentralDurableClaimedSourceChanged {
+                durable_central: Box::new(deletion_pending.clone()),
+            }
+        })?;
+        let claimed_source_stat = rustix::fs::fstat(&claimed_source).map_err(|_| {
+            LinuxAdvanceClaimedSourceDeletionPendingError::CentralDurableClaimedSourceChanged {
+                durable_central: Box::new(deletion_pending.clone()),
+            }
+        })?;
+        let claimed_source_file_type =
+            match rustix::fs::FileType::from_raw_mode(claimed_source_stat.st_mode) {
+                rustix::fs::FileType::RegularFile => LinuxFileType::Regular,
+                rustix::fs::FileType::Directory => LinuxFileType::Directory,
+                rustix::fs::FileType::Symlink => LinuxFileType::Symlink,
+                _ => LinuxFileType::Other,
+            };
+        if LinuxStableIdentity::new(
+            claimed_source_stat.st_dev,
+            claimed_source_stat.st_ino,
+            claimed_source_file_type,
+        ) != preflight.claimed_source_identity
+        {
+            return Err(
+                LinuxAdvanceClaimedSourceDeletionPendingError::CentralDurableClaimedSourceChanged {
                     durable_central: Box::new(deletion_pending),
                 },
             );
@@ -9036,6 +9077,53 @@ mod tests {
         );
         std::fs::write(&central_journal, &central_before_central_only_boundary).unwrap();
         std::fs::write(&local_journal, &local_before_central_only_content_boundary).unwrap();
+        // After central durability, a byte-identical claimed-source replacement must not
+        // inherit the opaque preflight before the matching local record is persisted.
+        let claimed_after_central_persistence_backup =
+            root.join("claimed-after-central-persistence-backup");
+        let preflight = recovery
+            .preflight_cross_device_overwrite_claimed_source_deletion(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            )
+            .unwrap();
+        assert!(matches!(
+            recovery.advance_cross_device_overwrite_to_claimed_source_deletion_pending_with_local_after_central_persistence(
+                &local,
+                [0x42; 16],
+                preflight,
+                || {
+                    std::fs::rename(&claimed_path, &claimed_after_central_persistence_backup)
+                        .unwrap();
+                    std::fs::create_dir(&claimed_path).unwrap();
+                    std::fs::write(
+                        claimed_path.join("source.txt"),
+                        b"source retained pending cleanup",
+                    )
+                    .unwrap();
+                },
+            ),
+            Err(LinuxAdvanceClaimedSourceDeletionPendingError::CentralDurableClaimedSourceChanged { .. })
+        ));
+        assert_eq!(
+            central.load_published_restart_state(&local, [0x42; 16]),
+            Ok(LinuxPublishedRestartState::CentralClaimedSourceDeletionPendingLocalCleanupPending {
+                claimed_source_deletion_pending: published.clone().into_claimed_source_deletion_pending(),
+                cleanup_pending: published.clone().into_cleanup_pending(),
+            })
+        );
+        assert_eq!(
+            std::fs::read(claimed_path.join("source.txt")).unwrap(),
+            b"source retained pending cleanup"
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        std::fs::write(&central_journal, &central_before_central_only_boundary).unwrap();
+        std::fs::remove_dir_all(&claimed_path).unwrap();
+        std::fs::rename(&claimed_after_central_persistence_backup, &claimed_path).unwrap();
         let preflight = recovery
             .preflight_cross_device_overwrite_claimed_source_deletion(
                 &local,
