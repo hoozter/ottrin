@@ -16,6 +16,7 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 - Damaged, encrypted, unsupported, or unrenderable PDFs fall back to extracted text and metadata without a visual page.
 - Damaged, oversized, unsupported, or unrenderable DOCX/XLSX/XLSM packages fall back to extracted text and metadata. Their visual output is a bounded content preview, not faithful Office layout.
 - Legacy binary Office files (`.doc`, `.xls`, `.ppt`) receive metadata previews rather than document content previews.
+- Windows artifacts currently use WGPU with the system graphics driver. A locally observed Mesa/OpenGL workaround for virtual and remote adapters is intentionally not bundled yet: the candidate Mesa archive lacks the complete component notices and `dxil.dll` redistribution evidence required for a release payload. v0.1.0 therefore has no supported Ottrin graphics-backend recovery override.
 - Real Windows desktop, Windows UAC/helper, packaged Linux polkit, and full packaged-workflow smoke tests are release blockers until manually signed off.
 - Full undo, tab drag-and-drop, media playback, PDF page navigation, and faithful Office layout rendering are not included. Linux `.deb`/`.rpm`, Windows MSI, and macOS packages are also deferred.
 

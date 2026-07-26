@@ -117,6 +117,7 @@ ottrin-index --remove-schedule
 
 - Windows builds pass CI and archive inspection, but real Windows desktop runtime smoke testing is still pending.
 - Windows UAC/helper behavior still needs real Windows validation.
+- Windows builds currently use WGPU with the system graphics driver. A Mesa/OpenGL workaround was observed on virtual and remote adapters, but it is not part of an Ottrin artifact until its complete third-party notices and `dxil.dll` redistribution evidence are available; there is no supported graphics-backend recovery override in this release candidate.
 - Linux polkit helper packaging needs real system smoke testing.
 - Linux portable and AppImage artifacts have shallow launch smoke coverage; full packaged workflow QA is still pending.
 - Quick Inspector covers text/code, images, PDF text/metadata, DOCX content, XLSX/XLSM worksheets, PPTX slide text, ZIP/archive listings, bounded folder summaries, and generic metadata, but the full keyboard/file-type matrix still needs manual QA.
