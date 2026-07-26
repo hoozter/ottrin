@@ -672,6 +672,16 @@ pub enum LinuxCrossDeviceOverwriteRetainedState {
     IdentityVerifiedRetained,
 }
 
+/// Read-only cleanup planning result for a retained cross-device Overwrite.
+///
+/// This intentionally conveys no mutation authority. Cleanup remains a separately-proven future
+/// transition, even when all retained identities are still verified.
+#[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum LinuxCrossDeviceOverwriteCleanupPlan {
+    RetainForManualReview,
+}
+
 #[cfg(target_os = "linux")]
 #[derive(Debug, Error, Eq, PartialEq)]
 pub enum LinuxInspectCrossDeviceOverwriteRetainedError {
@@ -3097,6 +3107,22 @@ impl LinuxRecoveryLock<'_> {
             );
         }
         Ok(LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedRetained)
+    }
+
+    /// Classifies a retained cross-device Overwrite for manual review without changing it.
+    pub fn plan_cross_device_overwrite_retained_cleanup(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxCrossDeviceOverwriteCleanupPlan, LinuxInspectCrossDeviceOverwriteRetainedError>
+    {
+        self.inspect_cross_device_overwrite_retained_state(
+            local,
+            destination_parent,
+            transaction_id,
+        )?;
+        Ok(LinuxCrossDeviceOverwriteCleanupPlan::RetainForManualReview)
     }
 
     pub fn observe_original_after_restart(
@@ -6665,6 +6691,14 @@ mod tests {
                 [0x42; 16],
             ),
             Ok(LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedRetained)
+        );
+        assert_eq!(
+            recovery.plan_cross_device_overwrite_retained_cleanup(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Ok(LinuxCrossDeviceOverwriteCleanupPlan::RetainForManualReview)
         );
 
         let claimed_child_backup = root.join("claimed-child-backup");
