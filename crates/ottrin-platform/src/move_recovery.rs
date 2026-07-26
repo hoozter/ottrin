@@ -252,6 +252,7 @@ pub struct PublishedRecord {
     source_tree_snapshot: Option<SourceTreeSnapshot>,
     staged_destination_identity: Option<LinuxStableIdentity>,
     expected_displaced_destination_identity: Option<LinuxStableIdentity>,
+    observed_displaced_destination_identity: Option<LinuxStableIdentity>,
     pending_destination_name: NativePath,
 }
 
@@ -300,6 +301,7 @@ struct RawPublishedRecord {
     source_tree_snapshot: Option<SourceTreeSnapshot>,
     staged_destination_identity: Option<LinuxStableIdentity>,
     expected_displaced_destination_identity: Option<LinuxStableIdentity>,
+    observed_displaced_destination_identity: Option<LinuxStableIdentity>,
     pending_destination_name: NativePath,
 }
 
@@ -3543,6 +3545,7 @@ impl PublishedRecord {
             staged_destination_identity: pending.staged_destination_identity,
             expected_displaced_destination_identity: pending
                 .expected_displaced_destination_identity,
+            observed_displaced_destination_identity: None,
             pending_destination_name: pending.pending_destination_name.clone(),
         })
     }
@@ -3569,6 +3572,7 @@ impl PublishedRecord {
             source_tree_snapshot: None,
             staged_destination_identity: None,
             expected_displaced_destination_identity: None,
+            observed_displaced_destination_identity: None,
             pending_destination_name: NativePath::encode(pending_destination_name),
         })
     }
@@ -3587,6 +3591,14 @@ impl TryFrom<RawPublishedRecord> for PublishedRecord {
     fn try_from(raw: RawPublishedRecord) -> Result<Self, Self::Error> {
         if raw.phase != JournalPhase::Published {
             return Err(JournalError::InvalidPublishedPhase(raw.phase));
+        }
+        if let Some(observed) = raw.observed_displaced_destination_identity
+            && raw.expected_displaced_destination_identity != Some(observed)
+        {
+            return Err(JournalError::InvalidJson(
+                "observed displaced destination identity does not match the pinned expected identity"
+                    .to_string(),
+            ));
         }
         let claimed = ClaimedRecord::try_from(RawClaimedRecord {
             schema_major: raw.schema_major,
@@ -3621,6 +3633,7 @@ impl TryFrom<RawPublishedRecord> for PublishedRecord {
             source_tree_snapshot: raw.source_tree_snapshot,
             staged_destination_identity: raw.staged_destination_identity,
             expected_displaced_destination_identity: raw.expected_displaced_destination_identity,
+            observed_displaced_destination_identity: raw.observed_displaced_destination_identity,
             pending_destination_name: raw.pending_destination_name,
         })
     }
@@ -3728,6 +3741,15 @@ impl PublishedRecord {
     ) -> Self {
         self.expected_displaced_destination_identity =
             Some(expected_displaced_destination_identity);
+        self
+    }
+
+    pub fn with_observed_displaced_destination_identity(
+        mut self,
+        observed_displaced_destination_identity: LinuxStableIdentity,
+    ) -> Self {
+        self.observed_displaced_destination_identity =
+            Some(observed_displaced_destination_identity);
         self
     }
 }
@@ -6179,6 +6201,48 @@ mod tests {
         );
         assert_eq!(PublishedRecord::parse(&central_bytes).unwrap(), expected);
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_device_overwrite_published_record_requires_matching_observed_displaced_identity() {
+        let claimed = ClaimedRecord::from_claim_intent(
+            &ClaimIntentRecord::from_prepared(
+                &PreparedRecord::new_linux(
+                    [0x41; 16],
+                    Path::new("/source-parent"),
+                    Path::new("source-item"),
+                    LinuxStableIdentity::new(7, 41, LinuxFileType::Directory),
+                    LinuxStableIdentity::new(7, 42, LinuxFileType::Regular),
+                    Path::new(".ottrin-move-41414141414141414141414141414141"),
+                    LinuxStableIdentity::new(7, 43, LinuxFileType::Directory),
+                )
+                .unwrap(),
+            )
+            .unwrap(),
+            LinuxStableIdentity::new(7, 42, LinuxFileType::Regular),
+        )
+        .unwrap();
+        let expected_displaced = LinuxStableIdentity::new(8, 51, LinuxFileType::Regular);
+        let pending = PendingDestinationRecord::from_claimed(&claimed, Path::new("target"))
+            .unwrap()
+            .with_expected_displaced_destination_identity(expected_displaced);
+        let published = PublishedRecord::from_pending(&pending)
+            .unwrap()
+            .with_observed_displaced_destination_identity(expected_displaced);
+
+        assert_eq!(
+            PublishedRecord::parse(&serde_json::to_vec(&published).unwrap()),
+            Ok(published.clone())
+        );
+        let mismatched = published.with_observed_displaced_destination_identity(
+            LinuxStableIdentity::new(8, 52, LinuxFileType::Regular),
+        );
+        assert!(matches!(
+            PublishedRecord::parse(&serde_json::to_vec(&mismatched).unwrap()),
+            Err(JournalError::InvalidJson(message))
+                if message.contains("observed displaced destination identity")
+        ));
     }
 
     #[cfg(target_os = "linux")]
