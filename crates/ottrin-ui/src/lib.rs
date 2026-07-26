@@ -300,6 +300,10 @@ fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) 
                         JournalPhase::PendingDestination => "pending destination",
                         JournalPhase::Published => "published",
                         JournalPhase::CleanupPending => "cleanup pending",
+                        JournalPhase::ClaimedSourceDeletionPending => {
+                            "claimed source deletion pending"
+                        }
+                        JournalPhase::ClaimedSourceUnlinked => "claimed source unlinked",
                     },
                 })
                 .collect(),
