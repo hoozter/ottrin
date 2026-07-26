@@ -58,12 +58,6 @@ fn move_with_hooks(
         .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
     reject_directory_copy_into_itself(source, destination_dir)?;
 
-    if conflict == ConflictAction::Overwrite {
-        return Err(PlatformError::UnsupportedSafeMove(
-            source.display().to_string(),
-        ));
-    }
-
     if destination_dir.join(source_name).exists() && conflict == ConflictAction::Skip {
         return Ok(());
     }
@@ -174,6 +168,11 @@ fn move_with_hooks(
             return Err(PlatformError::Io(format!("move test hook failed: {message}")));
         }
     };
+    if is_cross_device && conflict == ConflictAction::Overwrite {
+        return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+            source.display().to_string(),
+        ));
+    }
 
     let claimed_path = local_path.join("claimed");
     let mut destination_name = source_name.to_os_string();
@@ -285,7 +284,17 @@ fn move_with_hooks(
                         let _ = std::fs::remove_dir_all(destination_transaction_path_path);
                         return Ok(());
                     }
-
+                    if conflict == ConflictAction::Overwrite {
+                        publish_claimed_to_destination_with_exchange(
+                            &staged_candidate,
+                            &destination_target,
+                        )
+                        .map_err(|publish_error| PlatformError::CommittedCleanupPending {
+                            transaction: local_path.display().to_string(),
+                            message: format!("publication failed: {publish_error}"),
+                        })?;
+                        break;
+                    }
                     destination_name = next_available_name(&destination_target)
                         .file_name()
                         .expect("candidate has a file name")
@@ -373,9 +382,9 @@ fn move_with_hooks(
             Ok(()) => {
                 break;
             }
-            Err(publish_error) if publish_error.kind() == std::io::ErrorKind::AlreadyExists => {
-                if conflict == ConflictAction::Skip {
-                    restore_claimed_to_source(
+                Err(publish_error) if publish_error.kind() == std::io::ErrorKind::AlreadyExists => {
+                    if conflict == ConflictAction::Skip {
+                        restore_claimed_to_source(
                         source_parent_path,
                         source_name,
                         &claimed_path,
@@ -393,16 +402,28 @@ fn move_with_hooks(
                         &recovery_transaction_id,
                     );
                     return Ok(());
-                }
+                    }
 
-                destination_name = next_available_name(&destination_target)
-                    .file_name()
-                    .expect("candidate has a file name")
-                    .to_os_string();
-                destination_target = destination_dir.join(&destination_name);
-                if conflict == ConflictAction::Rename {
-                    continue;
-                }
+                    if conflict == ConflictAction::Overwrite {
+                        publish_claimed_to_destination_with_exchange(
+                            &claimed_path,
+                            &destination_target,
+                        )
+                        .map_err(|publish_error| PlatformError::CommittedCleanupPending {
+                            transaction: local_path.display().to_string(),
+                            message: format!("publication failed: {publish_error}"),
+                        })?;
+                        break;
+                    }
+
+                    destination_name = next_available_name(&destination_target)
+                        .file_name()
+                        .expect("candidate has a file name")
+                        .to_os_string();
+                    destination_target = destination_dir.join(&destination_name);
+                    if conflict == ConflictAction::Rename {
+                        continue;
+                    }
                 return Err(PlatformError::CleanupPending {
                     transaction: local_path.display().to_string(),
                     message: "publication conflict occurred for unsupported conflict mode"
@@ -482,6 +503,17 @@ fn publish_claimed_to_destination_with_no_replace(
             }
         }
     }
+}
+
+#[cfg(target_os = "linux")]
+fn publish_claimed_to_destination_with_exchange(
+    claimed: &Path,
+    destination: &Path,
+) -> std::io::Result<()> {
+    use rustix::fs::{CWD, RenameFlags, renameat_with};
+
+    renameat_with(CWD, claimed, CWD, destination, RenameFlags::EXCHANGE)
+        .map_err(|error| std::io::Error::other(error.to_string()))
 }
 
 #[cfg(target_os = "linux")]
