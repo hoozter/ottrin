@@ -3,8 +3,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
-STAGE="${1:-$ROOT/dist/Ottrin-$VERSION-windows-x64}"
-DIST_DIR="$ROOT/dist"
+DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
+STAGE="${1:-$DIST_DIR/Ottrin-$VERSION-windows-x64}"
 INSTALLER="$DIST_DIR/Ottrin-$VERSION-windows-x64-setup.exe"
 MAKENSIS="${MAKENSIS:-}"
 
