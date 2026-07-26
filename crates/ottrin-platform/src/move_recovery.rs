@@ -7234,6 +7234,42 @@ mod tests {
         );
         std::fs::remove_file(&published_target).unwrap();
         std::fs::rename(&target_backup_after_inspection, &published_target).unwrap();
+        let displaced_backup_after_inspection = root.join("displaced-before-preflight-replacement");
+        let central_before_displaced_replacement = std::fs::read(&central_journal).unwrap();
+        let local_before_displaced_replacement = std::fs::read(&local_journal).unwrap();
+        assert!(matches!(
+            recovery.preflight_cross_device_overwrite_claimed_source_deletion_after_inspection(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+                || {
+                    std::fs::rename(&retained_displaced, &displaced_backup_after_inspection)
+                        .unwrap();
+                    std::fs::write(&retained_displaced, b"replacement displaced target").unwrap();
+                },
+            ),
+            Err(LinuxClaimedSourceDeletionPreflightError::Inspect(
+                LinuxInspectCrossDeviceOverwriteRetainedError::DisplacedCandidateIdentityMismatch
+            ))
+        ));
+        assert_eq!(
+            std::fs::read(&central_journal).unwrap(),
+            central_before_displaced_replacement
+        );
+        assert_eq!(
+            std::fs::read(&local_journal).unwrap(),
+            local_before_displaced_replacement
+        );
+        assert_eq!(
+            std::fs::read(&claimed_child).unwrap(),
+            b"source retained pending cleanup"
+        );
+        assert_eq!(
+            std::fs::read(&published_target).unwrap(),
+            b"new target after exchange"
+        );
+        std::fs::remove_file(&retained_displaced).unwrap();
+        std::fs::rename(&displaced_backup_after_inspection, &retained_displaced).unwrap();
         assert_eq!(
             recovery
                 .advance_cross_device_overwrite_to_cleanup_pending_with_local(&local, [0x42; 16]),
