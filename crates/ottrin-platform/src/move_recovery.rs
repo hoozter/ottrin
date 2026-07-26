@@ -4078,6 +4078,19 @@ impl LinuxRecoveryLock<'_> {
         if (identity, contents) != journal_baseline {
             return Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged);
         }
+        match self
+            .central
+            .load_published_restart_state(local, transaction_id)
+            .map_err(LinuxInspectCrossDeviceOverwriteRetainedError::Restart)?
+        {
+            LinuxPublishedRestartState::MatchingPair(final_published)
+                if final_published == published => {}
+            _ => {
+                return Err(
+                    LinuxInspectClaimedSourceDirectoryCleanupError::NotClaimedSourceUnlinked,
+                );
+            }
+        }
         let named = openat(
             &source_parent.directory,
             &transaction_name,
@@ -8695,6 +8708,38 @@ mod tests {
             ))
         );
         std::fs::write(&local_journal, journal_before_final_topology_change).unwrap();
+        // The matching central record is equally part of the durable authority. Corruption
+        // after the final source-local scan must remain a strict restart-evidence rejection.
+        let central_before_final_topology_change = std::fs::read(&central_journal).unwrap();
+        let central_failure = recovery
+            .preflight_claimed_source_directory_cleanup_after_final_topology_scan(
+                &local,
+                &source_parent,
+                &destination_parent,
+                [0x42; 16],
+                (
+                    || {},
+                    || {},
+                    || {
+                        std::fs::write(
+                            &central_journal,
+                            b"corrupt central journal after final topology scan",
+                        )
+                        .unwrap()
+                    },
+                ),
+            );
+        assert!(matches!(
+            central_failure,
+            Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
+                LinuxInspectClaimedSourceDirectoryCleanupError::Retained(
+                    LinuxInspectCrossDeviceOverwriteRetainedError::Restart(
+                        LinuxLoadPublishedRestartError::CentralCorrupt(_)
+                    )
+                )
+            ))
+        ));
+        std::fs::write(&central_journal, central_before_final_topology_change).unwrap();
         // A new, plausible journal-only directory at the durable name must not inherit the
         // original transaction's cleanup authority after the final topology observation.
         let after_final_topology_replaced_local_path =
