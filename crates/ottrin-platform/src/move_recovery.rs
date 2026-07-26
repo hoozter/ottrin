@@ -662,6 +662,41 @@ pub enum LinuxPublishedJournals {
     MatchingPair,
 }
 
+/// Read-only result for a cross-device Overwrite that stopped after exchange.
+///
+/// This does not grant cleanup authority. It only confirms that all retained entries still
+/// match the exact identities pinned in the matching published journal pair.
+#[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum LinuxCrossDeviceOverwriteRetainedState {
+    IdentityVerifiedRetained,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxInspectCrossDeviceOverwriteRetainedError {
+    #[error("published restart evidence is unsafe: {0}")]
+    Restart(#[from] LinuxLoadPublishedRestartError),
+    #[error("published evidence does not describe a complete cross-device overwrite exchange")]
+    IncompleteEvidence,
+    #[error("retained source transaction directory identity does not match the published journal")]
+    SourceTransactionIdentityMismatch,
+    #[error("retained claimed source identity does not match the published journal")]
+    ClaimedSourceIdentityMismatch,
+    #[error("published destination target identity does not match the published journal")]
+    PublishedTargetIdentityMismatch,
+    #[error(
+        "retained destination transaction directory identity does not match the published journal"
+    )]
+    DestinationTransactionIdentityMismatch,
+    #[error(
+        "retained displaced destination candidate identity does not match the published journal"
+    )]
+    DisplacedCandidateIdentityMismatch,
+    #[error("retained-state inspection failed: {0}")]
+    Io(String),
+}
+
 #[cfg(target_os = "linux")]
 #[derive(Debug, Error, Eq, PartialEq)]
 pub enum LinuxPreparedPairError {
@@ -2871,6 +2906,110 @@ impl LinuxRecoveryLock<'_> {
         } else {
             Ok(LinuxClaimedTopology::UnexpectedIdentity { expected, observed })
         }
+    }
+
+    /// Inspects a post-exchange cross-device Overwrite without changing any entry or journal.
+    /// Every lookup is relative to an already-opened directory and refuses symlink traversal.
+    pub fn inspect_cross_device_overwrite_retained_state(
+        &mut self,
+        local: &LinuxJournalDirectory,
+        destination_parent: &LinuxSourceParentDirectory,
+        transaction_id: [u8; 16],
+    ) -> Result<LinuxCrossDeviceOverwriteRetainedState, LinuxInspectCrossDeviceOverwriteRetainedError>
+    {
+        use rustix::fs::{FileType, Mode, OFlags, fstat, openat};
+
+        let published = match self
+            .central
+            .load_published_restart_state(local, transaction_id)?
+        {
+            LinuxPublishedRestartState::MatchingPair(published) => published,
+            LinuxPublishedRestartState::CentralPublishedLocalPending { .. }
+            | LinuxPublishedRestartState::CentralPublishedLocalClaimed { .. } => {
+                return Err(LinuxInspectCrossDeviceOverwriteRetainedError::IncompleteEvidence);
+            }
+        };
+        let (
+            destination_transaction_name,
+            destination_transaction_identity,
+            staged_destination_identity,
+            observed_displaced_destination_identity,
+        ) = match (
+            published.destination_transaction_name.as_ref(),
+            published.destination_transaction_identity,
+            published.staged_destination_identity,
+            published.observed_displaced_destination_identity,
+        ) {
+            (Some(name), Some(transaction), Some(staged), Some(displaced)) => {
+                (name, transaction, staged, displaced)
+            }
+            _ => return Err(LinuxInspectCrossDeviceOverwriteRetainedError::IncompleteEvidence),
+        };
+        let identity = |fd: &OwnedFd| -> Result<
+            LinuxStableIdentity,
+            LinuxInspectCrossDeviceOverwriteRetainedError,
+        > {
+            let stat = fstat(fd).map_err(|error| {
+                LinuxInspectCrossDeviceOverwriteRetainedError::Io(error.to_string())
+            })?;
+            let file_type = match FileType::from_raw_mode(stat.st_mode) {
+                FileType::RegularFile => LinuxFileType::Regular,
+                FileType::Directory => LinuxFileType::Directory,
+                FileType::Symlink => LinuxFileType::Symlink,
+                _ => LinuxFileType::Other,
+            };
+            Ok(LinuxStableIdentity::new(
+                stat.st_dev,
+                stat.st_ino,
+                file_type,
+            ))
+        };
+        if identity(&local.directory)? != published.source_transaction_identity {
+            return Err(
+                LinuxInspectCrossDeviceOverwriteRetainedError::SourceTransactionIdentityMismatch,
+            );
+        }
+        let open = |directory: &OwnedFd, name: &Path| {
+            openat(
+                directory,
+                name,
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .map_err(|error| LinuxInspectCrossDeviceOverwriteRetainedError::Io(error.to_string()))
+        };
+        let claimed = open(&local.directory, Path::new("claimed"))?;
+        if identity(&claimed)? != published.claimed_source_identity {
+            return Err(
+                LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceIdentityMismatch,
+            );
+        }
+        let pending_name = published
+            .pending_destination_name
+            .decode()
+            .map_err(|error| {
+                LinuxInspectCrossDeviceOverwriteRetainedError::Io(error.to_string())
+            })?;
+        let target = open(&destination_parent.directory, &pending_name)?;
+        if identity(&target)? != staged_destination_identity {
+            return Err(
+                LinuxInspectCrossDeviceOverwriteRetainedError::PublishedTargetIdentityMismatch,
+            );
+        }
+        let transaction_name = destination_transaction_name.decode().map_err(|error| {
+            LinuxInspectCrossDeviceOverwriteRetainedError::Io(error.to_string())
+        })?;
+        let transaction = open(&destination_parent.directory, &transaction_name)?;
+        if identity(&transaction)? != destination_transaction_identity {
+            return Err(LinuxInspectCrossDeviceOverwriteRetainedError::DestinationTransactionIdentityMismatch);
+        }
+        let displaced = open(&transaction, Path::new("candidate"))?;
+        if identity(&displaced)? != observed_displaced_destination_identity {
+            return Err(
+                LinuxInspectCrossDeviceOverwriteRetainedError::DisplacedCandidateIdentityMismatch,
+            );
+        }
+        Ok(LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedRetained)
     }
 
     pub fn observe_original_after_restart(
@@ -6415,6 +6554,59 @@ mod tests {
             std::fs::read(&retained_displaced).unwrap(),
             b"displaced target retained"
         );
+
+        let destination_parent = LinuxSourceParentDirectory::open(&destination_path).unwrap();
+        assert_eq!(
+            recovery.inspect_cross_device_overwrite_retained_state(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Ok(LinuxCrossDeviceOverwriteRetainedState::IdentityVerifiedRetained)
+        );
+
+        let claimed_backup = root.join("claimed-backup");
+        let target_backup = root.join("target-backup");
+        let displaced_backup = root.join("displaced-backup");
+        std::fs::hard_link(&claimed_path, &claimed_backup).unwrap();
+        std::fs::hard_link(&published_target, &target_backup).unwrap();
+        std::fs::hard_link(&retained_displaced, &displaced_backup).unwrap();
+        std::fs::remove_file(&claimed_path).unwrap();
+        std::fs::write(&claimed_path, b"substituted claimed source").unwrap();
+        assert!(matches!(
+            recovery.inspect_cross_device_overwrite_retained_state(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Err(LinuxInspectCrossDeviceOverwriteRetainedError::ClaimedSourceIdentityMismatch)
+        ));
+        std::fs::remove_file(&claimed_path).unwrap();
+        std::fs::hard_link(&claimed_backup, &claimed_path).unwrap();
+
+        std::fs::remove_file(&published_target).unwrap();
+        std::fs::write(&published_target, b"substituted published target").unwrap();
+        assert!(matches!(
+            recovery.inspect_cross_device_overwrite_retained_state(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Err(LinuxInspectCrossDeviceOverwriteRetainedError::PublishedTargetIdentityMismatch)
+        ));
+        std::fs::remove_file(&published_target).unwrap();
+        std::fs::hard_link(&target_backup, &published_target).unwrap();
+
+        std::fs::remove_file(&retained_displaced).unwrap();
+        std::fs::write(&retained_displaced, b"substituted displaced candidate").unwrap();
+        assert!(matches!(
+            recovery.inspect_cross_device_overwrite_retained_state(
+                &local,
+                &destination_parent,
+                [0x42; 16],
+            ),
+            Err(LinuxInspectCrossDeviceOverwriteRetainedError::DisplacedCandidateIdentityMismatch)
+        ));
         std::fs::remove_dir_all(root).unwrap();
     }
 
