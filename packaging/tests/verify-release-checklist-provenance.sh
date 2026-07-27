@@ -100,6 +100,21 @@ for expected in \
   fi
 done
 
+# The remaining Windows gate is not a generic launch assertion.  The release
+# notes must keep the portable and per-user installer scopes, the native
+# default, the explicit bundled-OpenGL recovery route, and UAC/helper coverage
+# together so a release owner cannot sign off only one path by accident.
+for expected in \
+  'portable ZIP and per-user installer' \
+  'native WGPU default' \
+  '`--renderer opengl` / `OTTRIN_RENDERER=opengl` recovery path' \
+  'UAC/helper flows'; do
+  if ! grep -Fq -- "$expected" "$RELEASE_NOTES"; then
+    printf 'release notes are missing exact Windows acceptance scope: %s\n' "$expected" >&2
+    exit 1
+  fi
+done
+
 # Code signing is explicitly deferred from v1. The shipped release notes must
 # state that limitation just as the detailed user guidance does.
 if ! grep -Fq -- 'Code signing is not included' "$RELEASE_NOTES"; then
