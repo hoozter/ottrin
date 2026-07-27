@@ -4505,6 +4505,10 @@ impl OttrinApp {
         ui.selection_memory.insert(dir, selected_path);
     }
 
+    fn row_pointer_selects(primary_clicked: bool, secondary_clicked: bool) -> bool {
+        primary_clicked || secondary_clicked
+    }
+
     fn selected_paths_for_tab(&mut self, tab_id: u64) -> Vec<PathBuf> {
         let ui = self.tab_ui.entry(tab_id).or_default();
         let mut paths = if !ui.selected_paths.is_empty() {
@@ -12093,7 +12097,10 @@ impl OttrinApp {
                                                 row_smooth,
                                             );
                                         }
-                                        if resp.clicked() {
+                                        if Self::row_pointer_selects(
+                                            resp.clicked(),
+                                            resp.secondary_clicked(),
+                                        ) {
                                             self.focus_tab(tab_id);
                                             let is_current = col_idx == current_col;
                                             self.set_miller_selection(
@@ -12955,7 +12962,10 @@ impl OttrinApp {
                     if response.hovered() && !selected {
                         ui.painter().rect_filled(row_rect, 0.0, c.hover);
                     }
-                    if response.clicked() {
+                    if Self::row_pointer_selects(
+                        response.clicked(),
+                        response.secondary_clicked(),
+                    ) {
                         self.focus_tab(tab_id);
                         let modifiers = ui.ctx().input(|input| input.modifiers);
                         self.set_main_selection_from_click(tab_id, i, modifiers);
@@ -13310,7 +13320,10 @@ impl OttrinApp {
                             );
 
                             // Handle click/double-click
-                            if cell_resp.clicked() {
+                            if Self::row_pointer_selects(
+                                cell_resp.clicked(),
+                                cell_resp.secondary_clicked(),
+                            ) {
                                 self.focus_tab(tab_id);
                                 let modifiers = ui.ctx().input(|input| input.modifiers);
                                 self.set_main_selection_from_click(tab_id, idx, modifiers);
@@ -18543,6 +18556,13 @@ mod tests {
             app.search_ui.result_preview, None,
             "Selecting a different row should invalidate stale preview cache"
         );
+    }
+
+    #[test]
+    fn right_click_main_row_selects_it_before_its_context_action() {
+        assert!(OttrinApp::row_pointer_selects(false, true));
+        assert!(OttrinApp::row_pointer_selects(true, false));
+        assert!(!OttrinApp::row_pointer_selects(false, false));
     }
 
     #[test]

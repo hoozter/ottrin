@@ -372,11 +372,33 @@ def context_menu_entry(window_id: str, name: str):
     # accessibility action below reports success.  Prove the named row owns
     # selection before right-clicking its desktop coordinates; otherwise the
     # next context action can silently target the previous PDF.
-    click_entry(window_id, name)
+    selected_before_context = True
+    try:
+        click_entry(window_id, name)
+    except AssertionError:
+        # A native context click is also a named-row selection gesture.  Keep
+        # its authority strict by proving selection immediately afterwards;
+        # never invoke a menu action while the old row remains selected.
+        selected_before_context = False
     node = wait_for(lambda: visible_entry(name), f"selected entry {name!r}")
-    rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+    diagnostics = entry_x11_diagnostics(window_id, node)
+    target = diagnostics["x11_window_relative_target"]
     run("xdotool", "windowactivate", "--sync", window_id)
-    run("xdotool", "mousemove", str(rect.x + rect.width // 2), str(rect.y + rect.height // 2), "click", "3")
+    run(
+        "xdotool",
+        "mousemove",
+        "--window",
+        window_id,
+        str(target["x"]),
+        str(target["y"]),
+        "click",
+        "3",
+    )
+    if not selected_before_context:
+        wait_for(
+            lambda: entry_selected(name),
+            f"selected entry {name!r} after named context click",
+        )
     time.sleep(0.35)
 
 
@@ -443,7 +465,11 @@ def write_entry_activation_failure(evidence: Path, name: str, diagnostics: dict[
 
 
 def write_context_action_failure(
-    evidence: Path, filename: str, action_suffix: str, error: Exception
+    evidence: Path,
+    filename: str,
+    action_suffix: str,
+    error: Exception,
+    window_id: str | None = None,
 ):
     """Retain the exact target and popup tree when a context action is unsafe."""
     payload = {
@@ -452,6 +478,14 @@ def write_context_action_failure(
         "error": str(error),
         "visible_nodes": visible_a11y_nodes(),
     }
+    node = visible_entry(filename)
+    if node is not None:
+        payload["entry_selected"] = entry_selected(filename)
+        if window_id is not None:
+            try:
+                payload["entry_x11_diagnostics"] = entry_x11_diagnostics(window_id, node)
+            except Exception as diagnostic_error:
+                payload["entry_x11_diagnostics_error"] = str(diagnostic_error)
     safe_name = filename.replace("/", "-")
     (evidence / f"context-action-{safe_name}.json").write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -561,10 +595,26 @@ def click_entry(window_id: str, name: str):
             "click",
             "1",
         )
-        wait_for(
-            lambda: entry_selected(name),
-            f"selected entry {name!r} after direct AT-SPI X11 click",
-        )
+        try:
+            wait_for(
+                lambda: entry_selected(name),
+                f"selected entry {name!r} after direct AT-SPI X11 click",
+                timeout=2.0,
+            )
+        except AssertionError:
+            # A modal transition can leave both pointer coordinate routes on
+            # the prior row.  Focus the exact accessible node and activate it
+            # by keyboard before failing: this preserves named-node authority
+            # instead of guessing another desktop coordinate.
+            node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
+            run("xdotool", "windowactivate", "--sync", window_id)
+            if not node.queryComponent().grabFocus():
+                raise AssertionError(f"could not focus entry {name!r} for keyboard selection")
+            run("xdotool", "key", "--clearmodifiers", "space")
+            wait_for(
+                lambda: entry_selected(name),
+                f"selected entry {name!r} after accessible focus and Space",
+            )
     time.sleep(0.35)
 
 
@@ -640,7 +690,10 @@ def invoke_selection_action(window_id: str, filename: str, action_suffix: str):
 
 
 def invoke_context_action(
-    window_id: str, filename: str, action_suffix: str, evidence: Path | None = None
+    window_id: str,
+    filename: str,
+    action_suffix: str,
+    evidence: Path | None = None,
 ):
     last_error = None
     for _ in range(3):
@@ -677,7 +730,7 @@ def invoke_context_action(
             screenshot(evidence, f"context-action-{filename.replace('/', '-')}")
         except Exception as capture_error:
             screenshot_error = capture_error
-        write_context_action_failure(evidence, filename, action_suffix, error)
+        write_context_action_failure(evidence, filename, action_suffix, error, window_id)
         if screenshot_error is not None:
             (evidence / f"context-action-{filename.replace('/', '-')}.screenshot-error.txt").write_text(
                 f"{screenshot_error}\n", encoding="utf-8"
@@ -726,6 +779,14 @@ def quick_inspector_visible(filename: str):
     return any(node.name == title for node in visible_named_nodes(title))
 
 
+def quick_inspector_quiescent(filename: str) -> bool:
+    """Reject a transient AT-SPI disappearance while a viewport is closing."""
+    if quick_inspector_visible(filename):
+        return False
+    time.sleep(0.35)
+    return not quick_inspector_visible(filename)
+
+
 def inspector_requires_zoom_controls(filename: str) -> bool:
     """Only image and PDF inspectors expose the toolbar zoom buttons."""
     return Path(filename).suffix.lower() in {".png", ".jpg", ".jpeg", ".pdf"}
@@ -735,10 +796,22 @@ def close_quick_inspector(
     main_window_id: str, filename: str, *, dismiss_parent_menu: bool = False
 ):
     xkey(main_window_id, "space")
-    wait_for(
-        lambda: not quick_inspector_visible(filename),
-        "Quick Inspector close",
-    )
+    try:
+        wait_for(
+            lambda: quick_inspector_quiescent(filename),
+            "Quick Inspector close after Space",
+        )
+    except AssertionError:
+        # On KWin/XWayland a native child viewport can swallow Space while
+        # remaining in the accessibility tree. Escape is the inspector's
+        # documented alternate close route; require the same quiescence after
+        # it instead of continuing with a stale viewport.
+        xkey(main_window_id, "Escape")
+        wait_for(
+            lambda: quick_inspector_quiescent(filename),
+            "Quick Inspector close after Escape fallback",
+        )
+        return
     if dismiss_parent_menu:
         # The native inspector is opened from a context menu.  Closing its
         # child viewport can leave that parent popup active on KWin/Xwayland,
@@ -746,6 +819,10 @@ def close_quick_inspector(
         # the matrix.  Do not send Escape for a Space-opened search preview:
         # that shortcut belongs to the search panel itself.
         xkey(main_window_id, "Escape")
+        wait_for(
+            lambda: quick_inspector_quiescent(filename),
+            "Quick Inspector quiescence after parent-menu Escape",
+        )
 
 
 def create_preview_fixtures(project_root: Path, documents: Path):
@@ -803,7 +880,14 @@ def open_quick_inspector(
     evidence: Path,
     screenshot_name: str,
 ):
-    invoke_context_action(main_window_id, filename, "Quick Inspector", evidence)
+    # Quick Inspector is read-only, but the runner still proves that its named
+    # row owns selection before opening an entry-relative context action.
+    invoke_context_action(
+        main_window_id,
+        filename,
+        "Quick Inspector",
+        evidence,
+    )
     wait_for(
         lambda: quick_inspector_visible(filename),
         f"Quick Inspector for {filename}",
@@ -1065,23 +1149,15 @@ def main() -> int:
 
         click_accessible_name("\ue2c7 Documents", "push button")
         wait_for(lambda: visible_entry("notes.txt"), "Documents after copy")
-        invoke_context_action(window_id, "notes.txt", "Quick Inspector")
-        wait_for(
-            lambda: quick_inspector_visible("notes.txt"),
-            "Quick Inspector viewport",
+        open_quick_inspector(
+            window_id, "notes.txt", evidence, "05-quick-inspector-text"
         )
         passed("quick-inspector-text", "Opened the packaged text preview from its accessible menu.")
-        screenshot(evidence, "05-quick-inspector-text")
-        close_quick_inspector(window_id, "notes.txt")
 
-        invoke_context_action(window_id, "image.png", "Quick Inspector")
-        wait_for(
-            lambda: quick_inspector_visible("image.png"),
-            "image Quick Inspector viewport",
+        open_quick_inspector(
+            window_id, "image.png", evidence, "06-quick-inspector-image"
         )
         passed("quick-inspector-image", "Opened the packaged image preview.")
-        screenshot(evidence, "06-quick-inspector-image")
-        close_quick_inspector(window_id, "image.png")
 
         preview_matrix = [
             ("preview.pdf", "07-quick-inspector-pdf", "rendered PDF plus metadata"),

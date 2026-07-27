@@ -53,6 +53,7 @@ class A11yRegistryPreflightTests(unittest.TestCase):
     def test_records_context_action_failure_with_target_and_visible_popup_tree(self):
         evidence = Path(self.id().replace(".", "-"))
         writes = {}
+        node = MagicMock()
         with (
             patch.object(
                 qa,
@@ -62,6 +63,13 @@ class A11yRegistryPreflightTests(unittest.TestCase):
                     "menu item | Quick Inspector",
                 ],
             ),
+            patch.object(qa, "visible_entry", return_value=node),
+            patch.object(qa, "entry_selected", return_value=False),
+            patch.object(
+                qa,
+                "entry_x11_diagnostics",
+                return_value={"x11_window_relative_target": {"x": 280, "y": 330}},
+            ),
             patch.object(Path, "write_text", side_effect=lambda text, **_: writes.setdefault("text", text)),
         ):
             qa.write_context_action_failure(
@@ -69,11 +77,14 @@ class A11yRegistryPreflightTests(unittest.TestCase):
                 "preview-second.pdf",
                 "Quick Inspector",
                 AssertionError("selected entry remained preview.pdf"),
+                "0x123",
             )
 
         self.assertIn('"filename": "preview-second.pdf"', writes["text"])
         self.assertIn('"action": "Quick Inspector"', writes["text"])
         self.assertIn("menu item | Quick Inspector", writes["text"])
+        self.assertIn('"entry_selected": false', writes["text"])
+        self.assertIn('"x11_window_relative_target"', writes["text"])
 
 
 class X11CoordinateTranslationTests(unittest.TestCase):
@@ -90,28 +101,79 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         ):
             self.assertTrue(qa.entry_selected("notes.txt"))
 
-    def test_context_menu_selects_the_named_entry_before_right_clicking_it(self):
+    def test_context_menu_uses_the_checked_x11_target_only_after_named_selection(self):
         commands = []
         node = MagicMock()
-        node.queryComponent.return_value.getExtents.return_value = MagicMock(
-            x=600, y=700, width=40, height=60
-        )
         with (
             patch.object(qa, "click_entry") as click_entry,
             patch.object(qa, "wait_for", return_value=node),
+            patch.object(
+                qa,
+                "entry_x11_diagnostics",
+                return_value={"x11_window_relative_target": {"x": 280, "y": 330}},
+            ) as diagnostics,
             patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
             patch.object(qa.time, "sleep"),
         ):
             qa.context_menu_entry("0x123", "preview-second.pdf")
 
         click_entry.assert_called_once_with("0x123", "preview-second.pdf")
+        diagnostics.assert_called_once()
         self.assertEqual(
             commands,
             [
                 ("xdotool", "windowactivate", "--sync", "0x123"),
-                ("xdotool", "mousemove", "620", "730", "click", "3"),
+                (
+                    "xdotool",
+                    "mousemove",
+                    "--window",
+                    "0x123",
+                    "280",
+                    "330",
+                    "click",
+                    "3",
+                ),
             ],
         )
+
+    def test_context_menu_proves_selection_after_the_named_context_click_when_primary_selection_fails(self):
+        commands = []
+        node = MagicMock()
+        with (
+            patch.object(qa, "click_entry", side_effect=AssertionError("primary click missed")),
+            patch.object(
+                qa,
+                "wait_for",
+                side_effect=[node, object()],
+            ) as wait_for,
+            patch.object(
+                qa,
+                "entry_x11_diagnostics",
+                return_value={"x11_window_relative_target": {"x": 280, "y": 330}},
+            ),
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            qa.context_menu_entry("0x123", "image.png")
+
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                (
+                    "xdotool",
+                    "mousemove",
+                    "--window",
+                    "0x123",
+                    "280",
+                    "330",
+                    "click",
+                    "3",
+                ),
+            ],
+        )
+        self.assertEqual(wait_for.call_count, 2)
+        self.assertIn("after named context click", wait_for.call_args_list[-1].args[1])
 
     def test_open_search_retries_with_checked_x11_target_when_a11y_does_not_focus(self):
         commands = []
@@ -258,6 +320,37 @@ class X11CoordinateTranslationTests(unittest.TestCase):
             ],
         )
 
+    def test_click_entry_focuses_the_named_node_before_using_space_as_a_last_resort(self):
+        events = []
+        node = MagicMock()
+        node.queryComponent.return_value.getExtents.return_value = MagicMock(
+            x=600, y=700, width=40, height=60
+        )
+        node.queryComponent.return_value.grabFocus.side_effect = lambda: events.append("focus") or True
+        with (
+            patch.object(qa, "click_accessible_name"),
+            patch.object(qa, "entry_selected", side_effect=[False, False, False, True]),
+            patch.object(
+                qa,
+                "wait_for",
+                side_effect=[node, AssertionError("relative click missed"), node, AssertionError("direct click missed"), node, object()],
+            ),
+            patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: events.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            qa.click_entry("0x123", "sample.json")
+
+        node.queryComponent.return_value.grabFocus.assert_called_once_with()
+        self.assertEqual(
+            events[-3:],
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                "focus",
+                ("xdotool", "key", "--clearmodifiers", "space"),
+            ],
+        )
+
     def test_double_click_targets_the_named_entry_inside_its_x11_window(self):
         commands = []
         with (
@@ -365,7 +458,7 @@ class X11CoordinateTranslationTests(unittest.TestCase):
     def test_closing_quick_inspector_dismisses_its_parent_context_menu(self):
         with (
             patch.object(qa, "xkey") as xkey,
-            patch.object(qa, "wait_for"),
+            patch.object(qa, "wait_for") as wait_for,
         ):
             qa.close_quick_inspector("0x123", "preview.pdf", dismiss_parent_menu=True)
 
@@ -376,6 +469,34 @@ class X11CoordinateTranslationTests(unittest.TestCase):
                 (("0x123", "Escape"), {}),
             ],
         )
+        self.assertEqual(wait_for.call_count, 2)
+
+    def test_closing_quick_inspector_recovers_when_space_is_swallowed(self):
+        with (
+            patch.object(qa, "xkey") as xkey,
+            patch.object(
+                qa,
+                "wait_for",
+                side_effect=[AssertionError("Quick Inspector close timed out"), object()],
+            ) as wait_for,
+        ):
+            qa.close_quick_inspector("0x123", "image.png")
+
+        self.assertEqual(
+            xkey.call_args_list,
+            [
+                (("0x123", "space"), {}),
+                (("0x123", "Escape"), {}),
+            ],
+        )
+        self.assertEqual(wait_for.call_count, 2)
+
+    def test_quick_inspector_close_requires_stable_absence(self):
+        with (
+            patch.object(qa, "quick_inspector_visible", side_effect=[False, True]),
+            patch.object(qa.time, "sleep"),
+        ):
+            self.assertFalse(qa.quick_inspector_quiescent("image.png"))
 
     def test_maps_each_toggle_target_to_the_explicit_view_menu_item(self):
         self.assertEqual(qa.view_menu_label(qa.VIEW_TO_GRID), "List view")
