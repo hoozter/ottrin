@@ -204,6 +204,26 @@ verify_graphics_runtime_notice_manifest() {
   done
 }
 
+# The compatibility DLLs are deliberately opt-in.  Verify that each shipped
+# Windows artifact carries the exact recovery instructions, so a user who
+# encounters a virtual or remote adapter failure can select the bundled path
+# without changing the normal WGPU default.
+verify_windows_graphics_recovery_instructions() {
+  local artifact_label="$1"
+  local instructions="$2"
+  local expected
+  for expected in \
+    'ottrin.exe --renderer opengl' \
+    'OTTRIN_RENDERER=opengl' \
+    'WGPU with the system graphics driver'; do
+    if ! grep -Fq "$expected" <<<"$instructions"; then
+      printf '%s is missing the graphics recovery instruction: %s\n' \
+        "$artifact_label" "$expected" >&2
+      exit 1
+    fi
+  done
+}
+
 verify_portable_graphics_runtime_notice_manifest() {
   local manifest
   if ! manifest="$(unzip -p "$WINDOWS_ARCHIVE" \
@@ -219,6 +239,13 @@ verify_portable_graphics_runtime_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dll
 verify_portable_graphics_runtime_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
 verify_portable_graphics_runtime_dll "$DXIL_SHA256" 'bin/dxil.dll'
 verify_portable_graphics_runtime_notice_manifest
+if ! portable_running_instructions="$(unzip -p "$WINDOWS_ARCHIVE" \
+  "Ottrin-$VERSION-windows-x64/RUNNING.md")"; then
+  printf 'Windows portable archive is missing RUNNING.md.\n' >&2
+  exit 1
+fi
+verify_windows_graphics_recovery_instructions \
+  'Windows portable archive RUNNING.md' "$portable_running_instructions"
 
 for artifact in "$LINUX_APPIMAGE" "$WINDOWS_INSTALLER"; do
   if [[ ! -s "$artifact" ]]; then
@@ -260,6 +287,7 @@ for entry in \
   'third-party-notices/mesa3d-26.1.3/licenses/MIT' \
   'third-party-notices/pal1000-LICENSE.txt' \
   'third-party-notices/Microsoft-DXC-LICENSE-MS.txt' \
+  'RUNNING.md' \
   'docs/USER_GUIDE.md' \
   'docs/RELEASE_NOTES.md' \
   'docs/RELEASE_CHECKLIST.md'; do
@@ -301,6 +329,12 @@ verify_installer_graphics_runtime_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dl
 verify_installer_graphics_runtime_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
 verify_installer_graphics_runtime_dll "$DXIL_SHA256" 'bin/dxil.dll'
 verify_installer_graphics_runtime_notice_manifest
+if ! installer_running_instructions="$(7z x -so "$WINDOWS_INSTALLER" RUNNING.md)"; then
+  printf 'Windows installer is missing RUNNING.md.\n' >&2
+  exit 1
+fi
+verify_windows_graphics_recovery_instructions \
+  'Windows installer RUNNING.md' "$installer_running_instructions"
 
 APPIMAGE_EXTRACT_DIR="$(mktemp -d)"
 cleanup() {

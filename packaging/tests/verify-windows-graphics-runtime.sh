@@ -50,6 +50,7 @@ for literal in \
   'DXIL_SHA256="cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"' \
   'verify_portable_graphics_runtime_notice_manifest' \
   'verify_installer_graphics_runtime_notice_manifest' \
+  'verify_windows_graphics_recovery_instructions' \
   'verify_portable_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\''' \
   'verify_installer_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\'''; do
   require_literal "$ARTIFACT_VERIFIER" "$literal"
