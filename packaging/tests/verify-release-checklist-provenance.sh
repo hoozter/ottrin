@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CHECKLIST="$ROOT/docs/RELEASE_CHECKLIST.md"
 README="$ROOT/README.md"
+RELEASE_NOTES="$ROOT/docs/RELEASE_NOTES.md"
 
 require_line() {
   local expected="$1"
@@ -26,6 +27,13 @@ require_line '- [ ] Privileged helper allow, cancel, missing-helper, and misconf
 # renderer-default change.
 if ! grep -Fq -- 'ottrin.exe --renderer opengl' "$README"; then
   printf 'README is missing the explicit Windows OpenGL recovery selector.\n' >&2
+  exit 1
+fi
+
+# Code signing is explicitly deferred from v1.  The shipped release notes must
+# state that limitation just as the detailed user guidance does.
+if ! grep -Fq -- 'Code signing is not included' "$RELEASE_NOTES"; then
+  printf 'release notes are missing the deferred code-signing limitation.\n' >&2
   exit 1
 fi
 
