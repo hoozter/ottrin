@@ -69,7 +69,10 @@ done
 # The installer copies its supplied stage verbatim.  It must therefore reject
 # a stage missing any notice that the final artifact verifier requires, rather
 # than relying on a later archive inspection to catch an incomplete payload.
+# The same applies to RUNNING.md: it is the only packaged, artifact-local
+# recovery instruction for choosing the explicitly bundled OpenGL path.
 for literal in \
+  'RUNNING.md' \
   'third-party-notices/mesa3d-26.1.3/licenses/Apache-2.0' \
   'third-party-notices/mesa3d-26.1.3/licenses/BSL-1.0' \
   'third-party-notices/mesa3d-26.1.3/licenses/GPL-1.0-or-later' \
@@ -80,6 +83,7 @@ for literal in \
 done
 
 for literal in \
+  'RUNNING.md' \
   'third-party-notices\mesa3d-26.1.3\licenses\Apache-2.0' \
   'third-party-notices\mesa3d-26.1.3\licenses\BSL-1.0' \
   'third-party-notices\mesa3d-26.1.3\licenses\GPL-1.0-or-later' \
