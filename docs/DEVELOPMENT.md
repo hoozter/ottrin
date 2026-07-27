@@ -142,7 +142,7 @@ Before a public v1 release:
 - Windows portable zip is launched and smoke-tested on real Windows.
 - Linux privileged helper/polkit smoke test passes.
 - Windows UAC/helper smoke test passes.
-- `README.md`, `docs/USER_GUIDE.md`, and `docs/ROADMAP.md` accurately describe the shipped artifacts and known limitations.
+- `README.md`, `docs/USER_GUIDE.md`, `docs/ROADMAP.md`, and `docs/RELEASE_NOTES.md` accurately describe the shipped artifacts and known limitations.
 
 ## Theme Source Provenance
 

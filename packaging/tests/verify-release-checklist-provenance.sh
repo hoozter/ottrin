@@ -6,6 +6,8 @@ CHECKLIST="$ROOT/docs/RELEASE_CHECKLIST.md"
 README="$ROOT/README.md"
 RELEASE_NOTES="$ROOT/docs/RELEASE_NOTES.md"
 USER_GUIDE="$ROOT/docs/USER_GUIDE.md"
+ROADMAP="$ROOT/docs/ROADMAP.md"
+DEVELOPMENT="$ROOT/docs/DEVELOPMENT.md"
 
 require_line() {
   local expected="$1"
@@ -26,7 +28,7 @@ require_line '- [ ] Privileged helper allow, cancel, missing-helper, and misconf
 # The public Windows launch instructions must describe the same pinned recovery
 # path as the packaged artifacts. The bundled Mesa runtime is a compatibility
 # path, not a silent renderer-default change.
-for document in "$README" "$RELEASE_NOTES" "$USER_GUIDE"; do
+for document in "$README" "$RELEASE_NOTES" "$USER_GUIDE" "$ROADMAP"; do
   for expected in \
     'Mesa 26.1.3' \
     'ottrin.exe --renderer opengl' \
@@ -39,6 +41,14 @@ for document in "$README" "$RELEASE_NOTES" "$USER_GUIDE"; do
     fi
   done
 done
+
+# The release gate itself must review the release notes and the roadmap must
+# describe the packaged graphics compatibility policy. Otherwise a release
+# review could approve internally inconsistent artifact documentation.
+if ! grep -Fq -- '`docs/RELEASE_NOTES.md`' "$DEVELOPMENT"; then
+  printf 'docs/DEVELOPMENT.md is missing release-notes review coverage.\n' >&2
+  exit 1
+fi
 
 # Release review must not leave the public landing page describing the old
 # text-only PDF/Office behavior after the packaged visual-preview milestone.
