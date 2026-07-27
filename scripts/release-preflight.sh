@@ -79,6 +79,7 @@ shell_scripts=(
   packaging/linux/package-appimage.sh
   packaging/linux/package-portable.sh
   packaging/verify-release-artifacts.sh
+  packaging/windows/package-installer.sh
   packaging/windows/package-portable.sh
   scripts/release-preflight.sh
 )
