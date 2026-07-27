@@ -12962,10 +12962,7 @@ impl OttrinApp {
                     if response.hovered() && !selected {
                         ui.painter().rect_filled(row_rect, 0.0, c.hover);
                     }
-                    if Self::row_pointer_selects(
-                        response.clicked(),
-                        response.secondary_clicked(),
-                    ) {
+                    if Self::row_pointer_selects(response.clicked(), response.secondary_clicked()) {
                         self.focus_tab(tab_id);
                         let modifiers = ui.ctx().input(|input| input.modifiers);
                         self.set_main_selection_from_click(tab_id, i, modifiers);
