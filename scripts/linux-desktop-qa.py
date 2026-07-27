@@ -340,13 +340,15 @@ def write_visible_accessibility_tree(evidence: Path, name: str):
 
 def double_click_entry(window_id: str, name: str):
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
-    rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+    x, y = x11_point_for_node(window_id, node)
     run("xdotool", "windowactivate", "--sync", window_id)
     run(
         "xdotool",
         "mousemove",
-        str(rect.x + rect.width // 2),
-        str(rect.y + rect.height // 2),
+        "--window",
+        window_id,
+        str(x),
+        str(y),
         "click",
         "--repeat",
         "2",

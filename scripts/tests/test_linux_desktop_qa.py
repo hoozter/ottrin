@@ -77,6 +77,37 @@ class X11CoordinateTranslationTests(unittest.TestCase):
             ],
         )
 
+    def test_double_click_targets_the_named_entry_inside_its_x11_window(self):
+        commands = []
+        with (
+            patch.object(qa, "wait_for", return_value=object()),
+            patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            qa.double_click_entry("0x123", "Subfolder")
+
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                (
+                    "xdotool",
+                    "mousemove",
+                    "--window",
+                    "0x123",
+                    "280",
+                    "330",
+                    "click",
+                    "--repeat",
+                    "2",
+                    "--delay",
+                    "100",
+                    "1",
+                ),
+            ],
+        )
+
     def test_docx_page_preview_does_not_claim_image_pdf_zoom_toolbar(self):
         self.assertFalse(qa.inspector_requires_zoom_controls("letter.docx"))
         self.assertTrue(qa.inspector_requires_zoom_controls("preview.pdf"))
