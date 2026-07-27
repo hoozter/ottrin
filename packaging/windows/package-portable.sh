@@ -52,11 +52,12 @@ download_verify_and_package_pdfium() {
     rm -rf "$tmp_dir"
 }
 
-package_graphics_compatibility_runtime() {
+package_graphics_compatibility_runtime() (
     local target_bin="$1"
     local target_notices="$2"
     local tmp_dir
     tmp_dir="$(mktemp -d)"
+    trap 'rm -rf "$tmp_dir"' EXIT
     local mesa_archive="$tmp_dir/mesa.7z"
     local mesa_source="$tmp_dir/mesa-source.tar.gz"
     local dxc_archive="$tmp_dir/dxc.zip"
@@ -105,8 +106,7 @@ Microsoft DXC archive SHA-256: $DXC_SHA256
 dxil.dll SHA-256: $DXIL_SHA256
 Included Mesa DLLs: libEGL.dll, libGLESv2.dll, libgallium_wgl.dll
 EOF
-    rm -rf "$tmp_dir"
-}
+)
 
 cd "$ROOT"
 cargo build --release --target "$TARGET" -p ottrin-app -p ottrin-platform -p ottrin-search
