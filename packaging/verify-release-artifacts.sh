@@ -16,6 +16,7 @@ PAL_LICENSE_URL="https://raw.githubusercontent.com/pal1000/mesa-dist-win/26.1.3/
 PAL_LICENSE_SHA256="9cd0121dc070f0ac65c1fc266bee74bdbbc22cea4210ae72ae0c1f076448d4cc"
 DXC_URL="https://github.com/microsoft/DirectXShaderCompiler/releases/download/v1.9.2602.24/dxc_2026_05_27.zip"
 DXC_SHA256="cf658aacf070d3045e31b8f1f8a696c2945f37c1095019481ef7c513368db3b4"
+DXC_LICENSE_SHA256="734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963"
 
 "$ROOT/packaging/tests/verify-release-checklist-provenance.sh"
 
@@ -217,12 +218,30 @@ verify_portable_graphics_runtime_notice_file() {
   verify_graphics_runtime_notice_file 'Windows portable archive' "$expected" "$entry" "$actual"
 }
 
+verify_portable_graphics_runtime_notice_root_file() {
+  local expected="$1"
+  local entry="$2"
+  local actual
+  actual="$(unzip -p "$WINDOWS_ARCHIVE" \
+    "Ottrin-$VERSION-windows-x64/third-party-notices/$entry" | sha256sum | awk '{print $1}')"
+  verify_graphics_runtime_notice_file 'Windows portable archive' "$expected" "$entry" "$actual"
+}
+
 verify_installer_graphics_runtime_notice_file() {
   local expected="$1"
   local entry="$2"
   local actual
   actual="$(7z x -so "$WINDOWS_INSTALLER" \
     "third-party-notices/mesa3d-26.1.3/$entry" | sha256sum | awk '{print $1}')"
+  verify_graphics_runtime_notice_file 'Windows installer' "$expected" "$entry" "$actual"
+}
+
+verify_installer_graphics_runtime_notice_root_file() {
+  local expected="$1"
+  local entry="$2"
+  local actual
+  actual="$(7z x -so "$WINDOWS_INSTALLER" \
+    "third-party-notices/$entry" | sha256sum | awk '{print $1}')"
   verify_graphics_runtime_notice_file 'Windows installer' "$expected" "$entry" "$actual"
 }
 
@@ -239,6 +258,8 @@ for checksum_and_entry in \
   verify_portable_graphics_runtime_notice_file "$expected" "$entry"
   # The installer is verified later, after its NSIS payload has been opened.
 done
+verify_portable_graphics_runtime_notice_root_file "$PAL_LICENSE_SHA256" 'pal1000-LICENSE.txt'
+verify_portable_graphics_runtime_notice_root_file "$DXC_LICENSE_SHA256" 'Microsoft-DXC-LICENSE-MS.txt'
 
 verify_graphics_runtime_notice_manifest() {
   local artifact_label="$1"
@@ -418,6 +439,8 @@ for checksum_and_entry in \
   read -r expected entry <<<"$checksum_and_entry"
   verify_installer_graphics_runtime_notice_file "$expected" "$entry"
 done
+verify_installer_graphics_runtime_notice_root_file "$PAL_LICENSE_SHA256" 'pal1000-LICENSE.txt'
+verify_installer_graphics_runtime_notice_root_file "$DXC_LICENSE_SHA256" 'Microsoft-DXC-LICENSE-MS.txt'
 if ! installer_running_instructions="$(7z x -so "$WINDOWS_INSTALLER" RUNNING.md)"; then
   printf 'Windows installer is missing RUNNING.md.\n' >&2
   exit 1

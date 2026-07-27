@@ -66,6 +66,7 @@ done
 # checksum only authenticates whatever is presented alongside it.
 for literal in \
   'DXIL_SHA256="cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"' \
+  'DXC_LICENSE_SHA256="734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963"' \
   'third-party-notices/mesa3d-26\.1\.3/licenses/Apache-2\.0' \
   'third-party-notices/mesa3d-26\.1\.3/licenses/BSL-1\.0' \
   'third-party-notices/mesa3d-26\.1\.3/licenses/GPL-1\.0-or-later' \
@@ -75,6 +76,8 @@ for literal in \
   'verify_portable_graphics_runtime_notice_manifest' \
   'verify_installer_graphics_runtime_notice_manifest' \
   'verify_graphics_runtime_notice_file' \
+  'verify_portable_graphics_runtime_notice_root_file' \
+  'verify_installer_graphics_runtime_notice_root_file' \
   'Mesa notice SHA-256:' \
   'verify_windows_graphics_recovery_instructions' \
   'verify_portable_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\''' \
