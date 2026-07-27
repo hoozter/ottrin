@@ -429,6 +429,21 @@ def write_entry_activation_failure(evidence: Path, name: str, diagnostics: dict[
     )
 
 
+def write_workflow_failure(evidence: Path, qa_root: Path, error: Exception):
+    """Retain the failing UI state without treating a partial run as a pass."""
+    documents = qa_root / "home" / "Documents"
+    payload = {
+        "error": str(error),
+        "fixture_root": str(qa_root),
+        "delete_me_exists": (documents / "delete-me.txt").exists(),
+        "trash_me_exists": (documents / "trash-me.txt").exists(),
+        "visible_nodes": visible_a11y_nodes(),
+    }
+    (evidence / "workflow-failure.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
 def double_click_entry(window_id: str, name: str) -> dict[str, object]:
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
     diagnostics = entry_x11_diagnostics(window_id, node)
@@ -1093,6 +1108,9 @@ def main() -> int:
         )
         print(json.dumps(results, indent=2))
         return 0
+    except Exception as error:
+        write_workflow_failure(evidence, qa_root, error)
+        raise
     finally:
         if app_process.poll() is None:
             app_process.terminate()

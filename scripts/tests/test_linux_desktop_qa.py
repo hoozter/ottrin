@@ -34,6 +34,22 @@ class A11yRegistryPreflightTests(unittest.TestCase):
         with patch.object(qa.pyatspi.Registry, "getDesktop", return_value=[None]):
             self.assertIsNone(qa.ottrin_app())
 
+    def test_records_workflow_failure_with_fixture_state(self):
+        evidence = Path(self.id().replace(".", "-"))
+        qa_root = Path("/tmp/ottrin-desktop-qa-fixture")
+        writes = {}
+
+        with (
+            patch.object(qa, "visible_a11y_nodes", return_value=["push button | Delete Permanently"]),
+            patch.object(Path, "exists", return_value=True),
+            patch.object(Path, "write_text", side_effect=lambda text, **_: writes.setdefault("text", text)),
+        ):
+            qa.write_workflow_failure(evidence, qa_root, AssertionError("timed out"))
+
+        self.assertIn('"error": "timed out"', writes["text"])
+        self.assertIn('"delete_me_exists": true', writes["text"])
+        self.assertIn("push button | Delete Permanently", writes["text"])
+
 
 class X11CoordinateTranslationTests(unittest.TestCase):
     def test_open_search_retries_with_checked_x11_target_when_a11y_does_not_focus(self):
