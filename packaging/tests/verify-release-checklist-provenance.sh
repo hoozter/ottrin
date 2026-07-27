@@ -40,6 +40,26 @@ for document in "$README" "$RELEASE_NOTES" "$USER_GUIDE"; do
   done
 done
 
+# Release review must not leave the public landing page describing the old
+# text-only PDF/Office behavior after the packaged visual-preview milestone.
+# The portable ZIP and installer both ship this README, so stale wording would
+# misstate the exact artifact's Quick Inspector behavior.
+for expected in \
+  'bounded first-page PDF visuals' \
+  'bounded DOCX/XLSX/XLSM content-preview visuals' \
+  'PDF and Office previews retain extracted-text and metadata fallbacks'; do
+  if ! grep -Fq -- "$expected" "$README"; then
+    printf 'README.md is missing current Quick Inspector release detail: %s\n' \
+      "$expected" >&2
+    exit 1
+  fi
+done
+
+if grep -Fq -- 'PDF text/metadata, DOCX content, XLSX/XLSM worksheet tables' "$README"; then
+  printf 'README.md still advertises the superseded text-only PDF/Office preview summary.\n' >&2
+  exit 1
+fi
+
 # Code signing is explicitly deferred from v1.  The shipped release notes must
 # state that limitation just as the detailed user guidance does.
 if ! grep -Fq -- 'Code signing is not included' "$RELEASE_NOTES"; then

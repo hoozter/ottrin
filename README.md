@@ -74,7 +74,7 @@ explicit recovery path.
 - **Drop Folder workflow** — quick copy destination with recents and pinned entries
 - **Integrated privilege management** — denied operations can retry via helper flow
 - **Global search** — indexed search with scope switching and per-result actions
-- **Preview system** — text and images in-app, PDF text/metadata, DOCX content, XLSX/XLSM worksheet tables, PPTX slide text, and rich archive/media metadata (Space bar)
+- **Preview system** — text and images in-app, bounded first-page PDF visuals, bounded DOCX/XLSX/XLSM content-preview visuals, PPTX slide text, and rich archive/media metadata (Space bar). PDF and Office previews retain extracted-text and metadata fallbacks.
 
 ---
 
