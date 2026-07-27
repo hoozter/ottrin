@@ -36,6 +36,47 @@ class A11yRegistryPreflightTests(unittest.TestCase):
 
 
 class X11CoordinateTranslationTests(unittest.TestCase):
+    def test_maps_entry_center_through_the_accessible_window(self):
+        self.assertEqual(
+            qa.x11_point_for_entry(
+                component=(200, 350, 80, 30),
+                app=(100, 200, 400, 300),
+                window={"X": 500, "Y": 300, "WIDTH": 800, "HEIGHT": 600},
+            ),
+            (280, 330),
+        )
+
+    def test_ctrl_click_keeps_control_held_for_the_second_entry_click(self):
+        commands = []
+        with (
+            patch.object(qa, "wait_for", return_value=object()),
+            patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            qa.ctrl_click_entry("0x123", "notes.txt")
+
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                (
+                    "xdotool",
+                    "keydown",
+                    "Control_L",
+                    "mousemove",
+                    "--window",
+                    "0x123",
+                    "280",
+                    "330",
+                    "click",
+                    "1",
+                    "keyup",
+                    "Control_L",
+                ),
+            ],
+        )
+
     def test_docx_page_preview_does_not_claim_image_pdf_zoom_toolbar(self):
         self.assertFalse(qa.inspector_requires_zoom_controls("letter.docx"))
         self.assertTrue(qa.inspector_requires_zoom_controls("preview.pdf"))

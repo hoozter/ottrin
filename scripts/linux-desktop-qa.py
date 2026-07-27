@@ -161,6 +161,25 @@ def x11_point_for_component(component, app, window: dict[str, int]) -> tuple[int
     )
 
 
+def x11_point_for_entry(component, app, window: dict[str, int]) -> tuple[int, int]:
+    """Map a List entry into the X11 window just like a view control."""
+    return x11_point_for_component(component, app, window)
+
+
+def x11_point_for_node(window_id: str, node) -> tuple[int, int]:
+    """Return a checked X11-window-relative target for an accessible node."""
+    app = ottrin_app()
+    if app is None or app.childCount == 0:
+        raise AssertionError("Ottrin accessible window is unavailable for X11 coordinate mapping")
+    rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+    app_rect = app[0].queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+    return x11_point_for_entry(
+        (rect.x, rect.y, rect.width, rect.height),
+        (app_rect.x, app_rect.y, app_rect.width, app_rect.height),
+        x11_window_geometry(window_id),
+    )
+
+
 def view_toggle_x11_diagnostics(window_id: str, node) -> dict[str, object]:
     component = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
     app = ottrin_app()
@@ -339,31 +358,29 @@ def double_click_entry(window_id: str, name: str):
 
 
 def click_entry(window_id: str, name: str):
-    node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
-    rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
-    run("xdotool", "windowactivate", "--sync", window_id)
-    run("xdotool", "mousemove", str(rect.x + rect.width // 2), str(rect.y + rect.height // 2), "click", "1")
-    time.sleep(0.35)
+    """Select the first entry through AT-SPI before extending it with Ctrl-click."""
+    del window_id
+    click_accessible_name(name, "toggle button")
 
 
 def ctrl_click_entry(window_id: str, name: str):
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
-    rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+    x, y = x11_point_for_node(window_id, node)
     run("xdotool", "windowactivate", "--sync", window_id)
-    run("xdotool", "keydown", "Control_L")
-    try:
-        run(
-            "xdotool",
-            "mousemove",
-            str(rect.x + rect.width // 2),
-            str(rect.y + rect.height // 2),
-            "mousedown",
-            "1",
-            "mouseup",
-            "1",
-        )
-    finally:
-        run("xdotool", "keyup", "Control_L", check=False)
+    run(
+        "xdotool",
+        "keydown",
+        "Control_L",
+        "mousemove",
+        "--window",
+        window_id,
+        str(x),
+        str(y),
+        "click",
+        "1",
+        "keyup",
+        "Control_L",
+    )
     time.sleep(0.35)
 
 
