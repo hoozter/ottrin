@@ -1988,10 +1988,10 @@ mod tests {
         );
     }
 
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(windows)]
     #[test]
     fn move_is_rejected_before_mutating_even_for_a_valid_symlink_source() {
-        use std::os::unix::fs::symlink;
+        use std::os::windows::fs::symlink_file as symlink;
 
         let dir = TestDir::new("move-safe-rejection");
         let source = dir.path().join("dangling");

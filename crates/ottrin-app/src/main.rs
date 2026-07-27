@@ -61,8 +61,10 @@ fn windows_graphics_evidence() -> GraphicsEvidence {
     let remote_session = unsafe { GetSystemMetrics(SM_REMOTESESSION) != 0 };
     let mut virtual_or_problem_adapter = false;
     for index in 0..32 {
-        let mut adapter = DISPLAY_DEVICEW::default();
-        adapter.cb = std::mem::size_of::<DISPLAY_DEVICEW>() as u32;
+        let mut adapter = DISPLAY_DEVICEW {
+            cb: std::mem::size_of::<DISPLAY_DEVICEW>() as u32,
+            ..Default::default()
+        };
         if unsafe { EnumDisplayDevicesW(std::ptr::null(), index, &mut adapter, 0) } == 0 {
             break;
         }

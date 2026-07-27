@@ -35,7 +35,7 @@ pub(super) fn move_entry_transactional(
     ))
 }
 
-#[cfg(any(test, target_os = "linux"))]
+#[cfg(target_os = "linux")]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum TestPoint {
     Prepare,
@@ -725,18 +725,6 @@ pub(super) fn move_entry_transactional_with_test_hook(
     hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
 ) -> Result<(), PlatformError> {
     move_with_hooks(source, destination_dir, conflict, hook)
-}
-
-#[cfg(not(target_os = "linux"))]
-#[cfg(test)]
-#[allow(dead_code)]
-pub(super) fn move_entry_transactional_with_test_hook(
-    source: &Path,
-    destination_dir: &Path,
-    conflict: ConflictAction,
-    _hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
-) -> Result<(), PlatformError> {
-    move_entry_transactional(source, destination_dir, conflict)
 }
 
 #[cfg(all(test, target_os = "linux"))]
