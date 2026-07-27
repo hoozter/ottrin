@@ -17,6 +17,18 @@ require_literal() {
   fi
 }
 
+require_installer_verifier_entry() {
+  local entry="$1"
+  if ! awk -v entry="$entry" '
+    /for entry in \\/ { in_installer_list = 1; next }
+    in_installer_list && /require_installer_entry "\$entry"/ { exit !found }
+    in_installer_list && index($0, "'\''" entry "'\''") { found = 1 }
+  ' "$ARTIFACT_VERIFIER"; then
+    printf 'installer artifact verifier is missing required entry: %s\n' "$entry" >&2
+    exit 1
+  fi
+}
+
 # These are hashes of the exact x64 DLLs extracted from the pinned
 # pal1000 Mesa 26.1.3 MinGW archive.  Both packagers must verify the
 # post-extraction bytes, not only the enclosing archive.
@@ -68,9 +80,13 @@ for literal in \
   require_literal "$ARTIFACT_VERIFIER" "$literal"
 done
 
+require_installer_verifier_entry 'README.md'
+
 # The installer copies its supplied stage verbatim.  It must therefore reject
 # a stage missing any notice that the final artifact verifier requires, rather
 # than relying on a later archive inspection to catch an incomplete payload.
+# README.md is part of that required stage too, so installer verification must
+# reject a candidate that silently substitutes a stale public landing page.
 # The same applies to RUNNING.md: it is the only packaged, artifact-local
 # recovery instruction for choosing the explicitly bundled OpenGL path.
 for literal in \

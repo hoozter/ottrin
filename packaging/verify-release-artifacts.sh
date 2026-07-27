@@ -302,6 +302,7 @@ for entry in \
   'third-party-notices/pal1000-LICENSE.txt' \
   'third-party-notices/Microsoft-DXC-LICENSE-MS.txt' \
   'LICENSE' \
+  'README.md' \
   'RUNNING.md' \
   'docs/USER_GUIDE.md' \
   'docs/DEVELOPMENT.md' \
@@ -312,6 +313,7 @@ for entry in \
 done
 
 for relative_path in \
+  'README.md' \
   'docs/USER_GUIDE.md' \
   'docs/DEVELOPMENT.md' \
   'docs/ROADMAP.md' \
