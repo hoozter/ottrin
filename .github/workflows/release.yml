@@ -148,9 +148,18 @@ jobs:
       - name: Package Windows installer
         shell: powershell
         run: |
-          $archive = Get-ChildItem dist\Ottrin-*-windows-x64-portable.zip | Select-Object -First 1
+          $archives = @(Get-ChildItem dist\Ottrin-*-windows-x64-portable.zip -File)
+          if ($archives.Count -ne 1) { throw "Expected exactly one Windows portable archive for installer packaging." }
+          $archive = $archives[0]
+          $checksumFiles = @(Get-ChildItem dist\Ottrin-*-windows-x64-portable.zip.sha256 -File)
+          if ($checksumFiles.Count -ne 1) { throw "Expected exactly one Windows portable checksum for installer packaging." }
+          $expectedHash = ((Get-Content $checksumFiles[0].FullName -Raw).Trim() -split '\s+')[0].ToLowerInvariant()
+          $actualHash = (Get-FileHash -Algorithm SHA256 $archive.FullName).Hash.ToLowerInvariant()
+          if ($expectedHash -ne $actualHash) { throw "Windows portable archive checksum does not match its sidecar." }
           Expand-Archive -Path $archive.FullName -DestinationPath dist\installer-payload
-          $stage = Get-ChildItem dist\installer-payload -Directory | Select-Object -First 1
+          $stages = @(Get-ChildItem dist\installer-payload -Directory)
+          if ($stages.Count -ne 1) { throw "Expected exactly one extracted Windows portable stage for installer packaging." }
+          $stage = $stages[0]
           .\packaging\windows\package-installer.ps1 -Stage $stage.FullName
 
       - name: Upload Windows installer
