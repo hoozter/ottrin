@@ -304,6 +304,8 @@ for entry in \
   'LICENSE' \
   'RUNNING.md' \
   'docs/USER_GUIDE.md' \
+  'docs/DEVELOPMENT.md' \
+  'docs/ROADMAP.md' \
   'docs/RELEASE_NOTES.md' \
   'docs/RELEASE_CHECKLIST.md'; do
   require_installer_entry "$entry"
@@ -311,6 +313,8 @@ done
 
 for relative_path in \
   'docs/USER_GUIDE.md' \
+  'docs/DEVELOPMENT.md' \
+  'docs/ROADMAP.md' \
   'docs/RELEASE_NOTES.md' \
   'docs/RELEASE_CHECKLIST.md'; do
   if ! 7z x -so "$WINDOWS_INSTALLER" "$relative_path" | cmp -s - "$ROOT/$relative_path"; then

@@ -76,6 +76,8 @@ done
 for literal in \
   '  LICENSE' \
   'RUNNING.md' \
+  'docs/DEVELOPMENT.md' \
+  'docs/ROADMAP.md' \
   'third-party-notices/mesa3d-26.1.3/licenses/Apache-2.0' \
   'third-party-notices/mesa3d-26.1.3/licenses/BSL-1.0' \
   'third-party-notices/mesa3d-26.1.3/licenses/GPL-1.0-or-later' \
@@ -88,6 +90,8 @@ done
 for literal in \
   '    "LICENSE",' \
   'RUNNING.md' \
+  'docs\DEVELOPMENT.md' \
+  'docs\ROADMAP.md' \
   'third-party-notices\mesa3d-26.1.3\licenses\Apache-2.0' \
   'third-party-notices\mesa3d-26.1.3\licenses\BSL-1.0' \
   'third-party-notices\mesa3d-26.1.3\licenses\GPL-1.0-or-later' \

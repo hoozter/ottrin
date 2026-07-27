@@ -41,6 +41,8 @@ $RequiredFiles = @(
     "RUNNING.md",
     "README.md",
     "docs\USER_GUIDE.md",
+    "docs\DEVELOPMENT.md",
+    "docs\ROADMAP.md",
     "docs\RELEASE_NOTES.md",
     "docs\RELEASE_CHECKLIST.md"
 )
