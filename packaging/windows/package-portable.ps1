@@ -61,7 +61,8 @@ function Resolve-PdfiumRuntime {
 function Resolve-GraphicsCompatibilityRuntime {
     param([string]$BinDestination, [string]$NoticeDestination)
     $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("ottrin-mesa-" + [guid]::NewGuid())
-    New-Item -ItemType Directory -Force -Path $tmp, $NoticeDestination | Out-Null
+    $mesaNotices = Join-Path $NoticeDestination "mesa3d-26.1.3"
+    New-Item -ItemType Directory -Force -Path $tmp, $mesaNotices | Out-Null
     try {
     $mesaArchive = Join-Path $tmp "mesa.7z"
     $mesaSource = Join-Path $tmp "mesa-source.tar.gz"
@@ -90,7 +91,7 @@ function Resolve-GraphicsCompatibilityRuntime {
         throw "DXIL checksum mismatch after extracting the pinned Microsoft DXC archive."
     }
     Copy-Item $dxil $BinDestination
-    & tar -xzf $mesaSource -C $NoticeDestination --strip-components=1 mesa-mesa-26.1.3/docs/license.rst mesa-mesa-26.1.3/licenses
+    & tar -xzf $mesaSource -C $mesaNotices --strip-components=1 mesa-mesa-26.1.3/docs/license.rst mesa-mesa-26.1.3/licenses
     if ($LASTEXITCODE -ne 0) {
         throw "Mesa license extraction from the pinned source archive failed."
     }
