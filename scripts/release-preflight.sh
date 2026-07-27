@@ -83,17 +83,47 @@ shell_scripts=(
   packaging/windows/package-portable.sh
   packaging/tests/verify-release-workflow-dependencies.sh
   packaging/tests/verify-windows-installer-clean-checkout.sh
+  packaging/tests/verify-windows-installer-output-path.sh
   packaging/tests/verify-windows-installer-powershell-provenance.sh
+  packaging/tests/verify-windows-runtime-temp-cleanup.sh
+  packaging/tests/verify-linux-appimage-documentation.sh
+  packaging/tests/verify-linux-portable-running-instructions.sh
+  packaging/tests/verify-linux-privileged-helper-policy.sh
+  packaging/tests/verify-release-checklist-provenance.sh
+  packaging/tests/verify-release-preflight-contract-coverage.sh
+  packaging/tests/verify-release-preflight-shell-coverage.sh
+  packaging/tests/verify-release-provenance.sh
+  packaging/tests/verify-windows-graphics-runtime.sh
   scripts/release-preflight.sh
 )
 
 run_gate "Shell syntax" bash -n "${shell_scripts[@]}"
 run_gate "Windows PowerShell installer provenance guard" \
-  ./packaging/tests/verify-windows-installer-powershell-provenance.sh
+  bash packaging/tests/verify-windows-installer-powershell-provenance.sh
 run_gate "Windows installer clean-checkout guard" \
-  ./packaging/tests/verify-windows-installer-clean-checkout.sh
+  bash packaging/tests/verify-windows-installer-clean-checkout.sh
 run_gate "Release workflow dependency guards" \
-  ./packaging/tests/verify-release-workflow-dependencies.sh
+  bash packaging/tests/verify-release-workflow-dependencies.sh
+run_gate "Linux AppImage documentation contract" \
+  bash packaging/tests/verify-linux-appimage-documentation.sh
+run_gate "Linux portable runtime-instructions contract" \
+  bash packaging/tests/verify-linux-portable-running-instructions.sh
+run_gate "Linux privileged-helper policy contract" \
+  bash packaging/tests/verify-linux-privileged-helper-policy.sh
+run_gate "Release checklist provenance contract" \
+  bash packaging/tests/verify-release-checklist-provenance.sh
+run_gate "Release preflight packaging-contract coverage" \
+  bash packaging/tests/verify-release-preflight-contract-coverage.sh
+run_gate "Release preflight shell coverage" \
+  bash packaging/tests/verify-release-preflight-shell-coverage.sh
+run_gate "Release artifact provenance contract" \
+  bash packaging/tests/verify-release-provenance.sh
+run_gate "Windows graphics runtime contract" \
+  bash packaging/tests/verify-windows-graphics-runtime.sh
+run_gate "Windows installer output-path guard" \
+  bash packaging/tests/verify-windows-installer-output-path.sh
+run_gate "Windows runtime temporary-directory cleanup" \
+  bash packaging/tests/verify-windows-runtime-temp-cleanup.sh
 optional_gate shellcheck "ShellCheck" shellcheck -x "${shell_scripts[@]}"
 optional_gate actionlint "GitHub Actions workflows" actionlint \
   .github/workflows/ci.yml .github/workflows/release.yml
