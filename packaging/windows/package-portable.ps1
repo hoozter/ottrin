@@ -87,6 +87,10 @@ function Resolve-GraphicsCompatibilityRuntime {
         }
     }
     Expand-Archive -Path $dxcArchive -DestinationPath (Join-Path $tmp "dxc")
+    $dxcLicense = Join-Path $tmp "dxc\LICENSE-MS.txt"
+    if ((Get-FileHash -Algorithm SHA256 $dxcLicense).Hash.ToLowerInvariant() -ne $DxcLicenseSha256) {
+        throw "Microsoft DXC license checksum mismatch after extracting the pinned archive."
+    }
     $dxil = Join-Path $tmp "dxc\bin\x64\dxil.dll"
     if ((Get-FileHash -Algorithm SHA256 $dxil).Hash.ToLowerInvariant() -ne $DxilSha256) {
         throw "DXIL checksum mismatch after extracting the pinned Microsoft DXC archive."

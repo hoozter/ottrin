@@ -83,6 +83,7 @@ package_graphics_compatibility_runtime() (
         fi
     done
     unzip -q "$dxc_archive" -d "$tmp_dir/dxc"
+    printf '%s  %s\n' "$DXC_LICENSE_SHA256" "$tmp_dir/dxc/LICENSE-MS.txt" | sha256sum -c -
     printf '%s  %s\n' "$DXIL_SHA256" "$tmp_dir/dxc/bin/x64/dxil.dll" | sha256sum -c -
     cp "$tmp_dir/dxc/bin/x64/dxil.dll" "$target_bin/dxil.dll"
 
