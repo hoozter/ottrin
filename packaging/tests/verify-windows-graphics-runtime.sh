@@ -104,6 +104,9 @@ for literal in \
   'verify_installer_graphics_runtime_notice_root_file' \
   'Mesa notice SHA-256:' \
   'verify_windows_graphics_recovery_instructions' \
+  'verify_windows_runtime_instructions' \
+  'Normal user-owned file operations do not require elevation.' \
+  'Denied operations use the bundled helper through the Windows UAC flow.' \
   'verify_portable_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\''' \
   'verify_installer_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\'''; do
   require_literal "$ARTIFACT_VERIFIER" "$literal"

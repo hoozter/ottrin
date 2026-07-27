@@ -358,6 +358,25 @@ verify_windows_graphics_recovery_instructions() {
   done
 }
 
+# The compatibility runtime is not the only safety-critical Windows guidance:
+# the same artifact-local instructions must retain the UAC/helper boundary and
+# make clear that ordinary user-owned operations never require elevation.
+verify_windows_runtime_instructions() {
+  local artifact_label="$1"
+  local instructions="$2"
+  local expected
+  for expected in \
+    '.\bin\ottrin-priv-helper.exe' \
+    'Normal user-owned file operations do not require elevation.' \
+    'Denied operations use the bundled helper through the Windows UAC flow.'; do
+    if ! grep -Fq "$expected" <<<"$instructions"; then
+      printf '%s is missing the Windows runtime instruction: %s\\n' \
+        "$artifact_label" "$expected" >&2
+      exit 1
+    fi
+  done
+}
+
 verify_portable_graphics_runtime_notice_manifest() {
   local manifest
   if ! manifest="$(unzip -p "$WINDOWS_ARCHIVE" \
@@ -379,6 +398,8 @@ if ! portable_running_instructions="$(unzip -p "$WINDOWS_ARCHIVE" \
   exit 1
 fi
 verify_windows_graphics_recovery_instructions \
+  'Windows portable archive RUNNING.md' "$portable_running_instructions"
+verify_windows_runtime_instructions \
   'Windows portable archive RUNNING.md' "$portable_running_instructions"
 
 for artifact in "$LINUX_APPIMAGE" "$WINDOWS_INSTALLER"; do
@@ -501,6 +522,8 @@ if ! installer_running_instructions="$(7z x -so "$WINDOWS_INSTALLER" RUNNING.md)
   exit 1
 fi
 verify_windows_graphics_recovery_instructions \
+  'Windows installer RUNNING.md' "$installer_running_instructions"
+verify_windows_runtime_instructions \
   'Windows installer RUNNING.md' "$installer_running_instructions"
 
 APPIMAGE_EXTRACT_DIR="$(mktemp -d)"
