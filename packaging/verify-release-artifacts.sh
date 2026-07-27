@@ -104,6 +104,7 @@ for entry in \
   '/LICENSE$' \
   '/SOURCE_REVISION\.txt$' \
   '/README\.md$' \
+  '/RUNNING\.md$' \
   '/docs/USER_GUIDE\.md$' \
   '/docs/DEVELOPMENT\.md$' \
   '/docs/ROADMAP\.md$' \
@@ -204,6 +205,30 @@ verify_source_revision \
 verify_source_revision \
   'Windows portable archive' \
   "$(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/SOURCE_REVISION.txt")"
+
+# RUNNING.md is the artifact-local setup guidance for the portable Linux
+# release.  Require its safety-critical helper instructions independently of
+# the archive checksum so a substituted payload cannot silently lose them.
+verify_linux_portable_running_instructions() {
+  local instructions="$1"
+  local expected
+  for expected in \
+    'sudo install -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin-priv-helper' \
+    'Without the helper, normal user-owned file operations still work.'; do
+    if ! grep -Fq "$expected" <<<"$instructions"; then
+      printf 'Linux portable archive RUNNING.md is missing the runtime instruction: %s\n' \
+        "$expected" >&2
+      exit 1
+    fi
+  done
+}
+
+if ! linux_portable_running_instructions="$(tar -xOf "$LINUX_ARCHIVE" \
+  "Ottrin-$VERSION-linux-x86_64/RUNNING.md")"; then
+  printf 'Linux portable archive is missing RUNNING.md.\n' >&2
+  exit 1
+fi
+verify_linux_portable_running_instructions "$linux_portable_running_instructions"
 
 verify_portable_graphics_runtime_dll() {
   local expected="$1"
