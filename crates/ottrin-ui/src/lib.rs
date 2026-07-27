@@ -94,6 +94,35 @@ fn graphics_settings_visible(is_windows: bool) -> bool {
     is_windows
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct SettingsPlatformCapabilities {
+    terminal_launcher_visible: bool,
+    system_locate_controls_visible: bool,
+    privilege_backend: &'static str,
+    scheduler_name: &'static str,
+}
+
+fn settings_platform_capabilities(is_windows: bool) -> SettingsPlatformCapabilities {
+    if is_windows {
+        // The current Windows launcher writes a batch file in the home directory,
+        // but does not register that directory on PATH. Do not present it as a
+        // usable terminal command until that integration actually exists.
+        SettingsPlatformCapabilities {
+            terminal_launcher_visible: false,
+            system_locate_controls_visible: false,
+            privilege_backend: "UAC",
+            scheduler_name: "Windows Task Scheduler",
+        }
+    } else {
+        SettingsPlatformCapabilities {
+            terminal_launcher_visible: true,
+            system_locate_controls_visible: true,
+            privilege_backend: "polkit",
+            scheduler_name: "systemd --user or crontab",
+        }
+    }
+}
+
 fn graphics_renderer_reason_label(reason: GraphicsRendererReason) -> &'static str {
     match reason {
         GraphicsRendererReason::CommandLineOverride => "command-line OpenGL override",
@@ -14727,6 +14756,7 @@ impl OttrinApp {
                                     ui.add_space(14.0);
                                     ui.separator();
                                     ui.add_space(10.0);
+                                    let platform_capabilities = settings_platform_capabilities(self.graphics_runtime.is_windows);
                                     if graphics_settings_visible(self.graphics_runtime.is_windows) {
                                         ui.label(RichText::new("Graphics renderer").color(c.text).size(13.0).strong());
                                         let effective = match self.graphics_runtime.selection.choice {
@@ -14774,7 +14804,7 @@ impl OttrinApp {
                                         ui.separator();
                                         ui.add_space(10.0);
                                     }
-                                    ui.label(RichText::new("Integrated Privilege Management").color(c.text).size(13.0).strong());
+                                    ui.label(RichText::new("Privileged operations").color(c.text).size(13.0).strong());
                                     let (status_text, status_color) = match &self.privileged_availability {
                                         PrivilegedAvailability::Ready => ("Ready", c.accent),
                                         PrivilegedAvailability::Misconfigured(_) => ("Needs setup", c.error),
@@ -14783,7 +14813,13 @@ impl OttrinApp {
                                     ui.horizontal(|ui| {
                                         ui.label(RichText::new(status_text).color(status_color).size(11.5).strong());
                                         let detail = match &self.privileged_availability {
-                                            PrivilegedAvailability::Ready => "The helper and elevation backend are configured.",
+                                            PrivilegedAvailability::Ready => {
+                                                if platform_capabilities.privilege_backend == "UAC" {
+                                                    "The bundled helper and UAC launcher are configured."
+                                                } else {
+                                                    "The helper and polkit elevation backend are configured."
+                                                }
+                                            }
                                             PrivilegedAvailability::Misconfigured(msg) => msg.as_str(),
                                             PrivilegedAvailability::Unsupported(msg) => msg.as_str(),
                                         };
@@ -14791,40 +14827,45 @@ impl OttrinApp {
                                     });
                                     ui.add_space(6.0);
                                     ui.label(
-                                        RichText::new("Normally auto-discovered from bundled install. Developer override: set `OTTRIN_PRIV_HELPER` or launch with `ottrin-app --helper-path=/path/to/ottrin-priv-helper`.")
-                                            .color(c.text_muted)
-                                            .size(11.0),
+                                        RichText::new(format!(
+                                            "Ottrin uses its helper with {} when an operation needs elevation. Developer override: set `OTTRIN_PRIV_HELPER` or launch with `ottrin-app --helper-path=PATH`.",
+                                            platform_capabilities.privilege_backend,
+                                        ))
+                                        .color(c.text_muted)
+                                        .size(11.0),
                                     );
 
-                                    ui.add_space(14.0);
-                                    ui.separator();
-                                    ui.add_space(10.0);
-                                    ui.label(RichText::new("Terminal Launcher").color(c.text).size(13.0).strong());
-                                    ui.label(
-                                        RichText::new(launcher_status().unwrap_or_else(|| "Unavailable".to_string()))
-                                            .color(c.text_muted)
-                                            .size(11.0),
-                                    );
-                                    ui.add_space(6.0);
-                                    ui.horizontal(|ui| {
-                                        if ui.button("Install `ottrin` command").on_hover_text(
-                                            "Creates ~/.local/bin/ottrin as a symlink to this Ottrin build or AppImage. \
-                                             Use it to launch Ottrin from a terminal and to run `ottrin --uninstall`."
-                                        ).clicked() {
-                                            let (text, ok) = match install_terminal_launcher() {
-                                                Ok(msg) => (msg, true),
-                                                Err(err) => (err, false),
-                                            };
-                                            self.set_status_message(text, ok, 8);
-                                        }
-                                        if ui.button("Remove launcher").clicked() {
-                                            let (text, ok) = match remove_terminal_launcher() {
-                                                Ok(msg) => (msg, true),
-                                                Err(err) => (err, false),
-                                            };
-                                            self.set_status_message(text, ok, 6);
-                                        }
-                                    });
+                                    if platform_capabilities.terminal_launcher_visible {
+                                        ui.add_space(14.0);
+                                        ui.separator();
+                                        ui.add_space(10.0);
+                                        ui.label(RichText::new("Terminal Launcher").color(c.text).size(13.0).strong());
+                                        ui.label(
+                                            RichText::new(launcher_status().unwrap_or_else(|| "Unavailable".to_string()))
+                                                .color(c.text_muted)
+                                                .size(11.0),
+                                        );
+                                        ui.add_space(6.0);
+                                        ui.horizontal(|ui| {
+                                            if ui.button("Install `ottrin` command").on_hover_text(
+                                                "Creates ~/.local/bin/ottrin as a symlink to this Ottrin build or AppImage. \
+                                                 Use it to launch Ottrin from a terminal and to run `ottrin --uninstall`."
+                                            ).clicked() {
+                                                let (text, ok) = match install_terminal_launcher() {
+                                                    Ok(msg) => (msg, true),
+                                                    Err(err) => (err, false),
+                                                };
+                                                self.set_status_message(text, ok, 8);
+                                            }
+                                            if ui.button("Remove launcher").clicked() {
+                                                let (text, ok) = match remove_terminal_launcher() {
+                                                    Ok(msg) => (msg, true),
+                                                    Err(err) => (err, false),
+                                                };
+                                                self.set_status_message(text, ok, 6);
+                                            }
+                                        });
+                                    }
 
                                     ui.add_space(14.0);
                                     ui.separator();
@@ -14862,7 +14903,9 @@ impl OttrinApp {
                                                 Err(err) => errors.push(err),
                                             }
                                             freed = freed.saturating_add(clear_preview_cache_storage());
-                                            if let Err(err) = remove_terminal_launcher() {
+                                            if platform_capabilities.terminal_launcher_visible
+                                                && let Err(err) = remove_terminal_launcher()
+                                            {
                                                 errors.push(err);
                                             }
                                             self.app_cleanup_confirm = false;
@@ -14915,6 +14958,7 @@ impl OttrinApp {
                                 }
                                 SettingsTab::Search => {
                                     self.ensure_search_started();
+                                    let platform_capabilities = settings_platform_capabilities(self.graphics_runtime.is_windows);
                                     // ── Header ────────────────────────────────
                                     ui.label(RichText::new("Search").color(c.text).size(settings_title).strong());
                                     ui.label(RichText::new(
@@ -15588,47 +15632,49 @@ impl OttrinApp {
                                                     "Background SQLite update",
                                                     &sqlite_schedule_detail,
                                                 );
-                                                health_row(
-                                                    ui,
-                                                    if self.state.config.search.use_system_locate {
-                                                        Some(locate_ok)
+                                                if platform_capabilities.system_locate_controls_visible {
+                                                    health_row(
+                                                        ui,
+                                                        if self.state.config.search.use_system_locate {
+                                                            Some(locate_ok)
+                                                        } else {
+                                                            None
+                                                        },
+                                                        "plocate fallback",
+                                                        if self.state.config.search.use_system_locate {
+                                                            if locate_ok { "enabled and available" } else { "enabled but not installed" }
+                                                        } else {
+                                                            "off; not needed for normal Ottrin search"
+                                                        },
+                                                    );
+                                                    let sys_age = ottrin_search::SearchService::system_locate_db_age_secs();
+                                                    let locate_fresh = sys_age.map(|s| s < 86_400);
+                                                    let system_locate_detail = if self.state.config.search.use_system_locate {
+                                                        sys_age
+                                                            .map(|s| format!("age {}", format_age_str(s)))
+                                                            .unwrap_or_else(|| "unknown age".to_string())
                                                     } else {
-                                                        None
-                                                    },
-                                                    "plocate fallback",
-                                                    if self.state.config.search.use_system_locate {
-                                                        if locate_ok { "enabled and available" } else { "enabled but not installed" }
-                                                    } else {
-                                                        "off; not needed for normal Ottrin search"
-                                                    },
-                                                );
-                                                let sys_age = ottrin_search::SearchService::system_locate_db_age_secs();
-                                                let locate_fresh = sys_age.map(|s| s < 86_400);
-                                                let system_locate_detail = if self.state.config.search.use_system_locate {
-                                                    sys_age
-                                                        .map(|s| format!("age {}", format_age_str(s)))
-                                                        .unwrap_or_else(|| "unknown age".to_string())
-                                                } else {
-                                                    "not used unless plocate fallback is enabled".to_string()
-                                                };
-                                                health_row(
-                                                    ui,
-                                                    if self.state.config.search.use_system_locate && locate_ok { locate_fresh } else { None },
-                                                    "System locate DB",
-                                                    &system_locate_detail,
-                                                );
-                                                health_row(
-                                                    ui,
-                                                    Some(updatedb_ok),
-                                                    "updatedb",
-                                                    if updatedb_ok { "available if you want Ottrin to refresh plocate" } else { "not installed; only needed for locate maintenance" },
-                                                );
-                                                health_row(
-                                                    ui,
-                                                    None,
-                                                    "fanotify",
-                                                    "not used by normal v1 search",
-                                                );
+                                                        "not used unless plocate fallback is enabled".to_string()
+                                                    };
+                                                    health_row(
+                                                        ui,
+                                                        if self.state.config.search.use_system_locate && locate_ok { locate_fresh } else { None },
+                                                        "System locate DB",
+                                                        &system_locate_detail,
+                                                    );
+                                                    health_row(
+                                                        ui,
+                                                        Some(updatedb_ok),
+                                                        "updatedb",
+                                                        if updatedb_ok { "available if you want Ottrin to refresh plocate" } else { "not installed; only needed for locate maintenance" },
+                                                    );
+                                                    health_row(
+                                                        ui,
+                                                        None,
+                                                        "fanotify",
+                                                        "not used by normal v1 search",
+                                                    );
+                                                }
                                             });
                                         ui.add_space(12.0);
                                         ui.label(RichText::new("Recommended setup").color(c.text_dim).size(11.5).strong());
@@ -15689,8 +15735,10 @@ impl OttrinApp {
                                                                 .fill(c.panel_raised)
                                                                 .stroke(Stroke::new(1.0, c.border)),
                                                         ).on_hover_text(
-                                                            "Installs or removes a user-level schedule that runs ottrin-index --rebuild every 4 hours. \
-                                                             Linux uses systemd --user or crontab; Windows uses Task Scheduler."
+                                                            format!(
+                                                                "Installs or removes a user-level {} that runs ottrin-index --rebuild every 4 hours.",
+                                                                platform_capabilities.scheduler_name,
+                                                            )
                                                         ).clicked() {
                                                             let (text, ok) = if sqlite_sched.enabled {
                                                                 match ottrin_search::SearchService::uninstall_sqlite_schedule() {
@@ -15720,7 +15768,7 @@ impl OttrinApp {
                                         }
                                         ui.add_space(6.0);
 
-                                        {
+                                        if platform_capabilities.system_locate_controls_visible {
                                             Frame::new()
                                                 .fill(c.panel).corner_radius(6.0)
                                                 .inner_margin(egui::Margin::symmetric(12, 10))
@@ -15836,6 +15884,7 @@ impl OttrinApp {
 
                                     });
 
+                                    if platform_capabilities.system_locate_controls_visible {
                                     ui.add_space(12.0);
                                     settings_section_icon(ui, c, MI_SETTINGS, "Advanced", "System-level maintenance for special cases.", |ui| {
                                         let adv_parent = egui::collapsing_header::CollapsingState::load_with_default_open(
@@ -15987,6 +16036,7 @@ impl OttrinApp {
                                     ui.add_space(4.0);
                                     }); // end adv_parent.body
                                     });
+                                    }
 
                                     ui.add_space(12.0);
                                     settings_section_icon(ui, c, MI_CLEAR, "Reset", "Restore search settings to defaults.", |ui| {
@@ -18822,5 +18872,20 @@ mod tests {
             graphics_renderer_reason_label(GraphicsRendererReason::NativeAutomatic),
             "Automatic found no compatibility signal"
         );
+    }
+
+    #[test]
+    fn settings_capabilities_only_expose_real_platform_integrations() {
+        let linux = settings_platform_capabilities(false);
+        assert!(linux.terminal_launcher_visible);
+        assert!(linux.system_locate_controls_visible);
+        assert_eq!(linux.privilege_backend, "polkit");
+        assert_eq!(linux.scheduler_name, "systemd --user or crontab");
+
+        let windows = settings_platform_capabilities(true);
+        assert!(!windows.terminal_launcher_visible);
+        assert!(!windows.system_locate_controls_visible);
+        assert_eq!(windows.privilege_backend, "UAC");
+        assert_eq!(windows.scheduler_name, "Windows Task Scheduler");
     }
 }
