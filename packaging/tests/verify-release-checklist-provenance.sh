@@ -65,6 +65,21 @@ for expected in \
   fi
 done
 
+# The detailed install guide ships in both Windows artifacts too.  It must not
+# regress to the old text-only Office description after the visual-preview
+# milestone, otherwise the release review would approve contradictory user
+# documentation.
+for expected in \
+  'bounded first-page PDF visual' \
+  'bounded DOCX/XLSX/XLSM content-preview visual' \
+  'extracted PDF text and metadata'; do
+  if ! grep -Fq -- "$expected" "$USER_GUIDE"; then
+    printf 'docs/USER_GUIDE.md is missing current Quick Inspector release detail: %s\n' \
+      "$expected" >&2
+    exit 1
+  fi
+done
+
 if grep -Fq -- 'PDF text/metadata, DOCX content, XLSX/XLSM worksheet tables' "$README"; then
   printf 'README.md still advertises the superseded text-only PDF/Office preview summary.\n' >&2
   exit 1

@@ -71,7 +71,7 @@ Permanent deletion cannot be undone from Ottrin.
 
 ## Quick Inspector
 
-Press Space on a selected item to open Quick Inspector. Ottrin previews common text and image formats directly and renders a bounded first PDF page when its packaged PDFium runtime is available; it also shows extracted PDF text and metadata. DOCX content, XLSX/XLSM bounded worksheet tables, PPTX slide text, and ZIP listings are available as text previews.
+Press Space on a selected item to open Quick Inspector. Ottrin previews common text and image formats directly and renders a bounded first-page PDF visual when its packaged PDFium runtime is available; it also shows extracted PDF text and metadata. It renders bounded DOCX/XLSX/XLSM content-preview visuals alongside their extracted text and metadata; PPTX slide text and ZIP listings are available as text previews.
 
 Damaged, encrypted, unsupported, or unrenderable PDFs fall back to extracted text and metadata without exposing raw PDF bytes to the image renderer. Legacy binary Office formats such as `.doc`, `.xls`, and `.ppt` currently show metadata and can be opened in their associated desktop application.
 
