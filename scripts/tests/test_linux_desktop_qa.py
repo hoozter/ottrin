@@ -52,6 +52,42 @@ class A11yRegistryPreflightTests(unittest.TestCase):
 
 
 class X11CoordinateTranslationTests(unittest.TestCase):
+    def test_entry_selection_accepts_the_visible_status_label_when_a11y_omits_selected_state(self):
+        node = MagicMock()
+        node.getState.return_value.getStates.return_value = []
+        with (
+            patch.object(qa, "visible_entry", return_value=node),
+            patch.object(
+                qa,
+                "visible_a11y_nodes",
+                return_value=["label | 16 items  ·  notes.txt"],
+            ),
+        ):
+            self.assertTrue(qa.entry_selected("notes.txt"))
+
+    def test_context_menu_selects_the_named_entry_before_right_clicking_it(self):
+        commands = []
+        node = MagicMock()
+        node.queryComponent.return_value.getExtents.return_value = MagicMock(
+            x=600, y=700, width=40, height=60
+        )
+        with (
+            patch.object(qa, "click_entry") as click_entry,
+            patch.object(qa, "wait_for", return_value=node),
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            qa.context_menu_entry("0x123", "preview-second.pdf")
+
+        click_entry.assert_called_once_with("0x123", "preview-second.pdf")
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                ("xdotool", "mousemove", "620", "730", "click", "3"),
+            ],
+        )
+
     def test_open_search_retries_with_checked_x11_target_when_a11y_does_not_focus(self):
         commands = []
         toggle = MagicMock()

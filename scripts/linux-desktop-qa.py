@@ -96,7 +96,18 @@ def visible_entry(name: str):
 
 def entry_selected(name: str) -> bool:
     node = visible_entry(name)
-    return node is not None and pyatspi.STATE_SELECTED in node.getState().getStates()
+    if node is None:
+        return False
+    if pyatspi.STATE_SELECTED in node.getState().getStates():
+        return True
+    # KWin/Xwayland occasionally exposes the selected row without
+    # STATE_SELECTED, while Ottrin's visible status still identifies it.  That
+    # label is an explicit product selection signal, so accept only a matching
+    # visible status label as the compatibility fallback.
+    return any(
+        line.startswith("label | ") and line.endswith(f"·  {name}")
+        for line in visible_a11y_nodes()
+    )
 
 
 def visible_named_nodes(name: str):
@@ -357,9 +368,11 @@ def click_accessible_suffix(suffix: str, role: str | None = None):
 
 
 def context_menu_entry(window_id: str, name: str):
-    node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
-    node.queryAction().doAction(0)
-    time.sleep(0.2)
+    # A prior Quick Inspector can leave its old row selected even when the
+    # accessibility action below reports success.  Prove the named row owns
+    # selection before right-clicking its desktop coordinates; otherwise the
+    # next context action can silently target the previous PDF.
+    click_entry(window_id, name)
     node = wait_for(lambda: visible_entry(name), f"selected entry {name!r}")
     rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
     run("xdotool", "windowactivate", "--sync", window_id)
