@@ -126,6 +126,52 @@ def click_accessible_name(name: str, role: str | None = None):
     time.sleep(0.35)
 
 
+def focused_search_field():
+    return next(
+        (
+            node
+            for node in all_nodes(ottrin_app())
+            if node.getRoleName() in {"entry", "text"}
+            and pyatspi.STATE_FOCUSED in node.getState().getStates()
+        ),
+        None,
+    )
+
+
+def open_search(window_id: str):
+    """Open search and prove its input owns focus before typing into it."""
+    node = wait_for(
+        lambda: next(
+            (
+                item
+                for item in named_nodes("Toggle Search")
+                if item.getRoleName() == "push button"
+                and pyatspi.STATE_SHOWING in item.getState().getStates()
+            ),
+            None,
+        ),
+        "accessible control 'Toggle Search'",
+    )
+    if not node.queryAction().doAction(0):
+        raise AssertionError("AT-SPI click failed for 'Toggle Search'")
+    try:
+        return wait_for(focused_search_field, "focused search field", timeout=2.0)
+    except AssertionError:
+        x, y = x11_point_for_node(window_id, node)
+        run("xdotool", "windowactivate", "--sync", window_id)
+        run(
+            "xdotool",
+            "mousemove",
+            "--window",
+            window_id,
+            str(x),
+            str(y),
+            "click",
+            "1",
+        )
+        return wait_for(focused_search_field, "focused search field after X11 retry")
+
+
 def x11_window_geometry(window_id: str) -> dict[str, int]:
     """Return the X11 outer geometry used by xdotool's desktop coordinates."""
     result = run("xdotool", "getwindowgeometry", "--shell", window_id, capture=True)
@@ -823,19 +869,7 @@ def main() -> int:
 
         # Exercise search while the main file view has a stable keyboard focus;
         # later workflow steps intentionally open menus and dialogs.
-        click_accessible_name("Toggle Search", "push button")
-        search_field = wait_for(
-            lambda: next(
-                (
-                    node
-                    for node in all_nodes(ottrin_app())
-                    if node.getRoleName() in {"entry", "text"}
-                    and pyatspi.STATE_FOCUSED in node.getState().getStates()
-                ),
-                None,
-            ),
-            "focused search field",
-        )
+        search_field = open_search(window_id)
         assert search_field is not None
         run("xdotool", "type", "--clearmodifiers", "--delay", "1", "sample.json")
         wait_for(

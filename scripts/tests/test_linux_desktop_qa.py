@@ -6,7 +6,7 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 
 SCRIPT = Path(__file__).parents[1] / "linux-desktop-qa.py"
@@ -36,6 +36,42 @@ class A11yRegistryPreflightTests(unittest.TestCase):
 
 
 class X11CoordinateTranslationTests(unittest.TestCase):
+    def test_open_search_retries_with_checked_x11_target_when_a11y_does_not_focus(self):
+        commands = []
+        toggle = MagicMock()
+        toggle.queryAction.return_value.doAction.return_value = True
+        with (
+            patch.object(
+                qa,
+                "wait_for",
+                side_effect=[toggle, AssertionError("no focus"), object()],
+            ),
+            patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
+            patch.object(
+                qa,
+                "run",
+                side_effect=lambda *args, **kwargs: commands.append(args),
+            ),
+        ):
+            self.assertIsNotNone(qa.open_search("0x123"))
+
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                (
+                    "xdotool",
+                    "mousemove",
+                    "--window",
+                    "0x123",
+                    "280",
+                    "330",
+                    "click",
+                    "1",
+                ),
+            ],
+        )
+
     def test_maps_entry_center_through_the_accessible_window(self):
         self.assertEqual(
             qa.x11_point_for_entry(
