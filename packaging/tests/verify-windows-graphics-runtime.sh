@@ -48,6 +48,16 @@ for literal in \
   require_literal "$BASH_PACKAGER" "$literal"
 done
 
+# Presence checks alone let an old portable stage produce an installer whose
+# public license or release guidance no longer matches this release commit.
+# Reject that stale input before NSIS copies it verbatim.
+for literal in \
+  'release_files=(' \
+  'cmp -s "$STAGE/$relative" "$ROOT/$relative"' \
+  'Installer payload is stale: %s'; do
+  require_literal "$INSTALLER_PACKAGER" "$literal"
+done
+
 for literal in \
   'New-Item -ItemType Directory -Force -Path $DistDir | Out-Null' \
   '$MesaLibEglSha256 = "ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"' \
@@ -64,6 +74,13 @@ for literal in \
   'OTTRIN_RENDERER=opengl' \
   'Mesa DLL checksum mismatch after extracting the pinned Mesa archive'; do
   require_literal "$POWERSHELL_PACKAGER" "$literal"
+done
+
+for literal in \
+  '$ReleaseFiles = @(' \
+  'Get-FileHash -Algorithm SHA256' \
+  'Installer payload is stale:'; do
+  require_literal "$POWERSHELL_INSTALLER_PACKAGER" "$literal"
 done
 
 # The final artifact verifier must independently pin DXIL too: a release

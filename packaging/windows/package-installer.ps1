@@ -52,6 +52,25 @@ foreach ($RelativePath in $RequiredFiles) {
     }
 }
 
+# NSIS copies this stage verbatim. Keep release-facing files tied to this
+# checkout instead of accepting a stale portable stage with the right names.
+$ReleaseFiles = @(
+    "LICENSE",
+    "README.md",
+    "docs\\USER_GUIDE.md",
+    "docs\\DEVELOPMENT.md",
+    "docs\\ROADMAP.md",
+    "docs\\RELEASE_NOTES.md",
+    "docs\\RELEASE_CHECKLIST.md"
+)
+foreach ($RelativePath in $ReleaseFiles) {
+    $StageHash = (Get-FileHash -Algorithm SHA256 (Join-Path $Stage $RelativePath)).Hash
+    $SourceHash = (Get-FileHash -Algorithm SHA256 (Join-Path $Root $RelativePath)).Hash
+    if ($StageHash -ne $SourceHash) {
+        throw "Installer payload is stale: $RelativePath"
+    }
+}
+
 $MakensisCommand = Get-Command makensis.exe -ErrorAction SilentlyContinue
 if ($MakensisCommand) {
     $MakensisPath = $MakensisCommand.Source

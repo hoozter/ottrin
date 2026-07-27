@@ -55,6 +55,25 @@ for relative in "${required[@]}"; do
   fi
 done
 
+# NSIS copies this stage verbatim.  Keep the release-facing files tied to the
+# exact checkout that is producing the installer instead of accepting a stale
+# portable stage that happens to have the right filenames.
+release_files=(
+  LICENSE
+  README.md
+  docs/USER_GUIDE.md
+  docs/DEVELOPMENT.md
+  docs/ROADMAP.md
+  docs/RELEASE_NOTES.md
+  docs/RELEASE_CHECKLIST.md
+)
+for relative in "${release_files[@]}"; do
+  if ! cmp -s "$STAGE/$relative" "$ROOT/$relative"; then
+    printf 'Installer payload is stale: %s\n' "$relative" >&2
+    exit 1
+  fi
+done
+
 if [[ -z "$MAKENSIS" ]]; then
   if command -v makensis >/dev/null 2>&1; then
     MAKENSIS="$(command -v makensis)"
