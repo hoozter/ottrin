@@ -29,6 +29,7 @@ for script in \
   packaging/tests/verify-windows-installer-clean-checkout.sh \
   packaging/tests/verify-windows-installer-output-path.sh \
   packaging/tests/verify-windows-installer-powershell-provenance.sh \
+  packaging/tests/verify-windows-installer-stage-version.sh \
   packaging/tests/verify-windows-runtime-temp-cleanup.sh; do
   require_contract_gate "$script"
 done

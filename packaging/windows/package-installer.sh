@@ -85,6 +85,10 @@ for relative in "${release_files[@]}"; do
 done
 
 source_revision="$(git -C "$ROOT" rev-parse --verify HEAD)"
+if ! grep -Fqx "Version: $VERSION" "$STAGE/SOURCE_REVISION.txt"; then
+  printf 'Installer payload has a stale package version.\n' >&2
+  exit 1
+fi
 if ! grep -Fqx "Git revision: $source_revision" "$STAGE/SOURCE_REVISION.txt"; then
   printf 'Installer payload has a stale source revision.\n' >&2
   exit 1

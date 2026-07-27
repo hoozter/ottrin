@@ -82,6 +82,9 @@ foreach ($RelativePath in $ReleaseFiles) {
 
 $SourceRevision = (& git -C $Root rev-parse --verify HEAD).Trim()
 if ($LASTEXITCODE -ne 0) { throw "Could not determine the source revision for installer packaging." }
+if (-not ((Get-Content (Join-Path $Stage "SOURCE_REVISION.txt")) -contains "Version: $Version")) {
+    throw "Installer payload has a stale package version."
+}
 if (-not ((Get-Content (Join-Path $Stage "SOURCE_REVISION.txt")) -contains "Git revision: $SourceRevision")) {
     throw "Installer payload has a stale source revision."
 }

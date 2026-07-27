@@ -85,6 +85,7 @@ shell_scripts=(
   packaging/tests/verify-windows-installer-clean-checkout.sh
   packaging/tests/verify-windows-installer-output-path.sh
   packaging/tests/verify-windows-installer-powershell-provenance.sh
+  packaging/tests/verify-windows-installer-stage-version.sh
   packaging/tests/verify-windows-runtime-temp-cleanup.sh
   packaging/tests/verify-linux-appimage-documentation.sh
   packaging/tests/verify-linux-portable-running-instructions.sh
@@ -100,6 +101,8 @@ shell_scripts=(
 run_gate "Shell syntax" bash -n "${shell_scripts[@]}"
 run_gate "Windows PowerShell installer provenance guard" \
   bash packaging/tests/verify-windows-installer-powershell-provenance.sh
+run_gate "Windows installer staged package-version guard" \
+  bash packaging/tests/verify-windows-installer-stage-version.sh
 run_gate "Windows installer clean-checkout guard" \
   bash packaging/tests/verify-windows-installer-clean-checkout.sh
 run_gate "Release workflow dependency guards" \
