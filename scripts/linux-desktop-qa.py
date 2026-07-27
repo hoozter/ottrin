@@ -168,16 +168,33 @@ def x11_point_for_entry(component, app, window: dict[str, int]) -> tuple[int, in
 
 def x11_point_for_node(window_id: str, node) -> tuple[int, int]:
     """Return a checked X11-window-relative target for an accessible node."""
+    target = entry_x11_diagnostics(window_id, node)["x11_window_relative_target"]
+    return target["x"], target["y"]
+
+
+def entry_x11_diagnostics(window_id: str, node) -> dict[str, object]:
+    """Describe the checked accessible-entry to X11 target mapping."""
     app = ottrin_app()
     if app is None or app.childCount == 0:
         raise AssertionError("Ottrin accessible window is unavailable for X11 coordinate mapping")
     rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
     app_rect = app[0].queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
-    return x11_point_for_entry(
-        (rect.x, rect.y, rect.width, rect.height),
-        (app_rect.x, app_rect.y, app_rect.width, app_rect.height),
-        x11_window_geometry(window_id),
+    component = (rect.x, rect.y, rect.width, rect.height)
+    accessible_window = (app_rect.x, app_rect.y, app_rect.width, app_rect.height)
+    window = x11_window_geometry(window_id)
+    x, y = x11_point_for_entry(
+        component,
+        accessible_window,
+        window,
     )
+    return {
+        "accessible_entry": dict(zip(("x", "y", "width", "height"), component)),
+        "accessible_window": dict(
+            zip(("x", "y", "width", "height"), accessible_window)
+        ),
+        "x11_window": window,
+        "x11_window_relative_target": {"x": x, "y": y},
+    }
 
 
 def view_toggle_x11_diagnostics(window_id: str, node) -> dict[str, object]:
@@ -323,7 +340,7 @@ def click_search_result(window_id: str, name: str, button: str = "1"):
     time.sleep(0.35)
 
 
-def write_visible_accessibility_tree(evidence: Path, name: str):
+def visible_a11y_nodes() -> list[str]:
     app = ottrin_app()
     lines = []
     if app is not None:
@@ -335,20 +352,36 @@ def write_visible_accessibility_tree(evidence: Path, name: str):
                 lines.append(f"{node.getRoleName()} | {node.name or ''}")
             except Exception:
                 continue
+    return lines
+
+
+def write_visible_accessibility_tree(evidence: Path, name: str):
+    lines = visible_a11y_nodes()
     (evidence / f"{name}.a11y.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def double_click_entry(window_id: str, name: str):
+def write_entry_activation_failure(evidence: Path, name: str, diagnostics: dict[str, object]):
+    """Persist target geometry and post-click UI state only for a failed activation."""
+    payload = dict(diagnostics)
+    payload["entry_name"] = name
+    payload["post_click_visible_nodes"] = visible_a11y_nodes()
+    (evidence / f"entry-activation-{name.replace(' ', '-').lower()}.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
+def double_click_entry(window_id: str, name: str) -> dict[str, object]:
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
-    x, y = x11_point_for_node(window_id, node)
+    diagnostics = entry_x11_diagnostics(window_id, node)
+    target = diagnostics["x11_window_relative_target"]
     run("xdotool", "windowactivate", "--sync", window_id)
     run(
         "xdotool",
         "mousemove",
         "--window",
         window_id,
-        str(x),
-        str(y),
+        str(target["x"]),
+        str(target["y"]),
         "click",
         "--repeat",
         "2",
@@ -357,6 +390,7 @@ def double_click_entry(window_id: str, name: str):
         "1",
     )
     time.sleep(0.5)
+    return diagnostics
 
 
 def click_entry(window_id: str, name: str):
@@ -821,11 +855,17 @@ def main() -> int:
         click_view_toggle(window_id, VIEW_TO_LIST, VIEW_TO_GRID, evidence)
         wait_for(lambda: visible_entry("notes.txt"), "List view for workflow matrix")
         invoke_context_action(window_id, "notes.txt", "Copy Item")
-        double_click_entry(window_id, "Subfolder")
-        wait_for(
-            lambda: visible_entry("notes.txt") and not visible_entry("delete-me.txt"),
-            "Subfolder navigation",
-        )
+        subfolder_activation = double_click_entry(window_id, "Subfolder")
+        try:
+            wait_for(
+                lambda: visible_entry("notes.txt") and not visible_entry("delete-me.txt"),
+                "Subfolder navigation",
+            )
+        except AssertionError:
+            write_entry_activation_failure(
+                evidence, "Subfolder", subfolder_activation
+            )
+            raise
         click_named_control(window_id, "Menu")
         click_accessible_suffix("Paste into Current Folder")
         wait_for(lambda: (subfolder / "notes.txt").is_file(), "copied file")

@@ -81,7 +81,11 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         commands = []
         with (
             patch.object(qa, "wait_for", return_value=object()),
-            patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
+            patch.object(
+                qa,
+                "entry_x11_diagnostics",
+                return_value={"x11_window_relative_target": {"x": 280, "y": 330}},
+            ),
             patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
             patch.object(qa.time, "sleep"),
         ):
@@ -107,6 +111,27 @@ class X11CoordinateTranslationTests(unittest.TestCase):
                 ),
             ],
         )
+
+    def test_records_entry_activation_diagnostics_only_after_navigation_fails(self):
+        evidence = Path(self.id().replace(".", "-"))
+        diagnostics = {
+            "accessible_entry": {"x": 200, "y": 350, "width": 80, "height": 30},
+            "accessible_window": {"x": 100, "y": 200, "width": 400, "height": 300},
+            "x11_window": {"X": 500, "Y": 300, "WIDTH": 800, "HEIGHT": 600},
+            "x11_window_relative_target": {"x": 280, "y": 330},
+        }
+        visible = ["toggle button | Subfolder", "toggle button | notes.txt"]
+        writes = {}
+
+        with (
+            patch.object(qa, "visible_a11y_nodes", return_value=visible),
+            patch.object(Path, "write_text", side_effect=lambda text, **_: writes.setdefault("text", text)),
+        ):
+            qa.write_entry_activation_failure(evidence, "Subfolder", diagnostics)
+
+        self.assertIn('"accessible_entry"', writes["text"])
+        self.assertIn('"post_click_visible_nodes"', writes["text"])
+        self.assertIn("toggle button | Subfolder", writes["text"])
 
     def test_docx_page_preview_does_not_claim_image_pdf_zoom_toolbar(self):
         self.assertFalse(qa.inspector_requires_zoom_controls("letter.docx"))
