@@ -185,6 +185,55 @@ verify_portable_graphics_runtime_dll() {
   fi
 }
 
+# Presence alone is not enough for the redistributable notices: a stale or
+# substituted stage could retain the expected paths while losing the texts
+# that correspond to the pinned Mesa source archive.  These hashes are for
+# the exact files from mesa-mesa-26.1.3.tar.gz, whose archive hash is pinned
+# above.
+verify_graphics_runtime_notice_file() {
+  local artifact_label="$1"
+  local expected="$2"
+  local entry="$3"
+  local actual="$4"
+  if [[ "$actual" != "$expected" ]]; then
+    printf '%s contains an unexpected Mesa notice SHA-256: %s\n' \
+      "$artifact_label" "$entry" >&2
+    exit 1
+  fi
+}
+
+verify_portable_graphics_runtime_notice_file() {
+  local expected="$1"
+  local entry="$2"
+  local actual
+  actual="$(unzip -p "$WINDOWS_ARCHIVE" \
+    "Ottrin-$VERSION-windows-x64/third-party-notices/mesa3d-26.1.3/$entry" | sha256sum | awk '{print $1}')"
+  verify_graphics_runtime_notice_file 'Windows portable archive' "$expected" "$entry" "$actual"
+}
+
+verify_installer_graphics_runtime_notice_file() {
+  local expected="$1"
+  local entry="$2"
+  local actual
+  actual="$(7z x -so "$WINDOWS_INSTALLER" \
+    "third-party-notices/mesa3d-26.1.3/$entry" | sha256sum | awk '{print $1}')"
+  verify_graphics_runtime_notice_file 'Windows installer' "$expected" "$entry" "$actual"
+}
+
+for checksum_and_entry in \
+  '0d1a0472ecc81830e75c20d59b0ea02841e3db21255e0ebad97ab682c54d6615 docs/license.rst' \
+  '7e4d3fba250d15e9e0afa380d4b611828fa2560cc8fdebe95bcf2f01a487de12 licenses/Apache-2.0' \
+  '9b9fea7520a816107fcac2598b7c0155222f16bc430e989706b22f4367f1df7d licenses/BSL-1.0' \
+  '8ff76f1528e6e4e9400c0f6b1f2d19d4979aaac3bcc44bb707a55389132825c4 licenses/GPL-1.0-or-later' \
+  '6667ad4063569cd53b13500550d93fcd3dc11bcf82c5514296af013a0b720ba5 licenses/GPL-2.0-only' \
+  '323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f licenses/MIT' \
+  '686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7 licenses/SGI-B-2.0' \
+  '9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f licenses/exceptions/Linux-Syscall-Note'; do
+  read -r expected entry <<<"$checksum_and_entry"
+  verify_portable_graphics_runtime_notice_file "$expected" "$entry"
+  # The installer is verified later, after its NSIS payload has been opened.
+done
+
 verify_graphics_runtime_notice_manifest() {
   local artifact_label="$1"
   local manifest="$2"
@@ -350,6 +399,18 @@ verify_installer_graphics_runtime_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dl
 verify_installer_graphics_runtime_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
 verify_installer_graphics_runtime_dll "$DXIL_SHA256" 'bin/dxil.dll'
 verify_installer_graphics_runtime_notice_manifest
+for checksum_and_entry in \
+  '0d1a0472ecc81830e75c20d59b0ea02841e3db21255e0ebad97ab682c54d6615 docs/license.rst' \
+  '7e4d3fba250d15e9e0afa380d4b611828fa2560cc8fdebe95bcf2f01a487de12 licenses/Apache-2.0' \
+  '9b9fea7520a816107fcac2598b7c0155222f16bc430e989706b22f4367f1df7d licenses/BSL-1.0' \
+  '8ff76f1528e6e4e9400c0f6b1f2d19d4979aaac3bcc44bb707a55389132825c4 licenses/GPL-1.0-or-later' \
+  '6667ad4063569cd53b13500550d93fcd3dc11bcf82c5514296af013a0b720ba5 licenses/GPL-2.0-only' \
+  '323c587d0ccf10e376f8bf9a7f31fb4ca6078105194b42e0b1e0ee2bc9bde71f licenses/MIT' \
+  '686bf035a1fd22076416fd3b90370ac67771e884bf57f55693d51f8ce7c710a7 licenses/SGI-B-2.0' \
+  '9b4084655174654608fd037e9ddb4feeadfada01cd042e9c17b05aa7105b2b9f licenses/exceptions/Linux-Syscall-Note'; do
+  read -r expected entry <<<"$checksum_and_entry"
+  verify_installer_graphics_runtime_notice_file "$expected" "$entry"
+done
 if ! installer_running_instructions="$(7z x -so "$WINDOWS_INSTALLER" RUNNING.md)"; then
   printf 'Windows installer is missing RUNNING.md.\n' >&2
   exit 1

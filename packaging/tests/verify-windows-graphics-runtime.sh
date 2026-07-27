@@ -74,6 +74,8 @@ for literal in \
   'third-party-notices/mesa3d-26\.1\.3/licenses/exceptions/Linux-Syscall-Note' \
   'verify_portable_graphics_runtime_notice_manifest' \
   'verify_installer_graphics_runtime_notice_manifest' \
+  'verify_graphics_runtime_notice_file' \
+  'Mesa notice SHA-256:' \
   'verify_windows_graphics_recovery_instructions' \
   'verify_portable_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\''' \
   'verify_installer_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\'''; do
