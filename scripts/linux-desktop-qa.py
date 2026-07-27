@@ -550,6 +550,27 @@ def set_a11y(enabled: bool):
     )
 
 
+def require_a11y_registry():
+    """Fail before launching Ottrin when the desktop AT-SPI route is absent."""
+    result = run(
+        "busctl",
+        "--user",
+        "introspect",
+        "org.a11y.atspi.Registry",
+        "/org/a11y/atspi/cache",
+        check=False,
+        capture=True,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).strip()
+        suffix = f": {detail}" if detail else ""
+        raise RuntimeError(
+            "required AT-SPI registry/cache service is unavailable; "
+            "run this packaged desktop QA in a functioning accessibility session"
+            f"{suffix}"
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -563,9 +584,13 @@ def main() -> int:
     binary = args.binary.resolve()
     if not binary.is_file():
         parser.error(f"packaged binary not found: {binary}")
-    for tool in ("gdbus", "spectacle", "xdotool"):
+    for tool in ("busctl", "gdbus", "spectacle", "xdotool"):
         if shutil.which(tool) is None:
             parser.error(f"required tool not found: {tool}")
+    try:
+        require_a11y_registry()
+    except RuntimeError as error:
+        parser.error(str(error))
 
     evidence = args.evidence.resolve()
     evidence.mkdir(parents=True, exist_ok=True)
