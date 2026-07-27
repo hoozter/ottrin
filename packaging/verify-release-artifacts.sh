@@ -153,13 +153,8 @@ if [[ "$(head -n1 "$ROOT/docs/RELEASE_NOTES.md")" != "# Ottrin $VERSION Release 
   exit 1
 fi
 
-for relative_path in \
-  'README.md' \
-  'docs/USER_GUIDE.md' \
-  'docs/DEVELOPMENT.md' \
-  'docs/ROADMAP.md' \
-  'docs/RELEASE_NOTES.md' \
-  'docs/RELEASE_CHECKLIST.md'; do
+verify_release_file_bytes() {
+  local relative_path="$1"
   if ! cmp -s \
     <(tar -xOf "$LINUX_ARCHIVE" "Ottrin-$VERSION-linux-x86_64/$relative_path") \
     "$ROOT/$relative_path"; then
@@ -172,6 +167,17 @@ for relative_path in \
     printf 'Windows portable archive contains stale content: %s\n' "$relative_path" >&2
     exit 1
   fi
+}
+
+for relative_path in \
+  'LICENSE' \
+  'README.md' \
+  'docs/USER_GUIDE.md' \
+  'docs/DEVELOPMENT.md' \
+  'docs/ROADMAP.md' \
+  'docs/RELEASE_NOTES.md' \
+  'docs/RELEASE_CHECKLIST.md'; do
+  verify_release_file_bytes "$relative_path"
 done
 
 verify_portable_graphics_runtime_dll() {
@@ -362,6 +368,7 @@ for entry in \
 done
 
 for relative_path in \
+  'LICENSE' \
   'README.md' \
   'docs/USER_GUIDE.md' \
   'docs/DEVELOPMENT.md' \

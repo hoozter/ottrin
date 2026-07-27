@@ -84,6 +84,11 @@ done
 
 require_installer_verifier_entry 'README.md'
 
+# The project license is a release artifact in its own right. Presence-only
+# checks would accept a stale installer, portable ZIP, or Linux archive after
+# a license update, so the artifact verifier must compare its exact bytes.
+require_literal "$ARTIFACT_VERIFIER" 'verify_release_file_bytes() {'
+
 # The installer copies its supplied stage verbatim.  It must therefore reject
 # a stage missing any notice that the final artifact verifier requires, rather
 # than relying on a later archive inspection to catch an incomplete payload.
