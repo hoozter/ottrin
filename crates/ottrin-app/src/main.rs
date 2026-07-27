@@ -8,6 +8,10 @@ use ottrin_core::{
 use ottrin_platform::{DefaultPlatform, PlatformOps, set_privileged_helper_override};
 use ottrin_ui::{OttrinApp, clear_preview_cache_storage, load_config, remove_config_file};
 use std::collections::HashSet;
+#[cfg(any(target_os = "windows", test))]
+use std::fs::OpenOptions;
+#[cfg(any(target_os = "windows", test))]
+use std::io::Write;
 use std::path::PathBuf;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -99,10 +103,18 @@ fn windows_graphics_evidence() -> GraphicsEvidence {
     GraphicsEvidence::default()
 }
 
-fn main() -> eframe::Result<()> {
+fn main() {
     if handle_cli_action() {
-        return Ok(());
+        return;
     }
+    install_windows_startup_panic_hook();
+    if let Err(error) = run_gui() {
+        report_windows_startup_failure("Ottrin could not start", &error.to_string());
+        std::process::exit(1);
+    }
+}
+
+fn run_gui() -> eframe::Result<()> {
     apply_cli_overrides();
     ensure_dev_helper();
 
@@ -110,6 +122,7 @@ fn main() -> eframe::Result<()> {
         Ok(renderer_override) => renderer_override,
         Err(error) => {
             eprintln!("ottrin: {error}");
+            report_windows_startup_failure("Ottrin could not select a renderer", &error);
             std::process::exit(2);
         }
     };
@@ -142,6 +155,80 @@ fn main() -> eframe::Result<()> {
             )))
         }),
     )
+}
+
+#[cfg(target_os = "windows")]
+fn startup_failure_log_directory() -> PathBuf {
+    std::env::var_os("LOCALAPPDATA")
+        .map(PathBuf::from)
+        .unwrap_or_else(std::env::temp_dir)
+        .join("Ottrin")
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn write_startup_failure_log_in(
+    directory: &std::path::Path,
+    summary: &str,
+    details: &str,
+) -> std::io::Result<PathBuf> {
+    std::fs::create_dir_all(directory)?;
+    let path = directory.join("startup.log");
+    let mut log = OpenOptions::new().create(true).append(true).open(&path)?;
+    writeln!(log, "Ottrin startup failure")?;
+    writeln!(log, "Summary: {summary}")?;
+    writeln!(log, "Details: {details}")?;
+    writeln!(log)?;
+    log.sync_data()?;
+    Ok(path)
+}
+
+fn report_windows_startup_failure(summary: &str, details: &str) {
+    #[cfg(target_os = "windows")]
+    {
+        let log_path =
+            write_startup_failure_log_in(&startup_failure_log_directory(), summary, details).ok();
+        let location = log_path.as_deref().map_or_else(
+            || "the local Ottrin data directory".to_string(),
+            |path| path.display().to_string(),
+        );
+        show_windows_startup_failure_dialog(&format!(
+            "Ottrin could not start. Details were saved to:\n{location}"
+        ));
+    }
+    #[cfg(not(target_os = "windows"))]
+    let _ = (summary, details);
+}
+
+#[cfg(target_os = "windows")]
+fn install_windows_startup_panic_hook() {
+    std::panic::set_hook(Box::new(|panic| {
+        report_windows_startup_failure(
+            "Ottrin encountered a fatal startup error",
+            &panic.to_string(),
+        );
+    }));
+}
+
+#[cfg(not(target_os = "windows"))]
+fn install_windows_startup_panic_hook() {}
+
+#[cfg(target_os = "windows")]
+fn show_windows_startup_failure_dialog(message: &str) {
+    use windows_sys::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK, MessageBoxW};
+
+    let title: Vec<u16> = "Ottrin startup error"
+        .encode_utf16()
+        .chain(Some(0))
+        .collect();
+    let body: Vec<u16> = message.encode_utf16().chain(Some(0)).collect();
+    unsafe {
+        MessageBoxW(
+            std::ptr::null_mut(),
+            body.as_ptr(),
+            title.as_ptr(),
+            MB_ICONERROR | MB_OK,
+        );
+    }
 }
 
 fn handle_cli_action() -> bool {
@@ -611,5 +698,25 @@ mod tests {
                 PathBuf::from("two.txt"),
             ]))
         );
+    }
+
+    #[test]
+    fn startup_failure_diagnostic_is_durable_and_names_its_location() {
+        let directory = std::env::temp_dir().join(format!(
+            "ottrin-startup-diagnostic-test-{}",
+            std::process::id()
+        ));
+        let log = write_startup_failure_log_in(
+            &directory,
+            "WGPU initialization failed",
+            "No wgpu backend feature that is implemented for the target platform was enabled.",
+        )
+        .expect("startup diagnostic should be written");
+
+        assert_eq!(log, directory.join("startup.log"));
+        let contents = std::fs::read_to_string(log).expect("startup diagnostic should be readable");
+        assert!(contents.contains("Ottrin startup failure"));
+        assert!(contents.contains("Summary: WGPU initialization failed"));
+        assert!(contents.contains("Details: No wgpu backend feature"));
     }
 }

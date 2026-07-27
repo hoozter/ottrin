@@ -36,6 +36,14 @@ release commit and artifacts.
   running until an eight-second smoke-test timeout, with no startup error.
 - The Windows portable app inspected as an x86-64 PE using Windows system DLLs;
   the installer inspected as an NSIS executable.
+- The 2026-07-27 Wine launch probe kept the freshly rebuilt bundled OpenGL
+  compatibility path alive without fatal output. Native WGPU reached Wine's
+  D3D shader compiler but exited with `vkd3d result -5`; this isolates a
+  Wine/Mesa limitation and does not replace the required real-Windows native
+  launch smoke.
+- Windows GUI startup failures now append a durable `startup.log` under
+  `%LOCALAPPDATA%\\Ottrin` and show a bounded native error dialog that names
+  the log location. This diagnostic is local evidence, not real-Windows QA.
 - Isolated uninstall cleanup tests passed both preference-preserving and
   `--purge-config` paths without touching the real user profile.
 - Isolated privileged-helper protocol tests passed malformed-request,
@@ -74,3 +82,7 @@ interactive workflow, polkit-dialog, Windows runtime, UAC, or installer sign-off
 - [ ] Known limitations are complete and plainly worded.
 - [ ] Version, artifact names, checksums, and generated release notes agree.
 - [ ] No release-blocking item is waived without a written rationale.
+- [ ] Windows artifacts are Authenticode-signed with an approved production
+  identity and verified after download. Current rebuilt artifacts are unsigned;
+  SmartScreen reputation warnings remain a release blocker and must not be
+  bypassed or claimed as trusted.

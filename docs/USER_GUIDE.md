@@ -117,6 +117,11 @@ ottrin-index --remove-schedule
 
 - Windows builds pass local package checks and archive inspection, but exact-release-commit CI and real Windows desktop runtime smoke testing are still pending.
 - Windows UAC/helper behavior still needs real Windows validation.
+- Windows GUI startup failures write `%LOCALAPPDATA%\\Ottrin\\startup.log` and
+  show the local log location in a native error dialog. Wine launch evidence is
+  limited: the bundled OpenGL path stayed alive, while Native WGPU currently
+  reaches a Wine/Mesa D3D shader-compiler failure (`vkd3d result -5`); real
+  Windows native-driver validation remains required.
 - Windows builds use WGPU when Automatic finds no compatibility signal. The portable ZIP and installer include a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime. Automatic selects it for detected remote sessions and recognized virtual/problem adapters, then shows a one-time explanation with a route to Settings. Settings offers Automatic, Native, and OpenGL compatibility for the next launch. The diagnostic override `ottrin.exe --renderer opengl` (or `OTTRIN_RENDERER=opengl`) still takes precedence for that launch; its Mesa, pal1000, and Microsoft notices are bundled in `third-party-notices/`.
 - Linux polkit helper packaging needs real system smoke testing.
 - Linux portable and AppImage artifacts have shallow launch smoke coverage; full packaged workflow QA is still pending.
@@ -127,4 +132,4 @@ ottrin-index --remove-schedule
 - Operation Activity records session file operations and labels whether entries are restorable or not undoable. Full undo execution is not implemented.
 - Context-menu actions, Open With application launching, thumbnail view options, and status messages still need manual QA.
 - True FTS5 content indexing is not implemented; content search currently uses ripgrep-backed queries.
-- Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing are not complete.
+- Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing are not complete. Windows artifacts are unsigned, so SmartScreen reputation warnings remain a release blocker.
