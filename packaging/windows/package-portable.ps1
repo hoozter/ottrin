@@ -44,6 +44,18 @@ function Get-VerifiedFile {
     }
 }
 
+# Windows PowerShell 5.1 writes a UTF-8 BOM for Set-Content -Encoding UTF8.
+# The release verifier compares the generated notice manifest as exact text, so
+# use an explicit no-BOM encoding on every artifact-local UTF-8 document.
+function Set-Utf8NoBomText {
+    param([string]$Destination, [string]$Content)
+    [System.IO.File]::WriteAllText(
+        $Destination,
+        $Content,
+        (New-Object System.Text.UTF8Encoding($false))
+    )
+}
+
 function Resolve-PdfiumRuntime {
     param([string]$Destination)
     $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("ottrin-pdfium-" + [guid]::NewGuid())
@@ -125,7 +137,9 @@ Microsoft DXC archive SHA-256: $DxcSha256
 Microsoft DXC license SHA-256: $DxcLicenseSha256
 dxil.dll SHA-256: $DxilSha256
 Included Mesa DLLs: libEGL.dll, libGLESv2.dll, libgallium_wgl.dll
-"@ | Set-Content -Encoding UTF8 (Join-Path $NoticeDestination "MANIFEST.txt")
+"@ | ForEach-Object {
+        Set-Utf8NoBomText (Join-Path $NoticeDestination "MANIFEST.txt") $_
+    }
     } finally {
         Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
     }
@@ -179,7 +193,9 @@ compatibility runtime and explicitly select it for this launch:
 
 For a user-level recovery override, set `OTTRIN_RENDERER=opengl` before launching
 Ottrin. The normal default remains WGPU with the system graphics driver.
-"@ | Set-Content -Encoding UTF8 "$Stage\RUNNING.md"
+"@ | ForEach-Object {
+    Set-Utf8NoBomText "$Stage\RUNNING.md" $_
+}
 
 Remove-Item -Force $Archive -ErrorAction SilentlyContinue
 Compress-Archive -Path $Stage -DestinationPath $Archive
