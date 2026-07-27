@@ -39,6 +39,7 @@ required=(
   third-party-notices/mesa3d-26.1.3/licenses/exceptions/Linux-Syscall-Note
   third-party-notices/pal1000-LICENSE.txt
   third-party-notices/Microsoft-DXC-LICENSE-MS.txt
+  SOURCE_REVISION.txt
   LICENSE
   RUNNING.md
   README.md
@@ -73,6 +74,12 @@ for relative in "${release_files[@]}"; do
     exit 1
   fi
 done
+
+source_revision="$(git -C "$ROOT" rev-parse --verify HEAD)"
+if ! grep -Fqx "Git revision: $source_revision" "$STAGE/SOURCE_REVISION.txt"; then
+  printf 'Installer payload has a stale source revision.\n' >&2
+  exit 1
+fi
 
 if [[ -z "$MAKENSIS" ]]; then
   if command -v makensis >/dev/null 2>&1; then

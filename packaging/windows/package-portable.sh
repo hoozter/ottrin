@@ -23,6 +23,13 @@ DXC_URL="https://github.com/microsoft/DirectXShaderCompiler/releases/download/v1
 DXC_SHA256="cf658aacf070d3045e31b8f1f8a696c2945f37c1095019481ef7c513368db3b4"
 DXC_LICENSE_SHA256="734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963"
 DXIL_SHA256="cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"
+SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
+
+if ! git -C "$ROOT" diff --quiet --ignore-submodules -- \
+  || ! git -C "$ROOT" diff --cached --quiet --ignore-submodules --; then
+    printf 'Refusing to package a tracked-dirty checkout; commit or stash tracked changes first.\n' >&2
+    exit 1
+fi
 
 download_verified() {
     local url="$1"
@@ -128,6 +135,11 @@ cp "$ROOT/README.md" "$STAGE/"
 cp "$ROOT/LICENSE" "$STAGE/"
 cp "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" "$ROOT/docs/ROADMAP.md" \
   "$ROOT/docs/RELEASE_NOTES.md" "$ROOT/docs/RELEASE_CHECKLIST.md" "$STAGE/docs/"
+cat > "$STAGE/SOURCE_REVISION.txt" <<EOF
+Ottrin source revision
+Version: $VERSION
+Git revision: $SOURCE_REVISION
+EOF
 
 cat > "$STAGE/RUNNING.md" <<'EOF'
 # Running Ottrin Portable on Windows

@@ -10,6 +10,13 @@ APPIMAGETOOL="${APPIMAGETOOL:-$DIST_DIR/appimagetool-x86_64.AppImage}"
 APPIMAGETOOL_SHA256="${APPIMAGETOOL_SHA256:-b90f4a8b18967545fda78a445b27680a1642f1ef9488ced28b65398f2be7add2}"
 PDFIUM_URL="https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7961/pdfium-linux-x64.tgz"
 PDFIUM_SHA256="019665c8877d46fe65f625f80fd714ab07aac68554b0636acf2a2adf9288adb2"
+SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
+
+if ! git -C "$ROOT" diff --quiet --ignore-submodules -- \
+  || ! git -C "$ROOT" diff --cached --quiet --ignore-submodules --; then
+    printf 'Refusing to package a tracked-dirty checkout; commit or stash tracked changes first.\n' >&2
+    exit 1
+fi
 
 download_verify_and_package_pdfium() {
     local target_pdfium_dir="$1"
@@ -59,6 +66,11 @@ install -m 0644 "$ROOT/README.md" "$ROOT/LICENSE" "$APPDIR/usr/share/doc/ottrin/
 install -m 0644 "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" \
   "$ROOT/docs/ROADMAP.md" "$ROOT/docs/RELEASE_NOTES.md" \
   "$ROOT/docs/RELEASE_CHECKLIST.md" "$APPDIR/usr/share/doc/ottrin/"
+cat > "$APPDIR/usr/share/doc/ottrin/SOURCE_REVISION.txt" <<EOF
+Ottrin source revision
+Version: $VERSION
+Git revision: $SOURCE_REVISION
+EOF
 
 cat > "$APPDIR/org.ottrin.Ottrin.desktop" <<'DESKTOP'
 [Desktop Entry]

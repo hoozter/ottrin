@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="${1:-dist}"
 VERSION="$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')"
+EXPECTED_SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
 MESA_LIBEGL_SHA256="ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"
 MESA_LIBGLESV2_SHA256="649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"
 MESA_LIBGALLIUM_WGL_SHA256="a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"
@@ -101,6 +102,7 @@ for entry in \
   '/assets/icon\.svg$' \
   '/packaging/linux/org\.ottrin\.filesystem\.policy$' \
   '/LICENSE$' \
+  '/SOURCE_REVISION\.txt$' \
   '/README\.md$' \
   '/docs/USER_GUIDE\.md$' \
   '/docs/DEVELOPMENT\.md$' \
@@ -133,6 +135,7 @@ for entry in \
   '/third-party-notices/mesa3d-26\.1\.3/licenses/exceptions/Linux-Syscall-Note$' \
   '/third-party-notices/pal1000-LICENSE\.txt$' \
   '/third-party-notices/Microsoft-DXC-LICENSE-MS\.txt$' \
+  '/SOURCE_REVISION\.txt$' \
   '/assets/icon\.svg$' \
   '/LICENSE$' \
   '/README\.md$' \
@@ -180,6 +183,27 @@ for relative_path in \
   'docs/RELEASE_CHECKLIST.md'; do
   verify_release_file_bytes "$relative_path"
 done
+
+verify_source_revision() {
+  local artifact_label="$1"
+  local provenance="$2"
+  for expected in \
+    'Ottrin source revision' \
+    "Version: $VERSION" \
+    "Git revision: $EXPECTED_SOURCE_REVISION"; do
+    if ! grep -Fqx "$expected" <<<"$provenance"; then
+      printf '%s SOURCE_REVISION.txt is missing: %s\n' "$artifact_label" "$expected" >&2
+      exit 1
+    fi
+  done
+}
+
+verify_source_revision \
+  'Linux portable archive' \
+  "$(tar -xOf "$LINUX_ARCHIVE" "Ottrin-$VERSION-linux-x86_64/SOURCE_REVISION.txt")"
+verify_source_revision \
+  'Windows portable archive' \
+  "$(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/SOURCE_REVISION.txt")"
 
 verify_portable_graphics_runtime_dll() {
   local expected="$1"
@@ -378,6 +402,7 @@ for entry in \
   'third-party-notices/mesa3d-26.1.3/licenses/exceptions/Linux-Syscall-Note' \
   'third-party-notices/pal1000-LICENSE.txt' \
   'third-party-notices/Microsoft-DXC-LICENSE-MS.txt' \
+  'SOURCE_REVISION.txt' \
   'LICENSE' \
   'README.md' \
   'RUNNING.md' \
@@ -388,6 +413,10 @@ for entry in \
   'docs/RELEASE_CHECKLIST.md'; do
   require_installer_entry "$entry"
 done
+
+verify_source_revision \
+  'Windows installer' \
+  "$(7z x -so "$WINDOWS_INSTALLER" SOURCE_REVISION.txt)"
 
 for relative_path in \
   'LICENSE' \
@@ -475,6 +504,7 @@ for entry in \
   'usr/share/polkit-1/actions/org.ottrin.filesystem.policy' \
   'usr/share/doc/ottrin/README.md' \
   'usr/share/doc/ottrin/LICENSE' \
+  'usr/share/doc/ottrin/SOURCE_REVISION.txt' \
   'usr/share/doc/ottrin/USER_GUIDE.md' \
   'usr/share/doc/ottrin/DEVELOPMENT.md' \
   'usr/share/doc/ottrin/ROADMAP.md' \
@@ -485,6 +515,10 @@ for entry in \
     exit 1
   fi
 done
+
+verify_source_revision \
+  'Linux AppImage' \
+  "$(<"$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/SOURCE_REVISION.txt")"
 
 if [[ "$(tar -tzf "$LINUX_ARCHIVE" | grep -c '/bin/pdfium/lib/libpdfium.so$')" -lt 1 ]]; then
   printf 'Linux portable archive missing PDFium runtime library.\n' >&2

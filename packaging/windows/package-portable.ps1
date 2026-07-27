@@ -24,6 +24,12 @@ $DxcUrl = "https://github.com/microsoft/DirectXShaderCompiler/releases/download/
 $DxcSha256 = "cf658aacf070d3045e31b8f1f8a696c2945f37c1095019481ef7c513368db3b4"
 $DxcLicenseSha256 = "734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963"
 $DxilSha256 = "cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"
+$SourceRevision = (& git -C $Root rev-parse --verify HEAD).Trim()
+if ($LASTEXITCODE -ne 0) { throw "Could not determine the source revision for release packaging." }
+& git -C $Root diff --quiet --ignore-submodules --
+if ($LASTEXITCODE -ne 0) { throw "Refusing to package a tracked-dirty checkout; commit or stash tracked changes first." }
+& git -C $Root diff --cached --quiet --ignore-submodules --
+if ($LASTEXITCODE -ne 0) { throw "Refusing to package a tracked-dirty checkout; commit or stash tracked changes first." }
 
 function Get-VerifiedFile {
     param([string]$Url, [string]$ExpectedSha256, [string]$Destination)
@@ -141,6 +147,11 @@ Copy-Item "$Root\assets\icon.svg", "$Root\assets\icon.png", "$Root\assets\logo.s
 Copy-Item "$Root\README.md" "$Stage\"
 Copy-Item "$Root\LICENSE" "$Stage\"
 Copy-Item "$Root\docs\USER_GUIDE.md", "$Root\docs\DEVELOPMENT.md", "$Root\docs\ROADMAP.md", "$Root\docs\RELEASE_NOTES.md", "$Root\docs\RELEASE_CHECKLIST.md" "$Stage\docs\"
+@"
+Ottrin source revision
+Version: $Version
+Git revision: $SourceRevision
+"@ | Set-Content -Encoding ASCII "$Stage\SOURCE_REVISION.txt"
 
 @"
 # Running Ottrin Portable on Windows

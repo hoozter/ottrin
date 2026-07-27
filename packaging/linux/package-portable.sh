@@ -10,6 +10,13 @@ ARCHIVE="$DIST_DIR/Ottrin-$VERSION-linux-x86_64-portable.tar.gz"
 
 PDFIUM_URL="https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7961/pdfium-linux-x64.tgz"
 PDFIUM_SHA256="019665c8877d46fe65f625f80fd714ab07aac68554b0636acf2a2adf9288adb2"
+SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
+
+if ! git -C "$ROOT" diff --quiet --ignore-submodules -- \
+  || ! git -C "$ROOT" diff --cached --quiet --ignore-submodules --; then
+    printf 'Refusing to package a tracked-dirty checkout; commit or stash tracked changes first.\n' >&2
+    exit 1
+fi
 
 download_verify_and_package_pdfium() {
     local target_pdfium_dir="$1"
@@ -50,6 +57,11 @@ cp "$ROOT/packaging/linux/org.ottrin.filesystem.policy" \
 cp "$ROOT/README.md" "$ROOT/LICENSE" "$STAGE/" 2>/dev/null || cp "$ROOT/README.md" "$STAGE/"
 cp "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" "$ROOT/docs/ROADMAP.md" \
   "$ROOT/docs/RELEASE_NOTES.md" "$ROOT/docs/RELEASE_CHECKLIST.md" "$STAGE/docs/"
+cat > "$STAGE/SOURCE_REVISION.txt" <<EOF
+Ottrin source revision
+Version: $VERSION
+Git revision: $SOURCE_REVISION
+EOF
 
 cat > "$STAGE/RUNNING.md" <<'EOF'
 # Running Ottrin Portable on Linux

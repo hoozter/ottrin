@@ -37,6 +37,7 @@ $RequiredFiles = @(
     "third-party-notices\mesa3d-26.1.3\licenses\exceptions\Linux-Syscall-Note",
     "third-party-notices\pal1000-LICENSE.txt",
     "third-party-notices\Microsoft-DXC-LICENSE-MS.txt",
+    "SOURCE_REVISION.txt",
     "LICENSE",
     "RUNNING.md",
     "README.md",
@@ -69,6 +70,12 @@ foreach ($RelativePath in $ReleaseFiles) {
     if ($StageHash -ne $SourceHash) {
         throw "Installer payload is stale: $RelativePath"
     }
+}
+
+$SourceRevision = (& git -C $Root rev-parse --verify HEAD).Trim()
+if ($LASTEXITCODE -ne 0) { throw "Could not determine the source revision for installer packaging." }
+if (-not (Select-String -Path (Join-Path $Stage "SOURCE_REVISION.txt") -SimpleMatch "Git revision: $SourceRevision" -Quiet)) {
+    throw "Installer payload has a stale source revision."
 }
 
 $MakensisCommand = Get-Command makensis.exe -ErrorAction SilentlyContinue
