@@ -12,3 +12,6 @@ ottrin-ui = { path = "../ottrin-ui" }
 ottrin-platform = { path = "../ottrin-platform" }
 eframe.workspace = true
 image = "0.25"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging"] }

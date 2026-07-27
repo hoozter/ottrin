@@ -1,7 +1,10 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
 use eframe::{NativeOptions, egui};
-use ottrin_core::{ConflictAction, FileCommand, SearchIndexStatus, SearchQuery, format_size};
+use ottrin_core::{
+    ConflictAction, FileCommand, GraphicsEvidence, GraphicsRendererChoice, GraphicsRuntimeStatus,
+    SearchIndexStatus, SearchQuery, format_size, select_graphics_renderer,
+};
 use ottrin_platform::{DefaultPlatform, PlatformOps, set_privileged_helper_override};
 use ottrin_ui::{OttrinApp, clear_preview_cache_storage, load_config, remove_config_file};
 use std::collections::HashSet;
@@ -19,24 +22,79 @@ enum HeadlessAction {
     Invalid(String),
 }
 
-fn renderer_for_target(is_windows: bool) -> eframe::Renderer {
-    if is_windows {
-        eframe::Renderer::Wgpu
-    } else {
+fn renderer_for_selection(is_windows: bool, choice: GraphicsRendererChoice) -> eframe::Renderer {
+    if choice == GraphicsRendererChoice::OpenGlCompatibility || !is_windows {
         eframe::Renderer::Glow
+    } else {
+        eframe::Renderer::Wgpu
     }
 }
 
-/// Keeps the native WGPU path as the default while allowing an explicit recovery
-/// route for Windows adapters that need an OpenGL driver supplied by the user.
-fn renderer_for_target_with_override(
-    is_windows: bool,
-    renderer_override: Option<&str>,
-) -> eframe::Renderer {
-    match renderer_override.map(str::trim) {
-        Some(value) if value.eq_ignore_ascii_case("opengl") => eframe::Renderer::Glow,
-        _ => renderer_for_target(is_windows),
+fn graphics_runtime_status(
+    command_line_opengl: bool,
+    config: &ottrin_core::AppConfig,
+) -> GraphicsRuntimeStatus {
+    let is_windows = cfg!(target_os = "windows");
+    let evidence = if is_windows {
+        windows_graphics_evidence()
+    } else {
+        GraphicsEvidence::default()
+    };
+    GraphicsRuntimeStatus {
+        is_windows,
+        selection: select_graphics_renderer(
+            command_line_opengl,
+            config.graphics_renderer,
+            evidence,
+        ),
     }
+}
+
+#[cfg(target_os = "windows")]
+fn windows_graphics_evidence() -> GraphicsEvidence {
+    use windows_sys::Win32::Graphics::Gdi::{
+        DISPLAY_DEVICE_MIRRORING_DRIVER, DISPLAY_DEVICE_REMOTE, DISPLAY_DEVICEW,
+        EnumDisplayDevicesW,
+    };
+    use windows_sys::Win32::UI::WindowsAndMessaging::{GetSystemMetrics, SM_REMOTESESSION};
+
+    let remote_session = unsafe { GetSystemMetrics(SM_REMOTESESSION) != 0 };
+    let mut virtual_or_problem_adapter = false;
+    for index in 0..32 {
+        let mut adapter = DISPLAY_DEVICEW::default();
+        adapter.cb = std::mem::size_of::<DISPLAY_DEVICEW>() as u32;
+        if unsafe { EnumDisplayDevicesW(std::ptr::null(), index, &mut adapter, 0) } == 0 {
+            break;
+        }
+        let description = String::from_utf16_lossy(&adapter.DeviceString)
+            .trim_end_matches('\0')
+            .to_ascii_lowercase();
+        let flagged =
+            adapter.StateFlags & (DISPLAY_DEVICE_MIRRORING_DRIVER | DISPLAY_DEVICE_REMOTE) != 0;
+        let recognized_name = [
+            "microsoft basic display",
+            "vmware",
+            "virtualbox",
+            "qxl",
+            "parallels",
+            "virtual display",
+        ]
+        .iter()
+        .any(|name| description.contains(name));
+        if flagged || recognized_name {
+            virtual_or_problem_adapter = true;
+            break;
+        }
+    }
+    GraphicsEvidence {
+        remote_session,
+        virtual_or_problem_adapter,
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn windows_graphics_evidence() -> GraphicsEvidence {
+    GraphicsEvidence::default()
 }
 
 fn main() -> eframe::Result<()> {
@@ -55,12 +113,13 @@ fn main() -> eframe::Result<()> {
     };
 
     let config = load_config();
+    let graphics_runtime = graphics_runtime_status(renderer_override.is_some(), &config);
     let window_size = config.window_size.unwrap_or([1024.0, 680.0]);
 
     let options = NativeOptions {
-        renderer: renderer_for_target_with_override(
-            cfg!(target_os = "windows"),
-            renderer_override.as_deref(),
+        renderer: renderer_for_selection(
+            graphics_runtime.is_windows,
+            graphics_runtime.selection.choice,
         ),
         viewport: egui::ViewportBuilder::default()
             .with_title("Ottrin")
@@ -74,7 +133,12 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Ottrin",
         options,
-        Box::new(|cc| Ok(Box::new(OttrinApp::new(cc)))),
+        Box::new(move |cc| {
+            Ok(Box::new(OttrinApp::new_with_graphics_status(
+                cc,
+                graphics_runtime,
+            )))
+        }),
     )
 }
 
@@ -476,14 +540,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn windows_renderer_does_not_require_opengl() {
-        assert_eq!(renderer_for_target(true), eframe::Renderer::Wgpu);
+    fn native_renderer_uses_wgpu_on_windows_and_glow_elsewhere() {
+        assert_eq!(
+            renderer_for_selection(true, GraphicsRendererChoice::Native),
+            eframe::Renderer::Wgpu
+        );
+        assert_eq!(
+            renderer_for_selection(false, GraphicsRendererChoice::Native),
+            eframe::Renderer::Glow
+        );
     }
 
     #[test]
     fn graphics_recovery_override_can_select_opengl_without_changing_windows_default() {
         assert_eq!(
-            renderer_for_target_with_override(true, Some("opengl")),
+            renderer_for_selection(true, GraphicsRendererChoice::OpenGlCompatibility),
             eframe::Renderer::Glow
         );
     }

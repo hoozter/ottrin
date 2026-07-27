@@ -2810,6 +2810,7 @@ dependencies = [
  "ottrin-platform",
  "ottrin-search",
  "ottrin-ui",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

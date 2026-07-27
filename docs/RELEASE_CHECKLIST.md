@@ -11,7 +11,7 @@ Every item must be checked against the exact artifact intended for release. A so
 - [ ] Linux and Windows CI are green for the release commit.
 - [x] Release artifact checksums verify.
 - [x] Archive inspection confirms the app, indexer, privileged helper, policy/assets, and user documentation are present.
-- [x] Both Windows artifacts contain the same checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`libEGL.dll`, `libGLESv2.dll`, `libgallium_wgl.dll`, and `dxil.dll`) plus its complete Mesa, pal1000, and Microsoft notices under `third-party-notices/`. WGPU remains the default; `--renderer opengl` / `OTTRIN_RENDERER=opengl` is the explicit recovery selector for the bundled runtime.
+- [x] Both Windows artifacts contain the same checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`libEGL.dll`, `libGLESv2.dll`, `libgallium_wgl.dll`, and `dxil.dll`) plus its complete Mesa, pal1000, and Microsoft notices under `third-party-notices/`. Automatic uses documented remote-session and recognized virtual/problem-adapter evidence to select the bundled runtime; Settings persists Automatic, Native, or OpenGL compatibility for the next launch, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` remains a diagnostic override.
 
 Local automated gates and artifact inspection last passed on 2026-07-27. CI and
 the clean-machine/manual gates below remain required against the eventual
@@ -64,7 +64,7 @@ interactive workflow, polkit-dialog, Windows runtime, UAC, or installer sign-off
 - [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; Move rejects without mutation.
 - [ ] Search indexing, restart, watcher updates, and background updater scheduling/removal pass.
 - [ ] Quick Inspector passes the Windows file-type matrix, including rendered PDF first pages plus malformed/encrypted PDF text/metadata fallback paths.
-- [ ] If the graphics compatibility payload is shipped, native-driver and bundled-OpenGL launch paths each pass on their intended physical/virtual or remote adapters, including `--renderer opengl` / `OTTRIN_RENDERER=opengl` recovery selection.
+- [ ] If the graphics compatibility payload is shipped, native-driver and bundled-OpenGL launch paths each pass on their intended physical/virtual or remote adapters, including Automatic detection, the persisted renderer preference, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` diagnostic selection.
 - [ ] UAC allow, cancel, helper-missing, and denied-operation paths pass.
 - [ ] Uninstall cleanup commands remove scheduled/background integration without deleting user files; cleanup launch/failure stops before application deletion, and incomplete file deletion retains Installed Apps registration for retry.
 

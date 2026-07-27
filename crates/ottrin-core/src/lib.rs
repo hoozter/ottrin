@@ -703,6 +703,105 @@ impl LinkView {
 
 // ── App config (persisted to disk) ───────────────────────────────────────────
 
+/// The renderer preference that Ottrin owns. Command-line diagnostics remain a
+/// higher-precedence, non-persistent override.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum GraphicsRendererPreference {
+    #[default]
+    Automatic,
+    Native,
+    OpenGlCompatibility,
+}
+
+/// Truthful graphics facts collected by the platform integration. These facts
+/// intentionally do not include guesses derived from the renderer itself.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct GraphicsEvidence {
+    pub remote_session: bool,
+    pub virtual_or_problem_adapter: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GraphicsRendererChoice {
+    Native,
+    OpenGlCompatibility,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GraphicsRendererReason {
+    CommandLineOverride,
+    PersistedNativePreference,
+    PersistedCompatibilityPreference,
+    RemoteSession,
+    VirtualOrProblemAdapter,
+    NativeAutomatic,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct GraphicsRendererSelection {
+    pub choice: GraphicsRendererChoice,
+    pub reason: GraphicsRendererReason,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct GraphicsRuntimeStatus {
+    pub is_windows: bool,
+    pub selection: GraphicsRendererSelection,
+}
+
+impl Default for GraphicsRuntimeStatus {
+    fn default() -> Self {
+        Self {
+            is_windows: cfg!(target_os = "windows"),
+            selection: GraphicsRendererSelection {
+                choice: GraphicsRendererChoice::Native,
+                reason: GraphicsRendererReason::NativeAutomatic,
+            },
+        }
+    }
+}
+
+/// Applies the documented precedence: command-line diagnostic override,
+/// persisted Ottrin preference, platform evidence, then the native default.
+pub fn select_graphics_renderer(
+    command_line_opengl: bool,
+    preference: GraphicsRendererPreference,
+    evidence: GraphicsEvidence,
+) -> GraphicsRendererSelection {
+    if command_line_opengl {
+        return GraphicsRendererSelection {
+            choice: GraphicsRendererChoice::OpenGlCompatibility,
+            reason: GraphicsRendererReason::CommandLineOverride,
+        };
+    }
+    match preference {
+        GraphicsRendererPreference::Native => GraphicsRendererSelection {
+            choice: GraphicsRendererChoice::Native,
+            reason: GraphicsRendererReason::PersistedNativePreference,
+        },
+        GraphicsRendererPreference::OpenGlCompatibility => GraphicsRendererSelection {
+            choice: GraphicsRendererChoice::OpenGlCompatibility,
+            reason: GraphicsRendererReason::PersistedCompatibilityPreference,
+        },
+        GraphicsRendererPreference::Automatic if evidence.remote_session => {
+            GraphicsRendererSelection {
+                choice: GraphicsRendererChoice::OpenGlCompatibility,
+                reason: GraphicsRendererReason::RemoteSession,
+            }
+        }
+        GraphicsRendererPreference::Automatic if evidence.virtual_or_problem_adapter => {
+            GraphicsRendererSelection {
+                choice: GraphicsRendererChoice::OpenGlCompatibility,
+                reason: GraphicsRendererReason::VirtualOrProblemAdapter,
+            }
+        }
+        GraphicsRendererPreference::Automatic => GraphicsRendererSelection {
+            choice: GraphicsRendererChoice::Native,
+            reason: GraphicsRendererReason::NativeAutomatic,
+        },
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AppConfig {
     pub theme: ThemeMode,
@@ -770,6 +869,12 @@ pub struct AppConfig {
     /// Maximum thumbnail cache size in MiB. 0 disables disk thumbnail caching.
     #[serde(default = "default_thumbnail_cache_max_mb")]
     pub thumbnail_cache_max_mb: u32,
+    /// Windows renderer preference; Automatic uses conservative platform evidence.
+    #[serde(default)]
+    pub graphics_renderer: GraphicsRendererPreference,
+    /// Prevents repeating the one-time Automatic compatibility explanation.
+    #[serde(default)]
+    pub graphics_compatibility_notice_seen: bool,
 }
 
 impl Default for AppConfig {
@@ -809,6 +914,8 @@ impl Default for AppConfig {
             smart_panel_width: default_smart_panel_width(),
             window_size: None,
             thumbnail_cache_max_mb: default_thumbnail_cache_max_mb(),
+            graphics_renderer: GraphicsRendererPreference::Automatic,
+            graphics_compatibility_notice_seen: false,
         }
     }
 }
@@ -1664,5 +1771,95 @@ mod tests {
             PlatformCaseMode::CaseSensitive,
         );
         assert_eq!(link_dir.category, FileCategory::Directory);
+    }
+
+    #[test]
+    fn automatic_renderer_uses_native_for_physical_graphics() {
+        assert_eq!(
+            select_graphics_renderer(
+                false,
+                GraphicsRendererPreference::Automatic,
+                GraphicsEvidence::default()
+            ),
+            GraphicsRendererSelection {
+                choice: GraphicsRendererChoice::Native,
+                reason: GraphicsRendererReason::NativeAutomatic,
+            }
+        );
+    }
+
+    #[test]
+    fn automatic_renderer_uses_compatibility_for_rdp_and_problem_adapters() {
+        assert_eq!(
+            select_graphics_renderer(
+                false,
+                GraphicsRendererPreference::Automatic,
+                GraphicsEvidence {
+                    remote_session: true,
+                    virtual_or_problem_adapter: false
+                },
+            ),
+            GraphicsRendererSelection {
+                choice: GraphicsRendererChoice::OpenGlCompatibility,
+                reason: GraphicsRendererReason::RemoteSession,
+            }
+        );
+        assert_eq!(
+            select_graphics_renderer(
+                false,
+                GraphicsRendererPreference::Automatic,
+                GraphicsEvidence {
+                    remote_session: false,
+                    virtual_or_problem_adapter: true
+                },
+            ),
+            GraphicsRendererSelection {
+                choice: GraphicsRendererChoice::OpenGlCompatibility,
+                reason: GraphicsRendererReason::VirtualOrProblemAdapter,
+            }
+        );
+    }
+
+    #[test]
+    fn renderer_preference_and_cli_have_documented_precedence() {
+        assert_eq!(
+            select_graphics_renderer(
+                false,
+                GraphicsRendererPreference::Native,
+                GraphicsEvidence {
+                    remote_session: true,
+                    virtual_or_problem_adapter: true
+                },
+            )
+            .reason,
+            GraphicsRendererReason::PersistedNativePreference,
+        );
+        assert_eq!(
+            select_graphics_renderer(
+                false,
+                GraphicsRendererPreference::OpenGlCompatibility,
+                GraphicsEvidence::default(),
+            )
+            .reason,
+            GraphicsRendererReason::PersistedCompatibilityPreference,
+        );
+        assert_eq!(
+            select_graphics_renderer(
+                true,
+                GraphicsRendererPreference::Native,
+                GraphicsEvidence::default(),
+            )
+            .reason,
+            GraphicsRendererReason::CommandLineOverride,
+        );
+    }
+
+    #[test]
+    fn graphics_renderer_reset_is_automatic_and_notice_is_opt_in_persistence() {
+        let reset = GraphicsRendererPreference::default();
+        assert_eq!(reset, GraphicsRendererPreference::Automatic);
+        let config = AppConfig::default();
+        assert_eq!(config.graphics_renderer, reset);
+        assert!(!config.graphics_compatibility_notice_seen);
     }
 }

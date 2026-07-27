@@ -21,7 +21,7 @@ Implemented:
 - Quick Inspector as a full Space-triggered window with visual image, bounded first-page PDF previews, and bounded DOCX/XLSX/XLSM content-preview PNGs; it retains extracted PDF/Office text and metadata fallbacks. Office output is a truthful content preview, not a faithful document layout.
 - Theme presets and custom theme editing.
 - Linux portable tarball, Linux AppImage, Windows portable zip, and per-user Windows installer packaging scripts.
-- Windows portable and installer artifacts retain native WGPU as the default and bundle a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime for virtual, remote, and problematic adapters. `ottrin.exe --renderer opengl` or `OTTRIN_RENDERER=opengl` explicitly selects that recovery path; the bundled Mesa, pal1000, and Microsoft notices are under `third-party-notices/`.
+- Windows portable and installer artifacts retain native WGPU as the Automatic fallback and bundle a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime. Automatic selects the bundled compatibility path for detected RDP sessions and recognized virtual/problem adapters, explains that one-time choice in the app, and exposes Automatic, Native, and OpenGL compatibility preferences for the next launch. `ottrin.exe --renderer opengl` or `OTTRIN_RENDERER=opengl` remains a diagnostic override; the bundled Mesa, pal1000, and Microsoft notices are under `third-party-notices/`.
 - Strict formatting, tests, and Clippy gates.
 
 ## Still needs implementation or real QA before v1:

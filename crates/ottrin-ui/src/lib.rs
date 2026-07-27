@@ -9,7 +9,8 @@ use egui::{
 use egui_extras::{Column, TableBuilder};
 use ottrin_core::{
     AppConfig, AppState, ConflictAction, DeleteMode, EntryKind, FileCategory, FileCommand,
-    FileEntry, ListColumn, MillerColumnWidthMode, PrivilegedCommand, PrivilegedContext,
+    FileEntry, GraphicsRendererChoice, GraphicsRendererPreference, GraphicsRendererReason,
+    GraphicsRuntimeStatus, ListColumn, MillerColumnWidthMode, PrivilegedCommand, PrivilegedContext,
     PrivilegedPayload, PrivilegedRequest, PrivilegedStatus, SavedTheme, SearchIndexStatus,
     SearchQuery, SearchResponse, SearchResultItem, SearchScope, SearchSort, SortBy, TandemSide,
     ThemeCustomization, ThemeMode, ThemePreset, ViewMode, classify_file, default_home_dir,
@@ -86,6 +87,25 @@ fn format_age_str(secs: u64) -> String {
         format!("{}h ago", secs / 3_600)
     } else {
         format!("{}d ago", secs / 86_400)
+    }
+}
+
+fn graphics_settings_visible(is_windows: bool) -> bool {
+    is_windows
+}
+
+fn graphics_renderer_reason_label(reason: GraphicsRendererReason) -> &'static str {
+    match reason {
+        GraphicsRendererReason::CommandLineOverride => "command-line OpenGL override",
+        GraphicsRendererReason::PersistedNativePreference => "your Native preference",
+        GraphicsRendererReason::PersistedCompatibilityPreference => {
+            "your OpenGL compatibility preference"
+        }
+        GraphicsRendererReason::RemoteSession => "a remote desktop session",
+        GraphicsRendererReason::VirtualOrProblemAdapter => {
+            "a recognized virtual or problem adapter"
+        }
+        GraphicsRendererReason::NativeAutomatic => "Automatic found no compatibility signal",
     }
 }
 
@@ -941,6 +961,8 @@ pub struct OttrinApp {
     show_settings: bool,
     // Active settings category tab
     settings_tab: SettingsTab,
+    graphics_runtime: GraphicsRuntimeStatus,
+    show_graphics_compatibility_notice: bool,
     // Appearance: transient feedback for save/export actions.
     theme_status: Option<(String, bool, Instant)>,
     cache_clear_confirm: bool,
@@ -958,7 +980,10 @@ pub struct OttrinApp {
 
 impl Default for OttrinApp {
     fn default() -> Self {
-        Self::new_with_config(AppConfig::default())
+        Self::new_with_config_and_graphics_status(
+            AppConfig::default(),
+            GraphicsRuntimeStatus::default(),
+        )
     }
 }
 
@@ -992,12 +1017,41 @@ impl OttrinApp {
         cc.egui_ctx.set_fonts(fonts);
 
         let config = load_config();
-        let app = Self::new_with_config(config);
+        let app =
+            Self::new_with_config_and_graphics_status(config, GraphicsRuntimeStatus::default());
         app.apply_theme_to_ctx(&cc.egui_ctx);
         app
     }
 
-    fn new_with_config(config: AppConfig) -> Self {
+    pub fn new_with_graphics_status(
+        cc: &eframe::CreationContext<'_>,
+        graphics_runtime: GraphicsRuntimeStatus,
+    ) -> Self {
+        egui_extras::install_image_loaders(&cc.egui_ctx);
+        let mut fonts = egui::FontDefinitions::default();
+        fonts.font_data.insert(
+            "material-icons".to_owned(),
+            std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
+                "../assets/MaterialSymbolsFilled.ttf"
+            ))),
+        );
+        fonts
+            .families
+            .entry(egui::FontFamily::Proportional)
+            .or_default()
+            .push("material-icons".to_owned());
+        cc.egui_ctx.set_fonts(fonts);
+
+        let config = load_config();
+        let app = Self::new_with_config_and_graphics_status(config, graphics_runtime);
+        app.apply_theme_to_ctx(&cc.egui_ctx);
+        app
+    }
+
+    fn new_with_config_and_graphics_status(
+        config: AppConfig,
+        graphics_runtime: GraphicsRuntimeStatus,
+    ) -> Self {
         let (listing_tx, listing_worker_rx) = mpsc::channel::<ListingRequest>();
         let (listing_worker_tx, listing_rx) = mpsc::channel::<ListingResponse>();
         let (op_tx, op_rx) = mpsc::channel::<OpResult>();
@@ -1058,6 +1112,14 @@ impl OttrinApp {
         let search_config = state.config.search.clone();
         let (retained_move_activity, retained_move_activity_error) = load_retained_move_activity();
 
+        let show_graphics_compatibility_notice = graphics_runtime.is_windows
+            && state.config.graphics_renderer == GraphicsRendererPreference::Automatic
+            && graphics_runtime.selection.choice == GraphicsRendererChoice::OpenGlCompatibility
+            && !state.config.graphics_compatibility_notice_seen;
+        if show_graphics_compatibility_notice {
+            state.config.graphics_compatibility_notice_seen = true;
+        }
+
         let mut app = Self {
             state,
             colors,
@@ -1117,6 +1179,8 @@ impl OttrinApp {
             show_about: false,
             show_settings: false,
             settings_tab: SettingsTab::General,
+            graphics_runtime,
+            show_graphics_compatibility_notice,
             theme_status: None,
             cache_clear_confirm: false,
             app_cleanup_confirm: false,
@@ -1131,6 +1195,9 @@ impl OttrinApp {
         // scope so users can edit immediately without a separate enable step.
         app.load_or_seed_override_for_scope();
         app.colors = Colors::for_config(&app.state.config);
+        if show_graphics_compatibility_notice {
+            app.persist_config();
+        }
 
         // Kick off initial listings for the default tab
         app.search_ui.scope = app.state.config.search.default_scope;
@@ -14452,6 +14519,33 @@ impl OttrinApp {
         }
     }
 
+    fn render_graphics_compatibility_notice(&mut self, ctx: &Context) {
+        if !self.show_graphics_compatibility_notice {
+            return;
+        }
+        egui::Window::new("Graphics compatibility enabled")
+            .collapsible(false)
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, Vec2::ZERO)
+            .show(ctx, |ui| {
+                ui.set_min_width(390.0);
+                ui.label("Ottrin detected remote, virtual, or problem graphics and selected its bundled OpenGL compatibility renderer for responsiveness.");
+                ui.add_space(8.0);
+                ui.label(RichText::new("Ottrin did not change your system drivers. You can choose a different renderer for a future launch in Settings.").color(self.colors.text_muted).size(11.0));
+                ui.add_space(12.0);
+                ui.horizontal(|ui| {
+                    if ui.button("Open Graphics Settings").clicked() {
+                        self.show_settings = true;
+                        self.settings_tab = SettingsTab::General;
+                        self.show_graphics_compatibility_notice = false;
+                    }
+                    if ui.button("Close").clicked() {
+                        self.show_graphics_compatibility_notice = false;
+                    }
+                });
+            });
+    }
+
     fn settings_viewport_id() -> egui::ViewportId {
         egui::ViewportId::from_hash_of("ottrin-settings")
     }
@@ -14633,6 +14727,53 @@ impl OttrinApp {
                                     ui.add_space(14.0);
                                     ui.separator();
                                     ui.add_space(10.0);
+                                    if graphics_settings_visible(self.graphics_runtime.is_windows) {
+                                        ui.label(RichText::new("Graphics renderer").color(c.text).size(13.0).strong());
+                                        let effective = match self.graphics_runtime.selection.choice {
+                                            GraphicsRendererChoice::Native => "Native graphics",
+                                            GraphicsRendererChoice::OpenGlCompatibility => "Bundled OpenGL compatibility",
+                                        };
+                                        ui.label(
+                                            RichText::new(format!(
+                                                "Effective now: {effective}, selected because {}.",
+                                                graphics_renderer_reason_label(self.graphics_runtime.selection.reason),
+                                            ))
+                                            .color(c.text_muted)
+                                            .size(11.0),
+                                        );
+                                        ui.label(
+                                            RichText::new("Changes apply the next time Ottrin starts. Command-line diagnostics override this setting for that launch only.")
+                                                .color(c.text_muted)
+                                                .size(10.5),
+                                        );
+                                        ui.add_space(6.0);
+                                        for (preference, label) in [
+                                            (GraphicsRendererPreference::Automatic, "Automatic"),
+                                            (GraphicsRendererPreference::Native, "Native"),
+                                            (GraphicsRendererPreference::OpenGlCompatibility, "OpenGL compatibility"),
+                                        ] {
+                                            let selected = self.state.config.graphics_renderer == preference;
+                                            let check = if selected { MI_CHECK } else { "  " };
+                                            if ui.add(egui::Button::new(
+                                                RichText::new(format!("{check} {label}")).size(12.0)
+                                                    .color(if selected { c.text } else { c.text_dim }),
+                                            ).frame(true).min_size(Vec2::new(ui.available_width(), 27.0))).clicked() {
+                                                self.state.config.graphics_renderer = preference;
+                                                self.persist_config();
+                                                self.set_status_message("Graphics preference saved. Restart Ottrin to apply it.", true, 8);
+                                            }
+                                        }
+                                        if self.state.config.graphics_renderer != GraphicsRendererPreference::Automatic
+                                            && ui.button("Reset to Automatic").clicked()
+                                        {
+                                            self.state.config.graphics_renderer = GraphicsRendererPreference::Automatic;
+                                            self.persist_config();
+                                            self.set_status_message("Graphics preference reset. Restart Ottrin to apply it.", true, 8);
+                                        }
+                                        ui.add_space(14.0);
+                                        ui.separator();
+                                        ui.add_space(10.0);
+                                    }
                                     ui.label(RichText::new("Integrated Privilege Management").color(c.text).size(13.0).strong());
                                     let (status_text, status_color) = match &self.privileged_availability {
                                         PrivilegedAvailability::Ready => ("Ready", c.accent),
@@ -16274,6 +16415,7 @@ impl eframe::App for OttrinApp {
         self.render_empty_trash_confirmation(ctx);
         self.render_about_popup(ctx);
         self.render_settings_modal(ctx);
+        self.render_graphics_compatibility_notice(ctx);
         self.render_theme_editor_popup(ctx);
         self.handle_viewport_resize(ctx);
 
@@ -18666,5 +18808,19 @@ mod tests {
         drop(tx);
         assert!(rx.recv().is_ok());
         assert!(rx.recv().is_ok());
+    }
+
+    #[test]
+    fn graphics_controls_are_windows_only_and_explain_effective_selection() {
+        assert!(graphics_settings_visible(true));
+        assert!(!graphics_settings_visible(false));
+        assert_eq!(
+            graphics_renderer_reason_label(GraphicsRendererReason::RemoteSession),
+            "a remote desktop session"
+        );
+        assert_eq!(
+            graphics_renderer_reason_label(GraphicsRendererReason::NativeAutomatic),
+            "Automatic found no compatibility signal"
+        );
     }
 }

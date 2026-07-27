@@ -117,7 +117,7 @@ ottrin-index --remove-schedule
 
 - Windows builds pass local package checks and archive inspection, but exact-release-commit CI and real Windows desktop runtime smoke testing are still pending.
 - Windows UAC/helper behavior still needs real Windows validation.
-- Windows builds default to WGPU with the system graphics driver. The portable ZIP and installer include a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime for virtual, remote, and problematic adapters. Use the explicit recovery override `ottrin.exe --renderer opengl` (or `OTTRIN_RENDERER=opengl`) to select it; its Mesa, pal1000, and Microsoft notices are bundled in `third-party-notices/`.
+- Windows builds use WGPU when Automatic finds no compatibility signal. The portable ZIP and installer include a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime. Automatic selects it for detected remote sessions and recognized virtual/problem adapters, then shows a one-time explanation with a route to Settings. Settings offers Automatic, Native, and OpenGL compatibility for the next launch. The diagnostic override `ottrin.exe --renderer opengl` (or `OTTRIN_RENDERER=opengl`) still takes precedence for that launch; its Mesa, pal1000, and Microsoft notices are bundled in `third-party-notices/`.
 - Linux polkit helper packaging needs real system smoke testing.
 - Linux portable and AppImage artifacts have shallow launch smoke coverage; full packaged workflow QA is still pending.
 - Quick Inspector covers text/code, images, PDF text/metadata, DOCX content, XLSX/XLSM worksheets, PPTX slide text, ZIP/archive listings, bounded folder summaries, and generic metadata, but the full keyboard/file-type matrix still needs manual QA.
