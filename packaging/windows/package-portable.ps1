@@ -150,6 +150,16 @@ The privileged helper is bundled next to the app as:
 ```
 
 Normal user-owned file operations do not require elevation. Denied operations use the bundled helper through the Windows UAC flow.
+
+On virtual, remote, or problematic graphics adapters, keep the bundled Mesa
+compatibility runtime and explicitly select it for this launch:
+
+```powershell
+.\bin\ottrin.exe --renderer opengl
+```
+
+For a user-level recovery override, set `OTTRIN_RENDERER=opengl` before launching
+Ottrin. The normal default remains WGPU with the system graphics driver.
 "@ | Set-Content -Encoding UTF8 "$Stage\RUNNING.md"
 
 Remove-Item -Force $Archive -ErrorAction SilentlyContinue

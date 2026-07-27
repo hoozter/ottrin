@@ -25,6 +25,8 @@ for literal in \
   'trap ' \
   'rm -rf "$tmp_dir"' \
   'sha256sum -c -' \
+  'ottrin.exe --renderer opengl' \
+  'OTTRIN_RENDERER=opengl' \
   'checksum mismatch after extracting the pinned Mesa archive'; do
   require_literal "$BASH_PACKAGER" "$literal"
 done
@@ -36,6 +38,8 @@ for literal in \
   'Mesa license extraction from the pinned source archive failed.' \
   'finally {' \
   'Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue' \
+  'ottrin.exe --renderer opengl' \
+  'OTTRIN_RENDERER=opengl' \
   'Mesa DLL checksum mismatch after extracting the pinned Mesa archive'; do
   require_literal "$POWERSHELL_PACKAGER" "$literal"
 done
