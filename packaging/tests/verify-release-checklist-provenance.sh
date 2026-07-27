@@ -85,7 +85,22 @@ if grep -Fq -- 'PDF text/metadata, DOCX content, XLSX/XLSM worksheet tables' "$R
   exit 1
 fi
 
-# Code signing is explicitly deferred from v1.  The shipped release notes must
+# The notes are shipped inside the release artifacts. They must distinguish
+# package integrity from the exact-release-commit CI and physical acceptance
+# gates that are still required; otherwise a reader could mistake this
+# candidate for a signed-off release.
+for expected in \
+  'Linux and Windows CI' \
+  'real Windows desktop' \
+  'packaged Linux polkit' \
+  'full packaged-workflow smoke tests'; do
+  if ! grep -Fq -- "$expected" "$RELEASE_NOTES"; then
+    printf 'release notes are missing the required release-blocker detail: %s\n' "$expected" >&2
+    exit 1
+  fi
+done
+
+# Code signing is explicitly deferred from v1. The shipped release notes must
 # state that limitation just as the detailed user guidance does.
 if ! grep -Fq -- 'Code signing is not included' "$RELEASE_NOTES"; then
   printf 'release notes are missing the deferred code-signing limitation.\n' >&2
