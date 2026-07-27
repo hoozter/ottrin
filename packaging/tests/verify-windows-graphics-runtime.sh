@@ -21,6 +21,7 @@ require_literal() {
 # pal1000 Mesa 26.1.3 MinGW archive.  Both packagers must verify the
 # post-extraction bytes, not only the enclosing archive.
 for literal in \
+  'mkdir -p "$DIST_DIR"' \
   'MESA_LIBEGL_SHA256="ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"' \
   'MESA_LIBGLESV2_SHA256="649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"' \
   'MESA_LIBGALLIUM_WGL_SHA256="a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"' \
@@ -34,6 +35,7 @@ for literal in \
 done
 
 for literal in \
+  'New-Item -ItemType Directory -Force -Path $DistDir | Out-Null' \
   '$MesaLibEglSha256 = "ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"' \
   '$MesaLibGlesv2Sha256 = "649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"' \
   '$MesaLibGalliumWglSha256 = "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"' \

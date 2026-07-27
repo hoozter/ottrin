@@ -122,6 +122,7 @@ Included Mesa DLLs: libEGL.dll, libGLESv2.dll, libgallium_wgl.dll
 Set-Location $Root
 cargo build --release --target $Target -p ottrin-app -p ottrin-platform -p ottrin-search
 
+New-Item -ItemType Directory -Force -Path $DistDir | Out-Null
 Remove-Item -Recurse -Force $Stage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path "$Stage\bin", "$Stage\assets", "$Stage\docs", "$Stage\third-party-notices" | Out-Null
 

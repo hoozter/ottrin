@@ -111,6 +111,7 @@ EOF
 cd "$ROOT"
 cargo build --release --target "$TARGET" -p ottrin-app -p ottrin-platform -p ottrin-search
 
+mkdir -p "$DIST_DIR"
 rm -rf "$STAGE"
 mkdir -p "$STAGE/bin" "$STAGE/assets" "$STAGE/docs" "$STAGE/third-party-notices"
 
