@@ -57,6 +57,7 @@ function Resolve-GraphicsCompatibilityRuntime {
     param([string]$BinDestination, [string]$NoticeDestination)
     $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("ottrin-mesa-" + [guid]::NewGuid())
     New-Item -ItemType Directory -Force -Path $tmp, $NoticeDestination | Out-Null
+    try {
     $mesaArchive = Join-Path $tmp "mesa.7z"
     $mesaSource = Join-Path $tmp "mesa-source.tar.gz"
     $dxcArchive = Join-Path $tmp "dxc.zip"
@@ -107,7 +108,9 @@ Microsoft DXC archive SHA-256: $DxcSha256
 dxil.dll SHA-256: $DxilSha256
 Included Mesa DLLs: libEGL.dll, libGLESv2.dll, libgallium_wgl.dll
 "@ | Set-Content -Encoding UTF8 (Join-Path $NoticeDestination "MANIFEST.txt")
-    Remove-Item -Recurse -Force $tmp
+    } finally {
+        Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
+    }
 }
 
 Set-Location $Root

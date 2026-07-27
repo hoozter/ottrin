@@ -32,6 +32,8 @@ for literal in \
   '$MesaLibGlesv2Sha256 = "649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"' \
   '$MesaLibGalliumWglSha256 = "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"' \
   'Mesa license extraction from the pinned source archive failed.' \
+  'finally {' \
+  'Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue' \
   'Mesa DLL checksum mismatch after extracting the pinned Mesa archive'; do
   require_literal "$POWERSHELL_PACKAGER" "$literal"
 done
