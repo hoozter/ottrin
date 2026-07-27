@@ -158,6 +158,45 @@ class X11CoordinateTranslationTests(unittest.TestCase):
             ],
         )
 
+    def test_click_entry_retries_with_direct_a11y_coordinates_after_relative_click(self):
+        commands = []
+        node = MagicMock()
+        node.queryComponent.return_value.getExtents.return_value = MagicMock(
+            x=600, y=700, width=40, height=60
+        )
+        with (
+            patch.object(qa, "click_accessible_name"),
+            patch.object(qa, "entry_selected", side_effect=[False, False, True]),
+            patch.object(
+                qa,
+                "wait_for",
+                side_effect=[node, AssertionError("relative click missed"), node, object()],
+            ),
+            patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            qa.click_entry("0x123", "sample.json")
+
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                (
+                    "xdotool",
+                    "mousemove",
+                    "--window",
+                    "0x123",
+                    "280",
+                    "330",
+                    "click",
+                    "1",
+                ),
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                ("xdotool", "mousemove", "620", "730", "click", "1"),
+            ],
+        )
+
     def test_double_click_targets_the_named_entry_inside_its_x11_window(self):
         commands = []
         with (
@@ -183,6 +222,38 @@ class X11CoordinateTranslationTests(unittest.TestCase):
                     "0x123",
                     "280",
                     "330",
+                    "click",
+                    "--repeat",
+                    "2",
+                    "--delay",
+                    "100",
+                    "1",
+                ),
+            ],
+        )
+
+    def test_direct_double_click_targets_the_named_entry_at_a11y_desktop_coordinates(self):
+        commands = []
+        node = MagicMock()
+        node.queryComponent.return_value.getExtents.return_value = MagicMock(
+            x=600, y=700, width=40, height=60
+        )
+        with (
+            patch.object(qa, "wait_for", return_value=node),
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            qa.double_click_entry_at_desktop_coordinates("0x123", "Subfolder")
+
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                (
+                    "xdotool",
+                    "mousemove",
+                    "620",
+                    "730",
                     "click",
                     "--repeat",
                     "2",
@@ -229,6 +300,21 @@ class X11CoordinateTranslationTests(unittest.TestCase):
     def test_docx_page_preview_does_not_claim_image_pdf_zoom_toolbar(self):
         self.assertFalse(qa.inspector_requires_zoom_controls("letter.docx"))
         self.assertTrue(qa.inspector_requires_zoom_controls("preview.pdf"))
+
+    def test_closing_quick_inspector_dismisses_its_parent_context_menu(self):
+        with (
+            patch.object(qa, "xkey") as xkey,
+            patch.object(qa, "wait_for"),
+        ):
+            qa.close_quick_inspector("0x123", "preview.pdf", dismiss_parent_menu=True)
+
+        self.assertEqual(
+            xkey.call_args_list,
+            [
+                (("0x123", "space"), {}),
+                (("0x123", "Escape"), {}),
+            ],
+        )
 
     def test_maps_each_toggle_target_to_the_explicit_view_menu_item(self):
         self.assertEqual(qa.view_menu_label(qa.VIEW_TO_GRID), "List view")

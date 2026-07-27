@@ -467,6 +467,26 @@ def double_click_entry(window_id: str, name: str) -> dict[str, object]:
     return diagnostics
 
 
+def double_click_entry_at_desktop_coordinates(window_id: str, name: str):
+    """Retry activation through the direct AT-SPI desktop coordinate route."""
+    node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
+    rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+    run("xdotool", "windowactivate", "--sync", window_id)
+    run(
+        "xdotool",
+        "mousemove",
+        str(rect.x + rect.width // 2),
+        str(rect.y + rect.height // 2),
+        "click",
+        "--repeat",
+        "2",
+        "--delay",
+        "100",
+        "1",
+    )
+    time.sleep(0.5)
+
+
 def click_entry(window_id: str, name: str):
     """Select the first entry, proving selection before extending it with Ctrl-click."""
     click_accessible_name(name, "toggle button")
@@ -490,7 +510,32 @@ def click_entry(window_id: str, name: str):
         "click",
         "1",
     )
-    wait_for(lambda: entry_selected(name), f"selected entry {name!r}")
+    try:
+        wait_for(
+            lambda: entry_selected(name),
+            f"selected entry {name!r} after window-relative X11 click",
+            timeout=2.0,
+        )
+    except AssertionError:
+        # KWin/Xwayland can expose a client geometry that differs from the
+        # AT-SPI frame mapping.  Context actions use desktop coordinates
+        # successfully on that route, so make one final direct, named-node
+        # click before failing the selection proof.
+        node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
+        rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+        run("xdotool", "windowactivate", "--sync", window_id)
+        run(
+            "xdotool",
+            "mousemove",
+            str(rect.x + rect.width // 2),
+            str(rect.y + rect.height // 2),
+            "click",
+            "1",
+        )
+        wait_for(
+            lambda: entry_selected(name),
+            f"selected entry {name!r} after direct AT-SPI X11 click",
+        )
     time.sleep(0.35)
 
 
@@ -641,12 +686,21 @@ def inspector_requires_zoom_controls(filename: str) -> bool:
     return Path(filename).suffix.lower() in {".png", ".jpg", ".jpeg", ".pdf"}
 
 
-def close_quick_inspector(main_window_id: str, filename: str):
+def close_quick_inspector(
+    main_window_id: str, filename: str, *, dismiss_parent_menu: bool = False
+):
     xkey(main_window_id, "space")
     wait_for(
         lambda: not quick_inspector_visible(filename),
         "Quick Inspector close",
     )
+    if dismiss_parent_menu:
+        # The native inspector is opened from a context menu.  Closing its
+        # child viewport can leave that parent popup active on KWin/Xwayland,
+        # where it otherwise absorbs the next named-entry click and invalidates
+        # the matrix.  Do not send Escape for a Space-opened search preview:
+        # that shortcut belongs to the search panel itself.
+        xkey(main_window_id, "Escape")
 
 
 def create_preview_fixtures(project_root: Path, documents: Path):
@@ -725,7 +779,7 @@ def open_quick_inspector(
             f"100% control for {filename}",
         )
     screenshot(evidence, screenshot_name)
-    close_quick_inspector(main_window_id, filename)
+    close_quick_inspector(main_window_id, filename, dismiss_parent_menu=True)
 
 
 def a11y_enabled() -> bool:
@@ -942,13 +996,21 @@ def main() -> int:
         try:
             wait_for(
                 lambda: destination_breadcrumb_visible("Subfolder"),
-                "Subfolder navigation",
+                "Subfolder navigation after window-relative double-click",
+                timeout=2.0,
             )
         except AssertionError:
-            write_entry_activation_failure(
-                evidence, "Subfolder", subfolder_activation
-            )
-            raise
+            double_click_entry_at_desktop_coordinates(window_id, "Subfolder")
+            try:
+                wait_for(
+                    lambda: destination_breadcrumb_visible("Subfolder"),
+                    "Subfolder navigation after direct AT-SPI X11 double-click",
+                )
+            except AssertionError:
+                write_entry_activation_failure(
+                    evidence, "Subfolder", subfolder_activation
+                )
+                raise
         click_named_control(window_id, "Menu")
         click_accessible_suffix("Paste into Current Folder")
         wait_for(lambda: (subfolder / "notes.txt").is_file(), "copied file")
