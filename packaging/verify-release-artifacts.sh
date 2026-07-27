@@ -472,7 +472,14 @@ for entry in \
   'usr/bin/pdfium/licenses/pdfium.txt' \
   'usr/share/applications/org.ottrin.Ottrin.desktop' \
   'usr/share/metainfo/org.ottrin.Ottrin.appdata.xml' \
-  'usr/share/polkit-1/actions/org.ottrin.filesystem.policy'; do
+  'usr/share/polkit-1/actions/org.ottrin.filesystem.policy' \
+  'usr/share/doc/ottrin/README.md' \
+  'usr/share/doc/ottrin/LICENSE' \
+  'usr/share/doc/ottrin/USER_GUIDE.md' \
+  'usr/share/doc/ottrin/DEVELOPMENT.md' \
+  'usr/share/doc/ottrin/ROADMAP.md' \
+  'usr/share/doc/ottrin/RELEASE_NOTES.md' \
+  'usr/share/doc/ottrin/RELEASE_CHECKLIST.md'; do
   if [[ ! -e "$APPIMAGE_EXTRACT_DIR/squashfs-root/$entry" ]]; then
     printf 'Linux AppImage is missing: %s\n' "$entry" >&2
     exit 1
