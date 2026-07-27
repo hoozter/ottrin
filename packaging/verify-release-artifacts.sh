@@ -520,6 +520,34 @@ verify_source_revision \
   'Linux AppImage' \
   "$(<"$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/SOURCE_REVISION.txt")"
 
+# The AppImage is a separately assembled release artifact.  Its provenance
+# note identifies the build commit, but does not prove that every public
+# document still matches the checkout being released.  Compare those bytes
+# directly, as is already required for the portable archives and installer.
+verify_appimage_release_file_bytes() {
+  local relative_path="$1"
+  local source_path="$relative_path"
+  case "$relative_path" in
+    USER_GUIDE.md|DEVELOPMENT.md|ROADMAP.md|RELEASE_NOTES.md|RELEASE_CHECKLIST.md)
+      source_path="docs/$relative_path"
+      ;;
+  esac
+  if ! cmp -s \
+    "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/$relative_path" \
+    "$ROOT/$source_path"; then
+    printf 'Linux AppImage contains stale content: %s\n' "$relative_path" >&2
+    exit 1
+  fi
+}
+
+verify_appimage_release_file_bytes 'README.md'
+verify_appimage_release_file_bytes 'LICENSE'
+verify_appimage_release_file_bytes 'USER_GUIDE.md'
+verify_appimage_release_file_bytes 'DEVELOPMENT.md'
+verify_appimage_release_file_bytes 'ROADMAP.md'
+verify_appimage_release_file_bytes 'RELEASE_NOTES.md'
+verify_appimage_release_file_bytes 'RELEASE_CHECKLIST.md'
+
 if [[ "$(tar -tzf "$LINUX_ARCHIVE" | grep -c '/bin/pdfium/lib/libpdfium.so$')" -lt 1 ]]; then
   printf 'Linux portable archive missing PDFium runtime library.\n' >&2
   exit 1

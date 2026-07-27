@@ -36,4 +36,21 @@ for entry in \
   require_literal "$VERIFIER" "'$entry'"
 done
 
+# Presence and provenance are not enough for the AppImage documentation: an
+# artifact can retain a valid source-revision note while one of the public
+# release documents is replaced after packaging.  The final verifier must
+# compare each shipped document with the exact checkout, just as it does for
+# the portable archives and Windows installer.
+require_literal "$VERIFIER" 'verify_appimage_release_file_bytes() {'
+for source in \
+  'README.md' \
+  'LICENSE' \
+  'USER_GUIDE.md' \
+  'DEVELOPMENT.md' \
+  'ROADMAP.md' \
+  'RELEASE_NOTES.md' \
+  'RELEASE_CHECKLIST.md'; do
+  require_literal "$VERIFIER" "verify_appimage_release_file_bytes '$source'"
+done
+
 printf 'Verified Linux AppImage release-documentation contract.\n'
