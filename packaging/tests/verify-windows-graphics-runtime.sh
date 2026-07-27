@@ -37,6 +37,8 @@ for literal in \
   'MESA_LIBEGL_SHA256="ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"' \
   'MESA_LIBGLESV2_SHA256="649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"' \
   'MESA_LIBGALLIUM_WGL_SHA256="a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"' \
+  'DXC_LICENSE_SHA256="734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963"' \
+  'Microsoft DXC license SHA-256: $DXC_LICENSE_SHA256' \
   'trap ' \
   'rm -rf "$tmp_dir"' \
   'sha256sum -c -' \
@@ -51,6 +53,8 @@ for literal in \
   '$MesaLibEglSha256 = "ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"' \
   '$MesaLibGlesv2Sha256 = "649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"' \
   '$MesaLibGalliumWglSha256 = "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"' \
+  '$DxcLicenseSha256 = "734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963"' \
+  'Microsoft DXC license SHA-256: $DxcLicenseSha256' \
   '$mesaNotices = Join-Path $NoticeDestination "mesa3d-26.1.3"' \
   '-C $mesaNotices --strip-components=1' \
   'Mesa license extraction from the pinned source archive failed.' \
@@ -67,6 +71,7 @@ done
 for literal in \
   'DXIL_SHA256="cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"' \
   'DXC_LICENSE_SHA256="734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963"' \
+  'Microsoft DXC license SHA-256: $DXC_LICENSE_SHA256' \
   'third-party-notices/mesa3d-26\.1\.3/licenses/Apache-2\.0' \
   'third-party-notices/mesa3d-26\.1\.3/licenses/BSL-1\.0' \
   'third-party-notices/mesa3d-26\.1\.3/licenses/GPL-1\.0-or-later' \

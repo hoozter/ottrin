@@ -22,6 +22,7 @@ $PalLicenseUrl = "https://raw.githubusercontent.com/pal1000/mesa-dist-win/26.1.3
 $PalLicenseSha256 = "9cd0121dc070f0ac65c1fc266bee74bdbbc22cea4210ae72ae0c1f076448d4cc"
 $DxcUrl = "https://github.com/microsoft/DirectXShaderCompiler/releases/download/v1.9.2602.24/dxc_2026_05_27.zip"
 $DxcSha256 = "cf658aacf070d3045e31b8f1f8a696c2945f37c1095019481ef7c513368db3b4"
+$DxcLicenseSha256 = "734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963"
 $DxilSha256 = "cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"
 
 function Get-VerifiedFile {
@@ -111,6 +112,7 @@ pal1000 license: $PalLicenseUrl
 pal1000 license SHA-256: $PalLicenseSha256
 Microsoft DXC archive: $DxcUrl
 Microsoft DXC archive SHA-256: $DxcSha256
+Microsoft DXC license SHA-256: $DxcLicenseSha256
 dxil.dll SHA-256: $DxilSha256
 Included Mesa DLLs: libEGL.dll, libGLESv2.dll, libgallium_wgl.dll
 "@ | Set-Content -Encoding UTF8 (Join-Path $NoticeDestination "MANIFEST.txt")

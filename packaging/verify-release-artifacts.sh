@@ -278,6 +278,7 @@ verify_graphics_runtime_notice_manifest() {
     "pal1000 license SHA-256: $PAL_LICENSE_SHA256" \
     "Microsoft DXC archive: $DXC_URL" \
     "Microsoft DXC archive SHA-256: $DXC_SHA256" \
+    "Microsoft DXC license SHA-256: $DXC_LICENSE_SHA256" \
     "dxil.dll SHA-256: $DXIL_SHA256" \
     'Included Mesa DLLs: libEGL.dll, libGLESv2.dll, libgallium_wgl.dll'; do
     if ! grep -Fqx "$expected" <<<"$manifest"; then
