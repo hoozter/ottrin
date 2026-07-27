@@ -9,6 +9,14 @@ $Root = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $Stage = (Resolve-Path $Stage).Path
 $DistDir = if ($env:OTTRIN_DIST_DIR) { $env:OTTRIN_DIST_DIR } else { Join-Path $Root "dist" }
 
+# The portable stage records its own revision, but NSIS reads its script and
+# release metadata from this checkout. Do not let an installer claim clean
+# provenance while those tracked inputs are dirty.
+& git -C $Root diff --quiet --ignore-submodules --
+if ($LASTEXITCODE -ne 0) { throw "Refusing to package a tracked-dirty checkout; commit or stash tracked changes first." }
+& git -C $Root diff --cached --quiet --ignore-submodules --
+if ($LASTEXITCODE -ne 0) { throw "Refusing to package a tracked-dirty checkout; commit or stash tracked changes first." }
+
 if (-not $Version) {
     $CargoToml = Get-Content (Join-Path $Root "Cargo.toml")
     $VersionLine = $CargoToml | Where-Object { $_ -match '^version = ' } | Select-Object -First 1

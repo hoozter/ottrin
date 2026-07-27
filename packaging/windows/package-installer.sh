@@ -7,6 +7,15 @@ DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
 STAGE="${1:-$DIST_DIR/Ottrin-$VERSION-windows-x64}"
 MAKENSIS="${MAKENSIS:-}"
 
+# The portable stage records its own revision, but NSIS reads its script and
+# release metadata from this checkout.  Do not let an installer claim clean
+# provenance while those tracked inputs are dirty.
+if ! git -C "$ROOT" diff --quiet --ignore-submodules -- \
+  || ! git -C "$ROOT" diff --cached --quiet --ignore-submodules --; then
+  printf 'Refusing to package a tracked-dirty checkout; commit or stash tracked changes first.\n' >&2
+  exit 1
+fi
+
 if [[ ! -d "$STAGE" ]]; then
   printf 'Windows installer stage does not exist: %s\n' "$STAGE" >&2
   printf 'Build it first with packaging/windows/package-portable.sh\n' >&2

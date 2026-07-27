@@ -81,6 +81,7 @@ shell_scripts=(
   packaging/verify-release-artifacts.sh
   packaging/windows/package-installer.sh
   packaging/windows/package-portable.sh
+  packaging/tests/verify-windows-installer-clean-checkout.sh
   packaging/tests/verify-windows-installer-powershell-provenance.sh
   scripts/release-preflight.sh
 )
@@ -88,6 +89,8 @@ shell_scripts=(
 run_gate "Shell syntax" bash -n "${shell_scripts[@]}"
 run_gate "Windows PowerShell installer provenance guard" \
   ./packaging/tests/verify-windows-installer-powershell-provenance.sh
+run_gate "Windows installer clean-checkout guard" \
+  ./packaging/tests/verify-windows-installer-clean-checkout.sh
 optional_gate shellcheck "ShellCheck" shellcheck -x "${shell_scripts[@]}"
 optional_gate actionlint "GitHub Actions workflows" actionlint \
   .github/workflows/ci.yml .github/workflows/release.yml
