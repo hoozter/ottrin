@@ -1,3 +1,5 @@
+#![cfg_attr(windows, windows_subsystem = "windows")]
+
 use eframe::{NativeOptions, egui};
 use ottrin_core::{ConflictAction, FileCommand, SearchIndexStatus, SearchQuery, format_size};
 use ottrin_platform::{DefaultPlatform, PlatformOps, set_privileged_helper_override};

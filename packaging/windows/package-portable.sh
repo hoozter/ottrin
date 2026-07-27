@@ -120,6 +120,7 @@ EOF
 
 cd "$ROOT"
 cargo build --release --target "$TARGET" -p ottrin-app -p ottrin-platform -p ottrin-search
+"$ROOT/scripts/windows-gui-subsystem-smoke.sh" "$BUILD_DIR/ottrin-app.exe"
 
 mkdir -p "$DIST_DIR"
 rm -rf "$STAGE"

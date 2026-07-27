@@ -24,7 +24,10 @@ serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 tracing = "0.1"
 egui = "0.33"
-eframe = { version = "0.33", default-features = true, features = ["wgpu"] }
+# AccessKit's Unix AT-SPI event loop can abort a desktop session when its D-Bus
+# endpoint disappears. Keep the supported window backends, but do not opt into
+# that optional integration until it handles that failure safely upstream.
+eframe = { version = "0.33", default-features = false, features = ["default_fonts", "glow", "wayland", "wgpu", "x11"] }
 egui_extras = { version = "0.33", features = ["svg", "image"] }
 
 [profile.dev]

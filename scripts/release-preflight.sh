@@ -89,6 +89,8 @@ shell_scripts=(
   packaging/tests/verify-windows-runtime-temp-cleanup.sh
   packaging/tests/verify-linux-appimage-documentation.sh
   packaging/tests/verify-linux-portable-running-instructions.sh
+  scripts/linux-launch-smoke.sh
+  scripts/windows-gui-subsystem-smoke.sh
   packaging/tests/verify-linux-privileged-helper-policy.sh
   packaging/tests/verify-release-checklist-provenance.sh
   packaging/tests/verify-release-preflight-contract-coverage.sh
