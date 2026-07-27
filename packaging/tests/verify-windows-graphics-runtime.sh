@@ -5,6 +5,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BASH_PACKAGER="$ROOT/packaging/windows/package-portable.sh"
 POWERSHELL_PACKAGER="$ROOT/packaging/windows/package-portable.ps1"
 ARTIFACT_VERIFIER="$ROOT/packaging/verify-release-artifacts.sh"
+INSTALLER_PACKAGER="$ROOT/packaging/windows/package-installer.sh"
+POWERSHELL_INSTALLER_PACKAGER="$ROOT/packaging/windows/package-installer.ps1"
 
 require_literal() {
   local file="$1"
@@ -60,4 +62,27 @@ for literal in \
   'verify_portable_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\''' \
   'verify_installer_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\'''; do
   require_literal "$ARTIFACT_VERIFIER" "$literal"
+done
+
+# The installer copies its supplied stage verbatim.  It must therefore reject
+# a stage missing any notice that the final artifact verifier requires, rather
+# than relying on a later archive inspection to catch an incomplete payload.
+for literal in \
+  'third-party-notices/mesa3d-26.1.3/licenses/Apache-2.0' \
+  'third-party-notices/mesa3d-26.1.3/licenses/BSL-1.0' \
+  'third-party-notices/mesa3d-26.1.3/licenses/GPL-1.0-or-later' \
+  'third-party-notices/mesa3d-26.1.3/licenses/GPL-2.0-only' \
+  'third-party-notices/mesa3d-26.1.3/licenses/SGI-B-2.0' \
+  'third-party-notices/mesa3d-26.1.3/licenses/exceptions/Linux-Syscall-Note'; do
+  require_literal "$INSTALLER_PACKAGER" "$literal"
+done
+
+for literal in \
+  'third-party-notices\mesa3d-26.1.3\licenses\Apache-2.0' \
+  'third-party-notices\mesa3d-26.1.3\licenses\BSL-1.0' \
+  'third-party-notices\mesa3d-26.1.3\licenses\GPL-1.0-or-later' \
+  'third-party-notices\mesa3d-26.1.3\licenses\GPL-2.0-only' \
+  'third-party-notices\mesa3d-26.1.3\licenses\SGI-B-2.0' \
+  'third-party-notices\mesa3d-26.1.3\licenses\exceptions\Linux-Syscall-Note'; do
+  require_literal "$POWERSHELL_INSTALLER_PACKAGER" "$literal"
 done
