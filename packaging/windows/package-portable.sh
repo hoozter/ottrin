@@ -35,10 +35,11 @@ download_verified() {
     printf '%s  %s\n' "$expected" "$destination" | sha256sum -c -
 }
 
-download_verify_and_package_pdfium() {
+download_verify_and_package_pdfium() (
     local target_pdfium_dir="$1"
     local tmp_dir
     tmp_dir="$(mktemp -d)"
+    trap 'rm -rf "$tmp_dir"' EXIT
     local archive="$tmp_dir/pdfium.tgz"
     local extract_dir="$tmp_dir/extract"
     mkdir -p "$extract_dir"
@@ -49,8 +50,7 @@ download_verify_and_package_pdfium() {
     mkdir -p "$target_pdfium_dir"
     cp -a "$extract_dir/bin/." "$target_pdfium_dir/"
     cp -a "$extract_dir/LICENSE" "$extract_dir/licenses" "$target_pdfium_dir/"
-    rm -rf "$tmp_dir"
-}
+)
 
 package_graphics_compatibility_runtime() (
     local target_bin="$1"

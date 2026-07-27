@@ -39,18 +39,23 @@ function Get-VerifiedFile {
 
 function Resolve-PdfiumRuntime {
     param([string]$Destination)
-    $tmp = Join-Path $Root "dist\.pdfium-temp"
+    $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("ottrin-pdfium-" + [guid]::NewGuid())
     New-Item -ItemType Directory -Force -Path $tmp | Out-Null
-    $archive = Join-Path $tmp "pdfium.tgz"
-    Get-VerifiedFile $PdfiumUrl $PdfiumSha256 $archive
-    $extract = Join-Path $tmp "extract"
-    New-Item -ItemType Directory -Force -Path $extract | Out-Null
-    & tar -xzf $archive -C $extract
+    try {
+        $archive = Join-Path $tmp "pdfium.tgz"
+        Get-VerifiedFile $PdfiumUrl $PdfiumSha256 $archive
+        $extract = Join-Path $tmp "extract"
+        New-Item -ItemType Directory -Force -Path $extract | Out-Null
+        & tar -xzf $archive -C $extract
+        if ($LASTEXITCODE -ne 0) { throw "PDFium extraction from the pinned archive failed." }
 
-    New-Item -ItemType Directory -Force -Path $Destination | Out-Null
-    Copy-Item (Join-Path $extract "bin\*") $Destination -Recurse
-    Copy-Item (Join-Path $extract "LICENSE") $Destination
-    Copy-Item (Join-Path $extract "licenses") $Destination -Recurse
+        New-Item -ItemType Directory -Force -Path $Destination | Out-Null
+        Copy-Item (Join-Path $extract "bin\*") $Destination -Recurse
+        Copy-Item (Join-Path $extract "LICENSE") $Destination
+        Copy-Item (Join-Path $extract "licenses") $Destination -Recurse
+    } finally {
+        Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
+    }
 }
 
 function Resolve-GraphicsCompatibilityRuntime {
