@@ -564,6 +564,32 @@ for entry in \
   fi
 done
 
+# The privileged helper policy controls an authorization boundary. Presence of
+# its pathname is insufficient: release artifacts must carry the exact,
+# reviewed policy bytes from this checkout.
+verify_linux_privileged_helper_policy_bytes() {
+  local artifact_label="$1"
+  local artifact_policy="$2"
+  if ! cmp -s "$artifact_policy" \
+    "$ROOT/packaging/linux/org.ottrin.filesystem.policy"; then
+    printf '%s contains stale privileged-helper policy.\n' "$artifact_label" >&2
+    exit 1
+  fi
+}
+
+PORTABLE_POLICY="$APPIMAGE_EXTRACT_DIR/linux-portable-policy"
+if ! tar -xOf "$LINUX_ARCHIVE" \
+  "Ottrin-$VERSION-linux-x86_64/packaging/linux/org.ottrin.filesystem.policy" \
+  > "$PORTABLE_POLICY"; then
+  printf 'Linux portable archive is missing privileged-helper policy.\n' >&2
+  exit 1
+fi
+verify_linux_privileged_helper_policy_bytes \
+  'Linux portable archive' "$PORTABLE_POLICY"
+verify_linux_privileged_helper_policy_bytes \
+  'Linux AppImage' \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/polkit-1/actions/org.ottrin.filesystem.policy"
+
 verify_source_revision \
   'Linux AppImage' \
   "$(<"$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/SOURCE_REVISION.txt")"
