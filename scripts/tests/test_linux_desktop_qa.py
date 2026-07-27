@@ -30,6 +30,37 @@ class A11yRegistryPreflightTests(unittest.TestCase):
         with patch.object(qa.pyatspi.Registry, "getDesktop", return_value=object()):
             qa.require_a11y_registry()
 
+    def test_ignores_a_transient_empty_desktop_child(self):
+        with patch.object(qa.pyatspi.Registry, "getDesktop", return_value=[None]):
+            self.assertIsNone(qa.ottrin_app())
+
+
+class X11CoordinateTranslationTests(unittest.TestCase):
+    def test_docx_page_preview_does_not_claim_image_pdf_zoom_toolbar(self):
+        self.assertFalse(qa.inspector_requires_zoom_controls("letter.docx"))
+        self.assertTrue(qa.inspector_requires_zoom_controls("preview.pdf"))
+
+    def test_maps_each_toggle_target_to_the_explicit_view_menu_item(self):
+        self.assertEqual(qa.view_menu_label(qa.VIEW_TO_GRID), "List view")
+        self.assertEqual(qa.view_menu_label(qa.VIEW_TO_COLUMN), "Grid view")
+        self.assertEqual(qa.view_menu_label(qa.VIEW_TO_LIST), "Column view")
+
+    def test_scales_a11y_component_into_the_x11_window(self):
+        point = qa.x11_point_for_component(
+            component=(110, 220, 20, 10),
+            app=(100, 200, 400, 300),
+            window={"X": 500, "Y": 300, "WIDTH": 800, "HEIGHT": 600},
+        )
+
+        self.assertEqual(point, (40, 50))
+
+    def test_rejects_a_component_outside_the_accessible_window(self):
+        with self.assertRaisesRegex(AssertionError, "outside"):
+            qa.x11_point_for_component(
+                component=(99, 220, 20, 10),
+                app=(100, 200, 400, 300),
+                window={"X": 500, "Y": 300, "WIDTH": 800, "HEIGHT": 600},
+            )
 
 if __name__ == "__main__":
     unittest.main()

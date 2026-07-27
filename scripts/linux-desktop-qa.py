@@ -24,6 +24,11 @@ import pyatspi
 VIEW_TO_LIST = "Switch to List view"
 VIEW_TO_GRID = "Switch to Grid view"
 VIEW_TO_COLUMN = "Switch to Column view"
+VIEW_MENU_LABELS = {
+    VIEW_TO_LIST: "Column view",
+    VIEW_TO_GRID: "List view",
+    VIEW_TO_COLUMN: "Grid view",
+}
 
 target_process_id: int | None = None
 
@@ -64,7 +69,8 @@ def ottrin_app():
     candidates = [
         app
         for app in desktop
-        if app.name == "ottrin"
+        if app is not None
+        and app.name == "ottrin"
         and app.childCount > 0
         and (target_process_id is None or app.get_process_id() == target_process_id)
     ]
@@ -115,7 +121,71 @@ def click_accessible_name(name: str, role: str | None = None):
     time.sleep(0.35)
 
 
-def click_view_toggle(window_id: str, name: str, next_name: str):
+def x11_window_geometry(window_id: str) -> dict[str, int]:
+    """Return the X11 outer geometry used by xdotool's desktop coordinates."""
+    result = run("xdotool", "getwindowgeometry", "--shell", window_id, capture=True)
+    values = dict(
+        line.split("=", 1)
+        for line in result.stdout.splitlines()
+        if "=" in line
+    )
+    try:
+        return {key: int(values[key]) for key in ("X", "Y", "WIDTH", "HEIGHT")}
+    except (KeyError, ValueError) as error:
+        raise AssertionError(f"Could not read X11 geometry for window {window_id!r}") from error
+
+
+def view_menu_label(next_name: str) -> str:
+    try:
+        return VIEW_MENU_LABELS[next_name]
+    except KeyError as error:
+        raise AssertionError(f"unknown target view switch {next_name!r}") from error
+
+
+def x11_point_for_component(component, app, window: dict[str, int]) -> tuple[int, int]:
+    """Map an AT-SPI desktop component center into window-relative X11 space."""
+    component_left, component_top, component_width, component_height = component
+    app_left, app_top, app_width, app_height = app
+    if app_width <= 0 or app_height <= 0:
+        raise AssertionError("accessible Ottrin window has an empty extent")
+    if not (
+        app_left <= component_left
+        and app_top <= component_top
+        and component_left + component_width <= app_left + app_width
+        and component_top + component_height <= app_top + app_height
+    ):
+        raise AssertionError("view switch is outside the accessible Ottrin window")
+    return (
+        round((component_left + component_width / 2 - app_left) * window["WIDTH"] / app_width),
+        round((component_top + component_height / 2 - app_top) * window["HEIGHT"] / app_height),
+    )
+
+
+def view_toggle_x11_diagnostics(window_id: str, node) -> dict[str, object]:
+    component = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+    app = ottrin_app()
+    if app is None or app.childCount == 0:
+        raise AssertionError("Ottrin accessible window is unavailable for X11 coordinate mapping")
+    app_rect = app[0].queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+    component_tuple = (component.x, component.y, component.width, component.height)
+    app_tuple = (app_rect.x, app_rect.y, app_rect.width, app_rect.height)
+    window = x11_window_geometry(window_id)
+    x, y = x11_point_for_component(
+        component_tuple,
+        app_tuple,
+        window,
+    )
+    return {
+        "accessible_component": dict(zip(("x", "y", "width", "height"), component_tuple)),
+        "accessible_window": dict(zip(("x", "y", "width", "height"), app_tuple)),
+        "x11_window": window,
+        "x11_window_relative_target": {"x": x, "y": y},
+    }
+
+
+def click_view_toggle(
+    window_id: str, name: str, next_name: str, evidence: Path | None = None
+):
     """Advance the view switch and prove the next state reached AT-SPI.
 
     Some AT-SPI bridges acknowledge an egui button action without delivering
@@ -134,7 +204,6 @@ def click_view_toggle(window_id: str, name: str, next_name: str):
         ),
         f"view switch {name!r}",
     )
-    rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
     if not node.queryAction().doAction(0):
         raise AssertionError(f"AT-SPI click failed for view switch {name!r}")
     try:
@@ -144,12 +213,33 @@ def click_view_toggle(window_id: str, name: str, next_name: str):
             timeout=2.0,
         )
     except AssertionError:
+        click_accessible_name("View Options", "push button")
+        click_accessible_suffix(view_menu_label(next_name), "push button")
+        try:
+            wait_for(
+                lambda: visible_named_nodes(next_name),
+                f"View Options transition from {name!r} to {next_name!r}",
+                timeout=2.0,
+            )
+            time.sleep(0.35)
+            return
+        except AssertionError:
+            pass
+        diagnostics = view_toggle_x11_diagnostics(window_id, node)
+        if evidence is not None:
+            (evidence / f"view-toggle-{name.replace(' ', '-').lower()}.json").write_text(
+                json.dumps(diagnostics, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        x11_target = diagnostics["x11_window_relative_target"]
         run("xdotool", "windowactivate", "--sync", window_id)
         run(
             "xdotool",
             "mousemove",
-            str(rect.x + rect.width // 2),
-            str(rect.y + rect.height // 2),
+            "--window",
+            window_id,
+            str(x11_target["x"]),
+            str(x11_target["y"]),
             "click",
             "1",
         )
@@ -186,14 +276,7 @@ def context_menu_entry(window_id: str, name: str):
     node = wait_for(lambda: visible_entry(name), f"selected entry {name!r}")
     rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
     run("xdotool", "windowactivate", "--sync", window_id)
-    run(
-        "xdotool",
-        "mousemove",
-        str(rect.x + rect.width // 2),
-        str(rect.y + rect.height // 2),
-        "click",
-        "3",
-    )
+    run("xdotool", "mousemove", str(rect.x + rect.width // 2), str(rect.y + rect.height // 2), "click", "3")
     time.sleep(0.35)
 
 
@@ -217,14 +300,7 @@ def click_search_result(window_id: str, name: str, button: str = "1"):
     )
     rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
     run("xdotool", "windowactivate", "--sync", window_id)
-    run(
-        "xdotool",
-        "mousemove",
-        str(rect.x + rect.width // 2),
-        str(rect.y + rect.height // 2),
-        "click",
-        button,
-    )
+    run("xdotool", "mousemove", str(rect.x + rect.width // 2), str(rect.y + rect.height // 2), "click", button)
     time.sleep(0.35)
 
 
@@ -246,14 +322,12 @@ def write_visible_accessibility_tree(evidence: Path, name: str):
 def double_click_entry(window_id: str, name: str):
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
     rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
-    x = rect.x + rect.width // 2
-    y = rect.y + rect.height // 2
     run("xdotool", "windowactivate", "--sync", window_id)
     run(
         "xdotool",
         "mousemove",
-        str(x),
-        str(y),
+        str(rect.x + rect.width // 2),
+        str(rect.y + rect.height // 2),
         "click",
         "--repeat",
         "2",
@@ -268,14 +342,7 @@ def click_entry(window_id: str, name: str):
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
     rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
     run("xdotool", "windowactivate", "--sync", window_id)
-    run(
-        "xdotool",
-        "mousemove",
-        str(rect.x + rect.width // 2),
-        str(rect.y + rect.height // 2),
-        "click",
-        "1",
-    )
+    run("xdotool", "mousemove", str(rect.x + rect.width // 2), str(rect.y + rect.height // 2), "click", "1")
     time.sleep(0.35)
 
 
@@ -315,14 +382,7 @@ def click_named_control(window_id: str, name: str, role: str = "push button"):
     )
     rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
     run("xdotool", "windowactivate", "--sync", window_id)
-    run(
-        "xdotool",
-        "mousemove",
-        str(rect.x + rect.width // 2),
-        str(rect.y + rect.height // 2),
-        "click",
-        "1",
-    )
+    run("xdotool", "mousemove", str(rect.x + rect.width // 2), str(rect.y + rect.height // 2), "click", "1")
     time.sleep(0.35)
 
 
@@ -428,6 +488,11 @@ def quick_inspector_visible(filename: str):
     return any(node.name == title for node in visible_named_nodes(title))
 
 
+def inspector_requires_zoom_controls(filename: str) -> bool:
+    """Only image and PDF inspectors expose the toolbar zoom buttons."""
+    return Path(filename).suffix.lower() in {".png", ".jpg", ".jpeg", ".pdf"}
+
+
 def close_quick_inspector(main_window_id: str, filename: str):
     xkey(main_window_id, "space")
     wait_for(
@@ -496,7 +561,7 @@ def open_quick_inspector(
         lambda: quick_inspector_visible(filename),
         f"Quick Inspector for {filename}",
     )
-    if Path(filename).suffix.lower() in {".png", ".jpg", ".jpeg", ".pdf", ".docx"}:
+    if inspector_requires_zoom_controls(filename):
         wait_for(
             lambda: any(
                 node.getRoleName() == "push button"
@@ -712,21 +777,29 @@ def main() -> int:
             "Opened the shared search-result context menu and copied its selected item.",
         )
         screenshot(evidence, "01a-search-result")
-        xkey(window_id, "Escape")
+        # Escape dismisses the result context menu but leaves the search panel
+        # active; its modal input layer then absorbs toolbar clicks.  Toggle it
+        # through the same accessible control that opened it before exercising
+        # the main view controls.
+        click_accessible_name("Toggle Search", "push button")
+        wait_for(
+            lambda: not visible_named_nodes("Search result: sample.json"),
+            "closed search panel",
+        )
         wait_for(lambda: visible_entry("notes.txt"), "Documents after search")
 
-        click_view_toggle(window_id, VIEW_TO_LIST, VIEW_TO_GRID)
+        click_view_toggle(window_id, VIEW_TO_LIST, VIEW_TO_GRID, evidence)
         wait_for(lambda: visible_entry("notes.txt"), "List-view entries")
         passed("list-view", "Cycled from Miller to List with named selectable rows.")
         screenshot(evidence, "02-list-documents")
 
-        click_view_toggle(window_id, VIEW_TO_GRID, VIEW_TO_COLUMN)
+        click_view_toggle(window_id, VIEW_TO_GRID, VIEW_TO_COLUMN, evidence)
         wait_for(lambda: visible_entry("notes.txt"), "Grid-view entries")
         passed("grid-view", "Cycled from List to Grid with named selectable cells.")
         screenshot(evidence, "03-grid-documents")
 
-        click_view_toggle(window_id, VIEW_TO_COLUMN, VIEW_TO_LIST)
-        click_view_toggle(window_id, VIEW_TO_LIST, VIEW_TO_GRID)
+        click_view_toggle(window_id, VIEW_TO_COLUMN, VIEW_TO_LIST, evidence)
+        click_view_toggle(window_id, VIEW_TO_LIST, VIEW_TO_GRID, evidence)
         wait_for(lambda: visible_entry("notes.txt"), "List view for workflow matrix")
         invoke_context_action(window_id, "notes.txt", "Copy Item")
         double_click_entry(window_id, "Subfolder")
@@ -783,7 +856,7 @@ def main() -> int:
                 f"Opened the packaged {description} preview for {filename}.",
             )
 
-        click_view_toggle(window_id, VIEW_TO_GRID, VIEW_TO_COLUMN)
+        click_view_toggle(window_id, VIEW_TO_GRID, VIEW_TO_COLUMN, evidence)
         wait_for(lambda: visible_entry("trash-me.txt"), "trash fixture")
         invoke_context_action(window_id, "trash-me.txt", "Delete…")
         # The dialog opens with Move to Trash selected. Confirm through the
@@ -797,8 +870,8 @@ def main() -> int:
         )
         passed("trash-delete", "Moved only the disposable fixture into isolated XDG Trash.")
 
-        click_view_toggle(window_id, VIEW_TO_COLUMN, VIEW_TO_LIST)
-        click_view_toggle(window_id, VIEW_TO_LIST, VIEW_TO_GRID)
+        click_view_toggle(window_id, VIEW_TO_COLUMN, VIEW_TO_LIST, evidence)
+        click_view_toggle(window_id, VIEW_TO_LIST, VIEW_TO_GRID, evidence)
         wait_for(lambda: visible_entry("delete-me.txt"), "delete fixture")
         invoke_context_action(window_id, "delete-me.txt", "Delete…")
         # The confirmation choices expose accessible names. Select the explicit
