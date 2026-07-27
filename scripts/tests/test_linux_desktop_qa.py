@@ -133,6 +133,18 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         self.assertIn('"post_click_visible_nodes"', writes["text"])
         self.assertIn("toggle button | Subfolder", writes["text"])
 
+    def test_confirms_empty_destination_from_its_visible_breadcrumb(self):
+        with patch.object(
+            qa,
+            "visible_a11y_nodes",
+            return_value=[
+                "label | This folder is empty",
+                "push button | \\ue2c7 Documents",
+                "push button | \\ue2c7 Subfolder",
+            ],
+        ):
+            self.assertTrue(qa.destination_breadcrumb_visible("Subfolder"))
+
     def test_docx_page_preview_does_not_claim_image_pdf_zoom_toolbar(self):
         self.assertFalse(qa.inspector_requires_zoom_controls("letter.docx"))
         self.assertTrue(qa.inspector_requires_zoom_controls("preview.pdf"))

@@ -355,6 +355,14 @@ def visible_a11y_nodes() -> list[str]:
     return lines
 
 
+def destination_breadcrumb_visible(name: str) -> bool:
+    """Confirm navigation even when the destination has no entries yet."""
+    return any(
+        node.startswith("push button | ") and node.endswith(name)
+        for node in visible_a11y_nodes()
+    )
+
+
 def write_visible_accessibility_tree(evidence: Path, name: str):
     lines = visible_a11y_nodes()
     (evidence / f"{name}.a11y.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -858,7 +866,7 @@ def main() -> int:
         subfolder_activation = double_click_entry(window_id, "Subfolder")
         try:
             wait_for(
-                lambda: visible_entry("notes.txt") and not visible_entry("delete-me.txt"),
+                lambda: destination_breadcrumb_visible("Subfolder"),
                 "Subfolder navigation",
             )
         except AssertionError:
