@@ -30,7 +30,7 @@ Implemented:
 - Linux privileged helper and polkit smoke test from packaged layout.
 - Real Windows runtime smoke for portable zip: launch, navigation, file operations, Trash/Recycling Bin, search, Quick Inspector, UAC/helper behavior, and background updater.
 - Real Windows install/uninstall smoke for the installer candidate.
-- Final release notes and known limitations review.
+- Release-owner review of release notes and known limitations against the exact artifacts.
 
 Move re-enablement is deliberately separate from ordinary workflow QA. Its journal, recovery, crash-test, and platform gates are defined in [Durable Move Recovery Design](MOVE_RECOVERY_DESIGN.md); no mode is enabled merely because another mode or platform passes.
 

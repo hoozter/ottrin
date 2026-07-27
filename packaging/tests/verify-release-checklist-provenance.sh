@@ -50,6 +50,14 @@ if ! grep -Fq -- '`docs/RELEASE_NOTES.md`' "$DEVELOPMENT"; then
   exit 1
 fi
 
+# The roadmap must not describe the finished release notes as an unimplemented
+# feature.  What remains is release-owner comparison against the exact
+# artifacts, alongside the other physical acceptance gates.
+if ! grep -Fq -- 'Release-owner review of release notes and known limitations against the exact artifacts.' "$ROADMAP"; then
+  printf 'docs/ROADMAP.md is missing the exact-artifact release-owner review boundary.\n' >&2
+  exit 1
+fi
+
 # Release review must not leave the public landing page describing the old
 # text-only PDF/Office behavior after the packaged visual-preview milestone.
 # The portable ZIP and installer both ship this README, so stale wording would
