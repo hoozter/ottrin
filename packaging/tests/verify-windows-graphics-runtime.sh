@@ -72,6 +72,7 @@ done
 # The same applies to RUNNING.md: it is the only packaged, artifact-local
 # recovery instruction for choosing the explicitly bundled OpenGL path.
 for literal in \
+  '  LICENSE' \
   'RUNNING.md' \
   'third-party-notices/mesa3d-26.1.3/licenses/Apache-2.0' \
   'third-party-notices/mesa3d-26.1.3/licenses/BSL-1.0' \
@@ -83,6 +84,7 @@ for literal in \
 done
 
 for literal in \
+  '    "LICENSE",' \
   'RUNNING.md' \
   'third-party-notices\mesa3d-26.1.3\licenses\Apache-2.0' \
   'third-party-notices\mesa3d-26.1.3\licenses\BSL-1.0' \

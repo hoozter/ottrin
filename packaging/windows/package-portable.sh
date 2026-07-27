@@ -121,9 +121,7 @@ download_verify_and_package_pdfium "$STAGE/bin/pdfium"
 package_graphics_compatibility_runtime "$STAGE/bin" "$STAGE/third-party-notices"
 cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/logo.svg" "$STAGE/assets/"
 cp "$ROOT/README.md" "$STAGE/"
-if [ -f "$ROOT/LICENSE" ]; then
-  cp "$ROOT/LICENSE" "$STAGE/"
-fi
+cp "$ROOT/LICENSE" "$STAGE/"
 cp "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" "$ROOT/docs/ROADMAP.md" \
   "$ROOT/docs/RELEASE_NOTES.md" "$ROOT/docs/RELEASE_CHECKLIST.md" "$STAGE/docs/"
 

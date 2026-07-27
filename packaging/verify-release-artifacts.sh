@@ -99,6 +99,7 @@ for entry in \
   '/bin/pdfium/licenses/pdfium\.txt$' \
   '/assets/icon\.svg$' \
   '/packaging/linux/org\.ottrin\.filesystem\.policy$' \
+  '/LICENSE$' \
   '/README\.md$' \
   '/docs/USER_GUIDE\.md$' \
   '/docs/DEVELOPMENT\.md$' \
@@ -132,6 +133,7 @@ for entry in \
   '/third-party-notices/pal1000-LICENSE\.txt$' \
   '/third-party-notices/Microsoft-DXC-LICENSE-MS\.txt$' \
   '/assets/icon\.svg$' \
+  '/LICENSE$' \
   '/README\.md$' \
   '/docs/USER_GUIDE\.md$' \
   '/docs/DEVELOPMENT\.md$' \
@@ -299,6 +301,7 @@ for entry in \
   'third-party-notices/mesa3d-26.1.3/licenses/exceptions/Linux-Syscall-Note' \
   'third-party-notices/pal1000-LICENSE.txt' \
   'third-party-notices/Microsoft-DXC-LICENSE-MS.txt' \
+  'LICENSE' \
   'RUNNING.md' \
   'docs/USER_GUIDE.md' \
   'docs/RELEASE_NOTES.md' \

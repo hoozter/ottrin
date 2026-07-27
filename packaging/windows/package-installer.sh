@@ -39,6 +39,7 @@ required=(
   third-party-notices/mesa3d-26.1.3/licenses/exceptions/Linux-Syscall-Note
   third-party-notices/pal1000-LICENSE.txt
   third-party-notices/Microsoft-DXC-LICENSE-MS.txt
+  LICENSE
   RUNNING.md
   README.md
   docs/USER_GUIDE.md
