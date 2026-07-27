@@ -44,13 +44,21 @@ fn main() -> eframe::Result<()> {
     apply_cli_overrides();
     ensure_dev_helper();
 
+    let renderer_override = match graphics_renderer_override() {
+        Ok(renderer_override) => renderer_override,
+        Err(error) => {
+            eprintln!("ottrin: {error}");
+            std::process::exit(2);
+        }
+    };
+
     let config = load_config();
     let window_size = config.window_size.unwrap_or([1024.0, 680.0]);
 
     let options = NativeOptions {
         renderer: renderer_for_target_with_override(
             cfg!(target_os = "windows"),
-            graphics_renderer_override().as_deref(),
+            renderer_override.as_deref(),
         ),
         viewport: egui::ViewportBuilder::default()
             .with_title("Ottrin")
@@ -331,9 +339,23 @@ fn print_index_diagnostics(diagnostics: &ottrin_search::SearchIndexDiagnostics) 
     }
 }
 
-fn graphics_renderer_override() -> Option<String> {
+fn graphics_renderer_override() -> Result<Option<String>, String> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    cli_renderer_override(&args).or_else(|| std::env::var("OTTRIN_RENDERER").ok())
+    validate_renderer_override(
+        cli_renderer_override(&args)
+            .or_else(|| std::env::var("OTTRIN_RENDERER").ok())
+            .as_deref(),
+    )
+}
+
+fn validate_renderer_override(renderer_override: Option<&str>) -> Result<Option<String>, String> {
+    match renderer_override.map(str::trim) {
+        None | Some("") => Ok(None),
+        Some(value) if value.eq_ignore_ascii_case("opengl") => Ok(Some("opengl".to_string())),
+        Some(value) => Err(format!(
+            "unsupported renderer override `{value}`; expected `opengl`"
+        )),
+    }
 }
 
 fn cli_renderer_override(args: &[String]) -> Option<String> {
@@ -462,9 +484,13 @@ mod tests {
             renderer_for_target_with_override(true, Some("opengl")),
             eframe::Renderer::Glow
         );
+    }
+
+    #[test]
+    fn invalid_renderer_override_is_rejected_instead_of_silently_using_wgpu() {
         assert_eq!(
-            renderer_for_target_with_override(true, Some("unsupported")),
-            eframe::Renderer::Wgpu
+            validate_renderer_override(Some("vulkan")),
+            Err("unsupported renderer override `vulkan`; expected `opengl`".to_string())
         );
     }
 
