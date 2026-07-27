@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
-import subprocess
 import unittest
 from unittest.mock import patch
 
@@ -19,18 +18,16 @@ SPEC.loader.exec_module(qa)
 
 class A11yRegistryPreflightTests(unittest.TestCase):
     def test_rejects_missing_registry_cache_before_launch(self):
-        missing_registry = subprocess.CompletedProcess(
-            ["busctl"], 1, stdout="", stderr="Failed to introspect object"
-        )
-        with patch.object(qa, "run", return_value=missing_registry):
-            with self.assertRaisesRegex(RuntimeError, "registry/cache"):
+        with patch.object(
+            qa.pyatspi.Registry,
+            "getDesktop",
+            side_effect=RuntimeError("accessibility bus is unavailable"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "registry"):
                 qa.require_a11y_registry()
 
     def test_accepts_reachable_registry_cache(self):
-        reachable_registry = subprocess.CompletedProcess(
-            ["busctl"], 0, stdout="NAME TYPE SIGNATURE RESULT/FLAGS\n", stderr=""
-        )
-        with patch.object(qa, "run", return_value=reachable_registry):
+        with patch.object(qa.pyatspi.Registry, "getDesktop", return_value=object()):
             qa.require_a11y_registry()
 
 

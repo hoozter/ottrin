@@ -552,23 +552,14 @@ def set_a11y(enabled: bool):
 
 def require_a11y_registry():
     """Fail before launching Ottrin when the desktop AT-SPI route is absent."""
-    result = run(
-        "busctl",
-        "--user",
-        "introspect",
-        "org.a11y.atspi.Registry",
-        "/org/a11y/atspi/cache",
-        check=False,
-        capture=True,
-    )
-    if result.returncode != 0:
-        detail = (result.stderr or result.stdout).strip()
-        suffix = f": {detail}" if detail else ""
+    try:
+        pyatspi.Registry.getDesktop(0)
+    except Exception as error:
         raise RuntimeError(
-            "required AT-SPI registry/cache service is unavailable; "
+            "required AT-SPI registry service is unavailable; "
             "run this packaged desktop QA in a functioning accessibility session"
-            f"{suffix}"
-        )
+            f": {error}"
+        ) from error
 
 
 def main() -> int:
