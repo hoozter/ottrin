@@ -48,6 +48,12 @@ done
 # checksum only authenticates whatever is presented alongside it.
 for literal in \
   'DXIL_SHA256="cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"' \
+  'third-party-notices/mesa3d-26\.1\.3/licenses/Apache-2\.0' \
+  'third-party-notices/mesa3d-26\.1\.3/licenses/BSL-1\.0' \
+  'third-party-notices/mesa3d-26\.1\.3/licenses/GPL-1\.0-or-later' \
+  'third-party-notices/mesa3d-26\.1\.3/licenses/GPL-2\.0-only' \
+  'third-party-notices/mesa3d-26\.1\.3/licenses/SGI-B-2\.0' \
+  'third-party-notices/mesa3d-26\.1\.3/licenses/exceptions/Linux-Syscall-Note' \
   'verify_portable_graphics_runtime_notice_manifest' \
   'verify_installer_graphics_runtime_notice_manifest' \
   'verify_windows_graphics_recovery_instructions' \

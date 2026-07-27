@@ -122,7 +122,13 @@ for entry in \
   '/bin/dxil\.dll$' \
   '/third-party-notices/MANIFEST\.txt$' \
   '/third-party-notices/mesa3d-26\.1\.3/docs/license\.rst$' \
+  '/third-party-notices/mesa3d-26\.1\.3/licenses/Apache-2\.0$' \
+  '/third-party-notices/mesa3d-26\.1\.3/licenses/BSL-1\.0$' \
+  '/third-party-notices/mesa3d-26\.1\.3/licenses/GPL-1\.0-or-later$' \
+  '/third-party-notices/mesa3d-26\.1\.3/licenses/GPL-2\.0-only$' \
   '/third-party-notices/mesa3d-26\.1\.3/licenses/MIT$' \
+  '/third-party-notices/mesa3d-26\.1\.3/licenses/SGI-B-2\.0$' \
+  '/third-party-notices/mesa3d-26\.1\.3/licenses/exceptions/Linux-Syscall-Note$' \
   '/third-party-notices/pal1000-LICENSE\.txt$' \
   '/third-party-notices/Microsoft-DXC-LICENSE-MS\.txt$' \
   '/assets/icon\.svg$' \
@@ -284,7 +290,13 @@ for entry in \
   'bin/dxil.dll' \
   'third-party-notices/MANIFEST.txt' \
   'third-party-notices/mesa3d-26.1.3/docs/license.rst' \
+  'third-party-notices/mesa3d-26.1.3/licenses/Apache-2.0' \
+  'third-party-notices/mesa3d-26.1.3/licenses/BSL-1.0' \
+  'third-party-notices/mesa3d-26.1.3/licenses/GPL-1.0-or-later' \
+  'third-party-notices/mesa3d-26.1.3/licenses/GPL-2.0-only' \
   'third-party-notices/mesa3d-26.1.3/licenses/MIT' \
+  'third-party-notices/mesa3d-26.1.3/licenses/SGI-B-2.0' \
+  'third-party-notices/mesa3d-26.1.3/licenses/exceptions/Linux-Syscall-Note' \
   'third-party-notices/pal1000-LICENSE.txt' \
   'third-party-notices/Microsoft-DXC-LICENSE-MS.txt' \
   'RUNNING.md' \
