@@ -1695,7 +1695,7 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn move_succeeds_before_mutating_for_a_valid_file_source() {
+    fn move_is_rejected_before_mutating_for_a_valid_file_source() {
         let dir = TestDir::new("move-safe-success-file");
         let source = dir.path().join("source.txt");
         let destination = dir.path().join("destination");
@@ -1708,12 +1708,12 @@ mod tests {
             conflict: ConflictAction::Skip,
         });
 
-        assert!(result.is_ok());
-        assert!(!source.exists());
+        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
         assert_eq!(
-            std::fs::read_to_string(destination.join("source.txt")).unwrap(),
+            std::fs::read_to_string(&source).unwrap(),
             "original contents"
         );
+        assert!(std::fs::symlink_metadata(destination.join("source.txt")).is_err());
     }
 
     #[cfg(not(target_os = "linux"))]
@@ -1742,7 +1742,7 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn move_succeeds_before_mutating_for_a_valid_directory_source() {
+    fn move_is_rejected_before_mutating_for_a_valid_directory_source() {
         let dir = TestDir::new("move-safe-success-directory");
         let source = dir.path().join("source-dir");
         let source_file = source.join("inner.txt");
@@ -1757,13 +1757,10 @@ mod tests {
             conflict: ConflictAction::Skip,
         });
 
-        assert!(result.is_ok());
-        assert!(!source.exists());
-        assert!(!source_file.exists());
-        assert_eq!(
-            std::fs::read_to_string(destination.join("source-dir").join("inner.txt")).unwrap(),
-            "keep-safe"
-        );
+        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
+        assert!(source.exists());
+        assert_eq!(std::fs::read_to_string(&source_file).unwrap(), "keep-safe");
+        assert!(std::fs::symlink_metadata(destination.join("source-dir")).is_err());
     }
 
     #[cfg(not(target_os = "linux"))]
@@ -1819,32 +1816,18 @@ mod tests {
                 conflict,
             });
 
-            match conflict {
-                ConflictAction::Overwrite => {
-                    assert!(result.is_ok());
-                    assert!(!source.exists());
-                    assert_eq!(
-                        std::fs::read_to_string(destination.join("source.txt")).unwrap(),
-                        "original contents"
-                    );
-                    assert_eq!(
-                        std::fs::read_to_string(&destination_conflict).unwrap(),
-                        "original contents"
-                    );
-                }
-                ConflictAction::Skip => {
-                    assert!(result.is_ok());
-                    assert!(!source.exists());
-                    assert_eq!(
-                        std::fs::read_to_string(destination.join("source.txt")).unwrap(),
-                        "original contents"
-                    );
-                }
-                ConflictAction::Rename => {
-                    assert!(result.is_ok());
-                    assert!(!source.exists());
-                    assert!(destination.join("source.txt").exists());
-                }
+            assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
+            assert_eq!(
+                std::fs::read_to_string(&source).unwrap(),
+                "original contents"
+            );
+            if conflict == ConflictAction::Overwrite {
+                assert_eq!(
+                    std::fs::read_to_string(&destination_conflict).unwrap(),
+                    "existing contents"
+                );
+            } else {
+                assert!(std::fs::symlink_metadata(destination.join("source.txt")).is_err());
             }
         }
     }
@@ -1916,8 +1899,9 @@ mod tests {
             conflict: ConflictAction::Skip,
         });
 
-        assert!(result.is_ok());
+        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
         assert!(source.exists());
+        assert!(source_file.exists());
         assert!(destination_conflict.exists());
         let entries: Vec<_> = std::fs::read_dir(&destination)
             .unwrap()
@@ -1933,7 +1917,7 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn move_directory_rename_on_conflict_moves_to_available_name() {
+    fn move_directory_rename_on_conflict_is_rejected_before_mutating() {
         let dir = TestDir::new("move-safe-dir-conflict-matrix-rename");
         let source = dir.path().join("source-dir");
         let source_file = source.join("inner.txt");
@@ -1955,8 +1939,9 @@ mod tests {
             destination: destination.clone(),
             conflict: ConflictAction::Rename,
         });
-        assert!(result.is_ok(), "{result:?}");
-        assert!(!source.exists());
+        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
+        assert!(source.exists());
+        assert_eq!(std::fs::read_to_string(&source_file).unwrap(), "nested");
         let entries: Vec<_> = std::fs::read_dir(&destination)
             .unwrap()
             .filter_map(|entry| {
@@ -1965,8 +1950,7 @@ mod tests {
                     .map(|e| e.file_name().to_string_lossy().into_owned())
             })
             .collect();
-        assert!(entries.len() >= 2);
-        assert!(entries.iter().any(|name| name != "source-dir"));
+        assert_eq!(entries, vec!["source-dir"]);
     }
 
     #[cfg(target_os = "linux")]
@@ -1995,12 +1979,12 @@ mod tests {
             conflict: ConflictAction::Overwrite,
         });
 
-        assert!(result.is_ok());
-        assert!(!source.exists());
-        assert!(!source_file.exists());
+        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
+        assert!(source.exists());
+        assert_eq!(std::fs::read_to_string(&source_file).unwrap(), "nested");
         assert_eq!(
-            std::fs::read_to_string(destination_conflict.join("inner.txt")).unwrap(),
-            "nested"
+            std::fs::read_to_string(destination_conflict.join("retained.txt")).unwrap(),
+            "destination retained"
         );
     }
 
@@ -2031,7 +2015,7 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn move_succeeds_before_mutating_even_for_a_valid_symlink_source() {
+    fn move_is_rejected_before_mutating_even_for_a_valid_symlink_source() {
         use std::os::unix::fs::symlink;
 
         let dir = TestDir::new("move-safe-success");
@@ -2046,12 +2030,12 @@ mod tests {
             conflict: ConflictAction::Skip,
         });
 
-        assert!(result.is_ok());
+        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
         assert_eq!(
-            std::fs::read_link(destination.join("dangling")).unwrap(),
+            std::fs::read_link(&source).unwrap(),
             Path::new("missing-target")
         );
-        assert!(!source.exists());
+        assert!(std::fs::symlink_metadata(destination.join("dangling")).is_err());
     }
 
     #[cfg(target_os = "linux")]

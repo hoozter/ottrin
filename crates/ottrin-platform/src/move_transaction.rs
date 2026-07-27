@@ -1,3 +1,8 @@
+#![cfg_attr(not(test), allow(dead_code))]
+
+// The Linux journal implementation below remains compiled for recovery-test coverage while
+// user-facing Move is deliberately disabled. Remove this allowance only when the runtime gate
+// is reopened with the documented platform and crash evidence.
 #[cfg(target_os = "linux")]
 use super::move_recovery;
 use super::{ConflictAction, PlatformError, reject_directory_copy_into_itself};
@@ -13,8 +18,10 @@ const CROSS_DEVICE_STAGED_NAME: &str = "candidate";
 #[cfg(all(test, target_os = "linux"))]
 static TEST_MOVE_SERIALIZER: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
-/// Move a single entry with safe runtime semantics on supported platforms.
-#[cfg(not(target_os = "linux"))]
+/// Runtime Move stays fail-closed until the documented platform and crash gates are complete.
+///
+/// Linux journal machinery remains available to its dedicated recovery tests, but it must not
+/// become a user-facing mutator merely because an individual transaction path is implemented.
 pub(super) fn move_entry_transactional(
     source: &Path,
     destination_dir: &Path,
@@ -26,15 +33,6 @@ pub(super) fn move_entry_transactional(
     Err(PlatformError::UnsupportedSafeMove(
         source.display().to_string(),
     ))
-}
-
-#[cfg(target_os = "linux")]
-pub(super) fn move_entry_transactional(
-    source: &Path,
-    destination_dir: &Path,
-    conflict: ConflictAction,
-) -> Result<(), PlatformError> {
-    move_with_hooks(source, destination_dir, conflict, |_| Ok(()))
 }
 
 #[cfg(any(test, target_os = "linux"))]
