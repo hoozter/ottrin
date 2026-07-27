@@ -50,6 +50,31 @@ class A11yRegistryPreflightTests(unittest.TestCase):
         self.assertIn('"delete_me_exists": true', writes["text"])
         self.assertIn("push button | Delete Permanently", writes["text"])
 
+    def test_records_context_action_failure_with_target_and_visible_popup_tree(self):
+        evidence = Path(self.id().replace(".", "-"))
+        writes = {}
+        with (
+            patch.object(
+                qa,
+                "visible_a11y_nodes",
+                return_value=[
+                    "toggle button | preview-second.pdf",
+                    "menu item | Quick Inspector",
+                ],
+            ),
+            patch.object(Path, "write_text", side_effect=lambda text, **_: writes.setdefault("text", text)),
+        ):
+            qa.write_context_action_failure(
+                evidence,
+                "preview-second.pdf",
+                "Quick Inspector",
+                AssertionError("selected entry remained preview.pdf"),
+            )
+
+        self.assertIn('"filename": "preview-second.pdf"', writes["text"])
+        self.assertIn('"action": "Quick Inspector"', writes["text"])
+        self.assertIn("menu item | Quick Inspector", writes["text"])
+
 
 class X11CoordinateTranslationTests(unittest.TestCase):
     def test_entry_selection_accepts_the_visible_status_label_when_a11y_omits_selected_state(self):

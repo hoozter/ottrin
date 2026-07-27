@@ -442,6 +442,22 @@ def write_entry_activation_failure(evidence: Path, name: str, diagnostics: dict[
     )
 
 
+def write_context_action_failure(
+    evidence: Path, filename: str, action_suffix: str, error: Exception
+):
+    """Retain the exact target and popup tree when a context action is unsafe."""
+    payload = {
+        "filename": filename,
+        "action": action_suffix,
+        "error": str(error),
+        "visible_nodes": visible_a11y_nodes(),
+    }
+    safe_name = filename.replace("/", "-")
+    (evidence / f"context-action-{safe_name}.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
 def write_workflow_failure(evidence: Path, qa_root: Path, error: Exception):
     """Retain the failing UI state without treating a partial run as a pass."""
     documents = qa_root / "home" / "Documents"
@@ -623,7 +639,9 @@ def invoke_selection_action(window_id: str, filename: str, action_suffix: str):
     )
 
 
-def invoke_context_action(window_id: str, filename: str, action_suffix: str):
+def invoke_context_action(
+    window_id: str, filename: str, action_suffix: str, evidence: Path | None = None
+):
     last_error = None
     for _ in range(3):
         try:
@@ -648,9 +666,23 @@ def invoke_context_action(window_id: str, filename: str, action_suffix: str):
             last_error = error
             run("xdotool", "key", "--clearmodifiers", "Escape", check=False)
             time.sleep(0.4)
-    raise AssertionError(
+    error = AssertionError(
         f"Could not invoke {action_suffix!r} for {filename!r}: {last_error}"
     )
+    if evidence is not None:
+        # The target proof has failed, so capture the actual visible popup tree
+        # and a screen before returning the fail-closed error to the workflow.
+        screenshot_error = None
+        try:
+            screenshot(evidence, f"context-action-{filename.replace('/', '-')}")
+        except Exception as capture_error:
+            screenshot_error = capture_error
+        write_context_action_failure(evidence, filename, action_suffix, error)
+        if screenshot_error is not None:
+            (evidence / f"context-action-{filename.replace('/', '-')}.screenshot-error.txt").write_text(
+                f"{screenshot_error}\n", encoding="utf-8"
+            )
+    raise error
 
 
 def xkey(window_id: str, *keys: str):
@@ -771,7 +803,7 @@ def open_quick_inspector(
     evidence: Path,
     screenshot_name: str,
 ):
-    invoke_context_action(main_window_id, filename, "Quick Inspector")
+    invoke_context_action(main_window_id, filename, "Quick Inspector", evidence)
     wait_for(
         lambda: quick_inspector_visible(filename),
         f"Quick Inspector for {filename}",
