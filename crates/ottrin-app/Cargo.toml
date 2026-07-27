@@ -14,4 +14,12 @@ eframe.workspace = true
 image = "0.25"
 
 [target.'cfg(windows)'.dependencies]
+# eframe's WGPU renderer is the normal Windows path.  Its defaults are off at
+# the workspace boundary, so request only the native Windows backend here;
+# Glow remains the separately bundled compatibility path.
+wgpu = { version = "27", default-features = false, features = ["dx12"] }
+# Keep wgpu-hal and gpu-allocator on the same Windows bindings release.  The
+# allocator's broad semver range otherwise resolves alongside the older
+# bindings used by an unrelated dependency and fails to type-check DX12.
+windows = { version = "0.58", default-features = false }
 windows-sys = { version = "0.61", features = ["Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging"] }

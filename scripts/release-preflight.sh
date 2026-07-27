@@ -91,6 +91,7 @@ shell_scripts=(
   packaging/tests/verify-linux-portable-running-instructions.sh
   scripts/linux-launch-smoke.sh
   scripts/windows-gui-subsystem-smoke.sh
+  scripts/windows-runtime-launch-smoke.sh
   packaging/tests/verify-linux-privileged-helper-policy.sh
   packaging/tests/verify-release-checklist-provenance.sh
   packaging/tests/verify-release-preflight-contract-coverage.sh
@@ -129,6 +130,16 @@ run_gate "Windows installer output-path guard" \
   bash packaging/tests/verify-windows-installer-output-path.sh
 run_gate "Windows runtime temporary-directory cleanup" \
   bash packaging/tests/verify-windows-runtime-temp-cleanup.sh
+if command -v wine >/dev/null 2>&1; then
+  run_gate "Windows portable runtime launch" \
+    bash scripts/windows-runtime-launch-smoke.sh \
+      dist/Ottrin-0.1.0-windows-x64/bin/ottrin.exe
+  run_gate "Windows portable OpenGL compatibility launch" \
+    bash scripts/windows-runtime-launch-smoke.sh \
+      dist/Ottrin-0.1.0-windows-x64/bin/ottrin.exe --renderer opengl
+elif [[ "$verify_artifacts" == true ]]; then
+  printf '\n==> Windows runtime launch unavailable; Wine is not installed\n' >&2
+fi
 optional_gate shellcheck "ShellCheck" shellcheck -x "${shell_scripts[@]}"
 optional_gate actionlint "GitHub Actions workflows" actionlint \
   .github/workflows/ci.yml .github/workflows/release.yml
