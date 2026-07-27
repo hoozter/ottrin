@@ -94,6 +94,11 @@ def visible_entry(name: str):
     )
 
 
+def entry_selected(name: str) -> bool:
+    node = visible_entry(name)
+    return node is not None and pyatspi.STATE_SELECTED in node.getState().getStates()
+
+
 def visible_named_nodes(name: str):
     return [
         node
@@ -402,9 +407,30 @@ def double_click_entry(window_id: str, name: str) -> dict[str, object]:
 
 
 def click_entry(window_id: str, name: str):
-    """Select the first entry through AT-SPI before extending it with Ctrl-click."""
-    del window_id
+    """Select the first entry, proving selection before extending it with Ctrl-click."""
     click_accessible_name(name, "toggle button")
+    if entry_selected(name):
+        return
+
+    # The accessibility action can report success while a replaced List-view
+    # node leaves the previous preview selection active.  Retry once through
+    # the same checked accessible-to-X11 mapping used for the Ctrl extension,
+    # then require the named entry's selected state before copying anything.
+    node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
+    x, y = x11_point_for_node(window_id, node)
+    run("xdotool", "windowactivate", "--sync", window_id)
+    run(
+        "xdotool",
+        "mousemove",
+        "--window",
+        window_id,
+        str(x),
+        str(y),
+        "click",
+        "1",
+    )
+    wait_for(lambda: entry_selected(name), f"selected entry {name!r}")
+    time.sleep(0.35)
 
 
 def ctrl_click_entry(window_id: str, name: str):

@@ -77,6 +77,35 @@ class X11CoordinateTranslationTests(unittest.TestCase):
             ],
         )
 
+    def test_click_entry_retries_with_checked_x11_target_when_a11y_does_not_select(self):
+        commands = []
+        with (
+            patch.object(qa, "click_accessible_name"),
+            patch.object(qa, "entry_selected", side_effect=[False, True]),
+            patch.object(qa, "wait_for", return_value=object()),
+            patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            qa.click_entry("0x123", "sample.json")
+
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                (
+                    "xdotool",
+                    "mousemove",
+                    "--window",
+                    "0x123",
+                    "280",
+                    "330",
+                    "click",
+                    "1",
+                ),
+            ],
+        )
+
     def test_double_click_targets_the_named_entry_inside_its_x11_window(self):
         commands = []
         with (
