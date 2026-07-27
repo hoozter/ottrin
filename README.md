@@ -50,8 +50,9 @@ Run the per-user installer, or unzip the portable package and run:
 Normal user-owned file operations do not require elevation. Denied operations use the bundled helper through the Windows UAC flow.
 
 Windows normally uses WGPU with the system graphics driver. For virtual,
-remote, or problematic adapters, the portable ZIP and installer include a
-checksum-pinned Mesa OpenGL compatibility runtime; launch
+remote, or problematic adapters, the portable ZIP and installer include the
+checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime; its Mesa, pal1000,
+and Microsoft notices are bundled under `third-party-notices/`. Launch
 `ottrin.exe --renderer opengl` (or set `OTTRIN_RENDERER=opengl`) to select this
 explicit recovery path.
 

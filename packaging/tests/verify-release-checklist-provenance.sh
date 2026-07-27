@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CHECKLIST="$ROOT/docs/RELEASE_CHECKLIST.md"
 README="$ROOT/README.md"
 RELEASE_NOTES="$ROOT/docs/RELEASE_NOTES.md"
+USER_GUIDE="$ROOT/docs/USER_GUIDE.md"
 
 require_line() {
   local expected="$1"
@@ -22,13 +23,22 @@ require_line '- [ ] Portable zip launches on a real Windows desktop.'
 require_line '- [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; Move rejects without mutation.'
 require_line '- [ ] Privileged helper allow, cancel, missing-helper, and misconfigured-policy paths pass.'
 
-# The public Windows launch instructions must retain the explicit recovery
-# selector.  The bundled Mesa runtime is a compatibility path, not a silent
-# renderer-default change.
-if ! grep -Fq -- 'ottrin.exe --renderer opengl' "$README"; then
-  printf 'README is missing the explicit Windows OpenGL recovery selector.\n' >&2
-  exit 1
-fi
+# The public Windows launch instructions must describe the same pinned recovery
+# path as the packaged artifacts. The bundled Mesa runtime is a compatibility
+# path, not a silent renderer-default change.
+for document in "$README" "$RELEASE_NOTES" "$USER_GUIDE"; do
+  for expected in \
+    'Mesa 26.1.3' \
+    'ottrin.exe --renderer opengl' \
+    'OTTRIN_RENDERER=opengl' \
+    'third-party-notices/'; do
+    if ! grep -Fq -- "$expected" "$document"; then
+      printf '%s is missing the Windows graphics recovery detail: %s\n' \
+        "${document#$ROOT/}" "$expected" >&2
+      exit 1
+    fi
+  done
+done
 
 # Code signing is explicitly deferred from v1.  The shipped release notes must
 # state that limitation just as the detailed user guidance does.
