@@ -847,8 +847,27 @@ pub fn system_locate_available() -> bool {
     command_exists("plocate") || command_exists("locate")
 }
 
+#[cfg(any(target_os = "windows", test))]
+fn internal_command_creation_flags(is_windows: bool) -> u32 {
+    if is_windows { 0x0800_0000 } else { 0 }
+}
+
+fn internal_command(program: &str) -> std::process::Command {
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        let mut command = std::process::Command::new(program);
+        command.creation_flags(internal_command_creation_flags(true));
+        command
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        std::process::Command::new(program)
+    }
+}
+
 fn command_exists(name: &str) -> bool {
-    std::process::Command::new(name)
+    internal_command(name)
         .arg("--help")
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
@@ -967,7 +986,7 @@ pub fn sqlite_schedule_status() -> LocateScheduleStatus {
 
     #[cfg(target_os = "windows")]
     {
-        let output = std::process::Command::new("schtasks")
+        let output = internal_command("schtasks")
             .args(["/Query", "/TN", "Ottrin Index"])
             .output();
         if output.map(|o| o.status.success()).unwrap_or(false) {
@@ -1164,7 +1183,7 @@ pub fn uninstall_sqlite_schedule() -> Result<String, String> {
 
     #[cfg(target_os = "windows")]
     {
-        let status = std::process::Command::new("schtasks")
+        let status = internal_command("schtasks")
             .args(["/Delete", "/F", "/TN", "Ottrin Index"])
             .status()
             .map_err(|e| format!("Failed to run schtasks: {}", e))?;
@@ -1386,7 +1405,7 @@ fn install_sqlite_windows_task(
         command.push_str(&root.display().to_string());
         command.push('"');
     }
-    let status = std::process::Command::new("schtasks")
+    let status = internal_command("schtasks")
         .args([
             "/Create",
             "/F",
@@ -2528,6 +2547,12 @@ mod tests {
     use super::*;
     use std::fs;
     use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+
+    #[test]
+    fn windows_internal_commands_request_no_console_window() {
+        assert_eq!(internal_command_creation_flags(true), 0x0800_0000);
+        assert_eq!(internal_command_creation_flags(false), 0);
+    }
 
     fn temp_service_path(name: &str) -> PathBuf {
         std::env::temp_dir().join(format!(

@@ -22,7 +22,10 @@ use ottrin_platform::{
 #[cfg(target_os = "linux")]
 use ottrin_platform::{discover_retained_move_transactions, move_recovery::JournalPhase};
 use ottrin_preview::{PreviewData, PreviewKind, PreviewRequest, load_preview};
-use ottrin_search::{SearchIndexDiagnostics, SearchService, default_roots as default_search_roots};
+use ottrin_search::{
+    LocateScheduleStatus, SearchIndexDiagnostics, SearchService,
+    default_roots as default_search_roots,
+};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -873,6 +876,7 @@ struct SearchUiState {
     result_resize_start: Option<(usize, usize, f32, f32)>,
     latest_request_id: u64,
     search_inflight: bool,
+    sqlite_schedule_status: Option<LocateScheduleStatus>,
 }
 
 impl Default for SearchUiState {
@@ -904,8 +908,16 @@ impl Default for SearchUiState {
             result_resize_start: None,
             latest_request_id: 0,
             search_inflight: false,
+            sqlite_schedule_status: None,
         }
     }
+}
+
+fn cached_sqlite_schedule_status(
+    cached: &mut Option<LocateScheduleStatus>,
+    probe: impl FnOnce() -> LocateScheduleStatus,
+) -> LocateScheduleStatus {
+    cached.get_or_insert_with(probe).clone()
 }
 
 fn advance_search_snapshot(last_seen: &mut u64, current: u64, has_query: bool) -> bool {
@@ -15570,8 +15582,18 @@ impl OttrinApp {
 
                                     ui.add_space(12.0);
                                     settings_section_icon(ui, c, MI_STORAGE, "Indexing & performance", "Recommended setup and startup fallbacks.", |ui| {
-                                        let locate_ok = ottrin_search::SearchService::system_locate_available();
-                                        let updatedb_ok = ottrin_search::SearchService::updatedb_available();
+                                        let (locate_ok, updatedb_ok) = if platform_capabilities.system_locate_controls_visible {
+                                            (
+                                                ottrin_search::SearchService::system_locate_available(),
+                                                ottrin_search::SearchService::updatedb_available(),
+                                            )
+                                        } else {
+                                            (false, false)
+                                        };
+                                        let sqlite_sched = cached_sqlite_schedule_status(
+                                            &mut self.search_ui.sqlite_schedule_status,
+                                            ottrin_search::SearchService::sqlite_schedule_status,
+                                        );
                                         Frame::new()
                                             .fill(mix_color(c.panel, c.accent, 0.08))
                                             .stroke(Stroke::new(1.0, mix_color(c.border, c.accent, 0.28)))
@@ -15582,7 +15604,6 @@ impl OttrinApp {
                                                 ui.label(RichText::new("Search health").color(c.text).size(12.0).strong());
                                                 ui.add_space(6.0);
                                                 let diag = self.search_service.diagnostics();
-                                                let sqlite_sched = ottrin_search::SearchService::sqlite_schedule_status();
                                                 let ok_col = c.accent;
                                                 let warn_col = c.text_muted;
                                                 let bad_col = c.error;
@@ -15702,7 +15723,6 @@ impl OttrinApp {
                                                     ).color(c.text_muted).size(10.5));
                                                     ui.add_space(8.0);
                                                     ui.horizontal(|ui| {
-                                                        let sqlite_sched = ottrin_search::SearchService::sqlite_schedule_status();
                                                         let status = if sqlite_sched.enabled {
                                                             format!("Background updater: {} ({})", sqlite_sched.source, sqlite_sched.detail)
                                                         } else {
@@ -15724,7 +15744,6 @@ impl OttrinApp {
                                                     });
                                                     ui.add_space(6.0);
                                                     ui.horizontal(|ui| {
-                                                        let sqlite_sched = ottrin_search::SearchService::sqlite_schedule_status();
                                                         let label = if sqlite_sched.enabled {
                                                             "Disable background updater"
                                                         } else {
@@ -15760,6 +15779,7 @@ impl OttrinApp {
                                                                 text, ok,
                                                                 until: Instant::now() + Duration::from_secs(10),
                                                             });
+                                                            self.search_ui.sqlite_schedule_status = None;
                                                         }
                                                         ui.label(RichText::new("Recommended for reliable search after restarts")
                                                             .color(c.text_muted).size(10.5).italics());
@@ -18858,6 +18878,36 @@ mod tests {
         drop(tx);
         assert!(rx.recv().is_ok());
         assert!(rx.recv().is_ok());
+    }
+
+    #[test]
+    fn repeated_search_settings_renders_reuse_schedule_status_until_invalidated() {
+        let mut cached = None;
+        let mut probes = 0;
+
+        for _ in 0..120 {
+            let status = cached_sqlite_schedule_status(&mut cached, || {
+                probes += 1;
+                ottrin_search::LocateScheduleStatus {
+                    source: "test".to_string(),
+                    enabled: true,
+                    detail: "cached".to_string(),
+                }
+            });
+            assert!(status.enabled);
+        }
+        assert_eq!(probes, 1);
+
+        cached = None;
+        let _ = cached_sqlite_schedule_status(&mut cached, || {
+            probes += 1;
+            ottrin_search::LocateScheduleStatus {
+                source: "test".to_string(),
+                enabled: false,
+                detail: "refreshed".to_string(),
+            }
+        });
+        assert_eq!(probes, 2);
     }
 
     #[test]
