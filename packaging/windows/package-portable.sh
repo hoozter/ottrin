@@ -14,6 +14,7 @@ MESA_URL="https://github.com/pal1000/mesa-dist-win/releases/download/26.1.3/mesa
 MESA_SHA256="80d5add64254c839b4c784bdab6a2b504e448675604b0fe54a9bce3c543303a7"
 MESA_SOURCE_URL="https://gitlab.freedesktop.org/mesa/mesa/-/archive/mesa-26.1.3/mesa-mesa-26.1.3.tar.gz"
 MESA_SOURCE_SHA256="4ef7c87feb15966d5645ec55728020632d2f54becb42ce546d4a12bfc5275dd1"
+MESA_OPENGL32_SHA256="52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e"
 MESA_LIBEGL_SHA256="ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"
 MESA_LIBGLESV2_SHA256="649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"
 MESA_LIBGALLIUM_WGL_SHA256="a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"
@@ -76,10 +77,11 @@ package_graphics_compatibility_runtime() (
     download_verified "$DXC_URL" "$DXC_SHA256" "$dxc_archive"
 
     mkdir -p "$tmp_dir/dxc" "$target_notices/mesa3d-26.1.3"
-    for dll in libEGL.dll libGLESv2.dll libgallium_wgl.dll; do
+    for dll in opengl32.dll libEGL.dll libGLESv2.dll libgallium_wgl.dll; do
         7z e -bd -y "-o$target_bin" "$mesa_archive" "x64/$dll" >/dev/null
     done
     for checksum_and_dll in \
+        "$MESA_OPENGL32_SHA256 opengl32.dll" \
         "$MESA_LIBEGL_SHA256 libEGL.dll" \
         "$MESA_LIBGLESV2_SHA256 libGLESv2.dll" \
         "$MESA_LIBGALLIUM_WGL_SHA256 libgallium_wgl.dll"; do
@@ -105,6 +107,7 @@ Mesa archive: $MESA_URL
 Mesa archive SHA-256: $MESA_SHA256
 Mesa source archive: $MESA_SOURCE_URL
 Mesa source archive SHA-256: $MESA_SOURCE_SHA256
+opengl32.dll SHA-256: $MESA_OPENGL32_SHA256
 libEGL.dll SHA-256: $MESA_LIBEGL_SHA256
 libGLESv2.dll SHA-256: $MESA_LIBGLESV2_SHA256
 libgallium_wgl.dll SHA-256: $MESA_LIBGALLIUM_WGL_SHA256
@@ -114,7 +117,7 @@ Microsoft DXC archive: $DXC_URL
 Microsoft DXC archive SHA-256: $DXC_SHA256
 Microsoft DXC license SHA-256: $DXC_LICENSE_SHA256
 dxil.dll SHA-256: $DXIL_SHA256
-Included Mesa DLLs: libEGL.dll, libGLESv2.dll, libgallium_wgl.dll
+Included Mesa DLLs: opengl32.dll, libEGL.dll, libGLESv2.dll, libgallium_wgl.dll
 EOF
 )
 

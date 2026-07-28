@@ -19,5 +19,6 @@ require_shell_gate 'packaging/windows/package-installer.sh'
 require_shell_gate 'scripts/linux-launch-smoke.sh'
 require_shell_gate 'scripts/windows-gui-subsystem-smoke.sh'
 require_shell_gate 'scripts/windows-runtime-launch-smoke.sh'
+require_shell_gate 'packaging/tests/verify-windows-opengl-loader-contract.sh'
 
 printf 'Verified release preflight shell coverage.\n'

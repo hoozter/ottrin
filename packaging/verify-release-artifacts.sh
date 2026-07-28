@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="${1:-dist}"
 VERSION="$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')"
 EXPECTED_SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
+MESA_OPENGL32_SHA256="52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e"
 MESA_LIBEGL_SHA256="ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"
 MESA_LIBGLESV2_SHA256="649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"
 MESA_LIBGALLIUM_WGL_SHA256="a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"
@@ -121,6 +122,7 @@ for entry in \
   '/bin/pdfium/pdfium\.dll$' \
   '/bin/pdfium/LICENSE$' \
   '/bin/pdfium/licenses/pdfium\.txt$' \
+  '/bin/opengl32\.dll$' \
   '/bin/libEGL\.dll$' \
   '/bin/libGLESv2\.dll$' \
   '/bin/libgallium_wgl\.dll$' \
@@ -320,6 +322,7 @@ verify_graphics_runtime_notice_manifest() {
     "Mesa archive SHA-256: $MESA_SHA256" \
     "Mesa source archive: $MESA_SOURCE_URL" \
     "Mesa source archive SHA-256: $MESA_SOURCE_SHA256" \
+    "opengl32.dll SHA-256: $MESA_OPENGL32_SHA256" \
     "libEGL.dll SHA-256: $MESA_LIBEGL_SHA256" \
     "libGLESv2.dll SHA-256: $MESA_LIBGLESV2_SHA256" \
     "libgallium_wgl.dll SHA-256: $MESA_LIBGALLIUM_WGL_SHA256" \
@@ -329,7 +332,7 @@ verify_graphics_runtime_notice_manifest() {
     "Microsoft DXC archive SHA-256: $DXC_SHA256" \
     "Microsoft DXC license SHA-256: $DXC_LICENSE_SHA256" \
     "dxil.dll SHA-256: $DXIL_SHA256" \
-    'Included Mesa DLLs: libEGL.dll, libGLESv2.dll, libgallium_wgl.dll'; do
+    'Included Mesa DLLs: opengl32.dll, libEGL.dll, libGLESv2.dll, libgallium_wgl.dll'; do
     if ! grep -Fqx "$expected" <<<"$manifest"; then
       printf '%s graphics-runtime notice manifest is missing: %s\\n' \
         "$artifact_label" "$expected" >&2
@@ -387,6 +390,7 @@ verify_portable_graphics_runtime_notice_manifest() {
   verify_graphics_runtime_notice_manifest 'Windows portable archive' "$manifest"
 }
 
+verify_portable_graphics_runtime_dll "$MESA_OPENGL32_SHA256" 'bin/opengl32.dll'
 verify_portable_graphics_runtime_dll "$MESA_LIBEGL_SHA256" 'bin/libEGL.dll'
 verify_portable_graphics_runtime_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dll'
 verify_portable_graphics_runtime_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'
@@ -433,6 +437,7 @@ for entry in \
   'bin/ottrin-index.exe' \
   'bin/ottrin-priv-helper.exe' \
   'bin/pdfium/pdfium.dll' \
+  'bin/opengl32.dll' \
   'bin/libEGL.dll' \
   'bin/libGLESv2.dll' \
   'bin/libgallium_wgl.dll' \
@@ -498,6 +503,7 @@ verify_installer_graphics_runtime_notice_manifest() {
   verify_graphics_runtime_notice_manifest 'Windows installer' "$manifest"
 }
 
+verify_installer_graphics_runtime_dll "$MESA_OPENGL32_SHA256" 'bin/opengl32.dll'
 verify_installer_graphics_runtime_dll "$MESA_LIBEGL_SHA256" 'bin/libEGL.dll'
 verify_installer_graphics_runtime_dll "$MESA_LIBGLESV2_SHA256" 'bin/libGLESv2.dll'
 verify_installer_graphics_runtime_dll "$MESA_LIBGALLIUM_WGL_SHA256" 'bin/libgallium_wgl.dll'

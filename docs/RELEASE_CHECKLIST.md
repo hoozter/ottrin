@@ -9,9 +9,9 @@ Every item must be checked against the exact artifact intended for release. A so
 - [x] `cargo test --workspace`
 - [x] `cargo clippy --workspace --all-targets -- -D warnings`
 - [ ] Linux and Windows CI are green for the release commit.
-- [x] Release artifact checksums verify.
-- [x] Archive inspection confirms the app, indexer, privileged helper, policy/assets, and user documentation are present.
-- [x] Both Windows artifacts contain the same checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`libEGL.dll`, `libGLESv2.dll`, `libgallium_wgl.dll`, and `dxil.dll`) plus its complete Mesa, pal1000, and Microsoft notices under `third-party-notices/`. Automatic uses documented remote-session and recognized virtual/problem-adapter evidence to select the bundled runtime; Settings persists Automatic, Native, or OpenGL compatibility for the next launch, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` remains a diagnostic override.
+- [ ] Corrected release artifact checksums verify after rebuilding from the OpenGL-loader fix.
+- [ ] Archive inspection confirms the corrected app, indexer, privileged helper, policy/assets, and user documentation are present.
+- [ ] Both rebuilt Windows artifacts contain the same checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`opengl32.dll`, `libgallium_wgl.dll`, `libEGL.dll`, `libGLESv2.dll`, and `dxil.dll`) plus its complete Mesa, pal1000, and Microsoft notices under `third-party-notices/`. Automatic uses documented remote-session and recognized virtual/problem-adapter evidence to select the bundled runtime; Settings persists Automatic, Native, or OpenGL compatibility for the next launch, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` remains a diagnostic override.
 
 Local automated gates and artifact inspection last passed on 2026-07-27. CI and
 the clean-machine/manual gates below remain required against the eventual
@@ -24,9 +24,9 @@ release commit and artifacts.
 - The checksum-verified packaged Linux PDFium runtime rendered a bounded,
   non-blank first-page PNG; missing runtime remains a fail-closed text/metadata
   fallback.
-- The strict artifact verifier accepted one version-matched Linux portable
-  archive, AppImage, Windows portable archive, and NSIS installer; all four
-  checksums passed.
+- The prior strict artifact verification did not require Mesa's app-local
+  `opengl32.dll` loader and is invalidated for Windows startup acceptance. The
+  corrected verifier requires and hashes that loader in both Windows artifacts.
 - A fresh isolated artifact set was also reverified on 2026-07-27, including
   the pinned Mesa/DXC payloads and bundled release documentation. This remains
   integrity evidence only; it does not waive the physical acceptance gates.
@@ -34,13 +34,13 @@ release commit and artifacts.
   desktop entry, AppStream metadata, and polkit policy.
 - The freshly packaged Linux portable executable and AppImage each remained
   running until an eight-second smoke-test timeout, with no startup error.
-- The Windows portable app inspected as an x86-64 PE using Windows system DLLs;
-  the installer inspected as an NSIS executable.
-- The 2026-07-27 Wine launch probe kept the freshly rebuilt bundled OpenGL
-  compatibility path alive without fatal output. Native WGPU reached Wine's
-  D3D shader compiler but exited with `vkd3d result -5`; this isolates a
-  Wine/Mesa limitation and does not replace the required real-Windows native
-  launch smoke.
+- The Windows portable app imports `opengl32.dll`; corrected packaging must
+  place Mesa's pinned loader beside the executable so Windows does not resolve
+  that import to its OpenGL 1.1 system loader on compatibility-path machines.
+- The 2026-07-27 Wine launch result was a false positive because wrapper/error-
+  dialog liveness was accepted without checking `startup.log` or DLL provenance.
+  Corrected preflight checks both and does not treat Wine native WGPU as a real-
+  Windows launch pass.
 - Windows GUI startup failures now append a durable `startup.log` under
   `%LOCALAPPDATA%\\Ottrin` and show a bounded native error dialog that names
   the log location. This diagnostic is local evidence, not real-Windows QA.

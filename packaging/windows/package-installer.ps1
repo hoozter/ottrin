@@ -30,6 +30,7 @@ $RequiredFiles = @(
     "bin\pdfium\pdfium.dll",
     "bin\pdfium\LICENSE",
     "bin\pdfium\licenses\pdfium.txt",
+    "bin\opengl32.dll",
     "bin\libEGL.dll",
     "bin\libGLESv2.dll",
     "bin\libgallium_wgl.dll",

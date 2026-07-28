@@ -119,10 +119,10 @@ ottrin-index --remove-schedule
 - Windows UAC/helper behavior still needs real Windows validation.
 - Windows GUI startup failures write `%LOCALAPPDATA%\\Ottrin\\startup.log` and
   show the local log location in a native error dialog. Wine launch evidence is
-  limited: the bundled OpenGL path stayed alive, while Native WGPU currently
-  reaches a Wine/Mesa D3D shader-compiler failure (`vkd3d result -5`); real
-  Windows native-driver validation remains required.
-- Windows builds use WGPU when Automatic finds no compatibility signal. The portable ZIP and installer include a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime. Automatic selects it for detected remote sessions and recognized virtual/problem adapters, then shows a one-time explanation with a route to Settings. Settings offers Automatic, Native, and OpenGL compatibility for the next launch. The diagnostic override `ottrin.exe --renderer opengl` (or `OTTRIN_RENDERER=opengl`) still takes precedence for that launch; its Mesa, pal1000, and Microsoft notices are bundled in `third-party-notices/`.
+  limited: corrected probes reject any newly appended startup failure and prove
+  the OpenGL path loaded Ottrin's app-local Mesa loader; real Windows
+  native-driver validation remains required.
+- Windows builds use WGPU when Automatic finds no compatibility signal. The portable ZIP and installer include a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime with app-local `opengl32.dll`, its `libgallium_wgl.dll` driver bundle, EGL/GLES libraries, and DXIL. Automatic selects it for detected remote sessions and recognized virtual/problem adapters, then shows a one-time explanation with a route to Settings. Settings offers Automatic, Native, and OpenGL compatibility for the next launch. The diagnostic override `ottrin.exe --renderer opengl` (or `OTTRIN_RENDERER=opengl`) still takes precedence for that launch; its Mesa, pal1000, and Microsoft notices are bundled in `third-party-notices/`.
 - Linux polkit helper packaging needs real system smoke testing.
 - Linux portable and AppImage artifacts have shallow launch smoke coverage; full packaged workflow QA is still pending.
 - Quick Inspector covers text/code, images, PDF text/metadata, DOCX content, XLSX/XLSM worksheets, PPTX slide text, ZIP/archive listings, bounded folder summaries, and generic metadata, but the full keyboard/file-type matrix still needs manual QA.

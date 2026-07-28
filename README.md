@@ -55,7 +55,9 @@ checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime, explains that choice
 once, and offers Automatic, Native, and OpenGL compatibility for the next
 launch in Settings. `ottrin.exe --renderer opengl` (or
 `OTTRIN_RENDERER=opengl`) remains a diagnostic override; its Mesa, pal1000,
-and Microsoft notices are bundled under `third-party-notices/`.
+and Microsoft notices are bundled under `third-party-notices/`. The app-local
+Mesa payload includes `opengl32.dll`, its `libgallium_wgl.dll` driver bundle,
+EGL/GLES libraries, and DXIL rather than relying on Windows' OpenGL 1.1 loader.
 
 ---
 

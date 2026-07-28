@@ -34,6 +34,7 @@ require_installer_verifier_entry() {
 # post-extraction bytes, not only the enclosing archive.
 for literal in \
   'mkdir -p "$DIST_DIR"' \
+  'MESA_OPENGL32_SHA256="52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e"' \
   'MESA_LIBEGL_SHA256="ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"' \
   'MESA_LIBGLESV2_SHA256="649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"' \
   'MESA_LIBGALLIUM_WGL_SHA256="a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"' \
@@ -65,6 +66,7 @@ for literal in \
   'New-Object System.Text.UTF8Encoding($false)' \
   'Set-Utf8NoBomText (Join-Path $NoticeDestination "MANIFEST.txt")' \
   'Set-Utf8NoBomText "$Stage\RUNNING.md"' \
+  '$MesaOpengl32Sha256 = "52119774eb912d07c3abfb6e3e894981f425b3c79d852f5363927e38fa3bde7e"' \
   '$MesaLibEglSha256 = "ce36d60c5602920df49a2c8939d903da05dfe2610bfbb4bf0676e9ec3453df3b"' \
   '$MesaLibGlesv2Sha256 = "649f779b1b945433dfc2740e9ff1366e309686043999f7271e550079eadde8e6"' \
   '$MesaLibGalliumWglSha256 = "a3917a52cc893f614c9e415f5442eb2981dd46ba636fc64b35d5bd4be0faec7b"' \
@@ -111,6 +113,8 @@ for literal in \
   'verify_windows_runtime_instructions' \
   'Normal user-owned file operations do not require elevation.' \
   'Denied operations use the bundled helper through the Windows UAC flow.' \
+  'verify_portable_graphics_runtime_dll "$MESA_OPENGL32_SHA256" '\''bin/opengl32.dll'\''' \
+  'verify_installer_graphics_runtime_dll "$MESA_OPENGL32_SHA256" '\''bin/opengl32.dll'\''' \
   'verify_portable_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\''' \
   'verify_installer_graphics_runtime_dll "$DXIL_SHA256" '\''bin/dxil.dll'\'''; do
   require_literal "$ARTIFACT_VERIFIER" "$literal"
@@ -132,6 +136,7 @@ require_literal "$ARTIFACT_VERIFIER" 'verify_release_file_bytes() {'
 # recovery instruction for choosing the explicitly bundled OpenGL path.
 for literal in \
   '  LICENSE' \
+  '  bin/opengl32.dll' \
   'RUNNING.md' \
   'docs/DEVELOPMENT.md' \
   'docs/ROADMAP.md' \
@@ -146,6 +151,7 @@ done
 
 for literal in \
   '    "LICENSE",' \
+  '    "bin\opengl32.dll",' \
   'RUNNING.md' \
   'docs\DEVELOPMENT.md' \
   'docs\ROADMAP.md' \

@@ -97,6 +97,7 @@ shell_scripts=(
   packaging/tests/verify-release-preflight-contract-coverage.sh
   packaging/tests/verify-release-preflight-shell-coverage.sh
   packaging/tests/verify-release-provenance.sh
+  packaging/tests/verify-windows-opengl-loader-contract.sh
   packaging/tests/verify-windows-graphics-runtime.sh
   scripts/release-preflight.sh
 )
@@ -126,19 +127,22 @@ run_gate "Release artifact provenance contract" \
   bash packaging/tests/verify-release-provenance.sh
 run_gate "Windows graphics runtime contract" \
   bash packaging/tests/verify-windows-graphics-runtime.sh
+if [[ "$verify_artifacts" == true ]]; then
+  run_gate "Windows app-local OpenGL loader contract" \
+    bash packaging/tests/verify-windows-opengl-loader-contract.sh
+fi
 run_gate "Windows installer output-path guard" \
   bash packaging/tests/verify-windows-installer-output-path.sh
 run_gate "Windows runtime temporary-directory cleanup" \
   bash packaging/tests/verify-windows-runtime-temp-cleanup.sh
-if command -v wine >/dev/null 2>&1; then
-  run_gate "Windows portable runtime launch" \
-    bash scripts/windows-runtime-launch-smoke.sh \
-      dist/Ottrin-0.1.0-windows-x64/bin/ottrin.exe
-  run_gate "Windows portable OpenGL compatibility launch" \
-    bash scripts/windows-runtime-launch-smoke.sh \
-      dist/Ottrin-0.1.0-windows-x64/bin/ottrin.exe --renderer opengl
-elif [[ "$verify_artifacts" == true ]]; then
-  printf '\n==> Windows runtime launch unavailable; Wine is not installed\n' >&2
+if [[ "$verify_artifacts" == true ]]; then
+  if command -v wine >/dev/null 2>&1; then
+    run_gate "Windows portable OpenGL compatibility launch" \
+      bash scripts/windows-runtime-launch-smoke.sh \
+        dist/Ottrin-0.1.0-windows-x64/bin/ottrin.exe --renderer opengl
+  else
+    printf '\n==> Windows runtime launch unavailable; Wine is not installed\n' >&2
+  fi
 fi
 optional_gate shellcheck "ShellCheck" shellcheck -x "${shell_scripts[@]}"
 optional_gate actionlint "GitHub Actions workflows" actionlint \
