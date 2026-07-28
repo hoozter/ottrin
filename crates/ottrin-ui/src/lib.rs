@@ -130,7 +130,7 @@ fn graphics_renderer_reason_label(reason: GraphicsRendererReason) -> &'static st
         GraphicsRendererReason::PersistedCompatibilityPreference => {
             "your OpenGL compatibility preference"
         }
-        GraphicsRendererReason::RemoteSession => "a remote desktop session",
+        GraphicsRendererReason::RemoteSession => "a Remote Desktop session was detected",
         GraphicsRendererReason::VirtualOrProblemAdapter => {
             "a recognized virtual or problem adapter"
         }
@@ -18866,7 +18866,7 @@ mod tests {
         assert!(!graphics_settings_visible(false));
         assert_eq!(
             graphics_renderer_reason_label(GraphicsRendererReason::RemoteSession),
-            "a remote desktop session"
+            "a Remote Desktop session was detected"
         );
         assert_eq!(
             graphics_renderer_reason_label(GraphicsRendererReason::NativeAutomatic),
