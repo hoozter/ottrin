@@ -97,6 +97,20 @@ fn graphics_settings_visible(is_windows: bool) -> bool {
     is_windows
 }
 
+fn viewport_clear_color(is_windows: bool, background: Color32) -> [f32; 4] {
+    if is_windows {
+        let mut clear = egui::Rgba::from(background).to_array();
+        clear[3] = 1.0;
+        clear
+    } else {
+        [0.0, 0.0, 0.0, 0.0]
+    }
+}
+
+fn rounded_alpha_callback_enabled(is_windows: bool) -> bool {
+    !is_windows
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct SettingsPlatformCapabilities {
     terminal_launcher_visible: bool,
@@ -16356,9 +16370,7 @@ impl OttrinApp {
 
 impl eframe::App for OttrinApp {
     fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
-        // Transparent clear — the GL alpha-fix callback ensures content
-        // stays opaque while corners become transparent.
-        [0.0, 0.0, 0.0, 0.0]
+        viewport_clear_color(self.graphics_runtime.is_windows, self.colors.bg)
     }
 
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
@@ -16510,109 +16522,111 @@ impl eframe::App for OttrinApp {
         ));
 
         let radius = self.colors.app_radius as f32;
-        border_painter.add(egui::Shape::Callback(egui::PaintCallback {
-            rect: vp_rect,
-            callback: std::sync::Arc::new(eframe::egui_glow::CallbackFn::new(
-                move |info, painter| {
-                    use eframe::glow::HasContext as _;
-                    let gl = painter.gl();
-                    let [scr_w, scr_h] = info.screen_size_px;
-                    let scr_w = scr_w as i32;
-                    let scr_h = scr_h as i32;
-                    let ppp = info.pixels_per_point;
+        if rounded_alpha_callback_enabled(self.graphics_runtime.is_windows) {
+            border_painter.add(egui::Shape::Callback(egui::PaintCallback {
+                rect: vp_rect,
+                callback: std::sync::Arc::new(eframe::egui_glow::CallbackFn::new(
+                    move |info, painter| {
+                        use eframe::glow::HasContext as _;
+                        let gl = painter.gl();
+                        let [scr_w, scr_h] = info.screen_size_px;
+                        let scr_w = scr_w as i32;
+                        let scr_h = scr_h as i32;
+                        let ppp = info.pixels_per_point;
 
-                    unsafe {
-                        let r_f = radius * ppp;
-                        let r_px = r_f.ceil() as i32;
+                        unsafe {
+                            let r_f = radius * ppp;
+                            let r_px = r_f.ceil() as i32;
 
-                        // --- alpha pass: only write the A channel --------
-                        gl.color_mask(false, false, false, true);
+                            // --- alpha pass: only write the A channel --------
+                            gl.color_mask(false, false, false, true);
 
-                        // 1. Clear alpha to 0 everywhere (fully transparent).
-                        gl.clear_color(0.0, 0.0, 0.0, 0.0);
-                        gl.disable(eframe::glow::SCISSOR_TEST);
-                        gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-
-                        // 2. Fill alpha=1.0 only inside the rounded rect.
-                        gl.clear_color(0.0, 0.0, 0.0, 1.0);
-                        gl.enable(eframe::glow::SCISSOR_TEST);
-
-                        if r_px > 0 && scr_h > 2 * r_px {
-                            // Middle band: full width, fully opaque.
-                            gl.scissor(0, r_px, scr_w, scr_h - 2 * r_px);
-                            gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-
-                            // Corner scanlines: arc-shaped inset.
-                            for row in 0..r_px {
-                                let dy = r_f - row as f32 - 0.5;
-                                let inset = if dy <= 0.0 {
-                                    0
-                                } else if dy >= r_f {
-                                    scr_w // fully outside
-                                } else {
-                                    let x_inside = (r_f * r_f - dy * dy).sqrt();
-                                    let edge = r_f - x_inside;
-                                    (edge.ceil() as i32).clamp(0, r_px)
-                                };
-                                let strip_w = scr_w - 2 * inset;
-                                if strip_w <= 0 {
-                                    continue;
-                                }
-                                // Top row (GL origin is bottom-left).
-                                gl.scissor(inset, scr_h - 1 - row, strip_w, 1);
-                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                // Bottom row.
-                                gl.scissor(inset, row, strip_w, 1);
-                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                            }
-                        } else {
-                            // No rounding or window too small — full opaque.
-                            gl.scissor(0, 0, scr_w, scr_h);
-                            gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                        }
-
-                        // --- RGB pass: zero out RGB in corner boxes so
-                        //     stale content colour doesn't bleed through
-                        //     the border's anti-aliased fringe. ----------
-                        if r_px > 0 {
-                            gl.color_mask(true, true, true, false);
+                            // 1. Clear alpha to 0 everywhere (fully transparent).
                             gl.clear_color(0.0, 0.0, 0.0, 0.0);
-                            // Only clear the thin L-shaped strips outside
-                            // the arc, not the whole corner box (to avoid
-                            // destroying content pixels inside the arc).
-                            for row in 0..r_px {
-                                let dy = r_f - row as f32 - 0.5;
-                                let inset = if dy <= 0.0 {
-                                    0
-                                } else if dy >= r_f {
-                                    r_px
-                                } else {
-                                    let x_inside = (r_f * r_f - dy * dy).sqrt();
-                                    let edge = r_f - x_inside;
-                                    (edge.ceil() as i32).clamp(0, r_px)
-                                };
-                                if inset <= 0 {
-                                    continue;
+                            gl.disable(eframe::glow::SCISSOR_TEST);
+                            gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+
+                            // 2. Fill alpha=1.0 only inside the rounded rect.
+                            gl.clear_color(0.0, 0.0, 0.0, 1.0);
+                            gl.enable(eframe::glow::SCISSOR_TEST);
+
+                            if r_px > 0 && scr_h > 2 * r_px {
+                                // Middle band: full width, fully opaque.
+                                gl.scissor(0, r_px, scr_w, scr_h - 2 * r_px);
+                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+
+                                // Corner scanlines: arc-shaped inset.
+                                for row in 0..r_px {
+                                    let dy = r_f - row as f32 - 0.5;
+                                    let inset = if dy <= 0.0 {
+                                        0
+                                    } else if dy >= r_f {
+                                        scr_w // fully outside
+                                    } else {
+                                        let x_inside = (r_f * r_f - dy * dy).sqrt();
+                                        let edge = r_f - x_inside;
+                                        (edge.ceil() as i32).clamp(0, r_px)
+                                    };
+                                    let strip_w = scr_w - 2 * inset;
+                                    if strip_w <= 0 {
+                                        continue;
+                                    }
+                                    // Top row (GL origin is bottom-left).
+                                    gl.scissor(inset, scr_h - 1 - row, strip_w, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                    // Bottom row.
+                                    gl.scissor(inset, row, strip_w, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
                                 }
-                                // Top-left / top-right
-                                gl.scissor(0, scr_h - 1 - row, inset, 1);
-                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                gl.scissor(scr_w - inset, scr_h - 1 - row, inset, 1);
-                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                // Bottom-left / bottom-right
-                                gl.scissor(0, row, inset, 1);
-                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                gl.scissor(scr_w - inset, row, inset, 1);
+                            } else {
+                                // No rounding or window too small — full opaque.
+                                gl.scissor(0, 0, scr_w, scr_h);
                                 gl.clear(eframe::glow::COLOR_BUFFER_BIT);
                             }
-                        }
 
-                        gl.color_mask(true, true, true, true);
-                        gl.disable(eframe::glow::SCISSOR_TEST);
-                    }
-                },
-            )),
-        }));
+                            // --- RGB pass: zero out RGB in corner boxes so
+                            //     stale content colour doesn't bleed through
+                            //     the border's anti-aliased fringe. ----------
+                            if r_px > 0 {
+                                gl.color_mask(true, true, true, false);
+                                gl.clear_color(0.0, 0.0, 0.0, 0.0);
+                                // Only clear the thin L-shaped strips outside
+                                // the arc, not the whole corner box (to avoid
+                                // destroying content pixels inside the arc).
+                                for row in 0..r_px {
+                                    let dy = r_f - row as f32 - 0.5;
+                                    let inset = if dy <= 0.0 {
+                                        0
+                                    } else if dy >= r_f {
+                                        r_px
+                                    } else {
+                                        let x_inside = (r_f * r_f - dy * dy).sqrt();
+                                        let edge = r_f - x_inside;
+                                        (edge.ceil() as i32).clamp(0, r_px)
+                                    };
+                                    if inset <= 0 {
+                                        continue;
+                                    }
+                                    // Top-left / top-right
+                                    gl.scissor(0, scr_h - 1 - row, inset, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                    gl.scissor(scr_w - inset, scr_h - 1 - row, inset, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                    // Bottom-left / bottom-right
+                                    gl.scissor(0, row, inset, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                    gl.scissor(scr_w - inset, row, inset, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                }
+                            }
+
+                            gl.color_mask(true, true, true, true);
+                            gl.disable(eframe::glow::SCISSOR_TEST);
+                        }
+                    },
+                )),
+            }));
+        }
 
         // Border stroke renders AFTER the callback so it sits on top.
         border_painter.rect_stroke(
@@ -18908,6 +18922,19 @@ mod tests {
             }
         });
         assert_eq!(probes, 2);
+    }
+
+    #[test]
+    fn windows_composition_skips_alpha_callback_and_clears_opaque() {
+        let windows_clear = viewport_clear_color(true, Color32::from_rgb(18, 20, 24));
+        assert_eq!(windows_clear[3], 1.0);
+        assert!(!rounded_alpha_callback_enabled(true));
+
+        assert_eq!(
+            viewport_clear_color(false, Color32::from_rgb(18, 20, 24)),
+            [0.0, 0.0, 0.0, 0.0]
+        );
+        assert!(rounded_alpha_callback_enabled(false));
     }
 
     #[test]

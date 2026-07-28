@@ -34,6 +34,10 @@ fn renderer_for_selection(is_windows: bool, choice: GraphicsRendererChoice) -> e
     }
 }
 
+fn main_viewport_transparent(is_windows: bool) -> bool {
+    !is_windows
+}
+
 fn graphics_runtime_status(
     command_line_opengl: bool,
     config: &ottrin_core::AppConfig,
@@ -139,7 +143,7 @@ fn run_gui() -> eframe::Result<()> {
         viewport: egui::ViewportBuilder::default()
             .with_title("Ottrin")
             .with_decorations(false)
-            .with_transparent(true)
+            .with_transparent(main_viewport_transparent(graphics_runtime.is_windows))
             .with_inner_size(window_size)
             .with_min_inner_size([800.0, 500.0])
             .with_icon(load_window_icon()),
@@ -654,6 +658,12 @@ mod tests {
             validate_renderer_override(Some("vulkan")),
             Err("unsupported renderer override `vulkan`; expected `opengl`".to_string())
         );
+    }
+
+    #[test]
+    fn windows_composition_is_opaque_while_other_platforms_keep_transparency() {
+        assert!(!main_viewport_transparent(true));
+        assert!(main_viewport_transparent(false));
     }
 
     #[test]
