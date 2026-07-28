@@ -34,10 +34,6 @@ fn renderer_for_selection(is_windows: bool, choice: GraphicsRendererChoice) -> e
     }
 }
 
-fn main_viewport_transparent(is_windows: bool) -> bool {
-    !is_windows
-}
-
 fn graphics_runtime_status(
     command_line_opengl: bool,
     config: &ottrin_core::AppConfig,
@@ -143,7 +139,7 @@ fn run_gui() -> eframe::Result<()> {
         viewport: egui::ViewportBuilder::default()
             .with_title("Ottrin")
             .with_decorations(false)
-            .with_transparent(main_viewport_transparent(graphics_runtime.is_windows))
+            .with_transparent(true)
             .with_inner_size(window_size)
             .with_min_inner_size([800.0, 500.0])
             .with_icon(load_window_icon()),
@@ -631,12 +627,6 @@ fn ensure_dev_helper() {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn windows_main_viewport_is_opaque_while_other_platforms_keep_existing_behavior() {
-        assert!(!main_viewport_transparent(true));
-        assert!(main_viewport_transparent(false));
-    }
 
     #[test]
     fn native_renderer_uses_wgpu_on_windows_and_glow_elsewhere() {
