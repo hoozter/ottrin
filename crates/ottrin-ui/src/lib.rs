@@ -99,9 +99,7 @@ fn graphics_settings_visible(is_windows: bool) -> bool {
 
 fn viewport_clear_color(is_windows: bool, background: Color32) -> [f32; 4] {
     if is_windows {
-        let mut clear = egui::Rgba::from(background).to_array();
-        clear[3] = 1.0;
-        clear
+        background.to_normalized_gamma_f32()
     } else {
         [0.0, 0.0, 0.0, 0.0]
     }
@@ -18926,12 +18924,13 @@ mod tests {
 
     #[test]
     fn windows_composition_skips_alpha_callback_and_clears_opaque() {
-        let windows_clear = viewport_clear_color(true, Color32::from_rgb(18, 20, 24));
-        assert_eq!(windows_clear[3], 1.0);
+        let background = Color32::from_rgb(18, 20, 24);
+        let windows_clear = viewport_clear_color(true, background);
+        assert_eq!(windows_clear, background.to_normalized_gamma_f32());
         assert!(!rounded_alpha_callback_enabled(true));
 
         assert_eq!(
-            viewport_clear_color(false, Color32::from_rgb(18, 20, 24)),
+            viewport_clear_color(false, background),
             [0.0, 0.0, 0.0, 0.0]
         );
         assert!(rounded_alpha_callback_enabled(false));
