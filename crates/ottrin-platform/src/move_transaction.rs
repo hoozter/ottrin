@@ -17,11 +17,20 @@ const CROSS_DEVICE_STAGED_NAME: &str = "candidate";
 
 #[cfg(all(test, target_os = "linux"))]
 static TEST_MOVE_SERIALIZER: std::sync::Mutex<()> = std::sync::Mutex::new(());
+#[cfg(all(test, target_os = "linux"))]
+static TEST_MOVE_ENV_SERIALIZER: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
-/// Runtime Move stays fail-closed until the documented platform and crash gates are complete.
-///
-/// Linux journal machinery remains available to its dedicated recovery tests, but it must not
-/// become a user-facing mutator merely because an individual transaction path is implemented.
+/// Runtime Move stays fail-closed except where the exact Linux-safe implementation is proven.
+#[cfg(target_os = "linux")]
+pub(super) fn move_entry_transactional(
+    source: &Path,
+    destination_dir: &Path,
+    _conflict: ConflictAction,
+) -> Result<(), PlatformError> {
+    move_with_hooks(source, destination_dir, _conflict, |_| Ok(()))
+}
+
+#[cfg(not(target_os = "linux"))]
 pub(super) fn move_entry_transactional(
     source: &Path,
     destination_dir: &Path,
@@ -1489,6 +1498,13 @@ mod tests {
     use super::*;
     use std::path::PathBuf;
 
+    fn with_move_env_serializer<T>(work: impl FnOnce() -> T) -> T {
+        let _guard = TEST_MOVE_ENV_SERIALIZER
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        work()
+    }
+
     struct TestDir(PathBuf);
     impl TestDir {
         fn new(label: &str) -> Self {
@@ -1796,22 +1812,23 @@ mod tests {
         use std::os::unix::process::ExitStatusExt;
         use std::process::Command;
 
-        if std::env::var_os("OTTRIN_MOVE_PUBLICATION_SIGKILL_CHILD").as_deref()
-            == Some(std::ffi::OsStr::new("1"))
-        {
-            let root = std::env::var_os("OTTRIN_MOVE_PUBLICATION_SIGKILL_ROOT").unwrap();
-            run_publication_sigkill_child(Path::new(&root));
-            panic!("publication kill child returned without being terminated");
-        }
+        with_move_env_serializer(|| {
+            if std::env::var_os("OTTRIN_MOVE_PUBLICATION_SIGKILL_CHILD").as_deref()
+                == Some(std::ffi::OsStr::new("1"))
+            {
+                let root = std::env::var_os("OTTRIN_MOVE_PUBLICATION_SIGKILL_ROOT").unwrap();
+                run_publication_sigkill_child(Path::new(&root));
+                panic!("publication kill child returned without being terminated");
+            }
 
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-move-publication-kill-{}",
-            getrandom::u64().unwrap()
-        ));
-        std::fs::create_dir(&root).unwrap();
-        let state_root = root.join("state");
-        std::fs::create_dir_all(&state_root).unwrap();
-        let status = Command::new(std::env::current_exe().unwrap())
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-move-publication-kill-{}",
+                getrandom::u64().unwrap()
+            ));
+            std::fs::create_dir(&root).unwrap();
+            let state_root = root.join("state");
+            std::fs::create_dir_all(&state_root).unwrap();
+            let status = Command::new(std::env::current_exe().unwrap())
             .args([
                 "--exact",
                 "move_transaction::tests::same_filesystem_publication_kill_child_process_after_publication_preserves_volatile_state",
@@ -1823,14 +1840,53 @@ mod tests {
             .env("XDG_STATE_HOME", &state_root)
             .status()
             .unwrap();
-        assert_eq!(status.signal(), Some(9));
-        assert_eq!(
-            std::fs::read(root.join("destination").join("source")).unwrap(),
-            b"payload"
-        );
-        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
-        let has_central_journal_after_kill =
-            std::fs::read_dir(state_root.join("ottrin").join("moves"))
+            assert_eq!(status.signal(), Some(9));
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source")).unwrap(),
+                b"payload"
+            );
+            assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+            let has_central_journal_after_kill =
+                std::fs::read_dir(state_root.join("ottrin").join("moves"))
+                    .unwrap()
+                    .filter_map(Result::ok)
+                    .any(|entry| {
+                        entry
+                            .path()
+                            .extension()
+                            .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
+                    });
+            assert!(has_central_journal_after_kill);
+            let previous_state_home = std::env::var_os("XDG_STATE_HOME");
+            unsafe {
+                std::env::set_var("XDG_STATE_HOME", &state_root);
+            }
+            assert!(has_local_transaction_dir(&root));
+
+            let recovery = move_entry_transactional_with_test_hook(
+                &root.join("source"),
+                &root.join("destination"),
+                ConflictAction::Skip,
+                |_| Ok(()),
+            );
+            assert!(recovery.is_ok(), "recovery retry failed: {recovery:?}");
+            if let Some(previous_state_home) = previous_state_home {
+                unsafe {
+                    std::env::set_var("XDG_STATE_HOME", previous_state_home);
+                }
+            } else {
+                unsafe {
+                    std::env::remove_var("XDG_STATE_HOME");
+                }
+            }
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source")).unwrap(),
+                b"payload"
+            );
+            assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+            assert!(!has_local_transaction_dir(&root));
+
+            let has_central_journal = std::fs::read_dir(state_root.join("ottrin").join("moves"))
                 .unwrap()
                 .filter_map(Result::ok)
                 .any(|entry| {
@@ -1839,46 +1895,8 @@ mod tests {
                         .extension()
                         .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
                 });
-        assert!(has_central_journal_after_kill);
-        let previous_state_home = std::env::var_os("XDG_STATE_HOME");
-        unsafe {
-            std::env::set_var("XDG_STATE_HOME", &state_root);
-        }
-        assert!(has_local_transaction_dir(&root));
-
-        let recovery = move_entry_transactional_with_test_hook(
-            &root.join("source"),
-            &root.join("destination"),
-            ConflictAction::Skip,
-            |_| Ok(()),
-        );
-        assert!(recovery.is_ok(), "recovery retry failed: {recovery:?}");
-        if let Some(previous_state_home) = previous_state_home {
-            unsafe {
-                std::env::set_var("XDG_STATE_HOME", previous_state_home);
-            }
-        } else {
-            unsafe {
-                std::env::remove_var("XDG_STATE_HOME");
-            }
-        }
-        assert_eq!(
-            std::fs::read(root.join("destination").join("source")).unwrap(),
-            b"payload"
-        );
-        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
-        assert!(!has_local_transaction_dir(&root));
-
-        let has_central_journal = std::fs::read_dir(state_root.join("ottrin").join("moves"))
-            .unwrap()
-            .filter_map(Result::ok)
-            .any(|entry| {
-                entry
-                    .path()
-                    .extension()
-                    .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
-            });
-        assert!(!has_central_journal);
+            assert!(!has_central_journal);
+        });
     }
 
     #[cfg(target_os = "linux")]
@@ -1914,22 +1932,24 @@ mod tests {
         use std::os::unix::process::ExitStatusExt;
         use std::process::Command;
 
-        if std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_CHILD").as_deref()
-            == Some(std::ffi::OsStr::new("1"))
-        {
-            let root = std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_ROOT").unwrap();
-            run_pending_destination_sigkill_child(Path::new(&root));
-            panic!("pending destination kill child returned without being terminated");
-        }
+        with_move_env_serializer(|| {
+            if std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_CHILD").as_deref()
+                == Some(std::ffi::OsStr::new("1"))
+            {
+                let root =
+                    std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_ROOT").unwrap();
+                run_pending_destination_sigkill_child(Path::new(&root));
+                panic!("pending destination kill child returned without being terminated");
+            }
 
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-move-pending-destination-kill-{}",
-            getrandom::u64().unwrap()
-        ));
-        std::fs::create_dir(&root).unwrap();
-        let state_root = root.join("state");
-        std::fs::create_dir_all(&state_root).unwrap();
-        let status = Command::new(std::env::current_exe().unwrap())
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-move-pending-destination-kill-{}",
+                getrandom::u64().unwrap()
+            ));
+            std::fs::create_dir(&root).unwrap();
+            let state_root = root.join("state");
+            std::fs::create_dir_all(&state_root).unwrap();
+            let status = Command::new(std::env::current_exe().unwrap())
             .args([
                 "--exact",
                 "move_transaction::tests::same_filesystem_rename_pending_destination_kill_child_process_replays_to_next_available_name",
@@ -1941,54 +1961,55 @@ mod tests {
             .env("XDG_STATE_HOME", &state_root)
             .status()
             .unwrap();
-        assert_eq!(status.signal(), Some(9));
-        assert_eq!(
-            std::fs::read(root.join("destination").join("source")).unwrap(),
-            b"occupied"
-        );
-        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
-        let previous_state_home = std::env::var_os("XDG_STATE_HOME");
-        unsafe {
-            std::env::set_var("XDG_STATE_HOME", &state_root);
-        }
-
-        let recovery = move_entry_transactional_with_test_hook(
-            &root.join("source"),
-            &root.join("destination"),
-            ConflictAction::Rename,
-            |_| Ok(()),
-        );
-        assert!(recovery.is_ok(), "recovery retry failed: {recovery:?}");
-        if let Some(previous_state_home) = previous_state_home {
+            assert_eq!(status.signal(), Some(9));
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source")).unwrap(),
+                b"occupied"
+            );
+            assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+            let previous_state_home = std::env::var_os("XDG_STATE_HOME");
             unsafe {
-                std::env::set_var("XDG_STATE_HOME", previous_state_home);
+                std::env::set_var("XDG_STATE_HOME", &state_root);
             }
-        } else {
-            unsafe {
-                std::env::remove_var("XDG_STATE_HOME");
+
+            let recovery = move_entry_transactional_with_test_hook(
+                &root.join("source"),
+                &root.join("destination"),
+                ConflictAction::Rename,
+                |_| Ok(()),
+            );
+            assert!(recovery.is_ok(), "recovery retry failed: {recovery:?}");
+            if let Some(previous_state_home) = previous_state_home {
+                unsafe {
+                    std::env::set_var("XDG_STATE_HOME", previous_state_home);
+                }
+            } else {
+                unsafe {
+                    std::env::remove_var("XDG_STATE_HOME");
+                }
             }
-        }
-        assert_eq!(
-            std::fs::read(root.join("destination").join("source")).unwrap(),
-            b"occupied"
-        );
-        assert_eq!(
-            std::fs::read(root.join("destination").join("source (1)")).unwrap(),
-            b"payload"
-        );
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source")).unwrap(),
+                b"occupied"
+            );
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source (1)")).unwrap(),
+                b"payload"
+            );
 
-        assert!(!has_local_transaction_dir(&root));
+            assert!(!has_local_transaction_dir(&root));
 
-        let has_central_journal = std::fs::read_dir(state_root.join("ottrin").join("moves"))
-            .unwrap()
-            .filter_map(Result::ok)
-            .any(|entry| {
-                entry
-                    .path()
-                    .extension()
-                    .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
-            });
-        assert!(!has_central_journal);
+            let has_central_journal = std::fs::read_dir(state_root.join("ottrin").join("moves"))
+                .unwrap()
+                .filter_map(Result::ok)
+                .any(|entry| {
+                    entry
+                        .path()
+                        .extension()
+                        .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
+                });
+            assert!(!has_central_journal);
+        });
     }
 
     #[cfg(target_os = "linux")]
@@ -2027,25 +2048,29 @@ mod tests {
         use std::os::unix::process::ExitStatusExt;
         use std::process::Command;
 
-        if std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_CHILD").as_deref()
-            == Some(std::ffi::OsStr::new("1"))
-        {
-            let root = std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_ROOT").unwrap();
-            run_cross_filesystem_pending_destination_sigkill_child(
-                Path::new(&root),
-                ConflictAction::Rename,
-            );
-            panic!("cross-device pending destination kill child returned without being terminated");
-        }
+        with_move_env_serializer(|| {
+            if std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_CHILD").as_deref()
+                == Some(std::ffi::OsStr::new("1"))
+            {
+                let root =
+                    std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_ROOT").unwrap();
+                run_cross_filesystem_pending_destination_sigkill_child(
+                    Path::new(&root),
+                    ConflictAction::Rename,
+                );
+                panic!(
+                    "cross-device pending destination kill child returned without being terminated"
+                );
+            }
 
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-move-cross-pending-destination-kill-{}",
-            getrandom::u64().unwrap()
-        ));
-        std::fs::create_dir(&root).unwrap();
-        let state_root = root.join("state");
-        std::fs::create_dir_all(&state_root).unwrap();
-        let status = Command::new(std::env::current_exe().unwrap())
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-move-cross-pending-destination-kill-{}",
+                getrandom::u64().unwrap()
+            ));
+            std::fs::create_dir(&root).unwrap();
+            let state_root = root.join("state");
+            std::fs::create_dir_all(&state_root).unwrap();
+            let status = Command::new(std::env::current_exe().unwrap())
             .args([
                 "--exact",
                 "move_transaction::tests::cross_filesystem_rename_pending_destination_kill_child_process_replays_to_next_available_name",
@@ -2057,60 +2082,61 @@ mod tests {
             .env("XDG_STATE_HOME", &state_root)
             .status()
             .unwrap();
-        assert_eq!(status.signal(), Some(9));
-        assert_eq!(
-            std::fs::read(root.join("destination").join("source")).unwrap(),
-            b"occupied"
-        );
-        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
-        let previous_state_home = std::env::var_os("XDG_STATE_HOME");
-        unsafe {
-            std::env::set_var("XDG_STATE_HOME", &state_root);
-        }
+            assert_eq!(status.signal(), Some(9));
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source")).unwrap(),
+                b"occupied"
+            );
+            assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+            let previous_state_home = std::env::var_os("XDG_STATE_HOME");
+            unsafe {
+                std::env::set_var("XDG_STATE_HOME", &state_root);
+            }
 
-        let recovery = move_entry_transactional_with_test_hook(
-            &root.join("source"),
-            &root.join("destination"),
-            ConflictAction::Rename,
-            |point| {
-                if point == TestPoint::ClassifyCrossDevice {
-                    Err("force cross-device move")
-                } else {
-                    Ok(())
+            let recovery = move_entry_transactional_with_test_hook(
+                &root.join("source"),
+                &root.join("destination"),
+                ConflictAction::Rename,
+                |point| {
+                    if point == TestPoint::ClassifyCrossDevice {
+                        Err("force cross-device move")
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            assert!(recovery.is_ok(), "recovery retry failed: {recovery:?}");
+            if let Some(previous_state_home) = previous_state_home {
+                unsafe {
+                    std::env::set_var("XDG_STATE_HOME", previous_state_home);
                 }
-            },
-        );
-        assert!(recovery.is_ok(), "recovery retry failed: {recovery:?}");
-        if let Some(previous_state_home) = previous_state_home {
-            unsafe {
-                std::env::set_var("XDG_STATE_HOME", previous_state_home);
+            } else {
+                unsafe {
+                    std::env::remove_var("XDG_STATE_HOME");
+                }
             }
-        } else {
-            unsafe {
-                std::env::remove_var("XDG_STATE_HOME");
-            }
-        }
-        assert_eq!(
-            std::fs::read(root.join("destination").join("source")).unwrap(),
-            b"occupied"
-        );
-        assert_eq!(
-            std::fs::read(root.join("destination").join("source (1)")).unwrap(),
-            b"payload"
-        );
-        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
-        assert!(!has_local_transaction_dir(&root));
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source")).unwrap(),
+                b"occupied"
+            );
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source (1)")).unwrap(),
+                b"payload"
+            );
+            assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+            assert!(!has_local_transaction_dir(&root));
 
-        let has_central_journal = std::fs::read_dir(state_root.join("ottrin").join("moves"))
-            .unwrap()
-            .filter_map(Result::ok)
-            .any(|entry| {
-                entry
-                    .path()
-                    .extension()
-                    .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
-            });
-        assert!(!has_central_journal);
+            let has_central_journal = std::fs::read_dir(state_root.join("ottrin").join("moves"))
+                .unwrap()
+                .filter_map(Result::ok)
+                .any(|entry| {
+                    entry
+                        .path()
+                        .extension()
+                        .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
+                });
+            assert!(!has_central_journal);
+        });
     }
 
     #[cfg(target_os = "linux")]
@@ -2119,28 +2145,29 @@ mod tests {
         use std::os::unix::process::ExitStatusExt;
         use std::process::Command;
 
-        if std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SKIP_SIGKILL_CHILD").as_deref()
-            == Some(std::ffi::OsStr::new("1"))
-        {
-            let root =
-                std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SKIP_SIGKILL_ROOT").unwrap();
-            run_cross_filesystem_pending_destination_sigkill_child(
-                Path::new(&root),
-                ConflictAction::Skip,
-            );
-            panic!(
-                "cross-device skip pending destination kill child returned without being terminated"
-            );
-        }
+        with_move_env_serializer(|| {
+            if std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SKIP_SIGKILL_CHILD").as_deref()
+                == Some(std::ffi::OsStr::new("1"))
+            {
+                let root =
+                    std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SKIP_SIGKILL_ROOT").unwrap();
+                run_cross_filesystem_pending_destination_sigkill_child(
+                    Path::new(&root),
+                    ConflictAction::Skip,
+                );
+                panic!(
+                    "cross-device skip pending destination kill child returned without being terminated"
+                );
+            }
 
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-move-cross-pending-destination-skip-kill-{}",
-            getrandom::u64().unwrap()
-        ));
-        std::fs::create_dir(&root).unwrap();
-        let state_root = root.join("state");
-        std::fs::create_dir_all(&state_root).unwrap();
-        let status = Command::new(std::env::current_exe().unwrap())
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-move-cross-pending-destination-skip-kill-{}",
+                getrandom::u64().unwrap()
+            ));
+            std::fs::create_dir(&root).unwrap();
+            let state_root = root.join("state");
+            std::fs::create_dir_all(&state_root).unwrap();
+            let status = Command::new(std::env::current_exe().unwrap())
             .args([
                 "--exact",
                 "move_transaction::tests::cross_filesystem_skip_pending_destination_kill_child_process_restores_source_on_recovery",
@@ -2152,56 +2179,57 @@ mod tests {
             .env("XDG_STATE_HOME", &state_root)
             .status()
             .unwrap();
-        assert_eq!(status.signal(), Some(9));
-        assert_eq!(
-            std::fs::read(root.join("destination").join("source")).unwrap(),
-            b"occupied"
-        );
-        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+            assert_eq!(status.signal(), Some(9));
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source")).unwrap(),
+                b"occupied"
+            );
+            assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
 
-        let previous_state_home = std::env::var_os("XDG_STATE_HOME");
-        unsafe {
-            std::env::set_var("XDG_STATE_HOME", &state_root);
-        }
-        let recovery = move_entry_transactional_with_test_hook(
-            &root.join("source"),
-            &root.join("destination"),
-            ConflictAction::Skip,
-            |point| {
-                if point == TestPoint::ClassifyCrossDevice {
-                    Err("force cross-device move")
-                } else {
-                    Ok(())
+            let previous_state_home = std::env::var_os("XDG_STATE_HOME");
+            unsafe {
+                std::env::set_var("XDG_STATE_HOME", &state_root);
+            }
+            let recovery = move_entry_transactional_with_test_hook(
+                &root.join("source"),
+                &root.join("destination"),
+                ConflictAction::Skip,
+                |point| {
+                    if point == TestPoint::ClassifyCrossDevice {
+                        Err("force cross-device move")
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            assert!(recovery.is_ok(), "recovery retry failed: {recovery:?}");
+            if let Some(previous_state_home) = previous_state_home {
+                unsafe {
+                    std::env::set_var("XDG_STATE_HOME", previous_state_home);
                 }
-            },
-        );
-        assert!(recovery.is_ok(), "recovery retry failed: {recovery:?}");
-        if let Some(previous_state_home) = previous_state_home {
-            unsafe {
-                std::env::set_var("XDG_STATE_HOME", previous_state_home);
+            } else {
+                unsafe {
+                    std::env::remove_var("XDG_STATE_HOME");
+                }
             }
-        } else {
-            unsafe {
-                std::env::remove_var("XDG_STATE_HOME");
-            }
-        }
-        assert_eq!(std::fs::read(root.join("source")).unwrap(), b"payload");
-        assert_eq!(
-            std::fs::read(root.join("destination").join("source")).unwrap(),
-            b"occupied"
-        );
-        assert!(!has_local_transaction_dir(&root));
+            assert_eq!(std::fs::read(root.join("source")).unwrap(), b"payload");
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source")).unwrap(),
+                b"occupied"
+            );
+            assert!(!has_local_transaction_dir(&root));
 
-        let has_central_journal = std::fs::read_dir(state_root.join("ottrin").join("moves"))
-            .unwrap()
-            .filter_map(Result::ok)
-            .any(|entry| {
-                entry
-                    .path()
-                    .extension()
-                    .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
-            });
-        assert!(!has_central_journal);
+            let has_central_journal = std::fs::read_dir(state_root.join("ottrin").join("moves"))
+                .unwrap()
+                .filter_map(Result::ok)
+                .any(|entry| {
+                    entry
+                        .path()
+                        .extension()
+                        .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
+                });
+            assert!(!has_central_journal);
+        });
     }
 
     #[cfg(target_os = "linux")]
@@ -2210,28 +2238,30 @@ mod tests {
         use std::os::unix::process::ExitStatusExt;
         use std::process::Command;
 
-        if std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_VANISHED_SIGKILL_CHILD").as_deref()
-            == Some(std::ffi::OsStr::new("1"))
-        {
-            let root =
-                std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_VANISHED_SIGKILL_ROOT").unwrap();
-            run_cross_filesystem_pending_destination_sigkill_child(
-                Path::new(&root),
-                ConflictAction::Rename,
-            );
-            panic!(
-                "cross-device vanished destination tx kill child returned without being terminated"
-            );
-        }
+        with_move_env_serializer(|| {
+            if std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_VANISHED_SIGKILL_CHILD").as_deref()
+                == Some(std::ffi::OsStr::new("1"))
+            {
+                let root =
+                    std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_VANISHED_SIGKILL_ROOT")
+                        .unwrap();
+                run_cross_filesystem_pending_destination_sigkill_child(
+                    Path::new(&root),
+                    ConflictAction::Rename,
+                );
+                panic!(
+                    "cross-device vanished destination tx kill child returned without being terminated"
+                );
+            }
 
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-move-cross-pending-destination-vanish-{}",
-            getrandom::u64().unwrap()
-        ));
-        std::fs::create_dir(&root).unwrap();
-        let state_root = root.join("state");
-        std::fs::create_dir_all(&state_root).unwrap();
-        let status = Command::new(std::env::current_exe().unwrap())
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-move-cross-pending-destination-vanish-{}",
+                getrandom::u64().unwrap()
+            ));
+            std::fs::create_dir(&root).unwrap();
+            let state_root = root.join("state");
+            std::fs::create_dir_all(&state_root).unwrap();
+            let status = Command::new(std::env::current_exe().unwrap())
             .args([
                 "--exact",
                 "move_transaction::tests::cross_filesystem_recovery_requires_destination_transaction",
@@ -2243,55 +2273,56 @@ mod tests {
             .env("XDG_STATE_HOME", &state_root)
             .status()
             .unwrap();
-        assert_eq!(status.signal(), Some(9));
+            assert_eq!(status.signal(), Some(9));
 
-        for entry in std::fs::read_dir(root.join("destination"))
-            .unwrap()
-            .filter_map(Result::ok)
-        {
-            if entry
-                .file_name()
-                .to_string_lossy()
-                .starts_with(".ottrin-move-")
+            for entry in std::fs::read_dir(root.join("destination"))
+                .unwrap()
+                .filter_map(Result::ok)
             {
-                let _ = std::fs::remove_dir_all(entry.path());
-            }
-        }
-
-        let previous_state_home = std::env::var_os("XDG_STATE_HOME");
-        unsafe {
-            std::env::set_var("XDG_STATE_HOME", &state_root);
-        }
-        let recovery = move_entry_transactional_with_test_hook(
-            &root.join("source"),
-            &root.join("destination"),
-            ConflictAction::Rename,
-            |point| {
-                if point == TestPoint::ClassifyCrossDevice {
-                    Err("force cross-device move")
-                } else {
-                    Ok(())
+                if entry
+                    .file_name()
+                    .to_string_lossy()
+                    .starts_with(".ottrin-move-")
+                {
+                    let _ = std::fs::remove_dir_all(entry.path());
                 }
-            },
-        );
-        if let Some(previous_state_home) = previous_state_home {
-            unsafe {
-                std::env::set_var("XDG_STATE_HOME", previous_state_home);
             }
-        } else {
+
+            let previous_state_home = std::env::var_os("XDG_STATE_HOME");
             unsafe {
-                std::env::remove_var("XDG_STATE_HOME");
+                std::env::set_var("XDG_STATE_HOME", &state_root);
             }
-        }
-        assert!(matches!(
-            recovery,
-            Err(PlatformError::CommittedCleanupPending { .. })
-        ));
-        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
-        assert_eq!(
-            std::fs::read(root.join("destination").join("source")).unwrap(),
-            b"occupied"
-        );
-        assert!(has_local_transaction_dir(&root));
+            let recovery = move_entry_transactional_with_test_hook(
+                &root.join("source"),
+                &root.join("destination"),
+                ConflictAction::Rename,
+                |point| {
+                    if point == TestPoint::ClassifyCrossDevice {
+                        Err("force cross-device move")
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            if let Some(previous_state_home) = previous_state_home {
+                unsafe {
+                    std::env::set_var("XDG_STATE_HOME", previous_state_home);
+                }
+            } else {
+                unsafe {
+                    std::env::remove_var("XDG_STATE_HOME");
+                }
+            }
+            assert!(matches!(
+                recovery,
+                Err(PlatformError::CommittedCleanupPending { .. })
+            ));
+            assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source")).unwrap(),
+                b"occupied"
+            );
+            assert!(has_local_transaction_dir(&root));
+        });
     }
 }
