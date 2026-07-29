@@ -3,7 +3,7 @@ use ottrin_core::SearchConfig;
 use std::fmt::Write;
 use std::path::{Path, PathBuf};
 
-const FILTER_POLICY_VERSION: u32 = 1;
+const FILTER_POLICY_VERSION: u32 = 2;
 const FOLLOW_LINKS: bool = false;
 const SAME_FILE_SYSTEM: bool = true;
 
@@ -252,6 +252,12 @@ mod tests {
             exclude_globs: vec!["*.tmp".to_string()],
             ..SearchConfig::default()
         }
+    }
+
+    #[test]
+    fn identity_invalidates_indexes_created_before_windows_system_folder_exclusions() {
+        let identity = ScanPlan::new(&config()).expect("valid plan");
+        assert!(identity.identity().contains("filter=2;"));
     }
 
     #[test]

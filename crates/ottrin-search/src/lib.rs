@@ -2018,6 +2018,8 @@ fn path_has_builtin_excluded_component(path: &Path, root: &Path) -> bool {
             name.as_ref(),
             ".git" | ".svn" | ".hg" | "node_modules" | "target" | "__pycache__" | ".Trash"
         ) || name.starts_with(".Trash-")
+            || name.eq_ignore_ascii_case("$Recycle.Bin")
+            || name.eq_ignore_ascii_case("System Volume Information")
     })
 }
 
@@ -3318,6 +3320,23 @@ mod tests {
         ));
         assert!(!path_has_builtin_excluded_component(
             Path::new("/home/campbell/Documents/target-notes.txt"),
+            root
+        ));
+    }
+
+    #[test]
+    fn built_in_windows_system_folder_excludes_are_recursive_and_case_insensitive() {
+        let root = Path::new("/scan");
+        assert!(path_has_builtin_excluded_component(
+            Path::new("/scan/$Recycle.Bin/S-1-5-18/desktop.ini"),
+            root
+        ));
+        assert!(path_has_builtin_excluded_component(
+            Path::new("/scan/$RECYCLE.BIN/S-1-5-21/deleted.txt"),
+            root
+        ));
+        assert!(path_has_builtin_excluded_component(
+            Path::new("/scan/System Volume Information/tracking.log"),
             root
         ));
     }

@@ -22,6 +22,14 @@ pub(crate) enum ScanOutcome {
     Cancelled,
 }
 
+fn walk_error_is_skippable(depth: usize, kind: Option<std::io::ErrorKind>) -> bool {
+    depth > 0
+        && matches!(
+            kind,
+            Some(std::io::ErrorKind::PermissionDenied | std::io::ErrorKind::NotFound)
+        )
+}
+
 pub(crate) fn scan(
     plan: &ScanPlan,
     cancelled: &AtomicBool,
@@ -47,8 +55,11 @@ pub(crate) fn scan(
         if cancelled.load(Ordering::Acquire) {
             return Ok(ScanOutcome::Cancelled);
         }
-        if !root.exists() {
-            continue;
+        if let Err(error) = std::fs::symlink_metadata(root) {
+            return Err(format!(
+                "configured root is unavailable: {}: {error}",
+                root.display()
+            ));
         }
         let walker = WalkDir::new(root)
             .follow_links(plan.follow_links())
@@ -59,7 +70,18 @@ pub(crate) fn scan(
             if cancelled.load(Ordering::Acquire) {
                 return Ok(ScanOutcome::Cancelled);
             }
-            let entry = entry.map_err(|error| error.to_string())?;
+            let entry = match entry {
+                Ok(entry) => entry,
+                Err(error)
+                    if walk_error_is_skippable(
+                        error.depth(),
+                        error.io_error().map(std::io::Error::kind),
+                    ) =>
+                {
+                    continue;
+                }
+                Err(error) => return Err(error.to_string()),
+            };
             let path = entry.path();
             if path == root {
                 continue;
@@ -161,7 +183,18 @@ pub(crate) fn scan_root(
         if cancelled.load(Ordering::Acquire) {
             return Ok(ScanOutcome::Cancelled);
         }
-        let entry = entry.map_err(|error| error.to_string())?;
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(error)
+                if walk_error_is_skippable(
+                    error.depth(),
+                    error.io_error().map(std::io::Error::kind),
+                ) =>
+            {
+                continue;
+            }
+            Err(error) => return Err(error.to_string()),
+        };
         if entry.path() == root {
             continue;
         }
@@ -253,7 +286,18 @@ pub(crate) fn candidates_for_path(plan: &ScanPlan, path: &Path) -> Result<Vec<Ow
                 .is_some_and(|root| plan.includes_path_for_root(entry.path(), root))
         });
     for entry in walker.skip(1) {
-        let entry = entry.map_err(|error| error.to_string())?;
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(error)
+                if walk_error_is_skippable(
+                    error.depth(),
+                    error.io_error().map(std::io::Error::kind),
+                ) =>
+            {
+                continue;
+            }
+            Err(error) => return Err(error.to_string()),
+        };
         if let Some(item) = candidate_for_path(plan, entry.path())? {
             items.push(item);
         }
@@ -291,6 +335,37 @@ mod tests {
             ..SearchConfig::default()
         })
         .expect("valid scan plan")
+    }
+
+    #[test]
+    fn permission_denied_below_a_readable_root_is_skipped() {
+        assert!(walk_error_is_skippable(
+            2,
+            Some(std::io::ErrorKind::PermissionDenied)
+        ));
+    }
+
+    #[test]
+    fn permission_denied_at_the_configured_root_remains_fatal() {
+        assert!(!walk_error_is_skippable(
+            0,
+            Some(std::io::ErrorKind::PermissionDenied)
+        ));
+    }
+
+    #[test]
+    fn full_scan_rejects_an_unavailable_configured_root() {
+        let root = temp_root("unavailable-root");
+        let plan = plan(root.clone());
+        std::fs::remove_dir(&root).expect("remove configured root");
+
+        let result = scan(&plan, &AtomicBool::new(false), |_| {});
+
+        assert!(
+            result
+                .expect_err("unavailable configured root must fail the full scan")
+                .contains("configured root is unavailable")
+        );
     }
 
     #[test]
