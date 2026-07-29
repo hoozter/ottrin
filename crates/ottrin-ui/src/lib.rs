@@ -706,6 +706,18 @@ enum SidebarSection {
     Trash,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum LocationStorageKind {
+    Internal,
+    #[cfg(target_os = "linux")]
+    Removable,
+    #[cfg(target_os = "linux")]
+    Optical,
+    #[cfg(target_os = "windows")]
+    Network,
+    Unavailable,
+}
+
 // ── Settings tab ─────────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -1029,6 +1041,7 @@ pub struct OttrinApp {
     // Last measured content rect for the file pane, excluding the in-pane bottom toolbar.
     file_pane_rect: Option<Rect>,
     smart_panel_rect: Option<Rect>,
+    locations_rail_expanded: bool,
 }
 
 impl Default for OttrinApp {
@@ -1242,6 +1255,7 @@ impl OttrinApp {
             drop_folder_confirm_until: None,
             file_pane_rect: None,
             smart_panel_rect: None,
+            locations_rail_expanded: false,
         };
 
         // Theme editing is per preset+mode scope; always hydrate the active
@@ -8075,88 +8089,280 @@ impl OttrinApp {
             });
     }
 
-    /// Row 3: bookmark shortcuts to common directories (user-editable).
+    fn storage_root_label_for_path(home: &Path, path: &Path) -> String {
+        if path == home {
+            "Home".to_string()
+        } else if path == Path::new("/") {
+            "Root".to_string()
+        } else if let Some(label) = Self::windows_storage_root_label(path) {
+            label
+        } else {
+            path.file_name()
+                .and_then(|name| name.to_str())
+                .filter(|name| !name.is_empty())
+                .map(str::to_string)
+                .unwrap_or_else(|| path.to_string_lossy().into_owned())
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    fn windows_storage_root_label(path: &Path) -> Option<String> {
+        let text = path.to_string_lossy();
+        if text.len() >= 2
+            && text
+                .as_bytes()
+                .first()
+                .is_some_and(|c| c.is_ascii_alphabetic())
+            && text.as_bytes().get(1) == Some(&b':')
+        {
+            return text
+                .get(0..1)
+                .map(str::to_string)
+                .map(|c| format!("{}:", c));
+        }
+
+        if text.as_bytes().first() == Some(&b'\\') && text.as_bytes().get(1) == Some(&b'\\') {
+            let trimmed = text.trim_end_matches('\\');
+            if let Some((_, share)) = trimmed.split_once("\\\\") {
+                if let Some((_, tail)) = share.split_once('\\') {
+                    return Some(tail.to_string());
+                }
+            }
+            return Some(trimmed.to_string());
+        }
+
+        None
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn windows_storage_root_label(_path: &Path) -> Option<String> {
+        None
+    }
+
+    fn locations_rail_width(&self) -> f32 {
+        if self.locations_rail_expanded {
+            214.0
+        } else {
+            60.0
+        }
+    }
+
+    fn locations_rail_identity(home: &Path, _name: &str, path: &Path) -> String {
+        if path == home {
+            "Home".to_string()
+        } else if path == Path::new("/") {
+            "Root".to_string()
+        } else if !path.exists() {
+            "Unavailable".to_string()
+        } else if let Some(name) = path.file_name().and_then(|part| part.to_str()) {
+            if !name.is_empty() {
+                name.to_string()
+            } else {
+                Self::storage_root_label_for_path(home, path)
+            }
+        } else {
+            Self::storage_root_label_for_path(home, path)
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    fn classify_storage_kind(path: &Path) -> LocationStorageKind {
+        if !path.exists() {
+            LocationStorageKind::Unavailable
+        } else {
+            let path_text = path.to_string_lossy();
+            if path_text.contains("/media/") || path_text.contains("/run/media/") {
+                LocationStorageKind::Removable
+            } else if path_text.contains("/mnt/") {
+                LocationStorageKind::Internal
+            } else if path_text.contains("sr")
+                || path_text.contains("cd")
+                || path_text.contains("dvd")
+            {
+                LocationStorageKind::Optical
+            } else {
+                LocationStorageKind::Internal
+            }
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    fn classify_storage_kind(path: &Path) -> LocationStorageKind {
+        let text = path.to_string_lossy();
+        if text.starts_with("\\\\") {
+            LocationStorageKind::Network
+        } else if !path.exists() {
+            LocationStorageKind::Unavailable
+        } else {
+            LocationStorageKind::Internal
+        }
+    }
+
+    fn storage_icon_for_path(path: &Path) -> &'static str {
+        match Self::classify_storage_kind(path) {
+            LocationStorageKind::Internal => MI_STORAGE,
+            #[cfg(target_os = "linux")]
+            LocationStorageKind::Removable => MI_FOLDER_OPEN,
+            #[cfg(target_os = "linux")]
+            LocationStorageKind::Optical => MI_STORAGE,
+            #[cfg(target_os = "windows")]
+            LocationStorageKind::Network => MI_FOLDER_SHARED,
+            LocationStorageKind::Unavailable => MI_CLEAR,
+        }
+    }
+
+    fn default_bookmarks_from_roots(
+        home: &Path,
+        storage_roots: Vec<PathBuf>,
+    ) -> Vec<(String, String, PathBuf)> {
+        let mut bookmarks = vec![
+            (MI_HOME.to_string(), "Home".to_string(), home.to_path_buf()),
+            ("/".to_string(), "Root".to_string(), PathBuf::from("/")),
+            (
+                MI_FOLDER.to_string(),
+                "Desktop".to_string(),
+                home.join("Desktop"),
+            ),
+            (
+                MI_FOLDER.to_string(),
+                "Downloads".to_string(),
+                home.join("Downloads"),
+            ),
+            (
+                MI_FOLDER.to_string(),
+                "Documents".to_string(),
+                home.join("Documents"),
+            ),
+        ];
+
+        let mut seen: HashSet<PathBuf> =
+            bookmarks.iter().map(|(_, _, path)| path.clone()).collect();
+
+        for root in storage_roots {
+            if seen.insert(root.clone()) {
+                bookmarks.push((
+                    MI_STORAGE.to_string(),
+                    Self::storage_root_label_for_path(home, &root),
+                    root,
+                ));
+            }
+        }
+
+        bookmarks
+    }
+
+    /// Compact, collapsible locations rail (home, quick links, discovered storage).
     fn render_bookmarks_row(&mut self, ctx: &Context) {
         let c = self.colors;
         let home = default_home_dir();
 
         // Ensure default bookmarks exist on first run
         if self.state.config.bookmarks.is_empty() {
-            let defaults = [
-                (MI_HOME.to_string(), "Home".to_string(), home.clone()),
-                ("/".to_string(), "Root".to_string(), PathBuf::from("/")),
-                (
-                    MI_FOLDER.to_string(),
-                    "Desktop".to_string(),
-                    home.join("Desktop"),
-                ),
-                (
-                    MI_FOLDER.to_string(),
-                    "Downloads".to_string(),
-                    home.join("Downloads"),
-                ),
-                (
-                    MI_FOLDER.to_string(),
-                    "Documents".to_string(),
-                    home.join("Documents"),
-                ),
-            ];
-            self.state.config.bookmarks = defaults
-                .into_iter()
-                .filter(|(_, _, p)| p.exists())
-                .collect();
+            self.state.config.bookmarks =
+                Self::default_bookmarks_from_roots(&home, default_search_roots())
+                    .into_iter()
+                    .filter(|(_, _, p)| p.exists())
+                    .collect();
         }
 
         let mut navigate_to: Option<PathBuf> = None;
         let mut remove_idx: Option<usize> = None;
         let displayed_path = self.displayed_path();
+        let rail_w = self.locations_rail_width();
+        let expanded = self.locations_rail_expanded;
+        let toggle_tooltip = if expanded {
+            "Collapse locations rail"
+        } else {
+            "Expand locations rail"
+        };
+        let toggle_icon = if expanded {
+            MI_ARROW_BACK
+        } else {
+            MI_ARROW_FORWARD
+        };
 
-        egui::TopBottomPanel::top("bookmarks_row")
-            .exact_height(30.0)
+        egui::SidePanel::left("locations_rail")
+            .resizable(false)
+            .min_width(rail_w)
+            .max_width(rail_w)
             .frame(
                 Frame::new()
                     .fill(c.toolbar_bg)
-                    .inner_margin(egui::Margin::symmetric(8, 0)),
+                    .inner_margin(egui::Margin::symmetric(8, 6)),
             )
             .show(ctx, |ui| {
-                ui.spacing_mut().item_spacing.x = 3.0;
-                ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                    let bookmarks = self.state.config.bookmarks.clone();
-                    for (idx, (icon, name, path)) in bookmarks.iter().enumerate() {
-                        let is_here = &displayed_path == path;
-                        // All bookmarks look like buttons; active one uses accent tint
-                        let (text_col, bg_col) = if is_here {
-                            (c.text_muted, c.selected_bg.gamma_multiply(0.62))
-                        } else {
-                            (c.text_muted, mix_color(c.toolbar_bg, c.panel, 0.28))
-                        };
+                ui.set_width(rail_w);
+                ui.spacing_mut().item_spacing.y = 4.0;
 
-                        let btn = egui::Button::new(
-                            RichText::new(format!("{} {}", icon, name))
-                                .size(12.0)
-                                .color(text_col),
+                if ui
+                    .add(
+                        egui::Button::new(
+                            RichText::new(toggle_icon).size(15.0).color(c.text_muted),
                         )
-                        .fill(bg_col)
-                        .stroke(Stroke::NONE)
+                        .fill(if expanded {
+                            c.selected_bg
+                        } else {
+                            mix_color(c.toolbar_bg, c.panel, 0.22)
+                        })
                         .corner_radius(c.border_radius as f32)
-                        .min_size(Vec2::new(0.0, 22.0));
+                        .min_size(Vec2::new(rail_w - 14.0, 28.0)),
+                    )
+                    .on_hover_text(toggle_tooltip)
+                    .clicked()
+                {
+                    self.locations_rail_expanded = !self.locations_rail_expanded;
+                }
 
-                        let resp = ui.add(btn).on_hover_text(path.display().to_string());
-                        if resp.clicked() {
-                            navigate_to = Some(path.clone());
-                        }
-                        resp.context_menu(|ui| {
-                            ui.visuals_mut().override_text_color = Some(c.text_muted);
-                            ui.set_min_width(188.0);
-                            if menu_item(ui, MI_CLEAR, &format!("Remove \"{}\"", name), &c)
-                                .clicked()
-                            {
-                                remove_idx = Some(idx);
-                                ui.close();
-                            }
-                        });
+                ui.separator();
+                ui.add_space(4.0);
+
+                let bookmarks = self.state.config.bookmarks.clone();
+                for (idx, (stored_icon, name, path)) in bookmarks.iter().enumerate() {
+                    let path = path.clone();
+                    let is_here = displayed_path == path;
+                    let icon = if stored_icon == MI_STORAGE {
+                        Self::storage_icon_for_path(&path)
+                    } else {
+                        stored_icon.as_str()
+                    };
+                    let identity = Self::locations_rail_identity(&home, name, &path);
+                    let text = if expanded {
+                        format!("{icon} {name}")
+                    } else {
+                        format!("{icon}\n{identity}")
+                    };
+                    // All locations are keyboard-focusable tiles; active one uses accent tint.
+                    let (text_col, bg_col) = if is_here {
+                        (c.text, c.selected_bg.gamma_multiply(0.62))
+                    } else {
+                        (c.text_muted, mix_color(c.toolbar_bg, c.panel, 0.22))
+                    };
+
+                    let btn = egui::Button::new(
+                        RichText::new(text)
+                            .size(if expanded { 12.0 } else { 9.0 })
+                            .color(text_col),
+                    )
+                    .fill(bg_col)
+                    .stroke(Stroke::NONE)
+                    .corner_radius(c.border_radius as f32)
+                    .min_size(Vec2::new(rail_w - 14.0, if expanded { 28.0 } else { 46.0 }));
+
+                    let resp = ui
+                        .add(btn)
+                        .on_hover_text(format!("{} · {}", name, path.display()));
+                    if resp.clicked() {
+                        navigate_to = Some(path);
                     }
-                });
+                    resp.context_menu(|ui| {
+                        ui.visuals_mut().override_text_color = Some(c.text_muted);
+                        ui.set_min_width(188.0);
+                        if menu_item(ui, MI_CLEAR, &format!("Remove \"{}\"", name), &c).clicked() {
+                            remove_idx = Some(idx);
+                            ui.close();
+                        }
+                    });
+                }
             });
 
         if let Some(path) = navigate_to {
@@ -18963,5 +19169,74 @@ mod tests {
         assert!(!windows.system_locate_controls_visible);
         assert_eq!(windows.privilege_backend, "UAC");
         assert_eq!(windows.scheduler_name, "Windows Task Scheduler");
+    }
+
+    #[test]
+    fn default_bookmarks_include_discovered_storage_roots() {
+        let home = PathBuf::from("/home/alice");
+        let discovered = vec![
+            PathBuf::from("/"),
+            home.clone(),
+            PathBuf::from("/media/usb-drive"),
+            PathBuf::from("/mnt/storage"),
+            PathBuf::from("/media/usb-drive"),
+        ];
+
+        let bookmarks = OttrinApp::default_bookmarks_from_roots(&home, discovered);
+
+        assert_eq!(bookmarks.len(), 7);
+        assert_eq!(bookmarks[0].0, MI_HOME.to_string());
+        assert_eq!(bookmarks[0].1, "Home");
+        assert_eq!(bookmarks[1].0, "/".to_string());
+        assert_eq!(bookmarks[1].1, "Root");
+        assert_eq!(bookmarks[2].1, "Desktop");
+        assert_eq!(bookmarks[3].1, "Downloads");
+        assert_eq!(bookmarks[4].1, "Documents");
+        assert_eq!(
+            bookmarks[5],
+            (
+                MI_STORAGE.to_string(),
+                "usb-drive".to_string(),
+                PathBuf::from("/media/usb-drive")
+            )
+        );
+        assert_eq!(
+            bookmarks[6],
+            (
+                MI_STORAGE.to_string(),
+                "storage".to_string(),
+                PathBuf::from("/mnt/storage")
+            )
+        );
+    }
+
+    #[test]
+    fn locations_rail_defaults_to_compact_width() {
+        let app = OttrinApp::default();
+        assert_eq!(app.locations_rail_width(), 60.0);
+        assert!(!app.locations_rail_expanded);
+    }
+
+    #[test]
+    fn storage_icon_for_missing_storage_is_unavailable() {
+        let missing = PathBuf::from("/__ottrin_missing_storage_root__");
+        assert_eq!(OttrinApp::storage_icon_for_path(&missing), MI_CLEAR);
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_storage_root_label_prefers_drive_identity() {
+        let home = PathBuf::from("C:\\Users\\Alice");
+        assert_eq!(
+            OttrinApp::storage_root_label_for_path(&home, &PathBuf::from("C:\\")),
+            "C:"
+        );
+        assert_eq!(
+            OttrinApp::storage_root_label_for_path(
+                &home,
+                &PathBuf::from("\\\\storage.example\\projects")
+            ),
+            "projects"
+        );
     }
 }

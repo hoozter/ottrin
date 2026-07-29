@@ -16,6 +16,17 @@ use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 use walkdir::WalkDir;
+#[cfg(target_os = "windows")]
+use windows_sys::Win32::Storage::FileSystem::{GetDriveTypeW, GetLogicalDrives};
+
+#[cfg(target_os = "windows")]
+const WINDOWS_DRIVE_TYPE_REMOVABLE: u32 = 2;
+#[cfg(target_os = "windows")]
+const WINDOWS_DRIVE_TYPE_FIXED: u32 = 3;
+#[cfg(target_os = "windows")]
+const WINDOWS_DRIVE_TYPE_REMOTE: u32 = 4;
+#[cfg(target_os = "windows")]
+const WINDOWS_DRIVE_TYPE_CDROM: u32 = 5;
 
 mod db;
 #[allow(dead_code)] // Slice 2 mutation API is intentionally isolated until worker integration.
@@ -672,20 +683,130 @@ fn ordered_query_roots(query: &SearchQuery, cfg: &SearchConfig) -> Vec<PathBuf> 
     ordered
 }
 
+#[cfg(target_os = "linux")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum LinuxMountKind {
+    Internal,
+    Removable,
+    Optical,
+    Network,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct LinuxMountLocationCandidate {
+    path: PathBuf,
+    kind: LinuxMountKind,
+}
+
+#[cfg(target_os = "linux")]
+const LINUX_PSEUDO_FILESYSTEM_TYPES: [&str; 16] = [
+    "autofs",
+    "binfmt_misc",
+    "cgroup",
+    "cgroup2",
+    "configfs",
+    "debugfs",
+    "devpts",
+    "devtmpfs",
+    "mqueue",
+    "proc",
+    "pstore",
+    "securityfs",
+    "selinuxfs",
+    "sysfs",
+    "tmpfs",
+    "tracefs",
+];
+
+#[cfg(target_os = "linux")]
+fn is_linux_pseudo_filesystem_type(fstype: &str) -> bool {
+    LINUX_PSEUDO_FILESYSTEM_TYPES.contains(&fstype)
+}
+
+#[cfg(target_os = "linux")]
+fn is_linux_network_filesystem_type(fstype: &str) -> bool {
+    matches!(
+        fstype,
+        "cifs" | "nfs" | "nfs4" | "smbfs" | "sshfs" | "davfs"
+    )
+}
+
+#[cfg(target_os = "linux")]
+fn unescape_proc_mount_path(path: &str) -> String {
+    let mut out = String::with_capacity(path.len());
+    let bytes = path.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'\\'
+            && i + 3 < bytes.len()
+            && bytes[i + 1].is_ascii_digit()
+            && bytes[i + 2].is_ascii_digit()
+            && bytes[i + 3].is_ascii_digit()
+        {
+            let code =
+                (bytes[i + 1] - b'0') * 64 + (bytes[i + 2] - b'0') * 8 + (bytes[i + 3] - b'0');
+            if code <= b'~' {
+                out.push(code as char);
+                i += 4;
+                continue;
+            }
+        }
+        out.push(path.as_bytes()[i] as char);
+        i += 1;
+    }
+    out
+}
+
+#[cfg(target_os = "linux")]
+fn classify_linux_mount_kind(path: &Path, source: &str, fstype: &str) -> LinuxMountKind {
+    if is_linux_network_filesystem_type(fstype) || source.starts_with("//") {
+        LinuxMountKind::Network
+    } else if source.starts_with("/dev/sr") || fstype == "iso9660" || fstype == "udf" {
+        LinuxMountKind::Optical
+    } else if path.starts_with("/media") || path.starts_with("/run/media") {
+        LinuxMountKind::Removable
+    } else {
+        LinuxMountKind::Internal
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn parse_linux_mount_candidates(text: &str) -> Vec<LinuxMountLocationCandidate> {
+    let mut out = Vec::new();
+    let mut seen = HashSet::new();
+
+    for line in text.lines() {
+        let mut fields = line.split_whitespace();
+        let source = fields.next().unwrap_or_default();
+        let mount_point = fields.next().unwrap_or_default();
+        let fstype = fields.next().unwrap_or_default();
+        if source.is_empty() || mount_point.is_empty() || fstype.is_empty() {
+            continue;
+        }
+        if is_linux_pseudo_filesystem_type(fstype) {
+            continue;
+        }
+        let unescaped = unescape_proc_mount_path(mount_point);
+        let path = PathBuf::from(unescaped);
+        if !(path.starts_with("/media")
+            || path.starts_with("/mnt")
+            || path.starts_with("/run/media"))
+        {
+            continue;
+        }
+        if seen.insert(path.clone()) {
+            let kind = classify_linux_mount_kind(&path, source, fstype);
+            out.push(LinuxMountLocationCandidate { path, kind });
+        }
+    }
+    out
+}
+
 pub fn default_roots() -> Vec<PathBuf> {
     #[cfg(target_os = "windows")]
     {
-        let mut roots = Vec::new();
-        for c in b'C'..=b'Z' {
-            let p = PathBuf::from(format!("{}:\\", c as char));
-            if p.exists() {
-                roots.push(p);
-            }
-        }
-        if roots.is_empty() {
-            roots.push(ottrin_core::default_home_dir());
-        }
-        roots
+        discover_windows_storage_roots()
     }
     #[cfg(not(target_os = "windows"))]
     {
@@ -695,24 +816,53 @@ pub fn default_roots() -> Vec<PathBuf> {
             && let Ok(text) = std::fs::read_to_string(mounts)
         {
             let mut seen: HashSet<PathBuf> = roots.iter().cloned().collect();
-            for line in text.lines() {
-                let mut parts = line.split_whitespace();
-                let _src = parts.next();
-                let mnt = parts.next();
-                if let Some(m) = mnt {
-                    let p = PathBuf::from(m);
-                    if (p.starts_with("/media")
-                        || p.starts_with("/mnt")
-                        || p.starts_with("/run/media"))
-                        && seen.insert(p.clone())
-                    {
-                        roots.push(p);
-                    }
+            for mount in parse_linux_mount_candidates(&text) {
+                let path = mount.path;
+                if seen.insert(path.clone()) {
+                    roots.push(path);
                 }
             }
         }
         roots
     }
+}
+
+#[cfg(target_os = "windows")]
+fn discover_windows_storage_roots() -> Vec<PathBuf> {
+    use std::iter::once;
+    use std::os::windows::ffi::OsStrExt;
+
+    let mut roots = Vec::new();
+    let drive_mask = unsafe { GetLogicalDrives() };
+    if drive_mask == 0 {
+        return roots;
+    }
+    for index in 0..26 {
+        if (drive_mask & (1u32 << index)) == 0 {
+            continue;
+        }
+        let root = PathBuf::from(format!("{}:\\", (b'A' + index as u8) as char));
+        let wide: Vec<u16> = root.as_os_str().encode_wide().chain(once(0)).collect();
+        let drive_type = unsafe { GetDriveTypeW(wide.as_ptr()) };
+        if is_supported_windows_drive_type(drive_type) {
+            roots.push(root);
+        }
+    }
+    if roots.is_empty() {
+        roots.push(ottrin_core::default_home_dir());
+    }
+    roots
+}
+
+#[cfg(target_os = "windows")]
+fn is_supported_windows_drive_type(drive_type: u32) -> bool {
+    matches!(
+        drive_type,
+        WINDOWS_DRIVE_TYPE_FIXED
+            | WINDOWS_DRIVE_TYPE_REMOVABLE
+            | WINDOWS_DRIVE_TYPE_CDROM
+            | WINDOWS_DRIVE_TYPE_REMOTE
+    )
 }
 
 fn current_unix_secs() -> u64 {
@@ -2902,6 +3052,72 @@ mod tests {
     fn parser_rejects_invalid_regex() {
         let err = parse_query("/[/").expect_err("should reject invalid regex");
         assert!(err.to_string().contains("Invalid regex"));
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_supported_drive_types_are_explicit() {
+        assert!(is_supported_windows_drive_type(WINDOWS_DRIVE_TYPE_FIXED));
+        assert!(is_supported_windows_drive_type(
+            WINDOWS_DRIVE_TYPE_REMOVABLE
+        ));
+        assert!(is_supported_windows_drive_type(WINDOWS_DRIVE_TYPE_CDROM));
+        assert!(is_supported_windows_drive_type(WINDOWS_DRIVE_TYPE_REMOTE));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn parse_linux_mount_candidates_only_exposes_user_visible_locations() {
+        let fixtures = "\
+proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0\n\
+tmpfs /tmp tmpfs rw,nosuid,nodev 0 0\n\
+/dev/sda2 / ext4 rw,relatime 0 0\n\
+/dev/sdb1 /media/usb\\040Drive vfat rw,relatime 0 0\n\
+/dev/sr0 /media/cdrom iso9660 ro,relatime 0 0\n\
+/dev/sdd1 /media/usb_drive vfat rw,relatime 0 0\n\
+/dev/sdd1 /media/usb_drive vfat rw,relatime 0 0\n\
+192.168.1.1:/server /mnt/backup nfs rw,relatime 0 0\n\
+tmpfs /run/media/ignored tmpfs rw,nosuid,nodev 0 0\n\
+/dev/sde1 /mnt/storage ext4 rw,relatime 0 0\n\
+";
+
+        let parsed = parse_linux_mount_candidates(fixtures);
+        assert_eq!(parsed.len(), 5);
+        assert_eq!(
+            parsed.first().expect("expected mount"),
+            &LinuxMountLocationCandidate {
+                path: PathBuf::from("/media/usb Drive"),
+                kind: LinuxMountKind::Removable,
+            }
+        );
+        assert_eq!(
+            parsed.get(1).expect("expected mount"),
+            &LinuxMountLocationCandidate {
+                path: PathBuf::from("/media/cdrom"),
+                kind: LinuxMountKind::Optical,
+            }
+        );
+        assert_eq!(
+            parsed.get(2).expect("expected mount"),
+            &LinuxMountLocationCandidate {
+                path: PathBuf::from("/media/usb_drive"),
+                kind: LinuxMountKind::Removable,
+            }
+        );
+        assert_eq!(
+            parsed.get(3).expect("expected mount"),
+            &LinuxMountLocationCandidate {
+                path: PathBuf::from("/mnt/backup"),
+                kind: LinuxMountKind::Network,
+            }
+        );
+        assert_eq!(
+            parsed.get(4).expect("expected mount"),
+            &LinuxMountLocationCandidate {
+                path: PathBuf::from("/mnt/storage"),
+                kind: LinuxMountKind::Internal,
+            }
+        );
     }
 
     #[test]
