@@ -65,13 +65,17 @@ fn move_with_hooks(
     let source_parent_path = source
         .parent()
         .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
-    let source_parent = move_recovery::LinuxSourceParentDirectory::open(source_parent_path)
+    let source_parent_path = std::fs::canonicalize(source_parent_path)
+        .map_err(|_| PlatformError::InvalidSource(source_parent_path.display().to_string()))?;
+    let destination_dir = std::fs::canonicalize(destination_dir)
+        .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
+    let source_parent = move_recovery::LinuxSourceParentDirectory::open(&source_parent_path)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
     let source_entry_metadata = std::fs::symlink_metadata(source).ok();
     let source_entry_identity = source_entry_metadata
         .as_ref()
         .map(stable_identity_from_metadata);
-    let source_parent_metadata = std::fs::symlink_metadata(source_parent_path)
+    let source_parent_metadata = std::fs::symlink_metadata(&source_parent_path)
         .map_err(|_| PlatformError::InvalidSource(source_parent_path.display().to_string()))?;
     let source_parent_identity = move_recovery::LinuxStableIdentity::new(
         source_parent_metadata.dev(),
@@ -83,7 +87,7 @@ fn move_with_hooks(
         },
     );
 
-    let destination_parent_metadata = std::fs::symlink_metadata(destination_dir)
+    let destination_parent_metadata = std::fs::symlink_metadata(&destination_dir)
         .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
     let is_cross_device = match hook(TestPoint::ClassifyCrossDevice) {
         Ok(()) => source_parent_metadata.dev() != destination_parent_metadata.dev(),
@@ -95,17 +99,33 @@ fn move_with_hooks(
         }
     };
 
-    let destination_parent = move_recovery::LinuxSourceParentDirectory::open(destination_dir)
+    let destination_parent = move_recovery::LinuxSourceParentDirectory::open(&destination_dir)
         .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
 
     if !is_cross_device
         && (conflict == ConflictAction::Skip || conflict == ConflictAction::Rename)
         && recover_same_filesystem_pending_destination(
             source,
-            destination_dir,
+            &destination_dir,
             source_name,
             &source_parent,
-            source_parent_path,
+            &source_parent_path,
+            source_parent_identity,
+            source_entry_identity,
+            &destination_parent,
+            conflict,
+        )?
+    {
+        return Ok(());
+    }
+    if is_cross_device
+        && (conflict == ConflictAction::Skip || conflict == ConflictAction::Rename)
+        && recover_cross_filesystem_pending_destination(
+            source,
+            &destination_dir,
+            source_name,
+            &source_parent,
+            &source_parent_path,
             source_parent_identity,
             source_entry_identity,
             &destination_parent,
@@ -115,11 +135,14 @@ fn move_with_hooks(
         return Ok(());
     }
 
-    reject_directory_copy_into_itself(source, destination_dir)?;
+    reject_directory_copy_into_itself(source, &destination_dir)?;
 
     let source_metadata = source_entry_metadata
         .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
-    if destination_dir.join(source_name).exists() && conflict == ConflictAction::Skip {
+    if !is_cross_device
+        && destination_dir.join(source_name).exists()
+        && conflict == ConflictAction::Skip
+    {
         return Ok(());
     }
     let source_entry_identity = move_recovery::LinuxStableIdentity::new(
@@ -162,7 +185,7 @@ fn move_with_hooks(
 
     let prepared = move_recovery::PreparedRecord::new_linux(
         recovery_transaction_id,
-        source_parent_path,
+        &source_parent_path,
         Path::new(source_name),
         source_parent_identity,
         source_entry_identity,
@@ -278,7 +301,7 @@ fn move_with_hooks(
                     message: format!("cross-device transaction flush failed: {error}"),
                 }
             })?;
-            std::fs::File::open(destination_dir)
+            std::fs::File::open(&destination_dir)
                 .and_then(|directory| directory.sync_all())
                 .map_err(|error| PlatformError::CommittedCleanupPending {
                     transaction: local_path.display().to_string(),
@@ -610,6 +633,425 @@ fn recover_same_filesystem_pending_destination(
     }
 
     Ok(false)
+}
+
+#[cfg(target_os = "linux")]
+#[allow(clippy::too_many_arguments)]
+fn recover_cross_filesystem_pending_destination(
+    source: &Path,
+    destination_dir: &Path,
+    source_name: &std::ffi::OsStr,
+    source_parent: &move_recovery::LinuxSourceParentDirectory,
+    source_parent_path: &Path,
+    source_parent_identity: move_recovery::LinuxStableIdentity,
+    source_entry_identity: Option<move_recovery::LinuxStableIdentity>,
+    destination_parent: &move_recovery::LinuxSourceParentDirectory,
+    conflict: ConflictAction,
+) -> Result<bool, PlatformError> {
+    let recovery_root = default_recovery_root()?;
+    let discovered = discover_retained_move_transactions_at(&recovery_root)?;
+    if !discovered
+        .iter()
+        .any(|entry| entry.phase == move_recovery::JournalPhase::PendingDestination)
+    {
+        return Ok(false);
+    }
+
+    let expected_source_name = Path::new(source_name);
+    let central = move_recovery::LinuxJournalDirectory::open_configured_read_only(&recovery_root)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let mut recovery = central
+        .try_lock_recovery()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+
+    for entry in discovered {
+        if entry.phase != move_recovery::JournalPhase::PendingDestination {
+            continue;
+        }
+
+        let local_path = source_parent_path.join(format!(
+            ".ottrin-move-{}",
+            transaction_id_hex(&entry.transaction_id)
+        ));
+        let local =
+            match move_recovery::LinuxJournalDirectory::open_configured_read_only(&local_path) {
+                Ok(local) => local,
+                Err(_) => continue,
+            };
+
+        let state =
+            match central.load_pending_destination_restart_state(&local, entry.transaction_id) {
+                Ok(state) => state,
+                Err(_) => continue,
+            };
+        let pending = match state {
+            move_recovery::LinuxPendingDestinationRestartState::MatchingPair(pending) => pending,
+            move_recovery::LinuxPendingDestinationRestartState::CentralPendingDestinationLocalClaimed {
+                pending,
+                ..
+            } => {
+                recovery
+                    .resume_pending_destination_with_local(&local, entry.transaction_id)
+                    .map_err(|error| PlatformError::CommittedCleanupPending {
+                        transaction: local_path.display().to_string(),
+                        message: format!(
+                            "pending-destination restart persistence failed during recovery: {error}"
+                        ),
+                    })?;
+                pending
+            }
+        };
+
+        if pending.source_parent_identity() != source_parent_identity {
+            continue;
+        }
+        if !pending.original_name_matches_path(expected_source_name) {
+            continue;
+        }
+        if let Some(expected_identity) = source_entry_identity
+            && pending.expected_source_identity() != expected_identity
+        {
+            continue;
+        }
+        if !pending.has_cross_device_destination_state() {
+            continue;
+        }
+        if replay_cross_filesystem_pending_destination_with_record(
+            source,
+            source_parent,
+            destination_parent,
+            destination_dir,
+            &recovery_root,
+            entry.transaction_id,
+            &local_path,
+            &local,
+            &mut recovery,
+            pending,
+            conflict,
+        )? {
+            return Ok(true);
+        }
+    }
+
+    Ok(false)
+}
+
+#[cfg(target_os = "linux")]
+#[allow(clippy::too_many_arguments)]
+fn replay_cross_filesystem_pending_destination_with_record(
+    source: &Path,
+    source_parent: &move_recovery::LinuxSourceParentDirectory,
+    destination_parent: &move_recovery::LinuxSourceParentDirectory,
+    destination_dir: &Path,
+    recovery_root: &Path,
+    transaction_id: [u8; 16],
+    local_path: &Path,
+    local: &move_recovery::LinuxJournalDirectory,
+    recovery: &mut move_recovery::LinuxRecoveryLock<'_>,
+    pending: move_recovery::PendingDestinationRecord,
+    conflict: ConflictAction,
+) -> Result<bool, PlatformError> {
+    let source_name = pending
+        .original_name()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let claimed_source_identity = pending.claimed_source_identity();
+    let destination_transaction_name = pending.destination_transaction_name().map_err(|error| {
+        PlatformError::CommittedCleanupPending {
+            transaction: local_path.display().to_string(),
+            message: format!("cross-device destination transaction name decode failed: {error}"),
+        }
+    })?;
+    let destination_transaction_identity =
+        pending.destination_transaction_identity().ok_or_else(|| {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: "cross-device destination transaction identity is missing".to_string(),
+            }
+        })?;
+    let source_tree_snapshot =
+        pending
+            .source_tree_snapshot()
+            .ok_or_else(|| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: "cross-device source-tree snapshot is missing".to_string(),
+            })?;
+    let staged_destination_identity = pending.staged_destination_identity().ok_or_else(|| {
+        PlatformError::CommittedCleanupPending {
+            transaction: local_path.display().to_string(),
+            message: "cross-device staged destination identity is missing".to_string(),
+        }
+    })?;
+    let mut destination_name = pending
+        .pending_destination_name()
+        .map_err(|error| PlatformError::Io(error.to_string()))?
+        .file_name()
+        .expect("pending destination has a file name")
+        .to_os_string();
+    let mut destination_target = destination_dir.join(&destination_name);
+    let destination_transaction_path = destination_dir.join(&destination_transaction_name);
+    let claimed_path = local_path.join("claimed");
+
+    let pending_destination_metadata = move_recovery::PendingDestinationMetadata {
+        destination_transaction_name: Some(destination_transaction_name.clone()),
+        destination_transaction_identity: Some(destination_transaction_identity),
+        source_tree_snapshot: Some(source_tree_snapshot.clone()),
+        staged_destination_identity: Some(staged_destination_identity),
+        expected_displaced_destination_identity: None,
+    };
+
+    loop {
+        match std::fs::symlink_metadata(&claimed_path) {
+            Ok(metadata) => {
+                if stable_identity_from_metadata(&metadata) != claimed_source_identity {
+                    return Err(PlatformError::CommittedCleanupPending {
+                        transaction: local_path.display().to_string(),
+                        message:
+                            "recovered cross-device claimed identity changed before publication"
+                                .to_string(),
+                    });
+                }
+                let destination_transaction_metadata =
+                    std::fs::symlink_metadata(&destination_transaction_path).map_err(|error| {
+                        PlatformError::CommittedCleanupPending {
+                            transaction: local_path.display().to_string(),
+                            message: format!(
+                                "recovery destination transaction metadata failed: {error}"
+                            ),
+                        }
+                    })?;
+                if stable_identity_from_metadata(&destination_transaction_metadata)
+                    != destination_transaction_identity
+                {
+                    return Err(PlatformError::CommittedCleanupPending {
+                        transaction: local_path.display().to_string(),
+                        message:
+                            "recovery destination transaction identity changed before publication"
+                                .to_string(),
+                    });
+                }
+                let staged_destination_metadata = std::fs::symlink_metadata(
+                    destination_transaction_path.join(CROSS_DEVICE_STAGED_NAME),
+                )
+                .map_err(|error| PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!(
+                        "recovery staged destination metadata unavailable before publication: {error}"
+                    ),
+                })?;
+                if stable_identity_from_metadata(&staged_destination_metadata)
+                    != staged_destination_identity
+                {
+                    return Err(PlatformError::CommittedCleanupPending {
+                        transaction: local_path.display().to_string(),
+                        message: "recovery staged destination identity changed before publication"
+                            .to_string(),
+                    });
+                }
+
+                let destination_transaction_directory =
+                    move_recovery::LinuxJournalDirectory::open_configured(
+                        &destination_transaction_path,
+                    )
+                    .map_err(|error| {
+                        PlatformError::Io(format!(
+                            "recovery could not reopen destination transaction directory: {error}"
+                        ))
+                    })?;
+                match publish_claimed_to_destination_with_no_replace(
+                    &destination_transaction_directory,
+                    destination_parent,
+                    std::ffi::OsStr::new(CROSS_DEVICE_STAGED_NAME),
+                    destination_name.as_os_str(),
+                ) {
+                    Ok(()) => {
+                        let destination_metadata = std::fs::symlink_metadata(&destination_target)
+                            .map_err(|error| {
+                            PlatformError::CommittedCleanupPending {
+                                transaction: local_path.display().to_string(),
+                                message: format!(
+                                    "cross-device destination identity check failed: {error}"
+                                ),
+                            }
+                        })?;
+                        if stable_identity_from_metadata(&destination_metadata)
+                            != staged_destination_identity
+                        {
+                            return Err(PlatformError::CommittedCleanupPending {
+                                transaction: local_path.display().to_string(),
+                                message:
+                                    "cross-device destination identity changed after publication"
+                                        .to_string(),
+                            });
+                        }
+                        if !verify_source_tree_snapshot(&claimed_path, &source_tree_snapshot)
+                            .map_err(|error| PlatformError::Io(error.to_string()))?
+                        {
+                            return Err(PlatformError::CommittedCleanupPending {
+                                transaction: local_path.display().to_string(),
+                                message: "cross-device source snapshot changed before cleanup"
+                                    .to_string(),
+                            });
+                        }
+
+                        recovery
+                            .advance_to_published_with_local(local, transaction_id)
+                            .map_err(|error| PlatformError::CommittedCleanupPending {
+                                transaction: local_path.display().to_string(),
+                                message: format!(
+                                    "cross-device publication durable state failed: {error}"
+                                ),
+                            })?;
+                        remove_source_entry(&claimed_path).map_err(|error| {
+                            PlatformError::CommittedCleanupPending {
+                                transaction: local_path.display().to_string(),
+                                message: format!("cross-device source cleanup failed: {error}"),
+                            }
+                        })?;
+                        let _ = std::fs::remove_dir_all(&destination_transaction_path);
+                        let _ = cleanup_transaction_journals(
+                            recovery_root,
+                            local_path,
+                            &transaction_id,
+                        );
+                        return Ok(true);
+                    }
+                    Err(publish_error)
+                        if publish_error.kind() == std::io::ErrorKind::AlreadyExists =>
+                    {
+                        let destination_metadata = match std::fs::symlink_metadata(
+                            &destination_target,
+                        ) {
+                            Ok(metadata) => metadata,
+                            Err(error) => {
+                                return Err(PlatformError::CommittedCleanupPending {
+                                    transaction: local_path.display().to_string(),
+                                    message: format!(
+                                        "cross-device destination conflict check failed: {error}"
+                                    ),
+                                });
+                            }
+                        };
+                        if stable_identity_from_metadata(&destination_metadata)
+                            == staged_destination_identity
+                        {
+                            if !verify_source_tree_snapshot(&claimed_path, &source_tree_snapshot)
+                                .map_err(|error| PlatformError::Io(error.to_string()))?
+                            {
+                                return Err(PlatformError::CommittedCleanupPending {
+                                    transaction: local_path.display().to_string(),
+                                    message: "cross-device source snapshot changed before cleanup"
+                                        .to_string(),
+                                });
+                            }
+                            recovery
+                                .advance_to_published_with_local(local, transaction_id)
+                                .map_err(|error| PlatformError::CommittedCleanupPending {
+                                    transaction: local_path.display().to_string(),
+                                    message: format!(
+                                        "cross-device publication durable state failed: {error}"
+                                    ),
+                                })?;
+                            remove_source_entry(&claimed_path).map_err(|error| {
+                                PlatformError::CommittedCleanupPending {
+                                    transaction: local_path.display().to_string(),
+                                    message: format!("cross-device source cleanup failed: {error}"),
+                                }
+                            })?;
+                            let _ = std::fs::remove_dir_all(&destination_transaction_path);
+                            let _ = cleanup_transaction_journals(
+                                recovery_root,
+                                local_path,
+                                &transaction_id,
+                            );
+                            return Ok(true);
+                        }
+
+                        if conflict == ConflictAction::Skip {
+                            if source.exists() {
+                                return Err(PlatformError::CommittedCleanupPending {
+                                    transaction: local_path.display().to_string(),
+                                    message:
+                                        "source reappeared before recovery skip-mode restoration"
+                                            .to_string(),
+                                });
+                            }
+
+                            restore_claimed_to_source(
+                                source_parent,
+                                local,
+                                source_name.file_name().unwrap_or_default(),
+                            )
+                            .map_err(|restore_error| {
+                                PlatformError::CommittedCleanupPending {
+                                    transaction: local_path.display().to_string(),
+                                    message: format!(
+                                        "skip-mode recovery restoration failed: {restore_error}"
+                                    ),
+                                }
+                            })?;
+                            let _ = cleanup_transaction_journals(
+                                recovery_root,
+                                local_path,
+                                &transaction_id,
+                            );
+                            return Ok(true);
+                        }
+
+                        if conflict == ConflictAction::Rename {
+                            destination_name = next_available_name(&destination_target)
+                                .file_name()
+                                .expect("candidate has a file name")
+                                .to_os_string();
+                            destination_target = destination_dir.join(&destination_name);
+                            let displaced_destination_identity =
+                                stable_identity_from_metadata(&destination_metadata);
+                            recovery
+                                .advance_to_pending_destination_with_local_with_metadata(
+                                    local,
+                                    transaction_id,
+                                    destination_name.as_ref(),
+                                    move_recovery::PendingDestinationMetadata {
+                                        expected_displaced_destination_identity: Some(
+                                            displaced_destination_identity,
+                                        ),
+                                        ..pending_destination_metadata.clone()
+                                    },
+                                )
+                                .map_err(|error| PlatformError::CommittedCleanupPending {
+                                    transaction: local_path.display().to_string(),
+                                    message: format!(
+                                        "recovery pending-destination advancement failed: {error}"
+                                    ),
+                                })?;
+                            continue;
+                        }
+
+                        return Err(PlatformError::CommittedCleanupPending {
+                            transaction: local_path.display().to_string(),
+                            message: "recovery publication conflict for unsupported mode"
+                                .to_string(),
+                        });
+                    }
+                    Err(publish_error) => {
+                        return Err(PlatformError::CommittedCleanupPending {
+                            transaction: local_path.display().to_string(),
+                            message: format!("recovery publication failed: {publish_error}"),
+                        });
+                    }
+                }
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                return Err(PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: "recovery found no claimed source after cross-device publication"
+                        .to_string(),
+                });
+            }
+            Err(error) => {
+                return Err(PlatformError::Io(error.to_string()));
+            }
+        }
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -1547,5 +1989,309 @@ mod tests {
                     .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
             });
         assert!(!has_central_journal);
+    }
+
+    #[cfg(target_os = "linux")]
+    fn run_cross_filesystem_pending_destination_sigkill_child(
+        root: &Path,
+        conflict: ConflictAction,
+    ) {
+        use rustix::process;
+
+        let source = root.join("source");
+        let destination = root.join("destination");
+        std::fs::write(&source, "payload").unwrap();
+        std::fs::create_dir_all(&destination).unwrap();
+        std::fs::write(destination.join("source"), b"occupied").unwrap();
+
+        let result =
+            move_entry_transactional_with_test_hook(&source, &destination, conflict, |point| {
+                if point == TestPoint::ClassifyCrossDevice {
+                    Err("force cross-device move")
+                } else if point == TestPoint::PendingDestination {
+                    let _ = process::kill_process(process::getpid(), process::Signal::Kill);
+                    panic!("cross-device pending destination child was not terminated");
+                } else {
+                    Ok(())
+                }
+            });
+        panic!(
+            "cross-device pending destination move returned {result:?} without being terminated"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_filesystem_rename_pending_destination_kill_child_process_replays_to_next_available_name()
+     {
+        use std::os::unix::process::ExitStatusExt;
+        use std::process::Command;
+
+        if std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_CHILD").as_deref()
+            == Some(std::ffi::OsStr::new("1"))
+        {
+            let root = std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_ROOT").unwrap();
+            run_cross_filesystem_pending_destination_sigkill_child(
+                Path::new(&root),
+                ConflictAction::Rename,
+            );
+            panic!("cross-device pending destination kill child returned without being terminated");
+        }
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-cross-pending-destination-kill-{}",
+            getrandom::u64().unwrap()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let state_root = root.join("state");
+        std::fs::create_dir_all(&state_root).unwrap();
+        let status = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "move_transaction::tests::cross_filesystem_rename_pending_destination_kill_child_process_replays_to_next_available_name",
+                "--test-threads=1",
+                "--nocapture",
+            ])
+            .env("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_CHILD", "1")
+            .env("OTTRIN_MOVE_PENDING_DESTINATION_SIGKILL_ROOT", &root)
+            .env("XDG_STATE_HOME", &state_root)
+            .status()
+            .unwrap();
+        assert_eq!(status.signal(), Some(9));
+        assert_eq!(
+            std::fs::read(root.join("destination").join("source")).unwrap(),
+            b"occupied"
+        );
+        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+        let previous_state_home = std::env::var_os("XDG_STATE_HOME");
+        unsafe {
+            std::env::set_var("XDG_STATE_HOME", &state_root);
+        }
+
+        let recovery = move_entry_transactional_with_test_hook(
+            &root.join("source"),
+            &root.join("destination"),
+            ConflictAction::Rename,
+            |point| {
+                if point == TestPoint::ClassifyCrossDevice {
+                    Err("force cross-device move")
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        assert!(recovery.is_ok(), "recovery retry failed: {recovery:?}");
+        if let Some(previous_state_home) = previous_state_home {
+            unsafe {
+                std::env::set_var("XDG_STATE_HOME", previous_state_home);
+            }
+        } else {
+            unsafe {
+                std::env::remove_var("XDG_STATE_HOME");
+            }
+        }
+        assert_eq!(
+            std::fs::read(root.join("destination").join("source")).unwrap(),
+            b"occupied"
+        );
+        assert_eq!(
+            std::fs::read(root.join("destination").join("source (1)")).unwrap(),
+            b"payload"
+        );
+        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+        assert!(!has_local_transaction_dir(&root));
+
+        let has_central_journal = std::fs::read_dir(state_root.join("ottrin").join("moves"))
+            .unwrap()
+            .filter_map(Result::ok)
+            .any(|entry| {
+                entry
+                    .path()
+                    .extension()
+                    .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
+            });
+        assert!(!has_central_journal);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_filesystem_skip_pending_destination_kill_child_process_restores_source_on_recovery() {
+        use std::os::unix::process::ExitStatusExt;
+        use std::process::Command;
+
+        if std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SKIP_SIGKILL_CHILD").as_deref()
+            == Some(std::ffi::OsStr::new("1"))
+        {
+            let root =
+                std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_SKIP_SIGKILL_ROOT").unwrap();
+            run_cross_filesystem_pending_destination_sigkill_child(
+                Path::new(&root),
+                ConflictAction::Skip,
+            );
+            panic!(
+                "cross-device skip pending destination kill child returned without being terminated"
+            );
+        }
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-cross-pending-destination-skip-kill-{}",
+            getrandom::u64().unwrap()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let state_root = root.join("state");
+        std::fs::create_dir_all(&state_root).unwrap();
+        let status = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "move_transaction::tests::cross_filesystem_skip_pending_destination_kill_child_process_restores_source_on_recovery",
+                "--test-threads=1",
+                "--nocapture",
+            ])
+            .env("OTTRIN_MOVE_PENDING_DESTINATION_SKIP_SIGKILL_CHILD", "1")
+            .env("OTTRIN_MOVE_PENDING_DESTINATION_SKIP_SIGKILL_ROOT", &root)
+            .env("XDG_STATE_HOME", &state_root)
+            .status()
+            .unwrap();
+        assert_eq!(status.signal(), Some(9));
+        assert_eq!(
+            std::fs::read(root.join("destination").join("source")).unwrap(),
+            b"occupied"
+        );
+        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+
+        let previous_state_home = std::env::var_os("XDG_STATE_HOME");
+        unsafe {
+            std::env::set_var("XDG_STATE_HOME", &state_root);
+        }
+        let recovery = move_entry_transactional_with_test_hook(
+            &root.join("source"),
+            &root.join("destination"),
+            ConflictAction::Skip,
+            |point| {
+                if point == TestPoint::ClassifyCrossDevice {
+                    Err("force cross-device move")
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        assert!(recovery.is_ok(), "recovery retry failed: {recovery:?}");
+        if let Some(previous_state_home) = previous_state_home {
+            unsafe {
+                std::env::set_var("XDG_STATE_HOME", previous_state_home);
+            }
+        } else {
+            unsafe {
+                std::env::remove_var("XDG_STATE_HOME");
+            }
+        }
+        assert_eq!(std::fs::read(root.join("source")).unwrap(), b"payload");
+        assert_eq!(
+            std::fs::read(root.join("destination").join("source")).unwrap(),
+            b"occupied"
+        );
+        assert!(!has_local_transaction_dir(&root));
+
+        let has_central_journal = std::fs::read_dir(state_root.join("ottrin").join("moves"))
+            .unwrap()
+            .filter_map(Result::ok)
+            .any(|entry| {
+                entry
+                    .path()
+                    .extension()
+                    .is_some_and(|ext| ext == std::ffi::OsStr::new("journal"))
+            });
+        assert!(!has_central_journal);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_filesystem_recovery_requires_destination_transaction() {
+        use std::os::unix::process::ExitStatusExt;
+        use std::process::Command;
+
+        if std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_VANISHED_SIGKILL_CHILD").as_deref()
+            == Some(std::ffi::OsStr::new("1"))
+        {
+            let root =
+                std::env::var_os("OTTRIN_MOVE_PENDING_DESTINATION_VANISHED_SIGKILL_ROOT").unwrap();
+            run_cross_filesystem_pending_destination_sigkill_child(
+                Path::new(&root),
+                ConflictAction::Rename,
+            );
+            panic!(
+                "cross-device vanished destination tx kill child returned without being terminated"
+            );
+        }
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-cross-pending-destination-vanish-{}",
+            getrandom::u64().unwrap()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let state_root = root.join("state");
+        std::fs::create_dir_all(&state_root).unwrap();
+        let status = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "move_transaction::tests::cross_filesystem_recovery_requires_destination_transaction",
+                "--test-threads=1",
+                "--nocapture",
+            ])
+            .env("OTTRIN_MOVE_PENDING_DESTINATION_VANISHED_SIGKILL_CHILD", "1")
+            .env("OTTRIN_MOVE_PENDING_DESTINATION_VANISHED_SIGKILL_ROOT", &root)
+            .env("XDG_STATE_HOME", &state_root)
+            .status()
+            .unwrap();
+        assert_eq!(status.signal(), Some(9));
+
+        for entry in std::fs::read_dir(root.join("destination"))
+            .unwrap()
+            .filter_map(Result::ok)
+        {
+            if entry
+                .file_name()
+                .to_string_lossy()
+                .starts_with(".ottrin-move-")
+            {
+                let _ = std::fs::remove_dir_all(entry.path());
+            }
+        }
+
+        let previous_state_home = std::env::var_os("XDG_STATE_HOME");
+        unsafe {
+            std::env::set_var("XDG_STATE_HOME", &state_root);
+        }
+        let recovery = move_entry_transactional_with_test_hook(
+            &root.join("source"),
+            &root.join("destination"),
+            ConflictAction::Rename,
+            |point| {
+                if point == TestPoint::ClassifyCrossDevice {
+                    Err("force cross-device move")
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        if let Some(previous_state_home) = previous_state_home {
+            unsafe {
+                std::env::set_var("XDG_STATE_HOME", previous_state_home);
+            }
+        } else {
+            unsafe {
+                std::env::remove_var("XDG_STATE_HOME");
+            }
+        }
+        assert!(matches!(
+            recovery,
+            Err(PlatformError::CommittedCleanupPending { .. })
+        ));
+        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+        assert_eq!(
+            std::fs::read(root.join("destination").join("source")).unwrap(),
+            b"occupied"
+        );
+        assert!(has_local_transaction_dir(&root));
     }
 }

@@ -5796,6 +5796,29 @@ impl PendingDestinationRecord {
         self.pending_destination_name.decode()
     }
 
+    pub fn destination_transaction_name(&self) -> Result<std::path::PathBuf, JournalError> {
+        self.destination_transaction_name
+            .as_ref()
+            .ok_or_else(|| {
+                JournalError::InvalidJson(
+                    "pending destination transaction name is missing".to_string(),
+                )
+            })?
+            .decode()
+    }
+
+    pub fn destination_transaction_identity(&self) -> Option<LinuxStableIdentity> {
+        self.destination_transaction_identity
+    }
+
+    pub fn source_tree_snapshot(&self) -> Option<SourceTreeSnapshot> {
+        self.source_tree_snapshot.clone()
+    }
+
+    pub fn staged_destination_identity(&self) -> Option<LinuxStableIdentity> {
+        self.staged_destination_identity
+    }
+
     pub fn has_cross_device_destination_state(&self) -> bool {
         self.destination_transaction_name.is_some()
             || self.destination_transaction_identity.is_some()
