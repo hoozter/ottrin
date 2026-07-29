@@ -1,6 +1,6 @@
 # Ottrin Roadmap
 
-Last updated: 2026-07-23
+Last updated: 2026-07-29
 
 Ottrin is in v1 release hardening. The product focus is daily-driver reliability: navigation, file operations, search, previews, packaging, and clear failure states.
 
@@ -26,6 +26,11 @@ Implemented:
 
 ## Still needs implementation or real QA before v1:
 
+- Storage Locations must expose every user-accessible filesystem root instead of assuming the home profile is the whole machine. Windows must discover and navigate fixed, removable, optical, and mapped-network drive letters such as `D:` and `P:`; Linux must discover user-visible mounted volumes and removable-media mount points.
+- The Locations UX must keep Ottrin visually clean while making Home, bookmarks/quick links, drives, and mounted volumes immediately discoverable. Prototype a compact collapsible Locations rail or equivalent unified surface before committing to a permanently wide second sidebar.
+- Drive/volume discovery must refresh after attachment, removal, mapping, or disconnection. An unavailable or removed current volume must produce a clear non-destructive state and a safe navigation route; it must never silently redirect a file operation.
+- External-volume navigation must work without automatically indexing every attached drive. Users choose which additional volumes enter indexed search; direct browsing and scoped fallback search remain available independently.
+- Copy and Move must be tested across volume boundaries, including removable drives. Cross-filesystem Move remains gated by the durable Move protocol and may not degrade into an unjournaled copy-then-delete operation.
 - Linux manual workflow QA across navigation, file operations, search, Tandem View, multi-select, Quick Inspector, context menus, thumbnail view options, and status messages.
 - Linux privileged helper and polkit smoke test from packaged layout.
 - Real Windows runtime smoke for portable zip: launch, navigation, file operations, Trash/Recycling Bin, search, Quick Inspector, UAC/helper behavior, and background updater.
@@ -42,6 +47,8 @@ V1 should not ship until:
 - Linux and Windows CI pass.
 - Linux AppImage and portable tarball launch from clean artifacts.
 - Windows portable zip launches and passes real desktop smoke testing.
+- Windows secondary fixed drives, removable drives, and mapped network drives are discoverable and navigable; Linux user-visible mounted/removable volumes pass the equivalent attach, browse, detach, and unavailable-state checks.
+- Cross-volume Copy passes, and each enabled cross-volume Move mode passes its platform-specific journal, crash-recovery, hot-unplug, and native packaged acceptance gates.
 - Privileged helper behavior is validated on Linux and Windows.
 - Known limitations match the actual tested state.
 
