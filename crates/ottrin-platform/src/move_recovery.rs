@@ -5771,6 +5771,38 @@ impl PendingDestinationRecord {
             .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
         Self::try_from(raw)
     }
+
+    pub fn source_parent_identity(&self) -> LinuxStableIdentity {
+        self.source_parent_identity
+    }
+
+    pub fn original_name(&self) -> Result<std::path::PathBuf, JournalError> {
+        self.original_name.decode()
+    }
+
+    pub fn original_name_matches_path(&self, source_name: &Path) -> bool {
+        self.original_name == NativePath::encode(source_name)
+    }
+
+    pub fn expected_source_identity(&self) -> LinuxStableIdentity {
+        self.expected_source_identity
+    }
+
+    pub fn claimed_source_identity(&self) -> LinuxStableIdentity {
+        self.claimed_source_identity
+    }
+
+    pub fn pending_destination_name(&self) -> Result<std::path::PathBuf, JournalError> {
+        self.pending_destination_name.decode()
+    }
+
+    pub fn has_cross_device_destination_state(&self) -> bool {
+        self.destination_transaction_name.is_some()
+            || self.destination_transaction_identity.is_some()
+            || self.source_tree_snapshot.is_some()
+            || self.staged_destination_identity.is_some()
+            || self.expected_displaced_destination_identity.is_some()
+    }
 }
 
 #[cfg(target_os = "linux")]
