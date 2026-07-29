@@ -115,6 +115,8 @@ fn move_with_hooks(
             )));
         }
     };
+    let destination_parent = move_recovery::LinuxSourceParentDirectory::open(destination_dir)
+        .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
     if is_cross_device && conflict == ConflictAction::Overwrite {
         return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
             source.display().to_string(),
@@ -191,11 +193,6 @@ fn move_with_hooks(
     let mut destination_target = destination_dir.join(&destination_name);
 
     if is_cross_device {
-        let destination_parent = move_recovery::LinuxSourceParentDirectory::open(destination_dir)
-            .map_err(|error| PlatformError::CommittedCleanupPending {
-            transaction: local_path.display().to_string(),
-            message: format!("destination transaction parent open failed: {error}"),
-        })?;
         let destination_transaction = destination_parent
             .create_transaction(recovery_transaction_id)
             .map_err(|error| PlatformError::CommittedCleanupPending {
@@ -266,10 +263,19 @@ fn move_with_hooks(
                     message: format!("destination parent flush failed: {error}"),
                 })?;
 
-            let staged_candidate = destination_transaction_path.join(CROSS_DEVICE_STAGED_NAME);
+            let destination_transaction_directory =
+                move_recovery::LinuxJournalDirectory::open_configured(
+                    destination_transaction_path.as_path(),
+                )
+                .map_err(|error| PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("destination transaction reopen failed: {error}"),
+                })?;
             match publish_claimed_to_destination_with_no_replace(
-                &staged_candidate,
-                &destination_target,
+                &destination_transaction_directory,
+                &destination_parent,
+                std::ffi::OsStr::new(CROSS_DEVICE_STAGED_NAME),
+                destination_name.as_os_str(),
             ) {
                 Ok(()) => {
                     break;
@@ -277,10 +283,9 @@ fn move_with_hooks(
                 Err(publish_error) if publish_error.kind() == std::io::ErrorKind::AlreadyExists => {
                     if conflict == ConflictAction::Skip {
                         restore_claimed_to_source(
-                            source_parent_path,
+                            &source_parent,
+                            &local,
                             source_name,
-                            &claimed_path,
-                            &local_path,
                         )
                         .map_err(|restore_error| PlatformError::CommittedCleanupPending {
                             transaction: local_path.display().to_string(),
@@ -298,8 +303,10 @@ fn move_with_hooks(
                     }
                     if conflict == ConflictAction::Overwrite {
                         publish_claimed_to_destination_with_exchange(
-                            &staged_candidate,
-                            &destination_target,
+                            &destination_transaction_directory,
+                            &destination_parent,
+                            std::ffi::OsStr::new(CROSS_DEVICE_STAGED_NAME),
+                            destination_name.as_os_str(),
                         )
                         .map_err(|publish_error| {
                             PlatformError::CommittedCleanupPending {
@@ -399,17 +406,21 @@ fn move_with_hooks(
         hook(TestPoint::PendingDestination)
             .map_err(|message| PlatformError::Io(format!("move test hook failed: {message}")))?;
 
-        match publish_claimed_to_destination_with_no_replace(&claimed_path, &destination_target) {
+        match publish_claimed_to_destination_with_no_replace(
+            &local,
+            &destination_parent,
+            std::ffi::OsStr::new("claimed"),
+            destination_name.as_os_str(),
+        ) {
             Ok(()) => {
                 break;
             }
             Err(publish_error) if publish_error.kind() == std::io::ErrorKind::AlreadyExists => {
                 if conflict == ConflictAction::Skip {
                     restore_claimed_to_source(
-                        source_parent_path,
+                        &source_parent,
+                        &local,
                         source_name,
-                        &claimed_path,
-                        &local_path,
                     )
                     .map_err(|restore_error| PlatformError::CommittedCleanupPending {
                         transaction: local_path.display().to_string(),
@@ -427,8 +438,10 @@ fn move_with_hooks(
 
                 if conflict == ConflictAction::Overwrite {
                     publish_claimed_to_destination_with_exchange(
-                        &claimed_path,
-                        &destination_target,
+                        &local,
+                        &destination_parent,
+                        std::ffi::OsStr::new("claimed"),
+                        destination_name.as_os_str(),
                     )
                     .map_err(|publish_error| {
                         PlatformError::CommittedCleanupPending {
@@ -512,52 +525,33 @@ fn cleanup_transaction_journals(
 
 #[cfg(target_os = "linux")]
 fn publish_claimed_to_destination_with_no_replace(
-    claimed: &Path,
-    destination: &Path,
+    claimed: &move_recovery::LinuxJournalDirectory,
+    destination_parent: &move_recovery::LinuxSourceParentDirectory,
+    source_name: &std::ffi::OsStr,
+    destination_name: &std::ffi::OsStr,
 ) -> std::io::Result<()> {
-    use rustix::fs::{CWD, RenameFlags, renameat_with};
-    use rustix::io::Errno;
-
-    match renameat_with(CWD, claimed, CWD, destination, RenameFlags::NOREPLACE) {
-        Ok(()) => Ok(()),
-        Err(error) => {
-            if error == Errno::EXIST {
-                Err(std::io::Error::from(std::io::ErrorKind::AlreadyExists))
-            } else {
-                Err(std::io::Error::other(error.to_string()))
-            }
-        }
-    }
+    claimed.rename_to_parent_no_replace(source_name, destination_parent, destination_name)
 }
 
 #[cfg(target_os = "linux")]
 fn publish_claimed_to_destination_with_exchange(
-    claimed: &Path,
-    destination: &Path,
+    claimed: &move_recovery::LinuxJournalDirectory,
+    destination_parent: &move_recovery::LinuxSourceParentDirectory,
+    source_name: &std::ffi::OsStr,
+    destination_name: &std::ffi::OsStr,
 ) -> std::io::Result<()> {
-    use rustix::fs::{CWD, RenameFlags, renameat_with};
-
-    renameat_with(CWD, claimed, CWD, destination, RenameFlags::EXCHANGE)
-        .map_err(|error| std::io::Error::other(error.to_string()))
+    claimed.rename_to_parent_exchange(source_name, destination_parent, destination_name)
 }
 
 #[cfg(target_os = "linux")]
 fn restore_claimed_to_source(
-    source_parent: &Path,
+    source_parent: &move_recovery::LinuxSourceParentDirectory,
+    claimed: &move_recovery::LinuxJournalDirectory,
     source_name: &std::ffi::OsStr,
-    claimed: &Path,
-    _local_path: &Path,
 ) -> Result<(), String> {
-    use rustix::fs::{CWD, RenameFlags, renameat_with};
-    let original_target = source_parent.join(source_name);
-    renameat_with(
-        CWD,
-        claimed,
-        CWD,
-        original_target.as_os_str(),
-        RenameFlags::NOREPLACE,
-    )
-    .map_err(|error| error.to_string())
+    claimed
+        .rename_to_parent_no_replace(std::ffi::OsStr::new("claimed"), source_parent, source_name)
+        .map_err(|error| error.to_string())
 }
 
 #[cfg(target_os = "linux")]
@@ -919,5 +913,151 @@ mod tests {
                 .to_string_lossy()
                 .starts_with(".ottrin-move-")
         }));
+    }
+
+    #[test]
+    fn same_filesystem_publication_uses_verified_destination_parent_after_destination_alias_retarget()
+     {
+        let dir = TestDir::new("destination-handle-rebind");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        let retired = dir.0.join("destination-retired");
+        let attacker = dir.0.join("attacker");
+        std::fs::write(&source, "payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::create_dir(&retired).unwrap();
+        std::fs::create_dir(&attacker).unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| {
+                if point == TestPoint::PendingDestination {
+                    std::fs::rename(&destination, &retired).unwrap();
+                    std::fs::rename(&attacker, &destination).unwrap();
+                }
+                Ok(())
+            },
+        );
+        assert!(result.is_ok(), "move failed: {result:?}");
+        assert_eq!(std::fs::read(retired.join("source")).unwrap(), b"payload");
+        assert!(!destination.join("source").exists());
+        assert!(!source.exists());
+    }
+
+    #[test]
+    fn same_filesystem_restore_uses_verified_source_parent_after_source_alias_retarget() {
+        let dir = TestDir::new("source-handle-rebind");
+        let source_parent_real = dir.0.join("source-parent");
+        let source_parent_alias = dir.0.join("source-parent-link");
+        let source = source_parent_alias.join("source");
+        let destination = dir.0.join("destination");
+        let attacker = dir.0.join("attacker");
+        std::fs::create_dir(&source_parent_real).unwrap();
+        std::fs::create_dir(&attacker).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        use std::os::unix::fs::symlink;
+        symlink(&source_parent_real, &source_parent_alias).unwrap();
+        std::fs::write(&source, "payload").unwrap();
+        std::fs::write(destination.join("source"), "occupied").unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| {
+                if point == TestPoint::PendingDestination {
+                    let _ = std::fs::remove_file(&source_parent_alias);
+                    symlink(&attacker, &source_parent_alias).unwrap();
+                }
+                Ok(())
+            },
+        );
+        assert!(result.is_ok());
+        assert_eq!(
+            std::fs::read(source_parent_real.join("source")).unwrap(),
+            b"payload"
+        );
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"occupied"
+        );
+        assert!(!attacker.join("source").exists());
+    }
+
+    #[cfg(target_os = "linux")]
+    fn run_publication_sigkill_child(root: &Path) {
+        use rustix::process;
+
+        let source = root.join("source");
+        let destination = root.join("destination");
+        std::fs::write(&source, "payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| {
+                if point == TestPoint::Publication {
+                    let _ = process::kill_process(process::getpid(), process::Signal::Kill);
+                    panic!("publication child was not terminated");
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        panic!("publication move returned {result:?} without being terminated");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn same_filesystem_publication_kill_child_process_after_publication_preserves_volatile_state() {
+        use std::os::unix::process::ExitStatusExt;
+        use std::process::Command;
+
+        if std::env::var_os("OTTRIN_MOVE_PUBLICATION_SIGKILL_CHILD").as_deref()
+            == Some(std::ffi::OsStr::new("1"))
+        {
+            let root = std::env::var_os("OTTRIN_MOVE_PUBLICATION_SIGKILL_ROOT").unwrap();
+            run_publication_sigkill_child(Path::new(&root));
+            panic!("publication kill child returned without being terminated");
+        }
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-publication-kill-{}",
+            getrandom::u64().unwrap()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let state_root = root.join("state");
+        std::fs::create_dir_all(&state_root).unwrap();
+        let status = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "move_transaction::tests::same_filesystem_publication_kill_child_process_after_publication_preserves_volatile_state",
+                "--test-threads=1",
+                "--nocapture",
+            ])
+            .env("OTTRIN_MOVE_PUBLICATION_SIGKILL_CHILD", "1")
+            .env("OTTRIN_MOVE_PUBLICATION_SIGKILL_ROOT", &root)
+            .env("XDG_STATE_HOME", state_root)
+            .status()
+            .unwrap();
+        assert_eq!(status.signal(), Some(9));
+        assert_eq!(
+            std::fs::read(root.join("destination").join("source")).unwrap(),
+            b"payload"
+        );
+        assert!(!std::fs::exists(root.join("source")).unwrap_or_default());
+        let has_local_journal = std::fs::read_dir(&root)
+            .unwrap()
+            .filter_map(Result::ok)
+            .any(|entry| {
+                entry
+                    .file_name()
+                    .to_string_lossy()
+                    .starts_with(".ottrin-move-")
+            });
+        assert!(has_local_journal);
     }
 }

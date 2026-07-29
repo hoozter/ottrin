@@ -2700,6 +2700,51 @@ impl LinuxJournalDirectory {
         })?;
         sync_directory().map_err(LinuxJournalReplaceError::AfterRename)
     }
+
+    pub(super) fn rename_to_parent_no_replace(
+        &self,
+        source_name: &std::ffi::OsStr,
+        destination_parent: &LinuxSourceParentDirectory,
+        destination_name: &std::ffi::OsStr,
+    ) -> std::io::Result<()> {
+        use rustix::fs::{RenameFlags, renameat_with};
+        use rustix::io::Errno;
+
+        match renameat_with(
+            &self.directory,
+            source_name,
+            &destination_parent.directory,
+            destination_name,
+            RenameFlags::NOREPLACE,
+        ) {
+            Ok(()) => Ok(()),
+            Err(error) => {
+                if error == Errno::EXIST {
+                    Err(std::io::Error::from(std::io::ErrorKind::AlreadyExists))
+                } else {
+                    Err(std::io::Error::other(error.to_string()))
+                }
+            }
+        }
+    }
+
+    pub(super) fn rename_to_parent_exchange(
+        &self,
+        source_name: &std::ffi::OsStr,
+        destination_parent: &LinuxSourceParentDirectory,
+        destination_name: &std::ffi::OsStr,
+    ) -> std::io::Result<()> {
+        use rustix::fs::{RenameFlags, renameat_with};
+
+        renameat_with(
+            &self.directory,
+            source_name,
+            &destination_parent.directory,
+            destination_name,
+            RenameFlags::EXCHANGE,
+        )
+        .map_err(|error| std::io::Error::other(error.to_string()))
+    }
 }
 
 #[cfg(target_os = "linux")]
