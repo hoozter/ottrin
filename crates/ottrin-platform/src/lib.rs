@@ -1,6 +1,8 @@
 use ottrin_core::{
     ConflictAction, DeleteMode, EntryKind, FileCommand, PrivilegedRequest, PrivilegedResponse,
 };
+#[cfg(target_os = "linux")]
+use std::collections::HashSet;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -96,6 +98,181 @@ pub enum PlatformError {
         recovery_paths: Vec<PathBuf>,
         message: String,
     },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StorageLocationKind {
+    Internal,
+    Removable,
+    Optical,
+    Network,
+    Unavailable,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StorageLocation {
+    pub path: PathBuf,
+    pub kind: StorageLocationKind,
+}
+
+/// Discovers user-visible filesystem roots for direct navigation only.
+///
+/// Callers must opt locations into indexing separately; attaching storage never changes
+/// indexed-search configuration.
+pub fn discover_storage_locations() -> Vec<StorageLocation> {
+    #[cfg(target_os = "linux")]
+    {
+        std::fs::read_to_string("/proc/mounts")
+            .map(|mounts| discover_linux_storage_locations_from_mounts(&mounts))
+            .unwrap_or_default()
+    }
+    #[cfg(target_os = "windows")]
+    {
+        discover_windows_storage_locations()
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+    {
+        Vec::new()
+    }
+}
+
+#[cfg(target_os = "linux")]
+const LINUX_PSEUDO_FILESYSTEM_TYPES: [&str; 16] = [
+    "autofs",
+    "binfmt_misc",
+    "cgroup",
+    "cgroup2",
+    "configfs",
+    "debugfs",
+    "devpts",
+    "devtmpfs",
+    "mqueue",
+    "proc",
+    "pstore",
+    "securityfs",
+    "selinuxfs",
+    "sysfs",
+    "tmpfs",
+    "tracefs",
+];
+
+#[cfg(target_os = "linux")]
+fn discover_linux_storage_locations_from_mounts(mounts: &str) -> Vec<StorageLocation> {
+    let mut locations = Vec::new();
+    let mut seen = HashSet::new();
+    for line in mounts.lines() {
+        let mut fields = line.split_whitespace();
+        let source = fields.next().unwrap_or_default();
+        let mount_point = fields.next().unwrap_or_default();
+        let filesystem = fields.next().unwrap_or_default();
+        if source.is_empty()
+            || mount_point.is_empty()
+            || LINUX_PSEUDO_FILESYSTEM_TYPES.contains(&filesystem)
+        {
+            continue;
+        }
+        let path = PathBuf::from(unescape_linux_mount_path(mount_point));
+        if !(path.starts_with("/media")
+            || path.starts_with("/mnt")
+            || path.starts_with("/run/media"))
+            || !seen.insert(path.clone())
+        {
+            continue;
+        }
+        locations.push(StorageLocation {
+            kind: classify_linux_storage_kind(&path, source, filesystem),
+            path,
+        });
+    }
+    locations
+}
+
+#[cfg(target_os = "linux")]
+fn unescape_linux_mount_path(value: &str) -> String {
+    value
+        .replace("\\040", " ")
+        .replace("\\011", "\t")
+        .replace("\\012", "\n")
+        .replace("\\134", "\\")
+}
+
+#[cfg(target_os = "linux")]
+fn classify_linux_storage_kind(path: &Path, source: &str, filesystem: &str) -> StorageLocationKind {
+    if matches!(
+        filesystem,
+        "cifs" | "nfs" | "nfs4" | "smbfs" | "sshfs" | "davfs"
+    ) || source.starts_with("//")
+    {
+        StorageLocationKind::Network
+    } else if source.starts_with("/dev/sr") || matches!(filesystem, "iso9660" | "udf") {
+        StorageLocationKind::Optical
+    } else if path.starts_with("/media") || path.starts_with("/run/media") {
+        StorageLocationKind::Removable
+    } else {
+        StorageLocationKind::Internal
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn discover_windows_storage_locations() -> Vec<StorageLocation> {
+    use std::iter::once;
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Storage::FileSystem::{GetDriveTypeW, GetLogicalDrives};
+
+    const REMOVABLE: u32 = 2;
+    const FIXED: u32 = 3;
+    const REMOTE: u32 = 4;
+    const CDROM: u32 = 5;
+    let drive_mask = unsafe { GetLogicalDrives() };
+    (0..26)
+        .filter_map(|index| {
+            ((drive_mask & (1 << index)) != 0).then(|| {
+                let path = PathBuf::from(format!("{}:\\", (b'A' + index as u8) as char));
+                let wide: Vec<u16> = path.as_os_str().encode_wide().chain(once(0)).collect();
+                let kind = match unsafe { GetDriveTypeW(wide.as_ptr()) } {
+                    REMOVABLE => StorageLocationKind::Removable,
+                    FIXED => StorageLocationKind::Internal,
+                    REMOTE => StorageLocationKind::Network,
+                    CDROM => StorageLocationKind::Optical,
+                    _ => return None,
+                };
+                Some(StorageLocation { path, kind })
+            })?
+        })
+        .collect()
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod storage_location_tests {
+    use super::*;
+
+    #[test]
+    fn linux_storage_discovery_exposes_user_visible_mounts_without_home() {
+        let locations = discover_linux_storage_locations_from_mounts(
+            "/dev/sdb1 /media/alice/Backup ext4 rw 0 0\n\\
+             server:/share /mnt/team nfs4 rw 0 0\n\\
+             /dev/sr0 /run/media/alice/Install iso9660 ro 0 0\n\\
+             proc /proc proc rw 0 0\n",
+        );
+
+        assert_eq!(
+            locations,
+            vec![
+                StorageLocation {
+                    path: PathBuf::from("/media/alice/Backup"),
+                    kind: StorageLocationKind::Removable,
+                },
+                StorageLocation {
+                    path: PathBuf::from("/mnt/team"),
+                    kind: StorageLocationKind::Network,
+                },
+                StorageLocation {
+                    path: PathBuf::from("/run/media/alice/Install"),
+                    kind: StorageLocationKind::Optical,
+                },
+            ]
+        );
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

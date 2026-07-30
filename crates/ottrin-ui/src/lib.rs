@@ -17,7 +17,8 @@ use ottrin_core::{
     format_modified, format_size, format_size_units, platform_case_mode_current,
 };
 use ottrin_platform::{
-    DefaultPlatform, PlatformError, PlatformOps, PrivilegedAvailability, TrashItem,
+    DefaultPlatform, PlatformError, PlatformOps, PrivilegedAvailability, StorageLocation,
+    StorageLocationKind, TrashItem, discover_storage_locations,
 };
 #[cfg(target_os = "linux")]
 use ottrin_platform::{discover_retained_move_transactions, move_recovery::JournalPhase};
@@ -714,18 +715,6 @@ enum SidebarSection {
     Search,
     Activity,
     Trash,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum LocationStorageKind {
-    Internal,
-    #[cfg(target_os = "linux")]
-    Removable,
-    #[cfg(target_os = "linux")]
-    Optical,
-    #[cfg(target_os = "windows")]
-    Network,
-    Unavailable,
 }
 
 // ── Settings tab ─────────────────────────────────────────────────────────────
@@ -5037,6 +5026,14 @@ impl OttrinApp {
 
     // ── Navigation ────────────────────────────────────────────────────────────
 
+    fn navigate_to_location(&mut self, tab_id: u64, path: PathBuf) {
+        if path.is_dir() {
+            self.navigate_tab_to(tab_id, path);
+        } else {
+            self.set_status_message("Location is unavailable; current folder was kept", false, 4);
+        }
+    }
+
     fn navigate_tab_to(&mut self, tab_id: u64, dir: PathBuf) {
         self.focus_tab(tab_id);
         self.remember_main_selection(tab_id);
@@ -8185,55 +8182,26 @@ impl OttrinApp {
         }
     }
 
-    #[cfg(target_os = "linux")]
-    fn classify_storage_kind(path: &Path) -> LocationStorageKind {
-        if !path.exists() {
-            LocationStorageKind::Unavailable
-        } else {
-            let path_text = path.to_string_lossy();
-            if path_text.contains("/media/") || path_text.contains("/run/media/") {
-                LocationStorageKind::Removable
-            } else if path_text.contains("/mnt/") {
-                LocationStorageKind::Internal
-            } else if path_text.contains("sr")
-                || path_text.contains("cd")
-                || path_text.contains("dvd")
-            {
-                LocationStorageKind::Optical
-            } else {
-                LocationStorageKind::Internal
-            }
+    fn storage_icon_for_kind(kind: StorageLocationKind) -> &'static str {
+        match kind {
+            StorageLocationKind::Internal | StorageLocationKind::Optical => MI_STORAGE,
+            StorageLocationKind::Removable => MI_FOLDER_OPEN,
+            StorageLocationKind::Network => MI_FOLDER_SHARED,
+            StorageLocationKind::Unavailable => MI_CLEAR,
         }
     }
 
-    #[cfg(target_os = "windows")]
-    fn classify_storage_kind(path: &Path) -> LocationStorageKind {
-        let text = path.to_string_lossy();
-        if text.starts_with("\\\\") {
-            LocationStorageKind::Network
-        } else if !path.exists() {
-            LocationStorageKind::Unavailable
+    fn storage_icon_for_bookmark<'a>(stored_icon: &'a str, path: &Path) -> &'a str {
+        if matches!(stored_icon, MI_STORAGE | MI_FOLDER_OPEN | MI_FOLDER_SHARED) && !path.exists() {
+            MI_CLEAR
         } else {
-            LocationStorageKind::Internal
-        }
-    }
-
-    fn storage_icon_for_path(path: &Path) -> &'static str {
-        match Self::classify_storage_kind(path) {
-            LocationStorageKind::Internal => MI_STORAGE,
-            #[cfg(target_os = "linux")]
-            LocationStorageKind::Removable => MI_FOLDER_OPEN,
-            #[cfg(target_os = "linux")]
-            LocationStorageKind::Optical => MI_STORAGE,
-            #[cfg(target_os = "windows")]
-            LocationStorageKind::Network => MI_FOLDER_SHARED,
-            LocationStorageKind::Unavailable => MI_CLEAR,
+            stored_icon
         }
     }
 
     fn default_bookmarks_from_roots(
         home: &Path,
-        storage_roots: Vec<PathBuf>,
+        storage_roots: Vec<StorageLocation>,
     ) -> Vec<(String, String, PathBuf)> {
         let mut bookmarks = vec![
             (MI_HOME.to_string(), "Home".to_string(), home.to_path_buf()),
@@ -8259,11 +8227,11 @@ impl OttrinApp {
             bookmarks.iter().map(|(_, _, path)| path.clone()).collect();
 
         for root in storage_roots {
-            if seen.insert(root.clone()) {
+            if seen.insert(root.path.clone()) {
                 bookmarks.push((
-                    MI_STORAGE.to_string(),
-                    Self::storage_root_label_for_path(home, &root),
-                    root,
+                    Self::storage_icon_for_kind(root.kind).to_string(),
+                    Self::storage_root_label_for_path(home, &root.path),
+                    root.path,
                 ));
             }
         }
@@ -8279,7 +8247,7 @@ impl OttrinApp {
         // Ensure default bookmarks exist on first run
         if self.state.config.bookmarks.is_empty() {
             self.state.config.bookmarks =
-                Self::default_bookmarks_from_roots(&home, default_search_roots())
+                Self::default_bookmarks_from_roots(&home, discover_storage_locations())
                     .into_iter()
                     .filter(|(_, _, p)| p.exists())
                     .collect();
@@ -8340,11 +8308,7 @@ impl OttrinApp {
                 for (idx, (stored_icon, name, path)) in bookmarks.iter().enumerate() {
                     let path = path.clone();
                     let is_here = displayed_path == path;
-                    let icon = if stored_icon == MI_STORAGE {
-                        Self::storage_icon_for_path(&path)
-                    } else {
-                        stored_icon.as_str()
-                    };
+                    let icon = Self::storage_icon_for_bookmark(stored_icon, &path);
                     let identity = Self::locations_rail_identity(&home, name, &path);
                     let text = if expanded {
                         format!("{icon} {name}")
@@ -8387,7 +8351,7 @@ impl OttrinApp {
 
         if let Some(path) = navigate_to {
             let tab_id = self.state.active_tab().id;
-            self.navigate_tab_to(tab_id, path);
+            self.navigate_to_location(tab_id, path);
         }
         if let Some(idx) = remove_idx {
             self.state.config.bookmarks.remove(idx);
@@ -19310,11 +19274,18 @@ mod tests {
     fn default_bookmarks_include_discovered_storage_roots() {
         let home = PathBuf::from("/home/alice");
         let discovered = vec![
-            PathBuf::from("/"),
-            home.clone(),
-            PathBuf::from("/media/usb-drive"),
-            PathBuf::from("/mnt/storage"),
-            PathBuf::from("/media/usb-drive"),
+            StorageLocation {
+                path: PathBuf::from("/media/usb-drive"),
+                kind: StorageLocationKind::Removable,
+            },
+            StorageLocation {
+                path: PathBuf::from("/mnt/storage"),
+                kind: StorageLocationKind::Internal,
+            },
+            StorageLocation {
+                path: PathBuf::from("/media/usb-drive"),
+                kind: StorageLocationKind::Removable,
+            },
         ];
 
         let bookmarks = OttrinApp::default_bookmarks_from_roots(&home, discovered);
@@ -19330,7 +19301,7 @@ mod tests {
         assert_eq!(
             bookmarks[5],
             (
-                MI_STORAGE.to_string(),
+                MI_FOLDER_OPEN.to_string(),
                 "usb-drive".to_string(),
                 PathBuf::from("/media/usb-drive")
             )
@@ -19355,7 +19326,22 @@ mod tests {
     #[test]
     fn storage_icon_for_missing_storage_is_unavailable() {
         let missing = PathBuf::from("/__ottrin_missing_storage_root__");
-        assert_eq!(OttrinApp::storage_icon_for_path(&missing), MI_CLEAR);
+        assert_eq!(
+            OttrinApp::storage_icon_for_bookmark(MI_STORAGE, &missing),
+            MI_CLEAR
+        );
+    }
+
+    #[test]
+    fn unavailable_location_does_not_replace_the_current_directory() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        let original = app.state.active_tab().current_dir.clone();
+
+        app.navigate_to_location(tab_id, PathBuf::from("/__ottrin_removed_volume__"));
+
+        assert_eq!(app.state.active_tab().current_dir, original);
+        assert!(app.status_message.is_some());
     }
 
     #[cfg(target_os = "windows")]
