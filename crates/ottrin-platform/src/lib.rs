@@ -113,6 +113,8 @@ pub enum StorageLocationKind {
 pub struct StorageLocation {
     pub path: PathBuf,
     pub kind: StorageLocationKind,
+    /// User-facing volume or mapped-share name, when the platform can provide one.
+    pub display_name: Option<String>,
 }
 
 /// Discovers user-visible filesystem roots for direct navigation only.
@@ -182,6 +184,7 @@ fn discover_linux_storage_locations_from_mounts(mounts: &str) -> Vec<StorageLoca
         locations.push(StorageLocation {
             kind: classify_linux_storage_kind(&path, source, filesystem),
             path,
+            display_name: None,
         });
     }
     locations
@@ -227,7 +230,8 @@ fn discover_windows_storage_locations() -> Vec<StorageLocation> {
     (0..26)
         .filter_map(|index| {
             ((drive_mask & (1 << index)) != 0).then(|| {
-                let path = PathBuf::from(format!("{}:\\", (b'A' + index as u8) as char));
+                let drive_identity = format!("{}:", (b'A' + index as u8) as char);
+                let path = PathBuf::from(format!("{drive_identity}\\"));
                 let wide: Vec<u16> = path.as_os_str().encode_wide().chain(once(0)).collect();
                 let kind = match unsafe { GetDriveTypeW(wide.as_ptr()) } {
                     REMOVABLE => StorageLocationKind::Removable,
@@ -236,15 +240,99 @@ fn discover_windows_storage_locations() -> Vec<StorageLocation> {
                     CDROM => StorageLocationKind::Optical,
                     _ => return None,
                 };
-                Some(StorageLocation { path, kind })
+                let volume_label = windows_volume_label(&wide);
+                let drive_identity_wide: Vec<u16> =
+                    drive_identity.encode_utf16().chain(once(0)).collect();
+                let mapped_share = (kind == StorageLocationKind::Network)
+                    .then(|| windows_mapped_share(&drive_identity_wide))
+                    .flatten();
+                Some(StorageLocation {
+                    path,
+                    kind,
+                    display_name: Some(windows_storage_display_name(
+                        volume_label.as_deref(),
+                        mapped_share.as_deref(),
+                        &drive_identity,
+                    )),
+                })
             })?
         })
         .collect()
 }
 
+#[cfg(target_os = "windows")]
+fn windows_volume_label(root: &[u16]) -> Option<String> {
+    let mut label = [0_u16; 261];
+    let ok = unsafe {
+        windows_sys::Win32::Storage::FileSystem::GetVolumeInformationW(
+            root.as_ptr(),
+            label.as_mut_ptr(),
+            label.len() as u32,
+            std::ptr::null_mut(),
+            std::ptr::null_mut(),
+            std::ptr::null_mut(),
+            std::ptr::null_mut(),
+            0,
+        )
+    };
+    if ok == 0 {
+        return None;
+    }
+    let terminator = label.iter().position(|&unit| unit == 0)?;
+    let label = String::from_utf16_lossy(&label[..terminator]);
+    (!label.trim().is_empty()).then_some(label)
+}
+
+#[cfg(target_os = "windows")]
+fn windows_mapped_share(drive_root: &[u16]) -> Option<String> {
+    let mut remote_name = vec![0_u16; 32_768];
+    let mut length = remote_name.len() as u32;
+    let result = unsafe {
+        windows_sys::Win32::NetworkManagement::WNet::WNetGetConnectionW(
+            drive_root.as_ptr(),
+            remote_name.as_mut_ptr(),
+            &mut length,
+        )
+    };
+    (result == 0)
+        .then(|| String::from_utf16_lossy(&remote_name[..length as usize]))
+        .filter(|name| !name.trim().is_empty())
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_storage_display_name(
+    volume_label: Option<&str>,
+    mapped_share: Option<&str>,
+    drive_identity: &str,
+) -> String {
+    volume_label
+        .filter(|label| !label.trim().is_empty())
+        .map(str::to_string)
+        .or_else(|| {
+            mapped_share
+                .map(str::trim)
+                .filter(|share| !share.is_empty())
+                .map(|share| share.trim_start_matches('\\').to_string())
+        })
+        .unwrap_or_else(|| drive_identity.to_string())
+}
+
 #[cfg(all(test, target_os = "linux"))]
 mod storage_location_tests {
     use super::*;
+
+    #[test]
+    fn windows_storage_display_name_prefers_volume_or_share_over_drive_identity() {
+        assert_eq!(
+            windows_storage_display_name(Some("Archive"), None, "D:"),
+            "Archive"
+        );
+        assert_eq!(
+            windows_storage_display_name(None, Some("\\\\files.example\\team"), "P:"),
+            "files.example\\team"
+        );
+        assert_eq!(windows_storage_display_name(None, None, "E:"), "E:");
+    }
 
     #[test]
     fn linux_storage_discovery_exposes_user_visible_mounts_without_home() {
@@ -261,14 +349,17 @@ mod storage_location_tests {
                 StorageLocation {
                     path: PathBuf::from("/media/alice/Backup"),
                     kind: StorageLocationKind::Removable,
+                    display_name: None,
                 },
                 StorageLocation {
                     path: PathBuf::from("/mnt/team"),
                     kind: StorageLocationKind::Network,
+                    display_name: None,
                 },
                 StorageLocation {
                     path: PathBuf::from("/run/media/alice/Install"),
                     kind: StorageLocationKind::Optical,
+                    display_name: None,
                 },
             ]
         );

@@ -8360,7 +8360,8 @@ impl OttrinApp {
             if seen.insert(root.path.clone()) {
                 bookmarks.push((
                     Self::storage_icon_for_kind(root.kind).to_string(),
-                    Self::storage_root_label_for_path(home, &root.path),
+                    root.display_name
+                        .unwrap_or_else(|| Self::storage_root_label_for_path(home, &root.path)),
                     root.path,
                 ));
             }
@@ -8382,7 +8383,8 @@ impl OttrinApp {
             if seen.insert(root.path.clone()) {
                 bookmarks.push((
                     Self::storage_icon_for_kind(root.kind).to_string(),
-                    Self::storage_root_label_for_path(home, &root.path),
+                    root.display_name
+                        .unwrap_or_else(|| Self::storage_root_label_for_path(home, &root.path)),
                     root.path,
                 ));
             }
@@ -19730,14 +19732,17 @@ mod tests {
             StorageLocation {
                 path: PathBuf::from("/media/usb-drive"),
                 kind: StorageLocationKind::Removable,
+                display_name: Some("USB Archive".to_string()),
             },
             StorageLocation {
                 path: PathBuf::from("/mnt/storage"),
                 kind: StorageLocationKind::Internal,
+                display_name: None,
             },
             StorageLocation {
                 path: PathBuf::from("/media/usb-drive"),
                 kind: StorageLocationKind::Removable,
+                display_name: None,
             },
         ];
 
@@ -19755,7 +19760,7 @@ mod tests {
             bookmarks[5],
             (
                 MI_FOLDER_OPEN.to_string(),
-                "usb-drive".to_string(),
+                "USB Archive".to_string(),
                 PathBuf::from("/media/usb-drive")
             )
         );
@@ -19795,6 +19800,7 @@ mod tests {
             vec![StorageLocation {
                 path: new_root.clone(),
                 kind: StorageLocationKind::Removable,
+                display_name: Some("New USB".to_string()),
             }],
         );
 
@@ -19803,7 +19809,7 @@ mod tests {
         assert_eq!(bookmarks[2].2, user_bookmark);
         assert_eq!(
             bookmarks[3],
-            (MI_FOLDER_OPEN.to_string(), "new-usb".to_string(), new_root,)
+            (MI_FOLDER_OPEN.to_string(), "New USB".to_string(), new_root,)
         );
     }
 

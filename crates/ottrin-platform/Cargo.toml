@@ -21,4 +21,4 @@ same-file = "1"
 rustix = { version = "0.38", features = ["fs", "process"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem"] }
+windows-sys = { version = "0.61", features = ["Win32_NetworkManagement_WNet", "Win32_Storage_FileSystem"] }
