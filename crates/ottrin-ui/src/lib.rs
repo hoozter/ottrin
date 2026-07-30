@@ -8239,18 +8239,44 @@ impl OttrinApp {
         bookmarks
     }
 
+    /// Adds newly available direct-navigation roots without changing user bookmarks or search.
+    fn reconcile_bookmarks_with_storage_roots(
+        home: &Path,
+        bookmarks: &mut Vec<(String, String, PathBuf)>,
+        storage_roots: Vec<StorageLocation>,
+    ) {
+        let mut seen: HashSet<PathBuf> =
+            bookmarks.iter().map(|(_, _, path)| path.clone()).collect();
+
+        for root in storage_roots {
+            if seen.insert(root.path.clone()) {
+                bookmarks.push((
+                    Self::storage_icon_for_kind(root.kind).to_string(),
+                    Self::storage_root_label_for_path(home, &root.path),
+                    root.path,
+                ));
+            }
+        }
+    }
+
     /// Compact, collapsible locations rail (home, quick links, discovered storage).
     fn render_bookmarks_row(&mut self, ctx: &Context) {
         let c = self.colors;
         let home = default_home_dir();
+        let storage_roots = discover_storage_locations();
 
         // Ensure default bookmarks exist on first run
         if self.state.config.bookmarks.is_empty() {
-            self.state.config.bookmarks =
-                Self::default_bookmarks_from_roots(&home, discover_storage_locations())
-                    .into_iter()
-                    .filter(|(_, _, p)| p.exists())
-                    .collect();
+            self.state.config.bookmarks = Self::default_bookmarks_from_roots(&home, storage_roots)
+                .into_iter()
+                .filter(|(_, _, p)| p.exists())
+                .collect();
+        } else {
+            Self::reconcile_bookmarks_with_storage_roots(
+                &home,
+                &mut self.state.config.bookmarks,
+                storage_roots,
+            );
         }
 
         let mut navigate_to: Option<PathBuf> = None;
@@ -19313,6 +19339,44 @@ mod tests {
                 "storage".to_string(),
                 PathBuf::from("/mnt/storage")
             )
+        );
+    }
+
+    #[test]
+    fn reconciling_storage_locations_appends_new_roots_and_preserves_retained_bookmarks() {
+        let home = PathBuf::from("/home/alice");
+        let unavailable_root = PathBuf::from("/__ottrin_removed_volume__");
+        let user_bookmark = PathBuf::from("/home/alice/projects");
+        let new_root = PathBuf::from("/media/new-usb");
+        let mut bookmarks = vec![
+            (MI_HOME.to_string(), "Home".to_string(), home.clone()),
+            (
+                MI_FOLDER_OPEN.to_string(),
+                "Old USB".to_string(),
+                unavailable_root.clone(),
+            ),
+            (
+                MI_FOLDER.to_string(),
+                "Projects".to_string(),
+                user_bookmark.clone(),
+            ),
+        ];
+
+        OttrinApp::reconcile_bookmarks_with_storage_roots(
+            &home,
+            &mut bookmarks,
+            vec![StorageLocation {
+                path: new_root.clone(),
+                kind: StorageLocationKind::Removable,
+            }],
+        );
+
+        assert_eq!(bookmarks.len(), 4);
+        assert_eq!(bookmarks[1].2, unavailable_root);
+        assert_eq!(bookmarks[2].2, user_bookmark);
+        assert_eq!(
+            bookmarks[3],
+            (MI_FOLDER_OPEN.to_string(), "new-usb".to_string(), new_root,)
         );
     }
 
