@@ -1049,6 +1049,24 @@ impl AppState {
         self.tabs.len() - 1
     }
 
+    /// Moves a tab to a final zero-based position while retaining its stable identity.
+    ///
+    /// Returns the moved tab's new index. Invalid positions and no-op moves leave
+    /// all state untouched.
+    pub fn reorder_tab(&mut self, from: usize, to: usize) -> Option<usize> {
+        if from >= self.tabs.len() || to >= self.tabs.len() || from == to {
+            return None;
+        }
+
+        let active_id = self.active_tab().id;
+        let tab = self.tabs.remove(from);
+        self.tabs.insert(to, tab);
+        self.active_tab_idx = self
+            .tab_idx_by_id(active_id)
+            .expect("the active tab remains present while reordering");
+        Some(to)
+    }
+
     pub fn close_tab(&mut self, idx: usize) {
         if self.tabs.len() <= 1 {
             return; // never close the last tab
@@ -1640,6 +1658,54 @@ mod tests {
         // Should not close the last tab
         state.close_tab(0);
         assert_eq!(state.tabs.len(), 1);
+    }
+
+    #[test]
+    fn reorder_tabs_preserves_active_tab_history_and_linked_ids() {
+        let mut state = AppState::default();
+        let middle_idx = state.new_tab(PathBuf::from("/tmp/middle"));
+        let last_idx = state.new_tab(PathBuf::from("/tmp/last"));
+        state.tabs[middle_idx].navigate_to(PathBuf::from("/tmp/middle/history"));
+        state.activate_tandem(0, last_idx).unwrap();
+
+        let active_id = state.active_tab().id;
+        let linked = state.link_view.clone().unwrap();
+        assert_eq!(state.reorder_tab(middle_idx, 0), Some(0));
+
+        assert_eq!(
+            state.tabs.iter().map(|tab| tab.id).collect::<Vec<_>>(),
+            vec![2, 1, 3]
+        );
+        assert_eq!(state.active_tab().id, active_id);
+        assert_eq!(
+            state.tab_by_id(2).unwrap().current_dir,
+            PathBuf::from("/tmp/middle/history")
+        );
+        assert_eq!(
+            state.tab_by_id(2).unwrap().history_back,
+            vec![PathBuf::from("/tmp/middle")]
+        );
+        assert_eq!(state.link_view, Some(linked.clone()));
+
+        assert_eq!(state.reorder_tab(0, 2), Some(2));
+        assert_eq!(
+            state.tabs.iter().map(|tab| tab.id).collect::<Vec<_>>(),
+            vec![1, 3, 2]
+        );
+        assert_eq!(state.active_tab().id, active_id);
+        assert_eq!(state.link_view, Some(linked));
+    }
+
+    #[test]
+    fn reorder_tabs_rejects_invalid_and_noop_positions() {
+        let mut state = AppState::default();
+        state.new_tab(PathBuf::from("/tmp"));
+        let before = state.tabs.clone();
+
+        assert_eq!(state.reorder_tab(2, 0), None);
+        assert_eq!(state.reorder_tab(0, 2), None);
+        assert_eq!(state.reorder_tab(1, 1), None);
+        assert_eq!(state.tabs, before);
     }
 
     #[test]

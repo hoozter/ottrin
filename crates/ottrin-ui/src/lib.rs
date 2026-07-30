@@ -7389,6 +7389,8 @@ impl OttrinApp {
                     let mut navigate_to: Option<(u64, PathBuf)> = None;
                     let mut close_idx: Option<usize> = None;
                     let mut new_tab_requested = false;
+                    let mut tab_rects: Vec<Rect> = Vec::with_capacity(n_tabs);
+                    let mut tab_drag: Option<(usize, egui::Pos2, bool)> = None;
 
                     for i in 0..n_tabs {
                         let tab = &self.state.tabs[i];
@@ -7481,12 +7483,18 @@ impl OttrinApp {
                         let tab_click = ui.interact(
                             tab_click_rect,
                             ui.id().with(("tab_click", tab_id)),
-                            Sense::click(),
+                            Sense::click_and_drag(),
                         );
                         if tab_click.hovered() {
                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                         }
+                        if (tab_click.dragged() || tab_click.drag_stopped())
+                            && let Some(pointer) = tab_click.interact_pointer_pos()
+                        {
+                            tab_drag = Some((i, pointer, tab_click.drag_stopped()));
+                        }
                         blocked_drag_rects.push(tab_rect);
+                        tab_rects.push(tab_rect);
                         if tab_click.clicked() && close_idx.is_none() && !is_active {
                             let shift = ui.ctx().input(|input| input.modifiers.shift);
                             if shift {
@@ -7510,6 +7518,34 @@ impl OttrinApp {
                                 tab_rect.bottom() - 1.0,
                                 Stroke::new(2.0, c.accent),
                             );
+                        }
+                    }
+
+                    if let Some((from, pointer, dropped)) = tab_drag {
+                        let insertion_slot = tab_rects
+                            .iter()
+                            .position(|rect| pointer.x < rect.center().x)
+                            .unwrap_or(n_tabs);
+                        let marker_x = if insertion_slot < n_tabs {
+                            tab_rects[insertion_slot].left()
+                        } else {
+                            tab_rects.last().map_or(pointer.x, Rect::right)
+                        };
+                        ui.painter().vline(
+                            marker_x,
+                            egui::Rangef::new(
+                                tab_rects[0].top() + 3.0,
+                                tab_rects[0].bottom() - 3.0,
+                            ),
+                            Stroke::new(2.0, c.accent),
+                        );
+                        if dropped {
+                            let to = if from < insertion_slot {
+                                insertion_slot.saturating_sub(1)
+                            } else {
+                                insertion_slot
+                            };
+                            let _ = self.state.reorder_tab(from, to);
                         }
                     }
 
