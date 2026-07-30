@@ -112,9 +112,13 @@ pub enum StorageLocationKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StorageLocation {
     pub path: PathBuf,
-    /// Stable platform identity used to restore an explicit indexing choice if
-    /// the label or mount point changes.
+    /// Discovery key for this currently visible root. It is suitable for labels
+    /// and same-snapshot bookkeeping, but may be a mutable device node or drive
+    /// letter and therefore is never sufficient to reconnect an unavailable tab.
     pub identity: String,
+    /// Stable volume/share identity when the platform can prove one. `None`
+    /// means this root must not be automatically reconnected after removal.
+    pub stable_identity: Option<String>,
     pub kind: StorageLocationKind,
     /// User-facing volume or mapped-share name, when the platform can provide one.
     pub display_name: Option<String>,
@@ -184,10 +188,12 @@ fn discover_linux_storage_locations_from_mounts(mounts: &str) -> Vec<StorageLoca
         {
             continue;
         }
+        let (identity, stable_identity) = linux_storage_identity(source);
         locations.push(StorageLocation {
             kind: classify_linux_storage_kind(&path, source, filesystem),
             path,
-            identity: linux_storage_identity(source),
+            identity,
+            stable_identity,
             display_name: None,
         });
     }
@@ -195,7 +201,7 @@ fn discover_linux_storage_locations_from_mounts(mounts: &str) -> Vec<StorageLoca
 }
 
 #[cfg(target_os = "linux")]
-fn linux_storage_identity(source: &str) -> String {
+fn linux_storage_identity(source: &str) -> (String, Option<String>) {
     let source_path = Path::new(source);
     if source_path.starts_with("/dev/")
         && let Ok(canonical_source) = std::fs::canonicalize(source_path)
@@ -203,13 +209,14 @@ fn linux_storage_identity(source: &str) -> String {
     {
         for entry in entries.flatten() {
             if std::fs::canonicalize(entry.path()).ok().as_ref() == Some(&canonical_source) {
-                return format!("linux-uuid:{}", entry.file_name().to_string_lossy());
+                let identity = format!("linux-uuid:{}", entry.file_name().to_string_lossy());
+                return (identity.clone(), Some(identity));
             }
         }
     }
     // Network sources and unresolved block devices retain a conservative source
     // identity rather than incorrectly merging distinct locations.
-    format!("linux-source:{source}")
+    (format!("linux-source:{source}"), None)
 }
 
 #[cfg(target_os = "linux")]
@@ -269,15 +276,16 @@ fn discover_windows_storage_locations() -> Vec<StorageLocation> {
                 let mapped_share = (kind == StorageLocationKind::Network)
                     .then(|| windows_mapped_share(&drive_identity_wide))
                     .flatten();
+                let stable_identity = mapped_share
+                    .as_ref()
+                    .map(|share| format!("windows-share:{share}"))
+                    .or_else(|| volume_serial.map(|serial| format!("windows-volume:{serial:08x}")));
                 Some(StorageLocation {
                     path,
-                    identity: mapped_share
-                        .as_ref()
-                        .map(|share| format!("windows-share:{share}"))
-                        .or_else(|| {
-                            volume_serial.map(|serial| format!("windows-volume:{serial:08x}"))
-                        })
+                    identity: stable_identity
+                        .clone()
                         .unwrap_or_else(|| format!("windows-drive:{drive_identity}")),
+                    stable_identity,
                     kind,
                     display_name: Some(windows_storage_display_name(
                         volume_label.as_deref(),
@@ -397,18 +405,21 @@ mod storage_location_tests {
                 StorageLocation {
                     path: PathBuf::from("/media/alice/Backup"),
                     identity: "linux-source:/dev/sdb1".to_string(),
+                    stable_identity: None,
                     kind: StorageLocationKind::Removable,
                     display_name: None,
                 },
                 StorageLocation {
                     path: PathBuf::from("/mnt/team"),
                     identity: "linux-source:server:/share".to_string(),
+                    stable_identity: None,
                     kind: StorageLocationKind::Network,
                     display_name: None,
                 },
                 StorageLocation {
                     path: PathBuf::from("/run/media/alice/Install"),
                     identity: "linux-source:/dev/sr0".to_string(),
+                    stable_identity: None,
                     kind: StorageLocationKind::Optical,
                     display_name: None,
                 },

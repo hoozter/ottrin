@@ -381,8 +381,20 @@ struct PendingRename {
 /// location without persisting a stale path as a new bookmark or redirecting it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct UnavailableLocation {
-    identity: String,
+    /// A stable identity is required for automatic reconnect. Mutable discovery
+    /// keys (Linux device paths and Windows drive letters) intentionally leave
+    /// this empty.
+    stable_identity: Option<String>,
     root: PathBuf,
+}
+
+/// Root identity captured for an operation immediately before it is queued.
+/// Validation occurs again in the worker immediately before the platform call;
+/// OS pathname mutation remains inherently racy after that final validation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct StorageOperationBinding {
+    root: PathBuf,
+    stable_identity: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1106,10 +1118,14 @@ pub struct OttrinApp {
     operation_history: VecDeque<OperationRecord>,
     retained_move_activity: Vec<RetainedMoveActivity>,
     retained_move_activity_error: Option<String>,
-    /// Last discovery snapshot, keyed by stable volume identity.
-    known_storage_locations: HashMap<String, StorageLocation>,
+    /// Last discovery snapshot. Roots are deliberately independent even when a
+    /// backend reports the same identity at multiple mount points.
+    known_storage_locations: Vec<StorageLocation>,
     /// Tabs isolated because their selected discovered root is no longer present.
     unavailable_locations: HashMap<u64, UnavailableLocation>,
+    /// Retained provenance for stale clipboard/deferred/trash references after
+    /// a root disappears. This is runtime-only and never redirects a path.
+    unavailable_root_tombstones: Vec<UnavailableLocation>,
 
     next_request_id: u64,
     sidebar: SidebarSection,
@@ -1341,8 +1357,9 @@ impl OttrinApp {
             operation_history: VecDeque::new(),
             retained_move_activity,
             retained_move_activity_error,
-            known_storage_locations: HashMap::new(),
+            known_storage_locations: Vec::new(),
             unavailable_locations: HashMap::new(),
+            unavailable_root_tombstones: Vec::new(),
             next_request_id: 1,
             sidebar: SidebarSection::None,
             last_grid_cols: 4,
@@ -5162,45 +5179,72 @@ impl OttrinApp {
         }
     }
 
-    /// Reconcile selected tab roots against a fresh discovery snapshot. A missing
-    /// identity isolates only the affected tab; a path reused by another device
-    /// cannot clear that isolation. The same identity may resume at a new mount
-    /// point, retaining its selected relative directory when possible.
+    /// Reconcile selected tab roots against a fresh discovery snapshot. This
+    /// protection is deliberately scoped to Linux/Windows roots returned by
+    /// `discover_storage_locations`; unsupported platforms return no roots and
+    /// must not be represented as protected by this feature.
     fn reconcile_storage_location_availability(&mut self, locations: Vec<StorageLocation>) {
-        let current: HashMap<String, StorageLocation> = locations
-            .into_iter()
-            .map(|location| (location.identity.clone(), location))
-            .collect();
+        let previous = std::mem::replace(&mut self.known_storage_locations, locations);
+        let current = &self.known_storage_locations;
         let mut refreshes = Vec::new();
 
         for tab in &mut self.state.tabs {
             if let Some(unavailable) = self.unavailable_locations.get(&tab.id).cloned() {
-                if let Some(reconnected) = current.get(&unavailable.identity) {
-                    let relative = tab
-                        .current_dir
-                        .strip_prefix(&unavailable.root)
-                        .unwrap_or(Path::new(""));
-                    tab.current_dir = reconnected.path.join(relative);
+                let exact_reconnect = unavailable.stable_identity.as_ref().and_then(|identity| {
+                    let candidates: Vec<_> = current
+                        .iter()
+                        .filter(|location| location.stable_identity.as_ref() == Some(identity))
+                        .collect();
+                    if candidates.len() == 1 && candidates[0].path == unavailable.root {
+                        Some(candidates[0])
+                    } else {
+                        None
+                    }
+                });
+                // A duplicate stable identity can represent independent bind or
+                // share roots. Reconnect only when this identity has one root,
+                // so removing one root cannot silently retarget its tab.
+                let newly_mounted_stable_reconnect =
+                    unavailable.stable_identity.as_ref().and_then(|identity| {
+                        let candidates: Vec<_> = current
+                            .iter()
+                            .filter(|location| location.stable_identity.as_ref() == Some(identity))
+                            .collect();
+                        if candidates.len() == 1
+                            && !previous.iter().any(|old| old.path == candidates[0].path)
+                        {
+                            Some(candidates[0])
+                        } else {
+                            None
+                        }
+                    });
+                if let Some(reconnected) = exact_reconnect.or(newly_mounted_stable_reconnect) {
+                    if let Ok(relative) = tab.current_dir.strip_prefix(&unavailable.root) {
+                        tab.current_dir = reconnected.path.join(relative);
+                        refreshes.push((tab.id, tab.current_dir.clone()));
+                    }
                     self.unavailable_locations.remove(&tab.id);
-                    refreshes.push((tab.id, tab.current_dir.clone()));
+                    self.unavailable_root_tombstones
+                        .retain(|tombstone| tombstone != &unavailable);
                 }
                 continue;
             }
 
-            if let Some(previous) = self
-                .known_storage_locations
-                .values()
-                .find(|location| tab.current_dir.starts_with(&location.path))
-                && !current.contains_key(&previous.identity)
+            if let Some(previous_root) = longest_storage_root_for_path(&previous, &tab.current_dir)
+                && !current
+                    .iter()
+                    .any(|location| same_storage_root(location, previous_root))
             {
-                let root = previous.path.clone();
-                self.unavailable_locations.insert(
-                    tab.id,
-                    UnavailableLocation {
-                        identity: previous.identity.clone(),
-                        root: root.clone(),
-                    },
-                );
+                let root = previous_root.path.clone();
+                let unavailable = UnavailableLocation {
+                    stable_identity: previous_root.stable_identity.clone(),
+                    root: root.clone(),
+                };
+                self.unavailable_locations
+                    .insert(tab.id, unavailable.clone());
+                if !self.unavailable_root_tombstones.contains(&unavailable) {
+                    self.unavailable_root_tombstones.push(unavailable);
+                }
                 let ui = self.tab_ui.entry(tab.id).or_default();
                 ui.main.entries.clear();
                 ui.main.error = None;
@@ -5225,16 +5269,37 @@ impl OttrinApp {
                 }) {
                     self.pending_delete = None;
                 }
+                if self
+                    .clipboard
+                    .as_ref()
+                    .is_some_and(|clip| clip.sources.iter().any(|source| source.starts_with(&root)))
+                {
+                    self.clipboard = None;
+                }
+                if self
+                    .pending_privileged_retry
+                    .as_ref()
+                    .is_some_and(|(cmd, _)| {
+                        file_command_touches_unavailable_location(
+                            cmd,
+                            std::iter::once(&UnavailableLocation {
+                                stable_identity: previous_root.stable_identity.clone(),
+                                root: root.clone(),
+                            }),
+                        )
+                    })
+                {
+                    self.pending_privileged_retry = None;
+                }
             }
         }
-        self.known_storage_locations = current;
         for (tab_id, dir) in refreshes {
             self.refresh_tab(tab_id, dir);
         }
     }
 
     fn unavailable_location_for_command(&self, cmd: &FileCommand) -> Option<&UnavailableLocation> {
-        self.unavailable_locations.values().find(|location| {
+        self.unavailable_root_tombstones.iter().find(|location| {
             file_command_touches_unavailable_location(cmd, std::iter::once(*location))
         })
     }
@@ -5256,15 +5321,33 @@ impl OttrinApp {
     }
 
     fn navigate_tab_to(&mut self, tab_id: u64, dir: PathBuf) {
+        if self.navigation_target_is_isolated(tab_id, &dir) {
+            self.set_status_message(
+                "Location is unavailable; choose Home or another location",
+                false,
+                4,
+            );
+            return;
+        }
         self.focus_tab(tab_id);
         self.remember_main_selection(tab_id);
-        // Navigation is explicit user recovery. Never keep a stale-volume
-        // isolation marker after the user deliberately chose another path.
+        // A healthy explicit route clears only the pane's visual isolation.
+        // The root tombstone remains until stable-identity reconnection, so
+        // stale history, clipboard, restore, and deferred operation paths stay
+        // blocked after navigating away.
         self.unavailable_locations.remove(&tab_id);
         if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
             tab.navigate_to(dir.clone());
         }
         self.refresh_tab(tab_id, dir);
+    }
+
+    fn navigation_target_is_isolated(&self, tab_id: u64, target: &Path) -> bool {
+        self.unavailable_locations
+            .get(&tab_id)
+            .into_iter()
+            .chain(self.unavailable_root_tombstones.iter())
+            .any(|location| target.starts_with(&location.root))
     }
 
     fn focus_tab(&mut self, tab_id: u64) {
@@ -5402,6 +5485,15 @@ impl OttrinApp {
 
     fn navigate_tab_back(&mut self, tab_id: u64) {
         self.focus_tab(tab_id);
+        if self
+            .state
+            .tab_by_id(tab_id)
+            .and_then(|tab| tab.history_back.last())
+            .is_some_and(|target| self.navigation_target_is_isolated(tab_id, target))
+        {
+            self.set_status_message("Location is unavailable; Back stays isolated", false, 4);
+            return;
+        }
         let before = self
             .state
             .tab_by_id(tab_id)
@@ -5428,6 +5520,15 @@ impl OttrinApp {
 
     fn navigate_tab_forward(&mut self, tab_id: u64) {
         self.focus_tab(tab_id);
+        if self
+            .state
+            .tab_by_id(tab_id)
+            .and_then(|tab| tab.history_forward.last())
+            .is_some_and(|target| self.navigation_target_is_isolated(tab_id, target))
+        {
+            self.set_status_message("Location is unavailable; Forward stays isolated", false, 4);
+            return;
+        }
         let before = self
             .state
             .tab_by_id(tab_id)
@@ -5459,6 +5560,12 @@ impl OttrinApp {
             .tab_by_id(tab_id)
             .map(|tab| tab.current_dir.clone())
             .unwrap_or_else(default_home_dir);
+        if let Some(target) = before.parent()
+            && self.navigation_target_is_isolated(tab_id, target)
+        {
+            self.set_status_message("Location is unavailable; Up stays isolated", false, 4);
+            return;
+        }
         self.remember_main_selection(tab_id);
         let moved = self
             .state
@@ -6593,6 +6700,18 @@ impl OttrinApp {
     }
 
     fn retry_list_with_privileges(&mut self, tab_id: u64, dir: PathBuf) -> Result<(), String> {
+        self.reconcile_storage_location_availability(discover_storage_locations());
+        if self.unavailable_locations.contains_key(&tab_id) {
+            let message =
+                "Privileged listing was not started: the selected location is unavailable."
+                    .to_string();
+            self.privileged_status = Some(PrivilegedUiStatus {
+                kind: PrivilegedUiKind::Error,
+                text: message.clone(),
+                since: Instant::now(),
+            });
+            return Err(message);
+        }
         self.privileged_status = Some(PrivilegedUiStatus {
             kind: PrivilegedUiKind::InProgress,
             text: "Requesting administrator access…".to_string(),
@@ -6907,16 +7026,32 @@ impl OttrinApp {
         refresh_tab: Option<u64>,
         delete_nav: Vec<DeletePostNav>,
     ) {
+        // Reconcile the discovery snapshot before accepting mutable input, then
+        // bind affected storage roots for a second validation in the worker.
+        self.reconcile_storage_location_availability(discover_storage_locations());
         if let Some(location) = self.unavailable_location_for_command(&cmd).cloned() {
             self.reject_unavailable_location_operation(&cmd, &location);
             return;
         }
+        let bindings = operation_storage_bindings(&cmd, &self.known_storage_locations);
         let op_id = self.queue_operation_record(cmd.clone());
         let platform = Arc::clone(&self.platform);
         let op_tx = self.op_tx.clone();
         let retry_cmd = cmd.clone();
         std::thread::spawn(move || {
-            let outcome = classify_file_op_result(platform.execute_command(&cmd).map(|_| ()));
+            // This closes the queue-to-worker replacement window as far as the
+            // discovery API permits. The OS can still replace a pathname after
+            // this check and before the platform syscall; Rust cannot make that
+            // final cross-platform pathname operation identity-conditional.
+            let outcome =
+                match validate_operation_storage_bindings(&bindings, &discover_storage_locations())
+                {
+                    Ok(()) => classify_file_op_result(platform.execute_command(&cmd).map(|_| ())),
+                    Err(message) => FileOpOutcome::Failed {
+                        message,
+                        privilege_retry: false,
+                    },
+                };
             let privilege_retry = outcome.should_offer_privilege_retry();
             let (error, warning, retry) = match outcome {
                 FileOpOutcome::Completed => (None, None, None),
@@ -6990,6 +7125,14 @@ impl OttrinApp {
         cmd: FileCommand,
         refresh_tab: Option<u64>,
     ) -> Result<(), String> {
+        self.reconcile_storage_location_availability(discover_storage_locations());
+        if let Some(location) = self.unavailable_location_for_command(&cmd).cloned() {
+            self.pending_privileged_retry = None;
+            self.reject_unavailable_location_operation(&cmd, &location);
+            return Err(
+                "Privileged retry was not started because the location is unavailable.".to_string(),
+            );
+        }
         self.privileged_status = Some(PrivilegedUiStatus {
             kind: PrivilegedUiKind::InProgress,
             text: "Requesting administrator access…".to_string(),
@@ -10288,28 +10431,40 @@ impl OttrinApp {
                 .on_hover_text("Move this item back to its original path.")
                 .clicked()
             {
-                let op_id = self.queue_activity_record_with_recoverability(
-                    "Restore from Trash",
-                    format!("{} to {}", item.name, item.original_path.display()),
-                    OperationRecoverability::Restorable,
-                );
-                match self.platform.restore_trash_item(&item) {
-                    Ok(()) => {
-                        self.finish_operation_record(op_id, OperationStatus::Completed, None);
-                        self.set_status_message("Restored from Trash", true, 4);
+                self.reconcile_storage_location_availability(discover_storage_locations());
+                if trash_restore_touches_unavailable_location(
+                    &item,
+                    self.unavailable_root_tombstones.iter(),
+                ) {
+                    self.set_status_message(
+                        "Restore was not started: the original volume was replaced or is unavailable.",
+                        false,
+                        6,
+                    );
+                } else {
+                    let op_id = self.queue_activity_record_with_recoverability(
+                        "Restore from Trash",
+                        format!("{} to {}", item.name, item.original_path.display()),
+                        OperationRecoverability::Restorable,
+                    );
+                    match self.platform.restore_trash_item(&item) {
+                        Ok(()) => {
+                            self.finish_operation_record(op_id, OperationStatus::Completed, None);
+                            self.set_status_message("Restored from Trash", true, 4);
+                        }
+                        Err(err) => {
+                            let msg = err.to_string();
+                            self.finish_operation_record(
+                                op_id,
+                                OperationStatus::Failed,
+                                Some(msg.clone()),
+                            );
+                            self.set_status_message(msg, false, 6);
+                        }
                     }
-                    Err(err) => {
-                        let msg = err.to_string();
-                        self.finish_operation_record(
-                            op_id,
-                            OperationStatus::Failed,
-                            Some(msg.clone()),
-                        );
-                        self.set_status_message(msg, false, 6);
-                    }
+                    self.refresh_trash_panel();
+                    self.refresh_active_tab();
                 }
-                self.refresh_trash_panel();
-                self.refresh_active_tab();
             }
             if ui
                 .add_sized(
@@ -17732,6 +17887,98 @@ fn format_duration_short(duration: Duration) -> String {
     }
 }
 
+fn longest_storage_root_for_path<'a>(
+    locations: &'a [StorageLocation],
+    path: &Path,
+) -> Option<&'a StorageLocation> {
+    locations
+        .iter()
+        .filter(|location| path.starts_with(&location.path))
+        .max_by_key(|location| location.path.components().count())
+}
+
+fn same_storage_root(current: &StorageLocation, previous: &StorageLocation) -> bool {
+    current.path == previous.path
+        && match (&current.stable_identity, &previous.stable_identity) {
+            (Some(current), Some(previous)) => current == previous,
+            // A fallback key may keep an already-open current view visible, but
+            // it is not accepted as a reconnect or mutation authorization.
+            (None, None) => current.identity == previous.identity,
+            _ => false,
+        }
+}
+
+fn file_command_paths(cmd: &FileCommand) -> Vec<&Path> {
+    match cmd {
+        FileCommand::CreateFile { parent, .. } | FileCommand::CreateFolder { parent, .. } => {
+            vec![parent]
+        }
+        FileCommand::Rename { source, .. }
+        | FileCommand::ShowProperties { target: source }
+        | FileCommand::Chmod { target: source, .. } => vec![source],
+        FileCommand::Delete { targets, .. } => targets.iter().map(PathBuf::as_path).collect(),
+        FileCommand::Copy {
+            sources,
+            destination,
+            ..
+        }
+        | FileCommand::Move {
+            sources,
+            destination,
+            ..
+        } => sources
+            .iter()
+            .map(PathBuf::as_path)
+            .chain(std::iter::once(destination.as_path()))
+            .collect(),
+        FileCommand::Symlink { link_path, target } => vec![link_path, target],
+        FileCommand::RecoverRetainedMove { .. } => Vec::new(),
+    }
+}
+
+fn operation_storage_bindings(
+    cmd: &FileCommand,
+    locations: &[StorageLocation],
+) -> Vec<StorageOperationBinding> {
+    let mut bindings = Vec::new();
+    for path in file_command_paths(cmd) {
+        if let Some(location) = longest_storage_root_for_path(locations, path) {
+            let binding = StorageOperationBinding {
+                root: location.path.clone(),
+                stable_identity: location.stable_identity.clone(),
+            };
+            if !bindings.contains(&binding) {
+                bindings.push(binding);
+            }
+        }
+    }
+    bindings
+}
+
+fn validate_operation_storage_bindings(
+    bindings: &[StorageOperationBinding],
+    locations: &[StorageLocation],
+) -> Result<(), String> {
+    for binding in bindings {
+        let Some(expected_identity) = binding.stable_identity.as_ref() else {
+            return Err(format!(
+                "operation was not started: {} has no stable volume identity; explicitly navigate after it is rediscovered",
+                binding.root.display()
+            ));
+        };
+        if !locations.iter().any(|location| {
+            location.path == binding.root
+                && location.stable_identity.as_ref() == Some(expected_identity)
+        }) {
+            return Err(format!(
+                "operation was not started: {} changed or is unavailable",
+                binding.root.display()
+            ));
+        }
+    }
+    Ok(())
+}
+
 fn file_command_touches_unavailable_location<'a>(
     cmd: &FileCommand,
     unavailable: impl IntoIterator<Item = &'a UnavailableLocation>,
@@ -17762,6 +18009,15 @@ fn file_command_touches_unavailable_location<'a>(
         FileCommand::Symlink { link_path, target } => touches(link_path) || touches(target),
         FileCommand::RecoverRetainedMove { .. } => false,
     }
+}
+
+fn trash_restore_touches_unavailable_location<'a>(
+    item: &TrashItem,
+    unavailable: impl IntoIterator<Item = &'a UnavailableLocation>,
+) -> bool {
+    unavailable
+        .into_iter()
+        .any(|location| item.original_path.starts_with(&location.root))
 }
 
 fn operation_title(cmd: &FileCommand) -> &'static str {
@@ -20044,18 +20300,21 @@ mod tests {
             StorageLocation {
                 path: PathBuf::from("/media/usb-drive"),
                 identity: "linux:/dev/sdb1".to_string(),
+                stable_identity: Some("linux-uuid:usb".to_string()),
                 kind: StorageLocationKind::Removable,
                 display_name: Some("USB Archive".to_string()),
             },
             StorageLocation {
                 path: PathBuf::from("/mnt/storage"),
                 identity: "linux:/dev/sdc1".to_string(),
+                stable_identity: Some("linux-uuid:storage".to_string()),
                 kind: StorageLocationKind::Internal,
                 display_name: None,
             },
             StorageLocation {
                 path: PathBuf::from("/media/usb-drive"),
                 identity: "linux:/dev/sdb1".to_string(),
+                stable_identity: Some("linux-uuid:usb".to_string()),
                 kind: StorageLocationKind::Removable,
                 display_name: None,
             },
@@ -20115,6 +20374,7 @@ mod tests {
             vec![StorageLocation {
                 path: new_root.clone(),
                 identity: "linux:/dev/sdb1".to_string(),
+                stable_identity: Some("linux-uuid:new-usb".to_string()),
                 kind: StorageLocationKind::Removable,
                 display_name: Some("New USB".to_string()),
             }],
@@ -20172,6 +20432,7 @@ mod tests {
         let mounted = StorageLocation {
             path: PathBuf::from("/run/media/alice/New name"),
             identity: "linux:/dev/disk/by-uuid/abc".to_string(),
+            stable_identity: Some("linux-uuid:abc".to_string()),
             kind: StorageLocationKind::Removable,
             display_name: Some("Renamed disk".to_string()),
         };
@@ -20220,6 +20481,7 @@ mod tests {
         let volume_a = StorageLocation {
             path: original_root.clone(),
             identity: "test-volume-a".to_string(),
+            stable_identity: Some("test-volume-a".to_string()),
             kind: StorageLocationKind::Removable,
             display_name: Some("Archive A".to_string()),
         };
@@ -20230,7 +20492,7 @@ mod tests {
         assert_eq!(
             app.unavailable_locations.get(&tab_id),
             Some(&UnavailableLocation {
-                identity: "test-volume-a".to_string(),
+                stable_identity: Some("test-volume-a".to_string()),
                 root: original_root.clone(),
             })
         );
@@ -20239,6 +20501,7 @@ mod tests {
         app.reconcile_storage_location_availability(vec![StorageLocation {
             path: original_root.clone(),
             identity: "test-volume-b".to_string(),
+            stable_identity: Some("test-volume-b".to_string()),
             kind: StorageLocationKind::Removable,
             display_name: Some("Different disk".to_string()),
         }]);
@@ -20259,7 +20522,7 @@ mod tests {
     #[test]
     fn unavailable_location_rejects_every_mutation_bound_to_its_root() {
         let unavailable = [UnavailableLocation {
-            identity: "test-volume-a".to_string(),
+            stable_identity: Some("test-volume-a".to_string()),
             root: PathBuf::from("/__ottrin_volume_a__"),
         }];
         let source = PathBuf::from("/__ottrin_volume_a__/report.txt");
@@ -20299,6 +20562,7 @@ mod tests {
         app.reconcile_storage_location_availability(vec![StorageLocation {
             path: root.clone(),
             identity: "test-volume-a".to_string(),
+            stable_identity: Some("test-volume-a".to_string()),
             kind: StorageLocationKind::Removable,
             display_name: Some("Archive A".to_string()),
         }]);
@@ -20329,6 +20593,154 @@ mod tests {
 
         app.navigate_tab_to(tab_id, default_home_dir());
         assert!(!app.unavailable_locations.contains_key(&tab_id));
+        assert_eq!(app.unavailable_root_tombstones.len(), 1);
+        let home = app.state.active_tab().current_dir.clone();
+        app.navigate_tab_back(tab_id);
+        assert_eq!(app.state.active_tab().current_dir, home);
+        assert!(
+            app.status_message.is_some(),
+            "stale history remains blocked"
+        );
+    }
+
+    #[test]
+    fn mutable_fallback_identity_never_reconnects_after_disappearance() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        let root = PathBuf::from("/__ottrin_reused_slot__");
+        app.state.active_tab_mut().current_dir = root.join("documents");
+        let fallback = StorageLocation {
+            path: root.clone(),
+            identity: "linux-source:/dev/sdb1".to_string(),
+            stable_identity: None,
+            kind: StorageLocationKind::Removable,
+            display_name: Some("Unidentified disk".to_string()),
+        };
+
+        app.reconcile_storage_location_availability(vec![fallback.clone()]);
+        app.reconcile_storage_location_availability(Vec::new());
+        app.reconcile_storage_location_availability(vec![fallback]);
+
+        assert!(app.unavailable_locations.contains_key(&tab_id));
+        assert!(
+            app.unavailable_root_tombstones
+                .iter()
+                .any(|lost| lost.root == root)
+        );
+    }
+
+    #[test]
+    fn deepest_storage_root_wins_and_duplicate_identity_does_not_retarget() {
+        let parent = StorageLocation {
+            path: PathBuf::from("/mnt/archive"),
+            identity: "parent".to_string(),
+            stable_identity: Some("parent-stable".to_string()),
+            kind: StorageLocationKind::Internal,
+            display_name: None,
+        };
+        let nested = StorageLocation {
+            path: PathBuf::from("/mnt/archive/usb"),
+            identity: "usb-a".to_string(),
+            stable_identity: Some("shared-stable".to_string()),
+            kind: StorageLocationKind::Removable,
+            display_name: None,
+        };
+        assert_eq!(
+            longest_storage_root_for_path(
+                &[parent.clone(), nested.clone()],
+                Path::new("/mnt/archive/usb/report.txt"),
+            )
+            .map(|location| location.path.as_path()),
+            Some(nested.path.as_path()),
+        );
+
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.state.active_tab_mut().current_dir = nested.path.join("work");
+        app.reconcile_storage_location_availability(vec![parent.clone(), nested.clone()]);
+        app.reconcile_storage_location_availability(vec![parent]);
+        app.reconcile_storage_location_availability(vec![
+            nested.clone(),
+            StorageLocation {
+                path: PathBuf::from("/mnt/second-usb"),
+                ..nested
+            },
+        ]);
+        assert!(app.unavailable_locations.contains_key(&tab_id));
+    }
+
+    #[test]
+    fn queued_storage_binding_rejects_identity_replacement() {
+        let original = StorageLocation {
+            path: PathBuf::from("/__ottrin_queue_root__"),
+            identity: "slot".to_string(),
+            stable_identity: Some("volume-a".to_string()),
+            kind: StorageLocationKind::Removable,
+            display_name: None,
+        };
+        let command = FileCommand::CreateFolder {
+            parent: original.path.clone(),
+            name: "new".to_string(),
+        };
+        let bindings = operation_storage_bindings(&command, std::slice::from_ref(&original));
+        let replacement = StorageLocation {
+            stable_identity: Some("volume-b".to_string()),
+            ..original
+        };
+        assert!(validate_operation_storage_bindings(&bindings, &[replacement]).is_err());
+    }
+
+    #[test]
+    fn disconnect_invalidates_clipboard_privileged_retry_and_restore_origin() {
+        use std::ffi::OsString;
+
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        let root = PathBuf::from("/__ottrin_lost_root__");
+        let source = root.join("report.txt");
+        app.state.active_tab_mut().current_dir = root.clone();
+        let location = StorageLocation {
+            path: root.clone(),
+            identity: "slot".to_string(),
+            stable_identity: Some("volume-a".to_string()),
+            kind: StorageLocationKind::Removable,
+            display_name: None,
+        };
+        let command = FileCommand::Delete {
+            targets: vec![source.clone()],
+            mode: DeleteMode::Permanent,
+        };
+        app.clipboard = Some(Clipboard {
+            sources: vec![source.clone()],
+            cut: true,
+        });
+        app.pending_privileged_retry = Some((command.clone(), Some(tab_id)));
+        app.reconcile_storage_location_availability(vec![location]);
+        app.reconcile_storage_location_availability(Vec::new());
+
+        assert!(app.clipboard.is_none());
+        assert!(app.pending_privileged_retry.is_none());
+        assert!(
+            app.retry_file_op_with_privileges(command, Some(tab_id))
+                .is_err()
+        );
+
+        let item = TrashItem {
+            id: OsString::from("trash-id"),
+            original_name: OsString::from("report.txt"),
+            original_parent: root.clone(),
+            trash_path: PathBuf::from("/__ottrin_trash__/report.txt"),
+            original_path: source,
+            deletion_date: None,
+            time_deleted: 0,
+            name: "report.txt".to_string(),
+            kind: EntryKind::File,
+            size_bytes: Some(1),
+        };
+        assert!(trash_restore_touches_unavailable_location(
+            &item,
+            app.unavailable_root_tombstones.iter(),
+        ));
     }
 
     #[test]
@@ -20346,6 +20758,7 @@ mod tests {
         app.reconcile_storage_location_availability(vec![StorageLocation {
             path: root,
             identity: "test-volume-a".to_string(),
+            stable_identity: Some("test-volume-a".to_string()),
             kind: StorageLocationKind::Removable,
             display_name: Some("Archive A".to_string()),
         }]);
