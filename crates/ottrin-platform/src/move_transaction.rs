@@ -772,6 +772,123 @@ fn recover_cross_filesystem_pending_destination(
 }
 
 #[cfg(target_os = "linux")]
+pub(super) fn recover_retained_move_pending_destination(
+    transaction_id: [u8; 16],
+) -> Result<(), PlatformError> {
+    let recovery_root = default_recovery_root()?;
+    recover_retained_move_pending_destination_at(&recovery_root, transaction_id)
+}
+
+#[cfg(target_os = "linux")]
+pub(super) fn recover_retained_move_pending_destination_at(
+    recovery_root: &Path,
+    transaction_id: [u8; 16],
+) -> Result<(), PlatformError> {
+    let transaction_id_hex = transaction_id_hex(&transaction_id);
+    let discovered = discover_retained_move_transactions_at(recovery_root)?;
+    if !discovered.iter().any(|entry| {
+        entry.transaction_id == transaction_id
+            && entry.phase == move_recovery::JournalPhase::PendingDestination
+    }) {
+        return Err(PlatformError::Io(format!(
+            "retained Move transaction {transaction_id_hex} is not in pending destination state",
+        )));
+    }
+
+    let central = move_recovery::LinuxJournalDirectory::open_configured(recovery_root)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let mut recovery = central
+        .try_lock_recovery()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+
+    let central_journal_path = recovery_root.join(format!("{transaction_id_hex}.journal"));
+    let central_journal = std::fs::read(&central_journal_path)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let pending =
+        move_recovery::PendingDestinationRecord::parse(&central_journal).map_err(|error| {
+            PlatformError::Io(format!("failed to parse retained Move journal: {error}"))
+        })?;
+
+    let source_parent_path = pending.source_parent().map_err(|error| {
+        PlatformError::Io(format!("failed to decode source parent hint: {error}"))
+    })?;
+
+    let source_parent_metadata = std::fs::symlink_metadata(&source_parent_path)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let source_parent_identity = move_recovery::LinuxStableIdentity::new(
+        source_parent_metadata.dev(),
+        source_parent_metadata.ino(),
+        if source_parent_metadata.is_dir() {
+            move_recovery::LinuxFileType::Directory
+        } else {
+            move_recovery::LinuxFileType::Other
+        },
+    );
+    if source_parent_identity != pending.source_parent_identity() {
+        return Err(PlatformError::Io(format!(
+            "source parent identity changed for retained Move transaction {transaction_id_hex}"
+        )));
+    }
+
+    let source_parent = move_recovery::LinuxSourceParentDirectory::open(&source_parent_path)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let local_path = source_parent_path.join(format!(".ottrin-move-{transaction_id_hex}"));
+    let local = match move_recovery::LinuxJournalDirectory::open_configured(&local_path) {
+        Ok(local) => local,
+        Err(error) => {
+            return Err(PlatformError::Io(format!(
+                "unable to open source transaction directory for {transaction_id_hex}: {error}"
+            )));
+        }
+    };
+
+    let pending = match central
+        .load_pending_destination_restart_state(&local, transaction_id)
+        .map_err(|error| PlatformError::Io(format!("failed to load pending destination state: {error}")))?
+    {
+        move_recovery::LinuxPendingDestinationRestartState::MatchingPair(pending) => pending,
+        move_recovery::LinuxPendingDestinationRestartState::CentralPendingDestinationLocalClaimed {
+            pending,
+            ..
+        } => {
+            recovery
+                .resume_pending_destination_with_local(&local, transaction_id)
+                .map_err(|error| PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("recovery restart persistence failed: {error}"),
+                })?;
+            pending
+        }
+    };
+
+    let source_name = pending
+        .original_name()
+        .map_err(|error| PlatformError::Io(format!("failed to decode original name: {error}")))?;
+    let source_name = source_name.file_name().ok_or_else(|| {
+        PlatformError::Io("invalid original source path for retained Move entry".into())
+    })?;
+    let claimed_path = local_path.join("claimed");
+    let claimed_metadata = std::fs::symlink_metadata(&claimed_path)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    if stable_identity_from_metadata(&claimed_metadata) != pending.claimed_source_identity() {
+        return Err(PlatformError::CommittedCleanupPending {
+            transaction: local_path.display().to_string(),
+            message: "claimed identity no longer matches retained recovery evidence".to_string(),
+        });
+    }
+
+    restore_claimed_to_source(&source_parent, &local, source_name).map_err(|error| {
+        PlatformError::CommittedCleanupPending {
+            transaction: local_path.display().to_string(),
+            message: format!("restore claimed source failed: {error}"),
+        }
+    })?;
+
+    let _ = cleanup_transaction_journals(recovery_root, &local_path, &transaction_id);
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
 #[allow(clippy::too_many_arguments)]
 fn replay_cross_filesystem_pending_destination_with_record(
     source: &Path,
@@ -1459,6 +1576,11 @@ fn remove_source_entry(claimed_path: &Path) -> Result<(), String> {
 
 #[cfg(target_os = "linux")]
 fn default_recovery_root() -> Result<std::path::PathBuf, PlatformError> {
+    #[cfg(test)]
+    if let Some(root) = TEST_RECOVERY_ROOT.with(|root| root.borrow().clone()) {
+        return Ok(root);
+    }
+
     let base = std::env::var_os("XDG_STATE_HOME")
         .or_else(|| {
             std::env::var_os("HOME").map(|home| {
@@ -1475,6 +1597,18 @@ fn default_recovery_root() -> Result<std::path::PathBuf, PlatformError> {
         .ok_or_else(|| PlatformError::Io("XDG_STATE_HOME and HOME are unavailable".to_string()))?;
 
     Ok(base.join("ottrin").join("moves"))
+}
+
+#[cfg(all(target_os = "linux", test))]
+thread_local! {
+    static TEST_RECOVERY_ROOT: std::cell::RefCell<Option<std::path::PathBuf>> = const {
+        std::cell::RefCell::new(None)
+    };
+}
+
+#[cfg(all(target_os = "linux", test))]
+pub(super) fn set_test_recovery_root(root: Option<std::path::PathBuf>) {
+    TEST_RECOVERY_ROOT.with(|configured_root| *configured_root.borrow_mut() = root);
 }
 
 /// Reads retained Move recovery status from an existing configured recovery root.

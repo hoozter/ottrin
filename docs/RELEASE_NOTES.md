@@ -6,6 +6,7 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 
 - Miller, List, and Grid browsing with tabs, bookmarks, history, and Tandem View.
 - Transactional copy publication with race-resistant overwrite, retained recovery data, and explicit partial-batch warnings. Move mutation is disabled pending a durable recovery design.
+- Startup and batch-visible retained Move recovery cards are now reported in Activity with manual recovery actions on supported platforms.
 - Indexed search with durable SQLite generations, watcher updates, scoped fallback, and content snippets.
 - Quick Inspector for text, images, bounded first-page PDF visuals, bounded DOCX/XLSX/XLSM content-preview visuals, PPTX slide text, archives, folders, audio metadata, and generic files. PDF and Office previews retain extracted-text and metadata fallbacks.
 - Linux Trash and Windows Recycle Bin support, plus scoped privileged-helper flows.
@@ -16,6 +17,9 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 - Damaged, encrypted, unsupported, or unrenderable PDFs fall back to extracted text and metadata without a visual page.
 - Damaged, oversized, unsupported, or unrenderable DOCX/XLSX/XLSM packages fall back to extracted text and metadata. Their visual output is a bounded content preview, not faithful Office layout.
 - Legacy binary Office files (`.doc`, `.xls`, `.ppt`) receive metadata previews rather than document content previews.
+- Retained Move recovery surfaces are limited to startup/batch discovery and manual
+  recovery on supported platforms. Only `pending destination` items expose a
+  `Recover now` action; all other retained states are manual-review only.
 - Windows artifacts use WGPU when Automatic finds no compatibility signal. The portable ZIP and installer also carry the checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime, including app-local `opengl32.dll` and `libgallium_wgl.dll`; Automatic selects it for detected remote sessions and recognized virtual/problem adapters, explains that one-time choice, and Settings persists Automatic, Native, or OpenGL compatibility for the next launch. `ottrin.exe --renderer opengl` (or `OTTRIN_RENDERER=opengl`) remains a diagnostic override. Its complete Mesa, pal1000, and Microsoft notices are under `third-party-notices/`.
 - Linux and Windows CI, real Windows desktop and UAC/helper, packaged Linux polkit, and full packaged-workflow smoke tests are release blockers until manually signed off against the exact release commit and artifacts. Windows sign-off must cover the portable ZIP and per-user installer on the native WGPU default and Automatic compatibility paths, the persisted preference, and the explicit `--renderer opengl` / `OTTRIN_RENDERER=opengl` recovery path where applicable, including UAC/helper flows.
 - Full undo, tab drag-and-drop, media playback, PDF page navigation, and faithful Office layout rendering are not included. Linux `.deb`/`.rpm`, Windows MSI, and macOS packages are deferred. Code signing is not included in this release.

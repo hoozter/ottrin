@@ -64,6 +64,10 @@ interactive workflow, polkit-dialog, Windows runtime, UAC, or installer sign-off
 - [ ] Quick Inspector passes text, image, rendered-PDF first-page plus text/metadata fallback, DOCX, XLSX/XLSM, PPTX, archive, folder, and generic files.
 - [ ] Privileged helper allow, cancel, missing-helper, and misconfigured-policy paths pass.
 
+- [ ] Move recovery startup reporting: launch after seeded retained Move records and verify Activity shows transaction id, phase, and manual recovery status.
+- [ ] Move recovery batch semantics: run a Move that emits warnings, keep completed items visible in history, and keep retained-Move cards visible for manual recovery.
+- [ ] Manual recovery action path: `Recover now` completes only manual-review-safe states and does not mutate unrelated entries when not in pending-destination phase.
+
 ## Windows Artifact QA
 
 - [ ] Portable zip launches on a real Windows desktop.
@@ -75,6 +79,7 @@ interactive workflow, polkit-dialog, Windows runtime, UAC, or installer sign-off
 - [ ] If the graphics compatibility payload is shipped, native-driver and bundled-OpenGL launch paths each pass on their intended physical/virtual or remote adapters, including Automatic detection, the persisted renderer preference, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` diagnostic selection.
 - [ ] UAC allow, cancel, helper-missing, and denied-operation paths pass.
 - [ ] Uninstall cleanup commands remove scheduled/background integration without deleting user files; cleanup launch/failure stops before application deletion, and incomplete file deletion retains Installed Apps registration for retry.
+- [ ] Retained Move recovery flow review on packaged app launch remains for future Windows parity validation and is blocked until native recovery is proven.
 
 ## Release Review
 

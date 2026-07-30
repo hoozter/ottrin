@@ -278,6 +278,11 @@ fn classify_file_op_result(result: Result<(), PlatformError>) -> FileOpOutcome {
     }
 }
 
+fn should_refresh_retained_move_activity(cmd: &FileCommand, has_warning: bool) -> bool {
+    matches!(cmd, FileCommand::RecoverRetainedMove { .. })
+        || (has_warning && matches!(cmd, FileCommand::Move { .. }))
+}
+
 #[derive(Debug, Clone)]
 struct PendingDelete {
     tab_id: u64,
@@ -335,13 +340,22 @@ struct OperationRecord {
     message: Option<String>,
 }
 
-/// Durable Move evidence discovered at startup. This deliberately contains no filesystem path
-/// or action capability: retained journals remain manual-only until a later recovery design can
-/// prove identity-safe mutation.
+/// Durable Move evidence discovered at startup.
+/// A transaction id is kept as raw bytes, and pending-destination entries expose a
+/// manual recovery action while recovery design is proven for that lifecycle.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct RetainedMoveActivity {
-    transaction_id: String,
+    transaction_id: [u8; 16],
     phase: &'static str,
+}
+
+impl RetainedMoveActivity {
+    fn transaction_id_hex(&self) -> String {
+        self.transaction_id
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect()
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -351,11 +365,7 @@ fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) 
             transactions
                 .into_iter()
                 .map(|transaction| RetainedMoveActivity {
-                    transaction_id: transaction
-                        .transaction_id
-                        .iter()
-                        .map(|byte| format!("{byte:02x}"))
-                        .collect(),
+                    transaction_id: transaction.transaction_id,
                     phase: match transaction.phase {
                         JournalPhase::Prepared => "prepared",
                         JournalPhase::ClaimIntent => "claim intent",
@@ -4117,6 +4127,12 @@ impl OttrinApp {
         self.refresh_tab(tab_id, dir);
     }
 
+    fn refresh_retained_move_activity(&mut self) {
+        let (retained_move_activity, retained_move_activity_error) = load_retained_move_activity();
+        self.retained_move_activity = retained_move_activity;
+        self.retained_move_activity_error = retained_move_activity_error;
+    }
+
     fn refresh_tab(&mut self, tab_id: u64, dir: PathBuf) {
         // Reset selection and scroll on navigation
         if let Some(ui_state) = self.tab_ui.get_mut(&tab_id) {
@@ -4302,6 +4318,7 @@ impl OttrinApp {
                 OperationStatus::Completed,
                 res.warning.clone(),
             );
+            let has_warning = res.warning.is_some();
             if let Some(warning) = res.warning {
                 self.command_frame.error = None;
                 self.command_frame.message = Some(warning);
@@ -4313,6 +4330,9 @@ impl OttrinApp {
                 if self.trash_panel.loaded {
                     self.refresh_trash_panel();
                 }
+            }
+            if should_refresh_retained_move_activity(&completed_cmd, has_warning) {
+                self.refresh_retained_move_activity();
             }
             let mut refresh_tabs = res.tab_id.into_iter().collect::<Vec<_>>();
             if let FileCommand::Copy {
@@ -10020,6 +10040,8 @@ impl OttrinApp {
         }
 
         if !self.retained_move_activity.is_empty() {
+            let mut recovery_cmd = None;
+            let mut recovery_status_message = None;
             for retained in &self.retained_move_activity {
                 Frame::new()
                     .fill(c.panel)
@@ -10037,18 +10059,50 @@ impl OttrinApp {
                                         .size(12.0)
                                         .strong(),
                                 );
+                                let transaction_id = retained.transaction_id_hex();
                                 ui.label(
                                     RichText::new(format!(
                                         "Transaction {} · {} · manual review only",
-                                        retained.transaction_id, retained.phase
+                                        transaction_id, retained.phase
                                     ))
                                     .color(c.text_muted)
                                     .size(10.0),
                                 );
+                                if retained.phase == "pending destination" {
+                                    if ui
+                                        .add_enabled(
+                                            true,
+                                            egui::Button::new("Recover now")
+                                                .min_size(Vec2::new(90.0, 0.0)),
+                                        )
+                                        .on_hover_text(
+                                            "Recover this Move from pending destination state",
+                                        )
+                                        .clicked()
+                                    {
+                                        recovery_cmd = Some(FileCommand::RecoverRetainedMove {
+                                            transaction_id: retained.transaction_id,
+                                        });
+                                        recovery_status_message =
+                                            Some(format!("Queued recovery for {transaction_id}"));
+                                    }
+                                } else {
+                                    ui.label(
+                                        RichText::new("Not in recoverable state")
+                                            .color(c.text_muted)
+                                            .size(9.0),
+                                    );
+                                }
                             });
                         });
                     });
                 ui.add_space(6.0);
+            }
+            if let Some(cmd) = recovery_cmd {
+                if let Some(message) = recovery_status_message {
+                    self.set_status_message(message, true, 4);
+                }
+                self.run_file_op(cmd, None);
             }
         }
 
@@ -17150,6 +17204,7 @@ fn operation_title(cmd: &FileCommand) -> &'static str {
             DeleteMode::Permanent => "Delete permanently",
         },
         FileCommand::Copy { .. } => "Copy",
+        FileCommand::RecoverRetainedMove { .. } => "Recover retained Move",
         FileCommand::Move { .. } => "Move",
         FileCommand::ShowProperties { .. } => "Properties",
         FileCommand::Chmod { .. } => "Change permissions",
@@ -17172,6 +17227,7 @@ fn operation_recoverability(cmd: &FileCommand) -> OperationRecoverability {
         | FileCommand::CreateFolder { .. }
         | FileCommand::Rename { .. }
         | FileCommand::Copy { .. }
+        | FileCommand::RecoverRetainedMove { .. }
         | FileCommand::Move { .. }
         | FileCommand::Chmod { .. }
         | FileCommand::Symlink { .. } => OperationRecoverability::SessionTracked,
@@ -17229,6 +17285,13 @@ fn operation_detail(cmd: &FileCommand) -> String {
                 operation_sources_detail(sources),
                 destination.display()
             )
+        }
+        FileCommand::RecoverRetainedMove { transaction_id } => {
+            let transaction_id = transaction_id
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>();
+            format!("recover transaction {transaction_id}")
         }
         FileCommand::Move {
             sources,
@@ -18568,6 +18631,78 @@ mod tests {
 
         assert!(matches!(outcome, FileOpOutcome::CompletedWithWarning(_)));
         assert!(!outcome.should_offer_privilege_retry());
+    }
+
+    #[test]
+    fn move_warning_triggers_retained_move_activity_refresh() {
+        let move_cmd = FileCommand::Move {
+            sources: vec![PathBuf::from("/tmp/source")],
+            destination: PathBuf::from("/tmp/destination"),
+            conflict: ConflictAction::Skip,
+        };
+        assert!(should_refresh_retained_move_activity(&move_cmd, true));
+        assert!(!should_refresh_retained_move_activity(&move_cmd, false));
+    }
+
+    #[test]
+    fn non_move_warning_does_not_trigger_retained_move_activity_refresh() {
+        let copy_cmd = FileCommand::Copy {
+            sources: vec![PathBuf::from("/tmp/source")],
+            destination: PathBuf::from("/tmp/destination"),
+            conflict: ConflictAction::Skip,
+        };
+        let recover_cmd = FileCommand::RecoverRetainedMove {
+            transaction_id: [0_u8; 16],
+        };
+        assert!(!should_refresh_retained_move_activity(&copy_cmd, true));
+        assert!(should_refresh_retained_move_activity(&recover_cmd, false));
+    }
+
+    #[test]
+    fn startup_loads_retained_move_activity_from_discovery() {
+        let app = OttrinApp::default();
+        let (discovered_activity, discovered_error) = load_retained_move_activity();
+
+        assert_eq!(app.retained_move_activity, discovered_activity);
+        assert_eq!(app.retained_move_activity_error, discovered_error);
+    }
+
+    #[test]
+    fn move_batch_warning_refreshes_retained_move_activity_snapshot() {
+        let mut app = OttrinApp::default();
+        app.retained_move_activity = vec![RetainedMoveActivity {
+            transaction_id: [0x55; 16],
+            phase: "stale",
+        }];
+        app.retained_move_activity_error = Some("stale marker".to_string());
+
+        let move_cmd = FileCommand::Move {
+            sources: vec![
+                PathBuf::from("/tmp/source"),
+                PathBuf::from("/tmp/source-two"),
+            ],
+            destination: PathBuf::from("/tmp/destination"),
+            conflict: ConflictAction::Skip,
+        };
+        let op_id = app.queue_operation_record(move_cmd.clone());
+        let _ = app.op_tx.send(OpResult {
+            op_id,
+            tab_id: None,
+            cmd: move_cmd,
+            delete_nav: Vec::new(),
+            error: None,
+            warning: Some(
+                "batch completed 1 of 2 items, then stopped at /tmp/source-two: disk full"
+                    .to_string(),
+            ),
+            retry_cmd: None,
+        });
+
+        app.poll_op_results();
+
+        let (refreshed_activity, refreshed_error) = load_retained_move_activity();
+        assert_eq!(app.retained_move_activity, refreshed_activity);
+        assert_eq!(app.retained_move_activity_error, refreshed_error);
     }
 
     #[test]

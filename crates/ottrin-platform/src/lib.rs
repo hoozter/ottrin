@@ -271,6 +271,19 @@ impl PlatformOps for DefaultPlatform {
                 })?;
                 Ok(None)
             }
+            FileCommand::RecoverRetainedMove { transaction_id } => {
+                #[cfg(target_os = "linux")]
+                {
+                    move_transaction::recover_retained_move_pending_destination(*transaction_id)?;
+                }
+                #[cfg(not(target_os = "linux"))]
+                {
+                    return Err(PlatformError::NotAvailable(
+                        "Retained Move recovery is supported only on Linux",
+                    ));
+                }
+                Ok(None)
+            }
             FileCommand::ShowProperties { target } => {
                 let props = read_properties(target)?;
                 Ok(Some(props))
@@ -2086,5 +2099,86 @@ mod tests {
         }
         assert!(result.unwrap().is_empty());
         assert!(!state_home.exists());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recover_retained_move_unknown_transaction_is_rejected() {
+        let mut transaction_id = [0_u8; 16];
+        getrandom::fill(&mut transaction_id)
+            .expect("random source available for deterministic test data");
+
+        let result =
+            DefaultPlatform.execute_command(&FileCommand::RecoverRetainedMove { transaction_id });
+
+        assert!(matches!(result, Err(PlatformError::Io(_))));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recover_retained_move_known_pending_destination_replays_claimed_source() {
+        let dir = TestDir::new("move-retained-recover-known");
+        let state_home = dir.path().join("state");
+        let recovery_root = state_home.join("ottrin").join("moves");
+        move_transaction::set_test_recovery_root(Some(recovery_root.clone()));
+
+        let source = dir.path().join("source");
+        let destination = dir.path().join("destination");
+        std::fs::write(&source, b"payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("source"), b"occupied").unwrap();
+
+        let result = move_transaction::move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Rename,
+            |point| {
+                if point == move_transaction::TestPoint::PendingDestination {
+                    Err("force pending destination")
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        assert!(
+            matches!(result, Err(PlatformError::Io(message)) if message == "move test hook failed: force pending destination")
+        );
+
+        let retained = discover_retained_move_transactions_at(&recovery_root).unwrap();
+        let pending = retained
+            .iter()
+            .find(|entry| entry.phase == move_recovery::JournalPhase::PendingDestination)
+            .copied()
+            .unwrap_or_else(|| panic!("expected retained pending destination transaction"));
+        let recovery_result = move_transaction::recover_retained_move_pending_destination_at(
+            &recovery_root,
+            pending.transaction_id,
+        );
+        assert!(
+            recovery_result.is_ok(),
+            "recovery failed: {recovery_result:?}"
+        );
+
+        assert_eq!(std::fs::read(&source).unwrap(), b"payload");
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"occupied"
+        );
+
+        let transaction_id_hex: String = pending
+            .transaction_id
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        let local_path = dir
+            .path()
+            .join(format!(".ottrin-move-{transaction_id_hex}"));
+        let central_journal = state_home
+            .join("ottrin")
+            .join("moves")
+            .join(format!("{transaction_id_hex}.journal"));
+        assert!(!std::fs::exists(&local_path).unwrap_or_default());
+        assert!(!std::fs::exists(&central_journal).unwrap_or_default());
+        move_transaction::set_test_recovery_root(None);
     }
 }

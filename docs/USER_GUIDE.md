@@ -75,6 +75,22 @@ Press Space on a selected item to open Quick Inspector. Ottrin previews common t
 
 Damaged, encrypted, unsupported, or unrenderable PDFs fall back to extracted text and metadata without exposing raw PDF bytes to the image renderer. Legacy binary Office formats such as `.doc`, `.xls`, and `.ppt` currently show metadata and can be opened in their associated desktop application.
 
+## Retained Move Recovery
+
+If a Move is interrupted at a durable boundary, Ottrin surfaces a retained Move
+entry in the Activity panel when it can discover the journal evidence on startup
+(Linux only in the current release path).
+
+At startup, these retained entries are loaded from discovery records and shown as
+`Retained Move recovery` cards with transaction id and phase text.
+
+- `pending destination` entries expose a `Recover now` action for manual recovery.
+- Non-recoverable entries are labelled for manual review only.
+
+Move warning outcomes keep completed items visible in Activity and also refresh the
+retained-Move snapshot so recovery items remain discoverable after partial
+batch completion.
+
 ## Privileged Operations
 
 Normal user-owned files do not need elevated setup. If an operation is denied, Ottrin can retry through a privileged helper when that helper is available.

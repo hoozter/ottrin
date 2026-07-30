@@ -5814,6 +5814,14 @@ impl PendingDestinationRecord {
         self.source_parent_identity
     }
 
+    pub fn source_parent(&self) -> Result<std::path::PathBuf, JournalError> {
+        self.source_parent.decode()
+    }
+
+    pub fn source_transaction_name(&self) -> Result<std::path::PathBuf, JournalError> {
+        self.source_transaction_name.decode()
+    }
+
     pub fn original_name(&self) -> Result<std::path::PathBuf, JournalError> {
         self.original_name.decode()
     }

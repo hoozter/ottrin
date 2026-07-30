@@ -1120,6 +1120,9 @@ pub enum FileCommand {
         destination: PathBuf,
         conflict: ConflictAction,
     },
+    RecoverRetainedMove {
+        transaction_id: [u8; 16],
+    },
     Move {
         sources: Vec<PathBuf>,
         destination: PathBuf,
