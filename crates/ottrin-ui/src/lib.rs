@@ -376,6 +376,15 @@ struct PendingRename {
     request_focus: bool,
 }
 
+/// A selected storage root that disappeared from the latest discovery snapshot.
+/// This is deliberately runtime-only: it preserves the user's in-memory tab
+/// location without persisting a stale path as a new bookmark or redirecting it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct UnavailableLocation {
+    identity: String,
+    root: PathBuf,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum DeleteChoice {
     MoveToTrash,
@@ -1097,6 +1106,10 @@ pub struct OttrinApp {
     operation_history: VecDeque<OperationRecord>,
     retained_move_activity: Vec<RetainedMoveActivity>,
     retained_move_activity_error: Option<String>,
+    /// Last discovery snapshot, keyed by stable volume identity.
+    known_storage_locations: HashMap<String, StorageLocation>,
+    /// Tabs isolated because their selected discovered root is no longer present.
+    unavailable_locations: HashMap<u64, UnavailableLocation>,
 
     next_request_id: u64,
     sidebar: SidebarSection,
@@ -1328,6 +1341,8 @@ impl OttrinApp {
             operation_history: VecDeque::new(),
             retained_move_activity,
             retained_move_activity_error,
+            known_storage_locations: HashMap::new(),
+            unavailable_locations: HashMap::new(),
             next_request_id: 1,
             sidebar: SidebarSection::None,
             last_grid_cols: 4,
@@ -4288,6 +4303,11 @@ impl OttrinApp {
             let tab_id = match resp.key {
                 ListingKey::TabMain(id) | ListingKey::TabLeft(id) | ListingKey::TabRight(id) => id,
             };
+            // A late response for a disconnected root must not repopulate the
+            // cleared pane with stale mutation targets.
+            if self.unavailable_locations.contains_key(&tab_id) {
+                continue;
+            }
             let ui_state = self.tab_ui.entry(tab_id).or_default();
             let col = match resp.key {
                 ListingKey::TabMain(_) => &mut ui_state.main,
@@ -5142,9 +5162,105 @@ impl OttrinApp {
         }
     }
 
+    /// Reconcile selected tab roots against a fresh discovery snapshot. A missing
+    /// identity isolates only the affected tab; a path reused by another device
+    /// cannot clear that isolation. The same identity may resume at a new mount
+    /// point, retaining its selected relative directory when possible.
+    fn reconcile_storage_location_availability(&mut self, locations: Vec<StorageLocation>) {
+        let current: HashMap<String, StorageLocation> = locations
+            .into_iter()
+            .map(|location| (location.identity.clone(), location))
+            .collect();
+        let mut refreshes = Vec::new();
+
+        for tab in &mut self.state.tabs {
+            if let Some(unavailable) = self.unavailable_locations.get(&tab.id).cloned() {
+                if let Some(reconnected) = current.get(&unavailable.identity) {
+                    let relative = tab
+                        .current_dir
+                        .strip_prefix(&unavailable.root)
+                        .unwrap_or(Path::new(""));
+                    tab.current_dir = reconnected.path.join(relative);
+                    self.unavailable_locations.remove(&tab.id);
+                    refreshes.push((tab.id, tab.current_dir.clone()));
+                }
+                continue;
+            }
+
+            if let Some(previous) = self
+                .known_storage_locations
+                .values()
+                .find(|location| tab.current_dir.starts_with(&location.path))
+                && !current.contains_key(&previous.identity)
+            {
+                let root = previous.path.clone();
+                self.unavailable_locations.insert(
+                    tab.id,
+                    UnavailableLocation {
+                        identity: previous.identity.clone(),
+                        root: root.clone(),
+                    },
+                );
+                let ui = self.tab_ui.entry(tab.id).or_default();
+                ui.main.entries.clear();
+                ui.main.error = None;
+                ui.main.loading = false;
+                ui.main_sel = None;
+                ui.selected_paths.clear();
+                ui.selection_anchor = None;
+                ui.right = ColumnState::default();
+                ui.right_sel = None;
+                if self
+                    .pending_rename
+                    .as_ref()
+                    .is_some_and(|pending| pending.source.starts_with(&root))
+                {
+                    self.pending_rename = None;
+                }
+                if self.pending_delete.as_ref().is_some_and(|pending| {
+                    pending
+                        .targets
+                        .iter()
+                        .any(|target| target.starts_with(&root))
+                }) {
+                    self.pending_delete = None;
+                }
+            }
+        }
+        self.known_storage_locations = current;
+        for (tab_id, dir) in refreshes {
+            self.refresh_tab(tab_id, dir);
+        }
+    }
+
+    fn unavailable_location_for_command(&self, cmd: &FileCommand) -> Option<&UnavailableLocation> {
+        self.unavailable_locations.values().find(|location| {
+            file_command_touches_unavailable_location(cmd, std::iter::once(*location))
+        })
+    }
+
+    fn reject_unavailable_location_operation(
+        &mut self,
+        cmd: &FileCommand,
+        location: &UnavailableLocation,
+    ) {
+        let message = format!(
+            "{} was not started: {} is unavailable. Choose Home or another location before retrying.",
+            operation_title(cmd),
+            location.root.display()
+        );
+        self.set_status_message(message.clone(), false, 6);
+        self.command_frame.error = Some(message);
+        self.command_frame.message = None;
+        self.command_frame.visible = true;
+    }
+
     fn navigate_tab_to(&mut self, tab_id: u64, dir: PathBuf) {
         self.focus_tab(tab_id);
         self.remember_main_selection(tab_id);
+        // Navigation is explicit user recovery. Never keep a stale-volume
+        // isolation marker after the user deliberately chose another path.
+        self.unavailable_locations.remove(&tab_id);
         if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
             tab.navigate_to(dir.clone());
         }
@@ -6791,6 +6907,10 @@ impl OttrinApp {
         refresh_tab: Option<u64>,
         delete_nav: Vec<DeletePostNav>,
     ) {
+        if let Some(location) = self.unavailable_location_for_command(&cmd).cloned() {
+            self.reject_unavailable_location_operation(&cmd, &location);
+            return;
+        }
         let op_id = self.queue_operation_record(cmd.clone());
         let platform = Arc::clone(&self.platform);
         let op_tx = self.op_tx.clone();
@@ -8424,6 +8544,7 @@ impl OttrinApp {
         let c = self.colors;
         let home = default_home_dir();
         let storage_roots = discover_storage_locations();
+        self.reconcile_storage_location_availability(storage_roots.clone());
         if reconcile_indexed_volume_roots(&mut self.state.config.search, &storage_roots) {
             self.search_service
                 .update_config(self.state.config.search.clone());
@@ -12207,6 +12328,35 @@ impl OttrinApp {
     }
 
     fn render_tab_contents(&mut self, ui: &mut egui::Ui, tab_id: u64, allow_smart_panel: bool) {
+        if let Some(unavailable) = self.unavailable_locations.get(&tab_id).cloned() {
+            let c = self.colors;
+            ui.vertical_centered(|ui| {
+                ui.add_space((ui.available_height() * 0.28).max(18.0));
+                ui.label(
+                    RichText::new(format!("{MI_CLEAR} Location unavailable"))
+                        .size(22.0)
+                        .color(c.error),
+                );
+                ui.add_space(8.0);
+                ui.label(
+                    RichText::new(format!(
+                        "{} is no longer available. No file operation will be redirected from this location.",
+                        unavailable.root.display()
+                    ))
+                    .color(c.text),
+                );
+                ui.add_space(12.0);
+                if ui.button("Go to Home").clicked() {
+                    self.navigate_tab_to(tab_id, default_home_dir());
+                }
+                ui.label(
+                    RichText::new("Or choose another known location from the Locations rail.")
+                        .small()
+                        .color(c.text_muted),
+                );
+            });
+            return;
+        }
         let view_mode = self
             .state
             .tab_by_id(tab_id)
@@ -17582,6 +17732,38 @@ fn format_duration_short(duration: Duration) -> String {
     }
 }
 
+fn file_command_touches_unavailable_location<'a>(
+    cmd: &FileCommand,
+    unavailable: impl IntoIterator<Item = &'a UnavailableLocation>,
+) -> bool {
+    let roots: Vec<&Path> = unavailable
+        .into_iter()
+        .map(|location| location.root.as_path())
+        .collect();
+    let touches = |path: &Path| roots.iter().any(|root| path.starts_with(root));
+    match cmd {
+        FileCommand::CreateFile { parent, .. } | FileCommand::CreateFolder { parent, .. } => {
+            touches(parent)
+        }
+        FileCommand::Rename { source, .. }
+        | FileCommand::ShowProperties { target: source }
+        | FileCommand::Chmod { target: source, .. } => touches(source),
+        FileCommand::Delete { targets, .. } => targets.iter().any(|target| touches(target)),
+        FileCommand::Copy {
+            sources,
+            destination,
+            ..
+        }
+        | FileCommand::Move {
+            sources,
+            destination,
+            ..
+        } => sources.iter().any(|source| touches(source)) || touches(destination),
+        FileCommand::Symlink { link_path, target } => touches(link_path) || touches(target),
+        FileCommand::RecoverRetainedMove { .. } => false,
+    }
+}
+
 fn operation_title(cmd: &FileCommand) -> &'static str {
     match cmd {
         FileCommand::CreateFile { .. } => "Create file",
@@ -20026,6 +20208,153 @@ mod tests {
 
         assert_eq!(app.state.active_tab().current_dir, original);
         assert!(app.status_message.is_some());
+    }
+
+    #[test]
+    fn selected_volume_removal_is_retained_by_identity_and_reconnects_only_to_same_volume() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        let original_root = PathBuf::from("/__ottrin_volume_a__");
+        let original_dir = original_root.join("documents");
+        app.state.active_tab_mut().current_dir = original_dir.clone();
+        let volume_a = StorageLocation {
+            path: original_root.clone(),
+            identity: "test-volume-a".to_string(),
+            kind: StorageLocationKind::Removable,
+            display_name: Some("Archive A".to_string()),
+        };
+
+        app.reconcile_storage_location_availability(vec![volume_a.clone()]);
+        app.reconcile_storage_location_availability(Vec::new());
+
+        assert_eq!(
+            app.unavailable_locations.get(&tab_id),
+            Some(&UnavailableLocation {
+                identity: "test-volume-a".to_string(),
+                root: original_root.clone(),
+            })
+        );
+        assert_eq!(app.state.active_tab().current_dir, original_dir);
+
+        app.reconcile_storage_location_availability(vec![StorageLocation {
+            path: original_root.clone(),
+            identity: "test-volume-b".to_string(),
+            kind: StorageLocationKind::Removable,
+            display_name: Some("Different disk".to_string()),
+        }]);
+        assert!(app.unavailable_locations.contains_key(&tab_id));
+
+        let reconnected_root = PathBuf::from("/__ottrin_volume_a_reconnected__");
+        app.reconcile_storage_location_availability(vec![StorageLocation {
+            path: reconnected_root.clone(),
+            ..volume_a
+        }]);
+        assert!(!app.unavailable_locations.contains_key(&tab_id));
+        assert_eq!(
+            app.state.active_tab().current_dir,
+            reconnected_root.join("documents")
+        );
+    }
+
+    #[test]
+    fn unavailable_location_rejects_every_mutation_bound_to_its_root() {
+        let unavailable = [UnavailableLocation {
+            identity: "test-volume-a".to_string(),
+            root: PathBuf::from("/__ottrin_volume_a__"),
+        }];
+        let source = PathBuf::from("/__ottrin_volume_a__/report.txt");
+        let destination = PathBuf::from("/__ottrin_safe_destination__");
+
+        assert!(file_command_touches_unavailable_location(
+            &FileCommand::Copy {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Rename,
+            },
+            unavailable.iter(),
+        ));
+        assert!(file_command_touches_unavailable_location(
+            &FileCommand::CreateFolder {
+                parent: PathBuf::from("/__ottrin_volume_a__"),
+                name: "new folder".to_string(),
+            },
+            unavailable.iter(),
+        ));
+        assert!(file_command_touches_unavailable_location(
+            &FileCommand::Symlink {
+                link_path: destination,
+                target: source,
+            },
+            unavailable.iter(),
+        ));
+    }
+
+    #[test]
+    fn unavailable_tab_drops_stale_confirmation_and_explicit_home_navigation_recovers() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        let root = PathBuf::from("/__ottrin_volume_a__");
+        let source = root.join("report.txt");
+        app.state.active_tab_mut().current_dir = root.clone();
+        app.reconcile_storage_location_availability(vec![StorageLocation {
+            path: root.clone(),
+            identity: "test-volume-a".to_string(),
+            kind: StorageLocationKind::Removable,
+            display_name: Some("Archive A".to_string()),
+        }]);
+        app.pending_rename = Some(PendingRename {
+            tab_id,
+            source: source.clone(),
+            name_input: "renamed.txt".to_string(),
+            request_focus: false,
+        });
+        app.reconcile_storage_location_availability(Vec::new());
+        assert!(
+            app.pending_rename.is_none(),
+            "stale rename confirmation is dropped"
+        );
+
+        app.run_file_op(
+            FileCommand::Rename {
+                source,
+                new_name: "renamed.txt".to_string(),
+            },
+            Some(tab_id),
+        );
+        assert!(
+            app.operation_history.is_empty(),
+            "rejection must not queue mutation"
+        );
+        assert!(app.command_frame.error.is_some());
+
+        app.navigate_tab_to(tab_id, default_home_dir());
+        assert!(!app.unavailable_locations.contains_key(&tab_id));
+    }
+
+    #[test]
+    fn unavailable_tandem_pane_does_not_isolate_its_healthy_sibling() {
+        let mut app = OttrinApp::default();
+        let lost_tab_id = app.state.active_tab().id;
+        let healthy_tab_id = 99;
+        let root = PathBuf::from("/__ottrin_volume_a__");
+        app.state.active_tab_mut().current_dir = root.clone();
+        app.state.tabs.push(ottrin_core::TabState::new(
+            healthy_tab_id,
+            PathBuf::from("/__ottrin_healthy_location__"),
+        ));
+        app.state.link_view = Some(ottrin_core::LinkView::new(lost_tab_id, healthy_tab_id));
+        app.reconcile_storage_location_availability(vec![StorageLocation {
+            path: root,
+            identity: "test-volume-a".to_string(),
+            kind: StorageLocationKind::Removable,
+            display_name: Some("Archive A".to_string()),
+        }]);
+
+        app.reconcile_storage_location_availability(Vec::new());
+
+        assert!(app.unavailable_locations.contains_key(&lost_tab_id));
+        assert!(!app.unavailable_locations.contains_key(&healthy_tab_id));
+        assert_eq!(app.tandem_tab_ids(), Some((lost_tab_id, healthy_tab_id)));
     }
 
     #[cfg(target_os = "windows")]
