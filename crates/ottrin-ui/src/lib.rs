@@ -116,6 +116,20 @@ fn grid_rubber_band_selection(
     }
 }
 
+fn locations_rail_tile_text(
+    icon: &str,
+    name: &str,
+    path: &Path,
+    identity: &str,
+    expanded: bool,
+) -> String {
+    if expanded {
+        format!("{icon} {name}\n{}", path.display())
+    } else {
+        format!("{icon}\n{identity}")
+    }
+}
+
 fn format_age_str(secs: u64) -> String {
     if secs < 60 {
         "just now".to_string()
@@ -8452,11 +8466,7 @@ impl OttrinApp {
                     let is_here = displayed_path == path;
                     let icon = Self::storage_icon_for_bookmark(stored_icon, &path);
                     let identity = Self::locations_rail_identity(&home, name, &path);
-                    let text = if expanded {
-                        format!("{icon} {name}")
-                    } else {
-                        format!("{icon}\n{identity}")
-                    };
+                    let text = locations_rail_tile_text(icon, name, &path, &identity, expanded);
                     // All locations are keyboard-focusable tiles; active one uses accent tint.
                     let (text_col, bg_col) = if is_here {
                         (c.text, c.selected_bg.gamma_multiply(0.62))
@@ -8472,7 +8482,7 @@ impl OttrinApp {
                     .fill(bg_col)
                     .stroke(Stroke::NONE)
                     .corner_radius(c.border_radius as f32)
-                    .min_size(Vec2::new(rail_w - 14.0, if expanded { 28.0 } else { 46.0 }));
+                    .min_size(Vec2::new(rail_w - 14.0, if expanded { 42.0 } else { 46.0 }));
 
                     let resp = ui
                         .add(btn)
@@ -19802,6 +19812,20 @@ mod tests {
         let app = OttrinApp::default();
         assert_eq!(app.locations_rail_width(), 60.0);
         assert!(!app.locations_rail_expanded);
+    }
+
+    #[test]
+    fn expanded_locations_tile_includes_a_secondary_mount_path() {
+        assert_eq!(
+            locations_rail_tile_text(
+                MI_FOLDER_OPEN,
+                "Backup",
+                Path::new("/media/alice/Backup"),
+                "Backup",
+                true,
+            ),
+            format!("{MI_FOLDER_OPEN} Backup\n/media/alice/Backup")
+        );
     }
 
     #[test]
