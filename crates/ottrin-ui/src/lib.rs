@@ -17070,6 +17070,9 @@ fn search_result_accessibility_label(name: &str) -> String {
 const SEARCH_TOGGLE_ACCESSIBILITY_LABEL: &str = "Toggle Search";
 
 fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
+    if matches!(entry.kind, EntryKind::Directory) {
+        return true;
+    }
     if !matches!(entry.kind, EntryKind::File) {
         return false;
     }

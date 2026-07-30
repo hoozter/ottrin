@@ -5,6 +5,11 @@ use std::hash::{Hash, Hasher};
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
 
+const FOLDER_COLLAGE_ENTRY_LIMIT: usize = 64;
+const FOLDER_COLLAGE_CHILD_LIMIT: usize = 4;
+const FOLDER_COLLAGE_MAX_CHILD_BYTES: u64 = 16 * 1024 * 1024;
+const FOLDER_COLLAGE_MAX_CHILD_PIXELS: u64 = 16 * 1024 * 1024;
+
 #[derive(Debug, Clone)]
 pub(crate) enum ImagePreviewCacheEntry {
     Ready(Vec<u8>),
@@ -63,9 +68,33 @@ pub(crate) fn preview_cache_key_for_page(
             dur.hash(&mut hasher);
         }
     }
+    if path.is_dir() {
+        hash_folder_collage_inputs(path, &mut hasher);
+    }
     target_dim.hash(&mut hasher);
     page_index.hash(&mut hasher);
     format!("{:016x}_{}.png", hasher.finish(), target_dim)
+}
+
+fn hash_folder_collage_inputs(path: &Path, hasher: &mut impl Hasher) {
+    let Ok(entries) = std::fs::read_dir(path) else {
+        return;
+    };
+    for entry in entries.flatten().take(FOLDER_COLLAGE_ENTRY_LIMIT) {
+        entry.file_name().hash(hasher);
+        if let Ok(file_type) = entry.file_type() {
+            file_type.is_file().hash(hasher);
+            file_type.is_symlink().hash(hasher);
+        }
+        if let Ok(meta) = entry.metadata() {
+            meta.len().hash(hasher);
+            if let Ok(modified) = meta.modified()
+                && let Ok(duration) = modified.duration_since(std::time::UNIX_EPOCH)
+            {
+                duration.hash(hasher);
+            }
+        }
+    }
 }
 
 fn preview_cache_path(cache_key: &str) -> Option<PathBuf> {
@@ -95,7 +124,9 @@ pub(crate) fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8], max_bytes:
 
 pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
     build_thumbnail_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
-        if is_pdf_path(path) {
+        if path.is_dir() {
+            render_folder_collage_png(path, target_dim)
+        } else if is_pdf_path(path) {
             match ottrin_preview::render_pdf_first_page_png(path, target_dim) {
                 Ok(bytes) => Some(bytes),
                 Err(error) => {
@@ -196,6 +227,9 @@ fn build_thumbnail_bytes_with_visual_renderer(
     target_dim: u32,
     render_visual: impl FnOnce(&Path, u32) -> Option<Vec<u8>>,
 ) -> Option<Vec<u8>> {
+    if path.is_dir() {
+        return render_folder_collage_png(path, target_dim);
+    }
     if is_pdf_path(path) || is_office_visual_path(path) || is_text_preview_path(path) {
         return render_visual(path, target_dim);
     }
@@ -211,6 +245,91 @@ fn build_thumbnail_bytes_with_visual_renderer(
         .write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)
         .ok()?;
     Some(bytes)
+}
+
+fn render_folder_collage_png(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
+    use image::{ImageEncoder, Rgba, RgbaImage};
+
+    let mut children = std::fs::read_dir(path)
+        .ok()?
+        .take(FOLDER_COLLAGE_ENTRY_LIMIT)
+        .filter_map(Result::ok)
+        .filter_map(|entry| {
+            let file_type = entry.file_type().ok()?;
+            (!file_type.is_symlink()
+                && file_type.is_file()
+                && supported_collage_child(&entry.path()))
+            .then_some(entry.path())
+        })
+        .collect::<Vec<_>>();
+    children.sort();
+    children.truncate(FOLDER_COLLAGE_CHILD_LIMIT);
+    if children.is_empty() {
+        return None;
+    }
+    let dimension = target_dim.clamp(64, 2_048);
+    let gap = (dimension / 32).max(2);
+    let tile = (dimension.saturating_sub(gap * 3) / 2).max(1);
+    let mut collage = RgbaImage::from_pixel(dimension, dimension, Rgba([226, 230, 236, 255]));
+    let mut rendered = 0usize;
+    for (index, child) in children.iter().enumerate() {
+        let Ok(meta) = std::fs::metadata(child) else {
+            continue;
+        };
+        if meta.len() > FOLDER_COLLAGE_MAX_CHILD_BYTES {
+            continue;
+        }
+        let Ok(reader) = image::ImageReader::open(child) else {
+            continue;
+        };
+        let Ok(reader) = reader.with_guessed_format() else {
+            continue;
+        };
+        let Ok((width, height)) = reader.into_dimensions() else {
+            continue;
+        };
+        if u64::from(width) * u64::from(height) > FOLDER_COLLAGE_MAX_CHILD_PIXELS {
+            continue;
+        }
+        let Ok(reader) = image::ImageReader::open(child) else {
+            continue;
+        };
+        let Ok(reader) = reader.with_guessed_format() else {
+            continue;
+        };
+        let Ok(image) = reader.decode() else {
+            continue;
+        };
+        let image = image.to_rgba8();
+        let thumb = image::imageops::thumbnail(&image, tile, tile);
+        let x = gap + (index as u32 % 2) * (tile + gap) + (tile - thumb.width()) / 2;
+        let y = gap + (index as u32 / 2) * (tile + gap) + (tile - thumb.height()) / 2;
+        image::imageops::overlay(&mut collage, &thumb, i64::from(x), i64::from(y));
+        rendered += 1;
+    }
+    if rendered == 0 {
+        return None;
+    }
+    let mut bytes = Vec::new();
+    image::codecs::png::PngEncoder::new(&mut bytes)
+        .write_image(
+            collage.as_raw(),
+            dimension,
+            dimension,
+            image::ExtendedColorType::Rgba8,
+        )
+        .ok()?;
+    Some(bytes)
+}
+
+fn supported_collage_child(path: &Path) -> bool {
+    matches!(
+        path.extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| ext.to_ascii_lowercase())
+            .as_deref(),
+        Some("png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff")
+    )
 }
 
 fn is_pdf_path(path: &Path) -> bool {
@@ -311,6 +430,7 @@ pub fn clear_preview_cache_storage() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use image::GenericImageView;
 
     #[test]
     fn pdf_thumbnail_uses_visual_renderer_case_insensitively() {
@@ -403,5 +523,49 @@ mod tests {
         let path = Path::new("main.rs");
 
         assert_ne!(preview_cache_key(path, 256), preview_cache_key(path, 640));
+    }
+
+    #[test]
+    fn folder_thumbnail_is_a_bounded_direct_child_collage() {
+        let dir = std::env::temp_dir().join(format!("ottrin-folder-thumb-{}", std::process::id()));
+        std::fs::create_dir_all(dir.join("nested")).expect("make fixture");
+        let image = image::RgbaImage::from_pixel(8, 8, image::Rgba([10, 20, 30, 255]));
+        image.save(dir.join("cover.png")).expect("write image");
+        image
+            .save(dir.join("nested/ignored.png"))
+            .expect("write nested image");
+
+        let bytes = build_thumbnail_bytes(&dir, 128).expect("direct child collage");
+        assert_eq!(
+            image::load_from_memory(&bytes).expect("png").dimensions(),
+            (128, 128)
+        );
+
+        std::fs::remove_dir_all(dir).expect("remove fixture");
+    }
+
+    #[test]
+    fn folder_cache_key_changes_when_a_direct_child_changes() {
+        let dir = std::env::temp_dir().join(format!("ottrin-folder-key-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).expect("make fixture");
+        let child = dir.join("cover.png");
+        std::fs::write(&child, [1_u8; 8]).expect("write child");
+        let before = preview_cache_key(&dir, 128);
+        std::thread::sleep(std::time::Duration::from_millis(2));
+        std::fs::write(&child, [2_u8; 16]).expect("rewrite child");
+
+        assert_ne!(before, preview_cache_key(&dir, 128));
+        std::fs::remove_dir_all(dir).expect("remove fixture");
+    }
+
+    #[test]
+    fn folder_thumbnail_rejects_invalid_direct_children_without_a_blank_card() {
+        let dir =
+            std::env::temp_dir().join(format!("ottrin-folder-invalid-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).expect("make fixture");
+        std::fs::write(dir.join("unsafe.png"), b"not an image").expect("write invalid image");
+
+        assert!(build_thumbnail_bytes(&dir, 128).is_none());
+        std::fs::remove_dir_all(dir).expect("remove fixture");
     }
 }
