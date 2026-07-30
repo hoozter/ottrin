@@ -17,6 +17,9 @@ const MAX_OFFICE_PARTS: usize = 4_096;
 const MAX_OFFICE_XML_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_SHARED_STRINGS: usize = 4_096;
 const OFFICE_VISUAL_TEXT_LIMIT: usize = 4_096;
+const MAX_TEXT_VISUAL_INPUT_BYTES: u64 = 128 * 1024;
+const TEXT_VISUAL_LINE_LIMIT: usize = 18;
+const TEXT_VISUAL_CHAR_LIMIT: usize = 1_600;
 
 #[derive(Debug, thiserror::Error)]
 pub enum OfficeVisualError {
@@ -33,6 +36,22 @@ pub enum OfficeVisualError {
     #[error("Office document has no safe extractable content")]
     NoContent,
     #[error("could not encode Office visual preview: {0}")]
+    Encode(String),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum TextVisualError {
+    #[error("format has no generated text card")]
+    UnsupportedFormat,
+    #[error("could not inspect text input: {0}")]
+    InputMetadata(String),
+    #[error("text input is too large for a generated card ({actual} bytes; limit {limit} bytes)")]
+    InputTooLarge { actual: u64, limit: u64 },
+    #[error("could not read text input: {0}")]
+    Read(String),
+    #[error("text input is not safe UTF-8 text")]
+    UnsafeText,
+    #[error("could not encode generated text card: {0}")]
     Encode(String),
 }
 
@@ -154,6 +173,89 @@ pub fn render_office_content_preview_png(
     }
     .ok_or(OfficeVisualError::NoContent)?;
     render_office_content_png(&text, &ext, target_dim)
+}
+
+/// Renders a bounded, syntax-neutral card for text/source files. The input is
+/// deliberately constrained before decoding so thumbnail generation never
+/// treats arbitrary bytes as an image or consumes an unbounded document.
+pub fn render_text_content_preview_png(
+    path: &Path,
+    target_dim: u32,
+) -> Result<Vec<u8>, TextVisualError> {
+    if classify_path(path) != PreviewKind::Text {
+        return Err(TextVisualError::UnsupportedFormat);
+    }
+    let input_size = std::fs::metadata(path)
+        .map_err(|error| TextVisualError::InputMetadata(error.to_string()))?
+        .len();
+    if input_size > MAX_TEXT_VISUAL_INPUT_BYTES {
+        return Err(TextVisualError::InputTooLarge {
+            actual: input_size,
+            limit: MAX_TEXT_VISUAL_INPUT_BYTES,
+        });
+    }
+    let bytes = std::fs::read(path).map_err(|error| TextVisualError::Read(error.to_string()))?;
+    let source = std::str::from_utf8(&bytes).map_err(|_| TextVisualError::UnsafeText)?;
+    if source.contains('\0')
+        || source
+            .chars()
+            .any(|character| character.is_control() && !matches!(character, '\n' | '\r' | '\t'))
+    {
+        return Err(TextVisualError::UnsafeText);
+    }
+
+    use image::{ImageEncoder, Rgba, RgbaImage};
+
+    let dimension = target_dim.clamp(64, 2_048);
+    let mut image = RgbaImage::from_pixel(dimension, dimension, Rgba([248, 249, 251, 255]));
+    let margin = (dimension / 11).clamp(6, 96);
+    let header_bottom = margin + (dimension / 5).clamp(24, 160);
+    fill_rect(
+        &mut image,
+        0,
+        0,
+        dimension,
+        header_bottom,
+        [218, 228, 242, 255],
+    );
+    let filename = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("Text file");
+    let kind = text_kind_label(path);
+    let leading = source
+        .lines()
+        .take(TEXT_VISUAL_LINE_LIMIT)
+        .collect::<Vec<_>>()
+        .join("\n");
+    let leading: String = leading.chars().take(TEXT_VISUAL_CHAR_LIMIT).collect();
+    let header = format!("{filename}\n{kind}");
+    render_document_text(
+        &mut image,
+        &header,
+        margin,
+        margin,
+        dimension - margin,
+        header_bottom.saturating_sub(margin / 3),
+    );
+    render_document_text(
+        &mut image,
+        &leading,
+        margin,
+        header_bottom + margin / 2,
+        dimension - margin,
+        dimension.saturating_sub(margin),
+    );
+    let mut bytes = Vec::new();
+    image::codecs::png::PngEncoder::new(&mut bytes)
+        .write_image(
+            image.as_raw(),
+            dimension,
+            dimension,
+            image::ExtendedColorType::Rgba8,
+        )
+        .map_err(|error| TextVisualError::Encode(error.to_string()))?;
+    Ok(bytes)
 }
 
 fn render_office_content_png(
@@ -1520,6 +1622,32 @@ mod tests {
         assert!(preview.body.contains("Lines: 2"));
         assert!(preview.body.contains(EXTRACTED_TEXT_MARKER));
         assert!(preview.body.contains("fn main()"));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn text_visual_card_is_deterministic_bounded_and_includes_context() {
+        let path = temp_path("sample.rs");
+        std::fs::write(&path, "fn main() {}\nprintln!(\"hi\");\n").expect("write");
+
+        let first = render_text_content_preview_png(&path, 256).expect("first card");
+        let second = render_text_content_preview_png(&path, 256).expect("second card");
+        let decoded = image::load_from_memory(&first).expect("decode visual PNG");
+
+        assert_eq!(first, second, "the cacheable card must be deterministic");
+        assert_eq!(decoded.dimensions(), (256, 256));
+        assert!(first.len() < 256 * 1024, "render size must stay bounded");
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn text_visual_card_rejects_binary_input() {
+        let path = temp_path("unsafe.rs");
+        std::fs::write(&path, b"fn main() {}\0").expect("write");
+
+        assert!(render_text_content_preview_png(&path, 256).is_err());
 
         let _ = std::fs::remove_file(path);
     }

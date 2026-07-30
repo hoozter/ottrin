@@ -106,12 +106,23 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     None
                 }
             }
-        } else {
+        } else if is_office_visual_path(path) {
             match ottrin_preview::render_office_content_preview_png(path, target_dim) {
                 Ok(bytes) => Some(bytes),
                 Err(error) => {
                     eprintln!(
                         "Office thumbnail render failed for {}: {error}",
+                        path.display()
+                    );
+                    None
+                }
+            }
+        } else {
+            match ottrin_preview::render_text_content_preview_png(path, target_dim) {
+                Ok(bytes) => Some(bytes),
+                Err(error) => {
+                    eprintln!(
+                        "Text thumbnail render failed for {}: {error}",
                         path.display()
                     );
                     None
@@ -125,7 +136,7 @@ pub(crate) fn fallback_preview_bytes(path: &Path, generated: Option<Vec<u8>>) ->
     if generated.is_some() {
         return generated;
     }
-    if is_pdf_path(path) || is_office_visual_path(path) {
+    if is_pdf_path(path) || is_office_visual_path(path) || is_text_preview_path(path) {
         return None;
     }
     std::fs::read(path).ok()
@@ -146,14 +157,24 @@ pub(crate) fn full_preview_bytes_at_page(
         };
     }
     full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
-        match ottrin_preview::render_office_content_preview_png(path, target_dim) {
-            Ok(bytes) => Some(bytes),
-            Err(error) => {
-                eprintln!(
-                    "Office preview render failed for {}: {error}",
-                    path.display()
-                );
-                None
+        if is_office_visual_path(path) {
+            match ottrin_preview::render_office_content_preview_png(path, target_dim) {
+                Ok(bytes) => Some(bytes),
+                Err(error) => {
+                    eprintln!(
+                        "Office preview render failed for {}: {error}",
+                        path.display()
+                    );
+                    None
+                }
+            }
+        } else {
+            match ottrin_preview::render_text_content_preview_png(path, target_dim) {
+                Ok(bytes) => Some(bytes),
+                Err(error) => {
+                    eprintln!("Text preview render failed for {}: {error}", path.display());
+                    None
+                }
             }
         }
     })
@@ -164,7 +185,7 @@ fn full_preview_bytes_with_visual_renderer(
     target_dim: u32,
     render_visual: impl FnOnce(&Path, u32) -> Option<Vec<u8>>,
 ) -> Option<Vec<u8>> {
-    if is_pdf_path(path) || is_office_visual_path(path) {
+    if is_pdf_path(path) || is_office_visual_path(path) || is_text_preview_path(path) {
         return render_visual(path, target_dim);
     }
     std::fs::read(path).ok()
@@ -175,7 +196,7 @@ fn build_thumbnail_bytes_with_visual_renderer(
     target_dim: u32,
     render_visual: impl FnOnce(&Path, u32) -> Option<Vec<u8>>,
 ) -> Option<Vec<u8>> {
-    if is_pdf_path(path) || is_office_visual_path(path) {
+    if is_pdf_path(path) || is_office_visual_path(path) || is_text_preview_path(path) {
         return render_visual(path, target_dim);
     }
     let img = image::ImageReader::open(path)
@@ -202,6 +223,13 @@ fn is_office_visual_path(path: &Path) -> bool {
     path.extension()
         .and_then(|ext| ext.to_str())
         .is_some_and(|ext| matches!(ext.to_ascii_lowercase().as_str(), "docx" | "xlsx" | "xlsm"))
+}
+
+fn is_text_preview_path(path: &Path) -> bool {
+    matches!(
+        ottrin_preview::classify_path(path),
+        ottrin_preview::PreviewKind::Text
+    )
 }
 
 pub(crate) fn preview_cache_stats() -> Option<(usize, u64)> {
@@ -355,5 +383,25 @@ mod tests {
         });
 
         assert_eq!(bytes, Some(b"rendered-png".to_vec()));
+    }
+
+    #[test]
+    fn text_thumbnail_uses_generated_card_not_image_decoder() {
+        let path =
+            std::env::temp_dir().join(format!("ottrin-text-thumbnail-{}.rs", std::process::id()));
+        std::fs::write(&path, "fn main() {}\n").expect("write text fixture");
+
+        let bytes = build_thumbnail_bytes(&path, 256);
+
+        assert!(bytes.is_some(), "safe text should receive a generated card");
+        assert!(image::load_from_memory(&bytes.expect("card")).is_ok());
+        std::fs::remove_file(path).expect("remove text fixture");
+    }
+
+    #[test]
+    fn text_thumbnail_cache_keys_vary_by_render_size() {
+        let path = Path::new("main.rs");
+
+        assert_ne!(preview_cache_key(path, 256), preview_cache_key(path, 640));
     }
 }

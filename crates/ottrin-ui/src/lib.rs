@@ -17083,11 +17083,14 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
         )
         .category,
         FileCategory::Image | FileCategory::Pdf
+    ) || matches!(
+        ottrin_preview::classify_path(&entry.path),
+        PreviewKind::Text
     );
-    is_visual && thumbnail_supported_image_path(&entry.path)
+    is_visual && thumbnail_supported_preview_path(&entry.path)
 }
 
-fn thumbnail_supported_image_path(path: &Path) -> bool {
+fn thumbnail_supported_preview_path(path: &Path) -> bool {
     let ext = path
         .extension()
         .and_then(|ext| ext.to_str())
@@ -17107,7 +17110,7 @@ fn thumbnail_supported_image_path(path: &Path) -> bool {
             | "avif"
             | "svg"
             | "pdf"
-    )
+    ) || matches!(ottrin_preview::classify_path(path), PreviewKind::Text)
 }
 
 fn is_svg_path(path: &Path) -> bool {
@@ -19043,7 +19046,7 @@ mod tests {
     }
 
     #[test]
-    fn image_thumbnail_candidate_includes_supported_formats_only() {
+    fn thumbnail_candidate_includes_supported_visual_and_text_formats() {
         let image_entry = FileEntry {
             name: "cover.jpg".to_string(),
             path: PathBuf::from("/tmp/cover.jpg"),
@@ -19071,9 +19074,19 @@ mod tests {
             size_bytes: Some(2048),
             modified_unix_secs: None,
         };
+        let source_entry = FileEntry {
+            name: "main.rs".to_string(),
+            path: PathBuf::from("/tmp/main.rs"),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: Some(1024),
+            modified_unix_secs: None,
+        };
 
         assert!(image_thumbnail_candidate(&image_entry));
         assert!(image_thumbnail_candidate(&pdf_entry));
+        assert!(image_thumbnail_candidate(&source_entry));
         assert!(!image_thumbnail_candidate(&office_entry));
         assert!(!image_thumbnail_candidate(&FileEntry {
             name: "legacy.doc".to_string(),
@@ -19087,21 +19100,24 @@ mod tests {
     }
 
     #[test]
-    fn thumbnail_supported_image_path_includes_supported_formats_only() {
-        assert!(thumbnail_supported_image_path(Path::new(
+    fn thumbnail_supported_preview_path_includes_safe_text_but_not_office_packages() {
+        assert!(thumbnail_supported_preview_path(Path::new(
             "/tmp/sample.webp"
         )));
-        assert!(thumbnail_supported_image_path(Path::new("/tmp/sample.PDF")));
-        assert!(!thumbnail_supported_image_path(Path::new(
+        assert!(thumbnail_supported_preview_path(Path::new(
+            "/tmp/sample.PDF"
+        )));
+        assert!(thumbnail_supported_preview_path(Path::new("/tmp/main.rs")));
+        assert!(!thumbnail_supported_preview_path(Path::new(
             "/tmp/report.docx"
         )));
-        assert!(!thumbnail_supported_image_path(Path::new(
+        assert!(!thumbnail_supported_preview_path(Path::new(
             "/tmp/report.XLSX"
         )));
-        assert!(!thumbnail_supported_image_path(Path::new(
+        assert!(!thumbnail_supported_preview_path(Path::new(
             "/tmp/report.xlsm"
         )));
-        assert!(!thumbnail_supported_image_path(Path::new(
+        assert!(!thumbnail_supported_preview_path(Path::new(
             "/tmp/presentation.pptx"
         )));
     }
