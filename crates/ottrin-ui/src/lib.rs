@@ -82,6 +82,12 @@ use window_chrome::{
     viewport_window_fill, wm_btn,
 };
 
+const STORAGE_LOCATION_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
+
+fn schedule_storage_location_refresh(ctx: &Context) {
+    ctx.request_repaint_after(STORAGE_LOCATION_REFRESH_INTERVAL);
+}
+
 fn format_age_str(secs: u64) -> String {
     if secs < 60 {
         "just now".to_string()
@@ -16675,6 +16681,9 @@ impl eframe::App for OttrinApp {
         self.poll_search_results();
         let preview_ready = self.poll_preview_jobs() | self.poll_preview_loads();
         self.sync_search_scope_root();
+        // The locations rail reconciles direct-navigation roots while rendering.
+        // Wake an otherwise idle UI so mount, removal, and mapping changes become visible.
+        schedule_storage_location_refresh(ctx);
 
         let search_indexing = self.search_started
             && matches!(
@@ -18633,6 +18642,26 @@ fn theme_preview_strip(ui: &mut egui::Ui, preview: Colors, width: f32, height: f
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn storage_location_refresh_wakes_an_idle_ui_within_the_bound() {
+        let ctx = Context::default();
+        let delays = Arc::new(std::sync::Mutex::new(Vec::new()));
+        let captured_delays = Arc::clone(&delays);
+        ctx.set_request_repaint_callback(move |info| {
+            captured_delays.lock().unwrap().push(info.delay);
+        });
+
+        schedule_storage_location_refresh(&ctx);
+
+        assert!(
+            delays
+                .lock()
+                .unwrap()
+                .iter()
+                .any(|delay| *delay <= STORAGE_LOCATION_REFRESH_INTERVAL)
+        );
+    }
 
     #[test]
     fn committed_cleanup_warning_is_completed_and_never_privilege_retryable() {
