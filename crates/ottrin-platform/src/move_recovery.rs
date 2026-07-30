@@ -4,6 +4,24 @@ use thiserror::Error;
 
 #[cfg(target_os = "linux")]
 use rustix::fd::OwnedFd;
+#[cfg(target_os = "windows")]
+use std::ffi::c_void;
+#[cfg(target_os = "windows")]
+use std::fs::OpenOptions;
+#[cfg(target_os = "windows")]
+use std::mem::{self, MaybeUninit};
+#[cfg(target_os = "windows")]
+use std::os::windows::fs::OpenOptionsExt;
+#[cfg(target_os = "windows")]
+use std::os::windows::io::AsRawHandle;
+#[cfg(target_os = "windows")]
+use windows_sys::Win32::Foundation::HANDLE;
+#[cfg(target_os = "windows")]
+use windows_sys::Win32::Storage::FileSystem::{
+    FILE_ATTRIBUTE_REPARSE_POINT, FILE_ATTRIBUTE_TAG_INFO, FILE_FLAG_BACKUP_SEMANTICS,
+    FILE_FLAG_OPEN_REPARSE_POINT, FILE_ID_INFO, FileAttributeTagInfo, FileIdInfo,
+    GetFileInformationByHandleEx,
+};
 
 pub const JOURNAL_SCHEMA_MAJOR: u16 = 2;
 pub const JOURNAL_SCHEMA_MINOR: u16 = 0;
@@ -108,6 +126,26 @@ pub enum LinuxFileType {
     Directory,
     Symlink,
     Other,
+}
+
+#[cfg(target_os = "windows")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum WindowsFileType {
+    File,
+    Directory,
+    Symlink,
+    Other,
+}
+
+#[cfg(target_os = "windows")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WindowsStableIdentity {
+    volume_serial_number: u64,
+    file_id: [u8; 16],
+    reparse_tag: Option<u32>,
+    file_type: WindowsFileType,
 }
 
 #[cfg(target_os = "linux")]
@@ -6361,6 +6399,95 @@ fn decode_nibble(digit: u8) -> Result<u8, JournalError> {
     }
 }
 
+#[cfg(target_os = "windows")]
+fn classify_windows_file_type(metadata: &std::fs::Metadata) -> WindowsFileType {
+    if metadata.is_dir() {
+        WindowsFileType::Directory
+    } else if metadata.file_type().is_symlink() {
+        WindowsFileType::Symlink
+    } else if metadata.is_file() {
+        WindowsFileType::File
+    } else {
+        WindowsFileType::Other
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn open_reparse_safe_entry(path: &Path) -> Result<std::fs::File, JournalError> {
+    OpenOptions::new()
+        .read(true)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+        .open(path)
+        .map_err(|error| JournalError::Io(error.to_string()))
+}
+
+#[cfg(target_os = "windows")]
+fn stable_identity_from_handle(
+    file: &std::fs::File,
+) -> Result<WindowsStableIdentity, JournalError> {
+    let metadata = file
+        .metadata()
+        .map_err(|error| JournalError::Io(error.to_string()))?;
+    let file_type = classify_windows_file_type(&metadata);
+
+    let mut file_id_info = MaybeUninit::<FILE_ID_INFO>::zeroed();
+    let mut attribute_tag_info = MaybeUninit::<FILE_ATTRIBUTE_TAG_INFO>::zeroed();
+    let handle = file.as_raw_handle() as HANDLE;
+
+    let file_id_size = u32::try_from(mem::size_of::<FILE_ID_INFO>())
+        .map_err(|error| JournalError::Io(error.to_string()))?;
+    let attribute_tag_size = u32::try_from(mem::size_of::<FILE_ATTRIBUTE_TAG_INFO>())
+        .map_err(|error| JournalError::Io(error.to_string()))?;
+
+    let got_file_id = unsafe {
+        GetFileInformationByHandleEx(
+            handle,
+            FileIdInfo,
+            file_id_info.as_mut_ptr() as *mut c_void,
+            file_id_size,
+        )
+    };
+    if got_file_id == 0 {
+        return Err(JournalError::Io(
+            std::io::Error::last_os_error().to_string(),
+        ));
+    }
+
+    let got_attribute_tag = unsafe {
+        GetFileInformationByHandleEx(
+            handle,
+            FileAttributeTagInfo,
+            attribute_tag_info.as_mut_ptr() as *mut c_void,
+            attribute_tag_size,
+        )
+    };
+    if got_attribute_tag == 0 {
+        return Err(JournalError::Io(
+            std::io::Error::last_os_error().to_string(),
+        ));
+    }
+
+    let file_id_info = unsafe { file_id_info.assume_init() };
+    let attribute_tag_info = unsafe { attribute_tag_info.assume_init() };
+
+    Ok(WindowsStableIdentity {
+        volume_serial_number: file_id_info.VolumeSerialNumber,
+        file_id: file_id_info.FileId.Identifier,
+        reparse_tag: if attribute_tag_info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
+            Some(attribute_tag_info.ReparseTag)
+        } else {
+            None
+        },
+        file_type,
+    })
+}
+
+#[cfg(target_os = "windows")]
+pub(crate) fn stable_identity_of_entry(path: &Path) -> Result<WindowsStableIdentity, JournalError> {
+    let file = open_reparse_safe_entry(path)?;
+    stable_identity_from_handle(&file)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -7062,6 +7189,30 @@ mod tests {
             units_hex: String::new(),
         };
         assert_eq!(encoded.decode(), Err(JournalError::WrongPlatformEncoding));
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn reparse_safe_open_records_stable_windows_identity() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-windows-stable-identity-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let file_path = root.join("entry.txt");
+        let directory_path = root.join("entry-dir");
+        std::fs::write(&file_path, b"windowstest").unwrap();
+        std::fs::create_dir(&directory_path).unwrap();
+
+        let file_identity_first = stable_identity_of_entry(&file_path).unwrap();
+        let file_identity_second = stable_identity_of_entry(&file_path).unwrap();
+        let directory_identity = stable_identity_of_entry(&directory_path).unwrap();
+
+        assert_eq!(file_identity_first, file_identity_second);
+        assert_eq!(file_identity_first.file_type, WindowsFileType::File);
+        assert_eq!(directory_identity.file_type, WindowsFileType::Directory);
+        assert_ne!(file_identity_first.file_id, directory_identity.file_id);
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

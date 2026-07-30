@@ -5,6 +5,8 @@
 // is reopened with the documented platform and crash evidence.
 #[cfg(target_os = "linux")]
 use super::move_recovery;
+#[cfg(target_os = "windows")]
+use super::move_recovery;
 use super::{ConflictAction, PlatformError, reject_directory_copy_into_itself};
 #[cfg(target_os = "linux")]
 use super::{copy_entry, next_available_name};
@@ -30,7 +32,31 @@ pub(super) fn move_entry_transactional(
     move_with_hooks(source, destination_dir, _conflict, |_| Ok(()))
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(target_os = "windows")]
+pub(super) fn move_entry_transactional(
+    source: &Path,
+    destination_dir: &Path,
+    _conflict: ConflictAction,
+) -> Result<(), PlatformError> {
+    std::fs::symlink_metadata(source)
+        .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
+    std::fs::symlink_metadata(destination_dir)
+        .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
+    reject_directory_copy_into_itself(source, destination_dir)?;
+
+    let _source_identity = move_recovery::stable_identity_of_entry(source)
+        .map_err(|error| PlatformError::Io(format!("source identity probe failed: {error}")))?;
+    let _destination_identity =
+        move_recovery::stable_identity_of_entry(destination_dir).map_err(|error| {
+            PlatformError::Io(format!("destination identity probe failed: {error}"))
+        })?;
+
+    Err(PlatformError::UnsupportedSafeMove(
+        source.display().to_string(),
+    ))
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
 pub(super) fn move_entry_transactional(
     source: &Path,
     destination_dir: &Path,
