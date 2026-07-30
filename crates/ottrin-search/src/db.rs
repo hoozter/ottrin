@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use thiserror::Error;
 
 /// Schema version for the on-disk search database.
-pub const SEARCH_DB_VERSION: u32 = 4;
+pub const SEARCH_DB_VERSION: u32 = 5;
 
 const GENERATION_SCHEMA: &str = r#"
 CREATE TABLE IF NOT EXISTS search_generations (
@@ -38,11 +38,23 @@ CREATE TABLE IF NOT EXISTS search_store_state (
     active_generation_id INTEGER NOT NULL,
     FOREIGN KEY (active_generation_id) REFERENCES search_generations(id)
 );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS search_generation_content USING fts5(
+    generation_id UNINDEXED,
+    path UNINDEXED,
+    content
+);
 "#;
 
 #[allow(dead_code)] // Slice 2 storage API is intentionally isolated until worker integration.
 pub(crate) struct SearchStore {
     conn: Connection,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct IndexedContentHit {
+    pub(crate) path: PathBuf,
+    pub(crate) snippet: String,
 }
 
 #[allow(dead_code)]
@@ -162,6 +174,7 @@ impl SearchStore {
         )?;
         let generation = tx.last_insert_rowid();
         insert_generation_items(&tx, generation, candidate.items())?;
+        insert_generation_content(&tx, generation, candidate.items())?;
         tx.execute(
             "UPDATE search_generations SET completed = 1 WHERE id = ?1",
             [generation],
@@ -184,6 +197,10 @@ impl SearchStore {
             "DELETE FROM search_generations WHERE id <> ?1",
             [generation],
         )?;
+        tx.execute(
+            "DELETE FROM search_generation_content WHERE generation_id <> ?1",
+            [generation],
+        )?;
 
         let snapshot = load_generation(&tx, plan)?.ok_or_else(|| {
             SearchDbError::InvalidGeneration("active generation disappeared".to_string())
@@ -195,6 +212,39 @@ impl SearchStore {
         after_commit(&snapshot);
         Ok(snapshot)
     }
+}
+
+const MAX_INDEXED_TEXT_BYTES: u64 = 512 * 1024;
+
+fn insert_generation_content(
+    tx: &Transaction<'_>,
+    generation: i64,
+    items: &[OwnedItem],
+) -> Result<(), SearchDbError> {
+    let mut stmt = tx.prepare_cached(
+        "INSERT INTO search_generation_content (generation_id, path, content) VALUES (?1, ?2, ?3)",
+    )?;
+    for owned in items {
+        let item = owned.item();
+        if !matches!(item.kind, EntryKind::File)
+            || item
+                .size_bytes
+                .is_none_or(|size| size > MAX_INDEXED_TEXT_BYTES)
+        {
+            continue;
+        }
+        let Ok(bytes) = std::fs::read(&item.path) else {
+            continue;
+        };
+        let Ok(content) = String::from_utf8(bytes) else {
+            continue;
+        };
+        if content.is_empty() || content.contains('\0') {
+            continue;
+        }
+        stmt.execute(params![generation, encode_path(&item.path), content])?;
+    }
+    Ok(())
 }
 
 fn insert_generation_items(
@@ -231,6 +281,70 @@ fn load_generation(
     plan: &ScanPlan,
 ) -> Result<Option<GenerationSnapshot>, SearchDbError> {
     load_generation_inner(conn, plan, None)
+}
+
+/// Query only the completed active generation. The reader opens a separate
+/// SQLite connection so UI queries never share the worker's write connection.
+pub(crate) fn query_indexed_content(
+    db_path: &Path,
+    plan: &ScanPlan,
+    text: &str,
+    limit: usize,
+) -> Result<Vec<IndexedContentHit>, SearchDbError> {
+    let terms = text
+        .split_whitespace()
+        .filter(|term| term.len() >= 2)
+        .map(str::to_ascii_lowercase)
+        .collect::<Vec<_>>();
+    if terms.is_empty() || limit == 0 {
+        return Ok(Vec::new());
+    }
+    let conn = Connection::open_with_flags(
+        db_path,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+    )?;
+    let mut stmt = conn.prepare(
+        "SELECT f.path, snippet(search_generation_content, 2, '', '', '…', 20)
+         FROM search_generation_content f
+         JOIN search_store_state s ON s.singleton = 1 AND s.active_generation_id = f.generation_id
+         JOIN search_generations g ON g.id = f.generation_id
+         WHERE g.completed = 1 AND g.plan_identity = ?1
+           AND search_generation_content MATCH ?2
+         ORDER BY rank
+         LIMIT ?3",
+    )?;
+    let rows = stmt.query_map(
+        params![
+            plan.identity(),
+            terms
+                .iter()
+                .map(|term| format!("\"{}\"", term.replace('"', "\"\"")))
+                .collect::<Vec<_>>()
+                .join(" AND "),
+            limit as i64
+        ],
+        |row| {
+            let raw_snippet: String = row.get(1)?;
+            Ok(IndexedContentHit {
+                path: decode_path(row.get(0)?)?,
+                snippet: content_snippet_line(&raw_snippet, &terms),
+            })
+        },
+    )?;
+    rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+}
+
+fn content_snippet_line(content: &str, terms: &[String]) -> String {
+    content
+        .lines()
+        .find(|line| {
+            let lowered = line.to_ascii_lowercase();
+            terms.iter().all(|term| lowered.contains(term))
+        })
+        .or_else(|| content.lines().find(|line| !line.trim().is_empty()))
+        .unwrap_or(content)
+        .trim()
+        .to_string()
 }
 
 fn load_generation_inner(
@@ -383,7 +497,7 @@ pub fn search_db_path() -> PathBuf {
 fn migrate(conn: &Connection) -> Result<(), SearchDbError> {
     let version: u32 = conn.query_row("PRAGMA user_version", [], |row| row.get(0))?;
     match version {
-        0..=3 | SEARCH_DB_VERSION => {
+        0..=4 | SEARCH_DB_VERSION => {
             conn.execute_batch(GENERATION_SCHEMA)?;
             conn.execute_batch(
                 "DROP TABLE IF EXISTS scan_state;
@@ -395,7 +509,7 @@ fn migrate(conn: &Connection) -> Result<(), SearchDbError> {
         other => return Err(SearchDbError::UnsupportedVersion(other)),
     }
     if version != SEARCH_DB_VERSION {
-        conn.execute("PRAGMA user_version = 4", [])?;
+        conn.execute("PRAGMA user_version = 5", [])?;
     }
     Ok(())
 }
@@ -445,6 +559,22 @@ mod tests {
             )
             .expect("inspect schema");
         assert_eq!(table_count, 0);
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn fresh_database_has_generation_scoped_fts_content_table() {
+        let db_path = temp_db_path("fts-schema");
+        let _store = SearchStore::open(db_path.clone()).expect("open store");
+        let conn = Connection::open(&db_path).expect("open database");
+        let sql: String = conn
+            .query_row(
+                "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'search_generation_content'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("FTS content table");
+        assert!(sql.contains("fts5"));
         let _ = std::fs::remove_file(db_path);
     }
 }
@@ -523,6 +653,92 @@ mod generation_tests {
 
         assert_eq!(committed.items(), &[owned(&root, "kept.txt", 3)]);
         assert_eq!(store.load(&plan).expect("load"), Some(committed));
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn committed_generation_indexes_bounded_utf8_content_and_replaces_stale_hits() {
+        let db_path = temp_db_path("generation-fts-content");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-generation-fts-content-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(&root).expect("create root");
+        let scan_plan = plan(&root);
+        let old = root.join("old.txt");
+        let new = root.join("new.txt");
+        std::fs::write(&old, "retired unique content").expect("write old content");
+        std::fs::write(&new, "fresh unique content").expect("write new content");
+        let mut store = SearchStore::open(db_path.clone()).expect("open store");
+        store
+            .commit(
+                &scan_plan,
+                IndexMutation::ReplaceAll(vec![owned(&root, "old.txt", 22)]),
+            )
+            .expect("commit old generation");
+        assert_eq!(
+            query_indexed_content(&db_path, &scan_plan, "retired", 10).expect("query old"),
+            vec![IndexedContentHit {
+                path: old.clone(),
+                snippet: "retired unique content".to_string(),
+            }]
+        );
+        store
+            .commit(
+                &scan_plan,
+                IndexMutation::ReplaceAll(vec![owned(&root, "new.txt", 20)]),
+            )
+            .expect("commit new generation");
+        assert!(
+            query_indexed_content(&db_path, &scan_plan, "retired", 10)
+                .expect("query stale")
+                .is_empty()
+        );
+        assert_eq!(
+            query_indexed_content(&db_path, &scan_plan, "fresh", 10).expect("query fresh"),
+            vec![IndexedContentHit {
+                path: new,
+                snippet: "fresh unique content".to_string(),
+            }]
+        );
+        let _ = std::fs::remove_dir_all(root);
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn generation_content_skips_binary_and_oversized_files() {
+        let db_path = temp_db_path("generation-fts-bounds");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-generation-fts-bounds-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(&root).expect("create root");
+        let scan_plan = plan(&root);
+        std::fs::write(root.join("binary.txt"), b"needle\0not text").expect("write binary");
+        std::fs::write(
+            root.join("oversized.txt"),
+            vec![b'x'; MAX_INDEXED_TEXT_BYTES as usize + 1],
+        )
+        .expect("write oversized content");
+        let mut store = SearchStore::open(db_path.clone()).expect("open store");
+        store
+            .commit(
+                &scan_plan,
+                IndexMutation::ReplaceAll(vec![
+                    owned(&root, "binary.txt", 15),
+                    owned(&root, "oversized.txt", MAX_INDEXED_TEXT_BYTES + 1),
+                ]),
+            )
+            .expect("commit generation");
+
+        assert!(
+            query_indexed_content(&db_path, &scan_plan, "needle", 10)
+                .expect("query binary")
+                .is_empty()
+        );
+        let _ = std::fs::remove_dir_all(root);
         let _ = std::fs::remove_file(db_path);
     }
 

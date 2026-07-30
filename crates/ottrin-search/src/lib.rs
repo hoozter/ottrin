@@ -22,7 +22,7 @@ mod plan;
 mod scanner;
 mod watch;
 mod worker;
-use db::{SearchStore, search_db_path};
+use db::{SearchStore, query_indexed_content, search_db_path};
 
 #[cfg(test)]
 static SEARCH_SERVICE_TEST_LOCK: Mutex<()> = Mutex::new(());
@@ -146,6 +146,7 @@ pub struct SearchService {
 pub struct SearchHandle {
     config: Arc<RwLock<SearchConfig>>,
     index: Arc<RwLock<IndexState>>,
+    store_path: Arc<PathBuf>,
 }
 
 impl SearchService {
@@ -363,6 +364,7 @@ impl SearchService {
         SearchHandle {
             config: Arc::clone(&self.config),
             index: Arc::clone(&self.index),
+            store_path: Arc::new(self.store_path.clone()),
         }
     }
 
@@ -557,8 +559,40 @@ impl SearchHandle {
             }
         }
 
-        // ── Content search pass: use ripgrep when requested ───────────────────
+        // ── Content search pass: query the active FTS generation first. ───────
+        // Ripgrep remains a supplemental fallback for content which is deliberately
+        // not indexed (unreadable, binary, oversized, or outside indexed roots).
         if query.content_search && query.text.trim().len() >= 2 {
+            if matches!(status, SearchIndexStatus::Ready)
+                && let Ok(plan) = plan::ScanPlan::new(&cfg)
+                && let Ok(fts_hits) = query_indexed_content(
+                    self.store_path.as_ref(),
+                    &plan,
+                    query.text.trim(),
+                    query.limit.max(50),
+                )
+            {
+                let mut by_path = items
+                    .iter()
+                    .map(|item| (item.path.as_path(), item))
+                    .collect::<std::collections::HashMap<_, _>>();
+                let mut seen: HashSet<PathBuf> =
+                    matched.iter().map(|(_, item)| item.path.clone()).collect();
+                for hit in fts_hits {
+                    let Some(indexed) = by_path.remove(hit.path.as_path()) else {
+                        continue;
+                    };
+                    let mut item = indexed.clone();
+                    item.content_snippet = Some(hit.snippet);
+                    if scope_match(&query, &item)
+                        && (query.include_hidden_system || !item.name.starts_with('.'))
+                        && eval_expr(&expr, &item)
+                        && seen.insert(item.path.clone())
+                    {
+                        matched.push((8_000, item));
+                    }
+                }
+            }
             let roots = ordered_query_roots(&query, &cfg);
             let content_limit = query.limit.max(50);
             let rg_items = query_content_ripgrep(
@@ -3096,6 +3130,53 @@ mod tests {
         assert_eq!(item.content_snippet.as_deref(), Some("needle appears here"));
 
         let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn content_search_uses_active_fts_generation_before_ripgrep_fallback() {
+        let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-fts-content-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        let file_path = root.join("indexed.txt");
+        fs::write(&file_path, "first line\nneedle from indexed generation\n")
+            .expect("write indexed content");
+
+        let mut service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        service.start();
+        service
+            .rebuild_index_blocking()
+            .expect("commit indexed generation");
+        fs::remove_file(&file_path).expect("remove source after indexing");
+
+        let response = service.query(SearchQuery {
+            text: "needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].path, file_path);
+        assert_eq!(
+            response.items[0].content_snippet.as_deref(),
+            Some("needle from indexed generation")
+        );
+
+        service.stop();
+        let _ = fs::remove_dir_all(&root);
+        let _ = fs::remove_file(&service.store_path);
     }
 
     #[test]
