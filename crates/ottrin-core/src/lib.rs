@@ -182,6 +182,13 @@ pub struct SearchConfig {
     pub default_scope: SearchScope,
     pub include_hidden_system: bool,
     pub include_roots: Vec<PathBuf>,
+    /// Explicit opt-ins for discovered volumes. These retain user intent while a
+    /// removable or mapped location is unavailable; only currently discovered
+    /// paths are supplied to the running indexer.
+    pub indexed_volumes: Vec<IndexedVolumeLocation>,
+    /// Runtime-only paths for currently available opted-in volumes.
+    #[serde(skip)]
+    pub active_indexed_volume_roots: Vec<PathBuf>,
     pub exclude_roots: Vec<PathBuf>,
     /// Optional: only index file content for these roots when enabled.
     pub content_indexing_enabled: bool,
@@ -212,6 +219,8 @@ impl Default for SearchConfig {
             default_scope: SearchScope::Global,
             include_hidden_system: false,
             include_roots: Vec::new(),
+            indexed_volumes: Vec::new(),
+            active_indexed_volume_roots: Vec::new(),
             exclude_roots: default_exclude_roots(),
             content_indexing_enabled: false,
             content_include_roots: Vec::new(),
@@ -253,6 +262,15 @@ impl Default for SearchConfig {
             locate_update_hours: 6,
         }
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct IndexedVolumeLocation {
+    /// Platform-provided identity. It must not depend on the display label or
+    /// current mount point.
+    pub identity: String,
+    /// Last observed root, retained for inspection and updated on rediscovery.
+    pub last_known_path: PathBuf,
 }
 
 /// Pre-populated excluded folder roots. On Linux, virtual kernel filesystems

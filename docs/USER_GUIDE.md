@@ -49,7 +49,7 @@ Windows MSI and macOS packages are not part of the current v1 release path.
 
 ## Search
 
-Ottrin's primary search source is its own SQLite index. Configure indexed locations in Settings -> Search. For most users, the best setup is a focused set of home, project, document, and download folders.
+Ottrin's primary search source is its own SQLite index. Configure indexed locations in Settings -> Search. For most users, the best setup is a focused set of home, project, document, and download folders. Attached drives remain browseable without being indexed: use a drive's Locations context menu to enable or disable indexed search explicitly. Ottrin remembers that choice by volume identity and restores it when the volume returns, while an unavailable volume is left out of the active index.
 
 Search freshness uses three mechanisms:
 

@@ -488,6 +488,10 @@ impl SearchHandle {
             } else {
                 items
                     .iter()
+                    // A replacement generation remains readable until its commit,
+                    // but a removed root must never leak results from that prior
+                    // generation while the replacement is in flight.
+                    .filter(|item| root_is_indexed(&item.path, &cfg))
                     .filter(|item| scope_match(&query, item))
                     .filter(|item| query.include_hidden_system || !item.name.starts_with('.'))
                     .filter_map(|item| {
@@ -640,8 +644,12 @@ impl Drop for SearchService {
 }
 
 fn effective_roots(cfg: &SearchConfig) -> Vec<PathBuf> {
-    if !cfg.include_roots.is_empty() {
-        cfg.include_roots.clone()
+    let mut roots = cfg.include_roots.clone();
+    roots.extend(cfg.active_indexed_volume_roots.iter().cloned());
+    if !roots.is_empty() {
+        roots.sort();
+        roots.dedup();
+        roots
     } else {
         default_roots()
     }
@@ -2868,6 +2876,25 @@ mod tests {
             effective_roots(&SearchConfig::default()),
             vec![ottrin_core::default_home_dir()]
         );
+    }
+
+    #[test]
+    fn unavailable_volume_intent_does_not_keep_a_stale_root_in_the_scan_plan() {
+        let mut config = SearchConfig {
+            include_roots: vec![PathBuf::from("/home/alice")],
+            active_indexed_volume_roots: vec![PathBuf::from("/media/alice/usb")],
+            ..SearchConfig::default()
+        };
+        assert_eq!(
+            effective_roots(&config),
+            vec![
+                PathBuf::from("/home/alice"),
+                PathBuf::from("/media/alice/usb")
+            ]
+        );
+
+        config.active_indexed_volume_roots.clear();
+        assert_eq!(effective_roots(&config), vec![PathBuf::from("/home/alice")]);
     }
 
     #[test]

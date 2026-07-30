@@ -10,11 +10,12 @@ use egui_extras::{Column, TableBuilder};
 use ottrin_core::{
     AppConfig, AppState, ConflictAction, DeleteMode, EntryKind, FileCategory, FileCommand,
     FileEntry, GraphicsRendererChoice, GraphicsRendererPreference, GraphicsRendererReason,
-    GraphicsRuntimeStatus, ListColumn, MillerColumnWidthMode, PrivilegedCommand, PrivilegedContext,
-    PrivilegedPayload, PrivilegedRequest, PrivilegedStatus, SavedTheme, SearchIndexStatus,
-    SearchQuery, SearchResponse, SearchResultItem, SearchScope, SearchSort, SortBy, TandemSide,
-    ThemeCustomization, ThemeMode, ThemePreset, ViewMode, classify_file, default_home_dir,
-    format_modified, format_size, format_size_units, platform_case_mode_current,
+    GraphicsRuntimeStatus, IndexedVolumeLocation, ListColumn, MillerColumnWidthMode,
+    PrivilegedCommand, PrivilegedContext, PrivilegedPayload, PrivilegedRequest, PrivilegedStatus,
+    SavedTheme, SearchConfig, SearchIndexStatus, SearchQuery, SearchResponse, SearchResultItem,
+    SearchScope, SearchSort, SortBy, TandemSide, ThemeCustomization, ThemeMode, ThemePreset,
+    ViewMode, classify_file, default_home_dir, format_modified, format_size, format_size_units,
+    platform_case_mode_current,
 };
 use ottrin_platform::{
     DefaultPlatform, PlatformError, PlatformOps, PrivilegedAvailability, StorageLocation,
@@ -127,6 +128,33 @@ fn locations_rail_tile_text(
         format!("{icon} {name}\n{}", path.display())
     } else {
         format!("{icon}\n{identity}")
+    }
+}
+
+/// Resolves persisted volume choices against this refresh's discovered roots.
+/// Missing volumes retain their choice but are deliberately absent from the
+/// runtime scan plan, so an unplugged volume cannot leave stale index entries.
+fn reconcile_indexed_volume_roots(
+    config: &mut SearchConfig,
+    locations: &[StorageLocation],
+) -> bool {
+    let mut active = Vec::new();
+    for opt_in in &mut config.indexed_volumes {
+        if let Some(location) = locations
+            .iter()
+            .find(|location| location.identity == opt_in.identity)
+        {
+            opt_in.last_known_path = location.path.clone();
+            active.push(location.path.clone());
+        }
+    }
+    active.sort();
+    active.dedup();
+    if config.active_indexed_volume_roots == active {
+        false
+    } else {
+        config.active_indexed_volume_roots = active;
+        true
     }
 }
 
@@ -8396,23 +8424,29 @@ impl OttrinApp {
         let c = self.colors;
         let home = default_home_dir();
         let storage_roots = discover_storage_locations();
+        if reconcile_indexed_volume_roots(&mut self.state.config.search, &storage_roots) {
+            self.search_service
+                .update_config(self.state.config.search.clone());
+        }
 
         // Ensure default bookmarks exist on first run
         if self.state.config.bookmarks.is_empty() {
-            self.state.config.bookmarks = Self::default_bookmarks_from_roots(&home, storage_roots)
-                .into_iter()
-                .filter(|(_, _, p)| p.exists())
-                .collect();
+            self.state.config.bookmarks =
+                Self::default_bookmarks_from_roots(&home, storage_roots.clone())
+                    .into_iter()
+                    .filter(|(_, _, p)| p.exists())
+                    .collect();
         } else {
             Self::reconcile_bookmarks_with_storage_roots(
                 &home,
                 &mut self.state.config.bookmarks,
-                storage_roots,
+                storage_roots.clone(),
             );
         }
 
         let mut navigate_to: Option<PathBuf> = None;
         let mut remove_idx: Option<usize> = None;
+        let mut volume_index_action: Option<(String, PathBuf, bool)> = None;
         let displayed_path = self.displayed_path();
         let rail_w = self.locations_rail_width();
         let expanded = self.locations_rail_expanded;
@@ -8469,6 +8503,26 @@ impl OttrinApp {
                     let icon = Self::storage_icon_for_bookmark(stored_icon, &path);
                     let identity = Self::locations_rail_identity(&home, name, &path);
                     let text = locations_rail_tile_text(icon, name, &path, &identity, expanded);
+                    let volume_index_status = storage_roots
+                        .iter()
+                        .find(|location| location.path == path)
+                        .map(|location| {
+                            self.state
+                                .config
+                                .search
+                                .indexed_volumes
+                                .iter()
+                                .any(|opt_in| opt_in.identity == location.identity)
+                        })
+                        .or_else(|| {
+                            self.state
+                                .config
+                                .search
+                                .indexed_volumes
+                                .iter()
+                                .find(|opt_in| opt_in.last_known_path == path)
+                                .map(|_| true)
+                        });
                     // All locations are keyboard-focusable tiles; active one uses accent tint.
                     let (text_col, bg_col) = if is_here {
                         (c.text, c.selected_bg.gamma_multiply(0.62))
@@ -8486,15 +8540,58 @@ impl OttrinApp {
                     .corner_radius(c.border_radius as f32)
                     .min_size(Vec2::new(rail_w - 14.0, if expanded { 42.0 } else { 46.0 }));
 
-                    let resp = ui
-                        .add(btn)
-                        .on_hover_text(format!("{} · {}", name, path.display()));
+                    let resp = ui.add(btn).on_hover_text(match volume_index_status {
+                        Some(true) => {
+                            format!("{} · {}\nIndexed search: enabled", name, path.display())
+                        }
+                        Some(false) => {
+                            format!("{} · {}\nIndexed search: disabled", name, path.display())
+                        }
+                        None => format!("{} · {}", name, path.display()),
+                    });
                     if resp.clicked() {
-                        navigate_to = Some(path);
+                        navigate_to = Some(path.clone());
                     }
                     resp.context_menu(|ui| {
                         ui.visuals_mut().override_text_color = Some(c.text_muted);
                         ui.set_min_width(188.0);
+                        let known_volume =
+                            storage_roots
+                                .iter()
+                                .find(|location| location.path == path)
+                                .map(|location| (location.identity.clone(), location.path.clone()))
+                                .or_else(|| {
+                                    self.state.config.search.indexed_volumes.iter().find_map(
+                                        |opt_in| {
+                                            (opt_in.last_known_path == path).then(|| {
+                                                (
+                                                    opt_in.identity.clone(),
+                                                    opt_in.last_known_path.clone(),
+                                                )
+                                            })
+                                        },
+                                    )
+                                });
+                        if let Some((volume_identity, volume_path)) = known_volume {
+                            let indexed = self
+                                .state
+                                .config
+                                .search
+                                .indexed_volumes
+                                .iter()
+                                .any(|opt_in| opt_in.identity == volume_identity);
+                            let label = if indexed {
+                                "Disable indexed search for this volume"
+                            } else {
+                                "Enable indexed search for this volume"
+                            };
+                            if menu_item(ui, MI_STORAGE, label, &c).clicked() {
+                                volume_index_action =
+                                    Some((volume_identity, volume_path, !indexed));
+                                ui.close();
+                            }
+                            ui.separator();
+                        }
                         if menu_item(ui, MI_CLEAR, &format!("Remove \"{}\"", name), &c).clicked() {
                             remove_idx = Some(idx);
                             ui.close();
@@ -8509,6 +8606,39 @@ impl OttrinApp {
         }
         if let Some(idx) = remove_idx {
             self.state.config.bookmarks.remove(idx);
+        }
+        if let Some((identity, path, enabled)) = volume_index_action {
+            if enabled {
+                self.state
+                    .config
+                    .search
+                    .indexed_volumes
+                    .push(IndexedVolumeLocation {
+                        identity,
+                        last_known_path: path,
+                    });
+                self.set_status_message(
+                    "Indexed search enabled for this volume. Rebuilding index.",
+                    true,
+                    5,
+                );
+            } else {
+                self.state
+                    .config
+                    .search
+                    .indexed_volumes
+                    .retain(|opt_in| opt_in.identity != identity);
+                self.set_status_message(
+                    "Indexed search disabled for this volume. Retiring its index entries.",
+                    true,
+                    5,
+                );
+            }
+            reconcile_indexed_volume_roots(&mut self.state.config.search, &storage_roots);
+            self.search_service
+                .update_config(self.state.config.search.clone());
+            self.search_service.rebuild_index();
+            self.persist_config();
         }
     }
 
@@ -19731,16 +19861,19 @@ mod tests {
         let discovered = vec![
             StorageLocation {
                 path: PathBuf::from("/media/usb-drive"),
+                identity: "linux:/dev/sdb1".to_string(),
                 kind: StorageLocationKind::Removable,
                 display_name: Some("USB Archive".to_string()),
             },
             StorageLocation {
                 path: PathBuf::from("/mnt/storage"),
+                identity: "linux:/dev/sdc1".to_string(),
                 kind: StorageLocationKind::Internal,
                 display_name: None,
             },
             StorageLocation {
                 path: PathBuf::from("/media/usb-drive"),
+                identity: "linux:/dev/sdb1".to_string(),
                 kind: StorageLocationKind::Removable,
                 display_name: None,
             },
@@ -19799,6 +19932,7 @@ mod tests {
             &mut bookmarks,
             vec![StorageLocation {
                 path: new_root.clone(),
+                identity: "linux:/dev/sdb1".to_string(),
                 kind: StorageLocationKind::Removable,
                 display_name: Some("New USB".to_string()),
             }],
@@ -19840,6 +19974,45 @@ mod tests {
         assert_eq!(
             OttrinApp::storage_icon_for_bookmark(MI_STORAGE, &missing),
             MI_CLEAR
+        );
+    }
+
+    #[test]
+    fn volume_index_opt_in_is_persisted_but_only_available_roots_reach_the_indexer() {
+        let mut config = SearchConfig {
+            include_roots: vec![PathBuf::from("/home/alice")],
+            indexed_volumes: vec![IndexedVolumeLocation {
+                identity: "linux:/dev/disk/by-uuid/abc".to_string(),
+                last_known_path: PathBuf::from("/media/alice/Old name"),
+            }],
+            ..SearchConfig::default()
+        };
+        let mounted = StorageLocation {
+            path: PathBuf::from("/run/media/alice/New name"),
+            identity: "linux:/dev/disk/by-uuid/abc".to_string(),
+            kind: StorageLocationKind::Removable,
+            display_name: Some("Renamed disk".to_string()),
+        };
+
+        assert!(reconcile_indexed_volume_roots(&mut config, &[mounted]));
+        assert_eq!(
+            config.active_indexed_volume_roots,
+            vec![PathBuf::from("/run/media/alice/New name")]
+        );
+        assert_eq!(
+            config.indexed_volumes[0].last_known_path,
+            PathBuf::from("/run/media/alice/New name")
+        );
+        let saved = serde_json::to_string(&config).expect("serialize saved search settings");
+        assert!(saved.contains("linux:/dev/disk/by-uuid/abc"));
+        assert!(!saved.contains("active_indexed_volume_roots"));
+
+        assert!(reconcile_indexed_volume_roots(&mut config, &[]));
+        assert!(config.active_indexed_volume_roots.is_empty());
+        assert_eq!(
+            config.indexed_volumes.len(),
+            1,
+            "unavailable volumes retain user intent"
         );
     }
 
