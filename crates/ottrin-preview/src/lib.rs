@@ -7,6 +7,7 @@ use std::path::PathBuf;
 mod pdf_visual;
 pub use pdf_visual::{
     PdfVisualError, render_pdf_first_page_png, render_pdf_first_page_png_with_library,
+    render_pdf_page_png, render_pdf_page_png_with_library,
 };
 
 const EXTRACTED_TEXT_MARKER: &str = "\n\nExtracted text:\n";

@@ -45,6 +45,14 @@ pub(crate) fn preview_cache_dir() -> Option<PathBuf> {
 }
 
 pub(crate) fn preview_cache_key(path: &Path, target_dim: u32) -> String {
+    preview_cache_key_for_page(path, target_dim, 0)
+}
+
+pub(crate) fn preview_cache_key_for_page(
+    path: &Path,
+    target_dim: u32,
+    page_index: usize,
+) -> String {
     let mut hasher = DefaultHasher::new();
     path.hash(&mut hasher);
     if let Ok(meta) = std::fs::metadata(path) {
@@ -56,6 +64,7 @@ pub(crate) fn preview_cache_key(path: &Path, target_dim: u32) -> String {
         }
     }
     target_dim.hash(&mut hasher);
+    page_index.hash(&mut hasher);
     format!("{:016x}_{}.png", hasher.finish(), target_dim)
 }
 
@@ -122,26 +131,29 @@ pub(crate) fn fallback_preview_bytes(path: &Path, generated: Option<Vec<u8>>) ->
     std::fs::read(path).ok()
 }
 
-pub(crate) fn full_preview_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
-    full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
-        if is_pdf_path(path) {
-            match ottrin_preview::render_pdf_first_page_png(path, target_dim) {
-                Ok(bytes) => Some(bytes),
-                Err(error) => {
-                    eprintln!("PDF preview render failed for {}: {error}", path.display());
-                    None
-                }
+pub(crate) fn full_preview_bytes_at_page(
+    path: &Path,
+    target_dim: u32,
+    page_index: usize,
+) -> Option<Vec<u8>> {
+    if is_pdf_path(path) {
+        return match ottrin_preview::render_pdf_page_png(path, page_index, target_dim) {
+            Ok(bytes) => Some(bytes),
+            Err(error) => {
+                eprintln!("PDF preview render failed for {}: {error}", path.display());
+                None
             }
-        } else {
-            match ottrin_preview::render_office_content_preview_png(path, target_dim) {
-                Ok(bytes) => Some(bytes),
-                Err(error) => {
-                    eprintln!(
-                        "Office preview render failed for {}: {error}",
-                        path.display()
-                    );
-                    None
-                }
+        };
+    }
+    full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
+        match ottrin_preview::render_office_content_preview_png(path, target_dim) {
+            Ok(bytes) => Some(bytes),
+            Err(error) => {
+                eprintln!(
+                    "Office preview render failed for {}: {error}",
+                    path.display()
+                );
+                None
             }
         }
     })
@@ -296,6 +308,17 @@ mod tests {
         let entry = ImagePreviewCacheEntry::from_response(Some(vec![1, 2, 3]));
 
         assert_eq!(entry.bytes(), Some(&[1, 2, 3][..]));
+    }
+
+    #[test]
+    fn pdf_page_cache_keys_do_not_alias_different_pages() {
+        let path = Path::new("report.pdf");
+
+        assert_ne!(
+            preview_cache_key_for_page(path, 2_048, 0),
+            preview_cache_key_for_page(path, 2_048, 1),
+            "each rendered PDF page needs its own cache entry"
+        );
     }
 
     #[test]

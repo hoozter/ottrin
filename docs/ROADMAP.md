@@ -18,7 +18,7 @@ Implemented:
 - Smart panel sections for Info, Drop Folder, Search, Activity, and Trash.
 - Cross-platform Trash panel implementation with Linux Freedesktop trash support and Windows Recycle Bin backend.
 - SQLite-backed indexed search with watcher updates, background updater scheduling, generated-folder skips, content search snippets, column resizing, click selection, double-click/Enter opening, shared right-click actions, and Space-triggered full preview.
-- Quick Inspector as a full Space-triggered window with visual image, bounded first-page PDF previews, and bounded DOCX/XLSX/XLSM content-preview PNGs; it retains extracted PDF/Office text and metadata fallbacks. Office output is a truthful content preview, not a faithful document layout.
+- Quick Inspector as a full Space-triggered window with visual image, bounded multi-page PDF previews with Previous/Next/go-to-page navigation, and bounded DOCX/XLSX/XLSM content-preview PNGs; it retains extracted PDF/Office text and metadata fallbacks. Office output is a truthful content preview, not a faithful document layout.
 - Theme presets and custom theme editing.
 - Linux portable tarball, Linux AppImage, Windows portable zip, and per-user Windows installer packaging scripts.
 - Windows portable and installer artifacts retain native WGPU as the Automatic fallback and bundle a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime, including the app-local `opengl32.dll` loader and its `libgallium_wgl.dll` driver bundle. Automatic selects the bundled compatibility path for detected RDP sessions and recognized virtual/problem adapters, explains that one-time choice in the app, and exposes Automatic, Native, and OpenGL compatibility preferences for the next launch. `ottrin.exe --renderer opengl` or `OTTRIN_RENDERER=opengl` remains a diagnostic override; the bundled Mesa, pal1000, and Microsoft notices are under `third-party-notices/`.
@@ -60,7 +60,7 @@ V1 should not ship until:
 These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 
 - Text/code editing in Quick Inspector.
-- Multi-page PDF navigation and advanced Office navigation/editing or faithful Office layout beyond the bounded content preview required for v1.
+- Advanced Office navigation/editing or faithful Office layout beyond the bounded content preview required for v1.
 - Rich file thumbnails beyond the common-document v1 preview gate: generated text/code preview cards, video frame thumbnails, and broader document thumbnails where platform support or dependencies make sense.
 - Recursive folder size thumbnails and folder thumbnail collages.
 - Native desktop application discovery for richer Open With menus.

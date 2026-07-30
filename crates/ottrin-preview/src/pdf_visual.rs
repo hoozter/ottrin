@@ -21,6 +21,8 @@ pub enum PdfVisualError {
     DocumentLoad(String),
     #[error("PDF has no pages")]
     EmptyDocument,
+    #[error("PDF page {requested} is outside the document's {page_count} pages")]
+    PageOutOfBounds { requested: usize, page_count: usize },
     #[error("could not render PDF page: {0}")]
     Render(String),
     #[error("could not encode PDF preview: {0}")]
@@ -28,12 +30,21 @@ pub enum PdfVisualError {
 }
 
 pub fn render_pdf_first_page_png(path: &Path, target_dim: u32) -> Result<Vec<u8>, PdfVisualError> {
+    render_pdf_page_png(path, 0, target_dim)
+}
+
+pub fn render_pdf_page_png(
+    path: &Path,
+    page_index: usize,
+    target_dim: u32,
+) -> Result<Vec<u8>, PdfVisualError> {
     let env_dir = std::env::var_os(PDFIUM_DIR_ENV).map(PathBuf::from);
     let executable_dir = std::env::current_exe()
         .ok()
         .and_then(|path| path.parent().map(Path::to_path_buf));
-    render_pdf_first_page_png_from_dirs(
+    render_pdf_page_png_from_dirs(
         path,
+        page_index,
         target_dim,
         pdfium_library_dirs_from(env_dir, executable_dir, development_pdfium_dirs()),
     )
@@ -41,6 +52,15 @@ pub fn render_pdf_first_page_png(path: &Path, target_dim: u32) -> Result<Vec<u8>
 
 pub fn render_pdf_first_page_png_with_library(
     path: &Path,
+    target_dim: u32,
+    library: &Path,
+) -> Result<Vec<u8>, PdfVisualError> {
+    render_pdf_page_png_with_library(path, 0, target_dim, library)
+}
+
+pub fn render_pdf_page_png_with_library(
+    path: &Path,
+    page_index: usize,
     target_dim: u32,
     library: &Path,
 ) -> Result<Vec<u8>, PdfVisualError> {
@@ -67,10 +87,17 @@ pub fn render_pdf_first_page_png_with_library(
     let document = pdfium
         .load_pdf_from_file(path, None)
         .map_err(|error| PdfVisualError::DocumentLoad(error.to_string()))?;
-    let page = document
-        .pages()
-        .get(0)
-        .map_err(|_| PdfVisualError::EmptyDocument)?;
+    let pages = document.pages();
+    let page_count = pages.len() as usize;
+    if page_count == 0 {
+        return Err(PdfVisualError::EmptyDocument);
+    }
+    let page = pages
+        .get(page_index as i32)
+        .map_err(|_| PdfVisualError::PageOutOfBounds {
+            requested: page_index,
+            page_count,
+        })?;
     let image = page
         .render_with_config(
             &PdfRenderConfig::new()
@@ -136,13 +163,14 @@ fn find_pdfium_library_from(dirs: Vec<PathBuf>) -> Option<PathBuf> {
         .find(|path| path.is_file())
 }
 
-fn render_pdf_first_page_png_from_dirs(
+fn render_pdf_page_png_from_dirs(
     path: &Path,
+    page_index: usize,
     target_dim: u32,
     dirs: Vec<PathBuf>,
 ) -> Result<Vec<u8>, PdfVisualError> {
     let library = find_pdfium_library_from(dirs).ok_or(PdfVisualError::RuntimeUnavailable)?;
-    render_pdf_first_page_png_with_library(path, target_dim, &library)
+    render_pdf_page_png_with_library(path, page_index, target_dim, &library)
 }
 
 #[cfg(test)]
@@ -214,7 +242,7 @@ mod tests {
 
     #[test]
     fn empty_runtime_capability_fails_without_system_fallback() {
-        let error = render_pdf_first_page_png_from_dirs(Path::new("missing.pdf"), 256, vec![])
+        let error = render_pdf_page_png_from_dirs(Path::new("missing.pdf"), 0, 256, vec![])
             .expect_err("empty capability set must fail closed");
 
         assert!(matches!(error, PdfVisualError::RuntimeUnavailable));

@@ -74,8 +74,8 @@ use theme_import::{decode_theme_import_json, sanitize_theme_file_name, theme_nam
 pub use thumbnail_cache::clear_preview_cache_storage;
 use thumbnail_cache::{
     ImagePreviewCacheEntry, build_thumbnail_bytes, clear_preview_cache_dir, fallback_preview_bytes,
-    full_preview_bytes, load_cached_thumbnail, persist_cached_thumbnail, preview_cache_dir,
-    preview_cache_key, preview_cache_stats, prune_preview_cache_dir,
+    full_preview_bytes_at_page, load_cached_thumbnail, persist_cached_thumbnail, preview_cache_dir,
+    preview_cache_key, preview_cache_key_for_page, preview_cache_stats, prune_preview_cache_dir,
 };
 use window_chrome::{
     WmBtn, cursor_icon_for_resize_direction, render_custom_titlebar, resize_direction_for_pos,
@@ -507,6 +507,7 @@ struct PreviewOverlay {
     data: Option<PreviewData>,
     visual_fit: bool,
     visual_zoom: f32,
+    pdf_page_index: usize,
     /// The Space press that opens a native child viewport can also be
     /// delivered to that viewport. Ignore Space briefly after opening so that
     /// press cannot immediately close it. A time guard does not depend on the
@@ -518,6 +519,7 @@ struct PreviewOverlay {
 struct PreviewJobRequest {
     path: PathBuf,
     target_dim: u32,
+    page_index: usize,
     cache_max_bytes: u64,
 }
 
@@ -525,6 +527,7 @@ struct PreviewJobRequest {
 struct PreviewJobResponse {
     path: PathBuf,
     target_dim: u32,
+    page_index: usize,
     bytes: Option<Vec<u8>>,
 }
 
@@ -988,7 +991,7 @@ pub struct OttrinApp {
     image_preview_cache: HashMap<String, ImagePreviewCacheEntry>,
     preview_tx: Sender<PreviewJobRequest>,
     preview_rx: Receiver<PreviewJobResponse>,
-    preview_inflight: HashSet<PathBuf>,
+    preview_inflight: HashSet<String>,
     preview_budget_remaining: usize,
     preview_load_tx: mpsc::SyncSender<PreviewLoadRequest>,
     preview_load_rx: Receiver<PreviewLoadResponse>,
@@ -1148,9 +1151,12 @@ impl OttrinApp {
 
         std::thread::spawn(move || {
             while let Ok(req) = preview_req_rx.recv() {
-                let cache_key = preview_cache_key(&req.path, req.target_dim);
-                let bytes = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                    full_preview_bytes(&req.path, PREVIEW_CACHE_BUCKET_XL)
+                let cache_key =
+                    preview_cache_key_for_page(&req.path, req.target_dim, req.page_index);
+                let selected_pdf_page = req.page_index > 0
+                    && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
+                let bytes = if req.target_dim == PREVIEW_CACHE_ORIGINAL || selected_pdf_page {
+                    full_preview_bytes_at_page(&req.path, PREVIEW_CACHE_BUCKET_XL, req.page_index)
                 } else if let Some(bytes) = load_cached_thumbnail(&cache_key) {
                     Some(bytes)
                 } else if let Some(bytes) = build_thumbnail_bytes(&req.path, req.target_dim) {
@@ -1162,6 +1168,7 @@ impl OttrinApp {
                 let _ = preview_res_tx.send(PreviewJobResponse {
                     path: req.path,
                     target_dim: req.target_dim,
+                    page_index: req.page_index,
                     bytes,
                 });
             }
@@ -1413,6 +1420,17 @@ impl OttrinApp {
         max_height: f32,
         corner_radius: u8,
     ) -> Option<egui::Image<'static>> {
+        self.cached_image_preview_widget_for_page(path, max_width, max_height, corner_radius, 0)
+    }
+
+    fn cached_image_preview_widget_for_page(
+        &mut self,
+        path: &Path,
+        max_width: f32,
+        max_height: f32,
+        corner_radius: u8,
+        page_index: usize,
+    ) -> Option<egui::Image<'static>> {
         let max_dim = max_width.max(max_height);
         let target_dim = if max_dim >= 900.0 {
             PREVIEW_CACHE_BUCKET_XL
@@ -1421,15 +1439,16 @@ impl OttrinApp {
         } else {
             PREVIEW_CACHE_BUCKET_SMALL
         };
-        let cache_key = preview_cache_key(path, target_dim);
+        let cache_key = preview_cache_key_for_page(path, target_dim, page_index);
         if !self.image_preview_cache.contains_key(&cache_key) {
-            if !self.preview_inflight.contains(path) && self.preview_budget_remaining > 0 {
+            if !self.preview_inflight.contains(&cache_key) && self.preview_budget_remaining > 0 {
                 let _ = self.preview_tx.send(PreviewJobRequest {
                     path: path.to_path_buf(),
                     target_dim,
+                    page_index,
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
-                self.preview_inflight.insert(path.to_path_buf());
+                self.preview_inflight.insert(cache_key.clone());
                 self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
             }
             return None;
@@ -1443,22 +1462,24 @@ impl OttrinApp {
         )
     }
 
-    fn cached_original_image_preview_widget(
+    fn cached_original_image_preview_widget_for_page(
         &mut self,
         path: &Path,
         max_width: f32,
         max_height: f32,
         corner_radius: u8,
+        page_index: usize,
     ) -> Option<egui::Image<'static>> {
-        let cache_key = preview_cache_key(path, PREVIEW_CACHE_ORIGINAL);
+        let cache_key = preview_cache_key_for_page(path, PREVIEW_CACHE_ORIGINAL, page_index);
         if !self.image_preview_cache.contains_key(&cache_key) {
-            if !self.preview_inflight.contains(path) && self.preview_budget_remaining > 0 {
+            if !self.preview_inflight.contains(&cache_key) && self.preview_budget_remaining > 0 {
                 let _ = self.preview_tx.send(PreviewJobRequest {
                     path: path.to_path_buf(),
                     target_dim: PREVIEW_CACHE_ORIGINAL,
+                    page_index,
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
-                self.preview_inflight.insert(path.to_path_buf());
+                self.preview_inflight.insert(cache_key.clone());
                 self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
             }
             return None;
@@ -1472,21 +1493,23 @@ impl OttrinApp {
         )
     }
 
-    fn cached_original_image_zoom_widget(
+    fn cached_original_image_zoom_widget_for_page(
         &mut self,
         path: &Path,
         zoom: f32,
         corner_radius: u8,
+        page_index: usize,
     ) -> Option<egui::Image<'static>> {
-        let cache_key = preview_cache_key(path, PREVIEW_CACHE_ORIGINAL);
+        let cache_key = preview_cache_key_for_page(path, PREVIEW_CACHE_ORIGINAL, page_index);
         if !self.image_preview_cache.contains_key(&cache_key) {
-            if !self.preview_inflight.contains(path) && self.preview_budget_remaining > 0 {
+            if !self.preview_inflight.contains(&cache_key) && self.preview_budget_remaining > 0 {
                 let _ = self.preview_tx.send(PreviewJobRequest {
                     path: path.to_path_buf(),
                     target_dim: PREVIEW_CACHE_ORIGINAL,
+                    page_index,
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
-                self.preview_inflight.insert(path.to_path_buf());
+                self.preview_inflight.insert(cache_key.clone());
                 self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
             }
             return None;
@@ -4496,11 +4519,11 @@ impl OttrinApp {
     fn poll_preview_jobs(&mut self) -> bool {
         let mut changed = false;
         while let Ok(resp) = self.preview_rx.try_recv() {
-            self.preview_inflight.remove(&resp.path);
+            let key = preview_cache_key_for_page(&resp.path, resp.target_dim, resp.page_index);
+            self.preview_inflight.remove(&key);
             if self.image_preview_cache.len() >= MAX_CACHED_IMAGE_PREVIEWS {
                 self.image_preview_cache.clear();
             }
-            let key = preview_cache_key(&resp.path, resp.target_dim);
             self.image_preview_cache
                 .insert(key, ImagePreviewCacheEntry::from_response(resp.bytes));
             changed = true;
@@ -6076,6 +6099,7 @@ impl OttrinApp {
         self.preview.visible = false;
         self.preview.path = None;
         self.preview.data = None;
+        self.preview.pdf_page_index = 0;
         self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
         ctx.request_repaint();
     }
@@ -6087,6 +6111,7 @@ impl OttrinApp {
         self.preview.space_close_ready_at = Some(Instant::now() + Duration::from_millis(180));
         self.preview.visual_fit = true;
         self.preview.visual_zoom = 1.0;
+        self.preview.pdf_page_index = 0;
         self.preview.data = None;
         self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
         self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
@@ -6133,8 +6158,20 @@ impl OttrinApp {
         self.preview.path = Some(path.clone());
         self.preview.visual_fit = true;
         self.preview.visual_zoom = 1.0;
+        self.preview.pdf_page_index = 0;
         self.preview.data = None;
         self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
+    }
+
+    fn set_pdf_preview_page(&mut self, page_index: usize) -> bool {
+        let Some(page_count) = self.preview.data.as_ref().and_then(pdf_page_count) else {
+            return false;
+        };
+        if page_index >= page_count {
+            return false;
+        }
+        self.preview.pdf_page_index = page_index;
+        true
     }
 
     fn handle_preview_key_action(&mut self, action: PreviewKeyAction) {
@@ -13990,6 +14027,41 @@ impl OttrinApp {
                                     self.rotate_inspector_image(&path, false);
                                 }
                             }
+                            if let Some(page_count) = pdf_page_count(&preview) {
+                                let page_index = self.preview.pdf_page_index.min(page_count - 1);
+                                if ui
+                                    .add_enabled(
+                                        page_index > 0,
+                                        egui::Button::new("Previous"),
+                                    )
+                                    .on_hover_text("Show the previous PDF page.")
+                                    .clicked()
+                                {
+                                    self.set_pdf_preview_page(page_index - 1);
+                                }
+                                let mut selected_page = page_index + 1;
+                                if ui
+                                    .add(
+                                        egui::DragValue::new(&mut selected_page)
+                                            .range(1..=page_count)
+                                            .prefix("Page "),
+                                    )
+                                    .changed()
+                                {
+                                    self.set_pdf_preview_page(selected_page - 1);
+                                }
+                                ui.label(RichText::new(format!("of {page_count}")).color(c.text_dim));
+                                if ui
+                                    .add_enabled(
+                                        page_index + 1 < page_count,
+                                        egui::Button::new("Next"),
+                                    )
+                                    .on_hover_text("Show the next PDF page.")
+                                    .clicked()
+                                {
+                                    self.set_pdf_preview_page(page_index + 1);
+                                }
+                            }
                             let is_zoomable_document =
                                 matches!(preview.kind, PreviewKind::Image | PreviewKind::Pdf);
                             if is_zoomable_document {
@@ -14081,19 +14153,25 @@ impl OttrinApp {
                                             .and_then(|e| e.to_str())
                                             .map(|e| e.eq_ignore_ascii_case("svg"))
                                             .unwrap_or(false);
+                                    let pdf_page_index = if preview.kind == PreviewKind::Pdf {
+                                        self.preview.pdf_page_index
+                                    } else {
+                                        0
+                                    };
                                     let image = if !self.preview.visual_fit {
                                         if is_svg {
                                             self.cached_image_preview_widget(&path, max_w, max_h, 8)
                                         } else {
-                                            self.cached_original_image_zoom_widget(
+                                            self.cached_original_image_zoom_widget_for_page(
                                                 &path,
                                                 self.preview.visual_zoom,
                                                 8,
+                                                pdf_page_index,
                                             )
                                             .or_else(
                                                 || {
-                                                    self.cached_image_preview_widget(
-                                                        &path, max_w, max_h, 8,
+                                                    self.cached_image_preview_widget_for_page(
+                                                        &path, max_w, max_h, 8, pdf_page_index,
                                                     )
                                                 },
                                             )
@@ -14102,13 +14180,13 @@ impl OttrinApp {
                                         if is_svg {
                                             self.cached_image_preview_widget(&path, max_w, max_h, 8)
                                         } else {
-                                            self.cached_original_image_preview_widget(
-                                                &path, max_w, max_h, 8,
+                                            self.cached_original_image_preview_widget_for_page(
+                                                &path, max_w, max_h, 8, pdf_page_index,
                                             )
                                             .or_else(
                                                 || {
-                                                    self.cached_image_preview_widget(
-                                                        &path, max_w, max_h, 8,
+                                                    self.cached_image_preview_widget_for_page(
+                                                        &path, max_w, max_h, 8, pdf_page_index,
                                                     )
                                                 },
                                             )
@@ -17392,6 +17470,18 @@ fn preview_space_should_close(
     space_pressed && ready_at.is_some_and(|ready_at| now >= ready_at)
 }
 
+fn pdf_page_count(preview: &PreviewData) -> Option<usize> {
+    (preview.kind == PreviewKind::Pdf)
+        .then(|| {
+            preview.body.lines().find_map(|line| {
+                line.strip_prefix("Pages: ")
+                    .and_then(|count| count.trim().parse::<usize>().ok())
+                    .filter(|count| *count > 0)
+            })
+        })
+        .flatten()
+}
+
 fn previewable_entry(entry: &FileEntry) -> bool {
     matches!(
         entry.kind,
@@ -19251,6 +19341,33 @@ mod tests {
         assert!(!preview_space_should_close(Some(ready_at), opened_at, true));
         assert!(!preview_space_should_close(Some(ready_at), ready_at, false));
         assert!(preview_space_should_close(Some(ready_at), ready_at, true));
+    }
+
+    #[test]
+    fn quick_inspector_pdf_page_selection_is_bounded_and_resets_for_a_new_file() {
+        let mut app = OttrinApp::default();
+        app.preview.data = Some(PreviewData {
+            title: "report.pdf".to_string(),
+            kind: PreviewKind::Pdf,
+            body: "Filetype: PDF document\nPages: 3".to_string(),
+            open_external: true,
+        });
+
+        assert!(app.set_pdf_preview_page(2));
+        assert_eq!(app.preview.pdf_page_index, 2);
+        assert!(!app.set_pdf_preview_page(3));
+        assert_eq!(app.preview.pdf_page_index, 2);
+
+        app.open_preview_entry(FileEntry {
+            name: "other.pdf".to_string(),
+            path: PathBuf::from("/tmp/other.pdf"),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: None,
+            modified_unix_secs: None,
+        });
+        assert_eq!(app.preview.pdf_page_index, 0);
     }
 
     #[test]
