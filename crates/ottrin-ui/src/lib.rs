@@ -1,5 +1,5 @@
 use egui::emath::Rangef;
-use egui::scroll_area::ScrollBarVisibility;
+use egui::scroll_area::{ScrollBarVisibility, State as ScrollAreaState};
 use egui::style::ScrollAnimation;
 use egui::text::{CCursor, CCursorRange};
 use egui::{
@@ -95,8 +95,94 @@ fn grid_rubber_band_may_start(cells: &[(PathBuf, Rect)], pointer: egui::Pos2) ->
     !cells.iter().any(|(_, rect)| rect.contains(pointer))
 }
 
+fn list_rubber_band_may_start(
+    cells: &[(PathBuf, Rect)],
+    viewport: Rect,
+    pointer: egui::Pos2,
+) -> bool {
+    viewport.contains(pointer) && grid_rubber_band_may_start(cells, pointer)
+}
+
 fn rubber_band_crosses_threshold(origin: egui::Pos2, current: egui::Pos2) -> bool {
     (current - origin).length_sq() >= RUBBER_BAND_DRAG_THRESHOLD.powi(2)
+}
+
+fn rubber_band_edge_scroll_delta(pointer: egui::Pos2, viewport: Rect, dt: f32) -> f32 {
+    const EDGE_PX: f32 = 28.0;
+    const MAX_PX_PER_SECOND: f32 = 720.0;
+
+    if viewport.height() <= 0.0 || dt <= 0.0 {
+        return 0.0;
+    }
+    let top_edge = viewport.top() + EDGE_PX.min(viewport.height() * 0.5);
+    let bottom_edge = viewport.bottom() - EDGE_PX.min(viewport.height() * 0.5);
+    let fraction = if pointer.y < top_edge {
+        -((top_edge - pointer.y) / EDGE_PX).clamp(0.0, 1.0)
+    } else if pointer.y > bottom_edge {
+        ((pointer.y - bottom_edge) / EDGE_PX).clamp(0.0, 1.0)
+    } else {
+        0.0
+    };
+    fraction * MAX_PX_PER_SECOND * dt
+}
+
+fn rubber_band_edge_scroll_offset(
+    current_offset: f32,
+    delta: f32,
+    content_height: f32,
+    viewport_height: f32,
+) -> f32 {
+    (current_offset + delta).clamp(0.0, (content_height - viewport_height).max(0.0))
+}
+
+fn visible_grid_row_range(
+    viewport: Rect,
+    top_padding: f32,
+    row_height: f32,
+    row_count: usize,
+) -> std::ops::Range<usize> {
+    if row_height <= 0.0 {
+        return 0..0;
+    }
+    let first = ((viewport.min.y - top_padding) / row_height)
+        .floor()
+        .max(0.0) as usize;
+    let last = ((viewport.max.y - top_padding) / row_height)
+        .ceil()
+        .max(0.0) as usize;
+    let first = first.min(row_count);
+    first..last.clamp(first, row_count)
+}
+
+fn auto_scroll_rubber_band(
+    ctx: &Context,
+    scroll_id: egui::Id,
+    scroll_state: ScrollAreaState,
+    content_size: Vec2,
+    viewport: Rect,
+    gesture: &RubberBandGesture,
+) -> bool {
+    if !rubber_band_crosses_threshold(gesture.origin, gesture.current) {
+        return false;
+    }
+    let delta = rubber_band_edge_scroll_delta(
+        gesture.current,
+        viewport,
+        ctx.input(|input| input.stable_dt),
+    );
+    let offset_y = rubber_band_edge_scroll_offset(
+        scroll_state.offset.y,
+        delta,
+        content_size.y,
+        viewport.height(),
+    );
+    if (offset_y - scroll_state.offset.y).abs() <= f32::EPSILON {
+        return false;
+    }
+    let mut state = scroll_state;
+    state.offset.y = offset_y;
+    state.store(ctx, scroll_id);
+    true
 }
 
 fn clipped_rubber_band_rect(
@@ -605,10 +691,35 @@ struct TabUiState {
 struct RubberBandGesture {
     origin: egui::Pos2,
     current: egui::Pos2,
-    baseline: HashSet<PathBuf>,
+    baseline: RubberBandSelectionSnapshot,
     modifiers: egui::Modifiers,
     listing_request_id: u64,
     transient_paths: Option<HashSet<PathBuf>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct RubberBandSelectionSnapshot {
+    selected_paths: HashSet<PathBuf>,
+    main_sel: Option<usize>,
+    selection_anchor: Option<PathBuf>,
+}
+
+impl TabUiState {
+    fn rubber_band_snapshot(&self) -> RubberBandSelectionSnapshot {
+        let selected_paths = if self.selected_paths.is_empty() {
+            self.main_sel
+                .and_then(|idx| self.main.entries.get(idx))
+                .map(|entry| HashSet::from([entry.path.clone()]))
+                .unwrap_or_default()
+        } else {
+            self.selected_paths.clone()
+        };
+        RubberBandSelectionSnapshot {
+            selected_paths,
+            main_sel: self.main_sel,
+            selection_anchor: self.selection_anchor.clone(),
+        }
+    }
 }
 
 fn rubber_band_is_current(
@@ -4995,6 +5106,17 @@ impl OttrinApp {
         true
     }
 
+    fn cancel_rubber_band(&mut self, tab_id: u64) -> bool {
+        let Some(gesture) = self.tab_ui.entry(tab_id).or_default().rubber_band.take() else {
+            return false;
+        };
+        let ui = self.tab_ui.entry(tab_id).or_default();
+        ui.selected_paths = gesture.baseline.selected_paths;
+        ui.main_sel = gesture.baseline.main_sel;
+        ui.selection_anchor = gesture.baseline.selection_anchor;
+        true
+    }
+
     // Column-view live anchor: update active dir without pushing history.
     // Used when user navigates an ancestor column so child previews rebase.
     fn set_tab_anchor_dir_live(&mut self, tab_id: u64, dir: PathBuf) {
@@ -5516,10 +5638,19 @@ impl OttrinApp {
     }
 
     fn focus_tab(&mut self, tab_id: u64) {
+        let previous = self.state.active_tab().id;
+        if previous != tab_id {
+            self.cancel_rubber_band(previous);
+        }
         let _ = self.state.select_tab_id_preserving_tandem(tab_id);
     }
 
     fn focus_tab_idx(&mut self, idx: usize) {
+        let previous = self.state.active_tab().id;
+        let next = self.state.tabs.get(idx).map(|tab| tab.id);
+        if next.is_some_and(|tab_id| tab_id != previous) {
+            self.cancel_rubber_band(previous);
+        }
         let _ = self.state.select_tab_idx_preserving_tandem(idx);
     }
 
@@ -5614,6 +5745,7 @@ impl OttrinApp {
     }
 
     fn set_tandem_active_side(&mut self, side: TandemSide) {
+        let previous = self.state.active_tab().id;
         let tab_id = {
             let Some(link) = self.state.link_view.as_mut() else {
                 return;
@@ -5623,6 +5755,9 @@ impl OttrinApp {
             tab_id
         };
         if let Some(idx) = self.state.tab_idx_by_id(tab_id) {
+            if tab_id != previous {
+                self.cancel_rubber_band(previous);
+            }
             self.state.active_tab_idx = idx;
         }
     }
@@ -5971,6 +6106,20 @@ impl OttrinApp {
     fn handle_keyboard(&mut self, ctx: &Context) {
         // Don't intercept keys when typing in address bar
         if self.any_address_bar_editing() {
+            return;
+        }
+
+        // Gesture cancellation must claim Escape before the generic selection
+        // handler runs; otherwise that handler destroys the saved baseline.
+        let tab_id = self.state.active_tab().id;
+        let has_rubber_band = self
+            .tab_ui
+            .get(&tab_id)
+            .is_some_and(|ui| ui.rubber_band.is_some());
+        if has_rubber_band
+            && ctx.input_mut(|input| input.consume_key(egui::Modifiers::NONE, Key::Escape))
+            && self.cancel_rubber_band(tab_id)
+        {
             return;
         }
 
@@ -14168,17 +14317,17 @@ impl OttrinApp {
         }
 
         // Rows
-        let mut list_cells = Vec::with_capacity(entries.len());
-        let mut list_content_rect = Rect::NOTHING;
+        let mut list_cells = Vec::new();
         let mut list_viewport_rect = Rect::NOTHING;
-        ScrollArea::vertical()
+        let list_scroll = ScrollArea::vertical()
             .id_salt(("list_view", tab_id))
-            .show(ui, |ui| {
+            .show_rows(ui, row_h, entries.len(), |ui, row_range| {
                 if entries.is_empty() {
                     self.render_empty_folder_state(ui, &current_dir, &c, false);
                     return;
                 }
-                for (i, entry) in entries.iter().enumerate() {
+                for i in row_range {
+                    let entry = &entries[i];
                     let selected = selected_paths.contains(&entry.path)
                         || (selected_paths.is_empty() && sel == Some(i));
                     let row_rect = Rect::from_min_size(
@@ -14359,9 +14508,9 @@ impl OttrinApp {
                         x += w;
                     }
                 }
-                list_content_rect = ui.min_rect();
                 list_viewport_rect = ui.clip_rect();
             });
+        list_viewport_rect = list_scroll.inner_rect;
         let pointer = ui.ctx().input(|input| {
             (
                 input.pointer.interact_pos(),
@@ -14374,21 +14523,16 @@ impl OttrinApp {
         });
         let mut paint_rubber_band = None;
         if pointer.1
-            && pointer.0.is_some_and(|pos| list_content_rect.contains(pos))
             && pointer
                 .0
-                .is_some_and(|pos| list_viewport_rect.contains(pos))
-            && pointer
-                .0
-                .is_some_and(|pos| grid_rubber_band_may_start(&list_cells, pos))
+                .is_some_and(|pos| list_rubber_band_may_start(&list_cells, list_viewport_rect, pos))
         {
             let origin = pointer.0.expect("pointer position checked above");
             let baseline = self
                 .tab_ui
                 .entry(tab_id)
                 .or_default()
-                .selected_paths
-                .clone();
+                .rubber_band_snapshot();
             self.tab_ui.entry(tab_id).or_default().rubber_band = Some(RubberBandGesture {
                 origin,
                 current: origin,
@@ -14417,12 +14561,20 @@ impl OttrinApp {
                     &list_cells,
                     selection_rect,
                     list_viewport_rect,
-                    &rubber_band.baseline,
+                    &rubber_band.baseline.selected_paths,
                     rubber_band.modifiers,
                 ));
                 paint_rubber_band = Some(selection_rect);
             }
             if pointer.2 {
+                let _ = auto_scroll_rubber_band(
+                    ui.ctx(),
+                    list_scroll.id,
+                    list_scroll.state,
+                    list_scroll.content_size,
+                    list_viewport_rect,
+                    &rubber_band,
+                );
                 ui.ctx().request_repaint();
                 self.tab_ui.entry(tab_id).or_default().rubber_band = Some(rubber_band);
             } else if let Some(selected_paths) = rubber_band.transient_paths {
@@ -14540,178 +14692,188 @@ impl OttrinApp {
         let usable_w = (available_w - side_padding * 2.0).max(cell_inner + padding);
         let cols = ((usable_w + padding) / (cell_inner + padding)).floor() as usize;
         let cols = cols.max(1);
+        let icon_gap = (8.0 * scale.clamp(0.9, 1.35)).round();
+        let cell_h = icon_px + icon_gap + label_sz * 2.2 + 18.0;
+        let row_h = cell_h + padding * 0.25;
+        let row_count = entries.len().div_ceil(cols);
         self.last_grid_cols = cols;
-        let mut grid_cells = Vec::with_capacity(entries.len());
-        let mut grid_content_rect = Rect::NOTHING;
-        let mut grid_viewport_rect = Rect::NOTHING;
+        let mut grid_cells = Vec::new();
 
-        ScrollArea::vertical()
+        let grid_scroll = ScrollArea::vertical()
             .id_salt(("grid", tab_id))
             .auto_shrink([false, false])
-            .show(ui, |ui| {
+            .show_viewport(ui, |ui, viewport| {
                 ui.set_min_width(available_w);
-                ui.add_space(padding * 0.5);
-                let mut i = 0;
-                while i < entries.len() {
-                    ui.horizontal(|ui| {
-                        ui.spacing_mut().item_spacing.x = 0.0;
-                        ui.add_space(side_padding);
-                        for col in 0..cols {
-                            if i + col >= entries.len() {
-                                break;
-                            }
-                            let entry = &entries[i + col];
-                            let idx = i + col;
-                            let selected = selected_paths.contains(&entry.path)
-                                || (selected_paths.is_empty() && sel == Some(idx));
-                            let name = truncate_middle(&entry.name, label_chars);
+                ui.set_height(padding * 0.5 + row_h * row_count as f32);
+                let visible_rows =
+                    visible_grid_row_range(viewport, padding * 0.5, row_h, row_count);
+                let y_min = ui.max_rect().top() + padding * 0.5 + visible_rows.start as f32 * row_h;
+                let y_max = ui.max_rect().top() + padding * 0.5 + visible_rows.end as f32 * row_h;
+                let visible_rect = Rect::from_x_y_ranges(ui.max_rect().x_range(), y_min..=y_max);
+                ui.scope_builder(UiBuilder::new().max_rect(visible_rect), |ui| {
+                    ui.skip_ahead_auto_ids(visible_rows.start * cols);
+                    let mut i = visible_rows.start * cols;
+                    let last_visible_entry = (visible_rows.end * cols).min(entries.len());
+                    while i < last_visible_entry {
+                        ui.horizontal(|ui| {
+                            ui.spacing_mut().item_spacing.x = 0.0;
+                            ui.add_space(side_padding);
+                            for col in 0..cols {
+                                if i + col >= entries.len() {
+                                    break;
+                                }
+                                let entry = &entries[i + col];
+                                let idx = i + col;
+                                let selected = selected_paths.contains(&entry.path)
+                                    || (selected_paths.is_empty() && sel == Some(idx));
+                                let name = truncate_middle(&entry.name, label_chars);
 
-                            // Allocate the entire cell rect for hover/click sensing
-                            let icon_gap = (8.0 * scale.clamp(0.9, 1.35)).round();
-                            let cell_h = icon_px + icon_gap + label_sz * 2.2 + 18.0;
-                            let (cell_rect, cell_resp) = ui
-                                .allocate_exact_size(Vec2::new(cell_inner, cell_h), Sense::click());
-                            grid_cells.push((entry.path.clone(), cell_rect));
-                            cell_resp.widget_info(|| {
-                                WidgetInfo::selected(
-                                    WidgetType::Button,
-                                    true,
-                                    selected,
-                                    entry.name.as_str(),
-                                )
-                            });
-                            let is_hovered = cell_resp.hovered();
-                            if name != entry.name {
-                                cell_resp.clone().on_hover_text(entry.name.clone());
-                            }
-                            let style = style_for_entry(
-                                entry,
-                                EntryVisualState {
-                                    selected,
-                                    focused: true,
-                                    hovered: is_hovered,
-                                    opened: false,
-                                    symlink_dir: matches!(entry.kind, EntryKind::Symlink)
-                                        && entry.symlink_target_is_dir == Some(true),
-                                },
-                                &c,
-                                &self.state.config,
-                            );
-                            let icon = material_icon(style.icon);
-                            let icon_color = style.icon_color;
-                            let label_color = style.text_color;
-
-                            // Background
-                            let fill = if selected {
-                                c.selected_bg
-                            } else if is_hovered {
-                                c.hover
-                            } else {
-                                Color32::TRANSPARENT
-                            };
-                            if fill != Color32::TRANSPARENT {
-                                ui.painter().rect_filled(cell_rect, 8.0, fill);
-                            }
-                            if selected {
-                                ui.painter().rect_stroke(
-                                    cell_rect,
-                                    8.0,
-                                    Stroke::new(1.0, c.accent),
-                                    egui::StrokeKind::Middle,
+                                // Allocate the entire cell rect for hover/click sensing
+                                let (cell_rect, cell_resp) = ui.allocate_exact_size(
+                                    Vec2::new(cell_inner, cell_h),
+                                    Sense::click(),
                                 );
-                            }
-
-                            // Icon centered horizontally in cell
-                            let icon_y = cell_rect.min.y + (8.0 * scale.clamp(0.9, 1.3));
-                            let icon_cx = cell_rect.center().x;
-                            let icon_rect = Rect::from_center_size(
-                                egui::pos2(icon_cx, icon_y + icon_px * 0.5),
-                                Vec2::splat(icon_px),
-                            );
-                            let painted_thumbnail =
-                                thumbnails_enabled && image_thumbnail_candidate(entry);
-                            if painted_thumbnail {
-                                paint_thumbnail_slot(ui, icon_rect, c);
-                                let thumb = if entry
-                                    .path
-                                    .extension()
-                                    .and_then(|ext| ext.to_str())
-                                    .is_some_and(|ext| ext.eq_ignore_ascii_case("pdf"))
-                                {
-                                    self.cached_image_preview_widget(
-                                        &entry.path,
-                                        icon_px,
-                                        icon_px,
-                                        6,
+                                grid_cells.push((entry.path.clone(), cell_rect));
+                                cell_resp.widget_info(|| {
+                                    WidgetInfo::selected(
+                                        WidgetType::Button,
+                                        true,
+                                        selected,
+                                        entry.name.as_str(),
                                     )
-                                } else {
-                                    self.cached_thumbnail_widget(&entry.path, icon_px, 6)
-                                };
-                                if let Some(img) = thumb {
-                                    paint_centered_image(ui, icon_rect, img);
+                                });
+                                let is_hovered = cell_resp.hovered();
+                                if name != entry.name {
+                                    cell_resp.clone().on_hover_text(entry.name.clone());
                                 }
-                            }
-                            if !painted_thumbnail {
-                                ui.painter().text(
-                                    egui::Pos2::new(icon_cx, icon_y + icon_px * 0.5),
-                                    Align2::CENTER_CENTER,
-                                    icon,
-                                    FontId::proportional(icon_px),
-                                    icon_color,
+                                let style = style_for_entry(
+                                    entry,
+                                    EntryVisualState {
+                                        selected,
+                                        focused: true,
+                                        hovered: is_hovered,
+                                        opened: false,
+                                        symlink_dir: matches!(entry.kind, EntryKind::Symlink)
+                                            && entry.symlink_target_is_dir == Some(true),
+                                    },
+                                    &c,
+                                    &self.state.config,
                                 );
-                            }
+                                let icon = material_icon(style.icon);
+                                let icon_color = style.icon_color;
+                                let label_color = style.text_color;
 
-                            // Label below icon
-                            ui.painter().text(
-                                egui::Pos2::new(icon_cx, icon_y + icon_px + icon_gap),
-                                Align2::CENTER_TOP,
-                                &name,
-                                FontId::proportional(label_sz),
-                                label_color,
-                            );
-
-                            // Handle click/double-click
-                            if Self::row_pointer_selects(
-                                cell_resp.clicked(),
-                                cell_resp.secondary_clicked(),
-                            ) {
-                                self.focus_tab(tab_id);
-                                let modifiers = ui.ctx().input(|input| input.modifiers);
-                                self.set_main_selection_from_click(tab_id, idx, modifiers);
-                            }
-                            if cell_resp.double_clicked() {
-                                self.focus_tab(tab_id);
-                                let path = entry.path.clone();
-                                let kind = entry.kind;
-                                if matches!(kind, EntryKind::Directory | EntryKind::Symlink) {
-                                    self.navigate_tab_to(tab_id, path);
+                                // Background
+                                let fill = if selected {
+                                    c.selected_bg
+                                } else if is_hovered {
+                                    c.hover
                                 } else {
-                                    let _ = self.platform.reveal_in_system(&path);
+                                    Color32::TRANSPARENT
+                                };
+                                if fill != Color32::TRANSPARENT {
+                                    ui.painter().rect_filled(cell_rect, 8.0, fill);
+                                }
+                                if selected {
+                                    ui.painter().rect_stroke(
+                                        cell_rect,
+                                        8.0,
+                                        Stroke::new(1.0, c.accent),
+                                        egui::StrokeKind::Middle,
+                                    );
+                                }
+
+                                // Icon centered horizontally in cell
+                                let icon_y = cell_rect.min.y + (8.0 * scale.clamp(0.9, 1.3));
+                                let icon_cx = cell_rect.center().x;
+                                let icon_rect = Rect::from_center_size(
+                                    egui::pos2(icon_cx, icon_y + icon_px * 0.5),
+                                    Vec2::splat(icon_px),
+                                );
+                                let painted_thumbnail =
+                                    thumbnails_enabled && image_thumbnail_candidate(entry);
+                                if painted_thumbnail {
+                                    paint_thumbnail_slot(ui, icon_rect, c);
+                                    let thumb = if entry
+                                        .path
+                                        .extension()
+                                        .and_then(|ext| ext.to_str())
+                                        .is_some_and(|ext| ext.eq_ignore_ascii_case("pdf"))
+                                    {
+                                        self.cached_image_preview_widget(
+                                            &entry.path,
+                                            icon_px,
+                                            icon_px,
+                                            6,
+                                        )
+                                    } else {
+                                        self.cached_thumbnail_widget(&entry.path, icon_px, 6)
+                                    };
+                                    if let Some(img) = thumb {
+                                        paint_centered_image(ui, icon_rect, img);
+                                    }
+                                }
+                                if !painted_thumbnail {
+                                    ui.painter().text(
+                                        egui::Pos2::new(icon_cx, icon_y + icon_px * 0.5),
+                                        Align2::CENTER_CENTER,
+                                        icon,
+                                        FontId::proportional(icon_px),
+                                        icon_color,
+                                    );
+                                }
+
+                                // Label below icon
+                                ui.painter().text(
+                                    egui::Pos2::new(icon_cx, icon_y + icon_px + icon_gap),
+                                    Align2::CENTER_TOP,
+                                    &name,
+                                    FontId::proportional(label_sz),
+                                    label_color,
+                                );
+
+                                // Handle click/double-click
+                                if Self::row_pointer_selects(
+                                    cell_resp.clicked(),
+                                    cell_resp.secondary_clicked(),
+                                ) {
+                                    self.focus_tab(tab_id);
+                                    let modifiers = ui.ctx().input(|input| input.modifiers);
+                                    self.set_main_selection_from_click(tab_id, idx, modifiers);
+                                }
+                                if cell_resp.double_clicked() {
+                                    self.focus_tab(tab_id);
+                                    let path = entry.path.clone();
+                                    let kind = entry.kind;
+                                    if matches!(kind, EntryKind::Directory | EntryKind::Symlink) {
+                                        self.navigate_tab_to(tab_id, path);
+                                    } else {
+                                        let _ = self.platform.reveal_in_system(&path);
+                                    }
+                                }
+                                self.entry_context_menu(
+                                    &cell_resp,
+                                    entry,
+                                    &current_dir,
+                                    &mut pending_op,
+                                    &mut open_parent,
+                                    &mut open_entry_now,
+                                    &mut open_tandem_now,
+                                    &mut add_bookmark,
+                                    &mut remove_bookmark,
+                                );
+
+                                if col + 1 < cols && i + col + 1 < entries.len() {
+                                    ui.add_space(padding);
                                 }
                             }
-                            self.entry_context_menu(
-                                &cell_resp,
-                                entry,
-                                &current_dir,
-                                &mut pending_op,
-                                &mut open_parent,
-                                &mut open_entry_now,
-                                &mut open_tandem_now,
-                                &mut add_bookmark,
-                                &mut remove_bookmark,
-                            );
-
-                            if col + 1 < cols && i + col + 1 < entries.len() {
-                                ui.add_space(padding);
-                            }
-                        }
-                    });
-                    i += cols;
-                    ui.add_space(padding * 0.25);
-                }
-                grid_content_rect = ui.min_rect();
-                grid_viewport_rect = ui.clip_rect();
+                        });
+                        i += cols;
+                        ui.add_space(padding * 0.25);
+                    }
+                });
             });
+        let grid_viewport_rect = grid_scroll.inner_rect;
         let pointer = ui.ctx().input(|input| {
             (
                 input.pointer.interact_pos(),
@@ -14724,10 +14886,6 @@ impl OttrinApp {
         });
         let mut paint_rubber_band = None;
         if pointer.1
-            && pointer.0.is_some_and(|pos| grid_content_rect.contains(pos))
-            && pointer
-                .0
-                .is_some_and(|pos| grid_viewport_rect.contains(pos))
             && pointer
                 .0
                 .is_some_and(|pos| grid_rubber_band_may_start(&grid_cells, pos))
@@ -14737,8 +14895,7 @@ impl OttrinApp {
                 .tab_ui
                 .entry(tab_id)
                 .or_default()
-                .selected_paths
-                .clone();
+                .rubber_band_snapshot();
             self.tab_ui.entry(tab_id).or_default().rubber_band = Some(RubberBandGesture {
                 origin,
                 current: origin,
@@ -14767,12 +14924,20 @@ impl OttrinApp {
                     &grid_cells,
                     selection_rect,
                     grid_viewport_rect,
-                    &rubber_band.baseline,
+                    &rubber_band.baseline.selected_paths,
                     rubber_band.modifiers,
                 ));
                 paint_rubber_band = Some(selection_rect);
             }
             if pointer.2 {
+                let _ = auto_scroll_rubber_band(
+                    ui.ctx(),
+                    grid_scroll.id,
+                    grid_scroll.state,
+                    grid_scroll.content_size,
+                    grid_viewport_rect,
+                    &rubber_band,
+                );
                 ui.ctx().request_repaint();
                 self.tab_ui.entry(tab_id).or_default().rubber_band = Some(rubber_band);
             } else if let Some(selected_paths) = rubber_band.transient_paths {
@@ -20665,6 +20830,125 @@ mod tests {
     }
 
     #[test]
+    fn list_rubber_band_admits_scroll_viewport_whitespace_but_not_rows_or_scrollbar() {
+        let viewport = Rect::from_min_max(egui::pos2(10.0, 40.0), egui::pos2(190.0, 200.0));
+        let rows = vec![(
+            PathBuf::from("/tmp/entry"),
+            Rect::from_min_max(egui::pos2(10.0, 40.0), egui::pos2(190.0, 70.0)),
+        )];
+
+        assert!(list_rubber_band_may_start(
+            &rows,
+            viewport,
+            egui::pos2(100.0, 150.0)
+        ));
+        assert!(!list_rubber_band_may_start(
+            &rows,
+            viewport,
+            egui::pos2(100.0, 55.0)
+        ));
+        assert!(!list_rubber_band_may_start(
+            &rows,
+            viewport,
+            egui::pos2(195.0, 150.0)
+        ));
+        assert!(!list_rubber_band_may_start(
+            &rows,
+            viewport,
+            egui::pos2(100.0, 30.0)
+        ));
+    }
+
+    #[test]
+    fn rubber_band_snapshot_uses_main_selection_when_multi_selection_is_empty() {
+        let alpha = PathBuf::from("/tmp/alpha");
+        let mut ui = TabUiState::default();
+        ui.main.entries = vec![FileEntry {
+            name: "alpha".to_string(),
+            path: alpha.clone(),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: None,
+            modified_unix_secs: None,
+        }];
+        ui.main_sel = Some(0);
+
+        let snapshot = ui.rubber_band_snapshot();
+
+        assert_eq!(snapshot.selected_paths, HashSet::from([alpha]));
+        assert_eq!(snapshot.main_sel, Some(0));
+        assert_eq!(snapshot.selection_anchor, None);
+    }
+
+    #[test]
+    fn cancelling_rubber_band_restores_the_exact_saved_selection_state() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        let alpha = PathBuf::from("/tmp/alpha");
+        let bravo = PathBuf::from("/tmp/bravo");
+        let ui = app.tab_ui.entry(tab_id).or_default();
+        ui.selected_paths = HashSet::from([bravo.clone()]);
+        ui.main_sel = Some(1);
+        ui.selection_anchor = Some(bravo.clone());
+        ui.rubber_band = Some(RubberBandGesture {
+            origin: egui::pos2(0.0, 0.0),
+            current: egui::pos2(10.0, 10.0),
+            baseline: RubberBandSelectionSnapshot {
+                selected_paths: HashSet::from([alpha.clone()]),
+                main_sel: Some(0),
+                selection_anchor: Some(alpha.clone()),
+            },
+            modifiers: egui::Modifiers::NONE,
+            listing_request_id: 1,
+            transient_paths: Some(HashSet::from([bravo])),
+        });
+
+        assert!(app.cancel_rubber_band(tab_id));
+        let restored = app.tab_ui.get(&tab_id).unwrap();
+        assert_eq!(restored.selected_paths, HashSet::from([alpha.clone()]));
+        assert_eq!(restored.main_sel, Some(0));
+        assert_eq!(restored.selection_anchor, Some(alpha));
+        assert!(restored.rubber_band.is_none());
+    }
+
+    #[test]
+    fn switching_tabs_cancels_the_departing_rubber_band() {
+        let mut app = OttrinApp::default();
+        let first_tab = app.state.active_tab().id;
+        let second_tab = 42;
+        let alpha = PathBuf::from("/tmp/alpha");
+        let bravo = PathBuf::from("/tmp/bravo");
+        app.state.tabs.push(ottrin_core::TabState::new(
+            second_tab,
+            PathBuf::from("/tmp/second"),
+        ));
+        let ui = app.tab_ui.entry(first_tab).or_default();
+        ui.selected_paths = HashSet::from([bravo.clone()]);
+        ui.rubber_band = Some(RubberBandGesture {
+            origin: egui::pos2(0.0, 0.0),
+            current: egui::pos2(10.0, 10.0),
+            baseline: RubberBandSelectionSnapshot {
+                selected_paths: HashSet::from([alpha.clone()]),
+                main_sel: Some(0),
+                selection_anchor: Some(alpha.clone()),
+            },
+            modifiers: egui::Modifiers::NONE,
+            listing_request_id: 1,
+            transient_paths: Some(HashSet::from([bravo])),
+        });
+
+        app.focus_tab(second_tab);
+
+        assert_eq!(app.state.active_tab().id, second_tab);
+        let restored = app.tab_ui.get(&first_tab).unwrap();
+        assert_eq!(restored.selected_paths, HashSet::from([alpha.clone()]));
+        assert_eq!(restored.main_sel, Some(0));
+        assert_eq!(restored.selection_anchor, Some(alpha));
+        assert!(restored.rubber_band.is_none());
+    }
+
+    #[test]
     fn rubber_band_waits_for_a_real_drag_and_clips_to_its_viewport() {
         let viewport = Rect::from_min_size(egui::pos2(10.0, 10.0), Vec2::splat(100.0));
 
@@ -20682,6 +20966,59 @@ mod tests {
                 egui::pos2(10.0, 10.0),
                 egui::pos2(30.0, 30.0)
             ))
+        );
+    }
+
+    #[test]
+    fn rubber_band_edge_scroll_is_bounded_and_directional() {
+        let viewport = Rect::from_min_max(egui::pos2(10.0, 100.0), egui::pos2(210.0, 300.0));
+
+        let up = rubber_band_edge_scroll_delta(egui::pos2(80.0, 105.0), viewport, 1.0 / 60.0);
+        let down = rubber_band_edge_scroll_delta(egui::pos2(80.0, 295.0), viewport, 1.0 / 60.0);
+
+        assert!(up < 0.0);
+        assert!(down > 0.0);
+        assert_eq!(
+            rubber_band_edge_scroll_delta(egui::pos2(80.0, 200.0), viewport, 1.0 / 60.0),
+            0.0
+        );
+        assert_eq!(
+            rubber_band_edge_scroll_delta(egui::pos2(80.0, 300.0), viewport, 0.0),
+            0.0
+        );
+        assert!(down <= 12.0);
+    }
+
+    #[test]
+    fn rubber_band_edge_scroll_offset_stays_within_content_bounds() {
+        assert_eq!(rubber_band_edge_scroll_offset(0.0, -8.0, 600.0, 200.0), 0.0);
+        assert_eq!(
+            rubber_band_edge_scroll_offset(390.0, 20.0, 600.0, 200.0),
+            400.0
+        );
+        assert_eq!(
+            rubber_band_edge_scroll_offset(100.0, 12.0, 600.0, 200.0),
+            112.0
+        );
+        assert_eq!(
+            rubber_band_edge_scroll_offset(100.0, 12.0, 100.0, 200.0),
+            0.0
+        );
+    }
+
+    #[test]
+    fn visible_grid_rows_are_limited_to_the_viewport() {
+        let viewport = Rect::from_min_max(egui::pos2(0.0, 245.0), egui::pos2(400.0, 355.0));
+
+        assert_eq!(visible_grid_row_range(viewport, 5.0, 100.0, 1_000), 2..4);
+        assert_eq!(
+            visible_grid_row_range(
+                Rect::from_min_max(egui::pos2(0.0, -20.0), egui::pos2(400.0, 40.0)),
+                5.0,
+                100.0,
+                3,
+            ),
+            0..1
         );
     }
 
@@ -20717,7 +21054,11 @@ mod tests {
         let gesture = RubberBandGesture {
             origin: egui::pos2(0.0, 0.0),
             current: egui::pos2(0.0, 0.0),
-            baseline: HashSet::new(),
+            baseline: RubberBandSelectionSnapshot {
+                selected_paths: HashSet::new(),
+                main_sel: None,
+                selection_anchor: None,
+            },
             modifiers: egui::Modifiers::NONE,
             listing_request_id: 41,
             transient_paths: None,
