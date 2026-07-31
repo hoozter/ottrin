@@ -4505,6 +4505,14 @@ impl OttrinApp {
                 self.command_frame.visible = true;
             }
             self.pending_privileged_retry = None;
+            if let FileCommand::Move { sources, .. } = &completed_cmd
+                && self
+                    .clipboard
+                    .as_ref()
+                    .is_some_and(|clipboard| clipboard.cut && clipboard.sources == *sources)
+            {
+                self.clipboard = None;
+            }
             if let FileCommand::Delete { targets, .. } = &completed_cmd {
                 self.repair_tabs_after_deleted_targets(targets, &res.delete_nav);
                 if self.trash_panel.loaded {
@@ -6885,22 +6893,20 @@ impl OttrinApp {
             let dest = self.state.active_tab().current_dir.clone();
             let tab_id = self.state.active_tab().id;
             self.reconcile_storage_location_availability(discover_storage_locations());
-            let cmd = match prepare_clipboard_paste(&clip, dest, &self.known_storage_locations) {
-                Ok(cmd) => cmd,
-                Err(message) => {
-                    let message =
-                        format!("Paste was not started: {message}. Clipboard was retained.");
-                    self.set_status_message(message.clone(), false, 6);
-                    self.command_frame.error = Some(message);
-                    self.command_frame.message = None;
-                    self.command_frame.visible = true;
-                    return;
-                }
-            };
-            self.run_file_op(cmd, Some(tab_id));
-            if clip.cut {
-                self.clipboard = None;
-            }
+            let (cmd, bindings) =
+                match prepare_clipboard_paste(&clip, dest, &self.known_storage_locations) {
+                    Ok(prepared) => prepared,
+                    Err(message) => {
+                        let message =
+                            format!("Paste was not started: {message}. Clipboard was retained.");
+                        self.set_status_message(message.clone(), false, 6);
+                        self.command_frame.error = Some(message);
+                        self.command_frame.message = None;
+                        self.command_frame.visible = true;
+                        return;
+                    }
+                };
+            self.run_file_op_with_bindings(cmd, Some(tab_id), bindings);
         }
     }
 
@@ -7077,20 +7083,50 @@ impl OttrinApp {
         self.run_file_op_with_delete_nav(cmd, refresh_tab, Vec::new());
     }
 
+    fn run_file_op_with_bindings(
+        &mut self,
+        cmd: FileCommand,
+        refresh_tab: Option<u64>,
+        bindings: Vec<StorageOperationBinding>,
+    ) {
+        self.run_file_op_bound(cmd, refresh_tab, Vec::new(), Some(bindings));
+    }
+
     fn run_file_op_with_delete_nav(
         &mut self,
         cmd: FileCommand,
         refresh_tab: Option<u64>,
         delete_nav: Vec<DeletePostNav>,
     ) {
-        // Reconcile the discovery snapshot before accepting mutable input, then
-        // bind affected storage roots for a second validation in the worker.
+        self.run_file_op_bound(cmd, refresh_tab, delete_nav, None);
+    }
+
+    fn run_file_op_bound(
+        &mut self,
+        cmd: FileCommand,
+        refresh_tab: Option<u64>,
+        delete_nav: Vec<DeletePostNav>,
+        authoritative_bindings: Option<Vec<StorageOperationBinding>>,
+    ) {
+        // Reconcile before accepting mutable input. Callers with previously
+        // captured provenance carry those exact bindings through this refresh;
+        // they are never reconstructed from raw paths.
         self.reconcile_storage_location_availability(discover_storage_locations());
         if let Some(location) = self.unavailable_location_for_command(&cmd).cloned() {
             self.reject_unavailable_location_operation(&cmd, &location);
             return;
         }
-        let bindings = operation_storage_bindings(&cmd, &self.known_storage_locations);
+        let bindings = authoritative_bindings
+            .unwrap_or_else(|| operation_storage_bindings(&cmd, &self.known_storage_locations));
+        if let Err(message) =
+            validate_operation_storage_bindings(&bindings, &self.known_storage_locations)
+        {
+            self.command_frame.error = Some(message.clone());
+            self.command_frame.message = None;
+            self.command_frame.visible = true;
+            self.set_status_message(message, false, 6);
+            return;
+        }
         let op_id = self.queue_operation_record(cmd.clone());
         let platform = Arc::clone(&self.platform);
         let op_tx = self.op_tx.clone();
@@ -18093,9 +18129,16 @@ fn prepare_clipboard_paste(
     clipboard: &Clipboard,
     destination: PathBuf,
     locations: &[StorageLocation],
-) -> Result<FileCommand, String> {
+) -> Result<(FileCommand, Vec<StorageOperationBinding>), String> {
     validate_operation_storage_bindings(&clipboard.source_bindings, locations)?;
-    Ok(if clipboard.cut {
+    let mut bindings = clipboard.source_bindings.clone();
+    for binding in capture_required_storage_bindings(std::slice::from_ref(&destination), locations)?
+    {
+        if !bindings.contains(&binding) {
+            bindings.push(binding);
+        }
+    }
+    let cmd = if clipboard.cut {
         FileCommand::Move {
             sources: clipboard.sources.clone(),
             destination,
@@ -18107,7 +18150,8 @@ fn prepare_clipboard_paste(
             destination,
             conflict: ConflictAction::Rename,
         }
-    })
+    };
+    Ok((cmd, bindings))
 }
 
 fn validate_privileged_retry(
@@ -20864,7 +20908,7 @@ mod tests {
     }
 
     #[test]
-    fn clipboard_paste_does_not_construct_an_operation_after_source_volume_replacement() {
+    fn clipboard_paste_carries_original_source_binding_through_queue_refresh() {
         let root = PathBuf::from("/__ottrin_clipboard_volume__");
         let original = StorageLocation {
             path: root.clone(),
@@ -20877,11 +20921,22 @@ mod tests {
             stable_identity: Some("volume-b".to_string()),
             ..original.clone()
         };
-        let clipboard = Clipboard::capture(vec![root.join("report.txt")], true, &[original])
-            .expect("copy records a source binding");
+        let clipboard = Clipboard::capture(
+            vec![root.join("report.txt")],
+            true,
+            std::slice::from_ref(&original),
+        )
+        .expect("copy records a source binding");
+        let (_, queued_bindings) = prepare_clipboard_paste(
+            &clipboard,
+            default_home_dir(),
+            std::slice::from_ref(&original),
+        )
+        .expect("paste carries the source binding into the queue");
 
         assert!(
-            prepare_clipboard_paste(&clipboard, PathBuf::from("/safe"), &[replacement]).is_err()
+            validate_operation_storage_bindings(&queued_bindings, &[replacement]).is_err(),
+            "the queue must validate volume A's captured identity, never recompute B's"
         );
     }
 

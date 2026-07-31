@@ -4,6 +4,8 @@ use ottrin_core::{
 #[cfg(target_os = "linux")]
 use std::collections::HashSet;
 use std::ffi::OsString;
+#[cfg(target_os = "linux")]
+use std::path::Component;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{OnceLock, RwLock};
@@ -44,7 +46,7 @@ pub struct FileProperties {
     pub modified: Option<SystemTime>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TrashOriginBinding {
     /// The source root proven by native Trash metadata. This is deliberately
     /// absent when the native implementation only exposes a mutable original
@@ -1148,6 +1150,15 @@ fn list_trash_items() -> Result<Vec<TrashItem>, PlatformError> {
 }
 
 fn restore_trash_item(item: &TrashItem) -> Result<(), PlatformError> {
+    let current_origin = trash_origin_storage_binding(&item.trash_path, &item.original_path);
+    if !matches!(
+        (&item.origin_storage, current_origin.as_ref()),
+        (Some(expected), Some(current)) if expected == current
+    ) {
+        return Err(PlatformError::InvalidSource(
+            "Trash origin provenance is missing or changed".to_string(),
+        ));
+    }
     let parent = item.original_path.parent().ok_or_else(|| {
         PlatformError::InvalidDestination(item.original_path.display().to_string())
     })?;
@@ -1292,14 +1303,58 @@ fn trash_origin_storage_binding(
     original_path: &Path,
 ) -> Option<TrashOriginBinding> {
     let home = std::env::var_os("HOME").map(PathBuf::from)?;
-    let native_home_trash = home.join(".local/share/Trash");
-    (trash_path.starts_with(&native_home_trash) && original_path.starts_with(&home)).then(|| {
-        TrashOriginBinding {
-            root: home,
-            // This identifies the only native provenance proof offered by the
-            // Freedesktop metadata layout, not a guessed external-volume UUID.
-            stable_identity: Some("ottrin-native-home-trash-v1".to_string()),
-        }
+    let data_home = std::env::var_os("XDG_DATA_HOME")
+        .map(PathBuf::from)
+        .filter(|path| path.is_absolute());
+    trash_origin_storage_binding_at(trash_path, original_path, &home, data_home.as_deref())
+}
+
+#[cfg(target_os = "linux")]
+fn trash_origin_storage_binding_at(
+    trash_path: &Path,
+    original_path: &Path,
+    home: &Path,
+    data_home: Option<&Path>,
+) -> Option<TrashOriginBinding> {
+    if !home.is_absolute()
+        || !original_path.is_absolute()
+        || original_path
+            .components()
+            .any(|component| matches!(component, Component::ParentDir))
+    {
+        return None;
+    }
+    let data_home = data_home
+        .filter(|path| path.is_absolute())
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| home.join(".local/share"));
+    let native_home_trash = data_home.join("Trash");
+
+    // Mutable Trash metadata is not proof by itself. Resolve the existing
+    // payload and original parent physically, and reject a symlink payload,
+    // traversal components, or a home path that resolves outside HOME.
+    if std::fs::symlink_metadata(trash_path)
+        .ok()?
+        .file_type()
+        .is_symlink()
+    {
+        return None;
+    }
+    let canonical_home = std::fs::canonicalize(home).ok()?;
+    let canonical_trash_root = std::fs::canonicalize(native_home_trash).ok()?;
+    let canonical_trash_path = std::fs::canonicalize(trash_path).ok()?;
+    let canonical_original_parent = std::fs::canonicalize(original_path.parent()?).ok()?;
+    if !canonical_trash_path.starts_with(canonical_trash_root)
+        || !canonical_original_parent.starts_with(canonical_home)
+    {
+        return None;
+    }
+
+    Some(TrashOriginBinding {
+        root: home.to_path_buf(),
+        // This identifies the only native provenance proof offered by the
+        // Freedesktop metadata layout, not a guessed external-volume UUID.
+        stable_identity: Some("ottrin-native-home-trash-v1".to_string()),
     })
 }
 
@@ -1585,6 +1640,58 @@ fn read_properties(path: &Path) -> Result<FileProperties, PlatformError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn native_home_trash_proof_rejects_traversal_and_symlink_payloads() {
+        use std::os::unix::fs::symlink;
+        use std::time::UNIX_EPOCH;
+
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock after epoch")
+            .as_nanos();
+        let root =
+            std::env::temp_dir().join(format!("ottrin-trash-proof-{}-{nonce}", std::process::id()));
+        let home = root.join("home");
+        let data_home = root.join("xdg-data");
+        let trash_files = data_home.join("Trash/files");
+        let original_parent = home.join("Documents");
+        std::fs::create_dir_all(&trash_files).expect("create custom XDG Trash");
+        std::fs::create_dir_all(&original_parent).expect("create original home parent");
+        let payload = trash_files.join("report.txt");
+        std::fs::write(&payload, b"report").expect("create Trash payload");
+        let original = original_parent.join("report.txt");
+
+        assert!(
+            trash_origin_storage_binding_at(&payload, &original, &home, Some(&data_home)).is_some(),
+            "a physically verified custom-XDG home Trash payload is proven"
+        );
+        assert!(
+            trash_origin_storage_binding_at(
+                &payload,
+                &home.join("visible/../../mnt/replacement/report.txt"),
+                &home,
+                Some(&data_home),
+            )
+            .is_none(),
+            "mutable metadata cannot escape HOME with parent traversal"
+        );
+
+        let symlink_payload = trash_files.join("linked.txt");
+        symlink(&payload, &symlink_payload).expect("create malicious Trash symlink");
+        assert!(
+            trash_origin_storage_binding_at(
+                &symlink_payload,
+                &original_parent.join("linked.txt"),
+                &home,
+                Some(&data_home),
+            )
+            .is_none(),
+            "a symlink payload is not native origin proof"
+        );
+        std::fs::remove_dir_all(root).expect("remove Trash proof fixture");
+    }
 
     #[test]
     fn copy_batch_failure_after_a_completed_item_is_typed_as_partial_completion() {
