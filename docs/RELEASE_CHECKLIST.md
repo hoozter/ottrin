@@ -11,7 +11,7 @@ Every item must be checked against the exact artifact intended for release. A so
 - [ ] Linux and Windows CI are green for the release commit.
 - [x] Corrected release artifact checksums verify after rebuilding from the OpenGL-loader fix.
 - [x] Archive inspection confirms the corrected app, indexer, privileged helper, policy/assets, and user documentation are present.
-- [ ] Both rebuilt Windows artifacts contain the same checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`opengl32.dll`, `libgallium_wgl.dll`, `libEGL.dll`, `libGLESv2.dll`, and `dxil.dll`) plus its complete Mesa, pal1000, and Microsoft notices under `third-party-notices/`. Automatic uses documented remote-session and recognized virtual/problem-adapter evidence to select the bundled runtime; Settings persists Automatic, Native, or OpenGL compatibility for the next launch, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` remains a diagnostic override.
+- [x] Both rebuilt Windows artifacts contain the same checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`opengl32.dll`, `libgallium_wgl.dll`, `libEGL.dll`, `libGLESv2.dll`, and `dxil.dll`) plus its complete Mesa, pal1000, and Microsoft notices under `third-party-notices/`. Automatic uses documented remote-session and recognized virtual/problem-adapter evidence to select the bundled runtime; Settings persists Automatic, Native, or OpenGL compatibility for the next launch, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` remains a diagnostic override.
 
 Local automated gates and artifact inspection last passed on 2026-07-31. CI and
 the clean-machine/manual gates below remain required against the eventual
