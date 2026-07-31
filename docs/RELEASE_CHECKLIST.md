@@ -9,15 +9,15 @@ Every item must be checked against the exact artifact intended for release. A so
 - [x] `cargo test --workspace`
 - [x] `cargo clippy --workspace --all-targets -- -D warnings`
 - [ ] Linux and Windows CI are green for the release commit.
-- [ ] Corrected release artifact checksums verify after rebuilding from the OpenGL-loader fix.
-- [ ] Archive inspection confirms the corrected app, indexer, privileged helper, policy/assets, and user documentation are present.
+- [x] Corrected release artifact checksums verify after rebuilding from the OpenGL-loader fix.
+- [x] Archive inspection confirms the corrected app, indexer, privileged helper, policy/assets, and user documentation are present.
 - [ ] Both rebuilt Windows artifacts contain the same checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`opengl32.dll`, `libgallium_wgl.dll`, `libEGL.dll`, `libGLESv2.dll`, and `dxil.dll`) plus its complete Mesa, pal1000, and Microsoft notices under `third-party-notices/`. Automatic uses documented remote-session and recognized virtual/problem-adapter evidence to select the bundled runtime; Settings persists Automatic, Native, or OpenGL compatibility for the next launch, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` remains a diagnostic override.
 
-Local automated gates and artifact inspection last passed on 2026-07-27. CI and
+Local automated gates and artifact inspection last passed on 2026-07-31. CI and
 the clean-machine/manual gates below remain required against the eventual
 release commit and artifacts.
 
-### Local Preflight Evidence (refreshed 2026-07-27)
+### Local Preflight Evidence (refreshed 2026-07-31)
 
 - Workspace all-target tests, strict Clippy, and the workspace build passed after
   the bounded PDF and Office visual-preview milestones.
@@ -27,7 +27,7 @@ release commit and artifacts.
 - The prior strict artifact verification did not require Mesa's app-local
   `opengl32.dll` loader and is invalidated for Windows startup acceptance. The
   corrected verifier requires and hashes that loader in both Windows artifacts.
-- A fresh isolated artifact set was also reverified on 2026-07-27, including
+- A fresh isolated artifact set was rebuilt and reverified on 2026-07-31, including
   the pinned Mesa/DXC payloads and bundled release documentation. This remains
   integrity evidence only; it does not waive the physical acceptance gates.
 - AppImage payload inspection confirmed the app, indexer, privileged helper,
