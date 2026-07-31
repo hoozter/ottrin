@@ -55,6 +55,7 @@ pub(crate) struct SearchStore {
 pub(crate) struct IndexedContentHit {
     pub(crate) path: PathBuf,
     pub(crate) snippet: String,
+    pub(crate) content: String,
 }
 
 #[allow(dead_code)]
@@ -283,20 +284,17 @@ fn load_generation(
     load_generation_inner(conn, plan, None)
 }
 
-/// Query only the completed active generation. The reader opens a separate
-/// SQLite connection so UI queries never share the worker's write connection.
-pub(crate) fn query_indexed_content(
+/// Query one ordered page from the completed active FTS generation. The reader
+/// opens a separate SQLite connection so UI queries never share the worker's
+/// write connection.
+pub(crate) fn query_indexed_content_page(
     db_path: &Path,
     plan: &ScanPlan,
-    text: &str,
+    fts_query: &str,
     limit: usize,
+    offset: usize,
 ) -> Result<Vec<IndexedContentHit>, SearchDbError> {
-    let terms = text
-        .split_whitespace()
-        .filter(|term| term.len() >= 2)
-        .map(str::to_ascii_lowercase)
-        .collect::<Vec<_>>();
-    if terms.is_empty() || limit == 0 {
+    if fts_query.trim().is_empty() || limit == 0 {
         return Ok(Vec::new());
     }
     let conn = Connection::open_with_flags(
@@ -304,34 +302,48 @@ pub(crate) fn query_indexed_content(
         rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
     )?;
     let mut stmt = conn.prepare(
-        "SELECT f.path, snippet(search_generation_content, 2, '', '', '…', 20)
+        "SELECT f.path, snippet(search_generation_content, 2, '', '', '…', 20), f.content
          FROM search_generation_content f
          JOIN search_store_state s ON s.singleton = 1 AND s.active_generation_id = f.generation_id
          JOIN search_generations g ON g.id = f.generation_id
          WHERE g.completed = 1 AND g.plan_identity = ?1
            AND search_generation_content MATCH ?2
-         ORDER BY rank
-         LIMIT ?3",
+         ORDER BY rank, f.rowid
+         LIMIT ?3 OFFSET ?4",
     )?;
     let rows = stmt.query_map(
-        params![
-            plan.identity(),
-            terms
-                .iter()
-                .map(|term| format!("\"{}\"", term.replace('"', "\"\"")))
-                .collect::<Vec<_>>()
-                .join(" AND "),
-            limit as i64
-        ],
+        params![plan.identity(), fts_query, limit as i64, offset as i64],
         |row| {
             let raw_snippet: String = row.get(1)?;
             Ok(IndexedContentHit {
                 path: decode_path(row.get(0)?)?,
-                snippet: content_snippet_line(&raw_snippet, &terms),
+                snippet: content_snippet_line(&raw_snippet, &fts_query_terms(fts_query)),
+                content: row.get(2)?,
             })
         },
     )?;
     rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+}
+
+fn fts_query_terms(fts_query: &str) -> Vec<String> {
+    let quoted = fts_query
+        .split('"')
+        .enumerate()
+        .filter_map(|(index, value)| (index % 2 == 1).then_some(value.replace("\"\"", "\"")))
+        .filter(|value| !value.is_empty())
+        .collect::<Vec<_>>();
+    if quoted.is_empty() {
+        fts_query
+            .split_whitespace()
+            .filter(|term| term.len() >= 2)
+            .map(str::to_ascii_lowercase)
+            .collect()
+    } else {
+        quoted
+            .into_iter()
+            .map(|term| term.to_ascii_lowercase())
+            .collect()
+    }
 }
 
 fn content_snippet_line(content: &str, terms: &[String]) -> String {
@@ -678,10 +690,11 @@ mod generation_tests {
             )
             .expect("commit old generation");
         assert_eq!(
-            query_indexed_content(&db_path, &scan_plan, "retired", 10).expect("query old"),
+            query_indexed_content_page(&db_path, &scan_plan, "retired", 10, 0).expect("query old"),
             vec![IndexedContentHit {
                 path: old.clone(),
                 snippet: "retired unique content".to_string(),
+                content: "retired unique content".to_string(),
             }]
         );
         store
@@ -691,15 +704,16 @@ mod generation_tests {
             )
             .expect("commit new generation");
         assert!(
-            query_indexed_content(&db_path, &scan_plan, "retired", 10)
+            query_indexed_content_page(&db_path, &scan_plan, "retired", 10, 0)
                 .expect("query stale")
                 .is_empty()
         );
         assert_eq!(
-            query_indexed_content(&db_path, &scan_plan, "fresh", 10).expect("query fresh"),
+            query_indexed_content_page(&db_path, &scan_plan, "fresh", 10, 0).expect("query fresh"),
             vec![IndexedContentHit {
                 path: new,
                 snippet: "fresh unique content".to_string(),
+                content: "fresh unique content".to_string(),
             }]
         );
         let _ = std::fs::remove_dir_all(root);
@@ -734,7 +748,7 @@ mod generation_tests {
             .expect("commit generation");
 
         assert!(
-            query_indexed_content(&db_path, &scan_plan, "needle", 10)
+            query_indexed_content_page(&db_path, &scan_plan, "needle", 10, 0)
                 .expect("query binary")
                 .is_empty()
         );

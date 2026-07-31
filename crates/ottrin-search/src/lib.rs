@@ -22,7 +22,7 @@ mod plan;
 mod scanner;
 mod watch;
 mod worker;
-use db::{SearchStore, query_indexed_content, search_db_path};
+use db::{SearchStore, query_indexed_content_page, search_db_path};
 
 #[cfg(test)]
 static SEARCH_SERVICE_TEST_LOCK: Mutex<()> = Mutex::new(());
@@ -567,14 +567,10 @@ impl SearchHandle {
         // Ripgrep remains a supplemental fallback for content which is deliberately
         // not indexed (unreadable, binary, oversized, or outside indexed roots).
         if query.content_search && query.text.trim().len() >= 2 {
+            let fts_query = fts_content_match(&expr);
             if matches!(status, SearchIndexStatus::Ready)
+                && let Some(fts_query) = fts_query.as_deref()
                 && let Ok(plan) = plan::ScanPlan::new(&cfg)
-                && let Ok(fts_hits) = query_indexed_content(
-                    self.store_path.as_ref(),
-                    &plan,
-                    query.text.trim(),
-                    query.limit.max(50),
-                )
             {
                 let mut by_path = items
                     .iter()
@@ -582,19 +578,44 @@ impl SearchHandle {
                     .collect::<std::collections::HashMap<_, _>>();
                 let mut seen: HashSet<PathBuf> =
                     matched.iter().map(|(_, item)| item.path.clone()).collect();
-                for hit in fts_hits {
-                    let Some(indexed) = by_path.remove(hit.path.as_path()) else {
-                        continue;
+                let desired_hits = query.offset.saturating_add(query.limit).max(1);
+                let mut accepted_hits = 0;
+                let mut fts_offset = 0;
+                const FTS_PAGE_SIZE: usize = 50;
+                loop {
+                    let Ok(fts_hits) = query_indexed_content_page(
+                        self.store_path.as_ref(),
+                        &plan,
+                        fts_query,
+                        FTS_PAGE_SIZE,
+                        fts_offset,
+                    ) else {
+                        break;
                     };
-                    let mut item = indexed.clone();
-                    item.content_snippet = Some(hit.snippet);
-                    if scope_match(&query, &item)
-                        && (query.include_hidden_system || !item.name.starts_with('.'))
-                        && eval_expr(&expr, &item)
-                        && seen.insert(item.path.clone())
-                    {
-                        matched.push((8_000, item));
+                    let fetched = fts_hits.len();
+                    for hit in fts_hits {
+                        let Some(indexed) = by_path.remove(hit.path.as_path()) else {
+                            continue;
+                        };
+                        let mut item = indexed.clone();
+                        // Evaluate against the bounded indexed content, not the short
+                        // display snippet: boolean and negated terms can occur on a
+                        // different line than the snippet selected for presentation.
+                        item.content_snippet = Some(hit.content);
+                        if scope_match(&query, &item)
+                            && (query.include_hidden_system || !item.name.starts_with('.'))
+                            && eval_expr(&expr, &item)
+                            && seen.insert(item.path.clone())
+                        {
+                            item.content_snippet = Some(hit.snippet);
+                            matched.push((8_000, item));
+                            accepted_hits += 1;
+                        }
                     }
+                    if fetched < FTS_PAGE_SIZE || accepted_hits >= desired_hits {
+                        break;
+                    }
+                    fts_offset = fts_offset.saturating_add(fetched);
                 }
             }
             let roots = ordered_query_roots(&query, &cfg);
@@ -2294,6 +2315,42 @@ fn eval_term(t: &Term, item: &SearchResultItem) -> bool {
     }
 }
 
+/// Extract the unqualified literal terms that may match indexed file content.
+/// Field filters still run against each returned item, but must not become FTS
+/// terms themselves (for example, `name:notes needle` searches file content for
+/// `needle` and then applies the name filter).
+fn fts_content_match(expr: &Expr) -> Option<String> {
+    fn quote(value: &str) -> String {
+        format!("\"{}\"", value.replace('"', "\"\""))
+    }
+
+    fn build(expr: &Expr) -> Option<String> {
+        match expr {
+            Expr::And(parts) | Expr::Or(parts) => {
+                let operator = if matches!(expr, Expr::And(_)) {
+                    " AND "
+                } else {
+                    " OR "
+                };
+                let parts = parts.iter().filter_map(build).collect::<Vec<_>>();
+                match parts.len() {
+                    0 => None,
+                    1 => parts.into_iter().next(),
+                    _ => Some(format!("({})", parts.join(operator))),
+                }
+            }
+            Expr::Term(Term::Contains {
+                field: Field::Any,
+                value,
+            }) if value.len() >= 2 => Some(quote(value)),
+            // A negated content term cannot be used to obtain a safe positive FTS
+            // candidate set. The ordinary indexed/fallback paths remain available.
+            Expr::Not(_) | Expr::Term(_) => None,
+        }
+    }
+    build(expr)
+}
+
 fn relevance_score(query: &SearchQuery, item: &SearchResultItem) -> i64 {
     let q = query.text.to_ascii_lowercase();
     // Use pre-computed lowercase fields — zero allocations.
@@ -3200,6 +3257,238 @@ mod tests {
             response.items[0].content_snippet.as_deref(),
             Some("needle from indexed generation")
         );
+
+        service.stop();
+        let _ = fs::remove_dir_all(&root);
+        let _ = fs::remove_file(&service.store_path);
+    }
+
+    #[test]
+    fn indexed_content_search_applies_name_filters_without_querying_them_as_content() {
+        let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-fts-filtered-content-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        let file_path = root.join("alpha.txt");
+        fs::write(&file_path, "needle from indexed generation\n").expect("write indexed content");
+
+        let mut service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        service.start();
+        service
+            .rebuild_index_blocking()
+            .expect("commit indexed generation");
+        fs::remove_file(&file_path).expect("remove source after indexing");
+
+        let response = service.query(SearchQuery {
+            text: "name:alpha needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].path, file_path);
+        assert_eq!(
+            response.items[0].content_snippet.as_deref(),
+            Some("needle from indexed generation")
+        );
+
+        service.stop();
+        let _ = fs::remove_dir_all(&root);
+        let _ = fs::remove_file(&service.store_path);
+    }
+
+    #[test]
+    fn indexed_content_search_keeps_multi_word_matches_when_terms_are_on_separate_lines() {
+        let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-fts-multiword-content-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        let file_path = root.join("notes.txt");
+        fs::write(&file_path, "alpha on one line\nbeta on another line\n")
+            .expect("write indexed content");
+
+        let mut service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        service.start();
+        service
+            .rebuild_index_blocking()
+            .expect("commit indexed generation");
+        fs::remove_file(&file_path).expect("remove source after indexing");
+
+        let response = service.query(SearchQuery {
+            text: "alpha beta".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].path, file_path);
+
+        service.stop();
+        let _ = fs::remove_dir_all(&root);
+        let _ = fs::remove_file(&service.store_path);
+    }
+
+    #[test]
+    fn indexed_content_search_evaluates_negated_terms_against_full_indexed_content() {
+        let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-fts-negated-content-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        let kept = root.join("kept.txt");
+        let rejected = root.join("rejected.txt");
+        fs::write(&kept, "foo without the excluded term\n").expect("write kept content");
+        fs::write(&rejected, "foo and bar together\n").expect("write rejected content");
+
+        let mut service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        service.start();
+        service
+            .rebuild_index_blocking()
+            .expect("commit indexed generation");
+        fs::remove_file(&kept).expect("remove kept source after indexing");
+        fs::remove_file(&rejected).expect("remove rejected source after indexing");
+
+        let response = service.query(SearchQuery {
+            text: "foo !bar".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].path, kept);
+
+        service.stop();
+        let _ = fs::remove_dir_all(&root);
+        let _ = fs::remove_file(&service.store_path);
+    }
+
+    #[test]
+    fn indexed_content_search_preserves_or_branch_filters() {
+        let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-fts-or-content-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        let foo = root.join("foo.txt");
+        let good_bar = root.join("good-bar.txt");
+        let bad_bar = root.join("bad-bar.txt");
+        fs::write(&foo, "foo only\n").expect("write foo content");
+        fs::write(&good_bar, "bar only\n").expect("write good bar content");
+        fs::write(&bad_bar, "bar only\n").expect("write bad bar content");
+
+        let mut service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        service.start();
+        service
+            .rebuild_index_blocking()
+            .expect("commit indexed generation");
+        for path in [&foo, &good_bar, &bad_bar] {
+            fs::remove_file(path).expect("remove source after indexing");
+        }
+
+        let response = service.query(SearchQuery {
+            text: "foo | (bar name:good)".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+        let paths = response
+            .items
+            .iter()
+            .map(|item| item.path.clone())
+            .collect::<std::collections::HashSet<_>>();
+        assert_eq!(paths, std::collections::HashSet::from([foo, good_bar]));
+
+        service.stop();
+        let _ = fs::remove_dir_all(&root);
+        let _ = fs::remove_file(&service.store_path);
+    }
+
+    #[test]
+    fn indexed_content_search_pages_past_rejected_fts_candidates() {
+        let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-fts-paged-content-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        for index in 0..51 {
+            fs::write(root.join(format!("other-{index:02}.txt")), "foo\n")
+                .expect("write rejected content");
+        }
+        let target = root.join("target.txt");
+        fs::write(&target, "foo\n").expect("write target content");
+
+        let mut service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        service.start();
+        service
+            .rebuild_index_blocking()
+            .expect("commit indexed generation");
+        fs::remove_dir_all(&root).expect("remove sources after indexing");
+
+        let response = service.query(SearchQuery {
+            text: "name:target foo".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 1,
+            offset: 0,
+            content_search: true,
+        });
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].path, target);
 
         service.stop();
         let _ = fs::remove_dir_all(&root);
