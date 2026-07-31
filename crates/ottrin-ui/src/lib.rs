@@ -132,6 +132,19 @@ fn locations_rail_tile_text(
     }
 }
 
+fn locations_rail_tile_detail(name: &str, path: &Path, indexed: Option<bool>) -> String {
+    let detail = format!("{name} · {}", path.display());
+    match indexed {
+        Some(true) => format!("{detail}\nIndexed search: enabled"),
+        Some(false) => format!("{detail}\nIndexed search: disabled"),
+        None => detail,
+    }
+}
+
+fn locations_rail_tile_detail_visible(pointer_hovered: bool, keyboard_focused: bool) -> bool {
+    pointer_hovered || keyboard_focused
+}
+
 /// Resolves persisted volume choices against this refresh's discovered roots.
 /// Missing volumes retain their choice but are deliberately absent from the
 /// runtime scan plan, so an unplugged volume cannot leave stale index entries.
@@ -9011,15 +9024,11 @@ impl OttrinApp {
                     .corner_radius(c.border_radius as f32)
                     .min_size(Vec2::new(rail_w - 14.0, if expanded { 42.0 } else { 46.0 }));
 
-                    let resp = ui.add(btn).on_hover_text(match volume_index_status {
-                        Some(true) => {
-                            format!("{} · {}\nIndexed search: enabled", name, path.display())
-                        }
-                        Some(false) => {
-                            format!("{} · {}\nIndexed search: disabled", name, path.display())
-                        }
-                        None => format!("{} · {}", name, path.display()),
-                    });
+                    let detail = locations_rail_tile_detail(name, &path, volume_index_status);
+                    let resp = ui.add(btn);
+                    if locations_rail_tile_detail_visible(resp.hovered(), resp.has_focus()) {
+                        resp.show_tooltip_text(detail);
+                    }
                     if resp.clicked() {
                         navigate_to = Some(path.clone());
                     }
@@ -20814,6 +20823,25 @@ mod tests {
             ),
             format!("{MI_FOLDER_OPEN} Backup\n/media/alice/Backup")
         );
+    }
+
+    #[test]
+    fn compact_locations_tile_detail_keeps_the_full_name_and_mount_path() {
+        assert_eq!(
+            locations_rail_tile_detail("Backup", Path::new("/media/alice/Backup"), None),
+            "Backup · /media/alice/Backup"
+        );
+        assert_eq!(
+            locations_rail_tile_detail("Backup", Path::new("/media/alice/Backup"), Some(true),),
+            "Backup · /media/alice/Backup\nIndexed search: enabled"
+        );
+    }
+
+    #[test]
+    fn compact_locations_tile_detail_is_requested_for_hover_or_keyboard_focus() {
+        assert!(locations_rail_tile_detail_visible(true, false));
+        assert!(locations_rail_tile_detail_visible(false, true));
+        assert!(!locations_rail_tile_detail_visible(false, false));
     }
 
     #[test]
