@@ -78,6 +78,6 @@ These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 - Generation-consistent, aggregate-memory-bounded negated FTS5 content search.
 - Fanotify helper/service packaging.
 - Tab drag-and-drop.
-- Rubber-band selection in List and Grid views. Miller columns remain deferred because their independent columns and scroll areas require a separate interaction model.
+- Rubber-band selection.
 - Full undo for file operations.
 - Native Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing.
