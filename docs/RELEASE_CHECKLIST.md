@@ -85,7 +85,7 @@ interactive workflow, polkit-dialog, Windows runtime, UAC, or installer sign-off
 
 - [ ] `README.md`, `USER_GUIDE.md`, `ROADMAP.md`, and `RELEASE_NOTES.md` match observed behavior.
 - [ ] Known limitations are complete and plainly worded.
-- [ ] Version, artifact names, checksums, and generated release notes agree.
+- [x] Version, artifact names, checksums, and generated release notes agree.
 - [ ] No release-blocking item is waived without a written rationale.
 - [ ] Windows artifacts are Authenticode-signed with an approved production
   identity and verified after download. Current rebuilt artifacts are unsigned;
