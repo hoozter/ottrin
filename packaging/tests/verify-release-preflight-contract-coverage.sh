@@ -18,6 +18,7 @@ require_contract_gate() {
 # until a manually assembled artifact directory happens to be available.
 for script in \
   packaging/tests/verify-linux-appimage-documentation.sh \
+  packaging/tests/verify-linux-gio-runtime-contract.sh \
   packaging/tests/verify-linux-portable-running-instructions.sh \
   packaging/tests/verify-linux-privileged-helper-policy.sh \
   packaging/tests/verify-release-checklist-provenance.sh \

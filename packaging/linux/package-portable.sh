@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$ROOT/packaging/linux/bundle-runtime-libs.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 BUILD_DIR="$ROOT/target/release"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
@@ -45,11 +46,21 @@ cd "$ROOT"
 cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
 
 rm -rf "$STAGE"
-mkdir -p "$STAGE/bin" "$STAGE/assets" "$STAGE/docs" "$STAGE/packaging/linux"
+mkdir -p "$STAGE/bin" "$STAGE/libexec/ottrin" "$STAGE/assets" "$STAGE/docs" \
+  "$STAGE/packaging/linux"
 
-install -m 0755 "$BUILD_DIR/ottrin-app" "$STAGE/bin/ottrin"
+install -m 0755 "$BUILD_DIR/ottrin-app" "$STAGE/libexec/ottrin/ottrin"
 install -m 0755 "$BUILD_DIR/ottrin-priv-helper" "$STAGE/bin/ottrin-priv-helper"
 install -m 0755 "$BUILD_DIR/ottrin-index" "$STAGE/bin/ottrin-index"
+bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$STAGE" "$STAGE/third-party-notices/linux-runtime"
+cat > "$STAGE/bin/ottrin" <<'EOF'
+#!/bin/sh
+OTTRIN_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+OTTRIN_REAL_ELF="$OTTRIN_ROOT/libexec/ottrin/ottrin"
+export LD_LIBRARY_PATH="$OTTRIN_ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+exec "$OTTRIN_REAL_ELF" "$@"
+EOF
+chmod 0755 "$STAGE/bin/ottrin"
 download_verify_and_package_pdfium "$STAGE/bin/pdfium"
 cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/logo.svg" "$STAGE/assets/"
 cp "$ROOT/packaging/linux/org.ottrin.filesystem.policy" \
@@ -71,6 +82,8 @@ Run:
 ```sh
 ./bin/ottrin
 ```
+
+This launcher uses the artifact-local Linux runtime libraries in `./lib/`.
 
 Optional privileged helper setup:
 

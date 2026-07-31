@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$ROOT/packaging/linux/bundle-runtime-libs.sh"
 DIST_DIR="${1:-dist}"
 VERSION="$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')"
 EXPECTED_SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
@@ -544,6 +545,25 @@ LINUX_APPIMAGE_ABS="$(realpath "$LINUX_APPIMAGE")"
   cd "$APPIMAGE_EXTRACT_DIR"
   "$LINUX_APPIMAGE_ABS" --appimage-extract >/dev/null
 )
+
+PORTABLE_EXTRACT_DIR="$APPIMAGE_EXTRACT_DIR/linux-portable"
+mkdir -p "$PORTABLE_EXTRACT_DIR"
+tar -xzf "$LINUX_ARCHIVE" -C "$PORTABLE_EXTRACT_DIR"
+PORTABLE_STAGE="$PORTABLE_EXTRACT_DIR/Ottrin-$VERSION-linux-x86_64"
+verify_linux_runtime_closure \
+  'Linux portable archive' \
+  "$PORTABLE_STAGE" \
+  "$PORTABLE_STAGE/libexec/ottrin/ottrin" \
+  "$PORTABLE_STAGE/lib" \
+  "$PORTABLE_STAGE/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
+  "$PORTABLE_STAGE/third-party-notices/linux-runtime"
+verify_linux_runtime_closure \
+  'Linux AppImage' \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root" \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/bin/ottrin" \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/lib" \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime"
 
 for entry in \
   'AppRun' \

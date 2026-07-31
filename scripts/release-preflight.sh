@@ -78,6 +78,7 @@ shell_scripts=(
   build-all.sh
   packaging/linux/package-appimage.sh
   packaging/linux/package-portable.sh
+  packaging/linux/bundle-runtime-libs.sh
   packaging/verify-release-artifacts.sh
   packaging/windows/package-installer.sh
   packaging/windows/package-portable.sh
@@ -88,6 +89,7 @@ shell_scripts=(
   packaging/tests/verify-windows-installer-stage-version.sh
   packaging/tests/verify-windows-runtime-temp-cleanup.sh
   packaging/tests/verify-linux-appimage-documentation.sh
+  packaging/tests/verify-linux-gio-runtime-contract.sh
   packaging/tests/verify-linux-portable-running-instructions.sh
   scripts/linux-launch-smoke.sh
   scripts/windows-gui-subsystem-smoke.sh
@@ -113,6 +115,8 @@ run_gate "Release workflow dependency guards" \
   bash packaging/tests/verify-release-workflow-dependencies.sh
 run_gate "Linux AppImage documentation contract" \
   bash packaging/tests/verify-linux-appimage-documentation.sh
+run_gate "Linux GIO runtime packaging contract" \
+  bash packaging/tests/verify-linux-gio-runtime-contract.sh
 run_gate "Linux portable runtime-instructions contract" \
   bash packaging/tests/verify-linux-portable-running-instructions.sh
 run_gate "Linux privileged-helper policy contract" \

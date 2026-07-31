@@ -16,6 +16,7 @@ require_shell_gate() {
 # portable stage. It carries the graphics-runtime and UAC-facing payload, so a
 # preflight syntax pass must cover it alongside every other shell packager.
 require_shell_gate 'packaging/windows/package-installer.sh'
+require_shell_gate 'packaging/linux/bundle-runtime-libs.sh'
 require_shell_gate 'scripts/linux-launch-smoke.sh'
 require_shell_gate 'scripts/windows-gui-subsystem-smoke.sh'
 require_shell_gate 'scripts/windows-runtime-launch-smoke.sh'

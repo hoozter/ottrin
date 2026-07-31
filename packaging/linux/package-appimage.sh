@@ -2,8 +2,10 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$ROOT/packaging/linux/bundle-runtime-libs.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
+BUILD_DIR="$ROOT/target/release"
 APPDIR="$DIST_DIR/AppDir"
 APPIMAGE="$DIST_DIR/Ottrin-$VERSION-x86_64.AppImage"
 APPIMAGETOOL="${APPIMAGETOOL:-$DIST_DIR/appimagetool-x86_64.AppImage}"
@@ -66,6 +68,7 @@ install -m 0644 "$ROOT/README.md" "$ROOT/LICENSE" "$APPDIR/usr/share/doc/ottrin/
 install -m 0644 "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" \
   "$ROOT/docs/ROADMAP.md" "$ROOT/docs/RELEASE_NOTES.md" \
   "$ROOT/docs/RELEASE_CHECKLIST.md" "$APPDIR/usr/share/doc/ottrin/"
+bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$APPDIR/usr"
 cat > "$APPDIR/usr/share/doc/ottrin/SOURCE_REVISION.txt" <<EOF
 Ottrin source revision
 Version: $VERSION
@@ -87,6 +90,7 @@ cp "$APPDIR/org.ottrin.Ottrin.desktop" "$APPDIR/usr/share/applications/org.ottri
 cat > "$APPDIR/AppRun" <<'APPRUN'
 #!/bin/sh
 APPDIR="$(dirname "$(readlink -f "$0")")"
+export LD_LIBRARY_PATH="$APPDIR/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export OTTRIN_PRIV_HELPER="$APPDIR/usr/libexec/ottrin/ottrin-priv-helper"
 if [ "$1" = "--ottrin-index" ]; then
   shift

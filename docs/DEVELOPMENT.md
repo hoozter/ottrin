@@ -30,8 +30,31 @@ Linux development dependencies on Debian/Ubuntu:
 ```sh
 sudo apt-get install -y \
     libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-    libxkbcommon-dev libssl-dev
+    libxkbcommon-dev libssl-dev libglib2.0-dev
 ```
+
+Linux native Open With support requires GIO `>= 2.56`. The Linux portable and
+AppImage builders bundle the required GIO/GLib runtime closure; this development
+package is not an end-user package dependency for those artifacts.
+
+Its `BUNDLED_RUNTIME_MANIFEST.txt` is an **unsigned build record**: its hashes
+bind the shipped runtime bytes and copied notices for integrity checks and
+diagnosis, but they do not authenticate a final artifact. Someone able to
+rewrite an artifact can rewrite this record too. Final-artifact authenticity
+requires a future signed artifact or attestation and is not claimed here.
+
+The Linux runtime-closure builder is intentionally Debian-family specific: it
+requires `dpkg-query` to record package/version and copyright provenance and
+fails closed when that evidence is unavailable. Its supported artifact ABI is
+the system dynamic loader, glibc base ABI, and base C++ runtime (`libgcc_s` and
+`libstdc++`), including standard glibc split components such as `libresolv`,
+`libutil`, and `libanl` when needed. Those components remain host-provided;
+Ottrin does not claim broad Linux portability.
+
+GIO uses host desktop-entry and XDG MIME data by design. The artifacts do not
+claim to bundle GIO modules or schemas. Packaging has an artifact-level
+content-type smoke with empty XDG data, but clean/minimal desktop acceptance is
+a separate release gate.
 
 ## Packaging
 
