@@ -26,6 +26,11 @@ Implemented:
 
 ## Still needs implementation or real QA before v1:
 
+The Storage Locations rows below have source-level implementation evidence in
+`.hermes/storage-locations-reconciliation.md`; their remaining v1 work is
+native/manual acceptance, including real attachment/removal and real Windows
+drive/share coverage. Source tests do not satisfy those physical gates.
+
 - Storage Locations must expose every user-accessible filesystem root instead of assuming the home profile is the whole machine. Windows must discover and navigate fixed, removable, optical, and mapped-network drive letters such as `D:` and `P:`; Linux must discover user-visible mounted volumes and removable-media mount points.
 - The Locations UX must keep Ottrin visually clean while making Home, bookmarks/quick links, drives, and mounted volumes immediately discoverable. Use a compact collapsible Locations rail rather than requiring a permanently wide second sidebar.
 - The collapsed rail remains a complete navigation surface: each location is a keyboard-focusable compact tile with a semantic device icon (internal disk, removable/USB, optical, mapped/network, unavailable) and, where available, a small high-contrast identity badge such as `C:` or `P:`. Hover/focus exposes the full accessible label and mount path; identity must never depend on color alone.

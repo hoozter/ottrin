@@ -8803,15 +8803,20 @@ impl OttrinApp {
 
     fn storage_icon_for_kind(kind: StorageLocationKind) -> &'static str {
         match kind {
-            StorageLocationKind::Internal | StorageLocationKind::Optical => MI_STORAGE,
-            StorageLocationKind::Removable => MI_FOLDER_OPEN,
+            StorageLocationKind::Internal => MI_STORAGE,
+            StorageLocationKind::Removable => MI_USB,
+            StorageLocationKind::Optical => MI_DISC_FULL,
             StorageLocationKind::Network => MI_FOLDER_SHARED,
             StorageLocationKind::Unavailable => MI_CLEAR,
         }
     }
 
     fn storage_icon_for_bookmark<'a>(stored_icon: &'a str, path: &Path) -> &'a str {
-        if matches!(stored_icon, MI_STORAGE | MI_FOLDER_OPEN | MI_FOLDER_SHARED) && !path.exists() {
+        if matches!(
+            stored_icon,
+            MI_STORAGE | MI_USB | MI_DISC_FULL | MI_FOLDER_OPEN | MI_FOLDER_SHARED
+        ) && !path.exists()
+        {
             MI_CLEAR
         } else {
             stored_icon
@@ -8962,7 +8967,11 @@ impl OttrinApp {
                 for (idx, (stored_icon, name, path)) in bookmarks.iter().enumerate() {
                     let path = path.clone();
                     let is_here = displayed_path == path;
-                    let icon = Self::storage_icon_for_bookmark(stored_icon, &path);
+                    let icon = storage_roots
+                        .iter()
+                        .find(|location| location.path == path)
+                        .map(|location| Self::storage_icon_for_kind(location.kind))
+                        .unwrap_or_else(|| Self::storage_icon_for_bookmark(stored_icon, &path));
                     let identity = Self::locations_rail_identity(&home, name, &path);
                     let text = locations_rail_tile_text(icon, name, &path, &identity, expanded);
                     let volume_index_status = storage_roots
@@ -20730,7 +20739,7 @@ mod tests {
         assert_eq!(
             bookmarks[5],
             (
-                MI_FOLDER_OPEN.to_string(),
+                MI_USB.to_string(),
                 "USB Archive".to_string(),
                 PathBuf::from("/media/usb-drive")
             )
@@ -20782,7 +20791,7 @@ mod tests {
         assert_eq!(bookmarks[2].2, user_bookmark);
         assert_eq!(
             bookmarks[3],
-            (MI_FOLDER_OPEN.to_string(), "New USB".to_string(), new_root,)
+            (MI_USB.to_string(), "New USB".to_string(), new_root,)
         );
     }
 
@@ -20810,10 +20819,37 @@ mod tests {
     #[test]
     fn storage_icon_for_missing_storage_is_unavailable() {
         let missing = PathBuf::from("/__ottrin_missing_storage_root__");
-        assert_eq!(
-            OttrinApp::storage_icon_for_bookmark(MI_STORAGE, &missing),
-            MI_CLEAR
-        );
+        for icon in [MI_STORAGE, MI_USB, MI_DISC_FULL, MI_FOLDER_SHARED] {
+            assert_eq!(
+                OttrinApp::storage_icon_for_bookmark(icon, &missing),
+                MI_CLEAR
+            );
+        }
+    }
+
+    #[test]
+    fn storage_location_kinds_have_distinct_semantic_rail_icons() {
+        let internal = OttrinApp::storage_icon_for_kind(StorageLocationKind::Internal);
+        let removable = OttrinApp::storage_icon_for_kind(StorageLocationKind::Removable);
+        let optical = OttrinApp::storage_icon_for_kind(StorageLocationKind::Optical);
+        let network = OttrinApp::storage_icon_for_kind(StorageLocationKind::Network);
+        let unavailable = OttrinApp::storage_icon_for_kind(StorageLocationKind::Unavailable);
+
+        assert_eq!(internal, MI_STORAGE);
+        assert_eq!(removable, MI_USB);
+        assert_eq!(optical, MI_DISC_FULL);
+        assert_eq!(network, MI_FOLDER_SHARED);
+        assert_eq!(unavailable, MI_CLEAR);
+        assert_ne!(internal, removable);
+        assert_ne!(internal, optical);
+        assert_ne!(internal, network);
+        assert_ne!(internal, unavailable);
+        assert_ne!(removable, optical);
+        assert_ne!(removable, network);
+        assert_ne!(removable, unavailable);
+        assert_ne!(optical, network);
+        assert_ne!(optical, unavailable);
+        assert_ne!(network, unavailable);
     }
 
     #[test]
