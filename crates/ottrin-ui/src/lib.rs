@@ -31,6 +31,7 @@ use ottrin_search::{
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::time::{Duration, Instant};
 
@@ -314,12 +315,17 @@ struct OpResult {
     error: Option<String>,
     warning: Option<String>,
     retry: Option<PendingPrivilegedRetry>,
+    clipboard_generation: Option<u64>,
+    completed_sources: Option<usize>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 enum FileOpOutcome {
     Completed,
-    CompletedWithWarning(String),
+    CompletedWithWarning {
+        message: String,
+        completed_sources: usize,
+    },
     Failed {
         message: String,
         privilege_retry: bool,
@@ -341,10 +347,18 @@ impl FileOpOutcome {
 fn classify_file_op_result(result: Result<(), PlatformError>) -> FileOpOutcome {
     match result {
         Ok(()) => FileOpOutcome::Completed,
-        Err(
-            error @ (PlatformError::CommittedCleanupPending { .. }
-            | PlatformError::PartialBatch { .. }),
-        ) => FileOpOutcome::CompletedWithWarning(error.to_string()),
+        Err(error @ PlatformError::CommittedCleanupPending { .. }) => {
+            FileOpOutcome::CompletedWithWarning {
+                message: error.to_string(),
+                completed_sources: 1,
+            }
+        }
+        Err(error @ PlatformError::PartialBatch { completed, .. }) => {
+            FileOpOutcome::CompletedWithWarning {
+                message: error.to_string(),
+                completed_sources: completed,
+            }
+        }
         Err(error) => {
             let message = error.to_string();
             FileOpOutcome::Failed {
@@ -793,11 +807,15 @@ enum PreviewKeyAction {
 
 // ── Clipboard ─────────────────────────────────────────────────────────────────
 
+static NEXT_CLIPBOARD_GENERATION: AtomicU64 = AtomicU64::new(1);
+
 #[derive(Debug, Clone)]
 struct Clipboard {
+    generation: u64,
     sources: Vec<PathBuf>,
     cut: bool,
     source_bindings: Vec<StorageOperationBinding>,
+    in_flight: bool,
 }
 
 impl Clipboard {
@@ -808,9 +826,11 @@ impl Clipboard {
     ) -> Result<Self, String> {
         let source_bindings = capture_required_storage_bindings(&sources, locations)?;
         Ok(Self {
+            generation: NEXT_CLIPBOARD_GENERATION.fetch_add(1, Ordering::Relaxed),
             sources,
             cut,
             source_bindings,
+            in_flight: false,
         })
     }
 }
@@ -4481,6 +4501,12 @@ impl OttrinApp {
     fn poll_op_results(&mut self) {
         while let Ok(res) = self.op_rx.try_recv() {
             let completed_cmd = res.cmd.clone();
+            self.apply_clipboard_operation_result(
+                res.clipboard_generation,
+                &completed_cmd,
+                res.error.is_none(),
+                res.completed_sources,
+            );
             if let Some(err) = res.error {
                 self.finish_operation_record(res.op_id, OperationStatus::Failed, Some(err.clone()));
                 self.command_frame.error = Some(err);
@@ -4505,14 +4531,6 @@ impl OttrinApp {
                 self.command_frame.visible = true;
             }
             self.pending_privileged_retry = None;
-            if let FileCommand::Move { sources, .. } = &completed_cmd
-                && self
-                    .clipboard
-                    .as_ref()
-                    .is_some_and(|clipboard| clipboard.cut && clipboard.sources == *sources)
-            {
-                self.clipboard = None;
-            }
             if let FileCommand::Delete { targets, .. } = &completed_cmd {
                 self.repair_tabs_after_deleted_targets(targets, &res.delete_nav);
                 if self.trash_panel.loaded {
@@ -4565,6 +4583,51 @@ impl OttrinApp {
                 }
             }
         }
+    }
+
+    fn apply_clipboard_operation_result(
+        &mut self,
+        generation: Option<u64>,
+        cmd: &FileCommand,
+        completed: bool,
+        completed_sources: Option<usize>,
+    ) {
+        let Some(generation) = generation else {
+            return;
+        };
+        let Some(clipboard) = self
+            .clipboard
+            .as_mut()
+            .filter(|clipboard| clipboard.generation == generation)
+        else {
+            return;
+        };
+        clipboard.in_flight = false;
+        if !clipboard.cut {
+            return;
+        }
+        let FileCommand::Move { sources, .. } = cmd else {
+            return;
+        };
+        if !completed {
+            return;
+        }
+
+        let completed_count = completed_sources
+            .unwrap_or(sources.len())
+            .min(sources.len());
+        if completed_count >= sources.len() {
+            self.clipboard = None;
+            return;
+        }
+
+        clipboard.sources = sources[completed_count..].to_vec();
+        clipboard.source_bindings.retain(|binding| {
+            clipboard
+                .sources
+                .iter()
+                .any(|source| source.starts_with(&binding.root))
+        });
     }
 
     fn repair_tabs_after_deleted_targets(&mut self, targets: &[PathBuf], nav: &[DeletePostNav]) {
@@ -6890,6 +6953,10 @@ impl OttrinApp {
 
     fn paste_clipboard(&mut self) {
         if let Some(clip) = self.clipboard.clone() {
+            if clip.in_flight {
+                self.set_status_message("Paste is already in progress".to_string(), false, 3);
+                return;
+            }
             let dest = self.state.active_tab().current_dir.clone();
             let tab_id = self.state.active_tab().id;
             self.reconcile_storage_location_availability(discover_storage_locations());
@@ -6906,7 +6973,14 @@ impl OttrinApp {
                         return;
                     }
                 };
-            self.run_file_op_with_bindings(cmd, Some(tab_id), bindings);
+            if self.run_file_op_with_bindings(cmd, Some(tab_id), bindings, clip.generation)
+                && let Some(current) = self
+                    .clipboard
+                    .as_mut()
+                    .filter(|current| current.generation == clip.generation)
+            {
+                current.in_flight = true;
+            }
         }
     }
 
@@ -7080,7 +7154,7 @@ impl OttrinApp {
     }
 
     fn run_file_op(&mut self, cmd: FileCommand, refresh_tab: Option<u64>) {
-        self.run_file_op_with_delete_nav(cmd, refresh_tab, Vec::new());
+        let _ = self.run_file_op_bound(cmd, refresh_tab, Vec::new(), None, None);
     }
 
     fn run_file_op_with_bindings(
@@ -7088,8 +7162,15 @@ impl OttrinApp {
         cmd: FileCommand,
         refresh_tab: Option<u64>,
         bindings: Vec<StorageOperationBinding>,
-    ) {
-        self.run_file_op_bound(cmd, refresh_tab, Vec::new(), Some(bindings));
+        clipboard_generation: u64,
+    ) -> bool {
+        self.run_file_op_bound(
+            cmd,
+            refresh_tab,
+            Vec::new(),
+            Some(bindings),
+            Some(clipboard_generation),
+        )
     }
 
     fn run_file_op_with_delete_nav(
@@ -7098,7 +7179,7 @@ impl OttrinApp {
         refresh_tab: Option<u64>,
         delete_nav: Vec<DeletePostNav>,
     ) {
-        self.run_file_op_bound(cmd, refresh_tab, delete_nav, None);
+        let _ = self.run_file_op_bound(cmd, refresh_tab, delete_nav, None, None);
     }
 
     fn run_file_op_bound(
@@ -7107,14 +7188,15 @@ impl OttrinApp {
         refresh_tab: Option<u64>,
         delete_nav: Vec<DeletePostNav>,
         authoritative_bindings: Option<Vec<StorageOperationBinding>>,
-    ) {
+        clipboard_generation: Option<u64>,
+    ) -> bool {
         // Reconcile before accepting mutable input. Callers with previously
         // captured provenance carry those exact bindings through this refresh;
         // they are never reconstructed from raw paths.
         self.reconcile_storage_location_availability(discover_storage_locations());
         if let Some(location) = self.unavailable_location_for_command(&cmd).cloned() {
             self.reject_unavailable_location_operation(&cmd, &location);
-            return;
+            return false;
         }
         let bindings = authoritative_bindings
             .unwrap_or_else(|| operation_storage_bindings(&cmd, &self.known_storage_locations));
@@ -7125,7 +7207,7 @@ impl OttrinApp {
             self.command_frame.message = None;
             self.command_frame.visible = true;
             self.set_status_message(message, false, 6);
-            return;
+            return false;
         }
         let op_id = self.queue_operation_record(cmd.clone());
         let platform = Arc::clone(&self.platform);
@@ -7146,15 +7228,19 @@ impl OttrinApp {
                     },
                 };
             let privilege_retry = outcome.should_offer_privilege_retry();
-            let (error, warning, retry) = match outcome {
-                FileOpOutcome::Completed => (None, None, None),
-                FileOpOutcome::CompletedWithWarning(message) => (None, Some(message), None),
+            let (error, warning, retry, completed_sources) = match outcome {
+                FileOpOutcome::Completed => (None, None, None, None),
+                FileOpOutcome::CompletedWithWarning {
+                    message,
+                    completed_sources,
+                } => (None, Some(message), None, Some(completed_sources)),
                 FileOpOutcome::Failed { message, .. } => (
                     Some(message),
                     None,
                     privilege_retry.then(|| {
                         PendingPrivilegedRetry::capture(retry_cmd, refresh_tab, &bindings)
                     }),
+                    None,
                 ),
             };
             let _ = op_tx.send(OpResult {
@@ -7165,8 +7251,11 @@ impl OttrinApp {
                 error,
                 warning,
                 retry,
+                clipboard_generation,
+                completed_sources,
             });
         });
+        true
     }
 
     fn queue_operation_record(&mut self, cmd: FileCommand) -> u64 {
@@ -19690,7 +19779,13 @@ mod tests {
             message: "permission denied during cleanup".to_string(),
         }));
 
-        assert!(matches!(outcome, FileOpOutcome::CompletedWithWarning(_)));
+        assert!(matches!(
+            outcome,
+            FileOpOutcome::CompletedWithWarning {
+                completed_sources: 1,
+                ..
+            }
+        ));
         assert!(!outcome.should_offer_privilege_retry());
     }
 
@@ -19704,7 +19799,13 @@ mod tests {
             message: "permission denied".to_string(),
         }));
 
-        assert!(matches!(outcome, FileOpOutcome::CompletedWithWarning(_)));
+        assert!(matches!(
+            outcome,
+            FileOpOutcome::CompletedWithWarning {
+                completed_sources: 1,
+                ..
+            }
+        ));
         assert!(!outcome.should_offer_privilege_retry());
     }
 
@@ -19771,6 +19872,8 @@ mod tests {
                     .to_string(),
             ),
             retry: None,
+            clipboard_generation: None,
+            completed_sources: Some(1),
         });
 
         app.poll_op_results();
@@ -20941,6 +21044,63 @@ mod tests {
     }
 
     #[test]
+    fn partial_cut_move_retains_unresolved_suffix_and_generation_isolates_late_results() {
+        let home = default_home_dir();
+        let first = home.join("first.txt");
+        let second = home.join("second.txt");
+        let sources = vec![first, second.clone()];
+        let mut app = OttrinApp::default();
+        let mut clipboard = Clipboard::capture(sources.clone(), true, &[])
+            .expect("home cut clipboard has a narrow binding");
+        clipboard.in_flight = true;
+        let generation = clipboard.generation;
+        app.clipboard = Some(clipboard);
+        let command = FileCommand::Move {
+            sources: sources.clone(),
+            destination: home.join("destination"),
+            conflict: ConflictAction::Rename,
+        };
+
+        app.apply_clipboard_operation_result(Some(generation), &command, true, Some(1));
+        let remaining = app.clipboard.as_ref().expect("failed suffix is retained");
+        assert_eq!(remaining.sources, vec![second]);
+        assert!(!remaining.in_flight);
+
+        let replacement = Clipboard::capture(sources, true, &[])
+            .expect("later identical clipboard gets a new generation");
+        let replacement_generation = replacement.generation;
+        app.clipboard = Some(replacement);
+        app.apply_clipboard_operation_result(Some(generation), &command, true, None);
+        assert_eq!(
+            app.clipboard.as_ref().map(|clipboard| clipboard.generation),
+            Some(replacement_generation),
+            "a delayed result cannot clear a later identical clipboard"
+        );
+
+        let mut copied = Clipboard::capture(vec![home.join("copy.txt")], false, &[])
+            .expect("home copy clipboard has a narrow binding");
+        copied.in_flight = true;
+        let copy_generation = copied.generation;
+        let copy_sources = copied.sources.clone();
+        app.clipboard = Some(copied);
+        app.apply_clipboard_operation_result(
+            Some(copy_generation),
+            &FileCommand::Copy {
+                sources: copy_sources,
+                destination: home.join("destination"),
+                conflict: ConflictAction::Rename,
+            },
+            true,
+            None,
+        );
+        let copied = app
+            .clipboard
+            .as_ref()
+            .expect("copy clipboard remains reusable");
+        assert!(!copied.in_flight);
+    }
+
+    #[test]
     fn privileged_retry_rejects_original_volume_replacement_before_helper_request() {
         let root = PathBuf::from("/__ottrin_retry_volume__");
         let original = StorageLocation {
@@ -21039,6 +21199,7 @@ mod tests {
             mode: DeleteMode::Permanent,
         };
         app.clipboard = Some(Clipboard {
+            generation: NEXT_CLIPBOARD_GENERATION.fetch_add(1, Ordering::Relaxed),
             sources: vec![source.clone()],
             cut: true,
             source_bindings: operation_storage_bindings(
@@ -21048,6 +21209,7 @@ mod tests {
                 },
                 std::slice::from_ref(&location),
             ),
+            in_flight: false,
         });
         let retry_bindings = operation_storage_bindings(&command, std::slice::from_ref(&location));
         app.pending_privileged_retry = Some(PendingPrivilegedRetry::capture(
