@@ -1540,6 +1540,9 @@ fn copy_symlink(source: &Path, destination: &Path) -> Result<(), PlatformError> 
 
 #[cfg(target_os = "linux")]
 fn copy_dir_recursive(source_dir: &Path, target_dir: &Path) -> Result<(), PlatformError> {
+    let source_permissions = std::fs::metadata(source_dir)
+        .map_err(|e| PlatformError::Io(e.to_string()))?
+        .permissions();
     std::fs::create_dir_all(target_dir).map_err(|e| PlatformError::Io(e.to_string()))?;
 
     let read_dir = std::fs::read_dir(source_dir).map_err(|e| PlatformError::Io(e.to_string()))?;
@@ -1558,6 +1561,9 @@ fn copy_dir_recursive(source_dir: &Path, target_dir: &Path) -> Result<(), Platfo
             std::fs::copy(&source, &target).map_err(|e| PlatformError::Io(e.to_string()))?;
         }
     }
+
+    std::fs::set_permissions(target_dir, source_permissions)
+        .map_err(|e| PlatformError::Io(e.to_string()))?;
 
     Ok(())
 }
@@ -1760,8 +1766,12 @@ mod tests {
 
     impl TestDir {
         fn new(name: &str) -> Self {
+            Self::new_at(&std::env::temp_dir(), name)
+        }
+
+        fn new_at(parent: &Path, name: &str) -> Self {
             let id = TEMP_ID.fetch_add(1, Ordering::Relaxed);
-            let path = std::env::temp_dir().join(format!(
+            let path = parent.join(format!(
                 "ottrin-platform-{name}-{}-{id}",
                 std::process::id()
             ));
@@ -1777,6 +1787,54 @@ mod tests {
     impl Drop for TestDir {
         fn drop(&mut self) {
             let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    fn cross_filesystem_test_dirs(name: &str) -> Result<Option<(TestDir, TestDir)>, String> {
+        use std::os::unix::fs::MetadataExt;
+
+        let temporary = std::env::temp_dir();
+        let temporary_device = std::fs::metadata(&temporary)
+            .map_err(|error| {
+                format!(
+                    "cannot inspect temporary directory {}: {error}",
+                    temporary.display()
+                )
+            })?
+            .dev();
+        let mut candidates = std::env::var_os("HOME")
+            .map(PathBuf::from)
+            .into_iter()
+            .collect::<Vec<_>>();
+        candidates.push(
+            std::env::current_dir()
+                .map_err(|error| format!("cannot inspect current directory: {error}"))?,
+        );
+        let mut inspection_errors = Vec::new();
+        for candidate in candidates {
+            match std::fs::metadata(&candidate) {
+                Ok(metadata) if !metadata.is_dir() => inspection_errors.push(format!(
+                    "source parent {} is not a directory",
+                    candidate.display()
+                )),
+                Ok(metadata) if metadata.dev() != temporary_device => {
+                    return Ok(Some((
+                        TestDir::new_at(&candidate, &format!("{name}-source")),
+                        TestDir::new_at(&temporary, &format!("{name}-destination")),
+                    )));
+                }
+                Ok(_) => {}
+                Err(error) => inspection_errors.push(format!(
+                    "cannot inspect source parent {}: {error}",
+                    candidate.display()
+                )),
+            }
+        }
+        if inspection_errors.is_empty() {
+            Ok(None)
+        } else {
+            Err(inspection_errors.join("; "))
         }
     }
 
@@ -1832,6 +1890,124 @@ mod tests {
 
         assert!(matches!(result, Err(PlatformError::InvalidDestination(_))));
         assert_eq!(std::fs::read_to_string(destination).unwrap(), "original");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_filesystem_copy_preserves_directory_mode_and_source_across_conflicts() {
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
+
+        let (source_root, destination_root) = match cross_filesystem_test_dirs("cross-device") {
+            Ok(Some(dirs)) => dirs,
+            Ok(None) => {
+                eprintln!(
+                    "skipping cross-filesystem Copy test: HOME and current directory share /tmp's device"
+                );
+                return;
+            }
+            Err(reason) => panic!("cannot prepare cross-filesystem Copy test: {reason}"),
+        };
+        assert_ne!(
+            std::fs::metadata(source_root.path()).unwrap().dev(),
+            std::fs::metadata(destination_root.path()).unwrap().dev(),
+            "fixture must use distinct filesystem devices"
+        );
+        let source = source_root.path().join("project");
+        let destination = destination_root.path().join("destination");
+        std::fs::create_dir(&source).unwrap();
+        std::fs::set_permissions(&source, std::fs::Permissions::from_mode(0o750)).unwrap();
+        std::fs::write(source.join("notes.txt"), "source contents").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        assert_copy_completed_with_retained_stage(DefaultPlatform.execute_command(
+            &FileCommand::Copy {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Skip,
+            },
+        ));
+        let copied = destination.join("project");
+        assert_eq!(
+            std::fs::read_to_string(copied.join("notes.txt")).unwrap(),
+            "source contents"
+        );
+        assert_eq!(
+            std::fs::metadata(&copied).unwrap().permissions().mode() & 0o777,
+            0o750
+        );
+        assert_eq!(
+            std::fs::read_to_string(source.join("notes.txt")).unwrap(),
+            "source contents"
+        );
+
+        std::fs::write(copied.join("notes.txt"), "destination contents").unwrap();
+        assert!(
+            DefaultPlatform
+                .execute_command(&FileCommand::Copy {
+                    sources: vec![source.clone()],
+                    destination: destination.clone(),
+                    conflict: ConflictAction::Skip,
+                })
+                .is_ok()
+        );
+        assert_eq!(
+            std::fs::read_to_string(copied.join("notes.txt")).unwrap(),
+            "destination contents"
+        );
+        assert_eq!(
+            std::fs::read_to_string(source.join("notes.txt")).unwrap(),
+            "source contents"
+        );
+
+        assert_copy_completed_with_retained_stage(DefaultPlatform.execute_command(
+            &FileCommand::Copy {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Rename,
+            },
+        ));
+        let renamed = destination.join("project (1)");
+        assert_eq!(
+            std::fs::read_to_string(renamed.join("notes.txt")).unwrap(),
+            "source contents"
+        );
+        assert_eq!(
+            std::fs::metadata(renamed).unwrap().permissions().mode() & 0o777,
+            0o750
+        );
+        assert_eq!(
+            std::fs::read_to_string(source.join("notes.txt")).unwrap(),
+            "source contents"
+        );
+
+        let transaction = match DefaultPlatform.execute_command(&FileCommand::Copy {
+            sources: vec![source.clone()],
+            destination: destination.clone(),
+            conflict: ConflictAction::Overwrite,
+        }) {
+            Err(PlatformError::CommittedCleanupPending { transaction, .. }) => {
+                PathBuf::from(transaction)
+            }
+            other => {
+                panic!("expected published Copy with retained overwrite transaction, got {other:?}")
+            }
+        };
+        assert_eq!(
+            std::fs::read_to_string(copied.join("notes.txt")).unwrap(),
+            "source contents"
+        );
+        assert_eq!(
+            std::fs::metadata(&copied).unwrap().permissions().mode() & 0o777,
+            0o750
+        );
+        assert_eq!(
+            std::fs::read_to_string(transaction.join("candidate/notes.txt")).unwrap(),
+            "destination contents"
+        );
+        assert_eq!(
+            std::fs::read_to_string(source.join("notes.txt")).unwrap(),
+            "source contents"
+        );
     }
 
     #[cfg(unix)]
