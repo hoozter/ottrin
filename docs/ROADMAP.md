@@ -67,7 +67,7 @@ V1 should not ship until:
 
 These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 
-- Text/code editing in Quick Inspector (architecture is documented in
+- Text/code editing in Quick Inspector (an unapproved proposed design is documented in
   [Quick Inspector Text Editing Design](QUICK_INSPECTOR_TEXT_EDITING_DESIGN.md);
   it is not implemented or a v1 gate).
 - Advanced Office navigation/editing or faithful Office layout beyond the bounded content preview required for v1.
