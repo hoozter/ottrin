@@ -85,6 +85,7 @@ use window_chrome::{
 };
 
 const STORAGE_LOCATION_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
+const RUBBER_BAND_DRAG_THRESHOLD: f32 = 4.0;
 
 fn schedule_storage_location_refresh(ctx: &Context) {
     ctx.request_repaint_after(STORAGE_LOCATION_REFRESH_INTERVAL);
@@ -94,15 +95,35 @@ fn grid_rubber_band_may_start(cells: &[(PathBuf, Rect)], pointer: egui::Pos2) ->
     !cells.iter().any(|(_, rect)| rect.contains(pointer))
 }
 
-fn grid_rubber_band_selection(
+fn rubber_band_crosses_threshold(origin: egui::Pos2, current: egui::Pos2) -> bool {
+    (current - origin).length_sq() >= RUBBER_BAND_DRAG_THRESHOLD.powi(2)
+}
+
+fn clipped_rubber_band_rect(
+    origin: egui::Pos2,
+    current: egui::Pos2,
+    viewport: Rect,
+) -> Option<Rect> {
+    let selection = Rect::from_two_pos(origin, current);
+    let clipped = selection.intersect(viewport);
+    (clipped.max.x >= clipped.min.x && clipped.max.y >= clipped.min.y).then_some(clipped)
+}
+
+fn rects_overlap_or_touch(a: Rect, b: Rect) -> bool {
+    a.min.x <= b.max.x && a.max.x >= b.min.x && a.min.y <= b.max.y && a.max.y >= b.min.y
+}
+
+fn rubber_band_selection_in_viewport(
     cells: &[(PathBuf, Rect)],
     selection_rect: Rect,
+    viewport: Rect,
     existing: &HashSet<PathBuf>,
     modifiers: egui::Modifiers,
 ) -> HashSet<PathBuf> {
     let intersecting = cells
         .iter()
-        .filter(|(_, rect)| rect.intersects(selection_rect))
+        .filter(|(_, rect)| rects_overlap_or_touch(*rect, viewport))
+        .filter(|(_, rect)| rects_overlap_or_touch(*rect, selection_rect))
         .map(|(path, _)| path.clone())
         .collect::<HashSet<_>>();
 
@@ -552,7 +573,7 @@ struct TabUiState {
     // Path-backed multi-selection for the current folder.
     selected_paths: HashSet<PathBuf>,
     selection_anchor: Option<PathBuf>,
-    grid_rubber_band: Option<GridRubberBand>,
+    rubber_band: Option<RubberBandGesture>,
     // Path-backed focus for Column view; more stable than fixed left/middle/right.
     miller_focus_dir: Option<PathBuf>,
     // Remember last selected child per directory, so navigating back/up can
@@ -581,11 +602,21 @@ struct TabUiState {
 }
 
 #[derive(Debug, Clone)]
-struct GridRubberBand {
+struct RubberBandGesture {
     origin: egui::Pos2,
     current: egui::Pos2,
     baseline: HashSet<PathBuf>,
     modifiers: egui::Modifiers,
+    listing_request_id: u64,
+    transient_paths: Option<HashSet<PathBuf>>,
+}
+
+fn rubber_band_is_current(
+    gesture: &RubberBandGesture,
+    listing_request_id: u64,
+    cancelled: bool,
+) -> bool {
+    !cancelled && gesture.listing_request_id == listing_request_id
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -4351,6 +4382,7 @@ impl OttrinApp {
     fn refresh_tab(&mut self, tab_id: u64, dir: PathBuf) {
         // Reset selection and scroll on navigation
         if let Some(ui_state) = self.tab_ui.get_mut(&tab_id) {
+            ui_state.rubber_band = None;
             ui_state.main_sel = None;
             ui_state.left_sel = None;
             ui_state.selected_paths.clear();
@@ -12406,6 +12438,9 @@ impl OttrinApp {
         if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
             tab.view_mode = view_mode;
         }
+        if previous != view_mode {
+            self.tab_ui.entry(tab_id).or_default().rubber_band = None;
+        }
         if matches!(previous, ViewMode::Miller)
             && !matches!(view_mode, ViewMode::Miller)
             && matches!(self.sidebar, SidebarSection::Info)
@@ -13928,7 +13963,10 @@ impl OttrinApp {
                 s.main.loading,
                 s.main.error.clone(),
                 s.main_sel,
-                s.selected_paths.clone(),
+                s.rubber_band
+                    .as_ref()
+                    .and_then(|rubber_band| rubber_band.transient_paths.clone())
+                    .unwrap_or_else(|| s.selected_paths.clone()),
             )
         };
         let thumbnails_enabled = self.thumbnails_enabled_for(ViewMode::List, &current_dir);
@@ -14130,6 +14168,9 @@ impl OttrinApp {
         }
 
         // Rows
+        let mut list_cells = Vec::with_capacity(entries.len());
+        let mut list_content_rect = Rect::NOTHING;
+        let mut list_viewport_rect = Rect::NOTHING;
         ScrollArea::vertical()
             .id_salt(("list_view", tab_id))
             .show(ui, |ui| {
@@ -14156,6 +14197,7 @@ impl OttrinApp {
                     }
 
                     let response = ui.allocate_rect(row_rect, Sense::click());
+                    list_cells.push((entry.path.clone(), row_rect));
                     response.widget_info(|| {
                         WidgetInfo::selected(
                             WidgetType::Button,
@@ -14317,7 +14359,107 @@ impl OttrinApp {
                         x += w;
                     }
                 }
+                list_content_rect = ui.min_rect();
+                list_viewport_rect = ui.clip_rect();
             });
+        let pointer = ui.ctx().input(|input| {
+            (
+                input.pointer.interact_pos(),
+                input.pointer.primary_pressed(),
+                input.pointer.primary_down(),
+                input.modifiers,
+                input.key_pressed(egui::Key::Escape),
+                !input.focused,
+            )
+        });
+        let mut paint_rubber_band = None;
+        if pointer.1
+            && pointer.0.is_some_and(|pos| list_content_rect.contains(pos))
+            && pointer
+                .0
+                .is_some_and(|pos| list_viewport_rect.contains(pos))
+            && pointer
+                .0
+                .is_some_and(|pos| grid_rubber_band_may_start(&list_cells, pos))
+        {
+            let origin = pointer.0.expect("pointer position checked above");
+            let baseline = self
+                .tab_ui
+                .entry(tab_id)
+                .or_default()
+                .selected_paths
+                .clone();
+            self.tab_ui.entry(tab_id).or_default().rubber_band = Some(RubberBandGesture {
+                origin,
+                current: origin,
+                baseline,
+                modifiers: pointer.3,
+                listing_request_id: self.tab_ui.entry(tab_id).or_default().main.request_id,
+                transient_paths: None,
+            });
+        }
+        if let Some(mut rubber_band) = self.tab_ui.entry(tab_id).or_default().rubber_band.take() {
+            let listing_request_id = self.tab_ui.entry(tab_id).or_default().main.request_id;
+            if !rubber_band_is_current(&rubber_band, listing_request_id, pointer.4 || pointer.5) {
+                return;
+            }
+            if let Some(pointer_pos) = pointer.0 {
+                rubber_band.current = pointer_pos;
+            }
+            if rubber_band_crosses_threshold(rubber_band.origin, rubber_band.current)
+                && let Some(selection_rect) = clipped_rubber_band_rect(
+                    rubber_band.origin,
+                    rubber_band.current,
+                    list_viewport_rect,
+                )
+            {
+                rubber_band.transient_paths = Some(rubber_band_selection_in_viewport(
+                    &list_cells,
+                    selection_rect,
+                    list_viewport_rect,
+                    &rubber_band.baseline,
+                    rubber_band.modifiers,
+                ));
+                paint_rubber_band = Some(selection_rect);
+            }
+            if pointer.2 {
+                ui.ctx().request_repaint();
+                self.tab_ui.entry(tab_id).or_default().rubber_band = Some(rubber_band);
+            } else if let Some(selected_paths) = rubber_band.transient_paths {
+                let selected_idx = entries
+                    .iter()
+                    .rposition(|entry| selected_paths.contains(&entry.path));
+                let selected_path =
+                    selected_idx.and_then(|idx| entries.get(idx).map(|entry| entry.path.clone()));
+                let ui_state = self.tab_ui.entry(tab_id).or_default();
+                ui_state.selected_paths = selected_paths;
+                ui_state.main_sel = selected_idx;
+                if !(rubber_band.modifiers.shift
+                    || rubber_band.modifiers.command
+                    || rubber_band.modifiers.ctrl)
+                {
+                    ui_state.selection_anchor = selected_path.clone();
+                }
+                if let Some(selected_path) = selected_path {
+                    ui_state
+                        .selection_memory
+                        .insert(ui_state.main.dir.clone(), selected_path);
+                }
+            }
+        }
+        if let Some(selection_rect) = paint_rubber_band {
+            ui.painter_at(list_viewport_rect).rect_filled(
+                selection_rect,
+                3.0,
+                c.accent.linear_multiply(0.18),
+            );
+            ui.painter_at(list_viewport_rect).rect_stroke(
+                selection_rect,
+                3.0,
+                Stroke::new(1.0, c.accent),
+                egui::StrokeKind::Middle,
+            );
+        }
         if let Some(cmd) = pending_op {
             self.run_file_op(cmd, Some(tab_id));
         }
@@ -14358,7 +14500,10 @@ impl OttrinApp {
                 s.main.loading,
                 s.main.error.clone(),
                 s.main_sel,
-                s.selected_paths.clone(),
+                s.rubber_band
+                    .as_ref()
+                    .and_then(|rubber_band| rubber_band.transient_paths.clone())
+                    .unwrap_or_else(|| s.selected_paths.clone()),
             )
         };
         let thumbnails_enabled = self.thumbnails_enabled_for(ViewMode::Grid, &current_dir);
@@ -14573,11 +14718,16 @@ impl OttrinApp {
                 input.pointer.primary_pressed(),
                 input.pointer.primary_down(),
                 input.modifiers,
+                input.key_pressed(egui::Key::Escape),
+                !input.focused,
             )
         });
         let mut paint_rubber_band = None;
         if pointer.1
             && pointer.0.is_some_and(|pos| grid_content_rect.contains(pos))
+            && pointer
+                .0
+                .is_some_and(|pos| grid_viewport_rect.contains(pos))
             && pointer
                 .0
                 .is_some_and(|pos| grid_rubber_band_may_start(&grid_cells, pos))
@@ -14589,53 +14739,62 @@ impl OttrinApp {
                 .or_default()
                 .selected_paths
                 .clone();
-            self.tab_ui.entry(tab_id).or_default().grid_rubber_band = Some(GridRubberBand {
+            self.tab_ui.entry(tab_id).or_default().rubber_band = Some(RubberBandGesture {
                 origin,
                 current: origin,
                 baseline,
                 modifiers: pointer.3,
+                listing_request_id: self.tab_ui.entry(tab_id).or_default().main.request_id,
+                transient_paths: None,
             });
         }
-        if let Some(mut rubber_band) = self
-            .tab_ui
-            .entry(tab_id)
-            .or_default()
-            .grid_rubber_band
-            .take()
-        {
+        if let Some(mut rubber_band) = self.tab_ui.entry(tab_id).or_default().rubber_band.take() {
+            let listing_request_id = self.tab_ui.entry(tab_id).or_default().main.request_id;
+            if !rubber_band_is_current(&rubber_band, listing_request_id, pointer.4 || pointer.5) {
+                return;
+            }
             if let Some(pointer_pos) = pointer.0 {
                 rubber_band.current = pointer_pos;
             }
-            let selection_rect = Rect::from_two_pos(rubber_band.origin, rubber_band.current);
-            let selected_paths = grid_rubber_band_selection(
-                &grid_cells,
-                selection_rect,
-                &rubber_band.baseline,
-                rubber_band.modifiers,
-            );
-            let selected_idx = entries
-                .iter()
-                .rposition(|entry| selected_paths.contains(&entry.path));
-            let selected_path =
-                selected_idx.and_then(|idx| entries.get(idx).map(|entry| entry.path.clone()));
-            let ui_state = self.tab_ui.entry(tab_id).or_default();
-            ui_state.selected_paths = selected_paths;
-            ui_state.main_sel = selected_idx;
-            if !(rubber_band.modifiers.shift
-                || rubber_band.modifiers.command
-                || rubber_band.modifiers.ctrl)
+            if rubber_band_crosses_threshold(rubber_band.origin, rubber_band.current)
+                && let Some(selection_rect) = clipped_rubber_band_rect(
+                    rubber_band.origin,
+                    rubber_band.current,
+                    grid_viewport_rect,
+                )
             {
-                ui_state.selection_anchor = selected_path.clone();
+                rubber_band.transient_paths = Some(rubber_band_selection_in_viewport(
+                    &grid_cells,
+                    selection_rect,
+                    grid_viewport_rect,
+                    &rubber_band.baseline,
+                    rubber_band.modifiers,
+                ));
+                paint_rubber_band = Some(selection_rect);
             }
-            if let Some(selected_path) = selected_path {
-                ui_state
-                    .selection_memory
-                    .insert(ui_state.main.dir.clone(), selected_path);
-            }
-            paint_rubber_band = Some(selection_rect);
             if pointer.2 {
                 ui.ctx().request_repaint();
-                self.tab_ui.entry(tab_id).or_default().grid_rubber_band = Some(rubber_band);
+                self.tab_ui.entry(tab_id).or_default().rubber_band = Some(rubber_band);
+            } else if let Some(selected_paths) = rubber_band.transient_paths {
+                let selected_idx = entries
+                    .iter()
+                    .rposition(|entry| selected_paths.contains(&entry.path));
+                let selected_path =
+                    selected_idx.and_then(|idx| entries.get(idx).map(|entry| entry.path.clone()));
+                let ui_state = self.tab_ui.entry(tab_id).or_default();
+                ui_state.selected_paths = selected_paths;
+                ui_state.main_sel = selected_idx;
+                if !(rubber_band.modifiers.shift
+                    || rubber_band.modifiers.command
+                    || rubber_band.modifiers.ctrl)
+                {
+                    ui_state.selection_anchor = selected_path.clone();
+                }
+                if let Some(selected_path) = selected_path {
+                    ui_state
+                        .selection_memory
+                        .insert(ui_state.main.dir.clone(), selected_path);
+                }
             }
         }
         if let Some(selection_rect) = paint_rubber_band {
@@ -20433,9 +20592,10 @@ mod tests {
             ),
         ];
 
-        let selected = grid_rubber_band_selection(
+        let selected = rubber_band_selection_in_viewport(
             &cells,
             Rect::from_min_max(egui::pos2(10.0, -5.0), egui::pos2(55.0, 25.0)),
+            Rect::from_min_max(egui::pos2(-100.0, -100.0), egui::pos2(100.0, 100.0)),
             &HashSet::new(),
             egui::Modifiers::NONE,
         );
@@ -20465,9 +20625,10 @@ mod tests {
         let existing = HashSet::from([alpha.clone(), charlie.clone()]);
         let band = Rect::from_min_max(egui::pos2(10.0, -5.0), egui::pos2(55.0, 25.0));
 
-        let added = grid_rubber_band_selection(
+        let added = rubber_band_selection_in_viewport(
             &cells,
             band,
+            Rect::from_min_max(egui::pos2(-100.0, -100.0), egui::pos2(100.0, 100.0)),
             &existing,
             egui::Modifiers {
                 shift: true,
@@ -20479,9 +20640,10 @@ mod tests {
             HashSet::from([alpha.clone(), bravo.clone(), charlie.clone()])
         );
 
-        let toggled = grid_rubber_band_selection(
+        let toggled = rubber_band_selection_in_viewport(
             &cells,
             band,
+            Rect::from_min_max(egui::pos2(-100.0, -100.0), egui::pos2(100.0, 100.0)),
             &existing,
             egui::Modifiers {
                 ctrl: true,
@@ -20500,6 +20662,70 @@ mod tests {
 
         assert!(!grid_rubber_band_may_start(&cells, egui::pos2(15.0, 15.0)));
         assert!(grid_rubber_band_may_start(&cells, egui::pos2(35.0, 15.0)));
+    }
+
+    #[test]
+    fn rubber_band_waits_for_a_real_drag_and_clips_to_its_viewport() {
+        let viewport = Rect::from_min_size(egui::pos2(10.0, 10.0), Vec2::splat(100.0));
+
+        assert!(!rubber_band_crosses_threshold(
+            egui::pos2(20.0, 20.0),
+            egui::pos2(23.0, 22.0)
+        ));
+        assert!(rubber_band_crosses_threshold(
+            egui::pos2(20.0, 20.0),
+            egui::pos2(25.0, 20.0)
+        ));
+        assert_eq!(
+            clipped_rubber_band_rect(egui::pos2(0.0, 0.0), egui::pos2(30.0, 30.0), viewport),
+            Some(Rect::from_min_max(
+                egui::pos2(10.0, 10.0),
+                egui::pos2(30.0, 30.0)
+            ))
+        );
+    }
+
+    #[test]
+    fn rubber_band_uses_only_visible_cells_and_includes_touching_edges() {
+        let visible = PathBuf::from("/tmp/visible");
+        let offscreen = PathBuf::from("/tmp/offscreen");
+        let cells = vec![
+            (
+                visible.clone(),
+                Rect::from_min_size(egui::pos2(20.0, 20.0), Vec2::splat(20.0)),
+            ),
+            (
+                offscreen,
+                Rect::from_min_size(egui::pos2(200.0, 20.0), Vec2::splat(20.0)),
+            ),
+        ];
+        let viewport = Rect::from_min_size(egui::pos2(10.0, 10.0), Vec2::splat(80.0));
+
+        let selected = rubber_band_selection_in_viewport(
+            &cells,
+            Rect::from_min_max(egui::pos2(10.0, 20.0), egui::pos2(20.0, 40.0)),
+            viewport,
+            &HashSet::new(),
+            egui::Modifiers::NONE,
+        );
+
+        assert_eq!(selected, HashSet::from([visible]));
+    }
+
+    #[test]
+    fn rubber_band_cancels_for_escape_or_a_new_listing_generation() {
+        let gesture = RubberBandGesture {
+            origin: egui::pos2(0.0, 0.0),
+            current: egui::pos2(0.0, 0.0),
+            baseline: HashSet::new(),
+            modifiers: egui::Modifiers::NONE,
+            listing_request_id: 41,
+            transient_paths: None,
+        };
+
+        assert!(rubber_band_is_current(&gesture, 41, false));
+        assert!(!rubber_band_is_current(&gesture, 41, true));
+        assert!(!rubber_band_is_current(&gesture, 42, false));
     }
 
     #[test]
