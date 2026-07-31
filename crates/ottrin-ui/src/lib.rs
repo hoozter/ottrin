@@ -18,8 +18,8 @@ use ottrin_core::{
     platform_case_mode_current,
 };
 use ottrin_platform::{
-    DefaultPlatform, PlatformError, PlatformOps, PrivilegedAvailability, StorageLocation,
-    StorageLocationKind, TrashItem, discover_storage_locations,
+    DefaultPlatform, OpenWithApplication, PlatformError, PlatformOps, PrivilegedAvailability,
+    StorageLocation, StorageLocationKind, TrashItem, discover_storage_locations,
 };
 #[cfg(target_os = "linux")]
 use ottrin_platform::{discover_retained_move_transactions, move_recovery::JournalPhase};
@@ -1174,6 +1174,7 @@ pub struct OttrinApp {
     pending_rename: Option<PendingRename>,
     pending_delete: Option<PendingDelete>,
     pending_empty_trash: bool,
+    open_with_dialog: Option<OpenWithDialog>,
     pending_privileged_retry: Option<PendingPrivilegedRetry>,
     privileged_availability: PrivilegedAvailability,
     privileged_status: Option<PrivilegedUiStatus>,
@@ -1224,6 +1225,11 @@ pub struct OttrinApp {
     file_pane_rect: Option<Rect>,
     smart_panel_rect: Option<Rect>,
     locations_rail_expanded: bool,
+}
+
+struct OpenWithDialog {
+    target: PathBuf,
+    choices: Vec<OpenWithApplication>,
 }
 
 impl Default for OttrinApp {
@@ -1411,6 +1417,7 @@ impl OttrinApp {
             pending_rename: None,
             pending_delete: None,
             pending_empty_trash: false,
+            open_with_dialog: None,
             pending_privileged_retry: None,
             privileged_availability: PrivilegedAvailability::Unsupported(
                 "Status not initialized".to_string(),
@@ -12264,6 +12271,27 @@ impl OttrinApp {
     }
 
     fn open_with_application_dialog(&mut self, path: &Path) {
+        #[cfg(target_os = "linux")]
+        match ottrin_platform::discover_open_with_applications(path) {
+            Ok(choices) if !choices.is_empty() => {
+                self.open_with_dialog = Some(OpenWithDialog {
+                    target: path.to_path_buf(),
+                    choices,
+                });
+                return;
+            }
+            Ok(_) => {}
+            Err(err) => self.set_status_message(
+                format!("Open With discovery unavailable: {err}; choose an application manually"),
+                false,
+                5,
+            ),
+        }
+        self.open_with_manual_application(path);
+    }
+
+    /// Keeps the manual picker as an explicit user-selected executable-path fallback.
+    fn open_with_manual_application(&mut self, path: &Path) {
         let Some(application) = rfd::FileDialog::new().set_title("Open with").pick_file() else {
             return;
         };
@@ -12274,6 +12302,54 @@ impl OttrinApp {
                 3,
             ),
             Err(err) => self.set_status_message(format!("Open with failed: {err}"), false, 5),
+        }
+    }
+
+    fn render_open_with_dialog(&mut self, ctx: &Context) {
+        let Some(dialog) = self.open_with_dialog.as_ref() else {
+            return;
+        };
+        let target = dialog.target.clone();
+        let choices = dialog.choices.clone();
+        let mut close = false;
+        egui::Window::new("Open With")
+            .collapsible(false)
+            .resizable(false)
+            .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
+            .show(ctx, |ui| {
+                ui.label("Choose an application for this file:");
+                ui.add_space(6.0);
+                for choice in &choices {
+                    if ui.button(choice.name()).clicked() {
+                        match self
+                            .platform
+                            .open_with_discovered_application(&target, choice)
+                        {
+                            Ok(()) => self.set_status_message(
+                                format!("Opened with {}", choice.name()),
+                                true,
+                                3,
+                            ),
+                            Err(err) => self.set_status_message(
+                                format!("Open with failed: {err}"),
+                                false,
+                                5,
+                            ),
+                        }
+                        close = true;
+                    }
+                }
+                ui.separator();
+                if ui.button("Choose application…").clicked() {
+                    close = true;
+                    self.open_with_manual_application(&target);
+                }
+                if ui.button("Cancel").clicked() {
+                    close = true;
+                }
+            });
+        if close {
+            self.open_with_dialog = None;
         }
     }
 
@@ -17618,6 +17694,7 @@ impl eframe::App for OttrinApp {
             self.render_delete_confirmation(ctx);
         }
         self.render_empty_trash_confirmation(ctx);
+        self.render_open_with_dialog(ctx);
         self.render_about_popup(ctx);
         self.render_settings_modal(ctx);
         self.render_graphics_compatibility_notice(ctx);

@@ -450,6 +450,42 @@ pub enum PrivilegedAvailability {
     Unsupported(String),
 }
 
+/// A display-safe application choice discovered for one exact target. The
+/// target binding is lexical `PathBuf` equality, not inode or immutable-file
+/// identity; desktop associations and the target can change within the
+/// same-user desktop trust model. The desktop-file path remains opaque, so
+/// callers can show the name but cannot turn it into an arbitrary command.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OpenWithApplication {
+    name: String,
+    #[cfg(target_os = "linux")]
+    native_id: String,
+    #[cfg(target_os = "linux")]
+    target: PathBuf,
+}
+
+impl OpenWithApplication {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+/// Lists native Open With choices.  Platforms without safe native discovery
+/// deliberately return no choices so the UI retains its manual picker.
+pub fn discover_open_with_applications(
+    target: &Path,
+) -> Result<Vec<OpenWithApplication>, PlatformError> {
+    #[cfg(target_os = "linux")]
+    {
+        linux_open_with::discover(target)
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        let _ = target;
+        Ok(Vec::new())
+    }
+}
+
 pub trait PlatformOps: Send + Sync {
     fn delete_path(&self, target: &Path, mode: DeleteMode) -> Result<(), PlatformError>;
     fn reveal_in_system(&self, target: &Path) -> Result<(), PlatformError>;
@@ -709,6 +745,146 @@ impl PlatformOps for DefaultPlatform {
                 "Integrated privilege management is not implemented on this platform.".to_string(),
             )
         }
+    }
+}
+
+impl DefaultPlatform {
+    /// Launches only a descriptor freshly discoverable for this exact target.
+    /// This intentionally delegates desktop-entry interpretation to GIO rather
+    /// than interpreting an `Exec` field. A successful return means GIO accepted
+    /// the launch request, not that the application fully opened.
+    pub fn open_with_discovered_application(
+        &self,
+        target: &Path,
+        application: &OpenWithApplication,
+    ) -> Result<(), PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            if application.target != target {
+                return Err(PlatformError::InvalidSource(
+                    "Open With choice belongs to another target".into(),
+                ));
+            }
+            linux_open_with::launch_selected(target, &application.native_id)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = (target, application);
+            Err(PlatformError::NotAvailable("native Open With discovery"))
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+mod linux_open_with {
+    use super::*;
+    use gio::prelude::*;
+    use std::collections::BTreeMap;
+
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub(super) struct NativeApplication {
+        id: String,
+        name: String,
+    }
+
+    impl NativeApplication {
+        #[cfg(test)]
+        pub(super) fn new(id: impl Into<String>, name: impl Into<String>) -> Self {
+            Self {
+                id: id.into(),
+                name: name.into(),
+            }
+        }
+    }
+
+    fn content_type_for(target: &Path) -> Result<String, PlatformError> {
+        let file = gio::File::for_path(target);
+        let info = file
+            .query_info(
+                "standard::content-type",
+                gio::FileQueryInfoFlags::NONE,
+                gio::Cancellable::NONE,
+            )
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        info.content_type()
+            .map(|value| value.to_string())
+            .ok_or_else(|| PlatformError::InvalidSource(target.display().to_string()))
+    }
+
+    fn native_handlers(content_type: &str) -> Vec<(NativeApplication, gio::AppInfo)> {
+        // GIO owns desktop-entry interpretation. Keep this one filtered
+        // collection shared by discovery and the launch requery.
+        gio::AppInfo::recommended_for_type(content_type)
+            .into_iter()
+            .chain(gio::AppInfo::all_for_type(content_type))
+            .filter(|application| application.should_show())
+            .filter_map(|application| {
+                let id = application.id()?.to_string();
+                let name = application.display_name().to_string();
+                (!id.is_empty() && !name.is_empty())
+                    .then_some((NativeApplication { id, name }, application))
+            })
+            .collect()
+    }
+
+    pub(super) fn choices_from_native(
+        target: &Path,
+        applications: Vec<NativeApplication>,
+    ) -> Vec<OpenWithApplication> {
+        let mut unique = BTreeMap::new();
+        for application in applications {
+            if !application.id.is_empty() && !application.name.is_empty() {
+                unique.entry(application.id).or_insert(application.name);
+            }
+        }
+        let mut choices = unique
+            .into_iter()
+            .map(|(native_id, name)| OpenWithApplication {
+                name,
+                native_id,
+                target: target.to_path_buf(),
+            })
+            .collect::<Vec<_>>();
+        choices.sort_by(|left, right| {
+            left.name
+                .cmp(&right.name)
+                .then_with(|| left.native_id.cmp(&right.native_id))
+        });
+        choices
+    }
+
+    pub(super) fn discover(target: &Path) -> Result<Vec<OpenWithApplication>, PlatformError> {
+        let content_type = content_type_for(target)?;
+        let applications = native_handlers(&content_type)
+            .into_iter()
+            .map(|(descriptor, _)| descriptor)
+            .collect();
+        Ok(choices_from_native(target, applications))
+    }
+
+    pub(super) fn select_and_launch<T>(
+        applications: Vec<(NativeApplication, T)>,
+        selected_id: &str,
+        launch: impl FnOnce(T) -> Result<(), PlatformError>,
+    ) -> Result<(), PlatformError> {
+        let (_, application) = applications
+            .into_iter()
+            .find(|(descriptor, _)| descriptor.id == selected_id)
+            .ok_or_else(|| {
+                PlatformError::InvalidSource(
+                    "Open With choice is no longer discovered for this target".into(),
+                )
+            })?;
+        launch(application)
+    }
+
+    pub(super) fn launch_selected(target: &Path, selected_id: &str) -> Result<(), PlatformError> {
+        let content_type = content_type_for(target)?;
+        select_and_launch(native_handlers(&content_type), selected_id, |application| {
+            application
+                .launch(&[gio::File::for_path(target)], gio::AppLaunchContext::NONE)
+                .map_err(|error| PlatformError::Io(error.to_string()))
+        })
     }
 }
 
@@ -1646,6 +1822,157 @@ fn read_properties(path: &Path) -> Result<FileProperties, PlatformError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn open_with_native_choices_bind_target_deduplicate_and_sort() {
+        let target = PathBuf::from("/tmp/target.txt");
+        let choices = linux_open_with::choices_from_native(
+            &target,
+            vec![
+                linux_open_with::NativeApplication::new("z.desktop", "Zed"),
+                linux_open_with::NativeApplication::new("a.desktop", "Alpha"),
+                linux_open_with::NativeApplication::new("z.desktop", "Other Zed"),
+                linux_open_with::NativeApplication::new("", "Missing ID"),
+            ],
+        );
+        assert_eq!(
+            choices
+                .iter()
+                .map(OpenWithApplication::name)
+                .collect::<Vec<_>>(),
+            vec!["Alpha", "Zed"]
+        );
+        assert_eq!(choices[0].target, target);
+        assert_eq!(choices[0].native_id, "a.desktop");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn open_with_native_selection_rejects_stale_ids_and_launches_the_requeried_object() {
+        let launched = std::cell::Cell::new(None);
+        linux_open_with::select_and_launch(
+            vec![
+                (
+                    linux_open_with::NativeApplication::new("old.desktop", "Old"),
+                    7_u8,
+                ),
+                (
+                    linux_open_with::NativeApplication::new("new.desktop", "New"),
+                    9_u8,
+                ),
+            ],
+            "new.desktop",
+            |native_object| {
+                launched.set(Some(native_object));
+                Ok(())
+            },
+        )
+        .unwrap();
+        assert_eq!(launched.get(), Some(9));
+        let stale = linux_open_with::select_and_launch(
+            vec![(
+                linux_open_with::NativeApplication::new("fresh.desktop", "Fresh"),
+                (),
+            )],
+            "forged.desktop",
+            |_| Ok(()),
+        );
+        assert!(matches!(stale, Err(PlatformError::InvalidSource(_))));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn open_with_hides_nodisplay_handlers_in_an_isolated_gio_environment() {
+        use gio::prelude::*;
+        use std::time::UNIX_EPOCH;
+
+        const ROOT_ENV: &str = "OTTRIN_OPEN_WITH_ISOLATED_GIO_ROOT";
+
+        if let Some(root) = std::env::var_os(ROOT_ENV) {
+            let root = PathBuf::from(root);
+            let applications = root.join("data/applications");
+            std::fs::create_dir_all(&applications).expect("create isolated applications directory");
+            std::fs::create_dir_all(root.join("config")).expect("create isolated config directory");
+            std::fs::write(root.join("sample.txt"), b"sample").expect("create sample target");
+            std::fs::write(
+                applications.join("visible.desktop"),
+                "[Desktop Entry]\nType=Application\nName=Visible text handler\nExec=/bin/true %f\nMimeType=text/plain;\n",
+            )
+            .expect("write visible handler");
+            std::fs::write(
+                applications.join("hidden.desktop"),
+                "[Desktop Entry]\nType=Application\nName=Hidden text handler\nNoDisplay=true\nExec=/bin/true %f\nMimeType=text/plain;\n",
+            )
+            .expect("write hidden handler");
+            std::fs::write(
+                applications.join("mimeinfo.cache"),
+                "[MIME Cache]\ntext/plain=visible.desktop;hidden.desktop;\n",
+            )
+            .expect("write MIME cache");
+            std::fs::write(
+                root.join("config/mimeapps.list"),
+                "[Added Associations]\ntext/plain=visible.desktop;hidden.desktop;\n",
+            )
+            .expect("write MIME associations");
+
+            let update = std::process::Command::new("update-desktop-database")
+                .arg(&applications)
+                .status()
+                .expect("run update-desktop-database");
+            assert!(update.success(), "refresh isolated desktop database");
+
+            let gio_ids = gio::AppInfo::all_for_type("text/plain")
+                .into_iter()
+                .filter_map(|application| application.id().map(|id| id.to_string()))
+                .collect::<Vec<_>>();
+            assert!(
+                gio_ids.iter().any(|id| id == "hidden.desktop"),
+                "GIO must expose the hidden fixture so the wrapper proves its filtering"
+            );
+            assert!(
+                gio_ids.iter().any(|id| id == "visible.desktop"),
+                "GIO must expose the visible fixture"
+            );
+
+            let choices = linux_open_with::discover(&root.join("sample.txt"))
+                .expect("discover isolated text handlers");
+            let choice_ids = choices
+                .iter()
+                .map(|choice| choice.native_id.as_str())
+                .collect::<Vec<_>>();
+            assert!(choice_ids.contains(&"visible.desktop"));
+            assert!(
+                !choice_ids.contains(&"hidden.desktop"),
+                "NoDisplay handlers must never be offered by Open With"
+            );
+            return;
+        }
+
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock after epoch")
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-open-with-gio-{}-{nonce}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&root).expect("create isolated GIO root");
+        let status = std::process::Command::new(std::env::current_exe().expect("test executable"))
+            .arg("--exact")
+            .arg("tests::open_with_hides_nodisplay_handlers_in_an_isolated_gio_environment")
+            .arg("--nocapture")
+            .env(ROOT_ENV, &root)
+            .env("XDG_DATA_HOME", root.join("data"))
+            .env("XDG_DATA_DIRS", root.join("data"))
+            .env("XDG_CONFIG_HOME", root.join("config"))
+            .env("HOME", root.join("home"))
+            .status()
+            .expect("run isolated GIO child test");
+        let cleanup = std::fs::remove_dir_all(&root);
+        assert!(cleanup.is_ok(), "clean isolated GIO state: {cleanup:?}");
+        assert!(status.success(), "isolated GIO child test failed");
+    }
 
     #[cfg(target_os = "linux")]
     #[test]
