@@ -147,5 +147,5 @@ ottrin-index --remove-schedule
 - Tab drag-and-drop is not implemented.
 - Operation Activity records session file operations and labels whether entries are restorable or not undoable. Full undo execution is not implemented.
 - Context-menu actions, Open With application launching, thumbnail view options, and status messages still need manual QA.
-- True FTS5 content indexing is not implemented; content search currently uses ripgrep-backed queries.
+- Positive indexed FTS5 content search is supported, with ripgrep used as a supplemental fallback for content that is not indexed. Negated content-search expressions are currently rejected: correct complement evaluation requires an atomic metadata/content generation snapshot and streaming bounded evaluation. Filename, path, and metadata negation remains available when content search is off.
 - Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing are not complete. Windows artifacts are unsigned, so SmartScreen reputation warnings remain a release blocker.

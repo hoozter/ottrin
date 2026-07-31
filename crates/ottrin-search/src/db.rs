@@ -56,6 +56,9 @@ pub(crate) struct IndexedContentHit {
     pub(crate) path: PathBuf,
     pub(crate) snippet: String,
     pub(crate) content: String,
+    /// FTS5 ranks stronger matches with more-negative values. Convert that
+    /// ordering into a bounded positive relevance contribution for the UI.
+    pub(crate) relevance: i64,
 }
 
 #[allow(dead_code)]
@@ -302,7 +305,7 @@ pub(crate) fn query_indexed_content_page(
         rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
     )?;
     let mut stmt = conn.prepare(
-        "SELECT f.path, snippet(search_generation_content, 2, '', '', '…', 20), f.content
+        "SELECT f.path, snippet(search_generation_content, 2, '', '', '…', 20), f.content, rank
          FROM search_generation_content f
          JOIN search_store_state s ON s.singleton = 1 AND s.active_generation_id = f.generation_id
          JOIN search_generations g ON g.id = f.generation_id
@@ -319,10 +322,25 @@ pub(crate) fn query_indexed_content_page(
                 path: decode_path(row.get(0)?)?,
                 snippet: content_snippet_line(&raw_snippet, &fts_query_terms(fts_query)),
                 content: row.get(2)?,
+                relevance: fts_rank_relevance(row.get(3)?),
             })
         },
     )?;
     rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+}
+
+fn fts_rank_relevance(rank: f64) -> i64 {
+    const SCALE: f64 = 1_000_000.0;
+    if rank.is_nan() || rank >= 0.0 {
+        0
+    } else {
+        let scaled = (-rank) * SCALE;
+        if scaled >= i64::MAX as f64 {
+            i64::MAX
+        } else {
+            scaled as i64
+        }
+    }
 }
 
 fn fts_query_terms(fts_query: &str) -> Vec<String> {
@@ -589,6 +607,15 @@ mod tests {
         assert!(sql.contains("fts5"));
         let _ = std::fs::remove_file(db_path);
     }
+
+    #[test]
+    fn fts_rank_relevance_is_monotonic_and_saturating() {
+        assert!(fts_rank_relevance(-0.01) > fts_rank_relevance(-0.001));
+        assert_eq!(fts_rank_relevance(0.0), 0);
+        assert_eq!(fts_rank_relevance(f64::NAN), 0);
+        assert_eq!(fts_rank_relevance(f64::NEG_INFINITY), i64::MAX);
+        assert_eq!(fts_rank_relevance(-f64::MAX), i64::MAX);
+    }
 }
 
 #[cfg(test)]
@@ -689,14 +716,13 @@ mod generation_tests {
                 IndexMutation::ReplaceAll(vec![owned(&root, "old.txt", 22)]),
             )
             .expect("commit old generation");
-        assert_eq!(
-            query_indexed_content_page(&db_path, &scan_plan, "retired", 10, 0).expect("query old"),
-            vec![IndexedContentHit {
-                path: old.clone(),
-                snippet: "retired unique content".to_string(),
-                content: "retired unique content".to_string(),
-            }]
-        );
+        let old_hits =
+            query_indexed_content_page(&db_path, &scan_plan, "retired", 10, 0).expect("query old");
+        assert_eq!(old_hits.len(), 1);
+        assert_eq!(old_hits[0].path, old);
+        assert_eq!(old_hits[0].snippet, "retired unique content");
+        assert_eq!(old_hits[0].content, "retired unique content");
+        assert!(old_hits[0].relevance > 0);
         store
             .commit(
                 &scan_plan,
@@ -708,14 +734,13 @@ mod generation_tests {
                 .expect("query stale")
                 .is_empty()
         );
-        assert_eq!(
-            query_indexed_content_page(&db_path, &scan_plan, "fresh", 10, 0).expect("query fresh"),
-            vec![IndexedContentHit {
-                path: new,
-                snippet: "fresh unique content".to_string(),
-                content: "fresh unique content".to_string(),
-            }]
-        );
+        let new_hits =
+            query_indexed_content_page(&db_path, &scan_plan, "fresh", 10, 0).expect("query fresh");
+        assert_eq!(new_hits.len(), 1);
+        assert_eq!(new_hits[0].path, new);
+        assert_eq!(new_hits[0].snippet, "fresh unique content");
+        assert_eq!(new_hits[0].content, "fresh unique content");
+        assert!(new_hits[0].relevance > 0);
         let _ = std::fs::remove_dir_all(root);
         let _ = std::fs::remove_file(db_path);
     }

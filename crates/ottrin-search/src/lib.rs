@@ -449,6 +449,22 @@ impl SearchHandle {
             }
         };
 
+        // A negated content query needs the complement of the content index, not
+        // merely positive FTS candidates. Until metadata and content can be read
+        // from one generation-consistent, bounded stream, fail closed rather than
+        // silently mixing content and filename/path results.
+        if query.content_search && expr_contains_negation(&expr) {
+            return SearchResponse {
+                items: Vec::new(),
+                total: 0,
+                status,
+                error: Some(
+                    "Negated content-search expressions are not supported; use positive indexed content terms or disable content search."
+                        .to_string(),
+                ),
+            };
+        }
+
         let current_folder_outside_index = matches!(query.scope, SearchScope::CurrentFolder)
             && query
                 .root_path
@@ -605,10 +621,18 @@ impl SearchHandle {
                         if scope_match(&query, &item)
                             && (query.include_hidden_system || !item.name.starts_with('.'))
                             && eval_expr(&expr, &item)
-                            && seen.insert(item.path.clone())
                         {
                             item.content_snippet = Some(hit.snippet);
-                            matched.push((8_000, item));
+                            let score = 8_000_i64.saturating_add(hit.relevance);
+                            if let Some((existing_score, existing_item)) = matched
+                                .iter_mut()
+                                .find(|(_, existing)| existing.path == item.path)
+                            {
+                                *existing_score = (*existing_score).max(score);
+                                *existing_item = item;
+                            } else if seen.insert(item.path.clone()) {
+                                matched.push((score, item));
+                            }
                             accepted_hits += 1;
                         }
                     }
@@ -2351,6 +2375,14 @@ fn fts_content_match(expr: &Expr) -> Option<String> {
     build(expr)
 }
 
+fn expr_contains_negation(expr: &Expr) -> bool {
+    match expr {
+        Expr::Not(_) => true,
+        Expr::And(parts) | Expr::Or(parts) => parts.iter().any(expr_contains_negation),
+        Expr::Term(_) => false,
+    }
+}
+
 fn relevance_score(query: &SearchQuery, item: &SearchResultItem) -> i64 {
     let q = query.text.to_ascii_lowercase();
     // Use pre-computed lowercase fields — zero allocations.
@@ -3353,19 +3385,18 @@ mod tests {
     }
 
     #[test]
-    fn indexed_content_search_evaluates_negated_terms_against_full_indexed_content() {
+    fn indexed_content_search_merges_fts_evidence_into_filename_matches() {
         let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
         let root = std::env::temp_dir().join(format!(
-            "ottrin-fts-negated-content-search-{}-{}",
+            "ottrin-fts-merge-content-search-{}-{}",
             std::process::id(),
             current_unix_secs()
         ));
         let _ = fs::remove_dir_all(&root);
         fs::create_dir_all(&root).expect("create test root");
-        let kept = root.join("kept.txt");
-        let rejected = root.join("rejected.txt");
-        fs::write(&kept, "foo without the excluded term\n").expect("write kept content");
-        fs::write(&rejected, "foo and bar together\n").expect("write rejected content");
+        let file_path = root.join("needle.txt");
+        fs::write(&file_path, "needle appears in indexed content\n")
+            .expect("write indexed content");
 
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
@@ -3376,11 +3407,10 @@ mod tests {
         service
             .rebuild_index_blocking()
             .expect("commit indexed generation");
-        fs::remove_file(&kept).expect("remove kept source after indexing");
-        fs::remove_file(&rejected).expect("remove rejected source after indexing");
+        fs::remove_file(&file_path).expect("remove source after indexing");
 
         let response = service.query(SearchQuery {
-            text: "foo !bar".to_string(),
+            text: "needle".to_string(),
             scope: SearchScope::Global,
             root_path: None,
             include_hidden_system: false,
@@ -3390,11 +3420,71 @@ mod tests {
             content_search: true,
         });
         assert_eq!(response.items.len(), 1);
-        assert_eq!(response.items[0].path, kept);
+        assert_eq!(response.items[0].path, file_path);
+        assert!(
+            response.items[0]
+                .content_snippet
+                .as_deref()
+                .is_some_and(|snippet| snippet.contains("needle"))
+        );
 
         service.stop();
         let _ = fs::remove_dir_all(&root);
         let _ = fs::remove_file(&service.store_path);
+    }
+
+    #[test]
+    fn negated_content_search_is_rejected_before_metadata_evaluation() {
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![PathBuf::from("/snapshot")],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        let item = mk_item("/snapshot/foo.txt", "foo.txt", EntryKind::File);
+        let expressions = ["!bar", "foo | !bar", "!!foo", "!/bar/", "!type:dir"];
+
+        for status in [SearchIndexStatus::Ready, SearchIndexStatus::Indexing] {
+            {
+                let mut index = service.index.write().expect("index write");
+                index.status = status;
+                index.items = Arc::new(vec![item.clone()]);
+            }
+            for text in expressions {
+                let content_response = service.query(SearchQuery {
+                    text: text.to_string(),
+                    scope: SearchScope::Global,
+                    root_path: None,
+                    include_hidden_system: false,
+                    sort: SearchSort::Relevance,
+                    limit: 20,
+                    offset: 0,
+                    content_search: true,
+                });
+                assert!(content_response.error.is_some(), "{status:?}: {text}");
+                assert!(content_response.items.is_empty(), "{status:?}: {text}");
+                assert_eq!(content_response.total, 0, "{status:?}: {text}");
+
+                let metadata_response = service.query(SearchQuery {
+                    content_search: false,
+                    ..SearchQuery {
+                        text: text.to_string(),
+                        scope: SearchScope::Global,
+                        root_path: None,
+                        include_hidden_system: false,
+                        sort: SearchSort::Relevance,
+                        limit: 20,
+                        offset: 0,
+                        content_search: true,
+                    }
+                });
+                assert!(metadata_response.error.is_none(), "{status:?}: {text}");
+                assert_eq!(
+                    metadata_response.items,
+                    vec![item.clone()],
+                    "{status:?}: {text}"
+                );
+            }
+        }
     }
 
     #[test]

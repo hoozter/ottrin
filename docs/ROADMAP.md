@@ -65,7 +65,7 @@ These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 - Recursive folder size thumbnails and folder thumbnail collages.
 - Native desktop application discovery for richer Open With menus.
 - Media playback and advanced image tools.
-- True FTS5 content index.
+- Generation-consistent, aggregate-memory-bounded negated FTS5 content search.
 - Fanotify helper/service packaging.
 - Tab drag-and-drop.
 - Rubber-band selection.
