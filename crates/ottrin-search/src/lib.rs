@@ -2081,7 +2081,11 @@ enum Field {
 fn parse_query(input: &str) -> Result<Expr, SearchError> {
     let tokens = tokenize(input)?;
     let mut p = Parser { tokens, pos: 0 };
-    p.parse_expr()
+    let expr = p.parse_expr()?;
+    if p.peek().is_some() {
+        return Err(SearchError::Parse("Unexpected trailing token".to_string()));
+    }
+    Ok(expr)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -2957,6 +2961,46 @@ mod tests {
     fn parser_rejects_invalid_regex() {
         let err = parse_query("/[/").expect_err("should reject invalid regex");
         assert!(err.to_string().contains("Invalid regex"));
+    }
+
+    #[test]
+    fn parser_rejects_malformed_syntax_without_accepting_a_prefix() {
+        for query in ["foo) !bar", "(foo", "()", "foo |", "!", "foo bar)"] {
+            let error = parse_query(query).expect_err(query);
+            assert!(
+                matches!(error, SearchError::Parse(_)),
+                "{query:?} should produce a parse error"
+            );
+        }
+    }
+
+    #[test]
+    fn parser_preserves_valid_neighboring_syntax() {
+        for query in [
+            "foo bar",
+            "foo | bar",
+            "!(foo | bar)",
+            "!!name:report",
+            "name:\"quarterly report\" path:C:\\work",
+            "/foo\\\\d+/ ext:rs",
+        ] {
+            parse_query(query).unwrap_or_else(|error| panic!("{query:?} should parse: {error}"));
+        }
+    }
+
+    #[test]
+    fn malformed_query_returns_an_empty_error_response_before_search_execution() {
+        let service = SearchService::new(SearchConfig::default());
+        let response = service.query(query_by_name("foo) !bar"));
+
+        assert!(response.items.is_empty());
+        assert_eq!(response.total, 0);
+        assert!(
+            response
+                .error
+                .as_deref()
+                .is_some_and(|error| error.contains("search parser error"))
+        );
     }
 
     #[test]
