@@ -20,6 +20,9 @@ require_line() {
 # The checklist must distinguish refreshed artifact verification from the
 # external CI and physical-desktop gates that remain unproven.
 require_line 'Local automated gates and artifact inspection last passed on 2026-07-31.'
+require_line '- [x] Corrected release artifact checksums verify after rebuilding from the OpenGL-loader fix.'
+require_line '- [x] Archive inspection confirms the corrected app, indexer, privileged helper, policy/assets, and user documentation are present.'
+require_line '- A fresh isolated artifact set was rebuilt and reverified on 2026-07-31, including'
 require_line '- [ ] Linux and Windows CI are green for the release commit.'
 require_line '- [ ] Portable zip launches on a real Windows desktop.'
 require_line '- [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; Move rejects without mutation.'
