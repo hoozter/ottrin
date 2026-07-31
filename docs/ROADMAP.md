@@ -67,7 +67,9 @@ V1 should not ship until:
 
 These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 
-- Text/code editing in Quick Inspector.
+- Text/code editing in Quick Inspector (architecture is documented in
+  [Quick Inspector Text Editing Design](QUICK_INSPECTOR_TEXT_EDITING_DESIGN.md);
+  it is not implemented or a v1 gate).
 - Advanced Office navigation/editing or faithful Office layout beyond the bounded content preview required for v1.
 - Rich file thumbnails beyond the common-document v1 preview gate: generated text/code preview cards, video frame thumbnails, and broader document thumbnails where platform support or dependencies make sense.
 - Recursive folder size thumbnails and folder thumbnail collages.
