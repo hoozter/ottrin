@@ -29,7 +29,18 @@ pub(super) fn move_entry_transactional(
     destination_dir: &Path,
     _conflict: ConflictAction,
 ) -> Result<(), PlatformError> {
-    move_with_hooks(source, destination_dir, _conflict, |_| Ok(()))
+    std::fs::symlink_metadata(source)
+        .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
+    std::fs::symlink_metadata(destination_dir)
+        .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
+    reject_directory_copy_into_itself(source, destination_dir)?;
+
+    // The journal/recovery protocol remains exercised through its isolated test
+    // seam, but public Move must not enter it until every Linux release gate is
+    // evidenced on the packaged application and independently reviewed.
+    Err(PlatformError::UnsupportedSafeMove(
+        source.display().to_string(),
+    ))
 }
 
 #[cfg(target_os = "windows")]
