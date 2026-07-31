@@ -313,7 +313,7 @@ struct OpResult {
     delete_nav: Vec<DeletePostNav>,
     error: Option<String>,
     warning: Option<String>,
-    retry_cmd: Option<FileCommand>,
+    retry: Option<PendingPrivilegedRetry>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -395,6 +395,15 @@ struct UnavailableLocation {
 struct StorageOperationBinding {
     root: PathBuf,
     stable_identity: Option<String>,
+    kind: StorageOperationBindingKind,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum StorageOperationBindingKind {
+    Discovered,
+    /// The app's home root is deliberately treated as a narrow safe domain;
+    /// it is not an interchangeable removable-volume mount point.
+    Home,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -788,6 +797,43 @@ enum PreviewKeyAction {
 struct Clipboard {
     sources: Vec<PathBuf>,
     cut: bool,
+    source_bindings: Vec<StorageOperationBinding>,
+}
+
+impl Clipboard {
+    fn capture(
+        sources: Vec<PathBuf>,
+        cut: bool,
+        locations: &[StorageLocation],
+    ) -> Result<Self, String> {
+        let source_bindings = capture_required_storage_bindings(&sources, locations)?;
+        Ok(Self {
+            sources,
+            cut,
+            source_bindings,
+        })
+    }
+}
+
+#[derive(Debug, Clone)]
+struct PendingPrivilegedRetry {
+    cmd: FileCommand,
+    tab_id: Option<u64>,
+    bindings: Vec<StorageOperationBinding>,
+}
+
+impl PendingPrivilegedRetry {
+    fn capture(
+        cmd: FileCommand,
+        tab_id: Option<u64>,
+        bindings: &[StorageOperationBinding],
+    ) -> Self {
+        Self {
+            cmd,
+            tab_id,
+            bindings: bindings.to_vec(),
+        }
+    }
 }
 
 // ── Recent-targets dropdown ───────────────────────────────────────────────────
@@ -1108,7 +1154,7 @@ pub struct OttrinApp {
     pending_rename: Option<PendingRename>,
     pending_delete: Option<PendingDelete>,
     pending_empty_trash: bool,
-    pending_privileged_retry: Option<(FileCommand, Option<u64>)>,
+    pending_privileged_retry: Option<PendingPrivilegedRetry>,
     privileged_availability: PrivilegedAvailability,
     privileged_status: Option<PrivilegedUiStatus>,
     search_service: SearchService,
@@ -4440,8 +4486,8 @@ impl OttrinApp {
                 self.command_frame.error = Some(err);
                 self.command_frame.message = None;
                 self.command_frame.visible = true;
-                if let Some(cmd) = res.retry_cmd {
-                    self.pending_privileged_retry = Some((cmd, res.tab_id));
+                if let Some(retry) = res.retry {
+                    self.pending_privileged_retry = Some(retry);
                 } else {
                     self.pending_privileged_retry = None;
                 }
@@ -5276,19 +5322,15 @@ impl OttrinApp {
                 {
                     self.clipboard = None;
                 }
-                if self
-                    .pending_privileged_retry
-                    .as_ref()
-                    .is_some_and(|(cmd, _)| {
-                        file_command_touches_unavailable_location(
-                            cmd,
-                            std::iter::once(&UnavailableLocation {
-                                stable_identity: previous_root.stable_identity.clone(),
-                                root: root.clone(),
-                            }),
-                        )
-                    })
-                {
+                if self.pending_privileged_retry.as_ref().is_some_and(|retry| {
+                    file_command_touches_unavailable_location(
+                        &retry.cmd,
+                        std::iter::once(&UnavailableLocation {
+                            stable_identity: previous_root.stable_identity.clone(),
+                            root: root.clone(),
+                        }),
+                    )
+                }) {
                     self.pending_privileged_retry = None;
                 }
             }
@@ -6503,11 +6545,9 @@ impl OttrinApp {
 
     fn copy_preview_path(&mut self, cut: bool) {
         if let Some(path) = self.preview.path.clone() {
-            self.clipboard = Some(Clipboard {
-                sources: vec![path],
-                cut,
-            });
-            self.set_status_message(if cut { "Cut 1 item" } else { "Copied 1 item" }, true, 3);
+            if self.capture_clipboard(vec![path], cut) {
+                self.set_status_message(if cut { "Cut 1 item" } else { "Copied 1 item" }, true, 3);
+            }
         } else {
             self.copy_selection(cut);
         }
@@ -6820,7 +6860,9 @@ impl OttrinApp {
         let tab_id = self.state.active_tab().id;
         let sources = self.selected_paths_for_tab(tab_id);
         if !sources.is_empty() {
-            self.clipboard = Some(Clipboard { sources, cut });
+            if !self.capture_clipboard(sources, cut) {
+                return;
+            }
             let count = self
                 .clipboard
                 .as_ref()
@@ -6842,22 +6884,37 @@ impl OttrinApp {
         if let Some(clip) = self.clipboard.clone() {
             let dest = self.state.active_tab().current_dir.clone();
             let tab_id = self.state.active_tab().id;
-            let cmd = if clip.cut {
-                FileCommand::Move {
-                    sources: clip.sources,
-                    destination: dest,
-                    conflict: ConflictAction::Rename,
-                }
-            } else {
-                FileCommand::Copy {
-                    sources: clip.sources,
-                    destination: dest,
-                    conflict: ConflictAction::Rename,
+            self.reconcile_storage_location_availability(discover_storage_locations());
+            let cmd = match prepare_clipboard_paste(&clip, dest, &self.known_storage_locations) {
+                Ok(cmd) => cmd,
+                Err(message) => {
+                    let message =
+                        format!("Paste was not started: {message}. Clipboard was retained.");
+                    self.set_status_message(message.clone(), false, 6);
+                    self.command_frame.error = Some(message);
+                    self.command_frame.message = None;
+                    self.command_frame.visible = true;
+                    return;
                 }
             };
             self.run_file_op(cmd, Some(tab_id));
             if clip.cut {
                 self.clipboard = None;
+            }
+        }
+    }
+
+    fn capture_clipboard(&mut self, sources: Vec<PathBuf>, cut: bool) -> bool {
+        self.reconcile_storage_location_availability(discover_storage_locations());
+        match Clipboard::capture(sources, cut, &self.known_storage_locations) {
+            Ok(clipboard) => {
+                self.clipboard = Some(clipboard);
+                true
+            }
+            Err(message) => {
+                self.clipboard = None;
+                self.set_status_message(format!("Copy was not started: {message}"), false, 6);
+                false
             }
         }
     }
@@ -7056,9 +7113,13 @@ impl OttrinApp {
             let (error, warning, retry) = match outcome {
                 FileOpOutcome::Completed => (None, None, None),
                 FileOpOutcome::CompletedWithWarning(message) => (None, Some(message), None),
-                FileOpOutcome::Failed { message, .. } => {
-                    (Some(message), None, privilege_retry.then_some(retry_cmd))
-                }
+                FileOpOutcome::Failed { message, .. } => (
+                    Some(message),
+                    None,
+                    privilege_retry.then(|| {
+                        PendingPrivilegedRetry::capture(retry_cmd, refresh_tab, &bindings)
+                    }),
+                ),
             };
             let _ = op_tx.send(OpResult {
                 op_id,
@@ -7067,7 +7128,7 @@ impl OttrinApp {
                 delete_nav,
                 error,
                 warning,
-                retry_cmd: retry,
+                retry,
             });
         });
     }
@@ -7122,10 +7183,15 @@ impl OttrinApp {
 
     fn retry_file_op_with_privileges(
         &mut self,
-        cmd: FileCommand,
-        refresh_tab: Option<u64>,
+        retry: PendingPrivilegedRetry,
     ) -> Result<(), String> {
         self.reconcile_storage_location_availability(discover_storage_locations());
+        validate_privileged_retry(&retry, &self.known_storage_locations)?;
+        let PendingPrivilegedRetry {
+            cmd,
+            tab_id: refresh_tab,
+            ..
+        } = retry;
         if let Some(location) = self.unavailable_location_for_command(&cmd).cloned() {
             self.pending_privileged_retry = None;
             self.reject_unavailable_location_operation(&cmd, &location);
@@ -10432,15 +10498,10 @@ impl OttrinApp {
                 .clicked()
             {
                 self.reconcile_storage_location_availability(discover_storage_locations());
-                if trash_restore_touches_unavailable_location(
-                    &item,
-                    self.unavailable_root_tombstones.iter(),
-                ) {
-                    self.set_status_message(
-                        "Restore was not started: the original volume was replaced or is unavailable.",
-                        false,
-                        6,
-                    );
+                if let Err(message) =
+                    validate_trash_restore_provenance(&item, &self.known_storage_locations)
+                {
+                    self.set_status_message(message, false, 6);
                 } else {
                     let op_id = self.queue_activity_record_with_recoverability(
                         "Restore from Trash",
@@ -11594,7 +11655,7 @@ impl OttrinApp {
                 // Error or informational message
                 if let Some(err) = &self.command_frame.error.clone() {
                     ui.label(RichText::new(err).color(c.error).size(11.5));
-                    if let Some((cmd, tab_id)) = self.pending_privileged_retry.clone() {
+                    if let Some(retry) = self.pending_privileged_retry.clone() {
                         ui.add_space(4.0);
                         if ui
                             .add(
@@ -11605,7 +11666,7 @@ impl OttrinApp {
                             )
                             .clicked()
                         {
-                            match self.retry_file_op_with_privileges(cmd, tab_id) {
+                            match self.retry_file_op_with_privileges(retry) {
                                 Ok(()) => {
                                     self.pending_privileged_retry = None;
                                     self.command_frame.error = None;
@@ -11827,19 +11888,15 @@ impl OttrinApp {
             }
             if menu_count == 1 {
                 if menu_item(ui, MI_CONTENT_COPY, "Copy Item", &c).clicked() {
-                    self.clipboard = Some(Clipboard {
-                        sources: vec![path.clone()],
-                        cut: false,
-                    });
-                    self.set_status_message("Copied 1 item", true, 3);
+                    if self.capture_clipboard(vec![path.clone()], false) {
+                        self.set_status_message("Copied 1 item", true, 3);
+                    }
                     ui.close();
                 }
                 if menu_item(ui, MI_CONTENT_CUT, "Cut Item", &c).clicked() {
-                    self.clipboard = Some(Clipboard {
-                        sources: vec![path.clone()],
-                        cut: true,
-                    });
-                    self.set_status_message("Cut 1 item", true, 3);
+                    if self.capture_clipboard(vec![path.clone()], true) {
+                        self.set_status_message("Cut 1 item", true, 3);
+                    }
                     ui.close();
                 }
                 if menu_item(ui, MI_EDIT, "Rename…", &c).clicked() {
@@ -11858,19 +11915,15 @@ impl OttrinApp {
             }
             if menu_count > 1 {
                 if menu_item(ui, MI_CONTENT_COPY, &format!("Copy {menu_target}"), &c).clicked() {
-                    self.clipboard = Some(Clipboard {
-                        sources: menu_sources.clone(),
-                        cut: false,
-                    });
-                    self.set_status_message(format!("Copied {menu_count} items"), true, 3);
+                    if self.capture_clipboard(menu_sources.clone(), false) {
+                        self.set_status_message(format!("Copied {menu_count} items"), true, 3);
+                    }
                     ui.close();
                 }
                 if menu_item(ui, MI_CONTENT_CUT, &format!("Cut {menu_target}"), &c).clicked() {
-                    self.clipboard = Some(Clipboard {
-                        sources: menu_sources.clone(),
-                        cut: true,
-                    });
-                    self.set_status_message(format!("Cut {menu_count} items"), true, 3);
+                    if self.capture_clipboard(menu_sources.clone(), true) {
+                        self.set_status_message(format!("Cut {menu_count} items"), true, 3);
+                    }
                     ui.close();
                 }
                 if menu_item(ui, MI_DELETE, &format!("Delete {menu_target}…"), &c).clicked() {
@@ -17946,9 +17999,22 @@ fn operation_storage_bindings(
             let binding = StorageOperationBinding {
                 root: location.path.clone(),
                 stable_identity: location.stable_identity.clone(),
+                kind: StorageOperationBindingKind::Discovered,
             };
             if !bindings.contains(&binding) {
                 bindings.push(binding);
+            }
+        } else {
+            let home = default_home_dir();
+            if path.starts_with(&home) {
+                let binding = StorageOperationBinding {
+                    root: home,
+                    stable_identity: None,
+                    kind: StorageOperationBindingKind::Home,
+                };
+                if !bindings.contains(&binding) {
+                    bindings.push(binding);
+                }
             }
         }
     }
@@ -17960,6 +18026,12 @@ fn validate_operation_storage_bindings(
     locations: &[StorageLocation],
 ) -> Result<(), String> {
     for binding in bindings {
+        if binding.kind == StorageOperationBindingKind::Home {
+            if binding.root == default_home_dir() {
+                continue;
+            }
+            return Err("operation was not started: the captured home root changed".to_string());
+        }
         let Some(expected_identity) = binding.stable_identity.as_ref() else {
             return Err(format!(
                 "operation was not started: {} has no stable volume identity; explicitly navigate after it is rediscovered",
@@ -17977,6 +18049,116 @@ fn validate_operation_storage_bindings(
         }
     }
     Ok(())
+}
+
+fn capture_required_storage_bindings(
+    paths: &[PathBuf],
+    locations: &[StorageLocation],
+) -> Result<Vec<StorageOperationBinding>, String> {
+    let mut bindings = Vec::new();
+    let home = default_home_dir();
+    for path in paths {
+        let binding = if let Some(location) = longest_storage_root_for_path(locations, path) {
+            let Some(stable_identity) = location.stable_identity.clone() else {
+                return Err(format!(
+                    "{} has no stable volume identity",
+                    location.path.display()
+                ));
+            };
+            StorageOperationBinding {
+                root: location.path.clone(),
+                stable_identity: Some(stable_identity),
+                kind: StorageOperationBindingKind::Discovered,
+            }
+        } else if path.starts_with(&home) {
+            StorageOperationBinding {
+                root: home.clone(),
+                stable_identity: None,
+                kind: StorageOperationBindingKind::Home,
+            }
+        } else {
+            return Err(format!(
+                "the storage identity for {} cannot be proven",
+                path.display()
+            ));
+        };
+        if !bindings.contains(&binding) {
+            bindings.push(binding);
+        }
+    }
+    Ok(bindings)
+}
+
+fn prepare_clipboard_paste(
+    clipboard: &Clipboard,
+    destination: PathBuf,
+    locations: &[StorageLocation],
+) -> Result<FileCommand, String> {
+    validate_operation_storage_bindings(&clipboard.source_bindings, locations)?;
+    Ok(if clipboard.cut {
+        FileCommand::Move {
+            sources: clipboard.sources.clone(),
+            destination,
+            conflict: ConflictAction::Rename,
+        }
+    } else {
+        FileCommand::Copy {
+            sources: clipboard.sources.clone(),
+            destination,
+            conflict: ConflictAction::Rename,
+        }
+    })
+}
+
+fn validate_privileged_retry(
+    retry: &PendingPrivilegedRetry,
+    locations: &[StorageLocation],
+) -> Result<(), String> {
+    if retry.bindings.is_empty() {
+        return Err(
+            "Privileged retry was not started because its original storage identity was not captured"
+                .to_string(),
+        );
+    }
+    validate_operation_storage_bindings(&retry.bindings, locations)
+}
+
+fn validate_trash_restore_provenance(
+    item: &TrashItem,
+    locations: &[StorageLocation],
+) -> Result<(), String> {
+    let Some(origin) = item.origin_storage.as_ref() else {
+        return Err(
+            "Restore was not started because the original volume identity cannot be proven"
+                .to_string(),
+        );
+    };
+    if !item.original_path.starts_with(&origin.root) {
+        return Err(
+            "Restore was not started because its origin metadata is inconsistent".to_string(),
+        );
+    }
+    if origin.root == default_home_dir()
+        && origin.stable_identity.as_deref() == Some("ottrin-native-home-trash-v1")
+    {
+        return Ok(());
+    }
+    let Some(expected_identity) = origin.stable_identity.as_ref() else {
+        return Err(
+            "Restore was not started because the original volume identity cannot be proven"
+                .to_string(),
+        );
+    };
+    if locations.iter().any(|location| {
+        location.path == origin.root && location.stable_identity.as_ref() == Some(expected_identity)
+    }) {
+        Ok(())
+    } else {
+        Err(
+            "Restore was not started because the original volume changed or is unavailable"
+                .to_string(),
+        )
+    }
 }
 
 fn file_command_touches_unavailable_location<'a>(
@@ -18009,15 +18191,6 @@ fn file_command_touches_unavailable_location<'a>(
         FileCommand::Symlink { link_path, target } => touches(link_path) || touches(target),
         FileCommand::RecoverRetainedMove { .. } => false,
     }
-}
-
-fn trash_restore_touches_unavailable_location<'a>(
-    item: &TrashItem,
-    unavailable: impl IntoIterator<Item = &'a UnavailableLocation>,
-) -> bool {
-    unavailable
-        .into_iter()
-        .any(|location| item.original_path.starts_with(&location.root))
 }
 
 fn operation_title(cmd: &FileCommand) -> &'static str {
@@ -19553,7 +19726,7 @@ mod tests {
                 "batch completed 1 of 2 items, then stopped at /tmp/source-two: disk full"
                     .to_string(),
             ),
-            retry_cmd: None,
+            retry: None,
         });
 
         app.poll_op_results();
@@ -20691,6 +20864,106 @@ mod tests {
     }
 
     #[test]
+    fn clipboard_paste_does_not_construct_an_operation_after_source_volume_replacement() {
+        let root = PathBuf::from("/__ottrin_clipboard_volume__");
+        let original = StorageLocation {
+            path: root.clone(),
+            identity: "slot".to_string(),
+            stable_identity: Some("volume-a".to_string()),
+            kind: StorageLocationKind::Removable,
+            display_name: None,
+        };
+        let replacement = StorageLocation {
+            stable_identity: Some("volume-b".to_string()),
+            ..original.clone()
+        };
+        let clipboard = Clipboard::capture(vec![root.join("report.txt")], true, &[original])
+            .expect("copy records a source binding");
+
+        assert!(
+            prepare_clipboard_paste(&clipboard, PathBuf::from("/safe"), &[replacement]).is_err()
+        );
+    }
+
+    #[test]
+    fn privileged_retry_rejects_original_volume_replacement_before_helper_request() {
+        let root = PathBuf::from("/__ottrin_retry_volume__");
+        let original = StorageLocation {
+            path: root.clone(),
+            identity: "slot".to_string(),
+            stable_identity: Some("volume-a".to_string()),
+            kind: StorageLocationKind::Removable,
+            display_name: None,
+        };
+        let replacement = StorageLocation {
+            stable_identity: Some("volume-b".to_string()),
+            ..original.clone()
+        };
+        let command = FileCommand::Delete {
+            targets: vec![root.join("report.txt")],
+            mode: DeleteMode::Permanent,
+        };
+        let bindings = operation_storage_bindings(&command, &[original]);
+        let retry = PendingPrivilegedRetry::capture(command, Some(1), &bindings);
+
+        assert!(validate_privileged_retry(&retry, &[replacement]).is_err());
+    }
+
+    #[test]
+    fn unproven_trash_restore_rejects_replacement_volume_without_a_selected_tab() {
+        use std::ffi::OsString;
+
+        let root = PathBuf::from("/__ottrin_trash_volume__");
+        let item = TrashItem {
+            id: OsString::from("trash-id"),
+            original_name: OsString::from("report.txt"),
+            original_parent: root.clone(),
+            trash_path: PathBuf::from("/__ottrin_trash__/report.txt"),
+            original_path: root.join("report.txt"),
+            deletion_date: None,
+            time_deleted: 0,
+            name: "report.txt".to_string(),
+            kind: EntryKind::File,
+            size_bytes: Some(1),
+            origin_storage: None,
+        };
+        let replacement = StorageLocation {
+            path: root,
+            identity: "slot".to_string(),
+            stable_identity: Some("volume-b".to_string()),
+            kind: StorageLocationKind::Removable,
+            display_name: None,
+        };
+
+        assert!(validate_trash_restore_provenance(&item, &[replacement]).is_err());
+    }
+
+    #[test]
+    fn proven_native_home_trash_restore_remains_available() {
+        use std::ffi::OsString;
+
+        let home = default_home_dir();
+        let item = TrashItem {
+            id: OsString::from("trash-id"),
+            original_name: OsString::from("report.txt"),
+            original_parent: home.clone(),
+            trash_path: home.join(".local/share/Trash/files/report.txt"),
+            original_path: home.join("report.txt"),
+            deletion_date: None,
+            time_deleted: 0,
+            name: "report.txt".to_string(),
+            kind: EntryKind::File,
+            size_bytes: Some(1),
+            origin_storage: Some(ottrin_platform::TrashOriginBinding {
+                root: home,
+                stable_identity: Some("ottrin-native-home-trash-v1".to_string()),
+            }),
+        };
+
+        assert!(validate_trash_restore_provenance(&item, &[]).is_ok());
+    }
+
+    #[test]
     fn disconnect_invalidates_clipboard_privileged_retry_and_restore_origin() {
         use std::ffi::OsString;
 
@@ -20713,16 +20986,32 @@ mod tests {
         app.clipboard = Some(Clipboard {
             sources: vec![source.clone()],
             cut: true,
+            source_bindings: operation_storage_bindings(
+                &FileCommand::Delete {
+                    targets: vec![source.clone()],
+                    mode: DeleteMode::Permanent,
+                },
+                std::slice::from_ref(&location),
+            ),
         });
-        app.pending_privileged_retry = Some((command.clone(), Some(tab_id)));
+        let retry_bindings = operation_storage_bindings(&command, std::slice::from_ref(&location));
+        app.pending_privileged_retry = Some(PendingPrivilegedRetry::capture(
+            command.clone(),
+            Some(tab_id),
+            &retry_bindings,
+        ));
         app.reconcile_storage_location_availability(vec![location]);
         app.reconcile_storage_location_availability(Vec::new());
 
         assert!(app.clipboard.is_none());
         assert!(app.pending_privileged_retry.is_none());
         assert!(
-            app.retry_file_op_with_privileges(command, Some(tab_id))
-                .is_err()
+            app.retry_file_op_with_privileges(PendingPrivilegedRetry::capture(
+                command,
+                Some(tab_id),
+                &retry_bindings,
+            ))
+            .is_err()
         );
 
         let item = TrashItem {
@@ -20736,11 +21025,9 @@ mod tests {
             name: "report.txt".to_string(),
             kind: EntryKind::File,
             size_bytes: Some(1),
+            origin_storage: None,
         };
-        assert!(trash_restore_touches_unavailable_location(
-            &item,
-            app.unavailable_root_tombstones.iter(),
-        ));
+        assert!(validate_trash_restore_provenance(&item, &[]).is_err());
     }
 
     #[test]

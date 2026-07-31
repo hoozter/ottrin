@@ -45,6 +45,15 @@ pub struct FileProperties {
 }
 
 #[derive(Debug, Clone)]
+pub struct TrashOriginBinding {
+    /// The source root proven by native Trash metadata. This is deliberately
+    /// absent when the native implementation only exposes a mutable original
+    /// pathname, rather than a durable source-volume identity.
+    pub root: PathBuf,
+    pub stable_identity: Option<String>,
+}
+
+#[derive(Debug, Clone)]
 pub struct TrashItem {
     pub id: OsString,
     pub original_name: OsString,
@@ -56,6 +65,10 @@ pub struct TrashItem {
     pub name: String,
     pub kind: EntryKind,
     pub size_bytes: Option<u64>,
+    /// Native or durable provenance for the original storage. `None` means an
+    /// item must not be assumed to belong to a currently mounted volume just
+    /// because that volume now occupies its old pathname.
+    pub origin_storage: Option<TrashOriginBinding>,
 }
 
 #[derive(Debug, Error)]
@@ -1252,6 +1265,7 @@ fn system_trash_item_to_ottrin(item: trash::TrashItem) -> TrashItem {
     let kind = trash_item_kind(&trash_path, metadata.as_ref());
     let size_bytes = metadata.as_ref().and_then(|m| m.size.size());
     let deletion_date = trash_deletion_date(&item);
+    let origin_storage = trash_origin_storage_binding(&trash_path, &original_path);
     TrashItem {
         id: item.id,
         original_name: item.name.clone(),
@@ -1263,7 +1277,40 @@ fn system_trash_item_to_ottrin(item: trash::TrashItem) -> TrashItem {
         name: item.name.to_string_lossy().to_string(),
         kind,
         size_bytes,
+        origin_storage,
     }
+}
+
+/// Freedesktop Trash keeps only the original pathname for normal mounted-volume
+/// entries; it does not retain a volume UUID in `.trashinfo`. Do not manufacture
+/// an identity from the volume currently mounted at that pathname. The personal
+/// home Trash is the one native case we can prove here: both its storage and the
+/// original path are anchored beneath this process's home root.
+#[cfg(target_os = "linux")]
+fn trash_origin_storage_binding(
+    trash_path: &Path,
+    original_path: &Path,
+) -> Option<TrashOriginBinding> {
+    let home = std::env::var_os("HOME").map(PathBuf::from)?;
+    let native_home_trash = home.join(".local/share/Trash");
+    (trash_path.starts_with(&native_home_trash) && original_path.starts_with(&home)).then(|| {
+        TrashOriginBinding {
+            root: home,
+            // This identifies the only native provenance proof offered by the
+            // Freedesktop metadata layout, not a guessed external-volume UUID.
+            stable_identity: Some("ottrin-native-home-trash-v1".to_string()),
+        }
+    })
+}
+
+#[cfg(not(target_os = "linux"))]
+fn trash_origin_storage_binding(
+    _trash_path: &Path,
+    _original_path: &Path,
+) -> Option<TrashOriginBinding> {
+    // The Windows Shell item API exposes an original pathname but no durable
+    // source-volume identity for Recycle Bin entries.
+    None
 }
 
 #[cfg(any(
