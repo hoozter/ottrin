@@ -4657,15 +4657,11 @@ impl OttrinApp {
                 .filter(|source| !completed_source_paths.contains(source))
                 .cloned()
                 .collect::<Vec<_>>()
+        } else if completed_sources.is_none() {
+            self.clipboard = None;
+            return;
         } else {
-            let completed_count = completed_sources
-                .unwrap_or(sources.len())
-                .min(sources.len());
-            if completed_count >= sources.len() {
-                self.clipboard = None;
-                return;
-            }
-            sources[completed_count..].to_vec()
+            return;
         };
 
         if remaining_sources.is_empty() {
@@ -6510,6 +6506,16 @@ impl OttrinApp {
         }
     }
 
+    fn consume_move_conflict_modal_scroll_input(ctx: &Context) {
+        ctx.input_mut(|input| {
+            input
+                .events
+                .retain(|event| !matches!(event, egui::Event::MouseWheel { .. }));
+            input.raw_scroll_delta = Vec2::ZERO;
+            input.smooth_scroll_delta = Vec2::ZERO;
+        });
+    }
+
     fn handle_empty_trash_confirmation_keyboard(&mut self, ctx: &Context) {
         if !self.pending_empty_trash {
             return;
@@ -7073,6 +7079,7 @@ impl OttrinApp {
                 Vec::new(),
                 Some(pending.bindings),
                 None,
+                Some(conflict),
             ),
         };
         if started
@@ -7256,7 +7263,7 @@ impl OttrinApp {
     }
 
     fn run_file_op(&mut self, cmd: FileCommand, refresh_tab: Option<u64>) {
-        let _ = self.run_file_op_bound(cmd, refresh_tab, Vec::new(), None, None);
+        let _ = self.run_file_op_bound(cmd, refresh_tab, Vec::new(), None, None, None);
     }
 
     fn run_file_op_with_bindings(
@@ -7272,6 +7279,7 @@ impl OttrinApp {
             Vec::new(),
             Some(bindings),
             Some(clipboard_generation),
+            None,
         )
     }
 
@@ -7281,7 +7289,7 @@ impl OttrinApp {
         refresh_tab: Option<u64>,
         delete_nav: Vec<DeletePostNav>,
     ) {
-        let _ = self.run_file_op_bound(cmd, refresh_tab, delete_nav, None, None);
+        let _ = self.run_file_op_bound(cmd, refresh_tab, delete_nav, None, None, None);
     }
 
     fn run_file_op_bound(
@@ -7291,6 +7299,7 @@ impl OttrinApp {
         delete_nav: Vec<DeletePostNav>,
         authoritative_bindings: Option<Vec<StorageOperationBinding>>,
         clipboard_generation: Option<u64>,
+        preconfirmed_conflict_action: Option<ConflictAction>,
     ) -> bool {
         // Reconcile before accepting mutable input. Callers with previously
         // captured provenance carry those exact bindings through this refresh;
@@ -7316,6 +7325,7 @@ impl OttrinApp {
             refresh_tab,
             &bindings,
             clipboard_generation,
+            preconfirmed_conflict_action,
         ) {
             return false;
         }
@@ -7345,7 +7355,23 @@ impl OttrinApp {
                                         .collect();
                                     (FileOpOutcome::Completed, completed_source_paths)
                                 }
-                                Err(error) => (classify_file_op_result(Err(error)), Vec::new()),
+                                Err(error) => {
+                                    let completed_source_paths = match &error {
+                                        PlatformError::PartialBatch {
+                                            completed_dispositions,
+                                            ..
+                                        } => sources
+                                            .iter()
+                                            .zip(completed_dispositions)
+                                            .filter_map(|(source, disposition)| {
+                                                (disposition == &MoveDisposition::Moved)
+                                                    .then_some(source.clone())
+                                            })
+                                            .collect(),
+                                        _ => Vec::new(),
+                                    };
+                                    (classify_file_op_result(Err(error)), completed_source_paths)
+                                }
                             }
                         }
                         _ => (
@@ -7405,6 +7431,7 @@ impl OttrinApp {
         refresh_tab: Option<u64>,
         bindings: &[StorageOperationBinding],
         clipboard_generation: Option<u64>,
+        preconfirmed_conflict_action: Option<ConflictAction>,
     ) -> bool {
         let FileCommand::Move {
             conflict: ConflictAction::Rename | ConflictAction::Skip,
@@ -7414,6 +7441,9 @@ impl OttrinApp {
             return false;
         };
         if !move_has_destination_conflict(cmd) {
+            return false;
+        }
+        if preconfirmed_conflict_action.is_some() {
             return false;
         }
         if self.pending_move_conflict.is_some() {
@@ -15734,62 +15764,48 @@ impl OttrinApp {
         };
         let count = sources.len();
         let c = self.colors;
-        let viewport = ctx.viewport_rect();
-        ctx.layer_painter(egui::LayerId::new(
-            egui::Order::Middle,
-            egui::Id::new("move_conflict_modal_scrim"),
-        ))
-        .rect_filled(viewport, 0.0, Color32::from_rgba_unmultiplied(0, 0, 0, 82));
-
-        egui::Area::new(egui::Id::new("move_conflict_modal_blocker"))
-            .order(egui::Order::Foreground)
-            .fixed_pos(viewport.min)
-            .show(ctx, |ui| {
-                let _ = ui.allocate_exact_size(viewport.size(), Sense::click());
-            });
 
         let mut choice = None;
-        egui::Area::new(egui::Id::new("move_conflict_confirmation"))
-            .order(egui::Order::Foreground)
-            .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
-            .show(ctx, |ui| {
+        egui::Modal::new(egui::Id::new("move_conflict_modal"))
+            .backdrop_color(Color32::from_rgba_unmultiplied(0, 0, 0, 82))
+            .frame(
                 Frame::new()
                     .fill(c.panel_raised)
                     .stroke(Stroke::new(1.0, c.border))
                     .corner_radius(8.0)
-                    .inner_margin(egui::Margin::symmetric(18, 16))
-                    .show(ui, |ui| {
-                        ui.set_width(420.0);
-                        ui.label(
-                            RichText::new("A destination item already exists")
-                                .color(c.text)
-                                .size(15.0)
-                                .strong(),
-                        );
-                        ui.label(
-                            RichText::new(format!(
-                                "Choose how to move {count} item{} into {}.",
-                                plural_s(count),
-                                destination.display()
-                            ))
-                            .color(c.text_muted)
-                            .size(11.0),
-                        );
-                        ui.add_space(12.0);
-                        if ui.button("Replace existing item").clicked() {
-                            choice = Some(Some(ConflictAction::Overwrite));
-                        }
-                        if ui.button("Keep Both").clicked() {
-                            choice = Some(Some(ConflictAction::Rename));
-                        }
-                        if ui.button("Skip conflicting item").clicked() {
-                            choice = Some(Some(ConflictAction::Skip));
-                        }
-                        ui.add_space(4.0);
-                        if ui.button("Cancel").clicked() {
-                            choice = Some(None);
-                        }
-                    });
+                    .inner_margin(egui::Margin::symmetric(18, 16)),
+            )
+            .show(ctx, |ui| {
+                ui.set_width(420.0);
+                ui.label(
+                    RichText::new("A destination item already exists")
+                        .color(c.text)
+                        .size(15.0)
+                        .strong(),
+                );
+                ui.label(
+                    RichText::new(format!(
+                        "Choose how to move {count} item{} into {}.",
+                        plural_s(count),
+                        destination.display()
+                    ))
+                    .color(c.text_muted)
+                    .size(11.0),
+                );
+                ui.add_space(12.0);
+                if ui.button("Replace existing item").clicked() {
+                    choice = Some(Some(ConflictAction::Overwrite));
+                }
+                if ui.button("Keep Both").clicked() {
+                    choice = Some(Some(ConflictAction::Rename));
+                }
+                if ui.button("Skip conflicting item").clicked() {
+                    choice = Some(Some(ConflictAction::Skip));
+                }
+                ui.add_space(4.0);
+                if ui.button("Cancel").clicked() {
+                    choice = Some(None);
+                }
             });
         if let Some(choice) = choice {
             self.resolve_move_conflict(choice);
@@ -17870,6 +17886,10 @@ impl eframe::App for OttrinApp {
         }
         if preview_ready {
             ctx.request_repaint();
+        }
+
+        if self.pending_move_conflict.is_some() {
+            Self::consume_move_conflict_modal_scroll_input(ctx);
         }
 
         // Handle keyboard before rendering. Modal popups get first claim.
@@ -20155,6 +20175,7 @@ mod tests {
             total: 2,
             stopped_source: PathBuf::from("second"),
             recovery_paths: Vec::new(),
+            completed_dispositions: Vec::new(),
             message: "permission denied".to_string(),
         }));
 
@@ -21500,7 +21521,7 @@ mod tests {
 
         app.apply_clipboard_operation_result(Some(generation), &command, true, Some(1), &[]);
         let remaining = app.clipboard.as_ref().expect("failed suffix is retained");
-        assert_eq!(remaining.sources, vec![second]);
+        assert_eq!(remaining.sources, sources);
         assert!(!remaining.in_flight);
 
         let replacement = Clipboard::capture(sources, true, &[])
@@ -21600,6 +21621,62 @@ mod tests {
     }
 
     #[test]
+    fn cut_move_partial_skip_fallback_paths_do_not_infer_moved_sources() {
+        let fixture_root = std::env::temp_dir().join(format!(
+            "ottrin-ui-cut-move-partial-skip-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        let fixture_storage = StorageLocation {
+            path: fixture_root.clone(),
+            identity: "slot".to_string(),
+            stable_identity: Some("partial-skip-move-fixture".to_string()),
+            kind: StorageLocationKind::Removable,
+            display_name: None,
+        };
+        std::fs::create_dir_all(&fixture_root).expect("create fixture root");
+        let first = fixture_root.join("skip_cut_first.txt");
+        let second = fixture_root.join("skip_cut_second.txt");
+        std::fs::write(&first, "first").expect("create first");
+        std::fs::write(&second, "second").expect("create second");
+        let destination = fixture_root.join("destination");
+        std::fs::create_dir_all(&destination).expect("create destination");
+        let mut app = OttrinApp::default();
+        let sources = vec![first.clone(), second.clone()];
+        let mut clipboard = Clipboard::capture(
+            sources.clone(),
+            true,
+            std::slice::from_ref(&fixture_storage),
+        )
+        .expect("home cut clipboard has a narrow binding");
+        clipboard.in_flight = true;
+        let generation = clipboard.generation;
+        app.clipboard = Some(clipboard);
+
+        let move_cmd = FileCommand::Move {
+            sources: sources.clone(),
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        };
+        std::fs::write(destination.join(first.file_name().unwrap()), "occupied")
+            .expect("create conflict for first");
+
+        app.apply_clipboard_operation_result(Some(generation), &move_cmd, true, Some(1), &[]);
+
+        let remaining = app
+            .clipboard
+            .as_ref()
+            .expect("clipboard keeps skipped source without inferred positions");
+        assert_eq!(remaining.sources, vec![first, second]);
+        assert!(!remaining.in_flight);
+
+        std::fs::remove_dir_all(&fixture_root).expect("cleanup fixture");
+    }
+
+    #[test]
     fn move_conflict_modal_escape_cancels_pending_resolution() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-ui-move-conflict-escape-{}-{}",
@@ -21643,6 +21720,246 @@ mod tests {
     }
 
     #[test]
+    fn move_conflict_modal_only_blocks_scroll_input_and_preserves_pointer_and_touch_events() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-move-conflict-pointer-and-scroll-block-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        let destination = root.join("destination");
+        let workspace = root.join("workspace");
+        std::fs::create_dir_all(&destination).expect("create destination");
+        std::fs::create_dir_all(&workspace).expect("create workspace");
+        let source = workspace.join("source.txt");
+        let keep_me = workspace.join("keep-me.txt");
+        let keep_other = workspace.join("keep-other.txt");
+        std::fs::write(destination.join("report.txt"), "occupied").expect("create conflict");
+        std::fs::write(&source, "source").expect("seed source");
+        std::fs::write(&keep_me, "keep me").expect("seed keep me");
+        std::fs::write(&keep_other, "keep other").expect("seed keep other");
+
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.state.active_tab_mut().view_mode = ViewMode::Grid;
+        app.state.active_tab_mut().current_dir = workspace.clone();
+        let ui_state = app.tab_ui.entry(tab_id).or_default();
+        ui_state.main.entries = vec![
+            FileEntry {
+                name: "keep-me.txt".to_string(),
+                path: keep_me,
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: Some(1),
+                modified_unix_secs: Some(1_700_000_001),
+            },
+            FileEntry {
+                name: "keep-other.txt".to_string(),
+                path: keep_other,
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: Some(2),
+                modified_unix_secs: Some(1_700_000_002),
+            },
+        ];
+        let conflict_input = || -> Vec<egui::Event> {
+            vec![
+                egui::Event::MouseWheel {
+                    unit: egui::MouseWheelUnit::Line,
+                    delta: Vec2::new(0.0, 120.0),
+                    modifiers: egui::Modifiers::NONE,
+                },
+                egui::Event::PointerMoved(egui::pos2(108.0, 150.0)),
+                egui::Event::MouseMoved(egui::Vec2::new(108.0, 150.0)),
+                egui::Event::Touch {
+                    device_id: egui::TouchDeviceId(1),
+                    id: egui::TouchId(7),
+                    phase: egui::TouchPhase::Start,
+                    pos: egui::pos2(108.0, 150.0),
+                    force: None,
+                },
+                egui::Event::PointerButton {
+                    pos: egui::pos2(108.0, 150.0),
+                    button: egui::PointerButton::Primary,
+                    pressed: true,
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ]
+        };
+
+        let run_update_with_input = |app: &mut OttrinApp,
+                                     mut events: Vec<egui::Event>|
+         -> Context {
+            let mut input = egui::RawInput::default();
+            let viewport_rect = Rect::from_min_size(egui::pos2(0.0, 0.0), Vec2::new(1024.0, 768.0));
+            input.screen_rect = Some(viewport_rect);
+            input.events.append(&mut events);
+            if let Some(viewport_info) = input.viewports.get_mut(&egui::ViewportId::ROOT) {
+                viewport_info.inner_rect = Some(viewport_rect);
+                viewport_info.outer_rect = Some(viewport_rect);
+            }
+            let ctx = Context::default();
+            let mut frame = eframe::Frame::_new_kittest();
+            let _ = ctx.run(input, |ctx| {
+                eframe::App::update(app, ctx, &mut frame);
+            });
+            ctx
+        };
+
+        let _baseline_ctx = run_update_with_input(&mut app, conflict_input());
+        let (
+            baseline_has_mouse_wheel_event,
+            baseline_has_pointer_button_event,
+            baseline_has_touch_event,
+            baseline_raw_scroll_delta,
+        ) = _baseline_ctx.input(|input| {
+            (
+                input
+                    .events
+                    .iter()
+                    .any(|event| matches!(event, egui::Event::MouseWheel { .. })),
+                input
+                    .events
+                    .iter()
+                    .any(|event| matches!(event, egui::Event::PointerButton { .. })),
+                input
+                    .events
+                    .iter()
+                    .any(|event| matches!(event, egui::Event::Touch { .. })),
+                input.raw_scroll_delta,
+            )
+        });
+        assert!(baseline_has_mouse_wheel_event);
+        assert!(baseline_has_pointer_button_event);
+        assert!(baseline_has_touch_event);
+        assert_ne!(baseline_raw_scroll_delta, Vec2::ZERO);
+
+        app.tab_ui.entry(tab_id).or_default().grid_rubber_band = None;
+        app.pending_move_conflict = Some(PendingMoveConflict {
+            cmd: FileCommand::Move {
+                sources: vec![source],
+                destination,
+                conflict: ConflictAction::Rename,
+            },
+            tab_id: Some(tab_id),
+            bindings: Vec::new(),
+            clipboard_generation: None,
+        });
+
+        let blocked_ctx = run_update_with_input(&mut app, conflict_input());
+        let (
+            has_mouse_wheel_event,
+            has_pointer_button_event,
+            has_pointer_moved_event,
+            has_mouse_moved_event,
+            has_touch_event,
+            raw_scroll_delta,
+            smooth_scroll_delta,
+        ) = blocked_ctx.input(|input| {
+            (
+                input
+                    .events
+                    .iter()
+                    .any(|event| matches!(event, egui::Event::MouseWheel { .. })),
+                input
+                    .events
+                    .iter()
+                    .any(|event| matches!(event, egui::Event::PointerButton { .. })),
+                input
+                    .events
+                    .iter()
+                    .any(|event| matches!(event, egui::Event::PointerMoved(_))),
+                input
+                    .events
+                    .iter()
+                    .any(|event| matches!(event, egui::Event::MouseMoved(_))),
+                input
+                    .events
+                    .iter()
+                    .any(|event| matches!(event, egui::Event::Touch { .. })),
+                input.raw_scroll_delta,
+                input.smooth_scroll_delta,
+            )
+        });
+
+        assert!(!has_mouse_wheel_event);
+        assert!(has_pointer_button_event);
+        assert!(has_pointer_moved_event);
+        assert!(has_mouse_moved_event);
+        assert!(has_touch_event);
+        assert_eq!(raw_scroll_delta, Vec2::ZERO);
+        assert_eq!(smooth_scroll_delta, Vec2::ZERO);
+        assert!(
+            app.tab_ui
+                .entry(tab_id)
+                .or_default()
+                .grid_rubber_band
+                .is_none()
+        );
+        assert!(app.pending_move_conflict.is_some());
+
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn move_conflict_modal_resolution_actions_clears_pending_without_reentry() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-move-conflict-button-paths-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        let destination = root.join("destination");
+        let workspace = root.join("workspace");
+        std::fs::create_dir_all(&destination).expect("create destination");
+        std::fs::create_dir_all(&workspace).expect("create workspace");
+        let source = workspace.join("report.txt");
+        let other = workspace.join("report-2.txt");
+        std::fs::write(&source, "conflict source").expect("seed source");
+        std::fs::write(other.clone(), "conflict source 2").expect("seed source 2");
+        std::fs::write(destination.join("report.txt"), "occupied").expect("create conflict");
+
+        let make_cmd = |source: &std::path::PathBuf, other: &std::path::PathBuf| -> FileCommand {
+            FileCommand::Move {
+                sources: vec![source.clone(), other.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Rename,
+            }
+        };
+
+        let cmd = make_cmd(&source, &other);
+        let choices = [
+            Some(ConflictAction::Overwrite),
+            Some(ConflictAction::Rename),
+            Some(ConflictAction::Skip),
+            None,
+        ];
+
+        for action in choices {
+            let mut app = OttrinApp::default();
+            app.command_frame = Default::default();
+            app.operation_history.clear();
+
+            assert!(app.request_move_conflict_confirmation(&cmd, None, &Vec::new(), None, None));
+            assert!(app.pending_move_conflict.is_some());
+            app.resolve_move_conflict(action);
+
+            assert!(app.pending_move_conflict.is_none());
+            assert!(app.request_move_conflict_confirmation(&cmd, None, &Vec::new(), None, None));
+            assert!(app.pending_move_conflict.is_some());
+            app.pending_move_conflict = None;
+        }
+
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
     fn move_conflict_confirmation_does_not_require_refresh_tab() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-ui-move-conflict-tabless-{}-{}",
@@ -21663,7 +21980,7 @@ mod tests {
             destination,
             conflict: ConflictAction::Rename,
         };
-        let blocked = app.request_move_conflict_confirmation(&cmd, None, &Vec::new(), None);
+        let blocked = app.request_move_conflict_confirmation(&cmd, None, &Vec::new(), None, None);
         assert!(blocked);
         assert!(app.pending_move_conflict.is_some());
         assert!(
@@ -21671,6 +21988,39 @@ mod tests {
                 .as_ref()
                 .is_some_and(|pending| { pending.tab_id.is_none() })
         );
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn move_conflict_confirmation_preconfirmed_choice_skips_modal_reentry() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-move-conflict-preconfirmed-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
+        ));
+        let destination = root.join("destination");
+        std::fs::create_dir_all(&destination).expect("create destination");
+        let source = root.join("report.txt");
+        std::fs::write(destination.join("report.txt"), "occupied").expect("create conflict");
+
+        let mut app = OttrinApp::default();
+        let cmd = FileCommand::Move {
+            sources: vec![source],
+            destination,
+            conflict: ConflictAction::Skip,
+        };
+        let blocked = app.request_move_conflict_confirmation(
+            &cmd,
+            Some(1),
+            &Vec::new(),
+            None,
+            Some(ConflictAction::Rename),
+        );
+        assert!(!blocked);
+        assert!(app.pending_move_conflict.is_none());
         let _ = std::fs::remove_dir_all(root);
     }
 

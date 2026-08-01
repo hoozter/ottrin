@@ -117,6 +117,7 @@ pub enum PlatformError {
         total: usize,
         stopped_source: PathBuf,
         recovery_paths: Vec<PathBuf>,
+        completed_dispositions: Vec<MoveDisposition>,
         message: String,
     },
 }
@@ -504,7 +505,10 @@ pub trait PlatformOps: Send + Sync {
     fn execute_command_with_move_dispositions(
         &self,
         command: &FileCommand,
-    ) -> Result<(Option<FileProperties>, Vec<MoveDisposition>), PlatformError>;
+    ) -> Result<(Option<FileProperties>, Vec<MoveDisposition>), PlatformError> {
+        self.execute_command(command)
+            .map(|result| (result, Vec::new()))
+    }
     fn execute_privileged(
         &self,
         request: &PrivilegedRequest,
@@ -967,6 +971,7 @@ fn execute_batch(
                     completed,
                     total,
                     stopped_source: source.clone(),
+                    completed_dispositions: Vec::new(),
                     message: message_with_recovery(&error, &recovery_paths),
                     recovery_paths,
                 });
@@ -1004,6 +1009,7 @@ fn execute_move_batch(
                         completed,
                         total,
                         stopped_source: source.clone(),
+                        completed_dispositions: completed_dispositions.clone(),
                         message: message_with_recovery(&error, &recovery_paths),
                         recovery_paths,
                     });
@@ -1053,6 +1059,7 @@ fn execute_copy_batch_with(
                         completed,
                         total,
                         stopped_source: source.clone(),
+                        completed_dispositions: Vec::new(),
                         message: message_with_recovery(&error, &recovery_paths),
                         recovery_paths,
                     });
@@ -2114,15 +2121,21 @@ mod tests {
             }
         });
 
-        assert!(matches!(
-            result,
-            Err(PlatformError::PartialBatch {
-                completed: 1,
-                total: 2,
-                ref stopped_source,
-                ..
-            }) if stopped_source == Path::new("second")
-        ));
+        if let Err(PlatformError::PartialBatch {
+            completed,
+            total,
+            stopped_source,
+            completed_dispositions,
+            ..
+        }) = result
+        {
+            assert_eq!(completed, 1);
+            assert_eq!(total, 2);
+            assert_eq!(stopped_source, Path::new("second"));
+            assert!(completed_dispositions.is_empty());
+        } else {
+            panic!("expected typed partial copy batch result");
+        }
     }
 
     #[test]
@@ -2139,15 +2152,138 @@ mod tests {
             }
         });
 
-        assert!(matches!(
-            result,
+        if let Err(PlatformError::PartialBatch {
+            completed,
+            total,
+            stopped_source,
+            completed_dispositions,
+            ..
+        }) = result
+        {
+            assert_eq!(completed, 2);
+            assert_eq!(total, 2);
+            assert_eq!(stopped_source, Path::new("second"));
+            assert!(completed_dispositions.is_empty());
+        } else {
+            panic!("expected typed partial move batch result");
+        }
+    }
+
+    #[test]
+    fn move_batch_collects_ordered_dispositions_for_partial_source_failures() {
+        let sources = vec![
+            PathBuf::from("first"),
+            PathBuf::from("second"),
+            PathBuf::from("third"),
+        ];
+
+        let result = execute_move_batch(&sources, |source| {
+            if source == Path::new("second") {
+                Ok(MoveDisposition::Skipped)
+            } else if source == Path::new("third") {
+                Err(PlatformError::Io("injected failure".into()))
+            } else {
+                Ok(MoveDisposition::Moved)
+            }
+        });
+
+        match result {
             Err(PlatformError::PartialBatch {
-                completed: 2,
-                total: 2,
-                ref stopped_source,
+                completed_dispositions,
+                completed,
+                total,
+                stopped_source,
                 ..
-            }) if stopped_source == Path::new("second")
-        ));
+            }) => {
+                assert_eq!(completed, 2);
+                assert_eq!(total, 3);
+                assert_eq!(stopped_source, Path::new("third"));
+                assert_eq!(
+                    completed_dispositions,
+                    vec![MoveDisposition::Moved, MoveDisposition::Skipped]
+                );
+            }
+            other => panic!("expected typed partial move batch result, got {other:?}"),
+        }
+    }
+
+    #[derive(Default)]
+    struct MockDefaultMoveOps {
+        called_with: std::sync::atomic::AtomicUsize,
+    }
+
+    impl PlatformOps for MockDefaultMoveOps {
+        fn delete_path(&self, _target: &Path, _mode: DeleteMode) -> Result<(), PlatformError> {
+            Ok(())
+        }
+
+        fn reveal_in_system(&self, _target: &Path) -> Result<(), PlatformError> {
+            Ok(())
+        }
+
+        fn open_with_application(
+            &self,
+            _target: &Path,
+            _application: &Path,
+        ) -> Result<(), PlatformError> {
+            Ok(())
+        }
+
+        fn execute_command(
+            &self,
+            command: &FileCommand,
+        ) -> Result<Option<FileProperties>, PlatformError> {
+            self.called_with
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            match command {
+                FileCommand::Move { .. } => Err(PlatformError::Io("mock move failure".to_string())),
+                _ => Ok(None),
+            }
+        }
+
+        fn execute_privileged(
+            &self,
+            _request: &PrivilegedRequest,
+        ) -> Result<PrivilegedResponse, PlatformError> {
+            Ok(PrivilegedResponse {
+                status: ottrin_core::PrivilegedStatus::Unsupported,
+                message: None,
+                payload: None,
+            })
+        }
+
+        fn privileged_availability(&self) -> PrivilegedAvailability {
+            PrivilegedAvailability::Unsupported("mock helper unavailable".to_string())
+        }
+    }
+
+    #[test]
+    fn execute_command_with_move_dispositions_defaults_with_empty_dispositions() {
+        let platform = MockDefaultMoveOps::default();
+        let command = FileCommand::Move {
+            sources: vec![PathBuf::from("/tmp/source")],
+            destination: PathBuf::from("/tmp/destination"),
+            conflict: ConflictAction::Rename,
+        };
+        let error = platform.execute_command_with_move_dispositions(&command);
+        assert!(matches!(error, Err(PlatformError::Io(_))));
+
+        let command = FileCommand::Delete {
+            targets: vec![PathBuf::from("/tmp/source")],
+            mode: DeleteMode::Trash,
+        };
+        let Ok((result, dispositions)) = platform.execute_command_with_move_dispositions(&command)
+        else {
+            panic!("expected successful command execution");
+        };
+        assert!(result.is_none());
+        assert!(dispositions.is_empty());
+        assert_eq!(
+            platform
+                .called_with
+                .load(std::sync::atomic::Ordering::Relaxed),
+            2
+        );
     }
 
     #[test]
