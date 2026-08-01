@@ -1068,6 +1068,7 @@ struct SearchUiState {
     scroll_to_selected: bool,
     total: usize,
     last_error: Option<String>,
+    last_warning: Option<String>,
     request_focus: bool,
     input_focused: bool,
     last_query_root: Option<PathBuf>,
@@ -1104,6 +1105,7 @@ impl Default for SearchUiState {
             scroll_to_selected: false,
             total: 0,
             last_error: None,
+            last_warning: None,
             request_focus: false,
             input_focused: false,
             last_query_root: None,
@@ -7431,6 +7433,7 @@ impl OttrinApp {
             self.search_ui.total = 0;
             self.search_ui.selected = None;
             self.search_ui.last_error = None;
+            self.search_ui.last_warning = None;
             self.search_ui.last_query_root = root;
             self.search_ui.scroll_to_selected = false;
             self.search_ui.search_inflight = false;
@@ -7481,6 +7484,7 @@ impl OttrinApp {
             }
             self.search_ui.last_query_root = result.root;
             self.search_ui.last_error = result.response.error;
+            self.search_ui.last_warning = result.response.warning;
             if self.search_ui.last_error.is_none() {
                 self.search_ui.results = result.response.items;
                 self.search_ui.total = result.response.total;
@@ -11231,6 +11235,9 @@ impl OttrinApp {
             });
             if let Some(err) = &self.search_ui.last_error {
                 ui.label(RichText::new(err).color(c.error).size(10.5));
+            }
+            if let Some(warning) = &self.search_ui.last_warning {
+                ui.label(RichText::new(warning).color(c.text_muted).size(10.5));
             }
             ui.add_space(2.0);
         }

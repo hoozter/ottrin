@@ -22,7 +22,9 @@ mod plan;
 mod scanner;
 mod watch;
 mod worker;
-use db::{SearchStore, query_indexed_content_page, search_db_path};
+use db::{
+    SearchStore, query_indexed_content_page, search_db_path, stream_generation_content_items,
+};
 
 #[cfg(test)]
 static SEARCH_SERVICE_TEST_LOCK: Mutex<()> = Mutex::new(());
@@ -434,6 +436,7 @@ impl SearchHandle {
                 total: 0,
                 status,
                 error: None,
+                warning: None,
             };
         }
 
@@ -445,24 +448,13 @@ impl SearchHandle {
                     total: 0,
                     status,
                     error: Some(e.to_string()),
+                    warning: None,
                 };
             }
         };
 
-        // A negated content query needs the complement of the content index, not
-        // merely positive FTS candidates. Until metadata and content can be read
-        // from one generation-consistent, bounded stream, fail closed rather than
-        // silently mixing content and filename/path results.
         if query.content_search && expr_contains_negation(&expr) {
-            return SearchResponse {
-                items: Vec::new(),
-                total: 0,
-                status,
-                error: Some(
-                    "Negated content-search expressions are not supported; use positive indexed content terms or disable content search."
-                        .to_string(),
-                ),
-            };
+            return self.query_negated_content_snapshot(&query, &expr, status, &cfg);
         }
 
         let current_folder_outside_index = matches!(query.scope, SearchScope::CurrentFolder)
@@ -678,6 +670,100 @@ impl SearchHandle {
             total,
             status,
             error: None,
+            warning: None,
+        }
+    }
+}
+
+impl SearchHandle {
+    fn query_negated_content_snapshot(
+        &self,
+        query: &SearchQuery,
+        expr: &Expr,
+        status: SearchIndexStatus,
+        cfg: &SearchConfig,
+    ) -> SearchResponse {
+        if !matches!(status, SearchIndexStatus::Ready) {
+            return SearchResponse {
+                items: Vec::new(),
+                total: 0,
+                status,
+                error: Some(
+                    "Negated content search requires a completed indexed generation.".to_string(),
+                ),
+                warning: None,
+            };
+        }
+        let plan = match plan::ScanPlan::new(cfg) {
+            Ok(plan) => plan,
+            Err(error) => {
+                return SearchResponse {
+                    items: Vec::new(),
+                    total: 0,
+                    status,
+                    error: Some(error.to_string()),
+                    warning: None,
+                };
+            }
+        };
+        let mut matched = Vec::new();
+        let mut total_matches = 0usize;
+        let result_capacity = query.offset.saturating_add(query.limit).max(1);
+        let stats = stream_generation_content_items(self.store_path.as_ref(), &plan, |record| {
+            // Unknown content is excluded from every negated-content query. An
+            // absent FTS row must never become evidence for a complement result.
+            if !record.complete {
+                return;
+            }
+            let mut item = record.item;
+            item.content_snippet = record.content;
+            if scope_match(query, &item)
+                && (query.include_hidden_system || !item.name.starts_with('.'))
+                && eval_expr(expr, &item)
+            {
+                total_matches = total_matches.saturating_add(1);
+                matched.push((relevance_score(query, &item), item));
+                // The reader streams one item at a time; retain only the page
+                // window while scanning so a broad complement cannot clone the
+                // whole generation into query memory.
+                if matched.len() > result_capacity {
+                    sort_results(&mut matched, query.sort);
+                    matched.truncate(result_capacity);
+                }
+            }
+        });
+        let stats = match stats {
+            Ok(stats) => stats,
+            Err(error) => {
+                return SearchResponse {
+                    items: Vec::new(),
+                    total: 0,
+                    status,
+                    error: Some(format!(
+                        "Negated content search could not read its indexed generation: {error}"
+                    )),
+                    warning: None,
+                };
+            }
+        };
+        sort_results(&mut matched, query.sort);
+        let items = matched
+            .into_iter()
+            .skip(query.offset)
+            .take(query.limit)
+            .map(|(_, item)| item)
+            .collect();
+        SearchResponse {
+            items,
+            total: total_matches,
+            status,
+            error: None,
+            warning: (stats.unknown_items > 0).then(|| {
+                format!(
+                    "Excluded {} item(s) with unknown indexed content from negated content search.",
+                    stats.unknown_items.min(999)
+                )
+            }),
         }
     }
 }
@@ -3478,57 +3564,143 @@ mod tests {
     }
 
     #[test]
-    fn negated_content_search_is_rejected_before_metadata_evaluation() {
+    fn negated_content_search_requires_a_completed_generation() {
         let service = SearchService::new(SearchConfig {
             include_roots: vec![PathBuf::from("/snapshot")],
             use_system_locate: false,
             ..SearchConfig::default()
         });
         let item = mk_item("/snapshot/foo.txt", "foo.txt", EntryKind::File);
-        let expressions = ["!bar", "foo | !bar", "!!foo", "!/bar/", "!type:dir"];
-
-        for status in [SearchIndexStatus::Ready, SearchIndexStatus::Indexing] {
-            {
-                let mut index = service.index.write().expect("index write");
-                index.status = status;
-                index.items = Arc::new(vec![item.clone()]);
-            }
-            for text in expressions {
-                let content_response = service.query(SearchQuery {
-                    text: text.to_string(),
-                    scope: SearchScope::Global,
-                    root_path: None,
-                    include_hidden_system: false,
-                    sort: SearchSort::Relevance,
-                    limit: 20,
-                    offset: 0,
-                    content_search: true,
-                });
-                assert!(content_response.error.is_some(), "{status:?}: {text}");
-                assert!(content_response.items.is_empty(), "{status:?}: {text}");
-                assert_eq!(content_response.total, 0, "{status:?}: {text}");
-
-                let metadata_response = service.query(SearchQuery {
-                    content_search: false,
-                    ..SearchQuery {
-                        text: text.to_string(),
-                        scope: SearchScope::Global,
-                        root_path: None,
-                        include_hidden_system: false,
-                        sort: SearchSort::Relevance,
-                        limit: 20,
-                        offset: 0,
-                        content_search: true,
-                    }
-                });
-                assert!(metadata_response.error.is_none(), "{status:?}: {text}");
-                assert_eq!(
-                    metadata_response.items,
-                    vec![item.clone()],
-                    "{status:?}: {text}"
-                );
-            }
+        {
+            let mut index = service.index.write().expect("index write");
+            index.status = SearchIndexStatus::Indexing;
+            index.items = Arc::new(vec![item.clone()]);
         }
+        let response = service.query(SearchQuery {
+            text: "!bar".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+        assert!(response.items.is_empty());
+        assert_eq!(response.total, 0);
+        assert!(
+            response
+                .error
+                .as_deref()
+                .is_some_and(|error| error.contains("completed indexed generation"))
+        );
+    }
+
+    #[test]
+    fn negated_content_search_returns_only_generation_complete_content_absences() {
+        use crate::mutation::{IndexMutation, OwnedItem};
+        use crate::plan::ScanPlan;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-negated-fts-completeness-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        let complete = root.join("complete.txt");
+        let empty = root.join("empty.txt");
+        let binary = root.join("binary.txt");
+        let oversized = root.join("oversized.txt");
+        let vanished = root.join("vanished.txt");
+        fs::write(&complete, "ordinary searchable text").expect("write complete content");
+        fs::write(&empty, "").expect("write empty content");
+        fs::write(&binary, b"needle\0binary").expect("write binary content");
+        fs::write(&oversized, vec![b'x'; 512 * 1024 + 1]).expect("write oversized content");
+
+        let config = SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        };
+        let service = SearchService::new(config.clone());
+        let plan = ScanPlan::new(&config).expect("plan");
+        let make_owned = |path: &Path| {
+            let mut item = mk_item(
+                path.to_str().expect("UTF-8 temporary path"),
+                path.file_name()
+                    .and_then(|name| name.to_str())
+                    .expect("file name"),
+                EntryKind::File,
+            );
+            item.size_bytes = fs::metadata(path).ok().map(|metadata| metadata.len());
+            OwnedItem::new(root.clone(), item)
+        };
+        let mut store = SearchStore::open(service.store_path.clone()).expect("open real DB");
+        let mut items = vec![
+            make_owned(&complete),
+            make_owned(&empty),
+            make_owned(&binary),
+            make_owned(&oversized),
+        ];
+        let mut vanished_item = mk_item(
+            vanished.to_str().expect("UTF-8 temporary path"),
+            "vanished.txt",
+            EntryKind::File,
+        );
+        vanished_item.size_bytes = Some(10);
+        items.push(OwnedItem::new(root.clone(), vanished_item));
+        store
+            .commit(&plan, IndexMutation::ReplaceAll(items))
+            .expect("commit generation");
+        {
+            let mut index = service.index.write().expect("index write");
+            index.status = SearchIndexStatus::Ready;
+        }
+
+        let response = service.query(SearchQuery {
+            text: "!needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Path,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert!(response.error.is_none());
+        assert_eq!(
+            response.warning.as_deref(),
+            Some("Excluded 3 item(s) with unknown indexed content from negated content search.")
+        );
+        assert_eq!(
+            response
+                .items
+                .iter()
+                .map(|item| &item.path)
+                .collect::<Vec<_>>(),
+            vec![&complete, &empty]
+        );
+        let bounded_response = service.query(SearchQuery {
+            limit: 1,
+            ..SearchQuery {
+                text: "!needle".to_string(),
+                scope: SearchScope::Global,
+                root_path: None,
+                include_hidden_system: false,
+                sort: SearchSort::Path,
+                limit: 20,
+                offset: 0,
+                content_search: true,
+            }
+        });
+        assert_eq!(bounded_response.total, 2);
+        assert_eq!(bounded_response.items.len(), 1);
+        assert_eq!(bounded_response.items[0].path, complete);
+
+        let _ = fs::remove_dir_all(root);
+        let _ = fs::remove_file(&service.store_path);
     }
 
     #[test]

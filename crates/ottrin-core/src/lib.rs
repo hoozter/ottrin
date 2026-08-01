@@ -357,6 +357,9 @@ pub struct SearchResponse {
     pub total: usize,
     pub status: SearchIndexStatus,
     pub error: Option<String>,
+    /// Non-fatal search information; results remain valid when present.
+    #[serde(default)]
+    pub warning: Option<String>,
 }
 
 // ── File entry ────────────────────────────────────────────────────────────────

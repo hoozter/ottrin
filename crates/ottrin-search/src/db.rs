@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use thiserror::Error;
 
 /// Schema version for the on-disk search database.
-pub const SEARCH_DB_VERSION: u32 = 5;
+pub const SEARCH_DB_VERSION: u32 = 6;
 
 const GENERATION_SCHEMA: &str = r#"
 CREATE TABLE IF NOT EXISTS search_generations (
@@ -29,6 +29,17 @@ CREATE TABLE IF NOT EXISTS search_generation_items (
     modified_unix_secs INTEGER,
     is_executable INTEGER NOT NULL,
     symlink_target_is_dir INTEGER,
+    PRIMARY KEY (generation_id, path),
+    FOREIGN KEY (generation_id) REFERENCES search_generations(id) ON DELETE CASCADE
+);
+
+-- Every indexed item gets an explicit content-completeness row.  An absent FTS
+-- row alone is never evidence that a file does not contain a query term.
+CREATE TABLE IF NOT EXISTS search_generation_content_state (
+    generation_id INTEGER NOT NULL,
+    path BLOB NOT NULL,
+    state INTEGER NOT NULL,
+    content TEXT,
     PRIMARY KEY (generation_id, path),
     FOREIGN KEY (generation_id) REFERENCES search_generations(id) ON DELETE CASCADE
 );
@@ -59,6 +70,16 @@ pub(crate) struct IndexedContentHit {
     /// FTS5 ranks stronger matches with more-negative values. Convert that
     /// ordering into a bounded positive relevance contribution for the UI.
     pub(crate) relevance: i64,
+}
+
+pub(crate) struct GenerationContentItem {
+    pub(crate) item: SearchResultItem,
+    pub(crate) content: Option<String>,
+    pub(crate) complete: bool,
+}
+
+pub(crate) struct GenerationContentQueryStats {
+    pub(crate) unknown_items: usize,
 }
 
 #[allow(dead_code)]
@@ -225,28 +246,37 @@ fn insert_generation_content(
     generation: i64,
     items: &[OwnedItem],
 ) -> Result<(), SearchDbError> {
-    let mut stmt = tx.prepare_cached(
+    let mut content_stmt = tx.prepare_cached(
         "INSERT INTO search_generation_content (generation_id, path, content) VALUES (?1, ?2, ?3)",
+    )?;
+    let mut state_stmt = tx.prepare_cached(
+        "INSERT INTO search_generation_content_state (generation_id, path, state, content) VALUES (?1, ?2, ?3, ?4)",
     )?;
     for owned in items {
         let item = owned.item();
-        if !matches!(item.kind, EntryKind::File)
-            || item
-                .size_bytes
-                .is_none_or(|size| size > MAX_INDEXED_TEXT_BYTES)
+        let path = encode_path(&item.path);
+        let (state, content) = if !matches!(item.kind, EntryKind::File) {
+            (2_i64, None)
+        } else if item
+            .size_bytes
+            .is_none_or(|size| size > MAX_INDEXED_TEXT_BYTES)
         {
-            continue;
-        }
-        let Ok(bytes) = std::fs::read(&item.path) else {
-            continue;
+            (3, None)
+        } else {
+            match std::fs::read(&item.path) {
+                Err(_) => (4, None),
+                Ok(bytes) => match String::from_utf8(bytes) {
+                    Err(_) => (5, None),
+                    Ok(content) if content.contains('\0') => (5, None),
+                    Ok(content) if content.is_empty() => (1, None),
+                    Ok(content) => (0, Some(content)),
+                },
+            }
         };
-        let Ok(content) = String::from_utf8(bytes) else {
-            continue;
-        };
-        if content.is_empty() || content.contains('\0') {
-            continue;
+        state_stmt.execute(params![generation, &path, state, content])?;
+        if let Some(content) = content {
+            content_stmt.execute(params![generation, path, content])?;
         }
-        stmt.execute(params![generation, encode_path(&item.path), content])?;
     }
     Ok(())
 }
@@ -327,6 +357,66 @@ pub(crate) fn query_indexed_content_page(
         },
     )?;
     rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+}
+
+/// Stream the completed active generation from a single read transaction. This
+/// is intentionally separate from the worker connection: queries cannot retain
+/// the writer and each callback owns at most one item's indexed text.
+pub(crate) fn stream_generation_content_items(
+    db_path: &Path,
+    plan: &ScanPlan,
+    mut visit: impl FnMut(GenerationContentItem),
+) -> Result<GenerationContentQueryStats, SearchDbError> {
+    let mut conn = Connection::open_with_flags(
+        db_path,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+    )?;
+    let tx = conn.transaction_with_behavior(rusqlite::TransactionBehavior::Deferred)?;
+    let mut stmt = tx.prepare(
+        "SELECT i.path, i.parent_path, i.root_path, i.name, i.kind, i.size_bytes,
+                i.modified_unix_secs, i.is_executable, i.symlink_target_is_dir,
+                c.state, c.content
+         FROM search_store_state s
+         JOIN search_generations g ON g.id = s.active_generation_id
+         JOIN search_generation_items i ON i.generation_id = g.id
+         LEFT JOIN search_generation_content_state c
+           ON c.generation_id = i.generation_id AND c.path = i.path
+         WHERE s.singleton = 1 AND g.completed = 1 AND g.plan_identity = ?1
+         ORDER BY i.path",
+    )?;
+    let mut rows = stmt.query([plan.identity()])?;
+    let mut unknown_items = 0;
+    while let Some(row) = rows.next()? {
+        let state: Option<i64> = row.get(9)?;
+        let complete = matches!(state, Some(0 | 1));
+        if !complete {
+            unknown_items += 1;
+        }
+        let mut item = SearchResultItem {
+            path: decode_path(row.get(0)?)?,
+            parent_path: decode_path(row.get(1)?)?,
+            name: row.get(3)?,
+            kind: entry_kind_from_i64(row.get(4)?),
+            size_bytes: row.get(5)?,
+            modified_unix_secs: row.get(6)?,
+            is_executable: row.get::<_, i64>(7)? != 0,
+            symlink_target_is_dir: row.get::<_, Option<i64>>(8)?.map(|value| value != 0),
+            content_snippet: None,
+            name_lower: String::new(),
+            path_str: String::new(),
+            path_lower: String::new(),
+        };
+        item.prepare();
+        visit(GenerationContentItem {
+            item,
+            content: row.get(10)?,
+            complete,
+        });
+    }
+    drop(rows);
+    drop(stmt);
+    tx.commit()?;
+    Ok(GenerationContentQueryStats { unknown_items })
 }
 
 fn fts_rank_relevance(rank: f64) -> i64 {
@@ -536,10 +626,23 @@ fn migrate(conn: &Connection) -> Result<(), SearchDbError> {
                  DROP TABLE IF EXISTS meta;",
             )?;
         }
+        5 => {
+            // v5 had FTS rows without a per-item completeness record. Reusing
+            // those generations would make negation unsound, so force the
+            // normal rebuild path instead of guessing from absent FTS rows.
+            conn.execute_batch(
+                "DROP TABLE IF EXISTS search_generation_content;
+                 DROP TABLE IF EXISTS search_generation_content_state;
+                 DROP TABLE IF EXISTS search_generation_items;
+                 DROP TABLE IF EXISTS search_store_state;
+                 DROP TABLE IF EXISTS search_generations;",
+            )?;
+            conn.execute_batch(GENERATION_SCHEMA)?;
+        }
         other => return Err(SearchDbError::UnsupportedVersion(other)),
     }
     if version != SEARCH_DB_VERSION {
-        conn.execute("PRAGMA user_version = 5", [])?;
+        conn.execute("PRAGMA user_version = 6", [])?;
     }
     Ok(())
 }
@@ -605,6 +708,46 @@ mod tests {
             )
             .expect("FTS content table");
         assert!(sql.contains("fts5"));
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn v5_database_is_reset_before_completeness_state_is_required() {
+        let db_path = temp_db_path("v5-completeness-reset");
+        let conn = Connection::open(&db_path).expect("open old database");
+        conn.execute_batch(
+            "CREATE TABLE search_generations (id INTEGER PRIMARY KEY, plan_identity TEXT NOT NULL, completed INTEGER NOT NULL, item_count INTEGER NOT NULL);
+             CREATE TABLE search_generation_items (generation_id INTEGER NOT NULL, path BLOB NOT NULL, parent_path BLOB NOT NULL, root_path BLOB NOT NULL, name TEXT NOT NULL, kind INTEGER NOT NULL, size_bytes INTEGER, modified_unix_secs INTEGER, is_executable INTEGER NOT NULL, symlink_target_is_dir INTEGER, PRIMARY KEY (generation_id, path));
+             CREATE TABLE search_store_state (singleton INTEGER PRIMARY KEY, active_generation_id INTEGER NOT NULL);
+             CREATE VIRTUAL TABLE search_generation_content USING fts5(generation_id UNINDEXED, path UNINDEXED, content);
+             INSERT INTO search_generations VALUES (1, 'old-plan', 1, 1);
+             INSERT INTO search_store_state VALUES (1, 1);
+             PRAGMA user_version = 5;",
+        )
+        .expect("seed v5 schema");
+        drop(conn);
+
+        let _store = SearchStore::open(db_path.clone()).expect("migrate v5 database");
+        let conn = Connection::open(&db_path).expect("reopen migrated database");
+        let active_count: i64 = conn
+            .query_row("SELECT COUNT(*) FROM search_store_state", [], |row| {
+                row.get(0)
+            })
+            .expect("count active generation");
+        let state_table_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'search_generation_content_state'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("inspect completeness schema");
+        assert_eq!(active_count, 0, "v5 rows cannot prove content completeness");
+        assert_eq!(state_table_count, 1);
+        assert_eq!(
+            conn.query_row("PRAGMA user_version", [], |row| row.get::<_, u32>(0))
+                .expect("schema version"),
+            SEARCH_DB_VERSION
+        );
         let _ = std::fs::remove_file(db_path);
     }
 
