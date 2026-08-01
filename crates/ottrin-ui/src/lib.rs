@@ -7067,11 +7067,13 @@ impl OttrinApp {
         };
         *action = conflict;
         let started = match pending.clipboard_generation {
-            Some(clipboard_generation) => self.run_file_op_with_bindings(
+            Some(clipboard_generation) => self.run_file_op_bound(
                 pending.cmd,
                 pending.tab_id,
-                pending.bindings,
-                clipboard_generation,
+                Vec::new(),
+                Some(pending.bindings),
+                Some(clipboard_generation),
+                Some(conflict),
             ),
             None => self.run_file_op_bound(
                 pending.cmd,
@@ -21957,6 +21959,54 @@ mod tests {
         }
 
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn cut_clipboard_conflict_resolution_executes_once_without_reentry() {
+        for conflict in [ConflictAction::Rename, ConflictAction::Skip] {
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-ui-cut-conflict-confirmed-{conflict:?}-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .expect("clock after epoch")
+                    .as_nanos(),
+            ));
+            let destination = root.join("destination");
+            let workspace = root.join("workspace");
+            std::fs::create_dir_all(&destination).expect("create destination");
+            std::fs::create_dir_all(&workspace).expect("create workspace");
+            let source = workspace.join("report.txt");
+            std::fs::write(&source, "source").expect("seed source");
+            std::fs::write(destination.join("report.txt"), "occupied").expect("create conflict");
+
+            let generation = 42;
+            let mut app = OttrinApp::default();
+            app.operation_history.clear();
+            app.pending_move_conflict = Some(PendingMoveConflict {
+                cmd: FileCommand::Move {
+                    sources: vec![source],
+                    destination,
+                    conflict: ConflictAction::Rename,
+                },
+                tab_id: None,
+                bindings: Vec::new(),
+                clipboard_generation: Some(generation),
+            });
+
+            app.resolve_move_conflict(Some(conflict));
+
+            assert!(app.pending_move_conflict.is_none());
+            assert_eq!(app.operation_history.len(), 1);
+            let result = app
+                .op_rx
+                .recv_timeout(std::time::Duration::from_secs(2))
+                .expect("confirmed cut move is queued exactly once");
+            assert_eq!(result.clipboard_generation, Some(generation));
+            assert!(app.op_rx.try_recv().is_err());
+
+            std::fs::remove_dir_all(&root).expect("cleanup fixture");
+        }
     }
 
     #[test]
