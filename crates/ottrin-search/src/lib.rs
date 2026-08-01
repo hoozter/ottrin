@@ -10,7 +10,7 @@ use std::fs::{File, OpenOptions};
 use std::path::{Path, PathBuf};
 #[cfg(test)]
 use std::sync::Mutex;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, atomic::AtomicBool};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 use walkdir::WalkDir;
@@ -454,7 +454,7 @@ impl SearchHandle {
         };
 
         if query.content_search && expr_contains_negation(&expr) {
-            return self.query_negated_content_snapshot(&query, &expr, status, &cfg);
+            return self.query_negated_content_snapshot(&query, &expr, status, &cfg, None);
         }
 
         let current_folder_outside_index = matches!(query.scope, SearchScope::CurrentFolder)
@@ -676,12 +676,43 @@ impl SearchHandle {
 }
 
 impl SearchHandle {
+    /// Run a negated content query with cooperative cancellation. Other query
+    /// modes retain the established synchronous route.
+    pub fn query_cancellable(&self, query: SearchQuery, cancelled: &AtomicBool) -> SearchResponse {
+        if !query.content_search {
+            return self.query(query);
+        }
+        let (status, cfg) = {
+            let status = self.index.read().expect("index read").status;
+            let cfg = self.config.read().expect("config read").clone();
+            (status, cfg)
+        };
+        let expr = match parse_query(&query.text) {
+            Ok(expr) => expr,
+            Err(error) => {
+                return SearchResponse {
+                    items: Vec::new(),
+                    total: 0,
+                    status,
+                    error: Some(error.to_string()),
+                    warning: None,
+                };
+            }
+        };
+        if expr_contains_negation(&expr) {
+            self.query_negated_content_snapshot(&query, &expr, status, &cfg, Some(cancelled))
+        } else {
+            self.query(query)
+        }
+    }
+
     fn query_negated_content_snapshot(
         &self,
         query: &SearchQuery,
         expr: &Expr,
         status: SearchIndexStatus,
         cfg: &SearchConfig,
+        cancelled: Option<&AtomicBool>,
     ) -> SearchResponse {
         if !matches!(status, SearchIndexStatus::Ready) {
             return SearchResponse {
@@ -709,29 +740,30 @@ impl SearchHandle {
         let mut matched = Vec::new();
         let mut total_matches = 0usize;
         let result_capacity = query.offset.saturating_add(query.limit).max(1);
-        let stats = stream_generation_content_items(self.store_path.as_ref(), &plan, |record| {
-            // Unknown content is excluded from every negated-content query. An
-            // absent FTS row must never become evidence for a complement result.
-            if !record.complete {
-                return;
-            }
-            let mut item = record.item;
-            item.content_snippet = record.content;
-            if scope_match(query, &item)
-                && (query.include_hidden_system || !item.name.starts_with('.'))
-                && eval_expr(expr, &item)
-            {
-                total_matches = total_matches.saturating_add(1);
-                matched.push((relevance_score(query, &item), item));
-                // The reader streams one item at a time; retain only the page
-                // window while scanning so a broad complement cannot clone the
-                // whole generation into query memory.
-                if matched.len() > result_capacity {
-                    sort_results(&mut matched, query.sort);
-                    matched.truncate(result_capacity);
+        let stats =
+            stream_generation_content_items(self.store_path.as_ref(), &plan, cancelled, |record| {
+                // Unknown content is excluded from every negated-content query. An
+                // absent FTS row must never become evidence for a complement result.
+                if !record.complete {
+                    return;
                 }
-            }
-        });
+                let mut item = record.item;
+                item.content_snippet = record.content;
+                if scope_match(query, &item)
+                    && (query.include_hidden_system || !item.name.starts_with('.'))
+                    && eval_expr(expr, &item)
+                {
+                    total_matches = total_matches.saturating_add(1);
+                    matched.push((relevance_score(query, &item), item));
+                    // The reader streams one item at a time; retain only the page
+                    // window while scanning so a broad complement cannot clone the
+                    // whole generation into query memory.
+                    if matched.len() > result_capacity {
+                        sort_results(&mut matched, query.sort);
+                        matched.truncate(result_capacity);
+                    }
+                }
+            });
         let stats = match stats {
             Ok(stats) => stats,
             Err(error) => {
@@ -3698,6 +3730,27 @@ mod tests {
         assert_eq!(bounded_response.total, 2);
         assert_eq!(bounded_response.items.len(), 1);
         assert_eq!(bounded_response.items[0].path, complete);
+        let cancelled = AtomicBool::new(true);
+        let cancelled_response = service.handle().query_cancellable(
+            SearchQuery {
+                text: "!needle".to_string(),
+                scope: SearchScope::Global,
+                root_path: None,
+                include_hidden_system: false,
+                sort: SearchSort::Path,
+                limit: 20,
+                offset: 0,
+                content_search: true,
+            },
+            &cancelled,
+        );
+        assert!(cancelled_response.items.is_empty());
+        assert!(
+            cancelled_response
+                .error
+                .as_deref()
+                .is_some_and(|error| error.contains("was cancelled"))
+        );
 
         let _ = fs::remove_dir_all(root);
         let _ = fs::remove_file(&service.store_path);

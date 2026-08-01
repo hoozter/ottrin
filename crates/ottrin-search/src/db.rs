@@ -365,8 +365,12 @@ pub(crate) fn query_indexed_content_page(
 pub(crate) fn stream_generation_content_items(
     db_path: &Path,
     plan: &ScanPlan,
+    cancelled: Option<&AtomicBool>,
     mut visit: impl FnMut(GenerationContentItem),
 ) -> Result<GenerationContentQueryStats, SearchDbError> {
+    if cancelled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
+        return Err(SearchDbError::ContentQueryCancelled);
+    }
     let mut conn = Connection::open_with_flags(
         db_path,
         rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
@@ -387,6 +391,9 @@ pub(crate) fn stream_generation_content_items(
     let mut rows = stmt.query([plan.identity()])?;
     let mut unknown_items = 0;
     while let Some(row) = rows.next()? {
+        if cancelled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
+            return Err(SearchDbError::ContentQueryCancelled);
+        }
         let state: Option<i64> = row.get(9)?;
         let complete = matches!(state, Some(0 | 1));
         if !complete {
@@ -594,6 +601,8 @@ pub enum SearchDbError {
     ActivationCancelled,
     #[error("generation load was cancelled")]
     LoadCancelled,
+    #[error("content generation query was cancelled")]
+    ContentQueryCancelled,
 }
 
 pub fn search_db_path() -> PathBuf {
@@ -767,7 +776,7 @@ mod generation_tests {
     use crate::mutation::{ActivationFence, IndexMutation, OwnedItem};
     use crate::plan::ScanPlan;
     use ottrin_core::SearchConfig;
-    use std::sync::Arc;
+    use std::sync::{Arc, atomic::AtomicBool};
     use std::time::{SystemTime, UNIX_EPOCH};
 
     fn temp_db_path(name: &str) -> PathBuf {
@@ -922,6 +931,19 @@ mod generation_tests {
         );
         let _ = std::fs::remove_dir_all(root);
         let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn cancelled_content_stream_returns_before_opening_a_reader() {
+        let db_path = temp_db_path("generation-content-cancelled-query");
+        let root = PathBuf::from("root");
+        let scan_plan = plan(&root);
+        let cancelled = AtomicBool::new(true);
+
+        assert!(matches!(
+            stream_generation_content_items(&db_path, &scan_plan, Some(&cancelled), |_| {}),
+            Err(SearchDbError::ContentQueryCancelled)
+        ));
     }
 
     #[test]
