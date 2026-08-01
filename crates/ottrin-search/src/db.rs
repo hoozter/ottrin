@@ -78,13 +78,6 @@ pub(crate) struct GenerationContentItem {
     pub(crate) complete: bool,
 }
 
-#[derive(Debug)]
-pub(crate) struct SearchGenerationMetadata {
-    pub plan_identity: String,
-    pub completed: bool,
-    pub item_count: usize,
-}
-
 #[allow(dead_code)]
 impl SearchStore {
     pub(crate) fn open(path: PathBuf) -> Result<Self, SearchDbError> {
@@ -240,50 +233,6 @@ impl SearchStore {
         after_commit(&snapshot);
         Ok(snapshot)
     }
-}
-
-pub(crate) fn read_active_generation_metadata(
-    path: &Path,
-) -> Result<Option<SearchGenerationMetadata>, SearchDbError> {
-    if !path.exists() {
-        return Ok(None);
-    }
-
-    let conn = Connection::open_with_flags(
-        path,
-        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
-    )?;
-    conn.busy_timeout(std::time::Duration::from_millis(250))?;
-
-    let row: Option<(String, i64, i64)> = conn
-        .query_row(
-            "SELECT g.plan_identity, g.completed, g.item_count
-             FROM search_store_state s
-             JOIN search_generations g ON g.id = s.active_generation_id
-             WHERE s.singleton = 1",
-            [],
-            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
-        )
-        .optional()?;
-
-    let Some((plan_identity, completed, item_count)) = row else {
-        return Ok(None);
-    };
-    if !(0..=1).contains(&completed) {
-        return Err(SearchDbError::InvalidGeneration(
-            "active generation has invalid completion state".to_string(),
-        ));
-    }
-    if item_count < 0 {
-        return Err(SearchDbError::InvalidGeneration(
-            "active generation has invalid item count".to_string(),
-        ));
-    }
-    Ok(Some(SearchGenerationMetadata {
-        plan_identity,
-        completed: completed == 1,
-        item_count: usize::try_from(item_count).unwrap_or(0),
-    }))
 }
 
 fn configure_writer_connection(conn: &Connection) -> Result<(), SearchDbError> {
@@ -669,7 +618,7 @@ pub enum SearchDbError {
     ContentQueryCancelled,
 }
 
-pub fn search_db_path_no_create() -> PathBuf {
+pub fn search_db_path() -> PathBuf {
     #[cfg(target_os = "windows")]
     let cache_root = std::env::var("LOCALAPPDATA")
         .map(PathBuf::from)
@@ -683,13 +632,8 @@ pub fn search_db_path_no_create() -> PathBuf {
         .map(PathBuf::from)
         .unwrap_or_else(|_| ottrin_core::default_home_dir().join(".cache"));
     let dir = cache_root.join("ottrin");
+    let _ = std::fs::create_dir_all(&dir);
     dir.join("search.db")
-}
-
-pub fn search_db_path() -> PathBuf {
-    let path = search_db_path_no_create();
-    let _ = std::fs::create_dir_all(path.parent().unwrap_or_else(|| std::path::Path::new(".")));
-    path
 }
 
 fn migrate(conn: &Connection) -> Result<(), SearchDbError> {

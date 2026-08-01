@@ -6,7 +6,7 @@ use ottrin_core::{
     SearchIndexStatus, SearchQuery, format_size, select_graphics_renderer,
 };
 use ottrin_platform::{DefaultPlatform, PlatformOps, set_privileged_helper_override};
-use ottrin_ui::{OttrinApp, clear_preview_cache_storage, load_config_checked, remove_config_file};
+use ottrin_ui::{OttrinApp, clear_preview_cache_storage, load_config, remove_config_file};
 use std::collections::HashSet;
 #[cfg(any(target_os = "windows", test))]
 use std::fs::OpenOptions;
@@ -131,18 +131,7 @@ fn run_gui() -> eframe::Result<()> {
         }
     };
 
-    let config = match load_config_checked() {
-        Ok(config) => config,
-        Err(error) => {
-            let summary = format!(
-                "Ottrin could not start because config is invalid: {error}. \
-                Recover by fixing the saved config file or running `ottrin --uninstall --purge-config`."
-            );
-            eprintln!("ottrin: {summary}");
-            report_windows_startup_failure("Ottrin could not start", &summary);
-            std::process::exit(3);
-        }
-    };
+    let config = load_config();
     let graphics_runtime = graphics_runtime_status(renderer_override.is_some(), &config);
     let window_size = config.window_size.unwrap_or([1024.0, 680.0]);
 
@@ -163,9 +152,9 @@ fn run_gui() -> eframe::Result<()> {
     eframe::run_native(
         "Ottrin",
         options,
-        Box::new(move |_cc| {
-            Ok(Box::new(OttrinApp::new_with_config_and_graphics_status(
-                config.clone(),
+        Box::new(move |cc| {
+            Ok(Box::new(OttrinApp::new_with_graphics_status(
+                cc,
                 graphics_runtime,
             )))
         }),
@@ -358,44 +347,27 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
     None
 }
 
-fn configured_search_service(config: &ottrin_core::AppConfig) -> ottrin_search::SearchService {
-    let mut config = config.search.clone();
+fn configured_search_service() -> ottrin_search::SearchService {
+    let mut config = load_config().search;
     if config.include_roots.is_empty() {
         config.include_roots = ottrin_search::default_roots();
     }
     ottrin_search::SearchService::new(config)
 }
 
-fn load_headless_config_for_action(
-    _action: &HeadlessAction,
-) -> Result<ottrin_core::AppConfig, String> {
-    load_config_checked()
-}
-
 fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     if let HeadlessAction::Invalid(error) = &action {
         return Err(error.clone());
     }
-    let config = load_headless_config_for_action(&action)?;
     match action {
         HeadlessAction::DropStatus => {
-            print_drop_status(&config.target);
+            print_drop_status(&load_config().target);
             return Ok(());
         }
-        HeadlessAction::DropCopy(sources) => {
-            return run_drop_copy(&config, sources);
-        }
+        HeadlessAction::DropCopy(sources) => return run_drop_copy(sources),
         _ => {}
     }
-
-    if matches!(action, HeadlessAction::IndexStatus) {
-        print_index_diagnostics(&ottrin_search::SearchService::persisted_diagnostics(
-            &config.search,
-        ));
-        return Ok(());
-    }
-
-    let mut service = configured_search_service(&config);
+    let mut service = configured_search_service();
     service.start();
     if matches!(service.diagnostics().status, SearchIndexStatus::Unavailable) {
         return Err(service
@@ -405,7 +377,10 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     }
 
     let result = match action {
-        HeadlessAction::IndexStatus => Ok(()),
+        HeadlessAction::IndexStatus => {
+            print_index_diagnostics(&service.diagnostics());
+            Ok(())
+        }
         HeadlessAction::IndexRebuild => {
             service.rebuild_index_blocking()?;
             print_index_diagnostics(&service.diagnostics());
@@ -413,7 +388,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
         }
         HeadlessAction::Search(query) => {
             wait_for_index_ready(&service)?;
-            let config = config.search;
+            let config = load_config().search;
             let response = service.query(SearchQuery {
                 text: query,
                 scope: config.default_scope,
@@ -443,15 +418,14 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
 /// Executes only the existing production Copy command.  In particular, this
 /// headless surface has no Move variant, never creates a Drop Folder, and asks
 /// the platform layer to preflight every source before it publishes anything.
-fn run_drop_copy(config: &ottrin_core::AppConfig, sources: Vec<PathBuf>) -> Result<(), String> {
+fn run_drop_copy(sources: Vec<PathBuf>) -> Result<(), String> {
     if sources.is_empty() {
         return Err("--drop copy requires at least one source path".to_string());
     }
 
-    let destination = config
+    let destination = load_config()
         .target
         .current
-        .clone()
         .ok_or_else(|| "no Drop Folder is configured".to_string())?;
     if !destination.is_dir() {
         return Err(format!(
@@ -501,18 +475,6 @@ fn wait_for_index_ready(service: &ottrin_search::SearchService) -> Result<(), St
                 return Err(diagnostics
                     .last_error
                     .unwrap_or_else(|| "search service unavailable".to_string()));
-            }
-            SearchIndexStatus::Stale => {
-                return Err(diagnostics
-                    .last_error
-                    .clone()
-                    .unwrap_or_else(|| "search index status is stale".to_string()));
-            }
-            SearchIndexStatus::NeedsRebuild => {
-                return Err(diagnostics
-                    .last_error
-                    .clone()
-                    .unwrap_or_else(|| "search index requires rebuild".to_string()));
             }
             SearchIndexStatus::Indexing if Instant::now() >= deadline => {
                 return Err("search index did not become ready within 30 seconds".to_string());

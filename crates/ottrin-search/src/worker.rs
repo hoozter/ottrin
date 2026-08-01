@@ -4,10 +4,6 @@ use crate::plan::ScanPlan;
 use crate::scanner::{ScanOutcome, ScanProgress};
 use crate::watch::WatchRegistry;
 use crate::{IndexState, current_unix_secs};
-use crate::{
-    PersistedSearchIndexRecord, SEARCH_DB_VERSION, SEARCH_INDEX_STATUS_RECORD_FORMAT,
-    write_search_index_status_record,
-};
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use ottrin_core::{SearchConfig, SearchIndexStatus};
 use std::collections::{BTreeSet, VecDeque};
@@ -195,7 +191,6 @@ struct WorkerLoop {
     watch_registry: Option<WatchRegistry>,
     watch_clock_started: Instant,
     before_watch_setup: Option<WatchSetupHook>,
-    index_status_record_path: Option<PathBuf>,
 }
 
 struct WatchSetupOutcome {
@@ -211,7 +206,6 @@ pub(crate) fn spawn_with_runtime(
     store: SearchStore,
     launcher: ScanLauncher,
     watch_filesystem: bool,
-    index_status_record_path: Option<PathBuf>,
 ) -> WorkerHandle {
     spawn_inner(
         config,
@@ -220,7 +214,6 @@ pub(crate) fn spawn_with_runtime(
         launcher,
         watch_filesystem,
         None,
-        index_status_record_path,
     )
 }
 
@@ -243,7 +236,7 @@ fn spawn_with(
     store: Box<dyn StoreBackend>,
     launcher: ScanLauncher,
 ) -> WorkerHandle {
-    spawn_inner(config, index, store, launcher, false, None, None)
+    spawn_inner(config, index, store, launcher, false, None)
 }
 
 #[cfg(test)]
@@ -261,7 +254,6 @@ fn spawn_with_watch_setup_hook(
         launcher,
         false,
         Some(before_watch_setup),
-        None,
     )
 }
 
@@ -272,7 +264,6 @@ fn spawn_inner(
     launcher: ScanLauncher,
     watch_filesystem: bool,
     before_watch_setup: Option<WatchSetupHook>,
-    index_status_record_path: Option<PathBuf>,
 ) -> WorkerHandle {
     let desired_plan_identity = Arc::new(Mutex::new(
         ScanPlan::new(&config)
@@ -309,7 +300,6 @@ fn spawn_inner(
             watch_registry: None,
             watch_clock_started: Instant::now(),
             before_watch_setup,
-            index_status_record_path,
         };
         worker.run(receiver, watch_filesystem);
     });
@@ -697,7 +687,7 @@ impl WorkerLoop {
                 let expected_epoch = active.expected_epoch;
                 let index = Arc::clone(&self.index);
                 let mut publish = |snapshot: &GenerationSnapshot| {
-                    publish_snapshot(&index, snapshot, self.index_status_record_path.as_deref());
+                    publish_snapshot(&index, snapshot);
                 };
                 match self.store.commit_guarded(
                     plan,
@@ -752,11 +742,7 @@ impl WorkerLoop {
     }
 
     fn publish(&mut self, snapshot: GenerationSnapshot) {
-        publish_snapshot(
-            &self.index,
-            &snapshot,
-            self.index_status_record_path.as_deref(),
-        );
+        publish_snapshot(&self.index, &snapshot);
         self.has_snapshot = true;
     }
 
@@ -798,9 +784,7 @@ impl WorkerLoop {
             return false;
         };
         let index = Arc::clone(&self.index);
-        let mut publish = |snapshot: &GenerationSnapshot| {
-            publish_snapshot(&index, snapshot, self.index_status_record_path.as_deref());
-        };
+        let mut publish = |snapshot: &GenerationSnapshot| publish_snapshot(&index, snapshot);
         match self
             .store
             .commit_guarded(plan, mutation, &self.fence, expected_epoch, &mut publish)
@@ -1026,11 +1010,7 @@ impl WorkerLoop {
     }
 }
 
-fn publish_snapshot(
-    index: &RwLock<IndexState>,
-    snapshot: &GenerationSnapshot,
-    index_status_record_path: Option<&Path>,
-) {
+fn publish_snapshot(index: &RwLock<IndexState>, snapshot: &GenerationSnapshot) {
     let items = snapshot
         .items()
         .iter()
@@ -1049,21 +1029,6 @@ fn publish_snapshot(
     index.active_root_index = 0;
     index.last_scan_completed_unix_secs = Some(current_unix_secs());
     index.last_progress_unix_secs = Some(current_unix_secs());
-    if let Some(index_status_record_path) = index_status_record_path {
-        let record = PersistedSearchIndexRecord {
-            format_version: SEARCH_INDEX_STATUS_RECORD_FORMAT,
-            schema_version: SEARCH_DB_VERSION,
-            status: SearchIndexStatus::Ready,
-            plan_identity: snapshot.plan_identity().to_string(),
-            snapshot_revision: u64::try_from(snapshot.generation()).unwrap_or(0),
-            indexed_items: count,
-            detail: Some(format!("Ready · {count} indexed")),
-            last_error: None,
-        };
-        if let Err(error) = write_search_index_status_record(index_status_record_path, &record) {
-            index.last_error = Some(error);
-        }
-    }
 }
 
 #[cfg(test)]
@@ -2099,7 +2064,6 @@ mod tests {
                 .active
                 .as_ref()
                 .expect("active"),
-            None,
         );
         let (commands, _receiver) = mpsc::channel();
         let mut registry =
@@ -2131,7 +2095,6 @@ mod tests {
             watch_registry: Some(registry),
             watch_clock_started: Instant::now(),
             before_watch_setup: None,
-            index_status_record_path: None,
         };
 
         assert!(worker.recover_root(&root));
