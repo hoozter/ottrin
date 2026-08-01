@@ -383,6 +383,14 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
         _ => {}
     }
     let config = config.ok_or_else(|| "checked config missing".to_string())?;
+
+    if matches!(action, HeadlessAction::IndexStatus) {
+        print_index_diagnostics(&ottrin_search::SearchService::persisted_diagnostics(
+            &config.search,
+        ));
+        return Ok(());
+    }
+
     let mut service = configured_search_service(&config);
     service.start();
     if matches!(service.diagnostics().status, SearchIndexStatus::Unavailable) {
@@ -393,10 +401,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     }
 
     let result = match action {
-        HeadlessAction::IndexStatus => {
-            print_index_diagnostics(&service.diagnostics());
-            Ok(())
-        }
+        HeadlessAction::IndexStatus => Ok(()),
         HeadlessAction::IndexRebuild => {
             service.rebuild_index_blocking()?;
             print_index_diagnostics(&service.diagnostics());

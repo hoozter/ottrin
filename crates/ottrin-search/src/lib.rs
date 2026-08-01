@@ -16,6 +16,8 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 use walkdir::WalkDir;
 
+use crate::plan::ScanPlan;
+
 mod db;
 #[allow(dead_code)] // Slice 2 mutation API is intentionally isolated until worker integration.
 mod mutation;
@@ -24,7 +26,8 @@ mod scanner;
 mod watch;
 mod worker;
 use db::{
-    SearchStore, query_indexed_content_page, search_db_path, stream_generation_content_items,
+    SearchStore, query_indexed_content_page, read_active_generation_metadata, search_db_path,
+    search_db_path_no_create, stream_generation_content_items,
 };
 
 #[cfg(test)]
@@ -321,6 +324,131 @@ impl SearchService {
 
     pub fn search_db_path() -> PathBuf {
         search_db_path()
+    }
+
+    pub fn persisted_diagnostics(config: &SearchConfig) -> SearchIndexDiagnostics {
+        Self::persisted_diagnostics_for_path(config, &search_db_path_no_create())
+    }
+
+    pub(crate) fn persisted_diagnostics_for_path(
+        config: &SearchConfig,
+        store_path: &Path,
+    ) -> SearchIndexDiagnostics {
+        let mut config = config.clone();
+        if config.include_roots.is_empty() {
+            config.include_roots = default_roots();
+        }
+
+        let effective_roots = effective_roots(&config);
+        let configured_root_count = config.include_roots.len();
+        let watched_root_count = effective_roots.len();
+        let plan = match ScanPlan::new(&config) {
+            Ok(plan) => plan,
+            Err(error) => {
+                let message = format!("Invalid search config: {error}");
+                return SearchIndexDiagnostics {
+                    status: SearchIndexStatus::Unavailable,
+                    snapshot_revision: 0,
+                    detail: Some(message.clone()),
+                    indexed_items: 0,
+                    last_completed_indexed_items: None,
+                    estimated_total_items: None,
+                    last_indexed_path: None,
+                    configured_root_count,
+                    watched_root_count,
+                    watcher_ready: false,
+                    watcher_last_setup_unix_secs: None,
+                    watcher_last_error: None,
+                    active_root: None,
+                    active_root_index: 0,
+                    total_roots: effective_roots.len(),
+                    last_scan_started_unix_secs: None,
+                    last_scan_completed_unix_secs: None,
+                    last_scan_duration_ms: None,
+                    last_progress_unix_secs: None,
+                    last_error: Some(message),
+                };
+            }
+        };
+
+        let plan_identity = plan.identity().to_string();
+        let active = match read_active_generation_metadata(store_path) {
+            Ok(active) => active,
+            Err(error) => {
+                return SearchIndexDiagnostics {
+                    status: SearchIndexStatus::Unavailable,
+                    snapshot_revision: 0,
+                    detail: Some(format!("Could not read persisted search metadata: {error}")),
+                    indexed_items: 0,
+                    last_completed_indexed_items: None,
+                    estimated_total_items: None,
+                    last_indexed_path: None,
+                    configured_root_count,
+                    watched_root_count,
+                    watcher_ready: false,
+                    watcher_last_setup_unix_secs: None,
+                    watcher_last_error: None,
+                    active_root: None,
+                    active_root_index: 0,
+                    total_roots: effective_roots.len(),
+                    last_scan_started_unix_secs: None,
+                    last_scan_completed_unix_secs: None,
+                    last_scan_duration_ms: None,
+                    last_progress_unix_secs: None,
+                    last_error: Some(format!("Could not read persisted search metadata: {error}")),
+                };
+            }
+        };
+
+        let mut diagnostics = SearchIndexDiagnostics {
+            status: SearchIndexStatus::Unavailable,
+            snapshot_revision: 0,
+            detail: None,
+            indexed_items: 0,
+            last_completed_indexed_items: None,
+            estimated_total_items: None,
+            last_indexed_path: None,
+            configured_root_count,
+            watched_root_count,
+            watcher_ready: false,
+            watcher_last_setup_unix_secs: None,
+            watcher_last_error: None,
+            active_root: None,
+            active_root_index: 0,
+            total_roots: effective_roots.len(),
+            last_scan_started_unix_secs: None,
+            last_scan_completed_unix_secs: None,
+            last_scan_duration_ms: None,
+            last_progress_unix_secs: None,
+            last_error: None,
+        };
+
+        match active {
+            Some(metadata) => {
+                diagnostics.indexed_items = metadata.item_count;
+                if metadata.completed && metadata.plan_identity == plan_identity {
+                    diagnostics.status = SearchIndexStatus::Ready;
+                    diagnostics.detail = Some("search index is ready".to_string());
+                } else if metadata.completed {
+                    diagnostics.detail = Some(
+                        "Active search generation was built for a different scan plan".to_string(),
+                    );
+                    diagnostics.status = SearchIndexStatus::Indexing;
+                } else {
+                    diagnostics.detail = Some("Search index generation is in progress".to_string());
+                    diagnostics.status = SearchIndexStatus::Indexing;
+                }
+            }
+            None => {
+                diagnostics.detail = Some("No persisted search index is available".to_string());
+            }
+        }
+
+        if let Some(error) = &diagnostics.last_error {
+            diagnostics.detail = diagnostics.detail.or_else(|| Some(error.clone()));
+        }
+
+        diagnostics
     }
 
     /// Age of the system locate database in seconds, if detected.
@@ -2826,6 +2954,7 @@ fn sort_results(v: &mut [(i64, SearchResultItem)], sort: SearchSort) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::mutation::{IndexMutation, OwnedItem};
     use std::fs;
     use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
@@ -2916,11 +3045,113 @@ mod tests {
         item
     }
 
+    fn owned_item(root: &Path, name: &str, size: Option<u64>) -> OwnedItem {
+        let path = root.join(name);
+        let parent = path.parent().unwrap_or(root).to_path_buf();
+        let mut item = SearchResultItem {
+            path: path.clone(),
+            parent_path: parent,
+            name: path
+                .file_name()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_else(|| name.to_string()),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: size,
+            modified_unix_secs: Some(1),
+            content_snippet: None,
+            name_lower: String::new(),
+            path_str: String::new(),
+            path_lower: String::new(),
+        };
+        item.prepare();
+        OwnedItem::new(root.to_path_buf(), item)
+    }
+
     #[test]
     fn default_test_service_never_uses_the_user_search_database() {
         let service = SearchService::new(SearchConfig::default());
 
         assert_ne!(service.store_path, search_db_path());
+    }
+
+    #[test]
+    fn persisted_diagnostics_reports_unavailable_without_creating_storage() {
+        let config = SearchConfig {
+            include_roots: vec![PathBuf::from("tmp/index")],
+            ..SearchConfig::default()
+        };
+        let db_path = temp_service_path("persisted-status-missing");
+        let _ = fs::remove_file(&db_path);
+
+        let diagnostics = SearchService::persisted_diagnostics_for_path(&config, &db_path);
+
+        assert!(matches!(diagnostics.status, SearchIndexStatus::Unavailable));
+        assert_eq!(diagnostics.indexed_items, 0);
+        assert_eq!(diagnostics.configured_root_count, 1);
+        assert!(!db_path.exists());
+    }
+
+    #[test]
+    fn persisted_diagnostics_reports_ready_for_matching_plan() {
+        let db_path = temp_service_path("persisted-status-ready");
+        let _ = fs::remove_file(&db_path);
+        let config = SearchConfig {
+            include_roots: vec![PathBuf::from("tmp/index-ready")],
+            ..SearchConfig::default()
+        };
+        let mut store = SearchStore::open(db_path.clone()).expect("open test store");
+        let plan = crate::plan::ScanPlan::new(&config).unwrap();
+        store
+            .commit(
+                &plan,
+                IndexMutation::ReplaceAll(vec![owned_item(
+                    &PathBuf::from("tmp/index-ready"),
+                    "ready.txt",
+                    Some(1),
+                )]),
+            )
+            .expect("seed test store");
+
+        let diagnostics = SearchService::persisted_diagnostics_for_path(&config, &db_path);
+
+        assert!(matches!(diagnostics.status, SearchIndexStatus::Ready));
+        assert_eq!(diagnostics.indexed_items, 1);
+        assert_eq!(diagnostics.configured_root_count, 1);
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn persisted_diagnostics_reports_plan_staleness() {
+        let db_path = temp_service_path("persisted-status-stale");
+        let _ = fs::remove_file(&db_path);
+        let active_config = SearchConfig {
+            include_roots: vec![PathBuf::from("tmp/index-stale")],
+            ..SearchConfig::default()
+        };
+        let mut store = SearchStore::open(db_path.clone()).expect("open test store");
+        let plan = crate::plan::ScanPlan::new(&active_config).unwrap();
+        store
+            .commit(
+                &plan,
+                IndexMutation::ReplaceAll(vec![owned_item(
+                    &PathBuf::from("tmp/index-stale"),
+                    "stale.txt",
+                    Some(1),
+                )]),
+            )
+            .expect("seed stale store");
+
+        let stale_config = SearchConfig {
+            include_roots: vec![PathBuf::from("tmp/index-mismatch")],
+            ..SearchConfig::default()
+        };
+        let diagnostics = SearchService::persisted_diagnostics_for_path(&stale_config, &db_path);
+
+        assert!(matches!(diagnostics.status, SearchIndexStatus::Indexing));
+        assert_eq!(diagnostics.indexed_items, 1);
+        let _ = fs::remove_file(db_path);
     }
 
     #[test]
