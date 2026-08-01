@@ -1178,6 +1178,23 @@ fn current_unix_secs() -> u64 {
 // ── Index persistence ──────────────────────────────────────────────────────────
 
 fn search_index_status_record_path(store_path: &Path) -> PathBuf {
+    let mut status_stem = store_path
+        .file_stem()
+        .and_then(|name| name.to_str())
+        .unwrap_or("search")
+        .to_string();
+    while let Some(stripped) = status_stem.strip_suffix(".status") {
+        status_stem = stripped.to_string();
+    }
+    while let Some(stripped) = status_stem.strip_suffix(".db") {
+        status_stem = stripped.to_string();
+    }
+    let mut path = store_path.to_path_buf();
+    path.set_file_name(format!("{status_stem}.status.json"));
+    path
+}
+
+fn legacy_search_index_status_record_path(store_path: &Path) -> PathBuf {
     let mut path = store_path.to_path_buf();
     path.set_extension("status.json");
     path
@@ -1186,23 +1203,39 @@ fn search_index_status_record_path(store_path: &Path) -> PathBuf {
 fn read_search_index_status_record(
     store_path: &Path,
 ) -> Result<Option<PersistedSearchIndexRecord>, String> {
-    let path = search_index_status_record_path(store_path);
-    let bytes = match std::fs::read(&path) {
-        Ok(bytes) => bytes,
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+    if let Some(bytes) = read_search_index_status_record_bytes(store_path)? {
+        return serde_json::from_slice(&bytes).map_err(|error| {
+            format!(
+                "Could not decode persisted search status record {}: {error}",
+                search_index_status_record_path(store_path).display()
+            )
+        });
+    }
+    Ok(None)
+}
+
+fn read_search_index_status_record_bytes(store_path: &Path) -> Result<Option<Vec<u8>>, String> {
+    let primary_path = search_index_status_record_path(store_path);
+    match std::fs::read(&primary_path) {
+        Ok(bytes) => return Ok(Some(bytes)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
         Err(error) => {
             return Err(format!(
                 "Could not read persisted search status record {}: {error}",
-                path.display()
+                primary_path.display()
             ));
         }
     };
-    serde_json::from_slice(&bytes).map_err(|error| {
-        format!(
-            "Could not decode persisted search status record {}: {error}",
-            path.display()
-        )
-    })
+
+    let legacy_path = legacy_search_index_status_record_path(store_path);
+    match std::fs::read(&legacy_path) {
+        Ok(bytes) => Ok(Some(bytes)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(format!(
+            "Could not read persisted search status record {}: {error}",
+            legacy_path.display()
+        )),
+    }
 }
 
 fn write_search_index_status_record(
