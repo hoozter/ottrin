@@ -12,9 +12,9 @@ use ottrin_core::{
     FileEntry, GraphicsRendererChoice, GraphicsRendererPreference, GraphicsRendererReason,
     GraphicsRuntimeStatus, IndexedVolumeLocation, ListColumn, MillerColumnWidthMode,
     PrivilegedCommand, PrivilegedContext, PrivilegedPayload, PrivilegedRequest, PrivilegedStatus,
-    SavedTheme, SearchConfig, SearchIndexStatus, SearchQuery, SearchResponse, SearchResultItem,
-    SearchScope, SearchSort, SortBy, TandemSide, ThemeCustomization, ThemeMode, ThemePreset,
-    ViewMode, classify_file, default_home_dir, format_modified, format_size, format_size_units,
+    SavedTheme, SearchConfig, SearchIndexStatus, SearchQuery, SearchResultItem, SearchScope,
+    SearchSort, SortBy, TandemSide, ThemeCustomization, ThemeMode, ThemePreset, ViewMode,
+    classify_file, default_home_dir, format_modified, format_size, format_size_units,
     platform_case_mode_current,
 };
 use ottrin_platform::{
@@ -25,13 +25,13 @@ use ottrin_platform::{
 use ottrin_platform::{discover_retained_move_transactions, move_recovery::JournalPhase};
 use ottrin_preview::{PreviewData, PreviewKind, PreviewRequest, load_preview};
 use ottrin_search::{
-    LocateScheduleStatus, SearchIndexDiagnostics, SearchService,
+    LocateScheduleStatus, SearchIndexDiagnostics, SearchQueryResult, SearchService,
     default_roots as default_search_roots,
 };
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::time::{Duration, Instant};
 
@@ -804,7 +804,7 @@ struct SearchQueryResponse {
     query: SearchQuery,
     root: Option<PathBuf>,
     previously_selected_path: Option<PathBuf>,
-    response: SearchResponse,
+    result: SearchQueryResult,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1194,6 +1194,7 @@ pub struct OttrinApp {
     privileged_availability: PrivilegedAvailability,
     privileged_status: Option<PrivilegedUiStatus>,
     search_service: SearchService,
+    search_cancellation: Option<Arc<AtomicBool>>,
     search_started: bool,
     search_ui: SearchUiState,
     trash_panel: TrashPanelState,
@@ -1439,6 +1440,7 @@ impl OttrinApp {
             ),
             privileged_status: None,
             search_service: SearchService::new(search_config),
+            search_cancellation: None,
             search_started: false,
             search_ui: SearchUiState::default(),
             trash_panel: TrashPanelState::default(),
@@ -7429,6 +7431,9 @@ impl OttrinApp {
             .map(|it| it.path.clone());
         let root = Some(self.state.active_tab().current_dir.clone());
         if self.search_ui.query.trim().is_empty() {
+            if let Some(cancelled) = self.search_cancellation.take() {
+                cancelled.store(true, Ordering::Release);
+            }
             self.search_ui.results.clear();
             self.search_ui.total = 0;
             self.search_ui.selected = None;
@@ -7453,17 +7458,18 @@ impl OttrinApp {
         self.next_request_id = self.next_request_id.saturating_add(1);
         self.search_ui.latest_request_id = request_id;
         self.search_ui.search_inflight = true;
+        let cancelled = replace_search_cancellation(&mut self.search_cancellation);
         let search = self.search_service.handle();
         let tx = self.search_result_tx.clone();
         let response_root = root.clone();
         std::thread::spawn(move || {
-            let response = search.query(q.clone());
+            let result = search.query_cancellable_with_diagnostics(q.clone(), &cancelled);
             let _ = tx.send(SearchQueryResponse {
                 request_id,
                 query: q,
                 root: response_root,
                 previously_selected_path,
-                response,
+                result,
             });
         });
     }
@@ -7483,11 +7489,12 @@ impl OttrinApp {
                 continue;
             }
             self.search_ui.last_query_root = result.root;
-            self.search_ui.last_error = result.response.error;
-            self.search_ui.last_warning = result.response.warning;
+            self.search_cancellation = None;
+            self.search_ui.last_error = result.result.response.error;
+            self.search_ui.last_warning = result.result.warning;
             if self.search_ui.last_error.is_none() {
-                self.search_ui.results = result.response.items;
-                self.search_ui.total = result.response.total;
+                self.search_ui.results = result.result.response.items;
+                self.search_ui.total = result.result.response.total;
                 let new_selected = result
                     .previously_selected_path
                     .and_then(|path| self.search_ui.results.iter().position(|it| it.path == path))
@@ -17587,6 +17594,13 @@ impl OttrinApp {
     }
 }
 
+fn replace_search_cancellation(slot: &mut Option<Arc<AtomicBool>>) -> Arc<AtomicBool> {
+    if let Some(cancelled) = slot.replace(Arc::new(AtomicBool::new(false))) {
+        cancelled.store(true, Ordering::Release);
+    }
+    Arc::clone(slot.as_ref().expect("search cancellation"))
+}
+
 // ── eframe::App implementation ────────────────────────────────────────────────
 
 impl eframe::App for OttrinApp {
@@ -21420,6 +21434,78 @@ mod tests {
         assert!(app.unavailable_locations.contains_key(&lost_tab_id));
         assert!(!app.unavailable_locations.contains_key(&healthy_tab_id));
         assert_eq!(app.tandem_tab_ids(), Some((lost_tab_id, healthy_tab_id)));
+    }
+
+    #[test]
+    fn superseding_search_request_cancels_the_prior_worker_token() {
+        let mut slot = Some(Arc::new(AtomicBool::new(false)));
+        let first = Arc::clone(slot.as_ref().expect("first request token"));
+
+        let second = replace_search_cancellation(&mut slot);
+
+        assert!(first.load(Ordering::Acquire));
+        assert!(!second.load(Ordering::Acquire));
+        assert!(Arc::ptr_eq(
+            &second,
+            slot.as_ref().expect("current request token")
+        ));
+    }
+
+    #[test]
+    fn superseding_ui_negated_search_cancels_the_live_worker_request() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-negated-search-supersession-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&root).expect("create search root");
+        std::fs::write(root.join("entry.txt"), "indexed text").expect("write indexed content");
+        let config = SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        };
+        let mut service = SearchService::new(config);
+        service.start();
+        service
+            .rebuild_index_blocking()
+            .expect("build indexed generation");
+
+        let mut app = OttrinApp::default();
+        app.search_service = service;
+        app.search_started = true;
+        app.search_ui.query = "!needle".to_string();
+        app.search_ui.content_search = true;
+        app.run_search_query();
+        let first = Arc::clone(
+            app.search_cancellation
+                .as_ref()
+                .expect("first UI request has cancellation token"),
+        );
+
+        app.search_ui.query = "!other".to_string();
+        app.run_search_query();
+
+        assert!(
+            first.load(Ordering::Acquire),
+            "the second UI request must interrupt the first negated-content worker"
+        );
+        let deadline = Instant::now() + Duration::from_secs(1);
+        while app.search_ui.search_inflight && Instant::now() < deadline {
+            app.poll_search_results();
+            std::thread::yield_now();
+        }
+        app.poll_search_results();
+        assert!(
+            !app.search_ui.search_inflight,
+            "replacement request must complete"
+        );
+        assert!(app.search_ui.last_error.is_none());
+        assert_eq!(app.search_ui.last_executed_query, "!other");
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[cfg(target_os = "windows")]

@@ -5,6 +5,7 @@ use ottrin_core::{
     SearchScope, SearchSort,
 };
 use regex::{Regex, RegexBuilder};
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fs::{File, OpenOptions};
 use std::path::{Path, PathBuf};
@@ -149,6 +150,18 @@ pub struct SearchHandle {
     config: Arc<RwLock<SearchConfig>>,
     index: Arc<RwLock<IndexState>>,
     store_path: Arc<PathBuf>,
+}
+
+/// A search response plus non-fatal presentation diagnostics.
+///
+/// This deliberately keeps [`SearchResponse`] source-compatible for downstream
+/// callers that construct it with a struct literal.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SearchQueryResult {
+    pub response: SearchResponse,
+    /// Non-fatal information about intentionally excluded results.
+    #[serde(default)]
+    pub warning: Option<String>,
 }
 
 impl SearchService {
@@ -381,6 +394,16 @@ impl SearchService {
     pub fn query(&self, query: SearchQuery) -> SearchResponse {
         self.handle().query(query)
     }
+
+    /// Run a query and retain non-fatal diagnostics in a serializable result.
+    ///
+    /// This is the forward-compatible API for callers that need to distinguish
+    /// a complete result set from a fail-closed one with excluded unknown
+    /// content. [`Self::query`] remains available for legacy callers that
+    /// construct or serialize `SearchResponse` directly.
+    pub fn query_with_diagnostics(&self, query: SearchQuery) -> SearchQueryResult {
+        self.handle().query_with_diagnostics(query)
+    }
 }
 
 impl SearchHandle {
@@ -436,7 +459,6 @@ impl SearchHandle {
                 total: 0,
                 status,
                 error: None,
-                warning: None,
             };
         }
 
@@ -448,13 +470,14 @@ impl SearchHandle {
                     total: 0,
                     status,
                     error: Some(e.to_string()),
-                    warning: None,
                 };
             }
         };
 
         if query.content_search && expr_contains_negation(&expr) {
-            return self.query_negated_content_snapshot(&query, &expr, status, &cfg, None);
+            return self
+                .query_negated_content_snapshot(&query, &expr, status, &cfg, None)
+                .response;
         }
 
         let current_folder_outside_index = matches!(query.scope, SearchScope::CurrentFolder)
@@ -670,17 +693,21 @@ impl SearchHandle {
             total,
             status,
             error: None,
-            warning: None,
         }
     }
-}
 
-impl SearchHandle {
-    /// Run a negated content query with cooperative cancellation. Other query
-    /// modes retain the established synchronous route.
-    pub fn query_cancellable(&self, query: SearchQuery, cancelled: &AtomicBool) -> SearchResponse {
+    /// Run a query and retain non-fatal diagnostics in a serializable result.
+    ///
+    /// This is the forward-compatible API for callers that need to distinguish
+    /// a complete result set from a fail-closed one with excluded unknown
+    /// content. [`Self::query`] remains available for legacy callers that
+    /// construct or serialize `SearchResponse` directly.
+    pub fn query_with_diagnostics(&self, query: SearchQuery) -> SearchQueryResult {
         if !query.content_search {
-            return self.query(query);
+            return SearchQueryResult {
+                response: self.query(query),
+                warning: None,
+            };
         }
         let (status, cfg) = {
             let status = self.index.read().expect("index read").status;
@@ -690,11 +717,62 @@ impl SearchHandle {
         let expr = match parse_query(&query.text) {
             Ok(expr) => expr,
             Err(error) => {
-                return SearchResponse {
-                    items: Vec::new(),
-                    total: 0,
-                    status,
-                    error: Some(error.to_string()),
+                return SearchQueryResult {
+                    response: SearchResponse {
+                        items: Vec::new(),
+                        total: 0,
+                        status,
+                        error: Some(error.to_string()),
+                    },
+                    warning: None,
+                };
+            }
+        };
+        if expr_contains_negation(&expr) {
+            self.query_negated_content_snapshot(&query, &expr, status, &cfg, None)
+        } else {
+            SearchQueryResult {
+                response: self.query(query),
+                warning: None,
+            }
+        }
+    }
+}
+
+impl SearchHandle {
+    /// Run a negated content query with cooperative cancellation. Other query
+    /// modes retain the established synchronous route.
+    pub fn query_cancellable(&self, query: SearchQuery, cancelled: &AtomicBool) -> SearchResponse {
+        self.query_cancellable_with_diagnostics(query, cancelled)
+            .response
+    }
+
+    /// Run a query with cooperative cancellation and non-fatal diagnostics.
+    /// UI callers use this so a superseded request can promptly release its
+    /// snapshot reader without changing the established `SearchResponse` API.
+    pub fn query_cancellable_with_diagnostics(
+        &self,
+        query: SearchQuery,
+        cancelled: &AtomicBool,
+    ) -> SearchQueryResult {
+        if !query.content_search {
+            return self.query_with_diagnostics(query);
+        }
+        let (status, cfg) = {
+            let status = self.index.read().expect("index read").status;
+            let cfg = self.config.read().expect("config read").clone();
+            (status, cfg)
+        };
+        let expr = match parse_query(&query.text) {
+            Ok(expr) => expr,
+            Err(error) => {
+                return SearchQueryResult {
+                    response: SearchResponse {
+                        items: Vec::new(),
+                        total: 0,
+                        status,
+                        error: Some(error.to_string()),
+                    },
                     warning: None,
                 };
             }
@@ -702,7 +780,7 @@ impl SearchHandle {
         if expr_contains_negation(&expr) {
             self.query_negated_content_snapshot(&query, &expr, status, &cfg, Some(cancelled))
         } else {
-            self.query(query)
+            self.query_with_diagnostics(query)
         }
     }
 
@@ -713,38 +791,50 @@ impl SearchHandle {
         status: SearchIndexStatus,
         cfg: &SearchConfig,
         cancelled: Option<&AtomicBool>,
-    ) -> SearchResponse {
+    ) -> SearchQueryResult {
         if !matches!(status, SearchIndexStatus::Ready) {
-            return SearchResponse {
-                items: Vec::new(),
-                total: 0,
-                status,
-                error: Some(
-                    "Negated content search requires a completed indexed generation.".to_string(),
-                ),
+            return SearchQueryResult {
+                response: SearchResponse {
+                    items: Vec::new(),
+                    total: 0,
+                    status,
+                    error: Some(
+                        "Negated content search requires a completed indexed generation."
+                            .to_string(),
+                    ),
+                },
                 warning: None,
             };
         }
         let plan = match plan::ScanPlan::new(cfg) {
             Ok(plan) => plan,
             Err(error) => {
-                return SearchResponse {
-                    items: Vec::new(),
-                    total: 0,
-                    status,
-                    error: Some(error.to_string()),
+                return SearchQueryResult {
+                    response: SearchResponse {
+                        items: Vec::new(),
+                        total: 0,
+                        status,
+                        error: Some(error.to_string()),
+                    },
                     warning: None,
                 };
             }
         };
         let mut matched = Vec::new();
         let mut total_matches = 0usize;
+        let mut unknown_items = 0usize;
         let result_capacity = query.offset.saturating_add(query.limit).max(1);
         let stats =
             stream_generation_content_items(self.store_path.as_ref(), &plan, cancelled, |record| {
                 // Unknown content is excluded from every negated-content query. An
                 // absent FTS row must never become evidence for a complement result.
                 if !record.complete {
+                    if scope_match(query, &record.item)
+                        && (query.include_hidden_system || !record.item.name.starts_with('.'))
+                        && eval_expr(expr, &record.item)
+                    {
+                        unknown_items = unknown_items.saturating_add(1);
+                    }
                     return;
                 }
                 let mut item = record.item;
@@ -764,16 +854,18 @@ impl SearchHandle {
                     }
                 }
             });
-        let stats = match stats {
-            Ok(stats) => stats,
+        match stats {
+            Ok(_) => {}
             Err(error) => {
-                return SearchResponse {
-                    items: Vec::new(),
-                    total: 0,
-                    status,
-                    error: Some(format!(
-                        "Negated content search could not read its indexed generation: {error}"
-                    )),
+                return SearchQueryResult {
+                    response: SearchResponse {
+                        items: Vec::new(),
+                        total: 0,
+                        status,
+                        error: Some(format!(
+                            "Negated content search could not read its indexed generation: {error}"
+                        )),
+                    },
                     warning: None,
                 };
             }
@@ -785,19 +877,29 @@ impl SearchHandle {
             .take(query.limit)
             .map(|(_, item)| item)
             .collect();
-        SearchResponse {
-            items,
-            total: total_matches,
-            status,
-            error: None,
-            warning: (stats.unknown_items > 0).then(|| {
-                format!(
-                    "Excluded {} item(s) with unknown indexed content from negated content search.",
-                    stats.unknown_items.min(999)
-                )
-            }),
+        SearchQueryResult {
+            response: SearchResponse {
+                items,
+                total: total_matches,
+                status,
+                error: None,
+            },
+            warning: unknown_content_warning(unknown_items),
         }
     }
+}
+
+fn unknown_content_warning(unknown_items: usize) -> Option<String> {
+    (unknown_items > 0).then(|| {
+        let count = if unknown_items > 999 {
+            "999+".to_string()
+        } else {
+            unknown_items.to_string()
+        };
+        format!(
+            "Excluded {count} item(s) with unknown indexed content from negated content search."
+        )
+    })
 }
 
 impl Drop for SearchService {
@@ -3645,10 +3747,12 @@ mod tests {
         let binary = root.join("binary.txt");
         let oversized = root.join("oversized.txt");
         let vanished = root.join("vanished.txt");
+        let hidden_binary = root.join(".hidden-binary.txt");
         fs::write(&complete, "ordinary searchable text").expect("write complete content");
         fs::write(&empty, "").expect("write empty content");
         fs::write(&binary, b"needle\0binary").expect("write binary content");
         fs::write(&oversized, vec![b'x'; 512 * 1024 + 1]).expect("write oversized content");
+        fs::write(&hidden_binary, b"needle\0hidden").expect("write hidden binary content");
 
         let config = SearchConfig {
             include_roots: vec![root.clone()],
@@ -3674,6 +3778,7 @@ mod tests {
             make_owned(&empty),
             make_owned(&binary),
             make_owned(&oversized),
+            make_owned(&hidden_binary),
         ];
         let mut vanished_item = mk_item(
             vanished.to_str().expect("UTF-8 temporary path"),
@@ -3690,7 +3795,7 @@ mod tests {
             index.status = SearchIndexStatus::Ready;
         }
 
-        let response = service.query(SearchQuery {
+        let result = service.query_with_diagnostics(SearchQuery {
             text: "!needle".to_string(),
             scope: SearchScope::Global,
             root_path: None,
@@ -3700,10 +3805,11 @@ mod tests {
             offset: 0,
             content_search: true,
         });
+        let response = result.response;
 
         assert!(response.error.is_none());
         assert_eq!(
-            response.warning.as_deref(),
+            result.warning.as_deref(),
             Some("Excluded 3 item(s) with unknown indexed content from negated content search.")
         );
         assert_eq!(
@@ -3754,6 +3860,22 @@ mod tests {
 
         let _ = fs::remove_dir_all(root);
         let _ = fs::remove_file(&service.store_path);
+    }
+
+    #[test]
+    fn unknown_content_warning_is_truthfully_bounded() {
+        assert_eq!(unknown_content_warning(0), None);
+        assert_eq!(
+            unknown_content_warning(1_000).as_deref(),
+            Some("Excluded 999+ item(s) with unknown indexed content from negated content search.")
+        );
+    }
+
+    #[test]
+    fn diagnostic_query_result_is_serializable_without_changing_search_response_shape() {
+        fn assert_serializable<T: Serialize>() {}
+        assert_serializable::<SearchQueryResult>();
+        assert_serializable::<SearchResponse>();
     }
 
     #[test]

@@ -357,9 +357,6 @@ pub struct SearchResponse {
     pub total: usize,
     pub status: SearchIndexStatus,
     pub error: Option<String>,
-    /// Non-fatal search information; results remain valid when present.
-    #[serde(default)]
-    pub warning: Option<String>,
 }
 
 // ── File entry ────────────────────────────────────────────────────────────────
@@ -1616,6 +1613,17 @@ fn normalize_folder_name(name: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn search_response_remains_constructible_by_downstream_struct_literals() {
+        let response = SearchResponse {
+            items: Vec::new(),
+            total: 0,
+            status: SearchIndexStatus::Unavailable,
+            error: None,
+        };
+        assert_eq!(response.total, 0);
+    }
 
     #[test]
     fn tab_navigation_history() {

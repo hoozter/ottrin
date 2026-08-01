@@ -78,10 +78,6 @@ pub(crate) struct GenerationContentItem {
     pub(crate) complete: bool,
 }
 
-pub(crate) struct GenerationContentQueryStats {
-    pub(crate) unknown_items: usize,
-}
-
 #[allow(dead_code)]
 impl SearchStore {
     pub(crate) fn open(path: PathBuf) -> Result<Self, SearchDbError> {
@@ -89,7 +85,7 @@ impl SearchStore {
             std::fs::create_dir_all(parent)?;
         }
         let conn = Connection::open(path)?;
-        conn.execute_batch("PRAGMA foreign_keys = ON;")?;
+        configure_writer_connection(&conn)?;
         migrate(&conn)?;
         Ok(Self { conn })
     }
@@ -239,6 +235,19 @@ impl SearchStore {
     }
 }
 
+fn configure_writer_connection(conn: &Connection) -> Result<(), SearchDbError> {
+    // A negated query intentionally holds a stable read snapshot while it
+    // streams. WAL lets the next generation commit alongside that reader;
+    // the bounded timeout handles brief writer contention without masking a
+    // persistent indexing failure through unbounded retries.
+    conn.execute_batch(
+        "PRAGMA foreign_keys = ON;
+         PRAGMA journal_mode = WAL;
+         PRAGMA busy_timeout = 250;",
+    )?;
+    Ok(())
+}
+
 const MAX_INDEXED_TEXT_BYTES: u64 = 512 * 1024;
 
 fn insert_generation_content(
@@ -334,6 +343,7 @@ pub(crate) fn query_indexed_content_page(
         db_path,
         rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
     )?;
+    conn.busy_timeout(std::time::Duration::from_millis(250))?;
     let mut stmt = conn.prepare(
         "SELECT f.path, snippet(search_generation_content, 2, '', '', '…', 20), f.content, rank
          FROM search_generation_content f
@@ -367,7 +377,7 @@ pub(crate) fn stream_generation_content_items(
     plan: &ScanPlan,
     cancelled: Option<&AtomicBool>,
     mut visit: impl FnMut(GenerationContentItem),
-) -> Result<GenerationContentQueryStats, SearchDbError> {
+) -> Result<(), SearchDbError> {
     if cancelled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
         return Err(SearchDbError::ContentQueryCancelled);
     }
@@ -375,6 +385,7 @@ pub(crate) fn stream_generation_content_items(
         db_path,
         rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
     )?;
+    conn.busy_timeout(std::time::Duration::from_millis(250))?;
     let tx = conn.transaction_with_behavior(rusqlite::TransactionBehavior::Deferred)?;
     let mut stmt = tx.prepare(
         "SELECT i.path, i.parent_path, i.root_path, i.name, i.kind, i.size_bytes,
@@ -389,16 +400,12 @@ pub(crate) fn stream_generation_content_items(
          ORDER BY i.path",
     )?;
     let mut rows = stmt.query([plan.identity()])?;
-    let mut unknown_items = 0;
     while let Some(row) = rows.next()? {
         if cancelled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
             return Err(SearchDbError::ContentQueryCancelled);
         }
         let state: Option<i64> = row.get(9)?;
         let complete = matches!(state, Some(0 | 1));
-        if !complete {
-            unknown_items += 1;
-        }
         let mut item = SearchResultItem {
             path: decode_path(row.get(0)?)?,
             parent_path: decode_path(row.get(1)?)?,
@@ -419,11 +426,17 @@ pub(crate) fn stream_generation_content_items(
             content: row.get(10)?,
             complete,
         });
+        // A UI supersession may arrive while the callback evaluates the final
+        // streamed row. A post-callback check ensures that request still
+        // terminates as cancelled and drops this snapshot transaction.
+        if cancelled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
+            return Err(SearchDbError::ContentQueryCancelled);
+        }
     }
     drop(rows);
     drop(stmt);
     tx.commit()?;
-    Ok(GenerationContentQueryStats { unknown_items })
+    Ok(())
 }
 
 fn fts_rank_relevance(rank: f64) -> i64 {
@@ -848,6 +861,47 @@ mod generation_tests {
     }
 
     #[test]
+    fn wal_allows_generation_commit_while_a_snapshot_reader_is_open() {
+        let db_path = temp_db_path("wal-snapshot-writer");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-wal-snapshot-reader-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        std::fs::write(root.join("first.txt"), "first").expect("write first");
+        std::fs::write(root.join("second.txt"), "second").expect("write second");
+        let scan_plan = plan(&root);
+        let mut store = SearchStore::open(db_path.clone()).expect("open WAL store");
+        store
+            .commit(
+                &scan_plan,
+                IndexMutation::ReplaceAll(vec![owned(&root, "first.txt", 5)]),
+            )
+            .expect("commit first generation");
+
+        let reader = Connection::open(&db_path).expect("open snapshot reader");
+        reader
+            .execute_batch("BEGIN; SELECT * FROM search_generation_items;")
+            .expect("hold read snapshot");
+
+        store
+            .commit(
+                &scan_plan,
+                IndexMutation::ReplaceAll(vec![owned(&root, "second.txt", 6)]),
+            )
+            .expect("WAL writer must commit alongside snapshot reader");
+        reader
+            .execute_batch("COMMIT")
+            .expect("release snapshot reader");
+        let _ = std::fs::remove_dir_all(root);
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
     fn committed_generation_indexes_bounded_utf8_content_and_replaces_stale_hits() {
         let db_path = temp_db_path("generation-fts-content");
         let root = std::env::temp_dir().join(format!(
@@ -944,6 +998,48 @@ mod generation_tests {
             stream_generation_content_items(&db_path, &scan_plan, Some(&cancelled), |_| {}),
             Err(SearchDbError::ContentQueryCancelled)
         ));
+    }
+
+    #[test]
+    fn cancelled_content_stream_releases_its_snapshot_reader() {
+        let db_path = temp_db_path("generation-content-cancel-releases-reader");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-cancel-reader-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        std::fs::write(root.join("item.txt"), "content").expect("write item");
+        let scan_plan = plan(&root);
+        let mut store = SearchStore::open(db_path.clone()).expect("open store");
+        store
+            .commit(
+                &scan_plan,
+                IndexMutation::ReplaceAll(vec![owned(&root, "item.txt", 7)]),
+            )
+            .expect("commit generation");
+        let cancelled = AtomicBool::new(false);
+
+        assert!(matches!(
+            stream_generation_content_items(&db_path, &scan_plan, Some(&cancelled), |_| {
+                cancelled.store(true, Ordering::Release);
+            }),
+            Err(SearchDbError::ContentQueryCancelled)
+        ));
+
+        let checkpoint = Connection::open(&db_path).expect("open checkpoint connection");
+        let busy: i64 = checkpoint
+            .query_row("PRAGMA wal_checkpoint(TRUNCATE)", [], |row| row.get(0))
+            .expect("checkpoint after cancellation");
+        assert_eq!(
+            busy, 0,
+            "cancelled stream must not retain a snapshot reader"
+        );
+        let _ = std::fs::remove_dir_all(root);
+        let _ = std::fs::remove_file(db_path);
     }
 
     #[test]
