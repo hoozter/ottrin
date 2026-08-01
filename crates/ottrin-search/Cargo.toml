@@ -9,6 +9,7 @@ authors.workspace = true
 ottrin-core = { path = "../ottrin-core" }
 thiserror.workspace = true
 serde.workspace = true
+serde_json = "1"
 rusqlite = { version = "0.31", features = ["bundled"] }
 regex = "1"
 notify = "8"

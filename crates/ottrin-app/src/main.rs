@@ -6,9 +6,7 @@ use ottrin_core::{
     SearchIndexStatus, SearchQuery, format_size, select_graphics_renderer,
 };
 use ottrin_platform::{DefaultPlatform, PlatformOps, set_privileged_helper_override};
-use ottrin_ui::{
-    OttrinApp, clear_preview_cache_storage, load_config, load_config_checked, remove_config_file,
-};
+use ottrin_ui::{OttrinApp, clear_preview_cache_storage, load_config_checked, remove_config_file};
 use std::collections::HashSet;
 #[cfg(any(target_os = "windows", test))]
 use std::fs::OpenOptions;
@@ -133,7 +131,18 @@ fn run_gui() -> eframe::Result<()> {
         }
     };
 
-    let config = load_config();
+    let config = match load_config_checked() {
+        Ok(config) => config,
+        Err(error) => {
+            let summary = format!(
+                "Ottrin could not start because config is invalid: {error}. \
+                Recover by fixing the saved config file or running `ottrin --uninstall --purge-config`."
+            );
+            eprintln!("ottrin: {summary}");
+            report_windows_startup_failure("Ottrin could not start", &summary);
+            std::process::exit(3);
+        }
+    };
     let graphics_runtime = graphics_runtime_status(renderer_override.is_some(), &config);
     let window_size = config.window_size.unwrap_or([1024.0, 680.0]);
 
@@ -154,9 +163,9 @@ fn run_gui() -> eframe::Result<()> {
     eframe::run_native(
         "Ottrin",
         options,
-        Box::new(move |cc| {
-            Ok(Box::new(OttrinApp::new_with_graphics_status(
-                cc,
+        Box::new(move |_cc| {
+            Ok(Box::new(OttrinApp::new_with_config_and_graphics_status(
+                config.clone(),
                 graphics_runtime,
             )))
         }),
@@ -358,12 +367,9 @@ fn configured_search_service(config: &ottrin_core::AppConfig) -> ottrin_search::
 }
 
 fn load_headless_config_for_action(
-    action: &HeadlessAction,
-) -> Result<Option<ottrin_core::AppConfig>, String> {
-    match action {
-        HeadlessAction::DropStatus => Ok(None),
-        _ => load_config_checked().map(Some),
-    }
+    _action: &HeadlessAction,
+) -> Result<ottrin_core::AppConfig, String> {
+    load_config_checked()
 }
 
 fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
@@ -373,16 +379,14 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     let config = load_headless_config_for_action(&action)?;
     match action {
         HeadlessAction::DropStatus => {
-            print_drop_status(&load_config().target);
+            print_drop_status(&config.target);
             return Ok(());
         }
         HeadlessAction::DropCopy(sources) => {
-            let config = config.ok_or_else(|| "checked config missing".to_string())?;
             return run_drop_copy(&config, sources);
         }
         _ => {}
     }
-    let config = config.ok_or_else(|| "checked config missing".to_string())?;
 
     if matches!(action, HeadlessAction::IndexStatus) {
         print_index_diagnostics(&ottrin_search::SearchService::persisted_diagnostics(
@@ -497,6 +501,18 @@ fn wait_for_index_ready(service: &ottrin_search::SearchService) -> Result<(), St
                 return Err(diagnostics
                     .last_error
                     .unwrap_or_else(|| "search service unavailable".to_string()));
+            }
+            SearchIndexStatus::Stale => {
+                return Err(diagnostics
+                    .last_error
+                    .clone()
+                    .unwrap_or_else(|| "search index status is stale".to_string()));
+            }
+            SearchIndexStatus::NeedsRebuild => {
+                return Err(diagnostics
+                    .last_error
+                    .clone()
+                    .unwrap_or_else(|| "search index requires rebuild".to_string()));
             }
             SearchIndexStatus::Indexing if Instant::now() >= deadline => {
                 return Err("search index did not become ready within 30 seconds".to_string());

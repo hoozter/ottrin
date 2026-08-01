@@ -1329,7 +1329,7 @@ impl OttrinApp {
         app
     }
 
-    fn new_with_config_and_graphics_status(
+    pub fn new_with_config_and_graphics_status(
         config: AppConfig,
         graphics_runtime: GraphicsRuntimeStatus,
     ) -> Self {
@@ -11367,7 +11367,9 @@ impl OttrinApp {
                                     .size(10.5),
                             );
                         }
-                        SearchIndexStatus::Unavailable => {
+                        SearchIndexStatus::Unavailable
+                        | SearchIndexStatus::Stale
+                        | SearchIndexStatus::NeedsRebuild => {
                             ui.label(
                                 RichText::new("Search unavailable")
                                     .color(c.error)
@@ -16468,7 +16470,9 @@ impl OttrinApp {
                                         let (mut dot_col, mut status_word) = match diag.status {
                                             SearchIndexStatus::Indexing   => (c.accent, "Indexing"),
                                             SearchIndexStatus::Ready      => (ready_col, "Ready"),
-                                            SearchIndexStatus::Unavailable => (c.error, "Unavailable"),
+                                        SearchIndexStatus::Unavailable => (c.error, "Unavailable"),
+                                        SearchIndexStatus::Stale
+                                        | SearchIndexStatus::NeedsRebuild => (warn_col, "Needs rebuild"),
                                         };
                                         let est_total = diag.last_completed_indexed_items
                                             .or(diag.estimated_total_items)
@@ -16526,13 +16530,18 @@ impl OttrinApp {
                                                 ui.painter().circle_filled(dot_r.center(), 4.0, dot_col);
                                             }
                                             ui.add_space(6.0);
-                                            let status_text = if matches!(diag.status, SearchIndexStatus::Ready) {
-                                                "Ready"
-                                            } else if matches!(diag.status, SearchIndexStatus::Unavailable) {
-                                                "Unavailable"
-                                            } else {
-                                                status_word
-                                            };
+                                        let status_text = if matches!(diag.status, SearchIndexStatus::Ready) {
+                                            "Ready"
+                                        } else if matches!(
+                                            diag.status,
+                                            SearchIndexStatus::Unavailable
+                                                | SearchIndexStatus::Stale
+                                                | SearchIndexStatus::NeedsRebuild
+                                        ) {
+                                            "Needs rebuild"
+                                        } else {
+                                            status_word
+                                        };
                                             ui.label(RichText::new(status_text).color(dot_col).size(11.0).strong());
                                             if let Some(pct) = status_pct {
                                                 ui.add_space(6.0);
@@ -20039,6 +20048,13 @@ fn search_scan_summary(diagnostics: &SearchIndexDiagnostics) -> String {
                 .map(format_search_duration)
                 .unwrap_or_else(|| "unknown duration".to_string());
             format!("Scan: failed {} after {}", completed, duration)
+        }
+        SearchIndexStatus::Stale | SearchIndexStatus::NeedsRebuild => {
+            let completed = diagnostics
+                .last_scan_completed_unix_secs
+                .map(format_modified)
+                .unwrap_or_else(|| "recently".to_string());
+            format!("Scan: needs rebuild since {}", completed)
         }
     }
 }

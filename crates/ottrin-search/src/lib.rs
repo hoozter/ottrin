@@ -8,6 +8,7 @@ use regex::{Regex, RegexBuilder};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fs::{File, OpenOptions};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 #[cfg(test)]
 use std::sync::Mutex;
@@ -26,7 +27,7 @@ mod scanner;
 mod watch;
 mod worker;
 use db::{
-    SearchStore, query_indexed_content_page, read_active_generation_metadata, search_db_path,
+    SEARCH_DB_VERSION, SearchStore, query_indexed_content_page, search_db_path,
     search_db_path_no_create, stream_generation_content_items,
 };
 
@@ -134,6 +135,36 @@ pub struct SearchIndexDiagnostics {
     pub last_error: Option<String>,
 }
 
+const SEARCH_INDEX_STATUS_RECORD_FORMAT: u32 = 1;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+struct PersistedSearchIndexRecord {
+    format_version: u32,
+    schema_version: u32,
+    status: SearchIndexStatus,
+    plan_identity: String,
+    snapshot_revision: u64,
+    indexed_items: usize,
+    detail: Option<String>,
+    last_error: Option<String>,
+}
+
+impl Default for PersistedSearchIndexRecord {
+    fn default() -> Self {
+        Self {
+            format_version: SEARCH_INDEX_STATUS_RECORD_FORMAT,
+            schema_version: SEARCH_DB_VERSION,
+            status: SearchIndexStatus::Unavailable,
+            plan_identity: String::new(),
+            snapshot_revision: 0,
+            indexed_items: 0,
+            detail: Some("No persisted search status is available".to_string()),
+            last_error: None,
+        }
+    }
+}
+
 pub struct SearchService {
     config: Arc<RwLock<SearchConfig>>,
     index: Arc<RwLock<IndexState>>,
@@ -223,6 +254,7 @@ impl SearchService {
             store,
             Arc::clone(&self.launcher),
             self.watch_filesystem,
+            Some(search_index_status_record_path(&self.store_path)),
         ));
     }
 
@@ -370,15 +402,17 @@ impl SearchService {
                 };
             }
         };
-
-        let plan_identity = plan.identity().to_string();
-        let active = match read_active_generation_metadata(store_path) {
-            Ok(active) => active,
-            Err(error) => {
+        let diagnostics_record = match read_search_index_status_record(store_path) {
+            Ok(Some(record)) => record,
+            Ok(None) => {
                 return SearchIndexDiagnostics {
                     status: SearchIndexStatus::Unavailable,
                     snapshot_revision: 0,
-                    detail: Some(format!("Could not read persisted search metadata: {error}")),
+                    detail: if store_path.exists() {
+                        Some("No persisted search index status record is available".to_string())
+                    } else {
+                        Some("No persisted search index is available".to_string())
+                    },
                     indexed_items: 0,
                     last_completed_indexed_items: None,
                     estimated_total_items: None,
@@ -395,16 +429,44 @@ impl SearchService {
                     last_scan_completed_unix_secs: None,
                     last_scan_duration_ms: None,
                     last_progress_unix_secs: None,
-                    last_error: Some(format!("Could not read persisted search metadata: {error}")),
+                    last_error: None,
+                };
+            }
+            Err(error) => {
+                return SearchIndexDiagnostics {
+                    status: SearchIndexStatus::Unavailable,
+                    snapshot_revision: 0,
+                    detail: Some(format!(
+                        "Could not read persisted search diagnostics: {error}"
+                    )),
+                    indexed_items: 0,
+                    last_completed_indexed_items: None,
+                    estimated_total_items: None,
+                    last_indexed_path: None,
+                    configured_root_count,
+                    watched_root_count,
+                    watcher_ready: false,
+                    watcher_last_setup_unix_secs: None,
+                    watcher_last_error: None,
+                    active_root: None,
+                    active_root_index: 0,
+                    total_roots: effective_roots.len(),
+                    last_scan_started_unix_secs: None,
+                    last_scan_completed_unix_secs: None,
+                    last_scan_duration_ms: None,
+                    last_progress_unix_secs: None,
+                    last_error: Some(format!(
+                        "Could not read persisted search diagnostics: {error}"
+                    )),
                 };
             }
         };
-
+        let plan_identity = plan.identity().to_string();
         let mut diagnostics = SearchIndexDiagnostics {
-            status: SearchIndexStatus::Unavailable,
-            snapshot_revision: 0,
-            detail: None,
-            indexed_items: 0,
+            status: diagnostics_record.status,
+            snapshot_revision: diagnostics_record.snapshot_revision,
+            detail: diagnostics_record.detail,
+            indexed_items: diagnostics_record.indexed_items,
             last_completed_indexed_items: None,
             estimated_total_items: None,
             last_indexed_path: None,
@@ -420,32 +482,44 @@ impl SearchService {
             last_scan_completed_unix_secs: None,
             last_scan_duration_ms: None,
             last_progress_unix_secs: None,
-            last_error: None,
+            last_error: diagnostics_record.last_error,
         };
 
-        match active {
-            Some(metadata) => {
-                diagnostics.indexed_items = metadata.item_count;
-                if metadata.completed && metadata.plan_identity == plan_identity {
-                    diagnostics.status = SearchIndexStatus::Ready;
-                    diagnostics.detail = Some("search index is ready".to_string());
-                } else if metadata.completed {
-                    diagnostics.detail = Some(
-                        "Active search generation was built for a different scan plan".to_string(),
-                    );
-                    diagnostics.status = SearchIndexStatus::Indexing;
-                } else {
-                    diagnostics.detail = Some("Search index generation is in progress".to_string());
-                    diagnostics.status = SearchIndexStatus::Indexing;
-                }
+        diagnostics.status = if !store_path.exists() {
+            SearchIndexStatus::Unavailable
+        } else if diagnostics_record.schema_version != SEARCH_DB_VERSION {
+            SearchIndexStatus::NeedsRebuild
+        } else if diagnostics_record.plan_identity != plan_identity {
+            SearchIndexStatus::Stale
+        } else {
+            match diagnostics_record.status {
+                SearchIndexStatus::Ready => SearchIndexStatus::Ready,
+                SearchIndexStatus::Unavailable => SearchIndexStatus::Unavailable,
+                SearchIndexStatus::Indexing => SearchIndexStatus::Stale,
+                SearchIndexStatus::Stale => SearchIndexStatus::Stale,
+                SearchIndexStatus::NeedsRebuild => SearchIndexStatus::NeedsRebuild,
             }
-            None => {
-                diagnostics.detail = Some("No persisted search index is available".to_string());
-            }
+        };
+        if diagnostics.status == SearchIndexStatus::Stale {
+            diagnostics.detail =
+                Some("Persisted search index was built for a different scan plan".to_string());
+        } else if diagnostics.status == SearchIndexStatus::NeedsRebuild {
+            diagnostics.detail =
+                Some("Persisted search index schema is incompatible with this build".to_string());
+        } else if diagnostics.status == SearchIndexStatus::Unavailable
+            && diagnostics.detail.is_none()
+        {
+            diagnostics.detail = Some("Persisted search index is unavailable".to_string());
+        }
+
+        if diagnostics_record.format_version != SEARCH_INDEX_STATUS_RECORD_FORMAT {
+            diagnostics.status = SearchIndexStatus::NeedsRebuild;
+            diagnostics.detail =
+                Some("Persisted search index diagnostics format is not supported".to_string());
         }
 
         if let Some(error) = &diagnostics.last_error {
-            diagnostics.detail = diagnostics.detail.or_else(|| Some(error.clone()));
+            diagnostics.detail = diagnostics.detail.clone().or_else(|| Some(error.clone()));
         }
 
         diagnostics
@@ -544,6 +618,8 @@ impl SearchHandle {
         let idx = self.index.read().expect("index read");
         let detail = match idx.status {
             SearchIndexStatus::Indexing => idx.progress_text.clone(),
+            SearchIndexStatus::Stale => idx.last_error.clone(),
+            SearchIndexStatus::NeedsRebuild => idx.last_error.clone(),
             SearchIndexStatus::Unavailable => idx.last_error.clone(),
             SearchIndexStatus::Ready => idx.progress_text.clone(),
         };
@@ -551,7 +627,12 @@ impl SearchHandle {
             status: idx.status,
             snapshot_revision: idx.snapshot_revision,
             detail,
-            indexed_items: if matches!(idx.status, SearchIndexStatus::Indexing) {
+            indexed_items: if matches!(
+                idx.status,
+                SearchIndexStatus::Indexing
+                    | SearchIndexStatus::Stale
+                    | SearchIndexStatus::NeedsRebuild
+            ) {
                 idx.building_indexed_items
             } else {
                 idx.items.len()
@@ -625,12 +706,20 @@ impl SearchHandle {
             if matches!(query.scope, SearchScope::CurrentFolder)
                 && (matches!(
                     status,
-                    SearchIndexStatus::Unavailable | SearchIndexStatus::Indexing
+                    SearchIndexStatus::Unavailable
+                        | SearchIndexStatus::Indexing
+                        | SearchIndexStatus::Stale
+                        | SearchIndexStatus::NeedsRebuild
                 ) || current_folder_outside_index)
             {
                 query_current_folder_fallback(&query, &expr, &cfg)
             } else if matches!(query.scope, SearchScope::Global)
-                && matches!(status, SearchIndexStatus::Indexing)
+                && matches!(
+                    status,
+                    SearchIndexStatus::Indexing
+                        | SearchIndexStatus::Stale
+                        | SearchIndexStatus::NeedsRebuild
+                )
                 && items.is_empty()
             {
                 let roots = ordered_query_roots(&query, &cfg);
@@ -680,7 +769,12 @@ impl SearchHandle {
         // the user has opted in, and we have budget (index empty or still building).
         // Zero privilege required — we just read the database the OS already maintains.
         let budget_remaining = matched.len() < query.limit && query.text.trim().len() >= 2;
-        let index_thin = matches!(status, SearchIndexStatus::Indexing) && items.len() < 5_000;
+        let index_thin = matches!(
+            status,
+            SearchIndexStatus::Indexing
+                | SearchIndexStatus::Stale
+                | SearchIndexStatus::NeedsRebuild
+        ) && items.len() < 5_000;
         if cfg.use_system_locate && budget_remaining && (index_thin || matched.is_empty()) {
             let roots = effective_roots(&cfg);
             let locate_hits = query_system_locate(
@@ -1083,22 +1177,85 @@ fn current_unix_secs() -> u64 {
 
 // ── Index persistence ──────────────────────────────────────────────────────────
 
-fn index_cache_path() -> PathBuf {
-    #[cfg(target_os = "windows")]
-    let cache_root = std::env::var("LOCALAPPDATA")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| {
-            ottrin_core::default_home_dir()
-                .join("AppData")
-                .join("Local")
-        });
-    #[cfg(not(target_os = "windows"))]
-    let cache_root = std::env::var("XDG_CACHE_HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| ottrin_core::default_home_dir().join(".cache"));
-    let dir = cache_root.join("ottrin");
-    let _ = std::fs::create_dir_all(&dir);
-    dir.join("search_index.json")
+fn search_index_status_record_path(store_path: &Path) -> PathBuf {
+    let mut path = store_path.to_path_buf();
+    path.set_extension("status.json");
+    path
+}
+
+fn read_search_index_status_record(
+    store_path: &Path,
+) -> Result<Option<PersistedSearchIndexRecord>, String> {
+    let path = search_index_status_record_path(store_path);
+    let bytes = match std::fs::read(&path) {
+        Ok(bytes) => bytes,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => {
+            return Err(format!(
+                "Could not read persisted search status record {}: {error}",
+                path.display()
+            ));
+        }
+    };
+    serde_json::from_slice(&bytes).map_err(|error| {
+        format!(
+            "Could not decode persisted search status record {}: {error}",
+            path.display()
+        )
+    })
+}
+
+fn write_search_index_status_record(
+    store_path: &Path,
+    record: &PersistedSearchIndexRecord,
+) -> Result<(), String> {
+    let path = search_index_status_record_path(store_path);
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|error| format!("Failed to create search index status directory: {error}"))?;
+    }
+    let mut temp = path.clone();
+    temp.set_file_name(format!(
+        "{}.tmp",
+        path.file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("search-index-status.json")
+    ));
+    let mut file = File::create(&temp).map_err(|error| {
+        format!(
+            "Failed to create temporary search status record {}: {error}",
+            temp.display()
+        )
+    })?;
+    let bytes = serde_json::to_vec_pretty(record).map_err(|error| {
+        format!(
+            "Failed to encode persisted search status record {}: {error}",
+            path.display()
+        )
+    })?;
+    let write = file.write_all(&bytes).and_then(|()| file.sync_all());
+    if write.is_err() {
+        let _ = std::fs::remove_file(&temp);
+    }
+    write.map_err(|error| {
+        format!(
+            "Failed to write persisted search status record {}: {error}",
+            path.display()
+        )
+    })?;
+    std::fs::rename(&temp, &path).map_err(|error| {
+        let _ = std::fs::remove_file(&temp);
+        format!(
+            "Failed to finalize persisted search status record {}: {error}",
+            path.display()
+        )
+    })
+}
+
+fn index_cache_path(store_path: &Path) -> PathBuf {
+    let mut path = store_path.to_path_buf();
+    path.set_extension("cache");
+    path
 }
 
 fn remove_file_if_present(path: &Path) -> Result<u64, String> {
@@ -1154,12 +1311,21 @@ fn clear_sqlite_storage(path: &Path) -> Result<u64, String> {
 
 fn clear_search_storage_unlocked() -> Result<u64, String> {
     let mut freed = clear_sqlite_storage(&search_db_path())?;
+    freed = freed.saturating_add(remove_file_if_present(&search_index_status_record_path(
+        &search_db_path(),
+    ))?);
     #[cfg(target_os = "linux")]
-    let mut paths = vec![index_cache_path(), locate_db_path()];
+    let mut paths = vec![
+        index_cache_path(&search_db_path()),
+        locate_db_path(&search_db_path()),
+    ];
     #[cfg(target_os = "linux")]
     paths.push(appimage_index_wrapper_path());
     #[cfg(not(target_os = "linux"))]
-    let paths = vec![index_cache_path(), locate_db_path()];
+    let paths = vec![
+        index_cache_path(&search_db_path()),
+        locate_db_path(&search_db_path()),
+    ];
     for path in paths {
         if let Ok(meta) = std::fs::metadata(&path) {
             let len = meta.len();
@@ -1192,8 +1358,8 @@ pub fn clear_search_storage() -> Result<u64, String> {
 // NTFS USN journal integration is intentionally outside the current v1 path.
 
 /// Path where Ottrin stores its own mlocate database.
-fn locate_db_path() -> PathBuf {
-    index_cache_path().with_file_name("locate.db")
+fn locate_db_path(store_path: &Path) -> PathBuf {
+    index_cache_path(store_path).with_file_name("locate.db")
 }
 
 /// Returns true if `updatedb` (mlocate) is on PATH — required to build our own locate database.
@@ -1239,7 +1405,7 @@ fn command_exists(name: &str) -> bool {
 /// Returns immediately; the actual updatedb run may take a few seconds.
 pub fn run_user_updatedb(root: PathBuf) {
     std::thread::spawn(move || {
-        let db = locate_db_path();
+        let db = locate_db_path(&search_db_path());
         let _ = std::process::Command::new("updatedb")
             .args(["-l", "0"])
             .arg("-U")
@@ -1254,7 +1420,10 @@ pub fn run_user_updatedb(root: PathBuf) {
 
 /// How many seconds ago Ottrin's locate.db was last updated (mtime).
 pub fn locate_db_age_secs() -> Option<u64> {
-    let mtime = std::fs::metadata(locate_db_path()).ok()?.modified().ok()?;
+    let mtime = std::fs::metadata(locate_db_path(&search_db_path()))
+        .ok()?
+        .modified()
+        .ok()?;
     SystemTime::now()
         .duration_since(mtime)
         .ok()
@@ -1814,7 +1983,7 @@ fn shell_quote(value: &str) -> String {
 pub fn install_locate_schedule(interval_hours: u32, root: &Path) -> Result<String, String> {
     #[cfg(target_os = "linux")]
     {
-        let db = locate_db_path();
+        let db = locate_db_path(&search_db_path());
         let root_str = root.to_string_lossy();
         let db_str = db.to_string_lossy();
 
@@ -1927,7 +2096,7 @@ fn query_system_locate(
     include_hidden: bool,
     limit: usize,
 ) -> Vec<SearchResultItem> {
-    let our_db = locate_db_path();
+    let our_db = locate_db_path(&search_db_path());
 
     // Build the command: our own DB takes priority so results are always fresh.
     let output = if our_db.exists() && command_exists("locate") {
@@ -3113,6 +3282,20 @@ mod tests {
                 )]),
             )
             .expect("seed test store");
+        write_search_index_status_record(
+            &db_path,
+            &PersistedSearchIndexRecord {
+                format_version: SEARCH_INDEX_STATUS_RECORD_FORMAT,
+                schema_version: SEARCH_DB_VERSION,
+                status: SearchIndexStatus::Ready,
+                plan_identity: plan.identity().to_string(),
+                snapshot_revision: 1,
+                indexed_items: 1,
+                detail: Some("Ready".to_string()),
+                last_error: None,
+            },
+        )
+        .expect("write status record");
 
         let diagnostics = SearchService::persisted_diagnostics_for_path(&config, &db_path);
 
@@ -3142,6 +3325,20 @@ mod tests {
                 )]),
             )
             .expect("seed stale store");
+        write_search_index_status_record(
+            &db_path,
+            &PersistedSearchIndexRecord {
+                format_version: SEARCH_INDEX_STATUS_RECORD_FORMAT,
+                schema_version: SEARCH_DB_VERSION,
+                status: SearchIndexStatus::Ready,
+                plan_identity: plan.identity().to_string(),
+                snapshot_revision: 1,
+                indexed_items: 1,
+                detail: Some("Ready".to_string()),
+                last_error: None,
+            },
+        )
+        .expect("write status record");
 
         let stale_config = SearchConfig {
             include_roots: vec![PathBuf::from("tmp/index-mismatch")],
@@ -3149,9 +3346,190 @@ mod tests {
         };
         let diagnostics = SearchService::persisted_diagnostics_for_path(&stale_config, &db_path);
 
-        assert!(matches!(diagnostics.status, SearchIndexStatus::Indexing));
+        assert!(matches!(diagnostics.status, SearchIndexStatus::Stale));
         assert_eq!(diagnostics.indexed_items, 1);
         let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn persisted_diagnostics_reports_version_incompatibility_as_needs_rebuild() {
+        let db_path = temp_service_path("persisted-status-version");
+        let _ = fs::remove_file(&db_path);
+        let config = SearchConfig {
+            include_roots: vec![PathBuf::from("tmp/index-version")],
+            ..SearchConfig::default()
+        };
+        let mut store = SearchStore::open(db_path.clone()).expect("open test store");
+        let plan = crate::plan::ScanPlan::new(&config).unwrap();
+        store
+            .commit(
+                &plan,
+                IndexMutation::ReplaceAll(vec![owned_item(
+                    &PathBuf::from("tmp/index-version"),
+                    "ready.txt",
+                    Some(1),
+                )]),
+            )
+            .expect("seed test store");
+        write_search_index_status_record(
+            &db_path,
+            &PersistedSearchIndexRecord {
+                format_version: SEARCH_INDEX_STATUS_RECORD_FORMAT,
+                schema_version: SEARCH_DB_VERSION + 1,
+                status: SearchIndexStatus::Ready,
+                plan_identity: plan.identity().to_string(),
+                snapshot_revision: 1,
+                indexed_items: 1,
+                detail: Some("old schema".to_string()),
+                last_error: None,
+            },
+        )
+        .expect("write mismatched schema");
+
+        let diagnostics = SearchService::persisted_diagnostics_for_path(&config, &db_path);
+
+        assert!(matches!(
+            diagnostics.status,
+            SearchIndexStatus::NeedsRebuild
+        ));
+        assert_eq!(diagnostics.indexed_items, 1);
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn persisted_diagnostics_without_status_record_is_unavailable() {
+        let db_path = temp_service_path("persisted-status-missing-record");
+        let _ = fs::remove_file(&db_path);
+        let config = SearchConfig {
+            include_roots: vec![PathBuf::from("tmp/index-missing-record")],
+            ..SearchConfig::default()
+        };
+        SearchStore::open(db_path.clone()).expect("open test store");
+
+        let diagnostics = SearchService::persisted_diagnostics_for_path(&config, &db_path);
+
+        assert!(matches!(diagnostics.status, SearchIndexStatus::Unavailable));
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn persisted_diagnostics_reports_unavailable_when_index_db_was_deleted() {
+        let db_path = temp_service_path("persisted-status-db-deleted");
+        let _ = fs::remove_file(&db_path);
+        let config = SearchConfig {
+            include_roots: vec![PathBuf::from("tmp/index-db-deleted")],
+            ..SearchConfig::default()
+        };
+        let mut store = SearchStore::open(db_path.clone()).expect("open test store");
+        let plan = crate::plan::ScanPlan::new(&config).unwrap();
+        store
+            .commit(
+                &plan,
+                IndexMutation::ReplaceAll(vec![owned_item(
+                    &PathBuf::from("tmp/index-db-deleted"),
+                    "ready.txt",
+                    Some(1),
+                )]),
+            )
+            .expect("seed test store");
+        write_search_index_status_record(
+            &db_path,
+            &PersistedSearchIndexRecord {
+                format_version: SEARCH_INDEX_STATUS_RECORD_FORMAT,
+                schema_version: SEARCH_DB_VERSION,
+                status: SearchIndexStatus::Ready,
+                plan_identity: plan.identity().to_string(),
+                snapshot_revision: 1,
+                indexed_items: 1,
+                detail: Some("Ready".to_string()),
+                last_error: None,
+            },
+        )
+        .expect("write status record");
+        drop(store);
+        fs::remove_file(&db_path).expect("remove sqlite db");
+
+        let diagnostics = SearchService::persisted_diagnostics_for_path(&config, &db_path);
+
+        assert!(matches!(diagnostics.status, SearchIndexStatus::Unavailable));
+        assert!(search_index_status_record_path(&db_path).exists());
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn persisted_diagnostics_does_not_mutate_storage_on_read() {
+        let db_path = temp_service_path("persisted-status-read-no-touch");
+        let _ = fs::remove_file(&db_path);
+        let status_path = search_index_status_record_path(&db_path);
+        let wal_path = PathBuf::from(format!("{}-wal", db_path.display()));
+        let shm_path = PathBuf::from(format!("{}-shm", db_path.display()));
+        let journal_path = PathBuf::from(format!("{}-journal", db_path.display()));
+        let config = SearchConfig {
+            include_roots: vec![PathBuf::from("tmp/index-no-touch")],
+            ..SearchConfig::default()
+        };
+        assert!(!db_path.exists());
+        assert!(!status_path.exists());
+        assert!(!wal_path.exists());
+        assert!(!shm_path.exists());
+        assert!(!journal_path.exists());
+
+        let diagnostics = SearchService::persisted_diagnostics_for_path(&config, &db_path);
+
+        assert!(matches!(diagnostics.status, SearchIndexStatus::Unavailable));
+        assert!(!db_path.exists());
+        assert!(!status_path.exists());
+        assert!(!wal_path.exists());
+        assert!(!shm_path.exists());
+        assert!(!journal_path.exists());
+        let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn persisted_status_record_replacement_is_atomic_and_leaves_no_tmp_file() {
+        let db_path = temp_service_path("persisted-status-atomic-replace");
+        let _ = fs::remove_file(&db_path);
+        let status_path = search_index_status_record_path(&db_path);
+        let status_tmp_path = status_path.with_file_name(format!(
+            "{}.tmp",
+            status_path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("search-index-status.json")
+        ));
+        let first = PersistedSearchIndexRecord {
+            format_version: SEARCH_INDEX_STATUS_RECORD_FORMAT,
+            schema_version: SEARCH_DB_VERSION,
+            status: SearchIndexStatus::Ready,
+            plan_identity: "plan-1".to_string(),
+            snapshot_revision: 1,
+            indexed_items: 1,
+            detail: Some("first".to_string()),
+            last_error: None,
+        };
+        let second = PersistedSearchIndexRecord {
+            format_version: SEARCH_INDEX_STATUS_RECORD_FORMAT,
+            schema_version: SEARCH_DB_VERSION,
+            status: SearchIndexStatus::Ready,
+            plan_identity: "plan-2".to_string(),
+            snapshot_revision: 2,
+            indexed_items: 2,
+            detail: Some("second".to_string()),
+            last_error: None,
+        };
+
+        write_search_index_status_record(&db_path, &first).expect("write first status record");
+        let record = read_search_index_status_record(&db_path)
+            .expect("read first status record")
+            .expect("status record exists");
+        assert_eq!(record.snapshot_revision, 1);
+
+        write_search_index_status_record(&db_path, &second).expect("replace second status record");
+        let record = read_search_index_status_record(&db_path)
+            .expect("read second status record")
+            .expect("status record exists");
+        assert_eq!(record.snapshot_revision, 2);
+        assert!(!status_tmp_path.exists());
     }
 
     #[test]

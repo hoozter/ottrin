@@ -6,7 +6,30 @@ use std::thread::sleep;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 fn main() {
+    if let Err(err) = run() {
+        eprintln!("ottrin-index: {err}");
+        std::process::exit(1);
+    }
+}
+
+fn run() -> Result<(), String> {
+    fn print_status(config: &SearchConfig) {
+        let diagnostics = SearchService::persisted_diagnostics(config);
+        println!("status={:?}", diagnostics.status);
+        println!("indexed_items={}", diagnostics.indexed_items);
+        println!("snapshot_revision={}", diagnostics.snapshot_revision);
+        println!("configured_roots={}", diagnostics.configured_root_count);
+        println!("watched_roots={}", diagnostics.watched_root_count);
+        if let Some(detail) = &diagnostics.detail {
+            println!("detail={detail}");
+        }
+        if let Some(error) = &diagnostics.last_error {
+            println!("error={error}");
+        }
+    }
+
     let mut force_rebuild = false;
+    let mut print_status_only = false;
     let mut remove_schedule = false;
     let mut roots: Vec<PathBuf> = std::env::args()
         .skip(1)
@@ -14,12 +37,18 @@ fn main() {
             if a == "--rebuild" || a == "--force" {
                 force_rebuild = true;
                 None
+            } else if a == "--status" {
+                print_status_only = true;
+                None
             } else if a == "--remove-schedule" || a == "--uninstall-schedule" {
                 remove_schedule = true;
                 None
             } else if a == "--help" || a == "-h" {
-                println!("Usage: ottrin-index [--rebuild] [--remove-schedule] [ROOT ...]");
+                println!(
+                    "Usage: ottrin-index [--status] [--rebuild] [--remove-schedule] [ROOT ...]"
+                );
                 println!("Builds or refreshes Ottrin's SQLite search index.");
+                println!("  --status    Print persisted search status and exit.");
                 println!("  --rebuild   Force a full rescan even if a saved index exists.");
                 println!("  --remove-schedule");
                 println!("              Remove Ottrin's background SQLite refresh schedule.");
@@ -44,6 +73,20 @@ fn main() {
             }
         }
     }
+
+    if print_status_only {
+        let config = SearchConfig {
+            include_roots: if roots.is_empty() {
+                vec![default_home_dir()]
+            } else {
+                roots
+            },
+            ..SearchConfig::default()
+        };
+        print_status(&config);
+        return Ok(());
+    }
+
     if roots.is_empty() {
         roots.push(default_home_dir());
     }
@@ -62,16 +105,15 @@ fn main() {
     service.start();
     if matches!(service.diagnostics().status, SearchIndexStatus::Unavailable) {
         let diag = service.diagnostics();
-        eprintln!(
-            "ottrin-index: {}",
-            diag.last_error
-                .unwrap_or_else(|| "search service unavailable".to_string())
-        );
-        std::process::exit(1);
+        let unavailable_error = diag
+            .last_error
+            .clone()
+            .unwrap_or_else(|| "search service unavailable".to_string());
+        eprintln!("ottrin-index: {}", unavailable_error.clone());
+        return Err(unavailable_error);
     }
     if force_rebuild && let Err(error) = service.rebuild_index_blocking() {
-        eprintln!("ottrin-index: rebuild failed: {error}");
-        std::process::exit(1);
+        return Err(format!("rebuild failed: {error}"));
     }
 
     let mut last_line = String::new();
@@ -109,15 +151,25 @@ fn main() {
         match diag.status {
             SearchIndexStatus::Ready => break,
             SearchIndexStatus::Unavailable => {
-                eprintln!(
-                    "ottrin-index: {}",
-                    diag.last_error
-                        .unwrap_or_else(|| "search service unavailable".to_string())
-                );
-                std::process::exit(1);
+                return Err(diag
+                    .last_error
+                    .unwrap_or_else(|| "search service unavailable".to_string()));
+            }
+            SearchIndexStatus::Stale => {
+                return Err(diag
+                    .last_error
+                    .clone()
+                    .unwrap_or_else(|| "search index status is stale".to_string()));
+            }
+            SearchIndexStatus::NeedsRebuild => {
+                return Err(diag
+                    .last_error
+                    .clone()
+                    .unwrap_or_else(|| "search index requires rebuild".to_string()));
             }
             SearchIndexStatus::Indexing => {}
         }
         sleep(Duration::from_millis(500));
     }
+    Ok(())
 }

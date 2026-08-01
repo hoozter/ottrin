@@ -25,7 +25,7 @@ pub enum ThemePreset {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct ThemeCustomization {
     pub enabled: bool,
     pub background: [u8; 4],
@@ -103,7 +103,8 @@ fn default_true() -> bool {
     true
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[serde(default, deny_unknown_fields)]
 pub struct SavedTheme {
     pub name: String,
     pub theme_mode: ThemeMode,
@@ -177,7 +178,7 @@ pub enum SearchSort {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct SearchConfig {
     pub default_scope: SearchScope,
     pub include_hidden_system: bool,
@@ -264,7 +265,8 @@ impl Default for SearchConfig {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(default, deny_unknown_fields)]
 pub struct IndexedVolumeLocation {
     /// Platform-provided identity. It must not depend on the display label or
     /// current mount point.
@@ -348,6 +350,8 @@ impl SearchResultItem {
 pub enum SearchIndexStatus {
     Unavailable,
     Indexing,
+    Stale,
+    NeedsRebuild,
     Ready,
 }
 
@@ -559,6 +563,7 @@ impl TabState {
 // ── Target system ─────────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(default, deny_unknown_fields)]
 pub struct TargetState {
     pub current: Option<PathBuf>,
     #[serde(default)]
@@ -821,7 +826,7 @@ pub fn select_graphics_renderer(
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 pub struct AppConfig {
     pub theme: ThemeMode,
     #[serde(default)]
@@ -1971,5 +1976,90 @@ mod tests {
         assert_eq!(config.default_view_mode, ViewMode::Miller);
         assert!(!config.search.exclude_roots.is_empty());
         assert_eq!(config.search.default_scope, SearchScope::Global);
+    }
+
+    #[test]
+    fn app_config_rejects_unknown_top_level_field() {
+        let json = r#"{"search":{"include_roots":["/tmp/fx"]},"unexpected":123}"#;
+        let error: Result<AppConfig, _> = serde_json::from_str(json);
+
+        assert!(error.is_err());
+        assert!(
+            error
+                .unwrap_err()
+                .to_string()
+                .contains("unknown field `unexpected`")
+        );
+    }
+
+    #[test]
+    fn app_config_rejects_unknown_nested_search_field() {
+        let json = r#"{"search":{"include_roots":["/tmp/fx"],"surprise":true}}"#;
+        let error: Result<AppConfig, _> = serde_json::from_str(json);
+
+        assert!(error.is_err());
+        assert!(
+            error
+                .unwrap_err()
+                .to_string()
+                .contains("unknown field `surprise`")
+        );
+    }
+
+    #[test]
+    fn search_config_rejects_unknown_nested_indexed_volume_field() {
+        let json =
+            r#"{"indexed_volumes":[{"identity":"id","last_known_path":"/tmp","surprise":"x"}]}"#;
+        let error: Result<SearchConfig, _> = serde_json::from_str(json);
+
+        assert!(error.is_err());
+        assert!(
+            error
+                .unwrap_err()
+                .to_string()
+                .contains("unknown field `surprise`")
+        );
+    }
+
+    #[test]
+    fn target_state_rejects_unknown_field() {
+        let json = r#"{"current":"/tmp","unknown":true}"#;
+        let error: Result<TargetState, _> = serde_json::from_str(json);
+
+        assert!(error.is_err());
+        assert!(
+            error
+                .unwrap_err()
+                .to_string()
+                .contains("unknown field `unknown`")
+        );
+    }
+
+    #[test]
+    fn saved_theme_rejects_unknown_field() {
+        let json = r#"{"name":"X","theme_mode":"System","base_preset":"Ottrin","customization":{"enabled":false,"background":[0,0,0,255],"panel":[0,0,0,255],"toolbar":[0,0,0,255],"bookmarks_bar":[0,0,0,255],"smart_panel":[0,0,0,255],"titlebar":[0,0,0,255],"border":[0,0,0,255],"window_border":[0,0,0,255],"window_border_width":1.0,"accent":[0,0,0,255],"folder":[0,0,0,255],"button_bg":[0,0,0,255],"button_text":[0,0,0,255],"text_heading":[0,0,0,255],"text_folder":[0,0,0,255],"text_file":[0,0,0,255],"palette_folder_blue":[0,0,0,255],"palette_link_blue":[0,0,0,255],"palette_steel":[0,0,0,255],"palette_soft_white":[0,0,0,255],"palette_green":[0,0,0,255],"palette_orange":[0,0,0,255],"palette_purple":[0,0,0,255],"palette_pink":[0,0,0,255],"palette_red":[0,0,0,255],"palette_yellow":[0,0,0,255],"app_radius":1.0,"border_radius":1.0,"button_radius":1.0,"font_scale":1.0,"surprise":true}}}"#;
+        let error: Result<SavedTheme, _> = serde_json::from_str(json);
+
+        assert!(error.is_err());
+        assert!(
+            error
+                .unwrap_err()
+                .to_string()
+                .contains("unknown field `surprise`")
+        );
+    }
+
+    #[test]
+    fn theme_customization_rejects_unknown_field() {
+        let json = r#"{"enabled":false,"background":[0,0,0,255],"panel":[0,0,0,255],"toolbar":[0,0,0,255],"bookmarks_bar":[0,0,0,255],"smart_panel":[0,0,0,255],"titlebar":[0,0,0,255],"border":[0,0,0,255],"window_border":[0,0,0,255],"window_border_width":1.0,"accent":[0,0,0,255],"folder":[0,0,0,255],"button_bg":[0,0,0,255],"button_text":[0,0,0,255],"text_heading":[0,0,0,255],"text_folder":[0,0,0,255],"text_file":[0,0,0,255],"palette_folder_blue":[0,0,0,255],"palette_link_blue":[0,0,0,255],"palette_steel":[0,0,0,255],"palette_soft_white":[0,0,0,255],"palette_green":[0,0,0,255],"palette_orange":[0,0,0,255],"palette_purple":[0,0,0,255],"palette_pink":[0,0,0,255],"palette_red":[0,0,0,255],"palette_yellow":[0,0,0,255],"app_radius":1.0,"border_radius":1.0,"button_radius":1.0,"font_scale":1.0,"surprise":true}"#;
+        let error: Result<ThemeCustomization, _> = serde_json::from_str(json);
+
+        assert!(error.is_err());
+        assert!(
+            error
+                .unwrap_err()
+                .to_string()
+                .contains("unknown field `surprise`")
+        );
     }
 }

@@ -6,19 +6,52 @@ use std::path::{Path, PathBuf};
 
 fn config_path() -> Option<PathBuf> {
     #[cfg(target_os = "windows")]
-    let base = std::env::var_os("APPDATA").map(PathBuf::from)?;
+    let base = std::env::var_os("APPDATA").map(PathBuf::from);
     #[cfg(not(target_os = "windows"))]
-    let base = std::env::var_os("XDG_CONFIG_HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| {
-            let mut h = default_home_dir();
-            h.push(".config");
-            h
-        });
-    let mut p = base;
-    p.push("ottrin");
-    p.push("config.json");
-    Some(p)
+    let fallback_home = default_home_dir();
+    #[cfg(target_os = "windows")]
+    let fallback_home = PathBuf::new();
+    let base = std::env::var_os("XDG_CONFIG_HOME").map(PathBuf::from);
+    let base = config_root_path(base.as_deref(), &fallback_home);
+    let p = base;
+
+    #[cfg(windows)]
+    let p = match base {
+        Some(base) => {
+            let mut path = base;
+            path.push("ottrin");
+            path.push("config.json");
+            Some(path)
+        }
+        None => None,
+    };
+
+    #[cfg(not(target_os = "windows"))]
+    let p = {
+        let mut path = p;
+        path.push("ottrin");
+        path.push("config.json");
+        Some(path)
+    };
+
+    p
+}
+
+#[cfg(not(target_os = "windows"))]
+fn config_root_path(xdg_config_home: Option<&Path>, home: &Path) -> PathBuf {
+    match xdg_config_home {
+        Some(base) => base.to_path_buf(),
+        None => {
+            let mut base = home.to_path_buf();
+            base.push(".config");
+            base
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn config_root_path(appdata: Option<&Path>, _home: &Path) -> PathBuf {
+    appdata.map_or_else(PathBuf::new, Path::to_path_buf)
 }
 
 pub fn load_config() -> AppConfig {
@@ -47,129 +80,10 @@ pub(crate) fn load_config_checked_with_path(path: &Path) -> Result<AppConfig, St
 
     let value: serde_json::Value = serde_json::from_slice(&bytes)
         .map_err(|err| format!("invalid config file {}: {}", path.display(), err))?;
-    let top = value.as_object().ok_or_else(|| {
-        format!(
-            "invalid config file {}: expected JSON object",
-            path.display()
-        )
-    })?;
-    validate_known_keys(top, "config file", path, STRICT_CONFIG_KEYS)?;
-    validate_strict_search_fragment(&value, path)?;
 
-    serde_json::from_value(value)
+    serde_json::from_value::<AppConfig>(value)
         .map_err(|err| format!("invalid config file {}: {}", path.display(), err))
 }
-
-fn validate_strict_search_fragment(value: &serde_json::Value, path: &Path) -> Result<(), String> {
-    let Some(search) = value.get("search") else {
-        return Ok(());
-    };
-    if search.is_null() {
-        return Ok(());
-    }
-    let search_obj = search.as_object().ok_or_else(|| {
-        format!(
-            "invalid config file {}: search must be an object",
-            path.display()
-        )
-    })?;
-    validate_known_keys(search_obj, "search", path, SEARCH_CONFIG_KEYS)?;
-    if let Some(indexed_volumes) = search_obj.get("indexed_volumes") {
-        for indexed_volume in indexed_volumes.as_array().ok_or_else(|| {
-            format!(
-                "invalid config file {}: search.indexed_volumes must be an array",
-                path.display()
-            )
-        })? {
-            let volume_obj = indexed_volume.as_object().ok_or_else(|| {
-                format!(
-                    "invalid config file {}: search.indexed_volumes entries must be objects",
-                    path.display()
-                )
-            })?;
-            validate_known_keys(
-                volume_obj,
-                "search.indexed_volumes",
-                path,
-                SEARCH_INDEXED_VOLUME_KEYS,
-            )?;
-        }
-    }
-    Ok(())
-}
-
-const STRICT_CONFIG_KEYS: &[&str] = &[
-    "theme",
-    "theme_preset",
-    "theme_custom",
-    "theme_custom_by_preset",
-    "custom_themes",
-    "active_custom_theme",
-    "default_view_mode",
-    "colorize_file_types",
-    "colorize_folder_labels",
-    "list_columns",
-    "miller_view_scale",
-    "list_view_scale",
-    "grid_view_scale",
-    "command_frame_always_visible",
-    "restore_session",
-    "show_hidden_files",
-    "list_show_thumbnails",
-    "grid_show_thumbnails",
-    "folder_list_thumbnails",
-    "folder_grid_thumbnails",
-    "target",
-    "last_session_dirs",
-    "bookmarks",
-    "search",
-    "folder_column_widths",
-    "miller_column_width_mode",
-    "smart_panel_width",
-    "window_size",
-    "thumbnail_cache_max_mb",
-    "graphics_renderer",
-    "graphics_compatibility_notice_seen",
-];
-
-fn validate_known_keys(
-    value: &serde_json::Map<String, serde_json::Value>,
-    kind: &str,
-    path: &Path,
-    allowed: &[&str],
-) -> Result<(), String> {
-    for key in value.keys() {
-        if !allowed.contains(&key.as_str()) {
-            return Err(format!(
-                "invalid {kind} {}: unknown field `{}`",
-                path.display(),
-                key
-            ));
-        }
-    }
-    Ok(())
-}
-
-const SEARCH_CONFIG_KEYS: &[&str] = &[
-    "default_scope",
-    "include_hidden_system",
-    "include_roots",
-    "indexed_volumes",
-    "exclude_roots",
-    "content_indexing_enabled",
-    "content_include_roots",
-    "content_exclude_roots",
-    "include_globs",
-    "exclude_globs",
-    "default_sort",
-    "result_limit",
-    "refresh_interval_hours",
-    "use_system_locate",
-    "manage_locate_db",
-    "locate_update_hours",
-];
-
-const SEARCH_INDEXED_VOLUME_KEYS: &[&str] = &["identity", "last_known_path"];
 
 pub fn remove_config_file() -> Result<u64, String> {
     let Some(path) = config_path() else {
@@ -209,6 +123,7 @@ mod tests {
     use super::*;
     use ottrin_core::{SearchScope, ThemeMode};
     use std::fs;
+    use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
 
     fn with_temp_config_file<T>(test: T)
@@ -251,6 +166,34 @@ mod tests {
     }
 
     #[test]
+    fn checked_config_rejects_unknown_top_level_field() {
+        with_temp_config_file(|config_path| {
+            fs::write(
+                config_path,
+                r#"{"search":{"include_roots":["tmp/fx"]},"unknown":true}"#,
+            )
+            .unwrap();
+
+            let err = load_config_checked_with_path(config_path).unwrap_err();
+            assert!(err.contains("unknown field `unknown`"));
+        });
+    }
+
+    #[test]
+    fn checked_config_rejects_unknown_nested_indexed_volume_field() {
+        with_temp_config_file(|config_path| {
+            fs::write(
+                config_path,
+                r#"{"search":{"indexed_volumes":[{"identity":"id","last_known_path":"/tmp","surprise":"x"}]}}"#,
+            )
+            .unwrap();
+
+            let err = load_config_checked_with_path(config_path).unwrap_err();
+            assert!(err.contains("unknown field `surprise`"));
+        });
+    }
+
+    #[test]
     fn checked_config_rejects_malformed_json() {
         with_temp_config_file(|config_path| {
             fs::write(config_path, r#"{"search":{"include_roots":1}}"#).unwrap();
@@ -258,5 +201,28 @@ mod tests {
             let err = load_config_checked_with_path(config_path).unwrap_err();
             assert!(err.contains("invalid config file"));
         });
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    #[test]
+    fn config_path_uses_injected_xdg_config_home_without_env_mutation() {
+        let xdg = PathBuf::from("/tmp/injected-xdg-config");
+        let path = config_root_path(Some(&xdg), &PathBuf::from("/tmp/unused"));
+        assert_eq!(
+            path.join("ottrin").join("config.json"),
+            xdg.join("ottrin").join("config.json")
+        );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn config_path_uses_injected_appdata_without_env_mutation() {
+        use std::path::Path;
+        let appdata = PathBuf::from("C:/injected-appdata");
+        let path = config_root_path(Some(appdata.as_path()), Path::new(""));
+        assert_eq!(
+            path.join("ottrin").join("config.json"),
+            appdata.join("ottrin").join("config.json")
+        );
     }
 }
