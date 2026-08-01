@@ -46,6 +46,12 @@ pub struct FileProperties {
     pub modified: Option<SystemTime>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MoveDisposition {
+    Moved,
+    Skipped,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TrashOriginBinding {
     /// The source root proven by native Trash metadata. This is deliberately
@@ -495,6 +501,10 @@ pub trait PlatformOps: Send + Sync {
         &self,
         command: &FileCommand,
     ) -> Result<Option<FileProperties>, PlatformError>;
+    fn execute_command_with_move_dispositions(
+        &self,
+        command: &FileCommand,
+    ) -> Result<(Option<FileProperties>, Vec<MoveDisposition>), PlatformError>;
     fn execute_privileged(
         &self,
         request: &PrivilegedRequest,
@@ -648,7 +658,7 @@ impl PlatformOps for DefaultPlatform {
                     reject_directory_copy_into_itself(source, destination)?;
                 }
                 execute_batch(sources, |source| {
-                    move_entry_transactional(source, destination, *conflict)
+                    move_entry_transactional(source, destination, *conflict).map(|_| ())
                 })?;
                 Ok(None)
             }
@@ -677,6 +687,30 @@ impl PlatformOps for DefaultPlatform {
                 create_symlink(link_path, target).map_err(PlatformError::Io)?;
                 Ok(None)
             }
+        }
+    }
+
+    fn execute_command_with_move_dispositions(
+        &self,
+        command: &FileCommand,
+    ) -> Result<(Option<FileProperties>, Vec<MoveDisposition>), PlatformError> {
+        match command {
+            FileCommand::Move {
+                sources,
+                destination,
+                conflict,
+            } => {
+                ensure_existing_dir(destination)?;
+                for source in sources {
+                    validate_copy_source(source)?;
+                    reject_directory_copy_into_itself(source, destination)?;
+                }
+                let completed_dispositions = execute_move_batch(sources, |source| {
+                    move_entry_transactional(source, destination, *conflict)
+                })?;
+                Ok((None, completed_dispositions))
+            }
+            _ => Ok((self.execute_command(command)?, Vec::new())),
         }
     }
 
@@ -943,6 +977,44 @@ fn execute_batch(
     Ok(())
 }
 
+fn execute_move_batch(
+    sources: &[PathBuf],
+    mut execute: impl FnMut(&Path) -> Result<MoveDisposition, PlatformError>,
+) -> Result<Vec<MoveDisposition>, PlatformError> {
+    let total = sources.len();
+    let mut completed_dispositions = Vec::with_capacity(total);
+    for (index, source) in sources.iter().enumerate() {
+        match execute(source) {
+            Ok(disposition) => {
+                completed_dispositions.push(disposition);
+            }
+            Err(error) => {
+                let current_committed = matches!(
+                    error,
+                    PlatformError::CommittedCleanupPending { .. }
+                        | PlatformError::PartialBatch { .. }
+                );
+                let completed = index + usize::from(current_committed);
+                if current_committed {
+                    completed_dispositions.push(MoveDisposition::Moved);
+                }
+                if total > 1 && completed > 0 {
+                    let recovery_paths = error_recovery_paths(&error);
+                    return Err(PlatformError::PartialBatch {
+                        completed,
+                        total,
+                        stopped_source: source.clone(),
+                        message: message_with_recovery(&error, &recovery_paths),
+                        recovery_paths,
+                    });
+                }
+                return Err(error);
+            }
+        }
+    }
+    Ok(completed_dispositions)
+}
+
 fn execute_copy_batch(
     sources: &[PathBuf],
     destination: &Path,
@@ -1167,6 +1239,8 @@ fn rename_without_replacement(source: &Path, target: &Path) -> Result<(), Platfo
     renameat_with(CWD, source, CWD, target, RenameFlags::NOREPLACE).map_err(|error| {
         if error == Errno::EXIST {
             PlatformError::DestinationExists(target.display().to_string())
+        } else if error == Errno::XDEV {
+            PlatformError::UnsupportedSafeCrossDeviceMove(source.display().to_string())
         } else {
             PlatformError::Io(error.to_string())
         }

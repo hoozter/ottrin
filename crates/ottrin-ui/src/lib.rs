@@ -18,8 +18,9 @@ use ottrin_core::{
     platform_case_mode_current,
 };
 use ottrin_platform::{
-    DefaultPlatform, OpenWithApplication, PlatformError, PlatformOps, PrivilegedAvailability,
-    StorageLocation, StorageLocationKind, TrashItem, discover_storage_locations,
+    DefaultPlatform, MoveDisposition, OpenWithApplication, PlatformError, PlatformOps,
+    PrivilegedAvailability, StorageLocation, StorageLocationKind, TrashItem,
+    discover_storage_locations,
 };
 #[cfg(target_os = "linux")]
 use ottrin_platform::{discover_retained_move_transactions, move_recovery::JournalPhase};
@@ -330,6 +331,7 @@ struct OpResult {
     retry: Option<PendingPrivilegedRetry>,
     clipboard_generation: Option<u64>,
     completed_sources: Option<usize>,
+    completed_source_paths: Vec<PathBuf>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -398,9 +400,9 @@ struct PendingDelete {
 #[derive(Debug, Clone)]
 struct PendingMoveConflict {
     cmd: FileCommand,
-    tab_id: u64,
+    tab_id: Option<u64>,
     bindings: Vec<StorageOperationBinding>,
-    clipboard_generation: u64,
+    clipboard_generation: Option<u64>,
 }
 
 #[derive(Debug, Clone)]
@@ -4540,6 +4542,7 @@ impl OttrinApp {
                 &completed_cmd,
                 res.error.is_none(),
                 res.completed_sources,
+                &res.completed_source_paths,
             );
             if let Some(err) = res.error {
                 self.finish_operation_record(res.op_id, OperationStatus::Failed, Some(err.clone()));
@@ -4625,6 +4628,7 @@ impl OttrinApp {
         cmd: &FileCommand,
         completed: bool,
         completed_sources: Option<usize>,
+        completed_source_paths: &[PathBuf],
     ) {
         let Some(generation) = generation else {
             return;
@@ -4647,15 +4651,29 @@ impl OttrinApp {
             return;
         }
 
-        let completed_count = completed_sources
-            .unwrap_or(sources.len())
-            .min(sources.len());
-        if completed_count >= sources.len() {
+        let remaining_sources = if !completed_source_paths.is_empty() {
+            sources
+                .iter()
+                .filter(|source| !completed_source_paths.contains(source))
+                .cloned()
+                .collect::<Vec<_>>()
+        } else {
+            let completed_count = completed_sources
+                .unwrap_or(sources.len())
+                .min(sources.len());
+            if completed_count >= sources.len() {
+                self.clipboard = None;
+                return;
+            }
+            sources[completed_count..].to_vec()
+        };
+
+        if remaining_sources.is_empty() {
             self.clipboard = None;
             return;
         }
 
-        clipboard.sources = sources[completed_count..].to_vec();
+        clipboard.sources = remaining_sources;
         clipboard.source_bindings.retain(|binding| {
             clipboard
                 .sources
@@ -6482,6 +6500,16 @@ impl OttrinApp {
         }
     }
 
+    fn handle_move_conflict_confirmation_keyboard(&mut self, ctx: &Context) {
+        if self.pending_move_conflict.is_none() {
+            return;
+        }
+        let cancel = ctx.input_mut(|input| input.consume_key(egui::Modifiers::NONE, Key::Escape));
+        if cancel {
+            self.resolve_move_conflict(None);
+        }
+    }
+
     fn handle_empty_trash_confirmation_keyboard(&mut self, ctx: &Context) {
         if !self.pending_empty_trash {
             return;
@@ -7007,15 +7035,6 @@ impl OttrinApp {
                         return;
                     }
                 };
-            if move_has_destination_conflict(&cmd) {
-                self.pending_move_conflict = Some(PendingMoveConflict {
-                    cmd,
-                    tab_id,
-                    bindings,
-                    clipboard_generation: clip.generation,
-                });
-                return;
-            }
             if self.run_file_op_with_bindings(cmd, Some(tab_id), bindings, clip.generation)
                 && let Some(current) = self
                     .clipboard
@@ -7041,15 +7060,27 @@ impl OttrinApp {
             return;
         };
         *action = conflict;
-        if self.run_file_op_with_bindings(
-            pending.cmd,
-            Some(pending.tab_id),
-            pending.bindings,
-            pending.clipboard_generation,
-        ) && let Some(clipboard) = self
-            .clipboard
-            .as_mut()
-            .filter(|clipboard| clipboard.generation == pending.clipboard_generation)
+        let started = match pending.clipboard_generation {
+            Some(clipboard_generation) => self.run_file_op_with_bindings(
+                pending.cmd,
+                pending.tab_id,
+                pending.bindings,
+                clipboard_generation,
+            ),
+            None => self.run_file_op_bound(
+                pending.cmd,
+                pending.tab_id,
+                Vec::new(),
+                Some(pending.bindings),
+                None,
+            ),
+        };
+        if started
+            && let Some(clipboard_generation) = pending.clipboard_generation
+            && let Some(clipboard) = self
+                .clipboard
+                .as_mut()
+                .filter(|clipboard| clipboard.generation == clipboard_generation)
         {
             clipboard.in_flight = true;
         }
@@ -7280,6 +7311,14 @@ impl OttrinApp {
             self.set_status_message(message, false, 6);
             return false;
         }
+        if self.request_move_conflict_confirmation(
+            &cmd,
+            refresh_tab,
+            &bindings,
+            clipboard_generation,
+        ) {
+            return false;
+        }
         let op_id = self.queue_operation_record(cmd.clone());
         let platform = Arc::clone(&self.platform);
         let op_tx = self.op_tx.clone();
@@ -7289,22 +7328,52 @@ impl OttrinApp {
             // discovery API permits. The OS can still replace a pathname after
             // this check and before the platform syscall; Rust cannot make that
             // final cross-platform pathname operation identity-conditional.
-            let outcome =
+            let (outcome, completed_source_paths) =
                 match validate_operation_storage_bindings(&bindings, &discover_storage_locations())
                 {
-                    Ok(()) => classify_file_op_result(platform.execute_command(&cmd).map(|_| ())),
-                    Err(message) => FileOpOutcome::Failed {
-                        message,
-                        privilege_retry: false,
+                    Ok(()) => match &cmd {
+                        FileCommand::Move { sources, .. } => {
+                            match platform.execute_command_with_move_dispositions(&cmd) {
+                                Ok((_, dispositions)) => {
+                                    let completed_source_paths = sources
+                                        .iter()
+                                        .zip(dispositions)
+                                        .filter_map(|(source, disposition)| {
+                                            (disposition == MoveDisposition::Moved)
+                                                .then_some(source.clone())
+                                        })
+                                        .collect();
+                                    (FileOpOutcome::Completed, completed_source_paths)
+                                }
+                                Err(error) => (classify_file_op_result(Err(error)), Vec::new()),
+                            }
+                        }
+                        _ => (
+                            classify_file_op_result(platform.execute_command(&cmd).map(|_| ())),
+                            Vec::new(),
+                        ),
                     },
+                    Err(message) => (
+                        FileOpOutcome::Failed {
+                            message,
+                            privilege_retry: false,
+                        },
+                        Vec::new(),
+                    ),
                 };
+            let completed_source_count = match outcome {
+                FileOpOutcome::Completed => Some(completed_source_paths.len()),
+                FileOpOutcome::CompletedWithWarning {
+                    completed_sources, ..
+                } => Some(completed_sources),
+                _ => None,
+            };
             let privilege_retry = outcome.should_offer_privilege_retry();
             let (error, warning, retry, completed_sources) = match outcome {
-                FileOpOutcome::Completed => (None, None, None, None),
-                FileOpOutcome::CompletedWithWarning {
-                    message,
-                    completed_sources,
-                } => (None, Some(message), None, Some(completed_sources)),
+                FileOpOutcome::Completed => (None, None, None, completed_source_count),
+                FileOpOutcome::CompletedWithWarning { message, .. } => {
+                    (None, Some(message), None, completed_source_count)
+                }
                 FileOpOutcome::Failed { message, .. } => (
                     Some(message),
                     None,
@@ -7324,7 +7393,37 @@ impl OttrinApp {
                 retry,
                 clipboard_generation,
                 completed_sources,
+                completed_source_paths,
             });
+        });
+        true
+    }
+
+    fn request_move_conflict_confirmation(
+        &mut self,
+        cmd: &FileCommand,
+        refresh_tab: Option<u64>,
+        bindings: &[StorageOperationBinding],
+        clipboard_generation: Option<u64>,
+    ) -> bool {
+        let FileCommand::Move {
+            conflict: ConflictAction::Rename | ConflictAction::Skip,
+            ..
+        } = cmd
+        else {
+            return false;
+        };
+        if !move_has_destination_conflict(cmd) {
+            return false;
+        }
+        if self.pending_move_conflict.is_some() {
+            return true;
+        }
+        self.pending_move_conflict = Some(PendingMoveConflict {
+            cmd: cmd.clone(),
+            tab_id: refresh_tab,
+            bindings: bindings.to_vec(),
+            clipboard_generation,
         });
         true
     }
@@ -15642,6 +15741,13 @@ impl OttrinApp {
         ))
         .rect_filled(viewport, 0.0, Color32::from_rgba_unmultiplied(0, 0, 0, 82));
 
+        egui::Area::new(egui::Id::new("move_conflict_modal_blocker"))
+            .order(egui::Order::Foreground)
+            .fixed_pos(viewport.min)
+            .show(ctx, |ui| {
+                let _ = ui.allocate_exact_size(viewport.size(), Sense::click());
+            });
+
         let mut choice = None;
         egui::Area::new(egui::Id::new("move_conflict_confirmation"))
             .order(egui::Order::Foreground)
@@ -17772,7 +17878,7 @@ impl eframe::App for OttrinApp {
         } else if self.pending_delete.is_some() {
             self.handle_delete_confirmation_keyboard(ctx);
         } else if self.pending_move_conflict.is_some() {
-            // The conflict dialog owns input until the user chooses a mutation or Cancel.
+            self.handle_move_conflict_confirmation_keyboard(ctx);
         } else if self.pending_empty_trash {
             self.handle_empty_trash_confirmation_keyboard(ctx);
         } else {
@@ -20127,6 +20233,7 @@ mod tests {
             retry: None,
             clipboard_generation: None,
             completed_sources: Some(1),
+            completed_source_paths: Vec::new(),
         });
 
         app.poll_op_results();
@@ -21391,7 +21498,7 @@ mod tests {
             conflict: ConflictAction::Rename,
         };
 
-        app.apply_clipboard_operation_result(Some(generation), &command, true, Some(1));
+        app.apply_clipboard_operation_result(Some(generation), &command, true, Some(1), &[]);
         let remaining = app.clipboard.as_ref().expect("failed suffix is retained");
         assert_eq!(remaining.sources, vec![second]);
         assert!(!remaining.in_flight);
@@ -21400,7 +21507,7 @@ mod tests {
             .expect("later identical clipboard gets a new generation");
         let replacement_generation = replacement.generation;
         app.clipboard = Some(replacement);
-        app.apply_clipboard_operation_result(Some(generation), &command, true, None);
+        app.apply_clipboard_operation_result(Some(generation), &command, true, None, &[]);
         assert_eq!(
             app.clipboard.as_ref().map(|clipboard| clipboard.generation),
             Some(replacement_generation),
@@ -21422,12 +21529,149 @@ mod tests {
             },
             true,
             None,
+            &[],
         );
         let copied = app
             .clipboard
             .as_ref()
             .expect("copy clipboard remains reusable");
         assert!(!copied.in_flight);
+    }
+
+    #[test]
+    fn cut_move_skip_retains_unmoved_source_and_clears_moved_source() {
+        let fixture_root = std::env::temp_dir().join(format!(
+            "ottrin-ui-cut-move-skip-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        let fixture_storage = StorageLocation {
+            path: fixture_root.clone(),
+            identity: "slot".to_string(),
+            stable_identity: Some("skip-move-fixture".to_string()),
+            kind: StorageLocationKind::Removable,
+            display_name: None,
+        };
+        std::fs::create_dir_all(&fixture_root).expect("create fixture root");
+        let first = fixture_root.join("skip_cut_first.txt");
+        let second = fixture_root.join("skip_cut_second.txt");
+        std::fs::write(&first, "moved").expect("create first");
+        let destination = fixture_root.join("destination");
+        std::fs::create_dir_all(&destination).expect("create destination");
+        let mut app = OttrinApp::default();
+        let sources = vec![first.clone(), second.clone()];
+        let mut clipboard = Clipboard::capture(
+            sources.clone(),
+            true,
+            std::slice::from_ref(&fixture_storage),
+        )
+        .expect("home cut clipboard has a narrow binding");
+        clipboard.in_flight = true;
+        let generation = clipboard.generation;
+        app.clipboard = Some(clipboard);
+
+        let move_cmd = FileCommand::Move {
+            sources: sources.clone(),
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        };
+        std::fs::write(destination.join(second.file_name().unwrap()), "blocked")
+            .expect("create conflicting target");
+
+        app.apply_clipboard_operation_result(
+            Some(generation),
+            &move_cmd,
+            true,
+            Some(2),
+            std::slice::from_ref(&first),
+        );
+
+        let remaining = app
+            .clipboard
+            .as_ref()
+            .expect("clipboard keeps skipped source");
+        assert_eq!(remaining.sources, vec![second]);
+        assert!(!remaining.in_flight);
+
+        std::fs::remove_dir_all(&fixture_root).expect("cleanup fixture");
+    }
+
+    #[test]
+    fn move_conflict_modal_escape_cancels_pending_resolution() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-move-conflict-escape-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
+        ));
+        let destination = root.join("destination");
+        std::fs::create_dir_all(&destination).expect("create destination");
+        let source = root.join("report.txt");
+        std::fs::write(destination.join("report.txt"), "occupied").expect("create conflict");
+
+        let mut app = OttrinApp::default();
+        app.pending_move_conflict = Some(PendingMoveConflict {
+            cmd: FileCommand::Move {
+                sources: vec![source],
+                destination,
+                conflict: ConflictAction::Rename,
+            },
+            tab_id: Some(1),
+            bindings: Vec::new(),
+            clipboard_generation: None,
+        });
+
+        let ctx = Context::default();
+        ctx.input_mut(|input| {
+            input.events.push(egui::Event::Key {
+                key: Key::Escape,
+                physical_key: None,
+                pressed: true,
+                repeat: false,
+                modifiers: egui::Modifiers::NONE,
+            });
+        });
+        app.handle_move_conflict_confirmation_keyboard(&ctx);
+
+        assert!(app.pending_move_conflict.is_none());
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn move_conflict_confirmation_does_not_require_refresh_tab() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-move-conflict-tabless-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
+        ));
+        let destination = root.join("destination");
+        std::fs::create_dir_all(&destination).expect("create destination");
+        let source = root.join("report.txt");
+        std::fs::write(destination.join("report.txt"), "occupied").expect("create conflict");
+
+        let mut app = OttrinApp::default();
+        let cmd = FileCommand::Move {
+            sources: vec![source],
+            destination,
+            conflict: ConflictAction::Rename,
+        };
+        let blocked = app.request_move_conflict_confirmation(&cmd, None, &Vec::new(), None);
+        assert!(blocked);
+        assert!(app.pending_move_conflict.is_some());
+        assert!(
+            app.pending_move_conflict
+                .as_ref()
+                .is_some_and(|pending| { pending.tab_id.is_none() })
+        );
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]

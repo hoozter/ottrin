@@ -7,7 +7,7 @@
 use super::move_recovery;
 #[cfg(target_os = "windows")]
 use super::move_recovery;
-use super::{ConflictAction, PlatformError, reject_directory_copy_into_itself};
+use super::{ConflictAction, MoveDisposition, PlatformError, reject_directory_copy_into_itself};
 #[cfg(target_os = "linux")]
 use super::{copy_entry, next_available_name, rename_without_replacement};
 #[cfg(target_os = "linux")]
@@ -28,12 +28,14 @@ pub(super) fn move_entry_transactional(
     source: &Path,
     destination_dir: &Path,
     conflict: ConflictAction,
-) -> Result<(), PlatformError> {
+) -> Result<MoveDisposition, PlatformError> {
     let source_metadata = std::fs::symlink_metadata(source)
         .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
-    let destination_metadata = std::fs::symlink_metadata(destination_dir)
+    let destination_dir = std::fs::canonicalize(destination_dir)
         .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
-    reject_directory_copy_into_itself(source, destination_dir)?;
+    let destination_metadata = std::fs::symlink_metadata(&destination_dir)
+        .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
+    reject_directory_copy_into_itself(source, &destination_dir)?;
 
     if source_metadata.dev() != destination_metadata.dev() {
         return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
@@ -48,14 +50,15 @@ pub(super) fn move_entry_transactional(
     );
     match conflict {
         ConflictAction::Skip => match rename_without_replacement(source, &target) {
-            Ok(()) | Err(PlatformError::DestinationExists(_)) => Ok(()),
+            Ok(()) => Ok(MoveDisposition::Moved),
+            Err(PlatformError::DestinationExists(_)) => Ok(MoveDisposition::Skipped),
             Err(error) => Err(error),
         },
         ConflictAction::Rename => {
             let mut candidate = target;
             loop {
                 match rename_without_replacement(source, &candidate) {
-                    Ok(()) => return Ok(()),
+                    Ok(()) => return Ok(MoveDisposition::Moved),
                     Err(PlatformError::DestinationExists(_)) => {
                         candidate = next_available_name(&candidate);
                     }
@@ -63,9 +66,15 @@ pub(super) fn move_entry_transactional(
                 }
             }
         }
-        ConflictAction::Overwrite => {
-            std::fs::rename(source, target).map_err(|error| PlatformError::Io(error.to_string()))
-        }
+        ConflictAction::Overwrite => std::fs::rename(source, target)
+            .map_err(|error| {
+                if error.kind() == std::io::ErrorKind::CrossesDevices {
+                    PlatformError::UnsupportedSafeCrossDeviceMove(source.display().to_string())
+                } else {
+                    PlatformError::Io(error.to_string())
+                }
+            })
+            .map(|_| MoveDisposition::Moved),
     }
 }
 
@@ -74,7 +83,7 @@ pub(super) fn move_entry_transactional(
     source: &Path,
     destination_dir: &Path,
     _conflict: ConflictAction,
-) -> Result<(), PlatformError> {
+) -> Result<MoveDisposition, PlatformError> {
     std::fs::symlink_metadata(source)
         .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
     std::fs::symlink_metadata(destination_dir)
@@ -98,7 +107,7 @@ pub(super) fn move_entry_transactional(
     source: &Path,
     destination_dir: &Path,
     _conflict: ConflictAction,
-) -> Result<(), PlatformError> {
+) -> Result<MoveDisposition, PlatformError> {
     std::fs::symlink_metadata(source)
         .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
     reject_directory_copy_into_itself(source, destination_dir)?;
@@ -124,7 +133,7 @@ fn move_with_hooks(
     destination_dir: &Path,
     conflict: ConflictAction,
     mut hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
-) -> Result<(), PlatformError> {
+) -> Result<MoveDisposition, PlatformError> {
     #[cfg(test)]
     let _test_move_guard = TEST_MOVE_SERIALIZER
         .lock()
@@ -176,7 +185,7 @@ fn move_with_hooks(
 
     if !is_cross_device
         && (conflict == ConflictAction::Skip || conflict == ConflictAction::Rename)
-        && recover_same_filesystem_pending_destination(
+        && let Some(disposition) = recover_same_filesystem_pending_destination(
             source,
             &destination_dir,
             source_name,
@@ -188,11 +197,11 @@ fn move_with_hooks(
             conflict,
         )?
     {
-        return Ok(());
+        return Ok(disposition);
     }
     if is_cross_device
         && (conflict == ConflictAction::Skip || conflict == ConflictAction::Rename)
-        && recover_cross_filesystem_pending_destination(
+        && let Some(disposition) = recover_cross_filesystem_pending_destination(
             source,
             &destination_dir,
             source_name,
@@ -204,7 +213,7 @@ fn move_with_hooks(
             conflict,
         )?
     {
-        return Ok(());
+        return Ok(disposition);
     }
 
     reject_directory_copy_into_itself(source, &destination_dir)?;
@@ -215,7 +224,7 @@ fn move_with_hooks(
         && destination_dir.join(source_name).exists()
         && conflict == ConflictAction::Skip
     {
-        return Ok(());
+        return Ok(MoveDisposition::Skipped);
     }
     let source_entry_identity = move_recovery::LinuxStableIdentity::new(
         source_metadata.dev(),
@@ -416,7 +425,7 @@ fn move_with_hooks(
                             &recovery_transaction_id,
                         );
                         let _ = std::fs::remove_dir_all(destination_transaction_path_path);
-                        return Ok(());
+                        return Ok(MoveDisposition::Skipped);
                     }
                     if conflict == ConflictAction::Overwrite {
                         publish_claimed_to_destination_with_exchange(
@@ -506,7 +515,7 @@ fn move_with_hooks(
 
         let _ = std::fs::remove_dir_all(destination_transaction_path);
         let _ = cleanup_transaction_journals(&recovery_root, &local_path, &recovery_transaction_id);
-        return Ok(());
+        return Ok(MoveDisposition::Moved);
     }
 
     loop {
@@ -550,7 +559,7 @@ fn move_with_hooks(
                         &local_path,
                         &recovery_transaction_id,
                     );
-                    return Ok(());
+                    return Ok(MoveDisposition::Skipped);
                 }
 
                 if conflict == ConflictAction::Overwrite {
@@ -603,7 +612,7 @@ fn move_with_hooks(
         })?;
 
     let _ = cleanup_transaction_journals(&recovery_root, &local_path, &recovery_transaction_id);
-    Ok(())
+    Ok(MoveDisposition::Moved)
 }
 
 #[cfg(target_os = "linux")]
@@ -618,14 +627,14 @@ fn recover_same_filesystem_pending_destination(
     source_entry_identity: Option<move_recovery::LinuxStableIdentity>,
     destination_parent: &move_recovery::LinuxSourceParentDirectory,
     conflict: ConflictAction,
-) -> Result<bool, PlatformError> {
+) -> Result<Option<MoveDisposition>, PlatformError> {
     let recovery_root = default_recovery_root()?;
     let discovered = discover_retained_move_transactions_at(&recovery_root)?;
     if !discovered
         .iter()
         .any(|entry| entry.phase == move_recovery::JournalPhase::PendingDestination)
     {
-        return Ok(false);
+        return Ok(None);
     }
 
     let expected_source_name = Path::new(source_name);
@@ -687,7 +696,7 @@ fn recover_same_filesystem_pending_destination(
         if pending.has_cross_device_destination_state() {
             continue;
         }
-        if replay_same_filesystem_pending_destination_with_record(
+        if let Some(disposition) = replay_same_filesystem_pending_destination_with_record(
             source,
             source_parent,
             destination_parent,
@@ -700,11 +709,11 @@ fn recover_same_filesystem_pending_destination(
             pending,
             conflict,
         )? {
-            return Ok(true);
+            return Ok(Some(disposition));
         }
     }
 
-    Ok(false)
+    Ok(None)
 }
 
 #[cfg(target_os = "linux")]
@@ -719,14 +728,14 @@ fn recover_cross_filesystem_pending_destination(
     source_entry_identity: Option<move_recovery::LinuxStableIdentity>,
     destination_parent: &move_recovery::LinuxSourceParentDirectory,
     conflict: ConflictAction,
-) -> Result<bool, PlatformError> {
+) -> Result<Option<MoveDisposition>, PlatformError> {
     let recovery_root = default_recovery_root()?;
     let discovered = discover_retained_move_transactions_at(&recovery_root)?;
     if !discovered
         .iter()
         .any(|entry| entry.phase == move_recovery::JournalPhase::PendingDestination)
     {
-        return Ok(false);
+        return Ok(None);
     }
 
     let expected_source_name = Path::new(source_name);
@@ -788,7 +797,7 @@ fn recover_cross_filesystem_pending_destination(
         if !pending.has_cross_device_destination_state() {
             continue;
         }
-        if replay_cross_filesystem_pending_destination_with_record(
+        if let Some(disposition) = replay_cross_filesystem_pending_destination_with_record(
             source,
             source_parent,
             destination_parent,
@@ -801,11 +810,11 @@ fn recover_cross_filesystem_pending_destination(
             pending,
             conflict,
         )? {
-            return Ok(true);
+            return Ok(Some(disposition));
         }
     }
 
-    Ok(false)
+    Ok(None)
 }
 
 #[cfg(target_os = "linux")]
@@ -939,7 +948,7 @@ fn replay_cross_filesystem_pending_destination_with_record(
     recovery: &mut move_recovery::LinuxRecoveryLock<'_>,
     pending: move_recovery::PendingDestinationRecord,
     conflict: ConflictAction,
-) -> Result<bool, PlatformError> {
+) -> Result<Option<MoveDisposition>, PlatformError> {
     let source_name = pending
         .original_name()
         .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -1102,7 +1111,7 @@ fn replay_cross_filesystem_pending_destination_with_record(
                             local_path,
                             &transaction_id,
                         );
-                        return Ok(true);
+                        return Ok(Some(MoveDisposition::Moved));
                     }
                     Err(publish_error)
                         if publish_error.kind() == std::io::ErrorKind::AlreadyExists =>
@@ -1152,7 +1161,7 @@ fn replay_cross_filesystem_pending_destination_with_record(
                                 local_path,
                                 &transaction_id,
                             );
-                            return Ok(true);
+                            return Ok(Some(MoveDisposition::Moved));
                         }
 
                         if conflict == ConflictAction::Skip {
@@ -1183,7 +1192,7 @@ fn replay_cross_filesystem_pending_destination_with_record(
                                 local_path,
                                 &transaction_id,
                             );
-                            return Ok(true);
+                            return Ok(Some(MoveDisposition::Skipped));
                         }
 
                         if conflict == ConflictAction::Rename {
@@ -1257,7 +1266,7 @@ fn replay_same_filesystem_pending_destination_with_record(
     recovery: &mut move_recovery::LinuxRecoveryLock<'_>,
     pending: move_recovery::PendingDestinationRecord,
     conflict: ConflictAction,
-) -> Result<bool, PlatformError> {
+) -> Result<Option<MoveDisposition>, PlatformError> {
     let source_name = pending
         .original_name()
         .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -1302,7 +1311,7 @@ fn replay_same_filesystem_pending_destination_with_record(
                             local_path,
                             &transaction_id,
                         );
-                        return Ok(true);
+                        return Ok(Some(MoveDisposition::Moved));
                     }
                     Err(publish_error)
                         if publish_error.kind() == std::io::ErrorKind::AlreadyExists =>
@@ -1335,7 +1344,7 @@ fn replay_same_filesystem_pending_destination_with_record(
                                 local_path,
                                 &transaction_id,
                             );
-                            return Ok(true);
+                            return Ok(Some(MoveDisposition::Moved));
                         }
 
                         if conflict == ConflictAction::Skip {
@@ -1366,7 +1375,7 @@ fn replay_same_filesystem_pending_destination_with_record(
                                 local_path,
                                 &transaction_id,
                             );
-                            return Ok(true);
+                            return Ok(Some(MoveDisposition::Skipped));
                         }
 
                         if conflict == ConflictAction::Rename {
@@ -1431,7 +1440,7 @@ fn replay_same_filesystem_pending_destination_with_record(
                         message: format!("recovery publication durable state failed: {error}"),
                     })?;
                 let _ = cleanup_transaction_journals(recovery_root, local_path, &transaction_id);
-                return Ok(true);
+                return Ok(Some(MoveDisposition::Moved));
             }
             Err(error) => {
                 return Err(PlatformError::Io(error.to_string()));
@@ -1685,7 +1694,7 @@ pub(super) fn move_entry_transactional_with_test_hook(
     destination_dir: &Path,
     conflict: ConflictAction,
     hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
-) -> Result<(), PlatformError> {
+) -> Result<MoveDisposition, PlatformError> {
     move_with_hooks(source, destination_dir, conflict, hook)
 }
 
