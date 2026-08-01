@@ -3,6 +3,8 @@
 .DS_Store
 Thumbs.db
 *.af
+*.py[cod]
+__pycache__/
 .idea/
 .vscode/
 .claude/

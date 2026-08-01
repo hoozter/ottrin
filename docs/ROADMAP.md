@@ -13,15 +13,18 @@ Implemented:
 - Tabs, bookmarks, path navigation, and keyboard-first movement.
 - Tandem View with side-by-side panes and pane-to-pane copy.
 - Multi-select for current-folder selections.
-- File operations: copy, rename, trash, permanent delete, create file/folder, and command-frame actions. Move mutation remains disabled until the handle-owned, journaled protocol in [Durable Move Recovery Design](MOVE_RECOVERY_DESIGN.md) is implemented and proven per platform and conflict mode.
+- File operations: copy, rename, trash, permanent delete, create file/folder, and command-frame actions. Linux same-filesystem Move now has source- and automation-level support for Skip/Rename/Overwrite/Cancel with explicit dispositions and native rename behavior. Cross-filesystem Move and Windows Move remain disabled without mutation; reopening either requires a separately accepted protocol and evidence for that platform and mode.
 - Context menus with default open, open-with-application, folder location, path copy, rename/delete, bookmarks, and copy destinations.
 - Smart panel sections for Info, Drop Folder, Search, Activity, and Trash.
 - Cross-platform Trash panel implementation with Linux Freedesktop trash support and Windows Recycle Bin backend.
 - SQLite-backed indexed search with watcher updates, background updater scheduling, generated-folder skips, content search snippets, column resizing, click selection, double-click/Enter opening, shared right-click actions, and Space-triggered full preview.
 - Quick Inspector as a full Space-triggered window with visual image, bounded multi-page PDF previews with Previous/Next/go-to-page navigation, and bounded DOCX/XLSX/XLSM content-preview PNGs; it retains extracted PDF/Office text and metadata fallbacks. Office output is a truthful content preview, not a faithful document layout.
+- Grid rubber-band selection is implemented and source-tested; packaged/manual acceptance is pending.
+- Linux native Open With discovery and launch path is implemented with source and automated coverage; other platform discovery remains fallback/manual.
+- Generated visual text/source cards, bounded direct-child folder thumbnail collages, and bounded PDF page navigation are implemented and test-covered; recursive folder-size thumbnails remain deferred.
 - Theme presets and custom theme editing.
 - Linux portable tarball, Linux AppImage, Windows portable zip, and per-user Windows installer packaging scripts.
-- Windows portable and installer artifacts retain native WGPU as the Automatic fallback and bundle a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime, including the app-local `opengl32.dll` loader and its `libgallium_wgl.dll` driver bundle. Automatic selects the bundled compatibility path for detected RDP sessions and recognized virtual/problem adapters, explains that one-time choice in the app, and exposes Automatic, Native, and OpenGL compatibility preferences for the next launch. `ottrin.exe --renderer opengl` or `OTTRIN_RENDERER=opengl` remains a diagnostic override; the bundled Mesa, pal1000, and Microsoft notices are under `third-party-notices/`.
+- Windows portable and installer packaging is designed to retain native WGPU as the Automatic fallback and include a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime, app-local loader/driver payload, renderer preferences, diagnostic override, and complete notices. These remain exact-artifact verification and native-runtime gates; no current package acceptance is claimed.
 - Strict formatting, tests, and Clippy gates.
 
 ## Still needs implementation or real QA before v1:
@@ -41,14 +44,14 @@ coverage, remain v1 work. Source tests do not satisfy those gates.
 - Keep the drive icon family visually consistent with Ottrin's bundled Material Symbols language unless a focused icon prototype demonstrates that custom glyphs remain clearer at the compact rail size.
 - Drive/volume discovery must refresh after attachment, removal, mapping, or disconnection. An unavailable or removed current volume must produce a clear non-destructive state and a safe navigation route; it must never silently redirect a file operation.
 - External-volume navigation must work without automatically indexing every attached drive. Users choose which additional volumes enter indexed search; direct browsing and scoped fallback search remain available independently.
-- Copy and Move must be tested across volume boundaries, including removable drives. Cross-filesystem Move remains gated by the durable Move protocol and may not degrade into an unjournaled copy-then-delete operation.
+- Copy must be tested across volume boundaries, including removable drives. Cross-filesystem Move remains rejected without mutation and may not degrade into an unjournaled copy-then-delete operation.
 - Linux manual workflow QA across navigation, file operations, search, Tandem View, multi-select, Quick Inspector, context menus, thumbnail view options, and status messages.
 - Linux privileged helper and polkit smoke test from packaged layout.
 - Real Windows runtime smoke for portable zip: launch, navigation, file operations, Trash/Recycling Bin, search, Quick Inspector, UAC/helper behavior, and background updater.
 - Real Windows install/uninstall smoke for the installer candidate.
 - Release-owner review of release notes and known limitations against the exact artifacts.
 
-Move re-enablement is deliberately separate from ordinary workflow QA. Its journal, recovery, crash-test, and platform gates are defined in [Durable Move Recovery Design](MOVE_RECOVERY_DESIGN.md); no mode is enabled merely because another mode or platform passes.
+Move enablement is per platform and mode. Accepted Linux same-filesystem native rename does not enable cross-filesystem or Windows Move. The frozen [Durable Move Recovery Design](MOVE_RECOVERY_DESIGN.md) records one possible future source-claim protocol, not a prerequisite for the accepted same-filesystem path.
 
 ## V1 Release Gate
 
@@ -59,7 +62,7 @@ V1 should not ship until:
 - Linux AppImage and portable tarball launch from clean artifacts.
 - Windows portable zip launches and passes real desktop smoke testing.
 - Windows secondary fixed drives, removable drives, and mapped network drives are discoverable and navigable; Linux user-visible mounted/removable volumes pass the equivalent attach, browse, detach, and unavailable-state checks.
-- Cross-volume Copy passes, and each enabled cross-volume Move mode passes its platform-specific journal, crash-recovery, hot-unplug, and native packaged acceptance gates.
+- Cross-volume Copy passes. Cross-volume Move remains disabled without mutation unless a separately accepted protocol later passes its platform-specific safety, hot-unplug, packaged, and native acceptance gates.
 - Privileged helper behavior is validated on Linux and Windows.
 - Known limitations match the actual tested state.
 
@@ -71,13 +74,13 @@ These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
   [Quick Inspector Text Editing Design](QUICK_INSPECTOR_TEXT_EDITING_DESIGN.md);
   it is not implemented or a v1 gate).
 - Advanced Office navigation/editing or faithful Office layout beyond the bounded content preview required for v1.
-- Rich file thumbnails beyond the common-document v1 preview gate: generated text/code preview cards, video frame thumbnails, and broader document thumbnails where platform support or dependencies make sense.
-- Recursive folder size thumbnails and folder thumbnail collages.
-- Native desktop application discovery for richer Open With menus.
+- Rich file thumbnails beyond the implemented text-card and thumbnail-collage path remain deferred: video frame thumbnails and broader document variants where platform support or dependencies make sense.
+- Recursive folder size thumbnails.
+- Native desktop Open With discovery parity beyond Linux remains deferred.
 - Media playback and advanced image tools.
-- Generation-consistent, aggregate-memory-bounded negated FTS5 content search.
+- Negated FTS5 content search is not yet supported.
 - Fanotify helper/service packaging.
-- Tab drag-and-drop.
-- Rubber-band selection.
+- Tab drag-and-drop is implemented with source and automated tests; packaged/manual acceptance remains pending.
+- List-rubber-band selection remains deferred.
 - Full undo for file operations.
 - Native Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing.

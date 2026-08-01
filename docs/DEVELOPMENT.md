@@ -130,7 +130,7 @@ Runtime helper discovery checks explicit override, environment variable, app dir
 
 - Navigate Miller/List/Grid, tabs, bookmarks, and address bar.
 - Search first index, restart from DB, rebuild, current-folder search, content search, and result actions.
-- Create, rename, copy, trash delete, and permanent delete; verify that Move fails before mutation until the protocol in [Durable Move Recovery Design](MOVE_RECOVERY_DESIGN.md) is implemented for the tested platform and conflict mode.
+- Create, rename, copy, trash delete, and permanent delete; verify same-filesystem Linux Move with Skip/Rename/Overwrite/Cancel and explicit dispositions. Cross-filesystem and Windows Move must continue to reject without mutation unless a separately accepted protocol is implemented and proven for that platform and mode.
 - Tandem activation, pinning, side switching, and pane-to-pane copy.
 - Quick Inspector for text, image, PDF text/metadata, DOCX, XLSX/XLSM, PPTX, archive, folder, and generic fallback files.
 - Privileged helper smoke with helper and policy installed.

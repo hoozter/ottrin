@@ -1,8 +1,8 @@
-# Durable Move Recovery Design
+# Frozen Durable Move Recovery Design
 
 ## Status
 
-Move remains fail-closed. This document defines the recovery and ownership boundary that must exist before any Move mutation is re-enabled.
+Linux same-filesystem Move is enabled at the source and automation tier through a separate native-rename path; it does not call or depend on this machinery. Cross-filesystem and Windows Move remain fail-closed without mutation. This document preserves a possible durable source-claim/recovery design for future product reconsideration, but `move_recovery.rs` and `move_with_hooks` are dormant/test-only legacy machinery, not a current release prerequisite or enabled recovery feature.
 
 ## Problem
 
@@ -10,7 +10,7 @@ A safe Move cannot validate a pathname and later rename or delete that pathname.
 
 Linux has no general identity-conditional rename syscall: `renameat2` acts on the entry occupying a parent/name at syscall time, not on an earlier `O_PATH` handle. Claiming the source under a private name therefore transfers a name atomically but does not by itself prove that the claimed entry is the one Ottrin pinned. The claim must be followed by an identity check inside an Ottrin-owned directory before any publication or deletion. A mismatched claim is restored with no-replace or retained as a visible recovery item; it is never published or deleted.
 
-Without a durable, discoverable journal, a crash could also strand user data under a private name. Move therefore needs journal-before-claim ordering, post-claim identity fencing while running, and identity-verified recovery after restart.
+Without a durable, discoverable journal, a crash could strand user data after a future mode claims it under a private name. Any such recovery-backed mode therefore needs journal-before-claim ordering, post-claim identity fencing while running, and identity-verified recovery after restart. The accepted native same-filesystem path does not make a private source claim and is outside this protocol.
 
 ## Required invariants
 
@@ -251,12 +251,12 @@ The platform crate also needs explicit APIs to:
 
 ## Implementation milestones
 
-These are independently testable boundaries, not release claims:
+These are frozen design boundaries, not the active implementation plan or release claims. Existing substrate and tests do not enable recovery-backed Move:
 
-1. **Journal substrate:** native path encoding, atomic record replacement, central discovery, local/central consistency, corruption handling, and identity types. Move remains disabled.
-2. **Claim and restore:** handle-relative source claim plus startup recovery for every crash point before publication. Move remains disabled outside tests.
-3. **Linux same-filesystem Skip/Rename:** no-replace publication, durability, crash injection, and recovery. Enable only these proven modes on Linux.
-4. **Cross-filesystem Skip/Rename:** destination transaction handle ownership, source snapshots, durable publication, and verified claimed-source cleanup.
+1. **Journal substrate:** native path encoding, atomic record replacement, central discovery, local/central consistency, corruption handling, and identity types; retained as dormant/test-only legacy machinery.
+2. **Claim and restore:** handle-relative source claim plus startup recovery for every crash point before publication; not enabled in production.
+3. **Linux same-filesystem Skip/Rename:** superseded for current product behavior by the accepted native-rename path, which does not use this protocol.
+4. **Cross-filesystem Skip/Rename:** deferred unless a separate product decision accepts source claiming and recovery artifacts; current behavior rejects before mutation.
 5. **Overwrite:** atomic displaced-entry retention and explicit retained-data lifecycle. Enable per platform and entry kind only when proven.
 6. **Windows parity:** handle/identity implementation and crash tests on native Windows. Do not enable Windows Move from Linux cross-compilation alone.
 7. **UI recovery:** startup recovery reporting, Activity-panel actions, batch semantics, documentation, and packaged manual QA.
@@ -297,7 +297,7 @@ Additional required cases:
 
 ## Release gate
 
-Move remains disabled for any platform, conflict mode, or entry kind until all of the following are true for that exact combination:
+Any future recovery-backed Move mode remains disabled until all of the following are true for that exact platform, conflict mode, and entry kind. These gates do not apply retroactively to the accepted journal-free Linux same-filesystem native-rename path:
 
 - handle-relative primitives are implemented;
 - durable journal discovery and recovery are implemented;

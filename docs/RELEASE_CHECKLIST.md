@@ -4,18 +4,18 @@ Every item must be checked against the exact artifact intended for release. A so
 
 ## Automated Gates
 
-- [x] `cargo fmt --all --check`
-- [x] `cargo check --workspace --all-targets`
-- [x] `cargo test --workspace`
-- [x] `cargo clippy --workspace --all-targets -- -D warnings`
+- [ ] `cargo fmt --all --check`
+- [ ] `cargo check --workspace --all-targets`
+- [ ] `cargo test --workspace`
+- [ ] `cargo clippy --workspace --all-targets -- -D warnings`
 - [ ] Linux and Windows CI are green for the release commit.
-- [x] Corrected release artifact checksums verify after rebuilding from the OpenGL-loader fix.
-- [x] Archive inspection confirms the corrected app, indexer, privileged helper, policy/assets, and user documentation are present.
-- [x] Both rebuilt Windows artifacts contain the same checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`opengl32.dll`, `libgallium_wgl.dll`, `libEGL.dll`, `libGLESv2.dll`, and `dxil.dll`) plus its complete Mesa, pal1000, and Microsoft notices under `third-party-notices/`. Automatic uses documented remote-session and recognized virtual/problem-adapter evidence to select the bundled runtime; Settings persists Automatic, Native, or OpenGL compatibility for the next launch, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` remains a diagnostic override.
+- [ ] Exact release artifact checksums verify after rebuilding from the current release commit.
+- [ ] Archive inspection confirms the exact rebuilt app, indexer, privileged helper, policy/assets, and user documentation are present.
+- [ ] Both exact rebuilt Windows artifacts contain the checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`opengl32.dll`, `libgallium_wgl.dll`, `libEGL.dll`, `libGLESv2.dll`, and `dxil.dll`) plus complete notices; Automatic selection, persisted preference, explicit overrides, and loaded-DLL provenance pass acceptance.
 
-Local automated gates and artifact inspection last passed on 2026-07-31. CI and
-the clean-machine/manual gates below remain required against the eventual
-release commit and artifacts.
+Historical local gates and artifact inspection do not establish the current
+release candidate. Every item above remains unchecked until rerun against the
+exact release commit and artifacts.
 
 ### Local Preflight Evidence (refreshed 2026-07-31)
 
@@ -58,34 +58,34 @@ interactive workflow, polkit-dialog, Windows runtime, UAC, or installer sign-off
 - [ ] AppImage launches on a clean supported desktop.
 - [ ] Portable tarball launches on a clean supported desktop.
 - [ ] Miller/List/Grid navigation, tabs, bookmarks, address navigation, and status messages pass.
-- [ ] Copy, overwrite, rename, multi-select, Trash, permanent delete, and partial-batch warnings pass; Move rejects without mutation.
-- [ ] Tandem View pane-to-pane copy passes, and Move reports unsupported without mutation.
+- [ ] Copy, overwrite, rename, multi-select, Trash, permanent delete, and partial-batch warnings pass; Linux same-filesystem Move supports Skip/Rename/Overwrite/Cancel with explicit conflict handling and native rename, while cross-filesystem and Windows Move remain unsupported without mutation.
+- [ ] Tandem View pane-to-pane copy passes, and cross-filesystem/Windows Move continues to report unsupported without mutation.
 - [ ] Search initial index, restart, watcher update, rebuild, scope changes, content search, and result actions pass.
-- [ ] Quick Inspector passes text, image, rendered-PDF first-page plus text/metadata fallback, DOCX, XLSX/XLSM, PPTX, archive, folder, and generic files.
+- [ ] Quick Inspector passes text, image, rendered multi-page PDF plus page navigation and text/metadata fallback, DOCX, XLSX/XLSM, PPTX, archive, folder, and generic files.
 - [ ] Privileged helper allow, cancel, missing-helper, and misconfigured-policy paths pass.
 
-- [ ] Move recovery startup reporting: launch after seeded retained Move records and verify Activity shows transaction id, phase, and manual recovery status.
-- [ ] Move recovery batch semantics: run a Move that emits warnings, keep completed items visible in history, and keep retained-Move cards visible for manual recovery.
-- [ ] Manual recovery action path: `Recover now` completes only manual-review-safe states and does not mutate unrelated entries when not in pending-destination phase.
+Legacy retained-record recovery is dormant/test-only and is not an enabled v1
+feature or release gate. Reactivating it requires a separate product decision,
+implementation scope, and acceptance plan.
 
 ## Windows Artifact QA
 
 - [ ] Portable zip launches on a real Windows desktop.
 - [ ] Installer performs a clean per-user install, launches Ottrin, appears in Installed Apps, and creates working Start Menu shortcuts.
 - [ ] Uninstall removes the app, shortcuts, scheduled/background integration, generated search data, and preview cache while retaining saved preferences.
-- [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; Move rejects without mutation.
+- [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; cross-filesystem/Windows Move remains unsupported without mutation.
 - [ ] Search indexing, restart, watcher updates, and background updater scheduling/removal pass.
-- [ ] Quick Inspector passes the Windows file-type matrix, including rendered PDF first pages plus malformed/encrypted PDF text/metadata fallback paths.
+- [ ] Quick Inspector passes the Windows file-type matrix, including rendered PDF pages plus malformed/encrypted PDF text/metadata fallback paths.
 - [ ] If the graphics compatibility payload is shipped, native-driver and bundled-OpenGL launch paths each pass on their intended physical/virtual or remote adapters, including Automatic detection, the persisted renderer preference, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` diagnostic selection.
 - [ ] UAC allow, cancel, helper-missing, and denied-operation paths pass.
 - [ ] Uninstall cleanup commands remove scheduled/background integration without deleting user files; cleanup launch/failure stops before application deletion, and incomplete file deletion retains Installed Apps registration for retry.
-- [ ] Retained Move recovery flow review on packaged app launch remains for future Windows parity validation and is blocked until native recovery is proven.
+
 
 ## Release Review
 
 - [ ] `README.md`, `USER_GUIDE.md`, `ROADMAP.md`, and `RELEASE_NOTES.md` match observed behavior.
 - [ ] Known limitations are complete and plainly worded.
-- [x] Version, artifact names, checksums, and generated release notes agree.
+- [ ] Version, artifact names, checksums, and generated release notes agree for the exact release artifacts.
 - [ ] No release-blocking item is waived without a written rationale.
 - [ ] Windows artifacts are Authenticode-signed with an approved production
   identity and verified after download. Current rebuilt artifacts are unsigned;

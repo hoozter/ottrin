@@ -11,18 +11,17 @@ A fast, keyboard-first file manager built in Rust with [egui](https://github.com
 
 ---
 
-## Download
+## Release Artifacts
 
-Pre-built binaries for the [latest release](https://github.com/hoozter/ottrin/releases/latest):
+When a verified release is published, its artifacts will be available from
+[GitHub Releases](https://github.com/hoozter/ottrin/releases). The current
+v0.1.0 source tree remains a release candidate; no exact-current-commit
+artifact is claimed as published or accepted. See the
+[Release Checklist](docs/RELEASE_CHECKLIST.md) for outstanding gates.
 
-| Platform | File |
-|----------|------|
-| Linux (x86\_64) | `Ottrin-x.y.z-x86_64.AppImage` |
-| Linux portable | `Ottrin-x.y.z-linux-x86_64-portable.tar.gz` |
-| Windows portable (x64) | `Ottrin-x.y.z-windows-x64-portable.zip` |
-| Windows installer (x64) | `Ottrin-x.y.z-windows-x64-setup.exe` |
-
-Windows MSI and macOS packages are planned; the current v1 hardening path is Linux AppImage/portable plus Windows portable and per-user installer artifacts.
+The intended first release formats are Linux AppImage and portable tarball,
+plus Windows portable zip and per-user installer. Windows MSI and macOS
+packages remain planned work.
 
 ### Linux
 
@@ -49,15 +48,14 @@ Run the per-user installer, or unzip the portable package and run:
 
 Normal user-owned file operations do not require elevation. Denied operations use the bundled helper through the Windows UAC flow.
 
-Windows uses WGPU when Automatic finds no compatibility signal. For detected
-remote sessions and recognized virtual/problem adapters, Automatic selects the
-checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime, explains that choice
-once, and offers Automatic, Native, and OpenGL compatibility for the next
-launch in Settings. `ottrin.exe --renderer opengl` (or
-`OTTRIN_RENDERER=opengl`) remains a diagnostic override; its Mesa, pal1000,
-and Microsoft notices are bundled under `third-party-notices/`. The app-local
-Mesa payload includes `opengl32.dll`, its `libgallium_wgl.dll` driver bundle,
-EGL/GLES libraries, and DXIL rather than relying on Windows' OpenGL 1.1 loader.
+Windows packaging is designed to use WGPU when Automatic finds no compatibility
+signal and to select a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime
+for detected remote sessions and recognized virtual/problem adapters. Settings
+offers Automatic, Native, and OpenGL compatibility, while
+`ottrin.exe --renderer opengl` (or `OTTRIN_RENDERER=opengl`) is the diagnostic
+override. Exact release artifacts must still verify the app-local
+`opengl32.dll`, `libgallium_wgl.dll`, EGL/GLES, DXIL, and complete notices before
+this compatibility path is accepted.
 
 ---
 
@@ -77,7 +75,7 @@ EGL/GLES libraries, and DXIL rather than relying on Windows' OpenGL 1.1 loader.
 - **Drop Folder workflow** — quick copy destination with recents and pinned entries
 - **Integrated privilege management** — denied operations can retry via helper flow
 - **Global search** — indexed search with scope switching and per-result actions
-- **Preview system** — text and images in-app, bounded first-page PDF visuals, bounded DOCX/XLSX/XLSM content-preview visuals, PPTX slide text, and rich archive/media metadata (Space bar). PDF and Office previews retain extracted-text and metadata fallbacks.
+- **Preview system** — text and images in-app, bounded multi-page PDF previews with Previous/Next/page selection, bounded DOCX/XLSX/XLSM content-preview visuals, PPTX slide text, and rich archive/media metadata (Space bar). PDF and Office previews retain extracted-text and metadata fallbacks.
 
 ---
 
@@ -92,7 +90,7 @@ EGL/GLES libraries, and DXIL rather than relying on Windows' OpenGL 1.1 loader.
 | Space | Preview file |
 | Esc | Close preview / command frame |
 | F5 | Refresh current directory |
-| Ctrl+C / Ctrl+X | Copy / Cut (Move is disabled in the current hardening build) |
+| Ctrl+C / Ctrl+X | Copy / Cut (same-filesystem Linux Move is supported with safe conflict dispositions; cross-filesystem and Windows Move reject without mutation) |
 | Ctrl+V | Paste |
 | Delete | Move to trash |
 | Shift+Delete | Permanently delete |
