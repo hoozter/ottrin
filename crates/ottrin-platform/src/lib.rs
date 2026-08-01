@@ -2695,12 +2695,16 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn linux_move_is_rejected_before_mutating_until_release_gate_is_met() {
-        let dir = TestDir::new("move-safe-success-file");
+    fn linux_same_filesystem_move_uses_native_rename_without_recovery_artifacts() {
+        use std::os::unix::fs::MetadataExt;
+
+        let dir = TestDir::new("move-native-rename-file");
         let source = dir.path().join("source.txt");
         let destination = dir.path().join("destination");
         std::fs::create_dir(&destination).unwrap();
-        std::fs::write(&source, "original contents").unwrap();
+        let source_file = std::fs::File::create(&source).unwrap();
+        source_file.set_len(64 * 1024 * 1024).unwrap();
+        let source_identity = std::fs::metadata(&source).unwrap();
 
         let result = DefaultPlatform.execute_command(&FileCommand::Move {
             sources: vec![source.clone()],
@@ -2708,14 +2712,101 @@ mod tests {
             conflict: ConflictAction::Skip,
         });
 
-        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
-        assert_eq!(
-            std::fs::read_to_string(&source).unwrap(),
-            "original contents"
-        );
-        assert!(std::fs::symlink_metadata(destination.join("source.txt")).is_err());
+        assert!(result.is_ok(), "Move failed: {result:?}");
+        let moved = destination.join("source.txt");
+        let moved_identity = std::fs::metadata(&moved).unwrap();
+        assert!(std::fs::symlink_metadata(&source).is_err());
+        assert_eq!(moved_identity.len(), 64 * 1024 * 1024);
+        assert_eq!(moved_identity.dev(), source_identity.dev());
+        assert_eq!(moved_identity.ino(), source_identity.ino());
+        assert!(!dir.path().join(".ottrin-move-recovery-root").exists());
+        assert!(std::fs::read_dir(dir.path()).unwrap().all(|entry| {
+            !entry
+                .unwrap()
+                .file_name()
+                .to_string_lossy()
+                .starts_with(".ottrin-move-")
+        }));
     }
 
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn linux_same_filesystem_move_conflicts_are_explicit_and_non_copying() {
+        for (conflict, expected_name) in [
+            (ConflictAction::Skip, None),
+            (ConflictAction::Rename, Some("source (1).txt")),
+            (ConflictAction::Overwrite, Some("source.txt")),
+        ] {
+            let dir = TestDir::new("move-native-rename-conflicts");
+            let source = dir.path().join("source.txt");
+            let destination = dir.path().join("destination");
+            let occupied = destination.join("source.txt");
+            std::fs::create_dir(&destination).unwrap();
+            std::fs::write(&source, "source contents").unwrap();
+            std::fs::write(&occupied, "destination contents").unwrap();
+
+            let result = DefaultPlatform.execute_command(&FileCommand::Move {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict,
+            });
+
+            assert!(result.is_ok(), "{conflict:?} Move failed: {result:?}");
+            assert_eq!(
+                std::fs::read_to_string(&occupied).unwrap(),
+                if conflict == ConflictAction::Overwrite {
+                    "source contents"
+                } else {
+                    "destination contents"
+                }
+            );
+            match expected_name {
+                Some(name) => {
+                    assert!(!source.exists());
+                    assert_eq!(
+                        std::fs::read_to_string(destination.join(name)).unwrap(),
+                        "source contents"
+                    );
+                }
+                None => assert_eq!(std::fs::read_to_string(&source).unwrap(), "source contents"),
+            }
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn linux_cross_filesystem_move_returns_typed_error_without_mutation() {
+        use std::os::unix::fs::MetadataExt;
+
+        let dir = TestDir::new("move-cross-device-rejection");
+        let source = dir.path().join("source.txt");
+        let destination_root = std::path::Path::new("/dev/shm");
+        if std::fs::metadata(dir.path()).unwrap().dev()
+            == std::fs::metadata(destination_root).unwrap().dev()
+        {
+            return;
+        }
+        let destination =
+            destination_root.join(format!("ottrin-move-cross-device-{}", std::process::id()));
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&source, "source contents").unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Move {
+            sources: vec![source.clone()],
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        });
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::UnsupportedSafeCrossDeviceMove(_))
+        ));
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "source contents");
+        assert!(!destination.join("source.txt").exists());
+        std::fs::remove_dir(&destination).unwrap();
+    }
+
+    #[cfg(not(target_os = "linux"))]
     #[test]
     fn move_is_rejected_before_mutating_even_for_a_valid_directory_source() {
         let dir = TestDir::new("move-safe-rejection-directory");
@@ -2739,6 +2830,7 @@ mod tests {
         assert!(std::fs::read_dir(&destination).unwrap().next().is_none());
     }
 
+    #[cfg(not(target_os = "linux"))]
     #[test]
     fn move_is_rejected_before_mutating_for_all_conflict_actions() {
         for conflict in [
@@ -2767,6 +2859,7 @@ mod tests {
         }
     }
 
+    #[cfg(not(target_os = "linux"))]
     #[test]
     fn move_directory_is_rejected_before_mutating_for_all_conflict_actions() {
         for conflict in [
@@ -2835,7 +2928,7 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn linux_move_rejects_dangling_symlink_without_mutating() {
+    fn linux_same_filesystem_move_preserves_a_dangling_symlink() {
         use std::os::unix::fs::symlink;
 
         let dir = TestDir::new("move-safe-rejection");
@@ -2850,12 +2943,12 @@ mod tests {
             conflict: ConflictAction::Skip,
         });
 
-        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
+        assert!(result.is_ok(), "Move failed: {result:?}");
+        assert!(std::fs::symlink_metadata(&source).is_err());
         assert_eq!(
-            std::fs::read_link(&source).unwrap(),
+            std::fs::read_link(destination.join("dangling")).unwrap(),
             Path::new("missing-target")
         );
-        assert!(std::fs::symlink_metadata(destination.join("dangling")).is_err());
     }
 
     #[cfg(target_os = "linux")]

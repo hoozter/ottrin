@@ -396,6 +396,14 @@ struct PendingDelete {
 }
 
 #[derive(Debug, Clone)]
+struct PendingMoveConflict {
+    cmd: FileCommand,
+    tab_id: u64,
+    bindings: Vec<StorageOperationBinding>,
+    clipboard_generation: u64,
+}
+
+#[derive(Debug, Clone)]
 struct PendingRename {
     tab_id: u64,
     source: PathBuf,
@@ -1188,6 +1196,7 @@ pub struct OttrinApp {
     properties: PropertiesPopup,
     pending_rename: Option<PendingRename>,
     pending_delete: Option<PendingDelete>,
+    pending_move_conflict: Option<PendingMoveConflict>,
     pending_empty_trash: bool,
     open_with_dialog: Option<OpenWithDialog>,
     pending_privileged_retry: Option<PendingPrivilegedRetry>,
@@ -1432,6 +1441,7 @@ impl OttrinApp {
             properties: PropertiesPopup::default(),
             pending_rename: None,
             pending_delete: None,
+            pending_move_conflict: None,
             pending_empty_trash: false,
             open_with_dialog: None,
             pending_privileged_retry: None,
@@ -6997,6 +7007,15 @@ impl OttrinApp {
                         return;
                     }
                 };
+            if move_has_destination_conflict(&cmd) {
+                self.pending_move_conflict = Some(PendingMoveConflict {
+                    cmd,
+                    tab_id,
+                    bindings,
+                    clipboard_generation: clip.generation,
+                });
+                return;
+            }
             if self.run_file_op_with_bindings(cmd, Some(tab_id), bindings, clip.generation)
                 && let Some(current) = self
                     .clipboard
@@ -7005,6 +7024,34 @@ impl OttrinApp {
             {
                 current.in_flight = true;
             }
+        }
+    }
+
+    fn resolve_move_conflict(&mut self, conflict: Option<ConflictAction>) {
+        let Some(mut pending) = self.pending_move_conflict.take() else {
+            return;
+        };
+        let Some(conflict) = conflict else {
+            return;
+        };
+        let FileCommand::Move {
+            conflict: action, ..
+        } = &mut pending.cmd
+        else {
+            return;
+        };
+        *action = conflict;
+        if self.run_file_op_with_bindings(
+            pending.cmd,
+            Some(pending.tab_id),
+            pending.bindings,
+            pending.clipboard_generation,
+        ) && let Some(clipboard) = self
+            .clipboard
+            .as_mut()
+            .filter(|clipboard| clipboard.generation == pending.clipboard_generation)
+        {
+            clipboard.in_flight = true;
         }
     }
 
@@ -15574,6 +15621,75 @@ impl OttrinApp {
         }
     }
 
+    fn render_move_conflict_confirmation(&mut self, ctx: &Context) {
+        let Some(pending) = self.pending_move_conflict.as_ref() else {
+            return;
+        };
+        let FileCommand::Move {
+            sources,
+            destination,
+            ..
+        } = &pending.cmd
+        else {
+            return;
+        };
+        let count = sources.len();
+        let c = self.colors;
+        let viewport = ctx.viewport_rect();
+        ctx.layer_painter(egui::LayerId::new(
+            egui::Order::Middle,
+            egui::Id::new("move_conflict_modal_scrim"),
+        ))
+        .rect_filled(viewport, 0.0, Color32::from_rgba_unmultiplied(0, 0, 0, 82));
+
+        let mut choice = None;
+        egui::Area::new(egui::Id::new("move_conflict_confirmation"))
+            .order(egui::Order::Foreground)
+            .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
+            .show(ctx, |ui| {
+                Frame::new()
+                    .fill(c.panel_raised)
+                    .stroke(Stroke::new(1.0, c.border))
+                    .corner_radius(8.0)
+                    .inner_margin(egui::Margin::symmetric(18, 16))
+                    .show(ui, |ui| {
+                        ui.set_width(420.0);
+                        ui.label(
+                            RichText::new("A destination item already exists")
+                                .color(c.text)
+                                .size(15.0)
+                                .strong(),
+                        );
+                        ui.label(
+                            RichText::new(format!(
+                                "Choose how to move {count} item{} into {}.",
+                                plural_s(count),
+                                destination.display()
+                            ))
+                            .color(c.text_muted)
+                            .size(11.0),
+                        );
+                        ui.add_space(12.0);
+                        if ui.button("Replace existing item").clicked() {
+                            choice = Some(Some(ConflictAction::Overwrite));
+                        }
+                        if ui.button("Keep Both").clicked() {
+                            choice = Some(Some(ConflictAction::Rename));
+                        }
+                        if ui.button("Skip conflicting item").clicked() {
+                            choice = Some(Some(ConflictAction::Skip));
+                        }
+                        ui.add_space(4.0);
+                        if ui.button("Cancel").clicked() {
+                            choice = Some(None);
+                        }
+                    });
+            });
+        if let Some(choice) = choice {
+            self.resolve_move_conflict(choice);
+        }
+    }
+
     fn render_empty_trash_confirmation(&mut self, ctx: &Context) {
         if !self.pending_empty_trash {
             return;
@@ -17564,6 +17680,7 @@ impl OttrinApp {
     fn handle_viewport_resize(&self, ctx: &Context) {
         if self.pending_rename.is_some()
             || self.pending_delete.is_some()
+            || self.pending_move_conflict.is_some()
             || self.pending_empty_trash
         {
             return;
@@ -17654,6 +17771,8 @@ impl eframe::App for OttrinApp {
             // Rename modal handles its own text input and Enter/Escape.
         } else if self.pending_delete.is_some() {
             self.handle_delete_confirmation_keyboard(ctx);
+        } else if self.pending_move_conflict.is_some() {
+            // The conflict dialog owns input until the user chooses a mutation or Cancel.
         } else if self.pending_empty_trash {
             self.handle_empty_trash_confirmation_keyboard(ctx);
         } else {
@@ -17664,6 +17783,7 @@ impl eframe::App for OttrinApp {
         // Space to toggle preview — must consume before widgets see it.
         if self.pending_rename.is_none()
             && self.pending_delete.is_none()
+            && self.pending_move_conflict.is_none()
             && !self.pending_empty_trash
             && !self.any_address_bar_editing()
             && !self.command_frame.visible
@@ -17732,6 +17852,7 @@ impl eframe::App for OttrinApp {
             self.render_rename_modal(ctx);
             self.render_delete_confirmation(ctx);
         }
+        self.render_move_conflict_confirmation(ctx);
         self.render_empty_trash_confirmation(ctx);
         self.render_open_with_dialog(ctx);
         self.render_about_popup(ctx);
@@ -18357,6 +18478,22 @@ fn prepare_clipboard_paste(
         }
     };
     Ok((cmd, bindings))
+}
+
+fn move_has_destination_conflict(cmd: &FileCommand) -> bool {
+    let FileCommand::Move {
+        sources,
+        destination,
+        ..
+    } = cmd
+    else {
+        return false;
+    };
+    sources.iter().any(|source| {
+        source
+            .file_name()
+            .is_some_and(|name| std::fs::symlink_metadata(destination.join(name)).is_ok())
+    })
 }
 
 fn validate_privileged_retry(
@@ -21203,6 +21340,37 @@ mod tests {
             validate_operation_storage_bindings(&queued_bindings, &[replacement]).is_err(),
             "the queue must validate volume A's captured identity, never recompute B's"
         );
+    }
+
+    #[test]
+    fn move_conflict_prompt_is_limited_to_an_existing_destination_entry() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-move-conflict-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
+        ));
+        let destination = root.join("destination");
+        std::fs::create_dir_all(&destination).expect("create destination");
+        let source = root.join("report.txt");
+        std::fs::write(destination.join("report.txt"), "occupied").expect("create conflict");
+
+        let move_command = FileCommand::Move {
+            sources: vec![source.clone()],
+            destination: destination.clone(),
+            conflict: ConflictAction::Rename,
+        };
+        let copy_command = FileCommand::Copy {
+            sources: vec![source],
+            destination: destination.clone(),
+            conflict: ConflictAction::Rename,
+        };
+
+        assert!(move_has_destination_conflict(&move_command));
+        assert!(!move_has_destination_conflict(&copy_command));
+        std::fs::remove_dir_all(root).expect("remove fixture");
     }
 
     #[test]

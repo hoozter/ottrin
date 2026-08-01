@@ -9,7 +9,7 @@ use super::move_recovery;
 use super::move_recovery;
 use super::{ConflictAction, PlatformError, reject_directory_copy_into_itself};
 #[cfg(target_os = "linux")]
-use super::{copy_entry, next_available_name};
+use super::{copy_entry, next_available_name, rename_without_replacement};
 #[cfg(target_os = "linux")]
 use std::os::unix::fs::MetadataExt;
 use std::path::Path;
@@ -27,20 +27,46 @@ static TEST_MOVE_ENV_SERIALIZER: std::sync::Mutex<()> = std::sync::Mutex::new(()
 pub(super) fn move_entry_transactional(
     source: &Path,
     destination_dir: &Path,
-    _conflict: ConflictAction,
+    conflict: ConflictAction,
 ) -> Result<(), PlatformError> {
-    std::fs::symlink_metadata(source)
+    let source_metadata = std::fs::symlink_metadata(source)
         .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
-    std::fs::symlink_metadata(destination_dir)
+    let destination_metadata = std::fs::symlink_metadata(destination_dir)
         .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
     reject_directory_copy_into_itself(source, destination_dir)?;
 
-    // The journal/recovery protocol remains exercised through its isolated test
-    // seam, but public Move must not enter it until every Linux release gate is
-    // evidenced on the packaged application and independently reviewed.
-    Err(PlatformError::UnsupportedSafeMove(
-        source.display().to_string(),
-    ))
+    if source_metadata.dev() != destination_metadata.dev() {
+        return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+            source.display().to_string(),
+        ));
+    }
+
+    let target = destination_dir.join(
+        source
+            .file_name()
+            .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?,
+    );
+    match conflict {
+        ConflictAction::Skip => match rename_without_replacement(source, &target) {
+            Ok(()) | Err(PlatformError::DestinationExists(_)) => Ok(()),
+            Err(error) => Err(error),
+        },
+        ConflictAction::Rename => {
+            let mut candidate = target;
+            loop {
+                match rename_without_replacement(source, &candidate) {
+                    Ok(()) => return Ok(()),
+                    Err(PlatformError::DestinationExists(_)) => {
+                        candidate = next_available_name(&candidate);
+                    }
+                    Err(error) => return Err(error),
+                }
+            }
+        }
+        ConflictAction::Overwrite => {
+            std::fs::rename(source, target).map_err(|error| PlatformError::Io(error.to_string()))
+        }
+    }
 }
 
 #[cfg(target_os = "windows")]
