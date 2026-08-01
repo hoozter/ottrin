@@ -6,7 +6,9 @@ use ottrin_core::{
     SearchIndexStatus, SearchQuery, format_size, select_graphics_renderer,
 };
 use ottrin_platform::{DefaultPlatform, PlatformOps, set_privileged_helper_override};
-use ottrin_ui::{OttrinApp, clear_preview_cache_storage, load_config, remove_config_file};
+use ottrin_ui::{
+    OttrinApp, clear_preview_cache_storage, load_config, load_config_checked, remove_config_file,
+};
 use std::collections::HashSet;
 #[cfg(any(target_os = "windows", test))]
 use std::fs::OpenOptions;
@@ -347,27 +349,41 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
     None
 }
 
-fn configured_search_service() -> ottrin_search::SearchService {
-    let mut config = load_config().search;
+fn configured_search_service(config: &ottrin_core::AppConfig) -> ottrin_search::SearchService {
+    let mut config = config.search.clone();
     if config.include_roots.is_empty() {
         config.include_roots = ottrin_search::default_roots();
     }
     ottrin_search::SearchService::new(config)
 }
 
+fn load_headless_config_for_action(
+    action: &HeadlessAction,
+) -> Result<Option<ottrin_core::AppConfig>, String> {
+    match action {
+        HeadlessAction::DropStatus => Ok(None),
+        _ => load_config_checked().map(Some),
+    }
+}
+
 fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
     if let HeadlessAction::Invalid(error) = &action {
         return Err(error.clone());
     }
+    let config = load_headless_config_for_action(&action)?;
     match action {
         HeadlessAction::DropStatus => {
             print_drop_status(&load_config().target);
             return Ok(());
         }
-        HeadlessAction::DropCopy(sources) => return run_drop_copy(sources),
+        HeadlessAction::DropCopy(sources) => {
+            let config = config.ok_or_else(|| "checked config missing".to_string())?;
+            return run_drop_copy(&config, sources);
+        }
         _ => {}
     }
-    let mut service = configured_search_service();
+    let config = config.ok_or_else(|| "checked config missing".to_string())?;
+    let mut service = configured_search_service(&config);
     service.start();
     if matches!(service.diagnostics().status, SearchIndexStatus::Unavailable) {
         return Err(service
@@ -388,7 +404,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
         }
         HeadlessAction::Search(query) => {
             wait_for_index_ready(&service)?;
-            let config = load_config().search;
+            let config = config.search;
             let response = service.query(SearchQuery {
                 text: query,
                 scope: config.default_scope,
@@ -418,14 +434,15 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
 /// Executes only the existing production Copy command.  In particular, this
 /// headless surface has no Move variant, never creates a Drop Folder, and asks
 /// the platform layer to preflight every source before it publishes anything.
-fn run_drop_copy(sources: Vec<PathBuf>) -> Result<(), String> {
+fn run_drop_copy(config: &ottrin_core::AppConfig, sources: Vec<PathBuf>) -> Result<(), String> {
     if sources.is_empty() {
         return Err("--drop copy requires at least one source path".to_string());
     }
 
-    let destination = load_config()
+    let destination = config
         .target
         .current
+        .clone()
         .ok_or_else(|| "no Drop Folder is configured".to_string())?;
     if !destination.is_dir() {
         return Err(format!(

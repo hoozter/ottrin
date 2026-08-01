@@ -50,7 +50,7 @@ mod thumbnail_cache;
 mod window_chrome;
 
 use config::save_config;
-pub use config::{load_config, remove_config_file};
+pub use config::{load_config, load_config_checked, remove_config_file};
 use file_details::{
     InfoPanelDetails, build_info_panel_details, entry_kind_label, file_type_description,
 };

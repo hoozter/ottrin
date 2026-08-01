@@ -821,6 +821,7 @@ pub fn select_graphics_renderer(
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct AppConfig {
     pub theme: ThemeMode,
     #[serde(default)]
@@ -1959,5 +1960,16 @@ mod tests {
         let config = AppConfig::default();
         assert_eq!(config.graphics_renderer, reset);
         assert!(!config.graphics_compatibility_notice_seen);
+    }
+
+    #[test]
+    fn partial_app_config_json_applies_defaults() {
+        let json = r#"{"search":{"include_roots":["/tmp/fx"]}}"#;
+        let config: AppConfig = serde_json::from_str(json).unwrap();
+        assert_eq!(config.search.include_roots, vec![PathBuf::from("/tmp/fx")]);
+        assert_eq!(config.theme, ThemeMode::System);
+        assert_eq!(config.default_view_mode, ViewMode::Miller);
+        assert!(!config.search.exclude_roots.is_empty());
+        assert_eq!(config.search.default_scope, SearchScope::Global);
     }
 }
