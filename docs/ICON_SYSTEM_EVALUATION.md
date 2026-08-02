@@ -6,7 +6,7 @@ Status: design recommendation only; no icon-family migration is accepted by this
 
 Ottrin bundles `crates/ottrin-ui/assets/MaterialSymbolsFilled.ttf` and maps semantic file/device roles to Material Symbols codepoints through `icons.rs` and `semantic_style.rs`. This is operationally simple in egui: one bundled fallback font covers the existing interface and keeps tinting, scaling, and packaging uniform.
 
-The current Locations problem is primarily presentation, not glyph availability: collapsed tiles rendered the icon and full identity with one 9 px text style. The V1 correction is to restore standard-size semantic icons, use only a tiny identity cue, and match the Smart Panel surface. Replacing the icon family would not by itself fix those proportions.
+The current Locations problem is primarily presentation, not glyph availability: collapsed tiles rendered a semantic icon plus a redundant letter, slash, or drive cue, while generic folder symbols hid familiar Home/Desktop/Downloads/Documents distinctions. The V1 correction is an icon-only 44 px rail with distinct semantic Material symbols, a panel-specific expand/collapse affordance, full hover/focus details, and no layout gutter before the file view. Replacing the icon family would not by itself fix those proportions or semantics.
 
 ## Tabler Icons
 
@@ -52,7 +52,7 @@ A filesystem type and an operating system are different facts. An NTFS volume ma
 V1 should therefore use:
 
 1. a semantic device icon (internal, removable, optical, network, unavailable);
-2. a compact identity badge (`C:`, `P:`, or a short volume cue);
+2. the full location identity and mount path in hover/focus accessibility detail and expanded secondary text, never as a collapsed-rail letter, slash, drive label, or badge;
 3. an optional textual filesystem badge (`NTFS`, `ext4`, `Btrfs`) only when discovery reports it reliably;
 4. an operating-system logo only when a later, explicit system-volume detector has stronger evidence than filesystem type.
 

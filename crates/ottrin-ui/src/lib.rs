@@ -254,36 +254,16 @@ fn creation_completion_target(
     }
 }
 
-fn locations_rail_tile_text(
-    icon: &str,
-    name: &str,
-    path: &Path,
-    identity: &str,
-    expanded: bool,
-) -> String {
+fn locations_rail_tile_text(icon: &str, name: &str, path: &Path, expanded: bool) -> String {
     if expanded {
         format!("{icon} {name}\n{}", path.display())
     } else {
-        format!("{icon}\n{identity}")
+        icon.to_string()
     }
 }
 
-fn compact_location_identity(identity: &str) -> String {
-    let identity = identity.trim();
-    if identity == "/" {
-        return "/".to_string();
-    }
-    if identity.len() == 2
-        && identity.as_bytes()[0].is_ascii_alphabetic()
-        && identity.as_bytes()[1] == b':'
-    {
-        return identity.to_ascii_uppercase();
-    }
-    identity
-        .chars()
-        .next()
-        .map(|ch| ch.to_uppercase().collect())
-        .unwrap_or_default()
+fn locations_rail_accessibility_label(name: &str, path: &Path, indexed: Option<bool>) -> String {
+    locations_rail_tile_detail(name, path, indexed)
 }
 
 fn locations_rail_tile_detail(name: &str, path: &Path, indexed: Option<bool>) -> String {
@@ -9206,25 +9186,7 @@ impl OttrinApp {
         if self.locations_rail_expanded {
             214.0
         } else {
-            60.0
-        }
-    }
-
-    fn locations_rail_identity(home: &Path, _name: &str, path: &Path) -> String {
-        if path == home {
-            "Home".to_string()
-        } else if path == Path::new("/") {
-            "Root".to_string()
-        } else if !path.exists() {
-            "Unavailable".to_string()
-        } else if let Some(name) = path.file_name().and_then(|part| part.to_str()) {
-            if !name.is_empty() {
-                name.to_string()
-            } else {
-                Self::storage_root_label_for_path(home, path)
-            }
-        } else {
-            Self::storage_root_label_for_path(home, path)
+            44.0
         }
     }
 
@@ -9250,25 +9212,45 @@ impl OttrinApp {
         }
     }
 
+    fn bookmark_icon_for_path<'a>(home: &Path, stored_icon: &'a str, path: &Path) -> &'a str {
+        if path == home {
+            MI_HOME
+        } else if path == Path::new("/") {
+            MI_STORAGE
+        } else if path == home.join("Desktop") {
+            MI_DESKTOP
+        } else if path == home.join("Downloads") {
+            MI_DOWNLOAD
+        } else if path == home.join("Documents") {
+            MI_DESCRIPTION
+        } else {
+            Self::storage_icon_for_bookmark(stored_icon, path)
+        }
+    }
+
     fn default_bookmarks_from_roots(
         home: &Path,
         storage_roots: Vec<StorageLocation>,
     ) -> Vec<(String, String, PathBuf)> {
         let mut bookmarks = vec![
             (MI_HOME.to_string(), "Home".to_string(), home.to_path_buf()),
-            ("/".to_string(), "Root".to_string(), PathBuf::from("/")),
             (
-                MI_FOLDER.to_string(),
+                MI_STORAGE.to_string(),
+                "Root".to_string(),
+                PathBuf::from("/"),
+            ),
+            (
+                MI_DESKTOP.to_string(),
                 "Desktop".to_string(),
                 home.join("Desktop"),
             ),
             (
-                MI_FOLDER.to_string(),
+                MI_DOWNLOAD.to_string(),
                 "Downloads".to_string(),
                 home.join("Downloads"),
             ),
             (
-                MI_FOLDER.to_string(),
+                MI_DESCRIPTION.to_string(),
                 "Documents".to_string(),
                 home.join("Documents"),
             ),
@@ -9350,25 +9332,25 @@ impl OttrinApp {
             "Expand locations rail"
         };
         let toggle_icon = if expanded {
-            MI_ARROW_BACK
+            MI_LEFT_PANEL_CLOSE
         } else {
-            MI_ARROW_FORWARD
+            MI_LEFT_PANEL_OPEN
         };
 
         egui::SidePanel::left("locations_rail")
             .resizable(false)
-            .min_width(rail_w)
-            .max_width(rail_w)
+            .exact_width(rail_w)
+            .show_separator_line(false)
             .frame(
                 Frame::new()
                     .fill(c.smart_panel_bg)
-                    .inner_margin(egui::Margin::symmetric(8, 6)),
+                    .inner_margin(egui::Margin::symmetric(if expanded { 8 } else { 4 }, 6)),
             )
             .show(ctx, |ui| {
-                ui.set_width(rail_w);
                 ui.spacing_mut().item_spacing.y = 4.0;
+                let tile_w = ui.available_width();
 
-                if ui
+                let toggle_response = ui
                     .add(
                         egui::Button::new(
                             RichText::new(toggle_icon).size(15.0).color(c.text_muted),
@@ -9379,11 +9361,12 @@ impl OttrinApp {
                             mix_color(c.smart_panel_bg, c.panel, 0.22)
                         })
                         .corner_radius(c.border_radius as f32)
-                        .min_size(Vec2::new(rail_w - 14.0, 28.0)),
+                        .min_size(Vec2::new(tile_w, 28.0)),
                     )
-                    .on_hover_text(toggle_tooltip)
-                    .clicked()
-                {
+                    .on_hover_text(toggle_tooltip);
+                toggle_response
+                    .widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, toggle_tooltip));
+                if toggle_response.clicked() {
                     self.locations_rail_expanded = !self.locations_rail_expanded;
                 }
 
@@ -9398,9 +9381,7 @@ impl OttrinApp {
                         .iter()
                         .find(|location| location.path == path)
                         .map(|location| Self::storage_icon_for_kind(location.kind))
-                        .unwrap_or_else(|| Self::storage_icon_for_bookmark(stored_icon, &path));
-                    let identity = Self::locations_rail_identity(&home, name, &path);
-                    let compact_identity = compact_location_identity(&identity);
+                        .unwrap_or_else(|| Self::bookmark_icon_for_path(&home, stored_icon, &path));
                     let volume_index_status = storage_roots
                         .iter()
                         .find(|location| location.path == path)
@@ -9430,44 +9411,25 @@ impl OttrinApp {
 
                     let btn = if expanded {
                         egui::Button::new(
-                            RichText::new(locations_rail_tile_text(
-                                icon, name, &path, &identity, true,
-                            ))
-                            .size(12.0)
-                            .color(text_col),
+                            RichText::new(locations_rail_tile_text(icon, name, &path, true))
+                                .size(12.0)
+                                .color(text_col),
                         )
                     } else {
-                        let mut job = egui::text::LayoutJob {
-                            halign: Align::Center,
-                            ..Default::default()
-                        };
-                        job.append(
-                            icon,
-                            0.0,
-                            egui::TextFormat {
-                                font_id: FontId::proportional(19.0),
-                                color: text_col,
-                                ..Default::default()
-                            },
-                        );
-                        job.append(
-                            &format!("\n{compact_identity}"),
-                            0.0,
-                            egui::TextFormat {
-                                font_id: FontId::proportional(9.5),
-                                color: text_col,
-                                ..Default::default()
-                            },
-                        );
-                        egui::Button::new(job)
+                        egui::Button::new(RichText::new(icon).size(21.0).color(text_col))
                     }
                     .fill(bg_col)
                     .stroke(Stroke::NONE)
                     .corner_radius(c.border_radius as f32)
-                    .min_size(Vec2::new(rail_w - 14.0, if expanded { 42.0 } else { 50.0 }));
+                    .min_size(Vec2::new(tile_w, if expanded { 42.0 } else { 36.0 }));
 
                     let detail = locations_rail_tile_detail(name, &path, volume_index_status);
+                    let accessibility_label =
+                        locations_rail_accessibility_label(name, &path, volume_index_status);
                     let resp = ui.add(btn);
+                    resp.widget_info(|| {
+                        WidgetInfo::labeled(WidgetType::Button, true, accessibility_label.clone())
+                    });
                     if locations_rail_tile_detail_visible(resp.hovered(), resp.has_focus()) {
                         resp.show_tooltip_text(detail);
                     }
@@ -21591,10 +21553,13 @@ mod tests {
         assert_eq!(bookmarks.len(), 7);
         assert_eq!(bookmarks[0].0, MI_HOME.to_string());
         assert_eq!(bookmarks[0].1, "Home");
-        assert_eq!(bookmarks[1].0, "/".to_string());
+        assert_eq!(bookmarks[1].0, MI_STORAGE.to_string());
         assert_eq!(bookmarks[1].1, "Root");
+        assert_eq!(bookmarks[2].0, MI_DESKTOP.to_string());
         assert_eq!(bookmarks[2].1, "Desktop");
+        assert_eq!(bookmarks[3].0, MI_DOWNLOAD.to_string());
         assert_eq!(bookmarks[3].1, "Downloads");
+        assert_eq!(bookmarks[4].0, MI_DESCRIPTION.to_string());
         assert_eq!(bookmarks[4].1, "Documents");
         assert_eq!(
             bookmarks[5],
@@ -21656,19 +21621,42 @@ mod tests {
     }
 
     #[test]
-    fn compact_location_identity_keeps_drive_letters_and_abbreviates_names() {
-        assert_eq!(compact_location_identity("c:"), "C:");
-        assert_eq!(compact_location_identity("P:"), "P:");
-        assert_eq!(compact_location_identity("/"), "/");
-        assert_eq!(compact_location_identity("Home"), "H");
-        assert_eq!(compact_location_identity("  résumé"), "R");
-        assert_eq!(compact_location_identity("東京"), "東");
+    fn persisted_standard_bookmarks_use_semantic_icons() {
+        let home = PathBuf::from("/home/alice");
+        assert_eq!(
+            OttrinApp::bookmark_icon_for_path(&home, MI_FOLDER, &home),
+            MI_HOME
+        );
+        assert_eq!(
+            OttrinApp::bookmark_icon_for_path(&home, "/", Path::new("/")),
+            MI_STORAGE
+        );
+        assert_eq!(
+            OttrinApp::bookmark_icon_for_path(&home, MI_FOLDER, &home.join("Desktop")),
+            MI_DESKTOP
+        );
+        assert_eq!(
+            OttrinApp::bookmark_icon_for_path(&home, MI_FOLDER, &home.join("Downloads")),
+            MI_DOWNLOAD
+        );
+        assert_eq!(
+            OttrinApp::bookmark_icon_for_path(&home, MI_FOLDER, &home.join("Documents")),
+            MI_DESCRIPTION
+        );
+    }
+
+    #[test]
+    fn collapsed_locations_tile_contains_only_its_semantic_icon() {
+        assert_eq!(
+            locations_rail_tile_text(MI_HOME, "Home", Path::new("/home/alice"), false),
+            MI_HOME
+        );
     }
 
     #[test]
     fn locations_rail_defaults_to_compact_width() {
         let app = OttrinApp::default();
-        assert_eq!(app.locations_rail_width(), 60.0);
+        assert_eq!(app.locations_rail_width(), 44.0);
         assert!(!app.locations_rail_expanded);
     }
 
@@ -21679,10 +21667,17 @@ mod tests {
                 MI_FOLDER_OPEN,
                 "Backup",
                 Path::new("/media/alice/Backup"),
-                "Backup",
                 true,
             ),
             format!("{MI_FOLDER_OPEN} Backup\n/media/alice/Backup")
+        );
+    }
+
+    #[test]
+    fn collapsed_locations_tile_accessibility_label_keeps_name_and_path() {
+        assert_eq!(
+            locations_rail_accessibility_label("Home", Path::new("/home/alice"), None),
+            "Home · /home/alice"
         );
     }
 
