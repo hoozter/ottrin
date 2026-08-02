@@ -8961,10 +8961,10 @@ impl OttrinApp {
 
         if text.as_bytes().first() == Some(&b'\\') && text.as_bytes().get(1) == Some(&b'\\') {
             let trimmed = text.trim_end_matches('\\');
-            if let Some((_, share)) = trimmed.split_once("\\\\") {
-                if let Some((_, tail)) = share.split_once('\\') {
-                    return Some(tail.to_string());
-                }
+            if let Some((_, share)) = trimmed.split_once("\\\\")
+                && let Some((_, tail)) = share.split_once('\\')
+            {
+                return Some(tail.to_string());
             }
             return Some(trimmed.to_string());
         }

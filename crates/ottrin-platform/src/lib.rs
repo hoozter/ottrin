@@ -666,19 +666,15 @@ impl PlatformOps for DefaultPlatform {
                 })?;
                 Ok(None)
             }
+            #[cfg(target_os = "linux")]
             FileCommand::RecoverRetainedMove { transaction_id } => {
-                #[cfg(target_os = "linux")]
-                {
-                    move_transaction::recover_retained_move_pending_destination(*transaction_id)?;
-                }
-                #[cfg(not(target_os = "linux"))]
-                {
-                    return Err(PlatformError::NotAvailable(
-                        "Retained Move recovery is supported only on Linux",
-                    ));
-                }
+                move_transaction::recover_retained_move_pending_destination(*transaction_id)?;
                 Ok(None)
             }
+            #[cfg(not(target_os = "linux"))]
+            FileCommand::RecoverRetainedMove { .. } => Err(PlatformError::NotAvailable(
+                "Retained Move recovery is supported only on Linux",
+            )),
             FileCommand::ShowProperties { target } => {
                 let props = read_properties(target)?;
                 Ok(Some(props))
