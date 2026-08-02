@@ -125,13 +125,6 @@ enum CreationKind {
     Folder,
 }
 
-fn creation_default_name(kind: CreationKind) -> &'static str {
-    match kind {
-        CreationKind::File => "New File",
-        CreationKind::Folder => "New Folder",
-    }
-}
-
 #[cfg(any(target_os = "windows", test))]
 fn is_windows_reserved_creation_name(name: &str) -> bool {
     if name.ends_with(['.', ' '])
@@ -277,6 +270,39 @@ fn locations_rail_tile_detail(name: &str, path: &Path, indexed: Option<bool>) ->
 
 fn locations_rail_tile_detail_visible(pointer_hovered: bool, keyboard_focused: bool) -> bool {
     pointer_hovered || keyboard_focused
+}
+
+fn locations_rail_tooltip_allowed(
+    detail_visible: bool,
+    secondary_clicked: bool,
+    context_menu_open: bool,
+) -> bool {
+    detail_visible && !secondary_clicked && !context_menu_open
+}
+
+fn folder_context_creation_target(
+    path: &Path,
+    kind: EntryKind,
+    symlink_target_is_dir: Option<bool>,
+) -> Option<PathBuf> {
+    matches!(kind, EntryKind::Directory)
+        .then(|| path.to_path_buf())
+        .or_else(|| {
+            (matches!(kind, EntryKind::Symlink) && symlink_target_is_dir == Some(true))
+                .then(|| path.to_path_buf())
+        })
+}
+
+fn secondary_click_preserves_existing_selection(
+    secondary_clicked: bool,
+    modifiers: egui::Modifiers,
+    already_selected: bool,
+) -> bool {
+    secondary_clicked
+        && !modifiers.shift
+        && !modifiers.command
+        && !modifiers.ctrl
+        && already_selected
 }
 
 /// Resolves persisted volume choices against this refresh's discovered roots.
@@ -722,6 +748,8 @@ struct TabUiState {
     miller_focus_hint: Option<MillerFocusHint>,
     // One-shot: ensure active row is scrolled into view after keyboard move.
     miller_scroll_selected: bool,
+    // One-shot: reveal the selected folder's child column after pointer navigation.
+    miller_reveal_pointer_selection: bool,
     // How many preview columns past current_dir are allowed.
     // Up/Down → 1, Left → increment, Right → decrement (min 1).
     miller_preview_depth: usize,
@@ -1396,6 +1424,8 @@ pub struct OttrinApp {
     file_pane_rect: Option<Rect>,
     smart_panel_rect: Option<Rect>,
     locations_rail_expanded: bool,
+    // Explicit two-tab selection used by the tab context-menu Tandem action.
+    tab_tandem_selection: Vec<u64>,
 }
 
 struct OpenWithDialog {
@@ -1482,6 +1512,7 @@ impl OttrinApp {
         let (op_tx, op_rx) = mpsc::channel::<OpResult>();
         let (trash_tx, trash_rx) = mpsc::channel::<TrashLoadResponse>();
         let (trash_empty_tx, trash_empty_rx) = mpsc::channel::<TrashEmptyResponse>();
+
         let (hash_tx, hash_rx) = mpsc::channel::<(PathBuf, Result<String, String>)>();
         let (preview_req_tx, preview_req_rx) = mpsc::channel::<PreviewJobRequest>();
         let (preview_res_tx, preview_res_rx) = mpsc::channel::<PreviewJobResponse>();
@@ -1561,6 +1592,7 @@ impl OttrinApp {
             trash_rx,
             trash_empty_tx,
             trash_empty_rx,
+
             platform: Arc::new(DefaultPlatform),
             clipboard: None,
             command_frame: CommandFrame::default(),
@@ -1626,6 +1658,7 @@ impl OttrinApp {
             file_pane_rect: None,
             smart_panel_rect: None,
             locations_rail_expanded: false,
+            tab_tandem_selection: Vec::new(),
         };
 
         // Theme editing is per preset+mode scope; always hydrate the active
@@ -5081,6 +5114,7 @@ impl OttrinApp {
         tab_id: u64,
         idx: usize,
         modifiers: egui::Modifiers,
+        secondary_clicked: bool,
     ) {
         let (dir, selected_path, previous_path) = {
             let ui = self.tab_ui.entry(tab_id).or_default();
@@ -5131,7 +5165,11 @@ impl OttrinApp {
                 ui.selected_paths.insert(selected_path.clone());
                 ui.selection_anchor = Some(selected_path.clone());
             }
-        } else {
+        } else if !secondary_click_preserves_existing_selection(
+            secondary_clicked,
+            modifiers,
+            ui.selected_paths.contains(&selected_path),
+        ) {
             ui.selected_paths.clear();
             ui.selected_paths.insert(selected_path.clone());
             ui.selection_anchor = Some(selected_path.clone());
@@ -5141,6 +5179,17 @@ impl OttrinApp {
 
     fn row_pointer_selects(primary_clicked: bool, secondary_clicked: bool) -> bool {
         primary_clicked || secondary_clicked
+    }
+
+    fn miller_pointer_rebases_anchor(primary_clicked: bool, _secondary_clicked: bool) -> bool {
+        primary_clicked
+    }
+
+    fn miller_should_reveal_focus_column(
+        keyboard_navigation: bool,
+        pointer_navigation: bool,
+    ) -> bool {
+        keyboard_navigation || pointer_navigation
     }
 
     fn selected_paths_for_tab(&mut self, tab_id: u64) -> Vec<PathBuf> {
@@ -5694,6 +5743,54 @@ impl OttrinApp {
 
     fn focus_tab(&mut self, tab_id: u64) {
         let _ = self.state.select_tab_id_preserving_tandem(tab_id);
+    }
+
+    fn tab_selection_after_click(
+        selected: &[u64],
+        active_tab_id: u64,
+        clicked_tab_id: u64,
+        shift: bool,
+    ) -> Vec<u64> {
+        if !shift {
+            return Vec::new();
+        }
+
+        let mut next = if selected.contains(&active_tab_id) {
+            selected.to_vec()
+        } else {
+            vec![active_tab_id]
+        };
+        if clicked_tab_id == active_tab_id {
+            next.retain(|id| *id != clicked_tab_id);
+            if next.is_empty() {
+                next.push(active_tab_id);
+            }
+            return next;
+        }
+        if next.contains(&clicked_tab_id) {
+            next.retain(|id| *id != clicked_tab_id);
+            return next;
+        }
+        next.retain(|id| *id == active_tab_id);
+        next.push(clicked_tab_id);
+        next
+    }
+
+    fn activate_selected_tabs_in_tandem(&mut self) -> bool {
+        let [left_id, right_id] = self.tab_tandem_selection.as_slice() else {
+            return false;
+        };
+        let Some(left_idx) = self.state.tab_idx_by_id(*left_id) else {
+            return false;
+        };
+        let Some(right_idx) = self.state.tab_idx_by_id(*right_id) else {
+            return false;
+        };
+        if self.state.activate_tandem(left_idx, right_idx).is_none() {
+            return false;
+        }
+        self.tab_tandem_selection.clear();
+        true
     }
 
     fn focus_tab_idx(&mut self, idx: usize) {
@@ -7454,7 +7551,7 @@ impl OttrinApp {
             kind,
             tab_id,
             parent,
-            name_input: creation_default_name(kind).to_string(),
+            name_input: String::new(),
             error: None,
             request_focus: true,
         });
@@ -8008,6 +8105,10 @@ impl OttrinApp {
             && !Self::is_drop_folder_hint_suppressed_system_path(dir)
     }
 
+    fn empty_folder_content_width(column_width: f32) -> f32 {
+        (column_width - 24.0).clamp(96.0, 320.0)
+    }
+
     fn render_empty_folder_state(
         &mut self,
         ui: &mut egui::Ui,
@@ -8038,42 +8139,61 @@ impl OttrinApp {
         });
         let show_hint = show_drop_folder_hint && self.should_show_drop_folder_hint_for_dir(dir);
         ui.add_space(16.0);
-        ui.with_layout(Layout::top_down(Align::Center), |ui| {
-            ui.label(
-                RichText::new("This folder is empty")
-                    .color(c.text_muted)
-                    .size(12.0),
-            );
-            if show_hint {
-                ui.add_space(8.0);
-                ui.label(
-                    RichText::new("Set this folder as Drop Folder")
-                        .color(c.text_dim)
-                        .size(11.5)
-                        .strong(),
-                );
-                ui.label(
-                    RichText::new("Move or copy files here from anywhere.")
-                        .color(c.text_muted)
-                        .size(10.5),
-                );
-                ui.add_space(8.0);
-                if ui
-                    .add(
-                        egui::Button::new(
-                            RichText::new(format!("{} Set as Drop Folder", MI_MOVE_TO_INBOX))
-                                .size(11.5)
-                                .color(c.text),
-                        )
-                        .min_size(Vec2::new(198.0, 28.0))
-                        .corner_radius(4.0),
+        let column_width = ui.available_width();
+        let content_width = Self::empty_folder_content_width(column_width);
+        ui.allocate_ui_with_layout(
+            Vec2::new(column_width, if show_hint { 132.0 } else { 28.0 }),
+            Layout::top_down(Align::Center),
+            |ui| {
+                ui.set_width(column_width);
+                ui.add_sized(
+                    Vec2::new(content_width, 18.0),
+                    egui::Label::new(
+                        RichText::new("This folder is empty")
+                            .color(c.text_muted)
+                            .size(12.0),
                     )
-                    .clicked()
-                {
-                    self.set_drop_folder(dir.to_path_buf(), true, true);
+                    .wrap(),
+                );
+                if show_hint {
+                    ui.add_space(8.0);
+                    ui.add_sized(
+                        Vec2::new(content_width, 18.0),
+                        egui::Label::new(
+                            RichText::new("Set this folder as Drop Folder")
+                                .color(c.text_dim)
+                                .size(11.5)
+                                .strong(),
+                        )
+                        .wrap(),
+                    );
+                    ui.add_sized(
+                        Vec2::new(content_width, 30.0),
+                        egui::Label::new(
+                            RichText::new("Move or copy files here from anywhere.")
+                                .color(c.text_muted)
+                                .size(10.5),
+                        )
+                        .wrap(),
+                    );
+                    ui.add_space(8.0);
+                    if ui
+                        .add_sized(
+                            Vec2::new(content_width, 28.0),
+                            egui::Button::new(
+                                RichText::new(format!("{} Set as Drop Folder", MI_MOVE_TO_INBOX))
+                                    .size(11.5)
+                                    .color(c.text),
+                            )
+                            .corner_radius(4.0),
+                        )
+                        .clicked()
+                    {
+                        self.set_drop_folder(dir.to_path_buf(), true, true);
+                    }
                 }
-            }
-        });
+            },
+        );
         if let Some(until) = self.drop_folder_confirm_until {
             if Instant::now() < until {
                 ui.add_space(8.0);
@@ -8379,22 +8499,34 @@ impl OttrinApp {
                     let mut navigate_to: Option<(u64, PathBuf)> = None;
                     let mut close_idx: Option<usize> = None;
                     let mut new_tab_requested = false;
+                    let mut activate_selected_tandem_requested = false;
                     let mut tab_rects: Vec<Rect> = Vec::with_capacity(n_tabs);
                     let mut tab_drag: Option<(usize, egui::Pos2, bool)> = None;
 
+                    self.tab_tandem_selection
+                        .retain(|id| self.state.tab_idx_by_id(*id).is_some());
+
                     for i in 0..n_tabs {
-                        let tab = &self.state.tabs[i];
                         let is_active = i == active;
-                        let label = tab.display_name().to_string();
-                        let tab_id = tab.id;
+                        let (label, tab_id, tab_dir) = {
+                            let tab = &self.state.tabs[i];
+                            (
+                                tab.display_name().to_string(),
+                                tab.id,
+                                tab.current_dir.clone(),
+                            )
+                        };
+                        let is_tandem_selected = self.tab_tandem_selection.contains(&tab_id);
 
                         // Active tab should visually connect to the nav row below.
                         let tab_fill = if is_active {
                             active_tab_bg
+                        } else if is_tandem_selected {
+                            mix_color(c.accent, titlebar_bg, 0.18)
                         } else {
                             Color32::TRANSPARENT
                         };
-                        let text_color = if is_active {
+                        let text_color = if is_active || is_tandem_selected {
                             c.text_muted
                         } else {
                             inactive_text
@@ -8485,24 +8617,57 @@ impl OttrinApp {
                         }
                         blocked_drag_rects.push(tab_rect);
                         tab_rects.push(tab_rect);
-                        if tab_click.clicked() && close_idx.is_none() && !is_active {
+                        if tab_click.clicked() && close_idx.is_none() {
                             let shift = ui.ctx().input(|input| input.modifiers.shift);
                             if shift {
-                                let active_idx = self.state.active_tab_idx;
-                                if active_idx != i {
-                                    let _ = self.state.activate_tandem(active_idx, i);
-                                }
+                                let active_id = self.state.active_tab().id;
+                                self.tab_tandem_selection = Self::tab_selection_after_click(
+                                    &self.tab_tandem_selection,
+                                    active_id,
+                                    tab_id,
+                                    true,
+                                );
                             } else {
+                                self.tab_tandem_selection.clear();
                                 self.focus_tab_idx(i);
                             }
                             if !self.tab_ui.contains_key(&tab_id) {
-                                let dir = self.state.tabs[i].current_dir.clone();
-                                navigate_to = Some((tab_id, dir));
+                                navigate_to = Some((tab_id, tab_dir.clone()));
                             }
                         }
-                        resp.response
-                            .on_hover_text(self.state.tabs[i].current_dir.display().to_string());
-                        if is_active {
+                        tab_click.context_menu(|ui| {
+                            ui.set_min_width(210.0);
+                            let can_open_tandem = self.tab_tandem_selection.len() == 2
+                                && self.tab_tandem_selection.contains(&tab_id);
+                            if ui
+                                .add_enabled(
+                                    can_open_tandem,
+                                    egui::Button::new("Open selected tabs in Tandem"),
+                                )
+                                .clicked()
+                            {
+                                activate_selected_tandem_requested = true;
+                                ui.close();
+                            }
+                            ui.separator();
+                            if ui
+                                .add_enabled(n_tabs > 1, egui::Button::new("Close Tab"))
+                                .clicked()
+                            {
+                                close_idx = Some(i);
+                                ui.close();
+                            }
+                        });
+                        resp.response.on_hover_text(format!(
+                            "{}{}",
+                            tab_dir.display(),
+                            if is_tandem_selected {
+                                "\nSelected for Tandem"
+                            } else {
+                                ""
+                            }
+                        ));
+                        if is_active || is_tandem_selected {
                             ui.painter().hline(
                                 tab_rect.x_range(),
                                 tab_rect.bottom() - 1.0,
@@ -8552,9 +8717,16 @@ impl OttrinApp {
 
                     // Apply tab actions
                     if let Some(idx) = close_idx {
+                        let closing_id = self.state.tabs.get(idx).map(|tab| tab.id);
                         self.state.close_tab(idx);
+                        if let Some(closing_id) = closing_id {
+                            self.tab_tandem_selection.retain(|id| *id != closing_id);
+                        }
                     } else if let Some((tid, dir)) = navigate_to {
                         self.refresh_tab(tid, dir);
+                    }
+                    if activate_selected_tandem_requested {
+                        let _ = self.activate_selected_tabs_in_tandem();
                     }
                     if new_tab_requested {
                         let home = default_home_dir();
@@ -9323,6 +9495,7 @@ impl OttrinApp {
         let mut navigate_to: Option<PathBuf> = None;
         let mut remove_idx: Option<usize> = None;
         let mut volume_index_action: Option<(String, PathBuf, bool)> = None;
+
         let displayed_path = self.displayed_path();
         let rail_w = self.locations_rail_width();
         let expanded = self.locations_rail_expanded;
@@ -9430,7 +9603,13 @@ impl OttrinApp {
                     resp.widget_info(|| {
                         WidgetInfo::labeled(WidgetType::Button, true, accessibility_label.clone())
                     });
-                    if locations_rail_tile_detail_visible(resp.hovered(), resp.has_focus()) {
+                    let detail_visible =
+                        locations_rail_tile_detail_visible(resp.hovered(), resp.has_focus());
+                    if locations_rail_tooltip_allowed(
+                        detail_visible,
+                        resp.secondary_clicked(),
+                        resp.context_menu_opened(),
+                    ) {
                         resp.show_tooltip_text(detail);
                     }
                     if resp.clicked() {
@@ -9439,10 +9618,13 @@ impl OttrinApp {
                     resp.context_menu(|ui| {
                         ui.visuals_mut().override_text_color = Some(c.text_muted);
                         ui.set_min_width(188.0);
+                        let known_location = storage_roots
+                            .iter()
+                            .find(|location| location.path == path)
+                            .cloned();
                         let known_volume =
-                            storage_roots
-                                .iter()
-                                .find(|location| location.path == path)
+                            known_location
+                                .as_ref()
                                 .map(|location| (location.identity.clone(), location.path.clone()))
                                 .or_else(|| {
                                     self.state.config.search.indexed_volumes.iter().find_map(
@@ -9476,6 +9658,7 @@ impl OttrinApp {
                             }
                             ui.separator();
                         }
+
                         if menu_item(ui, MI_CLEAR, &format!("Remove \"{}\"", name), &c).clicked() {
                             remove_idx = Some(idx);
                             ui.close();
@@ -9491,6 +9674,7 @@ impl OttrinApp {
         if let Some(idx) = remove_idx {
             self.state.config.bookmarks.remove(idx);
         }
+
         if let Some((identity, path, enabled)) = volume_index_action {
             if enabled {
                 self.state
@@ -12438,6 +12622,27 @@ impl OttrinApp {
                 *open_tandem = Some(path.clone());
                 ui.close();
             }
+            ui.separator();
+            if menu_count == 1
+                && let Some(destination) =
+                    folder_context_creation_target(&path, kind, entry.symlink_target_is_dir)
+            {
+                ui.menu_button(format!("{MI_CREATE_FOLDER}  New"), |ui| {
+                    if menu_item(ui, MI_CREATE_FOLDER, "Folder", &c).clicked() {
+                        self.open_creation_dialog(
+                            CreationKind::Folder,
+                            tab_id,
+                            destination.clone(),
+                        );
+                        ui.close();
+                    }
+                    if menu_item(ui, MI_FILE, "File", &c).clicked() {
+                        self.open_creation_dialog(CreationKind::File, tab_id, destination.clone());
+                        ui.close();
+                    }
+                });
+                ui.separator();
+            }
             if menu_item(ui, MI_CONTENT_COPY, "Copy File Path", &c).clicked() {
                 ui.ctx().copy_text(path.display().to_string());
                 self.set_status_message("Copied file path", true, 3);
@@ -12508,183 +12713,192 @@ impl OttrinApp {
             }
             ui.separator();
 
-            let copy_target_btn = ui
-                .add_enabled(
-                    !target_missing && !same_as_target_set,
-                    egui::Button::new(
-                        RichText::new(format!(
-                            "{MI_CONTENT_COPY}  Copy {menu_target} to Drop Folder"
-                        ))
-                        .size(12.5)
-                        .color(c.text_muted),
-                    )
-                    .frame(false)
-                    .min_size(Vec2::new(188.0, 26.0)),
-                )
-                .on_hover_text(if target_missing {
-                    "No drop folder set"
-                } else if same_as_target_set {
-                    "Already in destination"
-                } else {
-                    ""
-                });
-            if copy_target_btn.clicked() {
-                if let Some(dst) = target_dir.clone() {
-                    *pending_op = Some(FileCommand::Copy {
-                        sources: menu_sources.clone(),
-                        destination: dst,
-                        conflict: ConflictAction::Rename,
-                    });
-                }
-                self.set_status_message("Queued copy to Drop Folder", true, 3);
-                ui.close();
-            }
-            let move_target_btn = ui
-                .add_enabled(
-                    !target_missing && !same_as_target_set,
-                    egui::Button::new(
-                        RichText::new(format!(
-                            "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to Drop Folder"
-                        ))
-                        .size(12.5)
-                        .color(c.text_muted),
-                    )
-                    .frame(false)
-                    .min_size(Vec2::new(188.0, 26.0)),
-                )
-                .on_hover_text(if target_missing {
-                    "No drop folder set"
-                } else if same_as_target_set {
-                    "Already in destination"
-                } else {
-                    ""
-                });
-            if move_target_btn.clicked() {
-                if let Some(dst) = target_dir.clone() {
-                    *pending_op = Some(FileCommand::Move {
-                        sources: menu_sources.clone(),
-                        destination: dst,
-                        conflict: ConflictAction::Rename,
-                    });
-                }
-                self.set_status_message("Queued move to Drop Folder", true, 3);
-                ui.close();
-            }
-
-            let copy_cur_btn = ui
-                .add_enabled(
-                    !same_as_current_set,
-                    egui::Button::new(
-                        RichText::new(format!(
-                            "{MI_CONTENT_COPY}  Copy {menu_target} to Current Folder"
-                        ))
-                        .size(12.5)
-                        .color(c.text_muted),
-                    )
-                    .frame(false)
-                    .min_size(Vec2::new(188.0, 26.0)),
-                )
-                .on_hover_text(if same_as_current_set {
-                    "Already in destination"
-                } else {
-                    ""
-                });
-            if copy_cur_btn.clicked() {
-                *pending_op = Some(FileCommand::Copy {
-                    sources: menu_sources.clone(),
-                    destination: current_dir.to_path_buf(),
-                    conflict: ConflictAction::Rename,
-                });
-                ui.close();
-            }
-            let move_cur_btn = ui
-                .add_enabled(
-                    !same_as_current_set,
-                    egui::Button::new(
-                        RichText::new(format!(
-                            "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to Current Folder"
-                        ))
-                        .size(12.5)
-                        .color(c.text_muted),
-                    )
-                    .frame(false)
-                    .min_size(Vec2::new(188.0, 26.0)),
-                )
-                .on_hover_text(if same_as_current_set {
-                    "Already in destination"
-                } else {
-                    ""
-                });
-            if move_cur_btn.clicked() {
-                *pending_op = Some(FileCommand::Move {
-                    sources: menu_sources.clone(),
-                    destination: current_dir.to_path_buf(),
-                    conflict: ConflictAction::Rename,
-                });
-                ui.close();
-            }
-
-            if tandem_target_dir.is_some() {
-                ui.separator();
-                let tandem_label = "Other Pane";
-                let copy_tandem_btn = ui
-                    .add_enabled(
-                        !same_as_tandem_set,
-                        egui::Button::new(
-                            RichText::new(format!(
-                                "{MI_CONTENT_COPY}  Copy {menu_target} to {tandem_label}"
-                            ))
-                            .size(12.5)
-                            .color(c.text_muted),
+            if !target_missing && !same_as_target_set {
+                ui.menu_button(format!("{MI_MOVE_TO_INBOX}  Drop Folder"), |ui| {
+                    let copy_target_btn = ui
+                        .add_enabled(
+                            !target_missing && !same_as_target_set,
+                            egui::Button::new(
+                                RichText::new(format!(
+                                    "{MI_CONTENT_COPY}  Copy {menu_target} to Drop Folder"
+                                ))
+                                .size(12.5)
+                                .color(c.text_muted),
+                            )
+                            .frame(false)
+                            .min_size(Vec2::new(188.0, 26.0)),
                         )
-                        .frame(false)
-                        .min_size(Vec2::new(188.0, 26.0)),
-                    )
-                    .on_hover_text(if same_as_tandem_set {
-                        "Already in destination"
-                    } else {
-                        ""
-                    });
-                if copy_tandem_btn.clicked() {
-                    if let Some(dst) = tandem_target_dir.clone() {
+                        .on_hover_text(if target_missing {
+                            "No drop folder set"
+                        } else if same_as_target_set {
+                            "Already in destination"
+                        } else {
+                            ""
+                        });
+                    if copy_target_btn.clicked() {
+                        if let Some(dst) = target_dir.clone() {
+                            *pending_op = Some(FileCommand::Copy {
+                                sources: menu_sources.clone(),
+                                destination: dst,
+                                conflict: ConflictAction::Rename,
+                            });
+                        }
+                        self.set_status_message("Queued copy to Drop Folder", true, 3);
+                        ui.close();
+                    }
+                    let move_target_btn = ui
+                        .add_enabled(
+                            !target_missing && !same_as_target_set,
+                            egui::Button::new(
+                                RichText::new(format!(
+                                    "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to Drop Folder"
+                                ))
+                                .size(12.5)
+                                .color(c.text_muted),
+                            )
+                            .frame(false)
+                            .min_size(Vec2::new(188.0, 26.0)),
+                        )
+                        .on_hover_text(if target_missing {
+                            "No drop folder set"
+                        } else if same_as_target_set {
+                            "Already in destination"
+                        } else {
+                            ""
+                        });
+                    if move_target_btn.clicked() {
+                        if let Some(dst) = target_dir.clone() {
+                            *pending_op = Some(FileCommand::Move {
+                                sources: menu_sources.clone(),
+                                destination: dst,
+                                conflict: ConflictAction::Rename,
+                            });
+                        }
+                        self.set_status_message("Queued move to Drop Folder", true, 3);
+                        ui.close();
+                    }
+                });
+            }
+
+            if !same_as_current_set {
+                ui.menu_button(format!("{MI_FOLDER}  Current Folder"), |ui| {
+                    let copy_cur_btn = ui
+                        .add_enabled(
+                            !same_as_current_set,
+                            egui::Button::new(
+                                RichText::new(format!(
+                                    "{MI_CONTENT_COPY}  Copy {menu_target} to Current Folder"
+                                ))
+                                .size(12.5)
+                                .color(c.text_muted),
+                            )
+                            .frame(false)
+                            .min_size(Vec2::new(188.0, 26.0)),
+                        )
+                        .on_hover_text(if same_as_current_set {
+                            "Already in destination"
+                        } else {
+                            ""
+                        });
+                    if copy_cur_btn.clicked() {
                         *pending_op = Some(FileCommand::Copy {
                             sources: menu_sources.clone(),
-                            destination: dst,
+                            destination: current_dir.to_path_buf(),
                             conflict: ConflictAction::Rename,
                         });
+                        ui.close();
                     }
-                    self.set_status_message("Queued copy to other pane", true, 3);
-                    ui.close();
-                }
-                let move_tandem_btn = ui
-                    .add_enabled(
-                        !same_as_tandem_set,
-                        egui::Button::new(
-                            RichText::new(format!(
-                                "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to {tandem_label}"
-                            ))
-                            .size(12.5)
-                            .color(c.text_muted),
+                    let move_cur_btn = ui
+                        .add_enabled(
+                            !same_as_current_set,
+                            egui::Button::new(
+                                RichText::new(format!(
+                                    "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to Current Folder"
+                                ))
+                                .size(12.5)
+                                .color(c.text_muted),
+                            )
+                            .frame(false)
+                            .min_size(Vec2::new(188.0, 26.0)),
                         )
-                        .frame(false)
-                        .min_size(Vec2::new(188.0, 26.0)),
-                    )
-                    .on_hover_text(if same_as_tandem_set {
-                        "Already in destination"
-                    } else {
-                        ""
-                    });
-                if move_tandem_btn.clicked() {
-                    if let Some(dst) = tandem_target_dir.clone() {
+                        .on_hover_text(if same_as_current_set {
+                            "Already in destination"
+                        } else {
+                            ""
+                        });
+                    if move_cur_btn.clicked() {
                         *pending_op = Some(FileCommand::Move {
                             sources: menu_sources.clone(),
-                            destination: dst,
+                            destination: current_dir.to_path_buf(),
                             conflict: ConflictAction::Rename,
                         });
+                        ui.close();
                     }
-                    self.set_status_message("Queued move to other pane", true, 3);
-                    ui.close();
-                }
+                });
+            }
+
+            if tandem_target_dir.is_some() && !same_as_tandem_set {
+                ui.menu_button(format!("{MI_VIEW_COLUMN}  Other Pane"), |ui| {
+                    let tandem_label = "Other Pane";
+                    let copy_tandem_btn = ui
+                        .add_enabled(
+                            !same_as_tandem_set,
+                            egui::Button::new(
+                                RichText::new(format!(
+                                    "{MI_CONTENT_COPY}  Copy {menu_target} to {tandem_label}"
+                                ))
+                                .size(12.5)
+                                .color(c.text_muted),
+                            )
+                            .frame(false)
+                            .min_size(Vec2::new(188.0, 26.0)),
+                        )
+                        .on_hover_text(if same_as_tandem_set {
+                            "Already in destination"
+                        } else {
+                            ""
+                        });
+                    if copy_tandem_btn.clicked() {
+                        if let Some(dst) = tandem_target_dir.clone() {
+                            *pending_op = Some(FileCommand::Copy {
+                                sources: menu_sources.clone(),
+                                destination: dst,
+                                conflict: ConflictAction::Rename,
+                            });
+                        }
+                        self.set_status_message("Queued copy to other pane", true, 3);
+                        ui.close();
+                    }
+                    let move_tandem_btn = ui
+                        .add_enabled(
+                            !same_as_tandem_set,
+                            egui::Button::new(
+                                RichText::new(format!(
+                                    "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to {tandem_label}"
+                                ))
+                                .size(12.5)
+                                .color(c.text_muted),
+                            )
+                            .frame(false)
+                            .min_size(Vec2::new(188.0, 26.0)),
+                        )
+                        .on_hover_text(if same_as_tandem_set {
+                            "Already in destination"
+                        } else {
+                            ""
+                        });
+                    if move_tandem_btn.clicked() {
+                        if let Some(dst) = tandem_target_dir.clone() {
+                            *pending_op = Some(FileCommand::Move {
+                                sources: menu_sources.clone(),
+                                destination: dst,
+                                conflict: ConflictAction::Rename,
+                            });
+                        }
+                        self.set_status_message("Queued move to other pane", true, 3);
+                        ui.close();
+                    }
+                });
             }
         });
     }
@@ -13564,6 +13778,10 @@ impl OttrinApp {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
             std::mem::take(&mut ui_state.miller_scroll_selected)
         };
+        let pointer_reveal = {
+            let ui_state = self.tab_ui.entry(tab_id).or_default();
+            std::mem::take(&mut ui_state.miller_reveal_pointer_selection)
+        };
 
         // File preview is based on the FOCUS column's selection.
         // Only show file preview when focus has a file selected;
@@ -13732,7 +13950,12 @@ impl OttrinApp {
                                                 ui_state.miller_focus_dir = Some(col.dir.clone());
                                                 ui_state.miller_focus_hint = None;
                                             }
-                                            if col_idx < current_col {
+                                            if col_idx < current_col
+                                                && Self::miller_pointer_rebases_anchor(
+                                                    resp.clicked(),
+                                                    resp.secondary_clicked(),
+                                                )
+                                            {
                                                 self.set_tab_anchor_dir_live(
                                                     tab_id,
                                                     col.dir.clone(),
@@ -13741,8 +13964,22 @@ impl OttrinApp {
                                                 let modifiers =
                                                     ui.ctx().input(|input| input.modifiers);
                                                 self.set_main_selection_from_click(
-                                                    tab_id, i, modifiers,
+                                                    tab_id,
+                                                    i,
+                                                    modifiers,
+                                                    resp.secondary_clicked(),
                                                 );
+                                            }
+                                            if resp.clicked()
+                                                && matches!(
+                                                    entry.kind,
+                                                    EntryKind::Directory | EntryKind::Symlink
+                                                )
+                                            {
+                                                self.tab_ui
+                                                    .entry(tab_id)
+                                                    .or_default()
+                                                    .miller_reveal_pointer_selection = true;
                                             }
                                             ui.ctx().request_repaint();
                                         }
@@ -13804,7 +14041,8 @@ impl OttrinApp {
                         // Right/Enter: ALWAYS ensure focus + 1 column is
                         // visible.  The user must never be in the rightmost
                         // visible column.
-                        if scroll_right_nav {
+                        if Self::miller_should_reveal_focus_column(scroll_right_nav, pointer_reveal)
+                        {
                             let col_w =
                                 (MILLER_FIXED_WIDTH * scale.clamp(0.92, 1.22)).clamp(96.0, 620.0);
                             let needed_right = rect.max.x + col_w;
@@ -14581,7 +14819,12 @@ impl OttrinApp {
                     if Self::row_pointer_selects(response.clicked(), response.secondary_clicked()) {
                         self.focus_tab(tab_id);
                         let modifiers = ui.ctx().input(|input| input.modifiers);
-                        self.set_main_selection_from_click(tab_id, i, modifiers);
+                        self.set_main_selection_from_click(
+                            tab_id,
+                            i,
+                            modifiers,
+                            response.secondary_clicked(),
+                        );
                     }
                     if response.double_clicked() {
                         self.focus_tab(tab_id);
@@ -14943,7 +15186,12 @@ impl OttrinApp {
                             ) {
                                 self.focus_tab(tab_id);
                                 let modifiers = ui.ctx().input(|input| input.modifiers);
-                                self.set_main_selection_from_click(tab_id, idx, modifiers);
+                                self.set_main_selection_from_click(
+                                    tab_id,
+                                    idx,
+                                    modifiers,
+                                    cell_resp.secondary_clicked(),
+                                );
                             }
                             if cell_resp.double_clicked() {
                                 self.focus_tab(tab_id);
@@ -18213,6 +18461,7 @@ impl eframe::App for OttrinApp {
         self.poll_listing_results();
         self.poll_op_results();
         self.poll_trash_results();
+
         self.poll_hash_results();
         self.poll_search_results();
         let preview_ready = self.poll_preview_jobs() | self.poll_preview_loads();
@@ -20651,7 +20900,7 @@ mod tests {
                 kind: CreationKind::File,
                 tab_id,
                 parent,
-                name_input: "New File".to_string(),
+                name_input: String::new(),
                 error: None,
                 request_focus: true,
             })
@@ -21227,6 +21476,110 @@ mod tests {
     }
 
     #[test]
+    fn folder_context_creation_uses_only_a_proven_clicked_folder_destination() {
+        let clicked = Path::new("/tmp/clicked-folder");
+        assert_eq!(
+            folder_context_creation_target(clicked, EntryKind::Directory, None),
+            Some(clicked.to_path_buf())
+        );
+        assert_eq!(
+            folder_context_creation_target(clicked, EntryKind::Symlink, Some(true)),
+            Some(clicked.to_path_buf())
+        );
+        assert_eq!(
+            folder_context_creation_target(clicked, EntryKind::Symlink, Some(false)),
+            None
+        );
+        assert_eq!(
+            folder_context_creation_target(clicked, EntryKind::Symlink, None),
+            None
+        );
+        assert_eq!(
+            folder_context_creation_target(clicked, EntryKind::File, None),
+            None
+        );
+    }
+
+    #[test]
+    fn plain_right_click_preserves_an_existing_multi_selection_member() {
+        assert!(secondary_click_preserves_existing_selection(
+            true,
+            egui::Modifiers::NONE,
+            true
+        ));
+        assert!(!secondary_click_preserves_existing_selection(
+            true,
+            egui::Modifiers::NONE,
+            false
+        ));
+        assert!(!secondary_click_preserves_existing_selection(
+            false,
+            egui::Modifiers::NONE,
+            true
+        ));
+    }
+
+    #[test]
+    fn right_clicking_miller_ancestor_selects_without_rebasing_the_current_folder() {
+        assert!(OttrinApp::miller_pointer_rebases_anchor(true, false));
+        assert!(
+            !OttrinApp::miller_pointer_rebases_anchor(false, true),
+            "opening a sibling from an ancestor-column context menu must keep the source tab path"
+        );
+        assert!(!OttrinApp::miller_pointer_rebases_anchor(false, false));
+    }
+
+    #[test]
+    fn pointer_folder_selection_requests_horizontal_reveal_without_a_keyboard_event() {
+        assert!(OttrinApp::miller_should_reveal_focus_column(false, true));
+        assert!(OttrinApp::miller_should_reveal_focus_column(true, false));
+        assert!(!OttrinApp::miller_should_reveal_focus_column(false, false));
+    }
+
+    #[test]
+    fn empty_folder_actions_fit_and_center_inside_auto_sized_columns() {
+        assert_eq!(OttrinApp::empty_folder_content_width(120.0), 96.0);
+        assert_eq!(OttrinApp::empty_folder_content_width(240.0), 216.0);
+        assert_eq!(OttrinApp::empty_folder_content_width(480.0), 320.0);
+    }
+
+    #[test]
+    fn shift_click_selects_exactly_two_tabs_without_entering_tandem() {
+        assert_eq!(
+            OttrinApp::tab_selection_after_click(&[], 7, 9, true),
+            vec![7, 9]
+        );
+        assert_eq!(
+            OttrinApp::tab_selection_after_click(&[7, 9], 7, 11, true),
+            vec![7, 11],
+            "a third Shift-click replaces the secondary choice"
+        );
+        assert_eq!(
+            OttrinApp::tab_selection_after_click(&[7, 9], 7, 9, true),
+            vec![7],
+            "Shift-clicking a selected secondary tab toggles it off"
+        );
+        assert!(OttrinApp::tab_selection_after_click(&[7, 9], 7, 11, false).is_empty());
+    }
+
+    #[test]
+    fn two_selected_tabs_activate_tandem_by_stable_id() {
+        let mut app = OttrinApp::default();
+        let first_id = app.state.active_tab().id;
+        let second_idx = app.state.new_tab(PathBuf::from("/tmp/second-tab"));
+        let second_id = app.state.tabs[second_idx].id;
+        app.tab_tandem_selection = vec![first_id, second_id];
+
+        assert!(app.activate_selected_tabs_in_tandem());
+        let tandem = app.state.link_view.as_ref().expect("tandem is active");
+        assert_eq!(
+            (tandem.left_tab_id, tandem.right_tab_id),
+            (first_id, second_id)
+        );
+        assert!(app.tab_tandem_selection.is_empty());
+    }
+
+    #[test]
     fn grid_rubber_band_selects_intersecting_cells_by_path() {
         let alpha = PathBuf::from("/tmp/alpha");
         let bravo = PathBuf::from("/tmp/bravo");
@@ -21698,6 +22051,14 @@ mod tests {
         assert!(locations_rail_tile_detail_visible(true, false));
         assert!(locations_rail_tile_detail_visible(false, true));
         assert!(!locations_rail_tile_detail_visible(false, false));
+    }
+
+    #[test]
+    fn locations_tooltip_never_competes_with_a_context_menu_layer() {
+        assert!(locations_rail_tooltip_allowed(true, false, false));
+        assert!(!locations_rail_tooltip_allowed(true, true, false));
+        assert!(!locations_rail_tooltip_allowed(true, false, true));
+        assert!(!locations_rail_tooltip_allowed(false, false, false));
     }
 
     #[test]
