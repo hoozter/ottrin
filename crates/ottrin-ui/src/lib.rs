@@ -305,6 +305,22 @@ fn secondary_click_preserves_existing_selection(
         && already_selected
 }
 
+fn inspector_owns_entry_modal(
+    preview_visible: bool,
+    pending_rename: bool,
+    pending_delete: bool,
+) -> bool {
+    preview_visible && (pending_rename || pending_delete)
+}
+
+fn cancel_inspector_entry_modals<R, D>(
+    pending_rename: &mut Option<R>,
+    pending_delete: &mut Option<D>,
+) {
+    *pending_rename = None;
+    *pending_delete = None;
+}
+
 /// Resolves persisted volume choices against this refresh's discovered roots.
 /// Missing volumes retain their choice but are deliberately absent from the
 /// runtime scan plan, so an unplugged volume cannot leave stale index entries.
@@ -6857,6 +6873,7 @@ impl OttrinApp {
     }
 
     fn close_preview(&mut self, ctx: &Context) {
+        cancel_inspector_entry_modals(&mut self.pending_rename, &mut self.pending_delete);
         self.preview.visible = false;
         self.preview.path = None;
         self.preview.data = None;
@@ -15355,8 +15372,19 @@ impl OttrinApp {
             .unwrap_or_else(|| loading_preview_data(&path));
         let name = preview.title.clone();
         let mut close_requested = false;
-        let inspector_ctx = ctx;
+        let builder = egui::ViewportBuilder::default()
+            .with_title(format!("Ottrin Quick Inspector — {name}"))
+            .with_inner_size([720.0, 560.0])
+            .with_min_inner_size([420.0, 320.0])
+            .with_resizable(true);
+        let vp_id = Self::quick_inspector_viewport_id();
+
+        ctx.show_viewport_immediate(vp_id, builder, |inspector_ctx, _class| {
         self.apply_theme_to_ctx(inspector_ctx);
+        if inspector_ctx.input(|i| i.viewport().close_requested()) {
+            close_requested = true;
+            return;
+        }
         let inspector_modal_active = self.pending_rename.is_some() || self.pending_delete.is_some();
         if inspector_modal_active {
             if self.pending_delete.is_some() {
@@ -15373,7 +15401,7 @@ impl OttrinApp {
                     space_pressed,
                 );
             if escape || space_close {
-                self.close_preview(ctx);
+                close_requested = true;
                 return;
             } else if self.command_frame.visible {
                 inspector_ctx.input_mut(|i| {
@@ -15430,14 +15458,7 @@ impl OttrinApp {
             }
         }
         self.render_command_frame(inspector_ctx);
-        let mut inspector_open = true;
-        egui::Window::new(format!("Quick Inspector — {name}"))
-            .id(egui::Id::new("quick_inspector_window"))
-            .open(&mut inspector_open)
-            .default_size([720.0, 560.0])
-            .min_size([420.0, 320.0])
-            .resizable(true)
-            .collapsible(false)
+        egui::CentralPanel::default()
             .frame(
                 Frame::new()
                     .fill(c.panel_raised)
@@ -15812,19 +15833,22 @@ impl OttrinApp {
                     }
                 });
             });
-        if !inspector_open {
-            close_requested = true;
-        }
         if self.pending_rename.is_some() {
             self.render_rename_modal(inspector_ctx);
         }
         if self.pending_delete.is_some() {
             self.render_delete_confirmation(inspector_ctx);
         }
+        });
 
         if close_requested {
             self.close_preview(ctx);
+            ctx.send_viewport_cmd_to(vp_id, egui::ViewportCommand::Close);
         }
+    }
+
+    fn quick_inspector_viewport_id() -> egui::ViewportId {
+        egui::ViewportId::from_hash_of("ottrin-quick-inspector")
     }
 
     fn render_properties_popup(&mut self, ctx: &Context) {
@@ -18493,11 +18517,19 @@ impl eframe::App for OttrinApp {
             Self::consume_move_conflict_modal_scroll_input(ctx);
         }
 
+        let inspector_entry_modal_active = inspector_owns_entry_modal(
+            self.preview.visible,
+            self.pending_rename.is_some(),
+            self.pending_delete.is_some(),
+        );
+
         // Handle keyboard before rendering. Modal popups get first claim.
         if self.pending_rename.is_some() || self.creation_modal_active() {
             // Text-entry modals handle their own text input and Enter/Escape.
         } else if self.pending_delete.is_some() {
-            self.handle_delete_confirmation_keyboard(ctx);
+            if !inspector_entry_modal_active {
+                self.handle_delete_confirmation_keyboard(ctx);
+            }
         } else if self.pending_move_conflict.is_some() {
             self.handle_move_conflict_confirmation_keyboard(ctx);
         } else if self.pending_empty_trash {
@@ -18563,6 +18595,22 @@ impl eframe::App for OttrinApp {
                     ui.interact(
                         rect,
                         egui::Id::new("creation_modal_background_blocker"),
+                        Sense::click_and_drag(),
+                    );
+                });
+        }
+
+        if inspector_entry_modal_active {
+            let vp = ctx.viewport_rect();
+            egui::Area::new(egui::Id::new("inspector_modal_root_input_shield"))
+                .order(egui::Order::Foreground)
+                .fixed_pos(vp.min)
+                .interactable(true)
+                .show(ctx, |ui| {
+                    let rect = Rect::from_min_size(ui.cursor().min, vp.size());
+                    ui.interact(
+                        rect,
+                        egui::Id::new("inspector_modal_root_background_blocker"),
                         Sense::click_and_drag(),
                     );
                 });
@@ -21726,6 +21774,31 @@ mod tests {
             app.state.active_tab().current_dir,
             target_parent,
             "Alt+Enter path and open-parent action should navigate to search result parent."
+        );
+    }
+
+    #[test]
+    fn closing_native_quick_inspector_cancels_its_entry_modals() {
+        let mut pending_rename = Some(());
+        let mut pending_delete = Some(());
+        cancel_inspector_entry_modals(&mut pending_rename, &mut pending_delete);
+        assert!(pending_rename.is_none());
+        assert!(pending_delete.is_none());
+    }
+
+    #[test]
+    fn native_quick_inspector_owns_its_entry_modals() {
+        assert!(inspector_owns_entry_modal(true, true, false));
+        assert!(inspector_owns_entry_modal(true, false, true));
+        assert!(!inspector_owns_entry_modal(false, false, true));
+        assert!(!inspector_owns_entry_modal(true, false, false));
+    }
+
+    #[test]
+    fn quick_inspector_uses_a_stable_native_viewport_identity() {
+        assert_eq!(
+            OttrinApp::quick_inspector_viewport_id(),
+            egui::ViewportId::from_hash_of("ottrin-quick-inspector")
         );
     }
 
