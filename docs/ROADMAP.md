@@ -1,6 +1,6 @@
 # Ottrin Roadmap
 
-Last updated: 2026-07-31
+Last updated: 2026-08-02
 
 Ottrin is in v1 release hardening. The product focus is daily-driver reliability: navigation, file operations, search, previews, packaging, and clear failure states.
 
@@ -38,10 +38,11 @@ acceptance, including real attachment/removal and real Windows drive/share
 coverage, remain v1 work. Source tests do not satisfy those gates.
 
 - Storage Locations must expose every user-accessible filesystem root instead of assuming the home profile is the whole machine. Windows must discover and navigate fixed, removable, optical, and mapped-network drive letters such as `D:` and `P:`; Linux must discover user-visible mounted volumes and removable-media mount points.
+- Creating an empty file or folder must be a first-class V1 workflow, not a command-frame shortcut disguised as a dialog. New File and New Folder actions must open a cohesive modal for the displayed directory, preserve spaces and Unicode, reject empty/reserved/traversal/separator names, never overwrite an existing entry, support Enter to create and Escape to cancel, refresh the correct tab, and select the new item after success. The actions must be discoverable from the main menu and blank-folder context menu; the command frame remains a power-user path with equivalent name handling.
 - The Locations UX must keep Ottrin visually clean while making Home, bookmarks/quick links, drives, and mounted volumes immediately discoverable. Use a compact collapsible Locations rail rather than requiring a permanently wide second sidebar.
-- The collapsed rail remains a complete navigation surface: each location is a keyboard-focusable compact tile with a semantic device icon (internal disk, removable/USB, optical, mapped/network, unavailable) and, where available, a small high-contrast identity badge such as `C:` or `P:`. Hover/focus exposes the full accessible label and mount path; identity must never depend on color alone.
+- The collapsed rail remains a complete navigation surface and must visually belong to the Smart Panel family: standard-size semantic icons, matching panel surface/selection treatment, and only a tiny identity cue (for example `H`, `D`, `C:`, or `P:`), never a full folder or volume name. Each tile is keyboard-focusable; hover/focus exposes the full accessible label and mount path, and identity must never depend on color alone.
 - The expanded rail shows the same items without changing order or selection, using the volume/share name as the primary label and the drive letter or mount point as secondary text. Expansion adds context, not functionality; selecting a location behaves identically in either state.
-- Keep the drive icon family visually consistent with Ottrin's bundled Material Symbols language unless a focused icon prototype demonstrates that custom glyphs remain clearer at the compact rail size.
+- Keep the current Material Symbols family until a focused, side-by-side icon prototype proves a replacement clearer at Ottrin's real 16/20/24 px sizes. Follow the [Icon System Evaluation](ICON_SYSTEM_EVALUATION.md): evaluate selected Tabler SVGs before any broad migration and do not adopt a whole icon font merely for coverage. Filesystem labels (`NTFS`, `ext4`, `Btrfs`, and similar) and semantic device state are preferable to using an operating-system logo as a filesystem guess, while removable, optical, network, unavailable, and system-volume identities should remain visually distinct.
 - Drive/volume discovery must refresh after attachment, removal, mapping, or disconnection. An unavailable or removed current volume must produce a clear non-destructive state and a safe navigation route; it must never silently redirect a file operation.
 - External-volume navigation must work without automatically indexing every attached drive. Users choose which additional volumes enter indexed search; direct browsing and scoped fallback search remain available independently.
 - Copy must be tested across volume boundaries, including removable drives. Cross-filesystem Move remains rejected without mutation and may not degrade into an unjournaled copy-then-delete operation.
@@ -60,6 +61,8 @@ V1 should not ship until:
 - `cargo fmt --check`, `cargo test --workspace`, and strict Clippy pass.
 - Linux and Windows CI pass.
 - Linux AppImage and portable tarball launch from clean artifacts.
+- New File and New Folder pass native Linux and Windows workflows with spaces, Unicode, invalid-name and existing-entry rejection, correct post-create selection, and no overwrite.
+- The collapsed and expanded Locations rail pass native visual, pointer, keyboard, tooltip, and selection-parity review alongside the Smart Panel.
 - Windows portable zip launches and passes real desktop smoke testing.
 - Windows secondary fixed drives, removable drives, and mapped network drives are discoverable and navigable; Linux user-visible mounted/removable volumes pass the equivalent attach, browse, detach, and unavailable-state checks.
 - Cross-volume Copy passes. Cross-volume Move remains disabled without mutation unless a separately accepted protocol later passes its platform-specific safety, hot-unplug, packaged, and native acceptance gates.

@@ -119,6 +119,141 @@ fn grid_rubber_band_selection(
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CreationKind {
+    File,
+    Folder,
+}
+
+fn creation_default_name(kind: CreationKind) -> &'static str {
+    match kind {
+        CreationKind::File => "New File",
+        CreationKind::Folder => "New Folder",
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn is_windows_reserved_creation_name(name: &str) -> bool {
+    if name.ends_with(['.', ' '])
+        || name
+            .chars()
+            .any(|ch| ch < ' ' || matches!(ch, '<' | '>' | ':' | '"' | '|' | '?' | '*'))
+    {
+        return true;
+    }
+    let base = name
+        .split('.')
+        .next()
+        .unwrap_or_default()
+        .to_ascii_uppercase();
+    let bytes = base.as_bytes();
+    matches!(base.as_str(), "CON" | "PRN" | "AUX" | "NUL")
+        || (bytes.len() == 4
+            && matches!(bytes.get(..3), Some(prefix) if prefix == b"COM" || prefix == b"LPT")
+            && matches!(bytes[3], b'1'..=b'9'))
+}
+
+fn build_creation_command(
+    kind: CreationKind,
+    parent: &Path,
+    name: &str,
+) -> Result<FileCommand, String> {
+    if name.trim().is_empty() {
+        return Err("Enter a non-empty name.".to_string());
+    }
+    let candidate = Path::new(name);
+    let has_drive_prefix =
+        name.len() >= 2 && name.as_bytes()[0].is_ascii_alphabetic() && name.as_bytes()[1] == b':';
+    if matches!(name, "." | "..")
+        || name.contains('\0')
+        || name.contains('/')
+        || name.contains('\\')
+        || candidate.is_absolute()
+        || has_drive_prefix
+        || candidate.components().count() != 1
+    {
+        return Err("Names must be a single path component.".to_string());
+    }
+    #[cfg(target_os = "windows")]
+    if is_windows_reserved_creation_name(name) {
+        return Err("That name is reserved or invalid on Windows.".to_string());
+    }
+    if std::fs::symlink_metadata(parent.join(name)).is_ok() {
+        return Err("An entry with that name already exists.".to_string());
+    }
+
+    Ok(match kind {
+        CreationKind::File => FileCommand::CreateFile {
+            parent: parent.to_path_buf(),
+            name: name.to_string(),
+        },
+        CreationKind::Folder => FileCommand::CreateFolder {
+            parent: parent.to_path_buf(),
+            name: name.to_string(),
+        },
+    })
+}
+
+fn creation_command_from_input(
+    kind: CreationKind,
+    raw: &str,
+    parent: &Path,
+) -> Result<FileCommand, String> {
+    let name = raw
+        .split_once(char::is_whitespace)
+        .map(|(_, remainder)| remainder.trim())
+        .unwrap_or("");
+    build_creation_command(kind, parent, name)
+}
+
+fn created_path_for_successful_command(cmd: &FileCommand, succeeded: bool) -> Option<PathBuf> {
+    if !succeeded {
+        return None;
+    }
+    match cmd {
+        FileCommand::CreateFile { parent, name } | FileCommand::CreateFolder { parent, name } => {
+            Some(parent.join(name))
+        }
+        _ => None,
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum CreationCompletionTarget {
+    MainListing {
+        created_path: PathBuf,
+    },
+    MillerListing {
+        parent: PathBuf,
+        created_path: PathBuf,
+    },
+}
+
+fn creation_completion_target(
+    cmd: &FileCommand,
+    succeeded: bool,
+    current_dir: &Path,
+    displayed_dir: &Path,
+) -> Option<CreationCompletionTarget> {
+    let (parent, created_path) = match cmd {
+        FileCommand::CreateFile { parent, .. } | FileCommand::CreateFolder { parent, .. } => {
+            (parent, created_path_for_successful_command(cmd, succeeded)?)
+        }
+        _ => return None,
+    };
+    if parent != displayed_dir {
+        return None;
+    }
+    if parent == current_dir {
+        Some(CreationCompletionTarget::MainListing { created_path })
+    } else {
+        Some(CreationCompletionTarget::MillerListing {
+            parent: parent.clone(),
+            created_path,
+        })
+    }
+}
+
 fn locations_rail_tile_text(
     icon: &str,
     name: &str,
@@ -131,6 +266,24 @@ fn locations_rail_tile_text(
     } else {
         format!("{icon}\n{identity}")
     }
+}
+
+fn compact_location_identity(identity: &str) -> String {
+    let identity = identity.trim();
+    if identity == "/" {
+        return "/".to_string();
+    }
+    if identity.len() == 2
+        && identity.as_bytes()[0].is_ascii_alphabetic()
+        && identity.as_bytes()[1] == b':'
+    {
+        return identity.to_ascii_uppercase();
+    }
+    identity
+        .chars()
+        .next()
+        .map(|ch| ch.to_uppercase().collect())
+        .unwrap_or_default()
 }
 
 fn locations_rail_tile_detail(name: &str, path: &Path, indexed: Option<bool>) -> String {
@@ -410,6 +563,16 @@ struct PendingRename {
     tab_id: u64,
     source: PathBuf,
     name_input: String,
+    request_focus: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct PendingCreation {
+    kind: CreationKind,
+    tab_id: u64,
+    parent: PathBuf,
+    name_input: String,
+    error: Option<String>,
     request_focus: bool,
 }
 
@@ -1197,6 +1360,7 @@ pub struct OttrinApp {
     target_dropdown: TargetDropdown,
     properties: PropertiesPopup,
     pending_rename: Option<PendingRename>,
+    pending_creation: Option<PendingCreation>,
     pending_delete: Option<PendingDelete>,
     pending_move_conflict: Option<PendingMoveConflict>,
     pending_empty_trash: bool,
@@ -1442,6 +1606,7 @@ impl OttrinApp {
             target_dropdown: TargetDropdown::default(),
             properties: PropertiesPopup::default(),
             pending_rename: None,
+            pending_creation: None,
             pending_delete: None,
             pending_move_conflict: None,
             pending_empty_trash: false,
@@ -4568,6 +4733,38 @@ impl OttrinApp {
                 self.command_frame.visible = true;
             }
             self.pending_privileged_retry = None;
+            let creation_refresh_tab = res.tab_id.and_then(|tab_id| {
+                let current_dir = self
+                    .state
+                    .tab_by_id(tab_id)
+                    .map(|tab| tab.current_dir.clone())?;
+                let displayed_dir = self.displayed_path_for(tab_id);
+                match creation_completion_target(
+                    &completed_cmd,
+                    true,
+                    &current_dir,
+                    &displayed_dir,
+                )? {
+                    CreationCompletionTarget::MainListing { created_path } => {
+                        self.tab_ui.entry(tab_id).or_default().pending_select_path =
+                            Some(created_path);
+                        Some(tab_id)
+                    }
+                    CreationCompletionTarget::MillerListing {
+                        parent,
+                        created_path,
+                    } => {
+                        let ui_state = self.tab_ui.entry(tab_id).or_default();
+                        ui_state.miller_cache.remove(&parent);
+                        ui_state.selection_memory.insert(parent, created_path);
+                        None
+                    }
+                }
+            });
+            let is_creation = matches!(
+                completed_cmd,
+                FileCommand::CreateFile { .. } | FileCommand::CreateFolder { .. }
+            );
             if let FileCommand::Delete { targets, .. } = &completed_cmd {
                 self.repair_tabs_after_deleted_targets(targets, &res.delete_nav);
                 if self.trash_panel.loaded {
@@ -4577,7 +4774,11 @@ impl OttrinApp {
             if should_refresh_retained_move_activity(&completed_cmd, has_warning) {
                 self.refresh_retained_move_activity();
             }
-            let mut refresh_tabs = res.tab_id.into_iter().collect::<Vec<_>>();
+            let mut refresh_tabs = if is_creation {
+                creation_refresh_tab.into_iter().collect::<Vec<_>>()
+            } else {
+                res.tab_id.into_iter().collect::<Vec<_>>()
+            };
             if let FileCommand::Copy {
                 sources,
                 destination,
@@ -7264,6 +7465,21 @@ impl OttrinApp {
         });
     }
 
+    fn creation_modal_active(&self) -> bool {
+        self.pending_creation.is_some()
+    }
+
+    fn open_creation_dialog(&mut self, kind: CreationKind, tab_id: u64, parent: PathBuf) {
+        self.pending_creation = Some(PendingCreation {
+            kind,
+            tab_id,
+            parent,
+            name_input: creation_default_name(kind).to_string(),
+            error: None,
+            request_focus: true,
+        });
+    }
+
     fn run_file_op(&mut self, cmd: FileCommand, refresh_tab: Option<u64>) {
         let _ = self.run_file_op_bound(cmd, refresh_tab, Vec::new(), None, None, None);
     }
@@ -7815,10 +8031,31 @@ impl OttrinApp {
     fn render_empty_folder_state(
         &mut self,
         ui: &mut egui::Ui,
+        tab_id: u64,
         dir: &Path,
         c: &Colors,
         show_drop_folder_hint: bool,
     ) {
+        let context_rect = ui.available_rect_before_wrap();
+        let context_response = ui.interact(
+            context_rect,
+            ui.id().with(("empty_folder_context", tab_id, dir)),
+            Sense::click(),
+        );
+        context_response.context_menu(|ui| {
+            ui.set_min_width(180.0);
+            if ui
+                .button(format!("{} New Folder", MI_CREATE_FOLDER))
+                .clicked()
+            {
+                self.open_creation_dialog(CreationKind::Folder, tab_id, dir.to_path_buf());
+                ui.close();
+            }
+            if ui.button(format!("{} New File", MI_FILE)).clicked() {
+                self.open_creation_dialog(CreationKind::File, tab_id, dir.to_path_buf());
+                ui.close();
+            }
+        });
         let show_hint = show_drop_folder_hint && self.should_show_drop_folder_hint_for_dir(dir);
         ui.add_space(16.0);
         ui.with_layout(Layout::top_down(Align::Center), |ui| {
@@ -7977,32 +8214,20 @@ impl OttrinApp {
                     err!(format!("Not a directory: {}", target.display()))
                 }
             }
-            "mkdir" => {
-                let name = parts.get(1).copied().unwrap_or("");
-                if name.is_empty() {
-                    return err!("Usage: mkdir <name>");
+            "mkdir" => match creation_command_from_input(CreationKind::Folder, raw, cwd) {
+                Ok(cmd) => {
+                    self.run_file_op(cmd, Some(tab_id));
+                    ok!()
                 }
-                let parent = cwd.to_path_buf();
-                let cmd = FileCommand::CreateFolder {
-                    parent,
-                    name: name.to_string(),
-                };
-                self.run_file_op(cmd, Some(tab_id));
-                ok!()
-            }
-            "touch" => {
-                let name = parts.get(1).copied().unwrap_or("");
-                if name.is_empty() {
-                    return err!("Usage: touch <name>");
+                Err(error) => err!(error),
+            },
+            "touch" => match creation_command_from_input(CreationKind::File, raw, cwd) {
+                Ok(cmd) => {
+                    self.run_file_op(cmd, Some(tab_id));
+                    ok!()
                 }
-                let parent = cwd.to_path_buf();
-                let cmd = FileCommand::CreateFile {
-                    parent,
-                    name: name.to_string(),
-                };
-                self.run_file_op(cmd, Some(tab_id));
-                ok!()
-            }
+                Err(error) => err!(error),
+            },
             "cp" => {
                 let src_str = parts.get(1).copied().unwrap_or("");
                 let dst_str = parts.get(2).copied().unwrap_or_else(|| {
@@ -8683,9 +8908,9 @@ impl OttrinApp {
                                     )
                                     .clicked()
                                 {
-                                    self.command_frame.input = "mkdir ".to_string();
-                                    self.command_frame.visible = true;
-                                    self.command_frame.request_focus = true;
+                                    let tab_id = self.state.active_tab().id;
+                                    let parent = self.displayed_path();
+                                    self.open_creation_dialog(CreationKind::Folder, tab_id, parent);
                                     egui::Popup::close_id(ui.ctx(), menu_popup_id);
                                 }
                                 if ui
@@ -8699,9 +8924,9 @@ impl OttrinApp {
                                     )
                                     .clicked()
                                 {
-                                    self.command_frame.input = "touch ".to_string();
-                                    self.command_frame.visible = true;
-                                    self.command_frame.request_focus = true;
+                                    let tab_id = self.state.active_tab().id;
+                                    let parent = self.displayed_path();
+                                    self.open_creation_dialog(CreationKind::File, tab_id, parent);
                                     egui::Popup::close_id(ui.ctx(), menu_popup_id);
                                 }
 
@@ -9136,7 +9361,7 @@ impl OttrinApp {
             .max_width(rail_w)
             .frame(
                 Frame::new()
-                    .fill(c.toolbar_bg)
+                    .fill(c.smart_panel_bg)
                     .inner_margin(egui::Margin::symmetric(8, 6)),
             )
             .show(ctx, |ui| {
@@ -9151,7 +9376,7 @@ impl OttrinApp {
                         .fill(if expanded {
                             c.selected_bg
                         } else {
-                            mix_color(c.toolbar_bg, c.panel, 0.22)
+                            mix_color(c.smart_panel_bg, c.panel, 0.22)
                         })
                         .corner_radius(c.border_radius as f32)
                         .min_size(Vec2::new(rail_w - 14.0, 28.0)),
@@ -9175,7 +9400,7 @@ impl OttrinApp {
                         .map(|location| Self::storage_icon_for_kind(location.kind))
                         .unwrap_or_else(|| Self::storage_icon_for_bookmark(stored_icon, &path));
                     let identity = Self::locations_rail_identity(&home, name, &path);
-                    let text = locations_rail_tile_text(icon, name, &path, &identity, expanded);
+                    let compact_identity = compact_location_identity(&identity);
                     let volume_index_status = storage_roots
                         .iter()
                         .find(|location| location.path == path)
@@ -9200,18 +9425,46 @@ impl OttrinApp {
                     let (text_col, bg_col) = if is_here {
                         (c.text, c.selected_bg.gamma_multiply(0.62))
                     } else {
-                        (c.text_muted, mix_color(c.toolbar_bg, c.panel, 0.22))
+                        (c.text_muted, mix_color(c.smart_panel_bg, c.panel, 0.22))
                     };
 
-                    let btn = egui::Button::new(
-                        RichText::new(text)
-                            .size(if expanded { 12.0 } else { 9.0 })
+                    let btn = if expanded {
+                        egui::Button::new(
+                            RichText::new(locations_rail_tile_text(
+                                icon, name, &path, &identity, true,
+                            ))
+                            .size(12.0)
                             .color(text_col),
-                    )
+                        )
+                    } else {
+                        let mut job = egui::text::LayoutJob {
+                            halign: Align::Center,
+                            ..Default::default()
+                        };
+                        job.append(
+                            icon,
+                            0.0,
+                            egui::TextFormat {
+                                font_id: FontId::proportional(19.0),
+                                color: text_col,
+                                ..Default::default()
+                            },
+                        );
+                        job.append(
+                            &format!("\n{compact_identity}"),
+                            0.0,
+                            egui::TextFormat {
+                                font_id: FontId::proportional(9.5),
+                                color: text_col,
+                                ..Default::default()
+                            },
+                        );
+                        egui::Button::new(job)
+                    }
                     .fill(bg_col)
                     .stroke(Stroke::NONE)
                     .corner_radius(c.border_radius as f32)
-                    .min_size(Vec2::new(rail_w - 14.0, if expanded { 42.0 } else { 46.0 }));
+                    .min_size(Vec2::new(rail_w - 14.0, if expanded { 42.0 } else { 50.0 }));
 
                     let detail = locations_rail_tile_detail(name, &path, volume_index_status);
                     let resp = ui.add(btn);
@@ -13443,10 +13696,14 @@ impl OttrinApp {
                                     if col.entries.is_empty() {
                                         if col_idx == current_col {
                                             // Entered empty folder: keep interaction minimal and non-blocking.
-                                            self.render_empty_folder_state(ui, &col.dir, &c, false);
+                                            self.render_empty_folder_state(
+                                                ui, tab_id, &col.dir, &c, false,
+                                            );
                                         } else if col_idx > current_col {
                                             // Previewed empty folder: show one-time Drop Folder hint.
-                                            self.render_empty_folder_state(ui, &col.dir, &c, true);
+                                            self.render_empty_folder_state(
+                                                ui, tab_id, &col.dir, &c, true,
+                                            );
                                         } else {
                                             ui.add_space(16.0);
                                             ui.with_layout(Layout::top_down(Align::Center), |ui| {
@@ -14326,7 +14583,7 @@ impl OttrinApp {
             .id_salt(("list_view", tab_id))
             .show(ui, |ui| {
                 if entries.is_empty() {
-                    self.render_empty_folder_state(ui, &current_dir, &c, false);
+                    self.render_empty_folder_state(ui, tab_id, &current_dir, &c, false);
                     return;
                 }
                 for (i, entry) in entries.iter().enumerate() {
@@ -14570,7 +14827,7 @@ impl OttrinApp {
             return;
         }
         if entries.is_empty() {
-            self.render_empty_folder_state(ui, &current_dir, &c, false);
+            self.render_empty_folder_state(ui, tab_id, &current_dir, &c, false);
             return;
         }
 
@@ -15506,6 +15763,137 @@ impl OttrinApp {
                 });
                 ui.add_space(4.0);
             });
+    }
+
+    fn render_creation_modal(&mut self, ctx: &Context) {
+        let Some(mut pending) = self.pending_creation.clone() else {
+            return;
+        };
+        let c = self.colors;
+        let viewport = ctx.viewport_rect();
+        let (title, subtitle, icon, action) = match pending.kind {
+            CreationKind::File => (
+                "New File",
+                "Create an empty file in this folder",
+                MI_FILE,
+                "Create",
+            ),
+            CreationKind::Folder => (
+                "New Folder",
+                "Create a folder in this location",
+                MI_CREATE_FOLDER,
+                "Create",
+            ),
+        };
+        ctx.layer_painter(egui::LayerId::new(
+            egui::Order::Middle,
+            egui::Id::new("creation_modal_scrim"),
+        ))
+        .rect_filled(viewport, 0.0, Color32::from_rgba_unmultiplied(0, 0, 0, 72));
+
+        let mut submit = false;
+        let mut cancel = false;
+        let just_opened = pending.request_focus;
+        let validation = build_creation_command(pending.kind, &pending.parent, &pending.name_input);
+        pending.error = validation.as_ref().err().cloned();
+
+        egui::Area::new(egui::Id::new("creation_modal"))
+            .order(egui::Order::Tooltip)
+            .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
+            .show(ctx, |ui| {
+                Frame::new()
+                    .fill(c.panel_raised)
+                    .stroke(Stroke::new(1.0, mix_color(c.border, c.text_dim, 0.35)))
+                    .shadow(Shadow {
+                        offset: [0, 10],
+                        blur: 28,
+                        spread: 0,
+                        color: Color32::from_rgba_unmultiplied(0, 0, 0, 120),
+                    })
+                    .corner_radius(8.0)
+                    .inner_margin(egui::Margin::symmetric(18, 16))
+                    .show(ui, |ui| {
+                        ui.set_width(viewport.width().clamp(300.0, 460.0));
+                        ui.horizontal(|ui| {
+                            ui.label(RichText::new(icon).size(22.0).color(c.accent));
+                            ui.add_space(8.0);
+                            ui.vertical(|ui| {
+                                ui.label(RichText::new(title).color(c.text).size(15.0).strong());
+                                ui.label(RichText::new(subtitle).color(c.text_muted).size(10.8));
+                            });
+                        });
+                        ui.add_space(12.0);
+                        ui.label(
+                            RichText::new(format!("Location: {}", pending.parent.display()))
+                                .color(c.text_dim)
+                                .size(10.5),
+                        );
+                        ui.add_space(6.0);
+                        let response = ui.add(
+                            egui::TextEdit::singleline(&mut pending.name_input)
+                                .id(egui::Id::new("creation_name_input"))
+                                .desired_width(ui.available_width())
+                                .font(FontId::proportional(13.0))
+                                .text_color(c.text),
+                        );
+                        if pending.request_focus {
+                            response.request_focus();
+                            pending.request_focus = false;
+                        }
+                        if let Some(error) = &pending.error {
+                            ui.add_space(6.0);
+                            ui.label(RichText::new(error).color(c.error).size(10.8));
+                        }
+                        ui.add_space(14.0);
+                        ui.horizontal(|ui| {
+                            if ui.button("Cancel").clicked() {
+                                cancel = true;
+                            }
+                            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                                if ui
+                                    .add_enabled(pending.error.is_none(), egui::Button::new(action))
+                                    .clicked()
+                                {
+                                    submit = true;
+                                }
+                            });
+                        });
+                    });
+            });
+
+        let key_action = ctx.input_mut(|input| {
+            if input.consume_key(egui::Modifiers::NONE, Key::Escape) {
+                Some(false)
+            } else if !just_opened && input.consume_key(egui::Modifiers::NONE, Key::Enter) {
+                Some(true)
+            } else {
+                None
+            }
+        });
+        if let Some(confirm) = key_action {
+            if confirm {
+                submit = true;
+            } else {
+                cancel = true;
+            }
+        }
+
+        if cancel {
+            self.pending_creation = None;
+        } else if submit {
+            match build_creation_command(pending.kind, &pending.parent, &pending.name_input) {
+                Ok(cmd) => {
+                    self.pending_creation = None;
+                    self.run_file_op(cmd, Some(pending.tab_id));
+                }
+                Err(error) => {
+                    pending.error = Some(error);
+                    self.pending_creation = Some(pending);
+                }
+            }
+        } else {
+            self.pending_creation = Some(pending);
+        }
     }
 
     fn render_rename_modal(&mut self, ctx: &Context) {
@@ -17890,13 +18278,13 @@ impl eframe::App for OttrinApp {
             ctx.request_repaint();
         }
 
-        if self.pending_move_conflict.is_some() {
+        if self.pending_move_conflict.is_some() || self.creation_modal_active() {
             Self::consume_move_conflict_modal_scroll_input(ctx);
         }
 
         // Handle keyboard before rendering. Modal popups get first claim.
-        if self.pending_rename.is_some() {
-            // Rename modal handles its own text input and Enter/Escape.
+        if self.pending_rename.is_some() || self.creation_modal_active() {
+            // Text-entry modals handle their own text input and Enter/Escape.
         } else if self.pending_delete.is_some() {
             self.handle_delete_confirmation_keyboard(ctx);
         } else if self.pending_move_conflict.is_some() {
@@ -17910,6 +18298,7 @@ impl eframe::App for OttrinApp {
 
         // Space to toggle preview — must consume before widgets see it.
         if self.pending_rename.is_none()
+            && !self.creation_modal_active()
             && self.pending_delete.is_none()
             && self.pending_move_conflict.is_none()
             && !self.pending_empty_trash
@@ -17952,6 +18341,22 @@ impl eframe::App for OttrinApp {
                 });
         }
 
+        if self.creation_modal_active() {
+            let vp = ctx.viewport_rect();
+            egui::Area::new(egui::Id::new("creation_modal_input_shield"))
+                .order(egui::Order::Foreground)
+                .fixed_pos(vp.min)
+                .interactable(true)
+                .show(ctx, |ui| {
+                    let rect = Rect::from_min_size(ui.cursor().min, vp.size());
+                    ui.interact(
+                        rect,
+                        egui::Id::new("creation_modal_background_blocker"),
+                        Sense::click_and_drag(),
+                    );
+                });
+        }
+
         // Render bottom panels first (egui registers bottom-to-top)
         self.render_status_bar(ctx);
         self.render_command_frame(ctx);
@@ -17977,6 +18382,7 @@ impl eframe::App for OttrinApp {
         self.render_preview_overlay(ctx);
         self.render_properties_popup(ctx);
         if !self.preview.visible {
+            self.render_creation_modal(ctx);
             self.render_rename_modal(ctx);
             self.render_delete_confirmation(ctx);
         }
@@ -20134,6 +20540,163 @@ mod tests {
     use super::*;
 
     #[test]
+    fn creation_command_preserves_unicode_and_internal_spaces() {
+        let parent = PathBuf::from("/tmp/ottrin-create-parent");
+
+        assert_eq!(
+            build_creation_command(CreationKind::Folder, &parent, "Résumé  notes"),
+            Ok(FileCommand::CreateFolder {
+                parent,
+                name: "Résumé  notes".to_string(),
+            })
+        );
+    }
+
+    #[test]
+    fn windows_reserved_creation_names_are_identified() {
+        for name in ["CON", "con.txt", "COM1", "LPT9.log", "bad.", "bad ", "a?b"] {
+            assert!(is_windows_reserved_creation_name(name), "{name}");
+        }
+        for name in ["console", "COM10", "report.txt", "résumé", "éé", "éé.txt"] {
+            assert!(!is_windows_reserved_creation_name(name), "{name}");
+        }
+    }
+
+    #[test]
+    fn creation_command_rejects_unsafe_or_existing_targets() {
+        let parent = std::env::temp_dir().join(format!("ottrin-create-{}", std::process::id()));
+        std::fs::create_dir_all(&parent).expect("create isolated parent");
+        std::fs::write(parent.join("already"), "present").expect("seed existing target");
+
+        for (name, expected_error) in [
+            ("   ", "Enter a non-empty name."),
+            (".", "Names must be a single path component."),
+            ("..", "Names must be a single path component."),
+            ("nested/name", "Names must be a single path component."),
+            ("nested\\name", "Names must be a single path component."),
+            ("/absolute", "Names must be a single path component."),
+            ("already", "An entry with that name already exists."),
+        ] {
+            assert_eq!(
+                build_creation_command(CreationKind::File, &parent, name),
+                Err(expected_error.to_string()),
+                "{name:?} should be rejected"
+            );
+        }
+
+        std::fs::remove_dir_all(parent).expect("clean isolated parent");
+    }
+
+    #[test]
+    fn command_frame_creation_uses_the_entire_trimmed_remainder() {
+        let parent = PathBuf::from("/tmp/ottrin-create-parent");
+
+        assert_eq!(
+            creation_command_from_input(CreationKind::Folder, "mkdir  Résumé  notes  ", &parent),
+            Ok(FileCommand::CreateFolder {
+                parent: parent.clone(),
+                name: "Résumé  notes".to_string(),
+            })
+        );
+        assert_eq!(
+            creation_command_from_input(CreationKind::File, "touch  hello  world.txt  ", &parent),
+            Ok(FileCommand::CreateFile {
+                parent,
+                name: "hello  world.txt".to_string(),
+            })
+        );
+    }
+
+    #[test]
+    fn successful_creation_completion_selects_the_created_path_only_after_success() {
+        let command = FileCommand::CreateFile {
+            parent: PathBuf::from("/tmp/ottrin-create-parent"),
+            name: "Résumé  notes".to_string(),
+        };
+
+        assert_eq!(
+            created_path_for_successful_command(&command, true),
+            Some(PathBuf::from("/tmp/ottrin-create-parent/Résumé  notes"))
+        );
+        assert_eq!(created_path_for_successful_command(&command, false), None);
+        assert_eq!(
+            creation_completion_target(
+                &command,
+                true,
+                Path::new("/tmp/ottrin-create-parent"),
+                Path::new("/tmp/ottrin-create-parent"),
+            ),
+            Some(CreationCompletionTarget::MainListing {
+                created_path: PathBuf::from("/tmp/ottrin-create-parent/Résumé  notes"),
+            })
+        );
+        assert_eq!(
+            creation_completion_target(
+                &command,
+                true,
+                Path::new("/tmp/miller-anchor"),
+                Path::new("/tmp/ottrin-create-parent"),
+            ),
+            Some(CreationCompletionTarget::MillerListing {
+                parent: PathBuf::from("/tmp/ottrin-create-parent"),
+                created_path: PathBuf::from("/tmp/ottrin-create-parent/Résumé  notes"),
+            }),
+            "a still-displayed Miller child listing must refresh and select there"
+        );
+        assert_eq!(
+            creation_completion_target(
+                &command,
+                true,
+                Path::new("/tmp/ottrin-create-parent"),
+                Path::new("/tmp/another-folder"),
+            ),
+            None,
+            "changing the displayed Miller listing before completion must suppress stale selection"
+        );
+        assert_eq!(
+            creation_completion_target(
+                &command,
+                false,
+                Path::new("/tmp/ottrin-create-parent"),
+                Path::new("/tmp/ottrin-create-parent"),
+            ),
+            None
+        );
+        assert_eq!(
+            created_path_for_successful_command(
+                &FileCommand::Delete {
+                    targets: Vec::new(),
+                    mode: DeleteMode::Trash,
+                },
+                true,
+            ),
+            None
+        );
+    }
+
+    #[test]
+    fn new_creation_dialog_targets_the_original_tab_and_displayed_directory() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        let parent = PathBuf::from("/tmp/ottrin-displayed-directory");
+
+        app.open_creation_dialog(CreationKind::File, tab_id, parent.clone());
+
+        assert!(app.creation_modal_active());
+        assert_eq!(
+            app.pending_creation,
+            Some(PendingCreation {
+                kind: CreationKind::File,
+                tab_id,
+                parent,
+                name_input: "New File".to_string(),
+                error: None,
+                request_focus: true,
+            })
+        );
+    }
+
+    #[test]
     fn storage_location_refresh_wakes_an_idle_ui_within_the_bound() {
         let ctx = Context::default();
         let delays = Arc::new(std::sync::Mutex::new(Vec::new()));
@@ -21090,6 +21653,16 @@ mod tests {
             bookmarks[3],
             (MI_USB.to_string(), "New USB".to_string(), new_root,)
         );
+    }
+
+    #[test]
+    fn compact_location_identity_keeps_drive_letters_and_abbreviates_names() {
+        assert_eq!(compact_location_identity("c:"), "C:");
+        assert_eq!(compact_location_identity("P:"), "P:");
+        assert_eq!(compact_location_identity("/"), "/");
+        assert_eq!(compact_location_identity("Home"), "H");
+        assert_eq!(compact_location_identity("  résumé"), "R");
+        assert_eq!(compact_location_identity("東京"), "東");
     }
 
     #[test]
