@@ -132,7 +132,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
     }
 }
 
-/// Renders bounded extracted DOCX/XLSX/XLSM content as a PNG. This is a
+/// Renders bounded extracted DOCX/XLSX/XLSM/ODS content as a PNG. This is a
 /// content preview, not a faithful Office layout engine; unsupported or
 /// malformed packages fail closed so callers retain the metadata/text view.
 pub fn render_office_content_preview_png(
@@ -144,7 +144,7 @@ pub fn render_office_content_preview_png(
         .and_then(|extension| extension.to_str())
         .unwrap_or_default()
         .to_ascii_lowercase();
-    if !matches!(ext.as_str(), "docx" | "xlsx" | "xlsm") {
+    if !matches!(ext.as_str(), "docx" | "xlsx" | "xlsm" | "ods") {
         return Err(OfficeVisualError::UnsupportedFormat);
     }
     let input_size = std::fs::metadata(path)
@@ -169,6 +169,7 @@ pub fn render_office_content_preview_png(
     let text = match ext.as_str() {
         "docx" => extract_docx_text(&mut archive),
         "xlsx" | "xlsm" => extract_xlsx_text(&mut archive),
+        "ods" => extract_ods_text(&mut archive),
         _ => None,
     }
     .ok_or(OfficeVisualError::NoContent)?;
@@ -983,12 +984,12 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
         .and_then(|s| s.to_str())
         .unwrap_or("")
         .to_ascii_lowercase();
-    let is_ooxml = matches!(ext.as_str(), "docx" | "xlsx" | "xlsm" | "pptx");
+    let is_office_package = matches!(ext.as_str(), "docx" | "xlsx" | "xlsm" | "pptx" | "ods");
 
     let package_is_bounded = std::fs::metadata(path)
         .map(|metadata| metadata.len() <= MAX_OFFICE_PACKAGE_BYTES)
         .unwrap_or(false);
-    if is_ooxml
+    if is_office_package
         && package_is_bounded
         && let Ok(file) = std::fs::File::open(path)
         && let Ok(mut archive) = zip::ZipArchive::new(file)
@@ -1013,6 +1014,7 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
             "docx" => extract_docx_text(&mut archive),
             "xlsx" | "xlsm" => extract_xlsx_text(&mut archive),
             "pptx" => extract_pptx_text(&mut archive),
+            "ods" => extract_ods_text(&mut archive),
             _ => None,
         };
         let body = if let Some(text) = extracted_text {
@@ -1155,6 +1157,347 @@ fn extract_pptx_text<R: std::io::Read + std::io::Seek>(
             break;
         }
     }
+    normalized_preview_text(&out)
+}
+
+const ODS_TABLE_NAMESPACE: &[u8] = b"urn:oasis:names:tc:opendocument:xmlns:table:1.0";
+const ODS_TEXT_NAMESPACE: &[u8] = b"urn:oasis:names:tc:opendocument:xmlns:text:1.0";
+
+fn ods_table_attribute(
+    reader: &quick_xml::NsReader<&[u8]>,
+    event: &quick_xml::events::BytesStart<'_>,
+    local_name: &[u8],
+) -> Result<Option<String>, ()> {
+    let mut found = None;
+    for attribute in event.attributes() {
+        let attribute = attribute.map_err(|_| ())?;
+        let (namespace, local) = reader.resolver().resolve_attribute(attribute.key);
+        if matches!(
+            namespace,
+            quick_xml::name::ResolveResult::Bound(namespace)
+                if namespace.as_ref() == ODS_TABLE_NAMESPACE
+        ) && local.as_ref() == local_name
+        {
+            if found.is_some() {
+                return Err(());
+            }
+            found = Some(attribute.unescape_value().map_err(|_| ())?.into_owned());
+        }
+    }
+    Ok(found)
+}
+
+fn ods_repeat_value(
+    reader: &quick_xml::NsReader<&[u8]>,
+    event: &quick_xml::events::BytesStart<'_>,
+    local_name: &[u8],
+) -> Option<usize> {
+    let Some(value) = ods_table_attribute(reader, event, local_name).ok()? else {
+        return Some(1);
+    };
+    let parsed = value.parse::<usize>().ok()?;
+    (parsed > 0).then_some(parsed)
+}
+
+fn append_ods_cell_chunk(
+    cell: &mut String,
+    characters: &mut usize,
+    saturated: &mut bool,
+    chunk: &str,
+) {
+    if *saturated {
+        return;
+    }
+    let remaining = EXTRACTED_TEXT_LIMIT.saturating_sub(*characters);
+    let mut chars = chunk.chars();
+    for character in chars.by_ref().take(remaining) {
+        cell.push(character);
+        *characters += 1;
+    }
+    if *characters >= EXTRACTED_TEXT_LIMIT || chars.next().is_some() {
+        *saturated = true;
+    }
+}
+
+fn ods_attributes_are_well_formed(
+    reader: &quick_xml::NsReader<&[u8]>,
+    event: &quick_xml::events::BytesStart<'_>,
+) -> bool {
+    event.attributes().all(|attribute| {
+        let Ok(attribute) = attribute else {
+            return false;
+        };
+        let (namespace, _) = reader.resolver().resolve_attribute(attribute.key);
+        !matches!(namespace, quick_xml::name::ResolveResult::Unknown(_))
+            && attribute.unescape_value().is_ok()
+    })
+}
+
+fn extract_ods_text<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> Option<String> {
+    let xml = zip_entry_text(archive, "content.xml")?;
+    let mut reader = quick_xml::NsReader::from_str(&xml);
+    reader.config_mut().trim_text(true);
+    reader.config_mut().check_comments = true;
+
+    let mut out = String::new();
+    let mut current_cell = String::new();
+    let mut row_cells = Vec::new();
+    let mut in_cell = false;
+    let mut sheet_count = 0usize;
+    let mut row_count = 0usize;
+    let mut active_sheet = false;
+    let mut row_repeat = 1usize;
+    let mut cell_repeat = 1usize;
+    let mut cell_characters = 0usize;
+    let mut cell_saturated = false;
+    let mut output_saturated = false;
+
+    loop {
+        let (namespace, event) = match reader.read_resolved_event() {
+            Ok(event) => event,
+            Err(_) => return None,
+        };
+        let is_element = matches!(
+            &event,
+            quick_xml::events::Event::Start(_)
+                | quick_xml::events::Event::Empty(_)
+                | quick_xml::events::Event::End(_)
+        );
+        if is_element
+            && matches!(
+                namespace,
+                quick_xml::name::ResolveResult::Unknown(_)
+                    | quick_xml::name::ResolveResult::Unbound
+            )
+        {
+            return None;
+        }
+        let table_namespace = matches!(
+            namespace,
+            quick_xml::name::ResolveResult::Bound(namespace)
+                if namespace.as_ref() == ODS_TABLE_NAMESPACE
+        );
+        let text_namespace = matches!(
+            namespace,
+            quick_xml::name::ResolveResult::Bound(namespace)
+                if namespace.as_ref() == ODS_TEXT_NAMESPACE
+        );
+
+        match event {
+            quick_xml::events::Event::Start(event) => {
+                if !ods_attributes_are_well_formed(&reader, &event) {
+                    return None;
+                }
+                let local = event.local_name();
+                let repeat_value = match (table_namespace, local.as_ref()) {
+                    (true, b"table-row") => {
+                        ods_repeat_value(&reader, &event, b"number-rows-repeated")?
+                    }
+                    (true, b"table-cell" | b"covered-table-cell") => {
+                        ods_repeat_value(&reader, &event, b"number-columns-repeated")?
+                    }
+                    _ => 1,
+                };
+                match (table_namespace, text_namespace, local.as_ref()) {
+                    (true, _, b"table") => {
+                        sheet_count += 1;
+                        active_sheet = sheet_count <= 12;
+                        if active_sheet {
+                            row_count = 0;
+                            let name = ods_table_attribute(&reader, &event, b"name")
+                                .ok()?
+                                .unwrap_or_else(|| format!("Sheet {sheet_count}"));
+                            let prefix = if out.is_empty() { "" } else { "\n\n" };
+                            if !output_saturated
+                                && !append_bounded_preview_text(
+                                    &mut out,
+                                    &format!("{prefix}Sheet: {name}\n"),
+                                )
+                            {
+                                output_saturated = true;
+                            }
+                        }
+                    }
+                    (true, _, b"table-row") if active_sheet && row_count < 256 => {
+                        row_cells.clear();
+                        row_repeat = repeat_value.min(256 - row_count);
+                    }
+                    (true, _, b"table-cell" | b"covered-table-cell")
+                        if active_sheet && row_count < 256 && row_cells.len() < 64 =>
+                    {
+                        in_cell = true;
+                        current_cell.clear();
+                        cell_characters = 0;
+                        cell_saturated = false;
+                        cell_repeat = repeat_value.min(64 - row_cells.len());
+                    }
+                    (_, true, b"line-break") if in_cell => {
+                        append_ods_cell_chunk(
+                            &mut current_cell,
+                            &mut cell_characters,
+                            &mut cell_saturated,
+                            "\n",
+                        );
+                    }
+                    (_, true, b"tab") if in_cell => {
+                        append_ods_cell_chunk(
+                            &mut current_cell,
+                            &mut cell_characters,
+                            &mut cell_saturated,
+                            "\t",
+                        );
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::Empty(event) => {
+                if !ods_attributes_are_well_formed(&reader, &event) {
+                    return None;
+                }
+                let local = event.local_name();
+                let repeat_value = match (table_namespace, local.as_ref()) {
+                    (true, b"table-row") => {
+                        ods_repeat_value(&reader, &event, b"number-rows-repeated")?
+                    }
+                    (true, b"table-cell" | b"covered-table-cell") => {
+                        ods_repeat_value(&reader, &event, b"number-columns-repeated")?
+                    }
+                    _ => 1,
+                };
+                match (table_namespace, text_namespace, local.as_ref()) {
+                    (true, _, b"table") => {
+                        sheet_count += 1;
+                        if sheet_count <= 12 {
+                            let name = ods_table_attribute(&reader, &event, b"name")
+                                .ok()?
+                                .unwrap_or_else(|| format!("Sheet {sheet_count}"));
+                            let prefix = if out.is_empty() { "" } else { "\n\n" };
+                            if !output_saturated
+                                && !append_bounded_preview_text(
+                                    &mut out,
+                                    &format!("{prefix}Sheet: {name}\n"),
+                                )
+                            {
+                                output_saturated = true;
+                            }
+                        }
+                    }
+                    (true, _, b"table-row") if active_sheet && row_count < 256 => {
+                        let repeat = repeat_value.min(256 - row_count);
+                        for _ in 0..repeat {
+                            row_count += 1;
+                            if !output_saturated && !append_bounded_preview_text(&mut out, "\n") {
+                                output_saturated = true;
+                            }
+                        }
+                        row_cells.clear();
+                    }
+                    (true, _, b"table-cell" | b"covered-table-cell")
+                        if active_sheet && row_count < 256 && row_cells.len() < 64 =>
+                    {
+                        let repeat = repeat_value.min(64 - row_cells.len());
+                        row_cells.extend(std::iter::repeat_n(String::new(), repeat));
+                    }
+                    (_, true, b"line-break") if in_cell => {
+                        append_ods_cell_chunk(
+                            &mut current_cell,
+                            &mut cell_characters,
+                            &mut cell_saturated,
+                            "\n",
+                        );
+                    }
+                    (_, true, b"tab") if in_cell => {
+                        append_ods_cell_chunk(
+                            &mut current_cell,
+                            &mut cell_characters,
+                            &mut cell_saturated,
+                            "\t",
+                        );
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::Text(event) => {
+                let decoded = event.xml_content().ok()?;
+                let chunk = quick_xml::escape::unescape(&decoded).ok()?;
+                if in_cell {
+                    append_ods_cell_chunk(
+                        &mut current_cell,
+                        &mut cell_characters,
+                        &mut cell_saturated,
+                        &chunk,
+                    );
+                }
+            }
+            quick_xml::events::Event::CData(event) => {
+                let chunk = event.decode().ok()?;
+                if in_cell {
+                    append_ods_cell_chunk(
+                        &mut current_cell,
+                        &mut cell_characters,
+                        &mut cell_saturated,
+                        &chunk,
+                    );
+                }
+            }
+            quick_xml::events::Event::GeneralRef(event) => {
+                let reference = event.decode().ok()?;
+                let encoded = format!("&{reference};");
+                let chunk = quick_xml::escape::unescape(&encoded).ok()?;
+                if in_cell {
+                    append_ods_cell_chunk(
+                        &mut current_cell,
+                        &mut cell_characters,
+                        &mut cell_saturated,
+                        &chunk,
+                    );
+                }
+            }
+            quick_xml::events::Event::DocType(_) => return None,
+            quick_xml::events::Event::End(event) => {
+                let local = event.local_name();
+                match (table_namespace, local.as_ref()) {
+                    (true, b"table-cell" | b"covered-table-cell") if in_cell => {
+                        let value = current_cell.trim().to_string();
+                        row_cells.extend(std::iter::repeat_n(value, cell_repeat));
+                        current_cell.clear();
+                        in_cell = false;
+                        cell_repeat = 1;
+                        cell_characters = 0;
+                        cell_saturated = false;
+                    }
+                    (true, b"table-row") if active_sheet && row_count < 256 => {
+                        let row = format!("{}\n", row_cells.join("\t"));
+                        for _ in 0..row_repeat {
+                            if row_count >= 256 {
+                                break;
+                            }
+                            row_count += 1;
+                            if !output_saturated && !append_bounded_preview_text(&mut out, &row) {
+                                output_saturated = true;
+                            }
+                        }
+                        row_cells.clear();
+                        row_repeat = 1;
+                    }
+                    (true, b"table") => {
+                        active_sheet = false;
+                        in_cell = false;
+                        current_cell.clear();
+                        cell_characters = 0;
+                        cell_saturated = false;
+                        row_cells.clear();
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::Eof => break,
+            _ => {}
+        }
+    }
+
     normalized_preview_text(&out)
 }
 
@@ -1690,6 +2033,316 @@ mod tests {
         assert!(preview.body.contains("docs/readme.txt"));
 
         let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn ods_preview_contains_sheet_cells_and_bounded_visual() {
+        let path = temp_path("workbook.ods");
+        {
+            let file = std::fs::File::create(&path).expect("create ods");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("content.xml", options).expect("content");
+            zip.write_all(
+                br#"<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:t="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:x="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:spreadsheet><t:table t:name="Budget"><t:table-row t:number-rows-repeated="2"><t:table-cell t:number-columns-repeated="2"><x:p>Item</x:p></t:table-cell><t:table-cell><x:p>Cost</x:p></t:table-cell></t:table-row><t:table-row><t:table-cell><x:p>Coffee</x:p></t:table-cell><t:table-cell office:value-type="float" office:value="42"><x:p>42</x:p></t:table-cell></t:table-row></t:table></office:spreadsheet></office:body></office:document-content>"#,
+            )
+            .expect("write content");
+            zip.finish().expect("finish");
+        }
+
+        let preview = preview_office("workbook.ods".to_string(), &path);
+        assert!(preview.body.contains(EXTRACTED_TEXT_MARKER));
+        assert!(preview.body.contains("Sheet: Budget"));
+        assert!(preview.body.contains("Item\tItem\tCost"));
+        assert_eq!(preview.body.matches("Item\tItem\tCost").count(), 2);
+        assert!(preview.body.contains("Coffee\t42"));
+        let png = render_office_content_preview_png(&path, 256).expect("bounded visual PNG");
+        assert_eq!(
+            image::load_from_memory(&png)
+                .expect("decode visual PNG")
+                .dimensions(),
+            (256, 256)
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn ods_preview_rejects_malformed_xml_after_the_output_budget() {
+        let path = temp_path("malformed-workbook.ods");
+        {
+            let file = std::fs::File::create(&path).expect("create ods");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("content.xml", options).expect("content");
+            let oversized_cell = "x".repeat(EXTRACTED_TEXT_LIMIT + 1_024);
+            write!(
+                zip,
+                "<office:document-content xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:t=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\" xmlns:x=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\"><office:body><office:spreadsheet><t:table t:name=\"Budget\"><t:table-row><t:table-cell><x:p>{oversized_cell}</x:p></t:table-cell></t:table-row><broken"
+            )
+            .expect("write malformed content");
+            zip.finish().expect("finish");
+        }
+
+        let file = std::fs::File::open(&path).expect("open ods");
+        let mut archive = zip::ZipArchive::new(file).expect("open package");
+        assert!(extract_ods_text(&mut archive).is_none());
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn ods_preview_rejects_malformed_or_duplicate_attributes() {
+        let path = temp_path("malformed-attributes.ods");
+        {
+            let file = std::fs::File::create(&path).expect("create ods");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("content.xml", options).expect("content");
+            zip.write_all(br#"<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:t="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:x="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:spreadsheet><t:table t:name="Budget"><t:table-row t:number-rows-repeated="2" t:number-rows-repeated="3"><t:table-cell><x:p>Value</x:p></t:table-cell></t:table-row></t:table></office:spreadsheet></office:body></office:document-content>"#)
+                .expect("write malformed attributes");
+            zip.finish().expect("finish");
+        }
+
+        let file = std::fs::File::open(&path).expect("open ods");
+        let mut archive = zip::ZipArchive::new(file).expect("open package");
+        assert!(extract_ods_text(&mut archive).is_none());
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn ods_preview_rejects_invalid_ignored_attributes() {
+        for (suffix, attribute) in [
+            ("invalid-entity", "inert=\"&bogus;\""),
+            ("unbound-prefix", "unknown:flag=\"x\""),
+        ] {
+            let path = temp_path(&format!("{suffix}.ods"));
+            {
+                let file = std::fs::File::create(&path).expect("create ods");
+                let mut zip = zip::ZipWriter::new(file);
+                let options = zip::write::SimpleFileOptions::default();
+                zip.start_file("content.xml", options).expect("content");
+                write!(
+                    zip,
+                    "<office:document-content xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:t=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\" xmlns:x=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\"><office:body><office:spreadsheet><t:table t:name=\"Budget\" {attribute}><t:table-row><t:table-cell><x:p>Value</x:p></t:table-cell></t:table-row></t:table></office:spreadsheet></office:body></office:document-content>"
+                )
+                .expect("write malformed attribute");
+                zip.finish().expect("finish");
+            }
+
+            let file = std::fs::File::open(&path).expect("open ods");
+            let mut archive = zip::ZipArchive::new(file).expect("open package");
+            assert!(
+                extract_ods_text(&mut archive).is_none(),
+                "ignored malformed attribute must fail closed: {suffix}"
+            );
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn ods_preview_rejects_unbound_elements_and_invalid_text() {
+        for (suffix, inner) in [
+            (
+                "invalid-text",
+                "<t:table-row><t:table-cell><x:p>&bogus;</x:p></t:table-cell></t:table-row>",
+            ),
+            (
+                "unbound-element",
+                "<unknown:item/><t:table-row><t:table-cell><x:p>Value</x:p></t:table-cell></t:table-row>",
+            ),
+            (
+                "unnamespaced-element",
+                "<item/><t:table-row><t:table-cell><x:p>Value</x:p></t:table-cell></t:table-row>",
+            ),
+            (
+                "invalid-comment",
+                "<!-- malformed -- comment --><t:table-row><t:table-cell><x:p>Value</x:p></t:table-cell></t:table-row>",
+            ),
+        ] {
+            let path = temp_path(&format!("{suffix}.ods"));
+            {
+                let file = std::fs::File::create(&path).expect("create ods");
+                let mut zip = zip::ZipWriter::new(file);
+                let options = zip::write::SimpleFileOptions::default();
+                zip.start_file("content.xml", options).expect("content");
+                write!(
+                    zip,
+                    "<office:document-content xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:t=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\" xmlns:x=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\"><office:body><office:spreadsheet><t:table t:name=\"Budget\">{inner}</t:table></office:spreadsheet></office:body></office:document-content>"
+                )
+                .expect("write malformed XML");
+                zip.finish().expect("finish");
+            }
+
+            let file = std::fs::File::open(&path).expect("open ods");
+            let mut archive = zip::ZipArchive::new(file).expect("open package");
+            assert!(
+                extract_ods_text(&mut archive).is_none(),
+                "malformed namespace/text must fail closed: {suffix}"
+            );
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn ods_preview_rejects_invalid_repeat_counts() {
+        for (suffix, inner) in [
+            (
+                "zero-row-repeat",
+                "<t:table-row t:number-rows-repeated=\"0\"><t:table-cell><x:p>Value</x:p></t:table-cell></t:table-row>",
+            ),
+            (
+                "malformed-row-repeat",
+                "<t:table-row t:number-rows-repeated=\"not-a-number\"><t:table-cell><x:p>Value</x:p></t:table-cell></t:table-row>",
+            ),
+            (
+                "overflow-empty-cell-repeat",
+                "<t:table-row><t:table-cell t:number-columns-repeated=\"999999999999999999999999999999999999999999999999\"/></t:table-row>",
+            ),
+        ] {
+            let path = temp_path(&format!("{suffix}.ods"));
+            {
+                let file = std::fs::File::create(&path).expect("create ods");
+                let mut zip = zip::ZipWriter::new(file);
+                let options = zip::write::SimpleFileOptions::default();
+                zip.start_file("content.xml", options).expect("content");
+                write!(
+                    zip,
+                    "<office:document-content xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:t=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\" xmlns:x=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\"><office:body><office:spreadsheet><t:table t:name=\"Budget\">{inner}</t:table></office:spreadsheet></office:body></office:document-content>"
+                )
+                .expect("write invalid repeat");
+                zip.finish().expect("finish");
+            }
+
+            let file = std::fs::File::open(&path).expect("open ods");
+            let mut archive = zip::ZipArchive::new(file).expect("open package");
+            assert!(
+                extract_ods_text(&mut archive).is_none(),
+                "invalid repeat must fail closed: {suffix}"
+            );
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn ods_empty_rows_and_tables_consume_display_budgets() {
+        let cases = [
+            (
+                "empty-row-repeat",
+                "<t:table t:name=\"Rows\"><t:table-row t:number-rows-repeated=\"256\"/><t:table-row><t:table-cell><x:p>HIDDEN_ROW</x:p></t:table-cell></t:table-row></t:table>".to_string(),
+                "HIDDEN_ROW",
+            ),
+            (
+                "empty-table-count",
+                format!(
+                    "{}<t:table t:name=\"Thirteen\"><t:table-row><t:table-cell><x:p>HIDDEN_SHEET</x:p></t:table-cell></t:table-row></t:table>",
+                    "<t:table/>".repeat(12)
+                ),
+                "HIDDEN_SHEET",
+            ),
+        ];
+
+        for (suffix, spreadsheet, hidden) in cases {
+            let path = temp_path(&format!("{suffix}.ods"));
+            {
+                let file = std::fs::File::create(&path).expect("create ods");
+                let mut zip = zip::ZipWriter::new(file);
+                let options = zip::write::SimpleFileOptions::default();
+                zip.start_file("content.xml", options).expect("content");
+                write!(
+                    zip,
+                    "<office:document-content xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:t=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\" xmlns:x=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\"><office:body><office:spreadsheet>{spreadsheet}</office:spreadsheet></office:body></office:document-content>"
+                )
+                .expect("write empty budget case");
+                zip.finish().expect("finish");
+            }
+
+            let file = std::fs::File::open(&path).expect("open ods");
+            let mut archive = zip::ZipArchive::new(file).expect("open package");
+            let preview = extract_ods_text(&mut archive).expect("preview");
+            assert!(
+                !preview.contains(hidden),
+                "empty ODF structures must consume their display budget: {suffix}"
+            );
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn ods_preview_validates_repeats_beyond_display_caps() {
+        let cases = [
+            (
+                "row-257",
+                format!(
+                    "<t:table t:name=\"Rows\">{}<t:table-row t:number-rows-repeated=\"0\"/></t:table>",
+                    "<t:table-row/>".repeat(256)
+                ),
+            ),
+            (
+                "cell-65",
+                format!(
+                    "<t:table t:name=\"Cells\"><t:table-row>{}<t:table-cell t:number-columns-repeated=\"invalid\"/></t:table-row></t:table>",
+                    "<t:table-cell/>".repeat(64)
+                ),
+            ),
+            (
+                "sheet-13",
+                format!(
+                    "{}<t:table t:name=\"Thirteen\"><t:table-row t:number-rows-repeated=\"999999999999999999999999999999999999999\"/></t:table>",
+                    "<t:table/>".repeat(12)
+                ),
+            ),
+        ];
+
+        for (suffix, spreadsheet) in cases {
+            let path = temp_path(&format!("{suffix}.ods"));
+            {
+                let file = std::fs::File::create(&path).expect("create ods");
+                let mut zip = zip::ZipWriter::new(file);
+                let options = zip::write::SimpleFileOptions::default();
+                zip.start_file("content.xml", options).expect("content");
+                write!(
+                    zip,
+                    "<office:document-content xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:t=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\"><office:body><office:spreadsheet>{spreadsheet}</office:spreadsheet></office:body></office:document-content>"
+                )
+                .expect("write post-cap repeat");
+                zip.finish().expect("finish");
+            }
+
+            let file = std::fs::File::open(&path).expect("open ods");
+            let mut archive = zip::ZipArchive::new(file).expect("open package");
+            assert!(
+                extract_ods_text(&mut archive).is_none(),
+                "post-cap invalid repeat must fail closed: {suffix}"
+            );
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn saturated_ods_cell_stops_materializing_more_chunks() {
+        let mut incremental = String::new();
+        let mut incremental_characters = 0usize;
+        let mut incremental_saturated = false;
+        for _ in 0..EXTRACTED_TEXT_LIMIT {
+            append_ods_cell_chunk(
+                &mut incremental,
+                &mut incremental_characters,
+                &mut incremental_saturated,
+                "x",
+            );
+        }
+        assert_eq!(incremental_characters, EXTRACTED_TEXT_LIMIT);
+        assert!(incremental_saturated);
+
+        let mut cell = "x".repeat(EXTRACTED_TEXT_LIMIT);
+        let mut characters = EXTRACTED_TEXT_LIMIT;
+        let mut saturated = true;
+        let original = cell.clone();
+        for _ in 0..10_000 {
+            append_ods_cell_chunk(&mut cell, &mut characters, &mut saturated, "ignored");
+        }
+        assert_eq!(cell, original);
+        assert_eq!(characters, EXTRACTED_TEXT_LIMIT);
+        assert!(saturated);
     }
 
     #[test]

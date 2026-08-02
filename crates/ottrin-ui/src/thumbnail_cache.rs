@@ -341,7 +341,12 @@ fn is_pdf_path(path: &Path) -> bool {
 fn is_office_visual_path(path: &Path) -> bool {
     path.extension()
         .and_then(|ext| ext.to_str())
-        .is_some_and(|ext| matches!(ext.to_ascii_lowercase().as_str(), "docx" | "xlsx" | "xlsm"))
+        .is_some_and(|ext| {
+            matches!(
+                ext.to_ascii_lowercase().as_str(),
+                "docx" | "xlsx" | "xlsm" | "ods"
+            )
+        })
 }
 
 fn is_text_preview_path(path: &Path) -> bool {
@@ -503,6 +508,7 @@ mod tests {
         });
 
         assert_eq!(bytes, Some(b"rendered-png".to_vec()));
+        assert!(is_office_visual_path(Path::new("workbook.ODS")));
     }
 
     #[test]
