@@ -35,6 +35,9 @@ const MAX_CAMERA_RAW_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_CAMERA_RAW_EMBEDDED_JPEG_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_CAMERA_RAW_EMBEDDED_JPEG_PIXELS: u64 = 16 * 1024 * 1024;
 const MAX_CAMERA_RAW_PREVIEW_DIMENSION: u32 = 4096;
+const MAX_CAMERA_RAW_TIFF_IFDS: usize = 8;
+const MAX_CAMERA_RAW_TIFF_ENTRIES_PER_IFD: usize = 256;
+const MAX_CAMERA_RAW_TIFF_TOTAL_ENTRIES: usize = 512;
 const MAX_TAR_COMPRESSED_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_TAR_SCAN_ENTRIES: usize = 4_096;
 const MAX_TAR_SCAN_BYTES: u64 = 256 * 1024 * 1024;
@@ -540,6 +543,8 @@ pub enum CameraRawVisualError {
     InputTooLarge { actual: u64, limit: u64 },
     #[error("could not read camera RAW container: {0}")]
     Read(String),
+    #[error("camera RAW file changed while its bounded snapshot was read")]
+    InputChanged,
     #[error("camera RAW container is not a supported TIFF-based RAW file: {0}")]
     Container(String),
     #[error("camera RAW container has no unambiguous embedded JPEG")]
@@ -563,27 +568,9 @@ pub fn render_camera_raw_embedded_preview_png(
     if !is_camera_raw_path(path) {
         return Err(CameraRawVisualError::UnsupportedFormat);
     }
-    let input_size = std::fs::metadata(path)
-        .map_err(|error| CameraRawVisualError::InputMetadata(error.to_string()))?
-        .len();
-    if input_size > MAX_CAMERA_RAW_PACKAGE_BYTES {
-        return Err(CameraRawVisualError::InputTooLarge {
-            actual: input_size,
-            limit: MAX_CAMERA_RAW_PACKAGE_BYTES,
-        });
-    }
-    let container =
-        std::fs::read(path).map_err(|error| CameraRawVisualError::Read(error.to_string()))?;
-    let exif = exif::Reader::new()
-        .read_raw(container)
-        .map_err(|error| CameraRawVisualError::Container(error.to_string()))?;
-    let jpeg = camera_raw_embedded_jpeg(&exif)?;
-
-    if !jpeg.starts_with(&[0xff, 0xd8]) || !jpeg.ends_with(&[0xff, 0xd9]) {
-        return Err(CameraRawVisualError::EmbeddedJpeg(
-            "missing JPEG start or end marker".to_string(),
-        ));
-    }
+    let container = read_camera_raw_container(path)?;
+    let jpeg = camera_raw_embedded_jpeg(&container)?;
+    validate_exact_jpeg(jpeg)?;
     let reader = image::ImageReader::with_format(Cursor::new(jpeg), image::ImageFormat::Jpeg);
     let (width, height) = reader
         .into_dimensions()
@@ -610,45 +597,312 @@ pub fn render_camera_raw_embedded_preview_png(
     Ok(png)
 }
 
-fn camera_raw_embedded_jpeg(exif: &exif::Exif) -> Result<&[u8], CameraRawVisualError> {
-    let mut candidates = Vec::new();
-    for ifd in 0..8 {
-        let ifd = exif::In(ifd);
-        let offsets = exif
-            .fields()
-            .filter(|field| field.ifd_num == ifd && field.tag == exif::Tag::JPEGInterchangeFormat)
-            .filter_map(|field| field.value.get_uint(0))
-            .collect::<Vec<_>>();
-        let lengths = exif
-            .fields()
-            .filter(|field| {
-                field.ifd_num == ifd && field.tag == exif::Tag::JPEGInterchangeFormatLength
-            })
-            .filter_map(|field| field.value.get_uint(0))
-            .collect::<Vec<_>>();
-        match (offsets.as_slice(), lengths.as_slice()) {
-            ([offset], [length]) => candidates.push((u64::from(*offset), u64::from(*length))),
-            ([], []) => {}
+fn read_camera_raw_container(path: &Path) -> Result<Vec<u8>, CameraRawVisualError> {
+    let mut file = std::fs::File::open(path)
+        .map_err(|error| CameraRawVisualError::InputMetadata(error.to_string()))?;
+    let input_size = file
+        .metadata()
+        .map_err(|error| CameraRawVisualError::InputMetadata(error.to_string()))?
+        .len();
+    if input_size > MAX_CAMERA_RAW_PACKAGE_BYTES {
+        return Err(CameraRawVisualError::InputTooLarge {
+            actual: input_size,
+            limit: MAX_CAMERA_RAW_PACKAGE_BYTES,
+        });
+    }
+    let capacity =
+        usize::try_from(input_size).map_err(|_| CameraRawVisualError::InputTooLarge {
+            actual: input_size,
+            limit: MAX_CAMERA_RAW_PACKAGE_BYTES,
+        })?;
+    let mut container = Vec::with_capacity(capacity);
+    file.by_ref()
+        .take(MAX_CAMERA_RAW_PACKAGE_BYTES + 1)
+        .read_to_end(&mut container)
+        .map_err(|error| CameraRawVisualError::Read(error.to_string()))?;
+    if container.len() as u64 > MAX_CAMERA_RAW_PACKAGE_BYTES {
+        return Err(CameraRawVisualError::InputTooLarge {
+            actual: container.len() as u64,
+            limit: MAX_CAMERA_RAW_PACKAGE_BYTES,
+        });
+    }
+    if container.len() as u64 != input_size {
+        return Err(CameraRawVisualError::InputChanged);
+    }
+    Ok(container)
+}
+
+#[derive(Clone, Copy)]
+enum TiffByteOrder {
+    Little,
+    Big,
+}
+
+impl TiffByteOrder {
+    fn u16(self, bytes: &[u8], offset: usize) -> Option<u16> {
+        let value = bytes.get(offset..offset.checked_add(2)?)?;
+        Some(match self {
+            Self::Little => u16::from_le_bytes([value[0], value[1]]),
+            Self::Big => u16::from_be_bytes([value[0], value[1]]),
+        })
+    }
+
+    fn u32(self, bytes: &[u8], offset: usize) -> Option<u32> {
+        let value = bytes.get(offset..offset.checked_add(4)?)?;
+        Some(match self {
+            Self::Little => u32::from_le_bytes([value[0], value[1], value[2], value[3]]),
+            Self::Big => u32::from_be_bytes([value[0], value[1], value[2], value[3]]),
+        })
+    }
+}
+
+fn camera_raw_embedded_jpeg(container: &[u8]) -> Result<&[u8], CameraRawVisualError> {
+    let byte_order = match container.get(..2) {
+        Some(b"II") => TiffByteOrder::Little,
+        Some(b"MM") => TiffByteOrder::Big,
+        _ => {
+            return Err(CameraRawVisualError::Container(
+                "missing classic TIFF byte order".into(),
+            ));
+        }
+    };
+    if byte_order.u16(container, 2) != Some(42) {
+        return Err(CameraRawVisualError::Container(
+            "missing classic TIFF marker".into(),
+        ));
+    }
+    let mut next_ifd = usize::try_from(
+        byte_order
+            .u32(container, 4)
+            .ok_or_else(|| CameraRawVisualError::Container("truncated TIFF header".into()))?,
+    )
+    .map_err(|_| CameraRawVisualError::Container("IFD offset exceeds address space".into()))?;
+    let mut seen_ifds = Vec::new();
+    let mut metadata_ranges = Vec::with_capacity(MAX_CAMERA_RAW_TIFF_IFDS + 1);
+    metadata_ranges.push(0..8);
+    let mut total_entries = 0usize;
+    let mut candidate = None;
+
+    while next_ifd != 0 {
+        if seen_ifds.len() == MAX_CAMERA_RAW_TIFF_IFDS || seen_ifds.contains(&next_ifd) {
+            return Err(CameraRawVisualError::Container(
+                "IFD chain exceeds safe bounds".into(),
+            ));
+        }
+        if next_ifd < 8 {
+            return Err(CameraRawVisualError::Container(
+                "IFD overlaps TIFF header".into(),
+            ));
+        }
+        seen_ifds.push(next_ifd);
+        let entry_count =
+            usize::from(byte_order.u16(container, next_ifd).ok_or_else(|| {
+                CameraRawVisualError::Container("truncated IFD entry count".into())
+            })?);
+        if entry_count > MAX_CAMERA_RAW_TIFF_ENTRIES_PER_IFD
+            || total_entries.saturating_add(entry_count) > MAX_CAMERA_RAW_TIFF_TOTAL_ENTRIES
+        {
+            return Err(CameraRawVisualError::Container(
+                "IFD entries exceed safe bounds".into(),
+            ));
+        }
+        total_entries += entry_count;
+        let entries_offset = next_ifd
+            .checked_add(2)
+            .ok_or_else(|| CameraRawVisualError::Container("IFD offset overflow".into()))?;
+        let entries_bytes = entry_count
+            .checked_mul(12)
+            .ok_or_else(|| CameraRawVisualError::Container("IFD entry size overflow".into()))?;
+        let next_offset = entries_offset
+            .checked_add(entries_bytes)
+            .ok_or_else(|| CameraRawVisualError::Container("IFD range overflow".into()))?;
+        let ifd_end = next_offset
+            .checked_add(4)
+            .ok_or_else(|| CameraRawVisualError::Container("IFD range overflow".into()))?;
+        if ifd_end > container.len() {
+            return Err(CameraRawVisualError::Container(
+                "truncated IFD entries".into(),
+            ));
+        }
+        metadata_ranges.push(next_ifd..ifd_end);
+
+        let mut jpeg_offset = None;
+        let mut jpeg_length = None;
+        let mut has_strip_or_tile_fields = false;
+        for index in 0..entry_count {
+            let offset = entries_offset + index * 12;
+            let tag = byte_order
+                .u16(container, offset)
+                .expect("validated IFD entry");
+            let field_type = byte_order
+                .u16(container, offset + 2)
+                .expect("validated IFD entry");
+            let count = byte_order
+                .u32(container, offset + 4)
+                .expect("validated IFD entry");
+            let value = byte_order
+                .u32(container, offset + 8)
+                .expect("validated IFD entry");
+            match tag {
+                0x0201 => {
+                    if field_type != 4 || count != 1 || jpeg_offset.replace(value).is_some() {
+                        return Err(CameraRawVisualError::NoEmbeddedJpeg);
+                    }
+                }
+                0x0202 => {
+                    if field_type != 4 || count != 1 || jpeg_length.replace(value).is_some() {
+                        return Err(CameraRawVisualError::NoEmbeddedJpeg);
+                    }
+                }
+                0x0111 | 0x0117 | 0x0144 | 0x0145 => has_strip_or_tile_fields = true,
+                _ => {}
+            }
+        }
+        match (jpeg_offset, jpeg_length) {
+            (None, None) => {}
+            (Some(offset), Some(length)) if !has_strip_or_tile_fields => {
+                if candidate
+                    .replace((u64::from(offset), u64::from(length)))
+                    .is_some()
+                {
+                    return Err(CameraRawVisualError::NoEmbeddedJpeg);
+                }
+            }
             _ => return Err(CameraRawVisualError::NoEmbeddedJpeg),
         }
+        next_ifd = usize::try_from(
+            byte_order
+                .u32(container, next_offset)
+                .expect("validated IFD next offset"),
+        )
+        .map_err(|_| CameraRawVisualError::Container("next IFD exceeds address space".into()))?;
     }
-    let [(offset, length)] = candidates.as_slice() else {
+
+    let Some((offset, length)) = candidate else {
         return Err(CameraRawVisualError::NoEmbeddedJpeg);
     };
-    if *length == 0 || *length > MAX_CAMERA_RAW_EMBEDDED_JPEG_BYTES {
+    if length == 0 || length > MAX_CAMERA_RAW_EMBEDDED_JPEG_BYTES {
         return Err(CameraRawVisualError::EmbeddedJpegTooLarge {
-            actual: *length,
+            actual: length,
             limit: MAX_CAMERA_RAW_EMBEDDED_JPEG_BYTES,
         });
     }
     let end = offset
-        .checked_add(*length)
+        .checked_add(length)
         .ok_or(CameraRawVisualError::EmbeddedJpegRange)?;
-    let start = usize::try_from(*offset).map_err(|_| CameraRawVisualError::EmbeddedJpegRange)?;
+    let start = usize::try_from(offset).map_err(|_| CameraRawVisualError::EmbeddedJpegRange)?;
     let end = usize::try_from(end).map_err(|_| CameraRawVisualError::EmbeddedJpegRange)?;
-    exif.buf()
+    if metadata_ranges
+        .iter()
+        .any(|range| start < range.end && range.start < end)
+    {
+        return Err(CameraRawVisualError::EmbeddedJpegRange);
+    }
+    container
         .get(start..end)
         .ok_or(CameraRawVisualError::EmbeddedJpegRange)
+}
+
+fn validate_exact_jpeg(jpeg: &[u8]) -> Result<(), CameraRawVisualError> {
+    if jpeg.get(..2) != Some(b"\xff\xd8") {
+        return Err(CameraRawVisualError::EmbeddedJpeg(
+            "missing JPEG start marker".into(),
+        ));
+    }
+    let mut position = 2usize;
+    let mut saw_scan = false;
+    let mut in_entropy_data = false;
+    loop {
+        let marker = if in_entropy_data {
+            let Some(relative) = jpeg[position..].iter().position(|byte| *byte == 0xff) else {
+                return Err(CameraRawVisualError::EmbeddedJpeg(
+                    "missing JPEG end marker".into(),
+                ));
+            };
+            position += relative + 1;
+            while jpeg.get(position) == Some(&0xff) {
+                position += 1;
+            }
+            let Some(marker) = jpeg.get(position).copied() else {
+                return Err(CameraRawVisualError::EmbeddedJpeg(
+                    "truncated JPEG marker".into(),
+                ));
+            };
+            position += 1;
+            match marker {
+                0x00 | 0xd0..=0xd7 => continue,
+                0xd9 => {
+                    return if position == jpeg.len() {
+                        Ok(())
+                    } else {
+                        Err(CameraRawVisualError::EmbeddedJpeg(
+                            "JPEG contains trailing bytes".into(),
+                        ))
+                    };
+                }
+                marker => {
+                    in_entropy_data = false;
+                    marker
+                }
+            }
+        } else {
+            if jpeg.get(position) != Some(&0xff) {
+                return Err(CameraRawVisualError::EmbeddedJpeg(
+                    "invalid JPEG marker stream".into(),
+                ));
+            }
+            position += 1;
+            while jpeg.get(position) == Some(&0xff) {
+                position += 1;
+            }
+            let Some(marker) = jpeg.get(position).copied() else {
+                return Err(CameraRawVisualError::EmbeddedJpeg(
+                    "truncated JPEG marker".into(),
+                ));
+            };
+            position += 1;
+            marker
+        };
+        match marker {
+            0xd9 if saw_scan && position == jpeg.len() => return Ok(()),
+            0xd9 => {
+                return Err(CameraRawVisualError::EmbeddedJpeg(
+                    "unexpected JPEG end marker".into(),
+                ));
+            }
+            0xd8 | 0x00 | 0xd0..=0xd7 => {
+                return Err(CameraRawVisualError::EmbeddedJpeg(
+                    "invalid JPEG marker".into(),
+                ));
+            }
+            0x01 => {}
+            _ => {
+                let length_bytes =
+                    jpeg.get(position..position.saturating_add(2))
+                        .ok_or_else(|| {
+                            CameraRawVisualError::EmbeddedJpeg("truncated JPEG segment".into())
+                        })?;
+                let length = u16::from_be_bytes([length_bytes[0], length_bytes[1]]);
+                if length < 2 {
+                    return Err(CameraRawVisualError::EmbeddedJpeg(
+                        "invalid JPEG segment length".into(),
+                    ));
+                }
+                position = position.checked_add(usize::from(length)).ok_or_else(|| {
+                    CameraRawVisualError::EmbeddedJpeg("JPEG segment overflow".into())
+                })?;
+                if position > jpeg.len() {
+                    return Err(CameraRawVisualError::EmbeddedJpeg(
+                        "truncated JPEG segment".into(),
+                    ));
+                }
+                if marker == 0xda {
+                    saw_scan = true;
+                    in_entropy_data = true;
+                }
+            }
+        }
+    }
 }
 
 /// Renders bounded extracted DOCX/XLSX/XLSM/ODS content as a PNG. This is a
@@ -3492,6 +3746,99 @@ mod tests {
         bytes
     }
 
+    fn raw_tiff_with_ifd_entries(mut entries: Vec<(u16, u16, u32, u32)>, jpeg: &[u8]) -> Vec<u8> {
+        const IFD0_OFFSET: u32 = 8;
+        const IFD1_OFFSET: u32 = IFD0_OFFSET + 2 + 4;
+        let jpeg_offset = IFD1_OFFSET + 2 + (entries.len() as u32) * 12 + 4;
+        for (tag, _, _, value) in &mut entries {
+            match *tag {
+                0x0201 => *value = jpeg_offset,
+                0x0202 => *value = jpeg.len() as u32,
+                _ => {}
+            }
+        }
+
+        let mut bytes = b"II*\0".to_vec();
+        bytes.extend_from_slice(&IFD0_OFFSET.to_le_bytes());
+        bytes.extend_from_slice(&0u16.to_le_bytes());
+        bytes.extend_from_slice(&IFD1_OFFSET.to_le_bytes());
+        bytes.extend_from_slice(&(entries.len() as u16).to_le_bytes());
+        for (tag, field_type, count, value) in entries {
+            bytes.extend_from_slice(&tag.to_le_bytes());
+            bytes.extend_from_slice(&field_type.to_le_bytes());
+            bytes.extend_from_slice(&count.to_le_bytes());
+            bytes.extend_from_slice(&value.to_le_bytes());
+        }
+        bytes.extend_from_slice(&0u32.to_le_bytes());
+        bytes.extend_from_slice(jpeg);
+        bytes
+    }
+
+    fn big_endian_raw_tiff_with_embedded_jpeg(jpeg: &[u8]) -> Vec<u8> {
+        const IFD0_OFFSET: u32 = 8;
+        const IFD1_OFFSET: u32 = IFD0_OFFSET + 2 + 4;
+        const JPEG_OFFSET: u32 = IFD1_OFFSET + 2 + 2 * 12 + 4;
+
+        let mut bytes = b"MM\0*".to_vec();
+        bytes.extend_from_slice(&IFD0_OFFSET.to_be_bytes());
+        bytes.extend_from_slice(&0u16.to_be_bytes());
+        bytes.extend_from_slice(&IFD1_OFFSET.to_be_bytes());
+        bytes.extend_from_slice(&2u16.to_be_bytes());
+        for (tag, value) in [(0x0201u16, JPEG_OFFSET), (0x0202u16, jpeg.len() as u32)] {
+            bytes.extend_from_slice(&tag.to_be_bytes());
+            bytes.extend_from_slice(&4u16.to_be_bytes());
+            bytes.extend_from_slice(&1u32.to_be_bytes());
+            bytes.extend_from_slice(&value.to_be_bytes());
+        }
+        bytes.extend_from_slice(&0u32.to_be_bytes());
+        bytes.extend_from_slice(jpeg);
+        bytes
+    }
+
+    fn raw_tiff_with_two_thumbnail_candidates(jpeg: &[u8]) -> Vec<u8> {
+        const IFD0_OFFSET: u32 = 8;
+        const IFD1_OFFSET: u32 = IFD0_OFFSET + 2 + 2 * 12 + 4;
+        const JPEG_OFFSET: u32 = IFD1_OFFSET + 2 + 2 * 12 + 4;
+        let mut bytes = b"II*\0".to_vec();
+        bytes.extend_from_slice(&IFD0_OFFSET.to_le_bytes());
+        for next_ifd in [IFD1_OFFSET, 0] {
+            bytes.extend_from_slice(&2u16.to_le_bytes());
+            for (tag, value) in [(0x0201u16, JPEG_OFFSET), (0x0202u16, jpeg.len() as u32)] {
+                bytes.extend_from_slice(&tag.to_le_bytes());
+                bytes.extend_from_slice(&4u16.to_le_bytes());
+                bytes.extend_from_slice(&1u32.to_le_bytes());
+                bytes.extend_from_slice(&value.to_le_bytes());
+            }
+            bytes.extend_from_slice(&next_ifd.to_le_bytes());
+        }
+        bytes.extend_from_slice(jpeg);
+        bytes
+    }
+
+    fn raw_tiff_with_subifd_thumbnail(jpeg: &[u8]) -> Vec<u8> {
+        const IFD0_OFFSET: u32 = 8;
+        const SUB_IFD_OFFSET: u32 = IFD0_OFFSET + 2 + 12 + 4;
+        const JPEG_OFFSET: u32 = SUB_IFD_OFFSET + 2 + 2 * 12 + 4;
+        let mut bytes = b"II*\0".to_vec();
+        bytes.extend_from_slice(&IFD0_OFFSET.to_le_bytes());
+        bytes.extend_from_slice(&1u16.to_le_bytes());
+        bytes.extend_from_slice(&0x014au16.to_le_bytes());
+        bytes.extend_from_slice(&4u16.to_le_bytes());
+        bytes.extend_from_slice(&1u32.to_le_bytes());
+        bytes.extend_from_slice(&SUB_IFD_OFFSET.to_le_bytes());
+        bytes.extend_from_slice(&0u32.to_le_bytes());
+        bytes.extend_from_slice(&2u16.to_le_bytes());
+        for (tag, value) in [(0x0201u16, JPEG_OFFSET), (0x0202u16, jpeg.len() as u32)] {
+            bytes.extend_from_slice(&tag.to_le_bytes());
+            bytes.extend_from_slice(&4u16.to_le_bytes());
+            bytes.extend_from_slice(&1u32.to_le_bytes());
+            bytes.extend_from_slice(&value.to_le_bytes());
+        }
+        bytes.extend_from_slice(&0u32.to_le_bytes());
+        bytes.extend_from_slice(jpeg);
+        bytes
+    }
+
     fn small_jpeg() -> Vec<u8> {
         let mut jpeg = Vec::new();
         image::DynamicImage::ImageRgb8(image::RgbImage::from_pixel(
@@ -3569,6 +3916,95 @@ mod tests {
             Err(CameraRawVisualError::InputTooLarge { .. })
         ));
         std::fs::remove_file(oversized).expect("remove oversized RAW fixture");
+    }
+
+    #[test]
+    fn camera_raw_rejects_nonclassic_or_unbounded_tiff_thumbnail_layouts() {
+        let jpeg = small_jpeg();
+        let cases = [
+            (
+                "short-tags.dng",
+                raw_tiff_with_ifd_entries(vec![(0x0201, 3, 1, 0), (0x0202, 3, 1, 0)], &jpeg),
+            ),
+            (
+                "multi-long.dng",
+                raw_tiff_with_ifd_entries(vec![(0x0201, 4, 2, 0), (0x0202, 4, 1, 0)], &jpeg),
+            ),
+            (
+                "strip-confusion.dng",
+                raw_tiff_with_ifd_entries(
+                    vec![
+                        (0x0201, 4, 1, 0),
+                        (0x0202, 4, 1, 0),
+                        (0x0111, 4, 1, 0),
+                        (0x0117, 4, 1, 0),
+                    ],
+                    &jpeg,
+                ),
+            ),
+            (
+                "too-many-entries.dng",
+                raw_tiff_with_ifd_entries(
+                    std::iter::once((0x0201, 4, 1, 0))
+                        .chain(std::iter::once((0x0202, 4, 1, 0)))
+                        .chain((0..300).map(|index| (0xc000 + index, 4, 1, 1)))
+                        .collect(),
+                    &jpeg,
+                ),
+            ),
+        ];
+
+        for (name, fixture) in cases {
+            let path = temp_path(name);
+            std::fs::write(&path, fixture).expect("write malformed RAW fixture");
+            assert!(
+                render_camera_raw_embedded_preview_png(&path, 128).is_err(),
+                "{name} must fail closed"
+            );
+            std::fs::remove_file(path).expect("remove malformed RAW fixture");
+        }
+    }
+
+    #[test]
+    fn camera_raw_accepts_big_endian_classic_tiff_and_rejects_conflicting_or_polyglot_data() {
+        let jpeg = small_jpeg();
+        let supported = temp_path("big-endian.arw");
+        std::fs::write(&supported, big_endian_raw_tiff_with_embedded_jpeg(&jpeg))
+            .expect("write big-endian RAW fixture");
+        assert!(render_camera_raw_embedded_preview_png(&supported, 128).is_ok());
+        std::fs::remove_file(supported).expect("remove big-endian RAW fixture");
+
+        let duplicate = temp_path("duplicate-candidates.dng");
+        std::fs::write(&duplicate, raw_tiff_with_two_thumbnail_candidates(&jpeg))
+            .expect("write duplicate candidate fixture");
+        assert!(render_camera_raw_embedded_preview_png(&duplicate, 128).is_err());
+        std::fs::remove_file(duplicate).expect("remove duplicate candidate fixture");
+
+        let polyglot = temp_path("polyglot.dng");
+        let mut jpeg_with_trailer = jpeg;
+        jpeg_with_trailer.extend_from_slice(b"trailing payload\xff\xd9");
+        std::fs::write(&polyglot, raw_tiff_with_embedded_jpeg(&jpeg_with_trailer))
+            .expect("write polyglot fixture");
+        assert!(render_camera_raw_embedded_preview_png(&polyglot, 128).is_err());
+        std::fs::remove_file(polyglot).expect("remove polyglot fixture");
+    }
+
+    #[test]
+    fn camera_raw_rejects_subifd_only_and_metadata_overlapping_thumbnails() {
+        let jpeg = small_jpeg();
+        let subifd = temp_path("subifd-only.dng");
+        std::fs::write(&subifd, raw_tiff_with_subifd_thumbnail(&jpeg))
+            .expect("write SubIFD-only fixture");
+        assert!(render_camera_raw_embedded_preview_png(&subifd, 128).is_err());
+        std::fs::remove_file(subifd).expect("remove SubIFD-only fixture");
+
+        let overlap = temp_path("metadata-overlap.dng");
+        let mut fixture = raw_tiff_with_embedded_jpeg(&jpeg);
+        let offset_field = 14 + 2 + 8;
+        fixture[offset_field..offset_field + 4].copy_from_slice(&14u32.to_le_bytes());
+        std::fs::write(&overlap, fixture).expect("write metadata-overlap fixture");
+        assert!(render_camera_raw_embedded_preview_png(&overlap, 128).is_err());
+        std::fs::remove_file(overlap).expect("remove metadata-overlap fixture");
     }
 
     fn write_gzip(path: &Path, payload: &[u8]) {

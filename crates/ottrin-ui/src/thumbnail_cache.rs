@@ -9,6 +9,8 @@ const FOLDER_COLLAGE_ENTRY_LIMIT: usize = 64;
 const FOLDER_COLLAGE_CHILD_LIMIT: usize = 4;
 const FOLDER_COLLAGE_MAX_CHILD_BYTES: u64 = 16 * 1024 * 1024;
 const FOLDER_COLLAGE_MAX_CHILD_PIXELS: u64 = 16 * 1024 * 1024;
+const MAX_CAMERA_RAW_CACHE_PNG_BYTES: u64 = 32 * 1024 * 1024;
+const MAX_CAMERA_RAW_CACHE_PNG_DIMENSION: u32 = 2_048;
 
 #[derive(Debug, Clone)]
 pub(crate) enum ImagePreviewCacheEntry {
@@ -109,6 +111,12 @@ pub(crate) fn load_cached_thumbnail(path: &Path, cache_key: &str) -> Option<Vec<
 /// accept cached PNG only, so stale source bytes cannot bypass it.
 fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u8>> {
     if ottrin_preview::is_epub_path(path) {
+        let _ = std::fs::remove_file(cache_path);
+        return None;
+    }
+    if ottrin_preview::is_camera_raw_path(path)
+        && std::fs::metadata(cache_path).ok()?.len() > MAX_CAMERA_RAW_CACHE_PNG_BYTES
+    {
         let _ = std::fs::remove_file(cache_path);
         return None;
     }
@@ -230,14 +238,68 @@ pub(crate) fn thumbnail_bytes_from_cache_or_build(
 }
 
 fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
-    (!ottrin_preview::is_svg_path(path)
-        && !ottrin_preview::is_epub_path(path)
-        && !ottrin_preview::is_camera_raw_path(path))
+    if ottrin_preview::is_camera_raw_path(path) {
+        return camera_raw_cached_png_is_safe(bytes);
+    }
+    (!ottrin_preview::is_svg_path(path) && !ottrin_preview::is_epub_path(path))
         || is_png_bytes(bytes)
 }
 
 fn is_png_bytes(bytes: &[u8]) -> bool {
     bytes.starts_with(b"\x89PNG\r\n\x1a\n")
+}
+
+fn camera_raw_cached_png_is_safe(bytes: &[u8]) -> bool {
+    if bytes.len() as u64 > MAX_CAMERA_RAW_CACHE_PNG_BYTES || !is_png_bytes(bytes) {
+        return false;
+    }
+    let Some((width, height)) = structurally_valid_png_dimensions(bytes) else {
+        return false;
+    };
+    if width == 0
+        || height == 0
+        || width > MAX_CAMERA_RAW_CACHE_PNG_DIMENSION
+        || height > MAX_CAMERA_RAW_CACHE_PNG_DIMENSION
+    {
+        return false;
+    }
+    image::ImageReader::with_format(Cursor::new(bytes), image::ImageFormat::Png)
+        .decode()
+        .is_ok()
+}
+
+fn structurally_valid_png_dimensions(bytes: &[u8]) -> Option<(u32, u32)> {
+    if bytes.get(..8)? != b"\x89PNG\r\n\x1a\n" {
+        return None;
+    }
+    let mut offset = 8usize;
+    let mut dimensions = None;
+    while offset < bytes.len() {
+        let length = u32::from_be_bytes(bytes.get(offset..offset.checked_add(4)?)?.try_into().ok()?)
+            as usize;
+        let chunk_type = bytes.get(offset + 4..offset.checked_add(8)?)?;
+        let data_start = offset.checked_add(8)?;
+        let data_end = data_start.checked_add(length)?;
+        let chunk_end = data_end.checked_add(4)?;
+        let data = bytes.get(data_start..data_end)?;
+        bytes.get(data_end..chunk_end)?;
+        if dimensions.is_none() {
+            if chunk_type != b"IHDR" || data.len() != 13 {
+                return None;
+            }
+            dimensions = Some((
+                u32::from_be_bytes(data.get(..4)?.try_into().ok()?),
+                u32::from_be_bytes(data.get(4..8)?.try_into().ok()?),
+            ));
+        }
+        offset = chunk_end;
+        if chunk_type == b"IEND" {
+            return (data.is_empty() && offset == bytes.len())
+                .then_some(dimensions)
+                .flatten();
+        }
+    }
+    None
 }
 
 pub(crate) fn full_preview_bytes_at_page(
@@ -634,6 +696,24 @@ mod tests {
         assert!(is_png_bytes(&cached));
         assert!(rebuilt, "raw cache bytes must not bypass the RAW renderer");
         assert!(image::load_from_memory(&thumbnail).is_ok());
+        std::fs::remove_file(path).expect("remove camera RAW fixture");
+    }
+
+    #[test]
+    fn camera_raw_rebuilds_magic_only_png_cache_entries() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-camera-raw-magic-cache-{}.dng",
+            std::process::id()
+        ));
+        std::fs::write(&path, raw_tiff_with_embedded_jpeg(&small_jpeg()))
+            .expect("write camera RAW fixture");
+        let fake_png = b"\x89PNG\r\n\x1a\nnot actually a PNG".to_vec();
+
+        let (bytes, rebuilt) = thumbnail_bytes_from_cache_or_build(&path, 128, Some(fake_png))
+            .expect("RAW preview should rebuild a structurally invalid cache entry");
+
+        assert!(rebuilt, "magic-only cache bytes must be rebuilt");
+        assert!(image::load_from_memory(&bytes).is_ok());
         std::fs::remove_file(path).expect("remove camera RAW fixture");
     }
 
