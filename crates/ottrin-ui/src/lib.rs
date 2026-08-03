@@ -19530,7 +19530,8 @@ fn compact_preview_snippet(
         PreviewKind::ArchiveMetadata
         | PreviewKind::AudioMetadata
         | PreviewKind::CameraRawMetadata
-        | PreviewKind::VideoMetadata => &preview.body,
+        | PreviewKind::VideoMetadata
+        | PreviewKind::FontMetadata => &preview.body,
         PreviewKind::Image | PreviewKind::FolderMetadata | PreviewKind::Unsupported => return None,
     };
     let snippet = metadata_preview_snippet(source, max_lines, max_chars);

@@ -19,5 +19,8 @@ flate2 = "1"
 quick-xml = "0.38"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "tiff"] }
 ab_glyph = "0.2"
+# Direct metadata API; ttf-parser 0.25.1 is MIT OR Apache-2.0 and already
+# resolved transitively by the existing preview rendering stack.
+ttf-parser = "0.25.1"
 epaint_default_fonts = "0.33"
 pdfium-render = { version = "=0.9.3", default-features = false, features = ["image_latest", "pdfium_latest", "thread_safe"] }

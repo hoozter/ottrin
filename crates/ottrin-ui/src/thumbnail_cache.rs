@@ -11,6 +11,8 @@ const FOLDER_COLLAGE_MAX_CHILD_BYTES: u64 = 16 * 1024 * 1024;
 const FOLDER_COLLAGE_MAX_CHILD_PIXELS: u64 = 16 * 1024 * 1024;
 const MAX_CAMERA_RAW_CACHE_PNG_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_CAMERA_RAW_CACHE_PNG_DIMENSION: u32 = 2_048;
+const MAX_FONT_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_FONT_CACHE_PNG_DIMENSION: u32 = 2_048;
 
 #[derive(Debug, Clone)]
 pub(crate) enum ImagePreviewCacheEntry {
@@ -122,6 +124,14 @@ fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u
                 return None;
             }
         }
+    } else if ottrin_preview::is_font_path(path) {
+        match read_font_cache_bytes(cache_path) {
+            Some(bytes) => bytes,
+            None => {
+                let _ = std::fs::remove_file(cache_path);
+                return None;
+            }
+        }
     } else {
         std::fs::read(cache_path).ok()?
     };
@@ -138,8 +148,17 @@ fn read_camera_raw_cache_bytes(path: &Path) -> Option<Vec<u8>> {
 }
 
 fn read_bounded_camera_raw_cache(reader: impl Read) -> std::io::Result<Option<Vec<u8>>> {
-    let limit = usize::try_from(MAX_CAMERA_RAW_CACHE_PNG_BYTES)
-        .expect("RAW cache byte limit fits in usize")
+    read_bounded_cache(reader, MAX_CAMERA_RAW_CACHE_PNG_BYTES)
+}
+
+fn read_font_cache_bytes(path: &Path) -> Option<Vec<u8>> {
+    let file = std::fs::File::open(path).ok()?;
+    read_bounded_cache(file, MAX_FONT_CACHE_PNG_BYTES).ok()?
+}
+
+fn read_bounded_cache(reader: impl Read, max_bytes: u64) -> std::io::Result<Option<Vec<u8>>> {
+    let limit = usize::try_from(max_bytes)
+        .expect("preview cache byte limit fits in usize")
         .saturating_add(1);
     let mut bytes = Vec::with_capacity(limit);
     reader.take(limit as u64).read_to_end(&mut bytes)?;
@@ -224,6 +243,18 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::Font => {
+                match ottrin_preview::render_font_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "Font thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
             _ => None,
         }
     })
@@ -259,8 +290,13 @@ fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
     if ottrin_preview::is_camera_raw_path(path) {
         return camera_raw_cached_png_is_safe(bytes);
     }
-    (!ottrin_preview::is_svg_path(path) && !ottrin_preview::is_epub_path(path))
-        || is_png_bytes(bytes)
+    if ottrin_preview::is_font_path(path) {
+        return font_cached_png_is_safe(bytes);
+    }
+    if !ottrin_preview::preview_profile(path).raw_fallback_allowed() {
+        return is_png_bytes(bytes);
+    }
+    !ottrin_preview::is_svg_path(path) && !ottrin_preview::is_epub_path(path)
 }
 
 fn is_png_bytes(bytes: &[u8]) -> bool {
@@ -268,17 +304,29 @@ fn is_png_bytes(bytes: &[u8]) -> bool {
 }
 
 fn camera_raw_cached_png_is_safe(bytes: &[u8]) -> bool {
-    if bytes.len() as u64 > MAX_CAMERA_RAW_CACHE_PNG_BYTES || !is_png_bytes(bytes) {
+    bounded_cached_png_is_safe(
+        bytes,
+        MAX_CAMERA_RAW_CACHE_PNG_BYTES,
+        MAX_CAMERA_RAW_CACHE_PNG_DIMENSION,
+    )
+}
+
+fn font_cached_png_is_safe(bytes: &[u8]) -> bool {
+    bounded_cached_png_is_safe(
+        bytes,
+        MAX_FONT_CACHE_PNG_BYTES,
+        MAX_FONT_CACHE_PNG_DIMENSION,
+    )
+}
+
+fn bounded_cached_png_is_safe(bytes: &[u8], max_bytes: u64, max_dimension: u32) -> bool {
+    if bytes.len() as u64 > max_bytes || !is_png_bytes(bytes) {
         return false;
     }
     let Some((width, height)) = structurally_valid_png_dimensions(bytes) else {
         return false;
     };
-    if width == 0
-        || height == 0
-        || width > MAX_CAMERA_RAW_CACHE_PNG_DIMENSION
-        || height > MAX_CAMERA_RAW_CACHE_PNG_DIMENSION
-    {
+    if width == 0 || height == 0 || width > max_dimension || height > max_dimension {
         return false;
     }
     image::ImageReader::with_format(Cursor::new(bytes), image::ImageFormat::Png)
@@ -354,25 +402,38 @@ pub(crate) fn full_preview_bytes_at_page(
         };
     }
     full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
-        if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Office {
-            match ottrin_preview::render_office_content_preview_png(path, target_dim) {
-                Ok(bytes) => Some(bytes),
-                Err(error) => {
-                    eprintln!(
-                        "Office preview render failed for {}: {error}",
-                        path.display()
-                    );
-                    None
+        match preview_visual_renderer(path) {
+            ottrin_preview::PreviewVisualRenderer::Office => {
+                match ottrin_preview::render_office_content_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "Office preview render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
                 }
             }
-        } else {
-            match ottrin_preview::render_text_content_preview_png(path, target_dim) {
-                Ok(bytes) => Some(bytes),
-                Err(error) => {
-                    eprintln!("Text preview render failed for {}: {error}", path.display());
-                    None
+            ottrin_preview::PreviewVisualRenderer::TextCard => {
+                match ottrin_preview::render_text_content_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!("Text preview render failed for {}: {error}", path.display());
+                        None
+                    }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::Font => {
+                match ottrin_preview::render_font_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!("Font preview render failed for {}: {error}", path.display());
+                        None
+                    }
+                }
+            }
+            _ => None,
         }
     })
 }
@@ -388,6 +449,7 @@ fn full_preview_bytes_with_visual_renderer(
             | ottrin_preview::PreviewVisualRenderer::Office
             | ottrin_preview::PreviewVisualRenderer::CameraRaw
             | ottrin_preview::PreviewVisualRenderer::TextCard
+            | ottrin_preview::PreviewVisualRenderer::Font
     ) {
         return render_visual(path, target_dim);
     }
@@ -406,7 +468,8 @@ fn build_thumbnail_bytes_with_visual_renderer(
         ottrin_preview::PreviewVisualRenderer::Pdf
         | ottrin_preview::PreviewVisualRenderer::Office
         | ottrin_preview::PreviewVisualRenderer::CameraRaw
-        | ottrin_preview::PreviewVisualRenderer::TextCard => {
+        | ottrin_preview::PreviewVisualRenderer::TextCard
+        | ottrin_preview::PreviewVisualRenderer::Font => {
             return render_visual(path, target_dim);
         }
         ottrin_preview::PreviewVisualRenderer::Image => {
@@ -634,6 +697,13 @@ mod tests {
         jpeg
     }
 
+    fn write_material_font(path: &Path) {
+        let font_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../ottrin-ui/assets/MaterialSymbolsFilled.ttf");
+        std::fs::write(path, std::fs::read(font_path).expect("read material font"))
+            .expect("write font fixture");
+    }
+
     #[test]
     fn pdf_thumbnail_uses_visual_renderer_case_insensitively() {
         let path = Path::new("report.PDF");
@@ -829,6 +899,81 @@ mod tests {
         assert!(bytes.is_some(), "safe text should receive a generated card");
         assert!(image::load_from_memory(&bytes.expect("card")).is_ok());
         std::fs::remove_file(path).expect("remove text fixture");
+    }
+
+    #[test]
+    fn font_thumbnail_and_full_preview_use_dedicated_visual_renderer() {
+        let path =
+            std::env::temp_dir().join(format!("ottrin-font-preview-{}.ttf", std::process::id()));
+        write_material_font(&path);
+
+        let direct =
+            ottrin_preview::render_font_preview_png(&path, 256).expect("font visual render");
+        let thumbnail = build_thumbnail_bytes(&path, 256).expect("font thumbnail");
+        let full = full_preview_bytes_at_page(&path, 256, 0).expect("font full preview");
+
+        assert_eq!(
+            thumbnail, direct,
+            "thumbnail must be routed through font renderer"
+        );
+        assert_eq!(
+            full, direct,
+            "full preview must be routed through font renderer"
+        );
+        let raw = std::fs::read(&path).expect("read source font");
+        assert_ne!(thumbnail, raw, "font visual output must not be raw bytes");
+        assert!(image::load_from_memory(&thumbnail).is_ok());
+        assert!(image::load_from_memory(&full).is_ok());
+
+        std::fs::remove_file(path).expect("remove font fixture");
+    }
+
+    #[test]
+    fn font_thumbnail_rebuilds_from_stale_non_png_cache_entry() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-font-cache-policy-{}.ttf",
+            std::process::id()
+        ));
+        write_material_font(&path);
+        let (cached, rebuilt) =
+            thumbnail_bytes_from_cache_or_build(&path, 256, Some(b"not a png".to_vec()))
+                .expect("font thumbnail with stale cache");
+
+        assert!(
+            rebuilt,
+            "font preview must not consume stale raw cache bytes"
+        );
+        assert!(is_png_bytes(&cached));
+        assert!(image::load_from_memory(&cached).is_ok());
+        std::fs::remove_file(path).expect("remove font fixture");
+    }
+
+    #[test]
+    fn font_cache_rejects_oversized_png_named_entries_before_loading_them() {
+        let font_path = std::env::temp_dir().join(format!(
+            "ottrin-font-cache-bounds-{}.ttf",
+            std::process::id()
+        ));
+        let cache_path = std::env::temp_dir().join(format!(
+            "ottrin-font-cache-bounds-{}.png",
+            std::process::id()
+        ));
+        write_material_font(&font_path);
+        std::fs::write(&cache_path, b"\x89PNG\r\n\x1a\n").expect("write cache header");
+        std::fs::File::options()
+            .write(true)
+            .open(&cache_path)
+            .expect("open oversized cache")
+            .set_len(MAX_FONT_CACHE_PNG_BYTES + 1)
+            .expect("extend cache past limit");
+
+        assert!(load_cached_thumbnail_at_path(&font_path, &cache_path).is_none());
+        assert!(
+            !cache_path.exists(),
+            "unsafe font cache data must be discarded rather than passed to the image loader"
+        );
+
+        std::fs::remove_file(font_path).expect("remove font fixture");
     }
 
     #[test]

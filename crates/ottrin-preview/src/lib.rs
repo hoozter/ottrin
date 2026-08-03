@@ -35,6 +35,21 @@ const MAX_CAMERA_RAW_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_CAMERA_RAW_EMBEDDED_JPEG_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_CAMERA_RAW_EMBEDDED_JPEG_PIXELS: u64 = 16 * 1024 * 1024;
 const MAX_CAMERA_RAW_PREVIEW_DIMENSION: u32 = 4096;
+const MAX_FONT_PREVIEW_PACKAGE_BYTES: u64 = 16 * 1024 * 1024;
+const MAX_FONT_PREVIEW_DIMENSION: u32 = 2048;
+const MAX_FONT_PREVIEW_PIXELS: u64 = 4_194_304;
+const MAX_FONT_TEXT_GLYPHS: usize = 32;
+const MAX_FONT_TABLES: usize = 128;
+const MAX_FONT_NAME_TABLE_BYTES: usize = 64 * 1024;
+const MAX_FONT_NAME_RECORDS: usize = 128;
+const MAX_FONT_NAME_BYTES: usize = 512;
+const MAX_FONT_NAME_CHARS: usize = 96;
+const MAX_FONT_GLYPH_PIXELS: u64 = 256 * 256;
+const MAX_FONT_TOTAL_GLYPH_PIXELS: u64 = 512 * 1024;
+const MAX_FONT_OUTLINE_SEGMENTS: usize = 512;
+const MAX_FONT_OUTLINE_RASTER_STEPS: u64 = 512 * 1024;
+const MAX_FONT_SIMPLE_GLYPH_CONTOURS: usize = 64;
+const MAX_FONT_SIMPLE_GLYPH_POINTS: usize = 256;
 const MAX_CAMERA_RAW_TIFF_IFDS: usize = 8;
 const MAX_CAMERA_RAW_TIFF_ENTRIES_PER_IFD: usize = 256;
 const MAX_CAMERA_RAW_TIFF_TOTAL_ENTRIES: usize = 512;
@@ -306,11 +321,96 @@ pub enum SvgVisualError {
     Rasterize(String),
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum FontVisualError {
+    #[error("format is not TTF/OTF")]
+    UnsupportedFormat,
+    #[error("could not inspect font input: {0}")]
+    InputMetadata(String),
+    #[error("Font input is too large for a bounded preview ({actual} bytes; limit {limit} bytes)")]
+    InputTooLarge { actual: u64, limit: u64 },
+    #[error("Font input could not be read: {0}")]
+    Read(String),
+    #[error("font input changed while its bounded snapshot was read")]
+    InputChanged,
+    #[error("TrueType collection fonts are not supported in this bounded preview")]
+    UnsupportedCollection,
+    #[error("font extension does not match its single-face SFNT container")]
+    ExtensionMismatch,
+    #[error("font table directory is unsafe: {0}")]
+    InvalidTableDirectory(String),
+    #[error("font contains an unsupported {tag:?} color, bitmap, or SVG surface")]
+    UnsupportedSurface { tag: [u8; 4] },
+    #[error("font could not be parsed for preview: {0}")]
+    Parse(String),
+    #[error("font outline work is unsafe: {0}")]
+    UnsafeOutlineWork(String),
+    #[error("font preview dimensions are unbounded ({dimension}px)")]
+    UnboundedDimensions { dimension: u32 },
+    #[error("font preview could not be encoded: {0}")]
+    Encode(String),
+}
+
+#[derive(Debug, Clone, Copy)]
+struct FontTableRecord {
+    tag: [u8; 4],
+    offset: usize,
+    length: usize,
+}
+
+#[derive(Debug, Clone, Copy)]
+enum FontOutlineCommand {
+    MoveTo(f32, f32),
+    LineTo(f32, f32),
+    QuadTo(f32, f32, f32, f32),
+    CurveTo(f32, f32, f32, f32, f32, f32),
+    Close,
+}
+
+#[derive(Default)]
+struct BoundedFontOutline {
+    commands: Vec<FontOutlineCommand>,
+    limit_exceeded: bool,
+}
+
+impl BoundedFontOutline {
+    fn push(&mut self, command: FontOutlineCommand) {
+        if self.commands.len() >= MAX_FONT_OUTLINE_SEGMENTS {
+            self.limit_exceeded = true;
+            return;
+        }
+        self.commands.push(command);
+    }
+}
+
+impl ttf_parser::OutlineBuilder for BoundedFontOutline {
+    fn move_to(&mut self, x: f32, y: f32) {
+        self.push(FontOutlineCommand::MoveTo(x, y));
+    }
+
+    fn line_to(&mut self, x: f32, y: f32) {
+        self.push(FontOutlineCommand::LineTo(x, y));
+    }
+
+    fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
+        self.push(FontOutlineCommand::QuadTo(x1, y1, x, y));
+    }
+
+    fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
+        self.push(FontOutlineCommand::CurveTo(x1, y1, x2, y2, x, y));
+    }
+
+    fn close(&mut self) {
+        self.push(FontOutlineCommand::Close);
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PreviewKind {
     Text,
     Image,
     FolderMetadata,
+    FontMetadata,
     Pdf,
     VideoMetadata,
     AudioMetadata,
@@ -347,6 +447,7 @@ pub enum PreviewVisualRenderer {
     Image,
     Pdf,
     Office,
+    Font,
     CameraRaw,
     TextCard,
 }
@@ -398,6 +499,12 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
             views: [true, false, true],
             visual_renderer: PreviewVisualRenderer::Image,
             raw_fallback_allowed: true,
+        },
+        PreviewKind::FontMetadata => PreviewProfile {
+            kind,
+            views: [true, false, true],
+            visual_renderer: PreviewVisualRenderer::Font,
+            raw_fallback_allowed: false,
         },
         PreviewKind::Pdf => PreviewProfile {
             kind,
@@ -462,6 +569,11 @@ pub fn preview_profile(path: &Path) -> PreviewProfile {
         // only a bounded, verified embedded JPEG may reach the visual surface.
         profile.raw_fallback_allowed = false;
     }
+    if is_font_path(path) {
+        // Font containers are always visualized through the dedicated preview
+        // renderer; they do not fall back to raw bytes.
+        profile.raw_fallback_allowed = false;
+    }
     profile
 }
 
@@ -469,6 +581,12 @@ pub fn is_camera_raw_path(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(|extension| matches!(extension.to_ascii_lowercase().as_str(), "dng" | "arw"))
+}
+
+pub fn is_font_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| matches!(extension.to_ascii_lowercase().as_str(), "ttf" | "otf"))
 }
 
 pub fn is_epub_path(path: &Path) -> bool {
@@ -492,6 +610,7 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
     match classify_path(&request.path) {
         PreviewKind::Text => preview_text(title, &request.path),
         PreviewKind::Image => preview_image(title, &request.path),
+        PreviewKind::FontMetadata => preview_font(title, &request.path),
         PreviewKind::Pdf => preview_pdf(title, &request.path),
         PreviewKind::VideoMetadata => preview_video(title, &request.path),
         PreviewKind::AudioMetadata => preview_audio(title, &request.path),
@@ -516,6 +635,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         | "rs" | "js" | "ts" | "jsx" | "tsx" | "py" | "rb" | "go" | "java" | "c" | "cpp" | "h"
         | "hpp" | "m" | "mm" | "sh" | "bash" | "zsh" | "fish" | "ps1" | "bat" | "vcf" | "ics"
         | "ical" | "ldif" | "sql" | "rtf" => PreviewKind::Text,
+        "ttf" | "otf" => PreviewKind::FontMetadata,
         "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" | "ico" | "svg" => {
             PreviewKind::Image
         }
@@ -1373,6 +1493,839 @@ fn preview_camera_raw(title: String, path: &Path) -> PreviewData {
         ),
         open_external: true,
     }
+}
+
+fn preview_font(title: String, path: &Path) -> PreviewData {
+    let mut lines = vec![
+        "Filetype: OpenType/TrueType font".to_string(),
+        format!(
+            "Format: {}",
+            path_format(path).unwrap_or_else(|| "Font".to_string())
+        ),
+    ];
+    if let Some(size) = std::fs::metadata(path).ok().map(|metadata| metadata.len()) {
+        lines.push(format!("Size: {}", format_size(size)));
+    }
+    if let Ok(source) = read_bounded_font_bytes(path)
+        && let Ok(tables) = validate_font_container(path, &source)
+        && let Ok(face) = ttf_parser::Face::parse(&source, 0)
+        && let Some(identity) = bounded_font_identity(&face, &tables)
+    {
+        lines.push(format!("Family: {identity}"));
+    }
+    lines.push("Preview: Bounded font sample".to_string());
+    PreviewData {
+        title,
+        kind: PreviewKind::FontMetadata,
+        body: lines.join("\n"),
+        open_external: true,
+    }
+}
+
+/// Generates a bounded PNG preview for OpenType/TrueType fonts.
+pub fn render_font_preview_png(path: &Path, target_dim: u32) -> Result<Vec<u8>, FontVisualError> {
+    if !is_font_path(path) {
+        return Err(FontVisualError::UnsupportedFormat);
+    }
+    let source = read_bounded_font_bytes(path)?;
+    let tables = validate_font_container(path, &source)?;
+    let face = ttf_parser::Face::parse(&source, 0)
+        .map_err(|error| FontVisualError::Parse(error.to_string()))?;
+    let specimen = font_specimen(bounded_font_identity(&face, &tables));
+
+    let dimension = target_dim.clamp(64, MAX_FONT_PREVIEW_DIMENSION);
+    let dimension_pixels = u64::from(dimension).saturating_mul(dimension.into());
+    if dimension_pixels > MAX_FONT_PREVIEW_PIXELS {
+        return Err(FontVisualError::UnboundedDimensions { dimension });
+    }
+
+    if source.starts_with(b"OTTO") {
+        // CFF charstrings have no bounded abort callback. Keep their preview
+        // useful but do not execute an unbounded outline decoder in-process.
+        return render_cff_font_card(&specimen, dimension);
+    }
+    preflight_ttf_specimen_glyphs(&source, &tables, &face, &specimen)?;
+    render_font_sample_png(&face, &specimen, dimension)
+}
+
+fn read_bounded_font_bytes(path: &Path) -> Result<Vec<u8>, FontVisualError> {
+    let mut file =
+        std::fs::File::open(path).map_err(|error| FontVisualError::Read(error.to_string()))?;
+    let input_size = file
+        .metadata()
+        .map_err(|error| FontVisualError::InputMetadata(error.to_string()))?
+        .len();
+    if input_size > MAX_FONT_PREVIEW_PACKAGE_BYTES {
+        return Err(FontVisualError::InputTooLarge {
+            actual: input_size,
+            limit: MAX_FONT_PREVIEW_PACKAGE_BYTES,
+        });
+    }
+    let capacity = usize::try_from(input_size).map_err(|_| FontVisualError::InputTooLarge {
+        actual: input_size,
+        limit: MAX_FONT_PREVIEW_PACKAGE_BYTES,
+    })?;
+    let mut source = Vec::with_capacity(capacity);
+    file.by_ref()
+        .take(MAX_FONT_PREVIEW_PACKAGE_BYTES + 1)
+        .read_to_end(&mut source)
+        .map_err(|error| FontVisualError::Read(error.to_string()))?;
+    let final_size = file
+        .metadata()
+        .map_err(|error| FontVisualError::Read(error.to_string()))?
+        .len();
+    if source.len() as u64 != input_size || final_size != input_size {
+        return Err(FontVisualError::InputChanged);
+    }
+    Ok(source)
+}
+
+fn validate_font_container(
+    path: &Path,
+    source: &[u8],
+) -> Result<Vec<FontTableRecord>, FontVisualError> {
+    let extension = path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .map(|extension| extension.to_ascii_lowercase());
+    let magic = source
+        .get(..4)
+        .ok_or_else(|| FontVisualError::InvalidTableDirectory("missing SFNT header".to_string()))?;
+    if magic == b"ttcf" {
+        return Err(FontVisualError::UnsupportedCollection);
+    }
+    let expected_magic: &[u8] = match extension.as_deref() {
+        Some("ttf") => b"\0\x01\0\0",
+        Some("otf") => b"OTTO",
+        _ => return Err(FontVisualError::UnsupportedFormat),
+    };
+    if magic != expected_magic {
+        return Err(FontVisualError::ExtensionMismatch);
+    }
+    if source.len() < 12 {
+        return Err(FontVisualError::InvalidTableDirectory(
+            "truncated SFNT offset table".to_string(),
+        ));
+    }
+    let table_count = usize::from(u16::from_be_bytes([source[4], source[5]]));
+    if table_count == 0 || table_count > MAX_FONT_TABLES {
+        return Err(FontVisualError::InvalidTableDirectory(format!(
+            "table count {table_count} exceeds bounded preview limits"
+        )));
+    }
+    let directory_bytes = table_count
+        .checked_mul(16)
+        .and_then(|bytes| bytes.checked_add(12))
+        .ok_or_else(|| FontVisualError::InvalidTableDirectory("directory overflow".to_string()))?;
+    if directory_bytes > source.len() {
+        return Err(FontVisualError::InvalidTableDirectory(
+            "truncated SFNT table directory".to_string(),
+        ));
+    }
+
+    let mut tables = Vec::with_capacity(table_count);
+    let mut ranges = Vec::with_capacity(table_count);
+    for index in 0..table_count {
+        let entry_offset = 12 + index * 16;
+        let tag = source[entry_offset..entry_offset + 4]
+            .try_into()
+            .expect("four-byte SFNT tag");
+        if tables
+            .iter()
+            .any(|table: &FontTableRecord| table.tag == tag)
+        {
+            return Err(FontVisualError::InvalidTableDirectory(format!(
+                "duplicate table tag {tag:?}"
+            )));
+        }
+        if is_unsupported_font_surface(tag) {
+            return Err(FontVisualError::UnsupportedSurface { tag });
+        }
+        let offset = usize::try_from(u32::from_be_bytes(
+            source[entry_offset + 8..entry_offset + 12]
+                .try_into()
+                .expect("four-byte SFNT offset"),
+        ))
+        .map_err(|_| FontVisualError::InvalidTableDirectory("table offset overflow".to_string()))?;
+        let length = usize::try_from(u32::from_be_bytes(
+            source[entry_offset + 12..entry_offset + 16]
+                .try_into()
+                .expect("four-byte SFNT length"),
+        ))
+        .map_err(|_| FontVisualError::InvalidTableDirectory("table length overflow".to_string()))?;
+        let end = offset.checked_add(length).ok_or_else(|| {
+            FontVisualError::InvalidTableDirectory("table offset plus length overflow".to_string())
+        })?;
+        if end > source.len() || (length > 0 && offset < directory_bytes) {
+            return Err(FontVisualError::InvalidTableDirectory(format!(
+                "table {tag:?} is outside the bounded SFNT payload"
+            )));
+        }
+        if length > 0 {
+            ranges.push((offset, end));
+        }
+        tables.push(FontTableRecord {
+            tag,
+            offset,
+            length,
+        });
+    }
+    ranges.sort_unstable_by_key(|range| range.0);
+    if ranges.windows(2).any(|ranges| ranges[0].1 > ranges[1].0) {
+        return Err(FontVisualError::InvalidTableDirectory(
+            "nonempty SFNT tables overlap".to_string(),
+        ));
+    }
+    if let Some(name) = tables.iter().find(|table| table.tag == *b"name") {
+        validate_font_name_table(&source[name.offset..name.offset + name.length])?;
+    }
+    Ok(tables)
+}
+
+fn is_unsupported_font_surface(tag: [u8; 4]) -> bool {
+    [*b"SVG ", *b"CBDT", *b"CBLC", *b"sbix", *b"COLR", *b"CPAL"].contains(&tag)
+}
+
+fn validate_font_name_table(data: &[u8]) -> Result<(), FontVisualError> {
+    if data.len() > MAX_FONT_NAME_TABLE_BYTES {
+        return Err(FontVisualError::InvalidTableDirectory(
+            "name table exceeds bounded metadata limits".to_string(),
+        ));
+    }
+    if data.len() < 6 {
+        return Err(FontVisualError::InvalidTableDirectory(
+            "truncated name table".to_string(),
+        ));
+    }
+    let record_count = usize::from(u16::from_be_bytes([data[2], data[3]]));
+    if record_count > MAX_FONT_NAME_RECORDS {
+        return Err(FontVisualError::InvalidTableDirectory(
+            "name record count exceeds bounded metadata limits".to_string(),
+        ));
+    }
+    let strings_offset = usize::from(u16::from_be_bytes([data[4], data[5]]));
+    let records_end = record_count
+        .checked_mul(12)
+        .and_then(|bytes| bytes.checked_add(6))
+        .ok_or_else(|| {
+            FontVisualError::InvalidTableDirectory("name record overflow".to_string())
+        })?;
+    if strings_offset < records_end || strings_offset > data.len() {
+        return Err(FontVisualError::InvalidTableDirectory(
+            "invalid name string storage offset".to_string(),
+        ));
+    }
+    for index in 0..record_count {
+        let record_offset = 6 + index * 12;
+        let length = usize::from(u16::from_be_bytes([
+            data[record_offset + 8],
+            data[record_offset + 9],
+        ]));
+        let offset = usize::from(u16::from_be_bytes([
+            data[record_offset + 10],
+            data[record_offset + 11],
+        ]));
+        let end = strings_offset
+            .checked_add(offset)
+            .and_then(|start| start.checked_add(length));
+        if length > MAX_FONT_NAME_BYTES || end.is_none_or(|end| end > data.len()) {
+            return Err(FontVisualError::InvalidTableDirectory(
+                "name record is outside bounded string storage".to_string(),
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn bounded_font_identity(
+    face: &ttf_parser::Face<'_>,
+    tables: &[FontTableRecord],
+) -> Option<String> {
+    if !tables.iter().any(|table| table.tag == *b"name") {
+        return None;
+    }
+    for name_id in [
+        ttf_parser::name_id::TYPOGRAPHIC_FAMILY,
+        ttf_parser::name_id::FAMILY,
+        ttf_parser::name_id::FULL_NAME,
+    ] {
+        for name in face.names() {
+            if name.name_id == name_id
+                && name.name.len() <= MAX_FONT_NAME_BYTES
+                && let Some(value) = name.to_string()
+            {
+                let value: String = value
+                    .chars()
+                    .filter(|character| !character.is_control())
+                    .take(MAX_FONT_NAME_CHARS)
+                    .collect();
+                if !value.trim().is_empty() {
+                    return Some(value);
+                }
+            }
+        }
+    }
+    None
+}
+
+fn font_specimen(identity: Option<String>) -> String {
+    match identity {
+        Some(identity) => format!("Aa Bb Cc 123\n{identity}"),
+        None => "Aa Bb Cc 123\nFont preview".to_string(),
+    }
+}
+
+fn font_table<'a>(
+    source: &'a [u8],
+    tables: &[FontTableRecord],
+    tag: [u8; 4],
+) -> Result<&'a [u8], FontVisualError> {
+    let table = tables
+        .iter()
+        .find(|table| table.tag == tag)
+        .ok_or_else(|| {
+            FontVisualError::UnsafeOutlineWork(format!("missing required TTF table {tag:?}"))
+        })?;
+    source
+        .get(table.offset..table.offset + table.length)
+        .ok_or_else(|| {
+            FontVisualError::UnsafeOutlineWork("invalid validated TTF table".to_string())
+        })
+}
+
+fn preflight_ttf_specimen_glyphs(
+    source: &[u8],
+    tables: &[FontTableRecord],
+    face: &ttf_parser::Face<'_>,
+    specimen: &str,
+) -> Result<(), FontVisualError> {
+    let head = font_table(source, tables, *b"head")?;
+    let maxp = font_table(source, tables, *b"maxp")?;
+    let loca = font_table(source, tables, *b"loca")?;
+    let glyf = font_table(source, tables, *b"glyf")?;
+    let index_format = i16::from_be_bytes(
+        head.get(50..52)
+            .ok_or_else(|| FontVisualError::UnsafeOutlineWork("truncated head table".to_string()))?
+            .try_into()
+            .expect("two-byte head index format"),
+    );
+    let glyph_count = usize::from(u16::from_be_bytes(
+        maxp.get(4..6)
+            .ok_or_else(|| FontVisualError::UnsafeOutlineWork("truncated maxp table".to_string()))?
+            .try_into()
+            .expect("two-byte maxp glyph count"),
+    ));
+    let entry_size = match index_format {
+        0 => 2,
+        1 => 4,
+        _ => {
+            return Err(FontVisualError::UnsafeOutlineWork(
+                "unsupported loca index format".to_string(),
+            ));
+        }
+    };
+    let required_loca_bytes = glyph_count
+        .checked_add(1)
+        .and_then(|entries| entries.checked_mul(entry_size))
+        .ok_or_else(|| {
+            FontVisualError::UnsafeOutlineWork("loca table size overflow".to_string())
+        })?;
+    if loca.len() < required_loca_bytes {
+        return Err(FontVisualError::UnsafeOutlineWork(
+            "truncated loca table".to_string(),
+        ));
+    }
+    let mut glyphs = Vec::new();
+    for character in specimen.chars().take(MAX_FONT_TEXT_GLYPHS) {
+        if character == '\n' {
+            continue;
+        }
+        let glyph = face
+            .glyph_index(character)
+            .unwrap_or(ttf_parser::GlyphId(0));
+        if !glyphs.contains(&glyph) {
+            glyphs.push(glyph);
+        }
+    }
+    for glyph in glyphs {
+        let glyph_id = usize::from(glyph.0);
+        if glyph_id >= glyph_count {
+            return Err(FontVisualError::UnsafeOutlineWork(
+                "cmap returned an out-of-range glyph".to_string(),
+            ));
+        }
+        let start = ttf_loca_offset(loca, glyph_id, entry_size, index_format)?;
+        let end = ttf_loca_offset(loca, glyph_id + 1, entry_size, index_format)?;
+        if start > end || end > glyf.len() {
+            return Err(FontVisualError::UnsafeOutlineWork(
+                "glyph loca range is invalid".to_string(),
+            ));
+        }
+        preflight_simple_ttf_glyph(&glyf[start..end])?;
+    }
+    Ok(())
+}
+
+fn ttf_loca_offset(
+    loca: &[u8],
+    index: usize,
+    entry_size: usize,
+    index_format: i16,
+) -> Result<usize, FontVisualError> {
+    let offset = index
+        .checked_mul(entry_size)
+        .ok_or_else(|| FontVisualError::UnsafeOutlineWork("loca index overflow".to_string()))?;
+    match index_format {
+        0 => Ok(usize::from(u16::from_be_bytes(
+            loca.get(offset..offset + 2)
+                .ok_or_else(|| {
+                    FontVisualError::UnsafeOutlineWork("truncated loca entry".to_string())
+                })?
+                .try_into()
+                .expect("two-byte loca entry"),
+        )) * 2),
+        1 => Ok(usize::try_from(u32::from_be_bytes(
+            loca.get(offset..offset + 4)
+                .ok_or_else(|| {
+                    FontVisualError::UnsafeOutlineWork("truncated loca entry".to_string())
+                })?
+                .try_into()
+                .expect("four-byte loca entry"),
+        ))
+        .expect("u32 fits usize on supported Ottrin targets")),
+        _ => unreachable!("validated loca index format"),
+    }
+}
+
+fn preflight_simple_ttf_glyph(data: &[u8]) -> Result<(), FontVisualError> {
+    if data.is_empty() {
+        return Ok(());
+    }
+    let contour_count = i16::from_be_bytes(
+        data.get(..2)
+            .ok_or_else(|| {
+                FontVisualError::UnsafeOutlineWork("truncated glyph header".to_string())
+            })?
+            .try_into()
+            .expect("two-byte contour count"),
+    );
+    if contour_count < 0 {
+        return Err(FontVisualError::UnsafeOutlineWork(
+            "composite glyphs are outside the bounded preview subset".to_string(),
+        ));
+    }
+    let contour_count = contour_count as usize;
+    if contour_count > MAX_FONT_SIMPLE_GLYPH_CONTOURS {
+        return Err(FontVisualError::UnsafeOutlineWork(
+            "simple glyph exceeds contour limit".to_string(),
+        ));
+    }
+    let endpoints_end = 10usize
+        .checked_add(contour_count.checked_mul(2).ok_or_else(|| {
+            FontVisualError::UnsafeOutlineWork("glyph endpoint overflow".to_string())
+        })?)
+        .ok_or_else(|| FontVisualError::UnsafeOutlineWork("glyph endpoint overflow".to_string()))?;
+    let last_point = if contour_count == 0 {
+        0
+    } else {
+        usize::from(u16::from_be_bytes(
+            data.get(endpoints_end - 2..endpoints_end)
+                .ok_or_else(|| {
+                    FontVisualError::UnsafeOutlineWork("truncated glyph endpoints".to_string())
+                })?
+                .try_into()
+                .expect("two-byte endpoint"),
+        ))
+        .checked_add(1)
+        .ok_or_else(|| FontVisualError::UnsafeOutlineWork("glyph point overflow".to_string()))?
+    };
+    if last_point > MAX_FONT_SIMPLE_GLYPH_POINTS {
+        return Err(FontVisualError::UnsafeOutlineWork(
+            "simple glyph exceeds point limit".to_string(),
+        ));
+    }
+    let instruction_length_offset = endpoints_end;
+    let instruction_length = usize::from(u16::from_be_bytes(
+        data.get(instruction_length_offset..instruction_length_offset + 2)
+            .ok_or_else(|| {
+                FontVisualError::UnsafeOutlineWork("truncated glyph instructions".to_string())
+            })?
+            .try_into()
+            .expect("two-byte instruction length"),
+    ));
+    let mut offset = instruction_length_offset
+        .checked_add(2)
+        .and_then(|value| value.checked_add(instruction_length))
+        .ok_or_else(|| {
+            FontVisualError::UnsafeOutlineWork("glyph instruction overflow".to_string())
+        })?;
+    let mut flags = Vec::with_capacity(last_point);
+    while flags.len() < last_point {
+        let flag = *data.get(offset).ok_or_else(|| {
+            FontVisualError::UnsafeOutlineWork("truncated glyph flags".to_string())
+        })?;
+        offset += 1;
+        let repetitions = if flag & 0x08 != 0 {
+            usize::from(*data.get(offset).ok_or_else(|| {
+                FontVisualError::UnsafeOutlineWork("truncated repeated glyph flag".to_string())
+            })?) + 1
+        } else {
+            1
+        };
+        if flag & 0x08 != 0 {
+            offset += 1;
+        }
+        if flags
+            .len()
+            .checked_add(repetitions)
+            .is_none_or(|count| count > last_point)
+        {
+            return Err(FontVisualError::UnsafeOutlineWork(
+                "glyph flag repetitions exceed point count".to_string(),
+            ));
+        }
+        flags.extend(std::iter::repeat_n(flag, repetitions));
+    }
+    let coordinate_bytes = flags.iter().try_fold(0usize, |total, flag| {
+        let x = if flag & 0x02 != 0 {
+            1
+        } else if flag & 0x10 != 0 {
+            0
+        } else {
+            2
+        };
+        let y = if flag & 0x04 != 0 {
+            1
+        } else if flag & 0x20 != 0 {
+            0
+        } else {
+            2
+        };
+        total.checked_add(x + y)
+    });
+    if coordinate_bytes
+        .is_none_or(|bytes| offset.checked_add(bytes).is_none_or(|end| end > data.len()))
+    {
+        return Err(FontVisualError::UnsafeOutlineWork(
+            "truncated glyph coordinates".to_string(),
+        ));
+    }
+    Ok(())
+}
+
+fn render_cff_font_card(specimen: &str, dimension: u32) -> Result<Vec<u8>, FontVisualError> {
+    let mut image =
+        image::RgbaImage::from_pixel(dimension, dimension, image::Rgba([255, 255, 255, 255]));
+    render_document_text(
+        &mut image,
+        &format!("CFF font\n{specimen}"),
+        dimension / 10,
+        dimension / 10,
+        dimension.saturating_sub(dimension / 10),
+        dimension.saturating_sub(dimension / 10),
+    );
+    let mut bytes = Vec::new();
+    use image::ImageEncoder;
+    image::codecs::png::PngEncoder::new(&mut bytes)
+        .write_image(
+            image.as_raw(),
+            dimension,
+            dimension,
+            image::ExtendedColorType::Rgba8,
+        )
+        .map_err(|error: image::ImageError| FontVisualError::Encode(error.to_string()))?;
+    Ok(bytes)
+}
+
+fn render_font_sample_png(
+    face: &ttf_parser::Face<'_>,
+    specimen: &str,
+    dimension: u32,
+) -> Result<Vec<u8>, FontVisualError> {
+    let mut image =
+        image::RgbaImage::from_pixel(dimension, dimension, image::Rgba([255, 255, 255, 255]));
+    render_text_with_font(
+        &mut image,
+        face,
+        specimen,
+        dimension / 10,
+        dimension / 10,
+        dimension.saturating_sub(dimension / 10),
+        dimension.saturating_sub(dimension / 10),
+    )?;
+    let mut bytes = Vec::new();
+    use image::ImageEncoder;
+    image::codecs::png::PngEncoder::new(&mut bytes)
+        .write_image(
+            image.as_raw(),
+            dimension,
+            dimension,
+            image::ExtendedColorType::Rgba8,
+        )
+        .map_err(|error: image::ImageError| FontVisualError::Encode(error.to_string()))?;
+    Ok(bytes)
+}
+
+fn render_text_with_font(
+    image: &mut image::RgbaImage,
+    face: &ttf_parser::Face<'_>,
+    text: &str,
+    left: u32,
+    top: u32,
+    right: u32,
+    bottom: u32,
+) -> Result<(), FontVisualError> {
+    use std::string::String;
+
+    let sample = text.chars().take(MAX_FONT_TEXT_GLYPHS).collect::<String>();
+    let font_size = (image.width() as f32 / 12.0).clamp(8.0, 36.0);
+    let units_per_em = face.units_per_em();
+    if units_per_em == 0 {
+        return Err(FontVisualError::UnsafeOutlineWork(
+            "font has zero units per em".to_string(),
+        ));
+    }
+    let scale = font_size / f32::from(units_per_em);
+    let ascent = f32::from(face.ascender()) * scale;
+    let line_height = (f32::from(face.height()) * scale * 1.4).max(font_size + 2.0);
+    if !scale.is_finite() || !ascent.is_finite() || !line_height.is_finite() || line_height <= 0.0 {
+        return Err(FontVisualError::UnsafeOutlineWork(
+            "non-finite font metrics".to_string(),
+        ));
+    }
+    let max_width = right.saturating_sub(left) as f32;
+    let mut x = left as f32;
+    let mut baseline = top as f32 + ascent;
+    let mut total_pixels = 0_u64;
+    let mut total_raster_steps = 0_u64;
+    for ch in sample.chars() {
+        if ch == '\n' {
+            x = left as f32;
+            baseline += line_height;
+            if !baseline.is_finite() || baseline > bottom as f32 {
+                return Ok(());
+            }
+            continue;
+        }
+        let id = face.glyph_index(ch).unwrap_or(ttf_parser::GlyphId(0));
+        let advance = face
+            .glyph_hor_advance(id)
+            .map(f32::from)
+            .unwrap_or(f32::from(units_per_em) / 2.0)
+            * scale;
+        if !advance.is_finite() || !x.is_finite() || !baseline.is_finite() {
+            return Err(FontVisualError::UnsafeOutlineWork(
+                "non-finite glyph positioning".to_string(),
+            ));
+        }
+        if x + advance > left as f32 + max_width && x > left as f32 {
+            x = left as f32;
+            baseline += line_height;
+            if !baseline.is_finite() || baseline > bottom as f32 {
+                return Ok(());
+            }
+        }
+        let mut outline = BoundedFontOutline::default();
+        let Some(bounds) = face.outline_glyph(id, &mut outline) else {
+            x += advance;
+            continue;
+        };
+        if outline.limit_exceeded {
+            return Err(FontVisualError::UnsafeOutlineWork(
+                "glyph outline exceeds segment limit".to_string(),
+            ));
+        }
+        let min_x = x + f32::from(bounds.x_min) * scale;
+        let max_x = x + f32::from(bounds.x_max) * scale;
+        let min_y = baseline - f32::from(bounds.y_max) * scale;
+        let max_y = baseline - f32::from(bounds.y_min) * scale;
+        if !min_x.is_finite()
+            || !min_y.is_finite()
+            || !max_x.is_finite()
+            || !max_y.is_finite()
+            || min_x < 0.0
+            || min_y < 0.0
+            || max_x > image.width() as f32
+            || max_y > image.height() as f32
+            || max_x < min_x
+            || max_y < min_y
+        {
+            return Err(FontVisualError::UnsafeOutlineWork(
+                "glyph raster bounds are outside the preview surface".to_string(),
+            ));
+        }
+        let width = (max_x.ceil() - min_x.floor()) as u64;
+        let height = (max_y.ceil() - min_y.floor()) as u64;
+        let glyph_pixels = width.checked_mul(height).ok_or_else(|| {
+            FontVisualError::UnsafeOutlineWork("glyph pixel work overflow".to_string())
+        })?;
+        total_pixels = total_pixels.checked_add(glyph_pixels).ok_or_else(|| {
+            FontVisualError::UnsafeOutlineWork("total glyph pixel work overflow".to_string())
+        })?;
+        if glyph_pixels > MAX_FONT_GLYPH_PIXELS || total_pixels > MAX_FONT_TOTAL_GLYPH_PIXELS {
+            return Err(FontVisualError::UnsafeOutlineWork(
+                "glyph raster work exceeds preview limits".to_string(),
+            ));
+        }
+        rasterize_font_outline(
+            image,
+            &outline.commands,
+            x,
+            baseline,
+            scale,
+            &mut total_raster_steps,
+        )?;
+        x += advance;
+    }
+    Ok(())
+}
+
+fn rasterize_font_outline(
+    image: &mut image::RgbaImage,
+    commands: &[FontOutlineCommand],
+    x: f32,
+    baseline: f32,
+    scale: f32,
+    total_steps: &mut u64,
+) -> Result<(), FontVisualError> {
+    let mut current = None;
+    let mut contour_start = None;
+    for command in commands {
+        match *command {
+            FontOutlineCommand::MoveTo(px, py) => {
+                let point = scale_font_point(px, py, x, baseline, scale)?;
+                current = Some(point);
+                contour_start = Some(point);
+            }
+            FontOutlineCommand::LineTo(px, py) => {
+                let next = scale_font_point(px, py, x, baseline, scale)?;
+                if let Some(start) = current {
+                    rasterize_font_line(image, start, next, total_steps)?;
+                }
+                current = Some(next);
+            }
+            FontOutlineCommand::QuadTo(cx, cy, px, py) => {
+                let control = scale_font_point(cx, cy, x, baseline, scale)?;
+                let next = scale_font_point(px, py, x, baseline, scale)?;
+                if let Some(start) = current {
+                    let mut previous = start;
+                    for step in 1..=8 {
+                        let t = step as f32 / 8.0;
+                        let point = quadratic_point(start, control, next, t);
+                        rasterize_font_line(image, previous, point, total_steps)?;
+                        previous = point;
+                    }
+                }
+                current = Some(next);
+            }
+            FontOutlineCommand::CurveTo(cx1, cy1, cx2, cy2, px, py) => {
+                let control1 = scale_font_point(cx1, cy1, x, baseline, scale)?;
+                let control2 = scale_font_point(cx2, cy2, x, baseline, scale)?;
+                let next = scale_font_point(px, py, x, baseline, scale)?;
+                if let Some(start) = current {
+                    let mut previous = start;
+                    for step in 1..=12 {
+                        let t = step as f32 / 12.0;
+                        let point = cubic_point(start, control1, control2, next, t);
+                        rasterize_font_line(image, previous, point, total_steps)?;
+                        previous = point;
+                    }
+                }
+                current = Some(next);
+            }
+            FontOutlineCommand::Close => {
+                if let (Some(start), Some(end)) = (current, contour_start) {
+                    rasterize_font_line(image, start, end, total_steps)?;
+                    current = Some(end);
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+fn scale_font_point(
+    point_x: f32,
+    point_y: f32,
+    x: f32,
+    baseline: f32,
+    scale: f32,
+) -> Result<(f32, f32), FontVisualError> {
+    let point = (x + point_x * scale, baseline - point_y * scale);
+    if !point.0.is_finite() || !point.1.is_finite() {
+        return Err(FontVisualError::UnsafeOutlineWork(
+            "non-finite glyph outline point".to_string(),
+        ));
+    }
+    Ok(point)
+}
+
+fn quadratic_point(start: (f32, f32), control: (f32, f32), end: (f32, f32), t: f32) -> (f32, f32) {
+    let inverse = 1.0 - t;
+    (
+        inverse * inverse * start.0 + 2.0 * inverse * t * control.0 + t * t * end.0,
+        inverse * inverse * start.1 + 2.0 * inverse * t * control.1 + t * t * end.1,
+    )
+}
+
+fn cubic_point(
+    start: (f32, f32),
+    control1: (f32, f32),
+    control2: (f32, f32),
+    end: (f32, f32),
+    t: f32,
+) -> (f32, f32) {
+    let inverse = 1.0 - t;
+    (
+        inverse.powi(3) * start.0
+            + 3.0 * inverse * inverse * t * control1.0
+            + 3.0 * inverse * t * t * control2.0
+            + t.powi(3) * end.0,
+        inverse.powi(3) * start.1
+            + 3.0 * inverse * inverse * t * control1.1
+            + 3.0 * inverse * t * t * control2.1
+            + t.powi(3) * end.1,
+    )
+}
+
+fn rasterize_font_line(
+    image: &mut image::RgbaImage,
+    start: (f32, f32),
+    end: (f32, f32),
+    total_steps: &mut u64,
+) -> Result<(), FontVisualError> {
+    if !start.0.is_finite() || !start.1.is_finite() || !end.0.is_finite() || !end.1.is_finite() {
+        return Err(FontVisualError::UnsafeOutlineWork(
+            "non-finite outline raster segment".to_string(),
+        ));
+    }
+    let steps = (end.0 - start.0).abs().max((end.1 - start.1).abs()).ceil() as u64;
+    *total_steps = total_steps
+        .checked_add(steps.saturating_add(1))
+        .ok_or_else(|| {
+            FontVisualError::UnsafeOutlineWork("outline raster step overflow".to_string())
+        })?;
+    if *total_steps > MAX_FONT_OUTLINE_RASTER_STEPS {
+        return Err(FontVisualError::UnsafeOutlineWork(
+            "outline raster work exceeds preview limits".to_string(),
+        ));
+    }
+    for step in 0..=steps {
+        let progress = if steps == 0 {
+            0.0
+        } else {
+            step as f32 / steps as f32
+        };
+        let px = (start.0 + (end.0 - start.0) * progress).round() as i32;
+        let py = (start.1 + (end.1 - start.1) * progress).round() as i32;
+        if px < 0 || py < 0 || px >= image.width() as i32 || py >= image.height() as i32 {
+            return Err(FontVisualError::UnsafeOutlineWork(
+                "outline segment escapes the preview surface".to_string(),
+            ));
+        }
+        image.put_pixel(px as u32, py as u32, image::Rgba([32, 32, 32, 255]));
+    }
+    Ok(())
 }
 
 pub fn is_svg_path(path: &Path) -> bool {
@@ -3725,6 +4678,24 @@ mod tests {
         std::env::temp_dir().join(format!("ottrin-preview-{unique}-{name}"))
     }
 
+    fn material_font_path() -> PathBuf {
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../ottrin-ui/assets/MaterialSymbolsFilled.ttf")
+    }
+
+    fn write_font_fixture(name: &str, bytes: &[u8]) -> PathBuf {
+        let path = temp_path(name);
+        std::fs::write(&path, bytes).expect("write font fixture");
+        path
+    }
+
+    fn font_table_entry_offset(source: &[u8], tag: [u8; 4]) -> usize {
+        let table_count = u16::from_be_bytes([source[4], source[5]]) as usize;
+        (0..table_count)
+            .map(|index| 12 + index * 16)
+            .find(|offset| source[*offset..*offset + 4] == tag)
+            .expect("font table entry")
+    }
+
     fn raw_tiff_with_embedded_jpeg(jpeg: &[u8]) -> Vec<u8> {
         const IFD0_OFFSET: u32 = 8;
         const IFD1_OFFSET: u32 = IFD0_OFFSET + 2 + 4;
@@ -4113,6 +5084,208 @@ mod tests {
         assert!(!profile.raw_fallback_allowed());
 
         let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn font_format_is_classified_as_metadata_with_dedicated_visual_renderer() {
+        let path = material_font_path();
+
+        assert_eq!(classify_path(&path), PreviewKind::FontMetadata);
+        assert_eq!(
+            preview_profile(&path).visual_renderer(),
+            PreviewVisualRenderer::Font
+        );
+        assert!(preview_profile(&path).supports_view(PreviewView::Visual));
+        assert!(!preview_profile(&path).raw_fallback_allowed());
+
+        let preview = preview_font("MaterialSymbolsFilled.ttf".to_string(), &path);
+        assert_eq!(preview.kind, PreviewKind::FontMetadata);
+        assert!(preview.body.contains("OpenType/TrueType"));
+        assert!(preview.body.contains("Preview: Bounded font sample"));
+    }
+
+    #[test]
+    fn font_preview_renderer_produces_deterministic_bounded_png_preview() {
+        let path = material_font_path();
+
+        let first = render_font_preview_png(&path, 256).expect("font visual render");
+        let second = render_font_preview_png(&path, 256).expect("font visual render");
+        assert_eq!(first, second);
+        let image = image::load_from_memory(&first).expect("decode font png");
+
+        assert!(image.dimensions().0 <= 256);
+        assert!(image.dimensions().1 <= 256);
+        assert!(
+            image.to_rgba8().pixels().any(|pixel| pixel.0[0] < 250),
+            "the deterministic missing-glyph fallback must remain a visible specimen"
+        );
+    }
+
+    #[test]
+    fn font_renderer_rejects_extension_mismatch_and_unsupported_collections() {
+        let source = std::fs::read(material_font_path()).expect("read material font");
+        let mismatch = temp_path("sample.txt");
+        std::fs::write(&mismatch, &source).expect("write mismatch fixture");
+        assert!(matches!(
+            render_font_preview_png(&mismatch, 256),
+            Err(FontVisualError::UnsupportedFormat)
+        ));
+        std::fs::remove_file(mismatch).expect("remove mismatch fixture");
+
+        let collection = temp_path("collection.ttf");
+        let mut payload = b"ttcf".to_vec();
+        payload.extend_from_slice(&[0; 32]);
+        std::fs::write(&collection, payload).expect("write TTC fixture");
+        assert!(matches!(
+            render_font_preview_png(&collection, 256),
+            Err(FontVisualError::UnsupportedCollection)
+        ));
+        std::fs::remove_file(collection).expect("remove collection fixture");
+    }
+
+    #[test]
+    fn font_renderer_rejects_oversized_or_malformed_font_inputs() {
+        let malformed = temp_path("malformed.otf");
+        std::fs::write(&malformed, b"\x00\x01\x02\x03not-font").expect("write malformed fixture");
+        assert!(matches!(
+            render_font_preview_png(&malformed, 256),
+            Err(FontVisualError::ExtensionMismatch)
+        ));
+        std::fs::remove_file(malformed).expect("remove malformed fixture");
+
+        let oversized = temp_path("oversized.ttf");
+        let oversized_file = std::fs::File::create(&oversized).expect("create oversized fixture");
+        oversized_file
+            .set_len(MAX_FONT_PREVIEW_PACKAGE_BYTES + 1)
+            .expect("oversize fixture");
+        assert!(matches!(
+            render_font_preview_png(&oversized, 256),
+            Err(FontVisualError::InputTooLarge { .. })
+        ));
+        std::fs::remove_file(oversized).expect("remove oversized fixture");
+    }
+
+    #[test]
+    fn font_renderer_rejects_container_mismatches_and_unsafe_table_directories() {
+        let source = std::fs::read(material_font_path()).expect("read material font");
+
+        let extension_mismatch = write_font_fixture("font-mismatch.otf", &source);
+        assert!(matches!(
+            render_font_preview_png(&extension_mismatch, 256),
+            Err(FontVisualError::ExtensionMismatch)
+        ));
+        std::fs::remove_file(extension_mismatch).expect("remove extension mismatch");
+
+        let truncated = write_font_fixture("font-truncated.ttf", &source[..15]);
+        assert!(matches!(
+            render_font_preview_png(&truncated, 256),
+            Err(FontVisualError::InvalidTableDirectory(_))
+        ));
+        std::fs::remove_file(truncated).expect("remove truncated fixture");
+
+        let mut overflow = source.clone();
+        let entry = font_table_entry_offset(&overflow, *b"cmap");
+        overflow[entry + 8..entry + 12].copy_from_slice(&u32::MAX.to_be_bytes());
+        let overflow = write_font_fixture("font-offset-overflow.ttf", &overflow);
+        assert!(matches!(
+            render_font_preview_png(&overflow, 256),
+            Err(FontVisualError::InvalidTableDirectory(_))
+        ));
+        std::fs::remove_file(overflow).expect("remove overflow fixture");
+
+        let mut duplicate = source.clone();
+        let first = 12;
+        let second = 28;
+        let first_tag = duplicate[first..first + 4].to_vec();
+        duplicate[second..second + 4].copy_from_slice(&first_tag);
+        let duplicate = write_font_fixture("font-duplicate-tag.ttf", &duplicate);
+        assert!(matches!(
+            render_font_preview_png(&duplicate, 256),
+            Err(FontVisualError::InvalidTableDirectory(_))
+        ));
+        std::fs::remove_file(duplicate).expect("remove duplicate fixture");
+
+        let mut overlap = source.clone();
+        let first_offset = font_table_entry_offset(&overlap, *b"cmap");
+        let second_offset = font_table_entry_offset(&overlap, *b"head");
+        let first_table_offset = overlap[first_offset + 8..first_offset + 12].to_vec();
+        overlap[second_offset + 8..second_offset + 12].copy_from_slice(&first_table_offset);
+        let overlap = write_font_fixture("font-overlap.ttf", &overlap);
+        assert!(matches!(
+            render_font_preview_png(&overlap, 256),
+            Err(FontVisualError::InvalidTableDirectory(_))
+        ));
+        std::fs::remove_file(overlap).expect("remove overlap fixture");
+    }
+
+    #[test]
+    fn font_renderer_rejects_color_bitmap_and_svg_font_surfaces() {
+        let mut source = std::fs::read(material_font_path()).expect("read material font");
+        source[12..16].copy_from_slice(b"SVG ");
+        let fixture = write_font_fixture("font-svg-surface.ttf", &source);
+
+        assert!(matches!(
+            render_font_preview_png(&fixture, 256),
+            Err(FontVisualError::UnsupportedSurface { tag }) if tag == *b"SVG "
+        ));
+
+        std::fs::remove_file(fixture).expect("remove surface fixture");
+    }
+
+    #[test]
+    fn font_renderer_rejects_unbounded_name_records_before_parsing() {
+        let mut source = std::fs::read(material_font_path()).expect("read material font");
+        let name_entry = font_table_entry_offset(&source, *b"name");
+        let name_table_offset = u32::from_be_bytes(
+            source[name_entry + 8..name_entry + 12]
+                .try_into()
+                .expect("name table offset"),
+        ) as usize;
+        source[name_table_offset + 14..name_table_offset + 16]
+            .copy_from_slice(&(MAX_FONT_NAME_BYTES as u16 + 1).to_be_bytes());
+        let fixture = write_font_fixture("font-unbounded-name.ttf", &source);
+
+        assert!(matches!(
+            render_font_preview_png(&fixture, 256),
+            Err(FontVisualError::InvalidTableDirectory(_))
+        ));
+
+        std::fs::remove_file(fixture).expect("remove name fixture");
+    }
+
+    #[test]
+    fn font_rasterizer_refuses_outline_work_outside_its_surface_before_drawing() {
+        let source = std::fs::read(material_font_path()).expect("read material font");
+        let font = ttf_parser::Face::parse(&source, 0).expect("parse material font");
+        let mut image = image::RgbaImage::from_pixel(64, 64, image::Rgba([255, 255, 255, 255]));
+
+        assert!(matches!(
+            render_text_with_font(&mut image, &font, "A", 96, 8, 120, 56),
+            Err(FontVisualError::UnsafeOutlineWork(_))
+        ));
+    }
+
+    #[test]
+    fn font_preflight_rejects_composite_glyphs_before_outline_decoding() {
+        assert!(matches!(
+            preflight_simple_ttf_glyph(&[0xff, 0xff, 0, 0, 0, 0, 0, 0, 0, 0]),
+            Err(FontVisualError::UnsafeOutlineWork(_))
+        ));
+    }
+
+    #[test]
+    fn font_preview_is_bound_to_metadata_and_profile_for_load_preview() {
+        let path = material_font_path();
+
+        let preview = load_preview(&PreviewRequest {
+            path: path.clone(),
+            kind_hint: EntryKind::File,
+        });
+
+        assert_eq!(preview.kind, PreviewKind::FontMetadata);
+        assert!(preview.body.contains("Preview: Bounded font sample"));
+        assert!(preview.body.contains("Filetype: OpenType/TrueType font"));
+        assert!(preview.body.contains("Family: Material Symbols"));
     }
 
     #[test]
