@@ -1885,8 +1885,7 @@ fn preflight_epub_zip(bytes: &[u8]) -> Option<EpubZipDirectory> {
 /// competing archive from the sole footer that terminates the snapshot.
 fn epub_zip_directory_at_eocd(bytes: &[u8], eocd_offset: u64) -> Option<(EpubZipDirectory, u64)> {
     const EOCD_SIGNATURE: &[u8; 4] = b"PK\x05\x06";
-    const ZIP64_LOCATOR_SIGNATURE: &[u8; 4] = b"PK\x06\x07";
-    const ZIP64_EOCD_SIGNATURE: &[u8; 4] = b"PK\x06\x06";
+
     const EOCD_MIN_BYTES: u64 = 22;
 
     let file_len = bytes.len() as u64;
@@ -1910,59 +1909,17 @@ fn epub_zip_directory_at_eocd(bytes: &[u8], eocd_offset: u64) -> Option<(EpubZip
         || total_entries == u16::MAX
         || directory_size == u32::MAX
         || directory_offset == u32::MAX;
-    let (entry_count, directory_size, directory_offset, directory_end) = if uses_zip64 {
-        if disk != 0
-            || directory_disk != 0
-            || entries_on_disk != u16::MAX
-            || total_entries != u16::MAX
-            || directory_size != u32::MAX
-            || directory_offset != u32::MAX
-        {
-            return None;
-        }
-        let locator_start = eocd_offset.checked_sub(20)?;
-        let locator: [u8; 20] = bytes
-            .get(locator_start as usize..locator_start.checked_add(20)? as usize)?
-            .try_into()
-            .ok()?;
-        if locator[..4] != *ZIP64_LOCATOR_SIGNATURE
-            || read_le_u32(&locator[4..8])? != 0
-            || read_le_u32(&locator[16..20])? != 1
-        {
-            return None;
-        }
-        let zip64_offset = read_le_u64(&locator[8..16])?;
-        let zip64: [u8; 56] = bytes
-            .get(zip64_offset as usize..zip64_offset.checked_add(56)? as usize)?
-            .try_into()
-            .ok()?;
-        if zip64[..4] != *ZIP64_EOCD_SIGNATURE
-            || read_le_u64(&zip64[4..12])? != 44
-            || zip64_offset
-                .checked_add(12)?
-                .checked_add(read_le_u64(&zip64[4..12])?)?
-                != locator_start
-            || read_le_u32(&zip64[16..20])? != 0
-            || read_le_u32(&zip64[20..24])? != 0
-            || read_le_u64(&zip64[24..32])? != read_le_u64(&zip64[32..40])?
-        {
-            return None;
-        }
-        let count = read_le_u64(&zip64[32..40])?;
-        let size = read_le_u64(&zip64[40..48])?;
-        let offset = read_le_u64(&zip64[48..56])?;
-        (count, size, offset, zip64_offset)
-    } else {
-        if disk != 0 || directory_disk != 0 || entries_on_disk != total_entries {
-            return None;
-        }
-        (
-            u64::from(total_entries),
-            u64::from(directory_size),
-            u64::from(directory_offset),
-            eocd_offset,
-        )
-    };
+    // The bounded EPUB surface cannot need ZIP64: packages are at most
+    // 128 MiB with at most 4,096 entries and an 8 MiB central directory.
+    // Refuse the alternate metadata graph rather than reconcile two sets of
+    // attacker-controlled sizes and offsets before `ZipArchive`.
+    if uses_zip64 || disk != 0 || directory_disk != 0 || entries_on_disk != total_entries {
+        return None;
+    }
+    let entry_count = u64::from(total_entries);
+    let directory_size = u64::from(directory_size);
+    let directory_offset = u64::from(directory_offset);
+    let directory_end = eocd_offset;
 
     let entry_count = usize::try_from(entry_count).ok()?;
     if entry_count > MAX_EPUB_PARTS || directory_size > MAX_EPUB_CENTRAL_DIRECTORY_BYTES {
@@ -1991,6 +1948,7 @@ fn epub_central_directory_is_well_formed(
         return false;
     };
     let mut offset = directory_offset;
+    let mut local_regions = Vec::with_capacity(entry_count);
     for _ in 0..entry_count {
         let Some(header_end) = offset.checked_add(CENTRAL_DIRECTORY_HEADER_BYTES) else {
             return false;
@@ -2032,22 +1990,125 @@ fn epub_central_directory_is_well_formed(
         let Some(extra) = bytes.get(extra_start as usize..extra_end as usize) else {
             return false;
         };
+        let Some(name) = bytes.get(header_end as usize..extra_start as usize) else {
+            return false;
+        };
         if !epub_central_directory_zip64_is_consistent(header, extra) {
             return false;
         }
+        let Some(local_header_offset) = read_le_u32(&header[42..46]).map(u64::from) else {
+            return false;
+        };
+        let Some(local_region) =
+            epub_local_entry_region(bytes, local_header_offset, directory_offset, header, name)
+        else {
+            return false;
+        };
+        local_regions.push(local_region);
         offset = next;
     }
-    offset == directory_end
+    local_regions.sort_unstable_by_key(|region| region.0);
+    let local_regions_are_disjoint = local_regions
+        .windows(2)
+        .all(|regions| regions[0].1 <= regions[1].0);
+    offset == directory_end && local_regions_are_disjoint
 }
 
-/// EPUB accepts only one ZIP disk. ZIP64 replacement values occur only for
-/// their classic sentinel fields and in APPNOTE central-directory order, so
-/// parse the complete ZIP64 extra before `ZipArchive` observes the entry.
+/// The bounded EPUB surface accepts at most 128 MiB and 4,096 entries, so no
+/// central-directory size, offset, or disk field can legitimately require a
+/// ZIP64 replacement. Reject ZIP64 entry metadata instead of maintaining a
+/// second archive parser whose values could disagree with `ZipArchive`.
 fn epub_central_directory_zip64_is_consistent(header: &[u8], extra: &[u8]) -> bool {
+    read_le_u32(&header[24..28]).is_some_and(|value| value != u32::MAX)
+        && read_le_u32(&header[20..24]).is_some_and(|value| value != u32::MAX)
+        && read_le_u32(&header[42..46]).is_some_and(|value| value != u32::MAX)
+        && read_le_u16(&header[34..36]) == Some(0)
+        && epub_extra_fields_are_classic(extra)
+}
+
+fn epub_local_entry_region(
+    bytes: &[u8],
+    offset: u64,
+    directory_offset: u64,
+    central: &[u8],
+    central_name: &[u8],
+) -> Option<(u64, u64)> {
+    const LOCAL_HEADER_BYTES: u64 = 30;
+    const DATA_DESCRIPTOR_SIGNATURE: u32 = 0x0807_4b50;
+    let header_end = offset.checked_add(LOCAL_HEADER_BYTES)?;
+    let header = bytes.get(offset as usize..header_end as usize)?;
+    if &header[..4] != b"PK\x03\x04"
+        || read_le_u32(&header[18..22]) == Some(u32::MAX)
+        || read_le_u32(&header[22..26]) == Some(u32::MAX)
+        || header[6..10] != central[8..12]
+    {
+        return None;
+    }
+    let name_len = u64::from(read_le_u16(&header[26..28])?);
+    let extra_len = u64::from(read_le_u16(&header[28..30])?);
+    let extra_start = header_end.checked_add(name_len)?;
+    let extra_end = extra_start.checked_add(extra_len)?;
+    if extra_end > directory_offset {
+        return None;
+    }
+    let extra = bytes.get(extra_start as usize..extra_end as usize)?;
+    let name = bytes.get(header_end as usize..extra_start as usize)?;
+    if name != central_name || !epub_extra_fields_are_classic(extra) {
+        return None;
+    }
+
+    let flags = read_le_u16(&central[8..10])?;
+    let crc = read_le_u32(&central[16..20])?;
+    let compressed_size = read_le_u32(&central[20..24])?;
+    let uncompressed_size = read_le_u32(&central[24..28])?;
+    let data_end = extra_end.checked_add(u64::from(compressed_size))?;
+    if data_end > directory_offset {
+        return None;
+    }
+
+    let entry_end = if flags & 0x0008 == 0 {
+        if read_le_u32(&header[14..18]) != Some(crc)
+            || read_le_u32(&header[18..22]) != Some(compressed_size)
+            || read_le_u32(&header[22..26]) != Some(uncompressed_size)
+        {
+            return None;
+        }
+        data_end
+    } else {
+        let signatureless_end = data_end.checked_add(12)?;
+        let signatureless_matches = signatureless_end <= directory_offset
+            && bytes
+                .get(data_end as usize..signatureless_end as usize)
+                .is_some_and(|values| {
+                    read_le_u32(&values[0..4]) == Some(crc)
+                        && read_le_u32(&values[4..8]) == Some(compressed_size)
+                        && read_le_u32(&values[8..12]) == Some(uncompressed_size)
+                });
+
+        let signed_end = data_end.checked_add(16)?;
+        let signed_matches = signed_end <= directory_offset
+            && bytes
+                .get(data_end as usize..signed_end as usize)
+                .is_some_and(|descriptor| {
+                    read_le_u32(&descriptor[0..4]) == Some(DATA_DESCRIPTOR_SIGNATURE)
+                        && read_le_u32(&descriptor[4..8]) == Some(crc)
+                        && read_le_u32(&descriptor[8..12]) == Some(compressed_size)
+                        && read_le_u32(&descriptor[12..16]) == Some(uncompressed_size)
+                });
+
+        match (signatureless_matches, signed_matches) {
+            (true, false) => signatureless_end,
+            (false, true) => signed_end,
+            _ => return None,
+        }
+    };
+    Some((offset, entry_end))
+}
+
+fn epub_extra_fields_are_classic(extra: &[u8]) -> bool {
     const ZIP64_EXTRA_FIELD_ID: u16 = 0x0001;
 
     let mut offset = 0usize;
-    let mut zip64_values = None;
     while offset < extra.len() {
         let Some(field_header_end) = offset.checked_add(4) else {
             return false;
@@ -2061,74 +2122,15 @@ fn epub_central_directory_zip64_is_consistent(header: &[u8], extra: &[u8]) -> bo
         let Some(field_end) = field_header_end.checked_add(field_len) else {
             return false;
         };
-        let Some(field) = extra.get(field_header_end..field_end) else {
+        if extra.get(field_header_end..field_end).is_none()
+            || read_le_u16(&field_header[..2]) == Some(ZIP64_EXTRA_FIELD_ID)
+        {
             return false;
-        };
-        let Some(field_id) = read_le_u16(&field_header[..2]) else {
-            return false;
-        };
-        if field_id == ZIP64_EXTRA_FIELD_ID {
-            if zip64_values.is_some() {
-                return false;
-            }
-            zip64_values = Some(field);
         }
         offset = field_end;
     }
 
-    let Some(uncompressed_size) = read_le_u32(&header[24..28]) else {
-        return false;
-    };
-    let Some(compressed_size) = read_le_u32(&header[20..24]) else {
-        return false;
-    };
-    let Some(local_header_offset) = read_le_u32(&header[42..46]) else {
-        return false;
-    };
-    let Some(disk_start) = read_le_u16(&header[34..36]) else {
-        return false;
-    };
-    if disk_start != 0 && disk_start != u16::MAX {
-        return false;
-    }
-
-    let needs_zip64 = [uncompressed_size, compressed_size, local_header_offset]
-        .into_iter()
-        .any(|value| value == u32::MAX)
-        || disk_start == u16::MAX;
-    let Some(mut values) = zip64_values else {
-        return !needs_zip64;
-    };
-
-    // ZIP64 values occur exactly in this central-directory order:
-    // uncompressed size, compressed size, local-header offset, disk number.
-    for value in [uncompressed_size, compressed_size, local_header_offset] {
-        if value == u32::MAX {
-            let Some(replacement) = values.get(..8) else {
-                return false;
-            };
-            if read_le_u64(replacement).is_none() {
-                return false;
-            }
-            let Some(remaining) = values.get(8..) else {
-                return false;
-            };
-            values = remaining;
-        }
-    }
-    if disk_start == u16::MAX {
-        let Some(replacement) = values.get(..4) else {
-            return false;
-        };
-        if read_le_u32(replacement) != Some(0) {
-            return false;
-        }
-        let Some(remaining) = values.get(4..) else {
-            return false;
-        };
-        values = remaining;
-    }
-    values.is_empty()
+    true
 }
 
 fn read_le_u16(bytes: &[u8]) -> Option<u16> {
@@ -2137,10 +2139,6 @@ fn read_le_u16(bytes: &[u8]) -> Option<u16> {
 
 fn read_le_u32(bytes: &[u8]) -> Option<u32> {
     Some(u32::from_le_bytes(bytes.try_into().ok()?))
-}
-
-fn read_le_u64(bytes: &[u8]) -> Option<u64> {
-    Some(u64::from_le_bytes(bytes.try_into().ok()?))
 }
 
 fn zip_entry_is_unique<R: std::io::Read + std::io::Seek>(
@@ -3741,7 +3739,7 @@ mod tests {
     }
 
     #[test]
-    fn epub_zip_preflight_accepts_a_bounded_zip64_directory() {
+    fn epub_zip_preflight_rejects_unnecessary_zip64_directory() {
         let path = temp_path("epub-zip64-directory.epub");
         {
             let file = std::fs::File::create(&path).expect("create EPUB");
@@ -3792,18 +3790,40 @@ mod tests {
         std::fs::write(&path, zip64).expect("write ZIP64 EPUB");
 
         let bytes = std::fs::read(&path).expect("read ZIP64 EPUB");
-        assert_eq!(
-            preflight_epub_zip(&bytes).map(|directory| directory.entry_count),
-            Some(1)
-        );
-        assert_eq!(
-            zip::ZipArchive::new(Cursor::new(bytes))
-                .expect("open ZIP64 archive")
-                .len(),
-            1
+        assert!(
+            preflight_epub_zip(&bytes).is_none(),
+            "bounded EPUB previews do not accept ZIP64 archive metadata"
         );
 
         std::fs::remove_file(path).expect("remove EPUB fixture");
+    }
+
+    #[test]
+    fn epub_signatureless_descriptor_crc_equal_to_marker_is_not_misread_as_signed() {
+        const MARKER: u32 = 0x0807_4b50;
+        let mut local = vec![0; 30];
+        local[..4].copy_from_slice(b"PK\x03\x04");
+        local[6..8].copy_from_slice(&0x0008u16.to_le_bytes());
+        local[14..18].copy_from_slice(&0u32.to_le_bytes());
+        local[18..22].copy_from_slice(&0u32.to_le_bytes());
+        local[22..26].copy_from_slice(&0u32.to_le_bytes());
+        local[26..28].copy_from_slice(&1u16.to_le_bytes());
+        local.extend_from_slice(b"x");
+        local.extend_from_slice(&[0xac, 0x0a, 0x7a, 0xd5]);
+        local.extend_from_slice(&MARKER.to_le_bytes());
+        local.extend_from_slice(&4u32.to_le_bytes());
+        local.extend_from_slice(&4u32.to_le_bytes());
+
+        let mut central = vec![0; 46];
+        central[8..10].copy_from_slice(&0x0008u16.to_le_bytes());
+        central[16..20].copy_from_slice(&MARKER.to_le_bytes());
+        central[20..24].copy_from_slice(&4u32.to_le_bytes());
+        central[24..28].copy_from_slice(&4u32.to_le_bytes());
+
+        assert_eq!(
+            epub_local_entry_region(&local, 0, local.len() as u64, &central, b"x"),
+            Some((0, local.len() as u64))
+        );
     }
 
     #[test]
@@ -3975,6 +3995,82 @@ mod tests {
             "a nonzero central-directory disk start conflicts with single-disk EPUB"
         );
 
+        let mut local_zip64 = original.clone();
+        let local_name_len = read_le_u16(&local_zip64[26..28]).expect("local name length") as usize;
+        let local_extra_start = 30 + local_name_len;
+        let compressed_size = read_le_u32(&local_zip64[18..22]).expect("local compressed size");
+        let uncompressed_size = read_le_u32(&local_zip64[22..26]).expect("local uncompressed size");
+        let mut local_extra = vec![1, 0, 16, 0];
+        local_extra.extend_from_slice(&(uncompressed_size as u64).to_le_bytes());
+        local_extra.extend_from_slice(&(compressed_size as u64).to_le_bytes());
+        local_zip64[18..22].copy_from_slice(&u32::MAX.to_le_bytes());
+        local_zip64[22..26].copy_from_slice(&u32::MAX.to_le_bytes());
+        local_zip64[28..30].copy_from_slice(&(local_extra.len() as u16).to_le_bytes());
+        local_zip64.splice(local_extra_start..local_extra_start, local_extra);
+        let shifted_eocd = eocd + 20;
+        let shifted_directory_offset =
+            read_le_u32(&local_zip64[shifted_eocd + 16..shifted_eocd + 20])
+                .expect("shifted directory offset");
+        local_zip64[shifted_eocd + 16..shifted_eocd + 20]
+            .copy_from_slice(&(shifted_directory_offset + 20).to_le_bytes());
+        assert!(
+            preflight_epub_zip(&local_zip64).is_none(),
+            "bounded EPUB previews reject ZIP64 local-header metadata"
+        );
+
+        let mut overlapping_data = original.clone();
+        let local_data_start = 30
+            + read_le_u16(&original[26..28]).expect("local name length") as usize
+            + read_le_u16(&original[28..30]).expect("local extra length") as usize;
+        let overlapping_size = central
+            .checked_sub(local_data_start)
+            .and_then(|size| size.checked_add(1))
+            .expect("overlapping compressed size") as u32;
+        overlapping_data[central + 20..central + 24]
+            .copy_from_slice(&overlapping_size.to_le_bytes());
+        assert!(
+            preflight_epub_zip(&overlapping_data).is_none(),
+            "local entry data must not overlap the central directory"
+        );
+
+        let duplicate_path = temp_path("epub-duplicate-local-reference.epub");
+        {
+            let file = std::fs::File::create(&duplicate_path).expect("create duplicate fixture");
+            let mut epub = zip::ZipWriter::new(file);
+            let stored = zip::write::SimpleFileOptions::default()
+                .compression_method(zip::CompressionMethod::Stored);
+            epub.start_file("mimetype", stored).expect("write mimetype");
+            epub.write_all(b"application/epub+zip")
+                .expect("write mimetype bytes");
+            epub.start_file("second", stored)
+                .expect("write second entry");
+            epub.write_all(b"second").expect("write second bytes");
+            epub.finish().expect("finish duplicate fixture");
+        }
+        let mut duplicate_local = std::fs::read(&duplicate_path).expect("read duplicate fixture");
+        let duplicate_eocd = duplicate_local
+            .windows(4)
+            .rposition(|window| window == b"PK\x05\x06")
+            .expect("find duplicate EOCD");
+        let first_central = read_le_u32(&duplicate_local[duplicate_eocd + 16..duplicate_eocd + 20])
+            .expect("first central offset") as usize;
+        let first_record_len = 46
+            + read_le_u16(&duplicate_local[first_central + 28..first_central + 30])
+                .expect("first name length") as usize
+            + read_le_u16(&duplicate_local[first_central + 30..first_central + 32])
+                .expect("first extra length") as usize
+            + read_le_u16(&duplicate_local[first_central + 32..first_central + 34])
+                .expect("first comment length") as usize;
+        let second_central = first_central + first_record_len;
+        let first_local_offset = duplicate_local[first_central + 42..first_central + 46].to_vec();
+        duplicate_local[second_central + 42..second_central + 46]
+            .copy_from_slice(&first_local_offset);
+        assert!(
+            preflight_epub_zip(&duplicate_local).is_none(),
+            "central records must not share a local header"
+        );
+        std::fs::remove_file(duplicate_path).expect("remove duplicate fixture");
+
         let mut valid_zip64_disk_start = original.clone();
         let valid_extra = vec![1, 0, 4, 0, 0, 0, 0, 0];
         valid_zip64_disk_start[central + 34..central + 36].copy_from_slice(&u16::MAX.to_le_bytes());
@@ -3986,10 +4082,9 @@ mod tests {
             .expect("directory size");
         valid_zip64_disk_start[valid_eocd + 12..valid_eocd + 16]
             .copy_from_slice(&(directory_size + 8).to_le_bytes());
-        assert_eq!(
-            preflight_epub_zip(&valid_zip64_disk_start).map(|directory| directory.entry_count),
-            Some(1),
-            "a present, well-formed zero ZIP64 disk-start value remains single-disk"
+        assert!(
+            preflight_epub_zip(&valid_zip64_disk_start).is_none(),
+            "bounded EPUB previews reject unnecessary ZIP64 entry metadata"
         );
 
         // ZIP64 values may only replace classic sentinel fields. A disk-start
@@ -4081,10 +4176,9 @@ mod tests {
                 read_le_u32(&bytes[mutated_eocd + 12..mutated_eocd + 16]).expect("directory size");
             bytes[mutated_eocd + 12..mutated_eocd + 16]
                 .copy_from_slice(&(directory_size + (mutated_eocd - eocd) as u32).to_le_bytes());
-            assert_eq!(
-                preflight_epub_zip(&bytes).map(|directory| directory.entry_count),
-                Some(1),
-                "a standards-valid ZIP64 extra with {label} sentinels remains single-disk"
+            assert!(
+                preflight_epub_zip(&bytes).is_none(),
+                "bounded EPUB previews reject ZIP64 {label} sentinels"
             );
         }
 
