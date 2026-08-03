@@ -82,7 +82,11 @@ fn padded_tar_entry_size(size: u64) -> std::io::Result<u64> {
 }
 
 fn pax_size_override(pax_payload: &[u8]) -> std::io::Result<Option<u64>> {
+    let mut size_override = None;
     for record in pax_payload.split_inclusive(|byte| *byte == b'\n') {
+        if !record.ends_with(b"\n") {
+            return Err(std::io::Error::other("invalid PAX extension record"));
+        }
         let Some(space) = record.iter().position(|byte| *byte == b' ') else {
             return Err(std::io::Error::other("invalid PAX extension record"));
         };
@@ -91,17 +95,20 @@ fn pax_size_override(pax_payload: &[u8]) -> std::io::Result<Option<u64>> {
             .and_then(|length| length.parse::<usize>().ok())
             .filter(|length| *length == record.len())
             .ok_or_else(|| std::io::Error::other("invalid PAX extension record"))?;
-        let value = &record[space + 1..record.len() - 1];
-        if let Some(value) = value.strip_prefix(b"size=") {
-            return Ok(Some(
-                std::str::from_utf8(value)
+        let key_value = &record[space + 1..record.len() - 1];
+        let Some(equals) = key_value.iter().position(|byte| *byte == b'=') else {
+            return Err(std::io::Error::other("invalid PAX extension record"));
+        };
+        if size_override.is_none() && key_value[..equals] == *b"size" {
+            size_override = Some(
+                std::str::from_utf8(&key_value[equals + 1..])
                     .ok()
                     .and_then(|value| value.parse::<u64>().ok())
                     .ok_or_else(|| std::io::Error::other("invalid PAX size extension"))?,
-            ));
+            );
         }
     }
-    Ok(None)
+    Ok(size_override)
 }
 
 impl<R> TarHeaderGuard<R> {
@@ -2686,6 +2693,61 @@ mod tests {
         archive
     }
 
+    fn unterminated_pax_size_override_tar() -> Vec<u8> {
+        // The declared PAX record length matches, but its final byte is not an
+        // LF. Treating that byte as a terminator would make this `size=0`
+        // override hide the following 512-byte file payload as a TAR marker.
+        let pax_record = b"10 size=0X";
+        let mut archive = Vec::new();
+
+        let mut pax_header = tar::Header::new_gnu();
+        pax_header.set_entry_type(tar::EntryType::XHeader);
+        pax_header.set_size(pax_record.len() as u64);
+        pax_header.set_cksum();
+        archive.extend_from_slice(pax_header.as_bytes());
+        archive.extend_from_slice(pax_record);
+        archive.resize(1024, 0);
+
+        let mut file_header = tar::Header::new_gnu();
+        file_header
+            .set_path("unterminated-pax.txt")
+            .expect("set entry path");
+        file_header.set_size(512);
+        file_header.set_mode(0o644);
+        file_header.set_cksum();
+        archive.extend_from_slice(file_header.as_bytes());
+        archive.extend_from_slice(&[0; 512]);
+        // One real TAR terminator block: the guard must not mistake the file
+        // payload above for the other required terminator.
+        archive.extend_from_slice(&[0; 512]);
+        archive
+    }
+
+    fn malformed_pax_before_size_override_tar() -> Vec<u8> {
+        let pax_record = b"10 abcdef\n9 size=0\n";
+        let mut archive = Vec::new();
+
+        let mut pax_header = tar::Header::new_gnu();
+        pax_header.set_entry_type(tar::EntryType::XHeader);
+        pax_header.set_size(pax_record.len() as u64);
+        pax_header.set_cksum();
+        archive.extend_from_slice(pax_header.as_bytes());
+        archive.extend_from_slice(pax_record);
+        archive.resize(1024, 0);
+
+        let mut file_header = tar::Header::new_gnu();
+        file_header
+            .set_path("malformed-pax.txt")
+            .expect("set entry path");
+        file_header.set_size(512);
+        file_header.set_mode(0o644);
+        file_header.set_cksum();
+        archive.extend_from_slice(file_header.as_bytes());
+        archive.extend_from_slice(&[0; 512]);
+        archive.extend_from_slice(&[0; 512]);
+        archive
+    }
+
     #[test]
     fn classified_formats_expose_shared_preview_contract_views_and_renderers() {
         let path = temp_path("manual.pdf");
@@ -3257,6 +3319,64 @@ mod tests {
             pax_size_override(b"13 size=1024\n9 size=0\n").expect("parse PAX size"),
             Some(1024)
         );
+    }
+
+    #[test]
+    fn pax_size_override_rejects_unterminated_records() {
+        assert!(pax_size_override(b"10 size=0X").is_err());
+    }
+
+    #[test]
+    fn pax_size_override_rejects_an_unterminated_duplicate_record() {
+        assert!(pax_size_override(b"13 size=1024\n10 size=0X").is_err());
+    }
+
+    #[test]
+    fn pax_size_override_rejects_a_record_without_a_key_value_separator() {
+        assert!(pax_size_override(b"10 abcdef\n9 size=0\n").is_err());
+    }
+
+    #[test]
+    fn tar_previews_reject_unterminated_pax_that_masks_a_missing_terminator() {
+        let tar_bytes = unterminated_pax_size_override_tar();
+        for (name, gzip) in [
+            ("unterminated-pax.tar", false),
+            ("unterminated-pax.tar.gz", true),
+        ] {
+            let path = temp_path(name);
+            if gzip {
+                write_gzip(&path, &tar_bytes);
+            } else {
+                std::fs::write(&path, &tar_bytes).expect("write TAR archive");
+            }
+
+            let preview = preview_archive(name.to_string(), &path);
+
+            assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+            assert!(preview.body.contains("Could not read archive entries."));
+
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn tar_previews_reject_malformed_pax_that_masks_a_missing_terminator() {
+        let tar_bytes = malformed_pax_before_size_override_tar();
+        for (name, gzip) in [("malformed-pax.tar", false), ("malformed-pax.tar.gz", true)] {
+            let path = temp_path(name);
+            if gzip {
+                write_gzip(&path, &tar_bytes);
+            } else {
+                std::fs::write(&path, &tar_bytes).expect("write TAR archive");
+            }
+
+            let preview = preview_archive(name.to_string(), &path);
+
+            assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+            assert!(preview.body.contains("Could not read archive entries."));
+
+            let _ = std::fs::remove_file(path);
+        }
     }
 
     #[test]
