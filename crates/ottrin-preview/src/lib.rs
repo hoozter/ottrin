@@ -15,6 +15,8 @@ const EXTRACTED_TEXT_LIMIT: usize = 24_000;
 const MAX_OFFICE_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_OFFICE_PARTS: usize = 4_096;
 const MAX_OFFICE_XML_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_EPUB_PACKAGE_PATH_BYTES: usize = 1_024;
+const MAX_EPUB_METADATA_CHARS: usize = 1_024;
 const MAX_SHARED_STRINGS: usize = 4_096;
 const OFFICE_VISUAL_TEXT_LIMIT: usize = 4_096;
 const MAX_TEXT_VISUAL_INPUT_BYTES: u64 = 128 * 1024;
@@ -475,7 +477,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         "pdf" => PreviewKind::Pdf,
         "mp4" | "mkv" | "webm" | "mov" | "avi" | "m4v" => PreviewKind::VideoMetadata,
         "mp3" | "flac" | "wav" | "ogg" | "m4a" | "aac" => PreviewKind::AudioMetadata,
-        "zip" | "tar" | "gz" | "xz" | "bz2" | "7z" | "rar" => PreviewKind::ArchiveMetadata,
+        "zip" | "tar" | "gz" | "xz" | "bz2" | "7z" | "rar" | "epub" => PreviewKind::ArchiveMetadata,
         "doc" | "docx" | "xls" | "xlsx" | "xlsm" | "ppt" | "pptx" | "odt" | "ods" | "odp" => {
             PreviewKind::OfficeMetadata
         }
@@ -1339,6 +1341,9 @@ fn preview_archive(title: String, path: &Path) -> PreviewData {
     if ext == "zip" {
         return preview_zip(title, path);
     }
+    if ext == "epub" {
+        return preview_epub(title, path);
+    }
     if path
         .file_name()
         .and_then(|name| name.to_str())
@@ -1705,6 +1710,199 @@ fn preview_zip(title: String, path: &Path) -> PreviewData {
                 body: info,
                 open_external: true,
             }
+        }
+    }
+}
+
+fn epub_error(title: String, path: &Path) -> PreviewData {
+    PreviewData {
+        title,
+        kind: PreviewKind::ArchiveMetadata,
+        body: metadata_summary(
+            path,
+            "EPUB ebook.",
+            Some("Could not read EPUB metadata safely."),
+        ),
+        open_external: true,
+    }
+}
+
+fn preview_epub(title: String, path: &Path) -> PreviewData {
+    let package_is_bounded = std::fs::metadata(path)
+        .map(|metadata| metadata.len() <= MAX_OFFICE_PACKAGE_BYTES)
+        .unwrap_or(false);
+    if !package_is_bounded {
+        return epub_error(title, path);
+    }
+    let Ok(file) = std::fs::File::open(path) else {
+        return epub_error(title, path);
+    };
+    let Ok(mut archive) = zip::ZipArchive::new(file) else {
+        return epub_error(title, path);
+    };
+    let mimetype_is_first = archive
+        .by_index_raw(0)
+        .is_ok_and(|entry| entry.name() == "mimetype" && entry.header_start() == 0);
+    if archive.len() > MAX_OFFICE_PARTS
+        || !mimetype_is_first
+        || !zip_entry_is_unique(&archive, "mimetype")
+    {
+        return epub_error(title, path);
+    }
+
+    let mimetype_is_valid = match archive.by_name("mimetype") {
+        Ok(entry)
+            if !entry.encrypted()
+                && entry.compression() == zip::CompressionMethod::Stored
+                && entry.size() == b"application/epub+zip".len() as u64 =>
+        {
+            let mut bytes = Vec::with_capacity(b"application/epub+zip".len());
+            entry
+                .take(b"application/epub+zip".len() as u64 + 1)
+                .read_to_end(&mut bytes)
+                .is_ok_and(|_| bytes == b"application/epub+zip")
+        }
+        _ => false,
+    };
+    if !mimetype_is_valid || !zip_entry_is_unique(&archive, "META-INF/container.xml") {
+        return epub_error(title, path);
+    }
+
+    let Some(container) = zip_entry_text(&mut archive, "META-INF/container.xml") else {
+        return epub_error(title, path);
+    };
+    let Some(package_path) = epub_package_path(&container) else {
+        return epub_error(title, path);
+    };
+    if !zip_entry_is_unique(&archive, &package_path) {
+        return epub_error(title, path);
+    }
+    let Some(package) = zip_entry_text(&mut archive, &package_path) else {
+        return epub_error(title, path);
+    };
+    let Some((book_title, author)) = extract_epub_metadata(&package) else {
+        return epub_error(title, path);
+    };
+
+    let mut lines = vec!["Filetype: EPUB ebook".to_string()];
+    if let Some(book_title) = book_title {
+        lines.push(format!("Title: {book_title}"));
+    }
+    if let Some(author) = author {
+        lines.push(format!("Author: {author}"));
+    }
+    lines.push(format!("Internal parts: {}", archive.len()));
+    if let Ok(metadata) = std::fs::metadata(path) {
+        lines.push(format!("Size: {}", format_size(metadata.len())));
+    }
+    PreviewData {
+        title,
+        kind: PreviewKind::ArchiveMetadata,
+        body: lines.join("\n"),
+        open_external: true,
+    }
+}
+
+fn zip_entry_is_unique<R: std::io::Read + std::io::Seek>(
+    archive: &zip::ZipArchive<R>,
+    name: &str,
+) -> bool {
+    archive
+        .file_names()
+        .filter(|entry| *entry == name)
+        .take(2)
+        .count()
+        == 1
+}
+
+fn epub_package_path(container: &str) -> Option<String> {
+    let mut reader = quick_xml::Reader::from_str(container);
+    let mut package_path = None;
+    loop {
+        match reader.read_event() {
+            Ok(quick_xml::events::Event::Empty(event))
+            | Ok(quick_xml::events::Event::Start(event))
+                if event.local_name().as_ref() == b"rootfile" =>
+            {
+                let mut full_path = None;
+                let mut media_type = None;
+                for attribute in event.attributes() {
+                    let attribute = attribute.ok()?;
+                    let value = attribute.unescape_value().ok()?.into_owned();
+                    if attribute.key.as_ref() == b"full-path" {
+                        if full_path.replace(value).is_some() {
+                            return None;
+                        }
+                    } else if attribute.key.as_ref() == b"media-type"
+                        && media_type.replace(value).is_some()
+                    {
+                        return None;
+                    }
+                }
+                let full_path = full_path?;
+                if media_type.as_deref() != Some("application/oebps-package+xml")
+                    || !epub_path_is_safe(&full_path)
+                    || package_path.replace(full_path).is_some()
+                {
+                    return None;
+                }
+            }
+            Ok(quick_xml::events::Event::Eof) => return package_path,
+            Err(_) => return None,
+            _ => {}
+        }
+    }
+}
+
+fn epub_path_is_safe(path: &str) -> bool {
+    !path.is_empty()
+        && path.len() <= MAX_EPUB_PACKAGE_PATH_BYTES
+        && !path.starts_with('/')
+        && !path.contains(['\\', ':'])
+        && path
+            .split('/')
+            .all(|component| !matches!(component, "" | "." | ".."))
+}
+
+fn extract_epub_metadata(package: &str) -> Option<(Option<String>, Option<String>)> {
+    let mut reader = quick_xml::Reader::from_str(package);
+    reader.config_mut().trim_text(true);
+    let mut title = String::new();
+    let mut author = String::new();
+    let mut active_field = None;
+    loop {
+        match reader.read_event() {
+            Ok(quick_xml::events::Event::Start(event)) => match event.local_name().as_ref() {
+                b"title" if title.is_empty() => active_field = Some(true),
+                b"creator" if author.is_empty() => active_field = Some(false),
+                _ => {}
+            },
+            Ok(quick_xml::events::Event::End(event))
+                if matches!(event.local_name().as_ref(), b"title" | b"creator") =>
+            {
+                active_field = None;
+            }
+            Ok(quick_xml::events::Event::Text(event)) => {
+                let text = event.decode().ok()?;
+                match active_field {
+                    Some(true) => title.extend(
+                        text.chars()
+                            .take(MAX_EPUB_METADATA_CHARS.saturating_sub(title.chars().count())),
+                    ),
+                    Some(false) => author.extend(
+                        text.chars()
+                            .take(MAX_EPUB_METADATA_CHARS.saturating_sub(author.chars().count())),
+                    ),
+                    None => {}
+                }
+            }
+            Ok(quick_xml::events::Event::Eof) => {
+                let title = (!title.trim().is_empty()).then(|| title.trim().to_string());
+                let author = (!author.trim().is_empty()).then(|| author.trim().to_string());
+                return Some((title, author));
+            }
+            Err(_) => return None,
+            _ => {}
         }
     }
 }
@@ -2936,6 +3134,166 @@ mod tests {
         assert!(preview.body.contains("Compressed:"));
         assert!(preview.body.contains("Contents:"));
         assert!(preview.body.contains("docs/readme.txt"));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn epub_preview_reports_canonical_title_and_author_without_content_execution() {
+        let path = temp_path("guide.epub");
+        {
+            let file = std::fs::File::create(&path).expect("create EPUB");
+            let mut epub = zip::ZipWriter::new(file);
+            let stored = zip::write::SimpleFileOptions::default()
+                .compression_method(zip::CompressionMethod::Stored);
+            epub.start_file("mimetype", stored).expect("write mimetype");
+            epub.write_all(b"application/epub+zip")
+                .expect("write EPUB mimetype");
+            let options = zip::write::SimpleFileOptions::default();
+            epub.start_file("META-INF/container.xml", options)
+                .expect("write container");
+            epub.write_all(br#"<?xml version="1.0"?><container><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>"#)
+                .expect("write container XML");
+            epub.start_file("OEBPS/content.opf", options)
+                .expect("write package");
+            epub.write_all(br#"<?xml version="1.0"?><package xmlns:dc="http://purl.org/dc/elements/1.1/"><metadata><dc:title>Ottrin Guide</dc:title><dc:creator>David</dc:creator></metadata></package>"#)
+                .expect("write package XML");
+            epub.start_file("OEBPS/chapter.xhtml", options)
+                .expect("write untrusted content");
+            epub.write_all(b"<script>untrusted-content</script>")
+                .expect("write chapter");
+            epub.finish().expect("finish EPUB");
+        }
+
+        assert_eq!(classify_path(&path), PreviewKind::ArchiveMetadata);
+        let preview = preview_archive("guide.epub".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(preview.body.contains("Filetype: EPUB ebook"));
+        assert!(preview.body.contains("Title: Ottrin Guide"));
+        assert!(preview.body.contains("Author: David"));
+        assert!(!preview.body.contains("untrusted-content"));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn epub_preview_fails_closed_on_malformed_or_external_package_metadata() {
+        for (name, container) in [
+            ("malformed-container.epub", b"<container>".as_slice()),
+            (
+                "external-rootfile.epub",
+                br#"<container><rootfiles><rootfile full-path="https://example.invalid/book.opf" media-type="application/oebps-package+xml"/></rootfiles></container>"#,
+            ),
+        ] {
+            let path = temp_path(name);
+            {
+                let file = std::fs::File::create(&path).expect("create EPUB");
+                let mut epub = zip::ZipWriter::new(file);
+                let stored = zip::write::SimpleFileOptions::default()
+                    .compression_method(zip::CompressionMethod::Stored);
+                epub.start_file("mimetype", stored).expect("write mimetype");
+                epub.write_all(b"application/epub+zip")
+                    .expect("write EPUB mimetype");
+                epub.start_file(
+                    "META-INF/container.xml",
+                    zip::write::SimpleFileOptions::default(),
+                )
+                .expect("write container");
+                epub.write_all(container).expect("write container XML");
+                epub.finish().expect("finish EPUB");
+            }
+
+            let preview = preview_archive(name.to_string(), &path);
+
+            assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+            assert!(preview.body.contains("Could not read EPUB metadata safely."));
+
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn epub_preview_rejects_a_mimetype_local_header_that_is_not_first() {
+        let path = temp_path("mimetype-local-header-not-first.epub");
+        {
+            let file = std::fs::File::create(&path).expect("create EPUB");
+            let mut epub = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            epub.start_file("before-mimetype", options)
+                .expect("write preceding entry");
+            epub.write_all(b"not an EPUB mimetype")
+                .expect("write preceding entry data");
+            let stored = options.compression_method(zip::CompressionMethod::Stored);
+            epub.start_file("mimetype", stored).expect("write mimetype");
+            epub.write_all(b"application/epub+zip")
+                .expect("write EPUB mimetype");
+            epub.start_file("META-INF/container.xml", options)
+                .expect("write container");
+            epub.write_all(br#"<container><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>"#)
+                .expect("write container XML");
+            epub.start_file("OEBPS/content.opf", options)
+                .expect("write package");
+            epub.write_all(
+                br#"<package><metadata><title>Not accepted</title></metadata></package>"#,
+            )
+            .expect("write package XML");
+            epub.finish().expect("finish EPUB");
+        }
+
+        // Move the `mimetype` central-directory record before the preceding
+        // entry without changing either local-header offset. ZIP readers then
+        // report it as index zero even though it is not the first physical
+        // file, which EPUB forbids.
+        let mut bytes = std::fs::read(&path).expect("read EPUB");
+        let central_start = bytes
+            .windows(4)
+            .position(|window| window == b"PK\x01\x02")
+            .expect("find central directory");
+        let central_record_len = |start: usize| {
+            46 + u16::from_le_bytes([bytes[start + 28], bytes[start + 29]]) as usize
+                + u16::from_le_bytes([bytes[start + 30], bytes[start + 31]]) as usize
+                + u16::from_le_bytes([bytes[start + 32], bytes[start + 33]]) as usize
+        };
+        let first_end = central_start + central_record_len(central_start);
+        let second_end = first_end + central_record_len(first_end);
+        let mut reordered = bytes[first_end..second_end].to_vec();
+        reordered.extend_from_slice(&bytes[central_start..first_end]);
+        bytes.splice(central_start..second_end, reordered);
+        std::fs::write(&path, bytes).expect("rewrite reordered central directory");
+
+        let preview = preview_archive("mimetype-local-header-not-first.epub".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(
+            preview
+                .body
+                .contains("Could not read EPUB metadata safely.")
+        );
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn epub_preview_fails_closed_on_an_oversized_package() {
+        let path = temp_path("oversized.epub");
+        let file = std::fs::OpenOptions::new()
+            .create(true)
+            .truncate(true)
+            .write(true)
+            .open(&path)
+            .expect("create sparse EPUB");
+        file.set_len(MAX_OFFICE_PACKAGE_BYTES + 1)
+            .expect("inflate EPUB package");
+
+        let preview = preview_archive("oversized.epub".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(
+            preview
+                .body
+                .contains("Could not read EPUB metadata safely.")
+        );
 
         let _ = std::fs::remove_file(path);
     }
