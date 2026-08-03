@@ -29,6 +29,211 @@ const MAX_TAR_SCAN_BYTES: u64 = 256 * 1024 * 1024;
 const MAX_TAR_PATH_BYTES: usize = 768;
 const MAX_TAR_LISTED_ENTRIES: usize = 200;
 
+/// Stops an archive stream at a fixed input budget.
+struct LimitedReader<R> {
+    inner: R,
+    remaining: u64,
+}
+
+impl<R> LimitedReader<R> {
+    fn new(inner: R, limit: u64) -> Self {
+        Self {
+            inner,
+            remaining: limit,
+        }
+    }
+}
+
+impl<R: Read> Read for LimitedReader<R> {
+    fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+        if buffer.is_empty() {
+            return Ok(0);
+        }
+        if self.remaining == 0 {
+            return Err(std::io::Error::other(
+                "archive input exceeded safe preview bounds",
+            ));
+        }
+
+        let readable = buffer.len().min(self.remaining as usize);
+        let read = self.inner.read(&mut buffer[..readable])?;
+        self.remaining -= read as u64;
+        Ok(read)
+    }
+}
+
+/// Validates extension headers before `tar` materializes their payloads.
+struct TarHeaderGuard<R> {
+    inner: R,
+    pending_header: Option<[u8; 512]>,
+    pending_offset: usize,
+    entry_bytes_remaining: u64,
+    pax_payload: Option<Vec<u8>>,
+    pax_payload_remaining: u64,
+    next_pax_size: Option<u64>,
+    zero_headers: u8,
+    after_terminator: bool,
+}
+
+fn padded_tar_entry_size(size: u64) -> std::io::Result<u64> {
+    let padding = (512 - size % 512) % 512;
+    size.checked_add(padding)
+        .ok_or_else(|| std::io::Error::other("archive entry size exceeded safe preview bounds"))
+}
+
+fn pax_size_override(pax_payload: &[u8]) -> std::io::Result<Option<u64>> {
+    for record in pax_payload.split_inclusive(|byte| *byte == b'\n') {
+        let Some(space) = record.iter().position(|byte| *byte == b' ') else {
+            return Err(std::io::Error::other("invalid PAX extension record"));
+        };
+        std::str::from_utf8(&record[..space])
+            .ok()
+            .and_then(|length| length.parse::<usize>().ok())
+            .filter(|length| *length == record.len())
+            .ok_or_else(|| std::io::Error::other("invalid PAX extension record"))?;
+        let value = &record[space + 1..record.len() - 1];
+        if let Some(value) = value.strip_prefix(b"size=") {
+            return Ok(Some(
+                std::str::from_utf8(value)
+                    .ok()
+                    .and_then(|value| value.parse::<u64>().ok())
+                    .ok_or_else(|| std::io::Error::other("invalid PAX size extension"))?,
+            ));
+        }
+    }
+    Ok(None)
+}
+
+impl<R> TarHeaderGuard<R> {
+    fn new(inner: R) -> Self {
+        Self {
+            inner,
+            pending_header: None,
+            pending_offset: 0,
+            entry_bytes_remaining: 0,
+            pax_payload: None,
+            pax_payload_remaining: 0,
+            next_pax_size: None,
+            zero_headers: 0,
+            after_terminator: false,
+        }
+    }
+
+    fn prepare_header(&mut self) -> std::io::Result<()>
+    where
+        R: Read,
+    {
+        let mut header_bytes = [0; 512];
+        let first_byte_count = self.inner.read(&mut header_bytes[..1])?;
+        if first_byte_count == 0 {
+            return if self.zero_headers >= 2 {
+                Ok(())
+            } else {
+                Err(std::io::Error::other(
+                    "archive ended before its TAR terminator",
+                ))
+            };
+        }
+        self.inner.read_exact(&mut header_bytes[1..])?;
+
+        if header_bytes.iter().all(|byte| *byte == 0) {
+            self.zero_headers = self.zero_headers.saturating_add(1);
+        } else {
+            self.zero_headers = 0;
+            let header = tar::Header::from_byte_slice(&header_bytes);
+            let entry_type = header.entry_type();
+            let extension = entry_type.is_gnu_longname()
+                || entry_type.is_gnu_longlink()
+                || entry_type.is_pax_global_extensions()
+                || entry_type.is_pax_local_extensions();
+            let entry_size = header.entry_size()?;
+            if extension && entry_size > MAX_TAR_PATH_BYTES as u64 {
+                return Err(std::io::Error::other(
+                    "archive extension exceeded safe preview path bounds",
+                ));
+            }
+            if entry_type.is_pax_local_extensions() {
+                self.pax_payload = Some(Vec::with_capacity(entry_size as usize));
+                self.pax_payload_remaining = entry_size;
+            }
+            let effective_size = if extension {
+                entry_size
+            } else {
+                self.next_pax_size.take().unwrap_or(entry_size)
+            };
+            self.entry_bytes_remaining = padded_tar_entry_size(effective_size)?;
+        }
+
+        self.pending_header = Some(header_bytes);
+        self.pending_offset = 0;
+        Ok(())
+    }
+}
+
+impl<R: Read> Read for TarHeaderGuard<R> {
+    fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+        if buffer.is_empty() {
+            return Ok(0);
+        }
+
+        let mut written = 0;
+        while written < buffer.len() {
+            if let Some(header) = self.pending_header.as_ref() {
+                let available = 512 - self.pending_offset;
+                let copy_len = available.min(buffer.len() - written);
+                buffer[written..written + copy_len]
+                    .copy_from_slice(&header[self.pending_offset..self.pending_offset + copy_len]);
+                self.pending_offset += copy_len;
+                written += copy_len;
+                if self.pending_offset == 512 {
+                    self.pending_header = None;
+                    self.pending_offset = 0;
+                    if self.zero_headers >= 2 {
+                        self.after_terminator = true;
+                    }
+                }
+                continue;
+            }
+
+            if self.after_terminator {
+                let read = self.inner.read(&mut buffer[written..])?;
+                return Ok(written + read);
+            }
+
+            if self.entry_bytes_remaining > 0 {
+                let remaining = usize::try_from(self.entry_bytes_remaining).unwrap_or(usize::MAX);
+                let readable = (buffer.len() - written).min(remaining);
+                let read = self.inner.read(&mut buffer[written..written + readable])?;
+                if let Some(pax_payload) = self.pax_payload.as_mut() {
+                    let capture = usize::try_from(self.pax_payload_remaining)
+                        .unwrap_or(usize::MAX)
+                        .min(read);
+                    pax_payload.extend_from_slice(&buffer[written..written + capture]);
+                    self.pax_payload_remaining -= capture as u64;
+                }
+                self.entry_bytes_remaining -= read as u64;
+                written += read;
+                if read == 0 {
+                    return Ok(written);
+                }
+                if self.entry_bytes_remaining == 0
+                    && let Some(pax_payload) = self.pax_payload.take()
+                {
+                    self.next_pax_size = pax_size_override(&pax_payload)?;
+                    self.pax_payload_remaining = 0;
+                }
+                continue;
+            }
+
+            self.prepare_header()?;
+            if self.pending_header.is_none() {
+                return Ok(written);
+            }
+        }
+        Ok(written)
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum OfficeVisualError {
     #[error("Office format has no bounded visual renderer")]
@@ -1127,6 +1332,13 @@ fn preview_archive(title: String, path: &Path) -> PreviewData {
     if ext == "zip" {
         return preview_zip(title, path);
     }
+    if path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.to_ascii_lowercase().ends_with(".tar.gz"))
+    {
+        return preview_tar_gz(title, path);
+    }
     if ext == "tar" {
         return preview_tar(title, path);
     }
@@ -1171,52 +1383,70 @@ fn preview_tar(title: String, path: &Path) -> PreviewData {
         };
     };
 
-    let mut archive = tar::Archive::new(file);
-    let mut entries_iter = match archive.entries() {
-        Ok(entries) => entries,
-        Err(_) => {
-            let info = metadata_summary(
-                path,
-                "TAR archive.",
-                Some("Could not read archive entries."),
-            );
-            return PreviewData {
-                title,
-                kind: PreviewKind::ArchiveMetadata,
-                body: info,
-                open_external: true,
-            };
-        }
-    };
+    preview_tar_reader(
+        title,
+        path,
+        TarHeaderGuard::new(LimitedReader::new(file, MAX_TAR_COMPRESSED_BYTES)),
+        "TAR archive",
+    )
+}
 
+fn preview_tar_gz(title: String, path: &Path) -> PreviewData {
+    let compressed_len = std::fs::metadata(path).map(|meta| meta.len()).unwrap_or(0);
+    if compressed_len > MAX_TAR_COMPRESSED_BYTES {
+        let info = metadata_summary(
+            path,
+            "TAR.GZ archive.",
+            Some("Archive is too large for safe metadata scanning."),
+        );
+        return PreviewData {
+            title,
+            kind: PreviewKind::ArchiveMetadata,
+            body: info,
+            open_external: true,
+        };
+    }
+    let Ok(file) = std::fs::File::open(path) else {
+        let info = metadata_summary(path, "TAR.GZ archive.", Some("Could not open archive."));
+        return PreviewData {
+            title,
+            kind: PreviewKind::ArchiveMetadata,
+            body: info,
+            open_external: true,
+        };
+    };
+    preview_tar_reader(
+        title,
+        path,
+        TarHeaderGuard::new(LimitedReader::new(
+            flate2::read::MultiGzDecoder::new(LimitedReader::new(file, MAX_TAR_COMPRESSED_BYTES)),
+            MAX_TAR_SCAN_BYTES,
+        )),
+        "TAR.GZ archive",
+    )
+}
+
+fn preview_tar_reader<R: std::io::Read>(
+    title: String,
+    path: &Path,
+    reader: R,
+    archive_label: &str,
+) -> PreviewData {
+    let archive_description = format!("{archive_label}.");
+    let mut archive = tar::Archive::new(reader);
     let mut total = 0usize;
     let mut total_uncompressed: u64 = 0;
     let mut dirs = 0usize;
     let mut files = 0usize;
     let mut listing = Vec::with_capacity(MAX_TAR_LISTED_ENTRIES);
 
-    for result in entries_iter.by_ref() {
-        total = total.saturating_add(1);
-        if total > MAX_TAR_SCAN_ENTRIES {
-            let info = metadata_summary(
-                path,
-                "TAR archive.",
-                Some("Archive has too many entries for safe scanning."),
-            );
-            return PreviewData {
-                title,
-                kind: PreviewKind::ArchiveMetadata,
-                body: info,
-                open_external: true,
-            };
-        }
-
-        let entry = match result {
-            Ok(entry) => entry,
+    {
+        let mut entries_iter = match archive.entries() {
+            Ok(entries) => entries,
             Err(_) => {
                 let info = metadata_summary(
                     path,
-                    "TAR archive.",
+                    &archive_description,
                     Some("Could not read archive entries."),
                 );
                 return PreviewData {
@@ -1227,14 +1457,30 @@ fn preview_tar(title: String, path: &Path) -> PreviewData {
                 };
             }
         };
-        let entry_path = match entry.path() {
-            Ok(entry_path) => {
-                let candidate = entry_path.to_string_lossy().into_owned();
-                if candidate.len() > MAX_TAR_PATH_BYTES {
+
+        for result in entries_iter.by_ref() {
+            total = total.saturating_add(1);
+            if total > MAX_TAR_SCAN_ENTRIES {
+                let info = metadata_summary(
+                    path,
+                    &archive_description,
+                    Some("Archive has too many entries for safe scanning."),
+                );
+                return PreviewData {
+                    title,
+                    kind: PreviewKind::ArchiveMetadata,
+                    body: info,
+                    open_external: true,
+                };
+            }
+
+            let entry = match result {
+                Ok(entry) => entry,
+                Err(_) => {
                     let info = metadata_summary(
                         path,
-                        "TAR archive.",
-                        Some("Archive entry path exceeded safe preview bounds."),
+                        &archive_description,
+                        Some("Could not read archive entries."),
                     );
                     return PreviewData {
                         title,
@@ -1243,13 +1489,80 @@ fn preview_tar(title: String, path: &Path) -> PreviewData {
                         open_external: true,
                     };
                 }
-                candidate
+            };
+            let entry_path = match entry.path() {
+                Ok(entry_path) => {
+                    let candidate = entry_path.to_string_lossy().into_owned();
+                    if candidate.len() > MAX_TAR_PATH_BYTES {
+                        let info = metadata_summary(
+                            path,
+                            &archive_description,
+                            Some("Archive entry path exceeded safe preview bounds."),
+                        );
+                        return PreviewData {
+                            title,
+                            kind: PreviewKind::ArchiveMetadata,
+                            body: info,
+                            open_external: true,
+                        };
+                    }
+                    candidate
+                }
+                Err(_) => {
+                    let info = metadata_summary(
+                        path,
+                        &archive_description,
+                        Some("Could not read archive entry paths."),
+                    );
+                    return PreviewData {
+                        title,
+                        kind: PreviewKind::ArchiveMetadata,
+                        body: info,
+                        open_external: true,
+                    };
+                }
+            };
+
+            let is_dir = entry.header().entry_type().is_dir();
+            let size = entry.size();
+            if is_dir {
+                dirs += 1;
+                if listing.len() < MAX_TAR_LISTED_ENTRIES {
+                    listing.push(format!("  {entry_path}"));
+                }
+            } else {
+                files += 1;
+                total_uncompressed = total_uncompressed.saturating_add(size);
+                if total_uncompressed > MAX_TAR_SCAN_BYTES {
+                    let info = metadata_summary(
+                        path,
+                        &archive_description,
+                        Some("Archive has too much data for safe preview scanning."),
+                    );
+                    return PreviewData {
+                        title,
+                        kind: PreviewKind::ArchiveMetadata,
+                        body: info,
+                        open_external: true,
+                    };
+                }
+                if listing.len() < MAX_TAR_LISTED_ENTRIES {
+                    listing.push(format!("  {entry_path}  ({})", format_size(size)));
+                }
             }
+        }
+    }
+
+    let mut remaining_input = archive.into_inner();
+    let mut trailing_bytes = [0; 8_192];
+    loop {
+        let read = match remaining_input.read(&mut trailing_bytes) {
+            Ok(read) => read,
             Err(_) => {
                 let info = metadata_summary(
                     path,
-                    "TAR archive.",
-                    Some("Could not read archive entry paths."),
+                    &archive_description,
+                    Some("Could not read archive entries."),
                 );
                 return PreviewData {
                     title,
@@ -1259,37 +1572,25 @@ fn preview_tar(title: String, path: &Path) -> PreviewData {
                 };
             }
         };
-
-        let header = entry.header();
-        let size = header.size().unwrap_or(0);
-        if header.entry_type().is_dir() {
-            dirs += 1;
-            if listing.len() < MAX_TAR_LISTED_ENTRIES {
-                listing.push(format!("  {entry_path}"));
-            }
-        } else {
-            files += 1;
-            total_uncompressed = total_uncompressed.saturating_add(size);
-            if total_uncompressed > MAX_TAR_SCAN_BYTES {
-                let info = metadata_summary(
-                    path,
-                    "TAR archive.",
-                    Some("Archive has too much data for safe preview scanning."),
-                );
-                return PreviewData {
-                    title,
-                    kind: PreviewKind::ArchiveMetadata,
-                    body: info,
-                    open_external: true,
-                };
-            }
-            if listing.len() < MAX_TAR_LISTED_ENTRIES {
-                listing.push(format!("  {entry_path}  ({})", format_size(size)));
-            }
+        if read == 0 {
+            break;
+        }
+        if trailing_bytes[..read].iter().any(|byte| *byte != 0) {
+            let info = metadata_summary(
+                path,
+                &archive_description,
+                Some("Could not read archive entries."),
+            );
+            return PreviewData {
+                title,
+                kind: PreviewKind::ArchiveMetadata,
+                body: info,
+                open_external: true,
+            };
         }
     }
 
-    let mut lines = vec!["Filetype: TAR archive".to_string()];
+    let mut lines = vec![format!("Filetype: {archive_label}")];
     lines.push(format!("Entries: {total}"));
     lines.push(format!("Files: {files}"));
     lines.push(format!("Folders: {dirs}"));
@@ -2350,6 +2651,41 @@ mod tests {
         std::env::temp_dir().join(format!("ottrin-preview-{unique}-{name}"))
     }
 
+    fn write_gzip(path: &Path, payload: &[u8]) {
+        use flate2::Compression;
+        use flate2::write::GzEncoder;
+
+        let file = std::fs::File::create(path).expect("create gzip archive");
+        let mut gzip = GzEncoder::new(file, Compression::default());
+        gzip.write_all(payload).expect("write gzip payload");
+        gzip.finish().expect("finish gzip archive");
+    }
+
+    fn pax_size_override_tar() -> Vec<u8> {
+        let pax_record = b"13 size=1024\n";
+        let mut archive = Vec::new();
+
+        let mut pax_header = tar::Header::new_gnu();
+        pax_header.set_entry_type(tar::EntryType::XHeader);
+        pax_header.set_size(pax_record.len() as u64);
+        pax_header.set_cksum();
+        archive.extend_from_slice(pax_header.as_bytes());
+        archive.extend_from_slice(pax_record);
+        archive.resize(1024, 0);
+
+        let mut file_header = tar::Header::new_gnu();
+        file_header
+            .set_path("pax-sized.txt")
+            .expect("set entry path");
+        file_header.set_size(0);
+        file_header.set_mode(0o644);
+        file_header.set_cksum();
+        archive.extend_from_slice(file_header.as_bytes());
+        archive.extend(vec![b'x'; 1024]);
+        archive.extend_from_slice(&[0; 1024]);
+        archive
+    }
+
     #[test]
     fn classified_formats_expose_shared_preview_contract_views_and_renderers() {
         let path = temp_path("manual.pdf");
@@ -2573,6 +2909,354 @@ mod tests {
         assert!(preview.open_external);
 
         let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_gz_preview_lists_counts_sizes_and_contents() {
+        let path = temp_path("archive.tar.gz");
+        let mut tar_bytes = Vec::new();
+        {
+            let mut tar = tar::Builder::new(&mut tar_bytes);
+            let payload = b"hello from compressed ottrin";
+            let mut header = tar::Header::new_gnu();
+            header.set_size(payload.len() as u64);
+            header.set_mode(0o644);
+            header.set_cksum();
+            tar.append_data(&mut header, "docs/readme.txt", payload.as_slice())
+                .expect("add tar entry");
+            tar.finish().expect("finish tar");
+        }
+        write_gzip(&path, &tar_bytes);
+
+        let preview = preview_archive("archive.tar.gz".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(preview.body.contains("Filetype: TAR.GZ archive"));
+        assert!(preview.body.contains("Files: 1"));
+        assert!(preview.body.contains("docs/readme.txt"));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_gz_preview_rejects_non_gzip_input() {
+        let path = temp_path("not-gzip.tar.gz");
+        std::fs::write(&path, b"this is not a gzip stream").expect("write invalid gzip");
+
+        let preview = preview_archive("not-gzip.tar.gz".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(preview.body.contains("Could not read archive entries."));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_gz_preview_rejects_gzip_payload_that_is_not_a_tar() {
+        let path = temp_path("not-tar.tar.gz");
+        write_gzip(&path, b"this is valid gzip but not a TAR archive");
+
+        let preview = preview_archive("not-tar.tar.gz".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(preview.body.contains("Could not read archive entries."));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_and_tar_gz_previews_honor_bounded_pax_size_overrides() {
+        let tar_bytes = pax_size_override_tar();
+        for (name, gzip) in [("pax-sized.tar", false), ("pax-sized.tar.gz", true)] {
+            let path = temp_path(name);
+            if gzip {
+                write_gzip(&path, &tar_bytes);
+            } else {
+                std::fs::write(&path, &tar_bytes).expect("write TAR archive");
+            }
+
+            let preview = preview_archive(name.to_string(), &path);
+
+            assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+            assert!(preview.body.contains("Files: 1"));
+            assert!(
+                preview.body.contains("Uncompressed: 1.0 KB"),
+                "{}",
+                preview.body
+            );
+            assert!(preview.body.contains("pax-sized.txt"));
+
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn tar_gz_preview_rejects_tar_without_a_complete_terminator() {
+        for (name, zero_blocks) in [
+            ("missing-terminator.tar.gz", 0),
+            ("one-zero-block.tar.gz", 1),
+        ] {
+            let path = temp_path(name);
+            let payload = b"payload";
+            let mut header = tar::Header::new_gnu();
+            header
+                .set_path("missing-terminator.txt")
+                .expect("set entry path");
+            header.set_size(payload.len() as u64);
+            header.set_mode(0o644);
+            header.set_cksum();
+            let mut tar_bytes = header.as_bytes().to_vec();
+            tar_bytes.extend_from_slice(payload);
+            tar_bytes.resize(1024, 0);
+            tar_bytes.extend(vec![0; zero_blocks * 512]);
+            write_gzip(&path, &tar_bytes);
+
+            let preview = preview_archive(name.to_string(), &path);
+
+            assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+            assert!(preview.body.contains("Could not read archive entries."));
+
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn tar_gz_preview_rejects_trailing_non_gzip_data() {
+        let path = temp_path("trailing-data.tar.gz");
+        let mut tar_bytes = Vec::new();
+        {
+            let mut tar = tar::Builder::new(&mut tar_bytes);
+            let payload = b"payload";
+            let mut header = tar::Header::new_gnu();
+            header.set_size(payload.len() as u64);
+            header.set_mode(0o644);
+            header.set_cksum();
+            tar.append_data(&mut header, "safe.txt", payload.as_slice())
+                .expect("add tar entry");
+            tar.finish().expect("finish tar");
+        }
+        write_gzip(&path, &tar_bytes);
+        let mut file = std::fs::OpenOptions::new()
+            .append(true)
+            .open(&path)
+            .expect("open gzip archive");
+        file.write_all(b"not a gzip member")
+            .expect("append invalid trailing data");
+
+        let preview = preview_archive("trailing-data.tar.gz".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(preview.body.contains("Could not read archive entries."));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_gz_preview_rejects_a_second_member_with_non_tar_data() {
+        let path = temp_path("second-member.tar.gz");
+        let mut tar_bytes = Vec::new();
+        {
+            let mut tar = tar::Builder::new(&mut tar_bytes);
+            let payload = b"payload";
+            let mut header = tar::Header::new_gnu();
+            header.set_size(payload.len() as u64);
+            header.set_mode(0o644);
+            header.set_cksum();
+            tar.append_data(&mut header, "safe.txt", payload.as_slice())
+                .expect("add tar entry");
+            tar.finish().expect("finish tar");
+        }
+        write_gzip(&path, &tar_bytes);
+        {
+            use flate2::Compression;
+            use flate2::write::GzEncoder;
+
+            let file = std::fs::OpenOptions::new()
+                .append(true)
+                .open(&path)
+                .expect("open gzip archive");
+            let mut gzip = GzEncoder::new(file, Compression::default());
+            gzip.write_all(b"not a TAR continuation")
+                .expect("write second member");
+            gzip.finish().expect("finish second member");
+        }
+
+        let preview = preview_archive("second-member.tar.gz".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(preview.body.contains("Could not read archive entries."));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_gz_preview_rejects_oversized_compressed_input() {
+        let path = temp_path("huge-archive.tar.gz");
+        let file = std::fs::OpenOptions::new()
+            .create(true)
+            .truncate(true)
+            .write(true)
+            .open(&path)
+            .expect("create sparse gzip archive");
+        file.set_len(MAX_TAR_COMPRESSED_BYTES + 1)
+            .expect("inflate compressed test archive size");
+
+        let preview = preview_archive("huge-archive.tar.gz".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(
+            preview
+                .body
+                .contains("Archive is too large for safe metadata scanning.")
+        );
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_gz_preview_rejects_a_header_declaring_excessive_uncompressed_data() {
+        let path = temp_path("declared-huge.tar.gz");
+        let mut tar_bytes = Vec::new();
+        let mut header = tar::Header::new_gnu();
+        header
+            .set_path("declared-huge.bin")
+            .expect("set entry path");
+        header.set_size(MAX_TAR_SCAN_BYTES + 1);
+        header.set_mode(0o644);
+        header.set_cksum();
+        tar_bytes.extend_from_slice(header.as_bytes());
+        tar_bytes.extend_from_slice(&[0; 1024]);
+        write_gzip(&path, &tar_bytes);
+
+        let preview = preview_archive("declared-huge.tar.gz".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(
+            preview
+                .body
+                .contains("Archive has too much data for safe preview scanning."),
+            "a declared-size bomb must be rejected before any payload read"
+        );
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_gz_preview_rejects_entry_paths_past_the_listing_bound() {
+        let path = temp_path("long-path.tar.gz");
+        let mut tar_bytes = Vec::new();
+        {
+            let mut tar = tar::Builder::new(&mut tar_bytes);
+            let payload = b"payload";
+            let long_path = format!("{}.txt", "a".repeat(MAX_TAR_PATH_BYTES));
+            let mut header = tar::Header::new_gnu();
+            header.set_size(payload.len() as u64);
+            header.set_mode(0o644);
+            header.set_cksum();
+            tar.append_data(&mut header, long_path, payload.as_slice())
+                .expect("add long-path entry");
+            tar.finish().expect("finish tar");
+        }
+        write_gzip(&path, &tar_bytes);
+
+        let preview = preview_archive("long-path.tar.gz".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(preview.body.contains("Could not read archive entries."));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_gz_preview_bounds_entry_count_and_listing() {
+        let path = temp_path("many-entries.tar.gz");
+        let mut tar_bytes = Vec::new();
+        {
+            let mut tar = tar::Builder::new(&mut tar_bytes);
+            for i in 0..(MAX_TAR_LISTED_ENTRIES + 1) {
+                let payload = b"payload";
+                let mut header = tar::Header::new_gnu();
+                header.set_size(payload.len() as u64);
+                header.set_mode(0o644);
+                header.set_cksum();
+                tar.append_data(&mut header, format!("entry-{i}"), payload.as_slice())
+                    .expect("add synthetic entry");
+            }
+            tar.finish().expect("finish tar");
+        }
+        write_gzip(&path, &tar_bytes);
+
+        let preview = preview_archive("many-entries.tar.gz".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(preview.body.contains("Entries: 201"));
+        assert!(preview.body.contains("  ... and 1 more entries"));
+        assert!(!preview.body.contains("  entry-200  ("));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_gz_preview_rejects_too_many_entries() {
+        let path = temp_path("too-many-entries.tar.gz");
+        let mut tar_bytes = Vec::new();
+        {
+            let mut tar = tar::Builder::new(&mut tar_bytes);
+            for i in 0..(MAX_TAR_SCAN_ENTRIES + 1) {
+                let payload = b"payload";
+                let mut header = tar::Header::new_gnu();
+                header.set_size(payload.len() as u64);
+                header.set_mode(0o644);
+                header.set_cksum();
+                tar.append_data(&mut header, format!("entry-{i}"), payload.as_slice())
+                    .expect("add synthetic entry");
+            }
+            tar.finish().expect("finish tar");
+        }
+        write_gzip(&path, &tar_bytes);
+
+        let preview = preview_archive("too-many-entries.tar.gz".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(
+            preview
+                .body
+                .contains("Archive has too many entries for safe scanning.")
+        );
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn limited_reader_rejects_data_past_input_limit() {
+        let mut reader = LimitedReader::new(std::io::Cursor::new(b"abc"), 2);
+        let mut buffer = [0; 3];
+
+        assert_eq!(reader.read(&mut buffer).expect("read up to limit"), 2);
+        assert_eq!(&buffer[..2], b"ab");
+        assert!(reader.read(&mut buffer).is_err());
+    }
+
+    #[test]
+    fn tar_header_guard_rejects_oversized_path_extensions_before_payload_reads() {
+        for extension_type in [tar::EntryType::GNULongName, tar::EntryType::XHeader] {
+            let mut header = tar::Header::new_gnu();
+            header.set_entry_type(extension_type);
+            header.set_size(MAX_TAR_PATH_BYTES as u64 + 1);
+            header.set_cksum();
+            let mut reader = TarHeaderGuard::new(std::io::Cursor::new(header.as_bytes()));
+            let mut output = [0; 512];
+
+            assert!(reader.read(&mut output).is_err());
+        }
+    }
+
+    #[test]
+    fn pax_size_override_uses_the_first_duplicate_size_record() {
+        assert_eq!(
+            pax_size_override(b"13 size=1024\n9 size=0\n").expect("parse PAX size"),
+            Some(1024)
+        );
     }
 
     #[test]

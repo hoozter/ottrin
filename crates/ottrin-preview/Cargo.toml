@@ -15,6 +15,7 @@ lopdf = "0.34"
 resvg = "0.45"
 usvg = { version = "0.45", default-features = false }
 tar = "0.4"
+flate2 = "1"
 quick-xml = "0.38"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "tiff"] }
 ab_glyph = "0.2"
