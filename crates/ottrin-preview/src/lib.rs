@@ -2032,7 +2032,7 @@ fn epub_central_directory_is_well_formed(
         let Some(extra) = bytes.get(extra_start as usize..extra_end as usize) else {
             return false;
         };
-        if !epub_central_directory_disk_start_is_safe(header, extra) {
+        if !epub_central_directory_zip64_is_consistent(header, extra) {
             return false;
         }
         offset = next;
@@ -2040,25 +2040,14 @@ fn epub_central_directory_is_well_formed(
     offset == directory_end
 }
 
-/// EPUB accepts only one ZIP disk. A central-directory record can override its
-/// 16-bit disk-start field through ZIP64, so validate both representations
-/// before `ZipArchive` observes the entry.
-fn epub_central_directory_disk_start_is_safe(header: &[u8], extra: &[u8]) -> bool {
-    let Some(disk_start) = read_le_u16(&header[34..36]) else {
-        return false;
-    };
-    match disk_start {
-        0 => true,
-        u16::MAX => epub_zip64_disk_start_is_zero(header, extra),
-        _ => false,
-    }
-}
-
-fn epub_zip64_disk_start_is_zero(header: &[u8], extra: &[u8]) -> bool {
+/// EPUB accepts only one ZIP disk. ZIP64 replacement values occur only for
+/// their classic sentinel fields and in APPNOTE central-directory order, so
+/// parse the complete ZIP64 extra before `ZipArchive` observes the entry.
+fn epub_central_directory_zip64_is_consistent(header: &[u8], extra: &[u8]) -> bool {
     const ZIP64_EXTRA_FIELD_ID: u16 = 0x0001;
 
     let mut offset = 0usize;
-    let mut zip64_disk_start = None;
+    let mut zip64_values = None;
     while offset < extra.len() {
         let Some(field_header_end) = offset.checked_add(4) else {
             return false;
@@ -2079,44 +2068,67 @@ fn epub_zip64_disk_start_is_zero(header: &[u8], extra: &[u8]) -> bool {
             return false;
         };
         if field_id == ZIP64_EXTRA_FIELD_ID {
-            if zip64_disk_start.is_some() {
+            if zip64_values.is_some() {
                 return false;
             }
-            let mut values = field;
-            // ZIP64 replacement values occur only for sentinels, and in this
-            // central-directory order: uncompressed size, compressed size,
-            // local-header offset, then disk number start.
-            for range in [24..28, 20..24, 42..46] {
-                let Some(value) = read_le_u32(&header[range]) else {
-                    return false;
-                };
-                if value == u32::MAX {
-                    let Some(replacement) = values.get(..8) else {
-                        return false;
-                    };
-                    if read_le_u64(replacement).is_none() {
-                        return false;
-                    }
-                    let Some(remaining) = values.get(8..) else {
-                        return false;
-                    };
-                    values = remaining;
-                }
-            }
-            let Some(disk_start) = read_le_u32(values) else {
-                return false;
-            };
-            // ZIP64 values occur exactly in sentinel-field order. The disk
-            // value is the final required value here, so additional bytes are
-            // malformed rather than an alternate interpretation.
-            if values.len() != 4 {
-                return false;
-            }
-            zip64_disk_start = Some(disk_start == 0);
+            zip64_values = Some(field);
         }
         offset = field_end;
     }
-    zip64_disk_start == Some(true)
+
+    let Some(uncompressed_size) = read_le_u32(&header[24..28]) else {
+        return false;
+    };
+    let Some(compressed_size) = read_le_u32(&header[20..24]) else {
+        return false;
+    };
+    let Some(local_header_offset) = read_le_u32(&header[42..46]) else {
+        return false;
+    };
+    let Some(disk_start) = read_le_u16(&header[34..36]) else {
+        return false;
+    };
+    if disk_start != 0 && disk_start != u16::MAX {
+        return false;
+    }
+
+    let needs_zip64 = [uncompressed_size, compressed_size, local_header_offset]
+        .into_iter()
+        .any(|value| value == u32::MAX)
+        || disk_start == u16::MAX;
+    let Some(mut values) = zip64_values else {
+        return !needs_zip64;
+    };
+
+    // ZIP64 values occur exactly in this central-directory order:
+    // uncompressed size, compressed size, local-header offset, disk number.
+    for value in [uncompressed_size, compressed_size, local_header_offset] {
+        if value == u32::MAX {
+            let Some(replacement) = values.get(..8) else {
+                return false;
+            };
+            if read_le_u64(replacement).is_none() {
+                return false;
+            }
+            let Some(remaining) = values.get(8..) else {
+                return false;
+            };
+            values = remaining;
+        }
+    }
+    if disk_start == u16::MAX {
+        let Some(replacement) = values.get(..4) else {
+            return false;
+        };
+        if read_le_u32(replacement) != Some(0) {
+            return false;
+        }
+        let Some(remaining) = values.get(4..) else {
+            return false;
+        };
+        values = remaining;
+    }
+    values.is_empty()
 }
 
 fn read_le_u16(bytes: &[u8]) -> Option<u16> {
@@ -3980,9 +3992,63 @@ mod tests {
             "a present, well-formed zero ZIP64 disk-start value remains single-disk"
         );
 
+        // ZIP64 values may only replace classic sentinel fields. A disk-start
+        // value is therefore forbidden when the classic disk-start field is
+        // already zero, whether it appears alone or after a required value.
+        for (label, sentinel_uncompressed_size, zip64_disk_start) in [
+            ("unneeded zero disk start alone", false, 0_u32),
+            ("unneeded nonzero disk start alone", false, 1_u32),
+            ("unneeded zero disk start after size", true, 0_u32),
+            ("unneeded nonzero disk start after size", true, 1_u32),
+        ] {
+            let mut bytes = original.clone();
+            let mut zip64_values = Vec::new();
+            if sentinel_uncompressed_size {
+                let size = read_le_u32(&original[central + 24..central + 28])
+                    .expect("classic uncompressed size");
+                bytes[central + 24..central + 28].copy_from_slice(&u32::MAX.to_le_bytes());
+                zip64_values.extend_from_slice(&(size as u64).to_le_bytes());
+            }
+            zip64_values.extend_from_slice(&zip64_disk_start.to_le_bytes());
+            let mut zip64_extra = Vec::with_capacity(4 + zip64_values.len());
+            zip64_extra.extend_from_slice(&1_u16.to_le_bytes());
+            zip64_extra.extend_from_slice(&(zip64_values.len() as u16).to_le_bytes());
+            zip64_extra.extend_from_slice(&zip64_values);
+            bytes[central + 30..central + 32]
+                .copy_from_slice(&(zip64_extra.len() as u16).to_le_bytes());
+            bytes.splice(extra_start..extra_start, zip64_extra);
+            let mutated_eocd = eocd
+                + read_le_u16(&bytes[central + 30..central + 32]).expect("extra length") as usize;
+            let directory_size =
+                read_le_u32(&bytes[mutated_eocd + 12..mutated_eocd + 16]).expect("directory size");
+            bytes[mutated_eocd + 12..mutated_eocd + 16]
+                .copy_from_slice(&(directory_size + (mutated_eocd - eocd) as u32).to_le_bytes());
+
+            assert!(
+                preflight_epub_zip(&bytes).is_none(),
+                "a {label} must fail closed"
+            );
+            std::fs::write(&path, &bytes).expect("write malformed EPUB");
+            assert!(
+                preview_archive(format!("{label}.epub"), &path)
+                    .body
+                    .contains("Could not read EPUB metadata safely."),
+                "the public EPUB preview must fail closed on a {label}"
+            );
+        }
+
         for (label, sentinel_uncompressed_size, sentinel_compressed_size, sentinel_local_offset) in [
             ("uncompressed size", true, false, false),
+            ("compressed size", false, true, false),
+            ("local-header offset", false, false, true),
             ("uncompressed and compressed sizes", true, true, false),
+            (
+                "uncompressed size and local-header offset",
+                true,
+                false,
+                true,
+            ),
+            ("compressed size and local-header offset", false, true, true),
             ("all preceding central-directory fields", true, true, true),
         ] {
             let mut bytes = original.clone();
