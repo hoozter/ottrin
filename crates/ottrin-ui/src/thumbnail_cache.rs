@@ -105,15 +105,15 @@ pub(crate) fn load_cached_thumbnail(path: &Path, cache_key: &str) -> Option<Vec<
 }
 
 /// Opens an already-resolved cache entry only after the preview profile permits
-/// that file type to use thumbnail bytes. EPUB is metadata-only and currently
-/// disabled, so stale entries are discarded without exposing any cache bytes.
+/// that file type to use thumbnail bytes. Formats with a dedicated renderer
+/// accept cached PNG only, so stale source bytes cannot bypass it.
 fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u8>> {
     if ottrin_preview::is_epub_path(path) {
         let _ = std::fs::remove_file(cache_path);
         return None;
     }
     let bytes = std::fs::read(cache_path).ok()?;
-    if ottrin_preview::is_svg_path(path) && !is_png_bytes(&bytes) {
+    if !cached_thumbnail_is_safe_for_path(path, &bytes) {
         let _ = std::fs::remove_file(cache_path);
         return None;
     }
@@ -186,6 +186,18 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::CameraRaw => {
+                match ottrin_preview::render_camera_raw_embedded_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "Camera RAW thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
             _ => None,
         }
     })
@@ -218,7 +230,9 @@ pub(crate) fn thumbnail_bytes_from_cache_or_build(
 }
 
 fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
-    (!ottrin_preview::is_svg_path(path) && !ottrin_preview::is_epub_path(path))
+    (!ottrin_preview::is_svg_path(path)
+        && !ottrin_preview::is_epub_path(path)
+        && !ottrin_preview::is_camera_raw_path(path))
         || is_png_bytes(bytes)
 }
 
@@ -246,6 +260,18 @@ pub(crate) fn full_preview_bytes_at_page(
             Err(ottrin_preview::SvgVisualError::UnsupportedFormat) => {}
             Err(_) => return None,
         }
+    }
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::CameraRaw {
+        return match ottrin_preview::render_camera_raw_embedded_preview_png(path, target_dim) {
+            Ok(bytes) => Some(bytes),
+            Err(error) => {
+                eprintln!(
+                    "Camera RAW preview render failed for {}: {error}",
+                    path.display()
+                );
+                None
+            }
+        };
     }
     full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
         if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Office {
@@ -280,6 +306,7 @@ fn full_preview_bytes_with_visual_renderer(
         preview_visual_renderer(path),
         ottrin_preview::PreviewVisualRenderer::Pdf
             | ottrin_preview::PreviewVisualRenderer::Office
+            | ottrin_preview::PreviewVisualRenderer::CameraRaw
             | ottrin_preview::PreviewVisualRenderer::TextCard
     ) {
         return render_visual(path, target_dim);
@@ -298,6 +325,7 @@ fn build_thumbnail_bytes_with_visual_renderer(
     match preview_visual_renderer(path) {
         ottrin_preview::PreviewVisualRenderer::Pdf
         | ottrin_preview::PreviewVisualRenderer::Office
+        | ottrin_preview::PreviewVisualRenderer::CameraRaw
         | ottrin_preview::PreviewVisualRenderer::TextCard => {
             return render_visual(path, target_dim);
         }
@@ -493,6 +521,39 @@ mod tests {
     use super::*;
     use image::GenericImageView;
 
+    fn raw_tiff_with_embedded_jpeg(jpeg: &[u8]) -> Vec<u8> {
+        const IFD0_OFFSET: u32 = 8;
+        const IFD1_OFFSET: u32 = IFD0_OFFSET + 2 + 4;
+        const JPEG_OFFSET: u32 = IFD1_OFFSET + 2 + 2 * 12 + 4;
+
+        let mut bytes = b"II*\0".to_vec();
+        bytes.extend_from_slice(&IFD0_OFFSET.to_le_bytes());
+        bytes.extend_from_slice(&0u16.to_le_bytes());
+        bytes.extend_from_slice(&IFD1_OFFSET.to_le_bytes());
+        bytes.extend_from_slice(&2u16.to_le_bytes());
+        for (tag, value) in [(0x0201u16, JPEG_OFFSET), (0x0202u16, jpeg.len() as u32)] {
+            bytes.extend_from_slice(&tag.to_le_bytes());
+            bytes.extend_from_slice(&4u16.to_le_bytes());
+            bytes.extend_from_slice(&1u32.to_le_bytes());
+            bytes.extend_from_slice(&value.to_le_bytes());
+        }
+        bytes.extend_from_slice(&0u32.to_le_bytes());
+        bytes.extend_from_slice(jpeg);
+        bytes
+    }
+
+    fn small_jpeg() -> Vec<u8> {
+        let mut jpeg = Vec::new();
+        image::DynamicImage::ImageRgb8(image::RgbImage::from_pixel(
+            12,
+            8,
+            image::Rgb([32, 160, 224]),
+        ))
+        .write_to(&mut Cursor::new(&mut jpeg), image::ImageFormat::Jpeg)
+        .expect("encode embedded JPEG");
+        jpeg
+    }
+
     #[test]
     fn pdf_thumbnail_uses_visual_renderer_case_insensitively() {
         let path = Path::new("report.PDF");
@@ -552,6 +613,67 @@ mod tests {
         });
 
         assert_eq!(bytes, Some(b"rendered-png".to_vec()));
+    }
+
+    #[test]
+    fn camera_raw_thumbnail_and_full_preview_use_the_bounded_renderer() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-camera-raw-thumbnail-{}.ARW",
+            std::process::id()
+        ));
+        let raw = raw_tiff_with_embedded_jpeg(&small_jpeg());
+        std::fs::write(&path, &raw).expect("write camera RAW fixture");
+
+        let thumbnail = build_thumbnail_bytes(&path, 128).expect("RAW thumbnail");
+        let full = full_preview_bytes_at_page(&path, 128, 0).expect("RAW full preview");
+        let (cached, rebuilt) =
+            thumbnail_bytes_from_cache_or_build(&path, 128, Some(raw)).expect("rebuilt RAW cache");
+
+        assert!(is_png_bytes(&thumbnail));
+        assert!(is_png_bytes(&full));
+        assert!(is_png_bytes(&cached));
+        assert!(rebuilt, "raw cache bytes must not bypass the RAW renderer");
+        assert!(image::load_from_memory(&thumbnail).is_ok());
+        std::fs::remove_file(path).expect("remove camera RAW fixture");
+    }
+
+    #[test]
+    fn camera_raw_cache_key_changes_when_the_container_changes() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-camera-raw-cache-key-{}.dng",
+            std::process::id()
+        ));
+        std::fs::write(&path, raw_tiff_with_embedded_jpeg(&small_jpeg()))
+            .expect("write camera RAW fixture");
+        let before = preview_cache_key_for_page(&path, 128, 0);
+        std::fs::write(
+            &path,
+            [raw_tiff_with_embedded_jpeg(&small_jpeg()), vec![0]].concat(),
+        )
+        .expect("replace camera RAW fixture");
+        let after = preview_cache_key_for_page(&path, 128, 0);
+
+        assert_ne!(before, after);
+        std::fs::remove_file(path).expect("remove camera RAW fixture");
+    }
+
+    #[test]
+    fn camera_raw_cache_entry_is_discarded_before_thumbnail_bytes_are_read() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-camera-raw-cache-policy-{}.dng",
+            std::process::id()
+        ));
+        let cache_path = std::env::temp_dir().join(format!(
+            "ottrin-camera-raw-stale-cache-{}.bin",
+            std::process::id()
+        ));
+        std::fs::write(&path, raw_tiff_with_embedded_jpeg(&small_jpeg()))
+            .expect("write camera RAW fixture");
+        std::fs::write(&cache_path, b"stale camera RAW bytes").expect("write cache entry");
+
+        assert_eq!(load_cached_thumbnail_at_path(&path, &cache_path), None);
+        assert!(!cache_path.exists(), "unsafe RAW cache must be discarded");
+        std::fs::remove_file(path).expect("remove camera RAW fixture");
     }
 
     #[test]

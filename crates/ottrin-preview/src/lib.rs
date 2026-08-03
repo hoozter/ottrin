@@ -31,6 +31,10 @@ const TEXT_VISUAL_CHAR_LIMIT: usize = 1_600;
 const MAX_SVG_VISUAL_INPUT_BYTES: u64 = 256 * 1024;
 const MAX_SVG_PREVIEW_DIMENSION: u32 = 2048;
 const MAX_SVG_PREVIEW_PIXELS: u64 = 4_194_304;
+const MAX_CAMERA_RAW_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
+const MAX_CAMERA_RAW_EMBEDDED_JPEG_BYTES: u64 = 32 * 1024 * 1024;
+const MAX_CAMERA_RAW_EMBEDDED_JPEG_PIXELS: u64 = 16 * 1024 * 1024;
+const MAX_CAMERA_RAW_PREVIEW_DIMENSION: u32 = 4096;
 const MAX_TAR_COMPRESSED_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_TAR_SCAN_ENTRIES: usize = 4_096;
 const MAX_TAR_SCAN_BYTES: u64 = 256 * 1024 * 1024;
@@ -308,6 +312,7 @@ pub enum PreviewKind {
     VideoMetadata,
     AudioMetadata,
     ArchiveMetadata,
+    CameraRawMetadata,
     OfficeMetadata,
     Unsupported,
 }
@@ -339,6 +344,7 @@ pub enum PreviewVisualRenderer {
     Image,
     Pdf,
     Office,
+    CameraRaw,
     TextCard,
 }
 
@@ -414,6 +420,12 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
             visual_renderer: PreviewVisualRenderer::None,
             raw_fallback_allowed: true,
         },
+        PreviewKind::CameraRawMetadata => PreviewProfile {
+            kind,
+            views: [true, false, true],
+            visual_renderer: PreviewVisualRenderer::CameraRaw,
+            raw_fallback_allowed: false,
+        },
         PreviewKind::OfficeMetadata => PreviewProfile {
             kind,
             views: [true, false, true],
@@ -442,7 +454,18 @@ pub fn preview_profile(path: &Path) -> PreviewProfile {
         // offered to an image decoder or displayed through the raw fallback.
         profile.raw_fallback_allowed = false;
     }
+    if is_camera_raw_path(path) {
+        // Camera RAW containers are never handed to the generic image decoder:
+        // only a bounded, verified embedded JPEG may reach the visual surface.
+        profile.raw_fallback_allowed = false;
+    }
     profile
+}
+
+pub fn is_camera_raw_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| matches!(extension.to_ascii_lowercase().as_str(), "dng" | "arw"))
 }
 
 pub fn is_epub_path(path: &Path) -> bool {
@@ -470,6 +493,7 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
         PreviewKind::VideoMetadata => preview_video(title, &request.path),
         PreviewKind::AudioMetadata => preview_audio(title, &request.path),
         PreviewKind::ArchiveMetadata => preview_archive(title, &request.path),
+        PreviewKind::CameraRawMetadata => preview_camera_raw(title, &request.path),
         PreviewKind::OfficeMetadata => preview_office(title, &request.path),
         PreviewKind::FolderMetadata => preview_folder(title, &request.path),
         PreviewKind::Unsupported => preview_fallback(title, &request.path),
@@ -492,6 +516,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" | "ico" | "svg" => {
             PreviewKind::Image
         }
+        "dng" | "arw" => PreviewKind::CameraRawMetadata,
         "pdf" => PreviewKind::Pdf,
         "mp4" | "mkv" | "webm" | "mov" | "avi" | "m4v" => PreviewKind::VideoMetadata,
         "mp3" | "flac" | "wav" | "ogg" | "m4a" | "aac" => PreviewKind::AudioMetadata,
@@ -501,6 +526,129 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         }
         _ => PreviewKind::Unsupported,
     }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum CameraRawVisualError {
+    #[error("camera RAW visual previews support only DNG and ARW files")]
+    UnsupportedFormat,
+    #[error("could not read camera RAW metadata: {0}")]
+    InputMetadata(String),
+    #[error(
+        "camera RAW file is too large for bounded preview parsing ({actual} bytes; limit {limit})"
+    )]
+    InputTooLarge { actual: u64, limit: u64 },
+    #[error("could not read camera RAW container: {0}")]
+    Read(String),
+    #[error("camera RAW container is not a supported TIFF-based RAW file: {0}")]
+    Container(String),
+    #[error("camera RAW container has no unambiguous embedded JPEG")]
+    NoEmbeddedJpeg,
+    #[error("camera RAW embedded JPEG is too large ({actual} bytes; limit {limit})")]
+    EmbeddedJpegTooLarge { actual: u64, limit: u64 },
+    #[error("camera RAW embedded JPEG range is invalid")]
+    EmbeddedJpegRange,
+    #[error("camera RAW embedded JPEG is not a valid bounded JPEG: {0}")]
+    EmbeddedJpeg(String),
+    #[error("could not encode camera RAW visual preview: {0}")]
+    Encode(String),
+}
+
+/// Extracts only a classic TIFF/Exif JPEG thumbnail from DNG or ARW. The RAW
+/// sensor payload is never decoded or passed to an image renderer.
+pub fn render_camera_raw_embedded_preview_png(
+    path: &Path,
+    target_dim: u32,
+) -> Result<Vec<u8>, CameraRawVisualError> {
+    if !is_camera_raw_path(path) {
+        return Err(CameraRawVisualError::UnsupportedFormat);
+    }
+    let input_size = std::fs::metadata(path)
+        .map_err(|error| CameraRawVisualError::InputMetadata(error.to_string()))?
+        .len();
+    if input_size > MAX_CAMERA_RAW_PACKAGE_BYTES {
+        return Err(CameraRawVisualError::InputTooLarge {
+            actual: input_size,
+            limit: MAX_CAMERA_RAW_PACKAGE_BYTES,
+        });
+    }
+    let container =
+        std::fs::read(path).map_err(|error| CameraRawVisualError::Read(error.to_string()))?;
+    let exif = exif::Reader::new()
+        .read_raw(container)
+        .map_err(|error| CameraRawVisualError::Container(error.to_string()))?;
+    let jpeg = camera_raw_embedded_jpeg(&exif)?;
+
+    if !jpeg.starts_with(&[0xff, 0xd8]) || !jpeg.ends_with(&[0xff, 0xd9]) {
+        return Err(CameraRawVisualError::EmbeddedJpeg(
+            "missing JPEG start or end marker".to_string(),
+        ));
+    }
+    let reader = image::ImageReader::with_format(Cursor::new(jpeg), image::ImageFormat::Jpeg);
+    let (width, height) = reader
+        .into_dimensions()
+        .map_err(|error| CameraRawVisualError::EmbeddedJpeg(error.to_string()))?;
+    if width > MAX_CAMERA_RAW_PREVIEW_DIMENSION
+        || height > MAX_CAMERA_RAW_PREVIEW_DIMENSION
+        || u64::from(width)
+            .checked_mul(u64::from(height))
+            .is_none_or(|pixels| pixels > MAX_CAMERA_RAW_EMBEDDED_JPEG_PIXELS)
+    {
+        return Err(CameraRawVisualError::EmbeddedJpeg(
+            "embedded dimensions exceed preview bounds".to_string(),
+        ));
+    }
+    let image = image::ImageReader::with_format(Cursor::new(jpeg), image::ImageFormat::Jpeg)
+        .decode()
+        .map_err(|error| CameraRawVisualError::EmbeddedJpeg(error.to_string()))?;
+    let dimension = target_dim.clamp(64, 2_048);
+    let thumbnail = image.thumbnail(dimension, dimension);
+    let mut png = Vec::new();
+    thumbnail
+        .write_to(&mut Cursor::new(&mut png), image::ImageFormat::Png)
+        .map_err(|error| CameraRawVisualError::Encode(error.to_string()))?;
+    Ok(png)
+}
+
+fn camera_raw_embedded_jpeg(exif: &exif::Exif) -> Result<&[u8], CameraRawVisualError> {
+    let mut candidates = Vec::new();
+    for ifd in 0..8 {
+        let ifd = exif::In(ifd);
+        let offsets = exif
+            .fields()
+            .filter(|field| field.ifd_num == ifd && field.tag == exif::Tag::JPEGInterchangeFormat)
+            .filter_map(|field| field.value.get_uint(0))
+            .collect::<Vec<_>>();
+        let lengths = exif
+            .fields()
+            .filter(|field| {
+                field.ifd_num == ifd && field.tag == exif::Tag::JPEGInterchangeFormatLength
+            })
+            .filter_map(|field| field.value.get_uint(0))
+            .collect::<Vec<_>>();
+        match (offsets.as_slice(), lengths.as_slice()) {
+            ([offset], [length]) => candidates.push((u64::from(*offset), u64::from(*length))),
+            ([], []) => {}
+            _ => return Err(CameraRawVisualError::NoEmbeddedJpeg),
+        }
+    }
+    let [(offset, length)] = candidates.as_slice() else {
+        return Err(CameraRawVisualError::NoEmbeddedJpeg);
+    };
+    if *length == 0 || *length > MAX_CAMERA_RAW_EMBEDDED_JPEG_BYTES {
+        return Err(CameraRawVisualError::EmbeddedJpegTooLarge {
+            actual: *length,
+            limit: MAX_CAMERA_RAW_EMBEDDED_JPEG_BYTES,
+        });
+    }
+    let end = offset
+        .checked_add(*length)
+        .ok_or(CameraRawVisualError::EmbeddedJpegRange)?;
+    let start = usize::try_from(*offset).map_err(|_| CameraRawVisualError::EmbeddedJpegRange)?;
+    let end = usize::try_from(end).map_err(|_| CameraRawVisualError::EmbeddedJpegRange)?;
+    exif.buf()
+        .get(start..end)
+        .ok_or(CameraRawVisualError::EmbeddedJpegRange)
 }
 
 /// Renders bounded extracted DOCX/XLSX/XLSM/ODS content as a PNG. This is a
@@ -956,6 +1104,19 @@ fn preview_image(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::Image,
         body: lines.join("\n"),
+        open_external: true,
+    }
+}
+
+fn preview_camera_raw(title: String, path: &Path) -> PreviewData {
+    PreviewData {
+        title,
+        kind: PreviewKind::CameraRawMetadata,
+        body: metadata_summary(
+            path,
+            "Camera RAW image.",
+            Some("Visual preview uses a bounded embedded JPEG when available."),
+        ),
         open_external: true,
     }
 }
@@ -3308,6 +3469,106 @@ mod tests {
             .expect("time")
             .as_nanos();
         std::env::temp_dir().join(format!("ottrin-preview-{unique}-{name}"))
+    }
+
+    fn raw_tiff_with_embedded_jpeg(jpeg: &[u8]) -> Vec<u8> {
+        const IFD0_OFFSET: u32 = 8;
+        const IFD1_OFFSET: u32 = IFD0_OFFSET + 2 + 4;
+        const JPEG_OFFSET: u32 = IFD1_OFFSET + 2 + 2 * 12 + 4;
+
+        let mut bytes = b"II*\0".to_vec();
+        bytes.extend_from_slice(&IFD0_OFFSET.to_le_bytes());
+        bytes.extend_from_slice(&0u16.to_le_bytes());
+        bytes.extend_from_slice(&IFD1_OFFSET.to_le_bytes());
+        bytes.extend_from_slice(&2u16.to_le_bytes());
+        for (tag, value) in [(0x0201u16, JPEG_OFFSET), (0x0202u16, jpeg.len() as u32)] {
+            bytes.extend_from_slice(&tag.to_le_bytes());
+            bytes.extend_from_slice(&4u16.to_le_bytes());
+            bytes.extend_from_slice(&1u32.to_le_bytes());
+            bytes.extend_from_slice(&value.to_le_bytes());
+        }
+        bytes.extend_from_slice(&0u32.to_le_bytes());
+        bytes.extend_from_slice(jpeg);
+        bytes
+    }
+
+    fn small_jpeg() -> Vec<u8> {
+        let mut jpeg = Vec::new();
+        image::DynamicImage::ImageRgb8(image::RgbImage::from_pixel(
+            12,
+            8,
+            image::Rgb([32, 160, 224]),
+        ))
+        .write_to(
+            &mut std::io::Cursor::new(&mut jpeg),
+            image::ImageFormat::Jpeg,
+        )
+        .expect("encode embedded JPEG");
+        jpeg
+    }
+
+    #[test]
+    fn camera_raw_embedded_jpeg_is_a_bounded_visual_preview() {
+        let path = temp_path("camera.DNG");
+        std::fs::write(&path, raw_tiff_with_embedded_jpeg(&small_jpeg()))
+            .expect("write TIFF-based RAW fixture");
+
+        let profile = preview_profile(&path);
+        assert_eq!(classify_path(&path), PreviewKind::CameraRawMetadata);
+        assert!(profile.supports_view(PreviewView::Metadata));
+        assert!(profile.supports_view(PreviewView::Visual));
+        assert_eq!(profile.visual_renderer(), PreviewVisualRenderer::CameraRaw);
+        assert!(!profile.raw_fallback_allowed());
+
+        let preview = load_preview(&PreviewRequest {
+            path: path.clone(),
+            kind_hint: EntryKind::File,
+        });
+        assert_eq!(preview.kind, PreviewKind::CameraRawMetadata);
+        assert!(preview.body.contains("Camera RAW image"));
+
+        let png = render_camera_raw_embedded_preview_png(&path, 128)
+            .expect("embedded JPEG should become a safe PNG");
+        let dimensions = image::load_from_memory(&png)
+            .expect("decode output PNG")
+            .dimensions();
+        assert!(dimensions.0 <= 128 && dimensions.1 <= 128);
+        assert!(dimensions.0 > 0 && dimensions.1 > 0);
+        assert_ne!(png, std::fs::read(&path).expect("read raw fixture"));
+        std::fs::remove_file(path).expect("remove RAW fixture");
+    }
+
+    #[test]
+    fn camera_raw_rejects_extension_mismatch_and_invalid_embedded_ranges() {
+        let mismatch = temp_path("mismatch.ARW");
+        std::fs::write(&mismatch, small_jpeg()).expect("write non-RAW payload");
+        assert!(render_camera_raw_embedded_preview_png(&mismatch, 128).is_err());
+        std::fs::remove_file(mismatch).expect("remove mismatch fixture");
+
+        let invalid = temp_path("overflow.dng");
+        let mut fixture = raw_tiff_with_embedded_jpeg(&small_jpeg());
+        let length_field = 14 + 2 + 12 + 8;
+        fixture[length_field..length_field + 4].copy_from_slice(&u32::MAX.to_le_bytes());
+        std::fs::write(&invalid, fixture).expect("write invalid range fixture");
+        assert!(render_camera_raw_embedded_preview_png(&invalid, 128).is_err());
+        std::fs::remove_file(invalid).expect("remove invalid range fixture");
+
+        let truncated = temp_path("truncated.dng");
+        let mut fixture = raw_tiff_with_embedded_jpeg(&small_jpeg());
+        fixture.truncate(fixture.len().saturating_sub(2));
+        std::fs::write(&truncated, fixture).expect("write truncated RAW fixture");
+        assert!(render_camera_raw_embedded_preview_png(&truncated, 128).is_err());
+        std::fs::remove_file(truncated).expect("remove truncated RAW fixture");
+
+        let oversized = temp_path("oversized.arw");
+        let file = std::fs::File::create(&oversized).expect("create oversized RAW fixture");
+        file.set_len(MAX_CAMERA_RAW_PACKAGE_BYTES + 1)
+            .expect("make sparse oversized RAW fixture");
+        assert!(matches!(
+            render_camera_raw_embedded_preview_png(&oversized, 128),
+            Err(CameraRawVisualError::InputTooLarge { .. })
+        ));
+        std::fs::remove_file(oversized).expect("remove oversized RAW fixture");
     }
 
     fn write_gzip(path: &Path, payload: &[u8]) {
