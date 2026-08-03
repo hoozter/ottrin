@@ -107,7 +107,7 @@ Ottrin stores user configuration in the platform config directory:
 
 Thumbnail cache files are disposable. If previews look stale after an upgrade, clear the cache from Settings -> Cache.
 
-View Options in the navigation bar controls the active view: Column/List/Grid mode, image thumbnails in List/Grid, hidden files, sorting, and List columns. View mode is remembered as the global default for future launches. Thumbnail toggles are saved for the current folder so an image-heavy folder can show thumbnails without forcing every folder into thumbnail mode. Use Global View Settings from that menu to change saved defaults in Settings. Image thumbnails currently cover common web/desktop formats such as PNG, JPEG, GIF, BMP, TIFF, WebP, ICO, AVIF, and SVG.
+View Options in the navigation bar controls the active view: Column/List/Grid mode, image thumbnails in List/Grid, hidden files, sorting, and List columns. View mode is remembered as the global default for future launches. Thumbnail toggles are saved for the current folder so an image-heavy folder can show thumbnails without forcing every folder into thumbnail mode. Use Global View Settings from that menu to change saved defaults in Settings. Image thumbnails currently cover common web/desktop formats such as PNG, JPEG, GIF, BMP, TIFF, WebP, ICO, and safely rasterized SVG.
 
 The SQLite search index is safe to rebuild from Settings -> Search.
 

@@ -20,6 +20,14 @@ const OFFICE_VISUAL_TEXT_LIMIT: usize = 4_096;
 const MAX_TEXT_VISUAL_INPUT_BYTES: u64 = 128 * 1024;
 const TEXT_VISUAL_LINE_LIMIT: usize = 18;
 const TEXT_VISUAL_CHAR_LIMIT: usize = 1_600;
+const MAX_SVG_VISUAL_INPUT_BYTES: u64 = 256 * 1024;
+const MAX_SVG_PREVIEW_DIMENSION: u32 = 2048;
+const MAX_SVG_PREVIEW_PIXELS: u64 = 4_194_304;
+const MAX_TAR_COMPRESSED_BYTES: u64 = 32 * 1024 * 1024;
+const MAX_TAR_SCAN_ENTRIES: usize = 4_096;
+const MAX_TAR_SCAN_BYTES: u64 = 256 * 1024 * 1024;
+const MAX_TAR_PATH_BYTES: usize = 768;
+const MAX_TAR_LISTED_ENTRIES: usize = 200;
 
 #[derive(Debug, thiserror::Error)]
 pub enum OfficeVisualError {
@@ -55,6 +63,22 @@ pub enum TextVisualError {
     Encode(String),
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum SvgVisualError {
+    #[error("format is not SVG")]
+    UnsupportedFormat,
+    #[error("could not inspect SVG input: {0}")]
+    InputMetadata(String),
+    #[error("SVG input is too large for a visual preview ({actual} bytes; limit {limit} bytes)")]
+    InputTooLarge { actual: u64, limit: u64 },
+    #[error("SVG contains blocked references (file/http/https image references are not permitted)")]
+    BlockedReference,
+    #[error("SVG could not be parsed for visual preview: {0}")]
+    Parse(String),
+    #[error("SVG visual preview could not be rasterized: {0}")]
+    Rasterize(String),
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PreviewKind {
     Text,
@@ -80,6 +104,119 @@ pub struct PreviewData {
     pub kind: PreviewKind,
     pub body: String,
     pub open_external: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PreviewView {
+    Metadata,
+    TextCard,
+    Visual,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PreviewVisualRenderer {
+    None,
+    Image,
+    Pdf,
+    Office,
+    TextCard,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PreviewProfile {
+    kind: PreviewKind,
+    views: [bool; 3],
+    visual_renderer: PreviewVisualRenderer,
+    raw_fallback_allowed: bool,
+}
+
+impl PreviewProfile {
+    pub const fn kind(&self) -> PreviewKind {
+        self.kind
+    }
+
+    pub const fn supports_view(&self, view: PreviewView) -> bool {
+        match view {
+            PreviewView::Metadata => self.views[0],
+            PreviewView::TextCard => self.views[1],
+            PreviewView::Visual => self.views[2],
+        }
+    }
+
+    pub const fn visual_renderer(&self) -> PreviewVisualRenderer {
+        self.visual_renderer
+    }
+
+    pub const fn raw_fallback_allowed(&self) -> bool {
+        self.raw_fallback_allowed
+    }
+
+    pub const fn supports_thumbnail_visual(&self) -> bool {
+        self.supports_view(PreviewView::TextCard) || self.supports_view(PreviewView::Visual)
+    }
+}
+
+const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
+    match kind {
+        PreviewKind::Text => PreviewProfile {
+            kind,
+            views: [true, true, true],
+            visual_renderer: PreviewVisualRenderer::TextCard,
+            raw_fallback_allowed: false,
+        },
+        PreviewKind::Image => PreviewProfile {
+            kind,
+            views: [true, false, true],
+            visual_renderer: PreviewVisualRenderer::Image,
+            raw_fallback_allowed: true,
+        },
+        PreviewKind::Pdf => PreviewProfile {
+            kind,
+            views: [true, false, true],
+            visual_renderer: PreviewVisualRenderer::Pdf,
+            raw_fallback_allowed: false,
+        },
+        PreviewKind::VideoMetadata => PreviewProfile {
+            kind,
+            views: [true, false, false],
+            visual_renderer: PreviewVisualRenderer::None,
+            raw_fallback_allowed: true,
+        },
+        PreviewKind::AudioMetadata => PreviewProfile {
+            kind,
+            views: [true, false, false],
+            visual_renderer: PreviewVisualRenderer::None,
+            raw_fallback_allowed: true,
+        },
+        PreviewKind::ArchiveMetadata => PreviewProfile {
+            kind,
+            views: [true, false, false],
+            visual_renderer: PreviewVisualRenderer::None,
+            raw_fallback_allowed: true,
+        },
+        PreviewKind::OfficeMetadata => PreviewProfile {
+            kind,
+            views: [true, false, true],
+            visual_renderer: PreviewVisualRenderer::Office,
+            raw_fallback_allowed: false,
+        },
+        PreviewKind::FolderMetadata => PreviewProfile {
+            kind,
+            views: [true, false, false],
+            visual_renderer: PreviewVisualRenderer::None,
+            raw_fallback_allowed: false,
+        },
+        PreviewKind::Unsupported => PreviewProfile {
+            kind,
+            views: [false, false, false],
+            visual_renderer: PreviewVisualRenderer::None,
+            raw_fallback_allowed: true,
+        },
+    }
+}
+
+pub fn preview_profile(path: &Path) -> PreviewProfile {
+    profile_from_kind(classify_path(path))
 }
 
 pub fn load_preview(request: &PreviewRequest) -> PreviewData {
@@ -117,10 +254,12 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
     match ext.as_str() {
         "txt" | "md" | "markdown" | "log" | "csv" | "tsv" | "json" | "toml" | "yaml" | "yml"
         | "ini" | "cfg" | "conf" | "env" | "xml" | "html" | "htm" | "css" | "scss" | "less"
-        | "svg" | "rs" | "js" | "ts" | "jsx" | "tsx" | "py" | "rb" | "go" | "java" | "c"
-        | "cpp" | "h" | "hpp" | "m" | "mm" | "sh" | "bash" | "zsh" | "fish" | "ps1" | "bat"
-        | "vcf" | "ics" | "ical" | "ldif" | "sql" | "rtf" => PreviewKind::Text,
-        "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" => PreviewKind::Image,
+        | "rs" | "js" | "ts" | "jsx" | "tsx" | "py" | "rb" | "go" | "java" | "c" | "cpp" | "h"
+        | "hpp" | "m" | "mm" | "sh" | "bash" | "zsh" | "fish" | "ps1" | "bat" | "vcf" | "ics"
+        | "ical" | "ldif" | "sql" | "rtf" => PreviewKind::Text,
+        "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" | "ico" | "svg" => {
+            PreviewKind::Image
+        }
         "pdf" => PreviewKind::Pdf,
         "mp4" | "mkv" | "webm" | "mov" | "avi" | "m4v" => PreviewKind::VideoMetadata,
         "mp3" | "flac" | "wav" | "ogg" | "m4a" | "aac" => PreviewKind::AudioMetadata,
@@ -589,6 +728,114 @@ fn preview_image(title: String, path: &Path) -> PreviewData {
     }
 }
 
+pub fn is_svg_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .map(|ext| ext.eq_ignore_ascii_case("svg"))
+        .unwrap_or(false)
+}
+
+/// Generates a bounded PNG preview for SVG files with reference-safe parsing.
+pub fn render_svg_content_preview_png(
+    path: &Path,
+    target_dim: u32,
+) -> Result<Vec<u8>, SvgVisualError> {
+    if !is_svg_path(path) {
+        return Err(SvgVisualError::UnsupportedFormat);
+    }
+    let input_size = std::fs::metadata(path)
+        .map_err(|error| SvgVisualError::InputMetadata(error.to_string()))?
+        .len();
+    if input_size > MAX_SVG_VISUAL_INPUT_BYTES {
+        return Err(SvgVisualError::InputTooLarge {
+            actual: input_size,
+            limit: MAX_SVG_VISUAL_INPUT_BYTES,
+        });
+    }
+
+    let input =
+        std::fs::read(path).map_err(|error| SvgVisualError::InputMetadata(error.to_string()))?;
+    if has_disallowed_svg_external_references(&input) {
+        return Err(SvgVisualError::BlockedReference);
+    }
+    let options = usvg::Options {
+        resources_dir: None,
+        image_href_resolver: usvg::ImageHrefResolver {
+            resolve_data: Box::new(|_, _, _| None),
+            resolve_string: Box::new(|_, _| None),
+        },
+        ..usvg::Options::default()
+    };
+    let tree = usvg::Tree::from_data(&input, &options)
+        .map_err(|error| SvgVisualError::Parse(error.to_string()))?;
+
+    let source = tree.size();
+    let preview_dimension = target_dim.clamp(1, MAX_SVG_PREVIEW_DIMENSION);
+    let preview_dimension_f32 = preview_dimension as f32;
+    let scale = ((preview_dimension_f32 / source.width())
+        .min(preview_dimension_f32 / source.height()))
+    .min(1.0);
+    if !scale.is_finite() || scale <= 0.0 {
+        return Err(SvgVisualError::Rasterize(
+            "SVG has invalid dimensions".to_string(),
+        ));
+    }
+    let width = (source.width() * scale)
+        .round()
+        .clamp(1.0, preview_dimension_f32) as u32;
+    let height = (source.height() * scale)
+        .round()
+        .clamp(1.0, preview_dimension_f32) as u32;
+    if u64::from(width) * u64::from(height) > MAX_SVG_PREVIEW_PIXELS {
+        return Err(SvgVisualError::Rasterize(
+            "SVG rasterization exceeded configured pixel cap".to_string(),
+        ));
+    }
+
+    let mut pixmap = resvg::tiny_skia::Pixmap::new(width, height).ok_or_else(|| {
+        SvgVisualError::Rasterize("Could not allocate SVG render surface".to_string())
+    })?;
+    resvg::render(
+        &tree,
+        resvg::tiny_skia::Transform::from_scale(scale, scale),
+        &mut pixmap.as_mut(),
+    );
+
+    let mut bytes = Vec::new();
+    use image::ImageEncoder;
+    image::codecs::png::PngEncoder::new(&mut bytes)
+        .write_image(
+            pixmap.data(),
+            width,
+            height,
+            image::ExtendedColorType::Rgba8,
+        )
+        .map_err(|error: image::ImageError| SvgVisualError::Rasterize(error.to_string()))?;
+    Ok(bytes)
+}
+
+fn has_disallowed_svg_external_references(data: &[u8]) -> bool {
+    let Ok(svg) = std::str::from_utf8(data) else {
+        return false;
+    };
+    let lower = svg.to_ascii_lowercase();
+    const BLOCKED_ATTRS: [&str; 12] = [
+        "href=\"file://",
+        "href='file://",
+        "xlink:href=\"file://",
+        "xlink:href='file://",
+        "href=\"http://",
+        "href='http://",
+        "xlink:href=\"http://",
+        "xlink:href='http://",
+        "href=\"https://",
+        "href='https://",
+        "xlink:href=\"https://",
+        "xlink:href='https://",
+    ];
+    lower.contains("<script") || BLOCKED_ATTRS.iter().any(|pattern| lower.contains(pattern))
+}
+
 fn preview_folder(title: String, path: &Path) -> PreviewData {
     const MAX_SAMPLES: usize = 18;
     match std::fs::read_dir(path) {
@@ -880,6 +1127,9 @@ fn preview_archive(title: String, path: &Path) -> PreviewData {
     if ext == "zip" {
         return preview_zip(title, path);
     }
+    if ext == "tar" {
+        return preview_tar(title, path);
+    }
 
     // For non-zip archives, show metadata only
     let info = metadata_summary(
@@ -891,6 +1141,182 @@ fn preview_archive(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::ArchiveMetadata,
         body: info,
+        open_external: true,
+    }
+}
+
+fn preview_tar(title: String, path: &Path) -> PreviewData {
+    let compressed_len = std::fs::metadata(path).map(|meta| meta.len()).unwrap_or(0);
+    if compressed_len > MAX_TAR_COMPRESSED_BYTES {
+        let info = metadata_summary(
+            path,
+            "TAR archive.",
+            Some("Archive is too large for safe metadata scanning."),
+        );
+        return PreviewData {
+            title,
+            kind: PreviewKind::ArchiveMetadata,
+            body: info,
+            open_external: true,
+        };
+    }
+
+    let Ok(file) = std::fs::File::open(path) else {
+        let info = metadata_summary(path, "TAR archive.", Some("Could not open archive."));
+        return PreviewData {
+            title,
+            kind: PreviewKind::ArchiveMetadata,
+            body: info,
+            open_external: true,
+        };
+    };
+
+    let mut archive = tar::Archive::new(file);
+    let mut entries_iter = match archive.entries() {
+        Ok(entries) => entries,
+        Err(_) => {
+            let info = metadata_summary(
+                path,
+                "TAR archive.",
+                Some("Could not read archive entries."),
+            );
+            return PreviewData {
+                title,
+                kind: PreviewKind::ArchiveMetadata,
+                body: info,
+                open_external: true,
+            };
+        }
+    };
+
+    let mut total = 0usize;
+    let mut total_uncompressed: u64 = 0;
+    let mut dirs = 0usize;
+    let mut files = 0usize;
+    let mut listing = Vec::with_capacity(MAX_TAR_LISTED_ENTRIES);
+
+    for result in entries_iter.by_ref() {
+        total = total.saturating_add(1);
+        if total > MAX_TAR_SCAN_ENTRIES {
+            let info = metadata_summary(
+                path,
+                "TAR archive.",
+                Some("Archive has too many entries for safe scanning."),
+            );
+            return PreviewData {
+                title,
+                kind: PreviewKind::ArchiveMetadata,
+                body: info,
+                open_external: true,
+            };
+        }
+
+        let entry = match result {
+            Ok(entry) => entry,
+            Err(_) => {
+                let info = metadata_summary(
+                    path,
+                    "TAR archive.",
+                    Some("Could not read archive entries."),
+                );
+                return PreviewData {
+                    title,
+                    kind: PreviewKind::ArchiveMetadata,
+                    body: info,
+                    open_external: true,
+                };
+            }
+        };
+        let entry_path = match entry.path() {
+            Ok(entry_path) => {
+                let candidate = entry_path.to_string_lossy().into_owned();
+                if candidate.len() > MAX_TAR_PATH_BYTES {
+                    let info = metadata_summary(
+                        path,
+                        "TAR archive.",
+                        Some("Archive entry path exceeded safe preview bounds."),
+                    );
+                    return PreviewData {
+                        title,
+                        kind: PreviewKind::ArchiveMetadata,
+                        body: info,
+                        open_external: true,
+                    };
+                }
+                candidate
+            }
+            Err(_) => {
+                let info = metadata_summary(
+                    path,
+                    "TAR archive.",
+                    Some("Could not read archive entry paths."),
+                );
+                return PreviewData {
+                    title,
+                    kind: PreviewKind::ArchiveMetadata,
+                    body: info,
+                    open_external: true,
+                };
+            }
+        };
+
+        let header = entry.header();
+        let size = header.size().unwrap_or(0);
+        if header.entry_type().is_dir() {
+            dirs += 1;
+            if listing.len() < MAX_TAR_LISTED_ENTRIES {
+                listing.push(format!("  {entry_path}"));
+            }
+        } else {
+            files += 1;
+            total_uncompressed = total_uncompressed.saturating_add(size);
+            if total_uncompressed > MAX_TAR_SCAN_BYTES {
+                let info = metadata_summary(
+                    path,
+                    "TAR archive.",
+                    Some("Archive has too much data for safe preview scanning."),
+                );
+                return PreviewData {
+                    title,
+                    kind: PreviewKind::ArchiveMetadata,
+                    body: info,
+                    open_external: true,
+                };
+            }
+            if listing.len() < MAX_TAR_LISTED_ENTRIES {
+                listing.push(format!("  {entry_path}  ({})", format_size(size)));
+            }
+        }
+    }
+
+    let mut lines = vec!["Filetype: TAR archive".to_string()];
+    lines.push(format!("Entries: {total}"));
+    lines.push(format!("Files: {files}"));
+    lines.push(format!("Folders: {dirs}"));
+    lines.push(format!("Uncompressed: {}", format_size(total_uncompressed)));
+
+    if let Ok(meta) = std::fs::metadata(path) {
+        lines.push(format!("Compressed: {}", format_size(meta.len())));
+        if total_uncompressed > 0 {
+            let ratio = (meta.len() as f64 / total_uncompressed as f64) * 100.0;
+            lines.push(format!("Ratio: {ratio:.0}%"));
+        }
+    }
+
+    lines.push(String::new());
+    lines.push("Contents:".to_string());
+    lines.extend(listing);
+    if total > MAX_TAR_LISTED_ENTRIES {
+        lines.push(format!(
+            "  ... and {} more entries",
+            total - MAX_TAR_LISTED_ENTRIES
+        ));
+    }
+
+    PreviewData {
+        title,
+        kind: PreviewKind::ArchiveMetadata,
+        body: lines.join("\n"),
         open_external: true,
     }
 }
@@ -1925,6 +2351,87 @@ mod tests {
     }
 
     #[test]
+    fn classified_formats_expose_shared_preview_contract_views_and_renderers() {
+        let path = temp_path("manual.pdf");
+        std::fs::write(&path, b"%PDF-1.7").expect("write sample");
+
+        let kind = classify_path(&path);
+        let profile = preview_profile(&path);
+
+        assert_eq!(kind, PreviewKind::Pdf);
+        assert_eq!(profile.kind(), kind);
+        assert!(profile.supports_view(PreviewView::Metadata));
+        assert!(profile.supports_view(PreviewView::Visual));
+        assert_eq!(profile.visual_renderer(), PreviewVisualRenderer::Pdf);
+        assert!(!profile.raw_fallback_allowed());
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn svg_is_rasterized_safely_without_external_references() {
+        let path = temp_path("graphic.svg");
+        std::fs::write(
+            &path,
+            r#"<svg width="12" height="12" xmlns="http://www.w3.org/2000/svg"><rect width='12' height='12' fill='#ff0000'/></svg>"#,
+        )
+        .expect("write sample");
+
+        assert_eq!(preview_profile(&path).kind(), PreviewKind::Image);
+        assert_eq!(
+            preview_profile(&path).visual_renderer(),
+            PreviewVisualRenderer::Image
+        );
+
+        let bytes =
+            render_svg_content_preview_png(&path, 64).expect("safe svg preview should render");
+        let image = image::load_from_memory(&bytes).expect("decode svg preview");
+        assert_eq!(image.dimensions(), (12, 12));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn avif_is_not_claimed_as_visual_image_format() {
+        let path = temp_path("photo.avif");
+        std::fs::write(&path, b"placeholder-avif").expect("write sample");
+
+        let profile = preview_profile(&path);
+        assert_eq!(profile.kind(), PreviewKind::Unsupported);
+        assert!(profile.raw_fallback_allowed());
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn ico_remains_a_visual_image_format_in_the_shared_preview_contract() {
+        let path = temp_path("application.ico");
+        std::fs::write(&path, b"placeholder-ico").expect("write sample");
+
+        let profile = preview_profile(&path);
+        assert_eq!(profile.kind(), PreviewKind::Image);
+        assert_eq!(profile.visual_renderer(), PreviewVisualRenderer::Image);
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn svg_visual_rejects_blocked_file_and_http_references() {
+        let path = temp_path("unsafe_external.svg");
+        std::fs::write(
+            &path,
+            r#"<svg xmlns="http://www.w3.org/2000/svg"><image xlink:href="file:///tmp/hosted.png"/></svg>"#,
+        )
+        .expect("write sample");
+
+        assert!(matches!(
+            render_svg_content_preview_png(&path, 64),
+            Err(SvgVisualError::BlockedReference)
+        ));
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
     fn office_text_normalization_and_aggregation_are_bounded() {
         let oversized = "x".repeat(EXTRACTED_TEXT_LIMIT * 2);
         let normalized = normalized_preview_text(&oversized).expect("normalized text");
@@ -2031,6 +2538,123 @@ mod tests {
         assert!(preview.body.contains("Compressed:"));
         assert!(preview.body.contains("Contents:"));
         assert!(preview.body.contains("docs/readme.txt"));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_preview_lists_counts_sizes_and_contents() {
+        let path = temp_path("archive.tar");
+        {
+            let dir = std::env::temp_dir()
+                .join(format!("ottrin-preview-tar-source-{}", std::process::id()));
+            std::fs::create_dir_all(&dir).expect("make tar source");
+            std::fs::create_dir_all(dir.join("docs")).expect("make docs");
+            std::fs::write(dir.join("docs/readme.txt"), "hello from ottrin\n")
+                .expect("write sample");
+
+            let file = std::fs::File::create(&path).expect("create tar");
+            let mut tar = tar::Builder::new(file);
+            tar.append_dir_all("docs", dir.join("docs"))
+                .expect("add docs");
+            tar.finish().expect("finish tar");
+
+            let _ = std::fs::remove_dir_all(dir);
+        }
+
+        let preview = preview_archive("archive.tar".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(preview.body.contains("Filetype: TAR archive"));
+        assert!(preview.body.contains("Files: 1"));
+        assert!(preview.body.contains("Folders: 1"));
+        assert!(preview.body.contains("Contents:"));
+        assert!(preview.body.contains("docs/readme.txt"));
+        assert!(preview.open_external);
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_preview_rejects_oversized_archives() {
+        let path = temp_path("huge-archive.tar");
+        let file = std::fs::OpenOptions::new()
+            .create(true)
+            .truncate(true)
+            .write(true)
+            .open(&path)
+            .expect("create sparse archive");
+        file.set_len(MAX_TAR_COMPRESSED_BYTES + 1)
+            .expect("inflate test archive size");
+
+        let preview = preview_archive("huge-archive.tar".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(
+            preview
+                .body
+                .contains("Archive is too large for safe metadata scanning.")
+        );
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_preview_rejects_too_many_entries() {
+        let path = temp_path("many-entries.tar");
+        {
+            let file = std::fs::File::create(&path).expect("create tar");
+            let mut tar = tar::Builder::new(file);
+            for i in 0..(MAX_TAR_SCAN_ENTRIES + 1) {
+                let payload = b"payload";
+                let mut header = tar::Header::new_gnu();
+                header.set_size(payload.len() as u64);
+                header.set_mode(0o644);
+                header.set_cksum();
+                tar.append_data(&mut header, format!("entry-{i}"), payload.as_slice())
+                    .expect("add synthetic entry");
+            }
+            tar.finish().expect("finish tar");
+        }
+
+        let preview = preview_archive("many-entries.tar".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(
+            preview
+                .body
+                .contains("Archive has too many entries for safe scanning.")
+        );
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_preview_rejects_a_header_declaring_excessive_uncompressed_data() {
+        let path = temp_path("declared-huge.tar");
+        {
+            let mut header = tar::Header::new_gnu();
+            header
+                .set_path("declared-huge.bin")
+                .expect("set entry path");
+            header.set_size(MAX_TAR_SCAN_BYTES + 1);
+            header.set_mode(0o644);
+            header.set_cksum();
+
+            let mut file = std::fs::File::create(&path).expect("create tar");
+            file.write_all(header.as_bytes()).expect("write tar header");
+            file.write_all(&[0; 1024]).expect("write tar end markers");
+        }
+
+        let preview = preview_archive("declared-huge.tar".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(
+            preview
+                .body
+                .contains("Archive has too much data for safe preview scanning."),
+            "a declared-size bomb must be rejected before any payload read"
+        );
 
         let _ = std::fs::remove_file(path);
     }

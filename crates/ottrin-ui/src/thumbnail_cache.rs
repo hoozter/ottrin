@@ -49,10 +49,6 @@ pub(crate) fn preview_cache_dir() -> Option<PathBuf> {
     Some(p)
 }
 
-pub(crate) fn preview_cache_key(path: &Path, target_dim: u32) -> String {
-    preview_cache_key_for_page(path, target_dim, 0)
-}
-
 pub(crate) fn preview_cache_key_for_page(
     path: &Path,
     target_dim: u32,
@@ -103,9 +99,14 @@ fn preview_cache_path(cache_key: &str) -> Option<PathBuf> {
     Some(dir)
 }
 
-pub(crate) fn load_cached_thumbnail(cache_key: &str) -> Option<Vec<u8>> {
-    let path = preview_cache_path(cache_key)?;
-    std::fs::read(path).ok()
+pub(crate) fn load_cached_thumbnail(path: &Path, cache_key: &str) -> Option<Vec<u8>> {
+    let cache_path = preview_cache_path(cache_key)?;
+    let bytes = std::fs::read(&cache_path).ok()?;
+    if ottrin_preview::is_svg_path(path) && !is_png_bytes(&bytes) {
+        let _ = std::fs::remove_file(cache_path);
+        return None;
+    }
+    Some(bytes)
 }
 
 pub(crate) fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8], max_bytes: u64) {
@@ -124,41 +125,57 @@ pub(crate) fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8], max_bytes:
 
 pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
     build_thumbnail_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
-        if path.is_dir() {
-            render_folder_collage_png(path, target_dim)
-        } else if is_pdf_path(path) {
-            match ottrin_preview::render_pdf_first_page_png(path, target_dim) {
-                Ok(bytes) => Some(bytes),
-                Err(error) => {
-                    eprintln!(
-                        "PDF thumbnail render failed for {}: {error}",
-                        path.display()
-                    );
-                    None
+        match preview_visual_renderer(path) {
+            ottrin_preview::PreviewVisualRenderer::Pdf => {
+                match ottrin_preview::render_pdf_first_page_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "PDF thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
                 }
             }
-        } else if is_office_visual_path(path) {
-            match ottrin_preview::render_office_content_preview_png(path, target_dim) {
-                Ok(bytes) => Some(bytes),
-                Err(error) => {
-                    eprintln!(
-                        "Office thumbnail render failed for {}: {error}",
-                        path.display()
-                    );
-                    None
+            ottrin_preview::PreviewVisualRenderer::Office => {
+                match ottrin_preview::render_office_content_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "Office thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
                 }
             }
-        } else {
-            match ottrin_preview::render_text_content_preview_png(path, target_dim) {
-                Ok(bytes) => Some(bytes),
-                Err(error) => {
-                    eprintln!(
-                        "Text thumbnail render failed for {}: {error}",
-                        path.display()
-                    );
-                    None
+            ottrin_preview::PreviewVisualRenderer::TextCard => {
+                match ottrin_preview::render_text_content_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "Text thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::Image => {
+                match ottrin_preview::render_svg_content_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(ottrin_preview::SvgVisualError::UnsupportedFormat) => None,
+                    Err(error) => {
+                        eprintln!(
+                            "SVG thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
+            _ => None,
         }
     })
 }
@@ -167,10 +184,34 @@ pub(crate) fn fallback_preview_bytes(path: &Path, generated: Option<Vec<u8>>) ->
     if generated.is_some() {
         return generated;
     }
-    if is_pdf_path(path) || is_office_visual_path(path) || is_text_preview_path(path) {
+    if ottrin_preview::is_svg_path(path)
+        || !ottrin_preview::preview_profile(path).raw_fallback_allowed()
+    {
         return None;
     }
     std::fs::read(path).ok()
+}
+
+pub(crate) fn thumbnail_bytes_from_cache_or_build(
+    path: &Path,
+    target_dim: u32,
+    cached: Option<Vec<u8>>,
+) -> Option<(Vec<u8>, bool)> {
+    if let Some(bytes) = cached.filter(|bytes| cached_thumbnail_is_safe_for_path(path, bytes)) {
+        return Some((bytes, false));
+    }
+    if let Some(bytes) = build_thumbnail_bytes(path, target_dim) {
+        return Some((bytes, true));
+    }
+    fallback_preview_bytes(path, None).map(|bytes| (bytes, false))
+}
+
+fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
+    !ottrin_preview::is_svg_path(path) || is_png_bytes(bytes)
+}
+
+fn is_png_bytes(bytes: &[u8]) -> bool {
+    bytes.starts_with(b"\x89PNG\r\n\x1a\n")
 }
 
 pub(crate) fn full_preview_bytes_at_page(
@@ -178,7 +219,7 @@ pub(crate) fn full_preview_bytes_at_page(
     target_dim: u32,
     page_index: usize,
 ) -> Option<Vec<u8>> {
-    if is_pdf_path(path) {
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Pdf {
         return match ottrin_preview::render_pdf_page_png(path, page_index, target_dim) {
             Ok(bytes) => Some(bytes),
             Err(error) => {
@@ -187,8 +228,15 @@ pub(crate) fn full_preview_bytes_at_page(
             }
         };
     }
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Image {
+        match ottrin_preview::render_svg_content_preview_png(path, target_dim) {
+            Ok(bytes) => return Some(bytes),
+            Err(ottrin_preview::SvgVisualError::UnsupportedFormat) => {}
+            Err(_) => return None,
+        }
+    }
     full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
-        if is_office_visual_path(path) {
+        if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Office {
             match ottrin_preview::render_office_content_preview_png(path, target_dim) {
                 Ok(bytes) => Some(bytes),
                 Err(error) => {
@@ -216,7 +264,12 @@ fn full_preview_bytes_with_visual_renderer(
     target_dim: u32,
     render_visual: impl FnOnce(&Path, u32) -> Option<Vec<u8>>,
 ) -> Option<Vec<u8>> {
-    if is_pdf_path(path) || is_office_visual_path(path) || is_text_preview_path(path) {
+    if matches!(
+        preview_visual_renderer(path),
+        ottrin_preview::PreviewVisualRenderer::Pdf
+            | ottrin_preview::PreviewVisualRenderer::Office
+            | ottrin_preview::PreviewVisualRenderer::TextCard
+    ) {
         return render_visual(path, target_dim);
     }
     std::fs::read(path).ok()
@@ -230,9 +283,20 @@ fn build_thumbnail_bytes_with_visual_renderer(
     if path.is_dir() {
         return render_folder_collage_png(path, target_dim);
     }
-    if is_pdf_path(path) || is_office_visual_path(path) || is_text_preview_path(path) {
-        return render_visual(path, target_dim);
+    match preview_visual_renderer(path) {
+        ottrin_preview::PreviewVisualRenderer::Pdf
+        | ottrin_preview::PreviewVisualRenderer::Office
+        | ottrin_preview::PreviewVisualRenderer::TextCard => {
+            return render_visual(path, target_dim);
+        }
+        ottrin_preview::PreviewVisualRenderer::Image => {
+            if let Some(bytes) = render_visual(path, target_dim) {
+                return Some(bytes);
+            }
+        }
+        ottrin_preview::PreviewVisualRenderer::None => return None,
     }
+
     let img = image::ImageReader::open(path)
         .ok()?
         .with_guessed_format()
@@ -245,6 +309,10 @@ fn build_thumbnail_bytes_with_visual_renderer(
         .write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)
         .ok()?;
     Some(bytes)
+}
+
+fn preview_visual_renderer(path: &Path) -> ottrin_preview::PreviewVisualRenderer {
+    ottrin_preview::preview_profile(path).visual_renderer()
 }
 
 fn render_folder_collage_png(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
@@ -329,30 +397,6 @@ fn supported_collage_child(path: &Path) -> bool {
             .map(|ext| ext.to_ascii_lowercase())
             .as_deref(),
         Some("png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff")
-    )
-}
-
-fn is_pdf_path(path: &Path) -> bool {
-    path.extension()
-        .and_then(|ext| ext.to_str())
-        .is_some_and(|ext| ext.eq_ignore_ascii_case("pdf"))
-}
-
-fn is_office_visual_path(path: &Path) -> bool {
-    path.extension()
-        .and_then(|ext| ext.to_str())
-        .is_some_and(|ext| {
-            matches!(
-                ext.to_ascii_lowercase().as_str(),
-                "docx" | "xlsx" | "xlsm" | "ods"
-            )
-        })
-}
-
-fn is_text_preview_path(path: &Path) -> bool {
-    matches!(
-        ottrin_preview::classify_path(path),
-        ottrin_preview::PreviewKind::Text
     )
 }
 
@@ -508,7 +552,10 @@ mod tests {
         });
 
         assert_eq!(bytes, Some(b"rendered-png".to_vec()));
-        assert!(is_office_visual_path(Path::new("workbook.ODS")));
+        assert_eq!(
+            ottrin_preview::preview_profile(Path::new("workbook.ODS")).visual_renderer(),
+            ottrin_preview::PreviewVisualRenderer::Office
+        );
     }
 
     #[test]
@@ -525,10 +572,92 @@ mod tests {
     }
 
     #[test]
+    fn svg_thumbnail_uses_safe_visual_renderer() {
+        let path =
+            std::env::temp_dir().join(format!("ottrin-svg-thumb-{}.svg", std::process::id()));
+        std::fs::write(
+            &path,
+            r#"<svg width="12" height="12" xmlns="http://www.w3.org/2000/svg"><rect width='12' height='12' fill='#00ff00'/></svg>"#,
+        )
+        .expect("write svg fixture");
+
+        assert_eq!(
+            ottrin_preview::preview_profile(&path).visual_renderer(),
+            ottrin_preview::PreviewVisualRenderer::Image
+        );
+
+        let direct = ottrin_preview::render_svg_content_preview_png(&path, 256)
+            .expect("direct svg preview render");
+
+        let bytes = build_thumbnail_bytes(&path, 256).expect("svg thumbnail");
+        assert_eq!(bytes, direct);
+        assert!(image::load_from_memory(&bytes).is_ok());
+        let raw = std::fs::read(&path).expect("read source svg");
+        assert_ne!(bytes, raw);
+        std::fs::remove_file(path).expect("remove svg fixture");
+    }
+
+    #[test]
+    fn svg_full_preview_uses_visual_renderer_not_raw_file_bytes() {
+        let path =
+            std::env::temp_dir().join(format!("ottrin-svg-preview-{}.svg", std::process::id()));
+        std::fs::write(
+            &path,
+            r#"<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg"><circle cx='12' cy='12' r='10' fill='#123456'/></svg>"#,
+        )
+        .expect("write svg fixture");
+
+        let bytes = full_preview_bytes_at_page(&path, 2_048, 0).expect("svg full preview");
+        assert!(image::load_from_memory(&bytes).is_ok());
+        let raw = std::fs::read(&path).expect("read source svg");
+        assert_ne!(bytes, raw);
+        std::fs::remove_file(path).expect("remove svg fixture");
+    }
+
+    #[test]
+    fn unsafe_svg_thumbnail_response_rejects_raw_fallback_and_stale_raw_cache() {
+        let blocked = std::env::temp_dir().join(format!(
+            "ottrin-blocked-svg-thumbnail-{}.svg",
+            std::process::id()
+        ));
+        std::fs::write(
+            &blocked,
+            r#"<svg xmlns="http://www.w3.org/2000/svg"><image href="file:///tmp/private.png"/></svg>"#,
+        )
+        .expect("write blocked SVG fixture");
+        let raw_blocked = std::fs::read(&blocked).expect("read blocked SVG fixture");
+
+        assert_eq!(
+            thumbnail_bytes_from_cache_or_build(&blocked, 256, Some(raw_blocked)),
+            None,
+            "a stale raw SVG cache entry must not bypass the safe renderer"
+        );
+
+        let oversized = std::env::temp_dir().join(format!(
+            "ottrin-oversized-svg-thumbnail-{}.svg",
+            std::process::id()
+        ));
+        std::fs::write(&oversized, vec![b' '; 256 * 1024 + 1])
+            .expect("write oversized SVG fixture");
+
+        assert_eq!(
+            thumbnail_bytes_from_cache_or_build(&oversized, 256, None),
+            None,
+            "an oversized SVG must not fall back to raw bytes"
+        );
+
+        std::fs::remove_file(blocked).expect("remove blocked SVG fixture");
+        std::fs::remove_file(oversized).expect("remove oversized SVG fixture");
+    }
+
+    #[test]
     fn text_thumbnail_cache_keys_vary_by_render_size() {
         let path = Path::new("main.rs");
 
-        assert_ne!(preview_cache_key(path, 256), preview_cache_key(path, 640));
+        assert_ne!(
+            preview_cache_key_for_page(path, 256, 0),
+            preview_cache_key_for_page(path, 640, 0)
+        );
     }
 
     #[test]
@@ -556,11 +685,11 @@ mod tests {
         std::fs::create_dir_all(&dir).expect("make fixture");
         let child = dir.join("cover.png");
         std::fs::write(&child, [1_u8; 8]).expect("write child");
-        let before = preview_cache_key(&dir, 128);
+        let before = preview_cache_key_for_page(&dir, 128, 0);
         std::thread::sleep(std::time::Duration::from_millis(2));
         std::fs::write(&child, [2_u8; 16]).expect("rewrite child");
 
-        assert_ne!(before, preview_cache_key(&dir, 128));
+        assert_ne!(before, preview_cache_key_for_page(&dir, 128, 0));
         std::fs::remove_dir_all(dir).expect("remove fixture");
     }
 

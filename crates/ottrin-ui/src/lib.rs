@@ -14,8 +14,7 @@ use ottrin_core::{
     PrivilegedCommand, PrivilegedContext, PrivilegedPayload, PrivilegedRequest, PrivilegedStatus,
     SavedTheme, SearchConfig, SearchIndexStatus, SearchQuery, SearchResultItem, SearchScope,
     SearchSort, SortBy, TandemSide, ThemeCustomization, ThemeMode, ThemePreset, ViewMode,
-    classify_file, default_home_dir, format_modified, format_size, format_size_units,
-    platform_case_mode_current,
+    default_home_dir, format_modified, format_size, format_size_units,
 };
 use ottrin_platform::{
     DefaultPlatform, MoveDisposition, OpenWithApplication, PlatformError, PlatformOps,
@@ -65,8 +64,8 @@ use preview_render::{
     GenericPreviewAction, compact_preview_metadata, inspector_icon_button,
     preview_payload_for_copy, render_archive_body_preview, render_document_body_preview,
     render_docx_page_preview, render_folder_body_preview, render_generic_body_preview,
-    render_image_hover_nav, render_metadata_card_preview, render_preview_footer,
-    render_text_body_preview, split_preview_extracted_text,
+    render_image_hover_nav, render_metadata_card_preview, render_text_body_preview,
+    split_preview_extracted_text,
 };
 use semantic_style::{
     EntryVisualState, file_icon_for_path, material_icon, semantic_for_path, semantic_palette,
@@ -76,9 +75,9 @@ use theme_colors::{Colors, apply_contrast, mix_color, parse_hex_rgb, shift_hsva}
 use theme_import::{decode_theme_import_json, sanitize_theme_file_name, theme_name_from_path};
 pub use thumbnail_cache::clear_preview_cache_storage;
 use thumbnail_cache::{
-    ImagePreviewCacheEntry, build_thumbnail_bytes, clear_preview_cache_dir, fallback_preview_bytes,
-    full_preview_bytes_at_page, load_cached_thumbnail, persist_cached_thumbnail, preview_cache_dir,
-    preview_cache_key, preview_cache_key_for_page, preview_cache_stats, prune_preview_cache_dir,
+    ImagePreviewCacheEntry, clear_preview_cache_dir, full_preview_bytes_at_page,
+    load_cached_thumbnail, persist_cached_thumbnail, preview_cache_dir, preview_cache_key_for_page,
+    preview_cache_stats, prune_preview_cache_dir, thumbnail_bytes_from_cache_or_build,
 };
 use window_chrome::{
     WmBtn, cursor_icon_for_resize_direction, render_custom_titlebar, resize_direction_for_pos,
@@ -449,7 +448,6 @@ const PREVIEW_CACHE_BUCKET_SMALL: u32 = 256;
 const PREVIEW_CACHE_BUCKET_LARGE: u32 = 640;
 const PREVIEW_CACHE_BUCKET_XL: u32 = 2048;
 const PREVIEW_CACHE_ORIGINAL: u32 = 0;
-const PREVIEW_CACHE_SMALL_SVG: u32 = 96;
 const PREVIEW_REQUESTS_PER_FRAME: usize = 2;
 const MILLER_FIXED_WIDTH: f32 = 240.0;
 const TANDEM_PANE_HEADER_HEIGHT: f32 = 38.0;
@@ -1555,13 +1553,16 @@ impl OttrinApp {
                     && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
                 let bytes = if req.target_dim == PREVIEW_CACHE_ORIGINAL || selected_pdf_page {
                     full_preview_bytes_at_page(&req.path, PREVIEW_CACHE_BUCKET_XL, req.page_index)
-                } else if let Some(bytes) = load_cached_thumbnail(&cache_key) {
-                    Some(bytes)
-                } else if let Some(bytes) = build_thumbnail_bytes(&req.path, req.target_dim) {
-                    persist_cached_thumbnail(&cache_key, &bytes, req.cache_max_bytes);
-                    Some(bytes)
                 } else {
-                    fallback_preview_bytes(&req.path, None)
+                    let cached = load_cached_thumbnail(&req.path, &cache_key);
+                    thumbnail_bytes_from_cache_or_build(&req.path, req.target_dim, cached).map(
+                        |(bytes, should_persist)| {
+                            if should_persist {
+                                persist_cached_thumbnail(&cache_key, &bytes, req.cache_max_bytes);
+                            }
+                            bytes
+                        },
+                    )
                 };
                 let _ = preview_res_tx.send(PreviewJobResponse {
                     path: req.path,
@@ -1877,6 +1878,15 @@ impl OttrinApp {
         corner_radius: u8,
         page_index: usize,
     ) -> Option<egui::Image<'static>> {
+        if ottrin_preview::is_svg_path(path) {
+            return self.cached_image_preview_widget_for_page(
+                path,
+                max_width,
+                max_height,
+                corner_radius,
+                page_index,
+            );
+        }
         let cache_key = preview_cache_key_for_page(path, PREVIEW_CACHE_ORIGINAL, page_index);
         if !self.image_preview_cache.contains_key(&cache_key) {
             if !self.preview_inflight.contains(&cache_key) && self.preview_budget_remaining > 0 {
@@ -1907,6 +1917,18 @@ impl OttrinApp {
         corner_radius: u8,
         page_index: usize,
     ) -> Option<egui::Image<'static>> {
+        if ottrin_preview::is_svg_path(path) {
+            let scale = zoom.clamp(0.1, 8.0);
+            let dim = (PREVIEW_CACHE_BUCKET_XL as f32 * scale)
+                .clamp(64.0, PREVIEW_CACHE_BUCKET_XL as f32);
+            return self.cached_image_preview_widget_for_page(
+                path,
+                dim,
+                dim,
+                corner_radius,
+                page_index,
+            );
+        }
         let cache_key = preview_cache_key_for_page(path, PREVIEW_CACHE_ORIGINAL, page_index);
         if !self.image_preview_cache.contains_key(&cache_key) {
             if !self.preview_inflight.contains(&cache_key) && self.preview_budget_remaining > 0 {
@@ -1932,33 +1954,6 @@ impl OttrinApp {
                 .fit_to_exact_size(size)
                 .corner_radius(corner_radius),
         )
-    }
-
-    fn cached_thumbnail_widget(
-        &mut self,
-        path: &Path,
-        size: f32,
-        corner_radius: u8,
-    ) -> Option<egui::Image<'static>> {
-        if is_svg_path(path) {
-            let cache_key = preview_cache_key(path, PREVIEW_CACHE_SMALL_SVG);
-            if !self.image_preview_cache.contains_key(&cache_key) {
-                if let Ok(bytes) = std::fs::read(path) {
-                    self.image_preview_cache
-                        .insert(cache_key.clone(), ImagePreviewCacheEntry::Ready(bytes));
-                } else {
-                    return None;
-                }
-            }
-            let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
-            return Some(
-                egui::Image::from_bytes(format!("bytes://preview/{cache_key}.svg"), bytes)
-                    .max_width(size)
-                    .max_height(size)
-                    .corner_radius(corner_radius),
-            );
-        }
-        self.cached_image_preview_widget(path, size, size, corner_radius)
     }
 
     fn rotate_inspector_image(&mut self, path: &Path, clockwise: bool) {
@@ -10149,46 +10144,23 @@ impl OttrinApp {
                                 let mut text_snippet: Option<String> = None;
                                 if matches!(entry.kind, EntryKind::File) {
                                     let preview = self.cached_info_preview(&entry);
-                                    match preview.kind {
-                                        PreviewKind::Image => {
-                                            let max_w = (ui.available_width() - 28.0).max(96.0);
-                                            let max_h = 132.0;
-                                            if let Some(img) = self.cached_image_preview_widget(
-                                                &entry.path,
-                                                max_w,
-                                                max_h,
-                                                8,
-                                            ) {
-                                                preview_widget = Some(img);
-                                            }
+                                    if preview.kind == PreviewKind::Image {
+                                        let max_w = (ui.available_width() - 28.0).max(96.0);
+                                        let max_h = 132.0;
+                                        if let Some(img) = self.cached_image_preview_widget(
+                                            &entry.path,
+                                            max_w,
+                                            max_h,
+                                            8,
+                                        ) {
+                                            preview_widget = Some(img);
                                         }
-                                        PreviewKind::Text => {
-                                            let is_svg = entry
-                                                .path
-                                                .extension()
-                                                .and_then(|e| e.to_str())
-                                                .map(|e| e.eq_ignore_ascii_case("svg"))
-                                                .unwrap_or(false);
-                                            if is_svg {
-                                                let max_w =
-                                                    (ui.available_width() - 28.0).max(96.0);
-                                                let max_h = 132.0;
-                                                if let Some(img) = self.cached_image_preview_widget(
-                                                    &entry.path,
-                                                    max_w,
-                                                    max_h,
-                                                    8,
-                                                ) {
-                                                    preview_widget = Some(img);
-                                                }
-                                            }
-                                        }
-                                        _ => {}
                                     }
                                     if preview_widget.is_none() {
                                         text_snippet = compact_preview_snippet(&preview, 8, 480);
                                     }
                                 }
+
                                 ui.add_space(4.0);
                                 Frame::new()
                                     .fill(Color32::TRANSPARENT)
@@ -14283,42 +14255,24 @@ impl OttrinApp {
                         }
                     }
                     PreviewKind::Text => {
-                        let is_svg = entry
-                            .path
-                            .extension()
-                            .and_then(|e| e.to_str())
-                            .map(|e| e.eq_ignore_ascii_case("svg"))
-                            .unwrap_or(false);
-                        if is_svg
-                            && let Some(img) = self.cached_image_preview_widget(
-                                &entry.path,
-                                max_preview_w,
-                                max_preview_h,
-                                8,
-                            )
-                        {
-                            preview_widget = Some(img);
+                        const SNIPPET_MAX: usize = 800;
+                        let mut snippet = String::new();
+                        let mut left = SNIPPET_MAX;
+                        let (_, extracted) = split_preview_extracted_text(&preview.body);
+                        let source = extracted.unwrap_or(&preview.body);
+                        for (i, line) in source.lines().enumerate() {
+                            if i >= 16 || left == 0 {
+                                break;
+                            }
+                            if i > 0 {
+                                snippet.push('\n');
+                            }
+                            let take = line.len().min(left);
+                            snippet.push_str(&line[..take]);
+                            left = left.saturating_sub(take);
                         }
-                        if preview_widget.is_none() {
-                            const SNIPPET_MAX: usize = 800;
-                            let mut snippet = String::new();
-                            let mut left = SNIPPET_MAX;
-                            let (_, extracted) = split_preview_extracted_text(&preview.body);
-                            let source = extracted.unwrap_or(&preview.body);
-                            for (i, line) in source.lines().enumerate() {
-                                if i >= 16 || left == 0 {
-                                    break;
-                                }
-                                if i > 0 {
-                                    snippet.push('\n');
-                                }
-                                let take = line.len().min(left);
-                                snippet.push_str(&line[..take]);
-                                left = left.saturating_sub(take);
-                            }
-                            if !snippet.is_empty() {
-                                text_snippet = Some(snippet);
-                            }
+                        if !snippet.is_empty() {
+                            text_snippet = Some(snippet);
                         }
                     }
                     PreviewKind::ArchiveMetadata
@@ -14897,21 +14851,12 @@ impl OttrinApp {
                                     thumbnails_enabled && image_thumbnail_candidate(entry);
                                 if painted_thumbnail {
                                     paint_thumbnail_slot(ui, thumb_rect, c);
-                                    let thumb = if entry
-                                        .path
-                                        .extension()
-                                        .and_then(|ext| ext.to_str())
-                                        .is_some_and(|ext| ext.eq_ignore_ascii_case("pdf"))
-                                    {
-                                        self.cached_image_preview_widget(
-                                            &entry.path,
-                                            thumb_size,
-                                            thumb_size,
-                                            4,
-                                        )
-                                    } else {
-                                        self.cached_thumbnail_widget(&entry.path, thumb_size, 4)
-                                    };
+                                    let thumb = self.cached_image_preview_widget(
+                                        &entry.path,
+                                        thumb_size,
+                                        thumb_size,
+                                        4,
+                                    );
                                     if let Some(img) = thumb {
                                         paint_centered_image(ui, thumb_rect, img);
                                     }
@@ -15158,21 +15103,12 @@ impl OttrinApp {
                                 thumbnails_enabled && image_thumbnail_candidate(entry);
                             if painted_thumbnail {
                                 paint_thumbnail_slot(ui, icon_rect, c);
-                                let thumb = if entry
-                                    .path
-                                    .extension()
-                                    .and_then(|ext| ext.to_str())
-                                    .is_some_and(|ext| ext.eq_ignore_ascii_case("pdf"))
-                                {
-                                    self.cached_image_preview_widget(
-                                        &entry.path,
-                                        icon_px,
-                                        icon_px,
-                                        6,
-                                    )
-                                } else {
-                                    self.cached_thumbnail_widget(&entry.path, icon_px, 6)
-                                };
+                                let thumb = self.cached_image_preview_widget(
+                                    &entry.path,
+                                    icon_px,
+                                    icon_px,
+                                    6,
+                                );
                                 if let Some(img) = thumb {
                                     paint_centered_image(ui, icon_rect, img);
                                 }
@@ -15645,49 +15581,20 @@ impl OttrinApp {
 
                     match preview.kind {
                         PreviewKind::Text => {
-                            let is_svg = path
-                                .extension()
-                                .and_then(|e| e.to_str())
-                                .map(|e| e.eq_ignore_ascii_case("svg"))
-                                .unwrap_or(false);
-                            if is_svg {
-                                ScrollArea::both().show(ui, |ui| {
-                                    let max_w = (ui.available_width() - 24.0).max(120.0);
-                                    let max_h = (ui.available_height() - 30.0).max(160.0);
-                                    ui.vertical_centered(|ui| {
-                                        ui.add_space(8.0);
-                                        if let Some(img) =
-                                            self.cached_image_preview_widget(&path, max_w, max_h, 8)
-                                        {
-                                            ui.add(img);
-                                        }
-                                        render_preview_footer(ui, c, &name, &preview.body);
-                                    });
-                                });
-                            } else {
-                                render_text_body_preview(ui, c, &name, &preview.body);
-                            }
+                            render_text_body_preview(ui, c, &name, &preview.body);
                         }
                         PreviewKind::Image | PreviewKind::Pdf => {
                             ScrollArea::both().show(ui, |ui| {
                                 let max_w = (ui.available_width() - 24.0).max(120.0);
                                 let max_h = (ui.available_height() - 34.0).max(160.0);
                                 ui.vertical_centered(|ui| {
-                                    let is_svg = preview.kind == PreviewKind::Image
-                                        && path
-                                            .extension()
-                                            .and_then(|e| e.to_str())
-                                            .map(|e| e.eq_ignore_ascii_case("svg"))
-                                            .unwrap_or(false);
                                     let pdf_page_index = if preview.kind == PreviewKind::Pdf {
                                         self.preview.pdf_page_index
                                     } else {
                                         0
                                     };
                                     let image = if !self.preview.visual_fit {
-                                        if is_svg {
-                                            self.cached_image_preview_widget(&path, max_w, max_h, 8)
-                                        } else {
+                                        if preview.kind == PreviewKind::Pdf {
                                             self.cached_original_image_zoom_widget_for_page(
                                                 &path,
                                                 self.preview.visual_zoom,
@@ -15701,22 +15608,26 @@ impl OttrinApp {
                                                     )
                                                 },
                                             )
-                                        }
-                                    } else {
-                                        if is_svg {
-                                            self.cached_image_preview_widget(&path, max_w, max_h, 8)
                                         } else {
-                                            self.cached_original_image_preview_widget_for_page(
-                                                &path, max_w, max_h, 8, pdf_page_index,
-                                            )
-                                            .or_else(
-                                                || {
-                                                    self.cached_image_preview_widget_for_page(
-                                                        &path, max_w, max_h, 8, pdf_page_index,
-                                                    )
-                                                },
-                                            )
+                                            self.cached_image_preview_widget(&path, max_w, max_h, 8)
                                         }
+                                    } else if preview.kind == PreviewKind::Pdf {
+                                        self.cached_original_image_preview_widget_for_page(
+                                            &path,
+                                            max_w,
+                                            max_h,
+                                            8,
+                                            pdf_page_index,
+                                        )
+                                        .or_else(
+                                            || {
+                                                self.cached_image_preview_widget_for_page(
+                                                    &path, max_w, max_h, 8, pdf_page_index,
+                                                )
+                                            },
+                                        )
+                                    } else {
+                                        self.cached_image_preview_widget(&path, max_w, max_h, 8)
                                     };
                                     let image_available = image.is_some();
                                     if let Some(img) = image {
@@ -18858,51 +18769,17 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
     if !matches!(entry.kind, EntryKind::File) {
         return false;
     }
+    let profile = ottrin_preview::preview_profile(&entry.path);
     let is_visual = matches!(
-        classify_file(
-            &entry.path,
-            entry.kind,
-            entry.is_executable,
-            entry.symlink_target_is_dir,
-            platform_case_mode_current(),
-        )
-        .category,
-        FileCategory::Image | FileCategory::Pdf
-    ) || matches!(
-        ottrin_preview::classify_path(&entry.path),
-        PreviewKind::Text
+        profile.kind(),
+        PreviewKind::Image | PreviewKind::Pdf | PreviewKind::Text
     );
     is_visual && thumbnail_supported_preview_path(&entry.path)
 }
 
 fn thumbnail_supported_preview_path(path: &Path) -> bool {
-    let ext = path
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .unwrap_or_default()
-        .to_ascii_lowercase();
-    matches!(
-        ext.as_str(),
-        "png"
-            | "jpg"
-            | "jpeg"
-            | "gif"
-            | "bmp"
-            | "tif"
-            | "tiff"
-            | "webp"
-            | "ico"
-            | "avif"
-            | "svg"
-            | "pdf"
-    ) || matches!(ottrin_preview::classify_path(path), PreviewKind::Text)
-}
-
-fn is_svg_path(path: &Path) -> bool {
-    path.extension()
-        .and_then(|ext| ext.to_str())
-        .map(|ext| ext.eq_ignore_ascii_case("svg"))
-        .unwrap_or(false)
+    let profile = ottrin_preview::preview_profile(path);
+    profile.supports_thumbnail_visual() && !matches!(profile.kind(), PreviewKind::OfficeMetadata)
 }
 
 struct SmartPanelIconButton<'a> {
@@ -21465,6 +21342,67 @@ mod tests {
         app.search_ui.selected = Some(1);
         app.sync_preview_to_selection();
         assert_eq!(app.preview.path, Some(PathBuf::from("/tmp/other.txt")));
+    }
+
+    #[test]
+    fn open_preview_entry_for_svg_loads_inspector_overlay_visual_preview() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-svg-inspector-preview-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        std::fs::create_dir_all(&root).expect("create svg fixture root");
+        let path = root.join("diagram.svg");
+        std::fs::write(
+            &path,
+            r##"<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#123456"/></svg>"##,
+        )
+        .expect("write svg fixture");
+
+        let mut app = OttrinApp::default();
+        app.open_preview_entry(FileEntry {
+            name: "diagram.svg".to_string(),
+            path: path.clone(),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: None,
+            modified_unix_secs: None,
+        });
+
+        assert_eq!(app.preview.path, Some(path.clone()));
+        assert!(app.preview.visible);
+        assert!(app.preview_load_slots[PreviewTarget::Overlay.index()].is_pending());
+
+        let deadline = Instant::now() + Duration::from_secs(1);
+        while app.preview.data.is_none() && Instant::now() < deadline {
+            app.poll_preview_loads();
+            if app.preview.data.is_some() {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(5));
+        }
+
+        let preview = app
+            .preview
+            .data
+            .as_ref()
+            .expect("svg preview should be loaded for inspector overlay");
+        assert_eq!(preview.kind, PreviewKind::Image);
+        assert_eq!(preview.title, "diagram.svg");
+        assert!(
+            preview.body.contains("Filetype: SVG image"),
+            "SVG metadata should be emitted by the inspector response"
+        );
+        assert!(
+            !app.preview_load_slots[PreviewTarget::Overlay.index()].is_pending(),
+            "overlay load should settle after response"
+        );
+
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]
