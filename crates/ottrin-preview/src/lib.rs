@@ -2083,11 +2083,20 @@ fn epub_zip64_disk_start_is_zero(header: &[u8], extra: &[u8]) -> bool {
                 return false;
             }
             let mut values = field;
-            for range in [20..24, 24..28, 42..46] {
+            // ZIP64 replacement values occur only for sentinels, and in this
+            // central-directory order: uncompressed size, compressed size,
+            // local-header offset, then disk number start.
+            for range in [24..28, 20..24, 42..46] {
                 let Some(value) = read_le_u32(&header[range]) else {
                     return false;
                 };
                 if value == u32::MAX {
+                    let Some(replacement) = values.get(..8) else {
+                        return false;
+                    };
+                    if read_le_u64(replacement).is_none() {
+                        return false;
+                    }
                     let Some(remaining) = values.get(8..) else {
                         return false;
                     };
@@ -3970,6 +3979,48 @@ mod tests {
             Some(1),
             "a present, well-formed zero ZIP64 disk-start value remains single-disk"
         );
+
+        for (label, sentinel_uncompressed_size, sentinel_compressed_size, sentinel_local_offset) in [
+            ("uncompressed size", true, false, false),
+            ("uncompressed and compressed sizes", true, true, false),
+            ("all preceding central-directory fields", true, true, true),
+        ] {
+            let mut bytes = original.clone();
+            let mut zip64_values = Vec::new();
+            for (range, is_sentinel) in [
+                (24..28, sentinel_uncompressed_size),
+                (20..24, sentinel_compressed_size),
+                (42..46, sentinel_local_offset),
+            ] {
+                let value = read_le_u32(&original[central + range.start..central + range.end])
+                    .expect("classic central-directory value");
+                if is_sentinel {
+                    bytes[central + range.start..central + range.end]
+                        .copy_from_slice(&u32::MAX.to_le_bytes());
+                    zip64_values.extend_from_slice(&(value as u64).to_le_bytes());
+                }
+            }
+            zip64_values.extend_from_slice(&0_u32.to_le_bytes());
+            let mut zip64_extra = Vec::with_capacity(4 + zip64_values.len());
+            zip64_extra.extend_from_slice(&1_u16.to_le_bytes());
+            zip64_extra.extend_from_slice(&(zip64_values.len() as u16).to_le_bytes());
+            zip64_extra.extend_from_slice(&zip64_values);
+            bytes[central + 34..central + 36].copy_from_slice(&u16::MAX.to_le_bytes());
+            bytes[central + 30..central + 32]
+                .copy_from_slice(&(zip64_extra.len() as u16).to_le_bytes());
+            bytes.splice(extra_start..extra_start, zip64_extra);
+            let mutated_eocd = eocd
+                + read_le_u16(&bytes[central + 30..central + 32]).expect("extra length") as usize;
+            let directory_size =
+                read_le_u32(&bytes[mutated_eocd + 12..mutated_eocd + 16]).expect("directory size");
+            bytes[mutated_eocd + 12..mutated_eocd + 16]
+                .copy_from_slice(&(directory_size + (mutated_eocd - eocd) as u32).to_le_bytes());
+            assert_eq!(
+                preflight_epub_zip(&bytes).map(|directory| directory.entry_count),
+                Some(1),
+                "a standards-valid ZIP64 extra with {label} sentinels remains single-disk"
+            );
+        }
 
         for (label, zip64_extra) in [
             ("missing", Vec::new()),
