@@ -101,7 +101,18 @@ fn preview_cache_path(cache_key: &str) -> Option<PathBuf> {
 
 pub(crate) fn load_cached_thumbnail(path: &Path, cache_key: &str) -> Option<Vec<u8>> {
     let cache_path = preview_cache_path(cache_key)?;
-    let bytes = std::fs::read(&cache_path).ok()?;
+    load_cached_thumbnail_at_path(path, &cache_path)
+}
+
+/// Opens an already-resolved cache entry only after the preview profile permits
+/// that file type to use thumbnail bytes. EPUB is metadata-only and currently
+/// disabled, so stale entries are discarded without exposing any cache bytes.
+fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u8>> {
+    if ottrin_preview::is_epub_path(path) {
+        let _ = std::fs::remove_file(cache_path);
+        return None;
+    }
+    let bytes = std::fs::read(cache_path).ok()?;
     if ottrin_preview::is_svg_path(path) && !is_png_bytes(&bytes) {
         let _ = std::fs::remove_file(cache_path);
         return None;
@@ -670,6 +681,32 @@ mod tests {
             full_preview_bytes_at_page(&path, 2_048, 0),
             None,
             "the full-preview path must not read raw EPUB bytes"
+        );
+
+        std::fs::remove_file(path).expect("remove EPUB fixture");
+    }
+
+    #[test]
+    fn epub_cache_entry_is_discarded_before_thumbnail_bytes_are_read() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-epub-cache-policy-{}.epub",
+            std::process::id()
+        ));
+        let cache_path = std::env::temp_dir().join(format!(
+            "ottrin-epub-cache-policy-{}.png",
+            std::process::id()
+        ));
+        std::fs::write(&path, b"EPUB package path is sufficient for policy").expect("write EPUB");
+        std::fs::write(&cache_path, b"stale EPUB cache bytes").expect("write cache entry");
+
+        assert_eq!(
+            load_cached_thumbnail_at_path(&path, &cache_path),
+            None,
+            "disabled EPUB must reject a cache entry before it can reach a decoder"
+        );
+        assert!(
+            !cache_path.exists(),
+            "a stale EPUB cache entry must be removed without returning its bytes"
         );
 
         std::fs::remove_file(path).expect("remove EPUB fixture");

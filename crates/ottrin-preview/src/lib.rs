@@ -1,6 +1,6 @@
 use ottrin_core::{EntryKind, format_modified};
 use serde::{Deserialize, Serialize};
-use std::io::{Read, Seek, SeekFrom};
+use std::io::{Cursor, Read};
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -1746,19 +1746,17 @@ fn epub_error(title: String, path: &Path) -> PreviewData {
 }
 
 fn preview_epub(title: String, path: &Path) -> PreviewData {
-    let Ok(input_size) = std::fs::metadata(path).map(|metadata| metadata.len()) else {
+    let Some(snapshot) = read_bounded_epub_snapshot(path) else {
         return epub_error(title, path);
     };
-    if input_size > MAX_EPUB_PACKAGE_BYTES {
-        return epub_error(title, path);
-    }
-    let Ok(file) = std::fs::File::open(path) else {
+    let input_size = snapshot.len() as u64;
+    let Some(directory) = preflight_epub_zip(&snapshot) else {
         return epub_error(title, path);
     };
-    let Some(directory) = preflight_epub_zip(&file, input_size) else {
-        return epub_error(title, path);
-    };
-    let Ok(mut archive) = zip::ZipArchive::new(file) else {
+    // Preflight and ZIP parsing intentionally consume this same immutable byte
+    // snapshot; metadata followed by reopening the pathname would leave a
+    // mutable-file race between the two safety decisions.
+    let Ok(mut archive) = zip::ZipArchive::new(Cursor::new(snapshot)) else {
         return epub_error(title, path);
     };
     let mimetype_is_first = archive
@@ -1824,15 +1822,21 @@ fn preview_epub(title: String, path: &Path) -> PreviewData {
         lines.push(format!("Author: {author}"));
     }
     lines.push(format!("Internal parts: {}", archive.len()));
-    if let Ok(metadata) = std::fs::metadata(path) {
-        lines.push(format!("Size: {}", format_size(metadata.len())));
-    }
+    lines.push(format!("Size: {}", format_size(input_size)));
     PreviewData {
         title,
         kind: PreviewKind::ArchiveMetadata,
         body: lines.join("\n"),
         open_external: true,
     }
+}
+
+fn read_bounded_epub_snapshot(path: &Path) -> Option<Vec<u8>> {
+    let file = std::fs::File::open(path).ok()?;
+    let mut bounded = file.take(MAX_EPUB_PACKAGE_BYTES.checked_add(1)?);
+    let mut snapshot = Vec::new();
+    bounded.read_to_end(&mut snapshot).ok()?;
+    (snapshot.len() as u64 <= MAX_EPUB_PACKAGE_BYTES).then_some(snapshot)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1843,22 +1847,32 @@ struct EpubZipDirectory {
 /// Parses the bounded ZIP footer before `ZipArchive` can materialize central
 /// directory entries. EPUB has no need for multi-disk archives, so every
 /// offset is required to describe one contiguous, in-file directory.
-fn preflight_epub_zip(file: &std::fs::File, file_len: u64) -> Option<EpubZipDirectory> {
+fn preflight_epub_zip(bytes: &[u8]) -> Option<EpubZipDirectory> {
     const EOCD_SIGNATURE: &[u8; 4] = b"PK\x05\x06";
     const ZIP64_LOCATOR_SIGNATURE: &[u8; 4] = b"PK\x06\x07";
     const ZIP64_EOCD_SIGNATURE: &[u8; 4] = b"PK\x06\x06";
     const EOCD_MIN_BYTES: usize = 22;
     const EOCD_SEARCH_BYTES: u64 = EOCD_MIN_BYTES as u64 + u16::MAX as u64;
 
+    let file_len = bytes.len() as u64;
     if file_len < EOCD_MIN_BYTES as u64 || file_len > MAX_EPUB_PACKAGE_BYTES {
         return None;
     }
     let tail_len = file_len.min(EOCD_SEARCH_BYTES) as usize;
     let tail_start = file_len.checked_sub(tail_len as u64)?;
-    let mut reader = file.try_clone().ok()?;
-    reader.seek(SeekFrom::Start(tail_start)).ok()?;
-    let mut tail = vec![0; tail_len];
-    reader.read_exact(&mut tail).ok()?;
+    let tail = bytes.get(tail_start as usize..)?;
+    // Rejecting more than one footer signature keeps an appended
+    // archive/footer pair from silently replacing the validated directory, and
+    // avoids ambiguity about which footer governs the package.
+    if tail
+        .windows(EOCD_SIGNATURE.len())
+        .filter(|window| *window == EOCD_SIGNATURE)
+        .take(2)
+        .count()
+        != 1
+    {
+        return None;
+    }
     let eocd_in_tail = tail
         .windows(EOCD_SIGNATURE.len())
         .rposition(|window| window == EOCD_SIGNATURE)
@@ -1885,13 +1899,20 @@ fn preflight_epub_zip(file: &std::fs::File, file_len: u64) -> Option<EpubZipDire
         || directory_size == u32::MAX
         || directory_offset == u32::MAX;
     let (entry_count, directory_size, directory_offset, directory_end) = if uses_zip64 {
-        if disk != 0 || directory_disk != 0 {
+        if disk != 0
+            || directory_disk != 0
+            || entries_on_disk != u16::MAX
+            || total_entries != u16::MAX
+            || directory_size != u32::MAX
+            || directory_offset != u32::MAX
+        {
             return None;
         }
         let locator_start = eocd_offset.checked_sub(20)?;
-        let mut locator = [0; 20];
-        reader.seek(SeekFrom::Start(locator_start)).ok()?;
-        reader.read_exact(&mut locator).ok()?;
+        let locator: [u8; 20] = bytes
+            .get(locator_start as usize..locator_start.checked_add(20)? as usize)?
+            .try_into()
+            .ok()?;
         if locator[..4] != *ZIP64_LOCATOR_SIGNATURE
             || read_le_u32(&locator[4..8])? != 0
             || read_le_u32(&locator[16..20])? != 1
@@ -1899,11 +1920,12 @@ fn preflight_epub_zip(file: &std::fs::File, file_len: u64) -> Option<EpubZipDire
             return None;
         }
         let zip64_offset = read_le_u64(&locator[8..16])?;
-        let mut zip64 = [0; 56];
-        reader.seek(SeekFrom::Start(zip64_offset)).ok()?;
-        reader.read_exact(&mut zip64).ok()?;
+        let zip64: [u8; 56] = bytes
+            .get(zip64_offset as usize..zip64_offset.checked_add(56)? as usize)?
+            .try_into()
+            .ok()?;
         if zip64[..4] != *ZIP64_EOCD_SIGNATURE
-            || read_le_u64(&zip64[4..12])? < 44
+            || read_le_u64(&zip64[4..12])? != 44
             || zip64_offset
                 .checked_add(12)?
                 .checked_add(read_le_u64(&zip64[4..12])?)?
@@ -1937,7 +1959,61 @@ fn preflight_epub_zip(file: &std::fs::File, file_len: u64) -> Option<EpubZipDire
     if directory_offset.checked_add(directory_size)? != directory_end || directory_end > file_len {
         return None;
     }
+    if !epub_central_directory_is_well_formed(bytes, directory_offset, directory_size, entry_count)
+    {
+        return None;
+    }
     Some(EpubZipDirectory { entry_count })
+}
+
+fn epub_central_directory_is_well_formed(
+    bytes: &[u8],
+    directory_offset: u64,
+    directory_size: u64,
+    entry_count: usize,
+) -> bool {
+    const CENTRAL_DIRECTORY_SIGNATURE: &[u8; 4] = b"PK\x01\x02";
+    const CENTRAL_DIRECTORY_HEADER_BYTES: u64 = 46;
+
+    let Some(directory_end) = directory_offset.checked_add(directory_size) else {
+        return false;
+    };
+    let mut offset = directory_offset;
+    for _ in 0..entry_count {
+        let Some(header_end) = offset.checked_add(CENTRAL_DIRECTORY_HEADER_BYTES) else {
+            return false;
+        };
+        let Some(header) = bytes.get(offset as usize..header_end as usize) else {
+            return false;
+        };
+        if header[..4] != *CENTRAL_DIRECTORY_SIGNATURE {
+            return false;
+        }
+        let Some(name_len) = read_le_u16(&header[28..30]).map(u64::from) else {
+            return false;
+        };
+        let Some(extra_len) = read_le_u16(&header[30..32]).map(u64::from) else {
+            return false;
+        };
+        let Some(comment_len) = read_le_u16(&header[32..34]).map(u64::from) else {
+            return false;
+        };
+        let Some(record_len) = CENTRAL_DIRECTORY_HEADER_BYTES
+            .checked_add(name_len)
+            .and_then(|value| value.checked_add(extra_len))
+            .and_then(|value| value.checked_add(comment_len))
+        else {
+            return false;
+        };
+        let Some(next) = offset.checked_add(record_len) else {
+            return false;
+        };
+        if next > directory_end {
+            return false;
+        }
+        offset = next;
+    }
+    offset == directory_end
 }
 
 fn read_le_u16(bytes: &[u8]) -> Option<u16> {
@@ -2099,8 +2175,8 @@ fn extract_epub_metadata(package: &str) -> Option<(Option<String>, Option<String
                         return None;
                     }
                     saw_package = true;
-                } else if depth == 2 && is_metadata {
-                    if !saw_package || saw_metadata {
+                } else if local.as_ref() == b"metadata" {
+                    if depth != 2 || !is_metadata || !saw_package || saw_metadata {
                         return None;
                     }
                     saw_metadata = true;
@@ -2119,7 +2195,10 @@ fn extract_epub_metadata(package: &str) -> Option<(Option<String>, Option<String
                 let (namespace, local) = reader.resolve_element(event.name());
                 let is_metadata = matches!(namespace, ResolveResult::Bound(namespace) if namespace.as_ref() == EPUB_PACKAGE_NAMESPACE)
                     && local.as_ref() == b"metadata";
-                if depth == 1 && is_metadata && !saw_metadata {
+                if local.as_ref() == b"metadata" {
+                    if depth != 1 || !is_metadata || !saw_package || saw_metadata {
+                        return None;
+                    }
                     saw_metadata = true;
                 } else if metadata_depth.is_some() {
                     return None;
@@ -3467,6 +3546,8 @@ mod tests {
             r#"<package><metadata><title>Unqualified</title></metadata></package>"#,
             r#"<package xmlns="https://example.invalid/opf" xmlns:dc="http://purl.org/dc/elements/1.1/"><metadata><dc:title>Wrong package namespace</dc:title></metadata></package>"#,
             r#"<package xmlns="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/"><manifest><metadata><dc:title>Wrong location</dc:title></metadata></manifest></package>"#,
+            r#"<package xmlns="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:foreign="https://example.invalid/opf"><metadata><dc:title>Canonical</dc:title></metadata><foreign:metadata><dc:title>Competing namespace</dc:title></foreign:metadata></package>"#,
+            r#"<package xmlns="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/"><metadata><dc:title>Canonical</dc:title></metadata><manifest><metadata><dc:title>Competing depth</dc:title></metadata></manifest></package>"#,
             r#"<!DOCTYPE package [<!ENTITY x "title">]><package xmlns="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/"><metadata><dc:&x;>Entity</dc:&x;></metadata></package>"#,
         ] {
             assert_eq!(
@@ -3490,13 +3571,11 @@ mod tests {
             epub.finish().expect("finish EPUB");
         }
 
-        let file = std::fs::File::open(&path).expect("open valid EPUB");
+        let bytes = std::fs::read(&path).expect("read valid EPUB");
         assert_eq!(
-            preflight_epub_zip(&file, std::fs::metadata(&path).expect("metadata").len())
-                .map(|directory| directory.entry_count),
+            preflight_epub_zip(&bytes).map(|directory| directory.entry_count),
             Some(1)
         );
-        drop(file);
 
         let original = std::fs::read(&path).expect("read EPUB");
         let eocd = original
@@ -3536,10 +3615,9 @@ mod tests {
             mutation(&mut bytes);
             std::fs::write(&path, bytes).expect("rewrite malformed EPUB");
 
-            let file = std::fs::File::open(&path).expect("open malformed EPUB");
+            let bytes = std::fs::read(&path).expect("read malformed EPUB");
             assert!(
-                preflight_epub_zip(&file, std::fs::metadata(&path).expect("metadata").len())
-                    .is_none(),
+                preflight_epub_zip(&bytes).is_none(),
                 "the central-directory {label} must be bounded before ZipArchive allocation"
             );
         }
@@ -3598,17 +3676,100 @@ mod tests {
         zip64.extend_from_slice(&zip64_eocd);
         std::fs::write(&path, zip64).expect("write ZIP64 EPUB");
 
-        let file = std::fs::File::open(&path).expect("open ZIP64 EPUB");
+        let bytes = std::fs::read(&path).expect("read ZIP64 EPUB");
         assert_eq!(
-            preflight_epub_zip(&file, std::fs::metadata(&path).expect("metadata").len())
-                .map(|directory| directory.entry_count),
+            preflight_epub_zip(&bytes).map(|directory| directory.entry_count),
             Some(1)
         );
         assert_eq!(
-            zip::ZipArchive::new(file)
+            zip::ZipArchive::new(Cursor::new(bytes))
                 .expect("open ZIP64 archive")
                 .len(),
             1
+        );
+
+        std::fs::remove_file(path).expect("remove EPUB fixture");
+    }
+
+    #[test]
+    fn epub_zip_preflight_rejects_ambiguous_footers_and_zip64_conflicts() {
+        let path = temp_path("epub-ambiguous-footer.epub");
+        {
+            let file = std::fs::File::create(&path).expect("create EPUB");
+            let mut epub = zip::ZipWriter::new(file);
+            epub.start_file(
+                "mimetype",
+                zip::write::SimpleFileOptions::default()
+                    .compression_method(zip::CompressionMethod::Stored),
+            )
+            .expect("write mimetype");
+            epub.write_all(b"application/epub+zip")
+                .expect("write mimetype bytes");
+            epub.finish().expect("finish EPUB");
+        }
+
+        let original = std::fs::read(&path).expect("read EPUB");
+        let eocd = original
+            .windows(4)
+            .rposition(|window| window == b"PK\x05\x06")
+            .expect("find EOCD");
+        let directory_offset =
+            read_le_u32(&original[eocd + 16..eocd + 20]).expect("directory offset") as usize;
+        let mut duplicate_directory = original.clone();
+        let duplicate_offset = duplicate_directory.len() as u32;
+        duplicate_directory.extend_from_slice(&original[directory_offset..eocd]);
+        let mut duplicate_footer = original[eocd..].to_vec();
+        duplicate_footer[16..20].copy_from_slice(&duplicate_offset.to_le_bytes());
+        duplicate_directory.extend_from_slice(&duplicate_footer);
+        std::fs::write(&path, &duplicate_directory).expect("write ambiguous EPUB");
+        assert!(
+            preflight_epub_zip(&duplicate_directory).is_none(),
+            "a second central-directory/footer pair must not replace an earlier archive footer"
+        );
+
+        let mut trailing_bytes = original.clone();
+        trailing_bytes.extend_from_slice(b"unexpected trailing data");
+        assert!(
+            preflight_epub_zip(&trailing_bytes).is_none(),
+            "a footer must terminate the immutable EPUB snapshot"
+        );
+
+        let mut multi_disk = original.clone();
+        multi_disk[eocd + 4..eocd + 6].copy_from_slice(&1_u16.to_le_bytes());
+        assert!(
+            preflight_epub_zip(&multi_disk).is_none(),
+            "EPUB must reject multi-disk ZIP metadata before archive allocation"
+        );
+
+        let mut zip64_conflict = original[..eocd].to_vec();
+        let zip64_eocd_offset = zip64_conflict.len() as u64;
+        let entries = read_le_u16(&original[eocd + 10..eocd + 12]).expect("entry count");
+        let directory_size = read_le_u32(&original[eocd + 12..eocd + 16]).expect("directory size");
+        let directory_offset =
+            read_le_u32(&original[eocd + 16..eocd + 20]).expect("directory offset");
+        zip64_conflict.extend_from_slice(b"PK\x06\x06");
+        zip64_conflict.extend_from_slice(&44_u64.to_le_bytes());
+        zip64_conflict.extend_from_slice(&45_u16.to_le_bytes());
+        zip64_conflict.extend_from_slice(&45_u16.to_le_bytes());
+        zip64_conflict.extend_from_slice(&0_u32.to_le_bytes());
+        zip64_conflict.extend_from_slice(&0_u32.to_le_bytes());
+        zip64_conflict.extend_from_slice(&(entries as u64).to_le_bytes());
+        zip64_conflict.extend_from_slice(&(entries as u64).to_le_bytes());
+        zip64_conflict.extend_from_slice(&(directory_size as u64).to_le_bytes());
+        zip64_conflict.extend_from_slice(&(directory_offset as u64).to_le_bytes());
+        zip64_conflict.extend_from_slice(b"PK\x06\x07");
+        zip64_conflict.extend_from_slice(&0_u32.to_le_bytes());
+        zip64_conflict.extend_from_slice(&zip64_eocd_offset.to_le_bytes());
+        zip64_conflict.extend_from_slice(&1_u32.to_le_bytes());
+        let mut zip64_footer = original[eocd..].to_vec();
+        zip64_footer[8..10].copy_from_slice(&u16::MAX.to_le_bytes());
+        zip64_footer[10..12].copy_from_slice(&u16::MAX.to_le_bytes());
+        zip64_footer[12..16].copy_from_slice(&u32::MAX.to_le_bytes());
+        // This deliberately leaves the classic directory offset non-sentinel.
+        zip64_conflict.extend_from_slice(&zip64_footer);
+        assert!(
+            preflight_epub_zip(&zip64_conflict).is_none(),
+            "ZIP64 records must not conflict with a partially populated classic footer"
         );
 
         std::fs::remove_file(path).expect("remove EPUB fixture");
