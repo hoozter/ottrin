@@ -1542,7 +1542,7 @@ pub fn render_font_preview_png(path: &Path, target_dim: u32) -> Result<Vec<u8>, 
     if source.starts_with(b"OTTO") {
         // CFF charstrings have no bounded abort callback. Keep their preview
         // useful but do not execute an unbounded outline decoder in-process.
-        return render_cff_font_card(&specimen, dimension);
+        return render_cff_font_card(bounded_font_identity(&face, &tables).as_deref(), dimension);
     }
     preflight_ttf_specimen_glyphs(&source, &tables, &face, &specimen)?;
     render_font_sample_png(&face, &specimen, dimension)
@@ -1594,12 +1594,12 @@ fn validate_font_container(
     if magic == b"ttcf" {
         return Err(FontVisualError::UnsupportedCollection);
     }
-    let expected_magic: &[u8] = match extension.as_deref() {
-        Some("ttf") => b"\0\x01\0\0",
-        Some("otf") => b"OTTO",
+    let expected_magic: &[&[u8]] = match extension.as_deref() {
+        Some("ttf") => &[b"\0\x01\0\0", b"true"],
+        Some("otf") => &[b"OTTO"],
         _ => return Err(FontVisualError::UnsupportedFormat),
     };
-    if magic != expected_magic {
+    if !expected_magic.contains(&magic) {
         return Err(FontVisualError::ExtensionMismatch);
     }
     if source.len() < 12 {
@@ -1683,7 +1683,11 @@ fn validate_font_container(
 }
 
 fn is_unsupported_font_surface(tag: [u8; 4]) -> bool {
-    [*b"SVG ", *b"CBDT", *b"CBLC", *b"sbix", *b"COLR", *b"CPAL"].contains(&tag)
+    [
+        *b"SVG ", *b"CBDT", *b"CBLC", *b"sbix", *b"COLR", *b"CPAL", *b"EBDT", *b"EBLC", *b"bdat",
+        *b"bloc",
+    ]
+    .contains(&tag)
 }
 
 fn validate_font_name_table(data: &[u8]) -> Result<(), FontVisualError> {
@@ -2013,12 +2017,18 @@ fn preflight_simple_ttf_glyph(data: &[u8]) -> Result<(), FontVisualError> {
     Ok(())
 }
 
-fn render_cff_font_card(specimen: &str, dimension: u32) -> Result<Vec<u8>, FontVisualError> {
+fn render_cff_font_card(
+    identity: Option<&str>,
+    dimension: u32,
+) -> Result<Vec<u8>, FontVisualError> {
     let mut image =
         image::RgbaImage::from_pixel(dimension, dimension, image::Rgba([255, 255, 255, 255]));
+    let identity = identity.unwrap_or("Identity unavailable");
     render_document_text(
         &mut image,
-        &format!("CFF font\n{specimen}"),
+        &format!(
+            "CFF font\n{identity}\nCFF outlines are not rendered;\nmetadata identity card only"
+        ),
         dimension / 10,
         dimension / 10,
         dimension.saturating_sub(dimension / 10),
@@ -5219,17 +5229,74 @@ mod tests {
     }
 
     #[test]
-    fn font_renderer_rejects_color_bitmap_and_svg_font_surfaces() {
+    fn font_renderer_accepts_true_type_sfnt_true_magic() {
         let mut source = std::fs::read(material_font_path()).expect("read material font");
-        source[12..16].copy_from_slice(b"SVG ");
-        let fixture = write_font_fixture("font-svg-surface.ttf", &source);
+        source[..4].copy_from_slice(b"true");
+        let fixture = write_font_fixture("font-true-magic.ttf", &source);
 
-        assert!(matches!(
-            render_font_preview_png(&fixture, 256),
-            Err(FontVisualError::UnsupportedSurface { tag }) if tag == *b"SVG "
-        ));
+        assert!(render_font_preview_png(&fixture, 256).is_ok());
 
-        std::fs::remove_file(fixture).expect("remove surface fixture");
+        std::fs::remove_file(fixture).expect("remove true-magic fixture");
+    }
+
+    #[test]
+    fn font_renderer_rejects_color_bitmap_and_svg_font_surfaces() {
+        for tag in [
+            *b"SVG ", *b"CBDT", *b"CBLC", *b"sbix", *b"COLR", *b"CPAL", *b"EBDT", *b"EBLC",
+            *b"bdat", *b"bloc",
+        ] {
+            let mut source = std::fs::read(material_font_path()).expect("read material font");
+            source[12..16].copy_from_slice(&tag);
+            let fixture = write_font_fixture("font-unsupported-surface.ttf", &source);
+
+            assert!(matches!(
+                render_font_preview_png(&fixture, 256),
+                Err(FontVisualError::UnsupportedSurface { tag: actual }) if actual == tag
+            ));
+
+            std::fs::remove_file(fixture).expect("remove surface fixture");
+        }
+    }
+
+    #[test]
+    fn font_identity_safely_falls_back_when_name_encoding_is_unsupported() {
+        let mut source = std::fs::read(material_font_path()).expect("read material font");
+        let name_entry = font_table_entry_offset(&source, *b"name");
+        let name_table_offset = u32::from_be_bytes(
+            source[name_entry + 8..name_entry + 12]
+                .try_into()
+                .expect("name table offset"),
+        ) as usize;
+        // Windows encoding ID 10 is a valid name record encoding that
+        // ttf-parser 0.25.1 intentionally does not decode. Apply it to all
+        // records so no supported duplicate can mask the fallback.
+        let record_count =
+            u16::from_be_bytes([source[name_table_offset + 2], source[name_table_offset + 3]])
+                as usize;
+        for record in 0..record_count {
+            let encoding = name_table_offset + 6 + record * 12 + 2;
+            source[encoding..encoding + 2].copy_from_slice(&10u16.to_be_bytes());
+        }
+        let fixture = write_font_fixture("font-unsupported-name-encoding.ttf", &source);
+
+        let preview = preview_font("unsupported-name-encoding.ttf".to_string(), &fixture);
+        assert!(!preview.body.contains("Family:"));
+        assert!(preview.body.contains("Preview: Bounded font sample"));
+        assert_eq!(
+            font_specimen(None),
+            "Aa Bb Cc 123\nFont preview",
+            "unsupported valid name encodings use the bounded generic identity fallback"
+        );
+
+        std::fs::remove_file(fixture).expect("remove unsupported-name fixture");
+    }
+
+    #[test]
+    fn cff_card_is_identity_only_and_does_not_render_a_bundled_font_specimen() {
+        let first = render_cff_font_card(None, 256).expect("render CFF identity card");
+        let second = render_cff_font_card(None, 256).expect("render CFF identity card");
+        assert_eq!(first, second);
+        assert!(image::load_from_memory(&first).is_ok());
     }
 
     #[test]
