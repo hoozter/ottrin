@@ -2,7 +2,7 @@
 use ottrin_core::default_home_dir;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use std::io::Cursor;
+use std::io::{Cursor, Read};
 use std::path::{Path, PathBuf};
 
 const FOLDER_COLLAGE_ENTRY_LIMIT: usize = 64;
@@ -114,18 +114,36 @@ fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u
         let _ = std::fs::remove_file(cache_path);
         return None;
     }
-    if ottrin_preview::is_camera_raw_path(path)
-        && std::fs::metadata(cache_path).ok()?.len() > MAX_CAMERA_RAW_CACHE_PNG_BYTES
-    {
-        let _ = std::fs::remove_file(cache_path);
-        return None;
-    }
-    let bytes = std::fs::read(cache_path).ok()?;
+    let bytes = if ottrin_preview::is_camera_raw_path(path) {
+        match read_camera_raw_cache_bytes(cache_path) {
+            Some(bytes) => bytes,
+            None => {
+                let _ = std::fs::remove_file(cache_path);
+                return None;
+            }
+        }
+    } else {
+        std::fs::read(cache_path).ok()?
+    };
     if !cached_thumbnail_is_safe_for_path(path, &bytes) {
         let _ = std::fs::remove_file(cache_path);
         return None;
     }
     Some(bytes)
+}
+
+fn read_camera_raw_cache_bytes(path: &Path) -> Option<Vec<u8>> {
+    let file = std::fs::File::open(path).ok()?;
+    read_bounded_camera_raw_cache(file).ok()?
+}
+
+fn read_bounded_camera_raw_cache(reader: impl Read) -> std::io::Result<Option<Vec<u8>>> {
+    let limit = usize::try_from(MAX_CAMERA_RAW_CACHE_PNG_BYTES)
+        .expect("RAW cache byte limit fits in usize")
+        .saturating_add(1);
+    let mut bytes = Vec::with_capacity(limit);
+    reader.take(limit as u64).read_to_end(&mut bytes)?;
+    Ok((bytes.len() < limit).then_some(bytes))
 }
 
 pub(crate) fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8], max_bytes: u64) {
@@ -754,6 +772,34 @@ mod tests {
         assert_eq!(load_cached_thumbnail_at_path(&path, &cache_path), None);
         assert!(!cache_path.exists(), "unsafe RAW cache must be discarded");
         std::fs::remove_file(path).expect("remove camera RAW fixture");
+    }
+
+    #[test]
+    fn camera_raw_cache_reader_bounds_replacement_growth() {
+        struct ObservedReader {
+            bytes: Vec<u8>,
+            requested: Vec<usize>,
+        }
+
+        impl Read for ObservedReader {
+            fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+                self.requested.push(buffer.len());
+                let count = self.bytes.len().min(buffer.len());
+                buffer[..count].copy_from_slice(&self.bytes[..count]);
+                self.bytes.drain(..count);
+                Ok(count)
+            }
+        }
+
+        let limit = usize::try_from(MAX_CAMERA_RAW_CACHE_PNG_BYTES).unwrap();
+        let mut reader = ObservedReader {
+            bytes: vec![0; limit + 1],
+            requested: Vec::new(),
+        };
+
+        assert_eq!(read_bounded_camera_raw_cache(&mut reader).unwrap(), None);
+        assert!(reader.requested.iter().all(|&size| size <= limit + 1));
+        assert_eq!(reader.requested.iter().sum::<usize>(), limit + 1);
     }
 
     #[test]
