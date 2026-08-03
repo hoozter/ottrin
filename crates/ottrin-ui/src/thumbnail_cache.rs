@@ -207,7 +207,8 @@ pub(crate) fn thumbnail_bytes_from_cache_or_build(
 }
 
 fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
-    !ottrin_preview::is_svg_path(path) || is_png_bytes(bytes)
+    (!ottrin_preview::is_svg_path(path) && !ottrin_preview::is_epub_path(path))
+        || is_png_bytes(bytes)
 }
 
 fn is_png_bytes(bytes: &[u8]) -> bool {
@@ -272,7 +273,7 @@ fn full_preview_bytes_with_visual_renderer(
     ) {
         return render_visual(path, target_dim);
     }
-    std::fs::read(path).ok()
+    fallback_preview_bytes(path, None)
 }
 
 fn build_thumbnail_bytes_with_visual_renderer(
@@ -648,6 +649,30 @@ mod tests {
 
         std::fs::remove_file(blocked).expect("remove blocked SVG fixture");
         std::fs::remove_file(oversized).expect("remove oversized SVG fixture");
+    }
+
+    #[test]
+    fn epub_never_uses_raw_bytes_for_thumbnail_or_full_preview() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-epub-raw-preview-{}.epub",
+            std::process::id()
+        ));
+        std::fs::write(&path, b"PK\x03\x04untrusted EPUB package bytes")
+            .expect("write EPUB fixture");
+        let raw = std::fs::read(&path).expect("read EPUB fixture");
+
+        assert_eq!(
+            thumbnail_bytes_from_cache_or_build(&path, 256, Some(raw.clone())),
+            None,
+            "a stale raw EPUB cache entry must not be returned as a thumbnail"
+        );
+        assert_eq!(
+            full_preview_bytes_at_page(&path, 2_048, 0),
+            None,
+            "the full-preview path must not read raw EPUB bytes"
+        );
+
+        std::fs::remove_file(path).expect("remove EPUB fixture");
     }
 
     #[test]
