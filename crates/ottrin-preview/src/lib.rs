@@ -5,13 +5,14 @@ use rusqlite::limits::Limit;
 use rusqlite::serialize::OwnedData;
 use rusqlite::{Connection, DatabaseName, OpenFlags};
 use serde::{Deserialize, Serialize};
-use std::hash::{Hash, Hasher};
 use std::io::{Cursor, Read};
 use std::path::Path;
 use std::path::PathBuf;
 use std::ptr::NonNull;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+
+use sha2::{Digest, Sha256};
 
 mod pdf_visual;
 pub use pdf_visual::{
@@ -394,22 +395,35 @@ pub enum SqliteVisualError {
     Encode(String),
 }
 
-/// A bounded SQLite card paired with the identity captured from the same open
-/// source handle that supplied its snapshot.
+/// A bounded SQLite card paired with the fingerprint captured from the same
+/// open source handle that supplied its snapshot.
 #[derive(Debug)]
 pub struct RenderedSqlitePreview {
     pub png: Vec<u8>,
-    pub source_generation: u64,
+    pub source_generation: SqlitePreviewSourceGeneration,
+}
+
+/// Collision-resistant fingerprint of exact bounded SQLite snapshot bytes.
+///
+/// This deliberately is neither object identity nor a truncated hash: callers
+/// use it to reject cache entries and asynchronous cards from older contents.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SqlitePreviewSourceGeneration([u8; 32]);
+
+impl SqlitePreviewSourceGeneration {
+    pub fn as_bytes(&self) -> &[u8; 32] {
+        &self.0
+    }
 }
 
 struct SqliteSourceSnapshot {
     bytes: Vec<u8>,
-    source_generation: u64,
+    source_generation: SqlitePreviewSourceGeneration,
 }
 
 struct SqliteInspection {
     metadata: SqliteMetadata,
-    source_generation: u64,
+    source_generation: SqlitePreviewSourceGeneration,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -1013,21 +1027,14 @@ fn configure_sqlite_preview_connection(connection: &Connection) -> Result<(), Sq
     Ok(())
 }
 
-/// Returns the stable source identity used by SQLite preview snapshots.
-pub fn sqlite_preview_source_generation(path: &Path) -> Option<u64> {
-    let file = std::fs::File::open(path).ok()?;
-    sqlite_source_generation(&file).ok()
-}
-
-fn sqlite_source_generation(file: &std::fs::File) -> Result<u64, SqliteVisualError> {
-    let identity = same_file::Handle::from_file(
-        file.try_clone()
-            .map_err(|error| SqliteVisualError::InputMetadata(error.to_string()))?,
-    )
-    .map_err(|error| SqliteVisualError::InputMetadata(error.to_string()))?;
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
-    identity.hash(&mut hasher);
-    Ok(hasher.finish())
+/// Returns the collision-resistant fingerprint of one bounded source snapshot.
+///
+/// This probe uses the same one-handle, 64 MiB plus sentinel bound as
+/// rendering and fails closed for unreadable, growing, or oversized sources.
+pub fn sqlite_preview_source_generation(path: &Path) -> Option<SqlitePreviewSourceGeneration> {
+    read_bounded_sqlite_snapshot(path)
+        .ok()
+        .map(|snapshot| snapshot.source_generation)
 }
 
 fn read_bounded_sqlite_snapshot(path: &Path) -> Result<SqliteSourceSnapshot, SqliteVisualError> {
@@ -1037,7 +1044,6 @@ fn read_bounded_sqlite_snapshot(path: &Path) -> Result<SqliteSourceSnapshot, Sql
         .metadata()
         .map_err(|error| SqliteVisualError::InputMetadata(error.to_string()))?
         .len();
-    let source_generation = sqlite_source_generation(&file)?;
     if input_size > MAX_SQLITE_PREVIEW_BYTES {
         return Err(SqliteVisualError::InputTooLarge {
             actual: input_size,
@@ -1067,8 +1073,8 @@ fn read_bounded_sqlite_snapshot(path: &Path) -> Result<SqliteSourceSnapshot, Sql
         return Err(SqliteVisualError::InputChanged);
     }
     Ok(SqliteSourceSnapshot {
+        source_generation: SqlitePreviewSourceGeneration(Sha256::digest(&source).into()),
         bytes: source,
-        source_generation,
     })
 }
 
@@ -5251,6 +5257,37 @@ mod tests {
     }
 
     #[test]
+    fn sqlite_source_generation_changes_after_equal_size_hard_link_write_with_restored_mtime() {
+        let source = temp_path("generation.sqlite");
+        let alias = temp_path("generation-alias.sqlite");
+        std::fs::write(&source, b"SQLite format 3\0first-generation")
+            .expect("write first SQLite generation");
+        let original_mtime = std::fs::metadata(&source)
+            .expect("read original metadata")
+            .modified()
+            .expect("read original mtime");
+        let first = sqlite_preview_source_generation(&source).expect("capture first generation");
+
+        std::fs::hard_link(&source, &alias).expect("create hard-link alias");
+        std::fs::write(&alias, b"SQLite format 3\0next--generation")
+            .expect("replace bytes through hard-link alias");
+        std::fs::File::open(&source)
+            .expect("open source to restore mtime")
+            .set_times(std::fs::FileTimes::new().set_modified(original_mtime))
+            .expect("restore source mtime");
+        let second =
+            sqlite_preview_source_generation(&source).expect("capture replacement generation");
+
+        assert_ne!(
+            first, second,
+            "same-file identity, length, and restored mtime must not accept different SQLite bytes"
+        );
+
+        std::fs::remove_file(alias).expect("remove hard-link alias");
+        std::fs::remove_file(source).expect("remove SQLite fixture");
+    }
+
+    #[test]
     fn sqlite_preview_is_content_bound_and_generates_a_deterministic_metadata_card() {
         let sqlite = temp_path("projects.SQLITE");
         write_sqlite_fixture(&sqlite);
@@ -5328,6 +5365,10 @@ mod tests {
             render_sqlite_metadata_preview_png(&oversized, 128),
             Err(SqliteVisualError::InputTooLarge { .. })
         ));
+        assert!(
+            sqlite_preview_source_generation(&oversized).is_none(),
+            "oversized sources must not receive a cache or async-response generation"
+        );
 
         for path in [truncated, wal_dependent, oversized] {
             std::fs::remove_file(path).expect("remove SQLite fixture");

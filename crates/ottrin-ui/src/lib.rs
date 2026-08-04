@@ -77,7 +77,8 @@ pub use thumbnail_cache::clear_preview_cache_storage;
 use thumbnail_cache::{
     ImagePreviewCacheEntry, clear_preview_cache_dir, full_preview_bytes_at_page,
     load_cached_thumbnail, persist_cached_thumbnail, preview_cache_dir, preview_cache_key_for_page,
-    preview_cache_stats, prune_preview_cache_dir, thumbnail_bytes_from_cache_or_build,
+    preview_cache_key_for_page_with_sqlite_generation, preview_cache_stats,
+    prune_preview_cache_dir, thumbnail_bytes_from_cache_or_build,
 };
 use window_chrome::{
     WmBtn, cursor_icon_for_resize_direction, render_custom_titlebar, resize_direction_for_pos,
@@ -852,7 +853,8 @@ struct PreviewJobRequest {
     target_dim: u32,
     page_index: usize,
     cache_key: String,
-    sqlite_source_generation: Option<u64>,
+    sqlite_source_generation: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
+    request_id: u64,
     cache_max_bytes: u64,
 }
 
@@ -862,6 +864,8 @@ struct PreviewJobResponse {
     target_dim: u32,
     page_index: usize,
     cache_key: String,
+    sqlite_source_generation: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
+    request_id: u64,
     bytes: Option<Vec<u8>>,
 }
 
@@ -1371,6 +1375,8 @@ pub struct OttrinApp {
     preview_tx: Sender<PreviewJobRequest>,
     preview_rx: Receiver<PreviewJobResponse>,
     preview_inflight: HashSet<String>,
+    preview_request_ids: HashMap<String, u64>,
+    next_preview_request_id: u64,
     preview_budget_remaining: usize,
     preview_load_tx: mpsc::SyncSender<PreviewLoadRequest>,
     preview_load_rx: Receiver<PreviewLoadResponse>,
@@ -1550,15 +1556,21 @@ impl OttrinApp {
 
         std::thread::spawn(move || {
             while let Ok(req) = preview_req_rx.recv() {
-                let generation_is_current = req.cache_key
-                    == preview_cache_key_for_page(&req.path, req.target_dim, req.page_index);
                 let sqlite_candidate = ottrin_preview::is_sqlite_preview_candidate(&req.path);
+                let generation_is_current = req.cache_key
+                    == preview_cache_key_for_page_with_sqlite_generation(
+                        &req.path,
+                        req.target_dim,
+                        req.page_index,
+                        req.sqlite_source_generation.as_ref(),
+                    );
                 let selected_pdf_page = req.page_index > 0
                     && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
                 let bytes = if !generation_is_current
                     || (sqlite_candidate
-                        && req.sqlite_source_generation
-                            != ottrin_preview::sqlite_preview_source_generation(&req.path))
+                        && (req.sqlite_source_generation.is_none()
+                            || req.sqlite_source_generation
+                                != ottrin_preview::sqlite_preview_source_generation(&req.path)))
                 {
                     None
                 } else if sqlite_candidate {
@@ -1575,6 +1587,8 @@ impl OttrinApp {
                             target_dim: req.target_dim,
                             page_index: req.page_index,
                             cache_key: req.cache_key,
+                            sqlite_source_generation: req.sqlite_source_generation,
+                            request_id: req.request_id,
                             bytes: Some(cached),
                         });
                         continue;
@@ -1590,7 +1604,8 @@ impl OttrinApp {
                         );
                     match rendered {
                         Ok(rendered)
-                            if Some(rendered.source_generation) == req.sqlite_source_generation =>
+                            if Some(&rendered.source_generation)
+                                == req.sqlite_source_generation.as_ref() =>
                         {
                             if req.target_dim != PREVIEW_CACHE_ORIGINAL {
                                 persist_cached_thumbnail(
@@ -1636,6 +1651,8 @@ impl OttrinApp {
                     target_dim: req.target_dim,
                     page_index: req.page_index,
                     cache_key: req.cache_key,
+                    sqlite_source_generation: req.sqlite_source_generation,
+                    request_id: req.request_id,
                     bytes,
                 });
             }
@@ -1689,6 +1706,8 @@ impl OttrinApp {
             preview_tx: preview_req_tx,
             preview_rx: preview_res_rx,
             preview_inflight: HashSet::new(),
+            preview_request_ids: HashMap::new(),
+            next_preview_request_id: 0,
             preview_budget_remaining: PREVIEW_REQUESTS_PER_FRAME,
             preview_load_tx,
             preview_load_rx,
@@ -1915,20 +1934,31 @@ impl OttrinApp {
         } else {
             PREVIEW_CACHE_BUCKET_SMALL
         };
-        let cache_key = preview_cache_key_for_page(path, target_dim, page_index);
+        let sqlite_source_generation = ottrin_preview::is_sqlite_preview_candidate(path)
+            .then(|| ottrin_preview::sqlite_preview_source_generation(path))
+            .flatten();
+        let cache_key = preview_cache_key_for_page_with_sqlite_generation(
+            path,
+            target_dim,
+            page_index,
+            sqlite_source_generation.as_ref(),
+        );
         if !self.image_preview_cache.contains_key(&cache_key) {
             if !self.preview_inflight.contains(&cache_key) && self.preview_budget_remaining > 0 {
+                self.next_preview_request_id = self.next_preview_request_id.wrapping_add(1).max(1);
+                let request_id = self.next_preview_request_id;
                 let _ = self.preview_tx.send(PreviewJobRequest {
                     path: path.to_path_buf(),
                     target_dim,
                     page_index,
                     cache_key: cache_key.clone(),
-                    sqlite_source_generation: ottrin_preview::sqlite_preview_source_generation(
-                        path,
-                    ),
+                    sqlite_source_generation,
+                    request_id,
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
                 self.preview_inflight.insert(cache_key.clone());
+                self.preview_request_ids
+                    .insert(cache_key.clone(), request_id);
                 self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
             }
             return None;
@@ -1959,20 +1989,31 @@ impl OttrinApp {
                 page_index,
             );
         }
-        let cache_key = preview_cache_key_for_page(path, PREVIEW_CACHE_ORIGINAL, page_index);
+        let sqlite_source_generation = ottrin_preview::is_sqlite_preview_candidate(path)
+            .then(|| ottrin_preview::sqlite_preview_source_generation(path))
+            .flatten();
+        let cache_key = preview_cache_key_for_page_with_sqlite_generation(
+            path,
+            PREVIEW_CACHE_ORIGINAL,
+            page_index,
+            sqlite_source_generation.as_ref(),
+        );
         if !self.image_preview_cache.contains_key(&cache_key) {
             if !self.preview_inflight.contains(&cache_key) && self.preview_budget_remaining > 0 {
+                self.next_preview_request_id = self.next_preview_request_id.wrapping_add(1).max(1);
+                let request_id = self.next_preview_request_id;
                 let _ = self.preview_tx.send(PreviewJobRequest {
                     path: path.to_path_buf(),
                     target_dim: PREVIEW_CACHE_ORIGINAL,
                     page_index,
                     cache_key: cache_key.clone(),
-                    sqlite_source_generation: ottrin_preview::sqlite_preview_source_generation(
-                        path,
-                    ),
+                    sqlite_source_generation,
+                    request_id,
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
                 self.preview_inflight.insert(cache_key.clone());
+                self.preview_request_ids
+                    .insert(cache_key.clone(), request_id);
                 self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
             }
             return None;
@@ -2005,20 +2046,31 @@ impl OttrinApp {
                 page_index,
             );
         }
-        let cache_key = preview_cache_key_for_page(path, PREVIEW_CACHE_ORIGINAL, page_index);
+        let sqlite_source_generation = ottrin_preview::is_sqlite_preview_candidate(path)
+            .then(|| ottrin_preview::sqlite_preview_source_generation(path))
+            .flatten();
+        let cache_key = preview_cache_key_for_page_with_sqlite_generation(
+            path,
+            PREVIEW_CACHE_ORIGINAL,
+            page_index,
+            sqlite_source_generation.as_ref(),
+        );
         if !self.image_preview_cache.contains_key(&cache_key) {
             if !self.preview_inflight.contains(&cache_key) && self.preview_budget_remaining > 0 {
+                self.next_preview_request_id = self.next_preview_request_id.wrapping_add(1).max(1);
+                let request_id = self.next_preview_request_id;
                 let _ = self.preview_tx.send(PreviewJobRequest {
                     path: path.to_path_buf(),
                     target_dim: PREVIEW_CACHE_ORIGINAL,
                     page_index,
                     cache_key: cache_key.clone(),
-                    sqlite_source_generation: ottrin_preview::sqlite_preview_source_generation(
-                        path,
-                    ),
+                    sqlite_source_generation,
+                    request_id,
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
                 self.preview_inflight.insert(cache_key.clone());
+                self.preview_request_ids
+                    .insert(cache_key.clone(), request_id);
                 self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
             }
             return None;
@@ -5105,7 +5157,15 @@ impl OttrinApp {
     fn poll_preview_jobs(&mut self) -> bool {
         let mut changed = false;
         while let Ok(resp) = self.preview_rx.try_recv() {
-            self.preview_inflight.remove(&resp.cache_key);
+            let request_is_current =
+                self.preview_request_ids.get(&resp.cache_key) == Some(&resp.request_id);
+            if request_is_current {
+                self.preview_inflight.remove(&resp.cache_key);
+                self.preview_request_ids.remove(&resp.cache_key);
+            }
+            if !request_is_current {
+                continue;
+            }
             if !preview_response_matches_current_generation(&resp) {
                 continue;
             }
@@ -18467,6 +18527,21 @@ impl OttrinApp {
 }
 
 fn preview_response_matches_current_generation(response: &PreviewJobResponse) -> bool {
+    if ottrin_preview::is_sqlite_preview_candidate(&response.path) {
+        let Some(current_generation) =
+            ottrin_preview::sqlite_preview_source_generation(&response.path)
+        else {
+            return false;
+        };
+        return response.sqlite_source_generation.as_ref() == Some(&current_generation)
+            && response.cache_key
+                == preview_cache_key_for_page_with_sqlite_generation(
+                    &response.path,
+                    response.target_dim,
+                    response.page_index,
+                    Some(&current_generation),
+                );
+    }
     response.cache_key
         == preview_cache_key_for_page(&response.path, response.target_dim, response.page_index)
 }
@@ -20796,26 +20871,37 @@ mod tests {
                 .as_nanos()
         );
         let source = std::env::temp_dir().join(format!("ottrin-preview-response-{nonce}.sqlite"));
-        let replacement =
-            std::env::temp_dir().join(format!("ottrin-preview-response-next-{nonce}.sqlite"));
+        let alias =
+            std::env::temp_dir().join(format!("ottrin-preview-response-alias-{nonce}.sqlite"));
         std::fs::write(&source, b"SQLite format 3\0first-generation")
             .expect("write first preview generation");
+        let original_mtime = std::fs::metadata(&source)
+            .expect("read source metadata")
+            .modified()
+            .expect("read source mtime");
         let response = PreviewJobResponse {
             path: source.clone(),
             target_dim: 128,
             page_index: 0,
             cache_key: preview_cache_key_for_page(&source, 128, 0),
+            sqlite_source_generation: ottrin_preview::sqlite_preview_source_generation(&source),
+            request_id: 1,
             bytes: Some(b"first-generation-card".to_vec()),
         };
-        std::fs::write(&replacement, b"SQLite format 3\0next--generation")
-            .expect("write replacement preview generation");
-        std::fs::rename(&replacement, &source).expect("atomically replace preview generation");
+        std::fs::hard_link(&source, &alias).expect("create source hard-link alias");
+        std::fs::write(&alias, b"SQLite format 3\0next--generation")
+            .expect("replace preview bytes through hard-link alias");
+        std::fs::File::open(&source)
+            .expect("open source to restore mtime")
+            .set_times(std::fs::FileTimes::new().set_modified(original_mtime))
+            .expect("restore source mtime");
 
         assert!(
             !preview_response_matches_current_generation(&response),
-            "a response validated for the prior source generation must not be relabelled"
+            "an equal-size hard-link mutation with restored mtime must discard its prior response"
         );
 
+        std::fs::remove_file(alias).expect("remove hard-link alias");
         std::fs::remove_file(source).expect("remove replacement preview generation");
     }
 

@@ -60,6 +60,21 @@ pub(crate) fn preview_cache_key_for_page(
     target_dim: u32,
     page_index: usize,
 ) -> String {
+    preview_cache_key_for_page_with_sqlite_generation(path, target_dim, page_index, None)
+}
+
+pub(crate) fn preview_cache_key_for_page_with_sqlite_generation(
+    path: &Path,
+    target_dim: u32,
+    page_index: usize,
+    sqlite_source_generation: Option<&ottrin_preview::SqlitePreviewSourceGeneration>,
+) -> String {
+    if ottrin_preview::is_sqlite_preview_candidate(path) {
+        let generation = sqlite_source_generation
+            .cloned()
+            .or_else(|| ottrin_preview::sqlite_preview_source_generation(path));
+        return sqlite_preview_cache_key(target_dim, page_index, generation.as_ref());
+    }
     let mut hasher = DefaultHasher::new();
     path.hash(&mut hasher);
     if let Ok(meta) = std::fs::metadata(path) {
@@ -83,6 +98,21 @@ pub(crate) fn preview_cache_key_for_page(
     target_dim.hash(&mut hasher);
     page_index.hash(&mut hasher);
     format!("{:016x}_{}.png", hasher.finish(), target_dim)
+}
+
+fn sqlite_preview_cache_key(
+    target_dim: u32,
+    page_index: usize,
+    source_generation: Option<&ottrin_preview::SqlitePreviewSourceGeneration>,
+) -> String {
+    let generation = source_generation
+        .map(|generation| hex_digest(generation.as_bytes()))
+        .unwrap_or_else(|| "unavailable".to_string());
+    format!("sqlite-v1-{generation}-{target_dim}-{page_index}.png")
+}
+
+fn hex_digest(digest: &[u8]) -> String {
+    digest.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 fn hash_folder_collage_inputs(path: &Path, hasher: &mut impl Hasher) {
@@ -1045,6 +1075,44 @@ mod tests {
         );
 
         std::fs::remove_file(source).expect("remove replacement source");
+    }
+
+    #[test]
+    fn sqlite_cache_key_changes_after_equal_size_hard_link_write_with_restored_mtime() {
+        let nonce = format!(
+            "{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system clock after epoch")
+                .as_nanos()
+        );
+        let source = std::env::temp_dir().join(format!("ottrin-key-{nonce}.sqlite"));
+        let alias = std::env::temp_dir().join(format!("ottrin-key-alias-{nonce}.sqlite"));
+        std::fs::write(&source, b"SQLite format 3\0first-generation")
+            .expect("write first SQLite generation");
+        let original_mtime = std::fs::metadata(&source)
+            .expect("read source metadata")
+            .modified()
+            .expect("read source mtime");
+        let first = preview_cache_key_for_page(&source, 128, 0);
+
+        std::fs::hard_link(&source, &alias).expect("create hard-link alias");
+        std::fs::write(&alias, b"SQLite format 3\0next--generation")
+            .expect("replace bytes through hard-link alias");
+        std::fs::File::open(&source)
+            .expect("open source to restore mtime")
+            .set_times(std::fs::FileTimes::new().set_modified(original_mtime))
+            .expect("restore source mtime");
+        let second = preview_cache_key_for_page(&source, 128, 0);
+
+        assert_ne!(
+            first, second,
+            "cache keys must include the full snapshot fingerprint, not object identity"
+        );
+
+        std::fs::remove_file(alias).expect("remove hard-link alias");
+        std::fs::remove_file(source).expect("remove SQLite fixture");
     }
 
     #[test]
