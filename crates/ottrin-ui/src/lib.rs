@@ -746,6 +746,42 @@ struct ColumnState {
     dir: PathBuf,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum MillerPointerReveal {
+    /// A history/parent navigation must wait for the matching listing request
+    /// before its destination column can be considered rendered.
+    Navigation {
+        destination: PathBuf,
+        main_request_id: u64,
+    },
+    /// Selecting a folder in an already-rendered column targets its preview
+    /// column directly; it does not depend on a main-listing generation.
+    Selection { destination: PathBuf },
+}
+
+impl MillerPointerReveal {
+    fn destination(&self) -> &Path {
+        match self {
+            Self::Navigation { destination, .. } | Self::Selection { destination } => destination,
+        }
+    }
+
+    fn destination_is_ready(&self, current_dir: &Path, main: &ColumnState) -> bool {
+        match self {
+            Self::Navigation {
+                destination,
+                main_request_id,
+            } => {
+                current_dir == destination
+                    && main.dir == *destination
+                    && main.request_id == *main_request_id
+                    && !main.loading
+            }
+            Self::Selection { .. } => true,
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 struct TabUiState {
     // Three columns for Miller view; main is also used for List/Grid
@@ -778,8 +814,8 @@ struct TabUiState {
     miller_focus_hint: Option<MillerFocusHint>,
     // One-shot: ensure active row is scrolled into view after keyboard move.
     miller_scroll_selected: bool,
-    // One-shot: reveal the selected folder's child column after pointer navigation.
-    miller_reveal_pointer_selection: bool,
+    // One-shot pointer reveal, scoped to a destination and (for navigation) listing generation.
+    miller_pointer_reveal: Option<MillerPointerReveal>,
     // How many preview columns past current_dir are allowed.
     // Up/Down → 1, Left → increment, Right → decrement (min 1).
     miller_preview_depth: usize,
@@ -789,6 +825,14 @@ struct TabUiState {
     miller_h_offset: f32,
     // Column scroll ids (must be stable)
     scroll_epoch: u64, // bump to reset scroll on navigation
+}
+
+#[cfg_attr(not(test), allow(dead_code))]
+#[derive(Debug, Clone)]
+struct LocationsRailLayout {
+    allocated_rect: Rect,
+    painted_rect: Rect,
+    input_rects: Vec<Rect>,
 }
 
 #[derive(Debug, Clone)]
@@ -5635,13 +5679,29 @@ impl OttrinApp {
     }
 
     fn request_miller_pointer_reveal(&mut self, tab_id: u64) {
+        let destination = self
+            .state
+            .tab_by_id(tab_id)
+            .filter(|tab| matches!(tab.view_mode, ViewMode::Miller))
+            .map(|tab| tab.current_dir.clone());
+        if let Some(destination) = destination {
+            let ui_state = self.tab_ui.entry(tab_id).or_default();
+            ui_state.miller_pointer_reveal = Some(MillerPointerReveal::Navigation {
+                destination,
+                main_request_id: ui_state.main.request_id,
+            });
+            ui_state.miller_scroll_selected = true;
+        }
+    }
+
+    fn request_miller_pointer_selection_reveal(&mut self, tab_id: u64, destination: PathBuf) {
         if self
             .state
             .tab_by_id(tab_id)
             .is_some_and(|tab| matches!(tab.view_mode, ViewMode::Miller))
         {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
-            ui_state.miller_reveal_pointer_selection = true;
+            ui_state.miller_pointer_reveal = Some(MillerPointerReveal::Selection { destination });
             ui_state.miller_scroll_selected = true;
         }
     }
@@ -9937,7 +9997,7 @@ impl OttrinApp {
     }
 
     /// Compact, collapsible locations rail (home, quick links, discovered storage).
-    fn render_bookmarks_row(&mut self, ctx: &Context) {
+    fn render_bookmarks_row(&mut self, ctx: &Context) -> LocationsRailLayout {
         let c = self.colors;
         let home = default_home_dir();
         let storage_roots = discover_storage_locations();
@@ -9965,6 +10025,7 @@ impl OttrinApp {
         let mut navigate_to: Option<PathBuf> = None;
         let mut remove_idx: Option<usize> = None;
         let mut volume_index_action: Option<(String, PathBuf, bool)> = None;
+        let mut input_rects = Vec::new();
 
         let displayed_path = self.displayed_path();
         let rail_w = self.locations_rail_width();
@@ -9980,7 +10041,7 @@ impl OttrinApp {
             MI_LEFT_PANEL_OPEN
         };
 
-        egui::SidePanel::left("locations_rail")
+        let rail = egui::SidePanel::left("locations_rail")
             .resizable(false)
             .exact_width(rail_w)
             .show_separator_line(false)
@@ -10010,6 +10071,7 @@ impl OttrinApp {
                     .on_hover_text(toggle_tooltip);
                 toggle_response
                     .widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, toggle_tooltip));
+                input_rects.push(toggle_response.rect);
                 if toggle_response.clicked() {
                     self.locations_rail_expanded = !self.locations_rail_expanded;
                 }
@@ -10071,6 +10133,7 @@ impl OttrinApp {
                         locations_rail_accessibility_label(name, &path, volume_index_status);
                     let resp =
                         ui.add_sized(Vec2::new(tile_w, if expanded { 42.0 } else { 36.0 }), btn);
+                    input_rects.push(resp.rect);
                     resp.widget_info(|| {
                         WidgetInfo::labeled(WidgetType::Button, true, accessibility_label.clone())
                     });
@@ -10178,6 +10241,13 @@ impl OttrinApp {
                 .update_config(self.state.config.search.clone());
             self.search_service.rebuild_index();
             self.persist_config();
+        }
+
+        LocationsRailLayout {
+            allocated_rect: rail.response.rect,
+            // The SidePanel frame fills exactly the panel response rect.
+            painted_rect: rail.response.rect,
+            input_rects,
         }
     }
 
@@ -14200,6 +14270,15 @@ impl OttrinApp {
         let mut open_tandem_now: Option<PathBuf> = None;
         let mut add_bookmark: Option<PathBuf> = None;
         let mut remove_bookmark: Option<PathBuf> = None;
+        let pointer_reveal = self
+            .tab_ui
+            .get(&tab_id)
+            .and_then(|ui_state| ui_state.miller_pointer_reveal.clone());
+        let pointer_reveal_ready = pointer_reveal.as_ref().is_some_and(|reveal| {
+            self.tab_ui
+                .get(&tab_id)
+                .is_some_and(|ui_state| reveal.destination_is_ready(&current_dir, &ui_state.main))
+        });
         let (cols, current_col) = self.build_miller_model(tab_id, self.miller_col_count);
         if cols.is_empty() {
             return;
@@ -14230,10 +14309,13 @@ impl OttrinApp {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
             std::mem::take(&mut ui_state.miller_scroll_selected)
         };
-        let pointer_reveal = self
-            .tab_ui
-            .get(&tab_id)
-            .is_some_and(|ui_state| ui_state.miller_reveal_pointer_selection);
+        let pointer_reveal_col = pointer_reveal
+            .as_ref()
+            .filter(|_| pointer_reveal_ready)
+            .and_then(|reveal| {
+                cols.iter()
+                    .position(|column| column.dir == reveal.destination())
+            });
         let mut pointer_reveal_completed = false;
 
         // File preview is based on the FOCUS column's selection.
@@ -14373,8 +14455,8 @@ impl OttrinApp {
                                             width,
                                             &c,
                                         );
-                                        if (scroll_selected || pointer_reveal)
-                                            && col_idx == focus_col
+                                        if (scroll_selected && col_idx == focus_col
+                                            || pointer_reveal_col == Some(col_idx))
                                             && selected
                                         {
                                             let row_smooth = ScrollAnimation {
@@ -14386,9 +14468,6 @@ impl OttrinApp {
                                                 Some(egui::Align::Center),
                                                 row_smooth,
                                             );
-                                            if pointer_reveal {
-                                                pointer_reveal_completed = true;
-                                            }
                                         }
                                         if Self::row_pointer_selects(
                                             resp.clicked(),
@@ -14435,14 +14514,10 @@ impl OttrinApp {
                                                     EntryKind::Directory | EntryKind::Symlink
                                                 )
                                             {
-                                                self.tab_ui
-                                                    .entry(tab_id)
-                                                    .or_default()
-                                                    .miller_reveal_pointer_selection = true;
-                                                self.tab_ui
-                                                    .entry(tab_id)
-                                                    .or_default()
-                                                    .miller_scroll_selected = true;
+                                                self.request_miller_pointer_selection_reveal(
+                                                    tab_id,
+                                                    entry.path.clone(),
+                                                );
                                             }
                                             ui.ctx().request_repaint();
                                         }
@@ -14491,21 +14566,23 @@ impl OttrinApp {
                     );
                     let rect = inner.response.rect;
 
-                    if col_idx == focus_col {
+                    if col_idx == focus_col || pointer_reveal_col == Some(col_idx) {
                         let clip = ui.clip_rect();
                         let smooth = ScrollAnimation {
                             points_per_second: 600.0,
                             duration: Rangef::new(0.15, 0.4),
                         };
                         // Left/Backspace: scroll left if focus is off the left edge.
-                        if scroll_left_nav && rect.left() < clip.left() {
+                        if col_idx == focus_col && scroll_left_nav && rect.left() < clip.left() {
                             ui.scroll_to_rect_animation(rect, Some(egui::Align::LEFT), smooth);
                         }
                         // Right/Enter: ALWAYS ensure focus + 1 column is
                         // visible.  The user must never be in the rightmost
                         // visible column.
-                        if Self::miller_should_reveal_focus_column(scroll_right_nav, pointer_reveal)
-                        {
+                        if Self::miller_should_reveal_focus_column(
+                            col_idx == focus_col && scroll_right_nav,
+                            pointer_reveal_col == Some(col_idx),
+                        ) {
                             let col_w =
                                 (MILLER_FIXED_WIDTH * scale.clamp(0.92, 1.22)).clamp(96.0, 620.0);
                             let needed_right = rect.max.x + col_w;
@@ -14521,7 +14598,7 @@ impl OttrinApp {
                                 );
                             }
                         }
-                        if pointer_reveal && col.entries.is_empty() {
+                        if pointer_reveal_col == Some(col_idx) && col.error.is_none() {
                             pointer_reveal_completed = true;
                         }
                     }
@@ -14620,10 +14697,7 @@ impl OttrinApp {
             self.tab_ui.entry(tab_id).or_default().miller_h_offset = sa_output.state.offset.x;
         }
         if pointer_reveal_completed {
-            self.tab_ui
-                .entry(tab_id)
-                .or_default()
-                .miller_reveal_pointer_selection = false;
+            self.tab_ui.entry(tab_id).or_default().miller_pointer_reveal = None;
         }
 
         if let Some(cmd) = pending_op {
@@ -22354,8 +22428,73 @@ mod tests {
         app.request_miller_pointer_reveal(tab_id);
 
         let ui_state = app.tab_ui.get(&tab_id).expect("active tab UI state");
-        assert!(ui_state.miller_reveal_pointer_selection);
+        assert!(ui_state.miller_pointer_reveal.is_some());
         assert!(ui_state.miller_scroll_selected);
+    }
+
+    #[test]
+    fn pointer_history_reveal_waits_for_the_destination_listing_then_expires_without_selection() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-pointer-reveal-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        let source = root.join("source");
+        let destination = root.join("destination");
+        std::fs::create_dir_all(&source).expect("create source fixture");
+        std::fs::create_dir_all(&destination).expect("create destination fixture");
+        std::fs::write(destination.join("later-unrelated.txt"), "present")
+            .expect("seed nonempty destination");
+
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        {
+            let tab = app.state.tab_by_id_mut(tab_id).expect("active tab");
+            tab.view_mode = ViewMode::Miller;
+            tab.current_dir = source.clone();
+            tab.history_back.push(destination.clone());
+        }
+        assert!(app.pointer_navigate(tab_id, PointerNavigation::Back));
+
+        let render_miller_frame = |app: &mut OttrinApp| {
+            let ctx = Context::default();
+            let input = egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::pos2(0.0, 0.0),
+                    Vec2::new(800.0, 600.0),
+                )),
+                ..Default::default()
+            };
+            let _ = ctx.run(input, |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+            });
+        };
+
+        render_miller_frame(&mut app);
+        assert!(
+            app.tab_ui
+                .get(&tab_id)
+                .is_some_and(|ui| ui.miller_pointer_reveal.is_some()),
+            "a destination that is still loading must retain its reveal request"
+        );
+
+        app.tab_ui
+            .get_mut(&tab_id)
+            .expect("destination UI state")
+            .main
+            .loading = false;
+        render_miller_frame(&mut app);
+        assert!(
+            app.tab_ui
+                .get(&tab_id)
+                .is_some_and(|ui| ui.miller_pointer_reveal.is_none()),
+            "a loaded nonempty destination with no restored selection must consume its reveal before a later selection can use it"
+        );
+
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]
@@ -22389,19 +22528,16 @@ mod tests {
 
         assert!(app.pointer_navigate(left_id, PointerNavigation::Back));
         let left_ui = app.tab_ui.get(&left_id).expect("left tab UI state");
-        assert!(left_ui.miller_reveal_pointer_selection);
+        assert!(left_ui.miller_pointer_reveal.is_some());
         assert!(left_ui.miller_scroll_selected);
         assert!(
             app.tab_ui
                 .get(&right_id)
-                .is_none_or(|ui| !ui.miller_reveal_pointer_selection && !ui.miller_scroll_selected),
+                .is_none_or(|ui| ui.miller_pointer_reveal.is_none() && !ui.miller_scroll_selected),
             "a Tandem navigation action must not leak reveal state into the opposite pane"
         );
 
-        app.tab_ui
-            .entry(left_id)
-            .or_default()
-            .miller_reveal_pointer_selection = false;
+        app.tab_ui.entry(left_id).or_default().miller_pointer_reveal = None;
         app.tab_ui
             .entry(left_id)
             .or_default()
@@ -22410,13 +22546,10 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&left_id)
-                .is_some_and(|ui| ui.miller_reveal_pointer_selection && ui.miller_scroll_selected)
+                .is_some_and(|ui| ui.miller_pointer_reveal.is_some() && ui.miller_scroll_selected)
         );
 
-        app.tab_ui
-            .entry(left_id)
-            .or_default()
-            .miller_reveal_pointer_selection = false;
+        app.tab_ui.entry(left_id).or_default().miller_pointer_reveal = None;
         app.tab_ui
             .entry(left_id)
             .or_default()
@@ -22425,13 +22558,10 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&left_id)
-                .is_some_and(|ui| ui.miller_reveal_pointer_selection && ui.miller_scroll_selected)
+                .is_some_and(|ui| ui.miller_pointer_reveal.is_some() && ui.miller_scroll_selected)
         );
 
-        app.tab_ui
-            .entry(left_id)
-            .or_default()
-            .miller_reveal_pointer_selection = false;
+        app.tab_ui.entry(left_id).or_default().miller_pointer_reveal = None;
         app.tab_ui
             .entry(left_id)
             .or_default()
@@ -22440,7 +22570,7 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&left_id)
-                .is_some_and(|ui| !ui.miller_reveal_pointer_selection && !ui.miller_scroll_selected),
+                .is_some_and(|ui| ui.miller_pointer_reveal.is_none() && !ui.miller_scroll_selected),
             "failed history navigation must not leave a stale pointer-reveal request"
         );
     }
@@ -22457,16 +22587,15 @@ mod tests {
             PointerNavigation::Forward,
             PointerNavigation::Up,
         ] {
-            app.tab_ui
-                .entry(tab_id)
-                .or_default()
-                .miller_reveal_pointer_selection = false;
+            app.tab_ui.entry(tab_id).or_default().miller_pointer_reveal = None;
             app.tab_ui.entry(tab_id).or_default().miller_scroll_selected = false;
 
             assert!(!app.pointer_navigate(tab_id, navigation));
-            assert!(app.tab_ui.get(&tab_id).is_some_and(
-                |ui| !ui.miller_reveal_pointer_selection && !ui.miller_scroll_selected
-            ));
+            assert!(
+                app.tab_ui.get(&tab_id).is_some_and(
+                    |ui| ui.miller_pointer_reveal.is_none() && !ui.miller_scroll_selected
+                )
+            );
         }
     }
 
@@ -22480,21 +22609,18 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&tab_id)
-                .is_some_and(|ui| ui.miller_reveal_pointer_selection && ui.miller_scroll_selected)
+                .is_some_and(|ui| ui.miller_pointer_reveal.is_some() && ui.miller_scroll_selected)
         );
 
         for mode in [ViewMode::List, ViewMode::Grid] {
             app.state.active_tab_mut().view_mode = mode;
             app.state.active_tab_mut().current_dir = default_home_dir();
-            app.tab_ui
-                .entry(tab_id)
-                .or_default()
-                .miller_reveal_pointer_selection = false;
+            app.tab_ui.entry(tab_id).or_default().miller_pointer_reveal = None;
             app.tab_ui.entry(tab_id).or_default().miller_scroll_selected = false;
             assert!(app.pointer_navigate(tab_id, PointerNavigation::Up));
             assert!(
                 app.tab_ui.get(&tab_id).is_none_or(
-                    |ui| !ui.miller_reveal_pointer_selection && !ui.miller_scroll_selected
+                    |ui| ui.miller_pointer_reveal.is_none() && !ui.miller_scroll_selected
                 ),
                 "{mode:?} pointer navigation must not schedule a Miller reveal"
             );
@@ -23004,51 +23130,90 @@ mod tests {
     }
 
     #[test]
-    fn locations_rail_and_canvas_share_an_exact_egui_boundary() {
-        for viewport in [
+    fn locations_rail_and_single_file_canvas_share_real_layout_without_input_leaks() {
+        fn render_production_layout(
+            app: &mut OttrinApp,
+            ctx: &Context,
+            viewport: Vec2,
+            events: Vec<egui::Event>,
+        ) -> (LocationsRailLayout, Rect) {
+            let input = egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(egui::pos2(0.0, 0.0), viewport)),
+                events,
+                ..Default::default()
+            };
+            let mut rail_layout = None;
+            let _ = ctx.run(input, |ctx| {
+                rail_layout = Some(app.render_bookmarks_row(ctx));
+                app.render_single_file_pane(ctx);
+            });
+            (
+                rail_layout.expect("production locations rail layout"),
+                app.file_pane_rect
+                    .expect("production single-file canvas rect"),
+            )
+        }
+
+        let viewports = [
             Vec2::new(800.0, 600.0),
             Vec2::new(1024.0, 680.0),
             Vec2::new(1440.0, 900.0),
-        ] {
-            for (rail_width, expanded) in [(44.0, false), (214.0, true)] {
-                let ctx = Context::default();
-                let input = egui::RawInput {
-                    screen_rect: Some(Rect::from_min_size(egui::pos2(0.0, 0.0), viewport)),
-                    ..Default::default()
-                };
-                let mut rail_rect = None;
-                let mut canvas_rect = None;
-
-                let _ = ctx.run(input, |ctx| {
-                    let rail = egui::SidePanel::left("locations_rail_geometry_test")
-                        .resizable(false)
-                        .exact_width(rail_width)
-                        .show_separator_line(false)
-                        .frame(
-                            Frame::new().inner_margin(egui::Margin::symmetric(
-                                if expanded { 8 } else { 3 },
-                                6,
-                            )),
-                        )
-                        .show(ctx, |ui| {
-                            let tile_width = ui.available_width();
-                            ui.add_sized(Vec2::new(tile_width, 28.0), egui::Button::new("rail"));
-                        });
-                    rail_rect = Some(rail.response.rect);
-                    canvas_rect = Some(
-                        egui::CentralPanel::default()
-                            .show(ctx, |_| {})
-                            .response
-                            .rect,
-                    );
-                });
-
-                let rail_rect = rail_rect.expect("rail response");
-                let canvas_rect = canvas_rect.expect("canvas response");
-                assert_eq!(rail_rect.width(), rail_width);
-                assert_eq!(canvas_rect.min.x, rail_rect.max.x);
+            Vec2::new(252.0, 240.0),
+        ];
+        for expanded in [false, true] {
+            let ctx = Context::default();
+            let mut app = OttrinApp::default();
+            app.locations_rail_expanded = expanded;
+            for viewport in viewports {
+                let (rail, canvas) = render_production_layout(&mut app, &ctx, viewport, Vec::new());
+                assert_eq!(rail.allocated_rect.width(), app.locations_rail_width());
+                assert_eq!(rail.painted_rect, rail.allocated_rect);
+                assert_eq!(canvas.min.x, rail.allocated_rect.max.x);
+                assert!(
+                    rail.input_rects
+                        .iter()
+                        .all(|rect| rail.allocated_rect.contains_rect(*rect)),
+                    "all Locations controls must be clipped inside the production rail at {viewport:?}"
+                );
+                assert!(
+                    rail.input_rects.iter().all(|rect| !rect.intersects(canvas)),
+                    "no Locations input surface may overlap the production file canvas at {viewport:?}"
+                );
             }
         }
+
+        let ctx = Context::default();
+        let mut app = OttrinApp::default();
+        let viewport = Vec2::new(1024.0, 680.0);
+        let (collapsed, _) = render_production_layout(&mut app, &ctx, viewport, Vec::new());
+        let toggle = collapsed.input_rects.first().expect("rail toggle").center();
+        let _ = render_production_layout(
+            &mut app,
+            &ctx,
+            viewport,
+            vec![
+                egui::Event::PointerMoved(toggle),
+                egui::Event::PointerButton {
+                    pos: toggle,
+                    button: egui::PointerButton::Primary,
+                    pressed: true,
+                    modifiers: egui::Modifiers::NONE,
+                },
+                egui::Event::PointerButton {
+                    pos: toggle,
+                    button: egui::PointerButton::Primary,
+                    pressed: false,
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ],
+        );
+        let (expanded, canvas) = render_production_layout(&mut app, &ctx, viewport, Vec::new());
+        assert!(
+            app.locations_rail_expanded,
+            "the production toggle must expand the rail"
+        );
+        assert_eq!(expanded.allocated_rect.width(), 214.0);
+        assert_eq!(canvas.min.x, expanded.allocated_rect.max.x);
     }
 
     #[test]
