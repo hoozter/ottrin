@@ -2771,6 +2771,7 @@ dependencies = [
  "quick-xml",
  "resvg",
  "rusqlite",
+ "same-file",
  "serde",
  "tar",
  "thiserror 2.0.18",

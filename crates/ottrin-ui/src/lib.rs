@@ -852,6 +852,7 @@ struct PreviewJobRequest {
     target_dim: u32,
     page_index: usize,
     cache_key: String,
+    sqlite_source_generation: Option<u64>,
     cache_max_bytes: u64,
 }
 
@@ -1551,10 +1552,60 @@ impl OttrinApp {
             while let Ok(req) = preview_req_rx.recv() {
                 let generation_is_current = req.cache_key
                     == preview_cache_key_for_page(&req.path, req.target_dim, req.page_index);
+                let sqlite_candidate = ottrin_preview::is_sqlite_preview_candidate(&req.path);
                 let selected_pdf_page = req.page_index > 0
                     && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
-                let bytes = if !generation_is_current {
+                let bytes = if !generation_is_current
+                    || (sqlite_candidate
+                        && req.sqlite_source_generation
+                            != ottrin_preview::sqlite_preview_source_generation(&req.path))
+                {
                     None
+                } else if sqlite_candidate {
+                    if req.target_dim != PREVIEW_CACHE_ORIGINAL
+                        && let Some(cached) = load_cached_thumbnail(
+                            &req.path,
+                            req.target_dim,
+                            req.page_index,
+                            &req.cache_key,
+                        )
+                    {
+                        let _ = preview_res_tx.send(PreviewJobResponse {
+                            path: req.path,
+                            target_dim: req.target_dim,
+                            page_index: req.page_index,
+                            cache_key: req.cache_key,
+                            bytes: Some(cached),
+                        });
+                        continue;
+                    }
+                    let rendered =
+                        ottrin_preview::render_sqlite_metadata_preview_png_with_generation(
+                            &req.path,
+                            if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                                PREVIEW_CACHE_BUCKET_XL
+                            } else {
+                                req.target_dim
+                            },
+                        );
+                    match rendered {
+                        Ok(rendered)
+                            if Some(rendered.source_generation) == req.sqlite_source_generation =>
+                        {
+                            if req.target_dim != PREVIEW_CACHE_ORIGINAL {
+                                persist_cached_thumbnail(
+                                    &req.path,
+                                    req.target_dim,
+                                    req.page_index,
+                                    &req.cache_key,
+                                    &rendered.png,
+                                    req.cache_max_bytes,
+                                );
+                            }
+                            Some(rendered.png)
+                        }
+                        _ => None,
+                    }
                 } else if req.target_dim == PREVIEW_CACHE_ORIGINAL || selected_pdf_page {
                     full_preview_bytes_at_page(&req.path, PREVIEW_CACHE_BUCKET_XL, req.page_index)
                 } else {
@@ -1872,6 +1923,9 @@ impl OttrinApp {
                     target_dim,
                     page_index,
                     cache_key: cache_key.clone(),
+                    sqlite_source_generation: ottrin_preview::sqlite_preview_source_generation(
+                        path,
+                    ),
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
                 self.preview_inflight.insert(cache_key.clone());
@@ -1913,6 +1967,9 @@ impl OttrinApp {
                     target_dim: PREVIEW_CACHE_ORIGINAL,
                     page_index,
                     cache_key: cache_key.clone(),
+                    sqlite_source_generation: ottrin_preview::sqlite_preview_source_generation(
+                        path,
+                    ),
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
                 self.preview_inflight.insert(cache_key.clone());
@@ -1956,6 +2013,9 @@ impl OttrinApp {
                     target_dim: PREVIEW_CACHE_ORIGINAL,
                     page_index,
                     cache_key: cache_key.clone(),
+                    sqlite_source_generation: ottrin_preview::sqlite_preview_source_generation(
+                        path,
+                    ),
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
                 self.preview_inflight.insert(cache_key.clone());

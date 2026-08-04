@@ -5,6 +5,7 @@ use rusqlite::limits::Limit;
 use rusqlite::serialize::OwnedData;
 use rusqlite::{Connection, DatabaseName, OpenFlags};
 use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
 use std::io::{Cursor, Read};
 use std::path::Path;
 use std::path::PathBuf;
@@ -391,6 +392,24 @@ pub enum SqliteVisualError {
     Query(String),
     #[error("could not encode SQLite metadata card: {0}")]
     Encode(String),
+}
+
+/// A bounded SQLite card paired with the identity captured from the same open
+/// source handle that supplied its snapshot.
+#[derive(Debug)]
+pub struct RenderedSqlitePreview {
+    pub png: Vec<u8>,
+    pub source_generation: u64,
+}
+
+struct SqliteSourceSnapshot {
+    bytes: Vec<u8>,
+    source_generation: u64,
+}
+
+struct SqliteInspection {
+    metadata: SqliteMetadata,
+    source_generation: u64,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -812,8 +831,18 @@ pub fn render_sqlite_metadata_preview_png(
     path: &Path,
     target_dim: u32,
 ) -> Result<Vec<u8>, SqliteVisualError> {
-    let metadata = inspect_sqlite_metadata(path)?;
-    let text = metadata.card_text()?;
+    Ok(render_sqlite_metadata_preview_png_with_generation(path, target_dim)?.png)
+}
+
+/// Renders a SQLite card with the identity captured from the exact file
+/// handle used for its bounded snapshot. Queueing callers must compare this
+/// generation to the one they requested before accepting the card.
+pub fn render_sqlite_metadata_preview_png_with_generation(
+    path: &Path,
+    target_dim: u32,
+) -> Result<RenderedSqlitePreview, SqliteVisualError> {
+    let inspection = inspect_sqlite_snapshot(path)?;
+    let text = inspection.metadata.card_text()?;
     let dimension = target_dim.clamp(64, MAX_SQLITE_PREVIEW_DIMENSION);
     if u64::from(dimension).saturating_mul(u64::from(dimension)) > MAX_SQLITE_PREVIEW_PIXELS {
         return Err(SqliteVisualError::Encode(
@@ -858,20 +887,27 @@ pub fn render_sqlite_metadata_preview_png(
             image::ExtendedColorType::Rgba8,
         )
         .map_err(|error: image::ImageError| SqliteVisualError::Encode(error.to_string()))?;
-    Ok(png)
+    Ok(RenderedSqlitePreview {
+        png,
+        source_generation: inspection.source_generation,
+    })
 }
 
 fn inspect_sqlite_metadata(path: &Path) -> Result<SqliteMetadata, SqliteVisualError> {
+    Ok(inspect_sqlite_snapshot(path)?.metadata)
+}
+
+fn inspect_sqlite_snapshot(path: &Path) -> Result<SqliteInspection, SqliteVisualError> {
     if !is_sqlite_preview_candidate(path) {
         return Err(SqliteVisualError::UnsupportedFormat);
     }
     let source = read_bounded_sqlite_snapshot(path)?;
     if sqlite_extension(path).as_deref() == Some("db")
-        && source.get(..16) != Some(b"SQLite format 3\0")
+        && source.bytes.get(..16) != Some(b"SQLite format 3\0")
     {
         return Err(SqliteVisualError::UnsupportedFormat);
     }
-    validate_sqlite_header(&source)?;
+    validate_sqlite_header(&source.bytes)?;
 
     let mut connection = Connection::open_in_memory_with_flags(
         OpenFlags::SQLITE_OPEN_READ_WRITE
@@ -881,7 +917,7 @@ fn inspect_sqlite_metadata(path: &Path) -> Result<SqliteMetadata, SqliteVisualEr
     .map_err(|error| SqliteVisualError::Snapshot(error.to_string()))?;
     configure_sqlite_preview_connection(&connection)?;
     connection
-        .deserialize(DatabaseName::Main, sqlite_owned_data(source)?, true)
+        .deserialize(DatabaseName::Main, sqlite_owned_data(source.bytes)?, true)
         .map_err(|error| SqliteVisualError::Snapshot(error.to_string()))?;
     connection
         .set_db_config(DbConfig::SQLITE_DBCONFIG_DEFENSIVE, true)
@@ -943,7 +979,10 @@ fn inspect_sqlite_metadata(path: &Path) -> Result<SqliteMetadata, SqliteVisualEr
     connection.authorizer(None::<fn(rusqlite::hooks::AuthContext<'_>) -> Authorization>);
     connection.progress_handler(0, None::<fn() -> bool>);
     (callbacks.load(Ordering::Relaxed) <= MAX_SQLITE_PROGRESS_CALLBACKS)
-        .then_some(metadata)
+        .then_some(SqliteInspection {
+            metadata,
+            source_generation: source.source_generation,
+        })
         .ok_or_else(|| {
             SqliteVisualError::SchemaBounds("schema query exceeded progress limit".into())
         })
@@ -974,13 +1013,31 @@ fn configure_sqlite_preview_connection(connection: &Connection) -> Result<(), Sq
     Ok(())
 }
 
-fn read_bounded_sqlite_snapshot(path: &Path) -> Result<Vec<u8>, SqliteVisualError> {
+/// Returns the stable source identity used by SQLite preview snapshots.
+pub fn sqlite_preview_source_generation(path: &Path) -> Option<u64> {
+    let file = std::fs::File::open(path).ok()?;
+    sqlite_source_generation(&file).ok()
+}
+
+fn sqlite_source_generation(file: &std::fs::File) -> Result<u64, SqliteVisualError> {
+    let identity = same_file::Handle::from_file(
+        file.try_clone()
+            .map_err(|error| SqliteVisualError::InputMetadata(error.to_string()))?,
+    )
+    .map_err(|error| SqliteVisualError::InputMetadata(error.to_string()))?;
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    identity.hash(&mut hasher);
+    Ok(hasher.finish())
+}
+
+fn read_bounded_sqlite_snapshot(path: &Path) -> Result<SqliteSourceSnapshot, SqliteVisualError> {
     let mut file = std::fs::File::open(path)
         .map_err(|error| SqliteVisualError::InputMetadata(error.to_string()))?;
     let input_size = file
         .metadata()
         .map_err(|error| SqliteVisualError::InputMetadata(error.to_string()))?
         .len();
+    let source_generation = sqlite_source_generation(&file)?;
     if input_size > MAX_SQLITE_PREVIEW_BYTES {
         return Err(SqliteVisualError::InputTooLarge {
             actual: input_size,
@@ -1009,7 +1066,10 @@ fn read_bounded_sqlite_snapshot(path: &Path) -> Result<Vec<u8>, SqliteVisualErro
     if source.len() as u64 != input_size || final_size != input_size {
         return Err(SqliteVisualError::InputChanged);
     }
-    Ok(source)
+    Ok(SqliteSourceSnapshot {
+        bytes: source,
+        source_generation,
+    })
 }
 
 fn validate_sqlite_header(source: &[u8]) -> Result<(), SqliteVisualError> {
@@ -5219,6 +5279,12 @@ mod tests {
         assert_eq!(first, second, "SQLite cards must be cacheable");
         let image = image::load_from_memory(&first).expect("decode SQLite card");
         assert!(image.width() <= 256 && image.height() <= 256);
+        let expected_generation =
+            sqlite_preview_source_generation(&sqlite).expect("capture source generation");
+        let rendered = render_sqlite_metadata_preview_png_with_generation(&sqlite, 256)
+            .expect("SQLite card with source generation");
+        assert_eq!(rendered.source_generation, expected_generation);
+        assert_eq!(rendered.png, first);
 
         let verified_db = temp_path("projects.Db");
         std::fs::copy(&sqlite, &verified_db).expect("copy content-verified .db");
