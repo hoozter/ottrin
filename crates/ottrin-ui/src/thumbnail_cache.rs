@@ -134,9 +134,7 @@ fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u
                 return None;
             }
         }
-    } else if ottrin_preview::preview_profile(path).kind()
-        == ottrin_preview::PreviewKind::SqliteMetadata
-    {
+    } else if ottrin_preview::is_sqlite_preview_candidate(path) {
         match read_sqlite_cache_bytes(cache_path) {
             Some(bytes) => bytes,
             None => {
@@ -293,7 +291,8 @@ pub(crate) fn fallback_preview_bytes(path: &Path, generated: Option<Vec<u8>>) ->
     if generated.is_some() {
         return generated;
     }
-    if ottrin_preview::is_svg_path(path)
+    if ottrin_preview::is_sqlite_preview_candidate(path)
+        || ottrin_preview::is_svg_path(path)
         || !ottrin_preview::preview_profile(path).raw_fallback_allowed()
     {
         return None;
@@ -322,7 +321,7 @@ fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
     if ottrin_preview::is_font_path(path) {
         return font_cached_png_is_safe(bytes);
     }
-    if ottrin_preview::preview_profile(path).kind() == ottrin_preview::PreviewKind::SqliteMetadata {
+    if ottrin_preview::is_sqlite_preview_candidate(path) {
         return ottrin_preview::is_sqlite_preview_path(path) && sqlite_cached_png_is_safe(bytes);
     }
     if !ottrin_preview::preview_profile(path).raw_fallback_allowed() {
@@ -858,6 +857,92 @@ mod tests {
         assert!(fallback_preview_bytes(&source, None).is_none());
 
         std::fs::remove_file(source).expect("remove SQLite source fixture");
+    }
+
+    #[test]
+    fn sqlite_candidate_extensions_never_return_raw_cache_or_source_bytes_after_replacement() {
+        let nonce = format!(
+            "{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system clock after epoch")
+                .as_nanos()
+        );
+        let oversized_raw_cache = vec![b'x'; MAX_SQLITE_CACHE_PNG_BYTES as usize + 1];
+
+        for extension in ["DB", "Sqlite", "sQLiTe3"] {
+            let source = std::env::temp_dir().join(format!("ottrin-replaced-{nonce}.{extension}"));
+            let cache =
+                std::env::temp_dir().join(format!("ottrin-replaced-{nonce}.{extension}.png"));
+            std::fs::write(&source, b"replacement is not a SQLite database")
+                .expect("write replacement source");
+            std::fs::write(&cache, &oversized_raw_cache).expect("write oversized stale cache");
+
+            assert!(
+                load_cached_thumbnail_at_path(&source, &cache).is_none(),
+                "SQLite candidates must reject stale cache before generic reads"
+            );
+            assert!(
+                !cache.exists(),
+                "unsafe SQLite candidate cache must be removed for {extension}"
+            );
+            assert_eq!(
+                thumbnail_bytes_from_cache_or_build(
+                    &source,
+                    128,
+                    Some(oversized_raw_cache.clone())
+                ),
+                None,
+                "cache miss/rebuild must not return replacement source bytes for {extension}"
+            );
+            assert_eq!(
+                full_preview_bytes_at_page(&source, 128, 0),
+                None,
+                "full preview must not fall back to replacement source bytes for {extension}"
+            );
+            assert_eq!(
+                fallback_preview_bytes(&source, None),
+                None,
+                "generic fallback must be permanently denied for {extension}"
+            );
+
+            std::fs::remove_file(source).expect("remove replacement source");
+        }
+    }
+
+    #[test]
+    fn sqlite_candidate_cache_hits_require_a_decoded_png_for_case_variants() {
+        let nonce = format!(
+            "{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system clock after epoch")
+                .as_nanos()
+        );
+        let mut cached_png = Vec::new();
+        image::RgbaImage::from_pixel(8, 8, image::Rgba([20, 40, 60, 255]))
+            .write_to(&mut Cursor::new(&mut cached_png), image::ImageFormat::Png)
+            .expect("encode bounded cache PNG");
+
+        for extension in ["DB", "Sqlite", "sQLiTe3"] {
+            let source = std::env::temp_dir().join(format!("ottrin-cache-hit-{nonce}.{extension}"));
+            let cache =
+                std::env::temp_dir().join(format!("ottrin-cache-hit-{nonce}.{extension}.png"));
+            std::fs::write(&source, b"SQLite format 3\0content verification")
+                .expect("write SQLite signature source");
+            std::fs::write(&cache, &cached_png).expect("write decoded SQLite cache PNG");
+
+            assert_eq!(
+                load_cached_thumbnail_at_path(&source, &cache),
+                Some(cached_png.clone()),
+                "valid bounded PNG cache may be used for content-verified {extension}"
+            );
+
+            std::fs::remove_file(source).expect("remove SQLite source");
+            std::fs::remove_file(cache).expect("remove SQLite cache");
+        }
     }
 
     #[test]

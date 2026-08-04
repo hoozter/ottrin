@@ -710,7 +710,11 @@ fn sqlite_extension(path: &Path) -> Option<String> {
         .map(|extension| extension.to_ascii_lowercase())
 }
 
-fn has_sqlite_candidate_extension(path: &Path) -> bool {
+/// Returns whether a path has an extension reserved for bounded SQLite
+/// metadata preview handling. Callers must apply this before any generic cache
+/// or raw-source fallback, because `.db` is otherwise content-classified only
+/// after opening the source.
+pub fn is_sqlite_preview_candidate(path: &Path) -> bool {
     matches!(
         sqlite_extension(path).as_deref(),
         Some("sqlite" | "sqlite3" | "db")
@@ -722,7 +726,7 @@ fn has_sqlite_candidate_extension(path: &Path) -> bool {
 /// important for generic `.db` files, but also prevents a stale card being
 /// reused after a `.sqlite`/`.sqlite3` path changes type.
 pub fn is_sqlite_preview_path(path: &Path) -> bool {
-    has_sqlite_candidate_extension(path) && has_sqlite_header(path)
+    is_sqlite_preview_candidate(path) && has_sqlite_header(path)
 }
 
 fn has_sqlite_header(path: &Path) -> bool {
@@ -858,7 +862,7 @@ pub fn render_sqlite_metadata_preview_png(
 }
 
 fn inspect_sqlite_metadata(path: &Path) -> Result<SqliteMetadata, SqliteVisualError> {
-    if !has_sqlite_candidate_extension(path) {
+    if !is_sqlite_preview_candidate(path) {
         return Err(SqliteVisualError::UnsupportedFormat);
     }
     let source = read_bounded_sqlite_snapshot(path)?;
@@ -1033,6 +1037,33 @@ fn validate_sqlite_header(source: &[u8]) -> Result<(), SqliteVisualError> {
             "WAL-dependent or non-rollback journal mode is not previewed".to_string(),
         ));
     }
+    if header[20] != 0 {
+        return Err(SqliteVisualError::InvalidHeader(
+            "reserved page space is not supported by the bounded preview".to_string(),
+        ));
+    }
+    if header[21..24] != [64, 32, 32] {
+        return Err(SqliteVisualError::InvalidHeader(
+            "payload fractions do not match SQLite format 3".to_string(),
+        ));
+    }
+    if header[72..92].iter().any(|&byte| byte != 0) {
+        return Err(SqliteVisualError::InvalidHeader(
+            "reserved SQLite header bytes must be zero".to_string(),
+        ));
+    }
+    let schema_format = u32::from_be_bytes([header[44], header[45], header[46], header[47]]);
+    if !(1..=4).contains(&schema_format) {
+        return Err(SqliteVisualError::InvalidHeader(
+            "schema format is not a supported SQLite version".to_string(),
+        ));
+    }
+    let text_encoding = u32::from_be_bytes([header[56], header[57], header[58], header[59]]);
+    if !(1..=3).contains(&text_encoding) {
+        return Err(SqliteVisualError::InvalidHeader(
+            "text encoding is not a supported SQLite value".to_string(),
+        ));
+    }
     if !(source.len() as u64).is_multiple_of(page_size) {
         return Err(SqliteVisualError::InvalidHeader(
             "database size is not an exact page multiple".to_string(),
@@ -1041,8 +1072,8 @@ fn validate_sqlite_header(source: &[u8]) -> Result<(), SqliteVisualError> {
     let page_count = u64::from(u32::from_be_bytes([
         header[28], header[29], header[30], header[31],
     ]));
-    if page_count != 0
-        && page_count
+    if page_count == 0
+        || page_count
             .checked_mul(page_size)
             .filter(|expected| *expected == source.len() as u64)
             .is_none()
@@ -5235,6 +5266,38 @@ mod tests {
         for path in [truncated, wal_dependent, oversized] {
             std::fs::remove_file(path).expect("remove SQLite fixture");
         }
+    }
+
+    #[test]
+    fn sqlite_preview_rejects_incomplete_rollback_header_invariants() {
+        let fixture = temp_path("header-invariants.sqlite");
+        write_sqlite_fixture(&fixture);
+        let source = std::fs::read(&fixture).expect("read SQLite fixture");
+
+        for (label, offset, replacement) in [
+            ("payload-fractions", 21, vec![0, 0, 0]),
+            ("reserved-space", 20, vec![1]),
+            ("reserved-header", 72, vec![1]),
+            ("schema-format", 44, 0u32.to_be_bytes().to_vec()),
+            ("text-encoding", 56, 0u32.to_be_bytes().to_vec()),
+            ("physical-page-count", 28, 0u32.to_be_bytes().to_vec()),
+        ] {
+            let path = temp_path(&format!("header-{label}.sqlite"));
+            let mut mutation = source.clone();
+            mutation[offset..offset + replacement.len()].copy_from_slice(&replacement);
+            std::fs::write(&path, mutation).expect("write mutated SQLite header");
+
+            assert!(
+                matches!(
+                    render_sqlite_metadata_preview_png(&path, 128),
+                    Err(SqliteVisualError::InvalidHeader(_))
+                ),
+                "{label} must be rejected before SQLite deserialize"
+            );
+            std::fs::remove_file(path).expect("remove mutated SQLite fixture");
+        }
+
+        std::fs::remove_file(fixture).expect("remove SQLite fixture");
     }
 
     #[test]
