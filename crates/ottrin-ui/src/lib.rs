@@ -12577,6 +12577,7 @@ impl OttrinApp {
                                 PreviewKind::Image
                                 | PreviewKind::CameraRawMetadata
                                 | PreviewKind::SqliteMetadata
+                                | PreviewKind::StlMetadata
                                 | PreviewKind::Pdf => {
                                     let avail_w = ui.available_width().max(60.0);
                                     let max_h = preview_panel_h - 70.0;
@@ -14497,6 +14498,7 @@ impl OttrinApp {
                     PreviewKind::Image
                     | PreviewKind::CameraRawMetadata
                     | PreviewKind::SqliteMetadata
+                    | PreviewKind::StlMetadata
                     | PreviewKind::Pdf => {
                         if let Some(img) = self.cached_image_preview_widget(
                             &entry.path,
@@ -15791,6 +15793,7 @@ impl OttrinApp {
                                 PreviewKind::Image
                                     | PreviewKind::CameraRawMetadata
                                     | PreviewKind::SqliteMetadata
+                                    | PreviewKind::StlMetadata
                                     | PreviewKind::Pdf
                             );
                             if is_zoomable_document {
@@ -15853,6 +15856,7 @@ impl OttrinApp {
                         PreviewKind::Image
                         | PreviewKind::CameraRawMetadata
                         | PreviewKind::SqliteMetadata
+                        | PreviewKind::StlMetadata
                         | PreviewKind::Pdf => {
                             ScrollArea::both().show(ui, |ui| {
                                 let max_w = (ui.available_width() - 24.0).max(120.0);
@@ -19065,6 +19069,7 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
         PreviewKind::Image
             | PreviewKind::CameraRawMetadata
             | PreviewKind::SqliteMetadata
+            | PreviewKind::StlMetadata
             | PreviewKind::Pdf
             | PreviewKind::Text
     );
@@ -19824,7 +19829,8 @@ fn compact_preview_snippet(
         | PreviewKind::CameraRawMetadata
         | PreviewKind::VideoMetadata
         | PreviewKind::FontMetadata
-        | PreviewKind::SqliteMetadata => &preview.body,
+        | PreviewKind::SqliteMetadata
+        | PreviewKind::StlMetadata => &preview.body,
         PreviewKind::Image | PreviewKind::FolderMetadata | PreviewKind::Unsupported => return None,
     };
     let snippet = metadata_preview_snippet(source, max_lines, max_chars);
@@ -21564,6 +21570,11 @@ mod tests {
                 "Video file.\nSize: 42 MB",
                 "Video file.\nSize: 42 MB",
             ),
+            (
+                PreviewKind::StlMetadata,
+                "Filetype: STL mesh\nTriangles: 12\nBounds: 1.0 x 1.0 x 1.0",
+                "Filetype: STL mesh\nTriangles: 12\nBounds: 1.0 x 1.0 x 1.0",
+            ),
         ] {
             let preview = PreviewData {
                 title: "fixture".to_string(),
@@ -21634,10 +21645,20 @@ mod tests {
             size_bytes: Some(1024),
             modified_unix_secs: None,
         };
+        let stl_entry = FileEntry {
+            name: "bracket.stl".to_string(),
+            path: PathBuf::from("/tmp/bracket.stl"),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: Some(2048),
+            modified_unix_secs: None,
+        };
 
         assert!(image_thumbnail_candidate(&image_entry));
         assert!(image_thumbnail_candidate(&pdf_entry));
         assert!(image_thumbnail_candidate(&source_entry));
+        assert!(image_thumbnail_candidate(&stl_entry));
         assert!(!image_thumbnail_candidate(&office_entry));
         assert!(!image_thumbnail_candidate(&FileEntry {
             name: "legacy.doc".to_string(),

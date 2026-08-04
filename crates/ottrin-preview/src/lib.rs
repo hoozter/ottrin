@@ -15,9 +15,14 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use sha2::{Digest, Sha256};
 
 mod pdf_visual;
+mod stl_visual;
 pub use pdf_visual::{
     PdfVisualError, render_pdf_first_page_png, render_pdf_first_page_png_with_library,
     render_pdf_page_png, render_pdf_page_png_with_library,
+};
+pub use stl_visual::{
+    StlPreviewSourceGeneration, StlVisualError, inspect_stl_metadata, render_stl_preview_png,
+    stl_preview_source_generation,
 };
 
 const EXTRACTED_TEXT_MARKER: &str = "\n\nExtracted text:\n";
@@ -487,6 +492,7 @@ pub enum PreviewKind {
     FolderMetadata,
     FontMetadata,
     SqliteMetadata,
+    StlMetadata,
     Pdf,
     VideoMetadata,
     AudioMetadata,
@@ -525,6 +531,7 @@ pub enum PreviewVisualRenderer {
     Office,
     Font,
     Sqlite,
+    Stl,
     CameraRaw,
     TextCard,
 }
@@ -587,6 +594,12 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
             kind,
             views: [true, false, true],
             visual_renderer: PreviewVisualRenderer::Sqlite,
+            raw_fallback_allowed: false,
+        },
+        PreviewKind::StlMetadata => PreviewProfile {
+            kind,
+            views: [true, false, true],
+            visual_renderer: PreviewVisualRenderer::Stl,
             raw_fallback_allowed: false,
         },
         PreviewKind::Pdf => PreviewProfile {
@@ -657,6 +670,10 @@ pub fn preview_profile(path: &Path) -> PreviewProfile {
         // renderer; they do not fall back to raw bytes.
         profile.raw_fallback_allowed = false;
     }
+    if is_stl_path(path) {
+        // Mesh source bytes never reach image decoding or the generic fallback.
+        profile.raw_fallback_allowed = false;
+    }
     profile
 }
 
@@ -670,6 +687,12 @@ pub fn is_font_path(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(|extension| matches!(extension.to_ascii_lowercase().as_str(), "ttf" | "otf"))
+}
+
+pub fn is_stl_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("stl"))
 }
 
 pub fn is_epub_path(path: &Path) -> bool {
@@ -695,6 +718,7 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
         PreviewKind::Image => preview_image(title, &request.path),
         PreviewKind::FontMetadata => preview_font(title, &request.path),
         PreviewKind::SqliteMetadata => preview_sqlite(title, &request.path),
+        PreviewKind::StlMetadata => preview_stl(title, &request.path),
         PreviewKind::Pdf => preview_pdf(title, &request.path),
         PreviewKind::VideoMetadata => preview_video(title, &request.path),
         PreviewKind::AudioMetadata => preview_audio(title, &request.path),
@@ -721,6 +745,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         | "ical" | "ldif" | "sql" | "rtf" => PreviewKind::Text,
         "ttf" | "otf" => PreviewKind::FontMetadata,
         "sqlite" | "sqlite3" => PreviewKind::SqliteMetadata,
+        "stl" => PreviewKind::StlMetadata,
         "db" if has_sqlite_header(path) => PreviewKind::SqliteMetadata,
         "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" | "ico" | "svg" => {
             PreviewKind::Image
@@ -2036,6 +2061,30 @@ fn preview_sqlite(title: String, path: &Path) -> PreviewData {
     PreviewData {
         title,
         kind: PreviewKind::SqliteMetadata,
+        body: lines.join("\n"),
+        open_external: true,
+    }
+}
+
+fn preview_stl(title: String, path: &Path) -> PreviewData {
+    let mut lines = vec!["Filetype: STL mesh".to_string(), "Format: STL".to_string()];
+    if let Ok(metadata) = std::fs::metadata(path) {
+        lines.push(format!("Size: {}", format_size(metadata.len())));
+    }
+    match inspect_stl_metadata(path) {
+        Ok(metadata) => {
+            lines.push(format!("Triangles: {}", metadata.triangle_count));
+            lines.push(format!(
+                "Bounds: {:.4} x {:.4} x {:.4}",
+                metadata.dimensions[0], metadata.dimensions[1], metadata.dimensions[2]
+            ));
+            lines.push("Preview: Bounded CPU mesh render".to_string());
+        }
+        Err(_) => lines.push("Preview: STL mesh metadata unavailable for this file.".to_string()),
+    }
+    PreviewData {
+        title,
+        kind: PreviewKind::StlMetadata,
         body: lines.join("\n"),
         open_external: true,
     }
@@ -7948,5 +7997,53 @@ mod tests {
             Err(OfficeVisualError::NoContent)
         ));
         let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn stl_preview_routes_ascii_and_binary_meshes_to_a_bounded_visual_png() {
+        let ascii = temp_path("ascii.stl");
+        std::fs::write(
+            &ascii,
+            b"solid tetra\nfacet normal 0 0 1\n outer loop\n  vertex 0 0 0\n  vertex 1 0 0\n  vertex 0 1 1\n endloop\nendfacet\nendsolid tetra\n",
+        )
+        .expect("write ASCII STL");
+
+        let binary = temp_path("binary.stl");
+        let mut binary_bytes = vec![0_u8; 80];
+        binary_bytes[..16].copy_from_slice(b"solid-but-binary");
+        binary_bytes.extend_from_slice(&1_u32.to_le_bytes());
+        for value in [
+            0.0_f32, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0,
+        ] {
+            binary_bytes.extend_from_slice(&value.to_le_bytes());
+        }
+        binary_bytes.extend_from_slice(&0_u16.to_le_bytes());
+        std::fs::write(&binary, binary_bytes).expect("write binary STL");
+
+        for path in [&ascii, &binary] {
+            let profile = preview_profile(path);
+            assert_eq!(classify_path(path), PreviewKind::StlMetadata);
+            assert_eq!(profile.visual_renderer(), PreviewVisualRenderer::Stl);
+            assert!(!profile.raw_fallback_allowed());
+
+            let png = render_stl_preview_png(path, 1).expect("render bounded STL PNG");
+            let decoded = image::load_from_memory(&png).expect("decode STL PNG");
+            assert_eq!(decoded.dimensions(), (64, 64));
+            assert!(
+                decoded
+                    .pixels()
+                    .any(|(_, _, pixel)| pixel.0 != [247, 249, 252, 255])
+            );
+
+            let preview = load_preview(&PreviewRequest {
+                path: path.clone(),
+                kind_hint: EntryKind::File,
+            });
+            assert!(preview.body.contains("Format: STL"));
+            assert!(preview.body.contains("Triangles: 1"));
+        }
+
+        let _ = std::fs::remove_file(ascii);
+        let _ = std::fs::remove_file(binary);
     }
 }

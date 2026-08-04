@@ -15,6 +15,8 @@ const MAX_FONT_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_FONT_CACHE_PNG_DIMENSION: u32 = 2_048;
 const MAX_SQLITE_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_SQLITE_CACHE_PNG_DIMENSION: u32 = 2_048;
+const MAX_STL_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_STL_CACHE_PNG_DIMENSION: u32 = 1_024;
 
 #[derive(Debug, Clone)]
 pub(crate) enum ImagePreviewCacheEntry {
@@ -69,6 +71,10 @@ pub(crate) fn preview_cache_key_for_page_with_sqlite_generation(
     page_index: usize,
     sqlite_source_generation: Option<&ottrin_preview::SqlitePreviewSourceGeneration>,
 ) -> String {
+    if ottrin_preview::is_stl_path(path) {
+        let generation = ottrin_preview::stl_preview_source_generation(path);
+        return stl_preview_cache_key(target_dim, page_index, generation.as_ref());
+    }
     if ottrin_preview::is_sqlite_preview_candidate(path) {
         let generation = sqlite_source_generation
             .cloned()
@@ -98,6 +104,17 @@ pub(crate) fn preview_cache_key_for_page_with_sqlite_generation(
     target_dim.hash(&mut hasher);
     page_index.hash(&mut hasher);
     format!("{:016x}_{}.png", hasher.finish(), target_dim)
+}
+
+fn stl_preview_cache_key(
+    target_dim: u32,
+    page_index: usize,
+    source_generation: Option<&ottrin_preview::StlPreviewSourceGeneration>,
+) -> String {
+    let generation = source_generation
+        .map(|generation| hex_digest(generation.as_bytes()))
+        .unwrap_or_else(|| "unavailable".to_string());
+    format!("stl-v1-{generation}-{target_dim}-{page_index}.png")
 }
 
 fn sqlite_preview_cache_key(
@@ -197,6 +214,14 @@ fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u
                 return None;
             }
         }
+    } else if ottrin_preview::is_stl_path(path) {
+        match read_stl_cache_bytes(cache_path) {
+            Some(bytes) => bytes,
+            None => {
+                let _ = std::fs::remove_file(cache_path);
+                return None;
+            }
+        }
     } else {
         std::fs::read(cache_path).ok()?
     };
@@ -224,6 +249,11 @@ fn read_font_cache_bytes(path: &Path) -> Option<Vec<u8>> {
 fn read_sqlite_cache_bytes(path: &Path) -> Option<Vec<u8>> {
     let file = std::fs::File::open(path).ok()?;
     read_bounded_cache(file, MAX_SQLITE_CACHE_PNG_BYTES).ok()?
+}
+
+fn read_stl_cache_bytes(path: &Path) -> Option<Vec<u8>> {
+    let file = std::fs::File::open(path).ok()?;
+    read_bounded_cache(file, MAX_STL_CACHE_PNG_BYTES).ok()?
 }
 
 fn read_bounded_cache(reader: impl Read, max_bytes: u64) -> std::io::Result<Option<Vec<u8>>> {
@@ -373,6 +403,18 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::Stl => {
+                match ottrin_preview::render_stl_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "STL thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
             _ => None,
         }
     })
@@ -415,6 +457,12 @@ fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
     if ottrin_preview::is_sqlite_preview_candidate(path) {
         return ottrin_preview::is_sqlite_preview_path(path) && sqlite_cached_png_is_safe(bytes);
     }
+    if ottrin_preview::is_stl_path(path) {
+        // A PNG-shaped cache file is not enough: a malformed replacement must
+        // not inherit a content-addressed cache entry or bypass the mesh
+        // parser. Validate the current bounded source before accepting it.
+        return ottrin_preview::inspect_stl_metadata(path).is_ok() && stl_cached_png_is_safe(bytes);
+    }
     if !ottrin_preview::preview_profile(path).raw_fallback_allowed() {
         return is_png_bytes(bytes);
     }
@@ -447,6 +495,10 @@ fn sqlite_cached_png_is_safe(bytes: &[u8]) -> bool {
         MAX_SQLITE_CACHE_PNG_BYTES,
         MAX_SQLITE_CACHE_PNG_DIMENSION,
     )
+}
+
+fn stl_cached_png_is_safe(bytes: &[u8]) -> bool {
+    bounded_cached_png_is_safe(bytes, MAX_STL_CACHE_PNG_BYTES, MAX_STL_CACHE_PNG_DIMENSION)
 }
 
 fn bounded_cached_png_is_safe(bytes: &[u8], max_bytes: u64, max_dimension: u32) -> bool {
@@ -531,6 +583,15 @@ pub(crate) fn full_preview_bytes_at_page(
             }
         };
     }
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Stl {
+        return match ottrin_preview::render_stl_preview_png(path, target_dim) {
+            Ok(bytes) => Some(bytes),
+            Err(error) => {
+                eprintln!("STL preview render failed for {}: {error}", path.display());
+                None
+            }
+        };
+    }
     full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
         match preview_visual_renderer(path) {
             ottrin_preview::PreviewVisualRenderer::Office => {
@@ -593,6 +654,7 @@ fn full_preview_bytes_with_visual_renderer(
             | ottrin_preview::PreviewVisualRenderer::TextCard
             | ottrin_preview::PreviewVisualRenderer::Font
             | ottrin_preview::PreviewVisualRenderer::Sqlite
+            | ottrin_preview::PreviewVisualRenderer::Stl
     ) {
         return render_visual(path, target_dim);
     }
@@ -613,7 +675,8 @@ fn build_thumbnail_bytes_with_visual_renderer(
         | ottrin_preview::PreviewVisualRenderer::CameraRaw
         | ottrin_preview::PreviewVisualRenderer::TextCard
         | ottrin_preview::PreviewVisualRenderer::Font
-        | ottrin_preview::PreviewVisualRenderer::Sqlite => {
+        | ottrin_preview::PreviewVisualRenderer::Sqlite
+        | ottrin_preview::PreviewVisualRenderer::Stl => {
             return render_visual(path, target_dim);
         }
         ottrin_preview::PreviewVisualRenderer::Image => {
@@ -1507,5 +1570,40 @@ mod tests {
 
         assert!(build_thumbnail_bytes(&dir, 128).is_none());
         std::fs::remove_dir_all(dir).expect("remove fixture");
+    }
+
+    #[test]
+    fn stl_thumbnail_and_full_preview_are_content_keyed_pngs_without_raw_fallback() {
+        let path =
+            std::env::temp_dir().join(format!("ottrin-stl-preview-{}.stl", std::process::id()));
+        let first = b"solid tetra\nfacet normal 0 0 1\n outer loop\n  vertex 0 0 0\n  vertex 1 0 0\n  vertex 0 1 1\n endloop\nendfacet\nendsolid tetra\n";
+        let replacement = b"solid tetra\nfacet normal 0 1 0\n outer loop\n  vertex 0 0 0\n  vertex 2 0 0\n  vertex 0 1 1\n endloop\nendfacet\nendsolid tetra\n";
+        std::fs::write(&path, first).expect("write STL");
+        let first_key = preview_cache_key_for_page(&path, 128, 0);
+        let thumbnail = build_thumbnail_bytes(&path, 128).expect("STL thumbnail");
+        let full = full_preview_bytes_at_page(&path, 128, 0).expect("STL full preview");
+        assert!(stl_cached_png_is_safe(&thumbnail));
+        assert_eq!(thumbnail, full, "shared STL renderer must serve both paths");
+        assert_ne!(thumbnail, first);
+        assert_eq!(fallback_preview_bytes(&path, None), None);
+
+        std::fs::write(&path, replacement).expect("replace STL");
+        assert_ne!(first_key, preview_cache_key_for_page(&path, 128, 0));
+        let (rebuilt, should_persist) =
+            thumbnail_bytes_from_cache_or_build(&path, 128, Some(first.to_vec()))
+                .expect("valid replacement must rebuild a safe STL preview");
+        assert!(should_persist, "raw stale STL cache bytes must be rebuilt");
+        assert!(stl_cached_png_is_safe(&rebuilt));
+        std::fs::write(&path, b"not a mesh").expect("replace with malformed STL");
+        assert_eq!(thumbnail_bytes_from_cache_or_build(&path, 128, None), None);
+        assert_eq!(full_preview_bytes_at_page(&path, 128, 0), None);
+        let cache_path = path.with_extension("cached.png");
+        std::fs::write(&cache_path, &thumbnail).expect("write stale STL cache PNG");
+        assert_eq!(load_cached_thumbnail_at_path(&path, &cache_path), None);
+        assert!(
+            !cache_path.exists(),
+            "malformed STL must discard cached PNG"
+        );
+        std::fs::remove_file(path).expect("remove STL fixture");
     }
 }

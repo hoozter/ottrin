@@ -27,5 +27,8 @@ ttf-parser = "0.25.1"
 # preview snapshots; `hooks` and `limits` provide the query work boundaries.
 rusqlite = { version = "0.31", features = ["bundled", "serialize", "hooks", "limits"] }
 sha2 = "0.10"
+# `stl_io` 0.11.x (MIT; https://github.com/hmeyer/stl_io) is a pure-Rust
+# streaming parser. Preview-specific input, triangle, and raster bounds remain local.
+stl_io = "0.11"
 epaint_default_fonts = "0.33"
 pdfium-render = { version = "=0.9.3", default-features = false, features = ["image_latest", "pdfium_latest", "thread_safe"] }
