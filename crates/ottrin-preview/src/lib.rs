@@ -17,6 +17,7 @@ use sha2::{Digest, Sha256};
 mod mesh_visual;
 mod obj_visual;
 mod pdf_visual;
+mod ply_visual;
 mod stl_visual;
 mod threemf_visual;
 pub use obj_visual::{
@@ -27,6 +28,11 @@ pub use obj_visual::{
 pub use pdf_visual::{
     PdfVisualError, render_pdf_first_page_png, render_pdf_first_page_png_with_library,
     render_pdf_page_png, render_pdf_page_png_with_library,
+};
+pub use ply_visual::{
+    PlyMetadata, PlyPreviewSourceGeneration, PlyVisualError, RenderedPlyPreview,
+    inspect_ply_metadata, ply_preview_source_generation, render_ply_preview_png,
+    render_ply_preview_png_with_generation,
 };
 pub use stl_visual::{
     StlPreviewSourceGeneration, StlVisualError, inspect_stl_metadata, render_stl_preview_png,
@@ -507,6 +513,7 @@ pub enum PreviewKind {
     SqliteMetadata,
     StlMetadata,
     ObjMetadata,
+    PlyMetadata,
     ThreeMfMetadata,
     Pdf,
     VideoMetadata,
@@ -548,6 +555,7 @@ pub enum PreviewVisualRenderer {
     Sqlite,
     Stl,
     Obj,
+    Ply,
     ThreeMf,
     CameraRaw,
     TextCard,
@@ -623,6 +631,12 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
             kind,
             views: [true, false, true],
             visual_renderer: PreviewVisualRenderer::Obj,
+            raw_fallback_allowed: false,
+        },
+        PreviewKind::PlyMetadata => PreviewProfile {
+            kind,
+            views: [true, false, true],
+            visual_renderer: PreviewVisualRenderer::Ply,
             raw_fallback_allowed: false,
         },
         PreviewKind::ThreeMfMetadata => PreviewProfile {
@@ -707,6 +721,11 @@ pub fn preview_profile(path: &Path) -> PreviewProfile {
         // OBJ source is parsed by a bounded, in-memory mesh renderer only.
         profile.raw_fallback_allowed = false;
     }
+    if is_ply_path(path) {
+        // PLY source bytes are only handled by the bounded immutable-snapshot
+        // mesh parser; they never reach an image decoder or raw fallback.
+        profile.raw_fallback_allowed = false;
+    }
     if is_3mf_path(path) {
         // 3MF package bytes only reach the dedicated bounded parser.
         profile.raw_fallback_allowed = false;
@@ -736,6 +755,12 @@ pub fn is_obj_path(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(|extension| extension.eq_ignore_ascii_case("obj"))
+}
+
+pub fn is_ply_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("ply"))
 }
 
 pub fn is_3mf_path(path: &Path) -> bool {
@@ -769,6 +794,7 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
         PreviewKind::SqliteMetadata => preview_sqlite(title, &request.path),
         PreviewKind::StlMetadata => preview_stl(title, &request.path),
         PreviewKind::ObjMetadata => preview_obj(title, &request.path),
+        PreviewKind::PlyMetadata => preview_ply(title, &request.path),
         PreviewKind::ThreeMfMetadata => preview_3mf(title, &request.path),
         PreviewKind::Pdf => preview_pdf(title, &request.path),
         PreviewKind::VideoMetadata => preview_video(title, &request.path),
@@ -798,6 +824,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         "sqlite" | "sqlite3" => PreviewKind::SqliteMetadata,
         "stl" => PreviewKind::StlMetadata,
         "obj" => PreviewKind::ObjMetadata,
+        "ply" => PreviewKind::PlyMetadata,
         "3mf" => PreviewKind::ThreeMfMetadata,
         "db" if has_sqlite_header(path) => PreviewKind::SqliteMetadata,
         "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" | "ico" | "svg" => {
@@ -2170,6 +2197,35 @@ fn preview_obj(title: String, path: &Path) -> PreviewData {
     PreviewData {
         title,
         kind: PreviewKind::ObjMetadata,
+        body: lines.join("\n"),
+        open_external: true,
+    }
+}
+
+fn preview_ply(title: String, path: &Path) -> PreviewData {
+    let mut lines = vec![
+        "Filetype: Polygon File Format mesh".to_string(),
+        "Format: PLY".to_string(),
+    ];
+    if let Ok(metadata) = std::fs::metadata(path) {
+        lines.push(format!("Size: {}", format_size(metadata.len())));
+    }
+    match inspect_ply_metadata(path) {
+        Ok(metadata) => {
+            lines.push(format!("Vertices: {}", metadata.vertex_count));
+            lines.push(format!("Faces: {}", metadata.face_count));
+            lines.push(format!("Triangles: {}", metadata.triangle_count));
+            lines.push(format!(
+                "Bounds: {:.4} x {:.4} x {:.4}",
+                metadata.dimensions[0], metadata.dimensions[1], metadata.dimensions[2]
+            ));
+            lines.push("Preview: Bounded CPU mesh render".to_string());
+        }
+        Err(_) => lines.push("Preview: PLY mesh metadata unavailable for this file.".to_string()),
+    }
+    PreviewData {
+        title,
+        kind: PreviewKind::PlyMetadata,
         body: lines.join("\n"),
         open_external: true,
     }
@@ -8183,5 +8239,137 @@ mod tests {
 
         let _ = std::fs::remove_file(ascii);
         let _ = std::fs::remove_file(binary);
+    }
+
+    #[test]
+    fn ply_preview_routes_ascii_and_both_binary_byte_orders_to_bounded_visual_png() {
+        let ascii = temp_path("triangle.ply");
+        std::fs::write(
+            &ascii,
+            b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n1 0 0\n0 1 1\n3 0 1 2\n",
+        )
+        .expect("write ASCII PLY");
+
+        let binary_fixture = |name: &str, endian: fn(f32) -> [u8; 4]| {
+            let path = temp_path(name);
+            let mut bytes = b"ply\nformat binary_little_endian 1.0\nelement vertex 4\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n".to_vec();
+            if name.contains("big") {
+                bytes = b"ply\nformat binary_big_endian 1.0\nelement vertex 4\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n".to_vec();
+            }
+            for vertex in [
+                [0.0_f32, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [1.0, 1.0, 1.0],
+                [0.0, 1.0, 1.0],
+            ] {
+                for coordinate in vertex {
+                    bytes.extend_from_slice(&endian(coordinate));
+                }
+            }
+            bytes.extend_from_slice(&[4, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0]);
+            if name.contains("big") {
+                bytes.truncate(bytes.len() - 17);
+                bytes.extend_from_slice(&[4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 3]);
+            }
+            std::fs::write(&path, bytes).expect("write binary PLY");
+            path
+        };
+        let little = binary_fixture("quad-little.ply", f32::to_le_bytes);
+        let big = binary_fixture("quad-big.ply", f32::to_be_bytes);
+
+        for path in [&ascii, &little, &big] {
+            let profile = preview_profile(path);
+            assert_eq!(classify_path(path), PreviewKind::PlyMetadata);
+            assert_eq!(profile.visual_renderer(), PreviewVisualRenderer::Ply);
+            assert!(!profile.raw_fallback_allowed());
+
+            let generation = ply_preview_source_generation(path).expect("PLY source generation");
+            assert_eq!(generation.as_bytes().len(), 32);
+            let metadata = inspect_ply_metadata(path)
+                .unwrap_or_else(|error| panic!("PLY metadata for {}: {error}", path.display()));
+            assert!(metadata.vertex_count >= 3);
+            assert_eq!(metadata.face_count, 1);
+            assert!(metadata.triangle_count >= 1);
+            let png = render_ply_preview_png(path, 1).expect("render bounded PLY PNG");
+            let decoded = image::load_from_memory(&png).expect("decode PLY PNG");
+            assert_eq!(decoded.dimensions(), (64, 64));
+            assert!(
+                decoded
+                    .pixels()
+                    .any(|(_, _, pixel)| pixel.0 != [247, 249, 252, 255])
+            );
+
+            let preview = load_preview(&PreviewRequest {
+                path: path.clone(),
+                kind_hint: EntryKind::File,
+            });
+            assert_eq!(preview.kind, PreviewKind::PlyMetadata);
+            assert!(preview.body.contains("Format: PLY"));
+            assert!(preview.body.contains("Preview: Bounded CPU mesh render"));
+        }
+
+        for path in [ascii, little, big] {
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn ply_preview_rejects_unbounded_headers_and_unsafe_or_incomplete_meshes() {
+        let cases = [
+            (
+                "huge-count.ply",
+                b"ply\nformat ascii 1.0\nelement vertex 200001\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n".as_slice(),
+            ),
+            (
+                "ambiguous-face-list.ply",
+                b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nproperty list uchar int material_indices\nend_header\n0 0 0\n1 0 0\n0 1 1\n3 0 1 2 0\n".as_slice(),
+            ),
+            (
+                "negative-index.ply",
+                b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n1 0 0\n0 1 1\n3 0 1 -1\n".as_slice(),
+            ),
+            (
+                "nan-coordinate.ply",
+                b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\nnan 0 0\n1 0 0\n0 1 1\n3 0 1 2\n".as_slice(),
+            ),
+            (
+                "concave-face.ply",
+                b"ply\nformat ascii 1.0\nelement vertex 4\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n2 0 0\n1 0.2 1\n0 2 2\n4 0 1 2 3\n".as_slice(),
+            ),
+            (
+                "trailing-body.ply",
+                b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n1 0 0\n0 1 1\n3 0 1 2\nextra\n".as_slice(),
+            ),
+        ];
+        for (name, source) in cases {
+            let path = temp_path(name);
+            std::fs::write(&path, source).expect("write rejected PLY fixture");
+            assert!(
+                inspect_ply_metadata(&path).is_err(),
+                "{name} must fail closed"
+            );
+            assert!(
+                render_ply_preview_png(&path, 128).is_err(),
+                "{name} must not render"
+            );
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn ply_preview_rejects_oversized_input_before_parser_allocation() {
+        let path = temp_path("oversized.ply");
+        let file = std::fs::File::create(&path).expect("create oversized PLY fixture");
+        file.set_len(crate::ply_visual::MAX_PLY_PREVIEW_BYTES + 1)
+            .expect("extend oversized PLY fixture");
+        assert!(matches!(
+            inspect_ply_metadata(&path),
+            Err(PlyVisualError::InputTooLarge { .. })
+        ));
+        assert!(matches!(
+            render_ply_preview_png(&path, 128),
+            Err(PlyVisualError::InputTooLarge { .. })
+        ));
+        std::fs::remove_file(path).expect("remove oversized PLY fixture");
     }
 }

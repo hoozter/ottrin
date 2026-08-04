@@ -1665,6 +1665,7 @@ impl OttrinApp {
             while let Ok(req) = preview_req_rx.recv() {
                 let sqlite_candidate = ottrin_preview::is_sqlite_preview_candidate(&req.path);
                 let obj_candidate = ottrin_preview::is_obj_path(&req.path);
+                let ply_candidate = ottrin_preview::is_ply_path(&req.path);
                 let generation_is_current = req.cache_key
                     == preview_cache_key_for_page_with_generations(
                         &req.path,
@@ -1769,6 +1770,55 @@ impl OttrinApp {
                         Ok(rendered)
                             if Some(&rendered.source_generation)
                                 == req.obj_source_generation.as_ref() =>
+                        {
+                            if req.target_dim != PREVIEW_CACHE_ORIGINAL {
+                                persist_cached_thumbnail(
+                                    &req.path,
+                                    req.target_dim,
+                                    req.page_index,
+                                    &req.cache_key,
+                                    &rendered.png,
+                                    req.cache_max_bytes,
+                                );
+                            }
+                            Some(rendered.png)
+                        }
+                        _ => None,
+                    }
+                } else if ply_candidate {
+                    if req.target_dim != PREVIEW_CACHE_ORIGINAL
+                        && let Some(cached) = load_cached_thumbnail(
+                            &req.path,
+                            req.target_dim,
+                            req.page_index,
+                            &req.cache_key,
+                        )
+                    {
+                        let _ = preview_res_tx.send(PreviewJobResponse {
+                            slot: req.slot,
+                            path: req.path,
+                            target_dim: req.target_dim,
+                            page_index: req.page_index,
+                            cache_key: req.cache_key,
+                            sqlite_source_generation: req.sqlite_source_generation,
+                            obj_source_generation: req.obj_source_generation,
+                            request_id: req.request_id,
+                            bytes: Some(cached),
+                        });
+                        continue;
+                    }
+                    match ottrin_preview::render_ply_preview_png_with_generation(
+                        &req.path,
+                        if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                            PREVIEW_CACHE_BUCKET_XL
+                        } else {
+                            req.target_dim
+                        },
+                    ) {
+                        Ok(rendered)
+                            if ottrin_preview::ply_preview_source_generation(&req.path)
+                                .as_ref()
+                                == Some(&rendered.source_generation) =>
                         {
                             if req.target_dim != PREVIEW_CACHE_ORIGINAL {
                                 persist_cached_thumbnail(
@@ -12653,6 +12703,7 @@ impl OttrinApp {
                                 | PreviewKind::SqliteMetadata
                                 | PreviewKind::StlMetadata
                                 | PreviewKind::ObjMetadata
+                                | PreviewKind::PlyMetadata
                                 | PreviewKind::ThreeMfMetadata
                                 | PreviewKind::Pdf => {
                                     let avail_w = ui.available_width().max(60.0);
@@ -14576,6 +14627,7 @@ impl OttrinApp {
                     | PreviewKind::SqliteMetadata
                     | PreviewKind::StlMetadata
                     | PreviewKind::ObjMetadata
+                    | PreviewKind::PlyMetadata
                     | PreviewKind::ThreeMfMetadata
                     | PreviewKind::Pdf => {
                         if let Some(img) = self.cached_image_preview_widget(
@@ -15873,6 +15925,7 @@ impl OttrinApp {
                                     | PreviewKind::SqliteMetadata
                                     | PreviewKind::StlMetadata
                                     | PreviewKind::ObjMetadata
+                                    | PreviewKind::PlyMetadata
                                     | PreviewKind::ThreeMfMetadata
                                     | PreviewKind::Pdf
                             );
@@ -15938,6 +15991,7 @@ impl OttrinApp {
                         | PreviewKind::SqliteMetadata
                         | PreviewKind::StlMetadata
                         | PreviewKind::ObjMetadata
+                        | PreviewKind::PlyMetadata
                         | PreviewKind::ThreeMfMetadata
                         | PreviewKind::Pdf => {
                             ScrollArea::both().show(ui, |ui| {
@@ -19169,6 +19223,7 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
             | PreviewKind::SqliteMetadata
             | PreviewKind::StlMetadata
             | PreviewKind::ObjMetadata
+            | PreviewKind::PlyMetadata
             | PreviewKind::ThreeMfMetadata
             | PreviewKind::Pdf
             | PreviewKind::Text
@@ -19932,6 +19987,7 @@ fn compact_preview_snippet(
         | PreviewKind::SqliteMetadata
         | PreviewKind::StlMetadata
         | PreviewKind::ObjMetadata
+        | PreviewKind::PlyMetadata
         | PreviewKind::ThreeMfMetadata => &preview.body,
         PreviewKind::Image | PreviewKind::FolderMetadata | PreviewKind::Unsupported => return None,
     };
@@ -21257,6 +21313,38 @@ mod tests {
         };
         assert!(!preview_response_matches_current_generation(&response));
         std::fs::remove_file(path).expect("remove OBJ");
+    }
+
+    #[test]
+    fn ply_response_from_an_intermediate_generation_is_rejected_after_a_to_b_to_a() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-ply-preview-response-{}.ply",
+            std::process::id()
+        ));
+        let first = b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n1 0 0\n0 1 1\n3 0 1 2\n";
+        let middle = b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n2 0 0\n0 1 1\n3 0 1 2\n";
+        std::fs::write(&path, first).expect("write initial PLY");
+        let first_key = preview_cache_key_for_page(&path, 128, 0);
+        std::fs::write(&path, middle).expect("write intermediate PLY");
+        let middle_key = preview_cache_key_for_page(&path, 128, 0);
+        assert_ne!(
+            first_key, middle_key,
+            "content generation must distinguish A and B"
+        );
+        std::fs::write(&path, first).expect("restore initial PLY");
+        let response = PreviewJobResponse {
+            slot: PreviewRequestSlot::new(path.clone(), PreviewRequestTarget::Thumbnail, 128, 0),
+            path: path.clone(),
+            target_dim: 128,
+            page_index: 0,
+            cache_key: middle_key,
+            sqlite_source_generation: None,
+            obj_source_generation: None,
+            request_id: 1,
+            bytes: Some(b"intermediate-png".to_vec()),
+        };
+        assert!(!preview_response_matches_current_generation(&response));
+        std::fs::remove_file(path).expect("remove PLY");
     }
 
     #[test]

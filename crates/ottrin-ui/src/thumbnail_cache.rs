@@ -19,6 +19,8 @@ const MAX_STL_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_STL_CACHE_PNG_DIMENSION: u32 = 1_024;
 const MAX_OBJ_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_OBJ_CACHE_PNG_DIMENSION: u32 = 1_024;
+const MAX_PLY_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_PLY_CACHE_PNG_DIMENSION: u32 = 1_024;
 const MAX_3MF_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_3MF_CACHE_PNG_DIMENSION: u32 = 1_024;
 
@@ -101,6 +103,10 @@ pub(crate) fn preview_cache_key_for_page_with_generations(
             .or_else(|| ottrin_preview::obj_preview_source_generation(path));
         return obj_preview_cache_key(target_dim, page_index, generation.as_ref());
     }
+    if ottrin_preview::is_ply_path(path) {
+        let generation = ottrin_preview::ply_preview_source_generation(path);
+        return ply_preview_cache_key(target_dim, page_index, generation.as_ref());
+    }
     if ottrin_preview::is_3mf_path(path) {
         let generation = ottrin_preview::threemf_preview_source_generation(path);
         return threemf_preview_cache_key(target_dim, page_index, generation.as_ref());
@@ -156,6 +162,17 @@ fn obj_preview_cache_key(
         .map(|generation| hex_digest(generation.as_bytes()))
         .unwrap_or_else(|| "unavailable".to_string());
     format!("obj-v1-{generation}-{target_dim}-{page_index}.png")
+}
+
+fn ply_preview_cache_key(
+    target_dim: u32,
+    page_index: usize,
+    source_generation: Option<&ottrin_preview::PlyPreviewSourceGeneration>,
+) -> String {
+    let generation = source_generation
+        .map(|generation| hex_digest(generation.as_bytes()))
+        .unwrap_or_else(|| "unavailable".to_string());
+    format!("ply-v1-{generation}-{target_dim}-{page_index}.png")
 }
 
 fn threemf_preview_cache_key(
@@ -282,6 +299,14 @@ fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u
                 return None;
             }
         }
+    } else if ottrin_preview::is_ply_path(path) {
+        match read_ply_cache_bytes(cache_path) {
+            Some(bytes) => bytes,
+            None => {
+                let _ = std::fs::remove_file(cache_path);
+                return None;
+            }
+        }
     } else if ottrin_preview::is_3mf_path(path) {
         match read_threemf_cache_bytes(cache_path) {
             Some(bytes) => bytes,
@@ -327,6 +352,11 @@ fn read_stl_cache_bytes(path: &Path) -> Option<Vec<u8>> {
 fn read_obj_cache_bytes(path: &Path) -> Option<Vec<u8>> {
     let file = std::fs::File::open(path).ok()?;
     read_bounded_cache(file, MAX_OBJ_CACHE_PNG_BYTES).ok()?
+}
+
+fn read_ply_cache_bytes(path: &Path) -> Option<Vec<u8>> {
+    let file = std::fs::File::open(path).ok()?;
+    read_bounded_cache(file, MAX_PLY_CACHE_PNG_BYTES).ok()?
 }
 
 fn read_threemf_cache_bytes(path: &Path) -> Option<Vec<u8>> {
@@ -505,6 +535,18 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::Ply => {
+                match ottrin_preview::render_ply_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "PLY thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
             ottrin_preview::PreviewVisualRenderer::ThreeMf => {
                 match ottrin_preview::render_3mf_preview_png(path, target_dim) {
                     Ok(bytes) => Some(bytes),
@@ -550,6 +592,13 @@ pub(crate) fn thumbnail_bytes_from_cache_or_build(
             == Some(&rendered.source_generation))
         .then_some((rendered.png, true));
     }
+    if ottrin_preview::is_ply_path(path) {
+        let rendered =
+            ottrin_preview::render_ply_preview_png_with_generation(path, target_dim).ok()?;
+        return (ottrin_preview::ply_preview_source_generation(path).as_ref()
+            == Some(&rendered.source_generation))
+        .then_some((rendered.png, true));
+    }
     if ottrin_preview::is_3mf_path(path) {
         let rendered =
             ottrin_preview::render_3mf_preview_png_with_generation(path, target_dim).ok()?;
@@ -581,6 +630,9 @@ fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
     }
     if ottrin_preview::is_obj_path(path) {
         return ottrin_preview::inspect_obj_metadata(path).is_ok() && obj_cached_png_is_safe(bytes);
+    }
+    if ottrin_preview::is_ply_path(path) {
+        return ottrin_preview::inspect_ply_metadata(path).is_ok() && ply_cached_png_is_safe(bytes);
     }
     if ottrin_preview::is_3mf_path(path) {
         return ottrin_preview::inspect_3mf_metadata(path).is_ok()
@@ -626,6 +678,10 @@ fn stl_cached_png_is_safe(bytes: &[u8]) -> bool {
 
 fn obj_cached_png_is_safe(bytes: &[u8]) -> bool {
     bounded_cached_png_is_safe(bytes, MAX_OBJ_CACHE_PNG_BYTES, MAX_OBJ_CACHE_PNG_DIMENSION)
+}
+
+fn ply_cached_png_is_safe(bytes: &[u8]) -> bool {
+    bounded_cached_png_is_safe(bytes, MAX_PLY_CACHE_PNG_BYTES, MAX_PLY_CACHE_PNG_DIMENSION)
 }
 
 fn threemf_cached_png_is_safe(bytes: &[u8]) -> bool {
@@ -738,6 +794,21 @@ pub(crate) fn full_preview_bytes_at_page(
             }
         };
     }
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Ply {
+        return match ottrin_preview::render_ply_preview_png_with_generation(path, target_dim) {
+            Ok(rendered)
+                if ottrin_preview::ply_preview_source_generation(path).as_ref()
+                    == Some(&rendered.source_generation) =>
+            {
+                Some(rendered.png)
+            }
+            Ok(_) => None,
+            Err(error) => {
+                eprintln!("PLY preview render failed for {}: {error}", path.display());
+                None
+            }
+        };
+    }
     if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::ThreeMf {
         return match ottrin_preview::render_3mf_preview_png_with_generation(path, target_dim) {
             Ok(rendered)
@@ -817,6 +888,7 @@ fn full_preview_bytes_with_visual_renderer(
             | ottrin_preview::PreviewVisualRenderer::Sqlite
             | ottrin_preview::PreviewVisualRenderer::Stl
             | ottrin_preview::PreviewVisualRenderer::Obj
+            | ottrin_preview::PreviewVisualRenderer::Ply
             | ottrin_preview::PreviewVisualRenderer::ThreeMf
     ) {
         return render_visual(path, target_dim);
@@ -841,6 +913,7 @@ fn build_thumbnail_bytes_with_visual_renderer(
         | ottrin_preview::PreviewVisualRenderer::Sqlite
         | ottrin_preview::PreviewVisualRenderer::Stl
         | ottrin_preview::PreviewVisualRenderer::Obj
+        | ottrin_preview::PreviewVisualRenderer::Ply
         | ottrin_preview::PreviewVisualRenderer::ThreeMf => {
             return render_visual(path, target_dim);
         }
@@ -1862,6 +1935,59 @@ mod tests {
             "oversized OBJ cache must be removed before image decode"
         );
         std::fs::remove_file(path).expect("remove OBJ");
+    }
+
+    #[test]
+    fn ply_thumbnail_compact_and_full_routes_use_only_content_keyed_pngs() {
+        let path =
+            std::env::temp_dir().join(format!("ottrin-ply-preview-{}.ply", std::process::id()));
+        let source = b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n1 0 0\n0 1 1\n3 0 1 2\n";
+        std::fs::write(&path, source).expect("write PLY fixture");
+        let thumbnail = build_thumbnail_bytes(&path, 128).expect("PLY thumbnail");
+        let full = full_preview_bytes_at_page(&path, 128, 0).expect("PLY full preview");
+        assert!(ply_cached_png_is_safe(&thumbnail));
+        assert_eq!(
+            thumbnail, full,
+            "shared PLY renderer must serve thumbnail and Inspector"
+        );
+        assert_ne!(thumbnail, source);
+        assert_eq!(fallback_preview_bytes(&path, None), None);
+
+        let first_key = preview_cache_key_for_page(&path, 128, 0);
+        let original_mtime = std::fs::metadata(&path)
+            .expect("read PLY metadata")
+            .modified()
+            .expect("read PLY mtime");
+        let replacement = b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n2 0 0\n0 1 1\n3 0 1 2\n";
+        assert_eq!(
+            source.len(),
+            replacement.len(),
+            "replacement stays same-sized"
+        );
+        let alias = path.with_extension("alias.ply");
+        std::fs::hard_link(&path, &alias).expect("create PLY hard-link alias");
+        std::fs::write(&alias, replacement).expect("replace PLY source through hard-link alias");
+        std::fs::File::open(&path)
+            .expect("open PLY source")
+            .set_times(std::fs::FileTimes::new().set_modified(original_mtime))
+            .expect("restore PLY mtime");
+        assert_ne!(first_key, preview_cache_key_for_page(&path, 128, 0));
+
+        std::fs::write(&path, b"not a PLY mesh").expect("replace with invalid PLY");
+        assert_eq!(
+            thumbnail_bytes_from_cache_or_build(&path, 128, Some(thumbnail.clone())),
+            None
+        );
+        assert_eq!(full_preview_bytes_at_page(&path, 128, 0), None);
+        let cache = path.with_extension("cached.png");
+        std::fs::write(&cache, thumbnail).expect("write stale PLY cache");
+        assert_eq!(load_cached_thumbnail_at_path(&path, &cache), None);
+        assert!(
+            !cache.exists(),
+            "invalid PLY source must discard cached preview"
+        );
+        std::fs::remove_file(path).expect("remove PLY fixture");
+        std::fs::remove_file(alias).expect("remove PLY hard-link alias");
     }
 
     #[test]
