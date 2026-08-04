@@ -17,6 +17,27 @@ const MAX_PREVIEW_SIDE: u32 = 1024;
 const MAX_PREVIEW_PIXELS: u64 = 1024 * 1024;
 const MAX_DECODED_PNG_BYTES: u64 = 8 * 1024 * 1024;
 
+#[cfg(all(test, unix))]
+thread_local! {
+    static AFTER_FIRST_READ_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> = const {
+        std::cell::RefCell::new(None)
+    };
+}
+
+#[cfg(all(test, unix))]
+fn run_after_first_read_hook() {
+    AFTER_FIRST_READ_HOOK.with(|hook| {
+        if let Some(hook) = hook.borrow_mut().take() {
+            hook();
+        }
+    });
+}
+
+#[cfg(all(test, unix))]
+fn set_after_first_read_hook(hook: impl FnOnce() + 'static) {
+    AFTER_FIRST_READ_HOOK.with(|slot| *slot.borrow_mut() = Some(Box::new(hook)));
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AffinityPreviewSourceGeneration(pub(crate) [u8; 32]);
 
@@ -155,27 +176,64 @@ fn read_snapshot(path: &Path) -> Result<Snapshot, AffinityVisualError> {
         limit: MAX_AFFINITY_PREVIEW_BYTES,
     })?;
     let mut bytes = Vec::with_capacity(capacity);
-    use std::io::Read;
+    use std::io::{Read, Seek, SeekFrom};
     file.by_ref()
         .take(MAX_AFFINITY_PREVIEW_BYTES + 1)
         .read_to_end(&mut bytes)
         .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
-    let final_size = file
+    #[cfg(all(test, unix))]
+    run_after_first_read_hook();
+    let first_pass_metadata = file
         .metadata()
-        .map_err(|error| AffinityVisualError::Read(error.to_string()))?
-        .len();
+        .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
     if bytes.len() as u64 > MAX_AFFINITY_PREVIEW_BYTES {
         return Err(AffinityVisualError::InputTooLarge {
             actual: bytes.len() as u64,
             limit: MAX_AFFINITY_PREVIEW_BYTES,
         });
     }
+    if bytes.len() as u64 != input_size
+        || !same_source_state(&opened_metadata, &first_pass_metadata)
+    {
+        return Err(AffinityVisualError::InputChanged);
+    }
+
+    // This is a fail-closed stable-read protocol, not an OS file lock.  The
+    // first buffer remains the only admitted input, but it is accepted only
+    // after a bounded second pass on this same non-following Unix handle
+    // proves the source generation did not change while it was read.
+    file.seek(SeekFrom::Start(0))
+        .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
+    let mut compared = 0usize;
+    let mut chunk = [0u8; 64 * 1024];
+    while compared < bytes.len() {
+        let expected = (bytes.len() - compared).min(chunk.len());
+        let read = file
+            .read(&mut chunk[..expected])
+            .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
+        if read == 0 || chunk[..read] != bytes[compared..compared + read] {
+            return Err(AffinityVisualError::InputChanged);
+        }
+        compared = compared
+            .checked_add(read)
+            .ok_or(AffinityVisualError::InputChanged)?;
+    }
+    let mut extra = [0u8; 1];
+    if file
+        .read(&mut extra)
+        .map_err(|error| AffinityVisualError::Read(error.to_string()))?
+        != 0
+    {
+        return Err(AffinityVisualError::InputChanged);
+    }
+    let second_pass_metadata = file
+        .metadata()
+        .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
     let current_metadata =
         std::fs::symlink_metadata(path).map_err(|_| AffinityVisualError::InputChanged)?;
-    if bytes.len() as u64 != input_size
-        || final_size != input_size
+    if !same_source_state(&opened_metadata, &second_pass_metadata)
         || !current_metadata.is_file()
-        || !same_source_identity(&opened_metadata, &current_metadata)
+        || !same_source_state(&opened_metadata, &current_metadata)
     {
         return Err(AffinityVisualError::InputChanged);
     }
@@ -200,6 +258,18 @@ fn open_affinity_source(path: &Path) -> Result<std::fs::File, AffinityVisualErro
 fn same_source_identity(left: &std::fs::Metadata, right: &std::fs::Metadata) -> bool {
     use std::os::unix::fs::MetadataExt;
     left.dev() == right.dev() && left.ino() == right.ino()
+}
+
+#[cfg(unix)]
+fn same_source_state(left: &std::fs::Metadata, right: &std::fs::Metadata) -> bool {
+    use std::os::unix::fs::MetadataExt;
+
+    same_source_identity(left, right)
+        && left.len() == right.len()
+        && left.mtime() == right.mtime()
+        && left.mtime_nsec() == right.mtime_nsec()
+        && left.ctime() == right.ctime()
+        && left.ctime_nsec() == right.ctime_nsec()
 }
 
 #[cfg(not(unix))]
@@ -261,8 +331,11 @@ fn validate_png(bytes: &[u8], start: usize) -> Result<Candidate, AffinityVisualE
     }
     let mut offset = start + PNG_SIGNATURE.len();
     let mut dimensions = None;
+    let mut palette_required = false;
+    let mut palette_forbidden = false;
+    let mut saw_plte = false;
     let mut saw_idat = false;
-    let mut after_idat = false;
+    let mut idat_ended = false;
     let mut compressed = Vec::new();
     loop {
         let header_end = offset
@@ -332,40 +405,89 @@ fn validate_png(bytes: &[u8], start: usize) -> Result<Candidate, AffinityVisualE
             {
                 return Err(AffinityVisualError::InvalidCandidate);
             }
+            let bit_depth = data[8];
+            let color_type = data[9];
+            if !matches!(
+                (color_type, bit_depth),
+                (0, 1 | 2 | 4 | 8 | 16)
+                    | (2, 8 | 16)
+                    | (3, 1 | 2 | 4 | 8)
+                    | (4, 8 | 16)
+                    | (6, 8 | 16)
+            ) || data[10] != 0
+                || data[11] != 0
+                || !matches!(data[12], 0 | 1)
+            {
+                return Err(AffinityVisualError::InvalidCandidate);
+            }
+            palette_required = color_type == 3;
+            palette_forbidden = matches!(color_type, 0 | 4 | 6);
             dimensions = Some((width, height));
-        } else if kind == b"IHDR" {
-            return Err(AffinityVisualError::InvalidCandidate);
-        }
-        if kind == b"IDAT" {
-            if after_idat {
-                return Err(AffinityVisualError::InvalidCandidate);
+        } else {
+            match kind {
+                b"IHDR" => return Err(AffinityVisualError::InvalidCandidate),
+                b"PLTE" => {
+                    if saw_plte
+                        || saw_idat
+                        || palette_forbidden
+                        || data.is_empty()
+                        || data.len() % 3 != 0
+                        || data.len() > 256 * 3
+                    {
+                        return Err(AffinityVisualError::InvalidCandidate);
+                    }
+                    saw_plte = true;
+                }
+                b"IDAT" => {
+                    if idat_ended {
+                        return Err(AffinityVisualError::InvalidCandidate);
+                    }
+                    saw_idat = true;
+                    let total = compressed
+                        .len()
+                        .checked_add(data.len())
+                        .ok_or(AffinityVisualError::InvalidCandidate)?;
+                    if total > MAX_CANDIDATE_IDAT_BYTES {
+                        return Err(AffinityVisualError::InvalidCandidate);
+                    }
+                    compressed.extend_from_slice(data);
+                }
+                b"IEND" => {
+                    if !data.is_empty() || !saw_idat || (palette_required && !saw_plte) {
+                        return Err(AffinityVisualError::InvalidCandidate);
+                    }
+                    offset = chunk_end;
+                    if has_immediate_iend_chunk(bytes, offset) {
+                        return Err(AffinityVisualError::InvalidCandidate);
+                    }
+                    validate_zlib_stream(&compressed)?;
+                    let (width, height) =
+                        dimensions.ok_or(AffinityVisualError::InvalidCandidate)?;
+                    return Ok(Candidate {
+                        span: start..offset,
+                        width,
+                        height,
+                    });
+                }
+                _ => {
+                    if kind[0] & 0x20 == 0 {
+                        return Err(AffinityVisualError::InvalidCandidate);
+                    }
+                    if saw_idat {
+                        idat_ended = true;
+                    }
+                }
             }
-            saw_idat = true;
-            let total = compressed
-                .len()
-                .checked_add(data.len())
-                .ok_or(AffinityVisualError::InvalidCandidate)?;
-            if total > MAX_CANDIDATE_IDAT_BYTES {
-                return Err(AffinityVisualError::InvalidCandidate);
-            }
-            compressed.extend_from_slice(data);
-        } else if saw_idat {
-            after_idat = true;
         }
         offset = chunk_end;
-        if kind == b"IEND" {
-            if !data.is_empty() || !saw_idat || !after_idat {
-                return Err(AffinityVisualError::InvalidCandidate);
-            }
-            validate_zlib_stream(&compressed)?;
-            let (width, height) = dimensions.ok_or(AffinityVisualError::InvalidCandidate)?;
-            return Ok(Candidate {
-                span: start..offset,
-                width,
-                height,
-            });
-        }
     }
+}
+
+fn has_immediate_iend_chunk(bytes: &[u8], offset: usize) -> bool {
+    offset
+        .checked_add(8)
+        .and_then(|end| bytes.get(offset..end))
+        .is_some_and(|header| header == b"\0\0\0\0IEND")
 }
 
 fn validate_zlib_stream(input: &[u8]) -> Result<(), AffinityVisualError> {
@@ -398,6 +520,8 @@ fn validate_zlib_stream(input: &[u8]) -> Result<(), AffinityVisualError> {
 mod tests {
     use super::*;
     use image::{ImageEncoder, Rgba, RgbaImage};
+    #[cfg(unix)]
+    use std::io::Write;
     use std::time::{SystemTime, UNIX_EPOCH};
 
     fn temp_path(name: &str) -> std::path::PathBuf {
@@ -420,6 +544,48 @@ mod tests {
             )
             .expect("encode fixture PNG");
         bytes
+    }
+
+    fn png_chunks(bytes: &[u8]) -> Vec<(Vec<u8>, Vec<u8>)> {
+        let mut offset = PNG_SIGNATURE.len();
+        let mut chunks = Vec::new();
+        while offset < bytes.len() {
+            let length =
+                u32::from_be_bytes(bytes[offset..offset + 4].try_into().expect("length")) as usize;
+            let kind = bytes[offset + 4..offset + 8].to_vec();
+            let end = offset + 12 + length;
+            chunks.push((kind, bytes[offset + 8..offset + 8 + length].to_vec()));
+            offset = end;
+        }
+        chunks
+    }
+
+    fn png_from_chunks(chunks: &[(Vec<u8>, Vec<u8>)]) -> Vec<u8> {
+        let mut bytes = PNG_SIGNATURE.to_vec();
+        for (kind, data) in chunks {
+            bytes.extend_from_slice(&(data.len() as u32).to_be_bytes());
+            bytes.extend_from_slice(kind);
+            bytes.extend_from_slice(data);
+            let mut hasher = Hasher::new();
+            hasher.update(kind);
+            hasher.update(data);
+            bytes.extend_from_slice(&hasher.finalize().to_be_bytes());
+        }
+        bytes
+    }
+
+    fn assert_invalid_embedded_png(name: &str, png: Vec<u8>) {
+        let path = temp_path(name);
+        std::fs::write(&path, png).expect("write malformed fixture");
+        assert!(
+            !affinity_preview_is_available(&path),
+            "availability must reject {name}"
+        );
+        assert!(
+            render_affinity_embedded_preview_png(&path, 256).is_err(),
+            "renderer must reject {name}"
+        );
+        let _ = std::fs::remove_file(path);
     }
 
     #[test]
@@ -485,6 +651,105 @@ mod tests {
         assert_ne!(first, second);
         assert!(!affinity_preview_is_available(&path));
         let _ = std::fs::remove_file(path);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn in_place_same_length_replacement_after_first_read_is_rejected() {
+        let path = temp_path("torn.afphoto");
+        let original = [png(256, 256, [1, 2, 3, 255]), vec![0x11; 1024 * 1024]].concat();
+        let replacement = [png(256, 256, [4, 5, 6, 255]), vec![0x22; 1024 * 1024]].concat();
+        assert_eq!(original.len(), replacement.len());
+        std::fs::write(&path, original).expect("write original fixture");
+        let replacement_path = path.clone();
+        set_after_first_read_hook(move || {
+            let mut file = std::fs::OpenOptions::new()
+                .write(true)
+                .open(&replacement_path)
+                .expect("open same inode for replacement");
+            file.write_all(&replacement)
+                .expect("replace same-length bytes");
+            file.sync_all().expect("persist replacement");
+        });
+
+        assert!(matches!(
+            read_snapshot(&path),
+            Err(AffinityVisualError::InputChanged)
+        ));
+        assert!(affinity_preview_source_generation(&path).is_some());
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn png_chunk_order_and_critical_chunk_rules_are_fail_closed() {
+        let base = png(256, 256, [10, 20, 30, 255]);
+        let chunks = png_chunks(&base);
+        let ihdr = chunks[0].clone();
+        let idat = chunks
+            .iter()
+            .find(|(kind, _)| kind == b"IDAT")
+            .cloned()
+            .expect("IDAT");
+        let iend = chunks
+            .iter()
+            .find(|(kind, _)| kind == b"IEND")
+            .cloned()
+            .expect("IEND");
+        let plte = (b"PLTE".to_vec(), vec![0, 0, 0]);
+        let ancillary = (b"tEXt".to_vec(), b"note\0between IDAT chunks".to_vec());
+        let unknown_critical = (b"ABCD".to_vec(), vec![1]);
+        let mut indexed_ihdr = ihdr.clone();
+        indexed_ihdr.1[9] = 3;
+
+        assert_invalid_embedded_png(
+            "late-plte.afphoto",
+            png_from_chunks(&[ihdr.clone(), idat.clone(), plte.clone(), iend.clone()]),
+        );
+        assert_invalid_embedded_png(
+            "duplicate-plte.afphoto",
+            png_from_chunks(&[
+                ihdr.clone(),
+                plte.clone(),
+                plte.clone(),
+                idat.clone(),
+                iend.clone(),
+            ]),
+        );
+        assert_invalid_embedded_png(
+            "indexed-without-plte.afphoto",
+            png_from_chunks(&[indexed_ihdr, idat.clone(), iend.clone()]),
+        );
+        let split = idat.1.len() / 2;
+        assert_invalid_embedded_png(
+            "split-idat.afphoto",
+            png_from_chunks(&[
+                ihdr.clone(),
+                (b"IDAT".to_vec(), idat.1[..split].to_vec()),
+                ancillary,
+                (b"IDAT".to_vec(), idat.1[split..].to_vec()),
+                iend.clone(),
+            ]),
+        );
+        assert_invalid_embedded_png(
+            "missing-idat.afphoto",
+            png_from_chunks(&[ihdr.clone(), iend.clone()]),
+        );
+        assert_invalid_embedded_png(
+            "duplicate-ihdr.afphoto",
+            png_from_chunks(&[ihdr.clone(), ihdr, idat.clone(), iend.clone()]),
+        );
+        assert_invalid_embedded_png(
+            "misordered-iend.afphoto",
+            png_from_chunks(&[chunks[0].clone(), iend.clone(), idat.clone()]),
+        );
+        assert_invalid_embedded_png(
+            "duplicate-iend.afphoto",
+            png_from_chunks(&[chunks[0].clone(), idat.clone(), iend.clone(), iend.clone()]),
+        );
+        assert_invalid_embedded_png(
+            "unknown-critical.afphoto",
+            png_from_chunks(&[chunks[0].clone(), unknown_critical, idat, iend]),
+        );
     }
 
     #[cfg(unix)]
