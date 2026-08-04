@@ -73,6 +73,80 @@ struct ParsedMesh {
     metadata: StlMetadata,
 }
 
+enum StlFormat {
+    Ascii,
+    Binary { triangle_count: usize },
+}
+
+struct MeshBuilder {
+    triangles: Vec<MeshTriangle>,
+    min: [f32; 3],
+    max: [f32; 3],
+}
+
+impl MeshBuilder {
+    fn new() -> Self {
+        Self {
+            triangles: Vec::new(),
+            min: [f32::INFINITY; 3],
+            max: [f32::NEG_INFINITY; 3],
+        }
+    }
+
+    fn add_triangle(
+        &mut self,
+        normal: [f32; 3],
+        vertices: [[f32; 3]; 3],
+    ) -> Result<(), StlVisualError> {
+        if self.triangles.len() >= MAX_STL_TRIANGLES {
+            return Err(StlVisualError::TriangleLimit {
+                limit: MAX_STL_TRIANGLES,
+            });
+        }
+        if !coordinates_are_safe(normal) {
+            return Err(StlVisualError::UnsafeCoordinates);
+        }
+        for vertex in vertices {
+            if !coordinates_are_safe(vertex) {
+                return Err(StlVisualError::UnsafeCoordinates);
+            }
+            for (axis, coordinate) in vertex.into_iter().enumerate() {
+                self.min[axis] = self.min[axis].min(coordinate);
+                self.max[axis] = self.max[axis].max(coordinate);
+            }
+        }
+        if triangle_area_squared(vertices) <= f32::EPSILON {
+            return Err(StlVisualError::DegenerateTriangle);
+        }
+        self.triangles.push(MeshTriangle { vertices, normal });
+        Ok(())
+    }
+
+    fn finish(self) -> Result<ParsedMesh, StlVisualError> {
+        if self.triangles.is_empty() {
+            return Err(StlVisualError::EmptyMesh);
+        }
+        let dimensions = [
+            self.max[0] - self.min[0],
+            self.max[1] - self.min[1],
+            self.max[2] - self.min[2],
+        ];
+        if dimensions
+            .iter()
+            .any(|dimension| !dimension.is_finite() || *dimension <= 0.0)
+        {
+            return Err(StlVisualError::UnusableBounds);
+        }
+        Ok(ParsedMesh {
+            metadata: StlMetadata {
+                triangle_count: self.triangles.len(),
+                dimensions,
+            },
+            triangles: self.triangles,
+        })
+    }
+}
+
 /// Reads one immutable bounded snapshot and returns its content identity.
 pub fn stl_preview_source_generation(path: &Path) -> Option<StlPreviewSourceGeneration> {
     read_stl_snapshot(path)
@@ -208,90 +282,130 @@ fn parse_stl_snapshot(path: &Path) -> Result<ParsedMesh, StlVisualError> {
         return Err(StlVisualError::UnsupportedFormat);
     }
     let snapshot = read_stl_snapshot(path)?;
-    validate_format(&snapshot.bytes)?;
-    let mut cursor = Cursor::new(snapshot.bytes.as_slice());
-    let reader = stl_io::create_stl_reader(&mut cursor)
-        .map_err(|error| StlVisualError::Parse(error.to_string()))?;
-    let mut triangles = Vec::new();
-    let mut min = [f32::INFINITY; 3];
-    let mut max = [f32::NEG_INFINITY; 3];
-    for result in reader {
-        if triangles.len() >= MAX_STL_TRIANGLES {
-            return Err(StlVisualError::TriangleLimit {
-                limit: MAX_STL_TRIANGLES,
-            });
-        }
-        let triangle = result.map_err(|error| StlVisualError::Parse(error.to_string()))?;
-        let normal = triangle.normal.0;
-        if !coordinates_are_safe(normal) {
-            return Err(StlVisualError::UnsafeCoordinates);
-        }
-        let vertices = triangle.vertices.map(|vertex| vertex.0);
-        for vertex in vertices {
-            if !coordinates_are_safe(vertex) {
-                return Err(StlVisualError::UnsafeCoordinates);
-            }
-            for axis in 0..3 {
-                min[axis] = min[axis].min(vertex[axis]);
-                max[axis] = max[axis].max(vertex[axis]);
-            }
-        }
-        if triangle_area_squared(vertices) <= f32::EPSILON {
-            return Err(StlVisualError::DegenerateTriangle);
-        }
-        triangles.push(MeshTriangle { vertices, normal });
+    match validate_format(&snapshot.bytes)? {
+        StlFormat::Binary { triangle_count } => parse_binary_mesh(&snapshot.bytes, triangle_count),
+        StlFormat::Ascii => parse_ascii_mesh(&snapshot.bytes),
     }
-    if triangles.is_empty() {
-        return Err(StlVisualError::EmptyMesh);
-    }
-    let dimensions = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
-    if dimensions
-        .iter()
-        .any(|dimension| !dimension.is_finite() || *dimension <= 0.0)
-    {
-        return Err(StlVisualError::UnusableBounds);
-    }
-    Ok(ParsedMesh {
-        metadata: StlMetadata {
-            triangle_count: triangles.len(),
-            dimensions,
-        },
-        triangles,
-    })
 }
 
-fn validate_format(bytes: &[u8]) -> Result<(), StlVisualError> {
-    let binary_length_matches = bytes.len() >= 84
-        && bytes
-            .get(80..84)
-            .and_then(|count| <[u8; 4]>::try_from(count).ok())
-            .and_then(|count| {
-                84_usize.checked_add(
-                    usize::try_from(u32::from_le_bytes(count))
-                        .ok()?
-                        .checked_mul(50)?,
-                )
-            })
-            == Some(bytes.len());
-    if binary_length_matches {
-        return Ok(());
+fn parse_binary_mesh(bytes: &[u8], triangle_count: usize) -> Result<ParsedMesh, StlVisualError> {
+    if triangle_count > MAX_STL_TRIANGLES {
+        return Err(StlVisualError::TriangleLimit {
+            limit: MAX_STL_TRIANGLES,
+        });
+    }
+    let mut builder = MeshBuilder::new();
+    let mut offset = 84_usize;
+    for _ in 0..triangle_count {
+        let end = offset
+            .checked_add(50)
+            .ok_or(StlVisualError::AmbiguousFormat)?;
+        let triangle = bytes
+            .get(offset..end)
+            .ok_or(StlVisualError::AmbiguousFormat)?;
+        builder.add_triangle(
+            binary_f32x3(triangle, 0)?,
+            [
+                binary_f32x3(triangle, 12)?,
+                binary_f32x3(triangle, 24)?,
+                binary_f32x3(triangle, 36)?,
+            ],
+        )?;
+        offset = end;
+    }
+    builder.finish()
+}
+
+fn parse_ascii_mesh(bytes: &[u8]) -> Result<ParsedMesh, StlVisualError> {
+    let mut cursor = Cursor::new(bytes);
+    let reader = stl_io::create_stl_reader(&mut cursor)
+        .map_err(|error| StlVisualError::Parse(error.to_string()))?;
+    let mut builder = MeshBuilder::new();
+    for result in reader {
+        let triangle = result.map_err(|error| StlVisualError::Parse(error.to_string()))?;
+        builder.add_triangle(triangle.normal.0, triangle.vertices.map(|vertex| vertex.0))?;
+    }
+    builder.finish()
+}
+
+fn binary_f32x3(bytes: &[u8], offset: usize) -> Result<[f32; 3], StlVisualError> {
+    Ok([
+        binary_f32(bytes, offset)?,
+        binary_f32(bytes, offset + 4)?,
+        binary_f32(bytes, offset + 8)?,
+    ])
+}
+
+fn binary_f32(bytes: &[u8], offset: usize) -> Result<f32, StlVisualError> {
+    let end = offset
+        .checked_add(4)
+        .ok_or(StlVisualError::AmbiguousFormat)?;
+    let value = bytes
+        .get(offset..end)
+        .ok_or(StlVisualError::AmbiguousFormat)?;
+    let value: [u8; 4] = value
+        .try_into()
+        .map_err(|_| StlVisualError::AmbiguousFormat)?;
+    Ok(f32::from_le_bytes(value))
+}
+
+fn validate_format(bytes: &[u8]) -> Result<StlFormat, StlVisualError> {
+    let binary_triangle_count = bytes
+        .get(80..84)
+        .and_then(|count| <[u8; 4]>::try_from(count).ok())
+        .map(u32::from_le_bytes)
+        .and_then(|count| usize::try_from(count).ok());
+    if let Some(triangle_count) = binary_triangle_count
+        && bytes.len() >= 84
+        && triangle_count
+            .checked_mul(50)
+            .and_then(|triangle_bytes| 84_usize.checked_add(triangle_bytes))
+            == Some(bytes.len())
+    {
+        return Ok(StlFormat::Binary { triangle_count });
     }
     let Ok(text) = std::str::from_utf8(bytes) else {
         return Err(StlVisualError::AmbiguousFormat);
     };
-    if !text.starts_with("solid ")
-        || text.as_bytes().iter().any(|byte| {
-            !byte.is_ascii() || (*byte < b' ' && !matches!(*byte, b'\n' | b'\r' | b'\t'))
-        })
-        || text
-            .lines()
-            .rev()
-            .find(|line| !line.trim().is_empty())
-            .is_none_or(|line| line.split_ascii_whitespace().next() != Some("endsolid"))
+    if text
+        .as_bytes()
+        .iter()
+        .any(|byte| !byte.is_ascii() || (*byte < b' ' && !matches!(*byte, b'\n' | b'\r' | b'\t')))
+        || !has_complete_ascii_envelope(text)
     {
         return Err(StlVisualError::AmbiguousFormat);
     }
-    Ok(())
+    Ok(StlFormat::Ascii)
+}
+
+fn has_complete_ascii_envelope(text: &str) -> bool {
+    let mut records = text.lines().map(str::trim).filter(|line| !line.is_empty());
+    let Some(first) = records.next() else {
+        return false;
+    };
+    if !is_ascii_stl_keyword(first, "solid") {
+        return false;
+    }
+    let mut saw_terminator = false;
+    for record in records {
+        if saw_terminator || is_ascii_stl_keyword(record, "solid") {
+            return false;
+        }
+        if is_ascii_stl_keyword(record, "endsolid") {
+            saw_terminator = true;
+        }
+    }
+    saw_terminator
+}
+
+fn is_ascii_stl_keyword(line: &str, keyword: &str) -> bool {
+    line.strip_prefix(keyword).is_some_and(|suffix| {
+        suffix.is_empty()
+            || suffix
+                .chars()
+                .next()
+                .is_some_and(|character| character.is_ascii_whitespace())
+    })
 }
 
 fn coordinates_are_safe(values: [f32; 3]) -> bool {
@@ -406,6 +520,45 @@ mod tests {
             [0.0, 0.0, 1.0],
             [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 1.0]],
         )
+    }
+
+    #[test]
+    fn exact_length_binary_stl_with_a_solid_header_is_rendered_as_binary() {
+        let path = temp_path("solid-binary-header.stl");
+        let mut bytes = binary_mesh(1, tetra_triangle());
+        bytes[..80].copy_from_slice(&{
+            let mut header = [0_u8; 80];
+            header[..13].copy_from_slice(b"solid binary\n");
+            header
+        });
+        std::fs::write(&path, bytes).expect("write binary STL with solid header");
+
+        assert_eq!(
+            inspect_stl_metadata(&path)
+                .expect("inspect exact-length binary STL")
+                .triangle_count,
+            1
+        );
+        assert!(
+            !render_stl_preview_png(&path, 128)
+                .expect("render exact-length binary STL")
+                .is_empty()
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn ascii_stl_rejects_nonblank_data_after_its_first_terminator() {
+        let path = temp_path("ascii-trailing-data.stl");
+        std::fs::write(
+            &path,
+            b"solid tetra\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 1\nendloop\nendfacet\nendsolid tetra\nTHIS MUST NOT BE IGNORED\nendsolid tetra\n",
+        )
+        .expect("write ASCII STL with trailing data");
+
+        assert!(inspect_stl_metadata(&path).is_err());
+        assert!(render_stl_preview_png(&path, 128).is_err());
+        let _ = std::fs::remove_file(path);
     }
 
     #[test]
