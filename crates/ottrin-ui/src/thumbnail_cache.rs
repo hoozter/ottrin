@@ -1701,6 +1701,48 @@ mod tests {
             ottrin_preview::preview_profile(Path::new("workbook.ODS")).visual_renderer(),
             ottrin_preview::PreviewVisualRenderer::Office
         );
+        let pptx = Path::new("deck.PPTX");
+        assert_eq!(
+            ottrin_preview::preview_profile(pptx).visual_renderer(),
+            ottrin_preview::PreviewVisualRenderer::Office
+        );
+        assert!(!ottrin_preview::preview_profile(pptx).raw_fallback_allowed());
+        assert_eq!(fallback_preview_bytes(pptx, None), None);
+    }
+
+    #[test]
+    fn office_cache_key_rejects_an_atomically_replaced_pptx_generation() {
+        let nonce = format!(
+            "{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system clock after epoch")
+                .as_nanos()
+        );
+        let source = std::env::temp_dir().join(format!("ottrin-office-{nonce}.pptx"));
+        let replacement =
+            std::env::temp_dir().join(format!("ottrin-office-replacement-{nonce}.pptx"));
+        let cache = std::env::temp_dir().join(format!("ottrin-office-{nonce}.png"));
+        std::fs::write(&source, b"first-pptx-generation").expect("write first generation");
+        let first_key = preview_cache_key_for_page(&source, 128, 0);
+        std::fs::write(&replacement, b"next--pptx-generation").expect("write replacement");
+        std::fs::rename(&replacement, &source).expect("atomically replace source");
+
+        assert!(
+            !persist_cached_thumbnail_at_path_if_current(
+                &source,
+                128,
+                0,
+                &first_key,
+                b"rendered card for the superseded package",
+                1024 * 1024,
+                cache.clone(),
+            ),
+            "a response for the replaced package must not be stored under its old generation"
+        );
+        assert!(!cache.exists());
+        let _ = std::fs::remove_file(source);
     }
 
     #[test]

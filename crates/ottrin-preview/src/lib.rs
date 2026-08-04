@@ -55,6 +55,8 @@ const EXTRACTED_TEXT_LIMIT: usize = 24_000;
 const MAX_OFFICE_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_OFFICE_PARTS: usize = 4_096;
 const MAX_OFFICE_XML_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_OFFICE_UNCOMPRESSED_BYTES: u64 = 64 * 1024 * 1024;
+const MAX_OFFICE_XML_DEPTH: usize = 64;
 const MAX_EPUB_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_EPUB_PARTS: usize = 4_096;
 const MAX_EPUB_PACKAGE_PATH_BYTES: usize = 1_024;
@@ -1680,7 +1682,7 @@ fn validate_exact_jpeg(jpeg: &[u8]) -> Result<(), CameraRawVisualError> {
     }
 }
 
-/// Renders bounded extracted DOCX/XLSX/XLSM/ODS content as a PNG. This is a
+/// Renders bounded extracted DOCX/XLSX/XLSM/ODS/PPTX content as a PNG. This is a
 /// content preview, not a faithful Office layout engine; unsupported or
 /// malformed packages fail closed so callers retain the metadata/text view.
 pub fn render_office_content_preview_png(
@@ -1692,7 +1694,7 @@ pub fn render_office_content_preview_png(
         .and_then(|extension| extension.to_str())
         .unwrap_or_default()
         .to_ascii_lowercase();
-    if !matches!(ext.as_str(), "docx" | "xlsx" | "xlsm" | "ods") {
+    if !matches!(ext.as_str(), "docx" | "xlsx" | "xlsm" | "ods" | "pptx") {
         return Err(OfficeVisualError::UnsupportedFormat);
     }
     let input_size = std::fs::metadata(path)
@@ -1714,10 +1716,14 @@ pub fn render_office_content_preview_png(
             limit: MAX_OFFICE_PARTS,
         });
     }
+    if ext == "pptx" && !pptx_package_is_safe(&mut archive) {
+        return Err(OfficeVisualError::NoContent);
+    }
     let text = match ext.as_str() {
         "docx" => extract_docx_text(&mut archive),
         "xlsx" | "xlsm" => extract_xlsx_text(&mut archive),
         "ods" => extract_ods_text(&mut archive),
+        "pptx" => extract_pptx_visual_text(&mut archive),
         _ => None,
     }
     .ok_or(OfficeVisualError::NoContent)?;
@@ -4740,6 +4746,174 @@ fn extract_pptx_text<R: std::io::Read + std::io::Seek>(
         }
     }
     normalized_preview_text(&out)
+}
+
+/// Visual PPTX previews deliberately admit only a canonical, bounded first
+/// slide. Metadata text can summarize more slides, but rendering a second
+/// slide after an empty or malformed first slide would hide a damaged package
+/// and make the preview's source ambiguous.
+fn extract_pptx_visual_text<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> Option<String> {
+    let (_, name) = pptx_first_slide(archive)?;
+    let xml = zip_entry_text(archive, &name)?;
+    extract_pptx_slide_text(&xml)
+}
+
+fn pptx_package_is_safe<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> bool {
+    let mut names = std::collections::HashSet::new();
+    let mut total_uncompressed = 0u64;
+    let mut relationship_parts = Vec::new();
+    for index in 0..archive.len() {
+        let Ok(entry) = archive.by_index_raw(index) else {
+            return false;
+        };
+        let name = entry.name().to_string();
+        if !safe_office_zip_name(&name)
+            || !names.insert(name.clone())
+            || entry.size() > MAX_OFFICE_XML_BYTES
+            || entry.compressed_size() > MAX_OFFICE_XML_BYTES
+        {
+            return false;
+        }
+        let Some(next_total) = total_uncompressed.checked_add(entry.size()) else {
+            return false;
+        };
+        total_uncompressed = next_total;
+        if total_uncompressed > MAX_OFFICE_UNCOMPRESSED_BYTES || name.starts_with("ppt/media/") {
+            return false;
+        }
+        if name.ends_with(".rels") {
+            relationship_parts.push(name);
+        }
+    }
+    if pptx_first_slide(archive).is_none() {
+        return false;
+    }
+    relationship_parts.into_iter().all(|name| {
+        zip_entry_text(archive, &name)
+            .and_then(|xml| pptx_relationships_are_internal(&xml))
+            .unwrap_or(false)
+    })
+}
+
+fn safe_office_zip_name(name: &str) -> bool {
+    let name = name.strip_suffix('/').unwrap_or(name);
+    !name.is_empty()
+        && !name.starts_with('/')
+        && !name.starts_with('\\')
+        && !name.contains('\\')
+        && !name.contains('\0')
+        && name
+            .split('/')
+            .all(|component| !matches!(component, "" | "." | ".."))
+}
+
+fn pptx_first_slide<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> Option<(u32, String)> {
+    let mut slides = std::collections::BTreeMap::new();
+    for index in 0..archive.len() {
+        let name = archive.by_index_raw(index).ok()?.name().to_string();
+        let Some(stem) = name
+            .strip_prefix("ppt/slides/slide")
+            .and_then(|name| name.strip_suffix(".xml"))
+        else {
+            continue;
+        };
+        let number = stem.parse::<u32>().ok()?;
+        if number == 0 || stem != number.to_string() || slides.insert(number, name).is_some() {
+            return None;
+        }
+    }
+    slides.into_iter().next()
+}
+
+fn pptx_relationships_are_internal(xml: &str) -> Option<bool> {
+    use quick_xml::events::Event;
+
+    let mut reader = quick_xml::Reader::from_str(xml);
+    let mut depth = 0usize;
+    loop {
+        match reader.read_event() {
+            Ok(Event::Start(event)) => {
+                depth = depth.checked_add(1)?;
+                if depth > MAX_OFFICE_XML_DEPTH {
+                    return None;
+                }
+                if !pptx_relationship_event_is_internal(&event)? {
+                    return Some(false);
+                }
+            }
+            Ok(Event::Empty(event)) => {
+                if !pptx_relationship_event_is_internal(&event)? {
+                    return Some(false);
+                }
+            }
+            Ok(Event::End(_)) => depth = depth.checked_sub(1)?,
+            Ok(Event::Text(_) | Event::Decl(_) | Event::Comment(_)) => {}
+            Ok(Event::DocType(_) | Event::GeneralRef(_) | Event::CData(_)) => return None,
+            Ok(Event::Eof) => return (depth == 0).then_some(true),
+            Err(_) => return None,
+            _ => return None,
+        }
+    }
+}
+
+fn pptx_relationship_event_is_internal(event: &quick_xml::events::BytesStart<'_>) -> Option<bool> {
+    for attribute in event.attributes() {
+        let attribute = attribute.ok()?;
+        if attribute.key.as_ref() == b"TargetMode"
+            && attribute.unescape_value().ok()?.as_ref() == "External"
+        {
+            return Some(false);
+        }
+    }
+    Some(true)
+}
+
+fn extract_pptx_slide_text(xml: &str) -> Option<String> {
+    use quick_xml::events::Event;
+
+    let mut reader = quick_xml::Reader::from_str(xml);
+    reader.config_mut().trim_text(true);
+    let mut depth = 0usize;
+    let mut text_depth = None;
+    let mut text = String::new();
+    loop {
+        match reader.read_event() {
+            Ok(Event::Start(event)) => {
+                depth = depth.checked_add(1)?;
+                if depth > MAX_OFFICE_XML_DEPTH {
+                    return None;
+                }
+                if event.name().as_ref() == b"a:t" && text_depth.replace(depth).is_some() {
+                    return None;
+                }
+            }
+            Ok(Event::Empty(event)) if event.name().as_ref() == b"a:t" => text.push('\n'),
+            Ok(Event::Empty(_)) => {}
+            Ok(Event::End(_)) => {
+                if text_depth == Some(depth) {
+                    text_depth = None;
+                    text.push('\n');
+                }
+                depth = depth.checked_sub(1)?;
+            }
+            Ok(Event::Text(event)) if text_depth.is_some() => text.push_str(&event.decode().ok()?),
+            Ok(Event::Text(_) | Event::Decl(_) | Event::Comment(_)) => {}
+            Ok(Event::DocType(_) | Event::GeneralRef(_) | Event::CData(_)) => return None,
+            Ok(Event::Eof) => {
+                return (depth == 0 && text_depth.is_none())
+                    .then(|| normalized_preview_text(&text))
+                    .flatten();
+            }
+            Err(_) => return None,
+            _ => return None,
+        }
+    }
 }
 
 const ODS_TABLE_NAMESPACE: &[u8] = b"urn:oasis:names:tc:opendocument:xmlns:table:1.0";
@@ -8235,6 +8409,174 @@ mod tests {
         assert!(preview.body.contains("Launch plan"));
         assert!(preview.body.contains("Ready for v1"));
         let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn pptx_visual_preview_is_bounded_png_not_package_bytes() {
+        let path = temp_path("slides.PPTX");
+        {
+            let file = std::fs::File::create(&path).expect("create pptx");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("ppt/slides/slide1.xml", options)
+                .expect("slide");
+            zip.write_all(
+                br#"<p:sld><a:t>First slide title</a:t><a:t>Bounded preview text</a:t></p:sld>"#,
+            )
+            .expect("write slide");
+            zip.finish().expect("finish");
+        }
+
+        let png = render_office_content_preview_png(&path, 256).expect("bounded visual PNG");
+        let decoded = image::load_from_memory(&png).expect("decode visual PNG");
+        assert_eq!(decoded.dimensions(), (256, 256));
+        assert!(
+            decoded
+                .pixels()
+                .any(|(_, _, pixel)| pixel.0 != [255, 255, 255, 255]),
+            "PPTX preview must rasterize slide text, not an empty page"
+        );
+        assert_ne!(png, std::fs::read(&path).expect("read package"));
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn pptx_visual_preview_uses_the_lowest_canonical_slide_number() {
+        let path = temp_path("out-of-order.pptx");
+        {
+            let file = std::fs::File::create(&path).expect("create pptx");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            for (name, text) in [
+                ("ppt/slides/slide2.xml", "Second slide"),
+                ("ppt/slides/slide1.xml", "First slide"),
+            ] {
+                zip.start_file(name, options).expect("slide");
+                write!(zip, "<p:sld><a:t>{text}</a:t></p:sld>").expect("write slide");
+            }
+            zip.finish().expect("finish");
+        }
+
+        let file = std::fs::File::open(&path).expect("open pptx");
+        let mut archive = zip::ZipArchive::new(file).expect("open package");
+        assert_eq!(
+            extract_pptx_visual_text(&mut archive),
+            Some("First slide".to_string())
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn pptx_visual_preview_fails_closed_for_unsafe_or_noncanonical_packages() {
+        let cases = [
+            (
+                "empty-first-slide",
+                vec![
+                    ("ppt/slides/slide1.xml", "<p:sld><a:t/></p:sld>"),
+                    (
+                        "ppt/slides/slide2.xml",
+                        "<p:sld><a:t>Later slide</a:t></p:sld>",
+                    ),
+                ],
+            ),
+            (
+                "malformed-slide",
+                vec![("ppt/slides/slide1.xml", "<p:sld><a:t>Unclosed</p:sld>")],
+            ),
+            (
+                "colliding-slide-identity",
+                vec![
+                    ("ppt/slides/slide1.xml", "<p:sld><a:t>One</a:t></p:sld>"),
+                    ("ppt/slides/slide01.xml", "<p:sld><a:t>Alias</a:t></p:sld>"),
+                ],
+            ),
+            (
+                "traversal-entry",
+                vec![
+                    ("ppt/slides/slide1.xml", "<p:sld><a:t>Safe</a:t></p:sld>"),
+                    (
+                        "../ppt/slides/slide2.xml",
+                        "<p:sld><a:t>Unsafe</a:t></p:sld>",
+                    ),
+                ],
+            ),
+            (
+                "media-entry",
+                vec![
+                    ("ppt/slides/slide1.xml", "<p:sld><a:t>Safe</a:t></p:sld>"),
+                    ("ppt/media/video.bin", "not rendered"),
+                ],
+            ),
+            (
+                "external-relationship",
+                vec![
+                    ("ppt/slides/slide1.xml", "<p:sld><a:t>Safe</a:t></p:sld>"),
+                    (
+                        "ppt/_rels/presentation.xml.rels",
+                        "<Relationships><Relationship TargetMode=\"External\" Target=\"https://example.invalid\"/></Relationships>",
+                    ),
+                ],
+            ),
+        ];
+
+        for (suffix, entries) in cases {
+            let path = temp_path(&format!("{suffix}.pptx"));
+            {
+                let file = std::fs::File::create(&path).expect("create pptx");
+                let mut zip = zip::ZipWriter::new(file);
+                let options = zip::write::SimpleFileOptions::default();
+                for (name, contents) in entries {
+                    zip.start_file(name, options).expect("entry");
+                    zip.write_all(contents.as_bytes()).expect("write entry");
+                }
+                zip.finish().expect("finish");
+            }
+
+            assert!(matches!(
+                render_office_content_preview_png(&path, 256),
+                Err(OfficeVisualError::NoContent)
+            ));
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn pptx_visual_preview_rejects_excess_parts_and_oversized_slide_xml() {
+        let many_parts = temp_path("too-many-parts.pptx");
+        {
+            let file = std::fs::File::create(&many_parts).expect("create pptx");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            for index in 0..=MAX_OFFICE_PARTS {
+                zip.start_file(format!("ppt/slides/slide{index}.xml"), options)
+                    .expect("entry");
+                zip.write_all(b"<p:sld><a:t>Ignored</a:t></p:sld>")
+                    .expect("write entry");
+            }
+            zip.finish().expect("finish");
+        }
+        assert!(matches!(
+            render_office_content_preview_png(&many_parts, 256),
+            Err(OfficeVisualError::TooManyParts { .. })
+        ));
+        let _ = std::fs::remove_file(many_parts);
+
+        let oversized = temp_path("oversized-slide.pptx");
+        {
+            let file = std::fs::File::create(&oversized).expect("create pptx");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("ppt/slides/slide1.xml", options)
+                .expect("slide");
+            zip.write_all(&vec![b'x'; MAX_OFFICE_XML_BYTES as usize + 1])
+                .expect("write oversized slide");
+            zip.finish().expect("finish");
+        }
+        assert!(matches!(
+            render_office_content_preview_png(&oversized, 256),
+            Err(OfficeVisualError::NoContent)
+        ));
+        let _ = std::fs::remove_file(oversized);
     }
 
     #[test]
