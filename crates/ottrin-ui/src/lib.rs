@@ -1554,11 +1554,23 @@ impl OttrinApp {
                 let bytes = if req.target_dim == PREVIEW_CACHE_ORIGINAL || selected_pdf_page {
                     full_preview_bytes_at_page(&req.path, PREVIEW_CACHE_BUCKET_XL, req.page_index)
                 } else {
-                    let cached = load_cached_thumbnail(&req.path, &cache_key);
+                    let cached = load_cached_thumbnail(
+                        &req.path,
+                        req.target_dim,
+                        req.page_index,
+                        &cache_key,
+                    );
                     thumbnail_bytes_from_cache_or_build(&req.path, req.target_dim, cached).map(
                         |(bytes, should_persist)| {
                             if should_persist {
-                                persist_cached_thumbnail(&cache_key, &bytes, req.cache_max_bytes);
+                                persist_cached_thumbnail(
+                                    &req.path,
+                                    req.target_dim,
+                                    req.page_index,
+                                    &cache_key,
+                                    &bytes,
+                                    req.cache_max_bytes,
+                                );
                             }
                             bytes
                         },

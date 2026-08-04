@@ -63,6 +63,13 @@ pub(crate) fn preview_cache_key_for_page(
     let mut hasher = DefaultHasher::new();
     path.hash(&mut hasher);
     if let Ok(meta) = std::fs::metadata(path) {
+        // The path and metadata are not enough to distinguish a same-size,
+        // same-timestamp replacement. `same_file::Handle` hashes the stable
+        // platform identity (inode on Unix; volume/file identity on Windows)
+        // so a replacement cannot inherit the old preview generation.
+        if let Ok(identity) = same_file::Handle::from_path(path) {
+            identity.hash(&mut hasher);
+        }
         meta.len().hash(&mut hasher);
         if let Ok(mtime) = meta.modified()
             && let Ok(dur) = mtime.duration_since(std::time::UNIX_EPOCH)
@@ -105,9 +112,27 @@ fn preview_cache_path(cache_key: &str) -> Option<PathBuf> {
     Some(dir)
 }
 
-pub(crate) fn load_cached_thumbnail(path: &Path, cache_key: &str) -> Option<Vec<u8>> {
+pub(crate) fn load_cached_thumbnail(
+    path: &Path,
+    target_dim: u32,
+    page_index: usize,
+    cache_key: &str,
+) -> Option<Vec<u8>> {
+    if !preview_cache_key_matches(path, target_dim, page_index, cache_key) {
+        return None;
+    }
     let cache_path = preview_cache_path(cache_key)?;
-    load_cached_thumbnail_at_path(path, &cache_path)
+    let bytes = load_cached_thumbnail_at_path(path, &cache_path)?;
+    preview_cache_key_matches(path, target_dim, page_index, cache_key).then_some(bytes)
+}
+
+fn preview_cache_key_matches(
+    path: &Path,
+    target_dim: u32,
+    page_index: usize,
+    cache_key: &str,
+) -> bool {
+    preview_cache_key_for_page(path, target_dim, page_index) == cache_key
 }
 
 /// Opens an already-resolved cache entry only after the preview profile permits
@@ -180,18 +205,54 @@ fn read_bounded_cache(reader: impl Read, max_bytes: u64) -> std::io::Result<Opti
     Ok((bytes.len() < limit).then_some(bytes))
 }
 
-pub(crate) fn persist_cached_thumbnail(cache_key: &str, bytes: &[u8], max_bytes: u64) {
-    if max_bytes == 0 {
-        return;
-    }
-    let Some(path) = preview_cache_path(cache_key) else {
+pub(crate) fn persist_cached_thumbnail(
+    source_path: &Path,
+    target_dim: u32,
+    page_index: usize,
+    cache_key: &str,
+    bytes: &[u8],
+    max_bytes: u64,
+) {
+    let Some(cache_path) = preview_cache_path(cache_key) else {
         return;
     };
-    if let Some(parent) = path.parent() {
+    let _ = persist_cached_thumbnail_at_path_if_current(
+        source_path,
+        target_dim,
+        page_index,
+        cache_key,
+        bytes,
+        max_bytes,
+        cache_path,
+    );
+}
+
+fn persist_cached_thumbnail_at_path_if_current(
+    source_path: &Path,
+    target_dim: u32,
+    page_index: usize,
+    cache_key: &str,
+    bytes: &[u8],
+    max_bytes: u64,
+    cache_path: PathBuf,
+) -> bool {
+    if max_bytes == 0 {
+        return false;
+    }
+    if preview_cache_key_for_page(source_path, target_dim, page_index) != cache_key {
+        return false;
+    }
+    if let Some(parent) = cache_path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
-    let _ = std::fs::write(path, bytes);
+    if std::fs::write(&cache_path, bytes).is_err()
+        || preview_cache_key_for_page(source_path, target_dim, page_index) != cache_key
+    {
+        let _ = std::fs::remove_file(cache_path);
+        return false;
+    }
     prune_preview_cache_dir(max_bytes);
+    true
 }
 
 pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<u8>> {
@@ -943,6 +1004,47 @@ mod tests {
             std::fs::remove_file(source).expect("remove SQLite source");
             std::fs::remove_file(cache).expect("remove SQLite cache");
         }
+    }
+
+    #[test]
+    fn sqlite_cache_generation_rejects_a_replacement_between_key_and_persist() {
+        let nonce = format!(
+            "{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system clock after epoch")
+                .as_nanos()
+        );
+        let source = std::env::temp_dir().join(format!("ottrin-generation-{nonce}.sqlite"));
+        let replacement =
+            std::env::temp_dir().join(format!("ottrin-generation-replacement-{nonce}.sqlite"));
+        let cache = std::env::temp_dir().join(format!("ottrin-generation-{nonce}.png"));
+        std::fs::write(&source, b"SQLite format 3\0first-generation")
+            .expect("write first source generation");
+        let first_key = preview_cache_key_for_page(&source, 128, 0);
+        std::fs::write(&replacement, b"SQLite format 3\0next--generation")
+            .expect("write replacement generation");
+        std::fs::rename(&replacement, &source).expect("atomically replace source generation");
+
+        assert!(
+            !persist_cached_thumbnail_at_path_if_current(
+                &source,
+                128,
+                0,
+                &first_key,
+                b"rendered card for the superseded generation",
+                MAX_SQLITE_CACHE_PNG_BYTES,
+                cache.clone(),
+            ),
+            "a card rendered after replacement must not be persisted under the prior generation"
+        );
+        assert!(
+            !cache.exists(),
+            "superseded-generation cache output must be removed rather than served later"
+        );
+
+        std::fs::remove_file(source).expect("remove replacement source");
     }
 
     #[test]

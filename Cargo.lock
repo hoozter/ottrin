@@ -2808,6 +2808,7 @@ dependencies = [
  "ottrin-preview",
  "ottrin-search",
  "rfd",
+ "same-file",
  "serde_json",
  "sha2",
 ]
