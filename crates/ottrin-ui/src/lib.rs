@@ -12653,6 +12653,7 @@ impl OttrinApp {
                                 | PreviewKind::SqliteMetadata
                                 | PreviewKind::StlMetadata
                                 | PreviewKind::ObjMetadata
+                                | PreviewKind::ThreeMfMetadata
                                 | PreviewKind::Pdf => {
                                     let avail_w = ui.available_width().max(60.0);
                                     let max_h = preview_panel_h - 70.0;
@@ -14575,6 +14576,7 @@ impl OttrinApp {
                     | PreviewKind::SqliteMetadata
                     | PreviewKind::StlMetadata
                     | PreviewKind::ObjMetadata
+                    | PreviewKind::ThreeMfMetadata
                     | PreviewKind::Pdf => {
                         if let Some(img) = self.cached_image_preview_widget(
                             &entry.path,
@@ -15871,6 +15873,7 @@ impl OttrinApp {
                                     | PreviewKind::SqliteMetadata
                                     | PreviewKind::StlMetadata
                                     | PreviewKind::ObjMetadata
+                                    | PreviewKind::ThreeMfMetadata
                                     | PreviewKind::Pdf
                             );
                             if is_zoomable_document {
@@ -15935,6 +15938,7 @@ impl OttrinApp {
                         | PreviewKind::SqliteMetadata
                         | PreviewKind::StlMetadata
                         | PreviewKind::ObjMetadata
+                        | PreviewKind::ThreeMfMetadata
                         | PreviewKind::Pdf => {
                             ScrollArea::both().show(ui, |ui| {
                                 let max_w = (ui.available_width() - 24.0).max(120.0);
@@ -19165,6 +19169,7 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
             | PreviewKind::SqliteMetadata
             | PreviewKind::StlMetadata
             | PreviewKind::ObjMetadata
+            | PreviewKind::ThreeMfMetadata
             | PreviewKind::Pdf
             | PreviewKind::Text
     );
@@ -19926,7 +19931,8 @@ fn compact_preview_snippet(
         | PreviewKind::FontMetadata
         | PreviewKind::SqliteMetadata
         | PreviewKind::StlMetadata
-        | PreviewKind::ObjMetadata => &preview.body,
+        | PreviewKind::ObjMetadata
+        | PreviewKind::ThreeMfMetadata => &preview.body,
         PreviewKind::Image | PreviewKind::FolderMetadata | PreviewKind::Unsupported => return None,
     };
     let snippet = metadata_preview_snippet(source, max_lines, max_chars);

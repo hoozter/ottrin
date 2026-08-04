@@ -18,6 +18,7 @@ mod mesh_visual;
 mod obj_visual;
 mod pdf_visual;
 mod stl_visual;
+mod threemf_visual;
 pub use obj_visual::{
     ObjMetadata, ObjPreviewSourceGeneration, ObjVisualError, RenderedObjPreview,
     inspect_obj_metadata, obj_preview_source_generation, render_obj_preview_png,
@@ -30,6 +31,11 @@ pub use pdf_visual::{
 pub use stl_visual::{
     StlPreviewSourceGeneration, StlVisualError, inspect_stl_metadata, render_stl_preview_png,
     stl_preview_source_generation,
+};
+pub use threemf_visual::{
+    ThreeMfMetadata, ThreeMfPreviewSourceGeneration, ThreeMfVisualError, inspect_3mf_metadata,
+    render_3mf_preview_png, render_3mf_preview_png_with_generation,
+    threemf_preview_source_generation,
 };
 
 const EXTRACTED_TEXT_MARKER: &str = "\n\nExtracted text:\n";
@@ -501,6 +507,7 @@ pub enum PreviewKind {
     SqliteMetadata,
     StlMetadata,
     ObjMetadata,
+    ThreeMfMetadata,
     Pdf,
     VideoMetadata,
     AudioMetadata,
@@ -541,6 +548,7 @@ pub enum PreviewVisualRenderer {
     Sqlite,
     Stl,
     Obj,
+    ThreeMf,
     CameraRaw,
     TextCard,
 }
@@ -615,6 +623,12 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
             kind,
             views: [true, false, true],
             visual_renderer: PreviewVisualRenderer::Obj,
+            raw_fallback_allowed: false,
+        },
+        PreviewKind::ThreeMfMetadata => PreviewProfile {
+            kind,
+            views: [true, false, true],
+            visual_renderer: PreviewVisualRenderer::ThreeMf,
             raw_fallback_allowed: false,
         },
         PreviewKind::Pdf => PreviewProfile {
@@ -693,6 +707,10 @@ pub fn preview_profile(path: &Path) -> PreviewProfile {
         // OBJ source is parsed by a bounded, in-memory mesh renderer only.
         profile.raw_fallback_allowed = false;
     }
+    if is_3mf_path(path) {
+        // 3MF package bytes only reach the dedicated bounded parser.
+        profile.raw_fallback_allowed = false;
+    }
     profile
 }
 
@@ -720,6 +738,12 @@ pub fn is_obj_path(path: &Path) -> bool {
         .is_some_and(|extension| extension.eq_ignore_ascii_case("obj"))
 }
 
+pub fn is_3mf_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("3mf"))
+}
+
 pub fn is_epub_path(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
@@ -745,6 +769,7 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
         PreviewKind::SqliteMetadata => preview_sqlite(title, &request.path),
         PreviewKind::StlMetadata => preview_stl(title, &request.path),
         PreviewKind::ObjMetadata => preview_obj(title, &request.path),
+        PreviewKind::ThreeMfMetadata => preview_3mf(title, &request.path),
         PreviewKind::Pdf => preview_pdf(title, &request.path),
         PreviewKind::VideoMetadata => preview_video(title, &request.path),
         PreviewKind::AudioMetadata => preview_audio(title, &request.path),
@@ -773,6 +798,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         "sqlite" | "sqlite3" => PreviewKind::SqliteMetadata,
         "stl" => PreviewKind::StlMetadata,
         "obj" => PreviewKind::ObjMetadata,
+        "3mf" => PreviewKind::ThreeMfMetadata,
         "db" if has_sqlite_header(path) => PreviewKind::SqliteMetadata,
         "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" | "ico" | "svg" => {
             PreviewKind::Image
@@ -2144,6 +2170,43 @@ fn preview_obj(title: String, path: &Path) -> PreviewData {
     PreviewData {
         title,
         kind: PreviewKind::ObjMetadata,
+        body: lines.join("\n"),
+        open_external: true,
+    }
+}
+
+fn preview_3mf(title: String, path: &Path) -> PreviewData {
+    let mut lines = vec![
+        "Filetype: 3D Manufacturing Format package".to_string(),
+        "Format: 3MF".to_string(),
+    ];
+    if let Ok(metadata) = std::fs::metadata(path) {
+        lines.push(format!("Size: {}", format_size(metadata.len())));
+    }
+    match inspect_3mf_metadata(path) {
+        Ok(metadata) => {
+            lines.push(format!("Units: {}", metadata.unit));
+            lines.push(format!("Objects: {}", metadata.object_count));
+            lines.push(format!("Build items: {}", metadata.build_item_count));
+            lines.push(format!("Vertices: {}", metadata.vertex_count));
+            lines.push(format!("Triangles: {}", metadata.triangle_count));
+            lines.push(format!(
+                "Bounds: {:.4} x {:.4} x {:.4}",
+                metadata.dimensions[0], metadata.dimensions[1], metadata.dimensions[2]
+            ));
+            if metadata.ignored_optional_features {
+                lines.push(
+                    "Materials/textures/print options: ignored for this bounded preview"
+                        .to_string(),
+                );
+            }
+            lines.push("Preview: Bounded CPU mesh render".to_string());
+        }
+        Err(_) => lines.push("Preview: 3MF metadata unavailable for this package.".to_string()),
+    }
+    PreviewData {
+        title,
+        kind: PreviewKind::ThreeMfMetadata,
         body: lines.join("\n"),
         open_external: true,
     }

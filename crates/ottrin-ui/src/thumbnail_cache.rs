@@ -19,6 +19,8 @@ const MAX_STL_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_STL_CACHE_PNG_DIMENSION: u32 = 1_024;
 const MAX_OBJ_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_OBJ_CACHE_PNG_DIMENSION: u32 = 1_024;
+const MAX_3MF_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_3MF_CACHE_PNG_DIMENSION: u32 = 1_024;
 
 #[derive(Debug, Clone)]
 pub(crate) enum ImagePreviewCacheEntry {
@@ -99,6 +101,10 @@ pub(crate) fn preview_cache_key_for_page_with_generations(
             .or_else(|| ottrin_preview::obj_preview_source_generation(path));
         return obj_preview_cache_key(target_dim, page_index, generation.as_ref());
     }
+    if ottrin_preview::is_3mf_path(path) {
+        let generation = ottrin_preview::threemf_preview_source_generation(path);
+        return threemf_preview_cache_key(target_dim, page_index, generation.as_ref());
+    }
     if ottrin_preview::is_sqlite_preview_candidate(path) {
         let generation = sqlite_source_generation
             .cloned()
@@ -150,6 +156,17 @@ fn obj_preview_cache_key(
         .map(|generation| hex_digest(generation.as_bytes()))
         .unwrap_or_else(|| "unavailable".to_string());
     format!("obj-v1-{generation}-{target_dim}-{page_index}.png")
+}
+
+fn threemf_preview_cache_key(
+    target_dim: u32,
+    page_index: usize,
+    source_generation: Option<&ottrin_preview::ThreeMfPreviewSourceGeneration>,
+) -> String {
+    let generation = source_generation
+        .map(|generation| hex_digest(generation.as_bytes()))
+        .unwrap_or_else(|| "unavailable".to_string());
+    format!("3mf-v1-{generation}-{target_dim}-{page_index}.png")
 }
 
 fn sqlite_preview_cache_key(
@@ -265,6 +282,14 @@ fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u
                 return None;
             }
         }
+    } else if ottrin_preview::is_3mf_path(path) {
+        match read_threemf_cache_bytes(cache_path) {
+            Some(bytes) => bytes,
+            None => {
+                let _ = std::fs::remove_file(cache_path);
+                return None;
+            }
+        }
     } else {
         std::fs::read(cache_path).ok()?
     };
@@ -302,6 +327,11 @@ fn read_stl_cache_bytes(path: &Path) -> Option<Vec<u8>> {
 fn read_obj_cache_bytes(path: &Path) -> Option<Vec<u8>> {
     let file = std::fs::File::open(path).ok()?;
     read_bounded_cache(file, MAX_OBJ_CACHE_PNG_BYTES).ok()?
+}
+
+fn read_threemf_cache_bytes(path: &Path) -> Option<Vec<u8>> {
+    let file = std::fs::File::open(path).ok()?;
+    read_bounded_cache(file, MAX_3MF_CACHE_PNG_BYTES).ok()?
 }
 
 fn read_bounded_cache(reader: impl Read, max_bytes: u64) -> std::io::Result<Option<Vec<u8>>> {
@@ -475,6 +505,18 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::ThreeMf => {
+                match ottrin_preview::render_3mf_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "3MF thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
             _ => None,
         }
     })
@@ -508,6 +550,13 @@ pub(crate) fn thumbnail_bytes_from_cache_or_build(
             == Some(&rendered.source_generation))
         .then_some((rendered.png, true));
     }
+    if ottrin_preview::is_3mf_path(path) {
+        let rendered =
+            ottrin_preview::render_3mf_preview_png_with_generation(path, target_dim).ok()?;
+        return (ottrin_preview::threemf_preview_source_generation(path).as_ref()
+            == Some(&rendered.source_generation))
+        .then_some((rendered.png, true));
+    }
     if let Some(bytes) = build_thumbnail_bytes(path, target_dim) {
         return Some((bytes, true));
     }
@@ -532,6 +581,10 @@ fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
     }
     if ottrin_preview::is_obj_path(path) {
         return ottrin_preview::inspect_obj_metadata(path).is_ok() && obj_cached_png_is_safe(bytes);
+    }
+    if ottrin_preview::is_3mf_path(path) {
+        return ottrin_preview::inspect_3mf_metadata(path).is_ok()
+            && threemf_cached_png_is_safe(bytes);
     }
     if !ottrin_preview::preview_profile(path).raw_fallback_allowed() {
         return is_png_bytes(bytes);
@@ -573,6 +626,10 @@ fn stl_cached_png_is_safe(bytes: &[u8]) -> bool {
 
 fn obj_cached_png_is_safe(bytes: &[u8]) -> bool {
     bounded_cached_png_is_safe(bytes, MAX_OBJ_CACHE_PNG_BYTES, MAX_OBJ_CACHE_PNG_DIMENSION)
+}
+
+fn threemf_cached_png_is_safe(bytes: &[u8]) -> bool {
+    bounded_cached_png_is_safe(bytes, MAX_3MF_CACHE_PNG_BYTES, MAX_3MF_CACHE_PNG_DIMENSION)
 }
 
 fn bounded_cached_png_is_safe(bytes: &[u8], max_bytes: u64, max_dimension: u32) -> bool {
@@ -681,6 +738,21 @@ pub(crate) fn full_preview_bytes_at_page(
             }
         };
     }
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::ThreeMf {
+        return match ottrin_preview::render_3mf_preview_png_with_generation(path, target_dim) {
+            Ok(rendered)
+                if ottrin_preview::threemf_preview_source_generation(path).as_ref()
+                    == Some(&rendered.source_generation) =>
+            {
+                Some(rendered.png)
+            }
+            Ok(_) => None,
+            Err(error) => {
+                eprintln!("3MF preview render failed for {}: {error}", path.display());
+                None
+            }
+        };
+    }
     full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
         match preview_visual_renderer(path) {
             ottrin_preview::PreviewVisualRenderer::Office => {
@@ -745,6 +817,7 @@ fn full_preview_bytes_with_visual_renderer(
             | ottrin_preview::PreviewVisualRenderer::Sqlite
             | ottrin_preview::PreviewVisualRenderer::Stl
             | ottrin_preview::PreviewVisualRenderer::Obj
+            | ottrin_preview::PreviewVisualRenderer::ThreeMf
     ) {
         return render_visual(path, target_dim);
     }
@@ -767,7 +840,8 @@ fn build_thumbnail_bytes_with_visual_renderer(
         | ottrin_preview::PreviewVisualRenderer::Font
         | ottrin_preview::PreviewVisualRenderer::Sqlite
         | ottrin_preview::PreviewVisualRenderer::Stl
-        | ottrin_preview::PreviewVisualRenderer::Obj => {
+        | ottrin_preview::PreviewVisualRenderer::Obj
+        | ottrin_preview::PreviewVisualRenderer::ThreeMf => {
             return render_visual(path, target_dim);
         }
         ottrin_preview::PreviewVisualRenderer::Image => {
@@ -961,6 +1035,33 @@ pub fn clear_preview_cache_storage() -> u64 {
 mod tests {
     use super::*;
     use image::GenericImageView;
+    use std::io::Write;
+
+    fn write_3mf_fixture(path: &Path) {
+        let file = std::fs::File::create(path).expect("create 3MF fixture");
+        let mut package = zip::ZipWriter::new(file);
+        let options = zip::write::SimpleFileOptions::default();
+        for (name, value) in [
+            (
+                "[Content_Types].xml",
+                r#"<Types><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>"#,
+            ),
+            (
+                "_rels/.rels",
+                r#"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" Target="/3D/model.model"/></Relationships>"#,
+            ),
+            (
+                "3D/model.model",
+                r#"<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><resources><object id="1" type="model"><mesh><vertices><vertex x="0" y="0" z="0"/><vertex x="1" y="0" z="0"/><vertex x="0" y="1" z="1"/></vertices><triangles><triangle v1="0" v2="1" v3="2"/></triangles></mesh></object></resources><build><item objectid="1"/></build></model>"#,
+            ),
+        ] {
+            package.start_file(name, options).expect("start 3MF entry");
+            package
+                .write_all(value.as_bytes())
+                .expect("write 3MF entry");
+        }
+        package.finish().expect("finish 3MF fixture");
+    }
 
     fn raw_tiff_with_embedded_jpeg(jpeg: &[u8]) -> Vec<u8> {
         const IFD0_OFFSET: u32 = 8;
@@ -1761,5 +1862,36 @@ mod tests {
             "oversized OBJ cache must be removed before image decode"
         );
         std::fs::remove_file(path).expect("remove OBJ");
+    }
+
+    #[test]
+    fn threemf_thumbnail_compact_and_full_routes_use_only_content_keyed_pngs() {
+        let path =
+            std::env::temp_dir().join(format!("ottrin-3mf-preview-{}.3mf", std::process::id()));
+        write_3mf_fixture(&path);
+        let thumbnail = build_thumbnail_bytes(&path, 128).expect("3MF thumbnail");
+        let full = full_preview_bytes_at_page(&path, 128, 0).expect("3MF full preview");
+        assert!(threemf_cached_png_is_safe(&thumbnail));
+        assert_eq!(
+            thumbnail, full,
+            "shared 3MF renderer must serve thumbnail and Inspector"
+        );
+        assert_ne!(thumbnail, std::fs::read(&path).expect("read package"));
+        assert_eq!(fallback_preview_bytes(&path, None), None);
+        let key = preview_cache_key_for_page(&path, 128, 0);
+        std::fs::write(&path, b"not a 3MF package").expect("replace 3MF source");
+        assert_ne!(key, preview_cache_key_for_page(&path, 128, 0));
+        assert_eq!(
+            thumbnail_bytes_from_cache_or_build(&path, 128, Some(thumbnail.clone())),
+            None
+        );
+        let cache = path.with_extension("cached.png");
+        std::fs::write(&cache, thumbnail).expect("write stale 3MF cache");
+        assert_eq!(load_cached_thumbnail_at_path(&path, &cache), None);
+        assert!(
+            !cache.exists(),
+            "invalid 3MF source must discard cached preview"
+        );
+        std::fs::remove_file(path).expect("remove 3MF fixture");
     }
 }
