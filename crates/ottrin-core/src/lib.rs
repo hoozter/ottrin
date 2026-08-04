@@ -1089,6 +1089,7 @@ impl AppState {
         if self.tabs.len() <= 1 {
             return; // never close the last tab
         }
+        let active_id = self.active_tab().id;
         // If this tab is part of link view, unlink first
         let closing_id = self.tabs[idx].id;
         if let Some(lv) = &self.link_view
@@ -1097,12 +1098,14 @@ impl AppState {
             self.link_view = None;
         }
         self.tabs.remove(idx);
-        if self.active_tab_idx >= self.tabs.len() {
-            self.active_tab_idx = self.tabs.len() - 1;
+        if closing_id == active_id {
+            self.active_tab_idx = idx.min(self.tabs.len() - 1);
+        } else {
+            self.active_tab_idx = self
+                .tab_idx_by_id(active_id)
+                .expect("closing an inactive tab preserves the active tab");
         }
-        if !self.tabs.is_empty() {
-            self.select_tab_idx(self.active_tab_idx);
-        }
+        self.select_tab_idx(self.active_tab_idx);
     }
 
     pub fn tab_by_id(&self, id: u64) -> Option<&TabState> {
@@ -1687,6 +1690,92 @@ mod tests {
         // Should not close the last tab
         state.close_tab(0);
         assert_eq!(state.tabs.len(), 1);
+    }
+
+    #[test]
+    fn close_inactive_tab_before_active_preserves_active_tab_identity() {
+        let mut state = AppState::default();
+        let active_idx = state.new_tab(PathBuf::from("/tmp/active"));
+        state.new_tab(PathBuf::from("/tmp/final"));
+        state.select_tab_idx(active_idx);
+        let active_id = state.active_tab().id;
+
+        state.close_tab(0);
+
+        assert_eq!(state.active_tab().id, active_id);
+        assert_eq!(state.active_tab_idx, 0);
+    }
+
+    #[test]
+    fn close_inactive_tab_after_active_preserves_active_tab_identity_and_index() {
+        let mut state = AppState::default();
+        state.new_tab(PathBuf::from("/tmp/active"));
+        state.new_tab(PathBuf::from("/tmp/later"));
+        state.select_tab_idx(1);
+        let active_id = state.active_tab().id;
+
+        state.close_tab(2);
+
+        assert_eq!(state.active_tab().id, active_id);
+        assert_eq!(state.active_tab_idx, 1);
+    }
+
+    #[test]
+    fn close_active_middle_tab_selects_tab_that_moves_into_its_index() {
+        let mut state = AppState::default();
+        state.new_tab(PathBuf::from("/tmp/middle"));
+        state.new_tab(PathBuf::from("/tmp/final"));
+        let successor_id = state.tabs[2].id;
+        state.select_tab_idx(1);
+
+        state.close_tab(1);
+
+        assert_eq!(state.active_tab().id, successor_id);
+        assert_eq!(state.active_tab_idx, 1);
+    }
+
+    #[test]
+    fn close_active_final_tab_selects_preceding_tab() {
+        let mut state = AppState::default();
+        state.new_tab(PathBuf::from("/tmp/middle"));
+        state.new_tab(PathBuf::from("/tmp/final"));
+        let predecessor_id = state.tabs[1].id;
+        state.select_tab_idx(2);
+
+        state.close_tab(2);
+
+        assert_eq!(state.active_tab().id, predecessor_id);
+        assert_eq!(state.active_tab_idx, 1);
+    }
+
+    #[test]
+    fn close_last_tab_is_refused() {
+        let mut state = AppState::default();
+        let only_id = state.active_tab().id;
+
+        state.close_tab(0);
+
+        assert_eq!(state.tabs.len(), 1);
+        assert_eq!(state.active_tab().id, only_id);
+        assert_eq!(state.active_tab_idx, 0);
+    }
+
+    #[test]
+    fn closing_tandem_member_unlinks_but_unrelated_tab_preserves_linked_ids() {
+        let mut state = AppState::default();
+        let right_idx = state.new_tab(PathBuf::from("/tmp/right"));
+        let unrelated_idx = state.new_tab(PathBuf::from("/tmp/unrelated"));
+        state.activate_tandem(0, right_idx).unwrap();
+        let linked = state.link_view.clone().unwrap();
+
+        state.close_tab(unrelated_idx);
+
+        assert_eq!(state.link_view, Some(linked.clone()));
+
+        let left_idx = state.tab_idx_by_id(linked.left_tab_id).unwrap();
+        state.close_tab(left_idx);
+
+        assert!(state.link_view.is_none());
     }
 
     #[test]
