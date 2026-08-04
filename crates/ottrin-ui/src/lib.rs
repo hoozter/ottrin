@@ -856,6 +856,7 @@ struct PreviewJobRequest {
     cache_key: String,
     sqlite_source_generation: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
     obj_source_generation: Option<ottrin_preview::ObjPreviewSourceGeneration>,
+    ply_source_generation: Option<ottrin_preview::PlyPreviewSourceGeneration>,
     request_id: u64,
     cache_max_bytes: u64,
 }
@@ -869,6 +870,7 @@ struct PreviewJobResponse {
     cache_key: String,
     sqlite_source_generation: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
     obj_source_generation: Option<ottrin_preview::ObjPreviewSourceGeneration>,
+    ply_source_generation: Option<ottrin_preview::PlyPreviewSourceGeneration>,
     request_id: u64,
     bytes: Option<Vec<u8>>,
 }
@@ -1673,6 +1675,7 @@ impl OttrinApp {
                         req.page_index,
                         req.sqlite_source_generation.as_ref(),
                         req.obj_source_generation.as_ref(),
+                        req.ply_source_generation.as_ref(),
                     );
                 let selected_pdf_page = req.page_index > 0
                     && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
@@ -1685,6 +1688,10 @@ impl OttrinApp {
                         && (req.obj_source_generation.is_none()
                             || req.obj_source_generation
                                 != ottrin_preview::obj_preview_source_generation(&req.path)))
+                    || (ply_candidate
+                        && (req.ply_source_generation.is_none()
+                            || req.ply_source_generation
+                                != ottrin_preview::ply_preview_source_generation(&req.path)))
                 {
                     None
                 } else if sqlite_candidate {
@@ -1704,6 +1711,7 @@ impl OttrinApp {
                             cache_key: req.cache_key,
                             sqlite_source_generation: req.sqlite_source_generation,
                             obj_source_generation: req.obj_source_generation,
+                            ply_source_generation: req.ply_source_generation,
                             request_id: req.request_id,
                             bytes: Some(cached),
                         });
@@ -1754,6 +1762,7 @@ impl OttrinApp {
                             cache_key: req.cache_key,
                             sqlite_source_generation: req.sqlite_source_generation,
                             obj_source_generation: req.obj_source_generation,
+                            ply_source_generation: req.ply_source_generation,
                             request_id: req.request_id,
                             bytes: Some(cached),
                         });
@@ -1802,6 +1811,7 @@ impl OttrinApp {
                             cache_key: req.cache_key,
                             sqlite_source_generation: req.sqlite_source_generation,
                             obj_source_generation: req.obj_source_generation,
+                            ply_source_generation: req.ply_source_generation,
                             request_id: req.request_id,
                             bytes: Some(cached),
                         });
@@ -1816,9 +1826,8 @@ impl OttrinApp {
                         },
                     ) {
                         Ok(rendered)
-                            if ottrin_preview::ply_preview_source_generation(&req.path)
-                                .as_ref()
-                                == Some(&rendered.source_generation) =>
+                            if Some(&rendered.source_generation)
+                                == req.ply_source_generation.as_ref() =>
                         {
                             if req.target_dim != PREVIEW_CACHE_ORIGINAL {
                                 persist_cached_thumbnail(
@@ -1867,6 +1876,7 @@ impl OttrinApp {
                     cache_key: req.cache_key,
                     sqlite_source_generation: req.sqlite_source_generation,
                     obj_source_generation: req.obj_source_generation,
+                    ply_source_generation: req.ply_source_generation,
                     request_id: req.request_id,
                     bytes,
                 });
@@ -2122,6 +2132,7 @@ impl OttrinApp {
         source_generations: (
             Option<ottrin_preview::SqlitePreviewSourceGeneration>,
             Option<ottrin_preview::ObjPreviewSourceGeneration>,
+            Option<ottrin_preview::PlyPreviewSourceGeneration>,
         ),
     ) {
         if self.preview_budget_remaining == 0 {
@@ -2142,6 +2153,7 @@ impl OttrinApp {
             cache_key,
             sqlite_source_generation: source_generations.0,
             obj_source_generation: source_generations.1,
+            ply_source_generation: source_generations.2,
             request_id,
             cache_max_bytes: self.thumbnail_cache_max_bytes(),
         });
@@ -2194,12 +2206,16 @@ impl OttrinApp {
         let obj_source_generation = ottrin_preview::is_obj_path(path)
             .then(|| ottrin_preview::obj_preview_source_generation(path))
             .flatten();
+        let ply_source_generation = ottrin_preview::is_ply_path(path)
+            .then(|| ottrin_preview::ply_preview_source_generation(path))
+            .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             target_dim,
             page_index,
             sqlite_source_generation.as_ref(),
             obj_source_generation.as_ref(),
+            ply_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2208,7 +2224,11 @@ impl OttrinApp {
                 target_dim,
                 page_index,
                 cache_key,
-                (sqlite_source_generation, obj_source_generation),
+                (
+                    sqlite_source_generation,
+                    obj_source_generation,
+                    ply_source_generation,
+                ),
             );
             return None;
         }
@@ -2244,12 +2264,16 @@ impl OttrinApp {
         let obj_source_generation = ottrin_preview::is_obj_path(path)
             .then(|| ottrin_preview::obj_preview_source_generation(path))
             .flatten();
+        let ply_source_generation = ottrin_preview::is_ply_path(path)
+            .then(|| ottrin_preview::ply_preview_source_generation(path))
+            .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             PREVIEW_CACHE_ORIGINAL,
             page_index,
             sqlite_source_generation.as_ref(),
             obj_source_generation.as_ref(),
+            ply_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2258,7 +2282,11 @@ impl OttrinApp {
                 PREVIEW_CACHE_ORIGINAL,
                 page_index,
                 cache_key,
-                (sqlite_source_generation, obj_source_generation),
+                (
+                    sqlite_source_generation,
+                    obj_source_generation,
+                    ply_source_generation,
+                ),
             );
             return None;
         }
@@ -2296,12 +2324,16 @@ impl OttrinApp {
         let obj_source_generation = ottrin_preview::is_obj_path(path)
             .then(|| ottrin_preview::obj_preview_source_generation(path))
             .flatten();
+        let ply_source_generation = ottrin_preview::is_ply_path(path)
+            .then(|| ottrin_preview::ply_preview_source_generation(path))
+            .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             PREVIEW_CACHE_ORIGINAL,
             page_index,
             sqlite_source_generation.as_ref(),
             obj_source_generation.as_ref(),
+            ply_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2310,7 +2342,11 @@ impl OttrinApp {
                 PREVIEW_CACHE_ORIGINAL,
                 page_index,
                 cache_key,
-                (sqlite_source_generation, obj_source_generation),
+                (
+                    sqlite_source_generation,
+                    obj_source_generation,
+                    ply_source_generation,
+                ),
             );
             return None;
         }
@@ -18808,6 +18844,24 @@ fn preview_response_matches_current_generation(response: &PreviewJobResponse) ->
                     response.page_index,
                     None,
                     Some(&current_generation),
+                    None,
+                );
+    }
+    if ottrin_preview::is_ply_path(&response.path) {
+        let Some(current_generation) =
+            ottrin_preview::ply_preview_source_generation(&response.path)
+        else {
+            return false;
+        };
+        return response.ply_source_generation.as_ref() == Some(&current_generation)
+            && response.cache_key
+                == preview_cache_key_for_page_with_generations(
+                    &response.path,
+                    response.target_dim,
+                    response.page_index,
+                    None,
+                    None,
+                    Some(&current_generation),
                 );
     }
     response.cache_key
@@ -21226,6 +21280,7 @@ mod tests {
             cache_key: preview_cache_key_for_page(&path, 128, 0),
             sqlite_source_generation: None,
             obj_source_generation: None,
+            ply_source_generation: None,
             request_id: 1,
             bytes: Some(b"png".to_vec()),
         };
@@ -21260,6 +21315,7 @@ mod tests {
             cache_key: preview_cache_key_for_page(&source, 128, 0),
             sqlite_source_generation: ottrin_preview::sqlite_preview_source_generation(&source),
             obj_source_generation: None,
+            ply_source_generation: None,
             request_id: 1,
             bytes: Some(b"first-generation-card".to_vec()),
         };
@@ -21305,9 +21361,11 @@ mod tests {
                 0,
                 None,
                 Some(&expected),
+                None,
             ),
             sqlite_source_generation: None,
             obj_source_generation: Some(rendered_middle),
+            ply_source_generation: None,
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
         };
@@ -21324,9 +21382,20 @@ mod tests {
         let first = b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n1 0 0\n0 1 1\n3 0 1 2\n";
         let middle = b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n2 0 0\n0 1 1\n3 0 1 2\n";
         std::fs::write(&path, first).expect("write initial PLY");
-        let first_key = preview_cache_key_for_page(&path, 128, 0);
+        let expected = ottrin_preview::ply_preview_source_generation(&path).expect("capture A");
+        let first_key =
+            preview_cache_key_for_page_with_generations(&path, 128, 0, None, None, Some(&expected));
         std::fs::write(&path, middle).expect("write intermediate PLY");
-        let middle_key = preview_cache_key_for_page(&path, 128, 0);
+        let rendered_middle =
+            ottrin_preview::ply_preview_source_generation(&path).expect("capture B");
+        let middle_key = preview_cache_key_for_page_with_generations(
+            &path,
+            128,
+            0,
+            None,
+            None,
+            Some(&rendered_middle),
+        );
         assert_ne!(
             first_key, middle_key,
             "content generation must distinguish A and B"
@@ -21340,6 +21409,7 @@ mod tests {
             cache_key: middle_key,
             sqlite_source_generation: None,
             obj_source_generation: None,
+            ply_source_generation: Some(rendered_middle),
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
         };

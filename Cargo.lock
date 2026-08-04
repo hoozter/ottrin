@@ -2764,6 +2764,7 @@ dependencies = [
  "epaint_default_fonts",
  "flate2",
  "image",
+ "libc",
  "lofty",
  "lopdf",
  "ottrin-core",

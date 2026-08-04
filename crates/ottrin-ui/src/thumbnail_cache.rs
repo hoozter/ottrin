@@ -68,7 +68,7 @@ pub(crate) fn preview_cache_key_for_page(
     target_dim: u32,
     page_index: usize,
 ) -> String {
-    preview_cache_key_for_page_with_generations(path, target_dim, page_index, None, None)
+    preview_cache_key_for_page_with_generations(path, target_dim, page_index, None, None, None)
 }
 
 pub(crate) fn preview_cache_key_for_page_with_sqlite_generation(
@@ -83,6 +83,7 @@ pub(crate) fn preview_cache_key_for_page_with_sqlite_generation(
         page_index,
         sqlite_source_generation,
         None,
+        None,
     )
 }
 
@@ -92,6 +93,7 @@ pub(crate) fn preview_cache_key_for_page_with_generations(
     page_index: usize,
     sqlite_source_generation: Option<&ottrin_preview::SqlitePreviewSourceGeneration>,
     obj_source_generation: Option<&ottrin_preview::ObjPreviewSourceGeneration>,
+    ply_source_generation: Option<&ottrin_preview::PlyPreviewSourceGeneration>,
 ) -> String {
     if ottrin_preview::is_stl_path(path) {
         let generation = ottrin_preview::stl_preview_source_generation(path);
@@ -104,7 +106,9 @@ pub(crate) fn preview_cache_key_for_page_with_generations(
         return obj_preview_cache_key(target_dim, page_index, generation.as_ref());
     }
     if ottrin_preview::is_ply_path(path) {
-        let generation = ottrin_preview::ply_preview_source_generation(path);
+        let generation = ply_source_generation
+            .cloned()
+            .or_else(|| ottrin_preview::ply_preview_source_generation(path));
         return ply_preview_cache_key(target_dim, page_index, generation.as_ref());
     }
     if ottrin_preview::is_3mf_path(path) {

@@ -47,6 +47,8 @@ pub enum PlyVisualError {
     UnsupportedFormat,
     #[error("could not inspect PLY input: {0}")]
     InputMetadata(String),
+    #[error("PLY source is not a regular file")]
+    InputNotRegular,
     #[error("PLY input is too large for a bounded preview ({actual} bytes; limit {limit})")]
     InputTooLarge { actual: u64, limit: u64 },
     #[error("could not read PLY input: {0}")]
@@ -247,12 +249,22 @@ pub fn render_ply_preview_png_with_generation(
 }
 
 fn read_ply_snapshot(path: &Path) -> Result<PlySnapshot, PlyVisualError> {
-    let mut file = std::fs::File::open(path)
+    let path_metadata = std::fs::symlink_metadata(path)
         .map_err(|error| PlyVisualError::InputMetadata(error.to_string()))?;
-    let input_size = file
+    if !path_metadata.is_file() {
+        return Err(PlyVisualError::InputNotRegular);
+    }
+    let mut file = open_ply_source(path)?;
+    let opened_metadata = file
         .metadata()
-        .map_err(|error| PlyVisualError::InputMetadata(error.to_string()))?
-        .len();
+        .map_err(|error| PlyVisualError::InputMetadata(error.to_string()))?;
+    if !opened_metadata.is_file() {
+        return Err(PlyVisualError::InputNotRegular);
+    }
+    if !same_source_identity(&path_metadata, &opened_metadata) {
+        return Err(PlyVisualError::InputChanged);
+    }
+    let input_size = opened_metadata.len();
     if input_size > MAX_PLY_PREVIEW_BYTES {
         return Err(PlyVisualError::InputTooLarge {
             actual: input_size,
@@ -282,10 +294,44 @@ fn read_ply_snapshot(path: &Path) -> Result<PlySnapshot, PlyVisualError> {
     if bytes.len() as u64 != input_size || final_size != input_size {
         return Err(PlyVisualError::InputChanged);
     }
+    let current_metadata =
+        std::fs::symlink_metadata(path).map_err(|_| PlyVisualError::InputChanged)?;
+    if !current_metadata.is_file() || !same_source_identity(&opened_metadata, &current_metadata) {
+        return Err(PlyVisualError::InputChanged);
+    }
     Ok(PlySnapshot {
         generation: PlyPreviewSourceGeneration(Sha256::digest(&bytes).into()),
         bytes,
     })
+}
+
+fn open_ply_source(path: &Path) -> Result<std::fs::File, PlyVisualError> {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+
+        std::fs::OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
+            .open(path)
+            .map_err(|error| PlyVisualError::InputMetadata(error.to_string()))
+    }
+    #[cfg(not(unix))]
+    {
+        std::fs::File::open(path).map_err(|error| PlyVisualError::InputMetadata(error.to_string()))
+    }
+}
+
+#[cfg(unix)]
+fn same_source_identity(left: &std::fs::Metadata, right: &std::fs::Metadata) -> bool {
+    use std::os::unix::fs::MetadataExt;
+
+    left.dev() == right.dev() && left.ino() == right.ino()
+}
+
+#[cfg(not(unix))]
+fn same_source_identity(left: &std::fs::Metadata, right: &std::fs::Metadata) -> bool {
+    left.len() == right.len() && left.modified().ok() == right.modified().ok()
 }
 
 fn parse_ply_snapshot(
@@ -959,4 +1005,115 @@ fn bounded_count(value: &str, label: &str) -> Result<usize, PlyVisualError> {
     value
         .parse()
         .map_err(|_| PlyVisualError::Header(format!("{label} overflow")))
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod tests {
+    use super::*;
+    use std::ffi::OsStr;
+    use std::os::unix::fs::symlink;
+    use std::os::unix::net::UnixListener;
+    use std::process::Command;
+    use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+
+    fn temp_root() -> std::path::PathBuf {
+        std::env::temp_dir().join(format!(
+            "ottrin-ply-nonregular-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
+        ))
+    }
+
+    fn assert_non_regular_ply_rejected(path: &Path) {
+        assert!(ply_preview_source_generation(path).is_none());
+        for result in [
+            inspect_ply_metadata(path).map(|_| ()),
+            render_ply_preview_png(path, 128).map(|_| ()),
+        ] {
+            assert_eq!(
+                result
+                    .expect_err("non-regular PLY source must fail closed")
+                    .to_string(),
+                "PLY source is not a regular file"
+            );
+        }
+    }
+
+    #[test]
+    fn ply_special_sources_and_symlinks_fail_closed() {
+        let root = temp_root();
+        std::fs::create_dir(&root).expect("create root");
+        let directory = root.join("directory.ply");
+        std::fs::create_dir(&directory).expect("create PLY directory");
+        let socket = root.join("socket.ply");
+        let _listener = UnixListener::bind(&socket).expect("create PLY socket");
+        let target = root.join("target.ply");
+        std::fs::write(&target, b"ply\nformat ascii 1.0\nend_header\n")
+            .expect("write PLY symlink target");
+        let link = root.join("link.ply");
+        symlink(&target, &link).expect("create PLY symlink");
+
+        for path in [&directory, &socket, &link] {
+            assert_non_regular_ply_rejected(path);
+        }
+        assert!(
+            ply_preview_source_generation(Path::new("/dev/null")).is_none(),
+            "device sources must be rejected before a bounded snapshot is read"
+        );
+
+        drop(_listener);
+        std::fs::remove_dir_all(root).expect("remove PLY fixtures");
+    }
+
+    #[test]
+    fn ply_fifo_is_rejected_without_blocking() {
+        const CHILD: &str = "OTTRIN_PLY_FIFO_REJECTION_CHILD";
+        const PATH: &str = "OTTRIN_PLY_FIFO_REJECTION_PATH";
+        if std::env::var_os(CHILD).as_deref() == Some(OsStr::new("1")) {
+            let fifo = std::env::var_os(PATH).expect("FIFO path");
+            assert_non_regular_ply_rejected(Path::new(&fifo));
+            return;
+        }
+
+        let root = temp_root();
+        std::fs::create_dir(&root).expect("create root");
+        let fifo = root.join("blocked.ply");
+        assert!(
+            Command::new("mkfifo")
+                .arg(&fifo)
+                .status()
+                .expect("run mkfifo")
+                .success()
+        );
+        let mut child = Command::new(std::env::current_exe().expect("current test binary"))
+            .args([
+                "--exact",
+                "ply_visual::tests::ply_fifo_is_rejected_without_blocking",
+                "--test-threads=1",
+            ])
+            .env(CHILD, "1")
+            .env(PATH, &fifo)
+            .spawn()
+            .expect("start bounded FIFO child");
+        let deadline = Instant::now() + Duration::from_secs(2);
+        let status = loop {
+            if let Some(status) = child.try_wait().expect("poll FIFO child") {
+                break Some(status);
+            }
+            if Instant::now() >= deadline {
+                child.kill().expect("stop blocking FIFO child");
+                child.wait().expect("reap blocking FIFO child");
+                break None;
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        };
+        std::fs::remove_dir_all(root).expect("remove FIFO fixture");
+        assert!(
+            status.is_some_and(|status| status.success()),
+            "PLY must reject an unread FIFO before blocking"
+        );
+    }
 }
