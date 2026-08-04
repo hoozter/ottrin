@@ -747,38 +747,16 @@ struct ColumnState {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum MillerPointerReveal {
-    /// A history/parent navigation must wait for the matching listing request
-    /// before its destination column can be considered rendered.
-    Navigation {
-        destination: PathBuf,
-        main_request_id: u64,
-    },
-    /// Selecting a folder in an already-rendered column targets its preview
-    /// column directly; it does not depend on a main-listing generation.
-    Selection { destination: PathBuf },
+struct MillerPointerReveal {
+    /// One production Miller render of this exact destination should make its
+    /// focus column visible. Listing generations deliberately do not take part:
+    /// the renderer can synchronously build the column before an async result.
+    destination: PathBuf,
 }
 
 impl MillerPointerReveal {
     fn destination(&self) -> &Path {
-        match self {
-            Self::Navigation { destination, .. } | Self::Selection { destination } => destination,
-        }
-    }
-
-    fn destination_is_ready(&self, current_dir: &Path, main: &ColumnState) -> bool {
-        match self {
-            Self::Navigation {
-                destination,
-                main_request_id,
-            } => {
-                current_dir == destination
-                    && main.dir == *destination
-                    && main.request_id == *main_request_id
-                    && !main.loading
-            }
-            Self::Selection { .. } => true,
-        }
+        &self.destination
     }
 }
 
@@ -814,7 +792,7 @@ struct TabUiState {
     miller_focus_hint: Option<MillerFocusHint>,
     // One-shot: ensure active row is scrolled into view after keyboard move.
     miller_scroll_selected: bool,
-    // One-shot pointer reveal, scoped to a destination and (for navigation) listing generation.
+    // One-shot pointer reveal, scoped only to this tab and destination.
     miller_pointer_reveal: Option<MillerPointerReveal>,
     // How many preview columns past current_dir are allowed.
     // Up/Down → 1, Left → increment, Right → decrement (min 1).
@@ -831,7 +809,6 @@ struct TabUiState {
 #[derive(Debug, Clone)]
 struct LocationsRailLayout {
     allocated_rect: Rect,
-    painted_rect: Rect,
     input_rects: Vec<Rect>,
 }
 
@@ -5020,6 +4997,9 @@ impl OttrinApp {
     }
 
     fn refresh_tab(&mut self, tab_id: u64, dir: PathBuf) {
+        // A refresh replaces the destination model, so it must not later
+        // consume an earlier pointer navigation's one-shot reveal.
+        self.cancel_miller_pointer_reveal(tab_id);
         // Reset selection and scroll on navigation
         if let Some(ui_state) = self.tab_ui.get_mut(&tab_id) {
             ui_state.main_sel = None;
@@ -5686,11 +5666,14 @@ impl OttrinApp {
             .map(|tab| tab.current_dir.clone());
         if let Some(destination) = destination {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
-            ui_state.miller_pointer_reveal = Some(MillerPointerReveal::Navigation {
-                destination,
-                main_request_id: ui_state.main.request_id,
-            });
+            ui_state.miller_pointer_reveal = Some(MillerPointerReveal { destination });
             ui_state.miller_scroll_selected = true;
+        }
+    }
+
+    fn cancel_miller_pointer_reveal(&mut self, tab_id: u64) {
+        if let Some(ui_state) = self.tab_ui.get_mut(&tab_id) {
+            ui_state.miller_pointer_reveal = None;
         }
     }
 
@@ -5701,7 +5684,7 @@ impl OttrinApp {
             .is_some_and(|tab| matches!(tab.view_mode, ViewMode::Miller))
         {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
-            ui_state.miller_pointer_reveal = Some(MillerPointerReveal::Selection { destination });
+            ui_state.miller_pointer_reveal = Some(MillerPointerReveal { destination });
             ui_state.miller_scroll_selected = true;
         }
     }
@@ -6226,6 +6209,7 @@ impl OttrinApp {
     }
 
     fn navigate_tab_to(&mut self, tab_id: u64, dir: PathBuf) {
+        self.cancel_miller_pointer_reveal(tab_id);
         if self.navigation_target_is_isolated(tab_id, &dir) {
             self.set_status_message(
                 "Location is unavailable; choose Home or another location",
@@ -6257,6 +6241,21 @@ impl OttrinApp {
 
     fn focus_tab(&mut self, tab_id: u64) {
         let _ = self.state.select_tab_id_preserving_tandem(tab_id);
+    }
+
+    fn close_tab(&mut self, idx: usize) {
+        let Some(closing_id) = self.state.tabs.get(idx).map(|tab| tab.id) else {
+            return;
+        };
+        let tab_count = self.state.tabs.len();
+        self.state.close_tab(idx);
+        if self.state.tabs.len() == tab_count {
+            return;
+        }
+        self.tab_ui.remove(&closing_id);
+        self.address_bars.remove(&closing_id);
+        self.unavailable_locations.remove(&closing_id);
+        self.tab_tandem_selection.retain(|id| *id != closing_id);
     }
 
     fn tab_selection_after_click(
@@ -6437,6 +6436,7 @@ impl OttrinApp {
     }
 
     fn navigate_tab_back(&mut self, tab_id: u64) -> bool {
+        self.cancel_miller_pointer_reveal(tab_id);
         self.focus_tab(tab_id);
         if self
             .state
@@ -6473,6 +6473,7 @@ impl OttrinApp {
     }
 
     fn navigate_tab_forward(&mut self, tab_id: u64) -> bool {
+        self.cancel_miller_pointer_reveal(tab_id);
         self.focus_tab(tab_id);
         if self
             .state
@@ -6509,6 +6510,7 @@ impl OttrinApp {
     }
 
     fn navigate_tab_up(&mut self, tab_id: u64) -> bool {
+        self.cancel_miller_pointer_reveal(tab_id);
         self.focus_tab(tab_id);
         let before = self
             .state
@@ -7140,7 +7142,7 @@ impl OttrinApp {
             }
             if ctrl && input.key_pressed(Key::W) {
                 let idx = self.state.active_tab_idx;
-                self.state.close_tab(idx);
+                self.close_tab(idx);
             }
             if ctrl && input.key_pressed(Key::Tab) {
                 let n = self.state.tabs.len();
@@ -9247,11 +9249,7 @@ impl OttrinApp {
 
                     // Apply tab actions
                     if let Some(idx) = close_idx {
-                        let closing_id = self.state.tabs.get(idx).map(|tab| tab.id);
-                        self.state.close_tab(idx);
-                        if let Some(closing_id) = closing_id {
-                            self.tab_tandem_selection.retain(|id| *id != closing_id);
-                        }
+                        self.close_tab(idx);
                     } else if let Some((tid, dir)) = navigate_to {
                         self.refresh_tab(tid, dir);
                     }
@@ -10245,8 +10243,6 @@ impl OttrinApp {
 
         LocationsRailLayout {
             allocated_rect: rail.response.rect,
-            // The SidePanel frame fills exactly the panel response rect.
-            painted_rect: rail.response.rect,
             input_rects,
         }
     }
@@ -13552,11 +13548,11 @@ impl OttrinApp {
         if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
             tab.view_mode = view_mode;
         }
-        if matches!(previous, ViewMode::Miller)
-            && !matches!(view_mode, ViewMode::Miller)
-            && matches!(self.sidebar, SidebarSection::Info)
-        {
-            self.sidebar = SidebarSection::None;
+        if matches!(previous, ViewMode::Miller) && !matches!(view_mode, ViewMode::Miller) {
+            self.cancel_miller_pointer_reveal(tab_id);
+            if matches!(self.sidebar, SidebarSection::Info) {
+                self.sidebar = SidebarSection::None;
+            }
         }
         self.state.config.default_view_mode = view_mode;
         self.persist_config();
@@ -14274,11 +14270,6 @@ impl OttrinApp {
             .tab_ui
             .get(&tab_id)
             .and_then(|ui_state| ui_state.miller_pointer_reveal.clone());
-        let pointer_reveal_ready = pointer_reveal.as_ref().is_some_and(|reveal| {
-            self.tab_ui
-                .get(&tab_id)
-                .is_some_and(|ui_state| reveal.destination_is_ready(&current_dir, &ui_state.main))
-        });
         let (cols, current_col) = self.build_miller_model(tab_id, self.miller_col_count);
         if cols.is_empty() {
             return;
@@ -14309,13 +14300,10 @@ impl OttrinApp {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
             std::mem::take(&mut ui_state.miller_scroll_selected)
         };
-        let pointer_reveal_col = pointer_reveal
-            .as_ref()
-            .filter(|_| pointer_reveal_ready)
-            .and_then(|reveal| {
-                cols.iter()
-                    .position(|column| column.dir == reveal.destination())
-            });
+        let pointer_reveal_col = pointer_reveal.as_ref().and_then(|reveal| {
+            cols.iter()
+                .position(|column| column.dir == reveal.destination())
+        });
         let mut pointer_reveal_completed = false;
 
         // File preview is based on the FOCUS column's selection.
@@ -14598,7 +14586,7 @@ impl OttrinApp {
                                 );
                             }
                         }
-                        if pointer_reveal_col == Some(col_idx) && col.error.is_none() {
+                        if pointer_reveal_col == Some(col_idx) {
                             pointer_reveal_completed = true;
                         }
                     }
@@ -22433,7 +22421,7 @@ mod tests {
     }
 
     #[test]
-    fn pointer_history_reveal_waits_for_the_destination_listing_then_expires_without_selection() {
+    fn pointer_history_reveal_consumes_the_first_rendered_destination_without_selection() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-pointer-reveal-{}-{}",
             std::process::id(),
@@ -22477,24 +22465,182 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&tab_id)
-                .is_some_and(|ui| ui.miller_pointer_reveal.is_some()),
-            "a destination that is still loading must retain its reveal request"
+                .is_some_and(|ui| ui.miller_pointer_reveal.is_none()),
+            "a nonempty destination with no restored selection must consume its reveal on its first production render"
         );
 
-        app.tab_ui
-            .get_mut(&tab_id)
-            .expect("destination UI state")
-            .main
-            .loading = false;
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn pointer_history_reveal_consumes_the_first_error_destination_render() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-pointer-error-reveal-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        let source = root.join("source");
+        let missing_destination = root.join("missing-destination");
+        std::fs::create_dir_all(&source).expect("create source fixture");
+
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        {
+            let tab = app.state.tab_by_id_mut(tab_id).expect("active tab");
+            tab.view_mode = ViewMode::Miller;
+            tab.current_dir = source;
+            tab.history_back.push(missing_destination);
+        }
+        assert!(app.pointer_navigate(tab_id, PointerNavigation::Back));
+
+        let render_miller_frame = |app: &mut OttrinApp| {
+            let ctx = Context::default();
+            let input = egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::pos2(0.0, 0.0),
+                    Vec2::new(800.0, 600.0),
+                )),
+                ..Default::default()
+            };
+            let _ = ctx.run(input, |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+            });
+        };
+
         render_miller_frame(&mut app);
         assert!(
             app.tab_ui
                 .get(&tab_id)
                 .is_some_and(|ui| ui.miller_pointer_reveal.is_none()),
-            "a loaded nonempty destination with no restored selection must consume its reveal before a later selection can use it"
+            "an error column is still the destination's first eligible production render"
         );
 
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn pointer_history_reveal_consumes_the_first_empty_destination_render() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-pointer-empty-reveal-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        let source = root.join("source");
+        let destination = root.join("destination");
+        std::fs::create_dir_all(&source).expect("create source fixture");
+        std::fs::create_dir_all(&destination).expect("create empty destination fixture");
+
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        {
+            let tab = app.state.tab_by_id_mut(tab_id).expect("active tab");
+            tab.view_mode = ViewMode::Miller;
+            tab.current_dir = source;
+            tab.history_back.push(destination);
+        }
+        assert!(app.pointer_navigate(tab_id, PointerNavigation::Back));
+
+        let ctx = Context::default();
+        let input = egui::RawInput {
+            screen_rect: Some(Rect::from_min_size(
+                egui::pos2(0.0, 0.0),
+                Vec2::new(800.0, 600.0),
+            )),
+            ..Default::default()
+        };
+        let _ = ctx.run(input, |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+        });
+        assert!(
+            app.tab_ui
+                .get(&tab_id)
+                .is_some_and(|ui| ui.miller_pointer_reveal.is_none()),
+            "an empty destination is still eligible for the first focus-column reveal"
+        );
+
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn refreshing_the_pointer_navigation_destination_cancels_its_reveal() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-pointer-refresh-cancel-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        let source = root.join("source");
+        let destination = root.join("destination");
+        std::fs::create_dir_all(&source).expect("create source fixture");
+        std::fs::create_dir_all(&destination).expect("create destination fixture");
+
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        {
+            let tab = app.state.tab_by_id_mut(tab_id).expect("active tab");
+            tab.view_mode = ViewMode::Miller;
+            tab.current_dir = source;
+            tab.history_back.push(destination.clone());
+        }
+        assert!(app.pointer_navigate(tab_id, PointerNavigation::Back));
+        assert!(
+            app.tab_ui
+                .get(&tab_id)
+                .is_some_and(|ui| ui.miller_pointer_reveal.is_some())
+        );
+
+        app.refresh_tab(tab_id, destination);
+        assert!(
+            app.tab_ui
+                .get(&tab_id)
+                .is_none_or(|ui| ui.miller_pointer_reveal.is_none()),
+            "same-path refresh must supersede the prior pointer reveal"
+        );
+
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn leaving_miller_or_closing_a_tab_discards_its_pointer_reveal_state() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.state.active_tab_mut().view_mode = ViewMode::Miller;
+        assert!(app.pointer_navigate(tab_id, PointerNavigation::Up));
+        assert!(
+            app.tab_ui
+                .get(&tab_id)
+                .is_some_and(|ui| ui.miller_pointer_reveal.is_some())
+        );
+
+        app.set_tab_view_mode(tab_id, ViewMode::List);
+        assert!(
+            app.tab_ui
+                .get(&tab_id)
+                .is_none_or(|ui| ui.miller_pointer_reveal.is_none())
+        );
+
+        let closing_idx = app.state.new_tab(default_home_dir());
+        let closing_id = app.state.tabs[closing_idx].id;
+        app.tab_ui
+            .entry(closing_id)
+            .or_default()
+            .miller_pointer_reveal = Some(MillerPointerReveal {
+            destination: default_home_dir(),
+        });
+        app.address_bars.entry(closing_id).or_default().editing = true;
+        app.close_tab(closing_idx);
+        assert!(
+            !app.tab_ui.contains_key(&closing_id) && !app.address_bars.contains_key(&closing_id),
+            "closing a tab must remove its retained UI state instead of preserving stale reveal intent"
+        );
     }
 
     #[test]
@@ -22587,14 +22733,18 @@ mod tests {
             PointerNavigation::Forward,
             PointerNavigation::Up,
         ] {
-            app.tab_ui.entry(tab_id).or_default().miller_pointer_reveal = None;
+            app.tab_ui.entry(tab_id).or_default().miller_pointer_reveal =
+                Some(MillerPointerReveal {
+                    destination: PathBuf::from("/stale-pointer-destination"),
+                });
             app.tab_ui.entry(tab_id).or_default().miller_scroll_selected = false;
 
             assert!(!app.pointer_navigate(tab_id, navigation));
             assert!(
                 app.tab_ui.get(&tab_id).is_some_and(
                     |ui| ui.miller_pointer_reveal.is_none() && !ui.miller_scroll_selected
-                )
+                ),
+                "a failed pointer navigation must cancel, not preserve, an older destination reveal"
             );
         }
     }
@@ -22610,6 +22760,24 @@ mod tests {
             app.tab_ui
                 .get(&tab_id)
                 .is_some_and(|ui| ui.miller_pointer_reveal.is_some() && ui.miller_scroll_selected)
+        );
+
+        let ctx = Context::default();
+        let input = egui::RawInput {
+            screen_rect: Some(Rect::from_min_size(
+                egui::pos2(0.0, 0.0),
+                Vec2::new(800.0, 600.0),
+            )),
+            ..Default::default()
+        };
+        let _ = ctx.run(input, |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+        });
+        assert!(
+            app.tab_ui
+                .get(&tab_id)
+                .is_some_and(|ui| ui.miller_pointer_reveal.is_none()),
+            "the parent listing with its restored child row must consume the first reveal"
         );
 
         for mode in [ViewMode::List, ViewMode::Grid] {
@@ -23167,7 +23335,6 @@ mod tests {
             for viewport in viewports {
                 let (rail, canvas) = render_production_layout(&mut app, &ctx, viewport, Vec::new());
                 assert_eq!(rail.allocated_rect.width(), app.locations_rail_width());
-                assert_eq!(rail.painted_rect, rail.allocated_rect);
                 assert_eq!(canvas.min.x, rail.allocated_rect.max.x);
                 assert!(
                     rail.input_rects
