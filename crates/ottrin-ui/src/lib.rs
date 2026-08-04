@@ -849,6 +849,7 @@ struct PreviewOverlay {
 
 #[derive(Debug)]
 struct PreviewJobRequest {
+    slot: PreviewRequestSlot,
     path: PathBuf,
     target_dim: u32,
     page_index: usize,
@@ -860,6 +861,7 @@ struct PreviewJobRequest {
 
 #[derive(Debug)]
 struct PreviewJobResponse {
+    slot: PreviewRequestSlot,
     path: PathBuf,
     target_dim: u32,
     page_index: usize,
@@ -867,6 +869,111 @@ struct PreviewJobResponse {
     sqlite_source_generation: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
     request_id: u64,
     bytes: Option<Vec<u8>>,
+}
+
+/// A UI request is distinct from the immutable cache entry it expects. A file
+/// can change A -> B -> A while earlier workers are still running, so cache
+/// identity alone cannot say which response is newest for the visible slot.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum PreviewRequestTarget {
+    Thumbnail,
+    Original,
+    ZoomedOriginal,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct PreviewRequestSlot {
+    path: PathBuf,
+    target: PreviewRequestTarget,
+    target_dim: u32,
+    page_index: usize,
+}
+
+impl PreviewRequestSlot {
+    fn new(
+        path: PathBuf,
+        target: PreviewRequestTarget,
+        target_dim: u32,
+        page_index: usize,
+    ) -> Self {
+        Self {
+            path,
+            target,
+            target_dim,
+            page_index,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct PreviewRequestState {
+    request_id: u64,
+    cache_key: String,
+}
+
+#[derive(Debug, Default)]
+struct PreviewRequestScheduler {
+    current: HashMap<PreviewRequestSlot, PreviewRequestState>,
+    inflight: HashSet<PreviewRequestSlot>,
+    next_request_id: u64,
+}
+
+impl PreviewRequestScheduler {
+    /// Reserves a new request only when this slot expects different content.
+    /// A returning key must supersede an older request after an intervening
+    /// generation, even if that older request used the same cache key.
+    fn reserve(&mut self, slot: PreviewRequestSlot, cache_key: String) -> Option<u64> {
+        if self
+            .current
+            .get(&slot)
+            .is_some_and(|state| state.cache_key == cache_key)
+        {
+            return None;
+        }
+        self.next_request_id = self.next_request_id.wrapping_add(1).max(1);
+        let request_id = self.next_request_id;
+        self.current.insert(
+            slot.clone(),
+            PreviewRequestState {
+                request_id,
+                cache_key,
+            },
+        );
+        self.inflight.insert(slot);
+        Some(request_id)
+    }
+
+    fn cancel(&mut self, slot: &PreviewRequestSlot, request_id: u64) {
+        if self
+            .current
+            .get(slot)
+            .is_some_and(|state| state.request_id == request_id)
+        {
+            self.current.remove(slot);
+            self.inflight.remove(slot);
+        }
+    }
+
+    fn accept_response(
+        &mut self,
+        slot: &PreviewRequestSlot,
+        request_id: u64,
+        cache_key: &str,
+    ) -> bool {
+        let current = self.current.get(slot);
+        let accepted = current
+            .is_some_and(|state| state.request_id == request_id && state.cache_key == cache_key);
+        if accepted {
+            self.current.remove(slot);
+            self.inflight.remove(slot);
+        }
+        accepted
+    }
+
+    #[cfg(test)]
+    fn is_inflight(&self, slot: &PreviewRequestSlot) -> bool {
+        self.inflight.contains(slot)
+    }
 }
 
 #[derive(Debug, Default)]
@@ -1374,9 +1481,7 @@ pub struct OttrinApp {
     image_preview_cache: HashMap<String, ImagePreviewCacheEntry>,
     preview_tx: Sender<PreviewJobRequest>,
     preview_rx: Receiver<PreviewJobResponse>,
-    preview_inflight: HashSet<String>,
-    preview_request_ids: HashMap<String, u64>,
-    next_preview_request_id: u64,
+    preview_scheduler: PreviewRequestScheduler,
     preview_budget_remaining: usize,
     preview_load_tx: mpsc::SyncSender<PreviewLoadRequest>,
     preview_load_rx: Receiver<PreviewLoadResponse>,
@@ -1583,6 +1688,7 @@ impl OttrinApp {
                         )
                     {
                         let _ = preview_res_tx.send(PreviewJobResponse {
+                            slot: req.slot,
                             path: req.path,
                             target_dim: req.target_dim,
                             page_index: req.page_index,
@@ -1647,6 +1753,7 @@ impl OttrinApp {
                     )
                 };
                 let _ = preview_res_tx.send(PreviewJobResponse {
+                    slot: req.slot,
                     path: req.path,
                     target_dim: req.target_dim,
                     page_index: req.page_index,
@@ -1705,9 +1812,7 @@ impl OttrinApp {
             image_preview_cache: HashMap::new(),
             preview_tx: preview_req_tx,
             preview_rx: preview_res_rx,
-            preview_inflight: HashSet::new(),
-            preview_request_ids: HashMap::new(),
-            next_preview_request_id: 0,
+            preview_scheduler: PreviewRequestScheduler::default(),
             preview_budget_remaining: PREVIEW_REQUESTS_PER_FRAME,
             preview_load_tx,
             preview_load_rx,
@@ -1899,6 +2004,43 @@ impl OttrinApp {
         });
     }
 
+    fn enqueue_image_preview(
+        &mut self,
+        path: &Path,
+        target: PreviewRequestTarget,
+        target_dim: u32,
+        page_index: usize,
+        cache_key: String,
+        sqlite_source_generation: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
+    ) {
+        if self.preview_budget_remaining == 0 {
+            return;
+        }
+        let slot = PreviewRequestSlot::new(path.to_path_buf(), target, target_dim, page_index);
+        let Some(request_id) = self
+            .preview_scheduler
+            .reserve(slot.clone(), cache_key.clone())
+        else {
+            return;
+        };
+        let sent = self.preview_tx.send(PreviewJobRequest {
+            slot: slot.clone(),
+            path: path.to_path_buf(),
+            target_dim,
+            page_index,
+            cache_key,
+            sqlite_source_generation,
+            request_id,
+            cache_max_bytes: self.thumbnail_cache_max_bytes(),
+        });
+        if sent.is_err() {
+            self.preview_scheduler.cancel(&slot, request_id);
+            self.set_status_message("Preview renderer stopped unexpectedly", false, 5);
+            return;
+        }
+        self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
+    }
+
     fn persist_config(&self) {
         save_config(&self.state.config);
     }
@@ -1944,23 +2086,14 @@ impl OttrinApp {
             sqlite_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
-            if !self.preview_inflight.contains(&cache_key) && self.preview_budget_remaining > 0 {
-                self.next_preview_request_id = self.next_preview_request_id.wrapping_add(1).max(1);
-                let request_id = self.next_preview_request_id;
-                let _ = self.preview_tx.send(PreviewJobRequest {
-                    path: path.to_path_buf(),
-                    target_dim,
-                    page_index,
-                    cache_key: cache_key.clone(),
-                    sqlite_source_generation,
-                    request_id,
-                    cache_max_bytes: self.thumbnail_cache_max_bytes(),
-                });
-                self.preview_inflight.insert(cache_key.clone());
-                self.preview_request_ids
-                    .insert(cache_key.clone(), request_id);
-                self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
-            }
+            self.enqueue_image_preview(
+                path,
+                PreviewRequestTarget::Thumbnail,
+                target_dim,
+                page_index,
+                cache_key,
+                sqlite_source_generation,
+            );
             return None;
         }
         let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
@@ -1999,23 +2132,14 @@ impl OttrinApp {
             sqlite_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
-            if !self.preview_inflight.contains(&cache_key) && self.preview_budget_remaining > 0 {
-                self.next_preview_request_id = self.next_preview_request_id.wrapping_add(1).max(1);
-                let request_id = self.next_preview_request_id;
-                let _ = self.preview_tx.send(PreviewJobRequest {
-                    path: path.to_path_buf(),
-                    target_dim: PREVIEW_CACHE_ORIGINAL,
-                    page_index,
-                    cache_key: cache_key.clone(),
-                    sqlite_source_generation,
-                    request_id,
-                    cache_max_bytes: self.thumbnail_cache_max_bytes(),
-                });
-                self.preview_inflight.insert(cache_key.clone());
-                self.preview_request_ids
-                    .insert(cache_key.clone(), request_id);
-                self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
-            }
+            self.enqueue_image_preview(
+                path,
+                PreviewRequestTarget::Original,
+                PREVIEW_CACHE_ORIGINAL,
+                page_index,
+                cache_key,
+                sqlite_source_generation,
+            );
             return None;
         }
         let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
@@ -2056,23 +2180,14 @@ impl OttrinApp {
             sqlite_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
-            if !self.preview_inflight.contains(&cache_key) && self.preview_budget_remaining > 0 {
-                self.next_preview_request_id = self.next_preview_request_id.wrapping_add(1).max(1);
-                let request_id = self.next_preview_request_id;
-                let _ = self.preview_tx.send(PreviewJobRequest {
-                    path: path.to_path_buf(),
-                    target_dim: PREVIEW_CACHE_ORIGINAL,
-                    page_index,
-                    cache_key: cache_key.clone(),
-                    sqlite_source_generation,
-                    request_id,
-                    cache_max_bytes: self.thumbnail_cache_max_bytes(),
-                });
-                self.preview_inflight.insert(cache_key.clone());
-                self.preview_request_ids
-                    .insert(cache_key.clone(), request_id);
-                self.preview_budget_remaining = self.preview_budget_remaining.saturating_sub(1);
-            }
+            self.enqueue_image_preview(
+                path,
+                PreviewRequestTarget::ZoomedOriginal,
+                PREVIEW_CACHE_ORIGINAL,
+                page_index,
+                cache_key,
+                sqlite_source_generation,
+            );
             return None;
         }
         let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
@@ -5157,13 +5272,10 @@ impl OttrinApp {
     fn poll_preview_jobs(&mut self) -> bool {
         let mut changed = false;
         while let Ok(resp) = self.preview_rx.try_recv() {
-            let request_is_current =
-                self.preview_request_ids.get(&resp.cache_key) == Some(&resp.request_id);
-            if request_is_current {
-                self.preview_inflight.remove(&resp.cache_key);
-                self.preview_request_ids.remove(&resp.cache_key);
-            }
-            if !request_is_current {
+            if !self
+                .preview_scheduler
+                .accept_response(&resp.slot, resp.request_id, &resp.cache_key)
+            {
                 continue;
             }
             if !preview_response_matches_current_generation(&resp) {
@@ -20861,6 +20973,102 @@ mod tests {
     use super::*;
 
     #[test]
+    fn preview_request_scheduler_supersedes_a_returning_content_generation() {
+        let path = PathBuf::from("/tmp/ottrin-preview-scheduler.sqlite");
+        let slot = PreviewRequestSlot::new(
+            path,
+            PreviewRequestTarget::Thumbnail,
+            PREVIEW_CACHE_BUCKET_SMALL,
+            0,
+        );
+        let mut scheduler = PreviewRequestScheduler::default();
+
+        let first_a = scheduler
+            .reserve(slot.clone(), "cache-a".to_string())
+            .unwrap();
+        let b = scheduler
+            .reserve(slot.clone(), "cache-b".to_string())
+            .unwrap();
+        let returning_a = scheduler
+            .reserve(slot.clone(), "cache-a".to_string())
+            .unwrap();
+
+        assert!(first_a < b && b < returning_a);
+        assert!(scheduler.is_inflight(&slot));
+        assert!(
+            !scheduler.accept_response(&slot, first_a, "cache-a"),
+            "the original A response must not clear or apply after B then A"
+        );
+        assert!(
+            !scheduler.accept_response(&slot, b, "cache-b"),
+            "the B response must not clear or apply after the returning A request"
+        );
+        assert!(scheduler.is_inflight(&slot));
+        assert!(scheduler.accept_response(&slot, returning_a, "cache-a"));
+        assert!(!scheduler.is_inflight(&slot));
+    }
+
+    #[test]
+    fn preview_request_scheduler_coalesces_identical_inflight_work_and_separates_slots() {
+        let path = PathBuf::from("/tmp/ottrin-preview-scheduler.png");
+        let thumbnail = PreviewRequestSlot::new(
+            path.clone(),
+            PreviewRequestTarget::Thumbnail,
+            PREVIEW_CACHE_BUCKET_SMALL,
+            0,
+        );
+        let next_page = PreviewRequestSlot::new(
+            path.clone(),
+            PreviewRequestTarget::Thumbnail,
+            PREVIEW_CACHE_BUCKET_SMALL,
+            1,
+        );
+        let larger = PreviewRequestSlot::new(
+            path,
+            PreviewRequestTarget::Thumbnail,
+            PREVIEW_CACHE_BUCKET_LARGE,
+            0,
+        );
+        let mut scheduler = PreviewRequestScheduler::default();
+
+        let thumbnail_request = scheduler
+            .reserve(thumbnail.clone(), "thumbnail-page-0".to_string())
+            .unwrap();
+        assert_eq!(
+            scheduler.reserve(thumbnail.clone(), "thumbnail-page-0".to_string()),
+            None,
+            "a cache miss already being rendered must not consume another budget slot"
+        );
+        let next_page_request = scheduler
+            .reserve(next_page.clone(), "thumbnail-page-1".to_string())
+            .unwrap();
+        let larger_request = scheduler
+            .reserve(larger.clone(), "thumbnail-large".to_string())
+            .unwrap();
+
+        assert!(scheduler.accept_response(&thumbnail, thumbnail_request, "thumbnail-page-0"));
+        assert!(scheduler.accept_response(&next_page, next_page_request, "thumbnail-page-1"));
+        assert!(scheduler.accept_response(&larger, larger_request, "thumbnail-large"));
+    }
+
+    #[test]
+    fn non_sqlite_preview_response_still_uses_its_content_cache_key() {
+        let path = PathBuf::from("/tmp/ottrin-preview-response.png");
+        let response = PreviewJobResponse {
+            slot: PreviewRequestSlot::new(path.clone(), PreviewRequestTarget::Thumbnail, 128, 0),
+            path: path.clone(),
+            target_dim: 128,
+            page_index: 0,
+            cache_key: preview_cache_key_for_page(&path, 128, 0),
+            sqlite_source_generation: None,
+            request_id: 1,
+            bytes: Some(b"png".to_vec()),
+        };
+
+        assert!(preview_response_matches_current_generation(&response));
+    }
+
+    #[test]
     fn preview_response_is_discarded_when_its_source_generation_is_replaced() {
         let nonce = format!(
             "{}-{}",
@@ -20880,6 +21088,7 @@ mod tests {
             .modified()
             .expect("read source mtime");
         let response = PreviewJobResponse {
+            slot: PreviewRequestSlot::new(source.clone(), PreviewRequestTarget::Thumbnail, 128, 0),
             path: source.clone(),
             target_dim: 128,
             page_index: 0,
