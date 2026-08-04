@@ -851,6 +851,7 @@ struct PreviewJobRequest {
     path: PathBuf,
     target_dim: u32,
     page_index: usize,
+    cache_key: String,
     cache_max_bytes: u64,
 }
 
@@ -859,6 +860,7 @@ struct PreviewJobResponse {
     path: PathBuf,
     target_dim: u32,
     page_index: usize,
+    cache_key: String,
     bytes: Option<Vec<u8>>,
 }
 
@@ -1547,18 +1549,20 @@ impl OttrinApp {
 
         std::thread::spawn(move || {
             while let Ok(req) = preview_req_rx.recv() {
-                let cache_key =
-                    preview_cache_key_for_page(&req.path, req.target_dim, req.page_index);
+                let generation_is_current = req.cache_key
+                    == preview_cache_key_for_page(&req.path, req.target_dim, req.page_index);
                 let selected_pdf_page = req.page_index > 0
                     && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
-                let bytes = if req.target_dim == PREVIEW_CACHE_ORIGINAL || selected_pdf_page {
+                let bytes = if !generation_is_current {
+                    None
+                } else if req.target_dim == PREVIEW_CACHE_ORIGINAL || selected_pdf_page {
                     full_preview_bytes_at_page(&req.path, PREVIEW_CACHE_BUCKET_XL, req.page_index)
                 } else {
                     let cached = load_cached_thumbnail(
                         &req.path,
                         req.target_dim,
                         req.page_index,
-                        &cache_key,
+                        &req.cache_key,
                     );
                     thumbnail_bytes_from_cache_or_build(&req.path, req.target_dim, cached).map(
                         |(bytes, should_persist)| {
@@ -1567,7 +1571,7 @@ impl OttrinApp {
                                     &req.path,
                                     req.target_dim,
                                     req.page_index,
-                                    &cache_key,
+                                    &req.cache_key,
                                     &bytes,
                                     req.cache_max_bytes,
                                 );
@@ -1580,6 +1584,7 @@ impl OttrinApp {
                     path: req.path,
                     target_dim: req.target_dim,
                     page_index: req.page_index,
+                    cache_key: req.cache_key,
                     bytes,
                 });
             }
@@ -1866,6 +1871,7 @@ impl OttrinApp {
                     path: path.to_path_buf(),
                     target_dim,
                     page_index,
+                    cache_key: cache_key.clone(),
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
                 self.preview_inflight.insert(cache_key.clone());
@@ -1906,6 +1912,7 @@ impl OttrinApp {
                     path: path.to_path_buf(),
                     target_dim: PREVIEW_CACHE_ORIGINAL,
                     page_index,
+                    cache_key: cache_key.clone(),
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
                 self.preview_inflight.insert(cache_key.clone());
@@ -1948,6 +1955,7 @@ impl OttrinApp {
                     path: path.to_path_buf(),
                     target_dim: PREVIEW_CACHE_ORIGINAL,
                     page_index,
+                    cache_key: cache_key.clone(),
                     cache_max_bytes: self.thumbnail_cache_max_bytes(),
                 });
                 self.preview_inflight.insert(cache_key.clone());
@@ -5037,13 +5045,17 @@ impl OttrinApp {
     fn poll_preview_jobs(&mut self) -> bool {
         let mut changed = false;
         while let Ok(resp) = self.preview_rx.try_recv() {
-            let key = preview_cache_key_for_page(&resp.path, resp.target_dim, resp.page_index);
-            self.preview_inflight.remove(&key);
+            self.preview_inflight.remove(&resp.cache_key);
+            if !preview_response_matches_current_generation(&resp) {
+                continue;
+            }
             if self.image_preview_cache.len() >= MAX_CACHED_IMAGE_PREVIEWS {
                 self.image_preview_cache.clear();
             }
-            self.image_preview_cache
-                .insert(key, ImagePreviewCacheEntry::from_response(resp.bytes));
+            self.image_preview_cache.insert(
+                resp.cache_key,
+                ImagePreviewCacheEntry::from_response(resp.bytes),
+            );
             changed = true;
         }
         changed
@@ -18394,6 +18406,11 @@ impl OttrinApp {
     }
 }
 
+fn preview_response_matches_current_generation(response: &PreviewJobResponse) -> bool {
+    response.cache_key
+        == preview_cache_key_for_page(&response.path, response.target_dim, response.page_index)
+}
+
 fn replace_search_cancellation(slot: &mut Option<Arc<AtomicBool>>) -> Arc<AtomicBool> {
     if let Some(cancelled) = slot.replace(Arc::new(AtomicBool::new(false))) {
         cancelled.store(true, Ordering::Release);
@@ -20707,6 +20724,40 @@ fn theme_preview_strip(ui: &mut egui::Ui, preview: Colors, width: f32, height: f
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn preview_response_is_discarded_when_its_source_generation_is_replaced() {
+        let nonce = format!(
+            "{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
+        );
+        let source = std::env::temp_dir().join(format!("ottrin-preview-response-{nonce}.sqlite"));
+        let replacement =
+            std::env::temp_dir().join(format!("ottrin-preview-response-next-{nonce}.sqlite"));
+        std::fs::write(&source, b"SQLite format 3\0first-generation")
+            .expect("write first preview generation");
+        let response = PreviewJobResponse {
+            path: source.clone(),
+            target_dim: 128,
+            page_index: 0,
+            cache_key: preview_cache_key_for_page(&source, 128, 0),
+            bytes: Some(b"first-generation-card".to_vec()),
+        };
+        std::fs::write(&replacement, b"SQLite format 3\0next--generation")
+            .expect("write replacement preview generation");
+        std::fs::rename(&replacement, &source).expect("atomically replace preview generation");
+
+        assert!(
+            !preview_response_matches_current_generation(&response),
+            "a response validated for the prior source generation must not be relabelled"
+        );
+
+        std::fs::remove_file(source).expect("remove replacement preview generation");
+    }
 
     #[test]
     fn creation_command_preserves_unicode_and_internal_spaces() {
