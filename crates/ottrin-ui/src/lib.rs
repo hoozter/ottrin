@@ -893,6 +893,7 @@ struct PreviewJobRequest {
     sqlite_source_generation: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
     obj_source_generation: Option<ottrin_preview::ObjPreviewSourceGeneration>,
     ply_source_generation: Option<ottrin_preview::PlyPreviewSourceGeneration>,
+    office_source_generation: Option<ottrin_preview::OfficePreviewSourceGeneration>,
     request_id: u64,
     cache_max_bytes: u64,
 }
@@ -907,6 +908,7 @@ struct PreviewJobResponse {
     sqlite_source_generation: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
     obj_source_generation: Option<ottrin_preview::ObjPreviewSourceGeneration>,
     ply_source_generation: Option<ottrin_preview::PlyPreviewSourceGeneration>,
+    office_source_generation: Option<ottrin_preview::OfficePreviewSourceGeneration>,
     request_id: u64,
     bytes: Option<Vec<u8>>,
 }
@@ -1704,6 +1706,7 @@ impl OttrinApp {
                 let sqlite_candidate = ottrin_preview::is_sqlite_preview_candidate(&req.path);
                 let obj_candidate = ottrin_preview::is_obj_path(&req.path);
                 let ply_candidate = ottrin_preview::is_ply_path(&req.path);
+                let office_candidate = ottrin_preview::is_office_visual_path(&req.path);
                 let generation_is_current = req.cache_key
                     == preview_cache_key_for_page_with_generations(
                         &req.path,
@@ -1712,6 +1715,7 @@ impl OttrinApp {
                         req.sqlite_source_generation.as_ref(),
                         req.obj_source_generation.as_ref(),
                         req.ply_source_generation.as_ref(),
+                        req.office_source_generation.as_ref(),
                     );
                 let selected_pdf_page = req.page_index > 0
                     && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
@@ -1728,6 +1732,10 @@ impl OttrinApp {
                         && (req.ply_source_generation.is_none()
                             || req.ply_source_generation
                                 != ottrin_preview::ply_preview_source_generation(&req.path)))
+                    || (office_candidate
+                        && (req.office_source_generation.is_none()
+                            || req.office_source_generation
+                                != ottrin_preview::office_preview_source_generation(&req.path)))
                 {
                     None
                 } else if sqlite_candidate {
@@ -1748,6 +1756,7 @@ impl OttrinApp {
                             sqlite_source_generation: req.sqlite_source_generation,
                             obj_source_generation: req.obj_source_generation,
                             ply_source_generation: req.ply_source_generation,
+                            office_source_generation: req.office_source_generation,
                             request_id: req.request_id,
                             bytes: Some(cached),
                         });
@@ -1799,6 +1808,7 @@ impl OttrinApp {
                             sqlite_source_generation: req.sqlite_source_generation,
                             obj_source_generation: req.obj_source_generation,
                             ply_source_generation: req.ply_source_generation,
+                            office_source_generation: req.office_source_generation,
                             request_id: req.request_id,
                             bytes: Some(cached),
                         });
@@ -1848,6 +1858,7 @@ impl OttrinApp {
                             sqlite_source_generation: req.sqlite_source_generation,
                             obj_source_generation: req.obj_source_generation,
                             ply_source_generation: req.ply_source_generation,
+                            office_source_generation: req.office_source_generation,
                             request_id: req.request_id,
                             bytes: Some(cached),
                         });
@@ -1864,6 +1875,56 @@ impl OttrinApp {
                         Ok(rendered)
                             if Some(&rendered.source_generation)
                                 == req.ply_source_generation.as_ref() =>
+                        {
+                            if req.target_dim != PREVIEW_CACHE_ORIGINAL {
+                                persist_cached_thumbnail(
+                                    &req.path,
+                                    req.target_dim,
+                                    req.page_index,
+                                    &req.cache_key,
+                                    &rendered.png,
+                                    req.cache_max_bytes,
+                                );
+                            }
+                            Some(rendered.png)
+                        }
+                        _ => None,
+                    }
+                } else if office_candidate {
+                    if req.target_dim != PREVIEW_CACHE_ORIGINAL
+                        && let Some(cached) = load_cached_thumbnail(
+                            &req.path,
+                            req.target_dim,
+                            req.page_index,
+                            &req.cache_key,
+                        )
+                    {
+                        let _ = preview_res_tx.send(PreviewJobResponse {
+                            slot: req.slot,
+                            path: req.path,
+                            target_dim: req.target_dim,
+                            page_index: req.page_index,
+                            cache_key: req.cache_key,
+                            sqlite_source_generation: req.sqlite_source_generation,
+                            obj_source_generation: req.obj_source_generation,
+                            ply_source_generation: req.ply_source_generation,
+                            office_source_generation: req.office_source_generation,
+                            request_id: req.request_id,
+                            bytes: Some(cached),
+                        });
+                        continue;
+                    }
+                    match ottrin_preview::render_office_content_preview_png_with_generation(
+                        &req.path,
+                        if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                            PREVIEW_CACHE_BUCKET_XL
+                        } else {
+                            req.target_dim
+                        },
+                    ) {
+                        Ok(rendered)
+                            if Some(&rendered.source_generation)
+                                == req.office_source_generation.as_ref() =>
                         {
                             if req.target_dim != PREVIEW_CACHE_ORIGINAL {
                                 persist_cached_thumbnail(
@@ -1913,6 +1974,7 @@ impl OttrinApp {
                     sqlite_source_generation: req.sqlite_source_generation,
                     obj_source_generation: req.obj_source_generation,
                     ply_source_generation: req.ply_source_generation,
+                    office_source_generation: req.office_source_generation,
                     request_id: req.request_id,
                     bytes,
                 });
@@ -2169,6 +2231,7 @@ impl OttrinApp {
             Option<ottrin_preview::SqlitePreviewSourceGeneration>,
             Option<ottrin_preview::ObjPreviewSourceGeneration>,
             Option<ottrin_preview::PlyPreviewSourceGeneration>,
+            Option<ottrin_preview::OfficePreviewSourceGeneration>,
         ),
     ) {
         if self.preview_budget_remaining == 0 {
@@ -2190,6 +2253,7 @@ impl OttrinApp {
             sqlite_source_generation: source_generations.0,
             obj_source_generation: source_generations.1,
             ply_source_generation: source_generations.2,
+            office_source_generation: source_generations.3,
             request_id,
             cache_max_bytes: self.thumbnail_cache_max_bytes(),
         });
@@ -2245,6 +2309,9 @@ impl OttrinApp {
         let ply_source_generation = ottrin_preview::is_ply_path(path)
             .then(|| ottrin_preview::ply_preview_source_generation(path))
             .flatten();
+        let office_source_generation = ottrin_preview::is_office_visual_path(path)
+            .then(|| ottrin_preview::office_preview_source_generation(path))
+            .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             target_dim,
@@ -2252,6 +2319,7 @@ impl OttrinApp {
             sqlite_source_generation.as_ref(),
             obj_source_generation.as_ref(),
             ply_source_generation.as_ref(),
+            office_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2264,6 +2332,7 @@ impl OttrinApp {
                     sqlite_source_generation,
                     obj_source_generation,
                     ply_source_generation,
+                    office_source_generation,
                 ),
             );
             return None;
@@ -2303,6 +2372,9 @@ impl OttrinApp {
         let ply_source_generation = ottrin_preview::is_ply_path(path)
             .then(|| ottrin_preview::ply_preview_source_generation(path))
             .flatten();
+        let office_source_generation = ottrin_preview::is_office_visual_path(path)
+            .then(|| ottrin_preview::office_preview_source_generation(path))
+            .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             PREVIEW_CACHE_ORIGINAL,
@@ -2310,6 +2382,7 @@ impl OttrinApp {
             sqlite_source_generation.as_ref(),
             obj_source_generation.as_ref(),
             ply_source_generation.as_ref(),
+            office_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2322,6 +2395,7 @@ impl OttrinApp {
                     sqlite_source_generation,
                     obj_source_generation,
                     ply_source_generation,
+                    office_source_generation,
                 ),
             );
             return None;
@@ -2363,6 +2437,9 @@ impl OttrinApp {
         let ply_source_generation = ottrin_preview::is_ply_path(path)
             .then(|| ottrin_preview::ply_preview_source_generation(path))
             .flatten();
+        let office_source_generation = ottrin_preview::is_office_visual_path(path)
+            .then(|| ottrin_preview::office_preview_source_generation(path))
+            .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             PREVIEW_CACHE_ORIGINAL,
@@ -2370,6 +2447,7 @@ impl OttrinApp {
             sqlite_source_generation.as_ref(),
             obj_source_generation.as_ref(),
             ply_source_generation.as_ref(),
+            office_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2382,6 +2460,7 @@ impl OttrinApp {
                     sqlite_source_generation,
                     obj_source_generation,
                     ply_source_generation,
+                    office_source_generation,
                 ),
             );
             return None;
@@ -18971,6 +19050,7 @@ fn preview_response_matches_current_generation(response: &PreviewJobResponse) ->
                     None,
                     Some(&current_generation),
                     None,
+                    None,
                 );
     }
     if ottrin_preview::is_ply_path(&response.path) {
@@ -18985,6 +19065,25 @@ fn preview_response_matches_current_generation(response: &PreviewJobResponse) ->
                     &response.path,
                     response.target_dim,
                     response.page_index,
+                    None,
+                    None,
+                    Some(&current_generation),
+                    None,
+                );
+    }
+    if ottrin_preview::is_office_visual_path(&response.path) {
+        let Some(current_generation) =
+            ottrin_preview::office_preview_source_generation(&response.path)
+        else {
+            return false;
+        };
+        return response.office_source_generation.as_ref() == Some(&current_generation)
+            && response.cache_key
+                == preview_cache_key_for_page_with_generations(
+                    &response.path,
+                    response.target_dim,
+                    response.page_index,
+                    None,
                     None,
                     None,
                     Some(&current_generation),
@@ -21409,6 +21508,7 @@ mod tests {
             sqlite_source_generation: None,
             obj_source_generation: None,
             ply_source_generation: None,
+            office_source_generation: None,
             request_id: 1,
             bytes: Some(b"png".to_vec()),
         };
@@ -21444,6 +21544,7 @@ mod tests {
             sqlite_source_generation: ottrin_preview::sqlite_preview_source_generation(&source),
             obj_source_generation: None,
             ply_source_generation: None,
+            office_source_generation: None,
             request_id: 1,
             bytes: Some(b"first-generation-card".to_vec()),
         };
@@ -21490,10 +21591,12 @@ mod tests {
                 None,
                 Some(&expected),
                 None,
+                None,
             ),
             sqlite_source_generation: None,
             obj_source_generation: Some(rendered_middle),
             ply_source_generation: None,
+            office_source_generation: None,
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
         };
@@ -21511,8 +21614,15 @@ mod tests {
         let middle = b"ply\nformat ascii 1.0\nelement vertex 3\nproperty float x\nproperty float y\nproperty float z\nelement face 1\nproperty list uchar int vertex_indices\nend_header\n0 0 0\n2 0 0\n0 1 1\n3 0 1 2\n";
         std::fs::write(&path, first).expect("write initial PLY");
         let expected = ottrin_preview::ply_preview_source_generation(&path).expect("capture A");
-        let first_key =
-            preview_cache_key_for_page_with_generations(&path, 128, 0, None, None, Some(&expected));
+        let first_key = preview_cache_key_for_page_with_generations(
+            &path,
+            128,
+            0,
+            None,
+            None,
+            Some(&expected),
+            None,
+        );
         std::fs::write(&path, middle).expect("write intermediate PLY");
         let rendered_middle =
             ottrin_preview::ply_preview_source_generation(&path).expect("capture B");
@@ -21523,6 +21633,7 @@ mod tests {
             None,
             None,
             Some(&rendered_middle),
+            None,
         );
         assert_ne!(
             first_key, middle_key,
@@ -21538,11 +21649,57 @@ mod tests {
             sqlite_source_generation: None,
             obj_source_generation: None,
             ply_source_generation: Some(rendered_middle),
+            office_source_generation: None,
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
         };
         assert!(!preview_response_matches_current_generation(&response));
         std::fs::remove_file(path).expect("remove PLY");
+    }
+
+    #[test]
+    fn office_response_from_an_intermediate_generation_is_rejected_after_a_to_b_to_a() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-office-preview-response-{}.pptx",
+            std::process::id()
+        ));
+        let first = b"first-office-generation";
+        let middle = b"other-office-generation";
+        std::fs::write(&path, first).expect("write initial Office generation");
+        let first_generation =
+            ottrin_preview::office_preview_source_generation(&path).expect("capture A");
+        let first_key = preview_cache_key_for_page_with_generations(
+            &path,
+            128,
+            0,
+            None,
+            None,
+            None,
+            Some(&first_generation),
+        );
+        std::fs::write(&path, middle).expect("write intermediate Office generation");
+        let middle_generation =
+            ottrin_preview::office_preview_source_generation(&path).expect("capture B");
+        std::fs::write(&path, first).expect("restore initial Office generation");
+        let response = PreviewJobResponse {
+            slot: PreviewRequestSlot::new(path.clone(), PreviewRequestTarget::Thumbnail, 128, 0),
+            path: path.clone(),
+            target_dim: 128,
+            page_index: 0,
+            cache_key: first_key,
+            sqlite_source_generation: None,
+            obj_source_generation: None,
+            ply_source_generation: None,
+            office_source_generation: Some(middle_generation),
+            request_id: 1,
+            bytes: Some(b"intermediate-png".to_vec()),
+        };
+
+        assert!(
+            !preview_response_matches_current_generation(&response),
+            "a response must carry the immutable Office snapshot generation, not only a key recomputed from the current path"
+        );
+        std::fs::remove_file(path).expect("remove Office package");
     }
 
     #[test]

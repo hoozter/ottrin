@@ -70,7 +70,9 @@ pub(crate) fn preview_cache_key_for_page(
     target_dim: u32,
     page_index: usize,
 ) -> String {
-    preview_cache_key_for_page_with_generations(path, target_dim, page_index, None, None, None)
+    preview_cache_key_for_page_with_generations(
+        path, target_dim, page_index, None, None, None, None,
+    )
 }
 
 pub(crate) fn preview_cache_key_for_page_with_sqlite_generation(
@@ -86,6 +88,7 @@ pub(crate) fn preview_cache_key_for_page_with_sqlite_generation(
         sqlite_source_generation,
         None,
         None,
+        None,
     )
 }
 
@@ -96,6 +99,7 @@ pub(crate) fn preview_cache_key_for_page_with_generations(
     sqlite_source_generation: Option<&ottrin_preview::SqlitePreviewSourceGeneration>,
     obj_source_generation: Option<&ottrin_preview::ObjPreviewSourceGeneration>,
     ply_source_generation: Option<&ottrin_preview::PlyPreviewSourceGeneration>,
+    office_source_generation: Option<&ottrin_preview::OfficePreviewSourceGeneration>,
 ) -> String {
     if ottrin_preview::is_stl_path(path) {
         let generation = ottrin_preview::stl_preview_source_generation(path);
@@ -120,6 +124,12 @@ pub(crate) fn preview_cache_key_for_page_with_generations(
     if ottrin_preview::is_affinity_path(path) {
         let generation = ottrin_preview::affinity_preview_source_generation(path);
         return affinity_preview_cache_key(target_dim, page_index, generation.as_ref());
+    }
+    if ottrin_preview::is_office_visual_path(path) {
+        let generation = office_source_generation
+            .cloned()
+            .or_else(|| ottrin_preview::office_preview_source_generation(path));
+        return office_preview_cache_key(target_dim, page_index, generation.as_ref());
     }
     if ottrin_preview::is_sqlite_preview_candidate(path) {
         let generation = sqlite_source_generation
@@ -183,6 +193,17 @@ fn ply_preview_cache_key(
         .map(|generation| hex_digest(generation.as_bytes()))
         .unwrap_or_else(|| "unavailable".to_string());
     format!("ply-v1-{generation}-{target_dim}-{page_index}.png")
+}
+
+fn office_preview_cache_key(
+    target_dim: u32,
+    page_index: usize,
+    source_generation: Option<&ottrin_preview::OfficePreviewSourceGeneration>,
+) -> String {
+    let generation = source_generation
+        .map(|generation| hex_digest(generation.as_bytes()))
+        .unwrap_or_else(|| "unavailable".to_string());
+    format!("office-v1-{generation}-{target_dim}-{page_index}.png")
 }
 
 fn threemf_preview_cache_key(

@@ -57,6 +57,11 @@ const MAX_OFFICE_PARTS: usize = 4_096;
 const MAX_OFFICE_XML_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_OFFICE_UNCOMPRESSED_BYTES: u64 = 64 * 1024 * 1024;
 const MAX_OFFICE_XML_DEPTH: usize = 64;
+const PRESENTATIONML_NAMESPACE: &[u8] =
+    b"http://schemas.openxmlformats.org/presentationml/2006/main";
+const DRAWINGML_NAMESPACE: &[u8] = b"http://schemas.openxmlformats.org/drawingml/2006/main";
+const RELATIONSHIPS_NAMESPACE: &[u8] =
+    b"http://schemas.openxmlformats.org/package/2006/relationships";
 const MAX_EPUB_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_EPUB_PARTS: usize = 4_096;
 const MAX_EPUB_PACKAGE_PATH_BYTES: usize = 1_024;
@@ -327,8 +332,18 @@ pub enum OfficeVisualError {
     UnsupportedFormat,
     #[error("could not inspect Office input: {0}")]
     InputMetadata(String),
+    #[error("Office preview source is not a regular file")]
+    InputNotRegular,
+    #[error(
+        "Office visual previews are disabled on this platform until native safe-file admission is available"
+    )]
+    PreviewDisabledOnPlatform,
     #[error("Office input is too large for a visual preview ({actual} bytes; limit {limit} bytes)")]
     InputTooLarge { actual: u64, limit: u64 },
+    #[error("could not read immutable Office package snapshot: {0}")]
+    Read(String),
+    #[error("Office package changed while its bounded snapshot was read")]
+    InputChanged,
     #[error("could not open Office package: {0}")]
     Package(String),
     #[error("Office package has too many parts ({actual}; limit {limit})")]
@@ -337,6 +352,28 @@ pub enum OfficeVisualError {
     NoContent,
     #[error("could not encode Office visual preview: {0}")]
     Encode(String),
+}
+
+/// Content identity for a safely admitted Office package. Unlike path metadata,
+/// this remains correct when a package is rewritten in place with restored mtime.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OfficePreviewSourceGeneration(pub(crate) [u8; 32]);
+
+impl OfficePreviewSourceGeneration {
+    pub fn as_bytes(&self) -> &[u8; 32] {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RenderedOfficePreview {
+    pub png: Vec<u8>,
+    pub source_generation: OfficePreviewSourceGeneration,
+}
+
+struct OfficeSnapshot {
+    bytes: Vec<u8>,
+    generation: OfficePreviewSourceGeneration,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -1689,6 +1726,30 @@ pub fn render_office_content_preview_png(
     path: &Path,
     target_dim: u32,
 ) -> Result<Vec<u8>, OfficeVisualError> {
+    Ok(render_office_content_preview_png_with_generation(path, target_dim)?.png)
+}
+
+pub fn office_preview_source_generation(path: &Path) -> Option<OfficePreviewSourceGeneration> {
+    read_office_snapshot(path)
+        .ok()
+        .map(|snapshot| snapshot.generation)
+}
+
+pub fn is_office_visual_path(path: &Path) -> bool {
+    matches!(
+        path.extension()
+            .and_then(|extension| extension.to_str())
+            .unwrap_or_default()
+            .to_ascii_lowercase()
+            .as_str(),
+        "docx" | "xlsx" | "xlsm" | "ods" | "pptx"
+    )
+}
+
+pub fn render_office_content_preview_png_with_generation(
+    path: &Path,
+    target_dim: u32,
+) -> Result<RenderedOfficePreview, OfficeVisualError> {
     let ext = path
         .extension()
         .and_then(|extension| extension.to_str())
@@ -1697,18 +1758,8 @@ pub fn render_office_content_preview_png(
     if !matches!(ext.as_str(), "docx" | "xlsx" | "xlsm" | "ods" | "pptx") {
         return Err(OfficeVisualError::UnsupportedFormat);
     }
-    let input_size = std::fs::metadata(path)
-        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?
-        .len();
-    if input_size > MAX_OFFICE_PACKAGE_BYTES {
-        return Err(OfficeVisualError::InputTooLarge {
-            actual: input_size,
-            limit: MAX_OFFICE_PACKAGE_BYTES,
-        });
-    }
-    let file =
-        std::fs::File::open(path).map_err(|error| OfficeVisualError::Package(error.to_string()))?;
-    let mut archive = zip::ZipArchive::new(file)
+    let snapshot = read_office_snapshot(path)?;
+    let mut archive = zip::ZipArchive::new(Cursor::new(&snapshot.bytes))
         .map_err(|error| OfficeVisualError::Package(error.to_string()))?;
     if archive.len() > MAX_OFFICE_PARTS {
         return Err(OfficeVisualError::TooManyParts {
@@ -1716,7 +1767,7 @@ pub fn render_office_content_preview_png(
             limit: MAX_OFFICE_PARTS,
         });
     }
-    if ext == "pptx" && !pptx_package_is_safe(&mut archive) {
+    if ext == "pptx" && !pptx_package_is_safe(&snapshot.bytes, &mut archive) {
         return Err(OfficeVisualError::NoContent);
     }
     let text = match ext.as_str() {
@@ -1727,7 +1778,112 @@ pub fn render_office_content_preview_png(
         _ => None,
     }
     .ok_or(OfficeVisualError::NoContent)?;
-    render_office_content_png(&text, &ext, target_dim)
+    Ok(RenderedOfficePreview {
+        png: render_office_content_png(&text, &ext, target_dim)?,
+        source_generation: snapshot.generation,
+    })
+}
+
+#[cfg(unix)]
+fn read_office_snapshot(path: &Path) -> Result<OfficeSnapshot, OfficeVisualError> {
+    use std::io::{Seek, SeekFrom};
+    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+
+    let path_metadata = std::fs::symlink_metadata(path)
+        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?;
+    if !path_metadata.is_file() {
+        return Err(OfficeVisualError::InputNotRegular);
+    }
+    let mut file = std::fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(path)
+        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?;
+    let opened = file
+        .metadata()
+        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?;
+    let same_identity = |left: &std::fs::Metadata, right: &std::fs::Metadata| {
+        left.dev() == right.dev() && left.ino() == right.ino()
+    };
+    let same_state = |left: &std::fs::Metadata, right: &std::fs::Metadata| {
+        same_identity(left, right)
+            && left.len() == right.len()
+            && left.mtime() == right.mtime()
+            && left.mtime_nsec() == right.mtime_nsec()
+            && left.ctime() == right.ctime()
+            && left.ctime_nsec() == right.ctime_nsec()
+    };
+    if !opened.is_file() || !same_identity(&path_metadata, &opened) {
+        return Err(OfficeVisualError::InputNotRegular);
+    }
+    if opened.len() > MAX_OFFICE_PACKAGE_BYTES {
+        return Err(OfficeVisualError::InputTooLarge {
+            actual: opened.len(),
+            limit: MAX_OFFICE_PACKAGE_BYTES,
+        });
+    }
+    let mut bytes = Vec::with_capacity(usize::try_from(opened.len()).map_err(|_| {
+        OfficeVisualError::InputTooLarge {
+            actual: opened.len(),
+            limit: MAX_OFFICE_PACKAGE_BYTES,
+        }
+    })?);
+    file.by_ref()
+        .take(MAX_OFFICE_PACKAGE_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|error| OfficeVisualError::Read(error.to_string()))?;
+    let first = file
+        .metadata()
+        .map_err(|error| OfficeVisualError::Read(error.to_string()))?;
+    if bytes.len() as u64 > MAX_OFFICE_PACKAGE_BYTES {
+        return Err(OfficeVisualError::InputTooLarge {
+            actual: bytes.len() as u64,
+            limit: MAX_OFFICE_PACKAGE_BYTES,
+        });
+    }
+    if bytes.len() as u64 != opened.len() || !same_state(&opened, &first) {
+        return Err(OfficeVisualError::InputChanged);
+    }
+    file.seek(SeekFrom::Start(0))
+        .map_err(|error| OfficeVisualError::Read(error.to_string()))?;
+    let mut compared = 0usize;
+    let mut chunk = [0u8; 64 * 1024];
+    while compared < bytes.len() {
+        let expected = (bytes.len() - compared).min(chunk.len());
+        let count = file
+            .read(&mut chunk[..expected])
+            .map_err(|error| OfficeVisualError::Read(error.to_string()))?;
+        if count == 0 || chunk[..count] != bytes[compared..compared + count] {
+            return Err(OfficeVisualError::InputChanged);
+        }
+        compared = compared
+            .checked_add(count)
+            .ok_or(OfficeVisualError::InputChanged)?;
+    }
+    let mut extra = [0u8; 1];
+    if file
+        .read(&mut extra)
+        .map_err(|error| OfficeVisualError::Read(error.to_string()))?
+        != 0
+    {
+        return Err(OfficeVisualError::InputChanged);
+    }
+    let second = file
+        .metadata()
+        .map_err(|error| OfficeVisualError::Read(error.to_string()))?;
+    let current = std::fs::symlink_metadata(path).map_err(|_| OfficeVisualError::InputChanged)?;
+    if !same_state(&opened, &second) || !current.is_file() || !same_state(&opened, &current) {
+        return Err(OfficeVisualError::InputChanged);
+    }
+    Ok(OfficeSnapshot {
+        generation: OfficePreviewSourceGeneration(Sha256::digest(&bytes).into()),
+        bytes,
+    })
+}
+
+#[cfg(not(unix))]
+fn read_office_snapshot(_path: &Path) -> Result<OfficeSnapshot, OfficeVisualError> {
+    Err(OfficeVisualError::PreviewDisabledOnPlatform)
 }
 
 /// Renders a bounded, syntax-neutral card for text/source files. The input is
@@ -4761,20 +4917,40 @@ fn extract_pptx_visual_text<R: std::io::Read + std::io::Seek>(
 }
 
 fn pptx_package_is_safe<R: std::io::Read + std::io::Seek>(
+    bytes: &[u8],
     archive: &mut zip::ZipArchive<R>,
 ) -> bool {
+    let Some(directory) = preflight_epub_zip(bytes) else {
+        return false;
+    };
+    if directory.entry_count != archive.len() || archive.len() > MAX_OFFICE_PARTS {
+        return false;
+    }
+    let Some(raw_entry_types) = office_raw_zip_entry_types(bytes, directory.entry_count) else {
+        return false;
+    };
     let mut names = std::collections::HashSet::new();
     let mut total_uncompressed = 0u64;
     let mut relationship_parts = Vec::new();
-    for index in 0..archive.len() {
+    for (index, raw_entry_type) in raw_entry_types.iter().enumerate() {
         let Ok(entry) = archive.by_index_raw(index) else {
             return false;
         };
         let name = entry.name().to_string();
         if !safe_office_zip_name(&name)
-            || !names.insert(name.clone())
+            || !names.insert(name.to_ascii_lowercase())
             || entry.size() > MAX_OFFICE_XML_BYTES
             || entry.compressed_size() > MAX_OFFICE_XML_BYTES
+            || office_local_header_uses_data_descriptor(bytes, entry.header_start())
+            || entry.encrypted()
+            || entry.is_symlink()
+            || (!entry.is_file() && !entry.is_dir())
+            || !raw_entry_type.allows(entry.is_file(), entry.is_dir())
+            || (!entry.is_dir()
+                && !matches!(
+                    entry.compression(),
+                    zip::CompressionMethod::Stored | zip::CompressionMethod::Deflated
+                ))
         {
             return false;
         }
@@ -4804,11 +4980,92 @@ fn safe_office_zip_name(name: &str) -> bool {
     !name.is_empty()
         && !name.starts_with('/')
         && !name.starts_with('\\')
-        && !name.contains('\\')
+        && !name.contains(['\\', ':'])
         && !name.contains('\0')
         && name
             .split('/')
             .all(|component| !matches!(component, "" | "." | ".."))
+}
+
+#[derive(Clone, Copy)]
+enum OfficeRawZipEntryType {
+    NonUnix,
+    Unix(u16),
+}
+
+impl OfficeRawZipEntryType {
+    fn allows(self, is_file: bool, is_dir: bool) -> bool {
+        match self {
+            Self::NonUnix => true,
+            Self::Unix(mode) if is_file => mode & 0o170000 == 0o100000,
+            Self::Unix(mode) if is_dir => mode & 0o170000 == 0o040000,
+            Self::Unix(_) => false,
+        }
+    }
+}
+
+fn office_raw_zip_entry_types(
+    bytes: &[u8],
+    expected_entries: usize,
+) -> Option<Vec<OfficeRawZipEntryType>> {
+    let eocd = bytes
+        .windows(4)
+        .enumerate()
+        .filter_map(|(offset, window)| {
+            (window == b"PK\x05\x06")
+                .then(|| bytes.get(offset + 20..offset + 22))
+                .flatten()
+                .map(|comment| {
+                    (
+                        offset,
+                        usize::from(u16::from_le_bytes([comment[0], comment[1]])),
+                    )
+                })
+        })
+        .find(|(offset, comment_len)| offset.checked_add(22 + comment_len) == Some(bytes.len()))?;
+    let footer = bytes.get(eocd.0..eocd.0.checked_add(22)?)?;
+    let entries = usize::from(u16::from_le_bytes([footer[10], footer[11]]));
+    if entries != expected_entries {
+        return None;
+    }
+    let mut offset = usize::try_from(u32::from_le_bytes([
+        footer[16], footer[17], footer[18], footer[19],
+    ]))
+    .ok()?;
+    let mut result = Vec::with_capacity(entries);
+    for _ in 0..entries {
+        let header = bytes.get(offset..offset.checked_add(46)?)?;
+        if header.get(..4) != Some(b"PK\x01\x02") {
+            return None;
+        }
+        let made_by = u16::from_le_bytes([header[4], header[5]]);
+        let attributes = u32::from_le_bytes([header[38], header[39], header[40], header[41]]);
+        result.push(if (made_by >> 8) == 3 {
+            OfficeRawZipEntryType::Unix((attributes >> 16) as u16)
+        } else {
+            OfficeRawZipEntryType::NonUnix
+        });
+        let name = usize::from(u16::from_le_bytes([header[28], header[29]]));
+        let extra = usize::from(u16::from_le_bytes([header[30], header[31]]));
+        let comment = usize::from(u16::from_le_bytes([header[32], header[33]]));
+        offset = offset
+            .checked_add(46)?
+            .checked_add(name)?
+            .checked_add(extra)?
+            .checked_add(comment)?;
+    }
+    Some(result)
+}
+
+fn office_local_header_uses_data_descriptor(bytes: &[u8], offset: u64) -> bool {
+    usize::try_from(offset)
+        .ok()
+        .and_then(|start| bytes.get(start..start.checked_add(30)?))
+        .and_then(|header| {
+            (header.get(..4) == Some(b"PK\x03\x04"))
+                .then(|| u16::from_le_bytes([header[6], header[7]]))
+        })
+        .is_none_or(|flags| flags & 0x0008 != 0)
 }
 
 fn pptx_first_slide<R: std::io::Read + std::io::Seek>(
@@ -4833,9 +5090,11 @@ fn pptx_first_slide<R: std::io::Read + std::io::Seek>(
 
 fn pptx_relationships_are_internal(xml: &str) -> Option<bool> {
     use quick_xml::events::Event;
+    use quick_xml::name::ResolveResult;
 
-    let mut reader = quick_xml::Reader::from_str(xml);
+    let mut reader = quick_xml::NsReader::from_str(xml);
     let mut depth = 0usize;
+    let mut saw_root = false;
     loop {
         match reader.read_event() {
             Ok(Event::Start(event)) => {
@@ -4843,29 +5102,60 @@ fn pptx_relationships_are_internal(xml: &str) -> Option<bool> {
                 if depth > MAX_OFFICE_XML_DEPTH {
                     return None;
                 }
-                if !pptx_relationship_event_is_internal(&event)? {
+                let (namespace, local) = reader.resolve_element(event.name());
+                if !pptx_xml_attributes_are_well_formed(&reader, &event)
+                    || (depth == 1
+                        && (!matches!(namespace, ResolveResult::Bound(namespace) if namespace.as_ref() == RELATIONSHIPS_NAMESPACE)
+                            || local.as_ref() != b"Relationships"))
+                    || (depth == 2
+                        && (!matches!(namespace, ResolveResult::Bound(namespace) if namespace.as_ref() == RELATIONSHIPS_NAMESPACE)
+                            || local.as_ref() != b"Relationship"))
+                    || (depth > 2)
+                    || !pptx_relationship_event_is_internal(&reader, &event)?
+                {
                     return Some(false);
                 }
+                saw_root = true;
             }
             Ok(Event::Empty(event)) => {
-                if !pptx_relationship_event_is_internal(&event)? {
+                let (namespace, local) = reader.resolve_element(event.name());
+                if !pptx_xml_attributes_are_well_formed(&reader, &event)
+                    || depth != 1
+                    || !matches!(namespace, ResolveResult::Bound(namespace) if namespace.as_ref() == RELATIONSHIPS_NAMESPACE)
+                    || local.as_ref() != b"Relationship"
+                    || !pptx_relationship_event_is_internal(&reader, &event)?
+                {
                     return Some(false);
                 }
             }
             Ok(Event::End(_)) => depth = depth.checked_sub(1)?,
-            Ok(Event::Text(_) | Event::Decl(_) | Event::Comment(_)) => {}
-            Ok(Event::DocType(_) | Event::GeneralRef(_) | Event::CData(_)) => return None,
-            Ok(Event::Eof) => return (depth == 0).then_some(true),
+            Ok(Event::Decl(_)) => {}
+            Ok(Event::Text(event)) if event.decode().ok()?.trim().is_empty() => {}
+            Ok(
+                Event::Text(_)
+                | Event::Comment(_)
+                | Event::PI(_)
+                | Event::DocType(_)
+                | Event::GeneralRef(_)
+                | Event::CData(_),
+            ) => return None,
+            Ok(Event::Eof) => return (depth == 0 && saw_root).then_some(true),
             Err(_) => return None,
-            _ => return None,
         }
     }
 }
 
-fn pptx_relationship_event_is_internal(event: &quick_xml::events::BytesStart<'_>) -> Option<bool> {
+fn pptx_relationship_event_is_internal(
+    reader: &quick_xml::NsReader<&[u8]>,
+    event: &quick_xml::events::BytesStart<'_>,
+) -> Option<bool> {
     for attribute in event.attributes() {
         let attribute = attribute.ok()?;
-        if attribute.key.as_ref() == b"TargetMode"
+        let (namespace, local) = reader.resolver().resolve_attribute(attribute.key);
+        if matches!(namespace, quick_xml::name::ResolveResult::Unknown(_)) {
+            return None;
+        }
+        if local.as_ref() == b"TargetMode"
             && attribute.unescape_value().ok()?.as_ref() == "External"
         {
             return Some(false);
@@ -4876,12 +5166,14 @@ fn pptx_relationship_event_is_internal(event: &quick_xml::events::BytesStart<'_>
 
 fn extract_pptx_slide_text(xml: &str) -> Option<String> {
     use quick_xml::events::Event;
+    use quick_xml::name::ResolveResult;
 
-    let mut reader = quick_xml::Reader::from_str(xml);
+    let mut reader = quick_xml::NsReader::from_str(xml);
     reader.config_mut().trim_text(true);
     let mut depth = 0usize;
     let mut text_depth = None;
     let mut text = String::new();
+    let mut saw_root = false;
     loop {
         match reader.read_event() {
             Ok(Event::Start(event)) => {
@@ -4889,31 +5181,84 @@ fn extract_pptx_slide_text(xml: &str) -> Option<String> {
                 if depth > MAX_OFFICE_XML_DEPTH {
                     return None;
                 }
-                if event.name().as_ref() == b"a:t" && text_depth.replace(depth).is_some() {
+                if !pptx_xml_attributes_are_well_formed(&reader, &event) {
+                    return None;
+                }
+                let (namespace, local) = reader.resolve_element(event.name());
+                if depth == 1 {
+                    if saw_root
+                        || !matches!(namespace, ResolveResult::Bound(namespace) if namespace.as_ref() == PRESENTATIONML_NAMESPACE)
+                        || local.as_ref() != b"sld"
+                    {
+                        return None;
+                    }
+                    saw_root = true;
+                }
+                if matches!(namespace, ResolveResult::Bound(namespace) if namespace.as_ref() == DRAWINGML_NAMESPACE)
+                    && local.as_ref() == b"t"
+                    && text_depth.replace(depth).is_some()
+                {
                     return None;
                 }
             }
-            Ok(Event::Empty(event)) if event.name().as_ref() == b"a:t" => text.push('\n'),
-            Ok(Event::Empty(_)) => {}
-            Ok(Event::End(_)) => {
+            Ok(Event::Empty(event)) => {
+                if !pptx_xml_attributes_are_well_formed(&reader, &event) {
+                    return None;
+                }
+                let (namespace, local) = reader.resolve_element(event.name());
+                if depth == 0 && !saw_root {
+                    return None;
+                }
+                if matches!(namespace, ResolveResult::Bound(namespace) if namespace.as_ref() == DRAWINGML_NAMESPACE)
+                    && local.as_ref() == b"t"
+                {
+                    text.push('\n');
+                }
+            }
+            Ok(Event::End(event)) => {
+                let (namespace, local) = reader.resolve_element(event.name());
                 if text_depth == Some(depth) {
+                    if !matches!(namespace, ResolveResult::Bound(namespace) if namespace.as_ref() == DRAWINGML_NAMESPACE)
+                        || local.as_ref() != b"t"
+                    {
+                        return None;
+                    }
                     text_depth = None;
                     text.push('\n');
                 }
                 depth = depth.checked_sub(1)?;
             }
             Ok(Event::Text(event)) if text_depth.is_some() => text.push_str(&event.decode().ok()?),
-            Ok(Event::Text(_) | Event::Decl(_) | Event::Comment(_)) => {}
-            Ok(Event::DocType(_) | Event::GeneralRef(_) | Event::CData(_)) => return None,
+            Ok(Event::Text(_) | Event::Decl(_)) => {}
+            Ok(
+                Event::DocType(_)
+                | Event::GeneralRef(_)
+                | Event::CData(_)
+                | Event::Comment(_)
+                | Event::PI(_),
+            ) => return None,
             Ok(Event::Eof) => {
-                return (depth == 0 && text_depth.is_none())
+                return (depth == 0 && saw_root && text_depth.is_none())
                     .then(|| normalized_preview_text(&text))
                     .flatten();
             }
             Err(_) => return None,
-            _ => return None,
         }
     }
+}
+
+fn pptx_xml_attributes_are_well_formed(
+    reader: &quick_xml::NsReader<&[u8]>,
+    event: &quick_xml::events::BytesStart<'_>,
+) -> bool {
+    event.attributes().all(|attribute| {
+        let Ok(attribute) = attribute else {
+            return false;
+        };
+        let (namespace, _) = reader.resolver().resolve_attribute(attribute.key);
+        !matches!(namespace, quick_xml::name::ResolveResult::Unknown(_))
+            && attribute.unescape_value().is_ok()
+    })
 }
 
 const ODS_TABLE_NAMESPACE: &[u8] = b"urn:oasis:names:tc:opendocument:xmlns:table:1.0";
@@ -8421,7 +8766,7 @@ mod tests {
             zip.start_file("ppt/slides/slide1.xml", options)
                 .expect("slide");
             zip.write_all(
-                br#"<p:sld><a:t>First slide title</a:t><a:t>Bounded preview text</a:t></p:sld>"#,
+                br#"<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:t>First slide title</a:t><a:t>Bounded preview text</a:t></p:sld>"#,
             )
             .expect("write slide");
             zip.finish().expect("finish");
@@ -8440,6 +8785,143 @@ mod tests {
         let _ = std::fs::remove_file(path);
     }
 
+    #[cfg(unix)]
+    #[test]
+    fn pptx_visual_preview_rejects_a_symlink_before_opening_the_package() {
+        use std::os::unix::fs::symlink;
+
+        let target = temp_path("pptx-symlink-target.pptx");
+        let link = temp_path("pptx-symlink.pptx");
+        std::fs::write(&target, b"not a package").expect("write target");
+        symlink(&target, &link).expect("create symlink");
+
+        assert!(matches!(
+            render_office_content_preview_png(&link, 256),
+            Err(OfficeVisualError::InputNotRegular)
+        ));
+        let _ = std::fs::remove_file(link);
+        let _ = std::fs::remove_file(target);
+    }
+
+    #[test]
+    fn office_source_generation_changes_for_an_in_place_same_length_rewrite() {
+        let path = temp_path("pptx-generation.pptx");
+        std::fs::write(&path, b"first-package-generation").expect("write first generation");
+        let first = office_preview_source_generation(&path).expect("hash first generation");
+        std::fs::write(&path, b"other-package-generation").expect("rewrite same length");
+        let second = office_preview_source_generation(&path).expect("hash second generation");
+        assert_ne!(first, second);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn office_snapshot_generation_changes_when_its_path_is_replaced() {
+        let path = temp_path("pptx-snapshot-replacement.pptx");
+        let replacement = temp_path("pptx-snapshot-replacement-next.pptx");
+        std::fs::write(&path, b"first-office-package").expect("write first package");
+        let first = read_office_snapshot(&path).expect("snapshot first package");
+        std::fs::write(&replacement, b"next--office-package").expect("write replacement");
+        std::fs::rename(&replacement, &path).expect("replace package path");
+        let next = read_office_snapshot(&path).expect("snapshot replacement package");
+
+        assert_ne!(first.generation, next.generation);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn office_snapshot_never_returns_an_unstable_same_inode_generation() {
+        use std::io::{Seek, SeekFrom};
+        use std::os::unix::fs::MetadataExt;
+        use std::sync::{
+            Arc, Barrier,
+            atomic::{AtomicBool, Ordering},
+        };
+
+        let path = temp_path("pptx-snapshot-same-inode.pptx");
+        let first = vec![b'A'; 128 * 1024];
+        let second = vec![b'B'; 128 * 1024];
+        std::fs::write(&path, &first).expect("write first package");
+        let inode = std::fs::metadata(&path).expect("first metadata").ino();
+        let first_generation = OfficePreviewSourceGeneration(Sha256::digest(&first).into());
+        let second_generation = OfficePreviewSourceGeneration(Sha256::digest(&second).into());
+        let start = Arc::new(Barrier::new(2));
+        let running = Arc::new(AtomicBool::new(true));
+        let writer_path = path.clone();
+        let writer_start = Arc::clone(&start);
+        let writer_running = Arc::clone(&running);
+        let writer = std::thread::spawn(move || {
+            writer_start.wait();
+            for generation in [&first, &second].into_iter().cycle().take(128) {
+                if !writer_running.load(Ordering::Acquire) {
+                    break;
+                }
+                let mut file = std::fs::OpenOptions::new()
+                    .write(true)
+                    .open(&writer_path)
+                    .expect("open same inode package");
+                file.seek(SeekFrom::Start(0)).expect("rewind package");
+                file.write_all(generation)
+                    .expect("rewrite same inode package");
+            }
+        });
+
+        start.wait();
+        for _ in 0..128 {
+            match read_office_snapshot(&path) {
+                Ok(snapshot) => assert!(
+                    snapshot.generation == first_generation
+                        || snapshot.generation == second_generation,
+                    "the admitted snapshot must be one complete writer generation"
+                ),
+                Err(OfficeVisualError::InputChanged) => {}
+                Err(error) => panic!(
+                    "same-inode rewrite must either yield a stable snapshot or fail closed: {error}"
+                ),
+            }
+        }
+        running.store(false, Ordering::Release);
+        writer.join().expect("writer joins");
+        assert_eq!(
+            std::fs::metadata(&path).expect("final metadata").ino(),
+            inode,
+            "the concurrent rewrites must retain the same inode"
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn pptx_slide_text_requires_truthful_namespaces() {
+        let valid = r#"<slide:sld xmlns:slide="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:text="http://schemas.openxmlformats.org/drawingml/2006/main"><text:t>Visible</text:t></slide:sld>"#;
+        assert_eq!(extract_pptx_slide_text(valid), Some("Visible".to_string()));
+        for invalid in [
+            r#"<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="https://evil.invalid"><a:t>Hidden</a:t></p:sld>"#,
+            r#"<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><a:t>Unbound</a:t></p:sld>"#,
+            r#"<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" a:x="1" a:x="2"><a:t>Duplicate</a:t></p:sld>"#,
+        ] {
+            assert_eq!(extract_pptx_slide_text(invalid), None);
+        }
+    }
+
+    #[test]
+    fn office_zip_names_reject_drive_and_cross_platform_escape_forms() {
+        for unsafe_name in [
+            "C:/ppt/evil.xml",
+            "C:\\\\ppt\\\\evil.xml",
+            "/ppt/slides/slide1.xml",
+            "\\\\server\\share\\slide.xml",
+            "ppt/../slides/slide1.xml",
+            "ppt\\slides\\slide1.xml",
+        ] {
+            assert!(
+                !safe_office_zip_name(unsafe_name),
+                "must reject {unsafe_name}"
+            );
+        }
+        assert!(safe_office_zip_name("ppt/slides/slide1.xml"));
+    }
+
     #[test]
     fn pptx_visual_preview_uses_the_lowest_canonical_slide_number() {
         let path = temp_path("out-of-order.pptx");
@@ -8452,7 +8934,7 @@ mod tests {
                 ("ppt/slides/slide1.xml", "First slide"),
             ] {
                 zip.start_file(name, options).expect("slide");
-                write!(zip, "<p:sld><a:t>{text}</a:t></p:sld>").expect("write slide");
+                write!(zip, "<p:sld xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><a:t>{text}</a:t></p:sld>").expect("write slide");
             }
             zip.finish().expect("finish");
         }
@@ -8538,6 +9020,175 @@ mod tests {
             ));
             let _ = std::fs::remove_file(path);
         }
+    }
+
+    #[test]
+    fn pptx_visual_admission_rejects_hostile_zip_metadata_before_rendering() {
+        fn visual_pptx_bytes(with_second_slide: bool) -> Vec<u8> {
+            let mut bytes = Cursor::new(Vec::new());
+            {
+                let mut zip = zip::ZipWriter::new(&mut bytes);
+                zip.start_file(
+                    "ppt/slides/slide1.xml",
+                    zip::write::SimpleFileOptions::default(),
+                )
+                .expect("slide");
+                zip.write_all(br#"<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:t>Safe</a:t></p:sld>"#)
+                    .expect("slide XML");
+                if with_second_slide {
+                    zip.start_file(
+                        "ppt/slides/slide2.xml",
+                        zip::write::SimpleFileOptions::default(),
+                    )
+                    .expect("second slide");
+                    zip.write_all(br#"<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:t>Safe</a:t></p:sld>"#)
+                        .expect("second slide XML");
+                }
+                zip.finish().expect("finish package");
+            }
+            bytes.into_inner()
+        }
+
+        fn central_offset(bytes: &[u8]) -> usize {
+            let eocd = bytes
+                .windows(4)
+                .rposition(|window| window == b"PK\x05\x06")
+                .expect("EOCD");
+            read_le_u32(&bytes[eocd + 16..eocd + 20]).expect("central offset") as usize
+        }
+
+        fn is_rejected(bytes: &[u8]) -> bool {
+            let mut archive = zip::ZipArchive::new(Cursor::new(bytes)).expect("open fixture");
+            !pptx_package_is_safe(bytes, &mut archive)
+        }
+
+        let valid = visual_pptx_bytes(true);
+        assert!(
+            !is_rejected(&valid),
+            "the control package must remain renderable"
+        );
+        let central = central_offset(&valid);
+        let local = read_le_u32(&valid[central + 42..central + 46]).expect("local offset") as usize;
+
+        let mut unix_symlink = valid.clone();
+        unix_symlink[central + 5] = 3;
+        unix_symlink[central + 38..central + 42]
+            .copy_from_slice(&((0o120777_u32) << 16).to_le_bytes());
+        assert!(
+            is_rejected(&unix_symlink),
+            "Unix symlink entries must fail closed"
+        );
+
+        let mut unix_special = valid.clone();
+        unix_special[central + 5] = 3;
+        unix_special[central + 38..central + 42]
+            .copy_from_slice(&((0o010644_u32) << 16).to_le_bytes());
+        assert!(
+            is_rejected(&unix_special),
+            "Unix special entries must fail closed"
+        );
+
+        let mut encrypted = valid.clone();
+        encrypted[local + 6] |= 1;
+        encrypted[central + 8] |= 1;
+        assert!(
+            is_rejected(&encrypted),
+            "encrypted entries must fail closed"
+        );
+
+        let mut unsupported_method = valid.clone();
+        unsupported_method[local + 8..local + 10].copy_from_slice(&12_u16.to_le_bytes());
+        unsupported_method[central + 10..central + 12].copy_from_slice(&12_u16.to_le_bytes());
+        assert!(
+            is_rejected(&unsupported_method),
+            "unsupported compression must fail closed"
+        );
+
+        let mut inconsistent_local_name = valid.clone();
+        let name_start = local + 30;
+        inconsistent_local_name[name_start] = b'P';
+        assert!(
+            is_rejected(&inconsistent_local_name),
+            "local and central names must agree"
+        );
+
+        let mut zip64_sentinel = valid.clone();
+        zip64_sentinel[central + 20..central + 24].copy_from_slice(&u32::MAX.to_le_bytes());
+        assert!(
+            is_rejected(&zip64_sentinel),
+            "ZIP64 metadata must fail closed"
+        );
+
+        let mut descriptor = visual_pptx_bytes(false);
+        let descriptor_central_before = central_offset(&descriptor);
+        let descriptor_local = read_le_u32(
+            &descriptor[descriptor_central_before + 42..descriptor_central_before + 46],
+        )
+        .expect("descriptor local offset") as usize;
+        let descriptor_bytes = [
+            b'P',
+            b'K',
+            7,
+            8,
+            descriptor[descriptor_central_before + 16],
+            descriptor[descriptor_central_before + 17],
+            descriptor[descriptor_central_before + 18],
+            descriptor[descriptor_central_before + 19],
+            descriptor[descriptor_central_before + 20],
+            descriptor[descriptor_central_before + 21],
+            descriptor[descriptor_central_before + 22],
+            descriptor[descriptor_central_before + 23],
+            descriptor[descriptor_central_before + 24],
+            descriptor[descriptor_central_before + 25],
+            descriptor[descriptor_central_before + 26],
+            descriptor[descriptor_central_before + 27],
+        ];
+        descriptor.splice(
+            descriptor_central_before..descriptor_central_before,
+            descriptor_bytes,
+        );
+        let descriptor_central = descriptor_central_before + 16;
+        let descriptor_eocd = descriptor
+            .windows(4)
+            .rposition(|window| window == b"PK\x05\x06")
+            .expect("shifted EOCD");
+        descriptor[descriptor_eocd + 16..descriptor_eocd + 20]
+            .copy_from_slice(&(descriptor_central as u32).to_le_bytes());
+        descriptor[descriptor_local + 6] |= 0x08;
+        descriptor[descriptor_central + 8] |= 0x08;
+        descriptor[descriptor_local + 14..descriptor_local + 26].fill(0);
+        assert!(
+            preflight_epub_zip(&descriptor).is_some(),
+            "the descriptor fixture must be structurally coherent before Office policy rejects it"
+        );
+        assert!(
+            is_rejected(&descriptor),
+            "data descriptors must fail closed"
+        );
+        assert_eq!(
+            read_le_u32(&descriptor[descriptor_eocd + 16..descriptor_eocd + 20]),
+            Some(descriptor_central as u32),
+            "the descriptor must describe its shifted central directory"
+        );
+
+        let mut case_collision = valid.clone();
+        let name_len =
+            read_le_u16(&valid[central + 28..central + 30]).expect("name length") as usize;
+        let first_record_len = 46
+            + name_len
+            + read_le_u16(&valid[central + 30..central + 32]).expect("first extra") as usize
+            + read_le_u16(&valid[central + 32..central + 34]).expect("first comment") as usize;
+        let second_central = central + first_record_len;
+        let second_local = read_le_u32(&valid[second_central + 42..second_central + 46])
+            .expect("second local") as usize;
+        case_collision[second_central + 46..second_central + 46 + name_len]
+            .copy_from_slice(b"PPT/SLIDES/SLIDE1.XML");
+        case_collision[second_local + 30..second_local + 30 + name_len]
+            .copy_from_slice(b"PPT/SLIDES/SLIDE1.XML");
+        assert!(
+            is_rejected(&case_collision),
+            "case-fold collisions must fail closed"
+        );
     }
 
     #[test]
