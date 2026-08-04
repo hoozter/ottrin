@@ -1,7 +1,9 @@
 use crate::mesh_visual::{MeshBuilder, MeshVisualError, ParsedMesh, render_mesh_preview_png};
+#[cfg(unix)]
 use sha2::{Digest, Sha256};
 use std::path::Path;
 
+#[cfg_attr(not(unix), allow(dead_code))]
 pub const MAX_PLY_PREVIEW_BYTES: u64 = 64 * 1024 * 1024;
 pub const MAX_PLY_VERTICES: usize = 200_000;
 pub const MAX_PLY_FACES: usize = 200_000;
@@ -49,6 +51,10 @@ pub enum PlyVisualError {
     InputMetadata(String),
     #[error("PLY source is not a regular file")]
     InputNotRegular,
+    #[error(
+        "PLY previews are disabled on this platform until native safe-file admission is available"
+    )]
+    PreviewDisabledOnPlatform,
     #[error("PLY input is too large for a bounded preview ({actual} bytes; limit {limit})")]
     InputTooLarge { actual: u64, limit: u64 },
     #[error("could not read PLY input: {0}")]
@@ -248,6 +254,7 @@ pub fn render_ply_preview_png_with_generation(
     })
 }
 
+#[cfg(unix)]
 fn read_ply_snapshot(path: &Path) -> Result<PlySnapshot, PlyVisualError> {
     let path_metadata = std::fs::symlink_metadata(path)
         .map_err(|error| PlyVisualError::InputMetadata(error.to_string()))?;
@@ -305,21 +312,23 @@ fn read_ply_snapshot(path: &Path) -> Result<PlySnapshot, PlyVisualError> {
     })
 }
 
-fn open_ply_source(path: &Path) -> Result<std::fs::File, PlyVisualError> {
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::OpenOptionsExt;
+#[cfg(not(unix))]
+fn read_ply_snapshot(_path: &Path) -> Result<PlySnapshot, PlyVisualError> {
+    // The former generic File::open fallback followed Windows reparse points
+    // and could block before proving this is a regular file. Do not re-enable
+    // PLY until a native opened-handle implementation is tested.
+    Err(PlyVisualError::PreviewDisabledOnPlatform)
+}
 
-        std::fs::OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
-            .open(path)
-            .map_err(|error| PlyVisualError::InputMetadata(error.to_string()))
-    }
-    #[cfg(not(unix))]
-    {
-        std::fs::File::open(path).map_err(|error| PlyVisualError::InputMetadata(error.to_string()))
-    }
+#[cfg(unix)]
+fn open_ply_source(path: &Path) -> Result<std::fs::File, PlyVisualError> {
+    use std::os::unix::fs::OpenOptionsExt;
+
+    std::fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(path)
+        .map_err(|error| PlyVisualError::InputMetadata(error.to_string()))
 }
 
 #[cfg(unix)]
@@ -327,11 +336,6 @@ fn same_source_identity(left: &std::fs::Metadata, right: &std::fs::Metadata) -> 
     use std::os::unix::fs::MetadataExt;
 
     left.dev() == right.dev() && left.ino() == right.ino()
-}
-
-#[cfg(not(unix))]
-fn same_source_identity(left: &std::fs::Metadata, right: &std::fs::Metadata) -> bool {
-    left.len() == right.len() && left.modified().ok() == right.modified().ok()
 }
 
 fn parse_ply_snapshot(
@@ -1115,5 +1119,57 @@ mod tests {
             status.is_some_and(|status| status.success()),
             "PLY must reject an unread FIFO before blocking"
         );
+    }
+}
+
+#[cfg(all(test, windows))]
+mod windows_tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_root() -> std::path::PathBuf {
+        std::env::temp_dir().join(format!(
+            "ottrin-ply-windows-admission-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
+        ))
+    }
+
+    fn assert_windows_ply_admission_disabled(path: &Path) {
+        assert!(ply_preview_source_generation(path).is_none());
+        for result in [
+            inspect_ply_metadata(path).map(|_| ()),
+            render_ply_preview_png(path, 128).map(|_| ()),
+        ] {
+            assert!(matches!(
+                result,
+                Err(PlyVisualError::PreviewDisabledOnPlatform)
+            ));
+        }
+    }
+
+    #[test]
+    fn ply_windows_source_admission_is_fail_closed_pending_native_handle_validation() {
+        let root = temp_root();
+        std::fs::create_dir(&root).expect("create root");
+        let ordinary = root.join("ordinary.ply");
+        std::fs::write(&ordinary, b"ply\nformat ascii 1.0\nend_header\n")
+            .expect("write ordinary PLY");
+        let oversized = root.join("oversized.ply");
+        let oversized_file = std::fs::File::create(&oversized).expect("create oversized PLY");
+        oversized_file
+            .set_len(MAX_PLY_PREVIEW_BYTES + 1)
+            .expect("size oversized PLY");
+        drop(oversized_file);
+        let truncated = root.join("truncated.ply");
+        std::fs::write(&truncated, b"ply\nformat ascii 1.0\n").expect("write truncated PLY");
+
+        for path in [&ordinary, &oversized, &truncated] {
+            assert_windows_ply_admission_disabled(path);
+        }
+        std::fs::remove_dir_all(root).expect("remove PLY fixtures");
     }
 }
