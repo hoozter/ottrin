@@ -87,6 +87,10 @@ use window_chrome::{
 
 const STORAGE_LOCATION_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 
+fn single_file_pane_background(colors: &Colors) -> Color32 {
+    colors.smart_panel_bg
+}
+
 fn schedule_storage_location_refresh(ctx: &Context) {
     ctx.request_repaint_after(STORAGE_LOCATION_REFRESH_INTERVAL);
 }
@@ -197,6 +201,18 @@ fn creation_command_from_input(
         .map(|(_, remainder)| remainder.trim())
         .unwrap_or("");
     build_creation_command(kind, parent, name)
+}
+
+fn creation_modal_width(viewport_width: f32) -> f32 {
+    (viewport_width - 32.0).clamp(320.0, 400.0)
+}
+
+fn locations_rail_content_width(rail_width: f32, expanded: bool) -> f32 {
+    (rail_width - if expanded { 16.0 } else { 6.0 }).max(0.0)
+}
+
+fn locations_rail_overflow_width(response_width: f32, rail_width: f32) -> f32 {
+    (response_width - rail_width).max(0.0)
 }
 
 fn created_path_for_successful_command(cmd: &FileCommand, succeeded: bool) -> Option<PathBuf> {
@@ -5619,6 +5635,18 @@ impl OttrinApp {
         keyboard_navigation || pointer_navigation
     }
 
+    fn request_miller_pointer_reveal(&mut self, tab_id: u64) {
+        if self
+            .state
+            .tab_by_id(tab_id)
+            .is_some_and(|tab| matches!(tab.view_mode, ViewMode::Miller))
+        {
+            let ui_state = self.tab_ui.entry(tab_id).or_default();
+            ui_state.miller_reveal_pointer_selection = true;
+            ui_state.miller_scroll_selected = true;
+        }
+    }
+
     fn selected_paths_for_tab(&mut self, tab_id: u64) -> Vec<PathBuf> {
         let ui = self.tab_ui.entry(tab_id).or_default();
         let mut paths = if !ui.selected_paths.is_empty() {
@@ -6349,7 +6377,7 @@ impl OttrinApp {
         }
     }
 
-    fn navigate_tab_back(&mut self, tab_id: u64) {
+    fn navigate_tab_back(&mut self, tab_id: u64) -> bool {
         self.focus_tab(tab_id);
         if self
             .state
@@ -6358,7 +6386,7 @@ impl OttrinApp {
             .is_some_and(|target| self.navigation_target_is_isolated(tab_id, target))
         {
             self.set_status_message("Location is unavailable; Back stays isolated", false, 4);
-            return;
+            return false;
         }
         let before = self
             .state
@@ -6382,9 +6410,10 @@ impl OttrinApp {
             }
             self.refresh_tab(tab_id, dir);
         }
+        moved
     }
 
-    fn navigate_tab_forward(&mut self, tab_id: u64) {
+    fn navigate_tab_forward(&mut self, tab_id: u64) -> bool {
         self.focus_tab(tab_id);
         if self
             .state
@@ -6393,7 +6422,7 @@ impl OttrinApp {
             .is_some_and(|target| self.navigation_target_is_isolated(tab_id, target))
         {
             self.set_status_message("Location is unavailable; Forward stays isolated", false, 4);
-            return;
+            return false;
         }
         let before = self
             .state
@@ -6417,9 +6446,10 @@ impl OttrinApp {
             }
             self.refresh_tab(tab_id, dir);
         }
+        moved
     }
 
-    fn navigate_tab_up(&mut self, tab_id: u64) {
+    fn navigate_tab_up(&mut self, tab_id: u64) -> bool {
         self.focus_tab(tab_id);
         let before = self
             .state
@@ -6430,7 +6460,7 @@ impl OttrinApp {
             && self.navigation_target_is_isolated(tab_id, target)
         {
             self.set_status_message("Location is unavailable; Up stays isolated", false, 4);
-            return;
+            return false;
         }
         self.remember_main_selection(tab_id);
         let moved = self
@@ -6447,6 +6477,7 @@ impl OttrinApp {
             self.tab_ui.entry(tab_id).or_default().pending_select_path = Some(before);
             self.refresh_tab(tab_id, dir);
         }
+        moved
     }
 
     fn open_directory_in_tandem(&mut self, dir: PathBuf) {
@@ -6460,19 +6491,19 @@ impl OttrinApp {
         self.refresh_tab(new_tab_id, dir);
     }
 
-    fn navigate_active_back(&mut self) {
+    fn navigate_active_back(&mut self) -> bool {
         let tab_id = self.state.active_tab().id;
-        self.navigate_tab_back(tab_id);
+        self.navigate_tab_back(tab_id)
     }
 
-    fn navigate_active_forward(&mut self) {
+    fn navigate_active_forward(&mut self) -> bool {
         let tab_id = self.state.active_tab().id;
-        self.navigate_tab_forward(tab_id);
+        self.navigate_tab_forward(tab_id)
     }
 
-    fn navigate_active_up(&mut self) {
+    fn navigate_active_up(&mut self) -> bool {
         let tab_id = self.state.active_tab().id;
-        self.navigate_tab_up(tab_id);
+        self.navigate_tab_up(tab_id)
     }
 
     fn open_entry(&mut self, path: PathBuf, kind: EntryKind) {
@@ -9408,7 +9439,9 @@ impl OttrinApp {
                         })
                         .clicked()
                     {
-                        self.navigate_active_back();
+                        if self.navigate_active_back() {
+                            self.request_miller_pointer_reveal(active_tab_id);
+                        }
                     }
                     if ui
                         .add_enabled(
@@ -9426,7 +9459,9 @@ impl OttrinApp {
                         })
                         .clicked()
                     {
-                        self.navigate_active_forward();
+                        if self.navigate_active_forward() {
+                            self.request_miller_pointer_reveal(active_tab_id);
+                        }
                     }
                     if ui
                         .add_enabled(
@@ -9438,7 +9473,9 @@ impl OttrinApp {
                         .on_hover_text("Go to parent folder (Alt+Up)")
                         .clicked()
                     {
-                        self.navigate_active_up();
+                        if self.navigate_active_up() {
+                            self.request_miller_pointer_reveal(active_tab_id);
+                        }
                     }
                     ui.add_space(6.0);
 
@@ -9938,21 +9975,24 @@ impl OttrinApp {
             MI_LEFT_PANEL_OPEN
         };
 
-        egui::SidePanel::left("locations_rail")
+        let rail_response = egui::SidePanel::left("locations_rail")
             .resizable(false)
             .exact_width(rail_w)
             .show_separator_line(false)
             .frame(
                 Frame::new()
                     .fill(c.smart_panel_bg)
-                    .inner_margin(egui::Margin::symmetric(if expanded { 8 } else { 4 }, 6)),
+                    .inner_margin(egui::Margin::symmetric(if expanded { 8 } else { 3 }, 6)),
             )
             .show(ctx, |ui| {
                 ui.spacing_mut().item_spacing.y = 4.0;
-                let tile_w = ui.available_width();
+                let tile_w = locations_rail_content_width(rail_w, expanded);
+                ui.set_width(tile_w);
+                ui.spacing_mut().interact_size.x = tile_w;
 
                 let toggle_response = ui
-                    .add(
+                    .add_sized(
+                        Vec2::new(tile_w, 28.0),
                         egui::Button::new(
                             RichText::new(toggle_icon).size(15.0).color(c.text_muted),
                         )
@@ -9961,8 +10001,7 @@ impl OttrinApp {
                         } else {
                             mix_color(c.smart_panel_bg, c.panel, 0.22)
                         })
-                        .corner_radius(c.border_radius as f32)
-                        .min_size(Vec2::new(tile_w, 28.0)),
+                        .corner_radius(c.border_radius as f32),
                     )
                     .on_hover_text(toggle_tooltip);
                 toggle_response
@@ -10021,13 +10060,13 @@ impl OttrinApp {
                     }
                     .fill(bg_col)
                     .stroke(Stroke::NONE)
-                    .corner_radius(c.border_radius as f32)
-                    .min_size(Vec2::new(tile_w, if expanded { 42.0 } else { 36.0 }));
+                    .corner_radius(c.border_radius as f32);
 
                     let detail = locations_rail_tile_detail(name, &path, volume_index_status);
                     let accessibility_label =
                         locations_rail_accessibility_label(name, &path, volume_index_status);
-                    let resp = ui.add(btn);
+                    let resp =
+                        ui.add_sized(Vec2::new(tile_w, if expanded { 42.0 } else { 36.0 }), btn);
                     resp.widget_info(|| {
                         WidgetInfo::labeled(WidgetType::Button, true, accessibility_label.clone())
                     });
@@ -10094,6 +10133,22 @@ impl OttrinApp {
                     });
                 }
             });
+
+        let overflow_width =
+            locations_rail_overflow_width(rail_response.response.rect.width(), rail_w);
+        if overflow_width > 0.0 {
+            // Egui can report a small response overflow outside the fixed rail.
+            // Paint only that remainder so the Smart Panel surface stays continuous.
+            let rect = Rect::from_min_max(
+                egui::pos2(
+                    rail_response.response.rect.max.x - overflow_width,
+                    rail_response.response.rect.min.y,
+                ),
+                rail_response.response.rect.max,
+            );
+            ctx.layer_painter(egui::LayerId::background())
+                .rect_filled(rect, 0.0, c.smart_panel_bg);
+        }
 
         if let Some(path) = navigate_to {
             let tab_id = self.state.active_tab().id;
@@ -13871,7 +13926,7 @@ impl OttrinApp {
 
         let mut file_rect: Option<Rect> = None;
         let pane = egui::CentralPanel::default()
-            .frame(Frame::new().fill(c.bg))
+            .frame(Frame::new().fill(single_file_pane_background(&c)))
             .show(ctx, |ui| {
                 let avail = ui.available_rect_before_wrap();
                 if avail.width() <= 48.0 || avail.height() <= 48.0 {
@@ -14190,10 +14245,11 @@ impl OttrinApp {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
             std::mem::take(&mut ui_state.miller_scroll_selected)
         };
-        let pointer_reveal = {
-            let ui_state = self.tab_ui.entry(tab_id).or_default();
-            std::mem::take(&mut ui_state.miller_reveal_pointer_selection)
-        };
+        let pointer_reveal = self
+            .tab_ui
+            .get(&tab_id)
+            .is_some_and(|ui_state| ui_state.miller_reveal_pointer_selection);
+        let mut pointer_reveal_completed = false;
 
         // File preview is based on the FOCUS column's selection.
         // Only show file preview when focus has a file selected;
@@ -14332,7 +14388,10 @@ impl OttrinApp {
                                             width,
                                             &c,
                                         );
-                                        if scroll_selected && col_idx == focus_col && selected {
+                                        if (scroll_selected || pointer_reveal)
+                                            && col_idx == focus_col
+                                            && selected
+                                        {
                                             let row_smooth = ScrollAnimation {
                                                 points_per_second: 800.0,
                                                 duration: Rangef::new(0.08, 0.25),
@@ -14342,6 +14401,9 @@ impl OttrinApp {
                                                 Some(egui::Align::Center),
                                                 row_smooth,
                                             );
+                                            if pointer_reveal {
+                                                pointer_reveal_completed = true;
+                                            }
                                         }
                                         if Self::row_pointer_selects(
                                             resp.clicked(),
@@ -14392,6 +14454,10 @@ impl OttrinApp {
                                                     .entry(tab_id)
                                                     .or_default()
                                                     .miller_reveal_pointer_selection = true;
+                                                self.tab_ui
+                                                    .entry(tab_id)
+                                                    .or_default()
+                                                    .miller_scroll_selected = true;
                                             }
                                             ui.ctx().request_repaint();
                                         }
@@ -14469,6 +14535,9 @@ impl OttrinApp {
                                     smooth,
                                 );
                             }
+                        }
+                        if pointer_reveal && col.entries.is_empty() {
+                            pointer_reveal_completed = true;
                         }
                     }
                     // A soft rail is real layout space, not an overlay, so
@@ -14564,6 +14633,12 @@ impl OttrinApp {
             state.store(ui.ctx(), sa_output.id);
         } else {
             self.tab_ui.entry(tab_id).or_default().miller_h_offset = sa_output.state.offset.x;
+        }
+        if pointer_reveal_completed {
+            self.tab_ui
+                .entry(tab_id)
+                .or_default()
+                .miller_reveal_pointer_selection = false;
         }
 
         if let Some(cmd) = pending_op {
@@ -16404,7 +16479,7 @@ impl OttrinApp {
                     .corner_radius(8.0)
                     .inner_margin(egui::Margin::symmetric(18, 16))
                     .show(ui, |ui| {
-                        ui.set_width(viewport.width().clamp(300.0, 460.0));
+                        ui.set_width(creation_modal_width(viewport.width()));
                         ui.horizontal(|ui| {
                             ui.label(RichText::new(icon).size(22.0).color(c.accent));
                             ui.add_space(8.0);
@@ -21575,6 +21650,13 @@ mod tests {
     }
 
     #[test]
+    fn creation_modal_uses_a_compact_dialog_width_across_viewports() {
+        assert_eq!(creation_modal_width(280.0), 320.0);
+        assert_eq!(creation_modal_width(480.0), 400.0);
+        assert_eq!(creation_modal_width(1440.0), 400.0);
+    }
+
+    #[test]
     fn storage_location_refresh_wakes_an_idle_ui_within_the_bound() {
         let ctx = Context::default();
         let delays = Arc::new(std::sync::Mutex::new(Vec::new()));
@@ -22280,6 +22362,26 @@ mod tests {
     }
 
     #[test]
+    fn mouse_navigation_requests_miller_row_and_column_reveal() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+
+        app.request_miller_pointer_reveal(tab_id);
+
+        let ui_state = app.tab_ui.get(&tab_id).expect("active tab UI state");
+        assert!(ui_state.miller_reveal_pointer_selection);
+        assert!(ui_state.miller_scroll_selected);
+    }
+
+    #[test]
+    fn failed_miller_history_navigation_does_not_report_a_move() {
+        let mut app = OttrinApp::default();
+
+        assert!(!app.navigate_active_back());
+        assert!(!app.navigate_active_forward());
+    }
+
+    #[test]
     fn empty_folder_actions_fit_and_center_inside_auto_sized_columns() {
         assert_eq!(OttrinApp::empty_folder_content_width(120.0), 96.0);
         assert_eq!(OttrinApp::empty_folder_content_width(240.0), 216.0);
@@ -22779,6 +22881,24 @@ mod tests {
         let app = OttrinApp::default();
         assert_eq!(app.locations_rail_width(), 44.0);
         assert!(!app.locations_rail_expanded);
+    }
+
+    #[test]
+    fn locations_rail_content_fits_inside_each_fixed_surface() {
+        assert_eq!(locations_rail_content_width(44.0, false), 38.0);
+        assert_eq!(locations_rail_content_width(214.0, true), 198.0);
+    }
+
+    #[test]
+    fn locations_rail_only_fills_the_panel_response_overflow() {
+        assert_eq!(locations_rail_overflow_width(44.0, 44.0), 0.0);
+        assert_eq!(locations_rail_overflow_width(46.0, 44.0), 2.0);
+    }
+
+    #[test]
+    fn locations_rail_and_single_file_canvas_share_the_smart_panel_surface() {
+        let colors = Colors::for_config(&AppConfig::default());
+        assert_eq!(single_file_pane_background(&colors), colors.smart_panel_bg);
     }
 
     #[test]
