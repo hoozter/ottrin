@@ -13,6 +13,8 @@ const MAX_CAMERA_RAW_CACHE_PNG_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_CAMERA_RAW_CACHE_PNG_DIMENSION: u32 = 2_048;
 const MAX_FONT_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_FONT_CACHE_PNG_DIMENSION: u32 = 2_048;
+const MAX_SQLITE_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_SQLITE_CACHE_PNG_DIMENSION: u32 = 2_048;
 
 #[derive(Debug, Clone)]
 pub(crate) enum ImagePreviewCacheEntry {
@@ -132,6 +134,16 @@ fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u
                 return None;
             }
         }
+    } else if ottrin_preview::preview_profile(path).kind()
+        == ottrin_preview::PreviewKind::SqliteMetadata
+    {
+        match read_sqlite_cache_bytes(cache_path) {
+            Some(bytes) => bytes,
+            None => {
+                let _ = std::fs::remove_file(cache_path);
+                return None;
+            }
+        }
     } else {
         std::fs::read(cache_path).ok()?
     };
@@ -154,6 +166,11 @@ fn read_bounded_camera_raw_cache(reader: impl Read) -> std::io::Result<Option<Ve
 fn read_font_cache_bytes(path: &Path) -> Option<Vec<u8>> {
     let file = std::fs::File::open(path).ok()?;
     read_bounded_cache(file, MAX_FONT_CACHE_PNG_BYTES).ok()?
+}
+
+fn read_sqlite_cache_bytes(path: &Path) -> Option<Vec<u8>> {
+    let file = std::fs::File::open(path).ok()?;
+    read_bounded_cache(file, MAX_SQLITE_CACHE_PNG_BYTES).ok()?
 }
 
 fn read_bounded_cache(reader: impl Read, max_bytes: u64) -> std::io::Result<Option<Vec<u8>>> {
@@ -255,6 +272,18 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::Sqlite => {
+                match ottrin_preview::render_sqlite_metadata_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "SQLite thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
             _ => None,
         }
     })
@@ -293,6 +322,9 @@ fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
     if ottrin_preview::is_font_path(path) {
         return font_cached_png_is_safe(bytes);
     }
+    if ottrin_preview::preview_profile(path).kind() == ottrin_preview::PreviewKind::SqliteMetadata {
+        return ottrin_preview::is_sqlite_preview_path(path) && sqlite_cached_png_is_safe(bytes);
+    }
     if !ottrin_preview::preview_profile(path).raw_fallback_allowed() {
         return is_png_bytes(bytes);
     }
@@ -316,6 +348,14 @@ fn font_cached_png_is_safe(bytes: &[u8]) -> bool {
         bytes,
         MAX_FONT_CACHE_PNG_BYTES,
         MAX_FONT_CACHE_PNG_DIMENSION,
+    )
+}
+
+fn sqlite_cached_png_is_safe(bytes: &[u8]) -> bool {
+    bounded_cached_png_is_safe(
+        bytes,
+        MAX_SQLITE_CACHE_PNG_BYTES,
+        MAX_SQLITE_CACHE_PNG_DIMENSION,
     )
 }
 
@@ -433,6 +473,18 @@ pub(crate) fn full_preview_bytes_at_page(
                     }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::Sqlite => {
+                match ottrin_preview::render_sqlite_metadata_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "SQLite preview render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
             _ => None,
         }
     })
@@ -450,6 +502,7 @@ fn full_preview_bytes_with_visual_renderer(
             | ottrin_preview::PreviewVisualRenderer::CameraRaw
             | ottrin_preview::PreviewVisualRenderer::TextCard
             | ottrin_preview::PreviewVisualRenderer::Font
+            | ottrin_preview::PreviewVisualRenderer::Sqlite
     ) {
         return render_visual(path, target_dim);
     }
@@ -469,7 +522,8 @@ fn build_thumbnail_bytes_with_visual_renderer(
         | ottrin_preview::PreviewVisualRenderer::Office
         | ottrin_preview::PreviewVisualRenderer::CameraRaw
         | ottrin_preview::PreviewVisualRenderer::TextCard
-        | ottrin_preview::PreviewVisualRenderer::Font => {
+        | ottrin_preview::PreviewVisualRenderer::Font
+        | ottrin_preview::PreviewVisualRenderer::Sqlite => {
             return render_visual(path, target_dim);
         }
         ottrin_preview::PreviewVisualRenderer::Image => {
@@ -763,6 +817,47 @@ mod tests {
         });
 
         assert_eq!(bytes, Some(b"rendered-png".to_vec()));
+    }
+
+    #[test]
+    fn sqlite_thumbnail_and_full_preview_use_the_metadata_card_renderer_case_insensitively() {
+        let path = Path::new("records.SQLITE3");
+        let thumbnail = build_thumbnail_bytes_with_visual_renderer(path, 256, |actual, target| {
+            assert_eq!(actual, path);
+            assert_eq!(target, 256);
+            Some(b"sqlite-card".to_vec())
+        });
+        let full = full_preview_bytes_with_visual_renderer(path, 512, |actual, target| {
+            assert_eq!(actual, path);
+            assert_eq!(target, 512);
+            Some(b"sqlite-card".to_vec())
+        });
+
+        assert_eq!(thumbnail, Some(b"sqlite-card".to_vec()));
+        assert_eq!(full, Some(b"sqlite-card".to_vec()));
+        assert!(fallback_preview_bytes(path, None).is_none());
+    }
+
+    #[test]
+    fn sqlite_cache_refuses_stale_raw_bytes_when_the_source_is_not_content_verified() {
+        let nonce = format!(
+            "{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system clock after epoch")
+                .as_nanos()
+        );
+        let source = std::env::temp_dir().join(format!("ottrin-stale-{nonce}.sqlite"));
+        let cache = std::env::temp_dir().join(format!("ottrin-stale-{nonce}.png"));
+        std::fs::write(&source, b"not a SQLite database").expect("write invalid SQLite source");
+        std::fs::write(&cache, b"stale source bytes").expect("write stale cache entry");
+
+        assert!(load_cached_thumbnail_at_path(&source, &cache).is_none());
+        assert!(!cache.exists(), "unsafe stale SQLite cache must be removed");
+        assert!(fallback_preview_bytes(&source, None).is_none());
+
+        std::fs::remove_file(source).expect("remove SQLite source fixture");
     }
 
     #[test]

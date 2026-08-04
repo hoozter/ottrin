@@ -1,8 +1,16 @@
 use ottrin_core::{EntryKind, format_modified};
+use rusqlite::config::DbConfig;
+use rusqlite::hooks::{AuthAction, Authorization};
+use rusqlite::limits::Limit;
+use rusqlite::serialize::OwnedData;
+use rusqlite::{Connection, DatabaseName, OpenFlags};
 use serde::{Deserialize, Serialize};
 use std::io::{Cursor, Read};
 use std::path::Path;
 use std::path::PathBuf;
+use std::ptr::NonNull;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 mod pdf_visual;
 pub use pdf_visual::{
@@ -50,6 +58,14 @@ const MAX_FONT_OUTLINE_SEGMENTS: usize = 512;
 const MAX_FONT_OUTLINE_RASTER_STEPS: u64 = 512 * 1024;
 const MAX_FONT_SIMPLE_GLYPH_CONTOURS: usize = 64;
 const MAX_FONT_SIMPLE_GLYPH_POINTS: usize = 256;
+pub const MAX_SQLITE_PREVIEW_BYTES: u64 = 64 * 1024 * 1024;
+const MAX_SQLITE_SCHEMA_ROWS: usize = 64;
+const MAX_SQLITE_NAME_BYTES: usize = 128;
+const MAX_SQLITE_OUTPUT_BYTES: usize = 4 * 1024;
+const MAX_SQLITE_PREVIEW_DIMENSION: u32 = 2_048;
+const MAX_SQLITE_PREVIEW_PIXELS: u64 = 4_194_304;
+const MAX_SQLITE_PROGRESS_CALLBACKS: usize = 512;
+const SQLITE_PROGRESS_OP_INTERVAL: i32 = 100;
 const MAX_CAMERA_RAW_TIFF_IFDS: usize = 8;
 const MAX_CAMERA_RAW_TIFF_ENTRIES_PER_IFD: usize = 256;
 const MAX_CAMERA_RAW_TIFF_TOTAL_ENTRIES: usize = 512;
@@ -351,6 +367,32 @@ pub enum FontVisualError {
     Encode(String),
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum SqliteVisualError {
+    #[error("format is not a supported SQLite database candidate")]
+    UnsupportedFormat,
+    #[error("could not inspect SQLite input: {0}")]
+    InputMetadata(String),
+    #[error(
+        "SQLite input is too large for a bounded preview ({actual} bytes; limit {limit} bytes)"
+    )]
+    InputTooLarge { actual: u64, limit: u64 },
+    #[error("could not read SQLite input: {0}")]
+    Read(String),
+    #[error("SQLite input changed while its bounded snapshot was read")]
+    InputChanged,
+    #[error("SQLite header is unsafe: {0}")]
+    InvalidHeader(String),
+    #[error("could not create an isolated SQLite snapshot: {0}")]
+    Snapshot(String),
+    #[error("SQLite schema metadata exceeds safe preview bounds: {0}")]
+    SchemaBounds(String),
+    #[error("could not query inert SQLite schema metadata: {0}")]
+    Query(String),
+    #[error("could not encode SQLite metadata card: {0}")]
+    Encode(String),
+}
+
 #[derive(Debug, Clone, Copy)]
 struct FontTableRecord {
     tag: [u8; 4],
@@ -411,6 +453,7 @@ pub enum PreviewKind {
     Image,
     FolderMetadata,
     FontMetadata,
+    SqliteMetadata,
     Pdf,
     VideoMetadata,
     AudioMetadata,
@@ -448,6 +491,7 @@ pub enum PreviewVisualRenderer {
     Pdf,
     Office,
     Font,
+    Sqlite,
     CameraRaw,
     TextCard,
 }
@@ -504,6 +548,12 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
             kind,
             views: [true, false, true],
             visual_renderer: PreviewVisualRenderer::Font,
+            raw_fallback_allowed: false,
+        },
+        PreviewKind::SqliteMetadata => PreviewProfile {
+            kind,
+            views: [true, false, true],
+            visual_renderer: PreviewVisualRenderer::Sqlite,
             raw_fallback_allowed: false,
         },
         PreviewKind::Pdf => PreviewProfile {
@@ -611,6 +661,7 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
         PreviewKind::Text => preview_text(title, &request.path),
         PreviewKind::Image => preview_image(title, &request.path),
         PreviewKind::FontMetadata => preview_font(title, &request.path),
+        PreviewKind::SqliteMetadata => preview_sqlite(title, &request.path),
         PreviewKind::Pdf => preview_pdf(title, &request.path),
         PreviewKind::VideoMetadata => preview_video(title, &request.path),
         PreviewKind::AudioMetadata => preview_audio(title, &request.path),
@@ -636,6 +687,8 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         | "hpp" | "m" | "mm" | "sh" | "bash" | "zsh" | "fish" | "ps1" | "bat" | "vcf" | "ics"
         | "ical" | "ldif" | "sql" | "rtf" => PreviewKind::Text,
         "ttf" | "otf" => PreviewKind::FontMetadata,
+        "sqlite" | "sqlite3" => PreviewKind::SqliteMetadata,
+        "db" if has_sqlite_header(path) => PreviewKind::SqliteMetadata,
         "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" | "ico" | "svg" => {
             PreviewKind::Image
         }
@@ -648,6 +701,374 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
             PreviewKind::OfficeMetadata
         }
         _ => PreviewKind::Unsupported,
+    }
+}
+
+fn sqlite_extension(path: &Path) -> Option<String> {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .map(|extension| extension.to_ascii_lowercase())
+}
+
+fn has_sqlite_candidate_extension(path: &Path) -> bool {
+    matches!(
+        sqlite_extension(path).as_deref(),
+        Some("sqlite" | "sqlite3" | "db")
+    )
+}
+
+/// Every SQLite preview candidate is content-bound to the SQLite signature
+/// before cached cards or the renderer can use it. This is especially
+/// important for generic `.db` files, but also prevents a stale card being
+/// reused after a `.sqlite`/`.sqlite3` path changes type.
+pub fn is_sqlite_preview_path(path: &Path) -> bool {
+    has_sqlite_candidate_extension(path) && has_sqlite_header(path)
+}
+
+fn has_sqlite_header(path: &Path) -> bool {
+    let Ok(mut file) = std::fs::File::open(path) else {
+        return false;
+    };
+    let mut header = [0u8; 16];
+    file.read_exact(&mut header).is_ok() && header == *b"SQLite format 3\0"
+}
+
+#[derive(Debug, Default)]
+struct SqliteMetadata {
+    tables: Vec<String>,
+    indexes: Vec<String>,
+    views: Vec<String>,
+    triggers: Vec<String>,
+}
+
+impl SqliteMetadata {
+    fn push(&mut self, kind: &str, name: String) -> Result<(), SqliteVisualError> {
+        if name.len() > MAX_SQLITE_NAME_BYTES
+            || name.chars().any(|character| character.is_control())
+        {
+            return Err(SqliteVisualError::SchemaBounds(
+                "schema object name is not safe for the bounded card".to_string(),
+            ));
+        }
+        let destination = match kind {
+            "table" => &mut self.tables,
+            "index" => &mut self.indexes,
+            "view" => &mut self.views,
+            "trigger" => &mut self.triggers,
+            _ => {
+                return Err(SqliteVisualError::SchemaBounds(
+                    "unexpected schema object kind".into(),
+                ));
+            }
+        };
+        destination.push(name);
+        if self.total_count() > MAX_SQLITE_SCHEMA_ROWS {
+            return Err(SqliteVisualError::SchemaBounds(
+                "schema row count exceeds preview limit".to_string(),
+            ));
+        }
+        Ok(())
+    }
+
+    fn total_count(&self) -> usize {
+        self.tables.len() + self.indexes.len() + self.views.len() + self.triggers.len()
+    }
+
+    fn card_text(&self) -> Result<String, SqliteVisualError> {
+        let mut lines = vec![
+            "SQLite database".to_string(),
+            format!("Tables: {}", self.tables.len()),
+            format!("Indexes: {}", self.indexes.len()),
+            format!("Views: {}", self.views.len()),
+            format!("Triggers: {}", self.triggers.len()),
+        ];
+        for (label, names) in [
+            ("Tables", &self.tables),
+            ("Indexes", &self.indexes),
+            ("Views", &self.views),
+            ("Triggers", &self.triggers),
+        ] {
+            if !names.is_empty() {
+                lines.push(format!("{label}: {}", names.join(", ")));
+            }
+        }
+        let text = lines.join("\n");
+        (text.len() <= MAX_SQLITE_OUTPUT_BYTES)
+            .then_some(text)
+            .ok_or_else(|| {
+                SqliteVisualError::SchemaBounds("metadata card text exceeds output limit".into())
+            })
+    }
+}
+
+/// Renders only inert SQLite schema metadata from an owned in-memory snapshot.
+/// It never opens the source database with SQLite, follows WAL state, runs
+/// schema SQL, or exposes row contents to the preview surface.
+pub fn render_sqlite_metadata_preview_png(
+    path: &Path,
+    target_dim: u32,
+) -> Result<Vec<u8>, SqliteVisualError> {
+    let metadata = inspect_sqlite_metadata(path)?;
+    let text = metadata.card_text()?;
+    let dimension = target_dim.clamp(64, MAX_SQLITE_PREVIEW_DIMENSION);
+    if u64::from(dimension).saturating_mul(u64::from(dimension)) > MAX_SQLITE_PREVIEW_PIXELS {
+        return Err(SqliteVisualError::Encode(
+            "requested card dimensions exceed preview bounds".to_string(),
+        ));
+    }
+    let mut image =
+        image::RgbaImage::from_pixel(dimension, dimension, image::Rgba([247, 249, 252, 255]));
+    let margin = (dimension / 10).clamp(6, 96);
+    let header_bottom = margin + (dimension / 5).clamp(24, 160);
+    fill_rect(
+        &mut image,
+        0,
+        0,
+        dimension,
+        header_bottom,
+        [53, 103, 151, 255],
+    );
+    render_document_text(
+        &mut image,
+        "SQLite metadata\nRead-only snapshot",
+        margin,
+        margin,
+        dimension - margin,
+        header_bottom.saturating_sub(margin / 3),
+    );
+    render_document_text(
+        &mut image,
+        &text,
+        margin,
+        header_bottom + margin / 2,
+        dimension - margin,
+        dimension.saturating_sub(margin),
+    );
+    let mut png = Vec::new();
+    use image::ImageEncoder;
+    image::codecs::png::PngEncoder::new(&mut png)
+        .write_image(
+            image.as_raw(),
+            dimension,
+            dimension,
+            image::ExtendedColorType::Rgba8,
+        )
+        .map_err(|error: image::ImageError| SqliteVisualError::Encode(error.to_string()))?;
+    Ok(png)
+}
+
+fn inspect_sqlite_metadata(path: &Path) -> Result<SqliteMetadata, SqliteVisualError> {
+    if !has_sqlite_candidate_extension(path) {
+        return Err(SqliteVisualError::UnsupportedFormat);
+    }
+    let source = read_bounded_sqlite_snapshot(path)?;
+    if sqlite_extension(path).as_deref() == Some("db")
+        && source.get(..16) != Some(b"SQLite format 3\0")
+    {
+        return Err(SqliteVisualError::UnsupportedFormat);
+    }
+    validate_sqlite_header(&source)?;
+
+    let mut connection = Connection::open_in_memory_with_flags(
+        OpenFlags::SQLITE_OPEN_READ_WRITE
+            | OpenFlags::SQLITE_OPEN_CREATE
+            | OpenFlags::SQLITE_OPEN_PRIVATE_CACHE,
+    )
+    .map_err(|error| SqliteVisualError::Snapshot(error.to_string()))?;
+    configure_sqlite_preview_connection(&connection)?;
+    connection
+        .deserialize(DatabaseName::Main, sqlite_owned_data(source)?, true)
+        .map_err(|error| SqliteVisualError::Snapshot(error.to_string()))?;
+    connection
+        .set_db_config(DbConfig::SQLITE_DBCONFIG_DEFENSIVE, true)
+        .map_err(|error| SqliteVisualError::Snapshot(error.to_string()))?;
+    connection
+        .set_db_config(DbConfig::SQLITE_DBCONFIG_TRUSTED_SCHEMA, false)
+        .map_err(|error| SqliteVisualError::Snapshot(error.to_string()))?;
+    connection
+        .execute_batch("PRAGMA query_only=ON; PRAGMA trusted_schema=OFF;")
+        .map_err(|error| SqliteVisualError::Snapshot(error.to_string()))?;
+
+    let callbacks = Arc::new(AtomicUsize::new(0));
+    let progress_callbacks = Arc::clone(&callbacks);
+    connection.progress_handler(
+        SQLITE_PROGRESS_OP_INTERVAL,
+        Some(move || {
+            progress_callbacks.fetch_add(1, Ordering::Relaxed) >= MAX_SQLITE_PROGRESS_CALLBACKS
+        }),
+    );
+    connection.authorizer(Some(
+        |context: rusqlite::hooks::AuthContext<'_>| match context.action {
+            AuthAction::Select => Authorization::Allow,
+            AuthAction::Read { table_name, .. }
+                if matches!(table_name, "sqlite_master" | "sqlite_schema")
+                    && context.accessor.is_none() =>
+            {
+                Authorization::Allow
+            }
+            _ => Authorization::Deny,
+        },
+    ));
+
+    let query = "SELECT type, name FROM sqlite_schema \
+        WHERE type IN ('table', 'index', 'view', 'trigger') \
+        ORDER BY type, name LIMIT 65";
+    let mut statement = connection
+        .prepare(query)
+        .map_err(|error| SqliteVisualError::Query(error.to_string()))?;
+    let mut rows = statement
+        .query([])
+        .map_err(|error| SqliteVisualError::Query(error.to_string()))?;
+    let mut metadata = SqliteMetadata::default();
+    while let Some(row) = rows
+        .next()
+        .map_err(|error| SqliteVisualError::Query(error.to_string()))?
+    {
+        let kind: String = row
+            .get(0)
+            .map_err(|error| SqliteVisualError::Query(error.to_string()))?;
+        let name: String = row
+            .get(1)
+            .map_err(|error| SqliteVisualError::Query(error.to_string()))?;
+        if !name.starts_with("sqlite_") {
+            metadata.push(&kind, name)?;
+        }
+    }
+    drop(rows);
+    drop(statement);
+    connection.authorizer(None::<fn(rusqlite::hooks::AuthContext<'_>) -> Authorization>);
+    connection.progress_handler(0, None::<fn() -> bool>);
+    (callbacks.load(Ordering::Relaxed) <= MAX_SQLITE_PROGRESS_CALLBACKS)
+        .then_some(metadata)
+        .ok_or_else(|| {
+            SqliteVisualError::SchemaBounds("schema query exceeded progress limit".into())
+        })
+}
+
+fn configure_sqlite_preview_connection(connection: &Connection) -> Result<(), SqliteVisualError> {
+    for (limit, value) in [
+        (Limit::SQLITE_LIMIT_LENGTH, MAX_SQLITE_OUTPUT_BYTES as i32),
+        (Limit::SQLITE_LIMIT_SQL_LENGTH, 512),
+        (Limit::SQLITE_LIMIT_COLUMN, 8),
+        (Limit::SQLITE_LIMIT_EXPR_DEPTH, 8),
+        (Limit::SQLITE_LIMIT_COMPOUND_SELECT, 1),
+        (Limit::SQLITE_LIMIT_VDBE_OP, 4_096),
+        (Limit::SQLITE_LIMIT_FUNCTION_ARG, 0),
+        (Limit::SQLITE_LIMIT_ATTACHED, 0),
+        (Limit::SQLITE_LIMIT_VARIABLE_NUMBER, 0),
+        (Limit::SQLITE_LIMIT_TRIGGER_DEPTH, 0),
+        (Limit::SQLITE_LIMIT_WORKER_THREADS, 0),
+    ] {
+        connection.set_limit(limit, value);
+    }
+    connection
+        .set_db_config(DbConfig::SQLITE_DBCONFIG_ENABLE_TRIGGER, false)
+        .map_err(|error| SqliteVisualError::Snapshot(error.to_string()))?;
+    connection
+        .set_db_config(DbConfig::SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER, false)
+        .map_err(|error| SqliteVisualError::Snapshot(error.to_string()))?;
+    Ok(())
+}
+
+fn read_bounded_sqlite_snapshot(path: &Path) -> Result<Vec<u8>, SqliteVisualError> {
+    let mut file = std::fs::File::open(path)
+        .map_err(|error| SqliteVisualError::InputMetadata(error.to_string()))?;
+    let input_size = file
+        .metadata()
+        .map_err(|error| SqliteVisualError::InputMetadata(error.to_string()))?
+        .len();
+    if input_size > MAX_SQLITE_PREVIEW_BYTES {
+        return Err(SqliteVisualError::InputTooLarge {
+            actual: input_size,
+            limit: MAX_SQLITE_PREVIEW_BYTES,
+        });
+    }
+    let capacity = usize::try_from(input_size).map_err(|_| SqliteVisualError::InputTooLarge {
+        actual: input_size,
+        limit: MAX_SQLITE_PREVIEW_BYTES,
+    })?;
+    let mut source = Vec::with_capacity(capacity);
+    file.by_ref()
+        .take(MAX_SQLITE_PREVIEW_BYTES + 1)
+        .read_to_end(&mut source)
+        .map_err(|error| SqliteVisualError::Read(error.to_string()))?;
+    let final_size = file
+        .metadata()
+        .map_err(|error| SqliteVisualError::Read(error.to_string()))?
+        .len();
+    if source.len() as u64 > MAX_SQLITE_PREVIEW_BYTES {
+        return Err(SqliteVisualError::InputTooLarge {
+            actual: source.len() as u64,
+            limit: MAX_SQLITE_PREVIEW_BYTES,
+        });
+    }
+    if source.len() as u64 != input_size || final_size != input_size {
+        return Err(SqliteVisualError::InputChanged);
+    }
+    Ok(source)
+}
+
+fn validate_sqlite_header(source: &[u8]) -> Result<(), SqliteVisualError> {
+    let header = source.get(..100).ok_or_else(|| {
+        SqliteVisualError::InvalidHeader("truncated 100-byte database header".into())
+    })?;
+    if &header[..16] != b"SQLite format 3\0" {
+        return Err(SqliteVisualError::InvalidHeader(
+            "missing SQLite format 3 signature".to_string(),
+        ));
+    }
+    let encoded_page_size = u16::from_be_bytes([header[16], header[17]]);
+    let page_size = if encoded_page_size == 1 {
+        65_536u64
+    } else {
+        u64::from(encoded_page_size)
+    };
+    if !(512..=65_536).contains(&page_size) || !page_size.is_power_of_two() {
+        return Err(SqliteVisualError::InvalidHeader(
+            "page size is outside SQLite preview bounds".to_string(),
+        ));
+    }
+    if header[18] != 1 || header[19] != 1 {
+        return Err(SqliteVisualError::InvalidHeader(
+            "WAL-dependent or non-rollback journal mode is not previewed".to_string(),
+        ));
+    }
+    if !(source.len() as u64).is_multiple_of(page_size) {
+        return Err(SqliteVisualError::InvalidHeader(
+            "database size is not an exact page multiple".to_string(),
+        ));
+    }
+    let page_count = u64::from(u32::from_be_bytes([
+        header[28], header[29], header[30], header[31],
+    ]));
+    if page_count != 0
+        && page_count
+            .checked_mul(page_size)
+            .filter(|expected| *expected == source.len() as u64)
+            .is_none()
+    {
+        return Err(SqliteVisualError::InvalidHeader(
+            "page count does not match bounded snapshot length".to_string(),
+        ));
+    }
+    Ok(())
+}
+
+fn sqlite_owned_data(source: Vec<u8>) -> Result<OwnedData, SqliteVisualError> {
+    let length = source.len();
+    // SQLite owns the returned allocation and accepts this bounded nonzero
+    // size; a null result is handled below before it can be dereferenced.
+    let allocation = unsafe { rusqlite::ffi::sqlite3_malloc64(length as u64) }.cast::<u8>();
+    let pointer = NonNull::new(allocation)
+        .ok_or_else(|| SqliteVisualError::Snapshot("SQLite snapshot allocation failed".into()))?;
+    // `OwnedData` requires SQLite-owned allocation because SQLite frees it on
+    // connection close. The bounded Vec is copied once into that allocator,
+    // after which the source path is no longer touched by SQLite.
+    // The source and destination are distinct valid allocations of `length`
+    // bytes, and `OwnedData` documents this SQLite-allocated ownership model.
+    unsafe {
+        std::ptr::copy_nonoverlapping(source.as_ptr(), pointer.as_ptr(), length);
+        Ok(OwnedData::from_raw_nonnull(pointer, length))
     }
 }
 
@@ -1491,6 +1912,34 @@ fn preview_camera_raw(title: String, path: &Path) -> PreviewData {
             "Camera RAW image.",
             Some("Visual preview uses a bounded embedded JPEG when available."),
         ),
+        open_external: true,
+    }
+}
+
+fn preview_sqlite(title: String, path: &Path) -> PreviewData {
+    let mut lines = vec!["Filetype: SQLite database".to_string()];
+    if let Ok(metadata) = std::fs::metadata(path) {
+        lines.push(format!("Size: {}", format_size(metadata.len())));
+    }
+    match inspect_sqlite_metadata(path) {
+        Ok(schema) => {
+            lines.extend([
+                format!("Tables: {}", schema.tables.len()),
+                format!("Indexes: {}", schema.indexes.len()),
+                format!("Views: {}", schema.views.len()),
+                format!("Triggers: {}", schema.triggers.len()),
+                "Preview: Read-only bounded metadata card".to_string(),
+            ]);
+            if let Ok(card) = schema.card_text() {
+                lines.extend(card.lines().skip(5).map(str::to_string));
+            }
+        }
+        Err(_) => lines.push("Preview: SQLite metadata unavailable for this file.".to_string()),
+    }
+    PreviewData {
+        title,
+        kind: PreviewKind::SqliteMetadata,
+        body: lines.join("\n"),
         open_external: true,
     }
 }
@@ -4696,6 +5145,114 @@ mod tests {
         let path = temp_path(name);
         std::fs::write(&path, bytes).expect("write font fixture");
         path
+    }
+
+    fn write_sqlite_fixture(path: &Path) {
+        let connection = rusqlite::Connection::open(path).expect("create SQLite fixture");
+        connection
+            .execute_batch(
+                "CREATE TABLE projects (id INTEGER PRIMARY KEY, label TEXT);\
+                 CREATE INDEX projects_label ON projects(label);\
+                 CREATE VIEW project_labels AS SELECT label FROM projects;\
+                 CREATE TRIGGER projects_audit AFTER INSERT ON projects BEGIN SELECT 1; END;",
+            )
+            .expect("create inert SQLite schema fixture");
+    }
+
+    #[test]
+    fn sqlite_preview_is_content_bound_and_generates_a_deterministic_metadata_card() {
+        let sqlite = temp_path("projects.SQLITE");
+        write_sqlite_fixture(&sqlite);
+
+        let profile = preview_profile(&sqlite);
+        assert_eq!(classify_path(&sqlite), PreviewKind::SqliteMetadata);
+        assert_eq!(profile.visual_renderer(), PreviewVisualRenderer::Sqlite);
+        assert!(profile.supports_view(PreviewView::Metadata));
+        assert!(profile.supports_view(PreviewView::Visual));
+        assert!(!profile.raw_fallback_allowed());
+
+        let preview = load_preview(&PreviewRequest {
+            path: sqlite.clone(),
+            kind_hint: EntryKind::File,
+        });
+        assert_eq!(preview.kind, PreviewKind::SqliteMetadata);
+        assert!(preview.body.contains("Tables: 1"));
+        assert!(preview.body.contains("Indexes: 1"));
+        assert!(preview.body.contains("Views: 1"));
+        assert!(preview.body.contains("Triggers: 1"));
+        assert!(preview.body.contains("projects"));
+        assert!(!preview.body.contains("label TEXT"));
+
+        let first = render_sqlite_metadata_preview_png(&sqlite, 256).expect("SQLite card");
+        let second = render_sqlite_metadata_preview_png(&sqlite, 256).expect("SQLite card");
+        assert_eq!(first, second, "SQLite cards must be cacheable");
+        let image = image::load_from_memory(&first).expect("decode SQLite card");
+        assert!(image.width() <= 256 && image.height() <= 256);
+
+        let verified_db = temp_path("projects.Db");
+        std::fs::copy(&sqlite, &verified_db).expect("copy content-verified .db");
+        assert_eq!(classify_path(&verified_db), PreviewKind::SqliteMetadata);
+        assert!(render_sqlite_metadata_preview_png(&verified_db, 128).is_ok());
+
+        let mismatch = temp_path("projects.db");
+        std::fs::write(&mismatch, b"not a SQLite database").expect("write extension mismatch");
+        assert_eq!(classify_path(&mismatch), PreviewKind::Unsupported);
+        assert!(matches!(
+            render_sqlite_metadata_preview_png(&mismatch, 128),
+            Err(SqliteVisualError::UnsupportedFormat)
+        ));
+
+        for path in [sqlite, verified_db, mismatch] {
+            std::fs::remove_file(path).expect("remove SQLite fixture");
+        }
+    }
+
+    #[test]
+    fn sqlite_preview_rejects_truncated_wal_dependent_and_oversized_inputs() {
+        let truncated = temp_path("truncated.sqlite3");
+        std::fs::write(&truncated, b"SQLite format 3\0").expect("write truncated header");
+        assert!(render_sqlite_metadata_preview_png(&truncated, 128).is_err());
+
+        let wal_dependent = temp_path("wal-dependent.sqlite");
+        let mut header = [0u8; 100];
+        header[..16].copy_from_slice(b"SQLite format 3\0");
+        header[16..18].copy_from_slice(&4096u16.to_be_bytes());
+        header[18] = 2;
+        header[19] = 2;
+        header[28..32].copy_from_slice(&1u32.to_be_bytes());
+        std::fs::write(&wal_dependent, header).expect("write WAL-dependent header");
+        assert!(render_sqlite_metadata_preview_png(&wal_dependent, 128).is_err());
+
+        let oversized = temp_path("oversized.sqlite");
+        let file = std::fs::File::create(&oversized).expect("create oversized SQLite fixture");
+        file.set_len(MAX_SQLITE_PREVIEW_BYTES + 1)
+            .expect("make sparse oversized SQLite fixture");
+        assert!(matches!(
+            render_sqlite_metadata_preview_png(&oversized, 128),
+            Err(SqliteVisualError::InputTooLarge { .. })
+        ));
+
+        for path in [truncated, wal_dependent, oversized] {
+            std::fs::remove_file(path).expect("remove SQLite fixture");
+        }
+    }
+
+    #[test]
+    fn sqlite_preview_rejects_schema_metadata_over_the_card_limit() {
+        let sqlite = temp_path("too-many-schema-objects.sqlite");
+        let connection = rusqlite::Connection::open(&sqlite).expect("create SQLite fixture");
+        for index in 0..=MAX_SQLITE_SCHEMA_ROWS {
+            connection
+                .execute_batch(&format!("CREATE TABLE table_{index} (id INTEGER);"))
+                .expect("create bounded schema object");
+        }
+        drop(connection);
+
+        assert!(matches!(
+            render_sqlite_metadata_preview_png(&sqlite, 128),
+            Err(SqliteVisualError::SchemaBounds(_))
+        ));
+        std::fs::remove_file(sqlite).expect("remove SQLite fixture");
     }
 
     fn font_table_entry_offset(source: &[u8], tag: [u8; 4]) -> usize {

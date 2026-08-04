@@ -12320,6 +12320,7 @@ impl OttrinApp {
                             match pv.kind {
                                 PreviewKind::Image
                                 | PreviewKind::CameraRawMetadata
+                                | PreviewKind::SqliteMetadata
                                 | PreviewKind::Pdf => {
                                     let avail_w = ui.available_width().max(60.0);
                                     let max_h = preview_panel_h - 70.0;
@@ -14237,7 +14238,10 @@ impl OttrinApp {
 
                 let preview = self.cached_info_preview(entry);
                 match preview.kind {
-                    PreviewKind::Image | PreviewKind::CameraRawMetadata | PreviewKind::Pdf => {
+                    PreviewKind::Image
+                    | PreviewKind::CameraRawMetadata
+                    | PreviewKind::SqliteMetadata
+                    | PreviewKind::Pdf => {
                         if let Some(img) = self.cached_image_preview_widget(
                             &entry.path,
                             max_preview_w,
@@ -15526,8 +15530,13 @@ impl OttrinApp {
                                     self.set_pdf_preview_page(page_index + 1);
                                 }
                             }
-                            let is_zoomable_document =
-                                matches!(preview.kind, PreviewKind::Image | PreviewKind::CameraRawMetadata | PreviewKind::Pdf);
+                            let is_zoomable_document = matches!(
+                                preview.kind,
+                                PreviewKind::Image
+                                    | PreviewKind::CameraRawMetadata
+                                    | PreviewKind::SqliteMetadata
+                                    | PreviewKind::Pdf
+                            );
                             if is_zoomable_document {
                                 if ui
                                     .small_button("Fit")
@@ -15585,7 +15594,10 @@ impl OttrinApp {
                         PreviewKind::Text => {
                             render_text_body_preview(ui, c, &name, &preview.body);
                         }
-                        PreviewKind::Image | PreviewKind::CameraRawMetadata | PreviewKind::Pdf => {
+                        PreviewKind::Image
+                        | PreviewKind::CameraRawMetadata
+                        | PreviewKind::SqliteMetadata
+                        | PreviewKind::Pdf => {
                             ScrollArea::both().show(ui, |ui| {
                                 let max_w = (ui.available_width() - 24.0).max(120.0);
                                 let max_h = (ui.available_height() - 34.0).max(160.0);
@@ -18774,7 +18786,11 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
     let profile = ottrin_preview::preview_profile(&entry.path);
     let is_visual = matches!(
         profile.kind(),
-        PreviewKind::Image | PreviewKind::CameraRawMetadata | PreviewKind::Pdf | PreviewKind::Text
+        PreviewKind::Image
+            | PreviewKind::CameraRawMetadata
+            | PreviewKind::SqliteMetadata
+            | PreviewKind::Pdf
+            | PreviewKind::Text
     );
     is_visual && thumbnail_supported_preview_path(&entry.path)
 }
@@ -19531,7 +19547,8 @@ fn compact_preview_snippet(
         | PreviewKind::AudioMetadata
         | PreviewKind::CameraRawMetadata
         | PreviewKind::VideoMetadata
-        | PreviewKind::FontMetadata => &preview.body,
+        | PreviewKind::FontMetadata
+        | PreviewKind::SqliteMetadata => &preview.body,
         PreviewKind::Image | PreviewKind::FolderMetadata | PreviewKind::Unsupported => return None,
     };
     let snippet = metadata_preview_snippet(source, max_lines, max_chars);

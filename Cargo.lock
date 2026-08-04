@@ -2770,6 +2770,7 @@ dependencies = [
  "pdfium-render",
  "quick-xml",
  "resvg",
+ "rusqlite",
  "serde",
  "tar",
  "thiserror 2.0.18",
