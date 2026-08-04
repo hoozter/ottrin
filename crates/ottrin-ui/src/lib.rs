@@ -207,14 +207,6 @@ fn creation_modal_width(viewport_width: f32) -> f32 {
     (viewport_width - 32.0).clamp(320.0, 400.0)
 }
 
-fn locations_rail_content_width(rail_width: f32, expanded: bool) -> f32 {
-    (rail_width - if expanded { 16.0 } else { 6.0 }).max(0.0)
-}
-
-fn locations_rail_overflow_width(response_width: f32, rail_width: f32) -> f32 {
-    (response_width - rail_width).max(0.0)
-}
-
 fn created_path_for_successful_command(cmd: &FileCommand, succeeded: bool) -> Option<PathBuf> {
     if !succeeded {
         return None;
@@ -469,6 +461,13 @@ const PREVIEW_REQUESTS_PER_FRAME: usize = 2;
 const MILLER_FIXED_WIDTH: f32 = 240.0;
 const TANDEM_PANE_HEADER_HEIGHT: f32 = 38.0;
 const TANDEM_DIVIDER_WIDTH: f32 = 8.0;
+
+#[derive(Clone, Copy)]
+enum PointerNavigation {
+    Back,
+    Forward,
+    Up,
+}
 
 // ── Async worker messages ─────────────────────────────────────────────────────
 // ── Async worker messages ─────────────────────────────────────────────────────
@@ -6480,6 +6479,18 @@ impl OttrinApp {
         moved
     }
 
+    fn pointer_navigate(&mut self, tab_id: u64, navigation: PointerNavigation) -> bool {
+        let moved = match navigation {
+            PointerNavigation::Back => self.navigate_tab_back(tab_id),
+            PointerNavigation::Forward => self.navigate_tab_forward(tab_id),
+            PointerNavigation::Up => self.navigate_tab_up(tab_id),
+        };
+        if moved {
+            self.request_miller_pointer_reveal(tab_id);
+        }
+        moved
+    }
+
     fn open_directory_in_tandem(&mut self, dir: PathBuf) {
         if !dir.is_dir() {
             return;
@@ -9439,9 +9450,7 @@ impl OttrinApp {
                         })
                         .clicked()
                     {
-                        if self.navigate_active_back() {
-                            self.request_miller_pointer_reveal(active_tab_id);
-                        }
+                        self.pointer_navigate(active_tab_id, PointerNavigation::Back);
                     }
                     if ui
                         .add_enabled(
@@ -9459,9 +9468,7 @@ impl OttrinApp {
                         })
                         .clicked()
                     {
-                        if self.navigate_active_forward() {
-                            self.request_miller_pointer_reveal(active_tab_id);
-                        }
+                        self.pointer_navigate(active_tab_id, PointerNavigation::Forward);
                     }
                     if ui
                         .add_enabled(
@@ -9473,9 +9480,7 @@ impl OttrinApp {
                         .on_hover_text("Go to parent folder (Alt+Up)")
                         .clicked()
                     {
-                        if self.navigate_active_up() {
-                            self.request_miller_pointer_reveal(active_tab_id);
-                        }
+                        self.pointer_navigate(active_tab_id, PointerNavigation::Up);
                     }
                     ui.add_space(6.0);
 
@@ -9975,7 +9980,7 @@ impl OttrinApp {
             MI_LEFT_PANEL_OPEN
         };
 
-        let rail_response = egui::SidePanel::left("locations_rail")
+        egui::SidePanel::left("locations_rail")
             .resizable(false)
             .exact_width(rail_w)
             .show_separator_line(false)
@@ -9986,8 +9991,7 @@ impl OttrinApp {
             )
             .show(ctx, |ui| {
                 ui.spacing_mut().item_spacing.y = 4.0;
-                let tile_w = locations_rail_content_width(rail_w, expanded);
-                ui.set_width(tile_w);
+                let tile_w = ui.available_width();
                 ui.spacing_mut().interact_size.x = tile_w;
 
                 let toggle_response = ui
@@ -10133,22 +10137,6 @@ impl OttrinApp {
                     });
                 }
             });
-
-        let overflow_width =
-            locations_rail_overflow_width(rail_response.response.rect.width(), rail_w);
-        if overflow_width > 0.0 {
-            // Egui can report a small response overflow outside the fixed rail.
-            // Paint only that remainder so the Smart Panel surface stays continuous.
-            let rect = Rect::from_min_max(
-                egui::pos2(
-                    rail_response.response.rect.max.x - overflow_width,
-                    rail_response.response.rect.min.y,
-                ),
-                rail_response.response.rect.max,
-            );
-            ctx.layer_painter(egui::LayerId::background())
-                .rect_filled(rect, 0.0, c.smart_panel_bg);
-        }
 
         if let Some(path) = navigate_to {
             let tab_id = self.state.active_tab().id;
@@ -13720,8 +13708,7 @@ impl OttrinApp {
                 })
                 .clicked()
             {
-                self.focus_tab(tab_id);
-                self.navigate_tab_back(tab_id);
+                self.pointer_navigate(tab_id, PointerNavigation::Back);
             }
             if ui
                 .add_enabled(
@@ -13737,8 +13724,7 @@ impl OttrinApp {
                 })
                 .clicked()
             {
-                self.focus_tab(tab_id);
-                self.navigate_tab_forward(tab_id);
+                self.pointer_navigate(tab_id, PointerNavigation::Forward);
             }
             if ui
                 .add_enabled(
@@ -13750,8 +13736,7 @@ impl OttrinApp {
                 .on_hover_text("Go to parent folder (Alt+Up when active)")
                 .clicked()
             {
-                self.focus_tab(tab_id);
-                self.navigate_tab_up(tab_id);
+                self.pointer_navigate(tab_id, PointerNavigation::Up);
             }
             ui.add_space(6.0);
 
@@ -22382,6 +22367,141 @@ mod tests {
     }
 
     #[test]
+    fn pointer_history_navigation_reveals_only_the_moved_miller_tandem_tab() {
+        let mut app = OttrinApp::default();
+        let left_id = app.state.active_tab().id;
+        let right_idx = app.state.new_tab(default_home_dir());
+        let right_id = app.state.tabs[right_idx].id;
+        assert!(app.state.activate_tandem(0, right_idx).is_some());
+        app.state
+            .tab_by_id_mut(left_id)
+            .expect("left tab")
+            .view_mode = ViewMode::Miller;
+        app.state
+            .tab_by_id_mut(right_id)
+            .expect("right tab")
+            .view_mode = ViewMode::Miller;
+        app.state
+            .tab_by_id_mut(left_id)
+            .expect("left tab")
+            .history_back
+            .push(PathBuf::from("/"));
+
+        assert!(app.pointer_navigate(left_id, PointerNavigation::Back));
+        let left_ui = app.tab_ui.get(&left_id).expect("left tab UI state");
+        assert!(left_ui.miller_reveal_pointer_selection);
+        assert!(left_ui.miller_scroll_selected);
+        assert!(
+            app.tab_ui
+                .get(&right_id)
+                .is_none_or(|ui| !ui.miller_reveal_pointer_selection && !ui.miller_scroll_selected),
+            "a Tandem navigation action must not leak reveal state into the opposite pane"
+        );
+
+        app.tab_ui
+            .entry(left_id)
+            .or_default()
+            .miller_reveal_pointer_selection = false;
+        app.tab_ui
+            .entry(left_id)
+            .or_default()
+            .miller_scroll_selected = false;
+        assert!(app.pointer_navigate(left_id, PointerNavigation::Forward));
+        assert!(
+            app.tab_ui
+                .get(&left_id)
+                .is_some_and(|ui| ui.miller_reveal_pointer_selection && ui.miller_scroll_selected)
+        );
+
+        app.tab_ui
+            .entry(left_id)
+            .or_default()
+            .miller_reveal_pointer_selection = false;
+        app.tab_ui
+            .entry(left_id)
+            .or_default()
+            .miller_scroll_selected = false;
+        assert!(app.pointer_navigate(left_id, PointerNavigation::Up));
+        assert!(
+            app.tab_ui
+                .get(&left_id)
+                .is_some_and(|ui| ui.miller_reveal_pointer_selection && ui.miller_scroll_selected)
+        );
+
+        app.tab_ui
+            .entry(left_id)
+            .or_default()
+            .miller_reveal_pointer_selection = false;
+        app.tab_ui
+            .entry(left_id)
+            .or_default()
+            .miller_scroll_selected = false;
+        assert!(!app.pointer_navigate(left_id, PointerNavigation::Forward));
+        assert!(
+            app.tab_ui
+                .get(&left_id)
+                .is_some_and(|ui| !ui.miller_reveal_pointer_selection && !ui.miller_scroll_selected),
+            "failed history navigation must not leave a stale pointer-reveal request"
+        );
+    }
+
+    #[test]
+    fn failed_pointer_navigation_never_schedules_a_miller_reveal() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.state.active_tab_mut().view_mode = ViewMode::Miller;
+        app.state.active_tab_mut().current_dir = PathBuf::from("/");
+
+        for navigation in [
+            PointerNavigation::Back,
+            PointerNavigation::Forward,
+            PointerNavigation::Up,
+        ] {
+            app.tab_ui
+                .entry(tab_id)
+                .or_default()
+                .miller_reveal_pointer_selection = false;
+            app.tab_ui.entry(tab_id).or_default().miller_scroll_selected = false;
+
+            assert!(!app.pointer_navigate(tab_id, navigation));
+            assert!(app.tab_ui.get(&tab_id).is_some_and(
+                |ui| !ui.miller_reveal_pointer_selection && !ui.miller_scroll_selected
+            ));
+        }
+    }
+
+    #[test]
+    fn pointer_up_navigation_reveals_miller_but_not_list_or_grid_tabs() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+
+        app.state.active_tab_mut().view_mode = ViewMode::Miller;
+        assert!(app.pointer_navigate(tab_id, PointerNavigation::Up));
+        assert!(
+            app.tab_ui
+                .get(&tab_id)
+                .is_some_and(|ui| ui.miller_reveal_pointer_selection && ui.miller_scroll_selected)
+        );
+
+        for mode in [ViewMode::List, ViewMode::Grid] {
+            app.state.active_tab_mut().view_mode = mode;
+            app.state.active_tab_mut().current_dir = default_home_dir();
+            app.tab_ui
+                .entry(tab_id)
+                .or_default()
+                .miller_reveal_pointer_selection = false;
+            app.tab_ui.entry(tab_id).or_default().miller_scroll_selected = false;
+            assert!(app.pointer_navigate(tab_id, PointerNavigation::Up));
+            assert!(
+                app.tab_ui.get(&tab_id).is_none_or(
+                    |ui| !ui.miller_reveal_pointer_selection && !ui.miller_scroll_selected
+                ),
+                "{mode:?} pointer navigation must not schedule a Miller reveal"
+            );
+        }
+    }
+
+    #[test]
     fn empty_folder_actions_fit_and_center_inside_auto_sized_columns() {
         assert_eq!(OttrinApp::empty_folder_content_width(120.0), 96.0);
         assert_eq!(OttrinApp::empty_folder_content_width(240.0), 216.0);
@@ -22884,15 +23004,51 @@ mod tests {
     }
 
     #[test]
-    fn locations_rail_content_fits_inside_each_fixed_surface() {
-        assert_eq!(locations_rail_content_width(44.0, false), 38.0);
-        assert_eq!(locations_rail_content_width(214.0, true), 198.0);
-    }
+    fn locations_rail_and_canvas_share_an_exact_egui_boundary() {
+        for viewport in [
+            Vec2::new(800.0, 600.0),
+            Vec2::new(1024.0, 680.0),
+            Vec2::new(1440.0, 900.0),
+        ] {
+            for (rail_width, expanded) in [(44.0, false), (214.0, true)] {
+                let ctx = Context::default();
+                let input = egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(egui::pos2(0.0, 0.0), viewport)),
+                    ..Default::default()
+                };
+                let mut rail_rect = None;
+                let mut canvas_rect = None;
 
-    #[test]
-    fn locations_rail_only_fills_the_panel_response_overflow() {
-        assert_eq!(locations_rail_overflow_width(44.0, 44.0), 0.0);
-        assert_eq!(locations_rail_overflow_width(46.0, 44.0), 2.0);
+                let _ = ctx.run(input, |ctx| {
+                    let rail = egui::SidePanel::left("locations_rail_geometry_test")
+                        .resizable(false)
+                        .exact_width(rail_width)
+                        .show_separator_line(false)
+                        .frame(
+                            Frame::new().inner_margin(egui::Margin::symmetric(
+                                if expanded { 8 } else { 3 },
+                                6,
+                            )),
+                        )
+                        .show(ctx, |ui| {
+                            let tile_width = ui.available_width();
+                            ui.add_sized(Vec2::new(tile_width, 28.0), egui::Button::new("rail"));
+                        });
+                    rail_rect = Some(rail.response.rect);
+                    canvas_rect = Some(
+                        egui::CentralPanel::default()
+                            .show(ctx, |_| {})
+                            .response
+                            .rect,
+                    );
+                });
+
+                let rail_rect = rail_rect.expect("rail response");
+                let canvas_rect = canvas_rect.expect("canvas response");
+                assert_eq!(rail_rect.width(), rail_width);
+                assert_eq!(canvas_rect.min.x, rail_rect.max.x);
+            }
+        }
     }
 
     #[test]
