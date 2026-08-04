@@ -101,7 +101,10 @@ pub fn affinity_preview_source_generation(path: &Path) -> Option<AffinityPreview
 /// True only if the current bounded source snapshot contains an embedded PNG
 /// that is safe to offer to the dedicated renderer.
 pub fn affinity_preview_is_available(path: &Path) -> bool {
-    parse_affinity_snapshot(path).is_ok()
+    let Ok((snapshot, candidate)) = parse_affinity_snapshot(path) else {
+        return false;
+    };
+    decode_candidate(&snapshot, &candidate).is_ok()
 }
 
 pub fn render_affinity_embedded_preview_png(
@@ -116,16 +119,7 @@ pub fn render_affinity_embedded_preview_png_with_generation(
     target_dim: u32,
 ) -> Result<RenderedAffinityPreview, AffinityVisualError> {
     let (snapshot, candidate) = parse_affinity_snapshot(path)?;
-    let png = snapshot
-        .bytes
-        .get(candidate.span)
-        .ok_or(AffinityVisualError::InvalidCandidate)?;
-    let image = image::ImageReader::with_format(std::io::Cursor::new(png), image::ImageFormat::Png)
-        .decode()
-        .map_err(|_| AffinityVisualError::Decode)?;
-    if image.dimensions() != (candidate.width, candidate.height) {
-        return Err(AffinityVisualError::Decode);
-    }
+    let image = decode_candidate(&snapshot, &candidate)?;
     let bounded_dim = target_dim.clamp(64, MAX_PREVIEW_SIDE);
     let thumbnail = image.thumbnail(bounded_dim, bounded_dim);
     let mut output = Vec::new();
@@ -139,6 +133,22 @@ pub fn render_affinity_embedded_preview_png_with_generation(
         png: output,
         source_generation: snapshot.generation,
     })
+}
+
+fn decode_candidate(
+    snapshot: &Snapshot,
+    candidate: &Candidate,
+) -> Result<image::DynamicImage, AffinityVisualError> {
+    let png = snapshot
+        .bytes
+        .get(candidate.span.clone())
+        .ok_or(AffinityVisualError::InvalidCandidate)?;
+    let image = image::ImageReader::with_format(std::io::Cursor::new(png), image::ImageFormat::Png)
+        .decode()
+        .map_err(|_| AffinityVisualError::Decode)?;
+    (image.dimensions() == (candidate.width, candidate.height))
+        .then_some(image)
+        .ok_or(AffinityVisualError::Decode)
 }
 
 fn parse_affinity_snapshot(path: &Path) -> Result<(Snapshot, Candidate), AffinityVisualError> {
@@ -331,6 +341,7 @@ fn validate_png(bytes: &[u8], start: usize) -> Result<Candidate, AffinityVisualE
     }
     let mut offset = start + PNG_SIGNATURE.len();
     let mut dimensions = None;
+    let mut indexed_bit_depth = None;
     let mut palette_required = false;
     let mut palette_forbidden = false;
     let mut saw_plte = false;
@@ -422,17 +433,26 @@ fn validate_png(bytes: &[u8], start: usize) -> Result<Candidate, AffinityVisualE
             }
             palette_required = color_type == 3;
             palette_forbidden = matches!(color_type, 0 | 4 | 6);
+            indexed_bit_depth = palette_required.then_some(bit_depth);
             dimensions = Some((width, height));
         } else {
             match kind {
                 b"IHDR" => return Err(AffinityVisualError::InvalidCandidate),
                 b"PLTE" => {
+                    let max_entries = indexed_bit_depth
+                        .map(|bit_depth| {
+                            1usize
+                                .checked_shl(u32::from(bit_depth))
+                                .ok_or(AffinityVisualError::InvalidCandidate)
+                        })
+                        .transpose()?
+                        .unwrap_or(256);
                     if saw_plte
                         || saw_idat
                         || palette_forbidden
                         || data.is_empty()
                         || data.len() % 3 != 0
-                        || data.len() > 256 * 3
+                        || data.len() / 3 > max_entries
                     {
                         return Err(AffinityVisualError::InvalidCandidate);
                     }
@@ -519,8 +539,8 @@ fn validate_zlib_stream(input: &[u8]) -> Result<(), AffinityVisualError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use flate2::{Compression, write::ZlibEncoder};
     use image::{ImageEncoder, Rgba, RgbaImage};
-    #[cfg(unix)]
     use std::io::Write;
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -572,6 +592,43 @@ mod tests {
             bytes.extend_from_slice(&hasher.finalize().to_be_bytes());
         }
         bytes
+    }
+
+    fn zlib_encode(bytes: &[u8]) -> Vec<u8> {
+        let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+        encoder
+            .write_all(bytes)
+            .expect("compress fixture scanlines");
+        encoder.finish().expect("finish fixture compression")
+    }
+
+    fn indexed_png(bit_depth: u8, palette_entries: usize) -> Vec<u8> {
+        let width = 128u32;
+        let height = 128u32;
+        let mut ihdr = Vec::with_capacity(13);
+        ihdr.extend_from_slice(&width.to_be_bytes());
+        ihdr.extend_from_slice(&height.to_be_bytes());
+        ihdr.extend_from_slice(&[bit_depth, 3, 0, 0, 0]);
+
+        let mut palette = Vec::with_capacity(palette_entries * 3);
+        for entry in 0..palette_entries {
+            let value = u8::try_from(entry % 256).expect("bounded test palette entry");
+            palette.extend_from_slice(&[value, value.wrapping_add(1), value.wrapping_add(2)]);
+        }
+
+        let row_bytes = usize::try_from((width * u32::from(bit_depth)).div_ceil(8))
+            .expect("bounded test row width");
+        let mut scanlines = Vec::with_capacity((row_bytes + 1) * height as usize);
+        for _ in 0..height {
+            scanlines.push(0);
+            scanlines.extend(std::iter::repeat_n(0, row_bytes));
+        }
+        png_from_chunks(&[
+            (b"IHDR".to_vec(), ihdr),
+            (b"PLTE".to_vec(), palette),
+            (b"IDAT".to_vec(), zlib_encode(&scanlines)),
+            (b"IEND".to_vec(), Vec::new()),
+        ])
     }
 
     fn assert_invalid_embedded_png(name: &str, png: Vec<u8>) {
@@ -638,6 +695,45 @@ mod tests {
             assert!(!affinity_preview_is_available(&path));
             assert!(render_affinity_embedded_preview_png(&path, 256).is_err());
             let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn availability_rejects_structurally_valid_pngs_that_the_decoder_cannot_render() {
+        let mut ihdr = Vec::with_capacity(13);
+        ihdr.extend_from_slice(&128u32.to_be_bytes());
+        ihdr.extend_from_slice(&128u32.to_be_bytes());
+        ihdr.extend_from_slice(&[8, 2, 0, 0, 0]);
+        assert_invalid_embedded_png(
+            "empty-zlib.afphoto",
+            png_from_chunks(&[
+                (b"IHDR".to_vec(), ihdr),
+                (b"IDAT".to_vec(), zlib_encode(&[])),
+                (b"IEND".to_vec(), Vec::new()),
+            ]),
+        );
+    }
+
+    #[test]
+    fn indexed_palette_cardinality_is_limited_by_its_bit_depth() {
+        for (bit_depth, maximum_entries) in [(1, 2), (2, 4), (4, 16), (8, 256)] {
+            let valid_path = temp_path(&format!("indexed-{bit_depth}-max.afphoto"));
+            std::fs::write(&valid_path, indexed_png(bit_depth, maximum_entries))
+                .expect("write valid indexed fixture");
+            assert!(
+                affinity_preview_is_available(&valid_path),
+                "{bit_depth}-bit palette with {maximum_entries} entries must be available"
+            );
+            assert!(
+                render_affinity_embedded_preview_png(&valid_path, 256).is_ok(),
+                "{bit_depth}-bit palette with {maximum_entries} entries must render"
+            );
+            let _ = std::fs::remove_file(valid_path);
+
+            assert_invalid_embedded_png(
+                &format!("indexed-{bit_depth}-over.afphoto"),
+                indexed_png(bit_depth, maximum_entries + 1),
+            );
         }
     }
 
