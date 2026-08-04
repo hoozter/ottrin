@@ -27,6 +27,7 @@ ttf-parser = "0.25.1"
 # preview snapshots; `hooks` and `limits` provide the query work boundaries.
 rusqlite = { version = "0.31", features = ["bundled", "serialize", "hooks", "limits"] }
 sha2 = "0.10"
+crc32fast = "1"
 libc = "0.2"
 # `stl_io` 0.11.x (MIT; https://github.com/hmeyer/stl_io) is a pure-Rust
 # streaming parser. Preview-specific input, triangle, and raster bounds remain local.

@@ -23,6 +23,8 @@ const MAX_PLY_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_PLY_CACHE_PNG_DIMENSION: u32 = 1_024;
 const MAX_3MF_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_3MF_CACHE_PNG_DIMENSION: u32 = 1_024;
+const MAX_AFFINITY_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_AFFINITY_CACHE_PNG_DIMENSION: u32 = 1_024;
 
 #[derive(Debug, Clone)]
 pub(crate) enum ImagePreviewCacheEntry {
@@ -115,6 +117,10 @@ pub(crate) fn preview_cache_key_for_page_with_generations(
         let generation = ottrin_preview::threemf_preview_source_generation(path);
         return threemf_preview_cache_key(target_dim, page_index, generation.as_ref());
     }
+    if ottrin_preview::is_affinity_path(path) {
+        let generation = ottrin_preview::affinity_preview_source_generation(path);
+        return affinity_preview_cache_key(target_dim, page_index, generation.as_ref());
+    }
     if ottrin_preview::is_sqlite_preview_candidate(path) {
         let generation = sqlite_source_generation
             .cloned()
@@ -188,6 +194,17 @@ fn threemf_preview_cache_key(
         .map(|generation| hex_digest(generation.as_bytes()))
         .unwrap_or_else(|| "unavailable".to_string());
     format!("3mf-v1-{generation}-{target_dim}-{page_index}.png")
+}
+
+fn affinity_preview_cache_key(
+    target_dim: u32,
+    page_index: usize,
+    source_generation: Option<&ottrin_preview::AffinityPreviewSourceGeneration>,
+) -> String {
+    let generation = source_generation
+        .map(|generation| hex_digest(generation.as_bytes()))
+        .unwrap_or_else(|| "unavailable".to_string());
+    format!("affinity-v1-{generation}-{target_dim}-{page_index}.png")
 }
 
 fn sqlite_preview_cache_key(
@@ -319,6 +336,14 @@ fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u
                 return None;
             }
         }
+    } else if ottrin_preview::is_affinity_path(path) {
+        match read_affinity_cache_bytes(cache_path) {
+            Some(bytes) => bytes,
+            None => {
+                let _ = std::fs::remove_file(cache_path);
+                return None;
+            }
+        }
     } else {
         std::fs::read(cache_path).ok()?
     };
@@ -366,6 +391,11 @@ fn read_ply_cache_bytes(path: &Path) -> Option<Vec<u8>> {
 fn read_threemf_cache_bytes(path: &Path) -> Option<Vec<u8>> {
     let file = std::fs::File::open(path).ok()?;
     read_bounded_cache(file, MAX_3MF_CACHE_PNG_BYTES).ok()?
+}
+
+fn read_affinity_cache_bytes(path: &Path) -> Option<Vec<u8>> {
+    let file = std::fs::File::open(path).ok()?;
+    read_bounded_cache(file, MAX_AFFINITY_CACHE_PNG_BYTES).ok()?
 }
 
 fn read_bounded_cache(reader: impl Read, max_bytes: u64) -> std::io::Result<Option<Vec<u8>>> {
@@ -563,6 +593,18 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::Affinity => {
+                match ottrin_preview::render_affinity_embedded_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "Affinity thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
             _ => None,
         }
     })
@@ -610,6 +652,14 @@ pub(crate) fn thumbnail_bytes_from_cache_or_build(
             == Some(&rendered.source_generation))
         .then_some((rendered.png, true));
     }
+    if ottrin_preview::is_affinity_path(path) {
+        let rendered =
+            ottrin_preview::render_affinity_embedded_preview_png_with_generation(path, target_dim)
+                .ok()?;
+        return (ottrin_preview::affinity_preview_source_generation(path).as_ref()
+            == Some(&rendered.source_generation))
+        .then_some((rendered.png, true));
+    }
     if let Some(bytes) = build_thumbnail_bytes(path, target_dim) {
         return Some((bytes, true));
     }
@@ -641,6 +691,14 @@ fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
     if ottrin_preview::is_3mf_path(path) {
         return ottrin_preview::inspect_3mf_metadata(path).is_ok()
             && threemf_cached_png_is_safe(bytes);
+    }
+    if ottrin_preview::is_affinity_path(path) {
+        return ottrin_preview::affinity_preview_is_available(path)
+            && bounded_cached_png_is_safe(
+                bytes,
+                MAX_AFFINITY_CACHE_PNG_BYTES,
+                MAX_AFFINITY_CACHE_PNG_DIMENSION,
+            );
     }
     if !ottrin_preview::preview_profile(path).raw_fallback_allowed() {
         return is_png_bytes(bytes);
@@ -828,6 +886,18 @@ pub(crate) fn full_preview_bytes_at_page(
             }
         };
     }
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Affinity {
+        return match ottrin_preview::render_affinity_embedded_preview_png(path, target_dim) {
+            Ok(bytes) => Some(bytes),
+            Err(error) => {
+                eprintln!(
+                    "Affinity preview render failed for {}: {error}",
+                    path.display()
+                );
+                None
+            }
+        };
+    }
     full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
         match preview_visual_renderer(path) {
             ottrin_preview::PreviewVisualRenderer::Office => {
@@ -872,6 +942,18 @@ pub(crate) fn full_preview_bytes_at_page(
                     }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::Affinity => {
+                match ottrin_preview::render_affinity_embedded_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "Affinity preview render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
             _ => None,
         }
     })
@@ -894,6 +976,7 @@ fn full_preview_bytes_with_visual_renderer(
             | ottrin_preview::PreviewVisualRenderer::Obj
             | ottrin_preview::PreviewVisualRenderer::Ply
             | ottrin_preview::PreviewVisualRenderer::ThreeMf
+            | ottrin_preview::PreviewVisualRenderer::Affinity
     ) {
         return render_visual(path, target_dim);
     }
@@ -921,6 +1004,7 @@ fn build_thumbnail_bytes_with_visual_renderer(
         | ottrin_preview::PreviewVisualRenderer::ThreeMf => {
             return render_visual(path, target_dim);
         }
+        ottrin_preview::PreviewVisualRenderer::Affinity => return render_visual(path, target_dim),
         ottrin_preview::PreviewVisualRenderer::Image => {
             if let Some(bytes) = render_visual(path, target_dim) {
                 return Some(bytes);
@@ -1173,6 +1257,14 @@ mod tests {
         jpeg
     }
 
+    fn affinity_fixture_png(color: [u8; 4]) -> Vec<u8> {
+        let mut png = Vec::new();
+        image::RgbaImage::from_pixel(256, 256, image::Rgba(color))
+            .write_to(&mut Cursor::new(&mut png), image::ImageFormat::Png)
+            .expect("encode Affinity embedded PNG");
+        png
+    }
+
     fn write_material_font(path: &Path) {
         let font_path = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../ottrin-ui/assets/MaterialSymbolsFilled.ttf");
@@ -1227,6 +1319,47 @@ mod tests {
 
         assert!(bytes.is_none());
         std::fs::remove_file(path).expect("remove PDF fixture");
+    }
+
+    #[test]
+    fn affinity_preview_never_returns_raw_container_or_stale_cache_after_replacement() {
+        let nonce = format!(
+            "{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system clock after epoch")
+                .as_nanos()
+        );
+        let source = std::env::temp_dir().join(format!("ottrin-affinity-{nonce}.AfDeSiGn"));
+        let cache = std::env::temp_dir().join(format!("ottrin-affinity-{nonce}.png"));
+        let embedded_png = affinity_fixture_png([20, 40, 60, 255]);
+        let container = [b"synthetic-affinity".as_slice(), embedded_png.as_slice()].concat();
+        std::fs::write(&source, &container).expect("write Affinity fixture");
+
+        let thumbnail =
+            build_thumbnail_bytes(&source, 128).expect("render bounded Affinity thumbnail");
+        assert_ne!(thumbnail, container);
+        assert!(fallback_preview_bytes(&source, None).is_none());
+        std::fs::write(&cache, &thumbnail).expect("write bounded cache PNG");
+        assert_eq!(
+            load_cached_thumbnail_at_path(&source, &cache),
+            Some(thumbnail)
+        );
+
+        std::fs::write(&source, b"malformed replacement").expect("replace Affinity source");
+        assert!(load_cached_thumbnail_at_path(&source, &cache).is_none());
+        assert!(
+            !cache.exists(),
+            "invalid replacement must discard stale cache"
+        );
+        assert_eq!(
+            thumbnail_bytes_from_cache_or_build(&source, 128, Some(vec![1, 2, 3])),
+            None
+        );
+        assert_eq!(full_preview_bytes_at_page(&source, 128, 0), None);
+        assert!(fallback_preview_bytes(&source, None).is_none());
+        let _ = std::fs::remove_file(source);
     }
 
     #[test]

@@ -14,12 +14,18 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use sha2::{Digest, Sha256};
 
+mod affinity_visual;
 mod mesh_visual;
 mod obj_visual;
 mod pdf_visual;
 mod ply_visual;
 mod stl_visual;
 mod threemf_visual;
+pub use affinity_visual::{
+    AffinityPreviewSourceGeneration, AffinityVisualError, RenderedAffinityPreview,
+    affinity_preview_is_available, affinity_preview_source_generation,
+    render_affinity_embedded_preview_png, render_affinity_embedded_preview_png_with_generation,
+};
 pub use obj_visual::{
     ObjMetadata, ObjPreviewSourceGeneration, ObjVisualError, RenderedObjPreview,
     inspect_obj_metadata, obj_preview_source_generation, render_obj_preview_png,
@@ -520,6 +526,7 @@ pub enum PreviewKind {
     AudioMetadata,
     ArchiveMetadata,
     CameraRawMetadata,
+    AffinityMetadata,
     OfficeMetadata,
     Unsupported,
 }
@@ -558,6 +565,7 @@ pub enum PreviewVisualRenderer {
     Ply,
     ThreeMf,
     CameraRaw,
+    Affinity,
     TextCard,
 }
 
@@ -675,6 +683,12 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
             visual_renderer: PreviewVisualRenderer::CameraRaw,
             raw_fallback_allowed: false,
         },
+        PreviewKind::AffinityMetadata => PreviewProfile {
+            kind,
+            views: [true, false, true],
+            visual_renderer: PreviewVisualRenderer::Affinity,
+            raw_fallback_allowed: false,
+        },
         PreviewKind::OfficeMetadata => PreviewProfile {
             kind,
             views: [true, false, true],
@@ -708,6 +722,11 @@ pub fn preview_profile(path: &Path) -> PreviewProfile {
         // only a bounded, verified embedded JPEG may reach the visual surface.
         profile.raw_fallback_allowed = false;
     }
+    if is_affinity_path(path) {
+        // Affinity containers are never handed to a generic image decoder.
+        // A dedicated bounded parser may expose only a validated embedded PNG.
+        profile.raw_fallback_allowed = false;
+    }
     if is_font_path(path) {
         // Font containers are always visualized through the dedicated preview
         // renderer; they do not fall back to raw bytes.
@@ -737,6 +756,17 @@ pub fn is_camera_raw_path(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(|extension| matches!(extension.to_ascii_lowercase().as_str(), "dng" | "arw"))
+}
+
+pub fn is_affinity_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| {
+            matches!(
+                extension.to_ascii_lowercase().as_str(),
+                "afphoto" | "afdesign" | "afpub"
+            )
+        })
 }
 
 pub fn is_font_path(path: &Path) -> bool {
@@ -801,6 +831,7 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
         PreviewKind::AudioMetadata => preview_audio(title, &request.path),
         PreviewKind::ArchiveMetadata => preview_archive(title, &request.path),
         PreviewKind::CameraRawMetadata => preview_camera_raw(title, &request.path),
+        PreviewKind::AffinityMetadata => preview_affinity(title, &request.path),
         PreviewKind::OfficeMetadata => preview_office(title, &request.path),
         PreviewKind::FolderMetadata => preview_folder(title, &request.path),
         PreviewKind::Unsupported => preview_fallback(title, &request.path),
@@ -831,6 +862,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
             PreviewKind::Image
         }
         "dng" | "arw" => PreviewKind::CameraRawMetadata,
+        "afphoto" | "afdesign" | "afpub" => PreviewKind::AffinityMetadata,
         "pdf" => PreviewKind::Pdf,
         "mp4" | "mkv" | "webm" | "mov" | "avi" | "m4v" => PreviewKind::VideoMetadata,
         "mp3" | "flac" | "wav" | "ogg" | "m4a" | "aac" => PreviewKind::AudioMetadata,
@@ -2113,6 +2145,19 @@ fn preview_camera_raw(title: String, path: &Path) -> PreviewData {
             path,
             "Camera RAW image.",
             Some("Visual preview uses a bounded embedded JPEG when available."),
+        ),
+        open_external: true,
+    }
+}
+
+fn preview_affinity(title: String, path: &Path) -> PreviewData {
+    PreviewData {
+        title,
+        kind: PreviewKind::AffinityMetadata,
+        body: metadata_summary(
+            path,
+            "Affinity document.",
+            Some("Best-effort embedded preview — may differ from the saved canvas."),
         ),
         open_external: true,
     }
@@ -5469,6 +5514,32 @@ mod tests {
         let path = temp_path(name);
         std::fs::write(&path, bytes).expect("write font fixture");
         path
+    }
+
+    #[test]
+    fn affinity_extensions_use_a_dedicated_best_effort_preview_profile() {
+        for name in ["cover.afphoto", "layout.AFDESIGN", "book.AfPuB"] {
+            let path = temp_path(name);
+            std::fs::write(&path, b"metadata-only fixture").expect("write Affinity fixture");
+            let profile = preview_profile(&path);
+            assert_eq!(classify_path(&path), PreviewKind::AffinityMetadata);
+            assert!(profile.supports_view(PreviewView::Metadata));
+            assert!(profile.supports_view(PreviewView::Visual));
+            assert_eq!(profile.visual_renderer(), PreviewVisualRenderer::Affinity);
+            assert!(!profile.raw_fallback_allowed());
+
+            let preview = load_preview(&PreviewRequest {
+                path: path.clone(),
+                kind_hint: EntryKind::File,
+            });
+            assert_eq!(preview.kind, PreviewKind::AffinityMetadata);
+            assert!(
+                preview
+                    .body
+                    .contains("Best-effort embedded preview — may differ from the saved canvas")
+            );
+            let _ = std::fs::remove_file(path);
+        }
     }
 
     fn write_sqlite_fixture(path: &Path) {

@@ -8,6 +8,7 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 - Transactional copy publication with race-resistant overwrite, retained recovery data, and explicit partial-batch warnings. Linux same-filesystem Move is enabled for test-covered Skip/Rename/Overwrite/Cancel with explicit dispositions and conflict handling. Cross-filesystem and Windows Move remain disabled without mutation pending a separately accepted protocol.
 - Indexed search with durable SQLite generations, watcher updates, scoped fallback, and content snippets.
 - Quick Inspector for text, images, bounded multi-page PDF visuals with Previous/Next/page selection, bounded DOCX/XLSX/XLSM content-preview visuals, PPTX slide text, archives, folders, audio metadata, and generic files. PDF and Office previews retain extracted-text and metadata fallbacks.
+- Best-effort embedded Affinity preview for `.afphoto` and `.afdesign`: it uses only a bounded validated embedded PNG and is labeled as potentially different from the saved canvas; `.afpub` receives the same bounded classification and safe metadata fallback, while public visual coverage remains unclaimed pending a legal fixture.
 - Linux Trash and Windows Recycle Bin support, plus scoped privileged-helper flows.
 - Packaging workflows target Linux portable/AppImage, Windows portable, and a per-user Windows installer with cleanup-aware uninstall; exact-current-commit artifacts are not yet accepted.
 

@@ -2761,6 +2761,7 @@ name = "ottrin-preview"
 version = "0.1.0"
 dependencies = [
  "ab_glyph",
+ "crc32fast",
  "epaint_default_fonts",
  "flate2",
  "image",

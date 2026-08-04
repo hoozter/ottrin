@@ -12845,6 +12845,7 @@ impl OttrinApp {
                             match pv.kind {
                                 PreviewKind::Image
                                 | PreviewKind::CameraRawMetadata
+                                | PreviewKind::AffinityMetadata
                                 | PreviewKind::SqliteMetadata
                                 | PreviewKind::StlMetadata
                                 | PreviewKind::ObjMetadata
@@ -14782,6 +14783,7 @@ impl OttrinApp {
                 match preview.kind {
                     PreviewKind::Image
                     | PreviewKind::CameraRawMetadata
+                    | PreviewKind::AffinityMetadata
                     | PreviewKind::SqliteMetadata
                     | PreviewKind::StlMetadata
                     | PreviewKind::ObjMetadata
@@ -16080,6 +16082,7 @@ impl OttrinApp {
                                 preview.kind,
                                 PreviewKind::Image
                                     | PreviewKind::CameraRawMetadata
+                                    | PreviewKind::AffinityMetadata
                                     | PreviewKind::SqliteMetadata
                                     | PreviewKind::StlMetadata
                                     | PreviewKind::ObjMetadata
@@ -16146,6 +16149,7 @@ impl OttrinApp {
                         }
                         PreviewKind::Image
                         | PreviewKind::CameraRawMetadata
+                        | PreviewKind::AffinityMetadata
                         | PreviewKind::SqliteMetadata
                         | PreviewKind::StlMetadata
                         | PreviewKind::ObjMetadata
@@ -19396,6 +19400,7 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
         profile.kind(),
         PreviewKind::Image
             | PreviewKind::CameraRawMetadata
+            | PreviewKind::AffinityMetadata
             | PreviewKind::SqliteMetadata
             | PreviewKind::StlMetadata
             | PreviewKind::ObjMetadata
@@ -20158,6 +20163,7 @@ fn compact_preview_snippet(
         PreviewKind::ArchiveMetadata
         | PreviewKind::AudioMetadata
         | PreviewKind::CameraRawMetadata
+        | PreviewKind::AffinityMetadata
         | PreviewKind::VideoMetadata
         | PreviewKind::FontMetadata
         | PreviewKind::SqliteMetadata
