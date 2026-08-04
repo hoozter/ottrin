@@ -7,6 +7,7 @@ use std::ops::Range;
 use std::path::Path;
 
 const PNG_SIGNATURE: &[u8; 8] = b"\x89PNG\r\n\x1a\n";
+#[cfg(unix)]
 pub const MAX_AFFINITY_PREVIEW_BYTES: u64 = 64 * 1024 * 1024;
 const MAX_CANDIDATES: usize = 128;
 const MAX_CANDIDATE_PNG_BYTES: usize = 8 * 1024 * 1024;
