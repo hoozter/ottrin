@@ -77,8 +77,8 @@ pub use thumbnail_cache::clear_preview_cache_storage;
 use thumbnail_cache::{
     ImagePreviewCacheEntry, clear_preview_cache_dir, full_preview_bytes_at_page,
     load_cached_thumbnail, persist_cached_thumbnail, preview_cache_dir, preview_cache_key_for_page,
-    preview_cache_key_for_page_with_sqlite_generation, preview_cache_stats,
-    prune_preview_cache_dir, thumbnail_bytes_from_cache_or_build,
+    preview_cache_key_for_page_with_generations, preview_cache_key_for_page_with_sqlite_generation,
+    preview_cache_stats, prune_preview_cache_dir, thumbnail_bytes_from_cache_or_build,
 };
 use window_chrome::{
     WmBtn, cursor_icon_for_resize_direction, render_custom_titlebar, resize_direction_for_pos,
@@ -855,6 +855,7 @@ struct PreviewJobRequest {
     page_index: usize,
     cache_key: String,
     sqlite_source_generation: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
+    obj_source_generation: Option<ottrin_preview::ObjPreviewSourceGeneration>,
     request_id: u64,
     cache_max_bytes: u64,
 }
@@ -867,6 +868,7 @@ struct PreviewJobResponse {
     page_index: usize,
     cache_key: String,
     sqlite_source_generation: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
+    obj_source_generation: Option<ottrin_preview::ObjPreviewSourceGeneration>,
     request_id: u64,
     bytes: Option<Vec<u8>>,
 }
@@ -1662,12 +1664,14 @@ impl OttrinApp {
         std::thread::spawn(move || {
             while let Ok(req) = preview_req_rx.recv() {
                 let sqlite_candidate = ottrin_preview::is_sqlite_preview_candidate(&req.path);
+                let obj_candidate = ottrin_preview::is_obj_path(&req.path);
                 let generation_is_current = req.cache_key
-                    == preview_cache_key_for_page_with_sqlite_generation(
+                    == preview_cache_key_for_page_with_generations(
                         &req.path,
                         req.target_dim,
                         req.page_index,
                         req.sqlite_source_generation.as_ref(),
+                        req.obj_source_generation.as_ref(),
                     );
                 let selected_pdf_page = req.page_index > 0
                     && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
@@ -1676,6 +1680,10 @@ impl OttrinApp {
                         && (req.sqlite_source_generation.is_none()
                             || req.sqlite_source_generation
                                 != ottrin_preview::sqlite_preview_source_generation(&req.path)))
+                    || (obj_candidate
+                        && (req.obj_source_generation.is_none()
+                            || req.obj_source_generation
+                                != ottrin_preview::obj_preview_source_generation(&req.path)))
                 {
                     None
                 } else if sqlite_candidate {
@@ -1694,6 +1702,7 @@ impl OttrinApp {
                             page_index: req.page_index,
                             cache_key: req.cache_key,
                             sqlite_source_generation: req.sqlite_source_generation,
+                            obj_source_generation: req.obj_source_generation,
                             request_id: req.request_id,
                             bytes: Some(cached),
                         });
@@ -1712,6 +1721,54 @@ impl OttrinApp {
                         Ok(rendered)
                             if Some(&rendered.source_generation)
                                 == req.sqlite_source_generation.as_ref() =>
+                        {
+                            if req.target_dim != PREVIEW_CACHE_ORIGINAL {
+                                persist_cached_thumbnail(
+                                    &req.path,
+                                    req.target_dim,
+                                    req.page_index,
+                                    &req.cache_key,
+                                    &rendered.png,
+                                    req.cache_max_bytes,
+                                );
+                            }
+                            Some(rendered.png)
+                        }
+                        _ => None,
+                    }
+                } else if obj_candidate {
+                    if req.target_dim != PREVIEW_CACHE_ORIGINAL
+                        && let Some(cached) = load_cached_thumbnail(
+                            &req.path,
+                            req.target_dim,
+                            req.page_index,
+                            &req.cache_key,
+                        )
+                    {
+                        let _ = preview_res_tx.send(PreviewJobResponse {
+                            slot: req.slot,
+                            path: req.path,
+                            target_dim: req.target_dim,
+                            page_index: req.page_index,
+                            cache_key: req.cache_key,
+                            sqlite_source_generation: req.sqlite_source_generation,
+                            obj_source_generation: req.obj_source_generation,
+                            request_id: req.request_id,
+                            bytes: Some(cached),
+                        });
+                        continue;
+                    }
+                    match ottrin_preview::render_obj_preview_png_with_generation(
+                        &req.path,
+                        if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                            PREVIEW_CACHE_BUCKET_XL
+                        } else {
+                            req.target_dim
+                        },
+                    ) {
+                        Ok(rendered)
+                            if Some(&rendered.source_generation)
+                                == req.obj_source_generation.as_ref() =>
                         {
                             if req.target_dim != PREVIEW_CACHE_ORIGINAL {
                                 persist_cached_thumbnail(
@@ -1759,6 +1816,7 @@ impl OttrinApp {
                     page_index: req.page_index,
                     cache_key: req.cache_key,
                     sqlite_source_generation: req.sqlite_source_generation,
+                    obj_source_generation: req.obj_source_generation,
                     request_id: req.request_id,
                     bytes,
                 });
@@ -2011,7 +2069,10 @@ impl OttrinApp {
         target_dim: u32,
         page_index: usize,
         cache_key: String,
-        sqlite_source_generation: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
+        source_generations: (
+            Option<ottrin_preview::SqlitePreviewSourceGeneration>,
+            Option<ottrin_preview::ObjPreviewSourceGeneration>,
+        ),
     ) {
         if self.preview_budget_remaining == 0 {
             return;
@@ -2029,7 +2090,8 @@ impl OttrinApp {
             target_dim,
             page_index,
             cache_key,
-            sqlite_source_generation,
+            sqlite_source_generation: source_generations.0,
+            obj_source_generation: source_generations.1,
             request_id,
             cache_max_bytes: self.thumbnail_cache_max_bytes(),
         });
@@ -2079,11 +2141,15 @@ impl OttrinApp {
         let sqlite_source_generation = ottrin_preview::is_sqlite_preview_candidate(path)
             .then(|| ottrin_preview::sqlite_preview_source_generation(path))
             .flatten();
-        let cache_key = preview_cache_key_for_page_with_sqlite_generation(
+        let obj_source_generation = ottrin_preview::is_obj_path(path)
+            .then(|| ottrin_preview::obj_preview_source_generation(path))
+            .flatten();
+        let cache_key = preview_cache_key_for_page_with_generations(
             path,
             target_dim,
             page_index,
             sqlite_source_generation.as_ref(),
+            obj_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2092,7 +2158,7 @@ impl OttrinApp {
                 target_dim,
                 page_index,
                 cache_key,
-                sqlite_source_generation,
+                (sqlite_source_generation, obj_source_generation),
             );
             return None;
         }
@@ -2125,11 +2191,15 @@ impl OttrinApp {
         let sqlite_source_generation = ottrin_preview::is_sqlite_preview_candidate(path)
             .then(|| ottrin_preview::sqlite_preview_source_generation(path))
             .flatten();
-        let cache_key = preview_cache_key_for_page_with_sqlite_generation(
+        let obj_source_generation = ottrin_preview::is_obj_path(path)
+            .then(|| ottrin_preview::obj_preview_source_generation(path))
+            .flatten();
+        let cache_key = preview_cache_key_for_page_with_generations(
             path,
             PREVIEW_CACHE_ORIGINAL,
             page_index,
             sqlite_source_generation.as_ref(),
+            obj_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2138,7 +2208,7 @@ impl OttrinApp {
                 PREVIEW_CACHE_ORIGINAL,
                 page_index,
                 cache_key,
-                sqlite_source_generation,
+                (sqlite_source_generation, obj_source_generation),
             );
             return None;
         }
@@ -2173,11 +2243,15 @@ impl OttrinApp {
         let sqlite_source_generation = ottrin_preview::is_sqlite_preview_candidate(path)
             .then(|| ottrin_preview::sqlite_preview_source_generation(path))
             .flatten();
-        let cache_key = preview_cache_key_for_page_with_sqlite_generation(
+        let obj_source_generation = ottrin_preview::is_obj_path(path)
+            .then(|| ottrin_preview::obj_preview_source_generation(path))
+            .flatten();
+        let cache_key = preview_cache_key_for_page_with_generations(
             path,
             PREVIEW_CACHE_ORIGINAL,
             page_index,
             sqlite_source_generation.as_ref(),
+            obj_source_generation.as_ref(),
         );
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2186,7 +2260,7 @@ impl OttrinApp {
                 PREVIEW_CACHE_ORIGINAL,
                 page_index,
                 cache_key,
-                sqlite_source_generation,
+                (sqlite_source_generation, obj_source_generation),
             );
             return None;
         }
@@ -12578,6 +12652,7 @@ impl OttrinApp {
                                 | PreviewKind::CameraRawMetadata
                                 | PreviewKind::SqliteMetadata
                                 | PreviewKind::StlMetadata
+                                | PreviewKind::ObjMetadata
                                 | PreviewKind::Pdf => {
                                     let avail_w = ui.available_width().max(60.0);
                                     let max_h = preview_panel_h - 70.0;
@@ -14499,6 +14574,7 @@ impl OttrinApp {
                     | PreviewKind::CameraRawMetadata
                     | PreviewKind::SqliteMetadata
                     | PreviewKind::StlMetadata
+                    | PreviewKind::ObjMetadata
                     | PreviewKind::Pdf => {
                         if let Some(img) = self.cached_image_preview_widget(
                             &entry.path,
@@ -15794,6 +15870,7 @@ impl OttrinApp {
                                     | PreviewKind::CameraRawMetadata
                                     | PreviewKind::SqliteMetadata
                                     | PreviewKind::StlMetadata
+                                    | PreviewKind::ObjMetadata
                                     | PreviewKind::Pdf
                             );
                             if is_zoomable_document {
@@ -15857,6 +15934,7 @@ impl OttrinApp {
                         | PreviewKind::CameraRawMetadata
                         | PreviewKind::SqliteMetadata
                         | PreviewKind::StlMetadata
+                        | PreviewKind::ObjMetadata
                         | PreviewKind::Pdf => {
                             ScrollArea::both().show(ui, |ui| {
                                 let max_w = (ui.available_width() - 24.0).max(120.0);
@@ -18658,6 +18736,22 @@ fn preview_response_matches_current_generation(response: &PreviewJobResponse) ->
                     Some(&current_generation),
                 );
     }
+    if ottrin_preview::is_obj_path(&response.path) {
+        let Some(current_generation) =
+            ottrin_preview::obj_preview_source_generation(&response.path)
+        else {
+            return false;
+        };
+        return response.obj_source_generation.as_ref() == Some(&current_generation)
+            && response.cache_key
+                == preview_cache_key_for_page_with_generations(
+                    &response.path,
+                    response.target_dim,
+                    response.page_index,
+                    None,
+                    Some(&current_generation),
+                );
+    }
     response.cache_key
         == preview_cache_key_for_page(&response.path, response.target_dim, response.page_index)
 }
@@ -19070,6 +19164,7 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
             | PreviewKind::CameraRawMetadata
             | PreviewKind::SqliteMetadata
             | PreviewKind::StlMetadata
+            | PreviewKind::ObjMetadata
             | PreviewKind::Pdf
             | PreviewKind::Text
     );
@@ -19830,7 +19925,8 @@ fn compact_preview_snippet(
         | PreviewKind::VideoMetadata
         | PreviewKind::FontMetadata
         | PreviewKind::SqliteMetadata
-        | PreviewKind::StlMetadata => &preview.body,
+        | PreviewKind::StlMetadata
+        | PreviewKind::ObjMetadata => &preview.body,
         PreviewKind::Image | PreviewKind::FolderMetadata | PreviewKind::Unsupported => return None,
     };
     let snippet = metadata_preview_snippet(source, max_lines, max_chars);
@@ -21067,6 +21163,7 @@ mod tests {
             page_index: 0,
             cache_key: preview_cache_key_for_page(&path, 128, 0),
             sqlite_source_generation: None,
+            obj_source_generation: None,
             request_id: 1,
             bytes: Some(b"png".to_vec()),
         };
@@ -21100,6 +21197,7 @@ mod tests {
             page_index: 0,
             cache_key: preview_cache_key_for_page(&source, 128, 0),
             sqlite_source_generation: ottrin_preview::sqlite_preview_source_generation(&source),
+            obj_source_generation: None,
             request_id: 1,
             bytes: Some(b"first-generation-card".to_vec()),
         };
@@ -21118,6 +21216,41 @@ mod tests {
 
         std::fs::remove_file(alias).expect("remove hard-link alias");
         std::fs::remove_file(source).expect("remove replacement preview generation");
+    }
+
+    #[test]
+    fn obj_response_from_an_intermediate_generation_is_rejected_after_a_to_b_to_a() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-obj-preview-response-{}.obj",
+            std::process::id()
+        ));
+        let first = b"v 0 0 0\nv 1 0 0\nv 0 1 1\nf 1 2 3\n";
+        let middle = b"v 0 0 0\nv 2 0 0\nv 0 1 1\nf 1 2 3\n";
+        std::fs::write(&path, first).expect("write initial OBJ");
+        let expected = ottrin_preview::obj_preview_source_generation(&path).expect("capture A");
+        std::fs::write(&path, middle).expect("write intermediate OBJ");
+        let rendered_middle =
+            ottrin_preview::obj_preview_source_generation(&path).expect("capture B");
+        std::fs::write(&path, first).expect("restore initial OBJ");
+        let response = PreviewJobResponse {
+            slot: PreviewRequestSlot::new(path.clone(), PreviewRequestTarget::Thumbnail, 128, 0),
+            path: path.clone(),
+            target_dim: 128,
+            page_index: 0,
+            cache_key: preview_cache_key_for_page_with_generations(
+                &path,
+                128,
+                0,
+                None,
+                Some(&expected),
+            ),
+            sqlite_source_generation: None,
+            obj_source_generation: Some(rendered_middle),
+            request_id: 1,
+            bytes: Some(b"intermediate-png".to_vec()),
+        };
+        assert!(!preview_response_matches_current_generation(&response));
+        std::fs::remove_file(path).expect("remove OBJ");
     }
 
     #[test]

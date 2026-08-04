@@ -30,5 +30,8 @@ sha2 = "0.10"
 # `stl_io` 0.11.x (MIT; https://github.com/hmeyer/stl_io) is a pure-Rust
 # streaming parser. Preview-specific input, triangle, and raster bounds remain local.
 stl_io = "0.11"
+# Bounded OBJ previews use only the in-memory buffer API.  Default `ahash`
+# acceleration is unnecessary for this small, preflight-bounded surface.
+tobj = { version = "=4.0.5", default-features = false }
 epaint_default_fonts = "0.33"
 pdfium-render = { version = "=0.9.3", default-features = false, features = ["image_latest", "pdfium_latest", "thread_safe"] }

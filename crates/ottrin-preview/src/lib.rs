@@ -14,8 +14,15 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use sha2::{Digest, Sha256};
 
+mod mesh_visual;
+mod obj_visual;
 mod pdf_visual;
 mod stl_visual;
+pub use obj_visual::{
+    ObjMetadata, ObjPreviewSourceGeneration, ObjVisualError, RenderedObjPreview,
+    inspect_obj_metadata, obj_preview_source_generation, render_obj_preview_png,
+    render_obj_preview_png_with_generation,
+};
 pub use pdf_visual::{
     PdfVisualError, render_pdf_first_page_png, render_pdf_first_page_png_with_library,
     render_pdf_page_png, render_pdf_page_png_with_library,
@@ -493,6 +500,7 @@ pub enum PreviewKind {
     FontMetadata,
     SqliteMetadata,
     StlMetadata,
+    ObjMetadata,
     Pdf,
     VideoMetadata,
     AudioMetadata,
@@ -532,6 +540,7 @@ pub enum PreviewVisualRenderer {
     Font,
     Sqlite,
     Stl,
+    Obj,
     CameraRaw,
     TextCard,
 }
@@ -600,6 +609,12 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
             kind,
             views: [true, false, true],
             visual_renderer: PreviewVisualRenderer::Stl,
+            raw_fallback_allowed: false,
+        },
+        PreviewKind::ObjMetadata => PreviewProfile {
+            kind,
+            views: [true, false, true],
+            visual_renderer: PreviewVisualRenderer::Obj,
             raw_fallback_allowed: false,
         },
         PreviewKind::Pdf => PreviewProfile {
@@ -674,6 +689,10 @@ pub fn preview_profile(path: &Path) -> PreviewProfile {
         // Mesh source bytes never reach image decoding or the generic fallback.
         profile.raw_fallback_allowed = false;
     }
+    if is_obj_path(path) {
+        // OBJ source is parsed by a bounded, in-memory mesh renderer only.
+        profile.raw_fallback_allowed = false;
+    }
     profile
 }
 
@@ -693,6 +712,12 @@ pub fn is_stl_path(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(|extension| extension.eq_ignore_ascii_case("stl"))
+}
+
+pub fn is_obj_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("obj"))
 }
 
 pub fn is_epub_path(path: &Path) -> bool {
@@ -719,6 +744,7 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
         PreviewKind::FontMetadata => preview_font(title, &request.path),
         PreviewKind::SqliteMetadata => preview_sqlite(title, &request.path),
         PreviewKind::StlMetadata => preview_stl(title, &request.path),
+        PreviewKind::ObjMetadata => preview_obj(title, &request.path),
         PreviewKind::Pdf => preview_pdf(title, &request.path),
         PreviewKind::VideoMetadata => preview_video(title, &request.path),
         PreviewKind::AudioMetadata => preview_audio(title, &request.path),
@@ -746,6 +772,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         "ttf" | "otf" => PreviewKind::FontMetadata,
         "sqlite" | "sqlite3" => PreviewKind::SqliteMetadata,
         "stl" => PreviewKind::StlMetadata,
+        "obj" => PreviewKind::ObjMetadata,
         "db" if has_sqlite_header(path) => PreviewKind::SqliteMetadata,
         "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" | "ico" | "svg" => {
             PreviewKind::Image
@@ -2085,6 +2112,38 @@ fn preview_stl(title: String, path: &Path) -> PreviewData {
     PreviewData {
         title,
         kind: PreviewKind::StlMetadata,
+        body: lines.join("\n"),
+        open_external: true,
+    }
+}
+
+fn preview_obj(title: String, path: &Path) -> PreviewData {
+    let mut lines = vec![
+        "Filetype: Wavefront OBJ mesh".to_string(),
+        "Format: OBJ".to_string(),
+    ];
+    if let Ok(metadata) = std::fs::metadata(path) {
+        lines.push(format!("Size: {}", format_size(metadata.len())));
+    }
+    match inspect_obj_metadata(path) {
+        Ok(metadata) => {
+            lines.push(format!("Objects: {}", metadata.object_count));
+            lines.push(format!("Groups: {}", metadata.group_count));
+            lines.push(format!("Vertices: {}", metadata.vertex_count));
+            lines.push(format!("Faces: {}", metadata.face_count));
+            lines.push(format!("Triangles: {}", metadata.triangle_count));
+            lines.push(format!(
+                "Bounds: {:.4} x {:.4} x {:.4}",
+                metadata.dimensions[0], metadata.dimensions[1], metadata.dimensions[2]
+            ));
+            lines.push("Materials/textures: ignored for this bounded preview".to_string());
+            lines.push("Preview: Bounded CPU mesh render".to_string());
+        }
+        Err(_) => lines.push("Preview: OBJ mesh metadata unavailable for this file.".to_string()),
+    }
+    PreviewData {
+        title,
+        kind: PreviewKind::ObjMetadata,
         body: lines.join("\n"),
         open_external: true,
     }
@@ -5888,6 +5947,22 @@ mod tests {
         assert_eq!(preview.kind, PreviewKind::FontMetadata);
         assert!(preview.body.contains("OpenType/TrueType"));
         assert!(preview.body.contains("Preview: Bounded font sample"));
+    }
+
+    #[test]
+    fn obj_format_is_reserved_for_a_dedicated_fail_closed_visual_renderer() {
+        let path = temp_path("triangle.obj");
+        std::fs::write(&path, "o bracket\nv 0 0 0\nv 1 0 0\nv 0 1 1\nf 1 2 3\n")
+            .expect("write OBJ fixture");
+
+        let profile = preview_profile(&path);
+        assert_eq!(classify_path(&path), PreviewKind::ObjMetadata);
+        assert_eq!(profile.visual_renderer(), PreviewVisualRenderer::Obj);
+        assert!(profile.supports_view(PreviewView::Visual));
+        assert!(!profile.raw_fallback_allowed());
+        assert!(render_obj_preview_png(&path, 128).is_ok());
+
+        let _ = std::fs::remove_file(path);
     }
 
     #[test]
