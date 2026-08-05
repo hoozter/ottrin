@@ -5797,16 +5797,9 @@ impl OttrinApp {
         }
     }
 
-    fn request_miller_pointer_selection_reveal(&mut self, tab_id: u64, destination: PathBuf) {
-        if self
-            .state
-            .tab_by_id(tab_id)
-            .is_some_and(|tab| matches!(tab.view_mode, ViewMode::Miller))
-        {
-            let ui_state = self.tab_ui.entry(tab_id).or_default();
-            ui_state.miller_pointer_reveal = Some(MillerPointerReveal { destination });
-            ui_state.miller_scroll_selected = true;
-        }
+    fn navigate_miller_pointer_folder(&mut self, tab_id: u64, destination: PathBuf) {
+        self.navigate_tab_to(tab_id, destination);
+        self.request_miller_pointer_reveal(tab_id);
     }
 
     fn selected_paths_for_tab(&mut self, tab_id: u64) -> Vec<PathBuf> {
@@ -14597,7 +14590,18 @@ impl OttrinApp {
                                                 ui_state.miller_focus_dir = Some(col.dir.clone());
                                                 ui_state.miller_focus_hint = None;
                                             }
-                                            if col_idx < current_col
+                                            if resp.clicked()
+                                                && !resp.double_clicked()
+                                                && matches!(
+                                                    entry.kind,
+                                                    EntryKind::Directory | EntryKind::Symlink
+                                                )
+                                            {
+                                                self.navigate_miller_pointer_folder(
+                                                    tab_id,
+                                                    entry.path.clone(),
+                                                );
+                                            } else if col_idx < current_col
                                                 && Self::miller_pointer_rebases_anchor(
                                                     resp.clicked(),
                                                     resp.secondary_clicked(),
@@ -14615,17 +14619,6 @@ impl OttrinApp {
                                                     i,
                                                     modifiers,
                                                     resp.secondary_clicked(),
-                                                );
-                                            }
-                                            if resp.clicked()
-                                                && matches!(
-                                                    entry.kind,
-                                                    EntryKind::Directory | EntryKind::Symlink
-                                                )
-                                            {
-                                                self.request_miller_pointer_selection_reveal(
-                                                    tab_id,
-                                                    entry.path.clone(),
                                                 );
                                             }
                                             ui.ctx().request_repaint();
@@ -22678,6 +22671,48 @@ mod tests {
         let ui_state = app.tab_ui.get(&tab_id).expect("active tab UI state");
         assert!(ui_state.miller_pointer_reveal.is_some());
         assert!(ui_state.miller_scroll_selected);
+    }
+
+    #[test]
+    fn pointer_folder_entry_updates_miller_path_and_reveals_an_empty_destination() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-miller-pointer-entry-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        let source = root.join("source");
+        let destination = source.join("empty-destination");
+        std::fs::create_dir_all(&destination).expect("create empty destination fixture");
+
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.state.active_tab_mut().view_mode = ViewMode::Miller;
+        app.state.active_tab_mut().current_dir = source.clone();
+
+        app.navigate_miller_pointer_folder(tab_id, destination.clone());
+
+        assert_eq!(
+            app.state.tab_by_id(tab_id).map(|tab| &tab.current_dir),
+            Some(&destination),
+            "a primary Miller folder click must make the clicked folder active"
+        );
+        assert!(app.tab_ui.get(&tab_id).is_some_and(|ui| {
+            ui.miller_pointer_reveal
+                .as_ref()
+                .is_some_and(|reveal| reveal.destination() == destination)
+                && ui.miller_scroll_selected
+        }));
+        let (columns, current_col) = app.build_miller_model(tab_id, app.miller_col_count);
+        assert_eq!(columns[current_col].dir, destination);
+        assert!(
+            columns[current_col].entries.is_empty(),
+            "the clicked empty folder must become a renderable current column"
+        );
+
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]
