@@ -5215,9 +5215,6 @@ fn office_raw_zip_entry_types(
         std::str::from_utf8(central_name).ok()?;
         let central_extra_end = name_end.checked_add(extra)?;
         let central_extra = bytes.get(name_end..central_extra_end)?;
-        if !office_extra_fields_are_safe(central_extra) {
-            return None;
-        }
 
         let local_offset = usize::try_from(u32::from_le_bytes([
             header[42], header[43], header[44], header[45],
@@ -5235,10 +5232,7 @@ fn office_raw_zip_entry_types(
         let local_extra_len = usize::from(u16::from_le_bytes([local_header[28], local_header[29]]));
         let local_extra_end = local_name_end.checked_add(local_extra_len)?;
         let local_extra = bytes.get(local_name_end..local_extra_end)?;
-        if !office_extra_fields_are_safe(local_extra) {
-            return None;
-        }
-        if local_name != central_name {
+        if local_name != central_name || !office_extra_fields_match(central_extra, local_extra) {
             return None;
         }
 
@@ -5255,6 +5249,7 @@ fn office_extra_fields_are_safe(extra: &[u8]) -> bool {
     const UNICODE_PATH_EXTRA_FIELD_ID: u16 = 0x7075;
 
     let mut offset = 0usize;
+    let mut field_ids = std::collections::HashSet::new();
     while offset < extra.len() {
         let Some(header_end) = offset.checked_add(4) else {
             return false;
@@ -5268,14 +5263,22 @@ fn office_extra_fields_are_safe(extra: &[u8]) -> bool {
         let Some(field_end) = header_end.checked_add(field_len) else {
             return false;
         };
+        let Some(field_id) = read_le_u16(&header[..2]) else {
+            return false;
+        };
         if extra.get(header_end..field_end).is_none()
-            || read_le_u16(&header[..2]) == Some(UNICODE_PATH_EXTRA_FIELD_ID)
+            || field_id == UNICODE_PATH_EXTRA_FIELD_ID
+            || !field_ids.insert(field_id)
         {
             return false;
         }
         offset = field_end;
     }
     true
+}
+
+fn office_extra_fields_match(central: &[u8], local: &[u8]) -> bool {
+    central == local && office_extra_fields_are_safe(central)
 }
 
 /// Forces `zip` to decompress and CRC-check every already-admitted file with
@@ -9438,6 +9441,26 @@ mod tests {
             ));
             let _ = std::fs::remove_file(path);
         }
+    }
+
+    #[test]
+    fn office_extra_fields_require_unique_matching_metadata() {
+        let single_unknown = [0xfe, 0xca, 2, 0, 0x11, 0x22];
+        let different_unknown = [0xfe, 0xca, 2, 0, 0x33, 0x44];
+        let duplicate_unknown = [0xfe, 0xca, 2, 0, 0x11, 0x22, 0xfe, 0xca, 2, 0, 0x33, 0x44];
+
+        assert!(office_extra_fields_are_safe(&single_unknown));
+        assert!(office_extra_fields_are_safe(&different_unknown));
+        assert!(!office_extra_fields_are_safe(&duplicate_unknown));
+        assert!(office_extra_fields_match(&single_unknown, &single_unknown));
+        assert!(!office_extra_fields_match(
+            &single_unknown,
+            &different_unknown
+        ));
+        assert!(!office_extra_fields_match(
+            &duplicate_unknown,
+            &duplicate_unknown
+        ));
     }
 
     #[test]
