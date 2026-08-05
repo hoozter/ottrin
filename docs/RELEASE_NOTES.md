@@ -15,7 +15,7 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 ## Important Limitations
 
 - Damaged, encrypted, unsupported, or unrenderable PDFs fall back to extracted text and metadata without a visual page.
-- Damaged, oversized, unsupported, or unrenderable DOCX/XLSX/XLSM/ODS/PPTX packages fall back to extracted text and metadata. Their visual output is a bounded content preview, not faithful Office layout; Unix-only PPTX cards do not render shapes, charts, media, animations, transitions, notes, themes, native fonts, or exact positioning.
+- Damaged, oversized, unsupported, or unrenderable DOCX/XLSX/XLSM/ODS/PPTX packages fall back to extracted text and metadata. Their visual output is a bounded content preview, not faithful Office layout; Unix-only PPTX cards do not render shapes, charts, media, animations, transitions, notes, themes, native fonts, or exact positioning. PPTX visual admission also requires canonical matching local and central ZIP metadata, so some files repacked by third-party ZIP tools may use the text and metadata fallback instead.
 - Legacy binary Office files (`.doc`, `.xls`, `.ppt`) receive metadata previews rather than document content previews.
 - Legacy retained Move records have source-level startup/batch discovery and
   manual-review surfaces. They do not back accepted Linux same-filesystem Move,

@@ -71,7 +71,7 @@ Permanent deletion cannot be undone from Ottrin.
 
 ## Quick Inspector
 
-Press Space on a selected item to open Quick Inspector. Ottrin previews common text and image formats directly and renders bounded multi-page PDF visuals with Previous/Next/page selection when its packaged PDFium runtime is available; it also shows extracted PDF text and metadata. It renders bounded DOCX/XLSX/XLSM/ODS content-preview visuals alongside their extracted text and metadata. On Unix, PPTX receives a bounded, non-authoritative first-slide text card alongside its slide text and metadata; this is not a faithful PowerPoint layout and does not render native fonts, shapes, charts, media, animations, transitions, speaker notes, themes, or exact positioning. On non-Unix platforms, PPTX keeps its text and metadata fallback until a reparse-safe admission protocol exists.
+Press Space on a selected item to open Quick Inspector. Ottrin previews common text and image formats directly and renders bounded multi-page PDF visuals with Previous/Next/page selection when its packaged PDFium runtime is available; it also shows extracted PDF text and metadata. It renders bounded DOCX/XLSX/XLSM/ODS content-preview visuals alongside their extracted text and metadata. On Unix, PPTX receives a bounded, non-authoritative first-slide text card alongside its slide text and metadata; this is not a faithful PowerPoint layout and does not render native fonts, shapes, charts, media, animations, transitions, speaker notes, themes, or exact positioning. PPTX visual admission deliberately requires canonical matching local and central ZIP metadata, so files repacked by some third-party ZIP tools may retain text and metadata without a visual card. On non-Unix platforms, PPTX keeps its text and metadata fallback until a reparse-safe admission protocol exists.
 
 Damaged, encrypted, unsupported, or unrenderable PDFs fall back to extracted text and metadata without exposing raw PDF bytes to the image renderer. Legacy binary Office formats such as `.doc`, `.xls`, and `.ppt` currently show metadata and can be opened in their associated desktop application.
 
@@ -134,6 +134,7 @@ ottrin-index --remove-schedule
 - Linux polkit helper packaging needs real system smoke testing.
 - Historical Linux portable/AppImage artifacts had shallow launch smoke coverage; the exact current candidate has no accepted rebuilt-artifact evidence and full packaged workflow QA remains pending.
 - Quick Inspector covers text/code, images, PDF text/metadata, DOCX content, XLSX/XLSM/ODS worksheets, Unix-only bounded first-slide PPTX text cards and slide text, ZIP/archive listings, bounded folder summaries, and generic metadata, but the full keyboard/file-type matrix still needs manual QA.
+- PPTX visual cards fail closed when local and central ZIP extra metadata is noncanonical or differs; affected files still retain slide text and metadata and can be opened normally.
 - Faithful Office layout rendering, text/code/PDF/video document thumbnails, recursive folder sizing/thumbnails, media playback, HEIC/HEIF and camera RAW thumbnails, and text/code edit mode are future work.
 - Multi-select is implemented, but still needs manual QA across Miller/List/Grid.
 - Tab drag-and-drop is implemented and test-covered; packaged/manual desktop acceptance is pending.
