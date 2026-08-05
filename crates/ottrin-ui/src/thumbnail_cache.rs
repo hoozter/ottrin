@@ -125,6 +125,9 @@ pub(crate) fn preview_cache_key_for_page_with_generations(
         let generation = ottrin_preview::affinity_preview_source_generation(path);
         return affinity_preview_cache_key(target_dim, page_index, generation.as_ref());
     }
+    if ottrin_preview::is_pptx_visual_path(path) {
+        return pptx_preview_request_key(path, target_dim, page_index);
+    }
     if ottrin_preview::is_office_visual_path(path) {
         let generation = office_source_generation
             .cloned()
@@ -160,6 +163,17 @@ pub(crate) fn preview_cache_key_for_page_with_generations(
     target_dim.hash(&mut hasher);
     page_index.hash(&mut hasher);
     format!("{:016x}_{}.png", hasher.finish(), target_dim)
+}
+
+/// PPTX never reaches the persistent thumbnail cache. This is only an
+/// in-memory request identity, deliberately independent of path metadata and
+/// source bytes so widget construction cannot open or hash a presentation.
+fn pptx_preview_request_key(path: &Path, target_dim: u32, page_index: usize) -> String {
+    let mut hasher = DefaultHasher::new();
+    path.hash(&mut hasher);
+    target_dim.hash(&mut hasher);
+    page_index.hash(&mut hasher);
+    format!("pptx-request-v1-{:016x}.png", hasher.finish())
 }
 
 fn stl_preview_cache_key(
@@ -276,6 +290,9 @@ pub(crate) fn load_cached_thumbnail(
     page_index: usize,
     cache_key: &str,
 ) -> Option<Vec<u8>> {
+    if ottrin_preview::is_pptx_visual_path(path) {
+        return None;
+    }
     if !preview_cache_key_matches(path, target_dim, page_index, cache_key) {
         return None;
     }
@@ -459,6 +476,9 @@ fn persist_cached_thumbnail_at_path_if_current(
     max_bytes: u64,
     cache_path: PathBuf,
 ) -> bool {
+    if ottrin_preview::is_pptx_visual_path(source_path) {
+        return false;
+    }
     if max_bytes == 0 {
         return false;
     }
@@ -1732,7 +1752,7 @@ mod tests {
     }
 
     #[test]
-    fn office_cache_key_rejects_an_atomically_replaced_pptx_generation() {
+    fn pptx_never_persists_a_disk_thumbnail() {
         let nonce = format!(
             "{}-{}",
             std::process::id(),
@@ -1742,25 +1762,21 @@ mod tests {
                 .as_nanos()
         );
         let source = std::env::temp_dir().join(format!("ottrin-office-{nonce}.pptx"));
-        let replacement =
-            std::env::temp_dir().join(format!("ottrin-office-replacement-{nonce}.pptx"));
         let cache = std::env::temp_dir().join(format!("ottrin-office-{nonce}.png"));
         std::fs::write(&source, b"first-pptx-generation").expect("write first generation");
-        let first_key = preview_cache_key_for_page(&source, 128, 0);
-        std::fs::write(&replacement, b"next--pptx-generation").expect("write replacement");
-        std::fs::rename(&replacement, &source).expect("atomically replace source");
+        let request_key = preview_cache_key_for_page(&source, 128, 0);
 
         assert!(
             !persist_cached_thumbnail_at_path_if_current(
                 &source,
                 128,
                 0,
-                &first_key,
-                b"rendered card for the superseded package",
+                &request_key,
+                b"rendered PPTX card",
                 1024 * 1024,
                 cache.clone(),
             ),
-            "a response for the replaced package must not be stored under its old generation"
+            "PPTX uses request-local memory only, never the disk thumbnail cache"
         );
         assert!(!cache.exists());
         let _ = std::fs::remove_file(source);

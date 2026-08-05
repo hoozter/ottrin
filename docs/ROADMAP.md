@@ -18,7 +18,7 @@ Implemented:
 - Smart panel sections for Info, Drop Folder, Search, Activity, and Trash.
 - Cross-platform Trash panel implementation with Linux Freedesktop trash support and Windows Recycle Bin backend.
 - SQLite-backed indexed search with watcher updates, background updater scheduling, generated-folder skips, content search snippets, column resizing, click selection, double-click/Enter opening, shared right-click actions, and Space-triggered full preview.
-- Quick Inspector as a full Space-triggered window with visual image, bounded multi-page PDF previews with Previous/Next/go-to-page navigation, and bounded DOCX/XLSX/XLSM/PPTX content-preview PNGs; it retains extracted PDF/Office text and metadata fallbacks. PPTX is a bounded first-slide text card only. Office output is a truthful content preview, not a faithful document layout.
+- Quick Inspector as a full Space-triggered window with visual image, bounded multi-page PDF previews with Previous/Next/go-to-page navigation, bounded DOCX/XLSX/XLSM/ODS content-preview PNGs, and a Unix-only bounded first-slide PPTX text card; it retains extracted PDF/Office text and metadata fallbacks. The PPTX card is non-authoritative. Office output is a truthful content preview, not a faithful document layout.
 - Grid rubber-band selection is implemented and source-tested; packaged/manual acceptance is pending.
 - Linux native Open With discovery and launch path is implemented with source and automated coverage; other platform discovery remains fallback/manual.
 - Generated visual text/source cards, bounded direct-child folder thumbnail collages, and bounded PDF page navigation are implemented and test-covered; recursive folder-size thumbnails remain deferred.

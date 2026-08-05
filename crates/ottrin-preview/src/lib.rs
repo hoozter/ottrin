@@ -1730,9 +1730,20 @@ pub fn render_office_content_preview_png(
 }
 
 pub fn office_preview_source_generation(path: &Path) -> Option<OfficePreviewSourceGeneration> {
+    // PPTX snapshots belong exclusively to the worker.  Calling this from a
+    // widget/cache-key path used to synchronously open and hash up to 128 MiB.
+    if is_pptx_visual_path(path) {
+        return None;
+    }
     read_office_snapshot(path)
         .ok()
         .map(|snapshot| snapshot.generation)
+}
+
+pub fn is_pptx_visual_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("pptx"))
 }
 
 pub fn is_office_visual_path(path: &Path) -> bool {
@@ -1758,9 +1769,27 @@ pub fn render_office_content_preview_png_with_generation(
     if !matches!(ext.as_str(), "docx" | "xlsx" | "xlsm" | "ods" | "pptx") {
         return Err(OfficeVisualError::UnsupportedFormat);
     }
-    let snapshot = read_office_snapshot(path)?;
-    let mut archive = zip::ZipArchive::new(Cursor::new(&snapshot.bytes))
-        .map_err(|error| OfficeVisualError::Package(error.to_string()))?;
+    // Native opened-handle admission is not yet available on non-Unix
+    // platforms. Keep PPTX fail-closed before touching its path there, while
+    // preserving the established DOCX/XLSX/XLSM/ODS renderer behaviour.
+    if ext == "pptx" && !cfg!(unix) {
+        return Err(OfficeVisualError::PreviewDisabledOnPlatform);
+    }
+    let snapshot = if ext == "pptx" {
+        read_pptx_snapshot(path)?
+    } else {
+        read_office_snapshot(path)?
+    };
+    let mut archive = zip::ZipArchive::new(Cursor::new(&snapshot.bytes)).map_err(|error| {
+        if ext == "pptx" {
+            // A concurrent in-place writer can leave an otherwise admitted
+            // single read with a non-package byte sequence. Treat that as a
+            // rejected stable-read attempt, never as renderable content.
+            OfficeVisualError::InputChanged
+        } else {
+            OfficeVisualError::Package(error.to_string())
+        }
+    })?;
     if archive.len() > MAX_OFFICE_PARTS {
         return Err(OfficeVisualError::TooManyParts {
             actual: archive.len(),
@@ -1782,6 +1811,84 @@ pub fn render_office_content_preview_png_with_generation(
         png: render_office_content_png(&text, &ext, target_dim)?,
         source_generation: snapshot.generation,
     })
+}
+
+/// PPTX gets exactly one worker-owned stable read. The bytes admitted here are
+/// the bytes parsed and rendered below; callers never preflight a second copy
+/// just to construct a cache key.
+#[cfg(unix)]
+fn read_pptx_snapshot(path: &Path) -> Result<OfficeSnapshot, OfficeVisualError> {
+    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+
+    let path_metadata = std::fs::symlink_metadata(path)
+        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?;
+    if !path_metadata.is_file() {
+        return Err(OfficeVisualError::InputNotRegular);
+    }
+    let mut file = std::fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(path)
+        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?;
+    let opened = file
+        .metadata()
+        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?;
+    let same_state = |left: &std::fs::Metadata, right: &std::fs::Metadata| {
+        left.is_file()
+            && right.is_file()
+            && left.dev() == right.dev()
+            && left.ino() == right.ino()
+            && left.len() == right.len()
+            && left.mtime() == right.mtime()
+            && left.mtime_nsec() == right.mtime_nsec()
+            && left.ctime() == right.ctime()
+            && left.ctime_nsec() == right.ctime_nsec()
+    };
+    if !opened.is_file()
+        || path_metadata.dev() != opened.dev()
+        || path_metadata.ino() != opened.ino()
+    {
+        return Err(OfficeVisualError::InputNotRegular);
+    }
+    if !same_state(&path_metadata, &opened) {
+        return Err(OfficeVisualError::InputChanged);
+    }
+    if opened.len() > MAX_OFFICE_PACKAGE_BYTES {
+        return Err(OfficeVisualError::InputTooLarge {
+            actual: opened.len(),
+            limit: MAX_OFFICE_PACKAGE_BYTES,
+        });
+    }
+    let mut bytes = Vec::with_capacity(usize::try_from(opened.len()).map_err(|_| {
+        OfficeVisualError::InputTooLarge {
+            actual: opened.len(),
+            limit: MAX_OFFICE_PACKAGE_BYTES,
+        }
+    })?);
+    file.by_ref()
+        .take(MAX_OFFICE_PACKAGE_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|error| OfficeVisualError::Read(error.to_string()))?;
+    let finished = file
+        .metadata()
+        .map_err(|error| OfficeVisualError::Read(error.to_string()))?;
+    let current = std::fs::symlink_metadata(path).map_err(|_| OfficeVisualError::InputChanged)?;
+    if bytes.len() as u64 != opened.len()
+        || bytes.len() as u64 > MAX_OFFICE_PACKAGE_BYTES
+        || !same_state(&opened, &finished)
+        || !same_state(&opened, &current)
+    {
+        return Err(OfficeVisualError::InputChanged);
+    }
+    Ok(OfficeSnapshot {
+        generation: OfficePreviewSourceGeneration(Sha256::digest(&bytes).into()),
+        bytes,
+    })
+}
+
+#[cfg(not(unix))]
+fn read_pptx_snapshot(_path: &Path) -> Result<OfficeSnapshot, OfficeVisualError> {
+    Err(OfficeVisualError::PreviewDisabledOnPlatform)
 }
 
 #[cfg(unix)]
@@ -1882,8 +1989,29 @@ fn read_office_snapshot(path: &Path) -> Result<OfficeSnapshot, OfficeVisualError
 }
 
 #[cfg(not(unix))]
-fn read_office_snapshot(_path: &Path) -> Result<OfficeSnapshot, OfficeVisualError> {
-    Err(OfficeVisualError::PreviewDisabledOnPlatform)
+fn read_office_snapshot(path: &Path) -> Result<OfficeSnapshot, OfficeVisualError> {
+    let metadata = std::fs::metadata(path)
+        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?;
+    if !metadata.is_file() {
+        return Err(OfficeVisualError::InputNotRegular);
+    }
+    if metadata.len() > MAX_OFFICE_PACKAGE_BYTES {
+        return Err(OfficeVisualError::InputTooLarge {
+            actual: metadata.len(),
+            limit: MAX_OFFICE_PACKAGE_BYTES,
+        });
+    }
+    let bytes = std::fs::read(path).map_err(|error| OfficeVisualError::Read(error.to_string()))?;
+    if bytes.len() as u64 > MAX_OFFICE_PACKAGE_BYTES {
+        return Err(OfficeVisualError::InputTooLarge {
+            actual: bytes.len() as u64,
+            limit: MAX_OFFICE_PACKAGE_BYTES,
+        });
+    }
+    Ok(OfficeSnapshot {
+        generation: OfficePreviewSourceGeneration(Sha256::digest(&bytes).into()),
+        bytes,
+    })
 }
 
 /// Renders a bounded, syntax-neutral card for text/source files. The input is
@@ -8825,9 +8953,38 @@ mod tests {
         let _ = std::fs::remove_file(target);
     }
 
+    #[cfg(not(unix))]
     #[test]
-    fn office_source_generation_changes_for_an_in_place_same_length_rewrite() {
-        let path = temp_path("pptx-generation.pptx");
+    fn non_unix_keeps_document_cards_but_rejects_pptx_before_path_access() {
+        let pptx = temp_path("non-unix-unopened.pptx");
+        assert!(matches!(
+            render_office_content_preview_png(&pptx, 128),
+            Err(OfficeVisualError::PreviewDisabledOnPlatform)
+        ));
+
+        let document = temp_path("non-unix-document.docx");
+        {
+            let file = std::fs::File::create(&document).expect("create document");
+            let mut zip = zip::ZipWriter::new(file);
+            zip.start_file(
+                "word/document.xml",
+                zip::write::SimpleFileOptions::default(),
+            )
+            .expect("document entry");
+            zip.write_all(b"<w:document><w:t>Visible document card</w:t></w:document>")
+                .expect("document XML");
+            zip.finish().expect("finish document");
+        }
+        assert!(
+            render_office_content_preview_png(&document, 128).is_ok(),
+            "DOCX keeps its established bounded renderer on non-Unix platforms"
+        );
+        let _ = std::fs::remove_file(document);
+    }
+
+    #[test]
+    fn office_source_generation_changes_for_an_in_place_same_length_document_rewrite() {
+        let path = temp_path("office-generation.docx");
         std::fs::write(&path, b"first-package-generation").expect("write first generation");
         let first = office_preview_source_generation(&path).expect("hash first generation");
         std::fs::write(&path, b"other-package-generation").expect("rewrite same length");
@@ -8838,9 +8995,9 @@ mod tests {
 
     #[cfg(unix)]
     #[test]
-    fn office_snapshot_generation_changes_when_its_path_is_replaced() {
-        let path = temp_path("pptx-snapshot-replacement.pptx");
-        let replacement = temp_path("pptx-snapshot-replacement-next.pptx");
+    fn office_snapshot_generation_changes_when_a_document_path_is_replaced() {
+        let path = temp_path("office-snapshot-replacement.docx");
+        let replacement = temp_path("office-snapshot-replacement-next.docx");
         std::fs::write(&path, b"first-office-package").expect("write first package");
         let first = read_office_snapshot(&path).expect("snapshot first package");
         std::fs::write(&replacement, b"next--office-package").expect("write replacement");
@@ -8853,7 +9010,7 @@ mod tests {
 
     #[cfg(unix)]
     #[test]
-    fn office_snapshot_never_returns_an_unstable_same_inode_generation() {
+    fn office_document_snapshot_never_returns_an_unstable_same_inode_generation() {
         use std::io::{Seek, SeekFrom};
         use std::os::unix::fs::MetadataExt;
         use std::sync::{
@@ -8861,7 +9018,7 @@ mod tests {
             atomic::{AtomicBool, Ordering},
         };
 
-        let path = temp_path("pptx-snapshot-same-inode.pptx");
+        let path = temp_path("office-snapshot-same-inode.docx");
         let first = vec![b'A'; 128 * 1024];
         let second = vec![b'B'; 128 * 1024];
         std::fs::write(&path, &first).expect("write first package");
@@ -8909,6 +9066,84 @@ mod tests {
             std::fs::metadata(&path).expect("final metadata").ino(),
             inode,
             "the concurrent rewrites must retain the same inode"
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn pptx_worker_snapshot_is_stable_during_same_inode_active_writes() {
+        use std::io::{Seek, SeekFrom};
+        use std::os::unix::fs::MetadataExt;
+        use std::sync::{
+            Arc, Barrier,
+            atomic::{AtomicBool, Ordering},
+        };
+
+        fn valid_pptx_bytes(text: &str) -> Vec<u8> {
+            let mut bytes = Cursor::new(Vec::new());
+            {
+                let mut zip = zip::ZipWriter::new(&mut bytes);
+                let options = zip::write::SimpleFileOptions::default()
+                    .compression_method(zip::CompressionMethod::Stored);
+                zip.start_file("ppt/slides/slide1.xml", options)
+                    .expect("slide entry");
+                write!(
+                    zip,
+                    "<p:sld xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><a:t>{text}</a:t></p:sld>"
+                )
+                .expect("slide text");
+                zip.finish().expect("finish package");
+            }
+            bytes.into_inner()
+        }
+
+        let path = temp_path("pptx-active-writer.pptx");
+        let first = valid_pptx_bytes("Alpha stable slide");
+        let second = valid_pptx_bytes("Bravo stable slide");
+        assert_eq!(first.len(), second.len(), "fixtures must have equal length");
+        std::fs::write(&path, &first).expect("write first fixture");
+        let inode = std::fs::metadata(&path).expect("first metadata").ino();
+        let first_generation = OfficePreviewSourceGeneration(Sha256::digest(&first).into());
+        let second_generation = OfficePreviewSourceGeneration(Sha256::digest(&second).into());
+        let start = Arc::new(Barrier::new(2));
+        let running = Arc::new(AtomicBool::new(true));
+        let writer_path = path.clone();
+        let writer_start = Arc::clone(&start);
+        let writer_running = Arc::clone(&running);
+        let writer = std::thread::spawn(move || {
+            writer_start.wait();
+            for generation in [&first, &second].into_iter().cycle().take(256) {
+                if !writer_running.load(Ordering::Acquire) {
+                    break;
+                }
+                let mut file = std::fs::OpenOptions::new()
+                    .write(true)
+                    .open(&writer_path)
+                    .expect("open same inode package");
+                file.seek(SeekFrom::Start(0)).expect("rewind package");
+                file.write_all(generation).expect("rewrite package");
+            }
+        });
+
+        start.wait();
+        for _ in 0..128 {
+            match render_office_content_preview_png_with_generation(&path, 128) {
+                Ok(rendered) => assert!(
+                    rendered.source_generation == first_generation
+                        || rendered.source_generation == second_generation,
+                    "a rendered PPTX must carry the SHA of its admitted A or B snapshot"
+                ),
+                Err(OfficeVisualError::InputChanged) => {}
+                Err(error) => panic!("active writer must yield A, B, or InputChanged; got {error}"),
+            }
+        }
+        running.store(false, Ordering::Release);
+        writer.join().expect("writer joins");
+        assert_eq!(
+            std::fs::metadata(&path).expect("final metadata").ino(),
+            inode,
+            "the active writer must retain the inode"
         );
         let _ = std::fs::remove_file(path);
     }

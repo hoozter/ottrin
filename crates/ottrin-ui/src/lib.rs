@@ -996,6 +996,25 @@ impl PreviewRequestScheduler {
         }
     }
 
+    /// A listing refresh is the local filesystem-change boundary for preview
+    /// requests. It must make an older worker response ineligible even when a
+    /// file changes A -> B -> A and therefore returns to the same logical key.
+    fn invalidate_pptx_in_directory(&mut self, directory: &Path) {
+        let stale = self
+            .current
+            .keys()
+            .filter(|slot| {
+                ottrin_preview::is_pptx_visual_path(&slot.path)
+                    && slot.path.parent() == Some(directory)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        for slot in stale {
+            self.current.remove(&slot);
+            self.inflight.remove(&slot);
+        }
+    }
+
     fn accept_response(
         &mut self,
         slot: &PreviewRequestSlot,
@@ -1706,6 +1725,7 @@ impl OttrinApp {
                 let sqlite_candidate = ottrin_preview::is_sqlite_preview_candidate(&req.path);
                 let obj_candidate = ottrin_preview::is_obj_path(&req.path);
                 let ply_candidate = ottrin_preview::is_ply_path(&req.path);
+                let pptx_candidate = ottrin_preview::is_pptx_visual_path(&req.path);
                 let office_candidate = ottrin_preview::is_office_visual_path(&req.path);
                 let generation_is_current = req.cache_key
                     == preview_cache_key_for_page_with_generations(
@@ -1733,6 +1753,7 @@ impl OttrinApp {
                             || req.ply_source_generation
                                 != ottrin_preview::ply_preview_source_generation(&req.path)))
                     || (office_candidate
+                        && !pptx_candidate
                         && (req.office_source_generation.is_none()
                             || req.office_source_generation
                                 != ottrin_preview::office_preview_source_generation(&req.path)))
@@ -1890,6 +1911,17 @@ impl OttrinApp {
                         }
                         _ => None,
                     }
+                } else if pptx_candidate {
+                    ottrin_preview::render_office_content_preview_png_with_generation(
+                        &req.path,
+                        if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                            PREVIEW_CACHE_BUCKET_XL
+                        } else {
+                            req.target_dim
+                        },
+                    )
+                    .ok()
+                    .map(|rendered| rendered.png)
                 } else if office_candidate {
                     if req.target_dim != PREVIEW_CACHE_ORIGINAL
                         && let Some(cached) = load_cached_thumbnail(
@@ -2309,9 +2341,10 @@ impl OttrinApp {
         let ply_source_generation = ottrin_preview::is_ply_path(path)
             .then(|| ottrin_preview::ply_preview_source_generation(path))
             .flatten();
-        let office_source_generation = ottrin_preview::is_office_visual_path(path)
-            .then(|| ottrin_preview::office_preview_source_generation(path))
-            .flatten();
+        let office_source_generation = (ottrin_preview::is_office_visual_path(path)
+            && !ottrin_preview::is_pptx_visual_path(path))
+        .then(|| ottrin_preview::office_preview_source_generation(path))
+        .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             target_dim,
@@ -2372,9 +2405,10 @@ impl OttrinApp {
         let ply_source_generation = ottrin_preview::is_ply_path(path)
             .then(|| ottrin_preview::ply_preview_source_generation(path))
             .flatten();
-        let office_source_generation = ottrin_preview::is_office_visual_path(path)
-            .then(|| ottrin_preview::office_preview_source_generation(path))
-            .flatten();
+        let office_source_generation = (ottrin_preview::is_office_visual_path(path)
+            && !ottrin_preview::is_pptx_visual_path(path))
+        .then(|| ottrin_preview::office_preview_source_generation(path))
+        .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             PREVIEW_CACHE_ORIGINAL,
@@ -2437,9 +2471,10 @@ impl OttrinApp {
         let ply_source_generation = ottrin_preview::is_ply_path(path)
             .then(|| ottrin_preview::ply_preview_source_generation(path))
             .flatten();
-        let office_source_generation = ottrin_preview::is_office_visual_path(path)
-            .then(|| ottrin_preview::office_preview_source_generation(path))
-            .flatten();
+        let office_source_generation = (ottrin_preview::is_office_visual_path(path)
+            && !ottrin_preview::is_pptx_visual_path(path))
+        .then(|| ottrin_preview::office_preview_source_generation(path))
+        .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             PREVIEW_CACHE_ORIGINAL,
@@ -5079,6 +5114,12 @@ impl OttrinApp {
         // A refresh replaces the destination model, so it must not later
         // consume an earlier pointer navigation's one-shot reveal.
         self.cancel_miller_pointer_reveal(tab_id);
+        // PPTX results are deliberately request-local. A directory refresh
+        // (including F5 and completed file operations) is its watcher/event
+        // invalidation boundary, so an older worker cannot repopulate it.
+        self.image_preview_cache
+            .retain(|key, _| !key.starts_with("pptx-request-v1-"));
+        self.preview_scheduler.invalidate_pptx_in_directory(&dir);
         // Reset selection and scroll on navigation
         if let Some(ui_state) = self.tab_ui.get_mut(&tab_id) {
             ui_state.main_sel = None;
@@ -19071,6 +19112,11 @@ fn preview_response_matches_current_generation(response: &PreviewJobResponse) ->
                     None,
                 );
     }
+    if ottrin_preview::is_pptx_visual_path(&response.path) {
+        // The scheduler's request id is the supersession fence for a worker
+        // owned PPTX snapshot; do not synchronously reopen it on the UI thread.
+        return true;
+    }
     if ottrin_preview::is_office_visual_path(&response.path) {
         let Some(current_generation) =
             ottrin_preview::office_preview_source_generation(&response.path)
@@ -21660,7 +21706,7 @@ mod tests {
     #[test]
     fn office_response_from_an_intermediate_generation_is_rejected_after_a_to_b_to_a() {
         let path = std::env::temp_dir().join(format!(
-            "ottrin-office-preview-response-{}.pptx",
+            "ottrin-office-preview-response-{}.docx",
             std::process::id()
         ));
         let first = b"first-office-generation";
@@ -21700,6 +21746,57 @@ mod tests {
             "a response must carry the immutable Office snapshot generation, not only a key recomputed from the current path"
         );
         std::fs::remove_file(path).expect("remove Office package");
+    }
+
+    #[test]
+    fn pptx_cache_key_is_logical_and_does_not_follow_source_bytes() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-pptx-logical-preview-key-{}.pptx",
+            std::process::id()
+        ));
+        std::fs::write(&path, b"first office bytes").expect("write first source bytes");
+        let first = preview_cache_key_for_page(&path, 128, 0);
+        std::fs::write(&path, b"second office bytes").expect("replace source bytes");
+        let second = preview_cache_key_for_page(&path, 128, 0);
+
+        assert_eq!(
+            first, second,
+            "PPTX cache identity is a logical request key; the worker owns its one snapshot"
+        );
+        std::fs::remove_file(path).expect("remove PPTX source");
+    }
+
+    #[test]
+    fn pptx_intermediate_worker_response_is_rejected_after_a_to_b_to_a_refreshes() {
+        let path = PathBuf::from("/tmp/ottrin-pptx-refresh.pptx");
+        let slot = PreviewRequestSlot::new(
+            path.clone(),
+            PreviewRequestTarget::Thumbnail,
+            PREVIEW_CACHE_BUCKET_SMALL,
+            0,
+        );
+        let key = preview_cache_key_for_page(&path, PREVIEW_CACHE_BUCKET_SMALL, 0);
+        let directory = path.parent().expect("test directory");
+        let mut scheduler = PreviewRequestScheduler::default();
+
+        let first_a = scheduler
+            .reserve(slot.clone(), key.clone())
+            .expect("first A");
+        scheduler.invalidate_pptx_in_directory(directory);
+        let middle_b = scheduler
+            .reserve(slot.clone(), key.clone())
+            .expect("B refresh");
+        scheduler.invalidate_pptx_in_directory(directory);
+        let returning_a = scheduler
+            .reserve(slot.clone(), key.clone())
+            .expect("returning A");
+
+        assert!(first_a < middle_b && middle_b < returning_a);
+        assert!(
+            !scheduler.accept_response(&slot, middle_b, &key),
+            "the B worker result cannot survive a later A refresh with the same logical key"
+        );
+        assert!(scheduler.accept_response(&slot, returning_a, &key));
     }
 
     #[test]
