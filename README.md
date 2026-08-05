@@ -75,7 +75,7 @@ this compatibility path is accepted.
 - **Drop Folder workflow** — quick copy destination with recents and pinned entries
 - **Integrated privilege management** — denied operations can retry via helper flow
 - **Global search** — indexed search with scope switching and per-result actions
-- **Preview system** — text and images in-app, bounded multi-page PDF previews with Previous/Next/page selection, bounded DOCX/XLSX/XLSM/ODS content-preview visuals, and Unix-only bounded PPTX first-slide text cards, plus rich archive/media metadata (Space bar). PDF and Office previews retain extracted-text and metadata fallbacks; the PPTX card is non-authoritative and not a faithful PowerPoint layout.
+- **Preview system** — text and images in-app, bounded multi-page PDF previews with Previous/Next/page selection, bounded DOCX/XLSX/XLSM content-preview visuals, ODS worksheet previews, and Unix-only bounded PPTX first-slide text cards, plus rich archive/media metadata (Space bar). PDF and Office previews retain extracted-text and metadata fallbacks; the PPTX card is non-authoritative and not a faithful PowerPoint layout.
 
 ---
 
