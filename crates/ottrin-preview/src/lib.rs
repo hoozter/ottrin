@@ -4938,6 +4938,7 @@ fn pptx_package_is_safe<R: std::io::Read + std::io::Seek>(
         };
         let name = entry.name().to_string();
         if !safe_office_zip_name(&name)
+            || pptx_part_is_forbidden(&name)
             || !names.insert(name.to_ascii_lowercase())
             || entry.size() > MAX_OFFICE_XML_BYTES
             || entry.compressed_size() > MAX_OFFICE_XML_BYTES
@@ -4985,6 +4986,27 @@ fn safe_office_zip_name(name: &str) -> bool {
         && name
             .split('/')
             .all(|component| !matches!(component, "" | "." | ".."))
+}
+
+/// Visual PPTX cards do not inspect or render packages that contain active,
+/// auxiliary, or embedded content. Keep this policy centralized because ZIP
+/// entry names are case-sensitive while the package admission boundary is not.
+fn pptx_part_is_forbidden(name: &str) -> bool {
+    let name = name.to_ascii_lowercase();
+    name.starts_with("ppt/vba")
+        || name.starts_with("ppt/moderncomment")
+        || matches!(name.as_str(), "ppt/commentauthors.xml")
+        || [
+            "ppt/notesslides/",
+            "ppt/comments/",
+            "ppt/embeddings/",
+            "ppt/externallinks/",
+            "ppt/activex/",
+            "ppt/ctrlprops/",
+            "ppt/notesmasters/",
+        ]
+        .iter()
+        .any(|prefix| name.starts_with(prefix))
 }
 
 #[derive(Clone, Copy)]
@@ -9014,6 +9036,56 @@ mod tests {
                 zip.finish().expect("finish");
             }
 
+            assert!(matches!(
+                render_office_content_preview_png(&path, 256),
+                Err(OfficeVisualError::NoContent)
+            ));
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn pptx_visual_admission_rejects_forbidden_active_content_parts() {
+        const SLIDE: &[u8] = br#"<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:t>Safe</a:t></p:sld>"#;
+        let forbidden_parts = [
+            "ppt/vbaProject.bin",
+            "PPT/vbaData.xml",
+            "ppt/vbaProjectSignature.bin",
+            "ppt/VBAProjectSignatureAgile.bin",
+            "ppt/notesSlides/notesSlide1.xml",
+            "ppt/comments/comment1.xml",
+            "ppt/embeddings/oleObject1.bin",
+            "ppt/externalLinks/externalLink1.xml",
+            "ppt/activeX/activeX1.bin",
+            "ppt/ctrlProps/ctrlProp1.xml",
+            "ppt/notesMasters/notesMaster1.xml",
+            "ppt/commentAuthors.xml",
+            "ppt/modernComment1.xml",
+            "PPT/modernCommentAuthors.xml",
+        ];
+
+        for (index, forbidden_part) in forbidden_parts.iter().enumerate() {
+            let path = temp_path(&format!("forbidden-content-part-{index}.pptx"));
+            {
+                let file = std::fs::File::create(&path).expect("create pptx");
+                let mut zip = zip::ZipWriter::new(file);
+                let options = zip::write::SimpleFileOptions::default();
+                zip.start_file("ppt/slides/slide1.xml", options)
+                    .expect("slide entry");
+                zip.write_all(SLIDE).expect("write slide");
+                zip.start_file(*forbidden_part, options)
+                    .expect("forbidden entry");
+                zip.write_all(b"active content")
+                    .expect("write forbidden entry");
+                zip.finish().expect("finish package");
+            }
+
+            let file = std::fs::File::open(&path).expect("open pptx");
+            let mut archive = zip::ZipArchive::new(file).expect("open package");
+            assert!(
+                !pptx_package_is_safe(&std::fs::read(&path).expect("read package"), &mut archive),
+                "must reject {forbidden_part}"
+            );
             assert!(matches!(
                 render_office_content_preview_png(&path, 256),
                 Err(OfficeVisualError::NoContent)
