@@ -5065,9 +5065,12 @@ fn pptx_package_is_safe<R: std::io::Read + std::io::Seek>(
             return false;
         };
         let name = entry.name().to_string();
+        // Package policy is case-insensitive even though ZIP names are not.
+        // Keep the original name only for the exact `zip` lookup below.
+        let policy_name = name.to_ascii_lowercase();
         if !safe_office_zip_name(&name)
-            || pptx_part_is_forbidden(&name)
-            || !names.insert(name.to_ascii_lowercase())
+            || pptx_part_is_forbidden(&policy_name)
+            || !names.insert(policy_name.clone())
             || entry.size() > MAX_OFFICE_XML_BYTES
             || entry.compressed_size() > MAX_OFFICE_XML_BYTES
             || office_local_header_uses_data_descriptor(bytes, entry.header_start())
@@ -5075,6 +5078,8 @@ fn pptx_package_is_safe<R: std::io::Read + std::io::Seek>(
             || entry.is_symlink()
             || (!entry.is_file() && !entry.is_dir())
             || !raw_entry_type.allows(entry.is_file(), entry.is_dir())
+            || (entry.is_dir()
+                && (entry.size() != 0 || entry.compressed_size() != 0 || entry.crc32() != 0))
             || (!entry.is_dir()
                 && !matches!(
                     entry.compression(),
@@ -5087,12 +5092,17 @@ fn pptx_package_is_safe<R: std::io::Read + std::io::Seek>(
             return false;
         };
         total_uncompressed = next_total;
-        if total_uncompressed > MAX_OFFICE_UNCOMPRESSED_BYTES || name.starts_with("ppt/media/") {
+        if total_uncompressed > MAX_OFFICE_UNCOMPRESSED_BYTES
+            || policy_name.starts_with("ppt/media/")
+        {
             return false;
         }
-        if name.ends_with(".rels") {
+        if policy_name.ends_with(".rels") {
             relationship_parts.push(name);
         }
+    }
+    if !(0..archive.len()).all(|index| office_zip_entry_decodes_to_eof(archive, index)) {
+        return false;
     }
     if pptx_first_slide(archive).is_none() {
         return false;
@@ -5117,13 +5127,11 @@ fn safe_office_zip_name(name: &str) -> bool {
 }
 
 /// Visual PPTX cards do not inspect or render packages that contain active,
-/// auxiliary, or embedded content. Keep this policy centralized because ZIP
-/// entry names are case-sensitive while the package admission boundary is not.
+/// auxiliary, or embedded content. Callers pass the case-normalized ZIP name.
 fn pptx_part_is_forbidden(name: &str) -> bool {
-    let name = name.to_ascii_lowercase();
     name.starts_with("ppt/vba")
         || name.starts_with("ppt/moderncomment")
-        || matches!(name.as_str(), "ppt/commentauthors.xml")
+        || matches!(name, "ppt/commentauthors.xml")
         || [
             "ppt/notesslides/",
             "ppt/comments/",
@@ -5154,6 +5162,9 @@ impl OfficeRawZipEntryType {
     }
 }
 
+/// Validates the raw ZIP names before `zip` decodes them. Office package part
+/// names are UTF-8; accepting CP437 or a lossy replacement would make policy
+/// classification diverge from the bytes that the central directory names.
 fn office_raw_zip_entry_types(
     bytes: &[u8],
     expected_entries: usize,
@@ -5190,21 +5201,115 @@ fn office_raw_zip_entry_types(
         }
         let made_by = u16::from_le_bytes([header[4], header[5]]);
         let attributes = u32::from_le_bytes([header[38], header[39], header[40], header[41]]);
-        result.push(if (made_by >> 8) == 3 {
+        let entry_type = if (made_by >> 8) == 3 {
             OfficeRawZipEntryType::Unix((attributes >> 16) as u16)
         } else {
             OfficeRawZipEntryType::NonUnix
-        });
+        };
         let name = usize::from(u16::from_le_bytes([header[28], header[29]]));
         let extra = usize::from(u16::from_le_bytes([header[30], header[31]]));
         let comment = usize::from(u16::from_le_bytes([header[32], header[33]]));
-        offset = offset
-            .checked_add(46)?
-            .checked_add(name)?
-            .checked_add(extra)?
-            .checked_add(comment)?;
+        let name_start = offset.checked_add(46)?;
+        let name_end = name_start.checked_add(name)?;
+        let central_name = bytes.get(name_start..name_end)?;
+        std::str::from_utf8(central_name).ok()?;
+        let central_extra_end = name_end.checked_add(extra)?;
+        let central_extra = bytes.get(name_end..central_extra_end)?;
+        if !office_extra_fields_are_safe(central_extra) {
+            return None;
+        }
+
+        let local_offset = usize::try_from(u32::from_le_bytes([
+            header[42], header[43], header[44], header[45],
+        ]))
+        .ok()?;
+        let local_header = bytes.get(local_offset..local_offset.checked_add(30)?)?;
+        if local_header.get(..4) != Some(b"PK\x03\x04") {
+            return None;
+        }
+        let local_name_len = usize::from(u16::from_le_bytes([local_header[26], local_header[27]]));
+        let local_name_start = local_offset.checked_add(30)?;
+        let local_name_end = local_name_start.checked_add(local_name_len)?;
+        let local_name = bytes.get(local_name_start..local_name_end)?;
+        std::str::from_utf8(local_name).ok()?;
+        let local_extra_len = usize::from(u16::from_le_bytes([local_header[28], local_header[29]]));
+        let local_extra_end = local_name_end.checked_add(local_extra_len)?;
+        let local_extra = bytes.get(local_name_end..local_extra_end)?;
+        if !office_extra_fields_are_safe(local_extra) {
+            return None;
+        }
+        if local_name != central_name {
+            return None;
+        }
+
+        result.push(entry_type);
+        offset = name_end.checked_add(extra)?.checked_add(comment)?;
     }
     Some(result)
+}
+
+/// The ZIP reader lets Info-ZIP's Unicode Path field replace the archive name
+/// it reports. PPTX policy must classify the original central/local names, so
+/// refuse that alternate name channel rather than reconcile two identities.
+fn office_extra_fields_are_safe(extra: &[u8]) -> bool {
+    const UNICODE_PATH_EXTRA_FIELD_ID: u16 = 0x7075;
+
+    let mut offset = 0usize;
+    while offset < extra.len() {
+        let Some(header_end) = offset.checked_add(4) else {
+            return false;
+        };
+        let Some(header) = extra.get(offset..header_end) else {
+            return false;
+        };
+        let Some(field_len) = read_le_u16(&header[2..4]).map(usize::from) else {
+            return false;
+        };
+        let Some(field_end) = header_end.checked_add(field_len) else {
+            return false;
+        };
+        if extra.get(header_end..field_end).is_none()
+            || read_le_u16(&header[..2]) == Some(UNICODE_PATH_EXTRA_FIELD_ID)
+        {
+            return false;
+        }
+        offset = field_end;
+    }
+    true
+}
+
+/// Forces `zip` to decompress and CRC-check every already-admitted file with
+/// bounded memory. The logical content readers below may re-read selected
+/// entries from the same immutable snapshot.
+fn office_zip_entry_decodes_to_eof<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+    index: usize,
+) -> bool {
+    let Ok(mut entry) = archive.by_index(index) else {
+        return false;
+    };
+    if entry.is_dir() {
+        return entry.size() == 0;
+    }
+
+    let expected_size = entry.size();
+    let mut actual_size = 0u64;
+    let mut buffer = [0u8; 8 * 1024];
+    loop {
+        let Ok(read) = entry.read(&mut buffer) else {
+            return false;
+        };
+        if read == 0 {
+            return actual_size == expected_size;
+        }
+        let Some(next_size) = actual_size.checked_add(read as u64) else {
+            return false;
+        };
+        if next_size > expected_size {
+            return false;
+        }
+        actual_size = next_size;
+    }
 }
 
 fn office_local_header_uses_data_descriptor(bytes: &[u8], offset: u64) -> bool {
@@ -5305,13 +5410,19 @@ fn pptx_relationship_event_is_internal(
         if matches!(namespace, quick_xml::name::ResolveResult::Unknown(_)) {
             return None;
         }
-        if local.as_ref() == b"TargetMode"
-            && attribute.unescape_value().ok()?.as_ref() == "External"
+        let value = attribute.unescape_value().ok()?;
+        if (local.as_ref() == b"TargetMode" && !value.eq_ignore_ascii_case("Internal"))
+            || (local.as_ref() == b"Target" && pptx_relationship_target_is_external(&value))
         {
             return Some(false);
         }
     }
     Some(true)
+}
+
+fn pptx_relationship_target_is_external(target: &str) -> bool {
+    let target = target.trim_start();
+    target.starts_with("//") || target.starts_with("\\\\") || target.contains(':')
 }
 
 fn extract_pptx_slide_text(xml: &str) -> Option<String> {
@@ -9356,6 +9467,69 @@ mod tests {
             bytes.into_inner()
         }
 
+        fn visual_pptx_with_unicode_name_override() -> Vec<u8> {
+            const RAW_NAME: &[u8] = b"ppt/vbaProject.bin";
+            let mut bytes = Cursor::new(Vec::new());
+            {
+                let mut zip = zip::ZipWriter::new(&mut bytes);
+                zip.start_file(
+                    "ppt/slides/slide1.xml",
+                    zip::write::SimpleFileOptions::default(),
+                )
+                .expect("slide");
+                zip.write_all(br#"<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:t>Safe</a:t></p:sld>"#)
+                    .expect("slide XML");
+
+                let mut unicode_path_data = vec![1];
+                // `zip` validates an extra field against an empty synthetic
+                // name while writing, so patch the real raw-name CRC below.
+                unicode_path_data.extend_from_slice(&crc32fast::hash(b"").to_le_bytes());
+                unicode_path_data.extend_from_slice(b"ppt/unused.bin");
+                let mut options = zip::write::FullFileOptions::default();
+                options
+                    .add_extra_data(0x7075, unicode_path_data.into_boxed_slice(), false)
+                    .expect("Unicode Path extra field");
+                zip.start_file("ppt/vbaProject.bin", options)
+                    .expect("active part");
+                zip.write_all(b"active content").expect("active content");
+                zip.finish().expect("finish package");
+            }
+            let mut bytes = bytes.into_inner();
+            let central = central_offset(&bytes);
+            let first_central_name_len = read_le_u16(&bytes[central + 28..central + 30])
+                .expect("first name length") as usize;
+            let second_central = central + 46 + first_central_name_len;
+            let second_local = read_le_u32(&bytes[second_central + 42..second_central + 46])
+                .expect("active-part local offset") as usize;
+            let local_name_len = read_le_u16(&bytes[second_local + 26..second_local + 28])
+                .expect("active-part local name length") as usize;
+            let central_name_len = read_le_u16(&bytes[second_central + 28..second_central + 30])
+                .expect("active-part central name length")
+                as usize;
+            let crc = crc32fast::hash(RAW_NAME).to_le_bytes();
+            bytes[second_local + 30 + local_name_len + 5..second_local + 30 + local_name_len + 9]
+                .copy_from_slice(&crc);
+            bytes[second_central + 46 + central_name_len + 5
+                ..second_central + 46 + central_name_len + 9]
+                .copy_from_slice(&crc);
+            bytes
+        }
+
+        fn visual_pptx_with_directory() -> Vec<u8> {
+            let mut bytes = Cursor::new(Vec::new());
+            {
+                let mut zip = zip::ZipWriter::new(&mut bytes);
+                let options = zip::write::SimpleFileOptions::default();
+                zip.start_file("ppt/slides/slide1.xml", options)
+                    .expect("slide");
+                zip.write_all(br#"<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:t>Safe</a:t></p:sld>"#)
+                    .expect("slide XML");
+                zip.add_directory("ppt/", options).expect("directory");
+                zip.finish().expect("finish package");
+            }
+            bytes.into_inner()
+        }
+
         fn central_offset(bytes: &[u8]) -> usize {
             let eocd = bytes
                 .windows(4)
@@ -9496,6 +9670,120 @@ mod tests {
             is_rejected(&case_collision),
             "case-fold collisions must fail closed"
         );
+
+        let mut corrupt_unused_crc = valid.clone();
+        corrupt_unused_crc[second_central + 16..second_central + 20]
+            .copy_from_slice(&0xdead_beef_u32.to_le_bytes());
+        corrupt_unused_crc[second_local + 14..second_local + 18]
+            .copy_from_slice(&0xdead_beef_u32.to_le_bytes());
+        assert!(
+            is_rejected(&corrupt_unused_crc),
+            "unused entries must have a valid decoded CRC"
+        );
+
+        let mut invalid_unused_name = valid.clone();
+        invalid_unused_name[second_central + 46] = 0xff;
+        invalid_unused_name[second_local + 30] = 0xff;
+        assert!(
+            is_rejected(&invalid_unused_name),
+            "unused raw local and central names must be strict UTF-8"
+        );
+
+        let unicode_name_override = visual_pptx_with_unicode_name_override();
+        assert!(
+            is_rejected(&unicode_name_override),
+            "Unicode Path extra fields must not override PPTX policy names"
+        );
+
+        let mut corrupt_directory_crc = visual_pptx_with_directory();
+        let directory_central = central_offset(&corrupt_directory_crc)
+            + 46
+            + read_le_u16(
+                &corrupt_directory_crc[central_offset(&corrupt_directory_crc) + 28
+                    ..central_offset(&corrupt_directory_crc) + 30],
+            )
+            .expect("slide name length") as usize;
+        let directory_local =
+            read_le_u32(&corrupt_directory_crc[directory_central + 42..directory_central + 46])
+                .expect("directory local offset") as usize;
+        corrupt_directory_crc[directory_central + 16..directory_central + 20]
+            .copy_from_slice(&0xdead_beef_u32.to_le_bytes());
+        corrupt_directory_crc[directory_local + 14..directory_local + 18]
+            .copy_from_slice(&0xdead_beef_u32.to_le_bytes());
+        assert!(
+            is_rejected(&corrupt_directory_crc),
+            "directories must receive the same CRC validation as files"
+        );
+    }
+
+    #[test]
+    fn pptx_visual_admission_case_normalizes_policy_and_relationships() {
+        const SLIDE: &[u8] = br#"<p:sld xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><a:t>Safe</a:t></p:sld>"#;
+
+        fn is_rejected(entries: &[(&str, &str)]) -> bool {
+            let mut bytes = Cursor::new(Vec::new());
+            {
+                let mut zip = zip::ZipWriter::new(&mut bytes);
+                let options = zip::write::SimpleFileOptions::default();
+                zip.start_file("ppt/slides/slide1.xml", options)
+                    .expect("slide entry");
+                zip.write_all(SLIDE).expect("slide XML");
+                for (name, contents) in entries {
+                    zip.start_file(*name, options).expect("fixture entry");
+                    zip.write_all(contents.as_bytes())
+                        .expect("fixture contents");
+                }
+                zip.finish().expect("finish fixture");
+            }
+            let bytes = bytes.into_inner();
+            let mut archive = zip::ZipArchive::new(Cursor::new(&bytes)).expect("open fixture");
+            !pptx_package_is_safe(&bytes, &mut archive)
+        }
+
+        assert!(
+            !is_rejected(&[("ppt/unused.xml", "unused but valid")]),
+            "a valid unused entry remains admissible"
+        );
+        assert!(
+            !is_rejected(&[(
+                "ppt/internal.rels",
+                "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship TargetMode=\"iNtErNaL\" Target=\"ppt/slides/slide1.xml\"/></Relationships>",
+            )]),
+            "TargetMode is explicitly case-insensitive only for Internal"
+        );
+        for (label, entries) in [
+            (
+                "mixed-case-media",
+                vec![("PPT/MEDIA/evil.bin", "not rendered")],
+            ),
+            (
+                "mixed-case-active-family",
+                vec![("PPT/EMBEDDINGS/evil.bin", "not rendered")],
+            ),
+            (
+                "mixed-case-relationship-name",
+                vec![(
+                    "ppt/evil.RELS",
+                    "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship TargetMode=\"eXtErNaL\" Target=\"https://example.invalid\"/></Relationships>",
+                )],
+            ),
+            (
+                "uppercase-external-mode",
+                vec![(
+                    "ppt/evil.rels",
+                    "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship TargetMode=\"EXTERNAL\" Target=\"https://example.invalid\"/></Relationships>",
+                )],
+            ),
+            (
+                "escaped-external-target",
+                vec![(
+                    "ppt/evil.rels",
+                    "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Target=\"https&#58;//example.invalid\"/></Relationships>",
+                )],
+            ),
+        ] {
+            assert!(is_rejected(&entries), "must reject {label}");
+        }
     }
 
     #[test]
