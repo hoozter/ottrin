@@ -114,11 +114,11 @@ fn schedule_storage_location_refresh(ctx: &Context) {
     ctx.request_repaint_after(STORAGE_LOCATION_REFRESH_INTERVAL);
 }
 
-fn grid_rubber_band_may_start(cells: &[(PathBuf, Rect)], pointer: egui::Pos2) -> bool {
+fn rubber_band_may_start(cells: &[(PathBuf, Rect)], pointer: egui::Pos2) -> bool {
     !cells.iter().any(|(_, rect)| rect.contains(pointer))
 }
 
-fn grid_rubber_band_selection(
+fn rubber_band_selection(
     cells: &[(PathBuf, Rect)],
     selection_rect: Rect,
     existing: &HashSet<PathBuf>,
@@ -794,7 +794,7 @@ struct TabUiState {
     // Path-backed multi-selection for the current folder.
     selected_paths: HashSet<PathBuf>,
     selection_anchor: Option<PathBuf>,
-    grid_rubber_band: Option<GridRubberBand>,
+    rubber_band: Option<RubberBand>,
     // Path-backed focus for Column view; more stable than fixed left/middle/right.
     miller_focus_dir: Option<PathBuf>,
     // Remember last selected child per directory, so navigating back/up can
@@ -832,7 +832,7 @@ struct LocationsRailLayout {
 }
 
 #[derive(Debug, Clone)]
-struct GridRubberBand {
+struct RubberBand {
     origin: egui::Pos2,
     current: egui::Pos2,
     baseline: HashSet<PathBuf>,
@@ -15208,6 +15208,79 @@ impl OttrinApp {
         inner.response.rect
     }
 
+    fn update_rubber_band_selection(
+        &mut self,
+        ui: &egui::Ui,
+        tab_id: u64,
+        entries: &[FileEntry],
+        entry_rects: &[(PathBuf, Rect)],
+        content_rect: Rect,
+    ) -> Option<Rect> {
+        let pointer = ui.ctx().input(|input| {
+            (
+                input.pointer.interact_pos(),
+                input.pointer.primary_pressed(),
+                input.pointer.primary_down(),
+                input.modifiers,
+            )
+        });
+        if pointer.1
+            && pointer.0.is_some_and(|pos| content_rect.contains(pos))
+            && pointer
+                .0
+                .is_some_and(|pos| rubber_band_may_start(entry_rects, pos))
+        {
+            let origin = pointer.0.expect("pointer position checked above");
+            let baseline = self
+                .tab_ui
+                .entry(tab_id)
+                .or_default()
+                .selected_paths
+                .clone();
+            self.tab_ui.entry(tab_id).or_default().rubber_band = Some(RubberBand {
+                origin,
+                current: origin,
+                baseline,
+                modifiers: pointer.3,
+            });
+        }
+        let mut rubber_band = self.tab_ui.entry(tab_id).or_default().rubber_band.take()?;
+        if let Some(pointer_pos) = pointer.0 {
+            rubber_band.current = pointer_pos;
+        }
+        let selection_rect = Rect::from_two_pos(rubber_band.origin, rubber_band.current);
+        let selected_paths = rubber_band_selection(
+            entry_rects,
+            selection_rect,
+            &rubber_band.baseline,
+            rubber_band.modifiers,
+        );
+        let selected_idx = entries
+            .iter()
+            .rposition(|entry| selected_paths.contains(&entry.path));
+        let selected_path =
+            selected_idx.and_then(|idx| entries.get(idx).map(|entry| entry.path.clone()));
+        let ui_state = self.tab_ui.entry(tab_id).or_default();
+        ui_state.selected_paths = selected_paths;
+        ui_state.main_sel = selected_idx;
+        if !(rubber_band.modifiers.shift
+            || rubber_band.modifiers.command
+            || rubber_band.modifiers.ctrl)
+        {
+            ui_state.selection_anchor = selected_path.clone();
+        }
+        if let Some(selected_path) = selected_path {
+            ui_state
+                .selection_memory
+                .insert(ui_state.main.dir.clone(), selected_path);
+        }
+        if pointer.2 {
+            ui.ctx().request_repaint();
+            self.tab_ui.entry(tab_id).or_default().rubber_band = Some(rubber_band);
+        }
+        Some(selection_rect)
+    }
+
     fn render_list(&mut self, ui: &mut egui::Ui, tab_id: u64) {
         let c = self.colors;
         let scale = self.view_scale_for(ViewMode::Miller);
@@ -15436,6 +15509,9 @@ impl OttrinApp {
         }
 
         // Rows
+        let mut list_rows = Vec::with_capacity(entries.len());
+        let mut list_content_rect = Rect::NOTHING;
+        let mut list_viewport_rect = Rect::NOTHING;
         ScrollArea::vertical()
             .id_salt(("list_view", tab_id))
             .show(ui, |ui| {
@@ -15462,6 +15538,7 @@ impl OttrinApp {
                     }
 
                     let response = ui.allocate_rect(row_rect, Sense::click());
+                    list_rows.push((entry.path.clone(), row_rect));
                     response.widget_info(|| {
                         WidgetInfo::selected(
                             WidgetType::Button,
@@ -15619,7 +15696,24 @@ impl OttrinApp {
                         x += w;
                     }
                 }
+                list_content_rect = ui.min_rect();
+                list_viewport_rect = ui.clip_rect();
             });
+        if let Some(selection_rect) =
+            self.update_rubber_band_selection(ui, tab_id, &entries, &list_rows, list_content_rect)
+        {
+            ui.painter_at(list_viewport_rect).rect_filled(
+                selection_rect,
+                3.0,
+                c.accent.linear_multiply(0.18),
+            );
+            ui.painter_at(list_viewport_rect).rect_stroke(
+                selection_rect,
+                3.0,
+                Stroke::new(1.0, c.accent),
+                egui::StrokeKind::Middle,
+            );
+        }
         if let Some(cmd) = pending_op {
             self.run_file_op(cmd, Some(tab_id));
         }
@@ -15865,78 +15959,9 @@ impl OttrinApp {
                 grid_content_rect = ui.min_rect();
                 grid_viewport_rect = ui.clip_rect();
             });
-        let pointer = ui.ctx().input(|input| {
-            (
-                input.pointer.interact_pos(),
-                input.pointer.primary_pressed(),
-                input.pointer.primary_down(),
-                input.modifiers,
-            )
-        });
-        let mut paint_rubber_band = None;
-        if pointer.1
-            && pointer.0.is_some_and(|pos| grid_content_rect.contains(pos))
-            && pointer
-                .0
-                .is_some_and(|pos| grid_rubber_band_may_start(&grid_cells, pos))
+        if let Some(selection_rect) =
+            self.update_rubber_band_selection(ui, tab_id, &entries, &grid_cells, grid_content_rect)
         {
-            let origin = pointer.0.expect("pointer position checked above");
-            let baseline = self
-                .tab_ui
-                .entry(tab_id)
-                .or_default()
-                .selected_paths
-                .clone();
-            self.tab_ui.entry(tab_id).or_default().grid_rubber_band = Some(GridRubberBand {
-                origin,
-                current: origin,
-                baseline,
-                modifiers: pointer.3,
-            });
-        }
-        if let Some(mut rubber_band) = self
-            .tab_ui
-            .entry(tab_id)
-            .or_default()
-            .grid_rubber_band
-            .take()
-        {
-            if let Some(pointer_pos) = pointer.0 {
-                rubber_band.current = pointer_pos;
-            }
-            let selection_rect = Rect::from_two_pos(rubber_band.origin, rubber_band.current);
-            let selected_paths = grid_rubber_band_selection(
-                &grid_cells,
-                selection_rect,
-                &rubber_band.baseline,
-                rubber_band.modifiers,
-            );
-            let selected_idx = entries
-                .iter()
-                .rposition(|entry| selected_paths.contains(&entry.path));
-            let selected_path =
-                selected_idx.and_then(|idx| entries.get(idx).map(|entry| entry.path.clone()));
-            let ui_state = self.tab_ui.entry(tab_id).or_default();
-            ui_state.selected_paths = selected_paths;
-            ui_state.main_sel = selected_idx;
-            if !(rubber_band.modifiers.shift
-                || rubber_band.modifiers.command
-                || rubber_band.modifiers.ctrl)
-            {
-                ui_state.selection_anchor = selected_path.clone();
-            }
-            if let Some(selected_path) = selected_path {
-                ui_state
-                    .selection_memory
-                    .insert(ui_state.main.dir.clone(), selected_path);
-            }
-            paint_rubber_band = Some(selection_rect);
-            if pointer.2 {
-                ui.ctx().request_repaint();
-                self.tab_ui.entry(tab_id).or_default().grid_rubber_band = Some(rubber_band);
-            }
-        }
-        if let Some(selection_rect) = paint_rubber_band {
             ui.painter_at(grid_viewport_rect).rect_filled(
                 selection_rect,
                 3.0,
@@ -23200,7 +23225,7 @@ mod tests {
             ),
         ];
 
-        let selected = grid_rubber_band_selection(
+        let selected = rubber_band_selection(
             &cells,
             Rect::from_min_max(egui::pos2(10.0, -5.0), egui::pos2(55.0, 25.0)),
             &HashSet::new(),
@@ -23232,7 +23257,7 @@ mod tests {
         let existing = HashSet::from([alpha.clone(), charlie.clone()]);
         let band = Rect::from_min_max(egui::pos2(10.0, -5.0), egui::pos2(55.0, 25.0));
 
-        let added = grid_rubber_band_selection(
+        let added = rubber_band_selection(
             &cells,
             band,
             &existing,
@@ -23246,7 +23271,7 @@ mod tests {
             HashSet::from([alpha.clone(), bravo.clone(), charlie.clone()])
         );
 
-        let toggled = grid_rubber_band_selection(
+        let toggled = rubber_band_selection(
             &cells,
             band,
             &existing,
@@ -23265,8 +23290,65 @@ mod tests {
             Rect::from_min_size(egui::pos2(10.0, 10.0), Vec2::splat(20.0)),
         )];
 
-        assert!(!grid_rubber_band_may_start(&cells, egui::pos2(15.0, 15.0)));
-        assert!(grid_rubber_band_may_start(&cells, egui::pos2(35.0, 15.0)));
+        assert!(!rubber_band_may_start(&cells, egui::pos2(15.0, 15.0)));
+        assert!(rubber_band_may_start(&cells, egui::pos2(35.0, 15.0)));
+    }
+
+    #[test]
+    fn list_rubber_band_uses_row_rectangles_for_replacement_and_modifiers() {
+        let alpha = PathBuf::from("/tmp/alpha");
+        let bravo = PathBuf::from("/tmp/bravo");
+        let charlie = PathBuf::from("/tmp/charlie");
+        let rows = vec![
+            (
+                alpha.clone(),
+                Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(200.0, 28.0)),
+            ),
+            (
+                bravo.clone(),
+                Rect::from_min_size(egui::pos2(0.0, 28.0), egui::vec2(200.0, 28.0)),
+            ),
+            (
+                charlie.clone(),
+                Rect::from_min_size(egui::pos2(0.0, 56.0), egui::vec2(200.0, 28.0)),
+            ),
+        ];
+        let band = Rect::from_min_max(egui::pos2(20.0, 29.0), egui::pos2(100.0, 55.0));
+        let existing = HashSet::from([alpha.clone(), charlie.clone()]);
+
+        assert_eq!(
+            rubber_band_selection(&rows, band, &existing, egui::Modifiers::NONE),
+            HashSet::from([bravo.clone()]),
+            "an unmodified List drag replaces the previous selection with intersecting rows"
+        );
+        assert_eq!(
+            rubber_band_selection(
+                &rows,
+                band,
+                &existing,
+                egui::Modifiers {
+                    shift: true,
+                    ..Default::default()
+                },
+            ),
+            HashSet::from([alpha.clone(), bravo.clone(), charlie.clone()]),
+            "Shift retains the selection baseline"
+        );
+        assert_eq!(
+            rubber_band_selection(
+                &rows,
+                band,
+                &existing,
+                egui::Modifiers {
+                    ctrl: true,
+                    ..Default::default()
+                },
+            ),
+            HashSet::from([alpha, bravo, charlie]),
+            "Ctrl toggles each intersecting row against the baseline"
+        );
+        assert!(!rubber_band_may_start(&rows, egui::pos2(20.0, 32.0)));
+        assert!(rubber_band_may_start(&rows, egui::pos2(220.0, 32.0)));
     }
 
     #[test]
@@ -24487,7 +24569,7 @@ mod tests {
         assert!(baseline_has_touch_event);
         assert_ne!(baseline_raw_scroll_delta, Vec2::ZERO);
 
-        app.tab_ui.entry(tab_id).or_default().grid_rubber_band = None;
+        app.tab_ui.entry(tab_id).or_default().rubber_band = None;
         app.pending_move_conflict = Some(PendingMoveConflict {
             cmd: FileCommand::Move {
                 sources: vec![source],
@@ -24542,13 +24624,7 @@ mod tests {
         assert!(has_touch_event);
         assert_eq!(raw_scroll_delta, Vec2::ZERO);
         assert_eq!(smooth_scroll_delta, Vec2::ZERO);
-        assert!(
-            app.tab_ui
-                .entry(tab_id)
-                .or_default()
-                .grid_rubber_band
-                .is_none()
-        );
+        assert!(app.tab_ui.entry(tab_id).or_default().rubber_band.is_none());
         assert!(app.pending_move_conflict.is_some());
 
         let _ = std::fs::remove_dir_all(root);

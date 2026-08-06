@@ -83,6 +83,6 @@ These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 - Media playback and advanced image tools.
 - Fanotify helper/service packaging.
 - Tab drag-and-drop is implemented with source and automated tests; packaged/manual acceptance remains pending.
-- List-rubber-band selection remains deferred.
+- List rubber-band selection is implemented with shared Grid semantics and source tests; packaged/manual acceptance remains pending.
 - Full undo for file operations.
 - Native Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing.
