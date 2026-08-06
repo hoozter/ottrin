@@ -24,13 +24,17 @@ owner/group, link count, sparse layout, inode flags, and xattr list. It rejects
 symlinks, hard links, xattrs (including ACLs, security labels, and
 capabilities), setuid/setgid/sticky modes, sparse files, nonzero inode flags,
 and any source whose owner/group cannot exactly match a freshly staged inode.
-The stage starts as a private `0600` file, receives the source's ordinary mode
-bits exactly, is synchronized, and is reclassified before it can replace the
-source. The parent directory is synchronized before and after the descriptor-
-relative rename. Once staging has begun, a failed save deliberately attempts no
-automatic cleanup: the public-parent name may have been replaced by another
-actor. The resulting error states that a private stage may remain for
-inspection rather than asserting ownership of that name.
+The stage is a private `0700` directory containing a private `0600` candidate.
+The candidate is synchronized and reclassified before it can replace the
+source; source ordinary mode bits are applied only inside that private
+directory immediately before rename. The parent directory is synchronized
+before and after the descriptor-relative rename. Once staging has begun, the
+directory is never removed automatically: the public-parent name may have been
+replaced by another actor. A failed save reports that a private staging
+directory may remain for inspection rather than asserting ownership of that
+name. A successful save leaves an empty private directory and reports that
+retention in the UI; this narrow mode deliberately favors non-destructive
+retention over name-based cleanup.
 
 The final kernel scheduling interval between the last identity check and
 `renameat` remains inherent: an actor that can mutate the *already pinned*
@@ -120,14 +124,12 @@ truthfully, and never claim that a replacement observed before publication
 cannot be overwritten. `RENAME_EXCHANGE` is not a hidden workaround because it
 mutates the destination namespace.
 
-The implemented Linux slice uses a private `0600` staged file in the retained
-source-parent descriptor rather than a general transaction directory. Any
-future multi-file, cross-directory, or crash-recovery mode needs a newly
-created `0700` private staging directory with its own retained descriptor/
-handle. Collision handling, ownership marker/identity, close order, cleanup
-order, and crash orphan inspection must be explicit and bounded. If ownership
-becomes uncertain, retain and report the orphan; never unlink a public-parent
-name after a separate identity check.
+The implemented Linux slice uses a newly created private `0700` staging
+directory with a retained descriptor, and never deletes that public-parent name
+after staging. Any future multi-file, cross-directory, or crash-recovery mode
+needs its own bounded ownership marker, close order, cleanup order, and crash
+orphan inspection. If ownership becomes uncertain, retain and report the
+orphan; never unlink a public-parent name after a separate identity check.
 
 Metadata policy must be a fail-closed platform matrix, validated by fixtures
 before capability becomes writable. Linux must explicitly classify POSIX ACLs,

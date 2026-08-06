@@ -120,7 +120,7 @@ mod linux {
     use rustix::fd::OwnedFd;
     use rustix::fs::{
         AtFlags, CWD, FileType, Mode, OFlags, RenameFlags, fchmod, flistxattr, fstat, fsync,
-        openat, renameat_with, statat,
+        mkdirat, openat, renameat_with, statat,
     };
     use rustix::io::Errno;
     use sha2::{Digest, Sha256};
@@ -129,6 +129,8 @@ mod linux {
     use std::io::{Read, Write};
     use std::os::fd::AsRawFd;
     use std::path::Path;
+
+    pub(super) const STAGED_CANDIDATE: &str = "candidate";
 
     #[derive(Debug)]
     pub(super) struct Session {
@@ -365,7 +367,10 @@ mod linux {
     }
 
     struct Stage {
+        directory: OwnedFd,
         name: OsString,
+        file: File,
+        source_mode: u32,
     }
 
     impl Stage {
@@ -376,9 +381,48 @@ mod linux {
         ) -> Result<Self, TextEditError> {
             for _ in 0..32 {
                 let name = random_stage_name()?;
-                let fd = match openat(
+                match mkdirat(parent, &name, Mode::RUSR | Mode::WUSR | Mode::XUSR) {
+                    Ok(()) => {}
+                    Err(Errno::EXIST) => continue,
+                    Err(error) => return Err(write_error(error)),
+                }
+                let directory = match openat(
                     parent,
                     &name,
+                    OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                    Mode::empty(),
+                ) {
+                    Ok(directory) => directory,
+                    Err(error) => {
+                        return Err(TextEditError::StageRetentionRequired(error.to_string()));
+                    }
+                };
+                let opened = match fstat(&directory) {
+                    Ok(stat) => stat,
+                    Err(error) => {
+                        return Err(TextEditError::StageRetentionRequired(error.to_string()));
+                    }
+                };
+                let named = match statat(parent, &name, AtFlags::SYMLINK_NOFOLLOW) {
+                    Ok(stat) => stat,
+                    Err(error) => {
+                        return Err(TextEditError::StageRetentionRequired(error.to_string()));
+                    }
+                };
+                let private_directory = FileType::from_raw_mode(opened.st_mode)
+                    == FileType::Directory
+                    && opened.st_mode & 0o777 == 0o700
+                    && opened.st_uid == rustix::process::geteuid().as_raw()
+                    && opened.st_dev == named.st_dev
+                    && opened.st_ino == named.st_ino;
+                if !private_directory {
+                    return Err(TextEditError::StageRetentionRequired(
+                        "the private staging directory could not be verified".to_string(),
+                    ));
+                }
+                let fd = match openat(
+                    &directory,
+                    STAGED_CANDIDATE,
                     OFlags::WRONLY
                         | OFlags::CREATE
                         | OFlags::EXCL
@@ -387,28 +431,32 @@ mod linux {
                     Mode::RUSR | Mode::WUSR,
                 ) {
                     Ok(fd) => fd,
-                    Err(Errno::EXIST) => continue,
-                    Err(error) => return Err(write_error(error)),
+                    Err(error) => {
+                        return Err(TextEditError::StageRetentionRequired(error.to_string()));
+                    }
                 };
                 let mut file = File::from(fd);
                 let result = (|| {
+                    fchmod(&file, Mode::RUSR | Mode::WUSR).map_err(write_error)?;
                     file.write_all(contents).map_err(write_error)?;
-                    fchmod(&file, Mode::from_raw_mode(source.mode)).map_err(write_error)?;
                     file.sync_all().map_err(write_error)?;
                     let staged = PlainMetadata::classify(&file)?;
-                    if staged.mode != source.mode
-                        || staged.uid != source.uid
-                        || staged.gid != source.gid
+                    if staged.mode != 0o600 || staged.uid != source.uid || staged.gid != source.gid
                     {
                         return Err(TextEditError::UnsupportedMetadata);
                     }
+                    fsync(&directory).map_err(write_error)?;
                     fsync(parent).map_err(write_error)
                 })();
-                drop(file);
                 if let Err(error) = result {
                     return Err(TextEditError::StageRetentionRequired(error.to_string()));
                 }
-                return Ok(Self { name });
+                return Ok(Self {
+                    directory,
+                    name,
+                    file,
+                    source_mode: source.mode,
+                });
             }
             Err(TextEditError::Write(
                 "could not reserve a private staging file".to_string(),
@@ -416,9 +464,22 @@ mod linux {
         }
 
         fn publish(self, parent: &OwnedFd, target: &OsStr) -> Result<(), TextEditError> {
-            if let Err(error) =
-                renameat_with(parent, &self.name, parent, target, RenameFlags::empty())
-            {
+            if let Err(error) = fchmod(&self.file, Mode::from_raw_mode(self.source_mode)) {
+                return Err(self.retention_required(&error.to_string()));
+            }
+            if let Err(error) = self.file.sync_all() {
+                return Err(self.retention_required(&error.to_string()));
+            }
+            if let Err(error) = fsync(&self.directory) {
+                return Err(self.retention_required(&error.to_string()));
+            }
+            if let Err(error) = renameat_with(
+                &self.directory,
+                STAGED_CANDIDATE,
+                parent,
+                target,
+                RenameFlags::empty(),
+            ) {
                 return Err(self.retention_required(&error.to_string()));
             }
             fsync(parent).map_err(|error| TextEditError::DurabilityUncertain(error.to_string()))
@@ -426,7 +487,8 @@ mod linux {
 
         fn retention_required(self, reason: &str) -> TextEditError {
             TextEditError::StageRetentionRequired(format!(
-                "{reason}; no descriptor-relative cleanup was attempted after staging"
+                "{reason}; private staging directory `{}` was not cleaned automatically",
+                self.name.to_string_lossy()
             ))
         }
     }
@@ -453,6 +515,7 @@ mod linux {
 
 #[cfg(all(test, target_os = "linux"))]
 mod tests {
+    use super::linux::STAGED_CANDIDATE;
     use super::*;
     use std::fs::Permissions;
     use std::path::PathBuf;
@@ -590,6 +653,8 @@ mod tests {
 
     #[test]
     fn replaced_stage_name_is_never_unlinked_during_failed_save_cleanup() {
+        use std::os::unix::fs::PermissionsExt;
+
         let root = TestDir::new();
         let path = root.file("notes.txt", "original\n");
         let session = TextEditSession::open(&path).expect("open editable text");
@@ -616,8 +681,16 @@ mod tests {
             Err(TextEditError::StageRetentionRequired(_))
         ));
         assert_eq!(
-            std::fs::read_to_string(&retained_stage).unwrap(),
+            std::fs::read_to_string(retained_stage.join(STAGED_CANDIDATE)).unwrap(),
             "edited\n"
+        );
+        assert_eq!(
+            std::fs::metadata(&retained_stage)
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777,
+            0o700
         );
         let replacement = std::fs::read_dir(&root.0)
             .unwrap()
@@ -634,6 +707,50 @@ mod tests {
             "attacker replacement\n"
         );
         assert_eq!(std::fs::read_to_string(path).unwrap(), "original\n");
+    }
+
+    #[test]
+    fn failed_rename_retains_source_mode_content_inside_a_private_directory() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let root = TestDir::new();
+        let path = root.file("notes.txt", "original\n");
+        std::fs::set_permissions(&path, Permissions::from_mode(0o644))
+            .expect("set ordinary source mode");
+        let session = TextEditSession::open(&path).expect("open editable text");
+
+        let result = session.save_with_test_hook("edited\n", |_| {
+            std::fs::remove_file(&path).expect("remove source before rename");
+            std::fs::create_dir(&path).expect("make rename target incompatible");
+            Ok(())
+        });
+
+        assert!(matches!(
+            result,
+            Err(TextEditError::StageRetentionRequired(_))
+        ));
+        let stage = std::fs::read_dir(&root.0)
+            .unwrap()
+            .map(Result::unwrap)
+            .map(|entry| entry.path())
+            .find(|path| {
+                path.file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.starts_with(".ottrin-text-edit-"))
+            })
+            .expect("private stage directory remains");
+        assert_eq!(
+            std::fs::metadata(&stage).unwrap().permissions().mode() & 0o777,
+            0o700
+        );
+        assert_eq!(
+            std::fs::metadata(stage.join(STAGED_CANDIDATE))
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777,
+            0o644
+        );
     }
 
     #[test]

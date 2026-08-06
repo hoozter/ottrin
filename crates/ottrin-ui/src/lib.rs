@@ -7599,7 +7599,7 @@ impl OttrinApp {
                 if let Some(path) = path {
                     self.request_preview_load(PreviewTarget::Overlay, path, EntryKind::File);
                 }
-                self.set_status_message("Text saved", true, 3);
+                self.set_status_message("Text saved; private staging directory retained", true, 4);
             }
             Err(error) => {
                 editor.error = Some(error.to_string());
