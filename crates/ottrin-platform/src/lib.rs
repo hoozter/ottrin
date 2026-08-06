@@ -92,6 +92,10 @@ pub enum PlatformError {
     InvalidDestination(String),
     #[error("destination entry already exists: {0}")]
     DestinationExists(String),
+    #[error("rename undo receipt is invalid: {0}")]
+    InvalidRenameUndoReceipt(String),
+    #[error("rename undo target is missing or no longer the renamed entry: {0}")]
+    StaleRenameUndo(String),
     #[error("safe copy is unsupported on this platform: {0}")]
     UnsupportedSafeCopy(String),
     #[error("safe overwrite of an existing entry is unsupported on this platform: {0}")]
@@ -121,6 +125,37 @@ pub enum PlatformError {
         completed_dispositions: Vec<MoveDisposition>,
         message: String,
     },
+}
+
+/// Link-entry identity captured around a successful Linux rename.
+///
+/// On Linux this is `symlink_metadata`'s device and inode pair, so it binds a
+/// symlink entry rather than the symlink target. It is intentionally opaque to
+/// callers: only this crate may compare it before an inverse rename.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RenameIdentity {
+    #[cfg(target_os = "linux")]
+    device: u64,
+    #[cfg(target_os = "linux")]
+    inode: u64,
+}
+
+/// Session-only proof required to attempt one inverse of a completed rename.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RenameUndoReceipt {
+    before_path: PathBuf,
+    after_path: PathBuf,
+    identity: RenameIdentity,
+}
+
+impl RenameUndoReceipt {
+    pub fn before_path(&self) -> &Path {
+        &self.before_path
+    }
+
+    pub fn after_path(&self) -> &Path {
+        &self.after_path
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -510,6 +545,28 @@ pub trait PlatformOps: Send + Sync {
         self.execute_command(command)
             .map(|result| (result, Vec::new()))
     }
+    /// Performs one same-parent Rename and returns an inverse receipt only
+    /// when the link entry has the same identity before and after the rename.
+    fn execute_rename_with_undo_receipt(
+        &self,
+        source: &Path,
+        new_name: &str,
+    ) -> Result<Option<RenameUndoReceipt>, PlatformError> {
+        self.execute_command(&FileCommand::Rename {
+            source: source.to_path_buf(),
+            new_name: new_name.to_string(),
+        })
+        .map(|_| None)
+    }
+    /// Attempts the receipt's inverse with the same atomic no-replace primitive
+    /// as forward Rename. The identity preflight detects staleness but cannot
+    /// make Linux's pathname rename an identity-conditional compare-and-swap.
+    fn undo_rename_with_receipt(&self, receipt: &RenameUndoReceipt) -> Result<(), PlatformError> {
+        let _ = receipt;
+        Err(PlatformError::NotAvailable(
+            "session-only rename undo is supported only on Linux",
+        ))
+    }
     fn execute_privileged(
         &self,
         request: &PrivilegedRequest,
@@ -625,12 +682,7 @@ impl PlatformOps for DefaultPlatform {
                 Ok(None)
             }
             FileCommand::Rename { source, new_name } => {
-                let parent = source
-                    .parent()
-                    .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
-                ensure_existing_dir(parent)?;
-                let target = parent.join(new_name);
-                rename_without_replacement(source, &target)?;
+                rename_in_same_parent(source, new_name)?;
                 Ok(None)
             }
             FileCommand::Delete { targets, mode } => {
@@ -712,6 +764,63 @@ impl PlatformOps for DefaultPlatform {
                 Ok((None, completed_dispositions))
             }
             _ => Ok((self.execute_command(command)?, Vec::new())),
+        }
+    }
+
+    fn execute_rename_with_undo_receipt(
+        &self,
+        source: &Path,
+        new_name: &str,
+    ) -> Result<Option<RenameUndoReceipt>, PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            if !rename_target_has_same_parent(source, new_name) {
+                return Err(PlatformError::InvalidRenameUndoReceipt(
+                    "forward rename must remain in the source parent".to_string(),
+                ));
+            }
+            let before_identity = rename_identity(source)
+                .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
+            let after_path = rename_in_same_parent(source, new_name)?;
+            let after_identity = rename_identity(&after_path).ok();
+            Ok(after_identity
+                .filter(|identity| identity == &before_identity)
+                .map(|identity| RenameUndoReceipt {
+                    before_path: source.to_path_buf(),
+                    after_path,
+                    identity,
+                }))
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            self.execute_command(&FileCommand::Rename {
+                source: source.to_path_buf(),
+                new_name: new_name.to_string(),
+            })
+            .map(|_| None)
+        }
+    }
+
+    fn undo_rename_with_receipt(&self, receipt: &RenameUndoReceipt) -> Result<(), PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            validate_rename_undo_receipt(receipt)?;
+            let observed_identity = rename_identity(&receipt.after_path).map_err(|_| {
+                PlatformError::StaleRenameUndo(receipt.after_path.display().to_string())
+            })?;
+            if observed_identity != receipt.identity {
+                return Err(PlatformError::StaleRenameUndo(
+                    receipt.after_path.display().to_string(),
+                ));
+            }
+            rename_without_replacement(&receipt.after_path, &receipt.before_path)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = receipt;
+            Err(PlatformError::NotAvailable(
+                "session-only rename undo is supported only on Linux",
+            ))
         }
     }
 
@@ -1233,6 +1342,48 @@ fn ensure_existing_dir(path: &Path) -> Result<(), PlatformError> {
             path.display().to_string(),
         ))
     }
+}
+
+fn rename_in_same_parent(source: &Path, new_name: &str) -> Result<PathBuf, PlatformError> {
+    let parent = source
+        .parent()
+        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
+    ensure_existing_dir(parent)?;
+    let target = parent.join(new_name);
+    rename_without_replacement(source, &target)?;
+    Ok(target)
+}
+
+#[cfg(target_os = "linux")]
+fn rename_target_has_same_parent(source: &Path, new_name: &str) -> bool {
+    let Some(parent) = source.parent() else {
+        return false;
+    };
+    parent.join(new_name).parent() == Some(parent)
+}
+
+#[cfg(target_os = "linux")]
+fn rename_identity(path: &Path) -> std::io::Result<RenameIdentity> {
+    use std::os::unix::fs::MetadataExt;
+
+    let metadata = std::fs::symlink_metadata(path)?;
+    Ok(RenameIdentity {
+        device: metadata.dev(),
+        inode: metadata.ino(),
+    })
+}
+
+#[cfg(target_os = "linux")]
+fn validate_rename_undo_receipt(receipt: &RenameUndoReceipt) -> Result<(), PlatformError> {
+    if receipt.before_path == receipt.after_path
+        || receipt.before_path.parent().is_none()
+        || receipt.before_path.parent() != receipt.after_path.parent()
+    {
+        return Err(PlatformError::InvalidRenameUndoReceipt(
+            "before and after paths must have the same lexical parent".to_string(),
+        ));
+    }
+    Ok(())
 }
 
 #[cfg(target_os = "linux")]
@@ -2401,6 +2552,161 @@ mod tests {
             std::fs::read_to_string(destination).unwrap(),
             "destination contents"
         );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rename_undo_receipt_restores_the_original_entry() {
+        use std::os::unix::fs::MetadataExt;
+
+        let dir = TestDir::new("rename-undo");
+        let before = dir.path().join("before.txt");
+        let after = dir.path().join("after.txt");
+        std::fs::write(&before, "original bytes").unwrap();
+        let before_metadata = std::fs::symlink_metadata(&before).unwrap();
+
+        let receipt = DefaultPlatform
+            .execute_rename_with_undo_receipt(&before, "after.txt")
+            .unwrap()
+            .expect("rename receipt");
+        assert!(!before.exists());
+        assert_eq!(std::fs::read_to_string(&after).unwrap(), "original bytes");
+
+        DefaultPlatform.undo_rename_with_receipt(&receipt).unwrap();
+
+        let restored_metadata = std::fs::symlink_metadata(&before).unwrap();
+        assert_eq!(std::fs::read_to_string(&before).unwrap(), "original bytes");
+        assert!(!after.exists());
+        assert_eq!(restored_metadata.dev(), before_metadata.dev());
+        assert_eq!(restored_metadata.ino(), before_metadata.ino());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rename_undo_collision_preserves_both_entries() {
+        let dir = TestDir::new("rename-undo-collision");
+        let before = dir.path().join("before.txt");
+        let after = dir.path().join("after.txt");
+        std::fs::write(&before, "original bytes").unwrap();
+        let receipt = DefaultPlatform
+            .execute_rename_with_undo_receipt(&before, "after.txt")
+            .unwrap()
+            .expect("rename receipt");
+        std::fs::write(&before, "replacement bytes").unwrap();
+
+        let result = DefaultPlatform.undo_rename_with_receipt(&receipt);
+
+        assert!(matches!(result, Err(PlatformError::DestinationExists(_))));
+        assert_eq!(
+            std::fs::read_to_string(&before).unwrap(),
+            "replacement bytes"
+        );
+        assert_eq!(std::fs::read_to_string(&after).unwrap(), "original bytes");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rename_undo_rejects_a_replaced_destination_without_mutation() {
+        let dir = TestDir::new("rename-undo-stale");
+        let before = dir.path().join("before.txt");
+        let after = dir.path().join("after.txt");
+        std::fs::write(&before, "original bytes").unwrap();
+        let receipt = DefaultPlatform
+            .execute_rename_with_undo_receipt(&before, "after.txt")
+            .unwrap()
+            .expect("rename receipt");
+        std::fs::remove_file(&after).unwrap();
+        std::fs::write(&after, "replacement bytes").unwrap();
+
+        let result = DefaultPlatform.undo_rename_with_receipt(&receipt);
+
+        assert!(matches!(result, Err(PlatformError::StaleRenameUndo(_))));
+        assert!(!before.exists());
+        assert_eq!(
+            std::fs::read_to_string(&after).unwrap(),
+            "replacement bytes"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rename_undo_rejects_a_missing_destination_without_creating_the_original_name() {
+        let dir = TestDir::new("rename-undo-missing");
+        let before = dir.path().join("before.txt");
+        let after = dir.path().join("after.txt");
+        std::fs::write(&before, "original bytes").unwrap();
+        let receipt = DefaultPlatform
+            .execute_rename_with_undo_receipt(&before, "after.txt")
+            .unwrap()
+            .expect("rename receipt");
+        std::fs::remove_file(&after).unwrap();
+
+        let result = DefaultPlatform.undo_rename_with_receipt(&receipt);
+
+        assert!(matches!(result, Err(PlatformError::StaleRenameUndo(_))));
+        assert!(!before.exists());
+        assert!(!after.exists());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rename_undo_preserves_symlink_entries_without_dereferencing() {
+        use std::os::unix::fs::{MetadataExt, symlink};
+
+        let dir = TestDir::new("rename-undo-symlink");
+        let target = dir.path().join("target.txt");
+        let before = dir.path().join("before-link");
+        let after = dir.path().join("after-link");
+        std::fs::write(&target, "target bytes").unwrap();
+        symlink("target.txt", &before).unwrap();
+        let before_metadata = std::fs::symlink_metadata(&before).unwrap();
+
+        let receipt = DefaultPlatform
+            .execute_rename_with_undo_receipt(&before, "after-link")
+            .unwrap()
+            .expect("rename receipt");
+        assert_eq!(
+            std::fs::read_link(&after).unwrap(),
+            PathBuf::from("target.txt")
+        );
+
+        DefaultPlatform.undo_rename_with_receipt(&receipt).unwrap();
+
+        let restored_metadata = std::fs::symlink_metadata(&before).unwrap();
+        assert_eq!(
+            std::fs::read_link(&before).unwrap(),
+            PathBuf::from("target.txt")
+        );
+        assert_eq!(restored_metadata.dev(), before_metadata.dev());
+        assert_eq!(restored_metadata.ino(), before_metadata.ino());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rename_undo_rejects_a_cross_parent_receipt_before_mutation() {
+        let dir = TestDir::new("rename-undo-cross-parent");
+        let other_parent = dir.path().join("other");
+        std::fs::create_dir(&other_parent).unwrap();
+        let before = dir.path().join("before.txt");
+        let after = dir.path().join("after.txt");
+        std::fs::write(&before, "original bytes").unwrap();
+        let receipt = DefaultPlatform
+            .execute_rename_with_undo_receipt(&before, "after.txt")
+            .unwrap()
+            .expect("rename receipt");
+        let malformed = RenameUndoReceipt {
+            before_path: other_parent.join("before.txt"),
+            ..receipt
+        };
+
+        let result = DefaultPlatform.undo_rename_with_receipt(&malformed);
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::InvalidRenameUndoReceipt(_))
+        ));
+        assert!(!before.exists());
+        assert_eq!(std::fs::read_to_string(&after).unwrap(), "original bytes");
     }
 
     #[cfg(unix)]

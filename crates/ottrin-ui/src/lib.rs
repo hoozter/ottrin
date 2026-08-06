@@ -19,7 +19,7 @@ use ottrin_core::{
 use ottrin_platform::text_edit::{TextEditSession, text_editing_supported};
 use ottrin_platform::{
     DefaultPlatform, MoveDisposition, OpenWithApplication, PlatformError, PlatformOps,
-    PrivilegedAvailability, StorageLocation, StorageLocationKind, TrashItem,
+    PrivilegedAvailability, RenameUndoReceipt, StorageLocation, StorageLocationKind, TrashItem,
     discover_storage_locations,
 };
 #[cfg(target_os = "linux")]
@@ -543,6 +543,14 @@ struct OpResult {
     clipboard_generation: Option<u64>,
     completed_sources: Option<usize>,
     completed_source_paths: Vec<PathBuf>,
+    rename_receipt: Option<RenameUndoReceipt>,
+    rename_bindings: Option<Vec<StorageOperationBinding>>,
+}
+
+#[derive(Debug)]
+struct RenameUndoResult {
+    op_id: u64,
+    result: Result<(), String>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -703,6 +711,40 @@ struct OperationRecord {
     queued_at: Instant,
     finished_at: Option<Instant>,
     message: Option<String>,
+    rename_paths: Option<(PathBuf, PathBuf)>,
+    rename_undo: Option<RenameUndoState>,
+    rename_undo_token: Option<RenameUndoToken>,
+}
+
+#[derive(Debug, Clone)]
+struct RenameUndoToken {
+    receipt: RenameUndoReceipt,
+    storage_bindings: Vec<StorageOperationBinding>,
+    origin_tab_id: Option<u64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum RenameUndoState {
+    Available,
+    UndoQueued,
+    Undone,
+    Unavailable { reason: String },
+}
+
+fn rename_undo_action_is_available(
+    status: OperationStatus,
+    state: Option<&RenameUndoState>,
+) -> bool {
+    status == OperationStatus::Completed && matches!(state, Some(RenameUndoState::Available))
+}
+
+fn rename_selection_for_tab(
+    origin_tab_id: Option<u64>,
+    tab_id: u64,
+    displays_parent: bool,
+    selected_path: &Path,
+) -> Option<PathBuf> {
+    (origin_tab_id == Some(tab_id) && displays_parent).then(|| selected_path.to_path_buf())
 }
 
 /// Durable Move evidence discovered at startup.
@@ -1562,6 +1604,8 @@ pub struct OttrinApp {
     // File operation results
     op_tx: Sender<OpResult>,
     op_rx: Receiver<OpResult>,
+    rename_undo_tx: Sender<RenameUndoResult>,
+    rename_undo_rx: Receiver<RenameUndoResult>,
     trash_tx: Sender<TrashLoadResponse>,
     trash_rx: Receiver<TrashLoadResponse>,
     trash_empty_tx: Sender<TrashEmptyResponse>,
@@ -1737,6 +1781,7 @@ impl OttrinApp {
         let (listing_tx, listing_worker_rx) = mpsc::channel::<ListingRequest>();
         let (listing_worker_tx, listing_rx) = mpsc::channel::<ListingResponse>();
         let (op_tx, op_rx) = mpsc::channel::<OpResult>();
+        let (rename_undo_tx, rename_undo_rx) = mpsc::channel::<RenameUndoResult>();
         let (trash_tx, trash_rx) = mpsc::channel::<TrashLoadResponse>();
         let (trash_empty_tx, trash_empty_rx) = mpsc::channel::<TrashEmptyResponse>();
 
@@ -2083,6 +2128,8 @@ impl OttrinApp {
             listing_rx,
             op_tx,
             op_rx,
+            rename_undo_tx,
+            rename_undo_rx,
             trash_tx,
             trash_rx,
             trash_empty_tx,
@@ -5330,6 +5377,8 @@ impl OttrinApp {
     fn poll_op_results(&mut self) {
         while let Ok(res) = self.op_rx.try_recv() {
             let completed_cmd = res.cmd.clone();
+            let rename_receipt = res.rename_receipt.clone();
+            let rename_bindings = res.rename_bindings.clone();
             self.apply_clipboard_operation_result(
                 res.clipboard_generation,
                 &completed_cmd,
@@ -5354,6 +5403,21 @@ impl OttrinApp {
                 OperationStatus::Completed,
                 res.warning.clone(),
             );
+            if res.warning.is_none()
+                && let (FileCommand::Rename { .. }, Some(receipt), Some(storage_bindings)) =
+                    (&completed_cmd, rename_receipt, rename_bindings)
+                && let Some(record) = self
+                    .operation_history
+                    .iter_mut()
+                    .find(|record| record.id == res.op_id)
+            {
+                record.rename_undo = Some(RenameUndoState::Available);
+                record.rename_undo_token = Some(RenameUndoToken {
+                    receipt,
+                    storage_bindings,
+                    origin_tab_id: res.tab_id,
+                });
+            }
             let has_warning = res.warning.is_some();
             if let Some(warning) = res.warning {
                 self.command_frame.error = None;
@@ -5402,7 +5466,13 @@ impl OttrinApp {
             if should_refresh_retained_move_activity(&completed_cmd, has_warning) {
                 self.refresh_retained_move_activity();
             }
-            let mut refresh_tabs = if is_creation {
+            let mut refresh_tabs = if let FileCommand::Rename { source, new_name } = &completed_cmd
+            {
+                if let Some(parent) = source.parent() {
+                    self.refresh_rename_parent(parent, res.tab_id, &parent.join(new_name));
+                }
+                Vec::new()
+            } else if is_creation {
                 creation_refresh_tab.into_iter().collect::<Vec<_>>()
             } else {
                 res.tab_id.into_iter().collect::<Vec<_>>()
@@ -5449,6 +5519,161 @@ impl OttrinApp {
                 }
             }
         }
+    }
+
+    fn refresh_rename_parent(
+        &mut self,
+        parent: &Path,
+        origin_tab_id: Option<u64>,
+        selected_path: &Path,
+    ) {
+        let tabs = self
+            .state
+            .tabs
+            .iter()
+            .map(|tab| (tab.id, tab.current_dir.clone(), tab.view_mode))
+            .collect::<Vec<_>>();
+        for (tab_id, current_dir, view_mode) in tabs {
+            let displays_parent = if matches!(view_mode, ViewMode::Miller) {
+                self.build_miller_model(tab_id, self.miller_col_count)
+                    .0
+                    .iter()
+                    .any(|column| column.dir == parent)
+            } else {
+                current_dir == parent
+            };
+            if !displays_parent {
+                continue;
+            }
+            let selected_path =
+                rename_selection_for_tab(origin_tab_id, tab_id, displays_parent, selected_path);
+            let ui_state = self.tab_ui.entry(tab_id).or_default();
+            if matches!(view_mode, ViewMode::Miller) {
+                ui_state.miller_cache.remove(parent);
+                if let Some(path) = selected_path.clone() {
+                    ui_state.selection_memory.insert(parent.to_path_buf(), path);
+                }
+            }
+            if current_dir == parent {
+                if let Some(path) = selected_path {
+                    ui_state.pending_select_path = Some(path);
+                }
+                self.request_listing(ListingKey::TabMain(tab_id), current_dir);
+            }
+        }
+    }
+
+    fn rename_undo_conflicts(&self, op_id: u64, receipt: &RenameUndoReceipt) -> bool {
+        self.operation_history.iter().any(|record| {
+            record.id != op_id
+                && (record.status == OperationStatus::Queued
+                    || matches!(record.rename_undo, Some(RenameUndoState::UndoQueued)))
+                && record.rename_paths.as_ref().is_some_and(|(before, after)| {
+                    before == receipt.before_path()
+                        || before == receipt.after_path()
+                        || after == receipt.before_path()
+                        || after == receipt.after_path()
+                })
+        })
+    }
+
+    fn run_rename_undo(&mut self, op_id: u64) {
+        let Some(token) = self
+            .operation_history
+            .iter()
+            .find(|record| record.id == op_id)
+            .filter(|record| {
+                rename_undo_action_is_available(record.status, record.rename_undo.as_ref())
+            })
+            .and_then(|record| record.rename_undo_token.clone())
+        else {
+            return;
+        };
+        if self.rename_undo_conflicts(op_id, &token.receipt) {
+            self.set_status_message(
+                "Undo rename was not started because a conflicting rename is still running."
+                    .to_string(),
+                false,
+                6,
+            );
+            return;
+        }
+        self.reconcile_storage_location_availability(discover_storage_locations());
+        if let Err(reason) = validate_operation_storage_bindings(
+            &token.storage_bindings,
+            &self.known_storage_locations,
+        ) {
+            self.finish_rename_undo(op_id, Err(reason));
+            return;
+        }
+        if let Some(record) = self
+            .operation_history
+            .iter_mut()
+            .find(|record| record.id == op_id)
+        {
+            record.rename_undo = Some(RenameUndoState::UndoQueued);
+        }
+        let platform = Arc::clone(&self.platform);
+        let tx = self.rename_undo_tx.clone();
+        std::thread::spawn(move || {
+            let result = validate_operation_storage_bindings(
+                &token.storage_bindings,
+                &discover_storage_locations(),
+            )
+            .map_err(|error| error.to_string())
+            .and_then(|()| {
+                platform
+                    .undo_rename_with_receipt(&token.receipt)
+                    .map_err(|e| e.to_string())
+            });
+            let _ = tx.send(RenameUndoResult { op_id, result });
+        });
+    }
+
+    fn poll_rename_undo_results(&mut self) {
+        while let Ok(result) = self.rename_undo_rx.try_recv() {
+            self.finish_rename_undo(result.op_id, result.result);
+        }
+    }
+
+    fn finish_rename_undo(&mut self, op_id: u64, result: Result<(), String>) {
+        let Some((parent, selected_path, origin_tab_id)) = self
+            .operation_history
+            .iter_mut()
+            .find(|record| record.id == op_id)
+            .filter(|record| {
+                matches!(
+                    record.rename_undo,
+                    Some(RenameUndoState::UndoQueued) | Some(RenameUndoState::Available)
+                )
+            })
+            .and_then(|record| {
+                let token = record.rename_undo_token.as_ref()?;
+                match result {
+                    Ok(()) => {
+                        record.rename_undo = Some(RenameUndoState::Undone);
+                        record.message = Some("Rename undone".to_string());
+                        token.receipt.before_path().parent().map(|parent| {
+                            (
+                                parent.to_path_buf(),
+                                token.receipt.before_path().to_path_buf(),
+                                token.origin_tab_id,
+                            )
+                        })
+                    }
+                    Err(reason) => {
+                        record.rename_undo = Some(RenameUndoState::Unavailable {
+                            reason: reason.clone(),
+                        });
+                        record.message = Some(format!("Undo unavailable: {reason}"));
+                        None
+                    }
+                }
+            })
+        else {
+            return;
+        };
+        self.refresh_rename_parent(&parent, origin_tab_id, &selected_path);
     }
 
     fn apply_clipboard_operation_result(
@@ -8412,10 +8637,18 @@ impl OttrinApp {
             // discovery API permits. The OS can still replace a pathname after
             // this check and before the platform syscall; Rust cannot make that
             // final cross-platform pathname operation identity-conditional.
-            let (outcome, completed_source_paths) =
+            let (outcome, completed_source_paths, rename_receipt) =
                 match validate_operation_storage_bindings(&bindings, &discover_storage_locations())
                 {
                     Ok(()) => match &cmd {
+                        FileCommand::Rename { source, new_name } => {
+                            match platform.execute_rename_with_undo_receipt(source, new_name) {
+                                Ok(receipt) => (FileOpOutcome::Completed, Vec::new(), receipt),
+                                Err(error) => {
+                                    (classify_file_op_result(Err(error)), Vec::new(), None)
+                                }
+                            }
+                        }
                         FileCommand::Move { sources, .. } => {
                             match platform.execute_command_with_move_dispositions(&cmd) {
                                 Ok((_, dispositions)) => {
@@ -8427,7 +8660,7 @@ impl OttrinApp {
                                                 .then_some(source.clone())
                                         })
                                         .collect();
-                                    (FileOpOutcome::Completed, completed_source_paths)
+                                    (FileOpOutcome::Completed, completed_source_paths, None)
                                 }
                                 Err(error) => {
                                     let completed_source_paths = match &error {
@@ -8444,13 +8677,18 @@ impl OttrinApp {
                                             .collect(),
                                         _ => Vec::new(),
                                     };
-                                    (classify_file_op_result(Err(error)), completed_source_paths)
+                                    (
+                                        classify_file_op_result(Err(error)),
+                                        completed_source_paths,
+                                        None,
+                                    )
                                 }
                             }
                         }
                         _ => (
                             classify_file_op_result(platform.execute_command(&cmd).map(|_| ())),
                             Vec::new(),
+                            None,
                         ),
                     },
                     Err(message) => (
@@ -8459,6 +8697,7 @@ impl OttrinApp {
                             privilege_retry: false,
                         },
                         Vec::new(),
+                        None,
                     ),
                 };
             let completed_source_count = match outcome {
@@ -8468,7 +8707,8 @@ impl OttrinApp {
                 } => Some(completed_sources),
                 _ => None,
             };
-            let privilege_retry = outcome.should_offer_privilege_retry();
+            let privilege_retry = outcome.should_offer_privilege_retry()
+                && !matches!(&cmd, FileCommand::Rename { .. });
             let (error, warning, retry, completed_sources) = match outcome {
                 FileOpOutcome::Completed => (None, None, None, completed_source_count),
                 FileOpOutcome::CompletedWithWarning { message, .. } => {
@@ -8483,6 +8723,7 @@ impl OttrinApp {
                     None,
                 ),
             };
+            let is_rename = matches!(&cmd, FileCommand::Rename { .. });
             let _ = op_tx.send(OpResult {
                 op_id,
                 tab_id: refresh_tab,
@@ -8494,6 +8735,8 @@ impl OttrinApp {
                 clipboard_generation,
                 completed_sources,
                 completed_source_paths,
+                rename_receipt,
+                rename_bindings: is_rename.then_some(bindings),
             });
         });
         true
@@ -8533,11 +8776,19 @@ impl OttrinApp {
     }
 
     fn queue_operation_record(&mut self, cmd: FileCommand) -> u64 {
-        self.queue_activity_record_with_recoverability(
+        let id = self.queue_activity_record_with_recoverability(
             operation_title(&cmd),
             operation_detail(&cmd),
             operation_recoverability(&cmd),
-        )
+        );
+        if let Some(record) = self
+            .operation_history
+            .iter_mut()
+            .find(|record| record.id == id)
+        {
+            record.rename_paths = rename_paths_for_command(&cmd);
+        }
+        id
     }
 
     fn queue_activity_record_with_recoverability(
@@ -8556,6 +8807,9 @@ impl OttrinApp {
             queued_at: Instant::now(),
             finished_at: None,
             message: None,
+            rename_paths: None,
+            rename_undo: None,
+            rename_undo_token: None,
         });
         while self.operation_history.len() > 100 {
             self.operation_history.pop_back();
@@ -12203,6 +12457,7 @@ impl OttrinApp {
             return;
         }
 
+        let mut undo_rename = None;
         ScrollArea::vertical().show(ui, |ui| {
             for record in &self.operation_history {
                 let (status_text, status_color, status_icon) = match record.status {
@@ -12245,7 +12500,30 @@ impl OttrinApp {
                             ui.add_space(4.0);
                             ui.label(RichText::new(msg).color(c.error).size(10.0));
                         }
-                        if record.status == OperationStatus::Completed {
+                        if rename_undo_action_is_available(
+                            record.status,
+                            record.rename_undo.as_ref(),
+                        ) {
+                            ui.add_space(4.0);
+                            if ui
+                                .button("Undo rename")
+                                .on_hover_text(
+                                    "Restore this renamed entry if it has not changed or been replaced.",
+                                )
+                                .clicked()
+                            {
+                                undo_rename = Some(record.id);
+                            }
+                        } else if let Some(rename_undo) = &record.rename_undo {
+                            ui.add_space(4.0);
+                            let (label, color) = match rename_undo {
+                                RenameUndoState::Available => ("Undo available", c.accent),
+                                RenameUndoState::UndoQueued => ("Undoing rename…", c.accent_dim),
+                                RenameUndoState::Undone => ("Rename undone", c.accent),
+                                RenameUndoState::Unavailable { .. } => ("Undo unavailable", c.error),
+                            };
+                            ui.label(RichText::new(label).color(color).size(10.0));
+                        } else if record.status == OperationStatus::Completed {
                             let (label, color, tip) =
                                 operation_recoverability_label(record.recoverability, c);
                             ui.add_space(4.0);
@@ -12266,6 +12544,9 @@ impl OttrinApp {
                 ui.add_space(6.0);
             }
         });
+        if let Some(op_id) = undo_rename {
+            self.run_rename_undo(op_id);
+        }
     }
 
     fn empty_trash_now(&mut self) {
@@ -19439,6 +19720,7 @@ impl eframe::App for OttrinApp {
         // Process async results
         self.poll_listing_results();
         self.poll_op_results();
+        self.poll_rename_undo_results();
         self.poll_trash_results();
 
         self.poll_hash_results();
@@ -20343,6 +20625,15 @@ fn operation_recoverability(cmd: &FileCommand) -> OperationRecoverability {
         | FileCommand::Chmod { .. }
         | FileCommand::Symlink { .. } => OperationRecoverability::SessionTracked,
     }
+}
+
+fn rename_paths_for_command(cmd: &FileCommand) -> Option<(PathBuf, PathBuf)> {
+    let FileCommand::Rename { source, new_name } = cmd else {
+        return None;
+    };
+    source
+        .parent()
+        .map(|parent| (source.clone(), parent.join(new_name)))
 }
 
 fn operation_recoverability_label(
@@ -22244,6 +22535,280 @@ mod tests {
     }
 
     #[test]
+    fn rename_undo_action_requires_a_completed_available_rename() {
+        assert!(rename_undo_action_is_available(
+            OperationStatus::Completed,
+            Some(&RenameUndoState::Available),
+        ));
+        assert!(!rename_undo_action_is_available(
+            OperationStatus::Queued,
+            Some(&RenameUndoState::Available),
+        ));
+        assert!(!rename_undo_action_is_available(
+            OperationStatus::Completed,
+            Some(&RenameUndoState::UndoQueued),
+        ));
+        assert!(!rename_undo_action_is_available(
+            OperationStatus::Completed,
+            Some(&RenameUndoState::Undone),
+        ));
+        assert!(!rename_undo_action_is_available(
+            OperationStatus::Completed,
+            None
+        ));
+    }
+
+    #[test]
+    fn rename_completion_selects_only_the_origin_tab_still_showing_the_parent() {
+        let after = PathBuf::from("/tmp/ottrin-rename-parent/after.txt");
+        let before = PathBuf::from("/tmp/ottrin-rename-parent/before.txt");
+
+        assert_eq!(
+            rename_selection_for_tab(Some(7), 7, true, &after),
+            Some(after.clone())
+        );
+        assert_eq!(
+            rename_selection_for_tab(Some(7), 8, true, &after),
+            None,
+            "other tabs refresh but retain their selection"
+        );
+        assert_eq!(
+            rename_selection_for_tab(Some(7), 7, false, &before),
+            None,
+            "a user who navigated away is never pulled back"
+        );
+    }
+
+    #[test]
+    fn rename_refresh_reloads_a_parent_visible_in_a_miller_column_without_navigation() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-rename-miller-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        let child = root.join("child");
+        let after = root.join("after.txt");
+        std::fs::create_dir(&root).unwrap();
+        std::fs::create_dir(&child).unwrap();
+        std::fs::write(&after, "renamed entry").unwrap();
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        let tab = app.state.active_tab_mut();
+        tab.current_dir = child.clone();
+        tab.view_mode = ViewMode::Miller;
+
+        let (columns, _) = app.build_miller_model(tab_id, app.miller_col_count);
+        assert!(columns.iter().any(|column| column.dir == root));
+        assert!(
+            app.tab_ui
+                .get(&tab_id)
+                .is_some_and(|ui| ui.miller_cache.contains_key(&root))
+        );
+
+        app.refresh_rename_parent(&root, Some(tab_id), &after);
+
+        let ui = app.tab_ui.get(&tab_id).unwrap();
+        assert!(!ui.miller_cache.contains_key(&root));
+        assert_eq!(ui.selection_memory.get(&root), Some(&after));
+        let (columns, _) = app.build_miller_model(tab_id, app.miller_col_count);
+        assert!(
+            columns
+                .iter()
+                .find(|column| column.dir == root)
+                .is_some_and(|column| column.entries.iter().any(|entry| entry.path == after))
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn successful_rename_receipt_is_single_use_and_undo_completion_updates_the_same_record() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-rename-undo-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let before = root.join("before.txt");
+        let after = root.join("after.txt");
+        std::fs::write(&before, "original bytes").unwrap();
+        let command = FileCommand::Rename {
+            source: before.clone(),
+            new_name: "after.txt".to_string(),
+        };
+        let receipt = DefaultPlatform
+            .execute_rename_with_undo_receipt(&before, "after.txt")
+            .unwrap()
+            .expect("Linux receipt");
+        let mut app = OttrinApp::default();
+        let op_id = app.queue_operation_record(command.clone());
+        app.op_tx
+            .send(OpResult {
+                op_id,
+                tab_id: Some(app.state.active_tab().id),
+                cmd: command,
+                delete_nav: Vec::new(),
+                error: None,
+                warning: None,
+                retry: None,
+                clipboard_generation: None,
+                completed_sources: None,
+                completed_source_paths: Vec::new(),
+                rename_receipt: Some(receipt),
+                rename_bindings: Some(Vec::new()),
+            })
+            .unwrap();
+        app.poll_op_results();
+        assert!(matches!(
+            app.operation_history
+                .front()
+                .and_then(|record| record.rename_undo.as_ref()),
+            Some(RenameUndoState::Available)
+        ));
+
+        app.run_rename_undo(op_id);
+        app.run_rename_undo(op_id);
+        assert!(matches!(
+            app.operation_history
+                .front()
+                .and_then(|record| record.rename_undo.as_ref()),
+            Some(RenameUndoState::UndoQueued)
+        ));
+        let result = app
+            .rename_undo_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("undo worker result");
+        app.finish_rename_undo(result.op_id, result.result);
+
+        let record = app.operation_history.front().unwrap();
+        assert_eq!(record.status, OperationStatus::Completed);
+        assert!(matches!(record.rename_undo, Some(RenameUndoState::Undone)));
+        assert_eq!(std::fs::read_to_string(&before).unwrap(), "original bytes");
+        assert!(!after.exists());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn failed_or_warning_rename_results_never_create_an_undo_token_or_retry() {
+        let command = FileCommand::Rename {
+            source: PathBuf::from("/tmp/ottrin-rename-before"),
+            new_name: "after.txt".to_string(),
+        };
+        let mut app = OttrinApp::default();
+        let failed_id = app.queue_operation_record(command.clone());
+        app.op_tx
+            .send(OpResult {
+                op_id: failed_id,
+                tab_id: None,
+                cmd: command.clone(),
+                delete_nav: Vec::new(),
+                error: Some("permission denied".to_string()),
+                warning: None,
+                retry: None,
+                clipboard_generation: None,
+                completed_sources: None,
+                completed_source_paths: Vec::new(),
+                rename_receipt: None,
+                rename_bindings: None,
+            })
+            .unwrap();
+        let warning_id = app.queue_operation_record(command.clone());
+        app.op_tx
+            .send(OpResult {
+                op_id: warning_id,
+                tab_id: None,
+                cmd: command,
+                delete_nav: Vec::new(),
+                error: None,
+                warning: Some("warning".to_string()),
+                retry: None,
+                clipboard_generation: None,
+                completed_sources: None,
+                completed_source_paths: Vec::new(),
+                rename_receipt: None,
+                rename_bindings: None,
+            })
+            .unwrap();
+        app.poll_op_results();
+
+        assert!(app.pending_privileged_retry.is_none());
+        assert!(
+            app.operation_history
+                .iter()
+                .all(|record| record.rename_undo.is_none())
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn rename_undo_collision_is_terminal_and_visible_on_the_original_record() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-rename-undo-collision-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let before = root.join("before.txt");
+        std::fs::write(&before, "original bytes").unwrap();
+        let command = FileCommand::Rename {
+            source: before.clone(),
+            new_name: "after.txt".to_string(),
+        };
+        let receipt = DefaultPlatform
+            .execute_rename_with_undo_receipt(&before, "after.txt")
+            .unwrap()
+            .expect("Linux receipt");
+        let mut app = OttrinApp::default();
+        let op_id = app.queue_operation_record(command.clone());
+        app.op_tx
+            .send(OpResult {
+                op_id,
+                tab_id: None,
+                cmd: command,
+                delete_nav: Vec::new(),
+                error: None,
+                warning: None,
+                retry: None,
+                clipboard_generation: None,
+                completed_sources: None,
+                completed_source_paths: Vec::new(),
+                rename_receipt: Some(receipt),
+                rename_bindings: Some(Vec::new()),
+            })
+            .unwrap();
+        app.poll_op_results();
+        std::fs::write(&before, "replacement bytes").unwrap();
+
+        app.run_rename_undo(op_id);
+        let result = app
+            .rename_undo_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("undo worker result");
+        app.finish_rename_undo(result.op_id, result.result);
+
+        let record = app.operation_history.front().unwrap();
+        assert!(matches!(
+            record.rename_undo,
+            Some(RenameUndoState::Unavailable { .. })
+        ));
+        assert!(
+            record
+                .message
+                .as_deref()
+                .is_some_and(|message| message.contains("Undo unavailable"))
+        );
+        assert_eq!(
+            std::fs::read_to_string(&before).unwrap(),
+            "replacement bytes"
+        );
+        assert_eq!(
+            std::fs::read_to_string(root.join("after.txt")).unwrap(),
+            "original bytes"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
     fn new_creation_dialog_targets_the_original_tab_and_displayed_directory() {
         let mut app = OttrinApp::default();
         let tab_id = app.state.active_tab().id;
@@ -22512,6 +23077,8 @@ mod tests {
             clipboard_generation: None,
             completed_sources: Some(1),
             completed_source_paths: Vec::new(),
+            rename_receipt: None,
+            rename_bindings: None,
         });
 
         app.poll_op_results();

@@ -81,5 +81,9 @@ These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 - Fanotify helper/service packaging.
 - Tab drag-and-drop is implemented with source and automated tests; packaged/manual acceptance remains pending.
 - List rubber-band selection is implemented with shared Grid semantics and source tests; packaged/manual acceptance remains pending.
-- Full undo for file operations.
+- Full undo for file operations. Linux has an initial session-only undo action for one completed
+  same-directory Rename: it rechecks the renamed link entry immediately before the same atomic
+  no-clobber rename used forward. Linux has no identity-conditional rename, so this is a
+  fail-closed stale-entry check with a residual external mutation TOCTOU window, not an
+  adversarial-race guarantee; undo for all other operations remains deferred.
 - Native Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing.
