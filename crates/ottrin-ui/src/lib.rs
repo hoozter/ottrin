@@ -15208,6 +15208,34 @@ impl OttrinApp {
         inner.response.rect
     }
 
+    fn start_rubber_band_selection(
+        &mut self,
+        tab_id: u64,
+        origin: egui::Pos2,
+        modifiers: egui::Modifiers,
+    ) {
+        if self
+            .tab_ui
+            .get(&tab_id)
+            .is_some_and(|ui_state| ui_state.rubber_band.is_some())
+        {
+            return;
+        }
+        self.focus_tab(tab_id);
+        let baseline = self
+            .tab_ui
+            .entry(tab_id)
+            .or_default()
+            .selected_paths
+            .clone();
+        self.tab_ui.entry(tab_id).or_default().rubber_band = Some(RubberBand {
+            origin,
+            current: origin,
+            baseline,
+            modifiers,
+        });
+    }
+
     fn update_rubber_band_selection(
         &mut self,
         ui: &egui::Ui,
@@ -15231,18 +15259,7 @@ impl OttrinApp {
                 .is_some_and(|pos| rubber_band_may_start(entry_rects, pos))
         {
             let origin = pointer.0.expect("pointer position checked above");
-            let baseline = self
-                .tab_ui
-                .entry(tab_id)
-                .or_default()
-                .selected_paths
-                .clone();
-            self.tab_ui.entry(tab_id).or_default().rubber_band = Some(RubberBand {
-                origin,
-                current: origin,
-                baseline,
-                modifiers: pointer.3,
-            });
+            self.start_rubber_band_selection(tab_id, origin, pointer.3);
         }
         let mut rubber_band = self.tab_ui.entry(tab_id).or_default().rubber_band.take()?;
         if let Some(pointer_pos) = pointer.0 {
@@ -23292,6 +23309,87 @@ mod tests {
 
         assert!(!rubber_band_may_start(&cells, egui::pos2(15.0, 15.0)));
         assert!(rubber_band_may_start(&cells, egui::pos2(35.0, 15.0)));
+    }
+
+    #[test]
+    fn rubber_band_start_transfers_tandem_command_ownership_once() {
+        let mut app = OttrinApp::default();
+        let left_id = app.state.active_tab().id;
+        let right_idx = app.state.new_tab(PathBuf::from("/tmp/rubber-band-right"));
+        let right_id = app.state.tabs[right_idx].id;
+        assert!(app.state.activate_tandem(0, right_idx).is_some());
+        app.focus_tab(left_id);
+
+        app.start_rubber_band_selection(right_id, egui::pos2(24.0, 32.0), egui::Modifiers::NONE);
+
+        assert_eq!(app.state.active_tab().id, right_id);
+        assert_eq!(
+            app.state
+                .link_view
+                .as_ref()
+                .expect("Tandem link")
+                .active_tab_id(),
+            right_id,
+            "starting in the inactive Tandem pane must route subsequent keyboard commands there"
+        );
+        assert!(app.tab_ui[&right_id].rubber_band.is_some());
+
+        app.start_rubber_band_selection(right_id, egui::pos2(30.0, 36.0), egui::Modifiers::NONE);
+        assert_eq!(app.state.active_tab().id, right_id);
+    }
+
+    #[test]
+    fn rejected_rubber_band_start_does_not_transfer_tandem_command_ownership() {
+        let mut app = OttrinApp::default();
+        let left_id = app.state.active_tab().id;
+        let right_idx = app.state.new_tab(PathBuf::from("/tmp/rubber-band-right"));
+        let right_id = app.state.tabs[right_idx].id;
+        assert!(app.state.activate_tandem(0, right_idx).is_some());
+        app.focus_tab(left_id);
+        let pointer = egui::pos2(24.0, 32.0);
+        let entry_rects = vec![(
+            PathBuf::from("/tmp/entry"),
+            Rect::from_center_size(pointer, egui::vec2(16.0, 16.0)),
+        )];
+        let ctx = Context::default();
+        let input = egui::RawInput {
+            screen_rect: Some(Rect::from_min_size(
+                egui::Pos2::ZERO,
+                egui::vec2(100.0, 100.0),
+            )),
+            events: vec![
+                egui::Event::PointerMoved(pointer),
+                egui::Event::PointerButton {
+                    pos: pointer,
+                    button: egui::PointerButton::Primary,
+                    pressed: true,
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ],
+            ..Default::default()
+        };
+
+        let _ = ctx.run(input, |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                assert!(
+                    app.update_rubber_band_selection(
+                        ui,
+                        right_id,
+                        &[],
+                        &entry_rects,
+                        Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(100.0, 100.0)),
+                    )
+                    .is_none()
+                );
+            });
+        });
+
+        assert_eq!(app.state.active_tab().id, left_id);
+        assert!(
+            app.tab_ui
+                .get(&right_id)
+                .is_none_or(|ui_state| ui_state.rubber_band.is_none())
+        );
     }
 
     #[test]
