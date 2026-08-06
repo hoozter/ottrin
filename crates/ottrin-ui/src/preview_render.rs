@@ -2,7 +2,9 @@ use crate::{
     Colors, MI_ARROW_BACK, MI_ARROW_FORWARD, MI_CONTENT_COPY, MI_DELETE, MI_EDIT, MI_FOLDER_OPEN,
     MI_FOLDER_ZIP, MI_OPEN_IN_NEW, file_icon_for_path, mix_color,
 };
-use egui::{Align, Align2, Color32, FontId, Layout, Rect, RichText, Sense, Stroke, Vec2};
+use egui::{
+    Align, Align2, Color32, FontId, Layout, Rect, RichText, ScrollArea, Sense, Stroke, Vec2,
+};
 use ottrin_preview::{PreviewData, PreviewKind};
 use std::path::Path;
 
@@ -123,19 +125,46 @@ pub(crate) fn render_preview_footer(ui: &mut egui::Ui, c: Colors, name: &str, bo
     });
 }
 
+pub(crate) fn scrollable_preview_height(available_height: f32, minimum_height: f32) -> f32 {
+    (available_height - 30.0).max(minimum_height)
+}
+
+fn render_scrollable_preview_text(
+    ui: &mut egui::Ui,
+    text: &str,
+    color: Color32,
+    minimum_height: f32,
+    id: impl std::hash::Hash,
+) {
+    let height = scrollable_preview_height(ui.available_height(), minimum_height);
+    let width = ui.available_width();
+    egui::Frame::new()
+        .stroke(Stroke::new(1.0, Color32::from_white_alpha(28)))
+        .show(ui, |ui| {
+            ui.set_width(width);
+            ScrollArea::vertical()
+                .id_salt(id)
+                .max_height(height)
+                .auto_shrink([false, false])
+                .show(ui, |ui| {
+                    ui.set_min_width(width);
+                    ui.add(
+                        egui::Label::new(
+                            RichText::new(text)
+                                .font(FontId::monospace(12.0))
+                                .color(color),
+                        )
+                        .wrap()
+                        .selectable(true),
+                    );
+                });
+        });
+}
+
 pub(crate) fn render_text_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
     let (metadata, extracted) = split_preview_extracted_text(body);
     let source = extracted.unwrap_or(body).trim();
-    let editor_h = (ui.available_height() - 30.0).max(160.0);
-    let mut text = source.to_string();
-    ui.add_sized(
-        [ui.available_width(), editor_h],
-        egui::TextEdit::multiline(&mut text)
-            .font(FontId::monospace(12.0))
-            .text_color(c.text)
-            .frame(true)
-            .interactive(true),
-    );
+    render_scrollable_preview_text(ui, source, c.text, 160.0, ("inspector_text", name));
     render_preview_footer(ui, c, name, metadata);
 }
 
@@ -146,16 +175,7 @@ pub(crate) fn render_archive_body_preview(ui: &mut egui::Ui, c: Colors, name: &s
         render_metadata_card_preview(ui, c, MI_FOLDER_ZIP, name, metadata);
         return;
     }
-    let editor_h = (ui.available_height() - 30.0).max(180.0);
-    let mut text = listing.to_string();
-    ui.add_sized(
-        [ui.available_width(), editor_h],
-        egui::TextEdit::multiline(&mut text)
-            .font(FontId::monospace(12.0))
-            .text_color(c.text)
-            .frame(true)
-            .interactive(true),
-    );
+    render_scrollable_preview_text(ui, listing, c.text, 180.0, ("inspector_archive", name));
     render_preview_footer(ui, c, name, metadata);
 }
 
@@ -168,16 +188,7 @@ pub(crate) fn render_document_body_preview(
 ) {
     let (metadata, extracted) = split_preview_extracted_text(body);
     if let Some(text) = extracted.filter(|text| !text.is_empty()) {
-        let editor_h = (ui.available_height() - 30.0).max(180.0);
-        let mut body = text.to_string();
-        ui.add_sized(
-            [ui.available_width(), editor_h],
-            egui::TextEdit::multiline(&mut body)
-                .font(FontId::monospace(12.0))
-                .text_color(c.text)
-                .frame(true)
-                .interactive(true),
-        );
+        render_scrollable_preview_text(ui, text, c.text, 180.0, ("inspector_document", name));
         render_preview_footer(ui, c, name, metadata);
     } else {
         render_metadata_card_preview(ui, c, icon, name, metadata);

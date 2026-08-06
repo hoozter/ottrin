@@ -21992,6 +21992,18 @@ mod tests {
     }
 
     #[test]
+    fn quick_inspector_text_regions_reserve_a_scrollable_viewport() {
+        assert_eq!(
+            preview_render::scrollable_preview_height(90.0, 160.0),
+            160.0
+        );
+        assert_eq!(
+            preview_render::scrollable_preview_height(260.0, 160.0),
+            230.0
+        );
+    }
+
+    #[test]
     fn storage_location_refresh_wakes_an_idle_ui_within_the_bound() {
         let ctx = Context::default();
         let delays = Arc::new(std::sync::Mutex::new(Vec::new()));
