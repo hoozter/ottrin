@@ -21529,28 +21529,29 @@ mod tests {
     use super::*;
 
     struct SearchTestFixture {
-        root: PathBuf,
+        temp_dir: tempfile::TempDir,
     }
 
     impl SearchTestFixture {
         fn new(name: &str) -> Self {
-            let root = std::env::temp_dir().join(format!(
-                "ottrin-ui-{name}-{}-{}",
-                std::process::id(),
-                std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .expect("clock after epoch")
-                    .as_nanos(),
-            ));
-            std::fs::create_dir_all(&root).expect("create search root");
-            Self { root }
+            let temp_dir = tempfile::Builder::new()
+                .prefix(&format!("ottrin-ui-{name}-"))
+                .tempdir()
+                .expect("create search fixture root");
+            Self { temp_dir }
+        }
+
+        fn root(&self) -> &Path {
+            self.temp_dir.path()
         }
     }
 
-    impl Drop for SearchTestFixture {
-        fn drop(&mut self) {
-            let _ = std::fs::remove_dir_all(&self.root);
-        }
+    #[test]
+    fn search_fixtures_use_distinct_owned_roots() {
+        let first = SearchTestFixture::new("distinct");
+        let second = SearchTestFixture::new("distinct");
+
+        assert_ne!(first.root(), second.root());
     }
 
     #[test]
@@ -25113,15 +25114,16 @@ mod tests {
     #[test]
     fn superseding_ui_negated_search_cancels_the_live_worker_request() {
         let fixture = SearchTestFixture::new("negated-search-supersession");
-        std::fs::write(fixture.root.join("entry.txt"), "indexed text")
+        let fixture_root = fixture.root().to_path_buf();
+        std::fs::write(fixture.root().join("entry.txt"), "indexed text")
             .expect("write indexed content");
         let config = SearchConfig {
-            include_roots: vec![fixture.root.clone()],
+            include_roots: vec![fixture.root().to_path_buf()],
             use_system_locate: false,
             ..SearchConfig::default()
         };
         let mut service =
-            SearchService::new_with_store_path(config, fixture.root.join("search.db"));
+            SearchService::new_with_store_path(config, fixture.root().join("search.db"));
         service.start();
         service
             .rebuild_index_blocking()
@@ -25141,13 +25143,22 @@ mod tests {
 
         app.search_ui.query = "!other".to_string();
         app.run_search_query();
+        let second = Arc::clone(
+            app.search_cancellation
+                .as_ref()
+                .expect("second UI request has cancellation token"),
+        );
 
         assert!(
             first.load(Ordering::Acquire),
             "the second UI request must interrupt the first negated-content worker"
         );
         let deadline = Instant::now() + Duration::from_secs(1);
-        while app.search_ui.search_inflight && Instant::now() < deadline {
+        while (app.search_ui.search_inflight
+            || Arc::strong_count(&first) > 1
+            || Arc::strong_count(&second) > 1)
+            && Instant::now() < deadline
+        {
             app.poll_search_results();
             std::thread::yield_now();
         }
@@ -25158,6 +25169,23 @@ mod tests {
         );
         assert!(app.search_ui.last_error.is_none());
         assert_eq!(app.search_ui.last_executed_query, "!other");
+        assert_eq!(
+            Arc::strong_count(&first),
+            1,
+            "cancelled query task must release its fixture-backed handle before teardown"
+        );
+        assert_eq!(
+            Arc::strong_count(&second),
+            1,
+            "replacement query task must release its fixture-backed handle before teardown"
+        );
+
+        drop(app);
+        drop(fixture);
+        assert!(
+            !fixture_root.exists(),
+            "fixture cleanup must run only after search service and query tasks are gone"
+        );
     }
 
     #[cfg(target_os = "windows")]
