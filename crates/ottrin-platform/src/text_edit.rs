@@ -368,7 +368,6 @@ mod linux {
 
     struct Stage {
         directory: OwnedFd,
-        name: OsString,
         file: File,
         source_mode: u32,
     }
@@ -453,7 +452,6 @@ mod linux {
                 }
                 return Ok(Self {
                     directory,
-                    name,
                     file,
                     source_mode: source.mode,
                 });
@@ -486,9 +484,9 @@ mod linux {
         }
 
         fn retention_required(self, reason: &str) -> TextEditError {
+            drop(self);
             TextEditError::StageRetentionRequired(format!(
-                "{reason}; private staging directory `{}` was not cleaned automatically",
-                self.name.to_string_lossy()
+                "{reason}; no automatic cleanup was attempted after private staging"
             ))
         }
     }
@@ -613,10 +611,12 @@ mod tests {
             Err(TextEditError::Write("forced test failure".to_string()))
         });
 
-        assert!(matches!(
-            result,
-            Err(TextEditError::StageRetentionRequired(_))
-        ));
+        let error = result.expect_err("replaced stage must not be removed");
+        assert!(matches!(error, TextEditError::StageRetentionRequired(_)));
+        assert!(
+            !error.to_string().contains(".ottrin-text-edit-"),
+            "retention error must not expose a replaceable public staging name"
+        );
         assert_eq!(unsaved_buffer, "my unsaved edit\n");
         assert_eq!(std::fs::read_to_string(path).unwrap(), "original\n");
     }
