@@ -86,9 +86,28 @@ use window_chrome::{
 };
 
 const STORAGE_LOCATION_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
+const CREATION_MODAL_INPUT_HEIGHT: f32 = 38.0;
+const CREATION_MODAL_ACTION_SIZE: Vec2 = Vec2::new(84.0, 32.0);
 
 fn single_file_pane_background(colors: &Colors) -> Color32 {
     colors.smart_panel_bg
+}
+
+fn creation_modal_input_height() -> f32 {
+    CREATION_MODAL_INPUT_HEIGHT
+}
+
+fn creation_modal_action_size() -> Vec2 {
+    CREATION_MODAL_ACTION_SIZE
+}
+
+fn creation_action_label(action: &str, enabled: bool, colors: &Colors) -> RichText {
+    let color = if enabled {
+        colors.text
+    } else {
+        mix_color(colors.text_muted, colors.panel_raised, 0.18)
+    };
+    RichText::new(action).color(color)
 }
 
 fn schedule_storage_location_refresh(ctx: &Context) {
@@ -16659,7 +16678,8 @@ impl OttrinApp {
                                 .size(10.5),
                         );
                         ui.add_space(6.0);
-                        let response = ui.add(
+                        let response = ui.add_sized(
+                            Vec2::new(ui.available_width(), creation_modal_input_height()),
                             egui::TextEdit::singleline(&mut pending.name_input)
                                 .id(egui::Id::new("creation_name_input"))
                                 .desired_width(ui.available_width())
@@ -16680,8 +16700,17 @@ impl OttrinApp {
                                 cancel = true;
                             }
                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                                let enabled = pending.error.is_none();
                                 if ui
-                                    .add_enabled(pending.error.is_none(), egui::Button::new(action))
+                                    .add_enabled_ui(enabled, |ui| {
+                                        ui.add_sized(
+                                            creation_modal_action_size(),
+                                            egui::Button::new(creation_action_label(
+                                                action, enabled, &c,
+                                            )),
+                                        )
+                                    })
+                                    .inner
                                     .clicked()
                                 {
                                     submit = true;
@@ -21954,6 +21983,12 @@ mod tests {
         assert_eq!(creation_modal_width(280.0), 320.0);
         assert_eq!(creation_modal_width(480.0), 400.0);
         assert_eq!(creation_modal_width(1440.0), 400.0);
+    }
+
+    #[test]
+    fn creation_modal_controls_keep_a_comfortable_shared_hit_area() {
+        assert_eq!(creation_modal_input_height(), 38.0);
+        assert_eq!(creation_modal_action_size(), Vec2::new(84.0, 32.0));
     }
 
     #[test]
