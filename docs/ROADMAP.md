@@ -21,7 +21,7 @@ Implemented:
 - Quick Inspector as a full Space-triggered window with visual image, bounded multi-page PDF previews with Previous/Next/go-to-page navigation, bounded DOCX/XLSX/XLSM/ODS content-preview PNGs, and a Unix-only bounded first-slide PPTX text card; it retains extracted PDF/Office text and metadata fallbacks. Complete direct UTF-8 text previews can be edited on Linux through the fail-closed atomic replacement path; derived, truncated, linked, metadata-bearing, sparse, and unsupported-platform sources remain read-only. The PPTX card is non-authoritative. Office output is a truthful content preview, not a faithful document layout.
 - Grid rubber-band selection is implemented and source-tested; packaged/manual acceptance is pending.
 - Linux native Open With discovery and launch path is implemented with source and automated coverage; other platform discovery remains fallback/manual.
-- Generated visual text/source cards, bounded direct-child folder thumbnail collages, and bounded PDF page navigation are implemented and test-covered; recursive folder-size thumbnails remain deferred.
+- Generated visual text/source cards, bounded direct-child folder thumbnail collages, bounded recursive folder-size metadata, and bounded PDF page navigation are implemented and test-covered.
 - Theme presets and custom theme editing.
 - Linux portable tarball, Linux AppImage, Windows portable zip, and per-user Windows installer packaging scripts.
 - Windows portable and installer packaging is designed to retain native WGPU as the Automatic fallback and include a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime, app-local loader/driver payload, renderer preferences, diagnostic override, and complete notices. These remain exact-artifact verification and native-runtime gates; no current package acceptance is claimed.
@@ -75,7 +75,6 @@ These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 
 - Advanced Office navigation/editing or faithful Office layout beyond the bounded content preview required for v1.
 - Rich file thumbnails beyond the implemented text-card and thumbnail-collage path remain deferred: video frame thumbnails and broader document variants where platform support or dependencies make sense.
-- Recursive folder size thumbnails.
 - Native desktop Open With discovery parity beyond Linux remains deferred.
 - Media playback and advanced image tools.
 - Fanotify helper/service packaging.

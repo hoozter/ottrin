@@ -113,6 +113,8 @@ const MAX_TAR_SCAN_ENTRIES: usize = 4_096;
 const MAX_TAR_SCAN_BYTES: u64 = 256 * 1024 * 1024;
 const MAX_TAR_PATH_BYTES: usize = 768;
 const MAX_TAR_LISTED_ENTRIES: usize = 200;
+const MAX_FOLDER_RECURSIVE_ENTRIES: usize = 16_384;
+const MAX_FOLDER_RECURSIVE_DEPTH: usize = 64;
 
 /// Stops an archive stream at a fixed input budget.
 struct LimitedReader<R> {
@@ -3626,12 +3628,14 @@ fn preview_folder(title: String, path: &Path) -> PreviewData {
             }
 
             let total = files + folders + symlinks + other;
+            let recursive_size = summarize_folder_recursive(path, MAX_FOLDER_RECURSIVE_ENTRIES);
             let mut lines = vec![
                 "Filetype: Folder".to_string(),
                 format!("Items: {total}"),
                 format!("Folders: {folders}"),
                 format!("Files: {files}"),
                 format!("Known direct file size: {}", format_size(direct_file_bytes)),
+                recursive_size.display_line(),
             ];
             if symlinks > 0 {
                 lines.push(format!("Symlinks: {symlinks}"));
@@ -3665,6 +3669,83 @@ fn preview_folder(title: String, path: &Path) -> PreviewData {
             open_external: false,
         },
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct FolderRecursiveSize {
+    bytes: u64,
+    incomplete: bool,
+}
+
+impl FolderRecursiveSize {
+    fn display_line(self) -> String {
+        let prefix = if self.incomplete { "At least " } else { "" };
+        let suffix = if self.incomplete {
+            " (scan bounded)"
+        } else {
+            ""
+        };
+        format!(
+            "Known recursive file size: {prefix}{}{suffix}",
+            format_size(self.bytes)
+        )
+    }
+}
+
+fn summarize_folder_recursive(path: &Path, entry_limit: usize) -> FolderRecursiveSize {
+    let mut size = FolderRecursiveSize {
+        bytes: 0,
+        incomplete: false,
+    };
+    let mut pending = vec![(path.to_path_buf(), 0usize)];
+    let mut visited_entries = 0usize;
+
+    while let Some((directory, depth)) = pending.pop() {
+        let entries = match std::fs::read_dir(directory) {
+            Ok(entries) => entries,
+            Err(_) => {
+                size.incomplete = true;
+                continue;
+            }
+        };
+        for entry in entries {
+            if visited_entries >= entry_limit {
+                size.incomplete = true;
+                return size;
+            }
+            visited_entries += 1;
+            let entry = match entry {
+                Ok(entry) => entry,
+                Err(_) => {
+                    size.incomplete = true;
+                    continue;
+                }
+            };
+            let kind = match entry.file_type() {
+                Ok(kind) => kind,
+                Err(_) => {
+                    size.incomplete = true;
+                    continue;
+                }
+            };
+            if kind.is_symlink() {
+                continue;
+            }
+            if kind.is_file() {
+                match entry.metadata() {
+                    Ok(metadata) => size.bytes = size.bytes.saturating_add(metadata.len()),
+                    Err(_) => size.incomplete = true,
+                }
+            } else if kind.is_dir() {
+                if depth < MAX_FOLDER_RECURSIVE_DEPTH {
+                    pending.push((entry.path(), depth + 1));
+                } else {
+                    size.incomplete = true;
+                }
+            }
+        }
+    }
+    size
 }
 
 // ── PDF preview via lopdf ──────────────────────────────────────────────
@@ -10120,5 +10201,32 @@ mod tests {
             Err(PlyVisualError::InputTooLarge { .. })
         ));
         std::fs::remove_file(path).expect("remove oversized PLY fixture");
+    }
+
+    #[test]
+    fn folder_preview_reports_nested_file_sizes_without_following_symlinks() {
+        let root = temp_path("folder-recursive-size");
+        let outside = temp_path("folder-recursive-size-outside");
+        std::fs::create_dir_all(root.join("nested")).expect("create nested fixture");
+        std::fs::create_dir_all(&outside).expect("create outside fixture");
+        std::fs::write(root.join("direct.txt"), b"abc").expect("write direct fixture");
+        std::fs::write(root.join("nested/child.txt"), b"de").expect("write nested fixture");
+        std::fs::write(outside.join("not-counted.txt"), b"not-counted")
+            .expect("write outside fixture");
+
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(&outside, root.join("outside-link"))
+            .expect("create directory symlink");
+
+        let preview = preview_folder("folder-recursive-size".to_string(), &root);
+
+        assert!(
+            preview.body.contains("Known recursive file size: 5 B"),
+            "nested regular files must contribute while a directory symlink stays untraversed: {}",
+            preview.body
+        );
+
+        let _ = std::fs::remove_dir_all(root);
+        let _ = std::fs::remove_dir_all(outside);
     }
 }
