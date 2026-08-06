@@ -166,12 +166,20 @@ pub struct SearchQueryResult {
 
 impl SearchService {
     pub fn new(config: SearchConfig) -> Self {
+        Self::new_with_store_path(config, default_search_store_path())
+    }
+
+    /// Creates a search service backed by the supplied SQLite store.
+    ///
+    /// Callers that run an isolated instance, such as a test harness, can use
+    /// this to avoid contending with the user's active search index.
+    pub fn new_with_store_path(config: SearchConfig, store_path: PathBuf) -> Self {
         Self {
             config: Arc::new(RwLock::new(config)),
             index: Arc::new(RwLock::new(IndexState::default())),
             worker: None,
             writer_lock: None,
-            store_path: default_search_store_path(),
+            store_path,
             launcher: worker::real_launcher(),
             watch_filesystem: true,
         }

@@ -1652,6 +1652,7 @@ impl Default for OttrinApp {
 
 impl Drop for OttrinApp {
     fn drop(&mut self) {
+        #[cfg(not(test))]
         self.persist_config();
         self.search_service.stop();
     }
@@ -21527,6 +21528,31 @@ fn theme_preview_strip(ui: &mut egui::Ui, preview: Colors, width: f32, height: f
 mod tests {
     use super::*;
 
+    struct SearchTestFixture {
+        root: PathBuf,
+    }
+
+    impl SearchTestFixture {
+        fn new(name: &str) -> Self {
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-ui-{name}-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .expect("clock after epoch")
+                    .as_nanos(),
+            ));
+            std::fs::create_dir_all(&root).expect("create search root");
+            Self { root }
+        }
+    }
+
+    impl Drop for SearchTestFixture {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.root);
+        }
+    }
+
     #[test]
     fn preview_request_scheduler_supersedes_a_returning_content_generation() {
         let path = PathBuf::from("/tmp/ottrin-preview-scheduler.sqlite");
@@ -25086,22 +25112,16 @@ mod tests {
 
     #[test]
     fn superseding_ui_negated_search_cancels_the_live_worker_request() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-ui-negated-search-supersession-{}-{}",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .expect("clock after epoch")
-                .as_nanos()
-        ));
-        std::fs::create_dir_all(&root).expect("create search root");
-        std::fs::write(root.join("entry.txt"), "indexed text").expect("write indexed content");
+        let fixture = SearchTestFixture::new("negated-search-supersession");
+        std::fs::write(fixture.root.join("entry.txt"), "indexed text")
+            .expect("write indexed content");
         let config = SearchConfig {
-            include_roots: vec![root.clone()],
+            include_roots: vec![fixture.root.clone()],
             use_system_locate: false,
             ..SearchConfig::default()
         };
-        let mut service = SearchService::new(config);
+        let mut service =
+            SearchService::new_with_store_path(config, fixture.root.join("search.db"));
         service.start();
         service
             .rebuild_index_blocking()
@@ -25138,7 +25158,6 @@ mod tests {
         );
         assert!(app.search_ui.last_error.is_none());
         assert_eq!(app.search_ui.last_executed_query, "!other");
-        let _ = std::fs::remove_dir_all(root);
     }
 
     #[cfg(target_os = "windows")]
