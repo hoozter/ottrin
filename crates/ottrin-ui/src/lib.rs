@@ -16,6 +16,7 @@ use ottrin_core::{
     SearchSort, SortBy, TandemSide, ThemeCustomization, ThemeMode, ThemePreset, ViewMode,
     default_home_dir, format_modified, format_size, format_size_units,
 };
+use ottrin_platform::text_edit::{TextEditSession, text_editing_supported};
 use ottrin_platform::{
     DefaultPlatform, MoveDisposition, OpenWithApplication, PlatformError, PlatformOps,
     PrivilegedAvailability, StorageLocation, StorageLocationKind, TrashItem,
@@ -23,7 +24,9 @@ use ottrin_platform::{
 };
 #[cfg(target_os = "linux")]
 use ottrin_platform::{discover_retained_move_transactions, move_recovery::JournalPhase};
-use ottrin_preview::{PreviewData, PreviewKind, PreviewRequest, load_preview};
+use ottrin_preview::{
+    PreviewData, PreviewKind, PreviewRequest, is_complete_text_preview, load_preview,
+};
 use ottrin_search::{
     LocateScheduleStatus, SearchIndexDiagnostics, SearchQueryResult, SearchService,
     default_roots as default_search_roots,
@@ -895,11 +898,26 @@ struct PreviewOverlay {
     visual_fit: bool,
     visual_zoom: f32,
     pdf_page_index: usize,
+    text_editor: Option<PreviewTextEditor>,
+    text_edit_discard_confirmation: bool,
     /// The Space press that opens a native child viewport can also be
     /// delivered to that viewport. Ignore Space briefly after opening so that
     /// press cannot immediately close it. A time guard does not depend on the
     /// child viewport receiving the corresponding key-release event.
     space_close_ready_at: Option<Instant>,
+}
+
+#[derive(Debug)]
+struct PreviewTextEditor {
+    session: TextEditSession,
+    buffer: String,
+    error: Option<String>,
+}
+
+impl PreviewTextEditor {
+    fn is_dirty(&self) -> bool {
+        self.buffer != self.session.contents()
+    }
 }
 
 #[derive(Debug)]
@@ -7296,6 +7314,9 @@ impl OttrinApp {
 
             // ── Preview ───────────────────────────────────────────────────────
             if input.key_pressed(Key::Escape) {
+                if self.preview.visible && !self.request_preview_close() {
+                    return;
+                }
                 let cleared_selection = self.clear_multi_selection(tab_id);
                 if self.sidebar == SidebarSection::Search {
                     self.sidebar = SidebarSection::None;
@@ -7304,7 +7325,9 @@ impl OttrinApp {
                     self.tab_ui.entry(tab_id).or_default().miller_focus_hint =
                         Some(MillerFocusHint::CurrentDir);
                 }
-                self.close_preview(ctx);
+                if self.preview.visible {
+                    self.close_preview(ctx);
+                }
                 if !cleared_selection {
                     self.command_frame.visible = false;
                     self.command_frame.error = None;
@@ -7526,18 +7549,94 @@ impl OttrinApp {
         self.preview.path = None;
         self.preview.data = None;
         self.preview.pdf_page_index = 0;
+        self.preview.text_editor = None;
+        self.preview.text_edit_discard_confirmation = false;
         self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
         ctx.request_repaint();
     }
 
+    fn request_preview_close(&mut self) -> bool {
+        if self
+            .preview
+            .text_editor
+            .as_ref()
+            .is_some_and(PreviewTextEditor::is_dirty)
+        {
+            self.preview.text_edit_discard_confirmation = true;
+            false
+        } else {
+            self.preview.text_editor = None;
+            true
+        }
+    }
+
+    fn begin_preview_text_edit(&mut self, path: &Path) {
+        match TextEditSession::open(path) {
+            Ok(session) => {
+                self.preview.text_editor = Some(PreviewTextEditor {
+                    buffer: session.contents().to_string(),
+                    session,
+                    error: None,
+                });
+            }
+            Err(error) => {
+                self.set_status_message(format!("Text editing unavailable: {error}"), false, 6)
+            }
+        }
+    }
+
+    fn save_preview_text_edit(&mut self) {
+        let Some(editor) = self.preview.text_editor.as_mut() else {
+            return;
+        };
+        match editor.session.save(&editor.buffer) {
+            Ok(()) => {
+                let path = self.preview.path.clone();
+                self.preview.text_editor = None;
+                self.preview.text_edit_discard_confirmation = false;
+                self.preview.data = None;
+                self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
+                if let Some(path) = path {
+                    self.request_preview_load(PreviewTarget::Overlay, path, EntryKind::File);
+                }
+                self.set_status_message("Text saved", true, 3);
+            }
+            Err(error) => {
+                editor.error = Some(error.to_string());
+            }
+        }
+    }
+
+    fn cancel_preview_text_edit(&mut self) {
+        self.preview.text_editor = None;
+        self.preview.text_edit_discard_confirmation = false;
+    }
+
     fn open_preview_entry(&mut self, entry: FileEntry) {
         let path = entry.path.clone();
+        if self.preview.visible
+            && self.preview.path.as_ref() != Some(&path)
+            && self
+                .preview
+                .text_editor
+                .as_ref()
+                .is_some_and(PreviewTextEditor::is_dirty)
+        {
+            self.set_status_message(
+                "Finish or cancel unsaved text edits before previewing another file",
+                false,
+                5,
+            );
+            return;
+        }
         self.preview.path = Some(path.clone());
         self.preview.visible = true;
         self.preview.space_close_ready_at = Some(Instant::now() + Duration::from_millis(180));
         self.preview.visual_fit = true;
         self.preview.visual_zoom = 1.0;
         self.preview.pdf_page_index = 0;
+        self.preview.text_editor = None;
+        self.preview.text_edit_discard_confirmation = false;
         self.preview.data = None;
         self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
         self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
@@ -7580,11 +7679,26 @@ impl OttrinApp {
         if self.preview.path.as_ref() == Some(&entry.path) {
             return;
         }
+        if self
+            .preview
+            .text_editor
+            .as_ref()
+            .is_some_and(PreviewTextEditor::is_dirty)
+        {
+            self.set_status_message(
+                "Finish or cancel unsaved text edits before previewing another file",
+                false,
+                5,
+            );
+            return;
+        }
         let path = entry.path.clone();
         self.preview.path = Some(path.clone());
         self.preview.visual_fit = true;
         self.preview.visual_zoom = 1.0;
         self.preview.pdf_page_index = 0;
+        self.preview.text_editor = None;
+        self.preview.text_edit_discard_confirmation = false;
         self.preview.data = None;
         self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
     }
@@ -16046,11 +16160,13 @@ impl OttrinApp {
 
         ctx.show_viewport_immediate(vp_id, builder, |inspector_ctx, _class| {
         self.apply_theme_to_ctx(inspector_ctx);
-        if inspector_ctx.input(|i| i.viewport().close_requested()) {
+        if inspector_ctx.input(|i| i.viewport().close_requested()) && self.request_preview_close() {
             close_requested = true;
             return;
         }
-        let inspector_modal_active = self.pending_rename.is_some() || self.pending_delete.is_some();
+        let inspector_modal_active = self.pending_rename.is_some()
+            || self.pending_delete.is_some()
+            || self.preview.text_edit_discard_confirmation;
         if inspector_modal_active {
             if self.pending_delete.is_some() {
                 self.handle_delete_confirmation_keyboard(inspector_ctx);
@@ -16059,14 +16175,15 @@ impl OttrinApp {
             let escape =
                 inspector_ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Escape));
             let space_pressed = inspector_ctx.input(|i| i.key_pressed(Key::Space));
-            let space_close = !self.command_frame.visible
+            let space_close = self.preview.text_editor.is_none()
+                && !self.command_frame.visible
                 && preview_space_should_close(
                     self.preview.space_close_ready_at,
                     Instant::now(),
                     space_pressed,
-                );
+            );
             if escape || space_close {
-                close_requested = true;
+                close_requested = self.request_preview_close();
                 return;
             } else if self.command_frame.visible {
                 inspector_ctx.input_mut(|i| {
@@ -16076,6 +16193,13 @@ impl OttrinApp {
                     let _ = i.consume_key(egui::Modifiers::NONE, Key::ArrowUp);
                     let _ = i.consume_key(egui::Modifiers::NONE, Key::Delete);
                 });
+            } else if self.preview.text_editor.is_some()
+                && inspector_ctx.input_mut(|i| {
+                    i.consume_key(egui::Modifiers::CTRL, Key::S)
+                        || i.consume_key(egui::Modifiers::COMMAND, Key::S)
+                })
+            {
+                self.save_preview_text_edit();
             } else if !inspector_ctx.wants_keyboard_input() {
                 let command_text = inspector_ctx.input(|i| {
                     if i.modifiers.any() {
@@ -16194,6 +16318,43 @@ impl OttrinApp {
                             )
                             .response
                             .on_hover_text("More actions");
+                            if self.preview.text_editor.is_some() {
+                                if inspector_icon_button(
+                                    ui,
+                                    MI_EDIT,
+                                    "Cancel edits",
+                                    "Discard the unsaved text edits without changing the file.",
+                                    c,
+                                )
+                                .clicked()
+                                {
+                                    self.cancel_preview_text_edit();
+                                }
+                                let save_enabled = self
+                                    .preview
+                                    .text_editor
+                                    .as_ref()
+                                    .is_some_and(PreviewTextEditor::is_dirty);
+                                if ui
+                                    .add_enabled(save_enabled, egui::Button::new("Save"))
+                                    .on_hover_text("Atomically save the edited text (Ctrl+S).")
+                                    .clicked()
+                                {
+                                    self.save_preview_text_edit();
+                                }
+                            } else if text_editing_supported()
+                                && is_complete_text_preview(&preview)
+                                && inspector_icon_button(
+                                    ui,
+                                    MI_EDIT,
+                                    "Edit text",
+                                    "Edit this complete UTF-8 text file.",
+                                    c,
+                                )
+                                .clicked()
+                            {
+                                self.begin_preview_text_edit(&path);
+                            }
                             if matches!(preview.kind, PreviewKind::Image) {
                                 if inspector_icon_button(
                                     ui,
@@ -16320,7 +16481,28 @@ impl OttrinApp {
 
                     match preview.kind {
                         PreviewKind::Text => {
-                            render_text_body_preview(ui, c, &name, &preview.body);
+                            if let Some(editor) = self.preview.text_editor.as_mut() {
+                                ScrollArea::vertical()
+                                    .id_salt(("inspector_text_editor", &path))
+                                    .show(ui, |ui| {
+                                        ui.add(
+                                            egui::TextEdit::multiline(&mut editor.buffer)
+                                                .font(FontId::monospace(12.0))
+                                                .desired_rows(18)
+                                                .lock_focus(true),
+                                        );
+                                        if let Some(error) = &editor.error {
+                                            ui.add_space(8.0);
+                                            ui.label(
+                                                RichText::new(error)
+                                                    .color(c.error)
+                                                    .size(11.5),
+                                            );
+                                        }
+                                    });
+                            } else {
+                                render_text_body_preview(ui, c, &name, &preview.body);
+                            }
                         }
                         PreviewKind::Image
                         | PreviewKind::CameraRawMetadata
@@ -16496,6 +16678,32 @@ impl OttrinApp {
         }
         if self.pending_delete.is_some() {
             self.render_delete_confirmation(inspector_ctx);
+        }
+        if self.preview.text_edit_discard_confirmation {
+            let mut keep_editing = false;
+            let mut discard_changes = false;
+            egui::Window::new("Discard unsaved text changes?")
+                .collapsible(false)
+                .resizable(false)
+                .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
+                .show(inspector_ctx, |ui| {
+                    ui.label("Closing the Quick Inspector will discard these unsaved edits.");
+                    ui.add_space(10.0);
+                    ui.horizontal(|ui| {
+                        if ui.button("Keep editing").clicked() {
+                            keep_editing = true;
+                        }
+                        if ui.button("Discard changes").clicked() {
+                            discard_changes = true;
+                        }
+                    });
+                });
+            if keep_editing {
+                self.preview.text_edit_discard_confirmation = false;
+            } else if discard_changes {
+                self.cancel_preview_text_edit();
+                close_requested = true;
+            }
         }
         });
 
@@ -19281,7 +19489,7 @@ impl eframe::App for OttrinApp {
             self.handle_move_conflict_confirmation_keyboard(ctx);
         } else if self.pending_empty_trash {
             self.handle_empty_trash_confirmation_keyboard(ctx);
-        } else {
+        } else if !(self.preview.visible && self.preview.text_editor.is_some()) {
             self.handle_keyboard(ctx);
             self.dismiss_command_frame_if_inactive(ctx);
         }
@@ -19295,10 +19503,13 @@ impl eframe::App for OttrinApp {
             && !self.any_address_bar_editing()
             && !self.command_frame.visible
         {
-            let space = ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Space));
+            let space = self.preview.text_editor.is_none()
+                && ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, Key::Space));
             if space {
                 if self.preview.visible {
-                    self.close_preview(ctx);
+                    if self.request_preview_close() {
+                        self.close_preview(ctx);
+                    }
                 } else {
                     self.open_preview();
                 }
@@ -22070,6 +22281,96 @@ mod tests {
             preview_render::scrollable_preview_height(260.0, 160.0),
             230.0
         );
+    }
+
+    #[test]
+    fn dirty_quick_inspector_text_edits_require_an_explicit_close_or_cancel() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-text-edit-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        std::fs::create_dir(&root).expect("create fixture directory");
+        let original = root.join("original.txt");
+        let next = root.join("next.txt");
+        std::fs::write(&original, "original\n").expect("write original text");
+        std::fs::write(&next, "next\n").expect("write next text");
+
+        let session = TextEditSession::open(&original).expect("open editable text");
+        let mut app = OttrinApp::default();
+        app.preview.visible = true;
+        app.preview.path = Some(original.clone());
+        app.preview.text_editor = Some(PreviewTextEditor {
+            session,
+            buffer: "unsaved change\n".to_string(),
+            error: None,
+        });
+
+        app.open_preview_entry(FileEntry {
+            name: "next.txt".to_string(),
+            path: next,
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: None,
+            modified_unix_secs: None,
+        });
+        assert_eq!(app.preview.path, Some(original));
+        assert!(!app.request_preview_close());
+        assert!(app.preview.text_edit_discard_confirmation);
+        assert!(app.preview.text_editor.is_some());
+
+        app.cancel_preview_text_edit();
+        assert!(app.request_preview_close());
+        assert!(app.preview.text_editor.is_none());
+
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn quick_inspector_text_save_conflict_keeps_the_editor_buffer() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-text-save-conflict-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        std::fs::create_dir(&root).expect("create fixture directory");
+        let path = root.join("notes.txt");
+        std::fs::write(&path, "original\n").expect("write source text");
+        let session = TextEditSession::open(&path).expect("open editable text");
+
+        let mut app = OttrinApp::default();
+        app.preview.path = Some(path.clone());
+        app.preview.text_editor = Some(PreviewTextEditor {
+            session,
+            buffer: "unsaved edit\n".to_string(),
+            error: None,
+        });
+        std::fs::write(&path, "external edit\n").expect("change source text");
+
+        app.save_preview_text_edit();
+
+        let editor = app
+            .preview
+            .text_editor
+            .as_ref()
+            .expect("keep text editor open");
+        assert_eq!(editor.buffer, "unsaved edit\n");
+        assert!(
+            editor
+                .error
+                .as_deref()
+                .is_some_and(|error| error.contains("changed"))
+        );
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "external edit\n");
+
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]

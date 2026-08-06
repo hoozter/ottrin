@@ -584,6 +584,17 @@ pub struct PreviewData {
     pub open_external: bool,
 }
 
+/// True only when this is a complete, directly-read text preview rather than a
+/// bounded/truncated display card. Callers must still take a fresh source
+/// snapshot before permitting mutation.
+pub fn is_complete_text_preview(preview: &PreviewData) -> bool {
+    preview.kind == PreviewKind::Text
+        && preview
+            .body
+            .split_once(EXTRACTED_TEXT_MARKER)
+            .is_some_and(|(metadata, _)| metadata.lines().any(|line| line == "Preview: Complete"))
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PreviewView {
     Metadata,
@@ -2344,8 +2355,35 @@ fn format_size(bytes: u64) -> String {
 
 fn preview_text(title: String, path: &Path) -> PreviewData {
     const LIMIT: usize = 128 * 1024;
-    match std::fs::read(path) {
-        Ok(bytes) => {
+    match std::fs::File::open(path) {
+        Ok(mut file) => {
+            let initial_metadata = match file.metadata() {
+                Ok(metadata) => metadata,
+                Err(err) => {
+                    return PreviewData {
+                        title,
+                        kind: PreviewKind::Unsupported,
+                        body: format!("Failed to read file: {err}"),
+                        open_external: true,
+                    };
+                }
+            };
+            let initial_size = initial_metadata.len();
+            let initial_modified = initial_metadata.modified().ok();
+            let mut bytes = Vec::with_capacity(initial_size.min((LIMIT + 1) as u64) as usize);
+            if let Err(err) = file.by_ref().take(LIMIT as u64 + 1).read_to_end(&mut bytes) {
+                return PreviewData {
+                    title,
+                    kind: PreviewKind::Unsupported,
+                    body: format!("Failed to read file: {err}"),
+                    open_external: true,
+                };
+            }
+            let complete = initial_size <= LIMIT as u64
+                && bytes.len() as u64 == initial_size
+                && file.metadata().is_ok_and(|metadata| {
+                    metadata.len() == initial_size && metadata.modified().ok() == initial_modified
+                });
             let head = &bytes[..bytes.len().min(LIMIT)];
             match std::str::from_utf8(head) {
                 Ok(s) => {
@@ -2354,16 +2392,19 @@ fn preview_text(title: String, path: &Path) -> PreviewData {
                         format!("Filetype: {}", text_kind_label(path)),
                         "Encoding: UTF-8".to_string(),
                         format!("Lines: {line_count}"),
+                        if !complete {
+                            "Preview: Truncated".to_string()
+                        } else {
+                            "Preview: Complete".to_string()
+                        },
                     ];
-                    if let Ok(meta) = std::fs::metadata(path) {
-                        lines.push(format!("Size: {}", format_size(meta.len())));
-                        if let Ok(modified) = meta.modified()
-                            && let Ok(dur) = modified.duration_since(std::time::UNIX_EPOCH)
-                        {
-                            lines.push(format!("Modified: {}", format_modified(dur.as_secs())));
-                        }
+                    lines.push(format!("Size: {}", format_size(initial_size)));
+                    if let Some(modified) = initial_modified
+                        && let Ok(dur) = modified.duration_since(std::time::UNIX_EPOCH)
+                    {
+                        lines.push(format!("Modified: {}", format_modified(dur.as_secs())));
                     }
-                    let text = if bytes.len() > LIMIT {
+                    let text = if !complete {
                         format!("{s}\n\n...(text preview truncated)")
                     } else {
                         s.to_string()
@@ -7283,8 +7324,34 @@ mod tests {
         assert!(preview.body.contains("Lines: 2"));
         assert!(preview.body.contains(EXTRACTED_TEXT_MARKER));
         assert!(preview.body.contains("fn main()"));
+        assert!(is_complete_text_preview(&preview));
 
         let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn only_complete_text_previews_are_editable_candidates() {
+        let complete = temp_path("complete.txt");
+        std::fs::write(&complete, "complete\n").expect("write complete text");
+        let complete_preview = preview_text("complete.txt".to_string(), &complete);
+        assert!(is_complete_text_preview(&complete_preview));
+
+        let truncated = temp_path("truncated.txt");
+        std::fs::write(&truncated, vec![b'x'; 128 * 1024 + 1]).expect("write large text");
+        let truncated_preview = preview_text("truncated.txt".to_string(), &truncated);
+        assert_eq!(truncated_preview.kind, PreviewKind::Text);
+        assert!(!is_complete_text_preview(&truncated_preview));
+
+        let derived_preview = PreviewData {
+            title: "report.pdf".to_string(),
+            kind: PreviewKind::Pdf,
+            body: "Extracted text is read-only".to_string(),
+            open_external: true,
+        };
+        assert!(!is_complete_text_preview(&derived_preview));
+
+        let _ = std::fs::remove_file(complete);
+        let _ = std::fs::remove_file(truncated);
     }
 
     #[test]
