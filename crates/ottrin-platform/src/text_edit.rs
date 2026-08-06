@@ -1,16 +1,12 @@
-//! Bounded local text-edit snapshots and atomic publication.
+//! Bounded Linux text-edit snapshots and descriptor-relative publication.
 //!
 //! This module deliberately does not classify file formats. The preview layer
 //! decides whether a file is a supported text preview; this boundary admits
-//! only a complete, regular, UTF-8 local file and rechecks its identity and
-//! content generation immediately before it publishes a replacement.
+//! only complete, demonstrably plain, UTF-8 local files. Linux saves retain a
+//! descriptor for the source parent so a later pathname substitution cannot
+//! redirect staging or publication. Other platforms stay read-only.
 
-use same_file::Handle;
-use sha2::{Digest, Sha256};
-use std::fs::{File, OpenOptions, Permissions};
-use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
-use std::time::SystemTime;
+use std::path::Path;
 use thiserror::Error;
 
 /// The largest complete text file the first Inspector editor will load.
@@ -19,11 +15,12 @@ use thiserror::Error;
 /// read-only rather than presenting a truncated buffer as editable content.
 pub const MAX_EDITABLE_TEXT_BYTES: u64 = 128 * 1024;
 
-/// Atomic replacement is enabled only where this implementation has the
-/// required same-directory publication semantics. Other platforms stay
-/// read-only until their native replacement boundary is proven.
+/// Atomic replacement is enabled only on Linux, where the implementation pins
+/// the source parent and uses descriptor-relative primitives throughout save.
+/// Other platforms stay read-only until their native replacement boundary is
+/// proven.
 pub const fn text_editing_supported() -> bool {
-    cfg!(target_family = "unix")
+    cfg!(target_os = "linux")
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -36,35 +33,28 @@ pub enum TextEditError {
     Symlink,
     #[error("hard-linked files cannot be atomically replaced without changing their link topology")]
     HardLinked,
+    #[error("this file has metadata that safe text editing cannot preserve")]
+    UnsupportedMetadata,
     #[error("text files larger than {limit} bytes remain read-only")]
     TooLarge { limit: u64 },
     #[error("only valid UTF-8 text can be edited")]
     InvalidUtf8,
     #[error("the file changed after editing began; your unsaved changes are still in the editor")]
     Conflict,
+    #[error(
+        "the edited text may be published, but directory durability could not be confirmed: {0}"
+    )]
+    DurabilityUncertain(String),
     #[error("could not save the edited text: {0}")]
     Write(String),
     #[error("could not open the text file: {0}")]
     Read(String),
 }
 
-/// An immutable source binding captured when editing begins.
-///
-/// The buffer belongs to the UI. Keeping this binding immutable means a failed
-/// save cannot consume or replace that buffer.
 #[derive(Debug)]
 pub struct TextEditSession {
-    path: PathBuf,
-    source: TextEditSnapshot,
-}
-
-#[derive(Debug)]
-struct TextEditSnapshot {
-    identity: Handle,
-    bytes: Vec<u8>,
-    digest: [u8; 32],
-    modified: Option<SystemTime>,
-    permissions: Permissions,
+    #[cfg(target_os = "linux")]
+    inner: linux::Session,
 }
 
 impl TextEditSession {
@@ -72,210 +62,399 @@ impl TextEditSession {
     /// and content generation. The caller must still decide whether the
     /// preview format itself is editable.
     pub fn open(path: &Path) -> Result<Self, TextEditError> {
-        if !text_editing_supported() {
-            return Err(TextEditError::NotAvailable);
+        #[cfg(target_os = "linux")]
+        {
+            linux::Session::open(path).map(|inner| Self { inner })
         }
-        Ok(Self {
-            path: path.to_path_buf(),
-            source: TextEditSnapshot::capture(path)?,
-        })
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = path;
+            Err(TextEditError::NotAvailable)
+        }
     }
 
     pub fn contents(&self) -> &str {
-        // `capture` validates UTF-8 before constructing a session.
-        std::str::from_utf8(&self.source.bytes).expect("text-edit session stores valid UTF-8")
-    }
-
-    /// Atomically replaces the original file only when its identity and exact
-    /// captured generation still match. Any pre-publication mismatch is a
-    /// conflict and leaves the caller's buffer untouched.
-    pub fn save(&self, edited_text: &str) -> Result<(), TextEditError> {
-        self.save_with_publisher(edited_text, publish_atomically)
-    }
-
-    fn save_with_publisher<F>(&self, edited_text: &str, publish: F) -> Result<(), TextEditError>
-    where
-        F: FnOnce(&Path, &[u8], &Permissions) -> Result<(), TextEditError>,
-    {
-        let current = TextEditSnapshot::capture(&self.path).map_err(|_| TextEditError::Conflict)?;
-        if !self.source.matches(&current) {
-            return Err(TextEditError::Conflict);
-        }
-        if edited_text.as_bytes() == self.source.bytes {
-            return Ok(());
-        }
-        publish(&self.path, edited_text.as_bytes(), &current.permissions)
-    }
-}
-
-impl TextEditSnapshot {
-    fn capture(path: &Path) -> Result<Self, TextEditError> {
-        let link_metadata = std::fs::symlink_metadata(path).map_err(read_error)?;
-        if link_metadata.file_type().is_symlink() {
-            return Err(TextEditError::Symlink);
-        }
-        if !link_metadata.is_file() {
-            return Err(TextEditError::NotRegularFile);
-        }
-
-        let mut file = File::open(path).map_err(read_error)?;
-        let identity =
-            Handle::from_file(file.try_clone().map_err(read_error)?).map_err(read_error)?;
-        let path_identity = Handle::from_path(path).map_err(read_error)?;
-        if identity != path_identity {
-            return Err(TextEditError::Conflict);
-        }
-
-        let initial_metadata = file.metadata().map_err(read_error)?;
-        if !initial_metadata.is_file() {
-            return Err(TextEditError::NotRegularFile);
-        }
-        reject_hard_linked_file(&initial_metadata)?;
-        let initial_size = initial_metadata.len();
-        if initial_size > MAX_EDITABLE_TEXT_BYTES {
-            return Err(TextEditError::TooLarge {
-                limit: MAX_EDITABLE_TEXT_BYTES,
-            });
-        }
-        let initial_modified = initial_metadata.modified().ok();
-
-        let mut bytes = Vec::with_capacity(initial_size as usize);
-        Read::by_ref(&mut file)
-            .take(MAX_EDITABLE_TEXT_BYTES + 1)
-            .read_to_end(&mut bytes)
-            .map_err(read_error)?;
-        if bytes.len() as u64 > MAX_EDITABLE_TEXT_BYTES {
-            return Err(TextEditError::TooLarge {
-                limit: MAX_EDITABLE_TEXT_BYTES,
-            });
-        }
-        let final_metadata = file.metadata().map_err(read_error)?;
-        if final_metadata.len() != initial_size
-            || final_metadata.modified().ok() != initial_modified
+        #[cfg(target_os = "linux")]
         {
-            return Err(TextEditError::Conflict);
+            self.inner.contents()
         }
-        let final_link_metadata = std::fs::symlink_metadata(path).map_err(read_error)?;
-        if final_link_metadata.file_type().is_symlink() {
-            return Err(TextEditError::Conflict);
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = self;
+            unreachable!("text-edit sessions cannot be created on this platform")
         }
-        let final_path_identity = Handle::from_path(path).map_err(read_error)?;
-        if final_path_identity != identity {
-            return Err(TextEditError::Conflict);
-        }
-        std::str::from_utf8(&bytes).map_err(|_| TextEditError::InvalidUtf8)?;
-
-        Ok(Self {
-            identity,
-            digest: Sha256::digest(&bytes).into(),
-            bytes,
-            modified: initial_modified,
-            permissions: final_metadata.permissions(),
-        })
     }
 
-    fn matches(&self, current: &Self) -> bool {
-        self.identity == current.identity
-            && self.bytes.len() == current.bytes.len()
-            && self.digest == current.digest
-            && self.modified == current.modified
-    }
-}
-
-#[cfg(target_family = "unix")]
-fn reject_hard_linked_file(metadata: &std::fs::Metadata) -> Result<(), TextEditError> {
-    use std::os::unix::fs::MetadataExt;
-
-    (metadata.nlink() == 1)
-        .then_some(())
-        .ok_or(TextEditError::HardLinked)
-}
-
-#[cfg(not(target_family = "unix"))]
-fn reject_hard_linked_file(_metadata: &std::fs::Metadata) -> Result<(), TextEditError> {
-    Ok(())
-}
-
-fn publish_atomically(
-    path: &Path,
-    contents: &[u8],
-    permissions: &Permissions,
-) -> Result<(), TextEditError> {
-    let parent = path.parent().ok_or_else(|| {
-        TextEditError::Write("the text file does not have a parent directory".to_string())
-    })?;
-    let temp_path = create_private_temp_file(parent, contents, permissions)?;
-    let publish_result = std::fs::rename(&temp_path, path).map_err(write_error);
-    if publish_result.is_err() {
-        let _ = std::fs::remove_file(&temp_path);
-    }
-    publish_result
-}
-
-fn create_private_temp_file(
-    parent: &Path,
-    contents: &[u8],
-    permissions: &Permissions,
-) -> Result<PathBuf, TextEditError> {
-    for _ in 0..32 {
-        let path = parent.join(format!(".ottrin-text-edit-{}", random_suffix()?));
-        let file = open_private_temp_file(&path);
-        let mut file = match file {
-            Ok(file) => file,
-            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
-            Err(error) => return Err(write_error(error)),
-        };
-        let write_result = (|| {
-            file.write_all(contents).map_err(write_error)?;
-            file.set_permissions(permissions.clone())
-                .map_err(write_error)?;
-            file.sync_all().map_err(write_error)
-        })();
-        if let Err(error) = write_result {
-            drop(file);
-            let _ = std::fs::remove_file(&path);
-            return Err(error);
+    /// Replaces the original file only when its descriptor-relative identity
+    /// and exact captured generation still match. Any pre-publication mismatch
+    /// is a conflict and leaves the caller's buffer untouched.
+    pub fn save(&self, edited_text: &str) -> Result<(), TextEditError> {
+        #[cfg(target_os = "linux")]
+        {
+            self.inner.save(edited_text)
         }
-        return Ok(path);
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = edited_text;
+            Err(TextEditError::NotAvailable)
+        }
     }
-    Err(TextEditError::Write(
-        "could not reserve a private temporary file".to_string(),
-    ))
+
+    #[cfg(all(test, target_os = "linux"))]
+    fn save_with_test_hook(
+        &self,
+        edited_text: &str,
+        hook: impl FnOnce(linux::TestPoint) -> Result<(), TextEditError>,
+    ) -> Result<(), TextEditError> {
+        self.inner.save_with_test_hook(edited_text, hook)
+    }
 }
 
-#[cfg(target_family = "unix")]
-fn open_private_temp_file(path: &Path) -> std::io::Result<File> {
-    use std::os::unix::fs::OpenOptionsExt;
+#[cfg(target_os = "linux")]
+mod linux {
+    use super::{MAX_EDITABLE_TEXT_BYTES, TextEditError};
+    use rustix::fd::OwnedFd;
+    use rustix::fs::{
+        AtFlags, CWD, FileType, Mode, OFlags, RenameFlags, fchmod, flistxattr, fstat, fsync,
+        openat, renameat_with, statat, unlinkat,
+    };
+    use rustix::io::Errno;
+    use sha2::{Digest, Sha256};
+    use std::ffi::{OsStr, OsString};
+    use std::fs::File;
+    use std::io::{Read, Write};
+    use std::os::fd::AsRawFd;
+    use std::path::Path;
 
-    OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .mode(0o600)
-        .open(path)
+    #[derive(Debug)]
+    pub(super) struct Session {
+        parent: OwnedFd,
+        name: OsString,
+        source: Snapshot,
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    struct Identity {
+        device: u64,
+        inode: u64,
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    struct PlainMetadata {
+        identity: Identity,
+        mode: u32,
+        uid: u32,
+        gid: u32,
+        size: u64,
+        blocks: u64,
+        modified: (i64, u64),
+        changed: (i64, u64),
+    }
+
+    #[derive(Debug)]
+    struct Snapshot {
+        metadata: PlainMetadata,
+        bytes: Vec<u8>,
+        digest: [u8; 32],
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    pub(super) enum TestPoint {
+        BeforePublication,
+    }
+
+    impl Session {
+        pub(super) fn open(path: &Path) -> Result<Self, TextEditError> {
+            let parent_path = path.parent().ok_or_else(|| {
+                TextEditError::Read("the text file does not have a parent directory".to_string())
+            })?;
+            let name = path.file_name().ok_or_else(|| {
+                TextEditError::Read("the text file does not have a file name".to_string())
+            })?;
+            let parent = openat(
+                CWD,
+                parent_path,
+                OFlags::RDONLY | OFlags::DIRECTORY | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .map_err(read_error)?;
+            let source = Snapshot::capture(&parent, name)?;
+            Ok(Self {
+                parent,
+                name: name.to_os_string(),
+                source,
+            })
+        }
+
+        pub(super) fn contents(&self) -> &str {
+            std::str::from_utf8(&self.source.bytes).expect("text-edit session stores valid UTF-8")
+        }
+
+        pub(super) fn save(&self, edited_text: &str) -> Result<(), TextEditError> {
+            self.save_with_hook(edited_text, |_| Ok(()))
+        }
+
+        #[cfg(test)]
+        pub(super) fn save_with_test_hook(
+            &self,
+            edited_text: &str,
+            hook: impl FnOnce(TestPoint) -> Result<(), TextEditError>,
+        ) -> Result<(), TextEditError> {
+            self.save_with_hook(edited_text, hook)
+        }
+
+        fn save_with_hook(
+            &self,
+            edited_text: &str,
+            hook: impl FnOnce(TestPoint) -> Result<(), TextEditError>,
+        ) -> Result<(), TextEditError> {
+            let current =
+                Snapshot::capture(&self.parent, &self.name).map_err(|_| TextEditError::Conflict)?;
+            if !self.source.matches(&current) {
+                return Err(TextEditError::Conflict);
+            }
+            if edited_text.as_bytes() == self.source.bytes {
+                return Ok(());
+            }
+
+            let stage = Stage::create(&self.parent, edited_text.as_bytes(), &current.metadata)?;
+            let final_current = match Snapshot::capture(&self.parent, &self.name) {
+                Ok(snapshot) => snapshot,
+                Err(_) => {
+                    stage.discard(&self.parent);
+                    return Err(TextEditError::Conflict);
+                }
+            };
+            if !self.source.matches(&final_current) {
+                stage.discard(&self.parent);
+                return Err(TextEditError::Conflict);
+            }
+            if let Err(error) = hook(TestPoint::BeforePublication) {
+                stage.discard(&self.parent);
+                return Err(error);
+            }
+            stage.publish(&self.parent, &self.name)
+        }
+    }
+
+    impl Snapshot {
+        fn capture(parent: &OwnedFd, name: &OsStr) -> Result<Self, TextEditError> {
+            let named = statat(parent, name, AtFlags::SYMLINK_NOFOLLOW).map_err(read_error)?;
+            if FileType::from_raw_mode(named.st_mode) == FileType::Symlink {
+                return Err(TextEditError::Symlink);
+            }
+            if FileType::from_raw_mode(named.st_mode) != FileType::RegularFile {
+                return Err(TextEditError::NotRegularFile);
+            }
+
+            let fd = openat(
+                parent,
+                name,
+                OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .map_err(read_error)?;
+            let mut file = File::from(fd);
+            let initial = PlainMetadata::classify(&file)?;
+            if !initial.matches_stat(&named) {
+                return Err(TextEditError::Conflict);
+            }
+            if initial.size > MAX_EDITABLE_TEXT_BYTES {
+                return Err(TextEditError::TooLarge {
+                    limit: MAX_EDITABLE_TEXT_BYTES,
+                });
+            }
+
+            let mut bytes = Vec::with_capacity(initial.size as usize);
+            Read::by_ref(&mut file)
+                .take(MAX_EDITABLE_TEXT_BYTES + 1)
+                .read_to_end(&mut bytes)
+                .map_err(read_error)?;
+            if bytes.len() as u64 > MAX_EDITABLE_TEXT_BYTES {
+                return Err(TextEditError::TooLarge {
+                    limit: MAX_EDITABLE_TEXT_BYTES,
+                });
+            }
+
+            let final_metadata = PlainMetadata::classify(&file)?;
+            let final_named =
+                statat(parent, name, AtFlags::SYMLINK_NOFOLLOW).map_err(read_error)?;
+            if initial != final_metadata || !final_metadata.matches_stat(&final_named) {
+                return Err(TextEditError::Conflict);
+            }
+            std::str::from_utf8(&bytes).map_err(|_| TextEditError::InvalidUtf8)?;
+
+            Ok(Self {
+                metadata: final_metadata,
+                digest: Sha256::digest(&bytes).into(),
+                bytes,
+            })
+        }
+
+        fn matches(&self, current: &Self) -> bool {
+            self.metadata == current.metadata
+                && self.bytes.len() == current.bytes.len()
+                && self.digest == current.digest
+        }
+    }
+
+    impl PlainMetadata {
+        fn classify(file: &File) -> Result<Self, TextEditError> {
+            let stat = fstat(file).map_err(read_error)?;
+            if FileType::from_raw_mode(stat.st_mode) != FileType::RegularFile {
+                return Err(TextEditError::NotRegularFile);
+            }
+            if stat.st_nlink != 1 {
+                return Err(TextEditError::HardLinked);
+            }
+            if stat.st_mode & 0o7000 != 0 {
+                return Err(TextEditError::UnsupportedMetadata);
+            }
+            let size = u64::try_from(stat.st_size).map_err(|_| TextEditError::Conflict)?;
+            let blocks =
+                u64::try_from(stat.st_blocks).map_err(|_| TextEditError::UnsupportedMetadata)?;
+            if blocks.saturating_mul(512) < size {
+                return Err(TextEditError::UnsupportedMetadata);
+            }
+            reject_inode_flags(file)?;
+            let mut names = [];
+            if flistxattr(file, &mut names).map_err(|_| TextEditError::UnsupportedMetadata)? != 0 {
+                return Err(TextEditError::UnsupportedMetadata);
+            }
+            Ok(Self {
+                identity: Identity {
+                    device: stat.st_dev,
+                    inode: stat.st_ino,
+                },
+                mode: stat.st_mode & 0o777,
+                uid: stat.st_uid,
+                gid: stat.st_gid,
+                size,
+                blocks,
+                modified: (stat.st_mtime as i64, stat.st_mtime_nsec),
+                changed: (stat.st_ctime as i64, stat.st_ctime_nsec),
+            })
+        }
+
+        fn matches_stat(&self, stat: &rustix::fs::Stat) -> bool {
+            self.identity
+                == Identity {
+                    device: stat.st_dev,
+                    inode: stat.st_ino,
+                }
+        }
+    }
+
+    fn reject_inode_flags(file: &File) -> Result<(), TextEditError> {
+        const IOC_READ: libc::c_ulong = 2;
+        const IOC_SIZE_SHIFT: libc::c_ulong = 16;
+        const IOC_DIR_SHIFT: libc::c_ulong = 30;
+        const FS_IOC_GETFLAGS: libc::c_ulong = (IOC_READ << IOC_DIR_SHIFT)
+            | ((std::mem::size_of::<libc::c_long>() as libc::c_ulong) << IOC_SIZE_SHIFT)
+            | ((b'f' as libc::c_ulong) << 8)
+            | 1;
+
+        let mut flags: libc::c_long = 0;
+        // FS_IOC_GETFLAGS reads the inode flags without changing filesystem state.
+        let result = unsafe { libc::ioctl(file.as_raw_fd(), FS_IOC_GETFLAGS, &mut flags) };
+        if result != 0 || flags != 0 {
+            return Err(TextEditError::UnsupportedMetadata);
+        }
+        Ok(())
+    }
+
+    struct Stage {
+        name: OsString,
+    }
+
+    impl Stage {
+        fn create(
+            parent: &OwnedFd,
+            contents: &[u8],
+            source: &PlainMetadata,
+        ) -> Result<Self, TextEditError> {
+            for _ in 0..32 {
+                let name = random_stage_name()?;
+                let fd = match openat(
+                    parent,
+                    &name,
+                    OFlags::WRONLY
+                        | OFlags::CREATE
+                        | OFlags::EXCL
+                        | OFlags::NOFOLLOW
+                        | OFlags::CLOEXEC,
+                    Mode::RUSR | Mode::WUSR,
+                ) {
+                    Ok(fd) => fd,
+                    Err(Errno::EXIST) => continue,
+                    Err(error) => return Err(write_error(error)),
+                };
+                let mut file = File::from(fd);
+                let result = (|| {
+                    file.write_all(contents).map_err(write_error)?;
+                    fchmod(&file, Mode::from_raw_mode(source.mode)).map_err(write_error)?;
+                    file.sync_all().map_err(write_error)?;
+                    let staged = PlainMetadata::classify(&file)?;
+                    if staged.mode != source.mode
+                        || staged.uid != source.uid
+                        || staged.gid != source.gid
+                    {
+                        return Err(TextEditError::UnsupportedMetadata);
+                    }
+                    fsync(parent).map_err(write_error)
+                })();
+                drop(file);
+                if let Err(error) = result {
+                    let _ = unlinkat(parent, &name, AtFlags::empty());
+                    return Err(error);
+                }
+                return Ok(Self { name });
+            }
+            Err(TextEditError::Write(
+                "could not reserve a private staging file".to_string(),
+            ))
+        }
+
+        fn publish(self, parent: &OwnedFd, target: &OsStr) -> Result<(), TextEditError> {
+            if let Err(error) =
+                renameat_with(parent, &self.name, parent, target, RenameFlags::empty())
+            {
+                self.discard(parent);
+                return Err(write_error(error));
+            }
+            fsync(parent).map_err(|error| TextEditError::DurabilityUncertain(error.to_string()))
+        }
+
+        fn discard(self, parent: &OwnedFd) {
+            let _ = unlinkat(parent, &self.name, AtFlags::empty());
+        }
+    }
+
+    fn random_stage_name() -> Result<OsString, TextEditError> {
+        let mut bytes = [0_u8; 16];
+        getrandom::fill(&mut bytes).map_err(|error| TextEditError::Write(error.to_string()))?;
+        let mut name = String::from(".ottrin-text-edit-");
+        for byte in bytes {
+            use std::fmt::Write as _;
+            write!(&mut name, "{byte:02x}").expect("writing to a String cannot fail");
+        }
+        Ok(name.into())
+    }
+
+    fn read_error(error: impl std::fmt::Display) -> TextEditError {
+        TextEditError::Read(error.to_string())
+    }
+
+    fn write_error(error: impl std::fmt::Display) -> TextEditError {
+        TextEditError::Write(error.to_string())
+    }
 }
 
-#[cfg(not(target_family = "unix"))]
-fn open_private_temp_file(path: &Path) -> std::io::Result<File> {
-    OpenOptions::new().write(true).create_new(true).open(path)
-}
-
-fn random_suffix() -> Result<String, TextEditError> {
-    let mut bytes = [0_u8; 16];
-    getrandom::fill(&mut bytes).map_err(|error| TextEditError::Write(error.to_string()))?;
-    Ok(bytes.iter().map(|byte| format!("{byte:02x}")).collect())
-}
-
-fn read_error(error: std::io::Error) -> TextEditError {
-    TextEditError::Read(error.to_string())
-}
-
-fn write_error(error: std::io::Error) -> TextEditError {
-    TextEditError::Write(error.to_string())
-}
-
-#[cfg(test)]
+#[cfg(all(test, target_os = "linux"))]
 mod tests {
     use super::*;
+    use std::fs::Permissions;
+    use std::path::PathBuf;
     use std::sync::atomic::{AtomicU64, Ordering};
 
     static TEST_ID: AtomicU64 = AtomicU64::new(0);
@@ -366,13 +545,43 @@ mod tests {
         let session = TextEditSession::open(&path).expect("open editable text");
         let unsaved_buffer = "my unsaved edit\n".to_string();
 
-        let result = session.save_with_publisher(&unsaved_buffer, |_, _, _| {
+        let result = session.save_with_test_hook(&unsaved_buffer, |_| {
             Err(TextEditError::Write("forced test failure".to_string()))
         });
 
         assert!(matches!(result, Err(TextEditError::Write(_))));
         assert_eq!(unsaved_buffer, "my unsaved edit\n");
         assert_eq!(std::fs::read_to_string(path).unwrap(), "original\n");
+    }
+
+    #[test]
+    fn parent_path_replacement_cannot_redirect_publication() {
+        let root = TestDir::new();
+        let parent = root.0.join("parent");
+        let moved_parent = root.0.join("moved-parent");
+        std::fs::create_dir(&parent).expect("create source parent");
+        let path = parent.join("notes.txt");
+        std::fs::write(&path, "original\n").expect("write source text");
+        let session = TextEditSession::open(&path).expect("open editable text");
+
+        session
+            .save_with_test_hook("edited\n", |_| {
+                std::fs::rename(&parent, &moved_parent).expect("move validated parent");
+                std::fs::create_dir(&parent).expect("replace parent path");
+                std::fs::write(parent.join("notes.txt"), "unrelated\n")
+                    .expect("write unrelated replacement");
+                Ok(())
+            })
+            .expect("publish through the pinned parent");
+
+        assert_eq!(
+            std::fs::read_to_string(moved_parent.join("notes.txt")).unwrap(),
+            "edited\n"
+        );
+        assert_eq!(
+            std::fs::read_to_string(parent.join("notes.txt")).unwrap(),
+            "unrelated\n"
+        );
     }
 
     #[test]
@@ -426,5 +635,49 @@ mod tests {
             Err(TextEditError::HardLinked)
         ));
         assert_eq!(std::fs::read_to_string(alias).unwrap(), "target\n");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn xattr_bearing_text_remains_read_only_when_supported_by_the_fixture() {
+        use rustix::fs::{XattrFlags, fsetxattr};
+
+        let root = TestDir::new();
+        let path = root.file("notes.txt", "original\n");
+        let file = std::fs::File::open(&path).expect("open xattr fixture");
+        if fsetxattr(
+            &file,
+            "user.ottrin-text-edit-test",
+            b"present",
+            XattrFlags::empty(),
+        )
+        .is_err()
+        {
+            return;
+        }
+
+        assert!(matches!(
+            TextEditSession::open(&path),
+            Err(TextEditError::UnsupportedMetadata)
+        ));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn special_mode_text_remains_read_only_when_supported_by_the_fixture() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let root = TestDir::new();
+        let path = root.file("notes.txt", "original\n");
+        std::fs::set_permissions(&path, Permissions::from_mode(0o4755))
+            .expect("set setuid fixture mode");
+        if std::fs::metadata(&path).unwrap().permissions().mode() & 0o7000 == 0 {
+            return;
+        }
+
+        assert!(matches!(
+            TextEditSession::open(&path),
+            Err(TextEditError::UnsupportedMetadata)
+        ));
     }
 }

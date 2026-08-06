@@ -21,6 +21,7 @@ sha2 = "0.10"
 [target.'cfg(target_os = "linux")'.dependencies]
 rustix = { version = "0.38", features = ["fs", "process"] }
 gio = "0.20.12"
+libc = "0.2"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_NetworkManagement_WNet", "Win32_Storage_FileSystem"] }

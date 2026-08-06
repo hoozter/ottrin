@@ -2744,6 +2744,7 @@ dependencies = [
  "chrono",
  "getrandom 0.3.4",
  "gio",
+ "libc",
  "opener",
  "ottrin-core",
  "rustix 0.38.44",

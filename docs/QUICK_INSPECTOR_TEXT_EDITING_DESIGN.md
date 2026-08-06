@@ -1,29 +1,58 @@
-# Quick Inspector Text Editing: Unapproved Safety Proposal
+# Quick Inspector Text Editing: Limited Linux Safety Boundary
 
-Status: **unapproved proposed design**. No production editing is implemented,
-enabled, or authorized by this document. Text/code editing remains deferred and
-is not a v1 release gate.
+Status: **implemented only for the coordinator-authorized Linux/plain-file
+slice**. Text editing is not a v1 release gate. Windows, macOS, BSD, and other
+platforms remain read-only/fail-closed; the broader cross-platform proposal
+below remains deferred.
 
-The current Quick Inspector loads a `PreviewData` snapshot asynchronously.
-Its editable-looking `egui::TextEdit` widgets display a copied preview string;
-they are not editor state and have no save operation. This remains true until a
-separate coordinator value decision, independent architecture reviews, native
-evidence, and explicit implementation authorization have all occurred.
+The Quick Inspector loads a `PreviewData` snapshot asynchronously. On Linux,
+an eligible complete UTF-8 text preview can open a bounded editor and save its
+buffer through the platform boundary. Failed saves retain that buffer. This
+does not authorize broader editing, format support, or platform enablement.
+
+## Implemented Linux/plain-file support boundary
+
+The current mode accepts only one existing regular UTF-8 file no larger than
+128 KiB. Opening pins its parent directory descriptor and basename. Every
+subsequent source open, metadata check, staging operation, cleanup, and
+publication is relative to that descriptor; a renamed or substituted pathname
+parent cannot redirect the save to an unrelated replacement directory.
+
+Before admission and again immediately before publication, the platform checks
+the descriptor-relative file identity, content digest, size, timestamps, mode,
+owner/group, link count, sparse layout, inode flags, and xattr list. It rejects
+symlinks, hard links, xattrs (including ACLs, security labels, and
+capabilities), setuid/setgid/sticky modes, sparse files, nonzero inode flags,
+and any source whose owner/group cannot exactly match a freshly staged inode.
+The stage starts as a private `0600` file, receives the source's ordinary mode
+bits exactly, is synchronized, and is reclassified before it can replace the
+source. The parent directory is synchronized before and after the descriptor-
+relative rename.
+
+The final kernel scheduling interval between the last identity check and
+`renameat` remains inherent: an actor that can mutate the *already pinned*
+directory can replace the target in that interval and have that replacement
+overwritten. This implementation removes the earlier parent-path validation and
+staging gap; it does not claim compare-and-swap publication. A successful save
+uses ordinary replacement semantics and therefore updates file timestamps. If
+the final parent-directory sync fails after rename, the result explicitly says
+that text may already be published but directory durability is unconfirmed;
+the editor keeps its unsaved buffer. There is no crash journal or recovery
+claim for this limited editor mode.
 
 ## Scope and non-goals
 
-Any future first mode would edit one already-existing regular UTF-8 text/code
-file from an explicit `EditableTextFormat` allowlist. It would have no autosave,
+This mode edits one already-existing complete UTF-8 text preview. It has no autosave,
 blind overwrite, rebase/merge, file creation, Save As, directory/archive/package
 editing, symlink following, elevated retry, or file-operation Undo/Copy/Cut/Move
 integration. PDF, Office, images, audio/video, archives, folders, generic
 fallbacks, alternate encodings, and rendered previews remain read-only.
 
-An editable format must not be inferred from `PreviewKind`; preview
-classification must never enable editing. A future UI must explain ineligibility
-truthfully, but no UI editor/control is authorized by this proposal.
+Preview completeness remains an admission requirement; truncated or failed
+previews never become editable. The UI reports platform and metadata rejection
+truthfully.
 
-## Required ownership and provenance model
+## Remaining ownership and provenance requirements for any expansion
 
 The future platform boundary, not `ottrin-ui`, owns opaque immutable values:
 
@@ -56,7 +85,7 @@ independent image rotation. The model must define lease owner, acquisition
 conflict, cancellation/shutdown release, and terminal states. A text save never
 enters `FileCommand`, privileged retry, or path-based Undo.
 
-## Proposed safe open and encoding contract
+## Deferred safe-open and encoding contract
 
 A future open operation returns a snapshot token only after it has opened a
 regular non-link object through the resolved target, captured its stable
@@ -76,7 +105,7 @@ The initial mode rejects a link count other than one at open and immediately
 before conceptual publication (`st_nlink` on Linux and handle-derived link count
 on Windows). Atomic replacement does not preserve hard-link topology.
 
-## Proposed native transaction constraints (not implementation authority)
+## Residual native transaction constraints beyond the limited implementation
 
 Before any native GREEN work, the design must be independently reviewed again.
 The supported threat model must explicitly acknowledge that neither Linux
@@ -88,13 +117,14 @@ truthfully, and never claim that a replacement observed before publication
 cannot be overwritten. `RENAME_EXCHANGE` is not a hidden workaround because it
 mutates the destination namespace.
 
-If native publication is ever evaluated, temporary content belongs only in a
-newly created `0700` private staging directory with a retained
-descriptor/handle. All staging operations are descriptor-relative. Collision
-handling, ownership marker/identity, close order, cleanup order, and crash
-orphan inspection must be explicit and bounded. If ownership becomes uncertain,
-retain and report the orphan; never unlink a public-parent name after a separate
-identity check.
+The implemented Linux slice uses a private `0600` staged file in the retained
+source-parent descriptor rather than a general transaction directory. Any
+future multi-file, cross-directory, or crash-recovery mode needs a newly
+created `0700` private staging directory with its own retained descriptor/
+handle. Collision handling, ownership marker/identity, close order, cleanup
+order, and crash orphan inspection must be explicit and bounded. If ownership
+becomes uncertain, retain and report the orphan; never unlink a public-parent
+name after a separate identity check.
 
 Metadata policy must be a fail-closed platform matrix, validated by fixtures
 before capability becomes writable. Linux must explicitly classify POSIX ACLs,
@@ -110,14 +140,12 @@ checks, the `SetFileInformationByHandle` versus `ReplaceFileW` choice and its
 limits, `FlushFileBuffers` behavior, security-descriptor treatment, and
 post-replace durability result. Unsupported conditions remain read-only.
 
-## Authorized RED-0 only: pure, non-mutating contract work
+## Deferred expansion work
 
-After the required value decision and explicit task authorization, the only
-permitted first slice is a pure state model and fake/in-memory syscall model.
-It may define the platform-owned opaque values, admission lease, phases,
-results, and errors above. It must not create real temporary files, write,
-rename, copy metadata, call arbitrary paths, expose a production API, or alter
-the UI.
+Any expansion beyond the implemented Linux/plain-file mode requires a new value
+decision and explicit task authorization. It must not treat this narrow mode as
+evidence that the broader ownership, metadata, crash, or cross-platform model
+is safe.
 
 RED tests must cover:
 
@@ -138,7 +166,7 @@ caller-controlled host target, and no installation. Crash evidence requires
 subprocess phase barriers, forced termination, reopening inspection, and
 inspect/report-only cleanup unless exclusive ownership is proven.
 
-## Gates before any future enablement
+## Gates before broader future enablement
 
 1. Independent Linux architecture/data-safety review before Linux native GREEN.
 2. Independent Windows architecture review, then Windows native runtime and
