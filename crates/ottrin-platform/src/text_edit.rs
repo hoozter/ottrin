@@ -119,8 +119,8 @@ mod linux {
     use super::{MAX_EDITABLE_TEXT_BYTES, TextEditError};
     use rustix::fd::OwnedFd;
     use rustix::fs::{
-        AtFlags, CWD, FileType, Mode, OFlags, RenameFlags, SeekFrom, fchmod, flistxattr, fstat,
-        fsync, mkdirat, openat, renameat_with, seek, statat,
+        AtFlags, CWD, FileType, Mode, OFlags, RenameFlags, fchmod, flistxattr, fstat, fsync,
+        mkdirat, openat, renameat_with, statat,
     };
     use rustix::io::Errno;
     use sha2::{Digest, Sha256};
@@ -346,22 +346,160 @@ mod linux {
         }
     }
 
+    const FIEMAP_FLAG_SYNC: u32 = 0x0000_0001;
+    pub(super) const FIEMAP_EXTENT_LAST: u32 = 0x0000_0001;
+    #[cfg(test)]
+    pub(super) const FIEMAP_EXTENT_UNKNOWN: u32 = 0x0000_0002;
+    #[cfg(test)]
+    pub(super) const FIEMAP_EXTENT_UNWRITTEN: u32 = 0x0000_0800;
+    const FIEMAP_BATCH_EXTENTS: usize = 32;
+
+    #[repr(C)]
+    #[derive(Clone, Copy, Default)]
+    struct Fiemap {
+        start: u64,
+        length: u64,
+        flags: u32,
+        mapped_extents: u32,
+        extent_count: u32,
+        _reserved: u32,
+    }
+
+    #[repr(C)]
+    #[derive(Clone, Copy, Default)]
+    pub(super) struct FiemapExtent {
+        logical: u64,
+        _physical: u64,
+        length: u64,
+        _reserved64: [u64; 2],
+        flags: u32,
+        _reserved: [u32; 3],
+    }
+
+    #[cfg(test)]
+    impl FiemapExtent {
+        pub(super) fn for_test(logical: u64, length: u64, flags: u32) -> Self {
+            Self {
+                logical,
+                length,
+                flags,
+                ..Self::default()
+            }
+        }
+    }
+
+    #[repr(C)]
+    struct FiemapRequest {
+        map: Fiemap,
+        extents: [FiemapExtent; FIEMAP_BATCH_EXTENTS],
+    }
+
     fn require_dense_logical_range(file: &File, size: u64) -> Result<(), TextEditError> {
         if size == 0 {
             return Ok(());
         }
 
-        let original_offset =
-            seek(file, SeekFrom::Current(0)).map_err(|_| TextEditError::UnsupportedMetadata)?;
-        let fully_data_backed = matches!(
-            (seek(file, SeekFrom::Data(0)), seek(file, SeekFrom::Hole(0))),
-            (Ok(0), Ok(hole)) if hole == size
-        );
-        let restored = seek(file, SeekFrom::Start(original_offset)).is_ok();
-        if !fully_data_backed || !restored {
+        let mut extents = Vec::new();
+        let mut next_start = 0;
+        loop {
+            let page = fiemap_page(file, next_start, size - next_start)?;
+            let last = page.last().ok_or(TextEditError::UnsupportedMetadata)?;
+            let page_end = last
+                .logical
+                .checked_add(last.length)
+                .ok_or(TextEditError::UnsupportedMetadata)?;
+            if extents.len() + page.len() > (MAX_EDITABLE_TEXT_BYTES / 512) as usize {
+                return Err(TextEditError::UnsupportedMetadata);
+            }
+            let page_is_last = last.flags & FIEMAP_EXTENT_LAST != 0;
+            if page[..page.len() - 1]
+                .iter()
+                .any(|extent| extent.flags & FIEMAP_EXTENT_LAST != 0)
+            {
+                return Err(TextEditError::UnsupportedMetadata);
+            }
+            extents.extend_from_slice(&page);
+            if page_is_last {
+                break;
+            }
+            if page_end <= next_start || page_end >= size {
+                return Err(TextEditError::UnsupportedMetadata);
+            }
+            next_start = page_end;
+        }
+
+        if fiemap_extents_cover_range(size, &extents) {
+            Ok(())
+        } else {
+            Err(TextEditError::UnsupportedMetadata)
+        }
+    }
+
+    fn fiemap_page(
+        file: &File,
+        start: u64,
+        length: u64,
+    ) -> Result<Vec<FiemapExtent>, TextEditError> {
+        const IOC_WRITE: libc::c_ulong = 1;
+        const IOC_READ: libc::c_ulong = 2;
+        const IOC_SIZE_SHIFT: libc::c_ulong = 16;
+        const IOC_DIR_SHIFT: libc::c_ulong = 30;
+        const FS_IOC_FIEMAP: libc::c_ulong = ((IOC_READ | IOC_WRITE) << IOC_DIR_SHIFT)
+            | ((std::mem::size_of::<Fiemap>() as libc::c_ulong) << IOC_SIZE_SHIFT)
+            | ((b'f' as libc::c_ulong) << 8)
+            | 11;
+
+        let mut request = FiemapRequest {
+            map: Fiemap {
+                start,
+                length,
+                flags: FIEMAP_FLAG_SYNC,
+                extent_count: FIEMAP_BATCH_EXTENTS as u32,
+                ..Fiemap::default()
+            },
+            extents: [FiemapExtent::default(); FIEMAP_BATCH_EXTENTS],
+        };
+        // FIEMAP reads extent metadata into the request buffer without mutating the file.
+        let result = unsafe { libc::ioctl(file.as_raw_fd(), FS_IOC_FIEMAP, &mut request.map) };
+        let mapped = request.map.mapped_extents as usize;
+        if result != 0
+            || request.map.start != start
+            || request.map.length != length
+            || request.map.flags != FIEMAP_FLAG_SYNC
+            || request.map.extent_count != FIEMAP_BATCH_EXTENTS as u32
+            || mapped > FIEMAP_BATCH_EXTENTS
+        {
             return Err(TextEditError::UnsupportedMetadata);
         }
-        Ok(())
+        Ok(request.extents[..mapped].to_vec())
+    }
+
+    pub(super) fn fiemap_extents_cover_range(size: u64, extents: &[FiemapExtent]) -> bool {
+        if size == 0 {
+            return extents.is_empty();
+        }
+
+        let mut expected_start = 0;
+        for (index, extent) in extents.iter().enumerate() {
+            if extent.flags & !FIEMAP_EXTENT_LAST != 0 || extent.logical != expected_start {
+                return false;
+            }
+            let Some(end) = extent.logical.checked_add(extent.length) else {
+                return false;
+            };
+            if extent.length == 0 {
+                return false;
+            }
+            let is_last = extent.flags & FIEMAP_EXTENT_LAST != 0;
+            if is_last {
+                return index + 1 == extents.len() && end >= size;
+            }
+            if end >= size {
+                return false;
+            }
+            expected_start = end;
+        }
+        false
     }
 
     fn reject_inode_flags(file: &File) -> Result<(), TextEditError> {
@@ -529,7 +667,10 @@ mod linux {
 
 #[cfg(all(test, target_os = "linux"))]
 mod tests {
-    use super::linux::STAGED_CANDIDATE;
+    use super::linux::{
+        FIEMAP_EXTENT_LAST, FIEMAP_EXTENT_UNKNOWN, FIEMAP_EXTENT_UNWRITTEN, FiemapExtent,
+        STAGED_CANDIDATE, fiemap_extents_cover_range,
+    };
     use super::*;
     use std::fs::Permissions;
     use std::path::PathBuf;
@@ -548,6 +689,19 @@ mod tests {
             Self(path)
         }
 
+        fn fiemap_fixture() -> Self {
+            let id = TEST_ID.fetch_add(1, Ordering::Relaxed);
+            let executable = std::env::current_exe().expect("locate test executable");
+            let target_dir = executable
+                .parent()
+                .and_then(|path| path.parent())
+                .and_then(|path| path.parent())
+                .expect("locate Cargo target directory");
+            let path = target_dir.join(format!("ottrin-text-edit-{}-{id}", std::process::id()));
+            std::fs::create_dir(&path).expect("create fixture directory");
+            Self(path)
+        }
+
         fn file(&self, name: &str, contents: &str) -> PathBuf {
             let path = self.0.join(name);
             std::fs::write(&path, contents).expect("write fixture");
@@ -561,8 +715,18 @@ mod tests {
         }
     }
 
+    fn text_edit_fixture_supported() -> bool {
+        let root = TestDir::new();
+        let path = root.file("support.txt", "ordinary text\n");
+        TextEditSession::open(&path).is_ok()
+    }
+
     #[test]
     fn unicode_text_can_be_saved_without_normalizing_line_endings() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping text-edit lifecycle fixture: FIEMAP is unavailable");
+            return;
+        }
         let root = TestDir::new();
         let path = root.file("notes.txt", "Gr\u{00f6}na\r\nrad\r\n");
 
@@ -579,6 +743,10 @@ mod tests {
 
     #[test]
     fn canceling_a_session_never_mutates_the_source() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping text-edit lifecycle fixture: FIEMAP is unavailable");
+            return;
+        }
         let root = TestDir::new();
         let path = root.file("notes.txt", "original\n");
 
@@ -591,6 +759,10 @@ mod tests {
 
     #[test]
     fn changed_source_refuses_overwrite_and_keeps_the_callers_buffer() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping text-edit lifecycle fixture: FIEMAP is unavailable");
+            return;
+        }
         let root = TestDir::new();
         let path = root.file("notes.txt", "original\n");
         let session = TextEditSession::open(&path).expect("open editable text");
@@ -604,6 +776,10 @@ mod tests {
 
     #[test]
     fn missing_source_is_a_conflict_not_a_new_file_save() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping text-edit lifecycle fixture: FIEMAP is unavailable");
+            return;
+        }
         let root = TestDir::new();
         let path = root.file("notes.txt", "original\n");
         let session = TextEditSession::open(&path).expect("open editable text");
@@ -618,6 +794,10 @@ mod tests {
 
     #[test]
     fn failed_publication_keeps_the_source_and_callers_buffer() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping text-edit lifecycle fixture: FIEMAP is unavailable");
+            return;
+        }
         let root = TestDir::new();
         let path = root.file("notes.txt", "original\n");
         let session = TextEditSession::open(&path).expect("open editable text");
@@ -639,6 +819,10 @@ mod tests {
 
     #[test]
     fn parent_path_replacement_cannot_redirect_publication() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping text-edit lifecycle fixture: FIEMAP is unavailable");
+            return;
+        }
         let root = TestDir::new();
         let parent = root.0.join("parent");
         let moved_parent = root.0.join("moved-parent");
@@ -669,6 +853,10 @@ mod tests {
 
     #[test]
     fn replaced_stage_name_is_never_unlinked_during_failed_save_cleanup() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping text-edit lifecycle fixture: FIEMAP is unavailable");
+            return;
+        }
         use std::os::unix::fs::PermissionsExt;
 
         let root = TestDir::new();
@@ -727,6 +915,10 @@ mod tests {
 
     #[test]
     fn failed_rename_retains_source_mode_content_inside_a_private_directory() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping text-edit lifecycle fixture: FIEMAP is unavailable");
+            return;
+        }
         use std::os::unix::fs::PermissionsExt;
 
         let root = TestDir::new();
@@ -771,6 +963,10 @@ mod tests {
 
     #[test]
     fn invalid_or_incomplete_sources_remain_read_only() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping text-edit lifecycle fixture: FIEMAP is unavailable");
+            return;
+        }
         let root = TestDir::new();
         let invalid = root.0.join("invalid.txt");
         std::fs::write(&invalid, [0xff, 0xfe]).expect("write invalid UTF-8");
@@ -822,6 +1018,45 @@ mod tests {
         assert_eq!(std::fs::read_to_string(alias).unwrap(), "target\n");
     }
 
+    #[test]
+    fn fiemap_extent_coverage_rejects_ambiguous_or_incomplete_layouts() {
+        assert!(fiemap_extents_cover_range(
+            8192,
+            &[
+                FiemapExtent::for_test(0, 4096, 0),
+                FiemapExtent::for_test(4096, 4096, FIEMAP_EXTENT_LAST),
+            ],
+        ));
+
+        assert!(!fiemap_extents_cover_range(
+            8192,
+            &[
+                FiemapExtent::for_test(0, 4096, 0),
+                FiemapExtent::for_test(6144, 2048, FIEMAP_EXTENT_LAST),
+            ],
+        ));
+        assert!(!fiemap_extents_cover_range(
+            8192,
+            &[FiemapExtent::for_test(
+                0,
+                8192,
+                FIEMAP_EXTENT_UNWRITTEN | FIEMAP_EXTENT_LAST,
+            )],
+        ));
+        assert!(!fiemap_extents_cover_range(
+            8192,
+            &[FiemapExtent::for_test(
+                0,
+                8192,
+                FIEMAP_EXTENT_UNKNOWN | FIEMAP_EXTENT_LAST,
+            )],
+        ));
+        assert!(!fiemap_extents_cover_range(
+            8192,
+            &[FiemapExtent::for_test(0, 8192, 0)],
+        ));
+    }
+
     #[cfg(target_os = "linux")]
     #[test]
     fn sparse_text_with_preallocation_past_eof_remains_read_only() {
@@ -830,7 +1065,7 @@ mod tests {
         use std::io::{Seek, SeekFrom as IoSeekFrom, Write};
         use std::os::unix::fs::MetadataExt;
 
-        let root = TestDir::new();
+        let root = TestDir::fiemap_fixture();
         let path = root.0.join("sparse.txt");
         let mut file = std::fs::OpenOptions::new()
             .read(true)

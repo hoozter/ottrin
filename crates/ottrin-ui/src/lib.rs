@@ -21757,6 +21757,13 @@ mod tests {
         }
     }
 
+    fn text_edit_fixture_supported() -> bool {
+        let root = tempfile::tempdir().expect("create text-edit fixture root");
+        let path = root.path().join("support.txt");
+        std::fs::write(&path, "ordinary text\n").expect("write text-edit fixture");
+        TextEditSession::open(&path).is_ok()
+    }
+
     #[test]
     fn search_fixtures_use_distinct_owned_roots() {
         let first = SearchTestFixture::new("distinct");
@@ -22285,6 +22292,10 @@ mod tests {
 
     #[test]
     fn dirty_quick_inspector_text_edits_require_an_explicit_close_or_cancel() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping Quick Inspector text-edit fixture: FIEMAP is unavailable");
+            return;
+        }
         let root = std::env::temp_dir().join(format!(
             "ottrin-ui-text-edit-{}-{}",
             std::process::id(),
@@ -22332,6 +22343,10 @@ mod tests {
 
     #[test]
     fn quick_inspector_text_save_conflict_keeps_the_editor_buffer() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping Quick Inspector text-edit fixture: FIEMAP is unavailable");
+            return;
+        }
         let root = std::env::temp_dir().join(format!(
             "ottrin-ui-text-save-conflict-{}-{}",
             std::process::id(),
