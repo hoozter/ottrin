@@ -1,11 +1,11 @@
 # Arthur · Ottrin V1 State
 
-Status: blocked on review and product-scope decisions after all current dependency-ready source slices
+Status: blocked on physical QA and product-scope decisions after all current dependency-ready local work
 Repository: `/home/campbell/.hermes/worktrees/Ottrin-arthur`
 Branch: `arthur/ui-followups`
 Accepted base: `78bc42df7a96960261a0bad88fd8e9109da796fc`
 
-## Current commits awaiting independent review
+## Independently accepted source range
 
 - `0a142d6 Validate creation names at platform boundary`
   - Root cause: `DefaultPlatform` accepted `FileCommand::CreateFile` and `CreateFolder` names with path separators, relying solely on UI preflight. A helper/direct command could therefore create below the requested parent.
@@ -16,7 +16,7 @@ Accepted base: `78bc42df7a96960261a0bad88fd8e9109da796fc`
   - Root cause: the four ignored packaged-PDFium integration probes ran concurrently despite PDFium's process-global runtime, producing SIGSEGV in the batch run.
   - Correction: the test-only probes share a process mutex. The exact four-test ignored batch now passes against the freshly packaged PDFium runtime.
 
-## Corrected review-required boundary
+## Corrected source boundary
 
 The earlier exact-diff review found these required corrections; they are now
 implemented in new commit `d2ab158 Harden creation and PDFium corrections`:
@@ -25,9 +25,10 @@ implemented in new commit `d2ab158 Harden creation and PDFium corrections`:
 2. Trust-boundary behavioral coverage makes `../external` CreateFile and CreateFolder attempts from an isolated requested parent and proves an external sibling remains empty.
 3. `PACKAGED_PDFIUM_TEST_LOCK` now recovers deliberately from poison via a named helper, with regression coverage.
 
-Do not amend the immutable reviewed commits. The corrected exact range
-`0a142d6..d2ab158` requires new independent review before release acceptance.
-Artifacts built before `d2ab158` are not acceptable for the corrected final HEAD.
+Do not amend the immutable reviewed commits. An independent current-source review
+accepted the exact range `78bc42d..e063d0b`, including `0a142d6`, `8c706ad`,
+`6dfd058`, `d2ab158`, and `e063d0b`. Artifacts built before `d2ab158` remain
+superseded and are not evidence for the corrected source.
 
 ## Completed post-V1 slice
 
@@ -40,7 +41,7 @@ Artifacts built before `d2ab158` are not acceptable for the corrected final HEAD
     size: 3 B` and omitted the nested two-byte file.
   - GREEN evidence: `cargo fmt --check`; `CARGO_TARGET_DIR=/tmp/ottrin-preview-folder-size-red cargo test -p ottrin-preview` (139 unit tests passed, 4 packaged-PDFium tests ignored); and `CARGO_TARGET_DIR=/tmp/ottrin-preview-folder-size-clippy cargo clippy -p ottrin-preview --all-targets -- -D warnings` passed.
 
-## Fresh Linux artifact evidence
+## Superseded artifact evidence
 
 Built from `0a142d6` before the test-only `8c706ad` commit:
 - `dist/Ottrin-0.1.0-linux-x86_64-portable.tar.gz`
@@ -48,11 +49,13 @@ Built from `0a142d6` before the test-only `8c706ad` commit:
 - `dist/Ottrin-0.1.0-x86_64.AppImage`
   SHA-256 `16d014bea4fa471ea07af8c3ade5f13cd49141d9533956ae5ab668147ad48346`
 
-The extracted portable and AppImage each passed `xvfb-run -a ./scripts/linux-launch-smoke.sh`. The packaged PDFium four-test batch passed after the test serialization correction. These are automated artifact-level checks, not a clean-desktop/manual/polkit acceptance claim.
+These pre-correction artifacts are retained only as historical evidence and are
+not release candidates. Final-current artifacts must embed the commit containing
+this state and the corrected release documentation.
 
 ## Remaining V1 boundary
 
-Implementation/source gates for Storage Locations and first-class Create workflows are present and covered; source-only release preflight passes. Remaining release blockers require: independent review of `0a142d6` (user-file mutation boundary), physical Linux desktop workflow and polkit smoke, attachment/removal behavior, real Windows drive/share and package/UAC testing, CI runs, signing/publication decisions, and release-owner artifact review. No source scope is currently authorized to replace those gates.
+Implementation/source gates for Storage Locations and first-class Create workflows are present and covered, and the user-file mutation boundary has independent source acceptance. Remaining release blockers require physical Linux desktop workflow and polkit smoke, attachment/removal behavior, real Windows drive/share and package/UAC testing, CI runs, signing/publication decisions, and release-owner artifact review. No source scope is currently authorized to replace those gates.
 
 ## Evidence for `d2ab158`
 
@@ -69,15 +72,15 @@ Implementation/source gates for Storage Locations and first-class Create workflo
   external-sibling non-mutation test; the portable superscript-device predicate
   test; the poison-recovering PDFium test-lock test; Windows-target checks for
   `ottrin-platform` and `ottrin-preview`; and `git diff --check`.
-- `d2ab158` remains a review-required correction commit. These local checks do
-  not constitute independent acceptance, and no reviewed history was amended.
+- `d2ab158` is included in the independently accepted source range. No reviewed
+  history was amended.
 
 ## Documentation correction
 
 - `e063d0b Correct thumbnail limitations` brings `docs/USER_GUIDE.md` into line with the existing generated thumbnail surface: text/code, PDF, Office, font, SQLite, mesh, camera-RAW, bounded Affinity, and folder-collage thumbnails are present; video thumbnails, media playback, HEIC/HEIF thumbnails, and faithful Office layout remain future work.
-- The final range `0a142d6..e063d0b` needs independent exact-diff review before release acceptance. Because documentation entering an artifact changed, pre-correction Linux artifacts are not evidence for final HEAD.
+- The final range `0a142d6..e063d0b` passed independent exact-diff review. Because documentation entering an artifact changed, pre-correction artifacts are not evidence for final HEAD.
 
-## Current roadmap scan and blocker
+## Current roadmap scan and blockers
 
 All source-level V1 work listed in `docs/ROADMAP.md` is implemented; the remaining V1 items require physical Linux/Windows/polkit/removable-media QA, CI, release-owner review, signing, or artifact publication.
 
@@ -85,4 +88,8 @@ The remaining deferred candidates each require a real product/architecture decis
 
 ## Exact next action
 
-Obtain independent exact-diff review for `0a142d6..e063d0b`, then select and authorize a concrete deferred product contract (recommended first decision: video-thumbnail decoder/backend, packaging and safety model) or provide the unavailable physical QA. Rebuild Linux artifacts only after final-HEAD review acceptance. V1 physical/CI/release gates remain blockers for release acceptance.
+Rebuild and verify all final-current artifacts after committing this corrected
+release claim. Then select and authorize a concrete deferred product contract
+(recommended first decision: video-thumbnail decoder/backend, packaging and
+safety model) or provide the unavailable physical QA. V1 physical/CI/release
+gates remain blockers for release acceptance.
