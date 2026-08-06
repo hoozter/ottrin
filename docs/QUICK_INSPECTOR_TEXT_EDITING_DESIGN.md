@@ -14,9 +14,9 @@ does not authorize broader editing, format support, or platform enablement.
 
 The current mode accepts only one existing regular UTF-8 file no larger than
 128 KiB. Opening pins its parent directory descriptor and basename. Every
-subsequent source open, metadata check, staging operation, cleanup, and
-publication is relative to that descriptor; a renamed or substituted pathname
-parent cannot redirect the save to an unrelated replacement directory.
+subsequent source open, metadata check, staging operation, and publication is
+relative to that descriptor; a renamed or substituted pathname parent cannot
+redirect the save to an unrelated replacement directory.
 
 Before admission and again immediately before publication, the platform checks
 the descriptor-relative file identity, content digest, size, timestamps, mode,
@@ -27,7 +27,10 @@ and any source whose owner/group cannot exactly match a freshly staged inode.
 The stage starts as a private `0600` file, receives the source's ordinary mode
 bits exactly, is synchronized, and is reclassified before it can replace the
 source. The parent directory is synchronized before and after the descriptor-
-relative rename.
+relative rename. Once staging has begun, a failed save deliberately attempts no
+automatic cleanup: the public-parent name may have been replaced by another
+actor. The resulting error states that a private stage may remain for
+inspection rather than asserting ownership of that name.
 
 The final kernel scheduling interval between the last identity check and
 `renameat` remains inherent: an actor that can mutate the *already pinned*

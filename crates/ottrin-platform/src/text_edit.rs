@@ -45,6 +45,10 @@ pub enum TextEditError {
         "the edited text may be published, but directory durability could not be confirmed: {0}"
     )]
     DurabilityUncertain(String),
+    #[error(
+        "save stopped after staging; no cleanup was attempted because the stage name may no longer be owned: {0}"
+    )]
+    StageRetentionRequired(String),
     #[error("could not save the edited text: {0}")]
     Write(String),
     #[error("could not open the text file: {0}")]
@@ -116,7 +120,7 @@ mod linux {
     use rustix::fd::OwnedFd;
     use rustix::fs::{
         AtFlags, CWD, FileType, Mode, OFlags, RenameFlags, fchmod, flistxattr, fstat, fsync,
-        openat, renameat_with, statat, unlinkat,
+        openat, renameat_with, statat,
     };
     use rustix::io::Errno;
     use sha2::{Digest, Sha256};
@@ -221,17 +225,14 @@ mod linux {
             let final_current = match Snapshot::capture(&self.parent, &self.name) {
                 Ok(snapshot) => snapshot,
                 Err(_) => {
-                    stage.discard(&self.parent);
-                    return Err(TextEditError::Conflict);
+                    return Err(stage.retention_required("the source changed before publication"));
                 }
             };
             if !self.source.matches(&final_current) {
-                stage.discard(&self.parent);
-                return Err(TextEditError::Conflict);
+                return Err(stage.retention_required("the source changed before publication"));
             }
             if let Err(error) = hook(TestPoint::BeforePublication) {
-                stage.discard(&self.parent);
-                return Err(error);
+                return Err(stage.retention_required(&error.to_string()));
             }
             stage.publish(&self.parent, &self.name)
         }
@@ -405,8 +406,7 @@ mod linux {
                 })();
                 drop(file);
                 if let Err(error) = result {
-                    let _ = unlinkat(parent, &name, AtFlags::empty());
-                    return Err(error);
+                    return Err(TextEditError::StageRetentionRequired(error.to_string()));
                 }
                 return Ok(Self { name });
             }
@@ -419,14 +419,15 @@ mod linux {
             if let Err(error) =
                 renameat_with(parent, &self.name, parent, target, RenameFlags::empty())
             {
-                self.discard(parent);
-                return Err(write_error(error));
+                return Err(self.retention_required(&error.to_string()));
             }
             fsync(parent).map_err(|error| TextEditError::DurabilityUncertain(error.to_string()))
         }
 
-        fn discard(self, parent: &OwnedFd) {
-            let _ = unlinkat(parent, &self.name, AtFlags::empty());
+        fn retention_required(self, reason: &str) -> TextEditError {
+            TextEditError::StageRetentionRequired(format!(
+                "{reason}; no descriptor-relative cleanup was attempted after staging"
+            ))
         }
     }
 
@@ -549,7 +550,10 @@ mod tests {
             Err(TextEditError::Write("forced test failure".to_string()))
         });
 
-        assert!(matches!(result, Err(TextEditError::Write(_))));
+        assert!(matches!(
+            result,
+            Err(TextEditError::StageRetentionRequired(_))
+        ));
         assert_eq!(unsaved_buffer, "my unsaved edit\n");
         assert_eq!(std::fs::read_to_string(path).unwrap(), "original\n");
     }
@@ -582,6 +586,54 @@ mod tests {
             std::fs::read_to_string(parent.join("notes.txt")).unwrap(),
             "unrelated\n"
         );
+    }
+
+    #[test]
+    fn replaced_stage_name_is_never_unlinked_during_failed_save_cleanup() {
+        let root = TestDir::new();
+        let path = root.file("notes.txt", "original\n");
+        let session = TextEditSession::open(&path).expect("open editable text");
+        let retained_stage = root.0.join("retained-stage");
+
+        let result = session.save_with_test_hook("edited\n", |_| {
+            let stage = std::fs::read_dir(&root.0)
+                .expect("read stage directory")
+                .map(Result::unwrap)
+                .map(|entry| entry.path())
+                .find(|path| {
+                    path.file_name()
+                        .and_then(|name| name.to_str())
+                        .is_some_and(|name| name.starts_with(".ottrin-text-edit-"))
+                })
+                .expect("find private stage");
+            std::fs::rename(&stage, &retained_stage).expect("move private stage");
+            std::fs::write(&stage, "attacker replacement\n").expect("replace private stage name");
+            Err(TextEditError::Write("force failed publication".to_string()))
+        });
+
+        assert!(matches!(
+            result,
+            Err(TextEditError::StageRetentionRequired(_))
+        ));
+        assert_eq!(
+            std::fs::read_to_string(&retained_stage).unwrap(),
+            "edited\n"
+        );
+        let replacement = std::fs::read_dir(&root.0)
+            .unwrap()
+            .map(Result::unwrap)
+            .map(|entry| entry.path())
+            .find(|path| {
+                path.file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.starts_with(".ottrin-text-edit-"))
+            })
+            .expect("attacker replacement remains");
+        assert_eq!(
+            std::fs::read_to_string(replacement).unwrap(),
+            "attacker replacement\n"
+        );
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "original\n");
     }
 
     #[test]
