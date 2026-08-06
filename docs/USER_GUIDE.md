@@ -135,7 +135,7 @@ ottrin-index --remove-schedule
 - Historical Linux portable/AppImage artifacts had shallow launch smoke coverage; the exact current candidate has no accepted rebuilt-artifact evidence and full packaged workflow QA remains pending.
 - Quick Inspector covers text/code, images, PDF text/metadata, DOCX content, XLSX/XLSM/ODS worksheets, Unix-only bounded first-slide PPTX text cards and slide text, ZIP/archive listings, bounded folder summaries, and generic metadata, but the full keyboard/file-type matrix still needs manual QA.
 - PPTX visual cards fail closed when local and central ZIP extra metadata is noncanonical or differs; affected files still retain slide text and metadata and can be opened normally.
-- Faithful Office layout rendering, text/code/PDF/video document thumbnails, recursive folder sizing/thumbnails, media playback, HEIC/HEIF and camera RAW thumbnails, and text/code edit mode are future work.
+- Faithful Office layout rendering, text/code/PDF/video document thumbnails, recursive folder sizing/thumbnails, media playback, and HEIC/HEIF thumbnails are future work. Quick Inspector editing is limited to complete direct UTF-8 text on supported Linux filesystems; unsupported or metadata-sensitive sources remain read-only.
 - Multi-select is implemented, but still needs manual QA across Miller/List/Grid.
 - Tab drag-and-drop is implemented and test-covered; packaged/manual desktop acceptance is pending.
 - Operation Activity records session file operations and labels whether entries are restorable or not undoable. Full undo execution is not implemented.
