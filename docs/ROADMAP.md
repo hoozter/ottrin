@@ -81,7 +81,6 @@ These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 - Recursive folder size thumbnails.
 - Native desktop Open With discovery parity beyond Linux remains deferred.
 - Media playback and advanced image tools.
-- Negated FTS5 content search is not yet supported.
 - Fanotify helper/service packaging.
 - Tab drag-and-drop is implemented with source and automated tests; packaged/manual acceptance remains pending.
 - List-rubber-band selection remains deferred.

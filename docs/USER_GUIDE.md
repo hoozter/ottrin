@@ -140,5 +140,5 @@ ottrin-index --remove-schedule
 - Tab drag-and-drop is implemented and test-covered; packaged/manual desktop acceptance is pending.
 - Operation Activity records session file operations and labels whether entries are restorable or not undoable. Full undo execution is not implemented.
 - Context-menu actions, Open With application launching, thumbnail view options, and status messages still need manual QA.
-- Indexed FTS5 content search is currently positive-only in supported behavior. Negated content search is not accepted as supported. Ripgrep remains supplemental only for positive content search and is never used to form a negated complement.
+- Indexed FTS5 content search supports negated content terms. A negated content query uses a completed indexed generation and excludes entries whose content could not be indexed, rather than guessing that missing content is absent. Filename, path, extension, and type exclusions keep the established positive-content fallback behavior. Ripgrep is never used to form a negated content complement.
 - Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing are not complete. Any current Windows candidate remains unaccepted until the exact unsigned artifacts are rebuilt and tested; signing and SmartScreen reputation remain release blockers.

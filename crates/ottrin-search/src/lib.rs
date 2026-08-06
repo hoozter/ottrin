@@ -474,7 +474,7 @@ impl SearchHandle {
             }
         };
 
-        if query.content_search && expr_contains_negation(&expr) {
+        if query.content_search && expr_contains_negated_content(&expr) {
             return self
                 .query_negated_content_snapshot(&query, &expr, status, &cfg, None)
                 .response;
@@ -659,13 +659,8 @@ impl SearchHandle {
             }
             let roots = ordered_query_roots(&query, &cfg);
             let content_limit = query.limit.max(50);
-            let rg_items = query_content_ripgrep(
-                &expr,
-                query.text.trim(),
-                &roots,
-                query.include_hidden_system,
-                content_limit,
-            );
+            let rg_items =
+                query_content_ripgrep(&expr, &roots, query.include_hidden_system, content_limit);
             let mut seen: HashSet<PathBuf> =
                 matched.iter().map(|(_, item)| item.path.clone()).collect();
             for item in rg_items {
@@ -728,7 +723,7 @@ impl SearchHandle {
                 };
             }
         };
-        if expr_contains_negation(&expr) {
+        if expr_contains_negated_content(&expr) {
             self.query_negated_content_snapshot(&query, &expr, status, &cfg, None)
         } else {
             SearchQueryResult {
@@ -777,7 +772,7 @@ impl SearchHandle {
                 };
             }
         };
-        if expr_contains_negation(&expr) {
+        if expr_contains_negated_content(&expr) {
             self.query_negated_content_snapshot(&query, &expr, status, &cfg, Some(cancelled))
         } else {
             self.query_with_diagnostics(query)
@@ -2599,10 +2594,25 @@ fn fts_content_match(expr: &Expr) -> Option<String> {
     build(expr)
 }
 
-fn expr_contains_negation(expr: &Expr) -> bool {
+/// Only negated terms that can inspect file content need the complete indexed
+/// snapshot. Negated filename, path, extension, and type filters retain the
+/// ordinary content-search path (including its established fallback behavior).
+fn expr_contains_negated_content(expr: &Expr) -> bool {
+    expr_has_negated_content(expr, false)
+}
+
+fn expr_has_negated_content(expr: &Expr, negated: bool) -> bool {
     match expr {
-        Expr::Not(_) => true,
-        Expr::And(parts) | Expr::Or(parts) => parts.iter().any(expr_contains_negation),
+        Expr::And(parts) | Expr::Or(parts) => parts
+            .iter()
+            .any(|part| expr_has_negated_content(part, negated)),
+        Expr::Not(inner) => expr_has_negated_content(inner, !negated),
+        Expr::Term(Term::Contains {
+            field: Field::Any, ..
+        })
+        | Expr::Term(Term::Regex {
+            field: Field::Any, ..
+        }) => negated,
         Expr::Term(_) => false,
     }
 }
@@ -2675,32 +2685,22 @@ fn is_simple_single_word(text: &str) -> bool {
         && !t.starts_with('"')
 }
 
-/// Run ripgrep to find files whose *contents* match whitespace-separated literal terms.
+/// Run ripgrep to find files whose *contents* match positive parsed content literals.
 /// Returns items with `content_snippet` populated (first matching line, trimmed).
 /// Regex-style queries are intentionally left unchanged here.
 fn query_content_ripgrep(
     expr: &Expr,
-    pattern: &str,
     roots: &[PathBuf],
     include_hidden: bool,
     limit: usize,
 ) -> Vec<SearchResultItem> {
-    let trimmed = pattern.trim();
-    if trimmed.is_empty() || roots.is_empty() {
-        return Vec::new();
-    }
-    if trimmed.starts_with('/') && trimmed.ends_with('/') {
+    if roots.is_empty() {
         return Vec::new();
     }
 
     let mut terms = Vec::new();
     let mut seen_terms = HashSet::new();
-    for term in trimmed.split_whitespace() {
-        let term = term.to_ascii_lowercase();
-        if term.len() >= 2 && seen_terms.insert(term.clone()) {
-            terms.push(term);
-        }
-    }
+    collect_positive_content_literals(expr, false, &mut terms, &mut seen_terms);
     if terms.is_empty() {
         return Vec::new();
     }
@@ -2801,6 +2801,29 @@ fn query_content_ripgrep(
         .collect();
     items.truncate(limit);
     items
+}
+
+fn collect_positive_content_literals(
+    expr: &Expr,
+    negated: bool,
+    terms: &mut Vec<String>,
+    seen_terms: &mut HashSet<String>,
+) {
+    match expr {
+        Expr::And(parts) | Expr::Or(parts) => {
+            for part in parts {
+                collect_positive_content_literals(part, negated, terms, seen_terms);
+            }
+        }
+        Expr::Not(inner) => collect_positive_content_literals(inner, !negated, terms, seen_terms),
+        Expr::Term(Term::Contains {
+            field: Field::Any,
+            value,
+        }) if !negated && value.len() >= 2 && seen_terms.insert(value.clone()) => {
+            terms.push(value.clone());
+        }
+        Expr::Term(_) => {}
+    }
 }
 
 fn sort_results(v: &mut [(i64, SearchResultItem)], sort: SearchSort) {
@@ -3731,6 +3754,91 @@ mod tests {
     }
 
     #[test]
+    fn negated_filename_filter_keeps_content_fallback_available_while_indexing() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-negated-name-content-fallback-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        let wanted = root.join("wanted.txt");
+        let excluded = root.join("excluded.txt");
+        fs::write(&wanted, "needle in the wanted document\n").expect("write wanted content");
+        fs::write(&excluded, "needle in the excluded document\n").expect("write excluded content");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        service.index.write().expect("index write").status = SearchIndexStatus::Indexing;
+
+        let response = service.query(SearchQuery {
+            text: "!name:excluded needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Path,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert!(response.error.is_none());
+        assert_eq!(response.total, 1);
+        assert_eq!(response.items[0].path, wanted);
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn quoted_negated_content_is_treated_as_a_literal_not_fts_syntax() {
+        let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-negated-content-literal-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        let literal = root.join("literal.txt");
+        let other = root.join("other.txt");
+        fs::write(&literal, "alpha OR beta\n").expect("write literal content");
+        fs::write(&other, "alpha beta without the literal operator\n")
+            .expect("write other content");
+
+        let mut service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            ..SearchConfig::default()
+        });
+        service.start();
+        service
+            .rebuild_index_blocking()
+            .expect("commit indexed generation");
+
+        let response = service.query(SearchQuery {
+            text: "!\"alpha OR beta\"".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Path,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert!(response.error.is_none());
+        assert_eq!(response.total, 1);
+        assert_eq!(response.items[0].path, other);
+
+        service.stop();
+        let _ = fs::remove_dir_all(root);
+        let _ = fs::remove_file(&service.store_path);
+    }
+
+    #[test]
     fn negated_content_search_returns_only_generation_complete_content_absences() {
         use crate::mutation::{IndexMutation, OwnedItem};
         use crate::plan::ScanPlan;
@@ -4038,8 +4146,7 @@ mod tests {
             .expect("create test file");
 
         let expr = parse_query("needle").expect("parse query");
-        let results =
-            query_content_ripgrep(&expr, "needle", std::slice::from_ref(&root), false, 10);
+        let results = query_content_ripgrep(&expr, std::slice::from_ref(&root), false, 10);
 
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].path, file_path);
