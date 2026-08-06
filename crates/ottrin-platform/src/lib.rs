@@ -170,11 +170,13 @@ pub fn is_windows_reserved_creation_name(name: &str) -> bool {
         .next()
         .unwrap_or_default()
         .to_ascii_uppercase();
-    let bytes = base.as_bytes();
     matches!(base.as_str(), "CON" | "PRN" | "AUX" | "NUL")
-        || (bytes.len() == 4
-            && matches!(bytes.get(..3), Some(prefix) if prefix == b"COM" || prefix == b"LPT")
-            && matches!(bytes[3], b'1'..=b'9'))
+        || ["COM", "LPT"].into_iter().any(|prefix| {
+            matches!(
+                base.strip_prefix(prefix),
+                Some("1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "¹" | "²" | "³")
+            )
+        })
 }
 
 /// Link-entry identity captured around a successful Linux rename.
@@ -2557,6 +2559,80 @@ mod tests {
                 .next()
                 .is_none(),
             "a rejected name must not create a nested entry"
+        );
+    }
+
+    #[test]
+    fn creation_commands_reject_parent_traversal_without_mutating_an_external_sibling() {
+        let root = TestDir::new("creation-parent-traversal");
+        let requested_parent = root.path().join("requested");
+        let external_sibling = root.path().join("external");
+        std::fs::create_dir(&requested_parent).expect("create requested parent");
+        std::fs::create_dir(&external_sibling).expect("create external sibling");
+
+        for command in [
+            FileCommand::CreateFile {
+                parent: requested_parent.clone(),
+                name: "../external/escaped.txt".to_string(),
+            },
+            FileCommand::CreateFolder {
+                parent: requested_parent.clone(),
+                name: "../external/escaped-folder".to_string(),
+            },
+        ] {
+            assert!(
+                DefaultPlatform.execute_command(&command).is_err(),
+                "parent traversal must be rejected: {command:?}"
+            );
+        }
+
+        assert!(
+            std::fs::read_dir(&external_sibling)
+                .expect("read external sibling")
+                .next()
+                .is_none(),
+            "rejected creation commands must not mutate outside their requested parent"
+        );
+    }
+
+    #[test]
+    fn windows_reserved_creation_names_reject_documented_superscript_device_aliases() {
+        for name in [
+            "COM¹",
+            "COM².txt",
+            "COM³.log",
+            "LPT¹",
+            "LPT².txt",
+            "LPT³.log",
+        ] {
+            assert!(is_windows_reserved_creation_name(name), "{name}");
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_creation_commands_reject_superscript_device_aliases_before_mutation() {
+        let root = TestDir::new("windows-superscript-device");
+        for command in [
+            FileCommand::CreateFile {
+                parent: root.path().to_path_buf(),
+                name: "COM¹.txt".to_string(),
+            },
+            FileCommand::CreateFolder {
+                parent: root.path().to_path_buf(),
+                name: "LPT³".to_string(),
+            },
+        ] {
+            assert!(
+                DefaultPlatform.execute_command(&command).is_err(),
+                "{command:?}"
+            );
+        }
+        assert!(
+            std::fs::read_dir(root.path())
+                .expect("read root")
+                .next()
+                .is_none()
         );
     }
 
