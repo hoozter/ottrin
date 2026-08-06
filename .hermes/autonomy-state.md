@@ -41,7 +41,7 @@ superseded and are not evidence for the corrected source.
     size: 3 B` and omitted the nested two-byte file.
   - GREEN evidence: `cargo fmt --check`; `CARGO_TARGET_DIR=/tmp/ottrin-preview-folder-size-red cargo test -p ottrin-preview` (139 unit tests passed, 4 packaged-PDFium tests ignored); and `CARGO_TARGET_DIR=/tmp/ottrin-preview-folder-size-clippy cargo clippy -p ottrin-preview --all-targets -- -D warnings` passed.
 
-## Superseded artifact evidence
+## Artifact evidence
 
 Built from `0a142d6` before the test-only `8c706ad` commit:
 - `dist/Ottrin-0.1.0-linux-x86_64-portable.tar.gz`
@@ -49,9 +49,12 @@ Built from `0a142d6` before the test-only `8c706ad` commit:
 - `dist/Ottrin-0.1.0-x86_64.AppImage`
   SHA-256 `16d014bea4fa471ea07af8c3ade5f13cd49141d9533956ae5ab668147ad48346`
 
-These pre-correction artifacts are retained only as historical evidence and are
-not release candidates. Final-current artifacts must embed the commit containing
-this state and the corrected release documentation.
+Those pre-correction checksums are historical only. Final-current Linux portable,
+Linux AppImage, Windows portable, and Windows NSIS candidates have since passed
+the strict artifact verifier, Linux Xvfb launch smoke, packaged-PDFium probes,
+and Wine app-local OpenGL compatibility smoke. The verifier must show each
+artifact's `SOURCE_REVISION.txt` equals live HEAD and embedded release documents
+match the worktree; exact current hashes are recorded with the kanban evidence.
 
 ## Remaining V1 boundary
 
@@ -88,8 +91,7 @@ The remaining deferred candidates each require a real product/architecture decis
 
 ## Exact next action
 
-Rebuild and verify all final-current artifacts after committing this corrected
-release claim. Then select and authorize a concrete deferred product contract
-(recommended first decision: video-thumbnail decoder/backend, packaging and
-safety model) or provide the unavailable physical QA. V1 physical/CI/release
-gates remain blockers for release acceptance.
+Select and authorize a concrete deferred product contract (recommended first
+decision: video-thumbnail decoder/backend, packaging and safety model) or provide
+the unavailable physical QA. V1 physical/CI/release gates remain blockers for
+release acceptance.

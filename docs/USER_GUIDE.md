@@ -123,14 +123,14 @@ ottrin-index --remove-schedule
 
 ## Current Limitations
 
-- Packaging workflows and historical local artifact checks exist, but no rebuilt exact-current-commit Windows artifact, accepted CI run, or real Windows desktop runtime smoke is claimed.
+- Exact-current Windows portable and NSIS artifacts have automated checksum, payload/provenance, PE/installer, and Wine compatibility-smoke evidence, but no accepted CI run or real Windows desktop runtime/install smoke is claimed.
 - Windows UAC/helper behavior still needs real Windows validation.
 - Windows GUI startup failures write `%LOCALAPPDATA%\\Ottrin\\startup.log` and
   show the local log location in a native error dialog. Wine launch evidence is
   limited: corrected probes reject any newly appended startup failure and prove
   the OpenGL path loaded Ottrin's app-local Mesa loader; real Windows
   native-driver validation remains required.
-- Windows packaging is designed to use WGPU when Automatic finds no compatibility signal and to include a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime with app-local `opengl32.dll`, its `libgallium_wgl.dll` driver bundle, EGL/GLES libraries, and DXIL. Automatic selection, persisted preferences, diagnostic override behavior, notices, and DLL provenance still require acceptance against the exact rebuilt artifacts.
+- Windows packaging is designed to use WGPU when Automatic finds no compatibility signal and includes a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime with app-local `opengl32.dll`, its `libgallium_wgl.dll` driver bundle, EGL/GLES libraries, and DXIL. Automated payload/provenance checks pass; Automatic selection, persisted preferences, diagnostic override behavior, and DLL loading still require real-Windows acceptance.
 - Linux polkit helper packaging needs real system smoke testing.
 - The exact current candidate has automated checksum, payload/provenance, Linux portable/AppImage launch, packaged-PDFium, and Wine compatibility-smoke evidence. Clean-desktop Linux workflows, polkit dialogs, and real Windows runtime/install/UAC behavior remain pending.
 - Quick Inspector covers text/code, images, PDF text/metadata, DOCX content, XLSX/XLSM/ODS worksheets, Unix-only bounded first-slide PPTX text cards and slide text, ZIP/archive listings, bounded folder summaries, and generic metadata, but the full keyboard/file-type matrix still needs manual QA.
@@ -141,4 +141,4 @@ ottrin-index --remove-schedule
 - Operation Activity records session file operations and labels whether entries are restorable or not undoable. Full undo execution is not implemented.
 - Context-menu actions, Open With application launching, thumbnail view options, and status messages still need manual QA.
 - Indexed FTS5 content search supports negated content terms. A negated content query uses a completed indexed generation and excludes entries whose content could not be indexed, rather than guessing that missing content is absent. Filename, path, extension, and type exclusions keep the established positive-content fallback behavior. Ripgrep is never used to form a negated content complement.
-- Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing are not complete. Any current Windows candidate remains unaccepted until the exact unsigned artifacts are rebuilt and tested; signing and SmartScreen reputation remain release blockers.
+- Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing are not complete. The current unsigned Windows candidates remain unaccepted pending real-Windows portable/install/UAC testing; signing and SmartScreen reputation remain release blockers.

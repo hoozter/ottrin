@@ -53,9 +53,9 @@ if awk '
   exit 1
 fi
 
-# Public documents must describe the pinned compatibility payload as packaging
-# design pending exact-artifact acceptance, not as proof that a current artifact
-# exists. Each document has explicit payload, renderer, and evidence boundaries.
+# Public documents must describe the pinned compatibility payload and distinguish
+# automated exact-artifact evidence from publication and native acceptance. Each
+# document has explicit payload, renderer, and evidence boundaries.
 require_document_line "$README" 'checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime' 'the pinned Windows payload'
 require_document_line "$README" 'no exact-current-commit' 'the artifact non-availability boundary'
 require_document_line "$README" 'Exact release artifacts must still verify' 'the exact-artifact gate'
@@ -67,8 +67,8 @@ require_document_line "$RELEASE_NOTES" 'exact rebuilt portable ZIP and installer
 require_document_line "$RELEASE_NOTES" 'Automatic compatibility paths' 'the renderer acceptance contract'
 
 require_document_line "$USER_GUIDE" 'checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime' 'the pinned Windows payload'
-require_document_line "$USER_GUIDE" 'no rebuilt exact-current-commit Windows artifact' 'the artifact non-availability boundary'
-require_document_line "$USER_GUIDE" 'exact rebuilt artifacts' 'the exact-artifact gate'
+require_document_line "$USER_GUIDE" 'Exact-current Windows portable and NSIS artifacts have automated checksum' 'the automated exact-artifact evidence boundary'
+require_document_line "$USER_GUIDE" 'Automated payload/provenance checks pass' 'the automated payload evidence boundary'
 require_document_line "$USER_GUIDE" 'Automatic selection, persisted preferences, diagnostic override behavior' 'the renderer acceptance contract'
 
 require_document_line "$ROADMAP" 'checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime' 'the pinned Windows payload'
