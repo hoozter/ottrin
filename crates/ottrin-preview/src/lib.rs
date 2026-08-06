@@ -12,6 +12,17 @@ use std::ptr::NonNull;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
+#[cfg(unix)]
+use std::ffi::{CStr, CString, OsStr, OsString};
+#[cfg(unix)]
+use std::fs::{File, OpenOptions};
+#[cfg(unix)]
+use std::os::fd::{AsRawFd, FromRawFd};
+#[cfg(unix)]
+use std::os::unix::ffi::{OsStrExt, OsStringExt};
+#[cfg(unix)]
+use std::os::unix::fs::OpenOptionsExt;
+
 use sha2::{Digest, Sha256};
 
 mod affinity_visual;
@@ -3693,59 +3704,174 @@ impl FolderRecursiveSize {
 }
 
 fn summarize_folder_recursive(path: &Path, entry_limit: usize) -> FolderRecursiveSize {
+    #[cfg(unix)]
+    {
+        summarize_folder_recursive_with_before_directory_open(path, entry_limit, |_| {})
+    }
+
+    #[cfg(not(unix))]
+    {
+        let _ = (path, entry_limit);
+        FolderRecursiveSize {
+            bytes: 0,
+            incomplete: true,
+        }
+    }
+}
+
+#[cfg(unix)]
+fn summarize_folder_recursive_with_before_directory_open(
+    path: &Path,
+    entry_limit: usize,
+    mut before_directory_open: impl FnMut(&OsStr),
+) -> FolderRecursiveSize {
     let mut size = FolderRecursiveSize {
         bytes: 0,
         incomplete: false,
     };
-    let mut pending = vec![(path.to_path_buf(), 0usize)];
+    let root = match open_directory_no_follow(path) {
+        Ok(root) => root,
+        Err(_) => {
+            size.incomplete = true;
+            return size;
+        }
+    };
+    let mut pending = vec![(root, 0usize)];
     let mut visited_entries = 0usize;
 
     while let Some((directory, depth)) = pending.pop() {
-        let entries = match std::fs::read_dir(directory) {
+        let entries = match pinned_directory_entries(&directory) {
             Ok(entries) => entries,
             Err(_) => {
                 size.incomplete = true;
                 continue;
             }
         };
-        for entry in entries {
+        for name in entries {
             if visited_entries >= entry_limit {
                 size.incomplete = true;
                 return size;
             }
             visited_entries += 1;
-            let entry = match entry {
-                Ok(entry) => entry,
+            let metadata = match metadata_at_no_follow(&directory, &name) {
+                Ok(metadata) => metadata,
                 Err(_) => {
                     size.incomplete = true;
                     continue;
                 }
             };
-            let kind = match entry.file_type() {
-                Ok(kind) => kind,
-                Err(_) => {
-                    size.incomplete = true;
-                    continue;
+            match metadata.st_mode & libc::S_IFMT {
+                libc::S_IFLNK => {}
+                libc::S_IFREG => {
+                    size.bytes = size.bytes.saturating_add(metadata.st_size.max(0) as u64);
                 }
-            };
-            if kind.is_symlink() {
-                continue;
-            }
-            if kind.is_file() {
-                match entry.metadata() {
-                    Ok(metadata) => size.bytes = size.bytes.saturating_add(metadata.len()),
-                    Err(_) => size.incomplete = true,
+                libc::S_IFDIR => {
+                    if depth < MAX_FOLDER_RECURSIVE_DEPTH {
+                        before_directory_open(&name);
+                        match open_directory_at_no_follow(&directory, &name) {
+                            Ok(child) => pending.push((child, depth + 1)),
+                            Err(_) => size.incomplete = true,
+                        }
+                    } else {
+                        size.incomplete = true;
+                    }
                 }
-            } else if kind.is_dir() {
-                if depth < MAX_FOLDER_RECURSIVE_DEPTH {
-                    pending.push((entry.path(), depth + 1));
-                } else {
-                    size.incomplete = true;
-                }
+                _ => {}
             }
         }
     }
     size
+}
+
+#[cfg(unix)]
+fn open_directory_no_follow(path: &Path) -> std::io::Result<File> {
+    OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_CLOEXEC | libc::O_DIRECTORY | libc::O_NOFOLLOW)
+        .open(path)
+}
+
+#[cfg(unix)]
+fn open_directory_at_no_follow(directory: &File, name: &OsStr) -> std::io::Result<File> {
+    let name = CString::new(name.as_bytes()).expect("directory entry names cannot contain NUL");
+    let fd = unsafe {
+        libc::openat(
+            directory.as_raw_fd(),
+            name.as_ptr(),
+            libc::O_RDONLY | libc::O_CLOEXEC | libc::O_DIRECTORY | libc::O_NOFOLLOW,
+        )
+    };
+    if fd < 0 {
+        return Err(std::io::Error::last_os_error());
+    }
+    Ok(unsafe { File::from_raw_fd(fd) })
+}
+
+#[cfg(unix)]
+fn metadata_at_no_follow(directory: &File, name: &OsStr) -> std::io::Result<libc::stat> {
+    let name = CString::new(name.as_bytes()).expect("directory entry names cannot contain NUL");
+    let mut metadata = std::mem::MaybeUninit::<libc::stat>::uninit();
+    let result = unsafe {
+        libc::fstatat(
+            directory.as_raw_fd(),
+            name.as_ptr(),
+            metadata.as_mut_ptr(),
+            libc::AT_SYMLINK_NOFOLLOW,
+        )
+    };
+    if result != 0 {
+        return Err(std::io::Error::last_os_error());
+    }
+    Ok(unsafe { metadata.assume_init() })
+}
+
+#[cfg(unix)]
+fn pinned_directory_entries(directory: &File) -> std::io::Result<Vec<OsString>> {
+    let duplicate = unsafe { libc::dup(directory.as_raw_fd()) };
+    if duplicate < 0 {
+        return Err(std::io::Error::last_os_error());
+    }
+    let stream = unsafe { libc::fdopendir(duplicate) };
+    if stream.is_null() {
+        unsafe { libc::close(duplicate) };
+        return Err(std::io::Error::last_os_error());
+    }
+
+    let mut names = Vec::new();
+    loop {
+        clear_errno();
+        let entry = unsafe { libc::readdir(stream) };
+        if entry.is_null() {
+            let result = std::io::Error::last_os_error();
+            unsafe { libc::closedir(stream) };
+            return if result.raw_os_error() == Some(0) {
+                Ok(names)
+            } else {
+                Err(result)
+            };
+        }
+        let name = unsafe { CStr::from_ptr((*entry).d_name.as_ptr()) }.to_bytes();
+        if name != b"." && name != b".." {
+            names.push(OsString::from_vec(name.to_vec()));
+        }
+    }
+}
+
+#[cfg(any(target_os = "linux", target_os = "android"))]
+fn clear_errno() {
+    unsafe { *libc::__errno_location() = 0 };
+}
+
+#[cfg(any(
+    target_os = "macos",
+    target_os = "ios",
+    target_os = "freebsd",
+    target_os = "dragonfly",
+    target_os = "openbsd",
+    target_os = "netbsd"
+))]
+fn clear_errno() {
+    unsafe { *libc::__error() = 0 };
 }
 
 // ── PDF preview via lopdf ──────────────────────────────────────────────
@@ -10224,6 +10350,43 @@ mod tests {
             preview.body.contains("Known recursive file size: 5 B"),
             "nested regular files must contribute while a directory symlink stays untraversed: {}",
             preview.body
+        );
+
+        let _ = std::fs::remove_dir_all(root);
+        let _ = std::fs::remove_dir_all(outside);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn recursive_folder_size_fails_closed_when_child_directory_becomes_symlink() {
+        let root = temp_path("folder-recursive-size-replaced-directory");
+        let outside = temp_path("folder-recursive-size-replaced-directory-outside");
+        std::fs::create_dir_all(root.join("nested")).expect("create nested fixture");
+        std::fs::create_dir_all(&outside).expect("create outside fixture");
+        std::fs::write(root.join("nested/inside.txt"), b"inside").expect("write nested fixture");
+        std::fs::write(outside.join("must-not-count.txt"), b"outside bytes")
+            .expect("write outside fixture");
+
+        let size = summarize_folder_recursive_with_before_directory_open(
+            &root,
+            MAX_FOLDER_RECURSIVE_ENTRIES,
+            |name| {
+                if name == std::ffi::OsStr::new("nested") {
+                    std::fs::remove_dir_all(root.join("nested"))
+                        .expect("replace original child directory");
+                    std::os::unix::fs::symlink(&outside, root.join("nested"))
+                        .expect("replace child directory with symlink");
+                }
+            },
+        );
+
+        assert_eq!(
+            size,
+            FolderRecursiveSize {
+                bytes: 0,
+                incomplete: true,
+            },
+            "a replacement symlink must never cause outside bytes to be counted"
         );
 
         let _ = std::fs::remove_dir_all(root);
