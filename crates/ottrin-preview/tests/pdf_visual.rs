@@ -3,6 +3,12 @@ use ottrin_preview::{
     render_pdf_page_png_with_library,
 };
 use std::path::Path;
+use std::sync::{LazyLock, Mutex};
+
+// PDFium's process-global binding is intentionally reused by the renderer, but
+// the packaged-runtime probes create and tear down documents independently.
+// The Rust test harness runs those probes concurrently unless we serialize them.
+static PACKAGED_PDFIUM_TEST_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
 
 #[test]
 fn explicit_missing_runtime_fails_closed() {
@@ -25,6 +31,7 @@ fn explicit_missing_runtime_fails_closed() {
 #[test]
 #[ignore = "requires the pinned packaged PDFium runtime"]
 fn packaged_runtime_renders_bounded_non_blank_first_page_png() {
+    let _guard = PACKAGED_PDFIUM_TEST_LOCK.lock().expect("PDFium test lock");
     let library = std::env::var_os("OTTRIN_TEST_PDFIUM_LIBRARY")
         .map(std::path::PathBuf::from)
         .and_then(|path| {
@@ -55,6 +62,7 @@ fn packaged_runtime_renders_bounded_non_blank_first_page_png() {
 #[test]
 #[ignore = "requires the pinned packaged PDFium runtime"]
 fn packaged_runtime_renders_more_than_one_pdf_per_process() {
+    let _guard = PACKAGED_PDFIUM_TEST_LOCK.lock().expect("PDFium test lock");
     let library = packaged_pdfium_library().expect("packaged PDFium runtime");
     let first = std::env::temp_dir().join(format!("ottrin-pdf-first-{}.pdf", std::process::id()));
     let second = std::env::temp_dir().join(format!("ottrin-pdf-second-{}.pdf", std::process::id()));
@@ -73,6 +81,7 @@ fn packaged_runtime_renders_more_than_one_pdf_per_process() {
 #[test]
 #[ignore = "requires the pinned packaged PDFium runtime"]
 fn packaged_runtime_renders_a_selected_page_and_rejects_out_of_bounds_page() {
+    let _guard = PACKAGED_PDFIUM_TEST_LOCK.lock().expect("PDFium test lock");
     let library = packaged_pdfium_library().expect("packaged PDFium runtime");
     let fixture = std::env::temp_dir().join(format!(
         "ottrin-pdf-selected-page-{}.pdf",
@@ -102,6 +111,7 @@ fn packaged_runtime_renders_a_selected_page_and_rejects_out_of_bounds_page() {
 #[test]
 #[ignore = "requires the development package produced by build-all.sh"]
 fn debug_runtime_discovers_packaged_pdfium_automatically() {
+    let _guard = PACKAGED_PDFIUM_TEST_LOCK.lock().expect("PDFium test lock");
     let fixture = std::env::temp_dir().join(format!(
         "ottrin-pdf-debug-runtime-{}.pdf",
         std::process::id()
