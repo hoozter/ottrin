@@ -16,11 +16,13 @@ use ottrin_core::{
     SearchSort, SortBy, TandemSide, ThemeCustomization, ThemeMode, ThemePreset, ViewMode,
     default_home_dir, format_modified, format_size, format_size_units,
 };
+#[cfg(test)]
+use ottrin_platform::is_windows_reserved_creation_name;
 use ottrin_platform::text_edit::{TextEditSession, text_editing_supported};
 use ottrin_platform::{
     DefaultPlatform, MoveDisposition, OpenWithApplication, PlatformError, PlatformOps,
     PrivilegedAvailability, RenameUndoReceipt, StorageLocation, StorageLocationKind, TrashItem,
-    discover_storage_locations,
+    discover_storage_locations, validate_creation_name,
 };
 #[cfg(target_os = "linux")]
 use ottrin_platform::{discover_retained_move_transactions, move_recovery::JournalPhase};
@@ -151,52 +153,12 @@ enum CreationKind {
     Folder,
 }
 
-#[cfg(any(target_os = "windows", test))]
-fn is_windows_reserved_creation_name(name: &str) -> bool {
-    if name.ends_with(['.', ' '])
-        || name
-            .chars()
-            .any(|ch| ch < ' ' || matches!(ch, '<' | '>' | ':' | '"' | '|' | '?' | '*'))
-    {
-        return true;
-    }
-    let base = name
-        .split('.')
-        .next()
-        .unwrap_or_default()
-        .to_ascii_uppercase();
-    let bytes = base.as_bytes();
-    matches!(base.as_str(), "CON" | "PRN" | "AUX" | "NUL")
-        || (bytes.len() == 4
-            && matches!(bytes.get(..3), Some(prefix) if prefix == b"COM" || prefix == b"LPT")
-            && matches!(bytes[3], b'1'..=b'9'))
-}
-
 fn build_creation_command(
     kind: CreationKind,
     parent: &Path,
     name: &str,
 ) -> Result<FileCommand, String> {
-    if name.trim().is_empty() {
-        return Err("Enter a non-empty name.".to_string());
-    }
-    let candidate = Path::new(name);
-    let has_drive_prefix =
-        name.len() >= 2 && name.as_bytes()[0].is_ascii_alphabetic() && name.as_bytes()[1] == b':';
-    if matches!(name, "." | "..")
-        || name.contains('\0')
-        || name.contains('/')
-        || name.contains('\\')
-        || candidate.is_absolute()
-        || has_drive_prefix
-        || candidate.components().count() != 1
-    {
-        return Err("Names must be a single path component.".to_string());
-    }
-    #[cfg(target_os = "windows")]
-    if is_windows_reserved_creation_name(name) {
-        return Err("That name is reserved or invalid on Windows.".to_string());
-    }
+    validate_creation_name(name)?;
     if std::fs::symlink_metadata(parent.join(name)).is_ok() {
         return Err("An entry with that name already exists.".to_string());
     }

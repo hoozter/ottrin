@@ -127,6 +127,56 @@ pub enum PlatformError {
     },
 }
 
+/// Validates a user-provided entry name before combining it with a parent path.
+/// FileCommand can also reach the platform through the privileged helper, so
+/// this boundary must not rely on UI-only validation to contain a creation.
+pub fn validate_creation_name(name: &str) -> Result<(), String> {
+    if name.trim().is_empty() {
+        return Err("Enter a non-empty name.".to_string());
+    }
+    let candidate = Path::new(name);
+    let has_drive_prefix =
+        name.len() >= 2 && name.as_bytes()[0].is_ascii_alphabetic() && name.as_bytes()[1] == b':';
+    if matches!(name, "." | "..")
+        || name.contains('\0')
+        || name.contains('/')
+        || name.contains('\\')
+        || candidate.is_absolute()
+        || has_drive_prefix
+        || candidate.components().count() != 1
+    {
+        return Err("Names must be a single path component.".to_string());
+    }
+    #[cfg(target_os = "windows")]
+    if is_windows_reserved_creation_name(name) {
+        return Err("That name is reserved or invalid on Windows.".to_string());
+    }
+    Ok(())
+}
+
+/// Windows namespace rules are platform-independent syntax, so tests and UI
+/// preflight can use this predicate on every host while execution enforces it
+/// when targeting Windows.
+pub fn is_windows_reserved_creation_name(name: &str) -> bool {
+    if name.ends_with(['.', ' '])
+        || name
+            .chars()
+            .any(|ch| ch < ' ' || matches!(ch, '<' | '>' | ':' | '"' | '|' | '?' | '*'))
+    {
+        return true;
+    }
+    let base = name
+        .split('.')
+        .next()
+        .unwrap_or_default()
+        .to_ascii_uppercase();
+    let bytes = base.as_bytes();
+    matches!(base.as_str(), "CON" | "PRN" | "AUX" | "NUL")
+        || (bytes.len() == 4
+            && matches!(bytes.get(..3), Some(prefix) if prefix == b"COM" || prefix == b"LPT")
+            && matches!(bytes[3], b'1'..=b'9'))
+}
+
 /// Link-entry identity captured around a successful Linux rename.
 ///
 /// On Linux this is `symlink_metadata`'s device and inode pair, so it binds a
@@ -667,6 +717,7 @@ impl PlatformOps for DefaultPlatform {
         match command {
             FileCommand::CreateFile { parent, name } => {
                 ensure_existing_dir(parent)?;
+                validate_creation_name(name).map_err(PlatformError::Io)?;
                 let target = parent.join(name);
                 std::fs::OpenOptions::new()
                     .create_new(true)
@@ -677,6 +728,7 @@ impl PlatformOps for DefaultPlatform {
             }
             FileCommand::CreateFolder { parent, name } => {
                 ensure_existing_dir(parent)?;
+                validate_creation_name(name).map_err(PlatformError::Io)?;
                 let target = parent.join(name);
                 std::fs::create_dir(&target).map_err(|e| PlatformError::Io(e.to_string()))?;
                 Ok(None)
@@ -2473,6 +2525,39 @@ mod tests {
         fn drop(&mut self) {
             let _ = std::fs::remove_dir_all(&self.0);
         }
+    }
+
+    #[test]
+    fn creation_commands_reject_names_that_escape_the_requested_parent() {
+        let root = TestDir::new("creation-name-boundary");
+        let nested = root.path().join("nested");
+        std::fs::create_dir(&nested).expect("create nested fixture directory");
+
+        for command in [
+            FileCommand::CreateFile {
+                parent: root.path().to_path_buf(),
+                name: "nested/created.txt".to_string(),
+            },
+            FileCommand::CreateFolder {
+                parent: root.path().to_path_buf(),
+                name: "nested/created-folder".to_string(),
+            },
+        ] {
+            let result = DefaultPlatform.execute_command(&command);
+
+            assert!(
+                result.is_err(),
+                "creation must reject a name with a path separator: {command:?}"
+            );
+        }
+
+        assert!(
+            std::fs::read_dir(&nested)
+                .expect("read nested fixture directory")
+                .next()
+                .is_none(),
+            "a rejected name must not create a nested entry"
+        );
     }
 
     #[cfg(target_os = "linux")]
