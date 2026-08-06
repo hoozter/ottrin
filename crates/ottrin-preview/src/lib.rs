@@ -125,6 +125,7 @@ const MAX_TAR_SCAN_BYTES: u64 = 256 * 1024 * 1024;
 const MAX_TAR_PATH_BYTES: usize = 768;
 const MAX_TAR_LISTED_ENTRIES: usize = 200;
 const MAX_FOLDER_RECURSIVE_ENTRIES: usize = 16_384;
+#[cfg(unix)]
 const MAX_FOLDER_RECURSIVE_DEPTH: usize = 64;
 
 /// Stops an archive stream at a fixed input budget.
