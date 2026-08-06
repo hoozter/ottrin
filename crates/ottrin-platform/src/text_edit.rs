@@ -119,8 +119,8 @@ mod linux {
     use super::{MAX_EDITABLE_TEXT_BYTES, TextEditError};
     use rustix::fd::OwnedFd;
     use rustix::fs::{
-        AtFlags, CWD, FileType, Mode, OFlags, RenameFlags, fchmod, flistxattr, fstat, fsync,
-        mkdirat, openat, renameat_with, statat,
+        AtFlags, CWD, FileType, Mode, OFlags, RenameFlags, SeekFrom, fchmod, flistxattr, fstat,
+        fsync, mkdirat, openat, renameat_with, seek, statat,
     };
     use rustix::io::Errno;
     use sha2::{Digest, Sha256};
@@ -316,9 +316,7 @@ mod linux {
             let size = u64::try_from(stat.st_size).map_err(|_| TextEditError::Conflict)?;
             let blocks =
                 u64::try_from(stat.st_blocks).map_err(|_| TextEditError::UnsupportedMetadata)?;
-            if blocks.saturating_mul(512) < size {
-                return Err(TextEditError::UnsupportedMetadata);
-            }
+            require_dense_logical_range(file, size)?;
             reject_inode_flags(file)?;
             let mut names = [];
             if flistxattr(file, &mut names).map_err(|_| TextEditError::UnsupportedMetadata)? != 0 {
@@ -346,6 +344,24 @@ mod linux {
                     inode: stat.st_ino,
                 }
         }
+    }
+
+    fn require_dense_logical_range(file: &File, size: u64) -> Result<(), TextEditError> {
+        if size == 0 {
+            return Ok(());
+        }
+
+        let original_offset =
+            seek(file, SeekFrom::Current(0)).map_err(|_| TextEditError::UnsupportedMetadata)?;
+        let fully_data_backed = matches!(
+            (seek(file, SeekFrom::Data(0)), seek(file, SeekFrom::Hole(0))),
+            (Ok(0), Ok(hole)) if hole == size
+        );
+        let restored = seek(file, SeekFrom::Start(original_offset)).is_ok();
+        if !fully_data_backed || !restored {
+            return Err(TextEditError::UnsupportedMetadata);
+        }
+        Ok(())
     }
 
     fn reject_inode_flags(file: &File) -> Result<(), TextEditError> {
@@ -804,6 +820,61 @@ mod tests {
             Err(TextEditError::HardLinked)
         ));
         assert_eq!(std::fs::read_to_string(alias).unwrap(), "target\n");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn sparse_text_with_preallocation_past_eof_remains_read_only() {
+        use rustix::fs::{FallocateFlags, SeekFrom, fallocate, seek};
+        use rustix::io::Errno;
+        use std::io::{Seek, SeekFrom as IoSeekFrom, Write};
+        use std::os::unix::fs::MetadataExt;
+
+        let root = TestDir::new();
+        let path = root.0.join("sparse.txt");
+        let mut file = std::fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create_new(true)
+            .open(&path)
+            .expect("create sparse fixture");
+        file.seek(IoSeekFrom::Start(4096))
+            .expect("seek to second logical page");
+        file.write_all(&[b'x'; 4096])
+            .expect("write second logical page");
+        file.sync_all().expect("sync sparse fixture");
+
+        let allocation = fallocate(&file, FallocateFlags::KEEP_SIZE, 8192, 8192);
+        if let Err(error @ (Errno::OPNOTSUPP | Errno::NOSYS | Errno::INVAL)) = allocation {
+            eprintln!("skipping sparse fixture: fallocate is unsupported: {error}");
+            return;
+        }
+        allocation.expect("preallocate beyond EOF");
+
+        let data = seek(&file, SeekFrom::Data(0));
+        let hole = seek(&file, SeekFrom::Hole(4096));
+        if matches!(data, Err(Errno::OPNOTSUPP | Errno::NOSYS | Errno::INVAL))
+            || matches!(hole, Err(Errno::OPNOTSUPP | Errno::NOSYS | Errno::INVAL))
+        {
+            eprintln!(
+                "skipping sparse fixture: extent queries are unsupported: {data:?}, {hole:?}"
+            );
+            return;
+        }
+        assert_eq!(data.expect("find data after first-page hole"), 4096);
+        assert_eq!(hole.expect("find hole after second-page data"), 8192);
+
+        let metadata = file.metadata().expect("stat sparse fixture");
+        assert!(
+            metadata.blocks().saturating_mul(512) >= metadata.len(),
+            "the previous st_blocks admission heuristic must accept this fixture"
+        );
+        drop(file);
+
+        assert!(matches!(
+            TextEditSession::open(&path),
+            Err(TextEditError::UnsupportedMetadata)
+        ));
     }
 
     #[cfg(target_os = "linux")]
