@@ -2721,6 +2721,94 @@ fn is_simple_single_word(text: &str) -> bool {
         && !t.starts_with('"')
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ContentRipgrepTraversal {
+    root: PathBuf,
+    exclude_globs: Vec<String>,
+}
+
+/// Return ripgrep working directories that cannot traverse outside the content
+/// policy. Excluded children become ripgrep ignore globs relative to their
+/// working directory; a path that cannot be represented as a glob is omitted
+/// rather than searched.
+fn content_ripgrep_traversal_plan(
+    query_roots: &[PathBuf],
+    config: &SearchConfig,
+) -> Vec<ContentRipgrepTraversal> {
+    if !config.content_indexing_enabled {
+        return Vec::new();
+    }
+
+    let mut plan = Vec::new();
+    for query_root in query_roots {
+        for content_root in &config.content_include_roots {
+            let root = if content_root.starts_with(query_root) {
+                content_root.clone()
+            } else if query_root.starts_with(content_root) {
+                query_root.clone()
+            } else {
+                continue;
+            };
+            if config
+                .content_exclude_roots
+                .iter()
+                .any(|excluded| root.starts_with(excluded))
+            {
+                continue;
+            }
+
+            let mut exclude_globs = Vec::new();
+            let mut representable = true;
+            for excluded in config
+                .content_exclude_roots
+                .iter()
+                .filter(|excluded| excluded.starts_with(&root))
+            {
+                let Some(relative) = excluded.strip_prefix(&root).ok() else {
+                    continue;
+                };
+                let Some(glob) = relative_path_to_ripgrep_glob(relative) else {
+                    representable = false;
+                    break;
+                };
+                exclude_globs.push(glob);
+            }
+            if !representable {
+                continue;
+            }
+            exclude_globs.sort();
+            exclude_globs.dedup();
+            plan.push(ContentRipgrepTraversal {
+                root,
+                exclude_globs,
+            });
+        }
+    }
+    plan.sort_by(|left, right| left.root.cmp(&right.root));
+    plan.dedup_by(|left, right| left.root == right.root);
+    plan
+}
+
+fn relative_path_to_ripgrep_glob(path: &Path) -> Option<String> {
+    let mut components = Vec::new();
+    for component in path.components() {
+        let std::path::Component::Normal(component) = component else {
+            return None;
+        };
+        let component = component.to_str()?;
+        let escaped = component
+            .chars()
+            .flat_map(|character| match character {
+                '\\' | '*' | '?' | '[' | ']' | '{' | '}' | '!' => ['\\', character],
+                _ => ['\0', character],
+            })
+            .filter(|character| *character != '\0')
+            .collect::<String>();
+        components.push(escaped);
+    }
+    (!components.is_empty()).then(|| format!("!{}/**", components.join("/")))
+}
+
 /// Run ripgrep to find files whose *contents* match positive parsed content literals.
 /// Returns items with `content_snippet` populated (first matching line, trimmed).
 /// Regex-style queries are intentionally left unchanged here.
@@ -2741,33 +2829,44 @@ fn query_content_ripgrep(
     if terms.is_empty() {
         return Vec::new();
     }
+    let traversal_plan = content_ripgrep_traversal_plan(roots, config);
+    if traversal_plan.is_empty() {
+        return Vec::new();
+    }
 
     let mut matching_paths: Option<HashSet<PathBuf>> = None;
     for term in &terms {
-        let mut cmd = std::process::Command::new("rg");
-        cmd.arg("--files-with-matches")
-            .arg("--fixed-strings")
-            .arg("--ignore-case")
-            .arg("--max-count=1");
-        if include_hidden {
-            cmd.arg("--hidden");
+        let mut term_paths = HashSet::new();
+        for traversal in &traversal_plan {
+            let mut cmd = internal_command("rg");
+            cmd.current_dir(&traversal.root)
+                .arg("--files-with-matches")
+                .arg("--fixed-strings")
+                .arg("--ignore-case")
+                .arg("--max-count=1");
+            if include_hidden {
+                cmd.arg("--hidden");
+            }
+            for glob in &traversal.exclude_globs {
+                cmd.arg("--glob").arg(glob);
+            }
+            cmd.arg("-e").arg(term).arg("--").arg(".");
+            let file_output = match cmd.output() {
+                Ok(output) if output.status.success() || !output.stdout.is_empty() => output,
+                _ => continue,
+            };
+            term_paths.extend(
+                std::str::from_utf8(&file_output.stdout)
+                    .unwrap_or("")
+                    .lines()
+                    .filter(|line| !line.is_empty())
+                    .map(|line| traversal.root.join(line))
+                    // Defense in depth: command planning keeps excluded paths out
+                    // of traversal, and this preserves the result boundary if the
+                    // filesystem changes while ripgrep is running.
+                    .filter(|path| content_indexing_allows_path(config, path)),
+            );
         }
-        cmd.arg("-e").arg(term);
-        cmd.arg("--");
-        for root in roots {
-            cmd.arg(root);
-        }
-        let file_output = match cmd.output() {
-            Ok(o) if o.status.success() || !o.stdout.is_empty() => o,
-            _ => return Vec::new(),
-        };
-        let term_paths: HashSet<PathBuf> = std::str::from_utf8(&file_output.stdout)
-            .unwrap_or("")
-            .lines()
-            .filter(|l| !l.is_empty())
-            .map(PathBuf::from)
-            .filter(|path| content_indexing_allows_path(config, path))
-            .collect();
         if term_paths.is_empty() {
             return Vec::new();
         }
@@ -3671,6 +3770,25 @@ mod tests {
         assert_eq!(response.items.len(), 1);
         assert_eq!(response.items[0].name, "included.txt");
         let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn content_ripgrep_traversal_plan_prunes_excluded_subtrees_before_search() {
+        let root = PathBuf::from("/search-root");
+        let excluded = root.join("private");
+        let plan = content_ripgrep_traversal_plan(
+            std::slice::from_ref(&root),
+            &SearchConfig {
+                content_indexing_enabled: true,
+                content_include_roots: vec![root.clone()],
+                content_exclude_roots: vec![excluded],
+                ..SearchConfig::default()
+            },
+        );
+
+        assert_eq!(plan.len(), 1);
+        assert_eq!(plan[0].root, root);
+        assert_eq!(plan[0].exclude_globs, vec!["!private/**"]);
     }
 
     #[test]

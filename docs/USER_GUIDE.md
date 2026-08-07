@@ -63,7 +63,7 @@ System locate/plocate is optional. It can help discover system paths, but it can
 
 Built-in generated-folder skips such as `.git`, `node_modules`, `target`, `__pycache__`, and Trash directories keep indexing practical. If you need to search one of those trees, adjust search settings instead of relying on the watcher.
 
-Content search follows its own privacy policy. When content indexing is disabled, Ottrin does not read file bodies for either saved-index or live fallback search. When it is enabled, only explicitly included roots are eligible and excluded roots stay out of both paths.
+Content search follows its own privacy policy. When content indexing is disabled, Ottrin does not read file bodies for either saved-index or live fallback search. When it is enabled, only explicitly included roots are eligible and excluded roots are pruned before live fallback traversal and remain out of saved-index results.
 
 ## Trash
 
@@ -142,5 +142,5 @@ ottrin-index --remove-schedule
 - Tab drag-and-drop is implemented and test-covered; packaged/manual desktop acceptance is pending.
 - Operation Activity records session file operations and labels whether entries are restorable or not undoable. Full undo execution is not implemented.
 - Context-menu actions, Open With application launching, thumbnail view options, and status messages still need manual QA.
-- Indexed FTS5 content search supports positive content terms only. Negated content terms are not supported because files whose bodies were not indexed cannot truthfully be treated as absent. Filename, path, extension, and type exclusions remain available; content-policy exclusions apply to both saved-index and live fallback search.
+- Indexed FTS5 content search supports negated content terms only against a completed indexed generation. Files with unknown indexed content (for example binary, oversized, unreadable, or excluded files) are omitted from complement results rather than treated as absent, and Ottrin reports that omission. Negated content search is unavailable while the generation is incomplete. Filename, path, extension, and type exclusions remain available; content-policy exclusions apply to both saved-index and live fallback search.
 - Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing are not complete. The current unsigned Windows candidates remain unaccepted pending real-Windows portable/install/UAC testing; signing and SmartScreen reputation remain release blockers.
