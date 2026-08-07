@@ -66,11 +66,6 @@ pub(crate) fn render_custom_titlebar(
                 });
             });
         });
-    ui.painter().hline(
-        title_bar.response.rect.x_range(),
-        ui.cursor().min.y,
-        Stroke::new(1.0, mix_color(colors.border, title_fill, 0.6)),
-    );
     if allow_drag {
         // Use the full titlebar rect (excluding close button) as the drag area.
         let bar_rect = title_bar.response.rect;
@@ -193,6 +188,41 @@ pub(crate) enum WmBtn {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn custom_titlebar_does_not_draw_a_full_width_separator_below_the_chrome() {
+        let ctx = Context::default();
+        ctx.begin_pass(egui::RawInput {
+            screen_rect: Some(Rect::from_min_size(
+                egui::Pos2::ZERO,
+                Vec2::new(640.0, 480.0),
+            )),
+            ..Default::default()
+        });
+        let colors = Colors::preset(ottrin_core::ThemePreset::Ottrin, true);
+        egui::CentralPanel::default().show(&ctx, |ui| {
+            let mut close_requested = false;
+            render_custom_titlebar(
+                ui,
+                &ctx,
+                colors,
+                colors.titlebar_bg,
+                "Test title",
+                false,
+                &mut close_requested,
+                |_ui| {},
+            );
+        });
+        let output = ctx.end_pass();
+        assert!(
+            !output.shapes.iter().any(|shape| matches!(
+                shape.shape,
+                egui::Shape::LineSegment { points, .. }
+                    if (points[0].x - points[1].x).abs() > 600.0
+            )),
+            "the titlebar must not add an unconditional full-width divider"
+        );
+    }
 
     #[test]
     fn resize_direction_detects_edges_and_corners() {
