@@ -443,6 +443,7 @@ impl WorkerLoop {
         self.current_plan = Some(Arc::clone(&plan));
         {
             let mut index = self.index.write().expect("index write");
+            index.status = SearchIndexStatus::Loading;
             index.loading_saved_snapshot = true;
             index.progress_text = Some("Loading saved search index…".to_string());
         }
@@ -611,6 +612,7 @@ impl WorkerLoop {
         index.database_bytes = storage.database_bytes;
         index.wal_bytes = storage.wal_bytes;
         index.freelist_pages = storage.freelist_pages;
+        index.freelist_bytes = storage.freelist_bytes;
     }
 
     fn start_scan(&mut self, completion: Option<mpsc::Sender<Result<(), String>>>) {
@@ -821,6 +823,7 @@ impl WorkerLoop {
         {
             Ok(()) => {
                 self.has_snapshot = true;
+                self.update_storage_diagnostics();
                 true
             }
             Err(StoreBackendError::ActivationCancelled) => false,
@@ -1427,13 +1430,18 @@ mod tests {
         let (launcher, scans) = controlled_launcher();
         let worker = spawn_with(
             config("/root"),
-            index,
+            Arc::clone(&index),
             Box::new(BlockingLoadStore {
                 entered: entered_tx,
             }),
             launcher,
         );
         entered_rx.recv_timeout(WAIT).expect("load entered");
+        assert_eq!(
+            index.read().expect("index").status,
+            SearchIndexStatus::Loading,
+            "SQLite snapshot deserialization is loading, not a filesystem scan"
+        );
         let (stopped_tx, stopped_rx) = mpsc::channel();
         std::thread::spawn(move || {
             worker.stop();

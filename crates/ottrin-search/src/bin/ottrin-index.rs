@@ -85,7 +85,7 @@ fn main() {
             .last_progress_unix_secs
             .map(|t| now_secs.saturating_sub(t));
         let line = format!(
-            "status={:?} indexed={} detail={} root={} ({}/{}) configured={} watched={} last_progress={}",
+            "status={:?} indexed={} detail={} root={} ({}/{}) configured={} watched={} db_bytes={} wal_bytes={} freelist_pages={} freelist_bytes={} last_progress={}",
             diag.status,
             diag.indexed_items,
             diag.detail.clone().unwrap_or_else(|| "-".to_string()),
@@ -97,6 +97,10 @@ fn main() {
             diag.total_roots,
             diag.configured_root_count,
             diag.watched_root_count,
+            diag.database_bytes,
+            diag.wal_bytes,
+            diag.freelist_pages,
+            diag.freelist_bytes,
             progress_age
                 .map(|a| format!("{}s", a))
                 .unwrap_or_else(|| "-".to_string()),
@@ -116,7 +120,7 @@ fn main() {
                 );
                 std::process::exit(1);
             }
-            SearchIndexStatus::Indexing => {}
+            SearchIndexStatus::Loading | SearchIndexStatus::Indexing => {}
         }
         sleep(Duration::from_millis(500));
     }

@@ -69,7 +69,12 @@ pub(crate) struct SearchStoreDiagnostics {
     pub(crate) database_bytes: u64,
     pub(crate) wal_bytes: u64,
     pub(crate) freelist_pages: u64,
+    pub(crate) freelist_bytes: u64,
 }
+
+/// A checkpoint is expensive enough to reserve for whole-generation commits
+/// and unusually large incremental batches. Passive mode never blocks readers.
+const CHECKPOINT_MUTATION_ITEM_THRESHOLD: usize = 512;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct IndexedContentHit {
@@ -118,6 +123,9 @@ impl SearchStore {
         let freelist_pages = self
             .conn
             .query_row("PRAGMA freelist_count", [], |row| row.get::<_, u64>(0))?;
+        let page_size = self
+            .conn
+            .query_row("PRAGMA page_size", [], |row| row.get::<_, u64>(0))?;
         Ok(SearchStoreDiagnostics {
             database_bytes: std::fs::metadata(&self.path)
                 .map(|metadata| metadata.len())
@@ -126,6 +134,7 @@ impl SearchStore {
                 .map(|metadata| metadata.len())
                 .unwrap_or(0),
             freelist_pages,
+            freelist_bytes: freelist_pages.saturating_mul(page_size),
         })
     }
 
@@ -203,6 +212,7 @@ impl SearchStore {
         after_commit: impl FnOnce(&GenerationSnapshot),
     ) -> Result<GenerationSnapshot, SearchDbError> {
         let is_full_replacement = matches!(&mutation, IndexMutation::ReplaceAll(_));
+        let checkpoint_after_commit = requires_checkpoint_after_commit(&mutation);
         let tx = self.conn.transaction()?;
         let current = if is_full_replacement {
             GenerationSnapshot::new(0, plan.identity().to_string(), Vec::new())
@@ -275,12 +285,32 @@ impl SearchStore {
             return Err(SearchDbError::InjectedFailure);
         }
         tx.commit()?;
-        if is_full_replacement {
-            self.conn.execute_batch("PRAGMA wal_checkpoint(PASSIVE)")?;
+        if checkpoint_after_commit {
+            checkpoint_wal_passively(&self.conn)?;
         }
         after_commit(&snapshot);
         Ok(snapshot)
     }
+}
+
+fn requires_checkpoint_after_commit(mutation: &IndexMutation) -> bool {
+    match mutation {
+        IndexMutation::ReplaceAll(_) => true,
+        IndexMutation::ReplaceRoot { items, .. } => {
+            items.len() >= CHECKPOINT_MUTATION_ITEM_THRESHOLD
+        }
+        IndexMutation::Delta {
+            upserts,
+            remove_trees,
+        } => upserts.len().saturating_add(remove_trees.len()) >= CHECKPOINT_MUTATION_ITEM_THRESHOLD,
+    }
+}
+
+fn checkpoint_wal_passively(conn: &Connection) -> Result<(), SearchDbError> {
+    let _: (u64, u64, u64) = conn.query_row("PRAGMA wal_checkpoint(PASSIVE)", [], |row| {
+        Ok((row.get(0)?, row.get(1)?, row.get(2)?))
+    })?;
+    Ok(())
 }
 
 fn configure_writer_connection(conn: &Connection) -> Result<(), SearchDbError> {
@@ -1015,6 +1045,62 @@ mod generation_tests {
         assert_eq!(committed.items(), &[owned(&root, "kept.txt", 3)]);
         assert_eq!(store.load(&plan).expect("load"), Some(committed));
         let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn diagnostics_report_freelist_pages_and_bytes_without_enabling_auto_vacuum() {
+        let db_path = temp_db_path("storage-diagnostics");
+        let store = SearchStore::open(db_path.clone()).expect("open store");
+        store
+            .conn
+            .execute_batch(
+                "CREATE TABLE diagnostic_churn (payload BLOB NOT NULL);
+                 INSERT INTO diagnostic_churn VALUES (zeroblob(65536));
+                 DELETE FROM diagnostic_churn;",
+            )
+            .expect("create diagnostic freelist");
+        let page_size: u64 = store
+            .conn
+            .query_row("PRAGMA page_size", [], |row| row.get(0))
+            .expect("read page size");
+        let auto_vacuum: u64 = store
+            .conn
+            .query_row("PRAGMA auto_vacuum", [], |row| row.get(0))
+            .expect("read auto vacuum policy");
+
+        let diagnostics = store.diagnostics().expect("read diagnostics");
+
+        assert_eq!(
+            auto_vacuum, 0,
+            "opening the GUI cache must not enable auto-VACUUM"
+        );
+        assert!(
+            diagnostics.freelist_pages > 0,
+            "fixture must create free pages"
+        );
+        assert_eq!(
+            diagnostics.freelist_bytes,
+            diagnostics.freelist_pages.saturating_mul(page_size)
+        );
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn checkpoint_policy_covers_full_and_large_mutations_only() {
+        let root = PathBuf::from("root");
+        assert!(requires_checkpoint_after_commit(
+            &IndexMutation::ReplaceAll(Vec::new())
+        ));
+        assert!(!requires_checkpoint_after_commit(&IndexMutation::Delta {
+            upserts: vec![owned(&root, "small.txt", 1)],
+            remove_trees: Vec::new(),
+        }));
+        assert!(requires_checkpoint_after_commit(&IndexMutation::Delta {
+            upserts: (0..CHECKPOINT_MUTATION_ITEM_THRESHOLD)
+                .map(|i| owned(&root, &format!("large-{i}.txt"), i as u64))
+                .collect(),
+            remove_trees: Vec::new(),
+        }));
     }
 
     #[test]

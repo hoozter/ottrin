@@ -476,10 +476,14 @@ fn wait_for_index_ready(service: &ottrin_search::SearchService) -> Result<(), St
                     .last_error
                     .unwrap_or_else(|| "search service unavailable".to_string()));
             }
-            SearchIndexStatus::Indexing if Instant::now() >= deadline => {
+            SearchIndexStatus::Loading | SearchIndexStatus::Indexing
+                if Instant::now() >= deadline =>
+            {
                 return Err("search index did not become ready within 30 seconds".to_string());
             }
-            SearchIndexStatus::Indexing => sleep(Duration::from_millis(50)),
+            SearchIndexStatus::Loading | SearchIndexStatus::Indexing => {
+                sleep(Duration::from_millis(50))
+            }
         }
     }
 }
@@ -488,6 +492,10 @@ fn print_index_diagnostics(diagnostics: &ottrin_search::SearchIndexDiagnostics) 
     println!("status={:?}", diagnostics.status);
     println!("indexed_items={}", diagnostics.indexed_items);
     println!("snapshot_revision={}", diagnostics.snapshot_revision);
+    println!("database_bytes={}", diagnostics.database_bytes);
+    println!("wal_bytes={}", diagnostics.wal_bytes);
+    println!("freelist_pages={}", diagnostics.freelist_pages);
+    println!("freelist_bytes={}", diagnostics.freelist_bytes);
     println!("configured_roots={}", diagnostics.configured_root_count);
     println!("watched_roots={}", diagnostics.watched_root_count);
     if let Some(detail) = &diagnostics.detail {

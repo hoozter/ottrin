@@ -347,6 +347,9 @@ impl SearchResultItem {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SearchIndexStatus {
     Unavailable,
+    /// A completed cached SQLite snapshot is being deserialized. This never
+    /// performs a filesystem walk.
+    Loading,
     Indexing,
     Ready,
 }

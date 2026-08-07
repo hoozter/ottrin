@@ -62,6 +62,7 @@ struct IndexState {
     database_bytes: u64,
     wal_bytes: u64,
     freelist_pages: u64,
+    freelist_bytes: u64,
     last_error: Option<String>,
     progress_text: Option<String>,
     last_completed_indexed_items: Option<usize>,
@@ -92,6 +93,7 @@ impl Default for IndexState {
             database_bytes: 0,
             wal_bytes: 0,
             freelist_pages: 0,
+            freelist_bytes: 0,
             last_error: None,
             progress_text: None,
             last_completed_indexed_items: None,
@@ -123,6 +125,7 @@ pub struct SearchIndexDiagnostics {
     pub database_bytes: u64,
     pub wal_bytes: u64,
     pub freelist_pages: u64,
+    pub freelist_bytes: u64,
     /// Monotonically advances whenever a complete query snapshot is replaced.
     pub snapshot_revision: u64,
     pub detail: Option<String>,
@@ -437,6 +440,7 @@ impl SearchHandle {
     pub fn diagnostics(&self) -> SearchIndexDiagnostics {
         let idx = self.index.read().expect("index read");
         let detail = match idx.status {
+            SearchIndexStatus::Loading => idx.progress_text.clone(),
             SearchIndexStatus::Indexing => idx.progress_text.clone(),
             SearchIndexStatus::Unavailable => idx.last_error.clone(),
             SearchIndexStatus::Ready => idx.progress_text.clone(),
@@ -447,6 +451,7 @@ impl SearchHandle {
             database_bytes: idx.database_bytes,
             wal_bytes: idx.wal_bytes,
             freelist_pages: idx.freelist_pages,
+            freelist_bytes: idx.freelist_bytes,
             snapshot_revision: idx.snapshot_revision,
             detail,
             indexed_items: if matches!(idx.status, SearchIndexStatus::Indexing) {
@@ -621,9 +626,9 @@ impl SearchHandle {
         }
 
         // ── Content search pass: query the active FTS generation first. ───────
-        // Ripgrep remains a supplemental fallback for content which is deliberately
-        // not indexed (unreadable, binary, oversized, or outside indexed roots).
-        if query.content_search && query.text.trim().len() >= 2 {
+        // The config is a privacy boundary, not a persistence preference: when
+        // disabled, avoid both indexed payloads and the live ripgrep fallback.
+        if query.content_search && cfg.content_indexing_enabled && query.text.trim().len() >= 2 {
             let fts_query = fts_content_match(&expr);
             if matches!(status, SearchIndexStatus::Ready)
                 && let Some(fts_query) = fts_query.as_deref()
@@ -685,8 +690,13 @@ impl SearchHandle {
             }
             let roots = ordered_query_roots(&query, &cfg);
             let content_limit = query.limit.max(50);
-            let rg_items =
-                query_content_ripgrep(&expr, &roots, query.include_hidden_system, content_limit);
+            let rg_items = query_content_ripgrep(
+                &expr,
+                &roots,
+                &cfg,
+                query.include_hidden_system,
+                content_limit,
+            );
             let mut seen: HashSet<PathBuf> =
                 matched.iter().map(|(_, item)| item.path.clone()).collect();
             for item in rg_items {
@@ -2717,6 +2727,7 @@ fn is_simple_single_word(text: &str) -> bool {
 fn query_content_ripgrep(
     expr: &Expr,
     roots: &[PathBuf],
+    config: &SearchConfig,
     include_hidden: bool,
     limit: usize,
 ) -> Vec<SearchResultItem> {
@@ -2755,6 +2766,7 @@ fn query_content_ripgrep(
             .lines()
             .filter(|l| !l.is_empty())
             .map(PathBuf::from)
+            .filter(|path| content_indexing_allows_path(config, path))
             .collect();
         if term_paths.is_empty() {
             return Vec::new();
@@ -2827,6 +2839,18 @@ fn query_content_ripgrep(
         .collect();
     items.truncate(limit);
     items
+}
+
+fn content_indexing_allows_path(config: &SearchConfig, path: &Path) -> bool {
+    config.content_indexing_enabled
+        && config
+            .content_include_roots
+            .iter()
+            .any(|root| path.starts_with(root))
+        && !config
+            .content_exclude_roots
+            .iter()
+            .any(|root| path.starts_with(root))
 }
 
 fn collect_positive_content_literals(
@@ -3566,6 +3590,90 @@ mod tests {
     }
 
     #[test]
+    fn disabled_content_indexing_never_searches_file_bodies() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-disabled-content-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        fs::write(root.join("body-only.txt"), "private-body-needle")
+            .expect("write body-only content");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: false,
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "private-body-needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert!(response.items.is_empty());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn live_content_search_excludes_content_policy_roots() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-live-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let excluded = root.join("excluded");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&excluded).expect("create content roots");
+        fs::write(root.join("included.txt"), "shared-content-needle")
+            .expect("write included content");
+        fs::write(excluded.join("private.txt"), "shared-content-needle")
+            .expect("write excluded content");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_exclude_roots: vec![excluded],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "shared-content-needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].name, "included.txt");
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
     fn content_search_uses_active_fts_generation_before_ripgrep_fallback() {
         let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
         let root = std::env::temp_dir().join(format!(
@@ -4196,7 +4304,12 @@ mod tests {
             .expect("create test file");
 
         let expr = parse_query("needle").expect("parse query");
-        let results = query_content_ripgrep(&expr, std::slice::from_ref(&root), false, 10);
+        let config = SearchConfig {
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            ..SearchConfig::default()
+        };
+        let results = query_content_ripgrep(&expr, std::slice::from_ref(&root), &config, false, 10);
 
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].path, file_path);

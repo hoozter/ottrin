@@ -4,6 +4,7 @@ use std::fmt::Write;
 use std::path::{Path, PathBuf};
 
 const FILTER_POLICY_VERSION: u32 = 3;
+const CONTENT_POLICY_VERSION: u32 = 1;
 const FOLLOW_LINKS: bool = false;
 const SAME_FILE_SYSTEM: bool = true;
 
@@ -202,7 +203,7 @@ fn canonical_identity(
     let mut identity = String::new();
     write!(
         identity,
-        "descriptor=2;filter={FILTER_POLICY_VERSION};encoding={PATH_ENCODING};hidden={include_hidden_system};content={};follow={FOLLOW_LINKS};samefs={SAME_FILE_SYSTEM};",
+        "descriptor=2;filter={FILTER_POLICY_VERSION};content-policy={CONTENT_POLICY_VERSION};encoding={PATH_ENCODING};hidden={include_hidden_system};content={};follow={FOLLOW_LINKS};samefs={SAME_FILE_SYSTEM};",
         content_policy.enabled,
     )
     .expect("writing to String cannot fail");
@@ -311,6 +312,7 @@ mod tests {
     fn identity_invalidates_indexes_created_before_content_policy() {
         let identity = ScanPlan::new(&config()).expect("valid plan");
         assert!(identity.identity().contains("filter=3;"));
+        assert!(identity.identity().contains("content-policy=1;"));
         assert!(identity.identity().contains("content=false;"));
     }
 

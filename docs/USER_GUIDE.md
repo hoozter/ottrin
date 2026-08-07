@@ -57,11 +57,13 @@ Search freshness uses three mechanisms:
 | --- | --- | --- |
 | Saved SQLite index | Yes | Gives instant results from the last completed scan |
 | File watcher | No | Updates results while Ottrin is running |
-| Background updater | Yes | Reconciles changes made while Ottrin was closed |
+| Background updater | Yes | Runs a scheduled full refresh (every four hours when enabled) to reconcile changes made while Ottrin was closed; it is not an always-on watcher |
 
 System locate/plocate is optional. It can help discover system paths, but it can be stale and does not grant permission to read, preview, copy, or delete protected files.
 
 Built-in generated-folder skips such as `.git`, `node_modules`, `target`, `__pycache__`, and Trash directories keep indexing practical. If you need to search one of those trees, adjust search settings instead of relying on the watcher.
+
+Content search follows its own privacy policy. When content indexing is disabled, Ottrin does not read file bodies for either saved-index or live fallback search. When it is enabled, only explicitly included roots are eligible and excluded roots stay out of both paths.
 
 ## Trash
 
@@ -140,5 +142,5 @@ ottrin-index --remove-schedule
 - Tab drag-and-drop is implemented and test-covered; packaged/manual desktop acceptance is pending.
 - Operation Activity records session file operations and labels whether entries are restorable or not undoable. Full undo execution is not implemented.
 - Context-menu actions, Open With application launching, thumbnail view options, and status messages still need manual QA.
-- Indexed FTS5 content search supports negated content terms. A negated content query uses a completed indexed generation and excludes entries whose content could not be indexed, rather than guessing that missing content is absent. Filename, path, extension, and type exclusions keep the established positive-content fallback behavior. Ripgrep is never used to form a negated content complement.
+- Indexed FTS5 content search supports positive content terms only. Negated content terms are not supported because files whose bodies were not indexed cannot truthfully be treated as absent. Filename, path, extension, and type exclusions remain available; content-policy exclusions apply to both saved-index and live fallback search.
 - Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing are not complete. The current unsigned Windows candidates remain unaccepted pending real-Windows portable/install/UAC testing; signing and SmartScreen reputation remain release blockers.
