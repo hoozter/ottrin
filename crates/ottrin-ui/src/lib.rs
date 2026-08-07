@@ -16892,28 +16892,14 @@ impl OttrinApp {
                                     let raster = self.cached_docx_raster_texture_load_result(
                                         ui.ctx(), &path, 0,
                                     );
-                                    if let Some(ready @ Ok(egui::load::TexturePoll::Ready { texture })) =
-                                        raster.as_ref()
-                                    {
-                                        let texture = *texture;
-                                        let image = if self.preview.visual_fit {
-                                            egui::Image::from_texture(texture)
-                                                .max_width(max_w)
-                                                .max_height(max_h)
-                                                .corner_radius(8)
-                                        } else {
-                                            egui::Image::from_texture(texture)
-                                                .fit_to_exact_size(
-                                                    texture.size * self.preview.visual_zoom,
-                                                )
-                                                .corner_radius(8)
-                                        };
-                                        ui.vertical_centered(|ui| {
-                                            ui.add(image);
-                                        });
-                                        if let Some(label) = docx_raster_ready_accessibility_label(ready) {
-                                            ui.label(label);
-                                        }
+                                    if render_docx_raster_inspector_page(
+                                        ui,
+                                        raster.as_ref(),
+                                        self.preview.visual_fit,
+                                        self.preview.visual_zoom,
+                                        max_w,
+                                        max_h,
+                                    ) {
                                         // Keep bounded extracted text alongside the completed
                                         // raster. Pixels are not exposed through AT-SPI, so this
                                         // makes the completed DOCX state deterministic for both
@@ -20170,16 +20156,35 @@ fn quick_inspector_uses_rendered_office_page(path: &Path) -> bool {
         .is_some_and(|extension| extension.eq_ignore_ascii_case("docx"))
 }
 
-/// Call after submitting the current DOCX texture to the inspector painter.
-/// Pending and failed native loader results never advertise rendered pixels.
-fn docx_raster_ready_accessibility_label(
-    texture_load_result: &egui::load::TextureLoadResult,
-) -> Option<&'static str> {
-    matches!(
-        texture_load_result,
-        Ok(egui::load::TexturePoll::Ready { .. })
-    )
-    .then_some("DOCX rendered page ready")
+/// Submit a ready DOCX texture and then expose its completion to accessibility.
+/// Pending, missing, and failed loader results must not emit the ready marker.
+fn render_docx_raster_inspector_page(
+    ui: &mut egui::Ui,
+    texture_load_result: Option<&egui::load::TextureLoadResult>,
+    visual_fit: bool,
+    visual_zoom: f32,
+    max_width: f32,
+    max_height: f32,
+) -> bool {
+    let Some(Ok(egui::load::TexturePoll::Ready { texture })) = texture_load_result else {
+        return false;
+    };
+    let texture = *texture;
+    let image = if visual_fit {
+        egui::Image::from_texture(texture)
+            .max_width(max_width)
+            .max_height(max_height)
+            .corner_radius(8)
+    } else {
+        egui::Image::from_texture(texture)
+            .fit_to_exact_size(texture.size * visual_zoom)
+            .corner_radius(8)
+    };
+    ui.vertical_centered(|ui| {
+        ui.add(image);
+    });
+    ui.label("DOCX rendered page ready");
+    true
 }
 
 struct SmartPanelIconButton<'a> {
@@ -22204,19 +22209,232 @@ mod tests {
         assert!(scheduler.accept_response(&larger, larger_request, "thumbnail-large"));
     }
 
-    #[test]
-    fn docx_raster_ready_signal_requires_a_ready_texture() {
-        let ready = Ok(egui::load::TexturePoll::Ready {
-            texture: egui::load::SizedTexture::new(egui::TextureId::Managed(7), Vec2::splat(1.0)),
-        });
-        let pending = Ok(egui::load::TexturePoll::Pending { size: None });
-        let failed = Err(egui::load::LoadError::NoMatchingTextureLoader);
+    fn docx_raster_frame(
+        app: &mut OttrinApp,
+        ctx: &Context,
+        path: &Path,
+        page_index: usize,
+    ) -> egui::FullOutput {
+        ctx.run(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(640.0, 480.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    let raster = app.cached_docx_raster_texture_load_result(ctx, path, page_index);
+                    render_docx_raster_inspector_page(ui, raster.as_ref(), true, 1.0, 600.0, 440.0);
+                });
+            },
+        )
+    }
 
-        assert_eq!(docx_raster_ready_accessibility_label(&pending), None);
-        assert_eq!(docx_raster_ready_accessibility_label(&failed), None);
-        assert_eq!(
-            docx_raster_ready_accessibility_label(&ready),
-            Some("DOCX rendered page ready")
+    fn shape_contains_text(shape: &egui::Shape, expected: &str) -> bool {
+        match shape {
+            egui::Shape::Vec(shapes) => shapes
+                .iter()
+                .any(|shape| shape_contains_text(shape, expected)),
+            egui::Shape::Text(text) => text.galley.job.text.contains(expected),
+            _ => false,
+        }
+    }
+
+    fn output_contains_docx_ready_marker(output: &egui::FullOutput) -> bool {
+        output
+            .shapes
+            .iter()
+            .any(|clipped| shape_contains_text(&clipped.shape, "DOCX rendered page ready"))
+    }
+
+    fn shape_contains_non_font_texture(shape: &egui::Shape) -> bool {
+        match shape {
+            egui::Shape::Vec(shapes) => shapes.iter().any(shape_contains_non_font_texture),
+            egui::Shape::Mesh(mesh) => mesh.texture_id != egui::TextureId::Managed(0),
+            egui::Shape::Rect(rect) => rect.fill_texture_id() != egui::TextureId::Managed(0),
+            _ => false,
+        }
+    }
+
+    fn output_contains_docx_raster(output: &egui::FullOutput) -> bool {
+        output
+            .shapes
+            .iter()
+            .any(|clipped| shape_contains_non_font_texture(&clipped.shape))
+    }
+
+    struct ControlledDocxImageLoader {
+        ready: Arc<AtomicBool>,
+    }
+
+    impl egui::load::ImageLoader for ControlledDocxImageLoader {
+        fn id(&self) -> &str {
+            "ottrin-ui::tests::ControlledDocxImageLoader"
+        }
+
+        fn load(
+            &self,
+            ctx: &Context,
+            uri: &str,
+            _: egui::load::SizeHint,
+        ) -> egui::load::ImageLoadResult {
+            let bytes = match ctx.try_load_bytes(uri)? {
+                egui::load::BytesPoll::Ready { bytes, .. } => bytes,
+                egui::load::BytesPoll::Pending { size } => {
+                    return Ok(egui::load::ImagePoll::Pending { size });
+                }
+            };
+            let decoded = image::load_from_memory(&bytes)
+                .map_err(|error| egui::load::LoadError::Loading(error.to_string()))?
+                .into_rgba8();
+            if !self.ready.load(Ordering::SeqCst) {
+                return Ok(egui::load::ImagePoll::Pending { size: None });
+            }
+            let size = [decoded.width() as usize, decoded.height() as usize];
+            Ok(egui::load::ImagePoll::Ready {
+                image: Arc::new(egui::ColorImage::from_rgba_unmultiplied(
+                    size,
+                    decoded.as_raw(),
+                )),
+            })
+        }
+
+        fn forget(&self, _: &str) {}
+
+        fn forget_all(&self) {}
+
+        fn byte_size(&self) -> usize {
+            0
+        }
+    }
+
+    #[test]
+    fn docx_raster_marker_requires_the_cached_generation_to_reach_the_inspector_paint_seam() {
+        let fixture = tempfile::Builder::new()
+            .prefix("ottrin-docx-raster-ready-")
+            .suffix(".docx")
+            .tempfile()
+            .expect("create DOCX generation fixture");
+        let path = fixture.path().to_path_buf();
+        std::fs::write(&path, b"DOCX generation one").expect("write DOCX generation fixture");
+
+        let mut app = OttrinApp::default();
+        let ctx = Context::default();
+        egui_extras::install_image_loaders(&ctx);
+        let loader_ready = Arc::new(AtomicBool::new(false));
+        ctx.add_image_loader(Arc::new(ControlledDocxImageLoader {
+            ready: loader_ready.clone(),
+        }));
+        let generation = ottrin_preview::office_preview_source_generation(&path)
+            .expect("capture DOCX generation");
+        let cache_key = preview_cache_key_for_page_with_generations(
+            &path,
+            PREVIEW_CACHE_ORIGINAL,
+            0,
+            None,
+            None,
+            None,
+            Some(&generation),
+        );
+        let mut png = Vec::new();
+        image::RgbaImage::from_pixel(2, 2, image::Rgba([12, 34, 56, 255]))
+            .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
+            .expect("encode cached DOCX raster");
+        app.image_preview_cache
+            .insert(cache_key, ImagePreviewCacheEntry::from_response(Some(png)));
+
+        let pending = docx_raster_frame(&mut app, &ctx, &path, 0);
+        assert!(
+            !output_contains_docx_ready_marker(&pending),
+            "the inspector must not advertise pixels while egui's loader is pending"
+        );
+
+        loader_ready.store(true, Ordering::SeqCst);
+        let ready = docx_raster_frame(&mut app, &ctx, &path, 0);
+        assert!(
+            output_contains_docx_ready_marker(&ready),
+            "the controlled egui loader must advance the real cached raster to the inspector paint seam"
+        );
+        assert!(
+            output_contains_docx_raster(&ready),
+            "the completion marker must share a frame with the submitted cached DOCX texture"
+        );
+
+        std::fs::write(&path, b"DOCX generation two").expect("replace DOCX generation");
+        let replaced = docx_raster_frame(&mut app, &ctx, &path, 0);
+        assert!(
+            !output_contains_docx_ready_marker(&replaced),
+            "a replaced DOCX generation must not retain the prior cache generation's marker"
+        );
+    }
+
+    #[test]
+    fn docx_raster_marker_rejects_missing_unavailable_malformed_and_wrong_cache_entries() {
+        let fixture = tempfile::Builder::new()
+            .prefix("ottrin-docx-raster-reject-")
+            .suffix(".docx")
+            .tempfile()
+            .expect("create DOCX cache fixture");
+        let path = fixture.path().to_path_buf();
+        std::fs::write(&path, b"DOCX cache fixture").expect("write DOCX cache fixture");
+        let generation = ottrin_preview::office_preview_source_generation(&path)
+            .expect("capture DOCX generation");
+        let page_zero_key = preview_cache_key_for_page_with_generations(
+            &path,
+            PREVIEW_CACHE_ORIGINAL,
+            0,
+            None,
+            None,
+            None,
+            Some(&generation),
+        );
+        let mut app = OttrinApp::default();
+        let ctx = Context::default();
+        egui_extras::install_image_loaders(&ctx);
+        ctx.add_image_loader(Arc::new(ControlledDocxImageLoader {
+            ready: Arc::new(AtomicBool::new(true)),
+        }));
+
+        assert!(
+            !output_contains_docx_ready_marker(&docx_raster_frame(&mut app, &ctx, &path, 0)),
+            "a missing cache entry cannot emit the DOCX marker"
+        );
+        app.image_preview_cache.insert(
+            page_zero_key.clone(),
+            ImagePreviewCacheEntry::from_response(None),
+        );
+        assert!(
+            !output_contains_docx_ready_marker(&docx_raster_frame(&mut app, &ctx, &path, 0)),
+            "an unavailable cache entry cannot emit the DOCX marker"
+        );
+        app.image_preview_cache.insert(
+            page_zero_key.clone(),
+            ImagePreviewCacheEntry::from_response(Some(b"not a PNG".to_vec())),
+        );
+        assert!(
+            !output_contains_docx_ready_marker(&docx_raster_frame(&mut app, &ctx, &path, 0)),
+            "malformed cached bytes cannot emit the DOCX marker"
+        );
+
+        let mut png = Vec::new();
+        image::RgbaImage::from_pixel(2, 2, image::Rgba([12, 34, 56, 255]))
+            .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
+            .expect("encode page-zero DOCX raster");
+        app.image_preview_cache.insert(
+            page_zero_key,
+            ImagePreviewCacheEntry::from_response(Some(png)),
+        );
+        assert!(
+            !output_contains_docx_ready_marker(&docx_raster_frame(&mut app, &ctx, &path, 1)),
+            "a different page must not consume page zero's cache entry"
+        );
+        let wrong_path = path.with_file_name("other.docx");
+        std::fs::write(&wrong_path, b"other DOCX cache fixture").expect("write wrong-path fixture");
+        assert!(
+            !output_contains_docx_ready_marker(&docx_raster_frame(&mut app, &ctx, &wrong_path, 0,)),
+            "a different DOCX path must not consume the selected path's cache entry"
         );
     }
 
