@@ -153,6 +153,87 @@ class X11CoordinateTranslationTests(unittest.TestCase):
             ],
         )
 
+    def test_pointer_selection_retries_the_named_node_at_desktop_coordinates(self):
+        commands = []
+        node = MagicMock()
+        node.queryComponent.return_value.getExtents.return_value = MagicMock(
+            x=600, y=700, width=40, height=60
+        )
+        with (
+            patch.object(
+                qa,
+                "wait_for",
+                side_effect=[
+                    node,
+                    AssertionError("window-relative click missed"),
+                    node,
+                    object(),
+                ],
+            ),
+            patch.object(
+                qa,
+                "entry_x11_diagnostics",
+                return_value={"x11_window_relative_target": {"x": 280, "y": 330}},
+            ),
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            qa.click_entry("0x123", "notes.txt")
+
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                (
+                    "xdotool",
+                    "mousemove",
+                    "--window",
+                    "0x123",
+                    "280",
+                    "330",
+                    "click",
+                    "1",
+                ),
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                ("xdotool", "mousemove", "620", "730", "click", "1"),
+            ],
+        )
+
+    def test_view_toggle_uses_the_checked_x11_pointer_without_accessibility_activation(self):
+        commands = []
+        node = MagicMock()
+        with (
+            patch.object(qa, "wait_for", side_effect=[node, object()]) as wait_for,
+            patch.object(
+                qa,
+                "view_toggle_x11_diagnostics",
+                return_value={"x11_window_relative_target": {"x": 280, "y": 330}},
+            ) as diagnostics,
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            qa.click_view_toggle("0x123", qa.VIEW_TO_LIST, qa.VIEW_TO_GRID)
+
+        node.queryAction.assert_not_called()
+        diagnostics.assert_called_once_with("0x123", node)
+        self.assertEqual(wait_for.call_count, 2)
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                (
+                    "xdotool",
+                    "mousemove",
+                    "--window",
+                    "0x123",
+                    "280",
+                    "330",
+                    "click",
+                    "1",
+                ),
+            ],
+        )
+
     def test_context_menu_uses_the_checked_x11_target_only_after_named_selection(self):
         commands = []
         node = MagicMock()
@@ -227,16 +308,11 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         self.assertEqual(wait_for.call_count, 2)
         self.assertIn("after named context click", wait_for.call_args_list[-1].args[1])
 
-    def test_open_search_retries_with_checked_x11_target_when_a11y_does_not_focus(self):
+    def test_open_search_uses_checked_x11_pointer_without_accessibility_activation(self):
         commands = []
         toggle = MagicMock()
-        toggle.queryAction.return_value.doAction.return_value = True
         with (
-            patch.object(
-                qa,
-                "wait_for",
-                side_effect=[toggle, AssertionError("no focus"), object()],
-            ),
+            patch.object(qa, "wait_for", side_effect=[toggle, object()]) as wait_for,
             patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
             patch.object(
                 qa,
@@ -246,6 +322,8 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         ):
             self.assertIsNotNone(qa.open_search("0x123"))
 
+        toggle.queryAction.assert_not_called()
+        self.assertEqual(wait_for.call_count, 2)
         self.assertEqual(
             commands,
             [
@@ -341,6 +419,39 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         )
 
 
+    def test_double_click_retry_targets_the_named_entry_at_desktop_coordinates(self):
+        commands = []
+        node = MagicMock()
+        node.queryComponent.return_value.getExtents.return_value = MagicMock(
+            x=600, y=700, width=40, height=60
+        )
+        with (
+            patch.object(qa, "wait_for", return_value=node),
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            diagnostics = qa.double_click_entry_at_desktop_coordinates("0x123", "Subfolder")
+
+        self.assertEqual(diagnostics, {"a11y_desktop_target": {"x": 620, "y": 730}})
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                (
+                    "xdotool",
+                    "mousemove",
+                    "620",
+                    "730",
+                    "click",
+                    "--repeat",
+                    "2",
+                    "--delay",
+                    "100",
+                    "1",
+                ),
+            ],
+        )
+
     def test_records_entry_activation_diagnostics_only_after_navigation_fails(self):
         evidence = Path(self.id().replace(".", "-"))
         diagnostics = {
@@ -374,8 +485,8 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         ):
             self.assertTrue(qa.destination_breadcrumb_visible("Subfolder"))
 
-    def test_docx_page_preview_does_not_claim_image_pdf_zoom_toolbar(self):
-        self.assertFalse(qa.inspector_requires_zoom_controls("letter.docx"))
+    def test_docx_page_preview_requires_the_rendered_page_zoom_toolbar(self):
+        self.assertTrue(qa.inspector_requires_zoom_controls("letter.docx"))
         self.assertTrue(qa.inspector_requires_zoom_controls("preview.pdf"))
 
     def test_inspector_content_requires_the_visible_document_marker(self):

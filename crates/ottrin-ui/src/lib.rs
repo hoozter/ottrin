@@ -16668,7 +16668,7 @@ impl OttrinApp {
                                     | PreviewKind::PlyMetadata
                                     | PreviewKind::ThreeMfMetadata
                                     | PreviewKind::Pdf
-                            );
+                            ) || quick_inspector_uses_rendered_office_page(&path);
                             if is_zoomable_document {
                                 if ui
                                     .small_button("Fit")
@@ -16845,20 +16845,56 @@ impl OttrinApp {
                             });
                         }
                         PreviewKind::OfficeMetadata => {
-                            let is_docx = path
-                                .extension()
-                                .and_then(|ext| ext.to_str())
-                                .is_some_and(|ext| ext.eq_ignore_ascii_case("docx"));
-                            if is_docx {
+                            if quick_inspector_uses_rendered_office_page(&path) {
                                 ScrollArea::both().drag_to_scroll(true).show(ui, |ui| {
-                                    render_docx_page_preview(
-                                        ui,
-                                        c,
-                                        &name,
-                                        &preview.body,
-                                        self.preview.visual_fit,
-                                        self.preview.visual_zoom,
-                                    );
+                                    let max_w = (ui.available_width() - 24.0).max(120.0);
+                                    let max_h = (ui.available_height() - 34.0).max(160.0);
+                                    let image = if self.preview.visual_fit {
+                                        self.cached_original_image_preview_widget_for_page(
+                                            &path, max_w, max_h, 8, 0,
+                                        )
+                                    } else {
+                                        self.cached_original_image_zoom_widget_for_page(
+                                            &path,
+                                            self.preview.visual_zoom,
+                                            8,
+                                            0,
+                                        )
+                                        .or_else(|| {
+                                            self.cached_original_image_preview_widget_for_page(
+                                                &path, max_w, max_h, 8, 0,
+                                            )
+                                        })
+                                    };
+                                    if let Some(image) = image {
+                                        ui.vertical_centered(|ui| {
+                                            ui.add(image);
+                                        });
+                                        // Keep bounded extracted text alongside the completed
+                                        // raster. Pixels are not exposed through AT-SPI, so this
+                                        // makes the completed DOCX state deterministic for both
+                                        // accessibility and desktop QA instead of passing only
+                                        // while the asynchronous page image is still in flight.
+                                        render_document_body_preview(
+                                            ui,
+                                            c,
+                                            MI_DESCRIPTION,
+                                            &name,
+                                            &preview.body,
+                                        );
+                                    } else {
+                                        // The bounded broker is asynchronous. Keep extracted
+                                        // DOCX text visible while its page image is in flight or
+                                        // if malformed input cannot be rendered.
+                                        render_docx_page_preview(
+                                            ui,
+                                            c,
+                                            &name,
+                                            &preview.body,
+                                            self.preview.visual_fit,
+                                            self.preview.visual_zoom,
+                                        );
+                                    }
                                 });
                             } else {
                                 render_document_body_preview(
@@ -20080,6 +20116,14 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
 fn thumbnail_supported_preview_path(path: &Path) -> bool {
     let profile = ottrin_preview::preview_profile(path);
     profile.supports_thumbnail_visual() && !matches!(profile.kind(), PreviewKind::OfficeMetadata)
+}
+
+/// DOCX has a bounded page renderer in the preview broker. The inspector must
+/// consume that image instead of leaving the broker result off-screen.
+fn quick_inspector_uses_rendered_office_page(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("docx"))
 }
 
 struct SmartPanelIconButton<'a> {
@@ -23331,6 +23375,19 @@ mod tests {
         )));
         assert!(!thumbnail_supported_preview_path(Path::new(
             "/tmp/presentation.pptx"
+        )));
+    }
+
+    #[test]
+    fn docx_quick_inspector_uses_the_rendered_page_broker() {
+        assert!(quick_inspector_uses_rendered_office_page(Path::new(
+            "/tmp/report.docx"
+        )));
+        assert!(quick_inspector_uses_rendered_office_page(Path::new(
+            "/tmp/REPORT.DOCX"
+        )));
+        assert!(!quick_inspector_uses_rendered_office_page(Path::new(
+            "/tmp/budget.xlsx"
         )));
     }
 

@@ -150,7 +150,7 @@ def focused_search_field():
 
 
 def open_search(window_id: str):
-    """Open search and prove its input owns focus before typing into it."""
+    """Open search through the checked ordinary-pointer route before typing."""
     node = wait_for(
         lambda: next(
             (
@@ -163,24 +163,19 @@ def open_search(window_id: str):
         ),
         "accessible control 'Toggle Search'",
     )
-    if not node.queryAction().doAction(0):
-        raise AssertionError("AT-SPI click failed for 'Toggle Search'")
-    try:
-        return wait_for(focused_search_field, "focused search field", timeout=2.0)
-    except AssertionError:
-        x, y = x11_point_for_node(window_id, node)
-        run("xdotool", "windowactivate", "--sync", window_id)
-        run(
-            "xdotool",
-            "mousemove",
-            "--window",
-            window_id,
-            str(x),
-            str(y),
-            "click",
-            "1",
-        )
-        return wait_for(focused_search_field, "focused search field after X11 retry")
+    x, y = x11_point_for_node(window_id, node)
+    run("xdotool", "windowactivate", "--sync", window_id)
+    run(
+        "xdotool",
+        "mousemove",
+        "--window",
+        window_id,
+        str(x),
+        str(y),
+        "click",
+        "1",
+    )
+    return wait_for(focused_search_field, "focused search field after X11 click")
 
 
 def x11_window_geometry(window_id: str) -> dict[str, int]:
@@ -234,6 +229,12 @@ def x11_point_for_node(window_id: str, node) -> tuple[int, int]:
     return target["x"], target["y"]
 
 
+def desktop_point_for_node(node) -> tuple[int, int]:
+    """Return the named node's direct desktop center for the XWayland retry."""
+    rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
+    return rect.x + rect.width // 2, rect.y + rect.height // 2
+
+
 def entry_x11_diagnostics(window_id: str, node) -> dict[str, object]:
     """Describe the checked accessible-entry to X11 target mapping."""
     app = ottrin_app()
@@ -256,6 +257,7 @@ def entry_x11_diagnostics(window_id: str, node) -> dict[str, object]:
         ),
         "x11_window": window,
         "x11_window_relative_target": {"x": x, "y": y},
+        "a11y_desktop_target": dict(zip(("x", "y"), desktop_point_for_node(node))),
     }
 
 
@@ -284,12 +286,7 @@ def view_toggle_x11_diagnostics(window_id: str, node) -> dict[str, object]:
 def click_view_toggle(
     window_id: str, name: str, next_name: str, evidence: Path | None = None
 ):
-    """Advance the view switch and prove the next state reached AT-SPI.
-
-    Some AT-SPI bridges acknowledge an egui button action without delivering
-    the pointer event.  Use that action first, then retry once through the
-    existing X11 route if its accessible label did not advance.
-    """
+    """Advance the view switch through the checked ordinary-pointer route."""
     node = wait_for(
         lambda: next(
             (
@@ -302,49 +299,31 @@ def click_view_toggle(
         ),
         f"view switch {name!r}",
     )
-    if not node.queryAction().doAction(0):
-        raise AssertionError(f"AT-SPI click failed for view switch {name!r}")
+    diagnostics = view_toggle_x11_diagnostics(window_id, node)
+    x11_target = diagnostics["x11_window_relative_target"]
+    run("xdotool", "windowactivate", "--sync", window_id)
+    run(
+        "xdotool",
+        "mousemove",
+        "--window",
+        window_id,
+        str(x11_target["x"]),
+        str(x11_target["y"]),
+        "click",
+        "1",
+    )
     try:
         wait_for(
             lambda: visible_named_nodes(next_name),
-            f"view transition from {name!r} to {next_name!r}",
-            timeout=2.0,
+            f"X11 view transition from {name!r} to {next_name!r}",
         )
     except AssertionError:
-        click_accessible_name("View Options", "push button")
-        click_accessible_suffix(view_menu_label(next_name), "push button")
-        try:
-            wait_for(
-                lambda: visible_named_nodes(next_name),
-                f"View Options transition from {name!r} to {next_name!r}",
-                timeout=2.0,
-            )
-            time.sleep(0.35)
-            return
-        except AssertionError:
-            pass
-        diagnostics = view_toggle_x11_diagnostics(window_id, node)
         if evidence is not None:
             (evidence / f"view-toggle-{name.replace(' ', '-').lower()}.json").write_text(
                 json.dumps(diagnostics, indent=2, sort_keys=True) + "\n",
                 encoding="utf-8",
             )
-        x11_target = diagnostics["x11_window_relative_target"]
-        run("xdotool", "windowactivate", "--sync", window_id)
-        run(
-            "xdotool",
-            "mousemove",
-            "--window",
-            window_id,
-            str(x11_target["x"]),
-            str(x11_target["y"]),
-            "click",
-            "1",
-        )
-        wait_for(
-            lambda: visible_named_nodes(next_name),
-            f"X11 view transition from {name!r} to {next_name!r}",
-        )
+        raise
     time.sleep(0.35)
 
 
@@ -530,8 +509,30 @@ def double_click_entry(window_id: str, name: str) -> dict[str, object]:
     return diagnostics
 
 
+def double_click_entry_at_desktop_coordinates(window_id: str, name: str) -> dict[str, object]:
+    """Retry a named entry's activation using ordinary desktop-coordinate input."""
+    node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
+    x, y = desktop_point_for_node(node)
+    diagnostics: dict[str, object] = {"a11y_desktop_target": {"x": x, "y": y}}
+    run("xdotool", "windowactivate", "--sync", window_id)
+    run(
+        "xdotool",
+        "mousemove",
+        str(x),
+        str(y),
+        "click",
+        "--repeat",
+        "2",
+        "--delay",
+        "100",
+        "1",
+    )
+    time.sleep(0.5)
+    return diagnostics
+
+
 def click_entry(window_id: str, name: str):
-    """Select an entry exclusively through the checked ordinary-pointer route."""
+    """Select an entry through ordinary pointer routes with named-node proof."""
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
     x, y = x11_point_for_node(window_id, node)
     run("xdotool", "windowactivate", "--sync", window_id)
@@ -545,11 +546,25 @@ def click_entry(window_id: str, name: str):
         "click",
         "1",
     )
-    wait_for(
-        lambda: entry_selected(name),
-        f"selected entry {name!r} after window-relative X11 click",
-        timeout=2.0,
-    )
+    try:
+        wait_for(
+            lambda: entry_selected(name),
+            f"selected entry {name!r} after window-relative X11 click",
+            timeout=2.0,
+        )
+    except AssertionError:
+        # KWin/Xwayland can disagree about client-relative coordinates. Retry
+        # exactly once at the same named node's AT-SPI desktop center, still
+        # using an ordinary xdotool click, then require the selection state.
+        node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
+        x, y = desktop_point_for_node(node)
+        run("xdotool", "windowactivate", "--sync", window_id)
+        run("xdotool", "mousemove", str(x), str(y), "click", "1")
+        wait_for(
+            lambda: entry_selected(name),
+            f"selected entry {name!r} after named desktop-coordinate X11 click",
+            timeout=2.0,
+        )
     time.sleep(0.35)
 
 
@@ -728,8 +743,8 @@ def quick_inspector_quiescent(filename: str) -> bool:
 
 
 def inspector_requires_zoom_controls(filename: str) -> bool:
-    """Only image and PDF inspectors expose the toolbar zoom buttons."""
-    return Path(filename).suffix.lower() in {".png", ".jpg", ".jpeg", ".pdf"}
+    """Rendered pages and images expose the inspector zoom toolbar."""
+    return Path(filename).suffix.lower() in {".png", ".jpg", ".jpeg", ".pdf", ".docx"}
 
 
 def close_quick_inspector(
@@ -1107,8 +1122,18 @@ def main() -> int:
                 timeout=2.0,
             )
         except AssertionError:
-            write_entry_activation_failure(evidence, "Subfolder", subfolder_activation)
-            raise
+            subfolder_activation["desktop_retry"] = double_click_entry_at_desktop_coordinates(
+                window_id, "Subfolder"
+            )
+            try:
+                wait_for(
+                    lambda: destination_breadcrumb_visible("Subfolder"),
+                    "Subfolder navigation after named desktop-coordinate double-click",
+                    timeout=2.0,
+                )
+            except AssertionError:
+                write_entry_activation_failure(evidence, "Subfolder", subfolder_activation)
+                raise
         click_named_control(window_id, "Menu")
         click_accessible_suffix("Paste into Current Folder")
         wait_for(lambda: (subfolder / "notes.txt").is_file(), "copied file")
