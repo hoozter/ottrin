@@ -2490,6 +2490,46 @@ impl OttrinApp {
         )
     }
 
+    /// Poll the exact cache generation that supplies the DOCX inspector page.
+    /// The caller owns painting the returned ready texture, so accessibility
+    /// readiness cannot get ahead of egui's native image loader.
+    fn cached_docx_raster_texture_load_result(
+        &mut self,
+        ctx: &Context,
+        path: &Path,
+        page_index: usize,
+    ) -> Option<egui::load::TextureLoadResult> {
+        let office_source_generation = ottrin_preview::office_preview_source_generation(path);
+        let cache_key = preview_cache_key_for_page_with_generations(
+            path,
+            PREVIEW_CACHE_ORIGINAL,
+            page_index,
+            None,
+            None,
+            None,
+            office_source_generation.as_ref(),
+        );
+        if !self.image_preview_cache.contains_key(&cache_key) {
+            self.enqueue_image_preview(
+                path,
+                PreviewRequestTarget::Original,
+                PREVIEW_CACHE_ORIGINAL,
+                page_index,
+                cache_key,
+                (None, None, None, office_source_generation),
+            );
+            return None;
+        }
+        let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
+        let uri = format!("bytes://preview/{cache_key}");
+        ctx.include_bytes(uri.clone(), bytes);
+        Some(ctx.try_load_texture(
+            &uri,
+            egui::TextureOptions::default(),
+            egui::load::SizeHint::default(),
+        ))
+    }
+
     fn cached_original_image_zoom_widget_for_page(
         &mut self,
         path: &Path,
@@ -16849,30 +16889,29 @@ impl OttrinApp {
                                 ScrollArea::both().drag_to_scroll(true).show(ui, |ui| {
                                     let max_w = (ui.available_width() - 24.0).max(120.0);
                                     let max_h = (ui.available_height() - 34.0).max(160.0);
-                                    let image = if self.preview.visual_fit {
-                                        self.cached_original_image_preview_widget_for_page(
-                                            &path, max_w, max_h, 8, 0,
-                                        )
-                                    } else {
-                                        self.cached_original_image_zoom_widget_for_page(
-                                            &path,
-                                            self.preview.visual_zoom,
-                                            8,
-                                            0,
-                                        )
-                                        .or_else(|| {
-                                            self.cached_original_image_preview_widget_for_page(
-                                                &path, max_w, max_h, 8, 0,
-                                            )
-                                        })
-                                    };
-                                    if let Some(image) = image {
+                                    let raster = self.cached_docx_raster_texture_load_result(
+                                        ui.ctx(), &path, 0,
+                                    );
+                                    if let Some(ready @ Ok(egui::load::TexturePoll::Ready { texture })) =
+                                        raster.as_ref()
+                                    {
+                                        let texture = *texture;
+                                        let image = if self.preview.visual_fit {
+                                            egui::Image::from_texture(texture)
+                                                .max_width(max_w)
+                                                .max_height(max_h)
+                                                .corner_radius(8)
+                                        } else {
+                                            egui::Image::from_texture(texture)
+                                                .fit_to_exact_size(
+                                                    texture.size * self.preview.visual_zoom,
+                                                )
+                                                .corner_radius(8)
+                                        };
                                         ui.vertical_centered(|ui| {
                                             ui.add(image);
                                         });
-                                        if let Some(label) =
-                                            docx_raster_ready_accessibility_label(true)
-                                        {
+                                        if let Some(label) = docx_raster_ready_accessibility_label(ready) {
                                             ui.label(label);
                                         }
                                         // Keep bounded extracted text alongside the completed
@@ -20131,11 +20170,16 @@ fn quick_inspector_uses_rendered_office_page(path: &Path) -> bool {
         .is_some_and(|extension| extension.eq_ignore_ascii_case("docx"))
 }
 
-/// Emitted only after the current DOCX raster has been added to the inspector.
-/// It remains absent while the broker is pending, rejects stale output, or
-/// provides no image bytes.
-fn docx_raster_ready_accessibility_label(image_displayed: bool) -> Option<&'static str> {
-    image_displayed.then_some("DOCX rendered page ready")
+/// Call after submitting the current DOCX texture to the inspector painter.
+/// Pending and failed native loader results never advertise rendered pixels.
+fn docx_raster_ready_accessibility_label(
+    texture_load_result: &egui::load::TextureLoadResult,
+) -> Option<&'static str> {
+    matches!(
+        texture_load_result,
+        Ok(egui::load::TexturePoll::Ready { .. })
+    )
+    .then_some("DOCX rendered page ready")
 }
 
 struct SmartPanelIconButton<'a> {
@@ -22161,10 +22205,17 @@ mod tests {
     }
 
     #[test]
-    fn docx_raster_ready_signal_only_exists_after_the_current_page_image_is_displayed() {
-        assert_eq!(docx_raster_ready_accessibility_label(false), None);
+    fn docx_raster_ready_signal_requires_a_ready_texture() {
+        let ready = Ok(egui::load::TexturePoll::Ready {
+            texture: egui::load::SizedTexture::new(egui::TextureId::Managed(7), Vec2::splat(1.0)),
+        });
+        let pending = Ok(egui::load::TexturePoll::Pending { size: None });
+        let failed = Err(egui::load::LoadError::NoMatchingTextureLoader);
+
+        assert_eq!(docx_raster_ready_accessibility_label(&pending), None);
+        assert_eq!(docx_raster_ready_accessibility_label(&failed), None);
         assert_eq!(
-            docx_raster_ready_accessibility_label(true),
+            docx_raster_ready_accessibility_label(&ready),
             Some("DOCX rendered page ready")
         );
     }

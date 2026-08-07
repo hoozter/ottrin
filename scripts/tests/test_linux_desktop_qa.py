@@ -503,6 +503,34 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         ):
             self.assertTrue(qa.docx_raster_ready())
 
+    def test_docx_screenshot_waits_for_the_rendered_page_marker(self):
+        events = []
+
+        with (
+            patch.object(qa, "invoke_context_action"),
+            patch.object(qa, "quick_inspector_visible", return_value=True),
+            patch.object(qa, "inspector_content_visible", return_value=True),
+            patch.object(qa, "docx_raster_ready", return_value=True),
+            patch.object(qa, "visible_named_nodes", return_value=[]),
+            patch.object(
+                qa,
+                "wait_for",
+                side_effect=lambda _predicate, description: events.append(("wait", description)),
+            ),
+            patch.object(
+                qa,
+                "screenshot",
+                side_effect=lambda *_args: events.append(("screenshot",)),
+            ),
+            patch.object(qa, "close_quick_inspector"),
+        ):
+            qa.open_quick_inspector("0x123", "letter.docx", Path("/tmp"), "letter")
+
+        self.assertLess(
+            events.index(("wait", "rendered DOCX page")),
+            events.index(("screenshot",)),
+        )
+
     def test_inspector_content_requires_the_visible_document_marker(self):
         with patch.object(
             qa,
