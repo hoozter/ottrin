@@ -605,14 +605,7 @@ fn ensure_dev_helper() {
 
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let helper_name = "ottrin-priv-helper";
-    let helper_path = if cfg!(target_os = "windows") {
-        manifest_dir
-            .join("target")
-            .join("debug")
-            .join(format!("{helper_name}.exe"))
-    } else {
-        manifest_dir.join("target").join("debug").join(helper_name)
-    };
+    let helper_path = dev_helper_path(&manifest_dir, cfg!(target_os = "windows"));
     if helper_path.is_file() {
         set_privileged_helper_override(Some(helper_path));
         return;
@@ -626,6 +619,22 @@ fn ensure_dev_helper() {
     if status.map(|s| s.success()).unwrap_or(false) && helper_path.is_file() {
         set_privileged_helper_override(Some(helper_path));
     }
+}
+
+fn dev_helper_path(manifest_dir: &std::path::Path, is_windows: bool) -> PathBuf {
+    let workspace_root = manifest_dir
+        .parent()
+        .and_then(std::path::Path::parent)
+        .unwrap_or(manifest_dir);
+    let helper_name = if is_windows {
+        "ottrin-priv-helper.exe"
+    } else {
+        "ottrin-priv-helper"
+    };
+    workspace_root
+        .join("target")
+        .join("debug")
+        .join(helper_name)
 }
 
 #[cfg(test)]
@@ -675,6 +684,19 @@ mod tests {
         assert_eq!(
             cli_renderer_override(&["--renderer=opengl".into()]),
             Some("opengl".into())
+        );
+    }
+
+    #[test]
+    fn debug_helper_path_uses_the_workspace_target_directory() {
+        let manifest_dir = PathBuf::from("/repo/crates/ottrin-app");
+        assert_eq!(
+            dev_helper_path(&manifest_dir, false),
+            PathBuf::from("/repo/target/debug/ottrin-priv-helper")
+        );
+        assert_eq!(
+            dev_helper_path(&manifest_dir, true),
+            PathBuf::from("/repo/target/debug/ottrin-priv-helper.exe")
         );
     }
 

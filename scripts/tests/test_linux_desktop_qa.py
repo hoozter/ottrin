@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
+import zipfile
 
 
 SCRIPT = Path(__file__).parents[1] / "linux-desktop-qa.py"
@@ -86,6 +88,21 @@ class A11yRegistryPreflightTests(unittest.TestCase):
         self.assertIn('"entry_selected": false', writes["text"])
         self.assertIn('"x11_window_relative_target"', writes["text"])
 
+    def test_preview_fixtures_include_a_real_safe_svg_and_docx_content_marker(self):
+        with tempfile.TemporaryDirectory() as temp:
+            documents = Path(temp) / "Documents"
+            documents.mkdir()
+            qa.create_preview_fixtures(Path.cwd(), documents)
+
+            svg = (documents / "ottrin-preview.svg").read_text(encoding="utf-8")
+            self.assertIn("<svg", svg)
+            self.assertIn("#00ff88", svg)
+            with zipfile.ZipFile(documents / "letter.docx") as docx:
+                self.assertIn(
+                    b"Ottrin DOCX QA visible document content",
+                    docx.read("word/document.xml"),
+                )
+
 
 class X11CoordinateTranslationTests(unittest.TestCase):
     def test_entry_selection_accepts_the_visible_status_label_when_a11y_omits_selected_state(self):
@@ -100,6 +117,41 @@ class X11CoordinateTranslationTests(unittest.TestCase):
             ),
         ):
             self.assertTrue(qa.entry_selected("notes.txt"))
+
+    def test_pointer_selection_never_uses_accessibility_activation_or_keyboard_fallback(self):
+        commands = []
+        node = MagicMock()
+        with (
+            patch.object(qa, "visible_entry", return_value=node),
+            patch.object(
+                qa,
+                "entry_x11_diagnostics",
+                return_value={"x11_window_relative_target": {"x": 280, "y": 330}},
+            ),
+            patch.object(qa, "entry_selected", side_effect=[False, True]),
+            patch.object(qa, "click_accessible_name") as accessibility_activation,
+            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
+            patch.object(qa.time, "sleep"),
+        ):
+            qa.click_entry("0x123", "notes.txt")
+
+        accessibility_activation.assert_not_called()
+        self.assertEqual(
+            commands,
+            [
+                ("xdotool", "windowactivate", "--sync", "0x123"),
+                (
+                    "xdotool",
+                    "mousemove",
+                    "--window",
+                    "0x123",
+                    "280",
+                    "330",
+                    "click",
+                    "1",
+                ),
+            ],
+        )
 
     def test_context_menu_uses_the_checked_x11_target_only_after_named_selection(self):
         commands = []
@@ -252,104 +304,6 @@ class X11CoordinateTranslationTests(unittest.TestCase):
             ],
         )
 
-    def test_click_entry_retries_with_checked_x11_target_when_a11y_does_not_select(self):
-        commands = []
-        with (
-            patch.object(qa, "click_accessible_name"),
-            patch.object(qa, "entry_selected", side_effect=[False, True]),
-            patch.object(qa, "wait_for", return_value=object()),
-            patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
-            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
-            patch.object(qa.time, "sleep"),
-        ):
-            qa.click_entry("0x123", "sample.json")
-
-        self.assertEqual(
-            commands,
-            [
-                ("xdotool", "windowactivate", "--sync", "0x123"),
-                (
-                    "xdotool",
-                    "mousemove",
-                    "--window",
-                    "0x123",
-                    "280",
-                    "330",
-                    "click",
-                    "1",
-                ),
-            ],
-        )
-
-    def test_click_entry_retries_with_direct_a11y_coordinates_after_relative_click(self):
-        commands = []
-        node = MagicMock()
-        node.queryComponent.return_value.getExtents.return_value = MagicMock(
-            x=600, y=700, width=40, height=60
-        )
-        with (
-            patch.object(qa, "click_accessible_name"),
-            patch.object(qa, "entry_selected", side_effect=[False, False, True]),
-            patch.object(
-                qa,
-                "wait_for",
-                side_effect=[node, AssertionError("relative click missed"), node, object()],
-            ),
-            patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
-            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
-            patch.object(qa.time, "sleep"),
-        ):
-            qa.click_entry("0x123", "sample.json")
-
-        self.assertEqual(
-            commands,
-            [
-                ("xdotool", "windowactivate", "--sync", "0x123"),
-                (
-                    "xdotool",
-                    "mousemove",
-                    "--window",
-                    "0x123",
-                    "280",
-                    "330",
-                    "click",
-                    "1",
-                ),
-                ("xdotool", "windowactivate", "--sync", "0x123"),
-                ("xdotool", "mousemove", "620", "730", "click", "1"),
-            ],
-        )
-
-    def test_click_entry_focuses_the_named_node_before_using_space_as_a_last_resort(self):
-        events = []
-        node = MagicMock()
-        node.queryComponent.return_value.getExtents.return_value = MagicMock(
-            x=600, y=700, width=40, height=60
-        )
-        node.queryComponent.return_value.grabFocus.side_effect = lambda: events.append("focus") or True
-        with (
-            patch.object(qa, "click_accessible_name"),
-            patch.object(qa, "entry_selected", side_effect=[False, False, False, True]),
-            patch.object(
-                qa,
-                "wait_for",
-                side_effect=[node, AssertionError("relative click missed"), node, AssertionError("direct click missed"), node, object()],
-            ),
-            patch.object(qa, "x11_point_for_node", return_value=(280, 330)),
-            patch.object(qa, "run", side_effect=lambda *args, **kwargs: events.append(args)),
-            patch.object(qa.time, "sleep"),
-        ):
-            qa.click_entry("0x123", "sample.json")
-
-        node.queryComponent.return_value.grabFocus.assert_called_once_with()
-        self.assertEqual(
-            events[-3:],
-            [
-                ("xdotool", "windowactivate", "--sync", "0x123"),
-                "focus",
-                ("xdotool", "key", "--clearmodifiers", "space"),
-            ],
-        )
 
     def test_double_click_targets_the_named_entry_inside_its_x11_window(self):
         commands = []
@@ -386,37 +340,6 @@ class X11CoordinateTranslationTests(unittest.TestCase):
             ],
         )
 
-    def test_direct_double_click_targets_the_named_entry_at_a11y_desktop_coordinates(self):
-        commands = []
-        node = MagicMock()
-        node.queryComponent.return_value.getExtents.return_value = MagicMock(
-            x=600, y=700, width=40, height=60
-        )
-        with (
-            patch.object(qa, "wait_for", return_value=node),
-            patch.object(qa, "run", side_effect=lambda *args, **kwargs: commands.append(args)),
-            patch.object(qa.time, "sleep"),
-        ):
-            qa.double_click_entry_at_desktop_coordinates("0x123", "Subfolder")
-
-        self.assertEqual(
-            commands,
-            [
-                ("xdotool", "windowactivate", "--sync", "0x123"),
-                (
-                    "xdotool",
-                    "mousemove",
-                    "620",
-                    "730",
-                    "click",
-                    "--repeat",
-                    "2",
-                    "--delay",
-                    "100",
-                    "1",
-                ),
-            ],
-        )
 
     def test_records_entry_activation_diagnostics_only_after_navigation_fails(self):
         evidence = Path(self.id().replace(".", "-"))
@@ -454,6 +377,16 @@ class X11CoordinateTranslationTests(unittest.TestCase):
     def test_docx_page_preview_does_not_claim_image_pdf_zoom_toolbar(self):
         self.assertFalse(qa.inspector_requires_zoom_controls("letter.docx"))
         self.assertTrue(qa.inspector_requires_zoom_controls("preview.pdf"))
+
+    def test_inspector_content_requires_the_visible_document_marker(self):
+        with patch.object(
+            qa,
+            "visible_a11y_nodes",
+            return_value=["label | Ottrin DOCX QA visible document content"],
+        ):
+            self.assertTrue(qa.inspector_content_visible("Ottrin DOCX QA visible document content"))
+        with patch.object(qa, "visible_a11y_nodes", return_value=["label | letter.docx"]):
+            self.assertFalse(qa.inspector_content_visible("Ottrin DOCX QA visible document content"))
 
     def test_closing_quick_inspector_dismisses_its_parent_context_menu(self):
         with (

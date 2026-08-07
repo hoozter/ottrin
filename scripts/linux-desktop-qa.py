@@ -530,36 +530,8 @@ def double_click_entry(window_id: str, name: str) -> dict[str, object]:
     return diagnostics
 
 
-def double_click_entry_at_desktop_coordinates(window_id: str, name: str):
-    """Retry activation through the direct AT-SPI desktop coordinate route."""
-    node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
-    rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
-    run("xdotool", "windowactivate", "--sync", window_id)
-    run(
-        "xdotool",
-        "mousemove",
-        str(rect.x + rect.width // 2),
-        str(rect.y + rect.height // 2),
-        "click",
-        "--repeat",
-        "2",
-        "--delay",
-        "100",
-        "1",
-    )
-    time.sleep(0.5)
-
-
 def click_entry(window_id: str, name: str):
-    """Select the first entry, proving selection before extending it with Ctrl-click."""
-    click_accessible_name(name, "toggle button")
-    if entry_selected(name):
-        return
-
-    # The accessibility action can report success while a replaced List-view
-    # node leaves the previous preview selection active.  Retry once through
-    # the same checked accessible-to-X11 mapping used for the Ctrl extension,
-    # then require the named entry's selected state before copying anything.
+    """Select an entry exclusively through the checked ordinary-pointer route."""
     node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
     x, y = x11_point_for_node(window_id, node)
     run("xdotool", "windowactivate", "--sync", window_id)
@@ -573,48 +545,11 @@ def click_entry(window_id: str, name: str):
         "click",
         "1",
     )
-    try:
-        wait_for(
-            lambda: entry_selected(name),
-            f"selected entry {name!r} after window-relative X11 click",
-            timeout=2.0,
-        )
-    except AssertionError:
-        # KWin/Xwayland can expose a client geometry that differs from the
-        # AT-SPI frame mapping.  Context actions use desktop coordinates
-        # successfully on that route, so make one final direct, named-node
-        # click before failing the selection proof.
-        node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
-        rect = node.queryComponent().getExtents(pyatspi.DESKTOP_COORDS)
-        run("xdotool", "windowactivate", "--sync", window_id)
-        run(
-            "xdotool",
-            "mousemove",
-            str(rect.x + rect.width // 2),
-            str(rect.y + rect.height // 2),
-            "click",
-            "1",
-        )
-        try:
-            wait_for(
-                lambda: entry_selected(name),
-                f"selected entry {name!r} after direct AT-SPI X11 click",
-                timeout=2.0,
-            )
-        except AssertionError:
-            # A modal transition can leave both pointer coordinate routes on
-            # the prior row.  Focus the exact accessible node and activate it
-            # by keyboard before failing: this preserves named-node authority
-            # instead of guessing another desktop coordinate.
-            node = wait_for(lambda: visible_entry(name), f"visible entry {name!r}")
-            run("xdotool", "windowactivate", "--sync", window_id)
-            if not node.queryComponent().grabFocus():
-                raise AssertionError(f"could not focus entry {name!r} for keyboard selection")
-            run("xdotool", "key", "--clearmodifiers", "space")
-            wait_for(
-                lambda: entry_selected(name),
-                f"selected entry {name!r} after accessible focus and Space",
-            )
+    wait_for(
+        lambda: entry_selected(name),
+        f"selected entry {name!r} after window-relative X11 click",
+        timeout=2.0,
+    )
     time.sleep(0.35)
 
 
@@ -779,6 +714,11 @@ def quick_inspector_visible(filename: str):
     return any(node.name == title for node in visible_named_nodes(title))
 
 
+def inspector_content_visible(marker: str) -> bool:
+    """Require rendered inspector text, not merely its native viewport."""
+    return any(marker in node for node in visible_a11y_nodes())
+
+
 def quick_inspector_quiescent(filename: str) -> bool:
     """Reject a transient AT-SPI disappearance while a viewport is closing."""
     if quick_inspector_visible(filename):
@@ -825,19 +765,51 @@ def close_quick_inspector(
         )
 
 
-def create_preview_fixtures(project_root: Path, documents: Path):
-    shutil.copy2(
-        project_root / ".hermes/spikes/pdfium-preview/fixture.pdf",
-        documents / "preview.pdf",
+def write_pdf_fixture(path: Path, text: str):
+    """Write a minimal self-contained PDF so desktop QA has no ignored-file dependency."""
+    stream = f"BT /F1 18 Tf 72 720 Td ({text}) Tj ET\n".encode("ascii")
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
+        f"<< /Length {len(stream)} >>\nstream\n".encode("ascii") + stream + b"endstream",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ]
+    payload = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for number, obj in enumerate(objects, start=1):
+        offsets.append(len(payload))
+        payload.extend(f"{number} 0 obj\n".encode("ascii"))
+        payload.extend(obj)
+        payload.extend(b"\nendobj\n")
+    xref_offset = len(payload)
+    payload.extend(f"xref\n0 {len(objects) + 1}\n".encode("ascii"))
+    payload.extend(b"0000000000 65535 f \n")
+    for offset in offsets[1:]:
+        payload.extend(f"{offset:010} 00000 n \n".encode("ascii"))
+    payload.extend(
+        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref_offset}\n%%EOF\n".encode(
+            "ascii"
+        )
     )
-    shutil.copy2(
-        project_root / ".hermes/spikes/pdfium-preview/fixture.pdf",
-        documents / "preview-second.pdf",
+    path.write_bytes(payload)
+
+
+def create_preview_fixtures(project_root: Path, documents: Path):
+    del project_root
+    write_pdf_fixture(documents / "preview.pdf", "Ottrin PDF QA")
+    write_pdf_fixture(documents / "preview-second.pdf", "Ottrin PDF QA second document")
+    (documents / "ottrin-preview.svg").write_text(
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"80\">"
+        "<rect width=\"120\" height=\"80\" fill=\"#00ff88\"/>"
+        "<circle cx=\"60\" cy=\"40\" r=\"22\" fill=\"#16202a\"/>"
+        "</svg>",
+        encoding="utf-8",
     )
     with zipfile.ZipFile(documents / "letter.docx", "w") as archive:
         archive.writestr(
             "word/document.xml",
-            "<w:document><w:body><w:p><w:r><w:t>Ottrin DOCX QA</w:t>"
+            "<w:document><w:body><w:p><w:r><w:t>Ottrin DOCX QA visible document content</w:t>"
             "</w:r></w:p></w:body></w:document>",
         )
     workbook_parts = {
@@ -892,6 +864,11 @@ def open_quick_inspector(
         lambda: quick_inspector_visible(filename),
         f"Quick Inspector for {filename}",
     )
+    if filename == "letter.docx":
+        wait_for(
+            lambda: inspector_content_visible("Ottrin DOCX QA visible document content"),
+            "visible DOCX document content",
+        )
     if inspector_requires_zoom_controls(filename):
         wait_for(
             lambda: any(
@@ -1050,6 +1027,7 @@ def main() -> int:
             "preview.pdf",
             "preview-second.pdf",
             "letter.docx",
+            "ottrin-preview.svg",
             "workbook.xlsx",
             "macros.xlsm",
             "slides.pptx",
@@ -1129,17 +1107,8 @@ def main() -> int:
                 timeout=2.0,
             )
         except AssertionError:
-            double_click_entry_at_desktop_coordinates(window_id, "Subfolder")
-            try:
-                wait_for(
-                    lambda: destination_breadcrumb_visible("Subfolder"),
-                    "Subfolder navigation after direct AT-SPI X11 double-click",
-                )
-            except AssertionError:
-                write_entry_activation_failure(
-                    evidence, "Subfolder", subfolder_activation
-                )
-                raise
+            write_entry_activation_failure(evidence, "Subfolder", subfolder_activation)
+            raise
         click_named_control(window_id, "Menu")
         click_accessible_suffix("Paste into Current Folder")
         wait_for(lambda: (subfolder / "notes.txt").is_file(), "copied file")
@@ -1167,6 +1136,7 @@ def main() -> int:
                 "second rendered PDF in the same process",
             ),
             ("letter.docx", "08-quick-inspector-docx", "DOCX"),
+            ("ottrin-preview.svg", "08a-quick-inspector-svg", "rendered SVG"),
             ("workbook.xlsx", "09-quick-inspector-xlsx", "XLSX"),
             ("macros.xlsm", "10-quick-inspector-xlsm", "XLSM"),
             ("slides.pptx", "11-quick-inspector-pptx", "PPTX"),
