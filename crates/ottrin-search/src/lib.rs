@@ -58,6 +58,10 @@ struct IndexState {
     items: Arc<Vec<SearchResultItem>>,
     snapshot_revision: u64,
     status: SearchIndexStatus,
+    loading_saved_snapshot: bool,
+    database_bytes: u64,
+    wal_bytes: u64,
+    freelist_pages: u64,
     last_error: Option<String>,
     progress_text: Option<String>,
     last_completed_indexed_items: Option<usize>,
@@ -84,6 +88,10 @@ impl Default for IndexState {
             items: Arc::new(Vec::new()),
             snapshot_revision: 0,
             status: SearchIndexStatus::Indexing,
+            loading_saved_snapshot: false,
+            database_bytes: 0,
+            wal_bytes: 0,
+            freelist_pages: 0,
             last_error: None,
             progress_text: None,
             last_completed_indexed_items: None,
@@ -109,6 +117,12 @@ impl Default for IndexState {
 #[derive(Debug, Clone)]
 pub struct SearchIndexDiagnostics {
     pub status: SearchIndexStatus,
+    /// True only while SQLite is deserializing a matching completed snapshot;
+    /// it never represents a filesystem scan.
+    pub loading_saved_snapshot: bool,
+    pub database_bytes: u64,
+    pub wal_bytes: u64,
+    pub freelist_pages: u64,
     /// Monotonically advances whenever a complete query snapshot is replaced.
     pub snapshot_revision: u64,
     pub detail: Option<String>,
@@ -429,6 +443,10 @@ impl SearchHandle {
         };
         SearchIndexDiagnostics {
             status: idx.status,
+            loading_saved_snapshot: idx.loading_saved_snapshot,
+            database_bytes: idx.database_bytes,
+            wal_bytes: idx.wal_bytes,
+            freelist_pages: idx.freelist_pages,
             snapshot_revision: idx.snapshot_revision,
             detail,
             indexed_items: if matches!(idx.status, SearchIndexStatus::Indexing) {
@@ -3297,6 +3315,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3498,6 +3518,8 @@ mod tests {
         let service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         {
@@ -3560,6 +3582,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3606,6 +3630,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3653,6 +3679,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3696,6 +3724,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3778,6 +3808,8 @@ mod tests {
         let service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.index.write().expect("index write").status = SearchIndexStatus::Indexing;
@@ -3819,6 +3851,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3873,6 +3907,8 @@ mod tests {
         let config = SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         };
         let service = SearchService::new(config.clone());
@@ -4014,6 +4050,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -4066,6 +4104,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -4111,6 +4151,8 @@ mod tests {
         let service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         {
@@ -4181,6 +4223,8 @@ mod tests {
         let service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         {

@@ -2,6 +2,7 @@ use crate::mutation::{ActivationFence, GenerationSnapshot, IndexMutation, OwnedI
 use crate::plan::ScanPlan;
 use ottrin_core::{EntryKind, SearchResultItem};
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
+use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -60,6 +61,14 @@ CREATE VIRTUAL TABLE IF NOT EXISTS search_generation_content USING fts5(
 #[allow(dead_code)] // Slice 2 storage API is intentionally isolated until worker integration.
 pub(crate) struct SearchStore {
     conn: Connection,
+    path: PathBuf,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub(crate) struct SearchStoreDiagnostics {
+    pub(crate) database_bytes: u64,
+    pub(crate) wal_bytes: u64,
+    pub(crate) freelist_pages: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -84,10 +93,10 @@ impl SearchStore {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
-        let conn = Connection::open(path)?;
+        let conn = Connection::open(&path)?;
         configure_writer_connection(&conn)?;
         migrate(&conn)?;
-        Ok(Self { conn })
+        Ok(Self { conn, path })
     }
 
     pub(crate) fn load(
@@ -103,6 +112,21 @@ impl SearchStore {
         cancelled: &AtomicBool,
     ) -> Result<Option<GenerationSnapshot>, SearchDbError> {
         load_generation_inner(&self.conn, plan, Some(cancelled))
+    }
+
+    pub(crate) fn diagnostics(&self) -> Result<SearchStoreDiagnostics, SearchDbError> {
+        let freelist_pages = self
+            .conn
+            .query_row("PRAGMA freelist_count", [], |row| row.get::<_, u64>(0))?;
+        Ok(SearchStoreDiagnostics {
+            database_bytes: std::fs::metadata(&self.path)
+                .map(|metadata| metadata.len())
+                .unwrap_or(0),
+            wal_bytes: std::fs::metadata(sqlite_sidecar_path(&self.path, "-wal"))
+                .map(|metadata| metadata.len())
+                .unwrap_or(0),
+            freelist_pages,
+        })
     }
 
     pub(crate) fn commit(
@@ -178,8 +202,9 @@ impl SearchStore {
         before_activation: impl FnOnce(),
         after_commit: impl FnOnce(&GenerationSnapshot),
     ) -> Result<GenerationSnapshot, SearchDbError> {
+        let is_full_replacement = matches!(&mutation, IndexMutation::ReplaceAll(_));
         let tx = self.conn.transaction()?;
-        let current = if matches!(&mutation, IndexMutation::ReplaceAll(_)) {
+        let current = if is_full_replacement {
             GenerationSnapshot::new(0, plan.identity().to_string(), Vec::new())
         } else {
             load_generation(&tx, plan)?.ok_or_else(|| {
@@ -188,18 +213,34 @@ impl SearchStore {
                 )
             })?
         };
-        let candidate = current.apply(mutation);
-        tx.execute(
-            "INSERT INTO search_generations (plan_identity, completed, item_count) VALUES (?1, 0, ?2)",
-            params![plan.identity(), candidate.items().len() as i64],
-        )?;
-        let generation = tx.last_insert_rowid();
-        insert_generation_items(&tx, generation, candidate.items())?;
-        insert_generation_content(&tx, generation, candidate.items())?;
-        tx.execute(
-            "UPDATE search_generations SET completed = 1 WHERE id = ?1",
-            [generation],
-        )?;
+        let candidate = current.clone().apply(mutation);
+        let generation = if is_full_replacement {
+            tx.execute(
+                "INSERT INTO search_generations (plan_identity, completed, item_count) VALUES (?1, 0, ?2)",
+                params![plan.identity(), candidate.items().len() as i64],
+            )?;
+            let generation = tx.last_insert_rowid();
+            insert_generation_items(&tx, generation, candidate.items())?;
+            insert_generation_content(&tx, generation, candidate.items(), plan)?;
+            tx.execute(
+                "UPDATE search_generations SET completed = 1 WHERE id = ?1",
+                [generation],
+            )?;
+            generation
+        } else {
+            apply_incremental_mutation(
+                &tx,
+                current.generation(),
+                current.items(),
+                candidate.items(),
+                plan,
+            )?;
+            tx.execute(
+                "UPDATE search_generations SET item_count = ?1 WHERE id = ?2",
+                params![candidate.items().len() as i64, current.generation()],
+            )?;
+            current.generation()
+        };
         before_activation();
         let activation_guard = activation.map(|(fence, expected_epoch)| {
             let guard = fence.lock();
@@ -209,19 +250,21 @@ impl SearchStore {
                 .ok_or(SearchDbError::ActivationCancelled)
         });
         let _activation_guard = activation_guard.transpose()?;
-        tx.execute(
-            "INSERT INTO search_store_state (singleton, active_generation_id) VALUES (1, ?1)
-             ON CONFLICT(singleton) DO UPDATE SET active_generation_id = excluded.active_generation_id",
-            [generation],
-        )?;
-        tx.execute(
-            "DELETE FROM search_generations WHERE id <> ?1",
-            [generation],
-        )?;
-        tx.execute(
-            "DELETE FROM search_generation_content WHERE generation_id <> ?1",
-            [generation],
-        )?;
+        if is_full_replacement {
+            tx.execute(
+                "INSERT INTO search_store_state (singleton, active_generation_id) VALUES (1, ?1)
+                 ON CONFLICT(singleton) DO UPDATE SET active_generation_id = excluded.active_generation_id",
+                [generation],
+            )?;
+            tx.execute(
+                "DELETE FROM search_generations WHERE id <> ?1",
+                [generation],
+            )?;
+            tx.execute(
+                "DELETE FROM search_generation_content WHERE generation_id <> ?1",
+                [generation],
+            )?;
+        }
 
         let snapshot = load_generation(&tx, plan)?.ok_or_else(|| {
             SearchDbError::InvalidGeneration("active generation disappeared".to_string())
@@ -230,6 +273,9 @@ impl SearchStore {
             return Err(SearchDbError::InjectedFailure);
         }
         tx.commit()?;
+        if is_full_replacement {
+            self.conn.execute_batch("PRAGMA wal_checkpoint(PASSIVE)")?;
+        }
         after_commit(&snapshot);
         Ok(snapshot)
     }
@@ -249,11 +295,69 @@ fn configure_writer_connection(conn: &Connection) -> Result<(), SearchDbError> {
 }
 
 const MAX_INDEXED_TEXT_BYTES: u64 = 512 * 1024;
+const CONTENT_STATE_POLICY_DISABLED: i64 = 6;
+
+fn apply_incremental_mutation(
+    tx: &Transaction<'_>,
+    generation: i64,
+    current: &[OwnedItem],
+    candidate: &[OwnedItem],
+    plan: &ScanPlan,
+) -> Result<(), SearchDbError> {
+    let current_by_path = current
+        .iter()
+        .map(|item| (item.item().path.clone(), item))
+        .collect::<BTreeMap<_, _>>();
+    let candidate_by_path = candidate
+        .iter()
+        .map(|item| (item.item().path.clone(), item))
+        .collect::<BTreeMap<_, _>>();
+    let removed = current_by_path
+        .iter()
+        .filter_map(|(path, item)| {
+            (candidate_by_path.get(path) != Some(item)).then_some((*item).clone())
+        })
+        .collect::<Vec<_>>();
+    let changed = candidate_by_path
+        .iter()
+        .filter_map(|(path, item)| {
+            (current_by_path.get(path) != Some(item)).then_some((*item).clone())
+        })
+        .collect::<Vec<_>>();
+    delete_generation_items(tx, generation, &removed)?;
+    insert_generation_items(tx, generation, &changed)?;
+    insert_generation_content(tx, generation, &changed, plan)?;
+    Ok(())
+}
+
+fn delete_generation_items(
+    tx: &Transaction<'_>,
+    generation: i64,
+    items: &[OwnedItem],
+) -> Result<(), SearchDbError> {
+    let mut fts = tx.prepare_cached(
+        "DELETE FROM search_generation_content WHERE generation_id = ?1 AND path = ?2",
+    )?;
+    let mut state = tx.prepare_cached(
+        "DELETE FROM search_generation_content_state WHERE generation_id = ?1 AND path = ?2",
+    )?;
+    let mut rows = tx.prepare_cached(
+        "DELETE FROM search_generation_items WHERE generation_id = ?1 AND path = ?2",
+    )?;
+    for item in items {
+        let path = encode_path(&item.item().path);
+        fts.execute(params![generation, &path])?;
+        state.execute(params![generation, &path])?;
+        rows.execute(params![generation, path])?;
+    }
+    Ok(())
+}
 
 fn insert_generation_content(
     tx: &Transaction<'_>,
     generation: i64,
     items: &[OwnedItem],
+    plan: &ScanPlan,
 ) -> Result<(), SearchDbError> {
     let mut content_stmt = tx.prepare_cached(
         "INSERT INTO search_generation_content (generation_id, path, content) VALUES (?1, ?2, ?3)",
@@ -264,7 +368,9 @@ fn insert_generation_content(
     for owned in items {
         let item = owned.item();
         let path = encode_path(&item.path);
-        let (state, content) = if !matches!(item.kind, EntryKind::File) {
+        let (state, content) = if !plan.indexes_content_for(&item.path) {
+            (CONTENT_STATE_POLICY_DISABLED, None)
+        } else if !matches!(item.kind, EntryKind::File) {
             (2_i64, None)
         } else if item
             .size_bytes
@@ -299,7 +405,16 @@ fn insert_generation_items(
         "INSERT INTO search_generation_items
          (generation_id, path, parent_path, root_path, name, kind, size_bytes,
           modified_unix_secs, is_executable, symlink_target_is_dir)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+         ON CONFLICT(generation_id, path) DO UPDATE SET
+            parent_path = excluded.parent_path,
+            root_path = excluded.root_path,
+            name = excluded.name,
+            kind = excluded.kind,
+            size_bytes = excluded.size_bytes,
+            modified_unix_secs = excluded.modified_unix_secs,
+            is_executable = excluded.is_executable,
+            symlink_target_is_dir = excluded.symlink_target_is_dir",
     )?;
     for owned in items {
         let item = owned.item();
@@ -636,6 +751,12 @@ pub fn search_db_path() -> PathBuf {
     dir.join("search.db")
 }
 
+fn sqlite_sidecar_path(path: &Path, suffix: &str) -> PathBuf {
+    let mut sidecar = path.as_os_str().to_os_string();
+    sidecar.push(suffix);
+    PathBuf::from(sidecar)
+}
+
 fn migrate(conn: &Connection) -> Result<(), SearchDbError> {
     let version: u32 = conn.query_row("PRAGMA user_version", [], |row| row.get(0))?;
     match version {
@@ -804,6 +925,8 @@ mod generation_tests {
         ScanPlan::new(&SearchConfig {
             include_roots: vec![root.to_path_buf()],
             include_hidden_system: true,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.to_path_buf()],
             ..SearchConfig::default()
         })
         .expect("valid plan")
@@ -1272,6 +1395,150 @@ mod generation_tests {
             .expect("delta generation");
 
         assert_eq!(store.load(&plan).expect("load"), Some(committed));
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn incremental_mutations_keep_the_active_generation_and_storage_bounded() {
+        let db_path = temp_db_path("incremental-storage-bounded");
+        let root = PathBuf::from("root");
+        let nested_root = root.join("nested");
+        let scan_plan = ScanPlan::new(&SearchConfig {
+            include_roots: vec![root.clone(), nested_root.clone()],
+            include_hidden_system: true,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            ..SearchConfig::default()
+        })
+        .expect("valid plan");
+        let mut store = SearchStore::open(db_path.clone()).expect("open store");
+        let mut initial = (0..255)
+            .map(|index| owned(&root, &format!("items/{index}.txt"), index))
+            .collect::<Vec<_>>();
+        initial.push(owned(&nested_root, "marker.txt", 255));
+        let initial = store
+            .commit(&scan_plan, IndexMutation::ReplaceAll(initial))
+            .expect("initial generation");
+
+        for revision in 0..128 {
+            store
+                .commit(
+                    &scan_plan,
+                    IndexMutation::Delta {
+                        upserts: vec![owned(&root, "items/0.txt", 10_000 + revision)],
+                        remove_trees: Vec::new(),
+                    },
+                )
+                .expect("bounded delta");
+        }
+        for revision in 0..128 {
+            store
+                .commit(
+                    &scan_plan,
+                    IndexMutation::ReplaceRoot {
+                        root: nested_root.clone(),
+                        items: vec![owned(&nested_root, "marker.txt", 20_000 + revision)],
+                    },
+                )
+                .expect("bounded root replacement");
+        }
+        let active = store
+            .load(&scan_plan)
+            .expect("load")
+            .expect("active generation");
+        let generations: i64 = store
+            .conn
+            .query_row("SELECT COUNT(*) FROM search_generations", [], |row| {
+                row.get(0)
+            })
+            .expect("count generations");
+        let freelist_pages: i64 = store
+            .conn
+            .query_row("PRAGMA freelist_count", [], |row| row.get(0))
+            .expect("freelist pages");
+
+        assert_eq!(active.generation(), initial.generation());
+        assert_eq!(active.items().len(), 256);
+        assert_eq!(generations, 1);
+        assert_eq!(freelist_pages, 0, "deltas must not churn whole generations");
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn content_policy_controls_payloads_and_invalidates_prior_generations() {
+        let db_path = temp_db_path("content-policy");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let excluded_dir = root.join("excluded");
+        std::fs::create_dir_all(&excluded_dir).expect("create content roots");
+        std::fs::write(root.join("included.txt"), "included-needle").expect("write included");
+        std::fs::write(excluded_dir.join("excluded.txt"), "excluded-needle")
+            .expect("write excluded");
+        let mut enabled = SearchConfig {
+            include_roots: vec![root.clone()],
+            include_hidden_system: true,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_exclude_roots: vec![excluded_dir],
+            ..SearchConfig::default()
+        };
+        let enabled_plan = ScanPlan::new(&enabled).expect("enabled plan");
+        let mut store = SearchStore::open(db_path.clone()).expect("open store");
+        store
+            .commit(
+                &enabled_plan,
+                IndexMutation::ReplaceAll(vec![
+                    owned(&root, "included.txt", 16),
+                    owned(&root, "excluded/excluded.txt", 16),
+                ]),
+            )
+            .expect("commit enabled content");
+        assert_eq!(
+            query_indexed_content_page(&db_path, &enabled_plan, "\"included-needle\"", 10, 0)
+                .expect("query included")
+                .len(),
+            1
+        );
+        assert!(
+            query_indexed_content_page(&db_path, &enabled_plan, "\"excluded-needle\"", 10, 0)
+                .expect("query excluded")
+                .is_empty()
+        );
+
+        enabled.content_indexing_enabled = false;
+        let disabled_plan = ScanPlan::new(&enabled).expect("disabled plan");
+        assert_ne!(enabled_plan.identity(), disabled_plan.identity());
+        assert!(matches!(
+            store.load(&disabled_plan),
+            Err(SearchDbError::PlanIdentityMismatch)
+        ));
+        store
+            .commit(
+                &disabled_plan,
+                IndexMutation::ReplaceAll(vec![owned(&root, "included.txt", 16)]),
+            )
+            .expect("commit disabled content");
+        assert!(
+            query_indexed_content_page(&db_path, &disabled_plan, "\"included-needle\"", 10, 0)
+                .expect("query disabled")
+                .is_empty()
+        );
+        let content_state_rows: i64 = store
+            .conn
+            .query_row(
+                "SELECT COUNT(*) FROM search_generation_content_state",
+                [],
+                |row| row.get(0),
+            )
+            .expect("count explicit policy state");
+        assert_eq!(content_state_rows, 1);
+        let _ = std::fs::remove_dir_all(root);
         let _ = std::fs::remove_file(db_path);
     }
 

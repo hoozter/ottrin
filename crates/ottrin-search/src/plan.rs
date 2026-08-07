@@ -3,7 +3,7 @@ use ottrin_core::SearchConfig;
 use std::fmt::Write;
 use std::path::{Path, PathBuf};
 
-const FILTER_POLICY_VERSION: u32 = 2;
+const FILTER_POLICY_VERSION: u32 = 3;
 const FOLLOW_LINKS: bool = false;
 const SAME_FILE_SYSTEM: bool = true;
 
@@ -16,6 +16,9 @@ pub(crate) struct ScanPlan {
     roots: Vec<PathBuf>,
     excluded_roots: Vec<PathBuf>,
     include_hidden_system: bool,
+    content_indexing_enabled: bool,
+    content_include_roots: Vec<PathBuf>,
+    content_exclude_roots: Vec<PathBuf>,
 
     include: GlobSet,
     exclude: GlobSet,
@@ -35,6 +38,10 @@ impl ScanPlan {
         dedup_paths(&mut roots);
         let mut excluded_roots = config.exclude_roots.clone();
         dedup_paths(&mut excluded_roots);
+        let mut content_include_roots = config.content_include_roots.clone();
+        dedup_paths(&mut content_include_roots);
+        let mut content_exclude_roots = config.content_exclude_roots.clone();
+        dedup_paths(&mut content_exclude_roots);
         let mut include_globs = normalized_patterns(&config.include_globs);
         let mut exclude_globs = normalized_patterns(&config.exclude_globs);
         let include = build_globset(&include_globs)?;
@@ -48,6 +55,11 @@ impl ScanPlan {
             &roots,
             &excluded_roots,
             config.include_hidden_system,
+            ContentPolicy {
+                enabled: config.content_indexing_enabled,
+                include_roots: &content_include_roots,
+                exclude_roots: &content_exclude_roots,
+            },
             &include_globs,
             &exclude_globs,
         );
@@ -55,6 +67,9 @@ impl ScanPlan {
             roots,
             excluded_roots,
             include_hidden_system: config.include_hidden_system,
+            content_indexing_enabled: config.content_indexing_enabled,
+            content_include_roots,
+            content_exclude_roots,
             include,
             exclude,
             identity,
@@ -118,6 +133,18 @@ impl ScanPlan {
     pub(crate) fn includes_item_name(&self, name: &str) -> bool {
         self.include_hidden_system || !name.starts_with('.')
     }
+
+    pub(crate) fn indexes_content_for(&self, path: &Path) -> bool {
+        self.content_indexing_enabled
+            && self
+                .content_include_roots
+                .iter()
+                .any(|root| path.starts_with(root))
+            && !self
+                .content_exclude_roots
+                .iter()
+                .any(|root| path.starts_with(root))
+    }
 }
 
 fn normalized_patterns(patterns: &[String]) -> Vec<String> {
@@ -150,10 +177,17 @@ fn build_globset(patterns: &[String]) -> Result<GlobSet, String> {
     builder.build().map_err(|error| error.to_string())
 }
 
+struct ContentPolicy<'a> {
+    enabled: bool,
+    include_roots: &'a [PathBuf],
+    exclude_roots: &'a [PathBuf],
+}
+
 fn canonical_identity(
     roots: &[PathBuf],
     excluded_roots: &[PathBuf],
     include_hidden_system: bool,
+    content_policy: ContentPolicy<'_>,
     include_globs: &[String],
     exclude_globs: &[String],
 ) -> String {
@@ -161,10 +195,15 @@ fn canonical_identity(
     canonical_roots.sort();
     let mut canonical_excluded_roots = excluded_roots.to_vec();
     canonical_excluded_roots.sort();
+    let mut canonical_content_include_roots = content_policy.include_roots.to_vec();
+    canonical_content_include_roots.sort();
+    let mut canonical_content_exclude_roots = content_policy.exclude_roots.to_vec();
+    canonical_content_exclude_roots.sort();
     let mut identity = String::new();
     write!(
         identity,
-        "descriptor=1;filter={FILTER_POLICY_VERSION};encoding={PATH_ENCODING};hidden={include_hidden_system};follow={FOLLOW_LINKS};samefs={SAME_FILE_SYSTEM};"
+        "descriptor=2;filter={FILTER_POLICY_VERSION};encoding={PATH_ENCODING};hidden={include_hidden_system};content={};follow={FOLLOW_LINKS};samefs={SAME_FILE_SYSTEM};",
+        content_policy.enabled,
     )
     .expect("writing to String cannot fail");
     append_identity_list(
@@ -181,6 +220,20 @@ fn canonical_identity(
     );
     append_identity_list(&mut identity, "include", include_globs.iter().cloned());
     append_identity_list(&mut identity, "exclude", exclude_globs.iter().cloned());
+    append_identity_list(
+        &mut identity,
+        "content-include",
+        canonical_content_include_roots
+            .iter()
+            .map(|path| encode_path(path)),
+    );
+    append_identity_list(
+        &mut identity,
+        "content-exclude",
+        canonical_content_exclude_roots
+            .iter()
+            .map(|path| encode_path(path)),
+    );
     identity
 }
 
@@ -255,9 +308,10 @@ mod tests {
     }
 
     #[test]
-    fn identity_invalidates_indexes_created_before_windows_system_folder_exclusions() {
+    fn identity_invalidates_indexes_created_before_content_policy() {
         let identity = ScanPlan::new(&config()).expect("valid plan");
-        assert!(identity.identity().contains("filter=2;"));
+        assert!(identity.identity().contains("filter=3;"));
+        assert!(identity.identity().contains("content=false;"));
     }
 
     #[test]
