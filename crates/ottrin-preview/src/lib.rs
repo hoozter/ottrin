@@ -727,7 +727,10 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
             kind,
             views: [true, false, false],
             visual_renderer: PreviewVisualRenderer::None,
-            raw_fallback_allowed: true,
+            // A video container is never image data. Until the bounded native
+            // backend produces a validated still, keep it metadata-only rather
+            // than handing arbitrary container bytes to an image decoder.
+            raw_fallback_allowed: false,
         },
         PreviewKind::AudioMetadata => PreviewProfile {
             kind,
@@ -7151,6 +7154,18 @@ mod tests {
         assert!(!profile.raw_fallback_allowed());
 
         let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn video_format_is_metadata_only_without_a_raw_fallback() {
+        let path = Path::new("sample.MP4");
+        let profile = preview_profile(path);
+
+        assert_eq!(classify_path(path), PreviewKind::VideoMetadata);
+        assert!(profile.supports_view(PreviewView::Metadata));
+        assert!(!profile.supports_view(PreviewView::TextCard));
+        assert!(!profile.supports_view(PreviewView::Visual));
+        assert!(!profile.raw_fallback_allowed());
     }
 
     #[test]

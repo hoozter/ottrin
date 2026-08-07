@@ -74,7 +74,7 @@ V1 should not ship until:
 These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 
 - Advanced Office navigation/editing or faithful Office layout beyond the bounded content preview required for v1.
-- Rich file thumbnails beyond the implemented text-card and thumbnail-collage path remain deferred: video frame thumbnails and broader document variants where platform support or dependencies make sense.
+- Rich file thumbnails beyond the implemented text-card and thumbnail-collage path remain deferred: video frame thumbnails and broader document variants where platform support or dependencies make sense. Video thumbnails now have an approved native-only Phase 1: Windows Media Foundation first, no bundled/invoked/recommended/downloaded FFmpeg, GStreamer codec payload, codec pack, external decoder, or additional codec implementation; unapproved platforms remain metadata-only. [Video Thumbnail Backend Spike](VIDEO_THUMBNAIL_SPIKE.md) preserves the rejected FFmpeg-first evaluation as historical evidence.
 - Native desktop Open With discovery parity beyond Linux remains deferred.
 - Media playback and advanced image tools.
 - Fanotify helper/service packaging.

@@ -1,9 +1,9 @@
 # Arthur · Ottrin V1 State
 
-Status: blocked on physical QA and product-scope decisions after all current dependency-ready local work
+Status: native-only video-thumbnail Phase 1 is authorized: Windows Media Foundation first, with no bundled or external decoder/runtime; all other current dependency-ready local work remains exhausted
 Repository: `/home/campbell/.hermes/worktrees/Ottrin-arthur`
 Branch: `arthur/ui-followups`
-Accepted base: `78bc42df7a96960261a0bad88fd8e9109da796fc`
+Accepted base: `5f2d929 Keep folder summary boundary warning-free`
 
 ## Independently accepted source range
 
@@ -87,11 +87,31 @@ Implementation/source gates for Storage Locations and first-class Create workflo
 
 All source-level V1 work listed in `docs/ROADMAP.md` is implemented; the remaining V1 items require physical Linux/Windows/polkit/removable-media QA, CI, release-owner review, signing, or artifact publication.
 
-The remaining deferred candidates each require a real product/architecture decision before source changes: faithful/advanced Office scope; video thumbnails (decoder/backend, sandboxing, licensing and packaged-runtime contract); native non-Linux Open With discovery; media playback UX/backend; fanotify service/package security model; generalized undo safety contract; and new native package/signing targets. No current source item is dependency-ready without selecting one of those contracts.
+## Video-thumbnail native-only Phase 1
+
+- `.hermes/video-thumbnail-policy-approved.md` supersedes the earlier
+  FFmpeg-first spike. Phase 1 uses only OS-supplied decoding: Windows Media
+  Foundation is the first backend, with no bundled, downloaded, recommended,
+  or invoked FFmpeg, GStreamer, codec/plugin payload, codec pack, external
+  decoder, or additional codec implementation.
+- The common contract permits one bounded still frame, no playback/audio,
+  network, sidecars, plugins, executable lookup, or path reopen. It requires
+  no-follow regular-file/handle admission, cancellation/resource/dimension/
+  output limits, generation-safe cache admission, and deterministic unavailable
+  results for unsupported or malformed media.
+- Linux and other platforms remain metadata-only until a separately reviewed
+  OS-native backend exists. Test doubles and Linux success cannot establish
+  Windows acceptance. Native Windows acceptance still requires tests for
+  reparse/file identity, cancellation, malformed input, resource bounds,
+  capability reporting, cache invalidation, unsupported codecs, and packages
+  containing no decoder/runtime/codec payload or installer.
+
+The remaining deferred candidates each require a real product/architecture decision before source changes: faithful/advanced Office scope; native non-Linux Open With discovery; media playback UX/backend; fanotify service/package security model; generalized undo safety contract; and new native package/signing targets. No current source item is dependency-ready without selecting one of those contracts.
 
 ## Exact next action
 
-Select and authorize a concrete deferred product contract (recommended first
-decision: video-thumbnail decoder/backend, packaging and safety model) or provide
-the unavailable physical QA. V1 physical/CI/release gates remain blockers for
+This safety-and-policy baseline does not implement or stub Media Foundation.
+The next separately authorized source slice is a Windows Media Foundation backend
+under the approved native-only contract, followed by required native
+Windows/package acceptance. V1 physical/CI/release gates remain blockers for
 release acceptance.

@@ -1363,6 +1363,20 @@ mod tests {
     }
 
     #[test]
+    fn video_candidate_never_falls_back_to_raw_container_bytes() {
+        let mut fixture = tempfile::Builder::new()
+            .prefix("ottrin-video-fallback-")
+            .suffix(".MP4")
+            .tempfile()
+            .expect("create video fixture");
+        fixture
+            .write_all(b"synthetic video container")
+            .expect("write video fixture");
+
+        assert_eq!(fallback_preview_bytes(fixture.path(), None), None);
+    }
+
+    #[test]
     fn affinity_preview_never_returns_raw_container_or_stale_cache_after_replacement() {
         let nonce = format!(
             "{}-{}",
