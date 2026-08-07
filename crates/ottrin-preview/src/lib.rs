@@ -3594,7 +3594,15 @@ fn has_disallowed_svg_external_references(data: &[u8]) -> bool {
     let Ok(svg) = std::str::from_utf8(data) else {
         return false;
     };
-    let lower = svg.to_ascii_lowercase();
+    // XML permits whitespace around `=`. Normalize it before checking so a
+    // file or network reference cannot evade the admission boundary with
+    // otherwise harmless formatting changes.
+    let compact = svg
+        .bytes()
+        .filter(|byte| !byte.is_ascii_whitespace())
+        .map(|byte| byte.to_ascii_lowercase())
+        .collect::<Vec<_>>();
+    let compact = String::from_utf8(compact).expect("ASCII lowercasing preserves UTF-8 bytes");
     const BLOCKED_ATTRS: [&str; 12] = [
         "href=\"file://",
         "href='file://",
@@ -3609,7 +3617,10 @@ fn has_disallowed_svg_external_references(data: &[u8]) -> bool {
         "xlink:href=\"https://",
         "xlink:href='https://",
     ];
-    lower.contains("<script") || BLOCKED_ATTRS.iter().any(|pattern| lower.contains(pattern))
+    compact.contains("<script")
+        || BLOCKED_ATTRS
+            .iter()
+            .any(|pattern| compact.contains(pattern))
 }
 
 fn preview_folder(title: String, path: &Path) -> PreviewData {

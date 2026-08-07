@@ -25,6 +25,8 @@ const MAX_3MF_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_3MF_CACHE_PNG_DIMENSION: u32 = 1_024;
 const MAX_AFFINITY_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_AFFINITY_CACHE_PNG_DIMENSION: u32 = 1_024;
+const MAX_SVG_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_SVG_CACHE_PNG_DIMENSION: u32 = 2_048;
 
 #[derive(Debug, Clone)]
 pub(crate) enum ImagePreviewCacheEntry {
@@ -708,6 +710,17 @@ pub(crate) fn thumbnail_bytes_from_cache_or_build(
 }
 
 fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
+    if ottrin_preview::is_svg_path(path) {
+        // Cached pixels are valid only while the current SVG passes the same
+        // safe renderer admission used by both selected-result and inspector
+        // previews. A stale valid raster must not mask a blocked replacement.
+        return ottrin_preview::render_svg_content_preview_png(path, 1).is_ok()
+            && bounded_cached_png_is_safe(
+                bytes,
+                MAX_SVG_CACHE_PNG_BYTES,
+                MAX_SVG_CACHE_PNG_DIMENSION,
+            );
+    }
     if ottrin_preview::is_camera_raw_path(path) {
         return camera_raw_cached_png_is_safe(bytes);
     }
@@ -1961,6 +1974,43 @@ mod tests {
 
         std::fs::remove_file(blocked).expect("remove blocked SVG fixture");
         std::fs::remove_file(oversized).expect("remove oversized SVG fixture");
+    }
+
+    #[test]
+    fn blocked_svg_rejects_a_stale_raster_cache_before_both_preview_routes() {
+        let valid = std::env::temp_dir().join(format!(
+            "ottrin-valid-svg-cache-source-{}.svg",
+            std::process::id()
+        ));
+        let blocked = std::env::temp_dir().join(format!(
+            "ottrin-blocked-svg-raster-cache-{}.svg",
+            std::process::id()
+        ));
+        std::fs::write(
+            &valid,
+            r##"<svg width="12" height="12" xmlns="http://www.w3.org/2000/svg"><rect width="12" height="12" fill="#00ff00"/></svg>"##,
+        )
+        .expect("write valid SVG fixture");
+        std::fs::write(
+            &blocked,
+            r#"<svg xmlns="http://www.w3.org/2000/svg"><image href = "file:///tmp/private.png"/></svg>"#,
+        )
+        .expect("write blocked SVG fixture");
+        let stale_png = build_thumbnail_bytes(&valid, 256).expect("render valid SVG fixture");
+
+        assert_eq!(
+            thumbnail_bytes_from_cache_or_build(&blocked, 256, Some(stale_png)),
+            None,
+            "a blocked SVG must not reuse a stale raster cache in the selected-result route"
+        );
+        assert_eq!(
+            full_preview_bytes_at_page(&blocked, 256, 0),
+            None,
+            "a blocked SVG must not produce a full inspector preview"
+        );
+
+        std::fs::remove_file(valid).expect("remove valid SVG fixture");
+        std::fs::remove_file(blocked).expect("remove blocked SVG fixture");
     }
 
     #[test]
