@@ -63,7 +63,7 @@ System locate/plocate is optional. It can help discover system paths, but it can
 
 Built-in generated-folder skips such as `.git`, `node_modules`, `target`, `__pycache__`, and Trash directories keep indexing practical. If you need to search one of those trees, adjust search settings instead of relying on the watcher.
 
-Content search follows its own privacy policy. When content indexing is disabled, Ottrin does not read file bodies for either saved-index or live fallback search. When it is enabled, only explicitly included roots are eligible and excluded roots are pruned before live fallback traversal and remain out of saved-index results.
+Content search follows its own privacy policy. When content indexing is disabled, Ottrin does not read file bodies for either saved-index or live fallback search. When it is enabled, only explicitly included roots are eligible; excluded file bodies and descendants are not searched by live fallback and remain out of saved-index results. Live fallback can still enumerate excluded directories while ripgrep applies those exclusions.
 
 ## Trash
 

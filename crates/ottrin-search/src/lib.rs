@@ -2767,11 +2767,11 @@ fn content_ripgrep_traversal_plan(
                 let Some(relative) = excluded.strip_prefix(&root).ok() else {
                     continue;
                 };
-                let Some(glob) = relative_path_to_ripgrep_glob(relative) else {
+                let Some(globs) = relative_path_to_ripgrep_globs(relative) else {
                     representable = false;
                     break;
                 };
-                exclude_globs.push(glob);
+                exclude_globs.extend(globs);
             }
             if !representable {
                 continue;
@@ -2789,7 +2789,7 @@ fn content_ripgrep_traversal_plan(
     plan
 }
 
-fn relative_path_to_ripgrep_glob(path: &Path) -> Option<String> {
+fn relative_path_to_ripgrep_globs(path: &Path) -> Option<[String; 2]> {
     let mut components = Vec::new();
     for component in path.components() {
         let std::path::Component::Normal(component) = component else {
@@ -2806,7 +2806,8 @@ fn relative_path_to_ripgrep_glob(path: &Path) -> Option<String> {
             .collect::<String>();
         components.push(escaped);
     }
-    (!components.is_empty()).then(|| format!("!{}/**", components.join("/")))
+    let path = components.join("/");
+    (!path.is_empty()).then(|| [format!("!{path}"), format!("!{path}/**")])
 }
 
 /// Run ripgrep to find files whose *contents* match positive parsed content literals.
@@ -3773,22 +3774,108 @@ mod tests {
     }
 
     #[test]
-    fn content_ripgrep_traversal_plan_prunes_excluded_subtrees_before_search() {
-        let root = PathBuf::from("/search-root");
-        let excluded = root.join("private");
+    fn live_content_search_excludes_a_configured_directory_after_it_becomes_a_file() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-replaced-root-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let excluded = root.join("was-directory");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create content root");
+        fs::write(root.join("included.txt"), "replacement-content-needle")
+            .expect("write included content");
+        fs::write(&excluded, "replacement-content-needle")
+            .expect("replace configured directory with file");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_exclude_roots: vec![excluded],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "replacement-content-needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].name, "included.txt");
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn content_ripgrep_exclude_globs_keep_exact_files_and_descendants_out_of_rg() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-ripgrep-globs-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let excluded_file = root.join("private.txt");
+        let excluded_metachar_file = root.join("private[?]*!.txt");
+        let excluded_dir = root.join("private-dir");
         let plan = content_ripgrep_traversal_plan(
             std::slice::from_ref(&root),
             &SearchConfig {
                 content_indexing_enabled: true,
                 content_include_roots: vec![root.clone()],
-                content_exclude_roots: vec![excluded],
+                content_exclude_roots: vec![
+                    excluded_file.clone(),
+                    excluded_metachar_file.clone(),
+                    excluded_dir.clone(),
+                ],
                 ..SearchConfig::default()
             },
         );
 
         assert_eq!(plan.len(), 1);
         assert_eq!(plan[0].root, root);
-        assert_eq!(plan[0].exclude_globs, vec!["!private/**"]);
+        fs::create_dir_all(&excluded_dir).expect("create excluded directory");
+        fs::write(root.join("included.txt"), "content-policy-needle").expect("write included file");
+        fs::write(&excluded_file, "content-policy-needle").expect("write excluded file");
+        fs::write(&excluded_metachar_file, "content-policy-needle")
+            .expect("write excluded metacharacter file");
+        fs::write(excluded_dir.join("child.txt"), "content-policy-needle")
+            .expect("write excluded child");
+
+        let mut command = internal_command("rg");
+        command
+            .current_dir(&root)
+            .arg("--files-with-matches")
+            .arg("--fixed-strings")
+            .arg("--ignore-case")
+            .arg("--max-count=1");
+        for glob in &plan[0].exclude_globs {
+            command.arg("--glob").arg(glob);
+        }
+        let output = command
+            .arg("-e")
+            .arg("content-policy-needle")
+            .arg("--")
+            .arg(".")
+            .output()
+            .expect("run ripgrep");
+        assert!(output.status.success());
+        assert_eq!(
+            std::str::from_utf8(&output.stdout).expect("ripgrep stdout"),
+            "./included.txt\n"
+        );
+
+        let _ = fs::remove_dir_all(root);
     }
 
     #[test]
