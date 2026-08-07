@@ -2724,6 +2724,7 @@ dependencies = [
  "ottrin-platform",
  "ottrin-search",
  "ottrin-ui",
+ "serde_json",
  "wgpu",
  "windows 0.58.0",
  "windows-sys 0.61.2",

@@ -12,6 +12,7 @@ ottrin-ui = { path = "../ottrin-ui" }
 ottrin-platform = { path = "../ottrin-platform" }
 eframe.workspace = true
 image = { version = "0.25", default-features = false, features = ["png"] }
+serde_json = "1"
 
 [target.'cfg(windows)'.dependencies]
 # eframe's WGPU renderer is the normal Windows path.  Its defaults are off at

@@ -605,7 +605,17 @@ fn ensure_dev_helper() {
 
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let helper_name = "ottrin-priv-helper";
-    let helper_path = dev_helper_path(&manifest_dir, cfg!(target_os = "windows"));
+    let target_directory = match cargo_target_directory(&manifest_dir) {
+        Ok(target_directory) => target_directory,
+        Err(error) => {
+            eprintln!(
+                "ottrin: could not resolve Cargo's target directory for the development helper: {error}"
+            );
+            return;
+        }
+    };
+    let helper_path =
+        dev_helper_path_from_target_directory(target_directory, cfg!(target_os = "windows"));
     if helper_path.is_file() {
         set_privileged_helper_override(Some(helper_path));
         return;
@@ -616,25 +626,60 @@ fn ensure_dev_helper() {
         .current_dir(&manifest_dir)
         .status();
 
-    if status.map(|s| s.success()).unwrap_or(false) && helper_path.is_file() {
-        set_privileged_helper_override(Some(helper_path));
+    match status {
+        Ok(status) if status.success() && helper_path.is_file() => {
+            set_privileged_helper_override(Some(helper_path));
+        }
+        Ok(status) if status.success() => {
+            eprintln!(
+                "ottrin: Cargo built the development helper but it was not found at {}; refusing to probe another target directory",
+                helper_path.display()
+            );
+        }
+        Ok(status) => {
+            eprintln!("ottrin: Cargo could not build the development helper: {status}");
+        }
+        Err(error) => {
+            eprintln!("ottrin: could not start Cargo for the development helper: {error}");
+        }
     }
 }
 
+fn cargo_target_directory(manifest_dir: &std::path::Path) -> Result<PathBuf, String> {
+    let output = std::process::Command::new("cargo")
+        .args(["metadata", "--no-deps", "--format-version", "1"])
+        .current_dir(manifest_dir)
+        .output()
+        .map_err(|error| error.to_string())?;
+    if !output.status.success() {
+        return Err(String::from_utf8_lossy(&output.stderr).trim().to_string());
+    }
+    let metadata: serde_json::Value =
+        serde_json::from_slice(&output.stdout).map_err(|error| error.to_string())?;
+    let target_directory = metadata
+        .get("target_directory")
+        .and_then(serde_json::Value::as_str)
+        .filter(|path| !path.is_empty())
+        .ok_or_else(|| "Cargo metadata omitted target_directory".to_string())?;
+    Ok(PathBuf::from(target_directory))
+}
+
+#[cfg(test)]
 fn dev_helper_path(manifest_dir: &std::path::Path, is_windows: bool) -> PathBuf {
     let workspace_root = manifest_dir
         .parent()
         .and_then(std::path::Path::parent)
         .unwrap_or(manifest_dir);
+    dev_helper_path_from_target_directory(workspace_root.join("target"), is_windows)
+}
+
+fn dev_helper_path_from_target_directory(target_directory: PathBuf, is_windows: bool) -> PathBuf {
     let helper_name = if is_windows {
         "ottrin-priv-helper.exe"
     } else {
         "ottrin-priv-helper"
     };
-    workspace_root
-        .join("target")
-        .join("debug")
-        .join(helper_name)
+    target_directory.join("debug").join(helper_name)
 }
 
 #[cfg(test)]
@@ -697,6 +742,18 @@ mod tests {
         assert_eq!(
             dev_helper_path(&manifest_dir, true),
             PathBuf::from("/repo/target/debug/ottrin-priv-helper.exe")
+        );
+    }
+
+    #[test]
+    fn debug_helper_path_uses_cargo_reported_nondefault_target_directory() {
+        assert_eq!(
+            dev_helper_path_from_target_directory(PathBuf::from("/tmp/ottrin-target-dir"), false),
+            PathBuf::from("/tmp/ottrin-target-dir/debug/ottrin-priv-helper")
+        );
+        assert_eq!(
+            dev_helper_path_from_target_directory(PathBuf::from("D:/ottrin-target-dir"), true),
+            PathBuf::from("D:/ottrin-target-dir/debug/ottrin-priv-helper.exe")
         );
     }
 
