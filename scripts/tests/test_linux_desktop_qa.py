@@ -489,6 +489,20 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         self.assertTrue(qa.inspector_requires_zoom_controls("letter.docx"))
         self.assertTrue(qa.inspector_requires_zoom_controls("preview.pdf"))
 
+    def test_docx_raster_ready_requires_the_final_rendered_page_signal(self):
+        with patch.object(
+            qa,
+            "visible_a11y_nodes",
+            return_value=["label | Ottrin DOCX QA visible document content", "push button | Fit"],
+        ):
+            self.assertFalse(qa.docx_raster_ready())
+        with patch.object(
+            qa,
+            "visible_a11y_nodes",
+            return_value=["label | DOCX rendered page ready"],
+        ):
+            self.assertTrue(qa.docx_raster_ready())
+
     def test_inspector_content_requires_the_visible_document_marker(self):
         with patch.object(
             qa,

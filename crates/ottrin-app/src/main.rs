@@ -605,39 +605,40 @@ fn ensure_dev_helper() {
 
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let helper_name = "ottrin-priv-helper";
-    let target_directory = match cargo_target_directory(&manifest_dir) {
-        Ok(target_directory) => target_directory,
-        Err(error) => {
-            eprintln!(
-                "ottrin: could not resolve Cargo's target directory for the development helper: {error}"
-            );
-            return;
-        }
-    };
-    let helper_path =
-        dev_helper_path_from_target_directory(target_directory, cfg!(target_os = "windows"));
-    if helper_path.is_file() {
-        set_privileged_helper_override(Some(helper_path));
-        return;
-    }
-
-    let status = std::process::Command::new("cargo")
+    let build = std::process::Command::new("cargo")
         .args(["build", "-p", "ottrin-platform", "--bin", helper_name])
+        .arg("--message-format=json-render-diagnostics")
         .current_dir(&manifest_dir)
-        .status();
+        .output();
 
-    match status {
-        Ok(status) if status.success() && helper_path.is_file() => {
+    match build {
+        Ok(output) if output.status.success() => {
+            let helper_path = match cargo_helper_artifact_from_messages(
+                &output.stdout,
+                cfg!(target_os = "windows"),
+            ) {
+                Ok(path) if path.is_file() => path,
+                Ok(path) => {
+                    eprintln!(
+                        "ottrin: Cargo reported the development helper at {}, but it was not a regular file; refusing to probe another target directory",
+                        path.display()
+                    );
+                    return;
+                }
+                Err(error) => {
+                    eprintln!(
+                        "ottrin: Cargo built the development helper but did not report one bounded executable artifact: {error}"
+                    );
+                    return;
+                }
+            };
             set_privileged_helper_override(Some(helper_path));
         }
-        Ok(status) if status.success() => {
+        Ok(output) => {
             eprintln!(
-                "ottrin: Cargo built the development helper but it was not found at {}; refusing to probe another target directory",
-                helper_path.display()
+                "ottrin: Cargo could not build the development helper: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
             );
-        }
-        Ok(status) => {
-            eprintln!("ottrin: Cargo could not build the development helper: {status}");
         }
         Err(error) => {
             eprintln!("ottrin: could not start Cargo for the development helper: {error}");
@@ -645,41 +646,45 @@ fn ensure_dev_helper() {
     }
 }
 
-fn cargo_target_directory(manifest_dir: &std::path::Path) -> Result<PathBuf, String> {
-    let output = std::process::Command::new("cargo")
-        .args(["metadata", "--no-deps", "--format-version", "1"])
-        .current_dir(manifest_dir)
-        .output()
-        .map_err(|error| error.to_string())?;
-    if !output.status.success() {
-        return Err(String::from_utf8_lossy(&output.stderr).trim().to_string());
-    }
-    let metadata: serde_json::Value =
-        serde_json::from_slice(&output.stdout).map_err(|error| error.to_string())?;
-    let target_directory = metadata
-        .get("target_directory")
-        .and_then(serde_json::Value::as_str)
-        .filter(|path| !path.is_empty())
-        .ok_or_else(|| "Cargo metadata omitted target_directory".to_string())?;
-    Ok(PathBuf::from(target_directory))
-}
-
-#[cfg(test)]
-fn dev_helper_path(manifest_dir: &std::path::Path, is_windows: bool) -> PathBuf {
-    let workspace_root = manifest_dir
-        .parent()
-        .and_then(std::path::Path::parent)
-        .unwrap_or(manifest_dir);
-    dev_helper_path_from_target_directory(workspace_root.join("target"), is_windows)
-}
-
-fn dev_helper_path_from_target_directory(target_directory: PathBuf, is_windows: bool) -> PathBuf {
+fn cargo_helper_artifact_from_messages(
+    messages: &[u8],
+    is_windows: bool,
+) -> Result<PathBuf, String> {
     let helper_name = if is_windows {
         "ottrin-priv-helper.exe"
     } else {
         "ottrin-priv-helper"
     };
-    target_directory.join("debug").join(helper_name)
+    let mut helper_path = None;
+    for line in messages
+        .split(|byte| *byte == b'\n')
+        .filter(|line| !line.is_empty())
+    {
+        let message: serde_json::Value = serde_json::from_slice(line)
+            .map_err(|error| format!("invalid Cargo message: {error}"))?;
+        if message.get("reason").and_then(serde_json::Value::as_str) != Some("compiler-artifact")
+            || message
+                .get("target")
+                .and_then(|target| target.get("name"))
+                .and_then(serde_json::Value::as_str)
+                != Some("ottrin-priv-helper")
+        {
+            continue;
+        }
+        let executable = message
+            .get("executable")
+            .and_then(serde_json::Value::as_str)
+            .filter(|path| !path.is_empty())
+            .ok_or_else(|| "helper compiler artifact omitted executable".to_string())?;
+        let path = PathBuf::from(executable);
+        if path.file_name().and_then(|name| name.to_str()) != Some(helper_name) {
+            return Err("helper compiler artifact named a different executable".to_string());
+        }
+        if helper_path.replace(path).is_some() {
+            return Err("Cargo reported multiple helper executable artifacts".to_string());
+        }
+    }
+    helper_path.ok_or_else(|| "Cargo did not report the helper executable artifact".to_string())
 }
 
 #[cfg(test)]
@@ -733,27 +738,57 @@ mod tests {
     }
 
     #[test]
-    fn debug_helper_path_uses_the_workspace_target_directory() {
-        let manifest_dir = PathBuf::from("/repo/crates/ottrin-app");
-        assert_eq!(
-            dev_helper_path(&manifest_dir, false),
-            PathBuf::from("/repo/target/debug/ottrin-priv-helper")
-        );
-        assert_eq!(
-            dev_helper_path(&manifest_dir, true),
-            PathBuf::from("/repo/target/debug/ottrin-priv-helper.exe")
-        );
+    fn cargo_helper_artifact_parser_uses_cargo_reported_executable_for_all_target_modes() {
+        let helper_artifact = |executable: &str| {
+            serde_json::json!({
+                "reason": "compiler-artifact",
+                "target": {"name": "ottrin-priv-helper"},
+                "executable": executable,
+            })
+            .to_string()
+        };
+
+        for (mode, executable) in [
+            ("default", "/repo/target/debug/ottrin-priv-helper"),
+            (
+                "CARGO_TARGET_DIR",
+                "/tmp/ottrin-target/debug/ottrin-priv-helper",
+            ),
+            (
+                "CARGO_BUILD_TARGET",
+                "/repo/target/x86_64-unknown-linux-gnu/debug/ottrin-priv-helper",
+            ),
+            (
+                "CARGO_TARGET_DIR + CARGO_BUILD_TARGET",
+                "/tmp/ottrin-target/x86_64-unknown-linux-gnu/debug/ottrin-priv-helper",
+            ),
+        ] {
+            assert_eq!(
+                cargo_helper_artifact_from_messages(
+                    format!("{}\n", helper_artifact(executable)).as_bytes(),
+                    false,
+                ),
+                Ok(PathBuf::from(executable)),
+                "{mode} must use Cargo's reported executable instead of reconstructing its target path"
+            );
+        }
     }
 
     #[test]
-    fn debug_helper_path_uses_cargo_reported_nondefault_target_directory() {
-        assert_eq!(
-            dev_helper_path_from_target_directory(PathBuf::from("/tmp/ottrin-target-dir"), false),
-            PathBuf::from("/tmp/ottrin-target-dir/debug/ottrin-priv-helper")
-        );
-        assert_eq!(
-            dev_helper_path_from_target_directory(PathBuf::from("D:/ottrin-target-dir"), true),
-            PathBuf::from("D:/ottrin-target-dir/debug/ottrin-priv-helper.exe")
+    fn cargo_helper_artifact_parser_rejects_missing_or_wrong_artifacts() {
+        assert!(cargo_helper_artifact_from_messages(b"", false).is_err());
+        assert!(
+            cargo_helper_artifact_from_messages(
+                serde_json::json!({
+                    "reason": "compiler-artifact",
+                    "target": {"name": "other-bin"},
+                    "executable": "/tmp/other-bin",
+                })
+                .to_string()
+                .as_bytes(),
+                false,
+            )
+            .is_err()
         );
     }
 

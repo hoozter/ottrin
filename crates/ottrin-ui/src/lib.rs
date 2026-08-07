@@ -16870,6 +16870,11 @@ impl OttrinApp {
                                         ui.vertical_centered(|ui| {
                                             ui.add(image);
                                         });
+                                        if let Some(label) =
+                                            docx_raster_ready_accessibility_label(true)
+                                        {
+                                            ui.label(label);
+                                        }
                                         // Keep bounded extracted text alongside the completed
                                         // raster. Pixels are not exposed through AT-SPI, so this
                                         // makes the completed DOCX state deterministic for both
@@ -20126,6 +20131,13 @@ fn quick_inspector_uses_rendered_office_page(path: &Path) -> bool {
         .is_some_and(|extension| extension.eq_ignore_ascii_case("docx"))
 }
 
+/// Emitted only after the current DOCX raster has been added to the inspector.
+/// It remains absent while the broker is pending, rejects stale output, or
+/// provides no image bytes.
+fn docx_raster_ready_accessibility_label(image_displayed: bool) -> Option<&'static str> {
+    image_displayed.then_some("DOCX rendered page ready")
+}
+
 struct SmartPanelIconButton<'a> {
     icon: &'a str,
     icon_size: f32,
@@ -22146,6 +22158,15 @@ mod tests {
         assert!(scheduler.accept_response(&thumbnail, thumbnail_request, "thumbnail-page-0"));
         assert!(scheduler.accept_response(&next_page, next_page_request, "thumbnail-page-1"));
         assert!(scheduler.accept_response(&larger, larger_request, "thumbnail-large"));
+    }
+
+    #[test]
+    fn docx_raster_ready_signal_only_exists_after_the_current_page_image_is_displayed() {
+        assert_eq!(docx_raster_ready_accessibility_label(false), None);
+        assert_eq!(
+            docx_raster_ready_accessibility_label(true),
+            Some("DOCX rendered page ready")
+        );
     }
 
     #[test]

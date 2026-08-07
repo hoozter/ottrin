@@ -734,6 +734,11 @@ def inspector_content_visible(marker: str) -> bool:
     return any(marker in node for node in visible_a11y_nodes())
 
 
+def docx_raster_ready() -> bool:
+    """Require the inspector's post-display DOCX raster accessibility signal."""
+    return any("DOCX rendered page ready" in node for node in visible_a11y_nodes())
+
+
 def quick_inspector_quiescent(filename: str) -> bool:
     """Reject a transient AT-SPI disappearance while a viewport is closing."""
     if quick_inspector_visible(filename):
@@ -884,6 +889,7 @@ def open_quick_inspector(
             lambda: inspector_content_visible("Ottrin DOCX QA visible document content"),
             "visible DOCX document content",
         )
+        wait_for(docx_raster_ready, "rendered DOCX page")
     if inspector_requires_zoom_controls(filename):
         wait_for(
             lambda: any(
