@@ -213,6 +213,7 @@ impl SearchStore {
                 )
             })?
         };
+        let authoritative_content_refresh = incremental_content_refresh_items(&mutation);
         let candidate = current.clone().apply(mutation);
         let generation = if is_full_replacement {
             tx.execute(
@@ -233,6 +234,7 @@ impl SearchStore {
                 current.generation(),
                 current.items(),
                 candidate.items(),
+                &authoritative_content_refresh,
                 plan,
             )?;
             tx.execute(
@@ -297,11 +299,30 @@ fn configure_writer_connection(conn: &Connection) -> Result<(), SearchDbError> {
 const MAX_INDEXED_TEXT_BYTES: u64 = 512 * 1024;
 const CONTENT_STATE_POLICY_DISABLED: i64 = 6;
 
+/// Filesystem watcher upserts are authoritative even when the scanner's
+/// metadata resolution cannot distinguish their old and new contents. Content
+/// state must therefore be refreshed from the mutation itself rather than the
+/// metadata-level current/candidate diff.
+fn incremental_content_refresh_items(mutation: &IndexMutation) -> Vec<OwnedItem> {
+    let items = match mutation {
+        IndexMutation::ReplaceAll(_) => return Vec::new(),
+        IndexMutation::ReplaceRoot { items, .. } => items,
+        IndexMutation::Delta { upserts, .. } => upserts,
+    };
+    items
+        .iter()
+        .map(|item| (item.item().path.clone(), item.clone()))
+        .collect::<BTreeMap<_, _>>()
+        .into_values()
+        .collect()
+}
+
 fn apply_incremental_mutation(
     tx: &Transaction<'_>,
     generation: i64,
     current: &[OwnedItem],
     candidate: &[OwnedItem],
+    authoritative_content_refresh: &[OwnedItem],
     plan: &ScanPlan,
 ) -> Result<(), SearchDbError> {
     let current_by_path = current
@@ -326,11 +347,12 @@ fn apply_incremental_mutation(
         .collect::<Vec<_>>();
     delete_generation_items(tx, generation, &removed)?;
     insert_generation_items(tx, generation, &changed)?;
-    insert_generation_content(tx, generation, &changed, plan)?;
+    delete_generation_content(tx, generation, authoritative_content_refresh)?;
+    insert_generation_content(tx, generation, authoritative_content_refresh, plan)?;
     Ok(())
 }
 
-fn delete_generation_items(
+fn delete_generation_content(
     tx: &Transaction<'_>,
     generation: i64,
     items: &[OwnedItem],
@@ -341,13 +363,25 @@ fn delete_generation_items(
     let mut state = tx.prepare_cached(
         "DELETE FROM search_generation_content_state WHERE generation_id = ?1 AND path = ?2",
     )?;
+    for item in items {
+        let path = encode_path(&item.item().path);
+        fts.execute(params![generation, &path])?;
+        state.execute(params![generation, path])?;
+    }
+    Ok(())
+}
+
+fn delete_generation_items(
+    tx: &Transaction<'_>,
+    generation: i64,
+    items: &[OwnedItem],
+) -> Result<(), SearchDbError> {
+    delete_generation_content(tx, generation, items)?;
     let mut rows = tx.prepare_cached(
         "DELETE FROM search_generation_items WHERE generation_id = ?1 AND path = ?2",
     )?;
     for item in items {
         let path = encode_path(&item.item().path);
-        fts.execute(params![generation, &path])?;
-        state.execute(params![generation, &path])?;
         rows.execute(params![generation, path])?;
     }
     Ok(())
@@ -1070,6 +1104,100 @@ mod generation_tests {
         assert_eq!(new_hits[0].snippet, "fresh unique content");
         assert_eq!(new_hits[0].content, "fresh unique content");
         assert!(new_hits[0].relevance > 0);
+        let _ = std::fs::remove_dir_all(root);
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn metadata_equal_incremental_upserts_refresh_content() {
+        let db_path = temp_db_path("delta-authoritative-content-refresh");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-delta-authoritative-content-refresh-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("system time")
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        let path = root.join("same.txt");
+        std::fs::write(&path, "oldcontent").expect("write old same-sized content");
+        let scan_plan = plan(&root);
+        let item = owned(&root, "same.txt", 10);
+        let mut store = SearchStore::open(db_path.clone()).expect("open store");
+        let initial = store
+            .commit(&scan_plan, IndexMutation::ReplaceAll(vec![item.clone()]))
+            .expect("commit initial generation");
+
+        std::fs::write(&path, "newcontent").expect("write new same-sized content");
+        let updated = store
+            .commit(
+                &scan_plan,
+                IndexMutation::Delta {
+                    upserts: vec![item.clone()],
+                    remove_trees: Vec::new(),
+                },
+            )
+            .expect("commit authoritative delta");
+
+        assert_eq!(updated.generation(), initial.generation());
+        assert!(
+            query_indexed_content_page(&db_path, &scan_plan, "oldcontent", 10, 0)
+                .expect("query stale content")
+                .is_empty(),
+            "a metadata-equal upsert must remove its stale positive FTS hit"
+        );
+        assert_eq!(
+            query_indexed_content_page(&db_path, &scan_plan, "newcontent", 10, 0)
+                .expect("query refreshed content")
+                .len(),
+            1
+        );
+        std::fs::write(&path, "oldcontent").expect("restore same-sized content");
+        let replaced = store
+            .commit(
+                &scan_plan,
+                IndexMutation::ReplaceRoot {
+                    root: root.clone(),
+                    items: vec![item],
+                },
+            )
+            .expect("commit authoritative root replacement");
+        assert_eq!(replaced.generation(), initial.generation());
+        assert!(
+            query_indexed_content_page(&db_path, &scan_plan, "newcontent", 10, 0)
+                .expect("query superseded replacement content")
+                .is_empty(),
+            "a metadata-equal root replacement must remove its stale positive FTS hit"
+        );
+        assert_eq!(
+            query_indexed_content_page(&db_path, &scan_plan, "oldcontent", 10, 0)
+                .expect("query root replacement content")
+                .len(),
+            1
+        );
+        let mut streamed = Vec::new();
+        stream_generation_content_items(&db_path, &scan_plan, None, |record| {
+            streamed.push((record.item.path, record.content, record.complete));
+        })
+        .expect("stream content for negated query");
+        assert_eq!(
+            streamed,
+            vec![(path.clone(), Some("oldcontent".to_string()), true)],
+            "negated queries must evaluate the refreshed complete content, not stale text"
+        );
+        let generations: i64 = store
+            .conn
+            .query_row("SELECT COUNT(*) FROM search_generations", [], |row| {
+                row.get(0)
+            })
+            .expect("count generations");
+        let freelist_pages: i64 = store
+            .conn
+            .query_row("PRAGMA freelist_count", [], |row| row.get(0))
+            .expect("count freelist pages");
+        assert_eq!(generations, 1);
+        assert_eq!(freelist_pages, 0);
         let _ = std::fs::remove_dir_all(root);
         let _ = std::fs::remove_file(db_path);
     }
