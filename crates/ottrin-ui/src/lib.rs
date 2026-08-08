@@ -2299,6 +2299,34 @@ impl OttrinApp {
         });
     }
 
+    fn cancel_unexecuted_command_frame(&mut self) {
+        self.command_frame.visible = false;
+        self.command_frame.input.clear();
+        self.command_frame.request_focus = false;
+        self.command_frame.error = None;
+        self.command_frame.message = None;
+        self.command_frame.completions.clear();
+    }
+
+    fn discard_cached_pdf_preview_when_runtime_is_unavailable(
+        &mut self,
+        path: &Path,
+        cache_key: &str,
+    ) {
+        if Self::should_discard_cached_pdf_preview(
+            path,
+            ottrin_preview::pdfium_runtime_is_available(),
+        ) {
+            self.image_preview_cache.remove(cache_key);
+        }
+    }
+
+    fn should_discard_cached_pdf_preview(path: &Path, pdfium_runtime_is_available: bool) -> bool {
+        ottrin_preview::preview_profile(path).visual_renderer()
+            == ottrin_preview::PreviewVisualRenderer::Pdf
+            && !pdfium_runtime_is_available
+    }
+
     fn enqueue_image_preview(
         &mut self,
         path: &Path,
@@ -2401,6 +2429,7 @@ impl OttrinApp {
             ply_source_generation.as_ref(),
             office_source_generation.as_ref(),
         );
+        self.discard_cached_pdf_preview_when_runtime_is_unavailable(path, &cache_key);
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
                 path,
@@ -2465,6 +2494,7 @@ impl OttrinApp {
             ply_source_generation.as_ref(),
             office_source_generation.as_ref(),
         );
+        self.discard_cached_pdf_preview_when_runtime_is_unavailable(path, &cache_key);
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
                 path,
@@ -2571,6 +2601,7 @@ impl OttrinApp {
             ply_source_generation.as_ref(),
             office_source_generation.as_ref(),
         );
+        self.discard_cached_pdf_preview_when_runtime_is_unavailable(path, &cache_key);
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
                 path,
@@ -5967,6 +5998,11 @@ impl OttrinApp {
         modifiers: egui::Modifiers,
         secondary_clicked: bool,
     ) {
+        // File-view pointer selection supersedes an unexecuted command entry.
+        // Do this before changing selection so the next Arrow/Enter/Space is
+        // handled by the selected file rather than the command palette.
+        self.cancel_unexecuted_command_frame();
+
         let (dir, selected_path, previous_path) = {
             let ui = self.tab_ui.entry(tab_id).or_default();
             let Some(entry) = ui.main.entries.get(idx) else {
@@ -6287,6 +6323,7 @@ impl OttrinApp {
         if entries.is_empty() {
             return;
         }
+        self.cancel_unexecuted_command_frame();
         let clamped = idx.min(entries.len() - 1);
         let path = entries[clamped].path.clone();
         let ui = self.tab_ui.entry(tab_id).or_default();
@@ -24020,6 +24057,72 @@ mod tests {
         assert!(OttrinApp::row_pointer_selects(false, true));
         assert!(OttrinApp::row_pointer_selects(true, false));
         assert!(!OttrinApp::row_pointer_selects(false, false));
+    }
+
+    #[test]
+    fn clicking_a_file_selection_cancels_unexecuted_command_input() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        let ui_state = app.tab_ui.entry(tab_id).or_default();
+        ui_state.main.dir = PathBuf::from("/tmp");
+        ui_state.main.entries = vec![FileEntry {
+            name: "clicked.txt".to_string(),
+            path: PathBuf::from("/tmp/clicked.txt"),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: Some(1),
+            modified_unix_secs: None,
+        }];
+        app.command_frame.visible = true;
+        app.command_frame.input = "rm -rf not-executed".to_string();
+        app.command_frame.request_focus = true;
+
+        app.set_main_selection_from_click(tab_id, 0, egui::Modifiers::NONE, false);
+
+        assert_eq!(app.tab_ui[&tab_id].main_sel, Some(0));
+        assert!(
+            !app.command_frame.visible && app.command_frame.input.is_empty(),
+            "pointer selection must cancel, not execute or retain, command input"
+        );
+    }
+
+    #[test]
+    fn clicking_a_miller_ancestor_row_cancels_unexecuted_command_input() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        let ancestor = PathBuf::from("/tmp");
+        let entries = vec![FileEntry {
+            name: "ancestor-child".to_string(),
+            path: ancestor.join("ancestor-child"),
+            kind: EntryKind::Directory,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: None,
+            modified_unix_secs: None,
+        }];
+        app.command_frame.visible = true;
+        app.command_frame.input = "rm -rf not-executed".to_string();
+        app.command_frame.request_focus = true;
+
+        app.set_miller_selection(tab_id, &ancestor, &entries, 0, false);
+
+        assert!(
+            !app.command_frame.visible && app.command_frame.input.is_empty(),
+            "pointer selection in every file-view column must cancel, not retain, command input"
+        );
+    }
+
+    #[test]
+    fn unavailable_pdfium_discards_a_cached_pdf_image_but_not_a_cached_svg_image() {
+        assert!(OttrinApp::should_discard_cached_pdf_preview(
+            Path::new("invoice.pdf"),
+            false
+        ));
+        assert!(!OttrinApp::should_discard_cached_pdf_preview(
+            Path::new("diagram.svg"),
+            false
+        ));
     }
 
     #[test]

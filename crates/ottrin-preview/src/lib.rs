@@ -43,8 +43,8 @@ pub use obj_visual::{
     render_obj_preview_png_with_generation,
 };
 pub use pdf_visual::{
-    PdfVisualError, render_pdf_first_page_png, render_pdf_first_page_png_with_library,
-    render_pdf_page_png, render_pdf_page_png_with_library,
+    PdfVisualError, pdfium_runtime_is_available, render_pdf_first_page_png,
+    render_pdf_first_page_png_with_library, render_pdf_page_png, render_pdf_page_png_with_library,
 };
 pub use ply_visual::{
     PlyMetadata, PlyPreviewSourceGeneration, PlyVisualError, RenderedPlyPreview,

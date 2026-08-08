@@ -27,6 +27,8 @@ const MAX_AFFINITY_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_AFFINITY_CACHE_PNG_DIMENSION: u32 = 1_024;
 const MAX_SVG_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_SVG_CACHE_PNG_DIMENSION: u32 = 2_048;
+const MAX_PDF_CACHE_PNG_BYTES: u64 = 32 * 1024 * 1024;
+const MAX_PDF_CACHE_PNG_DIMENSION: u32 = 2_048;
 
 #[derive(Debug, Clone)]
 pub(crate) enum ImagePreviewCacheEntry {
@@ -384,6 +386,14 @@ fn load_cached_thumbnail_at_path(path: &Path, cache_path: &Path) -> Option<Vec<u
                 return None;
             }
         }
+    } else if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Pdf {
+        match read_pdf_cache_bytes(cache_path) {
+            Some(bytes) => bytes,
+            None => {
+                let _ = std::fs::remove_file(cache_path);
+                return None;
+            }
+        }
     } else {
         std::fs::read(cache_path).ok()?
     };
@@ -436,6 +446,15 @@ fn read_threemf_cache_bytes(path: &Path) -> Option<Vec<u8>> {
 fn read_affinity_cache_bytes(path: &Path) -> Option<Vec<u8>> {
     let file = std::fs::File::open(path).ok()?;
     read_bounded_cache(file, MAX_AFFINITY_CACHE_PNG_BYTES).ok()?
+}
+
+fn read_pdf_cache_bytes(path: &Path) -> Option<Vec<u8>> {
+    let file = std::fs::File::open(path).ok()?;
+    read_bounded_pdf_cache(file).ok()?
+}
+
+fn read_bounded_pdf_cache(reader: impl Read) -> std::io::Result<Option<Vec<u8>>> {
+    read_bounded_cache(reader, MAX_PDF_CACHE_PNG_BYTES)
 }
 
 fn read_bounded_cache(reader: impl Read, max_bytes: u64) -> std::io::Result<Option<Vec<u8>>> {
@@ -710,6 +729,27 @@ pub(crate) fn thumbnail_bytes_from_cache_or_build(
 }
 
 fn cached_thumbnail_is_safe_for_path(path: &Path, bytes: &[u8]) -> bool {
+    cached_thumbnail_is_safe_for_path_with_pdfium_runtime(path, bytes, || {
+        ottrin_preview::pdfium_runtime_is_available()
+    })
+}
+
+fn cached_thumbnail_is_safe_for_path_with_pdfium_runtime(
+    path: &Path,
+    bytes: &[u8],
+    pdfium_runtime_is_available: impl FnOnce() -> bool,
+) -> bool {
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Pdf {
+        // A cache hit is admissible only while the same runtime discovery path
+        // can bind PDFium. Otherwise a stale sidebar PNG could disagree with a
+        // fresh Quick Inspector render that truthfully reports RuntimeLoad.
+        return pdfium_runtime_is_available()
+            && bounded_cached_png_is_safe(
+                bytes,
+                MAX_PDF_CACHE_PNG_BYTES,
+                MAX_PDF_CACHE_PNG_DIMENSION,
+            );
+    }
     if ottrin_preview::is_svg_path(path) {
         // Cached pixels are valid only while the current SVG passes the same
         // safe renderer admission used by both selected-result and inspector
@@ -1336,6 +1376,27 @@ mod tests {
         });
 
         assert_eq!(bytes, Some(vec![1, 2, 3]));
+    }
+
+    #[test]
+    fn cached_pdf_preview_is_never_accepted_without_a_fresh_pdfium_render() {
+        let pdf = Path::new("report.pdf");
+        let cached_png = affinity_fixture_png([32, 64, 96, 255]);
+
+        assert!(
+            !cached_thumbnail_is_safe_for_path_with_pdfium_runtime(pdf, &cached_png, || false),
+            "an otherwise valid cached PDF PNG must be rejected when a fresh inspector render cannot bind PDFium"
+        );
+    }
+
+    #[test]
+    fn pdf_cache_reader_rejects_oversized_bytes_before_png_validation() {
+        let oversized = vec![0_u8; MAX_PDF_CACHE_PNG_BYTES as usize + 1];
+
+        assert_eq!(
+            read_bounded_pdf_cache(Cursor::new(oversized)).unwrap(),
+            None
+        );
     }
 
     #[test]

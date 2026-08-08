@@ -38,15 +38,33 @@ pub fn render_pdf_page_png(
     page_index: usize,
     target_dim: u32,
 ) -> Result<Vec<u8>, PdfVisualError> {
+    let library_dirs = pdfium_runtime_library_dirs();
+    render_pdf_page_png_from_dirs(path, page_index, target_dim, library_dirs)
+}
+
+fn pdfium_runtime_library_dirs() -> Vec<PathBuf> {
     let env_dir = std::env::var_os(PDFIUM_DIR_ENV).map(PathBuf::from);
     let executable_dir = std::env::current_exe()
         .ok()
         .and_then(|path| path.parent().map(Path::to_path_buf));
-    render_pdf_page_png_from_dirs(
-        path,
-        page_index,
-        target_dim,
-        pdfium_library_dirs_from(env_dir, executable_dir, development_pdfium_dirs()),
+    pdfium_library_dirs_from(env_dir, executable_dir, development_pdfium_dirs())
+}
+
+/// Returns whether the first discovered runtime can provide PDFium bindings.
+///
+/// The renderer and cached-preview admission must share this exact discovery
+/// order: a filename is not evidence that the runtime can actually render.
+pub fn pdfium_runtime_is_available() -> bool {
+    pdfium_runtime_is_available_from_dirs(pdfium_runtime_library_dirs())
+}
+
+fn pdfium_runtime_is_available_from_dirs(dirs: Vec<PathBuf>) -> bool {
+    let Some(library) = find_pdfium_library_from(dirs) else {
+        return false;
+    };
+    matches!(
+        Pdfium::bind_to_library(library),
+        Ok(_) | Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized)
     )
 }
 
@@ -237,6 +255,26 @@ mod tests {
         let selected = find_pdfium_library_from(vec![root.join("missing"), runtime_dir]);
 
         assert_eq!(selected, Some(runtime.clone()));
+        std::fs::remove_dir_all(root).expect("remove runtime fixture");
+    }
+
+    #[test]
+    fn runtime_availability_rejects_an_unloadable_first_discovered_library() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-pdfium-unloadable-runtime-{}-{}",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        std::fs::create_dir_all(&root).expect("create runtime fixture");
+        let library = Pdfium::pdfium_platform_library_name_at_path(&root);
+        std::fs::write(&library, b"not a loadable PDFium library")
+            .expect("write unloadable runtime fixture");
+
+        assert!(
+            !pdfium_runtime_is_available_from_dirs(vec![root.clone()]),
+            "a filename alone must not admit a cached PDF preview when PDFium cannot bind it"
+        );
+
         std::fs::remove_dir_all(root).expect("remove runtime fixture");
     }
 
