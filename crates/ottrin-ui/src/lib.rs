@@ -9517,7 +9517,7 @@ impl OttrinApp {
         let active_tab_bg = mix_color(c.toolbar_bg, titlebar_bg, 0.28);
         let inactive_text = mix_color(c.text_muted, titlebar_bg, 0.32);
 
-        let panel_resp = egui::TopBottomPanel::top("tab_row")
+        let panel_rect = egui::TopBottomPanel::top("tab_row")
             .exact_height(CUSTOM_TITLEBAR_HEIGHT)
             .frame(
                 Frame::new()
@@ -9792,16 +9792,11 @@ impl OttrinApp {
                         }
                     });
                 });
-            });
-
-        ctx.layer_painter(egui::LayerId::background()).hline(
-            panel_resp.response.rect.x_range(),
-            panel_resp.response.rect.bottom(),
-            Stroke::new(1.0, mix_color(c.border, titlebar_bg, 0.55)),
-        );
+            })
+            .response
+            .rect;
 
         // Drag only from non-interactive tab-row areas so button clicks do not race StartDrag.
-        let panel_rect = panel_resp.response.rect;
         let can_drag = ctx.input(|i| {
             if !i.pointer.primary_pressed() {
                 return false;
@@ -22134,6 +22129,34 @@ fn theme_preview_strip(ui: &mut egui::Ui, preview: Colors, width: f32, height: f
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn stacked_header_has_no_full_width_separator_between_tab_and_navigation_rows() {
+        let mut app = OttrinApp::default();
+        let ctx = Context::default();
+        ctx.begin_pass(egui::RawInput {
+            screen_rect: Some(Rect::from_min_size(
+                egui::Pos2::ZERO,
+                Vec2::new(640.0, 480.0),
+            )),
+            ..Default::default()
+        });
+
+        app.render_tab_row(&ctx);
+        app.render_nav_row(&ctx);
+
+        let output = ctx.end_pass();
+        assert!(
+            !output.shapes.iter().any(|shape| matches!(
+                shape.shape,
+                egui::Shape::LineSegment { points, .. }
+                    if (points[0].x - points[1].x).abs() > 600.0
+                        && (points[0].y - CUSTOM_TITLEBAR_HEIGHT).abs() < f32::EPSILON
+                        && (points[1].y - CUSTOM_TITLEBAR_HEIGHT).abs() < f32::EPSILON
+            )),
+            "the stacked header must transition directly from tabs to navigation without a full-width separator band"
+        );
+    }
 
     struct SearchTestFixture {
         temp_dir: tempfile::TempDir,
