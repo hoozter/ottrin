@@ -20182,6 +20182,20 @@ fn take_docx_inspector_paint_events() -> Vec<DocxInspectorPaintEvent> {
     DOCX_INSPECTOR_PAINT_EVENTS.with(|events| std::mem::take(&mut *events.borrow_mut()))
 }
 
+fn submit_docx_raster(ui: &mut egui::Ui, image: egui::Image<'static>) -> egui::Response {
+    let response = ui.add(image);
+    #[cfg(test)]
+    record_docx_inspector_paint_event(DocxInspectorPaintEvent::RasterSubmitted);
+    response
+}
+
+fn expose_docx_raster_ready(ui: &mut egui::Ui) -> egui::Response {
+    let response = ui.label("DOCX rendered page ready");
+    #[cfg(test)]
+    record_docx_inspector_paint_event(DocxInspectorPaintEvent::ReadyMarker);
+    response
+}
+
 fn render_docx_raster_inspector_page(
     ui: &mut egui::Ui,
     texture_load_result: Option<&egui::load::TextureLoadResult>,
@@ -20205,13 +20219,9 @@ fn render_docx_raster_inspector_page(
             .corner_radius(8)
     };
     ui.vertical_centered(|ui| {
-        ui.add(image);
+        let _ = submit_docx_raster(ui, image);
     });
-    #[cfg(test)]
-    record_docx_inspector_paint_event(DocxInspectorPaintEvent::RasterSubmitted);
-    ui.label("DOCX rendered page ready");
-    #[cfg(test)]
-    record_docx_inspector_paint_event(DocxInspectorPaintEvent::ReadyMarker);
+    let _ = expose_docx_raster_ready(ui);
     true
 }
 
@@ -22250,6 +22260,53 @@ mod tests {
         );
     }
 
+    fn render_docx_raster_page_for_test(
+        app: &mut OttrinApp,
+        ctx: &Context,
+        path: &Path,
+        page_index: usize,
+    ) {
+        let _ = ctx.run(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(640.0, 480.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    let raster = app.cached_docx_raster_texture_load_result(ctx, path, page_index);
+                    let _ = render_docx_raster_inspector_page(
+                        ui,
+                        raster.as_ref(),
+                        true,
+                        1.0,
+                        600.0,
+                        440.0,
+                    );
+                });
+            },
+        );
+    }
+
+    fn docx_test_context(loader_ready: Arc<AtomicBool>) -> Context {
+        let ctx = Context::default();
+        egui_extras::install_image_loaders(&ctx);
+        ctx.add_image_loader(Arc::new(ControlledDocxImageLoader {
+            ready: loader_ready,
+        }));
+        ctx
+    }
+
+    fn ready_docx_test_raster(color: [u8; 4]) -> Vec<u8> {
+        let mut png = Vec::new();
+        image::RgbaImage::from_pixel(2, 2, image::Rgba(color))
+            .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
+            .expect("encode ready DOCX raster");
+        png
+    }
+
     fn set_docx_quick_inspector_state(app: &mut OttrinApp, path: &Path) {
         app.preview.visible = true;
         app.preview.path = Some(path.to_path_buf());
@@ -22320,6 +22377,10 @@ mod tests {
             .expect("create isolated DOCX fixture root");
         let root = fixture.path().to_path_buf();
         let path = root.join("report.docx");
+        assert!(
+            !Path::new("/tmp/other.docx").exists(),
+            "the regression must not rely on a leaked global wrong-path fixture"
+        );
         std::fs::write(&path, b"DOCX cache fixture").expect("write DOCX cache fixture");
         let generation = ottrin_preview::office_preview_source_generation(&path)
             .expect("capture DOCX generation");
@@ -22333,14 +22394,10 @@ mod tests {
             Some(&generation),
         );
         let mut app = OttrinApp::default();
-        let ctx = Context::default();
-        egui_extras::install_image_loaders(&ctx);
         let loader_ready = Arc::new(AtomicBool::new(false));
-        ctx.add_image_loader(Arc::new(ControlledDocxImageLoader {
-            ready: loader_ready.clone(),
-        }));
         set_docx_quick_inspector_state(&mut app, &path);
 
+        let ctx = docx_test_context(loader_ready.clone());
         render_docx_quick_inspector_frame(&mut app, &ctx);
         assert!(
             take_docx_inspector_paint_events().is_empty(),
@@ -22359,25 +22416,18 @@ mod tests {
             page_zero_key.clone(),
             ImagePreviewCacheEntry::from_response(Some(b"not a PNG".to_vec())),
         );
+        let ctx = docx_test_context(loader_ready.clone());
         render_docx_quick_inspector_frame(&mut app, &ctx);
         assert!(
             take_docx_inspector_paint_events().is_empty(),
             "a loader error from malformed cached bytes cannot submit a DOCX raster or advertise readiness"
         );
 
-        let mut png = Vec::new();
-        image::RgbaImage::from_pixel(2, 2, image::Rgba([12, 34, 56, 255]))
-            .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
-            .expect("encode page-zero DOCX raster");
         app.image_preview_cache.insert(
             page_zero_key.clone(),
-            ImagePreviewCacheEntry::from_response(Some(png)),
+            ImagePreviewCacheEntry::from_response(Some(ready_docx_test_raster([12, 34, 56, 255]))),
         );
-        let ctx = Context::default();
-        egui_extras::install_image_loaders(&ctx);
-        ctx.add_image_loader(Arc::new(ControlledDocxImageLoader {
-            ready: loader_ready.clone(),
-        }));
+        let ctx = docx_test_context(loader_ready.clone());
         render_docx_quick_inspector_frame(&mut app, &ctx);
         assert!(
             take_docx_inspector_paint_events().is_empty(),
@@ -22406,8 +22456,19 @@ mod tests {
         app.image_preview_cache.remove(&page_zero_key);
         app.image_preview_cache.insert(
             wrong_page_key,
-            ImagePreviewCacheEntry::from_response(Some(vec![137, 80, 78, 71])),
+            ImagePreviewCacheEntry::from_response(Some(ready_docx_test_raster([78, 56, 34, 255]))),
         );
+        let ctx = docx_test_context(loader_ready.clone());
+        render_docx_raster_page_for_test(&mut app, &ctx, &path, 1);
+        assert_eq!(
+            take_docx_inspector_paint_events(),
+            vec![
+                DocxInspectorPaintEvent::RasterSubmitted,
+                DocxInspectorPaintEvent::ReadyMarker,
+            ],
+            "the ready page-one alternate must paint when explicitly selected"
+        );
+        let ctx = docx_test_context(loader_ready.clone());
         render_docx_quick_inspector_frame(&mut app, &ctx);
         assert!(
             take_docx_inspector_paint_events().is_empty(),
@@ -22417,6 +22478,21 @@ mod tests {
         let wrong_path = root.join("other.docx");
         std::fs::write(&wrong_path, b"other DOCX cache fixture").expect("write wrong-path fixture");
         set_docx_quick_inspector_state(&mut app, &wrong_path);
+        app.image_preview_cache.insert(
+            page_zero_key.clone(),
+            ImagePreviewCacheEntry::from_response(Some(ready_docx_test_raster([34, 78, 56, 255]))),
+        );
+        let ctx = docx_test_context(loader_ready.clone());
+        render_docx_raster_page_for_test(&mut app, &ctx, &path, 0);
+        assert_eq!(
+            take_docx_inspector_paint_events(),
+            vec![
+                DocxInspectorPaintEvent::RasterSubmitted,
+                DocxInspectorPaintEvent::ReadyMarker,
+            ],
+            "the ready report-path alternate must paint when explicitly selected"
+        );
+        let ctx = docx_test_context(loader_ready.clone());
         render_docx_quick_inspector_frame(&mut app, &ctx);
         assert!(
             take_docx_inspector_paint_events().is_empty(),
@@ -22424,7 +22500,22 @@ mod tests {
         );
 
         set_docx_quick_inspector_state(&mut app, &path);
+        let ctx = docx_test_context(loader_ready.clone());
+        render_docx_raster_page_for_test(&mut app, &ctx, &path, 0);
+        assert_eq!(
+            take_docx_inspector_paint_events(),
+            vec![
+                DocxInspectorPaintEvent::RasterSubmitted,
+                DocxInspectorPaintEvent::ReadyMarker,
+            ],
+            "the ready old-generation raster must paint before its source is replaced"
+        );
         std::fs::write(&path, b"replacement DOCX generation").expect("replace DOCX generation");
+        assert!(
+            app.image_preview_cache.contains_key(&page_zero_key),
+            "the ready old-generation raster must remain in the cache to expose stale reuse"
+        );
+        let ctx = docx_test_context(loader_ready.clone());
         render_docx_quick_inspector_frame(&mut app, &ctx);
         assert!(
             take_docx_inspector_paint_events().is_empty(),
