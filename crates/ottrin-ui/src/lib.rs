@@ -480,6 +480,16 @@ struct ListingResponse {
     result: Result<Vec<FileEntry>, String>,
 }
 
+fn main_selection_index_for_path(path: Option<&Path>, entries: &[FileEntry]) -> Option<usize> {
+    path.and_then(|path| entries.iter().position(|entry| entry.path == path))
+}
+
+#[derive(Debug)]
+struct PendingMainSelection {
+    request_id: u64,
+    path: PathBuf,
+}
+
 #[derive(Debug)]
 struct TrashLoadResponse {
     request_id: u64,
@@ -809,6 +819,10 @@ struct TabUiState {
     selection_memory: HashMap<PathBuf, PathBuf>,
     // One-shot explicit path to restore on next TabMain listing load.
     pending_select_path: Option<PathBuf>,
+    // Pointer-selected main path retained across a same-directory refresh.
+    // It belongs to one specific listing generation so a superseded response
+    // cannot restore obsolete selection state.
+    pending_main_selection: Option<PendingMainSelection>,
     // One-shot hint: after explicit "enter directory" keyboard action, select
     // first entry in that directory to keep Right-navigation continuous.
     pending_select_first: bool,
@@ -5179,12 +5193,15 @@ impl OttrinApp {
         id
     }
 
-    fn request_listing(&mut self, key: ListingKey, dir: PathBuf) {
+    fn request_listing(&mut self, key: ListingKey, dir: PathBuf) -> u64 {
         let id = self.next_id();
         let hidden = self.state.config.show_hidden_files;
         let tab_ui = self.tab_ui_for_key(key);
         match key {
             ListingKey::TabMain(_) => {
+                // Any later main request supersedes recovery captured for an
+                // earlier listing generation.
+                tab_ui.pending_main_selection = None;
                 tab_ui.main.request_id = id;
                 tab_ui.main.loading = true;
                 tab_ui.main.dir = dir.clone();
@@ -5207,6 +5224,7 @@ impl OttrinApp {
             request_id: id,
             show_hidden: hidden,
         });
+        id
     }
 
     fn tab_ui_for_key(&mut self, key: ListingKey) -> &mut TabUiState {
@@ -5238,12 +5256,27 @@ impl OttrinApp {
         self.image_preview_cache
             .retain(|key, _| !key.starts_with("pptx-request-v1-"));
         self.preview_scheduler.invalidate_pptx_in_directory(&dir);
+        // Capture an ordinary same-directory pointer selection before this
+        // refresh clears the old model. Navigation supplies pending_select_path
+        // instead, so it deliberately does not retain the previous directory's
+        // selected child.
+        let retained_main_selection = self.tab_ui.get(&tab_id).and_then(|ui_state| {
+            (ui_state.main.dir == dir)
+                .then(|| {
+                    ui_state
+                        .main_sel
+                        .and_then(|index| ui_state.main.entries.get(index))
+                        .map(|entry| entry.path.clone())
+                })
+                .flatten()
+        });
         // Reset selection and scroll on navigation
         if let Some(ui_state) = self.tab_ui.get_mut(&tab_id) {
             ui_state.main_sel = None;
             ui_state.left_sel = None;
             ui_state.selected_paths.clear();
             ui_state.selection_anchor = None;
+            ui_state.pending_main_selection = None;
             ui_state.right = ColumnState::default();
             ui_state.right_is_file = false;
             // Focus starts on the actual current directory column.
@@ -5263,7 +5296,16 @@ impl OttrinApp {
             ui_state.scroll_epoch = ui_state.scroll_epoch.wrapping_add(1);
         }
         // Main column = current dir
-        self.request_listing(ListingKey::TabMain(tab_id), dir.clone());
+        let main_request_id = self.request_listing(ListingKey::TabMain(tab_id), dir.clone());
+        if let Some(path) = retained_main_selection {
+            self.tab_ui
+                .entry(tab_id)
+                .or_default()
+                .pending_main_selection = Some(PendingMainSelection {
+                request_id: main_request_id,
+                path,
+            });
+        }
         // Left column = parent dir
         if let Some(parent) = dir.parent().map(|p| p.to_path_buf()) {
             let left_dir = parent;
@@ -5309,6 +5351,18 @@ impl OttrinApp {
             // Discard stale responses
             if col.request_id != resp.request_id {
                 continue;
+            }
+            let retained_main_selection_path = matches!(resp.key, ListingKey::TabMain(_))
+                .then(|| {
+                    ui_state
+                        .pending_main_selection
+                        .as_ref()
+                        .filter(|pending| pending.request_id == resp.request_id)
+                        .map(|pending| pending.path.clone())
+                })
+                .flatten();
+            if retained_main_selection_path.is_some() {
+                ui_state.pending_main_selection = None;
             }
             col.loading = false;
             match resp.result {
@@ -5357,39 +5411,39 @@ impl OttrinApp {
                 }
                 if !ui_state.main.entries.is_empty() {
                     let dir = ui_state.main.dir.clone();
-                    let desired = ui_state.pending_select_path.take();
+                    let restoring_pointer_selection = retained_main_selection_path.is_some();
+                    let desired = ui_state
+                        .pending_select_path
+                        .take()
+                        .or(retained_main_selection_path);
                     let select_first = std::mem::take(&mut ui_state.pending_select_first);
-                    let idx = desired.as_ref().and_then(|path| {
-                        ui_state.main.entries.iter().position(|e| &e.path == path)
-                    });
+                    let idx =
+                        main_selection_index_for_path(desired.as_deref(), &ui_state.main.entries);
                     if let Some(i) = idx {
                         ui_state.main_sel = Some(i);
                         let selected_path = ui_state.main.entries[i].path.clone();
+                        if restoring_pointer_selection {
+                            ui_state.selected_paths = HashSet::from([selected_path.clone()]);
+                            ui_state.selection_anchor = Some(selected_path.clone());
+                        }
                         ui_state.selection_memory.insert(dir.clone(), selected_path);
                         refresh_right_for.push(tab_id);
-                    } else if select_first {
+                    } else if desired.is_none() && select_first {
                         ui_state.main_sel = Some(0);
                         let selected_path = ui_state.main.entries[0].path.clone();
                         ui_state.selection_memory.insert(dir.clone(), selected_path);
                         refresh_right_for.push(tab_id);
                     } else {
-                        // Keep an already valid selection (possibly set during
-                        // render-time model build) instead of wiping focus.
-                        let keep = ui_state
-                            .main_sel
-                            .filter(|&i| i < ui_state.main.entries.len());
-                        if let Some(i) = keep {
-                            ui_state.main_sel = Some(i);
-                            let selected_path = ui_state.main.entries[i].path.clone();
-                            ui_state.selection_memory.insert(dir.clone(), selected_path);
-                            refresh_right_for.push(tab_id);
-                        } else {
-                            // Fresh directory view (e.g., startup): no implicit child selection.
-                            ui_state.main_sel = None;
-                        }
+                        // A requested path that disappeared must not retain an
+                        // in-range numeric row from the replaced model.
+                        ui_state.main_sel = None;
+                        ui_state.selected_paths.clear();
+                        ui_state.selection_anchor = None;
                     }
                 } else {
                     ui_state.main_sel = None;
+                    ui_state.selected_paths.clear();
+                    ui_state.selection_anchor = None;
                 }
             }
             if matches!(resp.key, ListingKey::TabRight(_)) {
@@ -24110,6 +24164,147 @@ mod tests {
         assert!(
             !app.command_frame.visible && app.command_frame.input.is_empty(),
             "pointer selection in every file-view column must cancel, not retain, command input"
+        );
+    }
+
+    #[test]
+    fn refresh_relocates_or_clears_pointer_selection_by_path_in_every_file_view() {
+        let fixture = tempfile::tempdir().expect("create refresh fixture");
+        let root = fixture.path().to_path_buf();
+        let alpha = root.join("alpha");
+        let bravo = root.join("bravo");
+        std::fs::write(&alpha, "alpha").expect("write alpha fixture");
+        std::fs::write(&bravo, "bravo").expect("write bravo fixture");
+
+        for view_mode in [ViewMode::List, ViewMode::Grid, ViewMode::Miller] {
+            let mut app = OttrinApp::default();
+            let tab_id = app.state.active_tab().id;
+            {
+                let tab = app.state.tab_by_id_mut(tab_id).expect("active tab");
+                tab.current_dir = root.clone();
+                tab.view_mode = view_mode;
+            }
+            {
+                let ui = app.tab_ui.entry(tab_id).or_default();
+                ui.main.dir = root.clone();
+                // The pointer selected bravo at index zero before the listing
+                // worker returns its naturally sorted alpha/bravo result.
+                ui.main.entries = vec![
+                    FileEntry {
+                        name: "bravo".to_string(),
+                        path: bravo.clone(),
+                        kind: EntryKind::File,
+                        is_executable: false,
+                        symlink_target_is_dir: None,
+                        size_bytes: Some(5),
+                        modified_unix_secs: None,
+                    },
+                    FileEntry {
+                        name: "alpha".to_string(),
+                        path: alpha.clone(),
+                        kind: EntryKind::File,
+                        is_executable: false,
+                        symlink_target_is_dir: None,
+                        size_bytes: Some(5),
+                        modified_unix_secs: None,
+                    },
+                ];
+            }
+            app.set_main_selection_from_click(tab_id, 0, egui::Modifiers::NONE, false);
+
+            app.refresh_active_tab();
+            for _ in 0..100 {
+                app.poll_listing_results();
+                if !app.tab_ui[&tab_id].main.loading {
+                    break;
+                }
+                std::thread::sleep(std::time::Duration::from_millis(5));
+            }
+
+            let ui = &app.tab_ui[&tab_id];
+            assert_eq!(
+                ui.main_sel.and_then(|index| ui.main.entries.get(index)),
+                ui.main.entries.iter().find(|entry| entry.path == bravo),
+                "{view_mode:?} refresh must follow the pointer-selected path after reorder"
+            );
+            assert_eq!(ui.selected_paths, HashSet::from([bravo.clone()]));
+            assert_eq!(ui.selection_anchor, Some(bravo.clone()));
+        }
+
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.state.active_tab_mut().current_dir = root.clone();
+        {
+            let ui = app.tab_ui.entry(tab_id).or_default();
+            ui.main.dir = root.clone();
+            ui.main.entries = vec![FileEntry {
+                name: "bravo".to_string(),
+                path: bravo.clone(),
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: Some(5),
+                modified_unix_secs: None,
+            }];
+        }
+        app.set_main_selection_from_click(tab_id, 0, egui::Modifiers::NONE, false);
+        std::fs::remove_file(&bravo).expect("remove selected fixture");
+
+        app.refresh_active_tab();
+        for _ in 0..100 {
+            app.poll_listing_results();
+            if !app.tab_ui[&tab_id].main.loading {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        }
+
+        let ui = &app.tab_ui[&tab_id];
+        assert_eq!(
+            ui.main_sel, None,
+            "removed paths must not retain an in-range stale index"
+        );
+        assert!(ui.selected_paths.is_empty());
+        assert_eq!(ui.selection_anchor, None);
+    }
+
+    #[test]
+    fn newer_main_listing_request_discards_pointer_selection_recovery_from_refresh() {
+        let fixture = tempfile::tempdir().expect("create refresh fixture");
+        let root = fixture.path().to_path_buf();
+        let selected_path = root.join("selected");
+        std::fs::write(&selected_path, "selected").expect("write selected fixture");
+
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.state.active_tab_mut().current_dir = root.clone();
+        {
+            let ui = app.tab_ui.entry(tab_id).or_default();
+            ui.main.dir = root.clone();
+            ui.main.entries = vec![FileEntry {
+                name: "selected".to_string(),
+                path: selected_path,
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: Some(8),
+                modified_unix_secs: None,
+            }];
+        }
+        app.set_main_selection_from_click(tab_id, 0, egui::Modifiers::NONE, false);
+
+        app.refresh_active_tab();
+        let refresh_request = app.tab_ui[&tab_id]
+            .pending_main_selection
+            .as_ref()
+            .expect("same-directory refresh retains pointer path")
+            .request_id;
+        let newer_request = app.request_listing(ListingKey::TabMain(tab_id), root);
+
+        assert!(newer_request > refresh_request);
+        assert!(
+            app.tab_ui[&tab_id].pending_main_selection.is_none(),
+            "a newer request must supersede pointer recovery bound to the prior response"
         );
     }
 
