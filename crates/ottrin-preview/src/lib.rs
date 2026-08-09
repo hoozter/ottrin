@@ -100,6 +100,9 @@ const MAX_SVG_FILTER_DEFINITIONS: usize = 4;
 const MAX_SVG_FILTER_PRIMITIVES: usize = 8;
 const MAX_SVG_FILTER_APPLICATIONS: usize = 128;
 const MAX_SVG_FILTER_STD_DEVIATION: f32 = 16.0;
+const MAX_SVG_FILTER_REGION_NUMBER: f32 = 2.0;
+const MAX_SVG_FILTER_REGION_PERCENT: f32 = 200.0;
+const MAX_SVG_FILTER_OFFSET: f32 = 64.0;
 const MAX_SVG_PREVIEW_DIMENSION: u32 = 2048;
 const MAX_SVG_PREVIEW_PIXELS: u64 = 4_194_304;
 const MAX_CAMERA_RAW_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
@@ -3900,6 +3903,36 @@ fn admit_svg_element_bounds(
                 )));
             }
         }
+        if element_name == b"filter" && matches!(attribute_name, b"x" | b"y" | b"width" | b"height")
+        {
+            let value = std::str::from_utf8(attribute.value.as_ref())
+                .map_err(|error| SvgVisualError::Parse(error.to_string()))?;
+            let positive = matches!(attribute_name, b"width" | b"height");
+            if !svg_filter_region_length_is_bounded(value, positive) {
+                return Err(SvgVisualError::ComplexityLimit(format!(
+                    "filter region {} exceeds the bounded preview range",
+                    String::from_utf8_lossy(attribute_name)
+                )));
+            }
+        }
+        if element_name == b"filter" && matches!(attribute_name, b"filterUnits" | b"primitiveUnits")
+        {
+            return Err(SvgVisualError::ComplexityLimit(
+                "custom filter coordinate systems are not admitted".to_string(),
+            ));
+        }
+        if element_name == b"feDropShadow" && matches!(attribute_name, b"dx" | b"dy") {
+            let value = std::str::from_utf8(attribute.value.as_ref())
+                .ok()
+                .and_then(|value| value.parse::<f32>().ok())
+                .filter(|value| value.is_finite() && value.abs() <= MAX_SVG_FILTER_OFFSET)
+                .ok_or_else(|| {
+                    SvgVisualError::ComplexityLimit(format!(
+                        "drop-shadow offset exceeds {MAX_SVG_FILTER_OFFSET} SVG units"
+                    ))
+                })?;
+            let _ = value;
+        }
         if element_name == b"feDropShadow" && attribute_name == b"stdDeviation" {
             let value = std::str::from_utf8(attribute.value.as_ref())
                 .ok()
@@ -3927,6 +3960,18 @@ fn admit_svg_element_bounds(
         }
     }
     Ok(())
+}
+
+fn svg_filter_region_length_is_bounded(value: &str, positive: bool) -> bool {
+    let value = value.trim();
+    let (number, limit) = if let Some(percent) = value.strip_suffix('%') {
+        (percent.parse::<f32>().ok(), MAX_SVG_FILTER_REGION_PERCENT)
+    } else {
+        (value.parse::<f32>().ok(), MAX_SVG_FILTER_REGION_NUMBER)
+    };
+    number.is_some_and(|number| {
+        number.is_finite() && number.abs() <= limit && (!positive || number > 0.0)
+    })
 }
 
 fn has_disallowed_svg_external_references(data: &[u8]) -> bool {
@@ -8636,6 +8681,16 @@ mod tests {
                     r##"<rect width="1" height="1" filter="url(#f)"/>"##.repeat(129),
                 ),
                 "filter applications",
+            ),
+            (
+                "filter-region-amplification.svg",
+                r##"<svg xmlns="http://www.w3.org/2000/svg"><defs><filter id="f" x="-1000000%" width="2000000%"><feDropShadow stdDeviation="1"/></filter></defs><rect width="1" height="1" filter="url(#f)"/></svg>"##.to_string(),
+                "filter region",
+            ),
+            (
+                "filter-offset-amplification.svg",
+                r##"<svg xmlns="http://www.w3.org/2000/svg"><defs><filter id="f"><feDropShadow dx="1000000" stdDeviation="1"/></filter></defs><rect width="1" height="1" filter="url(#f)"/></svg>"##.to_string(),
+                "drop-shadow offset",
             ),
             (
                 "marker-amplification.svg",
