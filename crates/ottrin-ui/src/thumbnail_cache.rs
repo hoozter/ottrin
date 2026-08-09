@@ -33,21 +33,38 @@ const MAX_PDF_CACHE_PNG_DIMENSION: u32 = 2_048;
 #[derive(Debug, Clone)]
 pub(crate) enum ImagePreviewCacheEntry {
     Ready(Vec<u8>),
-    Unavailable,
+    Unavailable { reason: Option<String> },
 }
 
 impl ImagePreviewCacheEntry {
+    #[cfg(test)]
     pub(crate) fn from_response(bytes: Option<Vec<u8>>) -> Self {
+        Self::from_response_with_reason(bytes, None)
+    }
+
+    pub(crate) fn from_response_with_reason(
+        bytes: Option<Vec<u8>>,
+        reason: Option<String>,
+    ) -> Self {
         match bytes {
             Some(bytes) => Self::Ready(bytes),
-            None => Self::Unavailable,
+            None => Self::Unavailable { reason },
         }
     }
 
     pub(crate) fn bytes(&self) -> Option<&[u8]> {
         match self {
             Self::Ready(bytes) => Some(bytes),
-            Self::Unavailable => None,
+            Self::Unavailable { .. } => None,
+        }
+    }
+
+    pub(crate) fn unavailable_reason(&self) -> Option<&str> {
+        match self {
+            Self::Unavailable {
+                reason: Some(reason),
+            } => Some(reason),
+            _ => None,
         }
     }
 }
@@ -672,6 +689,18 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
     })
 }
 
+#[cfg(test)]
+pub(crate) fn build_thumbnail_bytes_with_error(
+    path: &Path,
+    target_dim: u32,
+) -> Result<Vec<u8>, String> {
+    if ottrin_preview::is_svg_path(path) {
+        return ottrin_preview::render_svg_content_preview_png(path, target_dim)
+            .map_err(|error| error.to_string());
+    }
+    build_thumbnail_bytes(path, target_dim).ok_or_else(|| "Image preview unavailable".to_string())
+}
+
 pub(crate) fn fallback_preview_bytes(path: &Path, generated: Option<Vec<u8>>) -> Option<Vec<u8>> {
     if generated.is_some() {
         return generated;
@@ -739,6 +768,11 @@ fn cached_thumbnail_is_safe_for_path_with_pdfium_runtime(
     bytes: &[u8],
     pdfium_runtime_is_available: impl FnOnce() -> bool,
 ) -> bool {
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::None {
+        // Metadata-only types (notably EPS while no isolated renderer is
+        // packaged) may not resurrect a stale raster cache as a visual claim.
+        return false;
+    }
     if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Pdf {
         // A cache hit is admissible only while the same runtime discovery path
         // can bind PDFium. Otherwise a stale sidebar PNG could disagree with a
@@ -1400,10 +1434,17 @@ mod tests {
     }
 
     #[test]
-    fn failed_preview_response_is_storable_without_exposing_image_bytes() {
-        let entry = ImagePreviewCacheEntry::from_response(None);
+    fn failed_preview_response_preserves_reason_without_exposing_image_bytes() {
+        let entry = ImagePreviewCacheEntry::from_response_with_reason(
+            None,
+            Some("SVG exceeds bounded render work".to_string()),
+        );
 
         assert!(entry.bytes().is_none());
+        assert_eq!(
+            entry.unavailable_reason(),
+            Some("SVG exceeds bounded render work")
+        );
     }
 
     #[test]
@@ -2035,6 +2076,57 @@ mod tests {
 
         std::fs::remove_file(blocked).expect("remove blocked SVG fixture");
         std::fs::remove_file(oversized).expect("remove oversized SVG fixture");
+    }
+
+    #[test]
+    fn eps_rejects_stale_raster_cache_without_a_safe_renderer() {
+        let svg = std::env::temp_dir().join(format!(
+            "ottrin-eps-cache-source-{}.svg",
+            std::process::id()
+        ));
+        let eps = std::env::temp_dir().join(format!(
+            "ottrin-eps-cache-target-{}.eps",
+            std::process::id()
+        ));
+        std::fs::write(
+            &svg,
+            r##"<svg width="12" height="12" xmlns="http://www.w3.org/2000/svg"><rect width="12" height="12" fill="#00ff00"/></svg>"##,
+        )
+        .expect("write SVG cache source");
+        std::fs::write(&eps, b"%!PS-Adobe-3.0\nshowpage\n").expect("write EPS fixture");
+        let stale_png = build_thumbnail_bytes(&svg, 128).expect("render SVG cache source");
+
+        assert_eq!(
+            thumbnail_bytes_from_cache_or_build(&eps, 128, Some(stale_png)),
+            None,
+            "EPS must not reuse a stale cache when no safe isolated renderer is available"
+        );
+        assert_eq!(full_preview_bytes_at_page(&eps, 128, 0), None);
+
+        std::fs::remove_file(svg).expect("remove SVG cache source");
+        std::fs::remove_file(eps).expect("remove EPS fixture");
+    }
+
+    #[test]
+    fn blocked_svg_thumbnail_preserves_its_actionable_admission_reason() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-svg-visible-error-{}.svg",
+            std::process::id()
+        ));
+        std::fs::write(
+            &path,
+            r##"<svg xmlns="http://www.w3.org/2000/svg"><use href="#shape"/></svg>"##,
+        )
+        .expect("write blocked SVG fixture");
+
+        let error = build_thumbnail_bytes_with_error(&path, 128)
+            .expect_err("blocked SVG must retain its admission error");
+        assert!(
+            error.contains("reuse"),
+            "unexpected visible reason: {error}"
+        );
+
+        std::fs::remove_file(path).expect("remove blocked SVG fixture");
     }
 
     #[test]

@@ -86,7 +86,20 @@ const OFFICE_VISUAL_TEXT_LIMIT: usize = 4_096;
 const MAX_TEXT_VISUAL_INPUT_BYTES: u64 = 128 * 1024;
 const TEXT_VISUAL_LINE_LIMIT: usize = 18;
 const TEXT_VISUAL_CHAR_LIMIT: usize = 1_600;
-const MAX_SVG_VISUAL_INPUT_BYTES: u64 = 256 * 1024;
+// SVG admission is deliberately structural rather than a small serialized-byte
+// cliff. The snapshot cap still bounds allocation, while XML work caps bound
+// the parser before resvg receives a tree.
+const MAX_SVG_VISUAL_INPUT_BYTES: u64 = 4 * 1024 * 1024;
+const MAX_SVG_XML_ELEMENTS: usize = 16 * 1024;
+const MAX_SVG_XML_ATTRIBUTES: usize = 64 * 1024;
+const MAX_SVG_XML_ATTRIBUTE_BYTES: usize = 1024 * 1024;
+const MAX_SVG_XML_DEPTH: usize = 64;
+const MAX_SVG_PATH_DATA_BYTES: usize = 1024 * 1024;
+const MAX_SVG_LOCAL_PAINT_REFERENCES: usize = 512;
+const MAX_SVG_FILTER_DEFINITIONS: usize = 4;
+const MAX_SVG_FILTER_PRIMITIVES: usize = 8;
+const MAX_SVG_FILTER_APPLICATIONS: usize = 128;
+const MAX_SVG_FILTER_STD_DEVIATION: f32 = 16.0;
 const MAX_SVG_PREVIEW_DIMENSION: u32 = 2048;
 const MAX_SVG_PREVIEW_PIXELS: u64 = 4_194_304;
 const MAX_CAMERA_RAW_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
@@ -414,6 +427,8 @@ pub enum SvgVisualError {
     InputMetadata(String),
     #[error("SVG input is too large for a visual preview ({actual} bytes; limit {limit} bytes)")]
     InputTooLarge { actual: u64, limit: u64 },
+    #[error("SVG exceeds the bounded visual-preview complexity policy: {0}")]
+    ComplexityLimit(String),
     #[error("SVG contains blocked references (file/http/https image references are not permitted)")]
     BlockedReference,
     #[error("SVG could not be parsed for visual preview: {0}")]
@@ -581,6 +596,7 @@ pub enum PreviewKind {
     CameraRawMetadata,
     AffinityMetadata,
     OfficeMetadata,
+    EpsMetadata,
     Unsupported,
 }
 
@@ -826,6 +842,15 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
             visual_renderer: PreviewVisualRenderer::Office,
             raw_fallback_allowed: false,
         },
+        // EPS is PostScript. This candidate has no vetted isolated renderer,
+        // so it exposes metadata and an actionable unavailable state rather
+        // than raw bytes or an in-process interpreter.
+        PreviewKind::EpsMetadata => PreviewProfile {
+            kind,
+            views: [true, false, false],
+            visual_renderer: PreviewVisualRenderer::None,
+            raw_fallback_allowed: false,
+        },
         PreviewKind::FolderMetadata => PreviewProfile {
             kind,
             views: [true, false, false],
@@ -964,6 +989,7 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
         PreviewKind::CameraRawMetadata => preview_camera_raw(title, &request.path),
         PreviewKind::AffinityMetadata => preview_affinity(title, &request.path),
         PreviewKind::OfficeMetadata => preview_office(title, &request.path),
+        PreviewKind::EpsMetadata => preview_eps(title, &request.path),
         PreviewKind::FolderMetadata => preview_folder(title, &request.path),
         PreviewKind::Unsupported => preview_fallback(title, &request.path),
     }
@@ -992,6 +1018,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         "png" | "jpg" | "jpeg" | "webp" | "gif" | "bmp" | "tif" | "tiff" | "ico" | "svg" => {
             PreviewKind::Image
         }
+        "eps" => PreviewKind::EpsMetadata,
         "dng" | "arw" => PreviewKind::CameraRawMetadata,
         "afphoto" | "afdesign" | "afpub" => PreviewKind::AffinityMetadata,
         "pdf" => PreviewKind::Pdf,
@@ -2583,6 +2610,22 @@ fn preview_affinity(title: String, path: &Path) -> PreviewData {
     }
 }
 
+fn preview_eps(title: String, path: &Path) -> PreviewData {
+    PreviewData {
+        title,
+        kind: PreviewKind::EpsMetadata,
+        body: metadata_summary(
+            path,
+            "EPS image",
+            Some(
+                "Preview: No safe isolated EPS renderer is available in this build. Ottrin will not execute PostScript directly; open this file in a trusted external viewer.",
+            ),
+        ),
+        spreadsheet: None,
+        open_external: true,
+    }
+}
+
 fn preview_sqlite(title: String, path: &Path) -> PreviewData {
     let mut lines = vec!["Filetype: SQLite database".to_string()];
     if let Ok(metadata) = std::fs::metadata(path) {
@@ -3597,7 +3640,10 @@ pub fn render_svg_content_preview_png(
     if !is_svg_path(path) {
         return Err(SvgVisualError::UnsupportedFormat);
     }
-    let input_size = std::fs::metadata(path)
+    let mut file = std::fs::File::open(path)
+        .map_err(|error| SvgVisualError::InputMetadata(error.to_string()))?;
+    let input_size = file
+        .metadata()
         .map_err(|error| SvgVisualError::InputMetadata(error.to_string()))?
         .len();
     if input_size > MAX_SVG_VISUAL_INPUT_BYTES {
@@ -3607,11 +3653,21 @@ pub fn render_svg_content_preview_png(
         });
     }
 
-    let input =
-        std::fs::read(path).map_err(|error| SvgVisualError::InputMetadata(error.to_string()))?;
+    let mut input = Vec::with_capacity(input_size.min(MAX_SVG_VISUAL_INPUT_BYTES) as usize);
+    file.by_ref()
+        .take(MAX_SVG_VISUAL_INPUT_BYTES + 1)
+        .read_to_end(&mut input)
+        .map_err(|error| SvgVisualError::InputMetadata(error.to_string()))?;
+    if input.len() as u64 > MAX_SVG_VISUAL_INPUT_BYTES {
+        return Err(SvgVisualError::InputTooLarge {
+            actual: input.len() as u64,
+            limit: MAX_SVG_VISUAL_INPUT_BYTES,
+        });
+    }
     if has_disallowed_svg_external_references(&input) {
         return Err(SvgVisualError::BlockedReference);
     }
+    admit_svg_visual_complexity(&input)?;
     let options = usvg::Options {
         resources_dir: None,
         image_href_resolver: usvg::ImageHrefResolver {
@@ -3666,6 +3722,211 @@ pub fn render_svg_content_preview_png(
         )
         .map_err(|error: image::ImageError| SvgVisualError::Rasterize(error.to_string()))?;
     Ok(bytes)
+}
+
+fn admit_svg_visual_complexity(input: &[u8]) -> Result<(), SvgVisualError> {
+    use quick_xml::events::Event;
+
+    let mut reader = quick_xml::Reader::from_reader(input);
+    reader.config_mut().check_end_names = true;
+    let mut budget = SvgAdmissionBudget::default();
+    let mut depth = 0usize;
+
+    loop {
+        match reader.read_event() {
+            Ok(Event::Start(event)) => {
+                budget.elements = budget.elements.saturating_add(1);
+                depth = depth.saturating_add(1);
+                admit_svg_element_bounds(&event, &mut budget, depth)?;
+            }
+            Ok(Event::Empty(event)) => {
+                budget.elements = budget.elements.saturating_add(1);
+                admit_svg_element_bounds(&event, &mut budget, depth.saturating_add(1))?;
+            }
+            Ok(Event::End(_)) => {
+                depth = depth.checked_sub(1).ok_or_else(|| {
+                    SvgVisualError::ComplexityLimit("XML depth underflow".to_string())
+                })?;
+            }
+            Ok(Event::DocType(_) | Event::PI(_)) => {
+                return Err(SvgVisualError::ComplexityLimit(
+                    "DTD and processing instructions are not permitted".to_string(),
+                ));
+            }
+            Ok(Event::Eof) => break,
+            Ok(_) => {}
+            Err(error) => return Err(SvgVisualError::Parse(error.to_string())),
+        }
+    }
+    if depth != 0 {
+        return Err(SvgVisualError::Parse(
+            "SVG has unbalanced XML elements".to_string(),
+        ));
+    }
+    Ok(())
+}
+
+#[derive(Default)]
+struct SvgAdmissionBudget {
+    elements: usize,
+    attributes: usize,
+    attribute_bytes: usize,
+    path_data_bytes: usize,
+    local_paint_references: usize,
+    filter_definitions: usize,
+    filter_primitives: usize,
+    filter_applications: usize,
+}
+
+fn admit_svg_element_bounds(
+    event: &quick_xml::events::BytesStart<'_>,
+    budget: &mut SvgAdmissionBudget,
+    depth: usize,
+) -> Result<(), SvgVisualError> {
+    if budget.elements > MAX_SVG_XML_ELEMENTS {
+        return Err(SvgVisualError::ComplexityLimit(format!(
+            "more than {MAX_SVG_XML_ELEMENTS} XML elements"
+        )));
+    }
+    if depth > MAX_SVG_XML_DEPTH {
+        return Err(SvgVisualError::ComplexityLimit(format!(
+            "XML nesting exceeds {MAX_SVG_XML_DEPTH} levels"
+        )));
+    }
+    let raw_name = event.name();
+    let element_name = raw_name
+        .as_ref()
+        .rsplit(|byte| *byte == b':')
+        .next()
+        .unwrap_or(raw_name.as_ref());
+    if matches!(
+        element_name,
+        b"use"
+            | b"pattern"
+            | b"mask"
+            | b"clipPath"
+            | b"marker"
+            | b"image"
+            | b"foreignObject"
+            | b"style"
+            | b"script"
+            | b"animate"
+            | b"animateMotion"
+            | b"animateTransform"
+            | b"set"
+    ) {
+        return Err(SvgVisualError::ComplexityLimit(format!(
+            "{0} elements are not admitted because they permit semantic reuse, embedded content, CSS, or animation",
+            String::from_utf8_lossy(element_name)
+        )));
+    }
+    if element_name == b"filter" {
+        budget.filter_definitions = budget.filter_definitions.saturating_add(1);
+        if budget.filter_definitions > MAX_SVG_FILTER_DEFINITIONS {
+            return Err(SvgVisualError::ComplexityLimit(format!(
+                "more than {MAX_SVG_FILTER_DEFINITIONS} filter definitions"
+            )));
+        }
+    } else if element_name.starts_with(b"fe") {
+        if element_name != b"feDropShadow" {
+            return Err(SvgVisualError::ComplexityLimit(format!(
+                "{} filter primitives are not admitted",
+                String::from_utf8_lossy(element_name)
+            )));
+        }
+        budget.filter_primitives = budget.filter_primitives.saturating_add(1);
+        if budget.filter_primitives > MAX_SVG_FILTER_PRIMITIVES {
+            return Err(SvgVisualError::ComplexityLimit(format!(
+                "more than {MAX_SVG_FILTER_PRIMITIVES} filter primitives"
+            )));
+        }
+    }
+
+    for attribute in event.attributes() {
+        let attribute = attribute.map_err(|error| SvgVisualError::Parse(error.to_string()))?;
+        let attribute_name = attribute
+            .key
+            .as_ref()
+            .rsplit(|byte| *byte == b':')
+            .next()
+            .unwrap_or(attribute.key.as_ref());
+        budget.attributes = budget.attributes.saturating_add(1);
+        budget.attribute_bytes = budget.attribute_bytes.saturating_add(attribute.value.len());
+        if budget.attributes > MAX_SVG_XML_ATTRIBUTES {
+            return Err(SvgVisualError::ComplexityLimit(format!(
+                "more than {MAX_SVG_XML_ATTRIBUTES} XML attributes"
+            )));
+        }
+        if budget.attribute_bytes > MAX_SVG_XML_ATTRIBUTE_BYTES {
+            return Err(SvgVisualError::ComplexityLimit(format!(
+                "more than {MAX_SVG_XML_ATTRIBUTE_BYTES} bytes of XML attribute data"
+            )));
+        }
+        if attribute_name == b"style" {
+            return Err(SvgVisualError::ComplexityLimit(
+                "CSS style attributes are not admitted because their render work is not structurally countable"
+                    .to_string(),
+            ));
+        }
+        if attribute_name == b"href" {
+            return Err(SvgVisualError::ComplexityLimit(
+                "local or external href reuse is not admitted".to_string(),
+            ));
+        }
+        if attribute
+            .value
+            .windows(4)
+            .any(|window| window.eq_ignore_ascii_case(b"url("))
+        {
+            let value = std::str::from_utf8(attribute.value.as_ref())
+                .map_err(|error| SvgVisualError::Parse(error.to_string()))?;
+            if !value.trim().starts_with("url(#") {
+                return Err(SvgVisualError::ComplexityLimit(
+                    "only local paint-server references are admitted".to_string(),
+                ));
+            }
+            budget.local_paint_references = budget.local_paint_references.saturating_add(1);
+            if budget.local_paint_references > MAX_SVG_LOCAL_PAINT_REFERENCES {
+                return Err(SvgVisualError::ComplexityLimit(format!(
+                    "more than {MAX_SVG_LOCAL_PAINT_REFERENCES} local paint-server references"
+                )));
+            }
+        }
+        if attribute_name == b"filter" {
+            budget.filter_applications = budget.filter_applications.saturating_add(1);
+            if budget.filter_applications > MAX_SVG_FILTER_APPLICATIONS {
+                return Err(SvgVisualError::ComplexityLimit(format!(
+                    "more than {MAX_SVG_FILTER_APPLICATIONS} filter applications"
+                )));
+            }
+        }
+        if element_name == b"feDropShadow" && attribute_name == b"stdDeviation" {
+            let value = std::str::from_utf8(attribute.value.as_ref())
+                .ok()
+                .and_then(|value| value.parse::<f32>().ok())
+                .filter(|value| value.is_finite() && *value >= 0.0)
+                .ok_or_else(|| {
+                    SvgVisualError::ComplexityLimit(
+                        "feDropShadow stdDeviation must be one finite non-negative number"
+                            .to_string(),
+                    )
+                })?;
+            if value > MAX_SVG_FILTER_STD_DEVIATION {
+                return Err(SvgVisualError::ComplexityLimit(format!(
+                    "feDropShadow stdDeviation exceeds {MAX_SVG_FILTER_STD_DEVIATION}"
+                )));
+            }
+        }
+        if element_name == b"path" && attribute_name == b"d" {
+            budget.path_data_bytes = budget.path_data_bytes.saturating_add(attribute.value.len());
+            if budget.path_data_bytes > MAX_SVG_PATH_DATA_BYTES {
+                return Err(SvgVisualError::ComplexityLimit(format!(
+                    "more than {MAX_SVG_PATH_DATA_BYTES} bytes of path data"
+                )));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn has_disallowed_svg_external_references(data: &[u8]) -> bool {
@@ -8319,6 +8580,97 @@ mod tests {
             render_svg_content_preview_png(&path, 64).expect("safe svg preview should render");
         let image = image::load_from_memory(&bytes).expect("decode svg preview");
         assert_eq!(image.dimensions(), (12, 12));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn svg_admission_accepts_a_bounded_checkerboard_larger_than_the_legacy_byte_cliff() {
+        let path = temp_path("bounded-checkerboard.svg");
+        let rectangles = (0..5_001)
+            .map(|index| {
+                let x = index % 101;
+                let y = index / 101;
+                format!("<rect x=\"{x}\" y=\"{y}\" width=\"1\" height=\"1\"/>")
+            })
+            .collect::<String>();
+        let svg = format!(
+            "<svg width=\"1000\" height=\"1000\" xmlns=\"http://www.w3.org/2000/svg\">{rectangles}<!--{}--></svg>",
+            " ".repeat(64 * 1024),
+        );
+        assert!(
+            svg.len() > 256 * 1024,
+            "fixture must cross the prior arbitrary source-byte cutoff"
+        );
+        std::fs::write(&path, svg).expect("write checkerboard fixture");
+
+        let bytes = render_svg_content_preview_png(&path, 128)
+            .expect("bounded self-contained checkerboard should render");
+        assert_eq!(
+            image::load_from_memory(&bytes)
+                .expect("decode checkerboard preview")
+                .dimensions(),
+            (128, 128)
+        );
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn svg_admission_rejects_semantic_render_amplifiers() {
+        let cases = [
+            (
+                "use-expansion.svg",
+                r##"<svg xmlns="http://www.w3.org/2000/svg"><defs><path id="p" d="M0 0h1v1z"/></defs><use href="#p"/></svg>"##.to_string(),
+                "reuse",
+            ),
+            (
+                "css-render-work.svg",
+                r##"<svg xmlns="http://www.w3.org/2000/svg"><style>rect { filter: blur(2px); }</style><rect width="1" height="1"/></svg>"##.to_string(),
+                "CSS",
+            ),
+            (
+                "filter-amplification.svg",
+                format!(
+                    r##"<svg xmlns="http://www.w3.org/2000/svg"><defs><filter id="f"><feDropShadow stdDeviation="1"/></filter></defs>{}</svg>"##,
+                    r##"<rect width="1" height="1" filter="url(#f)"/>"##.repeat(129),
+                ),
+                "filter applications",
+            ),
+            (
+                "marker-amplification.svg",
+                r##"<svg xmlns="http://www.w3.org/2000/svg"><defs><marker id="m"><circle r="1"/></marker></defs><path d="M0 0h1h1h1" marker-mid="url(#m)"/></svg>"##.to_string(),
+                "marker",
+            ),
+        ];
+
+        for (name, svg, expected_reason) in cases {
+            let path = temp_path(name);
+            std::fs::write(&path, svg).expect("write semantic-amplifier fixture");
+            let error = render_svg_content_preview_png(&path, 64)
+                .expect_err("semantic render amplification must fail closed")
+                .to_string();
+            assert!(
+                error.contains(expected_reason),
+                "expected {expected_reason:?} in {error:?}"
+            );
+            let _ = std::fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn eps_has_an_actionable_safe_renderer_unavailable_state() {
+        let path = temp_path("diagram.eps");
+        std::fs::write(&path, b"%!PS-Adobe-3.0\nshowpage\n").expect("write EPS fixture");
+
+        let profile = preview_profile(&path);
+        assert!(!profile.raw_fallback_allowed());
+        let preview = load_preview(&PreviewRequest {
+            path: path.clone(),
+            kind_hint: EntryKind::File,
+        });
+        assert!(preview.body.contains("safe isolated EPS renderer"));
+        assert!(preview.open_external);
 
         let _ = std::fs::remove_file(path);
     }

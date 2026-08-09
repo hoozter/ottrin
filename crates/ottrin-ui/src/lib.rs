@@ -967,6 +967,7 @@ struct PreviewJobResponse {
     office_source_generation: Option<ottrin_preview::OfficePreviewSourceGeneration>,
     request_id: u64,
     bytes: Option<Vec<u8>>,
+    error: Option<String>,
 }
 
 /// A UI request is distinct from the immutable cache entry it expects. A file
@@ -1841,6 +1842,7 @@ impl OttrinApp {
                             office_source_generation: req.office_source_generation,
                             request_id: req.request_id,
                             bytes: Some(cached),
+                            error: None,
                         });
                         continue;
                     }
@@ -1893,6 +1895,7 @@ impl OttrinApp {
                             office_source_generation: req.office_source_generation,
                             request_id: req.request_id,
                             bytes: Some(cached),
+                            error: None,
                         });
                         continue;
                     }
@@ -1943,6 +1946,7 @@ impl OttrinApp {
                             office_source_generation: req.office_source_generation,
                             request_id: req.request_id,
                             bytes: Some(cached),
+                            error: None,
                         });
                         continue;
                     }
@@ -2004,6 +2008,7 @@ impl OttrinApp {
                             office_source_generation: req.office_source_generation,
                             request_id: req.request_id,
                             bytes: Some(cached),
+                            error: None,
                         });
                         continue;
                     }
@@ -2058,6 +2063,18 @@ impl OttrinApp {
                         },
                     )
                 };
+                let error = if bytes.is_none() && ottrin_preview::is_svg_path(&req.path) {
+                    let target_dim = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                        PREVIEW_CACHE_BUCKET_XL
+                    } else {
+                        req.target_dim
+                    };
+                    ottrin_preview::render_svg_content_preview_png(&req.path, target_dim)
+                        .err()
+                        .map(|error| error.to_string())
+                } else {
+                    None
+                };
                 let _ = preview_res_tx.send(PreviewJobResponse {
                     slot: req.slot,
                     path: req.path,
@@ -2070,6 +2087,7 @@ impl OttrinApp {
                     office_source_generation: req.office_source_generation,
                     request_id: req.request_id,
                     bytes,
+                    error,
                 });
             }
         });
@@ -2405,6 +2423,30 @@ impl OttrinApp {
         corner_radius: u8,
     ) -> Option<egui::Image<'static>> {
         self.cached_image_preview_widget_for_page(path, max_width, max_height, corner_radius, 0)
+    }
+
+    fn cached_svg_preview_unavailable_reason(
+        &self,
+        path: &Path,
+        max_width: f32,
+        max_height: f32,
+    ) -> Option<String> {
+        if !ottrin_preview::is_svg_path(path) {
+            return None;
+        }
+        let max_dim = max_width.max(max_height);
+        let target_dim = if max_dim >= 900.0 {
+            PREVIEW_CACHE_BUCKET_XL
+        } else if max_dim >= 420.0 {
+            PREVIEW_CACHE_BUCKET_LARGE
+        } else {
+            PREVIEW_CACHE_BUCKET_SMALL
+        };
+        let cache_key = preview_cache_key_for_page(path, target_dim, 0);
+        self.image_preview_cache
+            .get(&cache_key)
+            .and_then(ImagePreviewCacheEntry::unavailable_reason)
+            .map(str::to_owned)
     }
 
     fn cached_image_preview_widget_for_page(
@@ -5957,7 +5999,7 @@ impl OttrinApp {
             }
             self.image_preview_cache.insert(
                 resp.cache_key,
-                ImagePreviewCacheEntry::from_response(resp.bytes),
+                ImagePreviewCacheEntry::from_response_with_reason(resp.bytes, resp.error),
             );
             changed = true;
         }
@@ -11289,7 +11331,14 @@ impl OttrinApp {
                                         }
                                     }
                                     if preview_widget.is_none() {
-                                        text_snippet = compact_preview_snippet(&preview, 8, 480);
+                                        let max_w = (ui.available_width() - 28.0).max(96.0);
+                                        text_snippet = self
+                                            .cached_svg_preview_unavailable_reason(
+                                                &entry.path,
+                                                max_w,
+                                                132.0,
+                                            )
+                                            .or_else(|| compact_preview_snippet(&preview, 8, 480));
                                     }
                                 }
 
@@ -13493,8 +13542,15 @@ impl OttrinApp {
                                     {
                                         ui.add(img);
                                     } else {
+                                        let unavailable = self
+                                            .cached_svg_preview_unavailable_reason(
+                                                &item.path, avail_w, max_h,
+                                            )
+                                            .unwrap_or_else(|| {
+                                                "Image preview unavailable".to_string()
+                                            });
                                         ui.label(
-                                            RichText::new("Image preview unavailable")
+                                            RichText::new(unavailable)
                                                 .size(10.5)
                                                 .color(c.text_muted),
                                         );
@@ -15432,7 +15488,15 @@ impl OttrinApp {
                         ) {
                             preview_widget = Some(img);
                         } else {
-                            let snippet = metadata_preview_snippet(&preview.body, 14, 900);
+                            let snippet = self
+                                .cached_svg_preview_unavailable_reason(
+                                    &entry.path,
+                                    max_preview_w,
+                                    max_preview_h,
+                                )
+                                .unwrap_or_else(|| {
+                                    metadata_preview_snippet(&preview.body, 14, 900)
+                                });
                             metadata_icon = Some(match preview.kind {
                                 PreviewKind::Pdf => MI_PICTURE_PDF,
                                 _ => MI_IMAGE,
@@ -16969,8 +17033,15 @@ impl OttrinApp {
                                                 ),
                                             );
                                         } else {
+                                            let unavailable = self
+                                                .cached_svg_preview_unavailable_reason(
+                                                    &path, max_w, max_h,
+                                                )
+                                                .unwrap_or_else(|| {
+                                                    "Image preview unavailable".to_string()
+                                                });
                                             ui.label(
-                                                RichText::new("Image preview unavailable")
+                                                RichText::new(unavailable)
                                                     .color(c.text_dim)
                                                     .size(11.0),
                                             );
@@ -21166,7 +21237,8 @@ fn compact_preview_snippet(
         | PreviewKind::StlMetadata
         | PreviewKind::ObjMetadata
         | PreviewKind::PlyMetadata
-        | PreviewKind::ThreeMfMetadata => &preview.body,
+        | PreviewKind::ThreeMfMetadata
+        | PreviewKind::EpsMetadata => &preview.body,
         PreviewKind::Image | PreviewKind::FolderMetadata | PreviewKind::Unsupported => return None,
     };
     let snippet = metadata_preview_snippet(source, max_lines, max_chars);
@@ -22750,6 +22822,7 @@ mod tests {
             office_source_generation: None,
             request_id: 1,
             bytes: Some(b"png".to_vec()),
+            error: None,
         };
 
         assert!(preview_response_matches_current_generation(&response));
@@ -22786,6 +22859,7 @@ mod tests {
             office_source_generation: None,
             request_id: 1,
             bytes: Some(b"first-generation-card".to_vec()),
+            error: None,
         };
         std::fs::hard_link(&source, &alias).expect("create source hard-link alias");
         std::fs::write(&alias, b"SQLite format 3\0next--generation")
@@ -22838,6 +22912,7 @@ mod tests {
             office_source_generation: None,
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
+            error: None,
         };
         assert!(!preview_response_matches_current_generation(&response));
         std::fs::remove_file(path).expect("remove OBJ");
@@ -22891,6 +22966,7 @@ mod tests {
             office_source_generation: None,
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
+            error: None,
         };
         assert!(!preview_response_matches_current_generation(&response));
         std::fs::remove_file(path).expect("remove PLY");
@@ -22932,6 +23008,7 @@ mod tests {
             office_source_generation: Some(middle_generation),
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
+            error: None,
         };
 
         assert!(
