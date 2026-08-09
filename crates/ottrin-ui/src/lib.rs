@@ -9610,6 +9610,7 @@ impl OttrinApp {
 
         let panel_rect = egui::TopBottomPanel::top("tab_row")
             .exact_height(CUSTOM_TITLEBAR_HEIGHT)
+            .show_separator_line(false)
             .frame(
                 Frame::new()
                     .fill(titlebar_bg)
@@ -10787,6 +10788,18 @@ impl OttrinApp {
                     });
                 }
             });
+
+        // Fill the shared rail/canvas boundary explicitly. At fractional display scaling,
+        // adjacent panel fills can otherwise expose the black clear color at the rounded edge.
+        let rail_boundary = Rect::from_min_max(
+            egui::pos2(
+                rail.response.rect.right() - 2.0,
+                rail.response.rect.top(),
+            ),
+            rail.response.rect.max,
+        );
+        ctx.layer_painter(rail.response.layer_id)
+            .rect_filled(rail_boundary, 0.0, c.smart_panel_bg);
 
         if let Some(path) = navigate_to {
             let tab_id = self.state.active_tab().id;
