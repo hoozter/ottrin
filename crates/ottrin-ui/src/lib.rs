@@ -16798,7 +16798,9 @@ impl OttrinApp {
                             if is_zoomable_document {
                                 if ui
                                     .small_button("Fit")
-                                    .on_hover_text("Fit the whole page or image in the inspector.")
+                                    .on_hover_text(
+                                        "Fit DOCX pages to the available width; fit other previews in the inspector.",
+                                    )
                                     .clicked()
                                 {
                                     self.preview.visual_fit = true;
@@ -16972,44 +16974,87 @@ impl OttrinApp {
                         }
                         PreviewKind::OfficeMetadata => {
                             if quick_inspector_uses_rendered_office_page(&path) {
-                                ScrollArea::both().drag_to_scroll(true).show(ui, |ui| {
-                                    let max_w = (ui.available_width() - 24.0).max(120.0);
-                                    let max_h = (ui.available_height() - 34.0).max(160.0);
+                                ui.scope(|ui| {
+                                    // DOCX is width-fitted, so a horizontal bar is never a
+                                    // valid affordance. The vertical bar reserves its own space
+                                    // instead of floating over the page or ready status.
+                                    ui.spacing_mut().scroll = egui::style::ScrollStyle::solid();
                                     let raster = self.cached_docx_raster_texture_load_result(
                                         ui.ctx(), &path, 0,
                                     );
-                                    if render_docx_raster_inspector_page(
-                                        ui,
-                                        raster.as_ref(),
-                                        self.preview.visual_fit,
-                                        self.preview.visual_zoom,
-                                        max_w,
-                                        max_h,
-                                    ) {
-                                        // Keep bounded extracted text alongside the completed
-                                        // raster. Pixels are not exposed through AT-SPI, so this
-                                        // makes the completed DOCX state deterministic for both
-                                        // accessibility and desktop QA instead of passing only
-                                        // while the asynchronous page image is still in flight.
-                                        render_document_body_preview(
-                                            ui,
-                                            c,
-                                            MI_DESCRIPTION,
-                                            &name,
-                                            &preview.body,
-                                        );
+                                    let scroll_area = if self.preview.visual_fit {
+                                        ScrollArea::vertical()
                                     } else {
-                                        // The bounded broker is asynchronous. Keep extracted
-                                        // DOCX text visible while its page image is in flight or
-                                        // if malformed input cannot be rendered.
-                                        render_docx_page_preview(
-                                            ui,
-                                            c,
-                                            &name,
-                                            &preview.body,
-                                            self.preview.visual_fit,
-                                            self.preview.visual_zoom,
-                                        );
+                                        ScrollArea::both()
+                                    };
+                                    let _scroll_output = scroll_area
+                                        .id_salt(("inspector_docx_page", &path))
+                                        .drag_to_scroll(true)
+                                        .auto_shrink([false, false])
+                                        .show(ui, |ui| {
+                                            let available_content_width = ui.available_width();
+                                            ui.set_min_width(available_content_width);
+                                            let raster_size = render_docx_raster_inspector_page(
+                                                ui,
+                                                raster.as_ref(),
+                                                self.preview.visual_fit,
+                                                self.preview.visual_zoom,
+                                                available_content_width,
+                                            );
+                                            let raster_rendered = raster_size.is_some();
+                                            let ready_document_body_in_scroll_content = if raster_rendered {
+                                                // Pixels are not exposed through AT-SPI. Keep the
+                                                // bounded extracted text and footer in this same
+                                                // reserved scroll region as the completed page.
+                                                preview_render::render_document_body_preview_in_scroll_content(
+                                                    ui,
+                                                    c,
+                                                    MI_DESCRIPTION,
+                                                    &name,
+                                                    &preview.body,
+                                                );
+                                                true
+                                            } else {
+                                                // The bounded broker is asynchronous. Keep
+                                                // extracted DOCX text scrollable while its page
+                                                // image is in flight or malformed input cannot be
+                                                // rendered.
+                                                render_docx_page_preview(
+                                                    ui,
+                                                    c,
+                                                    &name,
+                                                    &preview.body,
+                                                    self.preview.visual_fit,
+                                                    self.preview.visual_zoom,
+                                                );
+                                                false
+                                            };
+                                            (raster_rendered, ready_document_body_in_scroll_content)
+                                        });
+                                    #[cfg(test)]
+                                    {
+                                        let (page_rendered, ready_document_body_in_scroll_content) =
+                                            _scroll_output.inner;
+                                        record_docx_inspector_layout_event(if page_rendered {
+                                            DocxInspectorLayoutEvent::Raster {
+                                                solid_scrollbars: !ui.spacing().scroll.floating,
+                                                vertically_overflowing: _scroll_output.content_size.y
+                                                    > _scroll_output.inner_rect.height(),
+                                                content_width_fits_viewport: _scroll_output
+                                                    .content_size
+                                                    .x
+                                                    <= _scroll_output.inner_rect.width() + 1.0,
+                                                horizontally_overflowing: _scroll_output.content_size.x
+                                                    > _scroll_output.inner_rect.width() + 1.0,
+                                                ready_document_body_in_scroll_content,
+                                            }
+                                        } else {
+                                            DocxInspectorLayoutEvent::Fallback {
+                                                solid_scrollbars: !ui.spacing().scroll.floating,
+                                                vertically_overflowing: _scroll_output.content_size.y
+                                                    > _scroll_output.inner_rect.height(),
+                                            }
+                                        });
                                     }
                                 });
                             } else {
@@ -20252,8 +20297,27 @@ enum DocxInspectorPaintEvent {
 }
 
 #[cfg(test)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DocxInspectorLayoutEvent {
+    Raster {
+        solid_scrollbars: bool,
+        vertically_overflowing: bool,
+        content_width_fits_viewport: bool,
+        horizontally_overflowing: bool,
+        ready_document_body_in_scroll_content: bool,
+    },
+    Fallback {
+        solid_scrollbars: bool,
+        vertically_overflowing: bool,
+    },
+}
+
+#[cfg(test)]
 thread_local! {
     static DOCX_INSPECTOR_PAINT_EVENTS: std::cell::RefCell<Vec<DocxInspectorPaintEvent>> = const {
+        std::cell::RefCell::new(Vec::new())
+    };
+    static DOCX_INSPECTOR_LAYOUT_EVENTS: std::cell::RefCell<Vec<DocxInspectorLayoutEvent>> = const {
         std::cell::RefCell::new(Vec::new())
     };
 }
@@ -20266,6 +20330,16 @@ fn record_docx_inspector_paint_event(event: DocxInspectorPaintEvent) {
 #[cfg(test)]
 fn take_docx_inspector_paint_events() -> Vec<DocxInspectorPaintEvent> {
     DOCX_INSPECTOR_PAINT_EVENTS.with(|events| std::mem::take(&mut *events.borrow_mut()))
+}
+
+#[cfg(test)]
+fn record_docx_inspector_layout_event(event: DocxInspectorLayoutEvent) {
+    DOCX_INSPECTOR_LAYOUT_EVENTS.with(|events| events.borrow_mut().push(event));
+}
+
+#[cfg(test)]
+fn take_docx_inspector_layout_events() -> Vec<DocxInspectorLayoutEvent> {
+    DOCX_INSPECTOR_LAYOUT_EVENTS.with(|events| std::mem::take(&mut *events.borrow_mut()))
 }
 
 fn submit_docx_raster(ui: &mut egui::Ui, image: egui::Image<'static>) -> egui::Response {
@@ -20288,27 +20362,22 @@ fn render_docx_raster_inspector_page(
     visual_fit: bool,
     visual_zoom: f32,
     max_width: f32,
-    max_height: f32,
-) -> bool {
+) -> Option<Vec2> {
     let Some(Ok(egui::load::TexturePoll::Ready { texture })) = texture_load_result else {
-        return false;
+        return None;
     };
     let texture = *texture;
-    let image = if visual_fit {
-        egui::Image::from_texture(texture)
-            .max_width(max_width)
-            .max_height(max_height)
-            .corner_radius(8)
+    let display_size = if visual_fit {
+        texture.size * preview_render::docx_width_fit_scale(texture.size.x, max_width)
     } else {
-        egui::Image::from_texture(texture)
-            .fit_to_exact_size(texture.size * visual_zoom)
-            .corner_radius(8)
+        texture.size * visual_zoom.clamp(0.1, 8.0)
     };
-    ui.vertical_centered(|ui| {
-        let _ = submit_docx_raster(ui, image);
-    });
+    let image = egui::Image::from_texture(texture)
+        .fit_to_exact_size(display_size)
+        .corner_radius(8);
+    let response = ui.vertical_centered(|ui| submit_docx_raster(ui, image));
     let _ = expose_docx_raster_ready(ui);
-    true
+    Some(response.inner.rect.size())
 }
 
 struct SmartPanelIconButton<'a> {
@@ -22391,14 +22460,8 @@ mod tests {
             |ctx| {
                 egui::CentralPanel::default().show(ctx, |ui| {
                     let raster = app.cached_docx_raster_texture_load_result(ctx, path, page_index);
-                    let _ = render_docx_raster_inspector_page(
-                        ui,
-                        raster.as_ref(),
-                        true,
-                        1.0,
-                        600.0,
-                        440.0,
-                    );
+                    let _ =
+                        render_docx_raster_inspector_page(ui, raster.as_ref(), true, 1.0, 600.0);
                 });
             },
         );
@@ -22414,8 +22477,12 @@ mod tests {
     }
 
     fn ready_docx_test_raster(color: [u8; 4]) -> Vec<u8> {
+        ready_docx_test_raster_with_dimensions(2, 2, color)
+    }
+
+    fn ready_docx_test_raster_with_dimensions(width: u32, height: u32, color: [u8; 4]) -> Vec<u8> {
         let mut png = Vec::new();
-        image::RgbaImage::from_pixel(2, 2, image::Rgba(color))
+        image::RgbaImage::from_pixel(width, height, image::Rgba(color))
             .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
             .expect("encode ready DOCX raster");
         png
@@ -23353,6 +23420,126 @@ mod tests {
         assert_eq!(
             preview_render::scrollable_preview_height(260.0, 160.0),
             230.0
+        );
+    }
+
+    #[test]
+    fn docx_width_fit_recomputes_on_resize_and_never_upscales() {
+        let narrow_scale = preview_render::docx_width_fit_scale(816.0, 640.0);
+        assert_eq!(narrow_scale, 640.0 / 816.0);
+        assert!(
+            1056.0 * narrow_scale > 480.0,
+            "a portrait DOCX fitted to this width must naturally overflow vertically"
+        );
+        assert_eq!(
+            preview_render::docx_width_fit_scale(816.0, 1200.0),
+            1.0,
+            "width fit never upscales above the natural 100% raster size"
+        );
+    }
+
+    #[test]
+    fn docx_overlay_keeps_pending_fallback_in_the_fit_or_manual_scroll_container() {
+        let fixture = tempfile::Builder::new()
+            .prefix("ottrin-docx-scroll-container-")
+            .tempdir()
+            .expect("create isolated DOCX fixture root");
+        let path = fixture.path().join("report.docx");
+        std::fs::write(&path, b"DOCX scroll fixture").expect("write DOCX fixture");
+
+        let mut app = OttrinApp::default();
+        set_docx_quick_inspector_state(&mut app, &path);
+        app.preview.data.as_mut().expect("DOCX preview state").body = format!(
+            "Filetype: DOCX document\n\nExtracted text:\n{}",
+            "long extracted fallback text ".repeat(2_000)
+        );
+        let ctx = docx_test_context(Arc::new(AtomicBool::new(false)));
+
+        render_docx_quick_inspector_frame(&mut app, &ctx);
+        assert_eq!(
+            take_docx_inspector_layout_events(),
+            vec![DocxInspectorLayoutEvent::Fallback {
+                solid_scrollbars: true,
+                vertically_overflowing: true,
+            }],
+            "the pending DOCX fallback must remain vertically scrollable in width-fit mode without a horizontal track"
+        );
+
+        app.preview.visual_fit = false;
+        app.preview.visual_zoom = 1.5;
+        render_docx_quick_inspector_frame(&mut app, &ctx);
+        assert_eq!(
+            take_docx_inspector_layout_events(),
+            vec![DocxInspectorLayoutEvent::Fallback {
+                solid_scrollbars: true,
+                vertically_overflowing: true,
+            }],
+            "manual zoom must keep the pending fallback inside a two-axis scroll container"
+        );
+    }
+
+    #[test]
+    fn docx_overlay_applies_fit_and_manual_scroll_axes_to_the_rendered_broker_page() {
+        let fixture = tempfile::Builder::new()
+            .prefix("ottrin-docx-rendered-scroll-container-")
+            .tempdir()
+            .expect("create isolated DOCX fixture root");
+        let path = fixture.path().join("report.docx");
+        std::fs::write(&path, b"DOCX rendered scroll fixture").expect("write DOCX fixture");
+        let generation = ottrin_preview::office_preview_source_generation(&path)
+            .expect("capture DOCX generation");
+        let cache_key = preview_cache_key_for_page_with_generations(
+            &path,
+            PREVIEW_CACHE_ORIGINAL,
+            0,
+            None,
+            None,
+            None,
+            Some(&generation),
+        );
+
+        let mut app = OttrinApp::default();
+        set_docx_quick_inspector_state(&mut app, &path);
+        app.preview.data.as_mut().expect("DOCX preview state").body = format!(
+            "Filetype: DOCX document\n\nExtracted text:\n{}",
+            "ready extracted text in the shared scroll region ".repeat(2_000)
+        );
+        app.image_preview_cache.insert(
+            cache_key,
+            ImagePreviewCacheEntry::from_response(Some(ready_docx_test_raster_with_dimensions(
+                1_200,
+                1_600,
+                [12, 34, 56, 255],
+            ))),
+        );
+        let ctx = docx_test_context(Arc::new(AtomicBool::new(true)));
+
+        render_docx_quick_inspector_frame(&mut app, &ctx);
+        assert_eq!(
+            take_docx_inspector_layout_events(),
+            vec![DocxInspectorLayoutEvent::Raster {
+                solid_scrollbars: true,
+                vertically_overflowing: true,
+                content_width_fits_viewport: true,
+                horizontally_overflowing: false,
+                ready_document_body_in_scroll_content: true,
+            }],
+            "the rendered broker page must use the width-fit vertical-only container"
+        );
+
+        app.preview.visual_fit = false;
+        app.preview.visual_zoom = 1.5;
+        render_docx_quick_inspector_frame(&mut app, &ctx);
+        assert_eq!(
+            take_docx_inspector_layout_events(),
+            vec![DocxInspectorLayoutEvent::Raster {
+                solid_scrollbars: true,
+                vertically_overflowing: true,
+                content_width_fits_viewport: false,
+                horizontally_overflowing: true,
+                ready_document_body_in_scroll_content: true,
+            }],
+            "manual zoom must make both scroll axes available to the rendered broker page"
         );
     }
 

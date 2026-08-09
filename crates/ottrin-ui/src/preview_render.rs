@@ -129,6 +129,13 @@ pub(crate) fn scrollable_preview_height(available_height: f32, minimum_height: f
     (available_height - 30.0).max(minimum_height)
 }
 
+pub(crate) fn docx_width_fit_scale(page_width: f32, available_width: f32) -> f32 {
+    if page_width <= 0.0 {
+        return 1.0;
+    }
+    (available_width.max(0.0) / page_width).min(1.0)
+}
+
 fn render_scrollable_preview_text(
     ui: &mut egui::Ui,
     text: &str,
@@ -195,6 +202,33 @@ pub(crate) fn render_document_body_preview(
     }
 }
 
+/// Renders bounded document text as content of an existing scroll region.
+/// The caller owns scrolling so a paired visual raster and its accessible text
+/// share one geometry and scrollbar reservation.
+pub(crate) fn render_document_body_preview_in_scroll_content(
+    ui: &mut egui::Ui,
+    c: Colors,
+    icon: &str,
+    name: &str,
+    body: &str,
+) {
+    let (metadata, extracted) = split_preview_extracted_text(body);
+    if let Some(text) = extracted.filter(|text| !text.is_empty()) {
+        ui.add(
+            egui::Label::new(
+                RichText::new(text)
+                    .font(FontId::monospace(12.0))
+                    .color(c.text),
+            )
+            .wrap()
+            .selectable(true),
+        );
+        render_preview_footer(ui, c, name, metadata);
+    } else {
+        render_metadata_card_preview(ui, c, icon, name, metadata);
+    }
+}
+
 #[allow(deprecated)]
 pub(crate) fn render_docx_page_preview(
     ui: &mut egui::Ui,
@@ -212,9 +246,7 @@ pub(crate) fn render_docx_page_preview(
 
     const PAGE_WIDTH: f32 = 816.0;
     const PAGE_HEIGHT: f32 = 1056.0;
-    let fit_scale = (ui.available_width() / PAGE_WIDTH)
-        .min((ui.available_height().max(240.0) - 8.0) / PAGE_HEIGHT)
-        .clamp(0.2, 1.0);
+    let fit_scale = docx_width_fit_scale(PAGE_WIDTH, ui.available_width());
     let scale = if fit { fit_scale } else { zoom.clamp(0.1, 8.0) };
     let page_size = Vec2::new(PAGE_WIDTH * scale, PAGE_HEIGHT * scale);
     let margin = 72.0 * scale;
