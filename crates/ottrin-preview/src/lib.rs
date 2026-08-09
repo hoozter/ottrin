@@ -591,10 +591,74 @@ pub struct PreviewRequest {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SpreadsheetPreview {
+    pub sheets: Vec<SpreadsheetSheet>,
+    pub omissions: Vec<SpreadsheetOmission>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SpreadsheetSheet {
+    pub id: String,
+    pub name: String,
+    pub cells: Vec<SpreadsheetCell>,
+    pub omissions: Vec<SpreadsheetOmission>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SpreadsheetCell {
+    pub row: usize,
+    pub column: usize,
+    pub text: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SpreadsheetOmission {
+    pub reason: SpreadsheetOmissionReason,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SpreadsheetOmissionReason {
+    SparseRowGap {
+        from: usize,
+        to: usize,
+    },
+    SparseColumnGap {
+        from: usize,
+        to: usize,
+    },
+    SheetLimit {
+        omitted: usize,
+    },
+    /// Inclusive zero-based coordinate range outside the preview's row bound.
+    RowLimit {
+        from: usize,
+        to: usize,
+    },
+    /// Inclusive zero-based coordinate range outside the preview's column bound.
+    ColumnLimit {
+        from: usize,
+        to: usize,
+    },
+    CellLimit {
+        omitted: usize,
+    },
+    TextLimit {
+        omitted: usize,
+    },
+    /// A shared-string cell was intentionally withheld rather than displaying
+    /// its numeric index as though it were user content.
+    SharedStringUnavailable {
+        index: usize,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PreviewData {
     pub title: String,
     pub kind: PreviewKind,
     pub body: String,
+    #[serde(default)]
+    pub spreadsheet: Option<SpreadsheetPreview>,
     pub open_external: bool,
 }
 
@@ -2381,6 +2445,7 @@ fn preview_text(title: String, path: &Path) -> PreviewData {
                         title,
                         kind: PreviewKind::Unsupported,
                         body: format!("Failed to read file: {err}"),
+                        spreadsheet: None,
                         open_external: true,
                     };
                 }
@@ -2393,6 +2458,7 @@ fn preview_text(title: String, path: &Path) -> PreviewData {
                     title,
                     kind: PreviewKind::Unsupported,
                     body: format!("Failed to read file: {err}"),
+                    spreadsheet: None,
                     open_external: true,
                 };
             }
@@ -2430,6 +2496,7 @@ fn preview_text(title: String, path: &Path) -> PreviewData {
                         title,
                         kind: PreviewKind::Text,
                         body: format!("{}{}{}", lines.join("\n"), EXTRACTED_TEXT_MARKER, text),
+                        spreadsheet: None,
                         open_external: false,
                     }
                 }
@@ -2442,6 +2509,7 @@ fn preview_text(title: String, path: &Path) -> PreviewData {
                         file_kind_label(path),
                         "Text preview unavailable."
                     ),
+                    spreadsheet: None,
                     open_external: true,
                 },
             }
@@ -2450,6 +2518,7 @@ fn preview_text(title: String, path: &Path) -> PreviewData {
             title,
             kind: PreviewKind::Unsupported,
             body: format!("Failed to read file: {err}"),
+            spreadsheet: None,
             open_external: true,
         },
     }
@@ -2481,6 +2550,7 @@ fn preview_image(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::Image,
         body: lines.join("\n"),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -2494,6 +2564,7 @@ fn preview_camera_raw(title: String, path: &Path) -> PreviewData {
             "Camera RAW image.",
             Some("Visual preview uses a bounded embedded JPEG when available."),
         ),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -2507,6 +2578,7 @@ fn preview_affinity(title: String, path: &Path) -> PreviewData {
             "Affinity document.",
             Some("Best-effort embedded preview — may differ from the saved canvas."),
         ),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -2535,6 +2607,7 @@ fn preview_sqlite(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::SqliteMetadata,
         body: lines.join("\n"),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -2559,6 +2632,7 @@ fn preview_stl(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::StlMetadata,
         body: lines.join("\n"),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -2591,6 +2665,7 @@ fn preview_obj(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::ObjMetadata,
         body: lines.join("\n"),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -2620,6 +2695,7 @@ fn preview_ply(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::PlyMetadata,
         body: lines.join("\n"),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -2657,6 +2733,7 @@ fn preview_3mf(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::ThreeMfMetadata,
         body: lines.join("\n"),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -2684,6 +2761,7 @@ fn preview_font(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::FontMetadata,
         body: lines.join("\n"),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -3685,6 +3763,7 @@ fn preview_folder(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::FolderMetadata,
                 body: lines.join("\n"),
+                spreadsheet: None,
                 open_external: false,
             }
         }
@@ -3692,6 +3771,7 @@ fn preview_folder(title: String, path: &Path) -> PreviewData {
             title,
             kind: PreviewKind::FolderMetadata,
             body: format!("Folder metadata unavailable: {err}"),
+            spreadsheet: None,
             open_external: false,
         },
     }
@@ -3948,6 +4028,7 @@ fn preview_pdf(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::Pdf,
                 body,
+                spreadsheet: None,
                 open_external: true,
             }
         }
@@ -3961,6 +4042,7 @@ fn preview_pdf(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::Pdf,
                 body: info,
+                spreadsheet: None,
                 open_external: true,
             }
         }
@@ -4057,6 +4139,7 @@ fn preview_audio(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::AudioMetadata,
                 body: lines.join("\n"),
+                spreadsheet: None,
                 open_external: true,
             }
         }
@@ -4066,6 +4149,7 @@ fn preview_audio(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::AudioMetadata,
                 body: info,
+                spreadsheet: None,
                 open_external: true,
             }
         }
@@ -4092,6 +4176,7 @@ fn preview_video(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::VideoMetadata,
         body: lines.join("\n"),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -4132,6 +4217,7 @@ fn preview_archive(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::ArchiveMetadata,
         body: info,
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -4148,6 +4234,7 @@ fn preview_tar(title: String, path: &Path) -> PreviewData {
             title,
             kind: PreviewKind::ArchiveMetadata,
             body: info,
+            spreadsheet: None,
             open_external: true,
         };
     }
@@ -4158,6 +4245,7 @@ fn preview_tar(title: String, path: &Path) -> PreviewData {
             title,
             kind: PreviewKind::ArchiveMetadata,
             body: info,
+            spreadsheet: None,
             open_external: true,
         };
     };
@@ -4182,6 +4270,7 @@ fn preview_tar_gz(title: String, path: &Path) -> PreviewData {
             title,
             kind: PreviewKind::ArchiveMetadata,
             body: info,
+            spreadsheet: None,
             open_external: true,
         };
     }
@@ -4191,6 +4280,7 @@ fn preview_tar_gz(title: String, path: &Path) -> PreviewData {
             title,
             kind: PreviewKind::ArchiveMetadata,
             body: info,
+            spreadsheet: None,
             open_external: true,
         };
     };
@@ -4232,6 +4322,7 @@ fn preview_tar_reader<R: std::io::Read>(
                     title,
                     kind: PreviewKind::ArchiveMetadata,
                     body: info,
+                    spreadsheet: None,
                     open_external: true,
                 };
             }
@@ -4249,6 +4340,7 @@ fn preview_tar_reader<R: std::io::Read>(
                     title,
                     kind: PreviewKind::ArchiveMetadata,
                     body: info,
+                    spreadsheet: None,
                     open_external: true,
                 };
             }
@@ -4265,6 +4357,7 @@ fn preview_tar_reader<R: std::io::Read>(
                         title,
                         kind: PreviewKind::ArchiveMetadata,
                         body: info,
+                        spreadsheet: None,
                         open_external: true,
                     };
                 }
@@ -4282,6 +4375,7 @@ fn preview_tar_reader<R: std::io::Read>(
                             title,
                             kind: PreviewKind::ArchiveMetadata,
                             body: info,
+                            spreadsheet: None,
                             open_external: true,
                         };
                     }
@@ -4297,6 +4391,7 @@ fn preview_tar_reader<R: std::io::Read>(
                         title,
                         kind: PreviewKind::ArchiveMetadata,
                         body: info,
+                        spreadsheet: None,
                         open_external: true,
                     };
                 }
@@ -4322,6 +4417,7 @@ fn preview_tar_reader<R: std::io::Read>(
                         title,
                         kind: PreviewKind::ArchiveMetadata,
                         body: info,
+                        spreadsheet: None,
                         open_external: true,
                     };
                 }
@@ -4347,6 +4443,7 @@ fn preview_tar_reader<R: std::io::Read>(
                     title,
                     kind: PreviewKind::ArchiveMetadata,
                     body: info,
+                    spreadsheet: None,
                     open_external: true,
                 };
             }
@@ -4364,6 +4461,7 @@ fn preview_tar_reader<R: std::io::Read>(
                 title,
                 kind: PreviewKind::ArchiveMetadata,
                 body: info,
+                spreadsheet: None,
                 open_external: true,
             };
         }
@@ -4397,6 +4495,7 @@ fn preview_tar_reader<R: std::io::Read>(
         title,
         kind: PreviewKind::ArchiveMetadata,
         body: lines.join("\n"),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -4462,6 +4561,7 @@ fn preview_zip(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::ArchiveMetadata,
                 body: lines.join("\n"),
+                spreadsheet: None,
                 open_external: true,
             }
         }
@@ -4475,6 +4575,7 @@ fn preview_zip(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::ArchiveMetadata,
                 body: info,
+                spreadsheet: None,
                 open_external: true,
             }
         }
@@ -4490,6 +4591,7 @@ fn epub_error(title: String, path: &Path) -> PreviewData {
             "EPUB ebook.",
             Some("Could not read EPUB metadata safely."),
         ),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -4576,6 +4678,7 @@ fn preview_epub(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::ArchiveMetadata,
         body: lines.join("\n"),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -5136,6 +5239,12 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
         ];
         let total_parts = archive.len();
         lines.push(format!("Internal parts: {total_parts}"));
+        if matches!(ext.as_str(), "xlsx" | "xlsm" | "ods") {
+            lines.push(
+                "Spreadsheet preview limits: up to 12 worksheets, 4,096 populated cells per worksheet, and 1,024 characters per cell."
+                    .to_string(),
+            );
+        }
 
         if let Ok(meta) = std::fs::metadata(path) {
             lines.push(format!("Size: {}", format_size(meta.len())));
@@ -5152,6 +5261,11 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
             "ods" => extract_ods_text(&mut archive),
             _ => None,
         };
+        let spreadsheet = match ext.as_str() {
+            "xlsx" | "xlsm" => extract_xlsx_spreadsheet(&mut archive),
+            "ods" => extract_ods_spreadsheet(&mut archive),
+            _ => None,
+        };
         let body = if let Some(text) = extracted_text {
             format!(
                 "{}{EXTRACTED_TEXT_MARKER}{}",
@@ -5166,6 +5280,7 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
             title,
             kind: PreviewKind::OfficeMetadata,
             body,
+            spreadsheet,
             open_external: true,
         };
     }
@@ -5179,6 +5294,7 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::OfficeMetadata,
         body: info,
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -5847,6 +5963,49 @@ fn append_ods_cell_chunk(
     }
 }
 
+fn append_bounded_spreadsheet_cell_chunk(
+    cell: &mut String,
+    omitted: &mut usize,
+    chunk: &str,
+    limit: usize,
+) -> Option<()> {
+    let remaining = limit.saturating_sub(cell.chars().count());
+    let mut characters = chunk.chars();
+    for character in characters.by_ref().take(remaining) {
+        cell.push(character);
+    }
+    *omitted = omitted.checked_add(characters.count())?;
+    Some(())
+}
+
+#[derive(Debug, Clone)]
+struct BoundedSpreadsheetCellText {
+    text: String,
+    retained: usize,
+    omitted: usize,
+}
+
+impl BoundedSpreadsheetCellText {
+    fn new() -> Self {
+        Self {
+            text: String::new(),
+            retained: 0,
+            omitted: 0,
+        }
+    }
+
+    fn append(&mut self, chunk: &str, limit: usize) -> Option<()> {
+        let remaining = limit.saturating_sub(self.retained);
+        let mut characters = chunk.chars();
+        for character in characters.by_ref().take(remaining) {
+            self.text.push(character);
+            self.retained = self.retained.checked_add(1)?;
+        }
+        self.omitted = self.omitted.checked_add(characters.count())?;
+        Some(())
+    }
+}
+
 fn ods_attributes_are_well_formed(
     reader: &quick_xml::NsReader<&[u8]>,
     event: &quick_xml::events::BytesStart<'_>,
@@ -6126,7 +6285,271 @@ fn extract_ods_text<R: std::io::Read + std::io::Seek>(
         }
     }
 
-    normalized_preview_text(&out)
+    bounded_sheet_text(&out)
+}
+
+/// Builds the inspector-only spreadsheet payload after the established ODS
+/// extractor has validated the archive. Unlike the legacy text card this never
+/// serializes cell boundaries into tabs or lines.
+fn extract_ods_spreadsheet<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> Option<SpreadsheetPreview> {
+    const MAX_SHEETS: usize = 12;
+    const MAX_CELLS: usize = 4_096;
+    const MAX_CELL_CHARS: usize = 1_024;
+
+    // Keep the typed path fail-closed under exactly the XML validation rules
+    // already exercised by the legacy extracted-text reader.
+    extract_ods_text(archive)?;
+    let xml = zip_entry_text(archive, "content.xml")?;
+    let mut reader = quick_xml::NsReader::from_str(&xml);
+    reader.config_mut().trim_text(false);
+    reader.config_mut().check_comments = true;
+    let mut sheets = Vec::new();
+    let mut omissions = Vec::new();
+    let mut active = None::<SpreadsheetSheet>;
+    let mut next_row = 0usize;
+    let mut row_start = 0usize;
+    let mut row_repeat = 1usize;
+    let mut column = 0usize;
+    let mut cell_start = 0usize;
+    let mut cell_repeat = 1usize;
+    let mut cell_text = String::new();
+    let mut cell_text_omitted = 0usize;
+    let mut in_cell = false;
+    let mut in_paragraph = false;
+    let mut omitted_cells = 0usize;
+
+    loop {
+        let (namespace, event) = reader.read_resolved_event().ok()?;
+        let table_namespace = matches!(namespace, quick_xml::name::ResolveResult::Bound(namespace) if namespace.as_ref() == ODS_TABLE_NAMESPACE);
+        let text_namespace = matches!(namespace, quick_xml::name::ResolveResult::Bound(namespace) if namespace.as_ref() == ODS_TEXT_NAMESPACE);
+        match event {
+            quick_xml::events::Event::Start(event) => {
+                match (table_namespace, text_namespace, event.local_name().as_ref()) {
+                    (true, _, b"table") => {
+                        let name = ods_table_attribute(&reader, &event, b"name")
+                            .ok()?
+                            .unwrap_or_else(|| format!("Sheet {}", sheets.len() + 1));
+                        if sheets.len() < MAX_SHEETS {
+                            active = Some(SpreadsheetSheet {
+                                id: sheets.len().to_string(),
+                                name,
+                                cells: Vec::new(),
+                                omissions: Vec::new(),
+                            });
+                            next_row = 0;
+                        } else {
+                            omissions.push(SpreadsheetOmission {
+                                reason: SpreadsheetOmissionReason::SheetLimit { omitted: 1 },
+                            });
+                        }
+                    }
+                    (true, _, b"table-row") if active.is_some() => {
+                        row_start = next_row;
+                        row_repeat = ods_repeat_value(&reader, &event, b"number-rows-repeated")?;
+                        column = 0;
+                    }
+                    (true, _, b"table-cell" | b"covered-table-cell") if active.is_some() => {
+                        cell_start = column;
+                        cell_repeat =
+                            ods_repeat_value(&reader, &event, b"number-columns-repeated")?;
+                        cell_text.clear();
+                        cell_text_omitted = 0;
+                        in_cell = true;
+                        in_paragraph = false;
+                    }
+                    (_, true, b"p") if in_cell => {
+                        if !cell_text.is_empty() {
+                            append_bounded_spreadsheet_cell_chunk(
+                                &mut cell_text,
+                                &mut cell_text_omitted,
+                                "\n",
+                                MAX_CELL_CHARS,
+                            )?;
+                        }
+                        in_paragraph = true;
+                    }
+                    (_, true, b"line-break") if in_cell && in_paragraph => {
+                        append_bounded_spreadsheet_cell_chunk(
+                            &mut cell_text,
+                            &mut cell_text_omitted,
+                            "\n",
+                            MAX_CELL_CHARS,
+                        )?
+                    }
+                    (_, true, b"tab") if in_cell && in_paragraph => {
+                        append_bounded_spreadsheet_cell_chunk(
+                            &mut cell_text,
+                            &mut cell_text_omitted,
+                            "\t",
+                            MAX_CELL_CHARS,
+                        )?
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::Empty(event) => {
+                match (table_namespace, text_namespace, event.local_name().as_ref()) {
+                    (true, _, b"table-row") if active.is_some() => {
+                        let repeat = ods_repeat_value(&reader, &event, b"number-rows-repeated")?;
+                        let (_, omitted_range) =
+                            spreadsheet_coordinate_range(next_row, repeat, MAX_SPREADSHEET_ROWS)?;
+                        if let (Some(sheet), Some((from, to))) = (active.as_mut(), omitted_range) {
+                            sheet.omissions.push(SpreadsheetOmission {
+                                reason: SpreadsheetOmissionReason::RowLimit { from, to },
+                            });
+                        }
+                        next_row = next_row.checked_add(repeat)?;
+                    }
+                    (true, _, b"table-cell" | b"covered-table-cell") if active.is_some() => {
+                        let repeat = ods_repeat_value(&reader, &event, b"number-columns-repeated")?;
+                        let (_, omitted_range) =
+                            spreadsheet_coordinate_range(column, repeat, MAX_SPREADSHEET_COLUMNS)?;
+                        if let (Some(sheet), Some((from, to))) = (active.as_mut(), omitted_range) {
+                            sheet.omissions.push(SpreadsheetOmission {
+                                reason: SpreadsheetOmissionReason::ColumnLimit { from, to },
+                            });
+                        }
+                        column = column.checked_add(repeat)?;
+                    }
+                    (_, true, b"line-break") if in_cell && in_paragraph => {
+                        append_bounded_spreadsheet_cell_chunk(
+                            &mut cell_text,
+                            &mut cell_text_omitted,
+                            "\n",
+                            MAX_CELL_CHARS,
+                        )?
+                    }
+                    (_, true, b"tab") if in_cell && in_paragraph => {
+                        append_bounded_spreadsheet_cell_chunk(
+                            &mut cell_text,
+                            &mut cell_text_omitted,
+                            "\t",
+                            MAX_CELL_CHARS,
+                        )?
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::Text(event) if in_cell && in_paragraph => {
+                append_bounded_spreadsheet_cell_chunk(
+                    &mut cell_text,
+                    &mut cell_text_omitted,
+                    &event.xml_content().ok()?,
+                    MAX_CELL_CHARS,
+                )?
+            }
+            quick_xml::events::Event::CData(event) if in_cell && in_paragraph => {
+                append_bounded_spreadsheet_cell_chunk(
+                    &mut cell_text,
+                    &mut cell_text_omitted,
+                    &event.decode().ok()?,
+                    MAX_CELL_CHARS,
+                )?
+            }
+            quick_xml::events::Event::GeneralRef(event) if in_cell && in_paragraph => {
+                append_bounded_spreadsheet_cell_chunk(
+                    &mut cell_text,
+                    &mut cell_text_omitted,
+                    &quick_xml::escape::unescape(&format!("&{};", event.decode().ok()?)).ok()?,
+                    MAX_CELL_CHARS,
+                )?
+            }
+            quick_xml::events::Event::End(event) => {
+                match (table_namespace, event.local_name().as_ref()) {
+                    (true, b"table-cell" | b"covered-table-cell") if in_cell => {
+                        if let Some(sheet) = active.as_mut() {
+                            // Validate the declared repetition before narrowing it to the
+                            // product coordinate bounds. A hostile cardinality must not become
+                            // harmless merely because only a prefix is displayable.
+                            let declared_text_omitted = cell_text_omitted
+                                .checked_mul(row_repeat)?
+                                .checked_mul(cell_repeat)?;
+                            let (retained_rows, omitted_rows) = spreadsheet_coordinate_range(
+                                row_start,
+                                row_repeat,
+                                MAX_SPREADSHEET_ROWS,
+                            )?;
+                            let (retained_columns, omitted_columns) = spreadsheet_coordinate_range(
+                                cell_start,
+                                cell_repeat,
+                                MAX_SPREADSHEET_COLUMNS,
+                            )?;
+                            if let Some((from, to)) = omitted_rows {
+                                sheet.omissions.push(SpreadsheetOmission {
+                                    reason: SpreadsheetOmissionReason::RowLimit { from, to },
+                                });
+                            }
+                            if let Some((from, to)) = omitted_columns {
+                                sheet.omissions.push(SpreadsheetOmission {
+                                    reason: SpreadsheetOmissionReason::ColumnLimit { from, to },
+                                });
+                            }
+                            let occurrences = retained_rows.checked_mul(retained_columns)?;
+                            if cell_text_omitted > 0 {
+                                sheet.omissions.push(SpreadsheetOmission {
+                                    reason: SpreadsheetOmissionReason::TextLimit {
+                                        omitted: declared_text_omitted
+                                            .min(cell_text_omitted.checked_mul(occurrences)?),
+                                    },
+                                });
+                            }
+                            if !cell_text.is_empty() {
+                                let remaining = MAX_CELLS.saturating_sub(sheet.cells.len());
+                                let materialized = occurrences.min(remaining);
+                                for offset in 0..materialized {
+                                    sheet.cells.push(SpreadsheetCell {
+                                        row: row_start.checked_add(offset / retained_columns)?,
+                                        column: cell_start
+                                            .checked_add(offset % retained_columns)?,
+                                        text: cell_text.clone(),
+                                    });
+                                }
+                                omitted_cells =
+                                    omitted_cells.checked_add(occurrences - materialized)?;
+                            }
+                        }
+                        column = cell_start.checked_add(cell_repeat)?;
+                        in_cell = false;
+                        in_paragraph = false;
+                        cell_text_omitted = 0;
+                    }
+                    (_, b"p") if in_cell && in_paragraph => in_paragraph = false,
+                    (true, b"table-row") if active.is_some() => {
+                        let (_, omitted_range) = spreadsheet_coordinate_range(
+                            row_start,
+                            row_repeat,
+                            MAX_SPREADSHEET_ROWS,
+                        )?;
+                        if let (Some(sheet), Some((from, to))) = (active.as_mut(), omitted_range) {
+                            sheet.omissions.push(SpreadsheetOmission {
+                                reason: SpreadsheetOmissionReason::RowLimit { from, to },
+                            });
+                        }
+                        next_row = row_start.checked_add(row_repeat)?
+                    }
+                    (true, b"table") => {
+                        if let Some(mut sheet) = active.take() {
+                            if omitted_cells > 0 {
+                                sheet.omissions.push(SpreadsheetOmission {
+                                    reason: SpreadsheetOmissionReason::CellLimit {
+                                        omitted: omitted_cells,
+                                    },
+                                });
+                                omitted_cells = 0;
+                            }
+                            sheets.push(sheet);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::Eof => break,
+            _ => {}
+        }
+    }
+    (!sheets.is_empty()).then_some(SpreadsheetPreview { sheets, omissions })
 }
 
 fn extract_xlsx_text<R: std::io::Read + std::io::Seek>(
@@ -6150,7 +6573,270 @@ fn extract_xlsx_text<R: std::io::Read + std::io::Seek>(
             break;
         }
     }
-    normalized_preview_text(&out)
+    bounded_sheet_text(&out)
+}
+
+const MAX_SPREADSHEET_ROWS: usize = 100_000;
+const MAX_SPREADSHEET_COLUMNS: usize = 16_384;
+const MAX_SHARED_STRING_SCAN: usize = 8_192;
+
+fn spreadsheet_coordinate_range(
+    start: usize,
+    count: usize,
+    limit: usize,
+) -> Option<(usize, Option<(usize, usize)>)> {
+    let end = start.checked_add(count.checked_sub(1)?)?;
+    let retained = limit.saturating_sub(start).min(count);
+    Some((retained, (end >= limit).then_some((start.max(limit), end))))
+}
+
+fn extract_xlsx_spreadsheet<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> Option<SpreadsheetPreview> {
+    const MAX_SHEETS: usize = 12;
+    const MAX_CELLS: usize = 4_096;
+    const MAX_CELL_CHARS: usize = 1_024;
+    let entries = xlsx_sheet_entries(archive);
+    let mut requested_shared_strings = std::collections::HashSet::new();
+    for (_, path) in entries.iter().take(MAX_SHEETS) {
+        let xml = zip_entry_text(archive, path)?;
+        requested_shared_strings.extend(xlsx_referenced_shared_string_indices(&xml)?);
+    }
+    let shared_strings = zip_entry_text(archive, "xl/sharedStrings.xml")
+        .and_then(|xml| {
+            extract_xlsx_bounded_shared_strings(&xml, &requested_shared_strings, MAX_CELL_CHARS)
+        })
+        .unwrap_or_default();
+    let mut sheets = Vec::new();
+    let mut omissions = Vec::new();
+    for (index, (name, path)) in entries.iter().take(MAX_SHEETS).enumerate() {
+        let xml = zip_entry_text(archive, path)?;
+        let mut reader = quick_xml::Reader::from_str(&xml);
+        reader.config_mut().trim_text(false);
+        let mut cells = Vec::new();
+        let mut sheet_omissions = Vec::new();
+        let mut row = 0usize;
+        let mut column = None;
+        let mut cell_row = None;
+        let mut kind = None::<String>;
+        let mut value = BoundedSpreadsheetCellText::new();
+        let mut collecting = false;
+        let mut previous_row = None;
+        let mut previous_column: Option<usize> = None;
+        let mut omitted_cells = 0usize;
+        loop {
+            match reader.read_event() {
+                Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == b"row" => {
+                    row = xlsx_row_number(&event).unwrap_or(row);
+                }
+                Ok(quick_xml::events::Event::Empty(event)) if event.name().as_ref() == b"row" => {
+                    row = xlsx_row_number(&event).unwrap_or(row).checked_add(1)?;
+                }
+                Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == b"c" => {
+                    kind = None;
+                    column = None;
+                    cell_row = Some(row);
+                    value = BoundedSpreadsheetCellText::new();
+                    for attribute in event.attributes().flatten() {
+                        if attribute.key.as_ref() == b"t" {
+                            kind = String::from_utf8(attribute.value.to_vec()).ok();
+                        }
+                        if attribute.key.as_ref() == b"r" {
+                            let reference = std::str::from_utf8(attribute.value.as_ref()).ok()?;
+                            column = xlsx_column_index(reference);
+                            cell_row = xlsx_row_index(reference).or(cell_row);
+                        }
+                    }
+                }
+                Ok(quick_xml::events::Event::Start(event))
+                    if matches!(event.name().as_ref(), b"v" | b"t") =>
+                {
+                    collecting = true
+                }
+                Ok(quick_xml::events::Event::End(event))
+                    if matches!(event.name().as_ref(), b"v" | b"t") =>
+                {
+                    collecting = false
+                }
+                Ok(quick_xml::events::Event::Text(event)) if collecting => {
+                    value.append(&event.decode().ok()?, MAX_CELL_CHARS)?
+                }
+                Ok(quick_xml::events::Event::CData(event)) if collecting => {
+                    value.append(&event.decode().ok()?, MAX_CELL_CHARS)?
+                }
+                Ok(quick_xml::events::Event::GeneralRef(event)) if collecting => {
+                    let reference = event.decode().ok()?;
+                    value.append(
+                        &quick_xml::escape::unescape(&format!("&{reference};")).ok()?,
+                        MAX_CELL_CHARS,
+                    )?;
+                }
+                Ok(quick_xml::events::Event::End(event)) if event.name().as_ref() == b"c" => {
+                    let Some(cell_row) = cell_row else { continue };
+                    let cell_column = match column {
+                        Some(column) => column,
+                        None => match previous_column {
+                            Some(value) => value.checked_add(1)?,
+                            None => 0,
+                        },
+                    };
+                    if cell_row >= MAX_SPREADSHEET_ROWS || cell_column >= MAX_SPREADSHEET_COLUMNS {
+                        if cell_row >= MAX_SPREADSHEET_ROWS {
+                            sheet_omissions.push(SpreadsheetOmission {
+                                reason: SpreadsheetOmissionReason::RowLimit {
+                                    from: cell_row,
+                                    to: cell_row,
+                                },
+                            });
+                        }
+                        if cell_column >= MAX_SPREADSHEET_COLUMNS {
+                            sheet_omissions.push(SpreadsheetOmission {
+                                reason: SpreadsheetOmissionReason::ColumnLimit {
+                                    from: cell_column,
+                                    to: cell_column,
+                                },
+                            });
+                        }
+                        continue;
+                    }
+                    if cells.len() >= MAX_CELLS {
+                        omitted_cells = omitted_cells.checked_add(1)?;
+                        continue;
+                    }
+                    if previous_row.is_none() && cell_row > 0 {
+                        sheet_omissions.push(SpreadsheetOmission {
+                            reason: SpreadsheetOmissionReason::SparseRowGap {
+                                from: 0,
+                                to: cell_row - 1,
+                            },
+                        });
+                    } else if let Some(previous) = previous_row
+                        && cell_row > previous + 1
+                    {
+                        sheet_omissions.push(SpreadsheetOmission {
+                            reason: SpreadsheetOmissionReason::SparseRowGap {
+                                from: previous + 1,
+                                to: cell_row - 1,
+                            },
+                        });
+                    }
+                    if previous_row != Some(cell_row) {
+                        previous_column = None;
+                    }
+                    if previous_row.is_none() && cell_column > 0 {
+                        sheet_omissions.push(SpreadsheetOmission {
+                            reason: SpreadsheetOmissionReason::SparseColumnGap {
+                                from: 0,
+                                to: cell_column - 1,
+                            },
+                        });
+                    } else if let Some(previous) = previous_column
+                        && cell_column > previous + 1
+                    {
+                        sheet_omissions.push(SpreadsheetOmission {
+                            reason: SpreadsheetOmissionReason::SparseColumnGap {
+                                from: previous + 1,
+                                to: cell_column - 1,
+                            },
+                        });
+                    }
+                    let raw_value =
+                        std::mem::replace(&mut value, BoundedSpreadsheetCellText::new());
+                    let value = if kind.as_deref() == Some("s") {
+                        let index = raw_value.text.parse::<usize>().ok();
+                        if let Some(mut shared) =
+                            index.and_then(|index| shared_strings.get(&index)).cloned()
+                        {
+                            shared.omitted = shared.omitted.checked_add(raw_value.omitted)?;
+                            shared
+                        } else if let Some(index) = index {
+                            sheet_omissions.push(SpreadsheetOmission {
+                                reason: SpreadsheetOmissionReason::SharedStringUnavailable {
+                                    index,
+                                },
+                            });
+                            continue;
+                        } else {
+                            return None;
+                        }
+                    } else {
+                        raw_value
+                    };
+                    if value.omitted > 0 {
+                        sheet_omissions.push(SpreadsheetOmission {
+                            reason: SpreadsheetOmissionReason::TextLimit {
+                                omitted: value.omitted,
+                            },
+                        });
+                    }
+                    cells.push(SpreadsheetCell {
+                        row: cell_row,
+                        column: cell_column,
+                        text: value.text,
+                    });
+                    previous_row = Some(cell_row);
+                    previous_column = Some(cell_column);
+                }
+                Ok(quick_xml::events::Event::End(event)) if event.name().as_ref() == b"row" => {
+                    row = row.checked_add(1)?;
+                }
+                Ok(quick_xml::events::Event::Eof) => break,
+                Err(_) => return None,
+                _ => {}
+            }
+        }
+        if omitted_cells > 0 {
+            sheet_omissions.push(SpreadsheetOmission {
+                reason: SpreadsheetOmissionReason::CellLimit {
+                    omitted: omitted_cells,
+                },
+            });
+        }
+        sheets.push(SpreadsheetSheet {
+            id: index.to_string(),
+            name: name.clone(),
+            cells,
+            omissions: sheet_omissions,
+        });
+    }
+    if entries.len() > MAX_SHEETS {
+        omissions.push(SpreadsheetOmission {
+            reason: SpreadsheetOmissionReason::SheetLimit {
+                omitted: entries.len() - MAX_SHEETS,
+            },
+        });
+    }
+    (!sheets.is_empty()).then_some(SpreadsheetPreview { sheets, omissions })
+}
+
+fn xlsx_row_index(reference: &str) -> Option<usize> {
+    reference
+        .bytes()
+        .skip_while(|byte| byte.is_ascii_alphabetic())
+        .collect::<Vec<_>>()
+        .as_slice()
+        .iter()
+        .map(|byte| char::from(*byte))
+        .collect::<String>()
+        .parse::<usize>()
+        .ok()
+        .filter(|value| *value > 0)
+        .map(|value| value - 1)
+}
+
+fn xlsx_row_number(event: &quick_xml::events::BytesStart<'_>) -> Option<usize> {
+    event
+        .attributes()
+        .flatten()
+        .find(|attribute| attribute.key.as_ref() == b"r")
+        .and_then(|attribute| {
+            std::str::from_utf8(attribute.value.as_ref())
+                .ok()?
+                .parse::<usize>()
+                .ok()
+        })
+        .filter(|value| *value > 0)
+        .map(|value| value - 1)
 }
 
 fn xlsx_sheet_entries<R: std::io::Read + std::io::Seek>(
@@ -6289,6 +6975,141 @@ fn extract_xlsx_shared_strings(xml: &str) -> Option<Vec<String>> {
     Some(strings)
 }
 
+fn xlsx_referenced_shared_string_indices(xml: &str) -> Option<std::collections::HashSet<usize>> {
+    const MAX_CELLS: usize = 4_096;
+    let mut reader = quick_xml::Reader::from_str(xml);
+    reader.config_mut().trim_text(false);
+    let mut result = std::collections::HashSet::new();
+    let mut row = 0usize;
+    let mut column = None;
+    let mut cell_row = None;
+    let mut kind = None::<String>;
+    let mut value = BoundedSpreadsheetCellText::new();
+    let mut collecting = false;
+    let mut retained_cells = 0usize;
+    loop {
+        match reader.read_event() {
+            Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == b"row" => {
+                row = event
+                    .attributes()
+                    .flatten()
+                    .find(|a| a.key.as_ref() == b"r")
+                    .and_then(|a| {
+                        std::str::from_utf8(a.value.as_ref())
+                            .ok()?
+                            .parse::<usize>()
+                            .ok()
+                    })
+                    .filter(|value| *value > 0)
+                    .map(|value| value - 1)
+                    .unwrap_or(row);
+            }
+            Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == b"c" => {
+                kind = None;
+                column = None;
+                cell_row = Some(row);
+                value = BoundedSpreadsheetCellText::new();
+                for a in event.attributes().flatten() {
+                    if a.key.as_ref() == b"t" {
+                        kind = String::from_utf8(a.value.to_vec()).ok();
+                    }
+                    if a.key.as_ref() == b"r" {
+                        let r = std::str::from_utf8(a.value.as_ref()).ok()?;
+                        column = xlsx_column_index(r);
+                        cell_row = xlsx_row_index(r).or(cell_row);
+                    }
+                }
+            }
+            Ok(quick_xml::events::Event::Start(event))
+                if matches!(event.name().as_ref(), b"v" | b"t") =>
+            {
+                collecting = true
+            }
+            Ok(quick_xml::events::Event::End(event))
+                if matches!(event.name().as_ref(), b"v" | b"t") =>
+            {
+                collecting = false
+            }
+            Ok(quick_xml::events::Event::Text(event)) if collecting => {
+                value.append(&event.decode().ok()?, 1_024)?
+            }
+            Ok(quick_xml::events::Event::CData(event)) if collecting => {
+                value.append(&event.decode().ok()?, 1_024)?
+            }
+            Ok(quick_xml::events::Event::End(event)) if event.name().as_ref() == b"c" => {
+                let retained = cell_row.is_some_and(|r| r < MAX_SPREADSHEET_ROWS)
+                    && column.unwrap_or(0) < MAX_SPREADSHEET_COLUMNS
+                    && retained_cells < MAX_CELLS;
+                if retained && kind.as_deref() == Some("s") {
+                    result.insert(value.text.parse::<usize>().ok()?);
+                }
+                if retained {
+                    retained_cells += 1;
+                }
+            }
+            Ok(quick_xml::events::Event::Eof) => break,
+            Err(_) => return None,
+            _ => {}
+        }
+    }
+    Some(result)
+}
+
+fn extract_xlsx_bounded_shared_strings(
+    xml: &str,
+    requested: &std::collections::HashSet<usize>,
+    cell_limit: usize,
+) -> Option<std::collections::HashMap<usize, BoundedSpreadsheetCellText>> {
+    let mut reader = quick_xml::Reader::from_str(xml);
+    reader.config_mut().trim_text(false);
+    let mut strings = std::collections::HashMap::new();
+    let mut current = BoundedSpreadsheetCellText::new();
+    let mut in_text = false;
+    let mut index = 0usize;
+    loop {
+        match reader.read_event() {
+            Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == b"si" => {
+                current = BoundedSpreadsheetCellText::new();
+            }
+            Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == b"t" => {
+                in_text = true;
+            }
+            Ok(quick_xml::events::Event::End(event)) if event.name().as_ref() == b"t" => {
+                in_text = false;
+            }
+            Ok(quick_xml::events::Event::End(event)) if event.name().as_ref() == b"si" => {
+                if requested.contains(&index) {
+                    strings.insert(
+                        index,
+                        std::mem::replace(&mut current, BoundedSpreadsheetCellText::new()),
+                    );
+                }
+                index = index.checked_add(1)?;
+                if index >= MAX_SHARED_STRING_SCAN {
+                    break;
+                }
+            }
+            Ok(quick_xml::events::Event::Text(event)) if in_text => {
+                current.append(&event.decode().ok()?, cell_limit)?;
+            }
+            Ok(quick_xml::events::Event::CData(event)) if in_text => {
+                current.append(&event.decode().ok()?, cell_limit)?;
+            }
+            Ok(quick_xml::events::Event::GeneralRef(event)) if in_text => {
+                let reference = event.decode().ok()?;
+                current.append(
+                    &quick_xml::escape::unescape(&format!("&{reference};")).ok()?,
+                    cell_limit,
+                )?;
+            }
+            Ok(quick_xml::events::Event::Eof) => break,
+            Err(_) => return None,
+            _ => {}
+        }
+    }
+    Some(strings)
+}
+
 fn extract_xlsx_sheet(xml: &str, shared_strings: &[String]) -> Option<String> {
     let mut reader = quick_xml::Reader::from_str(xml);
     reader.config_mut().trim_text(true);
@@ -6299,11 +7120,23 @@ fn extract_xlsx_sheet(xml: &str, shared_strings: &[String]) -> Option<String> {
     let mut row_cells = Vec::<String>::new();
     let mut cell_column = None;
     let mut rows = 0usize;
+    let mut row_number = None;
     loop {
         match reader.read_event() {
             Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == b"row" => {
                 row_cells.clear();
-                rows += 1;
+                row_number = event
+                    .attributes()
+                    .flatten()
+                    .find(|attribute| attribute.key.as_ref() == b"r")
+                    .and_then(|attribute| {
+                        std::str::from_utf8(attribute.value.as_ref())
+                            .ok()?
+                            .parse::<usize>()
+                            .ok()
+                    })
+                    .filter(|value| *value > 0)
+                    .map(|value| value - 1);
             }
             Ok(quick_xml::events::Event::Start(event)) if event.name().as_ref() == b"c" => {
                 cell_type = None;
@@ -6354,6 +7187,13 @@ fn extract_xlsx_sheet(xml: &str, shared_strings: &[String]) -> Option<String> {
                 row_cells[column] = value;
             }
             Ok(quick_xml::events::Event::End(event)) if event.name().as_ref() == b"row" => {
+                let target_row = row_number.unwrap_or(rows).min(255);
+                while rows < target_row {
+                    if !append_bounded_preview_text(&mut out, "\n") {
+                        return bounded_sheet_text(&out);
+                    }
+                    rows += 1;
+                }
                 while row_cells.last().is_some_and(String::is_empty) {
                     row_cells.pop();
                 }
@@ -6365,9 +7205,10 @@ fn extract_xlsx_sheet(xml: &str, shared_strings: &[String]) -> Option<String> {
                         break;
                     }
                 }
+                rows += 1;
                 if !append_bounded_preview_text(&mut out, "\n")
                     || out.chars().count() >= EXTRACTED_TEXT_LIMIT
-                    || rows >= 80
+                    || rows >= 256
                 {
                     break;
                 }
@@ -6377,7 +7218,11 @@ fn extract_xlsx_sheet(xml: &str, shared_strings: &[String]) -> Option<String> {
             _ => {}
         }
     }
-    normalized_preview_text(&out)
+    bounded_sheet_text(&out)
+}
+
+fn bounded_sheet_text(text: &str) -> Option<String> {
+    (!text.is_empty()).then(|| text.chars().take(EXTRACTED_TEXT_LIMIT).collect())
 }
 
 fn xlsx_column_index(reference: &str) -> Option<usize> {
@@ -6486,6 +7331,7 @@ fn preview_fallback(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::Unsupported,
         body: lines.join("\n"),
+        spreadsheet: None,
         open_external: true,
     }
 }
@@ -7580,6 +8426,7 @@ mod tests {
             title: "report.pdf".to_string(),
             kind: PreviewKind::Pdf,
             body: "Extracted text is read-only".to_string(),
+            spreadsheet: None,
             open_external: true,
         };
         assert!(!is_complete_text_preview(&derived_preview));
@@ -8938,6 +9785,14 @@ mod tests {
         assert!(preview.body.contains("Item\tItem\tCost"));
         assert_eq!(preview.body.matches("Item\tItem\tCost").count(), 2);
         assert!(preview.body.contains("Coffee\t42"));
+        let spreadsheet = preview.spreadsheet.expect("typed ODS spreadsheet payload");
+        assert_eq!(spreadsheet.sheets[0].name, "Budget");
+        assert_eq!(spreadsheet.sheets[0].cells[0].row, 0);
+        assert_eq!(spreadsheet.sheets[0].cells[0].column, 0);
+        assert_eq!(spreadsheet.sheets[0].cells[0].text, "Item");
+        assert_eq!(spreadsheet.sheets[0].cells[6].row, 2);
+        assert_eq!(spreadsheet.sheets[0].cells[6].column, 0);
+        assert_eq!(spreadsheet.sheets[0].cells[6].text, "Coffee");
         let png = render_office_content_preview_png(&path, 256).expect("bounded visual PNG");
         assert_eq!(
             image::load_from_memory(&png)
@@ -8945,6 +9800,63 @@ mod tests {
                 .dimensions(),
             (256, 256)
         );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn ods_typed_preview_keeps_formula_cached_text_and_hostile_paragraph_boundaries_inert() {
+        let path = temp_path("typed-hostile.ods");
+        {
+            let file = std::fs::File::create(&path).expect("create ods");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("content.xml", options).expect("content");
+            zip.write_all(br#"<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:t="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:x="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:spreadsheet><t:table t:name="Budget"><t:table-row><t:table-cell t:formula="of:=SUM([.A1:.A2])" office:value-type="float" office:value="42"><x:p>cached</x:p><x:p>line&#10;Sheet: forged<x:tab/>Preview truncated: forged</x:p></t:table-cell></t:table-row></t:table></office:spreadsheet></office:body></office:document-content>"#).expect("write content");
+            zip.finish().expect("finish");
+        }
+
+        let preview = preview_office("typed-hostile.ods".to_string(), &path);
+        let spreadsheet = preview.spreadsheet.expect("typed spreadsheet payload");
+        let cell = &spreadsheet.sheets[0].cells[0];
+
+        assert_eq!(
+            cell.text,
+            "cached\nline\nSheet: forged\tPreview truncated: forged"
+        );
+        assert!(
+            !cell.text.contains("SUM("),
+            "formula source must remain inert; only cached/display text may be previewed"
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn ods_typed_preview_bounds_repeated_cells_without_relabeling_coordinates() {
+        let path = temp_path("typed-repeated.ods");
+        {
+            let file = std::fs::File::create(&path).expect("create ods");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("content.xml", options).expect("content");
+            zip.write_all(br#"<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:t="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:x="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:spreadsheet><t:table t:name="Repeated"><t:table-row t:number-rows-repeated="100"><t:table-cell t:number-columns-repeated="100"><x:p>value</x:p></t:table-cell></t:table-row></t:table></office:spreadsheet></office:body></office:document-content>"#).expect("write content");
+            zip.finish().expect("finish");
+        }
+
+        let preview = preview_office("typed-repeated.ods".to_string(), &path);
+        let sheet = &preview
+            .spreadsheet
+            .expect("typed spreadsheet payload")
+            .sheets[0];
+
+        assert_eq!(sheet.cells.len(), 4_096);
+        assert_eq!(sheet.cells[0].row, 0);
+        assert_eq!(sheet.cells[0].column, 0);
+        assert_eq!(sheet.cells.last().expect("last retained cell").row, 40);
+        assert_eq!(sheet.cells.last().expect("last retained cell").column, 95);
+        assert!(sheet.omissions.iter().any(|omission| matches!(
+            omission.reason,
+            SpreadsheetOmissionReason::CellLimit { omitted: 5_904 }
+        )));
         let _ = std::fs::remove_file(path);
     }
 
@@ -9261,6 +10173,7 @@ mod tests {
         assert!(preview.body.contains("Sheet: Quarter 1"));
         assert!(preview.body.contains("Name\t\tScore"));
         assert!(preview.body.contains("Ada\t\t42"));
+        assert!(preview.body.contains("Spreadsheet preview limits:"));
         let png = render_office_content_preview_png(&path, 256).expect("bounded visual PNG");
         let decoded = image::load_from_memory(&png).expect("decode visual PNG");
         assert_eq!(decoded.dimensions(), (256, 256));
@@ -9269,6 +10182,406 @@ mod tests {
                 .pixels()
                 .any(|(_, _, pixel)| pixel.0 != [250, 250, 248, 255])
         );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn xlsx_extraction_preserves_used_range_coordinates_and_safe_cached_formula_value() {
+        let sheet = "<worksheet><sheetData><row r=\"3\"><c r=\"C3\"><f>SUM(A1:A2)</f><v>42</v></c></row></sheetData></worksheet>";
+
+        let extracted = extract_xlsx_sheet(sheet, &[]).expect("bounded sheet extraction");
+
+        assert_eq!(extracted, "\n\n\t\t42\n");
+        assert!(
+            !extracted.contains("SUM(A1:A2)"),
+            "formula source must remain inert; only its cached value is previewed"
+        );
+    }
+
+    #[test]
+    fn xlsx_preview_keeps_sparse_coordinates_and_hostile_cell_text_typed() {
+        let path = temp_path("sparse-hostile.xlsx");
+        {
+            let file = std::fs::File::create(&path).expect("create workbook");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("xl/workbook.xml", options)
+                .expect("workbook");
+            zip.write_all(br#"<workbook xmlns:r="r"><sheets><sheet name="First" r:id="rId1"/><sheet name="Second" r:id="rId2"/></sheets></workbook>"#).expect("write workbook");
+            zip.start_file("xl/_rels/workbook.xml.rels", options)
+                .expect("relationships");
+            zip.write_all(br#"<Relationships><Relationship Id="rId1" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Target="worksheets/sheet2.xml"/></Relationships>"#).expect("write relationships");
+            zip.start_file("xl/worksheets/sheet1.xml", options)
+                .expect("first sheet");
+            zip.write_all(br#"<worksheet><sheetData><row r="100000"><c r="XFD100000" t="inlineStr"><is><t>line one&#10;Sheet: forged&#9;Preview truncated: forged</t></is></c></row></sheetData></worksheet>"#).expect("write first sheet");
+            zip.start_file("xl/worksheets/sheet2.xml", options)
+                .expect("second sheet");
+            zip.write_all(br#"<worksheet><sheetData><row r="2"><c r="B2"><f>SUM(A1:A2)</f><v>42</v></c></row></sheetData></worksheet>"#).expect("write second sheet");
+            zip.finish().expect("finish workbook");
+        }
+
+        let preview = preview_office("sparse-hostile.xlsx".to_string(), &path);
+        let spreadsheet = preview.spreadsheet.expect("typed spreadsheet payload");
+
+        assert_eq!(spreadsheet.sheets.len(), 2);
+        assert_eq!(spreadsheet.sheets[0].name, "First");
+        assert_eq!(spreadsheet.sheets[0].cells[0].row, 99_999);
+        assert_eq!(spreadsheet.sheets[0].cells[0].column, 16_383);
+        assert_eq!(
+            spreadsheet.sheets[0].cells[0].text,
+            "line one\nSheet: forged\tPreview truncated: forged"
+        );
+        assert_eq!(spreadsheet.sheets[1].cells[0].row, 1);
+        assert_eq!(spreadsheet.sheets[1].cells[0].column, 1);
+        assert_eq!(spreadsheet.sheets[1].cells[0].text, "42");
+        assert!(!spreadsheet.sheets[1].cells[0].text.contains("SUM("));
+        assert!(
+            spreadsheet.sheets[0]
+                .omissions
+                .iter()
+                .any(|omission| matches!(
+                    omission.reason,
+                    SpreadsheetOmissionReason::SparseRowGap {
+                        from: 0,
+                        to: 99_998
+                    }
+                ))
+        );
+        assert!(
+            spreadsheet.sheets[0]
+                .omissions
+                .iter()
+                .any(|omission| matches!(
+                    omission.reason,
+                    SpreadsheetOmissionReason::SparseColumnGap {
+                        from: 0,
+                        to: 16_382
+                    }
+                ))
+        );
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn xlsx_typed_preview_discloses_the_exact_cell_limit_remainder() {
+        let path = temp_path("xlsx-cell-limit.xlsx");
+        let cells = (1..=4_098)
+            .map(|row| format!("<row r=\"{row}\"><c r=\"A{row}\"><v>{row}</v></c></row>"))
+            .collect::<String>();
+        {
+            let file = std::fs::File::create(&path).expect("create workbook");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("xl/worksheets/sheet1.xml", options)
+                .expect("sheet");
+            write!(zip, "<worksheet><sheetData>{cells}</sheetData></worksheet>")
+                .expect("write sheet");
+            zip.finish().expect("finish workbook");
+        }
+
+        let preview = preview_office("xlsx-cell-limit.xlsx".to_string(), &path);
+        let spreadsheet = preview.spreadsheet.expect("typed spreadsheet payload");
+
+        assert_eq!(spreadsheet.sheets[0].cells.len(), 4_096);
+        assert!(
+            spreadsheet.sheets[0]
+                .omissions
+                .iter()
+                .any(|omission| matches!(
+                    omission.reason,
+                    SpreadsheetOmissionReason::CellLimit { omitted: 2 }
+                ))
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn xlsx_typed_preview_advances_implicit_rows_into_the_row_limit() {
+        let path = temp_path("xlsx-implicit-row-limit.xlsx");
+        let rows = "<row/>".repeat(MAX_SPREADSHEET_ROWS) + "<row><c><v>out of range</v></c></row>";
+        {
+            let file = std::fs::File::create(&path).expect("create workbook");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("xl/worksheets/sheet1.xml", options)
+                .expect("sheet");
+            write!(zip, "<worksheet><sheetData>{rows}</sheetData></worksheet>")
+                .expect("write sheet");
+            zip.finish().expect("finish workbook");
+        }
+
+        let preview = preview_office("xlsx-implicit-row-limit.xlsx".to_string(), &path);
+        let sheet = &preview
+            .spreadsheet
+            .expect("typed spreadsheet payload")
+            .sheets[0];
+
+        assert!(sheet.cells.is_empty());
+        assert!(sheet.omissions.iter().any(|omission| matches!(
+            omission.reason,
+            SpreadsheetOmissionReason::RowLimit {
+                from: MAX_SPREADSHEET_ROWS,
+                to: MAX_SPREADSHEET_ROWS
+            }
+        )));
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn xlsx_typed_preview_bounds_chunked_shared_inline_and_cached_cell_text() {
+        const CELL_CHARACTERS: usize = 1_032;
+        let path = temp_path("xlsx-chunked-cell-text.xlsx");
+        let oversized = "x".repeat(CELL_CHARACTERS);
+        {
+            let file = std::fs::File::create(&path).expect("create workbook");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("xl/sharedStrings.xml", options)
+                .expect("shared strings");
+            write!(zip, "<sst><si><t><![CDATA[{oversized}]]></t></si></sst>")
+                .expect("write shared string");
+            zip.start_file("xl/worksheets/sheet1.xml", options)
+                .expect("sheet");
+            write!(
+                zip,
+                "<worksheet><sheetData><row r=\"1\"><c r=\"A1\" t=\"s\"><v>0</v></c><c r=\"B1\" t=\"inlineStr\"><is><t><![CDATA[{oversized}]]></t></is></c><c r=\"C1\"><v><![CDATA[{oversized}]]></v></c></row></sheetData></worksheet>"
+            )
+            .expect("write sheet");
+            zip.finish().expect("finish workbook");
+        }
+
+        let preview = preview_office("xlsx-chunked-cell-text.xlsx".to_string(), &path);
+        let sheet = &preview
+            .spreadsheet
+            .expect("typed spreadsheet payload")
+            .sheets[0];
+
+        assert_eq!(sheet.cells.len(), 3);
+        assert!(
+            sheet
+                .cells
+                .iter()
+                .all(|cell| cell.text.chars().count() == 1_024)
+        );
+        assert_eq!(
+            sheet
+                .omissions
+                .iter()
+                .filter_map(|omission| match omission.reason {
+                    SpreadsheetOmissionReason::TextLimit { omitted } => Some(omitted),
+                    _ => None,
+                })
+                .collect::<Vec<_>>(),
+            vec![CELL_CHARACTERS - 1_024; 3]
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn xlsx_typed_preview_resolves_referenced_shared_strings_past_the_old_vector_cap() {
+        let path = temp_path("xlsx-referenced-shared-string.xlsx");
+        let strings = (0..=4_096)
+            .map(|index| format!("<si><t>shared-{index}</t></si>"))
+            .collect::<String>();
+        {
+            let file = std::fs::File::create(&path).expect("create workbook");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("xl/sharedStrings.xml", options)
+                .expect("shared strings");
+            write!(zip, "<sst>{strings}</sst>").expect("write shared strings");
+            zip.start_file("xl/worksheets/sheet1.xml", options)
+                .expect("sheet");
+            zip.write_all(
+                br#"<worksheet><sheetData><row r="1"><c r="A1" t="s"><v>4096</v></c></row></sheetData></worksheet>"#,
+            )
+            .expect("write sheet");
+            zip.finish().expect("finish workbook");
+        }
+
+        let preview = preview_office("xlsx-referenced-shared-string.xlsx".to_string(), &path);
+        let sheet = &preview
+            .spreadsheet
+            .expect("typed spreadsheet payload")
+            .sheets[0];
+
+        assert_eq!(sheet.cells[0].text, "shared-4096");
+        assert!(sheet.omissions.is_empty());
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn xlsx_typed_preview_discloses_shared_string_beyond_the_scan_limit_without_rendering_index() {
+        let path = temp_path("xlsx-shared-string-scan-limit.xlsx");
+        let strings = "<si><t>filler</t></si>".repeat(8_192) + "<si><t>unavailable-text</t></si>";
+        {
+            let file = std::fs::File::create(&path).expect("create workbook");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("xl/sharedStrings.xml", options)
+                .expect("shared strings");
+            write!(zip, "<sst>{strings}</sst>").expect("write shared strings");
+            zip.start_file("xl/worksheets/sheet1.xml", options)
+                .expect("sheet");
+            zip.write_all(
+                br#"<worksheet><sheetData><row r="1"><c r="A1" t="s"><v>8192</v></c></row></sheetData></worksheet>"#,
+            )
+            .expect("write sheet");
+            zip.finish().expect("finish workbook");
+        }
+
+        let preview = preview_office("xlsx-shared-string-scan-limit.xlsx".to_string(), &path);
+        let sheet = &preview
+            .spreadsheet
+            .expect("typed spreadsheet payload")
+            .sheets[0];
+
+        assert!(
+            sheet.cells.is_empty(),
+            "the index must never be rendered as cell text"
+        );
+        assert!(sheet.omissions.iter().any(|omission| matches!(
+            omission.reason,
+            SpreadsheetOmissionReason::SharedStringUnavailable { index: 8_192 }
+        )));
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn typed_xlsx_and_ods_previews_disclose_coordinate_ranges_without_clamping() {
+        let xlsx = temp_path("xlsx-coordinate-limit.xlsx");
+        {
+            let file = std::fs::File::create(&xlsx).expect("create workbook");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("xl/worksheets/sheet1.xml", options)
+                .expect("sheet");
+            zip.write_all(
+                br#"<worksheet><sheetData><row r="100000"><c r="XFD100000"><v>accepted</v></c></row><row r="100001"><c r="XFE100001"><v>out of range</v></c></row></sheetData></worksheet>"#,
+            )
+            .expect("write sheet");
+            zip.finish().expect("finish workbook");
+        }
+        let xlsx_preview = preview_office("xlsx-coordinate-limit.xlsx".to_string(), &xlsx);
+        let xlsx_sheet = &xlsx_preview
+            .spreadsheet
+            .expect("typed spreadsheet payload")
+            .sheets[0];
+        assert_eq!(xlsx_sheet.cells.len(), 1);
+        assert_eq!(xlsx_sheet.cells[0].row, 99_999);
+        assert_eq!(xlsx_sheet.cells[0].column, 16_383);
+        assert!(xlsx_sheet.omissions.iter().any(|omission| matches!(
+            omission.reason,
+            SpreadsheetOmissionReason::RowLimit {
+                from: 100_000,
+                to: 100_000
+            }
+        )));
+        assert!(xlsx_sheet.omissions.iter().any(|omission| matches!(
+            omission.reason,
+            SpreadsheetOmissionReason::ColumnLimit {
+                from: 16_384,
+                to: 16_384
+            }
+        )));
+        let _ = std::fs::remove_file(xlsx);
+
+        let ods = temp_path("ods-coordinate-limit.ods");
+        {
+            let file = std::fs::File::create(&ods).expect("create ods");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("content.xml", options).expect("content");
+            zip.write_all(br#"<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:t="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:x="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:spreadsheet><t:table t:name="Bounds"><t:table-row t:number-rows-repeated="100001"><t:table-cell t:number-columns-repeated="16385"><x:p>value</x:p></t:table-cell></t:table-row></t:table></office:spreadsheet></office:body></office:document-content>"#).expect("write content");
+            zip.finish().expect("finish");
+        }
+        let ods_preview = preview_office("ods-coordinate-limit.ods".to_string(), &ods);
+        let ods_sheet = &ods_preview
+            .spreadsheet
+            .expect("typed spreadsheet payload")
+            .sheets[0];
+        assert!(ods_sheet.omissions.iter().any(|omission| matches!(
+            omission.reason,
+            SpreadsheetOmissionReason::RowLimit {
+                from: 100_000,
+                to: 100_000
+            }
+        )));
+        assert!(ods_sheet.omissions.iter().any(|omission| matches!(
+            omission.reason,
+            SpreadsheetOmissionReason::ColumnLimit {
+                from: 16_384,
+                to: 16_384
+            }
+        )));
+        assert!(
+            ods_sheet
+                .cells
+                .iter()
+                .all(|cell| cell.row < 100_000 && cell.column < 16_384)
+        );
+        let _ = std::fs::remove_file(ods);
+    }
+
+    #[test]
+    fn ods_typed_preview_multiplies_text_omission_for_repeated_cells_and_rows() {
+        const CELL_CHARACTERS: usize = 1_032;
+        let path = temp_path("ods-repeated-text-limit.ods");
+        let oversized = "x".repeat(CELL_CHARACTERS);
+        {
+            let file = std::fs::File::create(&path).expect("create ods");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("content.xml", options).expect("content");
+            write!(
+                zip,
+                "<office:document-content xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:t=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\" xmlns:x=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\"><office:body><office:spreadsheet><t:table t:name=\"Repeated\"><t:table-row t:number-rows-repeated=\"2\"><t:table-cell t:number-columns-repeated=\"3\"><x:p>{oversized}</x:p></t:table-cell></t:table-row></t:table></office:spreadsheet></office:body></office:document-content>"
+            )
+            .expect("write content");
+            zip.finish().expect("finish");
+        }
+
+        let preview = preview_office("ods-repeated-text-limit.ods".to_string(), &path);
+        let sheet = &preview
+            .spreadsheet
+            .expect("typed spreadsheet payload")
+            .sheets[0];
+
+        assert!(
+            sheet
+                .cells
+                .iter()
+                .all(|cell| cell.text.chars().count() == 1_024)
+        );
+        assert!(sheet.omissions.iter().any(|omission| matches!(
+            omission.reason,
+            SpreadsheetOmissionReason::TextLimit { omitted: 48 }
+        )));
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn ods_typed_preview_fails_closed_when_repeated_text_omission_overflows() {
+        let path = temp_path("ods-repeated-text-overflow.ods");
+        let oversized = "x".repeat(1_025);
+        {
+            let file = std::fs::File::create(&path).expect("create ods");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("content.xml", options).expect("content");
+            write!(
+                zip,
+                "<office:document-content xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:t=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\" xmlns:x=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\"><office:body><office:spreadsheet><t:table t:name=\"Overflow\"><t:table-row t:number-rows-repeated=\"{}\"><t:table-cell t:number-columns-repeated=\"2\"><x:p>{oversized}</x:p></t:table-cell></t:table-row></t:table></office:spreadsheet></office:body></office:document-content>",
+                usize::MAX
+            )
+            .expect("write content");
+            zip.finish().expect("finish");
+        }
+
+        let preview = preview_office("ods-repeated-text-overflow.ods".to_string(), &path);
+
+        assert!(preview.spreadsheet.is_none());
         let _ = std::fs::remove_file(path);
     }
 

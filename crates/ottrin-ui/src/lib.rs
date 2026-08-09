@@ -69,8 +69,8 @@ use preview_render::{
     GenericPreviewAction, compact_preview_metadata, inspector_icon_button,
     preview_payload_for_copy, render_archive_body_preview, render_document_body_preview,
     render_docx_page_preview, render_folder_body_preview, render_generic_body_preview,
-    render_image_hover_nav, render_metadata_card_preview, render_text_body_preview,
-    split_preview_extracted_text,
+    render_image_hover_nav, render_metadata_card_preview, render_spreadsheet_body_preview,
+    render_text_body_preview, split_preview_extracted_text,
 };
 use semantic_style::{
     EntryVisualState, file_icon_for_path, material_icon, semantic_for_path, semantic_palette,
@@ -916,6 +916,7 @@ struct PreviewOverlay {
     visual_fit: bool,
     visual_zoom: f32,
     pdf_page_index: usize,
+    spreadsheet_sheet_id: Option<String>,
     text_editor: Option<PreviewTextEditor>,
     text_edit_discard_confirmation: bool,
     /// The Space press that opens a native child viewport can also be
@@ -1219,6 +1220,7 @@ fn loading_preview_data(path: &Path) -> PreviewData {
             .to_string(),
         kind: PreviewKind::Unsupported,
         body: "Loading preview…".to_string(),
+        spreadsheet: None,
         open_external: false,
     }
 }
@@ -7867,6 +7869,7 @@ impl OttrinApp {
         self.preview.path = None;
         self.preview.data = None;
         self.preview.pdf_page_index = 0;
+        self.preview.spreadsheet_sheet_id = None;
         self.preview.text_editor = None;
         self.preview.text_edit_discard_confirmation = false;
         self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
@@ -7953,6 +7956,7 @@ impl OttrinApp {
         self.preview.visual_fit = true;
         self.preview.visual_zoom = 1.0;
         self.preview.pdf_page_index = 0;
+        self.preview.spreadsheet_sheet_id = None;
         self.preview.text_editor = None;
         self.preview.text_edit_discard_confirmation = false;
         self.preview.data = None;
@@ -8015,6 +8019,7 @@ impl OttrinApp {
         self.preview.visual_fit = true;
         self.preview.visual_zoom = 1.0;
         self.preview.pdf_page_index = 0;
+        self.preview.spreadsheet_sheet_id = None;
         self.preview.text_editor = None;
         self.preview.text_edit_discard_confirmation = false;
         self.preview.data = None;
@@ -17070,7 +17075,13 @@ impl OttrinApp {
                                         });
                                     }
                                 });
-                            } else {
+                            } else if !render_spreadsheet_body_preview(
+                                ui,
+                                c,
+                                &name,
+                                &preview,
+                                &mut self.preview.spreadsheet_sheet_id,
+                            ) {
                                 render_document_body_preview(
                                     ui,
                                     c,
@@ -22512,6 +22523,7 @@ mod tests {
                 .to_string(),
             kind: PreviewKind::OfficeMetadata,
             body: "Filetype: DOCX document".to_string(),
+            spreadsheet: None,
             open_external: true,
         });
         app.preview.visual_fit = true;
@@ -23959,6 +23971,7 @@ mod tests {
                 title: "fixture".to_string(),
                 kind,
                 body: body.to_string(),
+                spreadsheet: None,
                 open_external: true,
             };
             assert_eq!(
@@ -23977,6 +23990,7 @@ mod tests {
                 title: "fixture".to_string(),
                 kind,
                 body: "must stay on its specialized path".to_string(),
+                spreadsheet: None,
                 open_external: false,
             };
             assert!(
@@ -25383,6 +25397,7 @@ mod tests {
             title: "report.pdf".to_string(),
             kind: PreviewKind::Pdf,
             body: "Filetype: PDF document\nPages: 3".to_string(),
+            spreadsheet: None,
             open_external: true,
         });
 

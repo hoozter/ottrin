@@ -5,7 +5,9 @@ use crate::{
 use egui::{
     Align, Align2, Color32, FontId, Layout, Rect, RichText, ScrollArea, Sense, Stroke, Vec2,
 };
-use ottrin_preview::{PreviewData, PreviewKind};
+use ottrin_preview::{
+    PreviewData, PreviewKind, SpreadsheetOmission, SpreadsheetOmissionReason, SpreadsheetPreview,
+};
 use std::path::Path;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -200,6 +202,288 @@ pub(crate) fn render_document_body_preview(
     } else {
         render_metadata_card_preview(ui, c, icon, name, metadata);
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct SpreadsheetRow {
+    label: String,
+    cells: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct SpreadsheetColumn {
+    label: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct SpreadsheetSheet {
+    id: String,
+    name: String,
+    columns: Vec<SpreadsheetColumn>,
+    rows: Vec<SpreadsheetRow>,
+    omissions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct SpreadsheetGrid {
+    sheets: Vec<SpreadsheetSheet>,
+    omissions: Vec<String>,
+}
+
+const MAX_VISIBLE_BLANK_GAP: usize = 16;
+const MAX_RENDERED_SPREADSHEET_AXIS: usize = 64;
+
+fn spreadsheet_grid_from_payload(payload: &SpreadsheetPreview) -> SpreadsheetGrid {
+    let sheets = payload
+        .sheets
+        .iter()
+        .map(|sheet| {
+            let mut row_coordinates = sheet.cells.iter().map(|cell| cell.row).collect::<Vec<_>>();
+            let mut column_coordinates = sheet
+                .cells
+                .iter()
+                .map(|cell| cell.column)
+                .collect::<Vec<_>>();
+            row_coordinates.sort_unstable();
+            row_coordinates.dedup();
+            column_coordinates.sort_unstable();
+            column_coordinates.dedup();
+            let (row_coordinates, omitted_rows) = bounded_spreadsheet_axis(row_coordinates);
+            let (column_coordinates, omitted_columns) =
+                bounded_spreadsheet_axis(column_coordinates);
+            let rows = spreadsheet_axis_labels(&row_coordinates, false);
+            let columns = spreadsheet_axis_labels(&column_coordinates, true)
+                .into_iter()
+                .map(|label| SpreadsheetColumn { label })
+                .collect::<Vec<_>>();
+            let row_labels = rows.clone();
+            let mut rendered_rows = rows
+                .into_iter()
+                .map(|label| SpreadsheetRow {
+                    label,
+                    cells: vec![String::new(); columns.len()],
+                })
+                .collect::<Vec<_>>();
+            for cell in &sheet.cells {
+                let row_label = (cell.row + 1).to_string();
+                let column_label = spreadsheet_column_label(cell.column);
+                if let (Some(row), Some(column)) = (
+                    row_labels.iter().position(|label| label == &row_label),
+                    columns
+                        .iter()
+                        .position(|column| column.label == column_label),
+                ) {
+                    rendered_rows[row].cells[column] = cell.text.clone();
+                }
+            }
+            SpreadsheetSheet {
+                id: sheet.id.clone(),
+                name: sheet.name.clone(),
+                columns,
+                rows: rendered_rows,
+                omissions: sheet
+                    .omissions
+                    .iter()
+                    .map(spreadsheet_omission_label)
+                    .chain(omitted_rows.map(|omitted| {
+                        format!("{omitted} populated row(s) omitted at safe render limit")
+                    }))
+                    .chain(omitted_columns.map(|omitted| {
+                        format!("{omitted} populated column(s) omitted at safe render limit")
+                    }))
+                    .collect(),
+            }
+        })
+        .collect();
+    SpreadsheetGrid {
+        sheets,
+        omissions: payload
+            .omissions
+            .iter()
+            .map(spreadsheet_omission_label)
+            .collect(),
+    }
+}
+
+fn bounded_spreadsheet_axis(mut coordinates: Vec<usize>) -> (Vec<usize>, Option<usize>) {
+    if coordinates.len() <= MAX_RENDERED_SPREADSHEET_AXIS {
+        return (coordinates, None);
+    }
+    let omitted = coordinates.len() - MAX_RENDERED_SPREADSHEET_AXIS;
+    let tail = coordinates.split_off(MAX_RENDERED_SPREADSHEET_AXIS / 2);
+    coordinates.truncate(MAX_RENDERED_SPREADSHEET_AXIS / 2);
+    coordinates.extend(tail.into_iter().skip(omitted));
+    (coordinates, Some(omitted))
+}
+
+fn spreadsheet_axis_labels(coordinates: &[usize], columns: bool) -> Vec<String> {
+    let mut labels = Vec::new();
+    let mut previous = None;
+    for &coordinate in coordinates {
+        let start = previous.map_or(0, |value| value + 1);
+        if coordinate > start {
+            let gap = coordinate - start;
+            if gap <= MAX_VISIBLE_BLANK_GAP {
+                for blank in start..coordinate {
+                    labels.push(if columns {
+                        spreadsheet_column_label(blank)
+                    } else {
+                        (blank + 1).to_string()
+                    });
+                }
+            } else {
+                labels.push(if columns {
+                    format!(
+                        "… {}–{} omitted",
+                        spreadsheet_column_label(start),
+                        spreadsheet_column_label(coordinate - 1)
+                    )
+                } else {
+                    format!("… {}–{} omitted", start + 1, coordinate)
+                });
+            }
+        }
+        labels.push(if columns {
+            spreadsheet_column_label(coordinate)
+        } else {
+            (coordinate + 1).to_string()
+        });
+        previous = Some(coordinate);
+    }
+    labels
+}
+
+fn spreadsheet_omission_label(omission: &SpreadsheetOmission) -> String {
+    match omission.reason {
+        SpreadsheetOmissionReason::SparseRowGap { from, to } => {
+            format!(
+                "Rows {}–{} omitted to bound sparse preview",
+                from + 1,
+                to + 1
+            )
+        }
+        SpreadsheetOmissionReason::SparseColumnGap { from, to } => format!(
+            "Columns {}–{} omitted to bound sparse preview",
+            spreadsheet_column_label(from),
+            spreadsheet_column_label(to)
+        ),
+        SpreadsheetOmissionReason::SheetLimit { omitted } => {
+            format!("{omitted} worksheet(s) omitted at safe limit")
+        }
+        SpreadsheetOmissionReason::RowLimit { from, to } => {
+            format!("Rows {}–{} omitted at safe limit", from + 1, to + 1)
+        }
+        SpreadsheetOmissionReason::ColumnLimit { from, to } => {
+            format!(
+                "Columns {}–{} omitted at safe limit",
+                spreadsheet_column_label(from),
+                spreadsheet_column_label(to)
+            )
+        }
+        SpreadsheetOmissionReason::CellLimit { omitted } => {
+            format!("{omitted} cell(s) omitted at safe limit")
+        }
+        SpreadsheetOmissionReason::TextLimit { omitted } => {
+            format!("{omitted} character(s) omitted at safe limit")
+        }
+        SpreadsheetOmissionReason::SharedStringUnavailable { index } => {
+            format!("Shared string {index} unavailable at safe scan limit")
+        }
+    }
+}
+
+pub(crate) fn render_spreadsheet_body_preview(
+    ui: &mut egui::Ui,
+    c: Colors,
+    name: &str,
+    preview: &PreviewData,
+    selected_sheet: &mut Option<String>,
+) -> bool {
+    let Some(payload) = preview.spreadsheet.as_ref() else {
+        return false;
+    };
+    let grid = spreadsheet_grid_from_payload(payload);
+    let Some(selected_index) =
+        spreadsheet_selected_sheet_index(&grid.sheets, selected_sheet.as_deref())
+    else {
+        return false;
+    };
+    if selected_sheet.as_deref() != Some(grid.sheets[selected_index].id.as_str()) {
+        *selected_sheet = Some(grid.sheets[selected_index].id.clone());
+    }
+    ui.horizontal_wrapped(|ui| {
+        for sheet in &grid.sheets {
+            if ui
+                .selectable_label(
+                    selected_sheet.as_deref() == Some(sheet.id.as_str()),
+                    &sheet.name,
+                )
+                .on_hover_text("Show this worksheet")
+                .clicked()
+            {
+                *selected_sheet = Some(sheet.id.clone());
+            }
+        }
+    });
+    ui.add_space(6.0);
+    let sheet = &grid.sheets[selected_index];
+    let height = scrollable_preview_height(ui.available_height(), 180.0);
+    egui::Frame::new()
+        .stroke(Stroke::new(1.0, Color32::from_white_alpha(28)))
+        .show(ui, |ui| {
+            ScrollArea::both()
+                .id_salt(("inspector_spreadsheet", name, &sheet.id))
+                .max_height(height)
+                .auto_shrink([false, false])
+                .show(ui, |ui| {
+                    egui::Grid::new(("spreadsheet_grid", name, &sheet.id))
+                        .striped(true)
+                        .min_col_width(112.0)
+                        .show(ui, |ui| {
+                            ui.label(RichText::new("#").color(c.text_muted).strong());
+                            for column in &sheet.columns {
+                                ui.label(RichText::new(&column.label).color(c.text_muted).strong());
+                            }
+                            ui.end_row();
+                            for row in &sheet.rows {
+                                ui.label(RichText::new(&row.label).color(c.text_muted));
+                                for value in &row.cells {
+                                    ui.add(
+                                        egui::Label::new(RichText::new(value).color(c.text))
+                                            .selectable(true),
+                                    );
+                                }
+                                ui.end_row();
+                            }
+                        });
+                });
+        });
+    for omission in sheet.omissions.iter().chain(grid.omissions.iter()) {
+        ui.label(RichText::new(omission).color(c.text_dim).size(11.0));
+    }
+    render_preview_footer(ui, c, name, &preview.body);
+    true
+}
+
+fn spreadsheet_selected_sheet_index(
+    sheets: &[SpreadsheetSheet],
+    selected_id: Option<&str>,
+) -> Option<usize> {
+    selected_id
+        .and_then(|id| sheets.iter().position(|sheet| sheet.id == id))
+        .or_else(|| (!sheets.is_empty()).then_some(0))
+}
+
+fn spreadsheet_column_label(mut column: usize) -> String {
+    let mut label = String::new();
+    loop {
+        label.insert(0, char::from(b'A' + (column % 26) as u8));
+        if column < 26 {
+            break;
+        }
+        column = column / 26 - 1;
+    }
+    label
 }
 
 /// Renders bounded document text as content of an existing scroll region.
@@ -498,5 +782,74 @@ pub(crate) fn render_image_hover_nav(
         Some(1)
     } else {
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn spreadsheet_grid_keeps_hostile_values_in_one_typed_cell() {
+        let preview = ottrin_preview::SpreadsheetPreview {
+            sheets: vec![ottrin_preview::SpreadsheetSheet {
+                id: "first".to_string(),
+                name: "Budget".to_string(),
+                cells: vec![ottrin_preview::SpreadsheetCell {
+                    row: 99_999,
+                    column: 16_383,
+                    text: "line one\nSheet: forged\tPreview truncated: forged".to_string(),
+                }],
+                omissions: vec![ottrin_preview::SpreadsheetOmission {
+                    reason: ottrin_preview::SpreadsheetOmissionReason::SparseRowGap {
+                        from: 0,
+                        to: 99_998,
+                    },
+                }],
+            }],
+            omissions: vec![],
+        };
+
+        let grid = spreadsheet_grid_from_payload(&preview);
+
+        assert_eq!(grid.sheets[0].id, "first");
+        assert_eq!(grid.sheets[0].name, "Budget");
+        assert_eq!(grid.sheets[0].rows[1].label, "100000");
+        assert_eq!(grid.sheets[0].columns[1].label, "XFD");
+        assert_eq!(
+            grid.sheets[0].rows[1].cells[1],
+            "line one\nSheet: forged\tPreview truncated: forged"
+        );
+        assert!(
+            grid.sheets[0]
+                .omissions
+                .iter()
+                .any(|label| label.contains("1–99999"))
+        );
+    }
+
+    #[test]
+    fn spreadsheet_selection_uses_stable_ids_for_duplicate_sheet_names() {
+        let sheets = vec![
+            SpreadsheetSheet {
+                id: "sheet-alpha".to_string(),
+                name: "Budget".to_string(),
+                columns: vec![],
+                rows: vec![],
+                omissions: vec![],
+            },
+            SpreadsheetSheet {
+                id: "sheet-beta".to_string(),
+                name: "Budget".to_string(),
+                columns: vec![],
+                rows: vec![],
+                omissions: vec![],
+            },
+        ];
+
+        assert_eq!(
+            spreadsheet_selected_sheet_index(&sheets, Some("sheet-beta")),
+            Some(1)
+        );
     }
 }
