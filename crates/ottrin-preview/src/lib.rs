@@ -4535,6 +4535,18 @@ fn preview_video(title: String, path: &Path) -> PreviewData {
 
 // ── Archive preview via zip crate ──────────────────────────────────────
 
+fn sanitize_archive_listing_path(path: &str) -> String {
+    path.chars()
+        .map(|character| {
+            if character.is_control() {
+                '�'
+            } else {
+                character
+            }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 fn preview_archive(title: String, path: &Path) -> PreviewData {
     let cancelled = AtomicBool::new(false);
@@ -4813,16 +4825,17 @@ fn preview_tar_reader<R: std::io::Read>(
                 };
             }
             total = total.saturating_add(1);
+            let display_path = sanitize_archive_listing_path(&entry_path);
             if is_dir {
                 dirs += 1;
                 if listing.len() < MAX_TAR_LISTED_ENTRIES {
-                    listing.push(format!("  {entry_path}"));
+                    listing.push(format!("  {display_path}"));
                 }
             } else {
                 files += 1;
                 total_uncompressed = next_uncompressed;
                 if listing.len() < MAX_TAR_LISTED_ENTRIES {
-                    listing.push(format!("  {entry_path}  ({})", format_size(size)));
+                    listing.push(format!("  {display_path}  ({})", format_size(size)));
                 }
             }
         }
@@ -4933,21 +4946,28 @@ fn preview_zip(title: String, path: &Path) -> PreviewData {
                     }
 
                     if listing.len() < MAX_ENTRIES {
+                        let display_name = sanitize_archive_listing_path(&name);
                         if entry.is_dir() {
-                            listing.push(format!("  {name}"));
+                            listing.push(format!("  {display_name}"));
                         } else {
-                            listing.push(format!("  {name}  ({})", format_size(size)));
+                            listing.push(format!("  {display_name}  ({})", format_size(size)));
                         }
                     }
                 }
             }
 
-            let mut lines = vec![
-                "Filetype: ZIP archive".to_string(),
+            let mut lines = vec!["Filetype: ZIP archive".to_string()];
+            if total > MAX_ENTRIES {
+                lines.push(format!(
+                    "Partial listing: {} entries omitted after the first {MAX_ENTRIES}.",
+                    total - MAX_ENTRIES
+                ));
+            }
+            lines.extend([
                 format!("Files: {files}"),
                 format!("Folders: {dirs}"),
                 format!("Uncompressed: {}", format_size(total_uncompressed)),
-            ];
+            ]);
 
             if let Ok(meta) = std::fs::metadata(path) {
                 lines.push(format!("Compressed: {}", format_size(meta.len())));
@@ -4960,9 +4980,6 @@ fn preview_zip(title: String, path: &Path) -> PreviewData {
             lines.push(String::new());
             lines.push("Contents:".to_string());
             lines.extend(listing);
-            if total > MAX_ENTRIES {
-                lines.push(format!("  ... and {} more entries", total - MAX_ENTRIES));
-            }
 
             PreviewData {
                 title,
@@ -9010,6 +9027,35 @@ mod tests {
     }
 
     #[test]
+    fn zip_partial_listing_metadata_cannot_collide_with_a_real_filename() {
+        let path = temp_path("bounded-archive.zip");
+        {
+            let file = std::fs::File::create(&path).expect("create zip");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("... and notes.txt", options)
+                .expect("write collision-shaped path");
+            for index in 1..=200 {
+                zip.start_file(format!("entry-{index:03}.txt"), options)
+                    .expect("write bounded entry");
+            }
+            zip.finish().expect("finish");
+        }
+
+        let preview = preview_zip("bounded-archive.zip".to_string(), &path);
+        let (metadata, listing) = preview
+            .body
+            .split_once("\nContents:\n")
+            .expect("archive metadata and listing");
+
+        assert!(metadata.contains("Partial listing: 1 entries omitted after the first 200."));
+        assert!(listing.contains("... and notes.txt"));
+        assert!(!listing.contains("entries omitted"));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
     fn epub_preview_reports_canonical_title_and_author_without_content_execution() {
         let path = temp_path("guide.epub");
         {
@@ -9805,6 +9851,30 @@ mod tests {
         assert!(preview.body.contains("Filetype: TAR.GZ archive"));
         assert!(preview.body.contains("Files: 1"));
         assert!(preview.body.contains("docs/readme.txt"));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tar_preview_keeps_control_characters_inside_one_inert_listing_entry() {
+        let path = temp_path("hostile-name.tar");
+        {
+            let file = std::fs::File::create(&path).expect("create tar");
+            let mut tar = tar::Builder::new(file);
+            let payload = b"inert";
+            let mut header = tar::Header::new_gnu();
+            header.set_size(payload.len() as u64);
+            header.set_mode(0o644);
+            header.set_cksum();
+            tar.append_data(&mut header, "docs/line\nbreak.txt", payload.as_slice())
+                .expect("add hostile path entry");
+            tar.finish().expect("finish tar");
+        }
+
+        let preview = preview_archive("hostile-name.tar".to_string(), &path);
+
+        assert!(preview.body.contains("docs/line�break.txt"));
+        assert!(!preview.body.contains("docs/line\nbreak.txt"));
 
         let _ = std::fs::remove_file(path);
     }

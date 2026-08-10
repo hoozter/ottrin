@@ -88,9 +88,182 @@ pub(crate) fn split_preview_extracted_text(body: &str) -> (&str, Option<&str>) {
 fn split_archive_listing(body: &str) -> (&str, Option<&str>) {
     const MARKER: &str = "\nContents:\n";
     if let Some((metadata, listing)) = body.split_once(MARKER) {
-        (metadata, Some(listing.trim()))
+        (metadata, Some(listing.trim_end()))
     } else {
         (body, None)
+    }
+}
+
+const MAX_ARCHIVE_TREE_NODES: usize = 512;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ArchiveTreeNode {
+    name: String,
+    directory: bool,
+    size: Option<String>,
+    children: Vec<ArchiveTreeNode>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ArchiveTreeModel {
+    roots: Vec<ArchiveTreeNode>,
+    truncated: bool,
+}
+
+fn archive_display_name(name: &str) -> String {
+    name.chars()
+        .map(|character| {
+            if character.is_control() {
+                '�'
+            } else {
+                character
+            }
+        })
+        .collect()
+}
+
+fn insert_archive_path(
+    siblings: &mut Vec<ArchiveTreeNode>,
+    components: &[String],
+    explicit_directory: bool,
+    size: Option<&str>,
+    remaining_nodes: &mut usize,
+) -> bool {
+    let Some((name, tail)) = components.split_first() else {
+        return true;
+    };
+    let directory = explicit_directory || !tail.is_empty();
+    let position = siblings.iter().position(|node| node.name == *name);
+    let index = if let Some(position) = position {
+        position
+    } else {
+        if *remaining_nodes == 0 {
+            return false;
+        }
+        *remaining_nodes -= 1;
+        siblings.push(ArchiveTreeNode {
+            name: name.clone(),
+            directory,
+            size: if tail.is_empty() {
+                size.map(str::to_string)
+            } else {
+                None
+            },
+            children: Vec::new(),
+        });
+        siblings.len() - 1
+    };
+
+    let node = &mut siblings[index];
+    node.directory |= directory;
+    if tail.is_empty() && node.size.is_none() {
+        node.size = size.map(str::to_string);
+    }
+    if tail.is_empty() {
+        true
+    } else {
+        insert_archive_path(
+            &mut node.children,
+            tail,
+            explicit_directory,
+            size,
+            remaining_nodes,
+        )
+    }
+}
+
+fn split_archive_listing_entry(line: &str) -> (&str, Option<&str>) {
+    let line = line.strip_prefix("  ").unwrap_or(line);
+    if let Some((path, size)) = line.rsplit_once("  (")
+        && let Some(size) = size.strip_suffix(')')
+    {
+        (path, Some(size))
+    } else {
+        (line, None)
+    }
+}
+
+fn archive_tree_from_listing(listing: &str) -> ArchiveTreeModel {
+    let mut roots = Vec::new();
+    let mut remaining_nodes = MAX_ARCHIVE_TREE_NODES;
+    let mut truncated = false;
+
+    for line in listing.lines() {
+        let (path, size) = split_archive_listing_entry(line);
+        if path.is_empty() {
+            continue;
+        }
+        let explicit_directory = path.ends_with('/');
+        let components = path
+            .split('/')
+            .filter(|component| !component.is_empty())
+            .map(archive_display_name)
+            .collect::<Vec<_>>();
+        if components.is_empty() {
+            continue;
+        }
+        if !insert_archive_path(
+            &mut roots,
+            &components,
+            explicit_directory,
+            size,
+            &mut remaining_nodes,
+        ) {
+            truncated = true;
+            break;
+        }
+    }
+
+    ArchiveTreeModel { roots, truncated }
+}
+
+#[cfg(test)]
+fn archive_tree_node_count(nodes: &[ArchiveTreeNode]) -> usize {
+    nodes
+        .iter()
+        .map(|node| 1 + archive_tree_node_count(&node.children))
+        .sum()
+}
+
+fn archive_partial_notice(metadata: &str) -> Option<&str> {
+    metadata
+        .lines()
+        .find(|line| line.starts_with("Partial listing:"))
+}
+
+fn render_archive_tree_nodes(
+    ui: &mut egui::Ui,
+    nodes: &[ArchiveTreeNode],
+    c: Colors,
+    parent_id: &str,
+    depth: usize,
+) {
+    for (index, node) in nodes.iter().enumerate() {
+        let node_id = format!("{parent_id}/{index}:{}", node.name);
+        if node.directory {
+            egui::CollapsingHeader::new(
+                RichText::new(format!("{MI_FOLDER_OPEN}  {}", node.name))
+                    .color(c.text)
+                    .size(12.0),
+            )
+            .id_salt(&node_id)
+            .default_open(depth < 2)
+            .show(ui, |ui| {
+                render_archive_tree_nodes(ui, &node.children, c, &node_id, depth + 1);
+            });
+        } else {
+            ui.horizontal(|ui| {
+                let icon = file_icon_for_path(Path::new(&node.name));
+                ui.label(RichText::new(icon).color(c.text_dim).size(13.0));
+                ui.add(
+                    egui::Label::new(RichText::new(&node.name).color(c.text).size(12.0))
+                        .selectable(true),
+                );
+                if let Some(size) = &node.size {
+                    ui.label(RichText::new(size).color(c.text_muted).size(10.5));
+                }
+            });
+        }
     }
 }
 
@@ -179,12 +352,54 @@ pub(crate) fn render_text_body_preview(ui: &mut egui::Ui, c: Colors, name: &str,
 
 pub(crate) fn render_archive_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
     let (metadata, listing) = split_archive_listing(body);
-    let listing = listing.unwrap_or("").trim();
+    let listing = listing.unwrap_or("").trim_end();
     if listing.is_empty() {
         render_metadata_card_preview(ui, c, MI_FOLDER_ZIP, name, metadata);
         return;
     }
-    render_scrollable_preview_text(ui, listing, c.text, 180.0, ("inspector_archive", name));
+
+    let tree = archive_tree_from_listing(listing);
+    let height = scrollable_preview_height(ui.available_height(), 180.0);
+    let width = ui.available_width();
+    egui::Frame::new()
+        .stroke(Stroke::new(1.0, Color32::from_white_alpha(28)))
+        .show(ui, |ui| {
+            ui.set_width(width);
+            ScrollArea::vertical()
+                .id_salt(("inspector_archive_tree", name))
+                .max_height(height)
+                .auto_shrink([false, false])
+                .show(ui, |ui| {
+                    ui.set_min_width(width);
+                    egui::CollapsingHeader::new(
+                        RichText::new(format!("{MI_FOLDER_ZIP}  {}", archive_display_name(name)))
+                            .color(c.text)
+                            .size(12.5)
+                            .strong(),
+                    )
+                    .id_salt(("archive_root", name))
+                    .default_open(true)
+                    .show(ui, |ui| {
+                        render_archive_tree_nodes(ui, &tree.roots, c, name, 0);
+                        if let Some(notice) = archive_partial_notice(metadata) {
+                            ui.label(
+                                RichText::new(notice)
+                                    .color(c.text_muted)
+                                    .italics()
+                                    .size(11.0),
+                            );
+                        }
+                        if tree.truncated {
+                            ui.label(
+                                RichText::new("Tree rendering truncated at the safe node limit.")
+                                    .color(c.text_muted)
+                                    .italics()
+                                    .size(11.0),
+                            );
+                        }
+                    });
+                });
+        });
     render_preview_footer(ui, c, name, metadata);
 }
 
@@ -850,6 +1065,69 @@ mod tests {
         assert_eq!(
             spreadsheet_selected_sheet_index(&sheets, Some("sheet-beta")),
             Some(1)
+        );
+    }
+
+    #[test]
+    fn archive_tree_preserves_nesting_and_keeps_hostile_names_inert() {
+        let tree = archive_tree_from_listing(
+            "  docs/\n  docs/reports/annual.pdf  (12 KiB)\n  bin/run.sh  (4 KiB)\n  ../outside.txt  (1 B)\n  control\u{0}name.txt  (2 B)",
+        );
+
+        assert!(!tree.truncated);
+        assert_eq!(tree.roots.len(), 4);
+        assert!(tree.roots[0].directory);
+        assert_eq!(tree.roots[0].name, "docs");
+        assert_eq!(tree.roots[0].children[0].name, "reports");
+        assert_eq!(tree.roots[0].children[0].children[0].name, "annual.pdf");
+        assert!(!tree.roots[0].children[0].children[0].directory);
+        assert_eq!(
+            tree.roots[0].children[0].children[0].size.as_deref(),
+            Some("12 KiB")
+        );
+        assert_eq!(tree.roots[2].name, "..");
+        assert_eq!(tree.roots[2].children[0].name, "outside.txt");
+        assert_eq!(tree.roots[3].name, "control�name.txt");
+    }
+
+    #[test]
+    fn archive_tree_promotes_implied_folders_without_duplicate_nodes() {
+        let tree = archive_tree_from_listing("a/b.txt\na/\na/c/d.txt\na/b.txt");
+
+        assert_eq!(tree.roots.len(), 1);
+        assert!(tree.roots[0].directory);
+        assert_eq!(tree.roots[0].children.len(), 2);
+        assert_eq!(tree.roots[0].children[0].name, "b.txt");
+        assert_eq!(tree.roots[0].children[1].name, "c");
+        assert_eq!(tree.roots[0].children[1].children[0].name, "d.txt");
+    }
+
+    #[test]
+    fn archive_tree_reports_when_implied_folders_exhaust_the_render_budget() {
+        let listing = (0..MAX_ARCHIVE_TREE_NODES)
+            .map(|index| format!("root-{index}/a/b/c/d/e/file.txt"))
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        let tree = archive_tree_from_listing(&listing);
+
+        assert!(tree.truncated);
+        assert!(archive_tree_node_count(&tree.roots) <= MAX_ARCHIVE_TREE_NODES);
+    }
+
+    #[test]
+    fn archive_tree_does_not_confuse_a_legitimate_filename_with_partial_state() {
+        let tree =
+            archive_tree_from_listing("docs/readme.txt  (1 KiB)\n  ... and notes.txt  (2 B)");
+
+        assert_eq!(tree.roots.len(), 2);
+        assert_eq!(tree.roots[1].name, "... and notes.txt");
+        assert_eq!(tree.roots[1].size.as_deref(), Some("2 B"));
+        assert_eq!(
+            archive_partial_notice(
+                "Filetype: ZIP archive\nPartial listing: 201 entries omitted after the first 200."
+            ),
+            Some("Partial listing: 201 entries omitted after the first 200.")
         );
     }
 }
