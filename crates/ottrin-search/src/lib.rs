@@ -169,6 +169,12 @@ impl SearchService {
         Self::new_with_store_path(config, default_search_store_path())
     }
 
+    /// Load the completed configured generation from Ottrin's normal store without opening
+    /// writable storage or starting a worker.
+    pub fn load_persisted_default(config: SearchConfig) -> Result<Self, String> {
+        Self::load_persisted(config, default_search_store_path())
+    }
+
     /// Creates a search service backed by the supplied SQLite store.
     ///
     /// Callers that run an isolated instance, such as a test harness, can use
@@ -183,6 +189,28 @@ impl SearchService {
             launcher: worker::real_launcher(),
             watch_filesystem: true,
         }
+    }
+
+    /// Load the completed configured generation without opening writable storage or starting a
+    /// worker. This is the read-only authority used by status and one-shot query clients.
+    pub fn load_persisted(config: SearchConfig, store_path: PathBuf) -> Result<Self, String> {
+        let plan = plan::ScanPlan::new(&config)?;
+        let snapshot = SearchStore::load_read_only(&store_path, &plan)
+            .map_err(|error| error.to_string())?
+            .ok_or_else(|| {
+                "No completed search index exists for the configured roots".to_string()
+            })?;
+        let service = Self::new_with_store_path(config, store_path);
+        worker::publish_snapshot(&service.index, &snapshot);
+        {
+            let mut index = service.index.write().expect("index write");
+            index.configured_root_count = plan.roots().len();
+            index.watched_root_count = 0;
+            index.watcher_ready = false;
+            index.watcher_last_error =
+                Some("Watcher health is unavailable from a read-only status snapshot".to_string());
+        }
+        Ok(service)
     }
 
     #[cfg(test)]
@@ -298,6 +326,17 @@ impl SearchService {
             .as_ref()
             .ok_or_else(|| "Search service is not running".to_string())?
             .rebuild_blocking()
+    }
+
+    /// Reconcile every configured root and return only after that exact update commits or fails.
+    ///
+    /// Unlike a rebuild, this publishes a root-scoped delta so state outside the configured roots
+    /// is not treated as part of the replacement candidate.
+    pub fn update_index_blocking(&mut self) -> Result<(), String> {
+        self.worker
+            .as_ref()
+            .ok_or_else(|| "Search service is not running".to_string())?
+            .reconcile_blocking()
     }
 
     /// Returns `true` if `plocate` or `locate` is on PATH (the system locate database is usable).
@@ -1350,8 +1389,9 @@ pub fn install_sqlite_schedule(interval_hours: u32, roots: &[PathBuf]) -> Result
     } else {
         roots.to_vec()
     };
-    let indexer = find_ottrin_index_binary()
-        .ok_or_else(|| "Could not find ottrin-index next to Ottrin or on PATH.".to_string())?;
+    let ottrin = find_ottrin_binary().ok_or_else(|| {
+        "Could not find the ottrin executable next to the running app or on PATH.".to_string()
+    })?;
 
     #[cfg(target_os = "linux")]
     {
@@ -1363,19 +1403,19 @@ pub fn install_sqlite_schedule(interval_hours: u32, roots: &[PathBuf]) -> Result
             .map(|s| s.success() || s.code() == Some(1))
             .unwrap_or(false);
         if has_systemd {
-            return install_sqlite_systemd_user_timer(interval_hours, &indexer, &roots);
+            return install_sqlite_systemd_user_timer(interval_hours, &ottrin, &roots);
         }
-        install_sqlite_crontab_entry(interval_hours, &indexer, &roots)
+        install_sqlite_crontab_entry(interval_hours, &ottrin, &roots)
     }
 
     #[cfg(target_os = "windows")]
     {
-        install_sqlite_windows_task(interval_hours, &indexer, &roots)
+        install_sqlite_windows_task(interval_hours, &ottrin, &roots)
     }
 
     #[cfg(not(any(target_os = "linux", target_os = "windows")))]
     {
-        let _ = (interval_hours, roots, indexer);
+        let _ = (interval_hours, roots, ottrin);
         Err(
             "Background SQLite refresh scheduling is not supported on this platform yet."
                 .to_string(),
@@ -1477,22 +1517,29 @@ fn remove_crontab_block(tag: &str) -> Result<bool, String> {
     }
 }
 
-fn find_ottrin_index_binary() -> Option<PathBuf> {
+fn find_ottrin_binary() -> Option<PathBuf> {
     let exe_name = if cfg!(target_os = "windows") {
-        "ottrin-index.exe"
+        "ottrin.exe"
     } else {
-        "ottrin-index"
+        "ottrin"
     };
     #[cfg(target_os = "linux")]
     if let Some(wrapper) = create_appimage_index_wrapper() {
         return Some(wrapper);
     }
-    if let Ok(current) = std::env::current_exe()
-        && let Some(dir) = current.parent()
-    {
-        let sibling = dir.join(exe_name);
-        if sibling.exists() {
-            return Some(sibling);
+    if let Ok(current) = std::env::current_exe() {
+        let current_name = current.file_name().and_then(|name| name.to_str());
+        if matches!(
+            current_name,
+            Some("ottrin" | "ottrin.exe" | "ottrin-app" | "ottrin-app.exe")
+        ) {
+            return Some(current);
+        }
+        if let Some(dir) = current.parent() {
+            let sibling = dir.join(exe_name);
+            if sibling.exists() {
+                return Some(sibling);
+            }
         }
     }
     std::env::var_os("PATH").and_then(|paths| {
@@ -1523,7 +1570,7 @@ fn create_appimage_index_wrapper() -> Option<PathBuf> {
         std::fs::create_dir_all(parent).ok()?;
     }
     let script = format!(
-        "#!/bin/sh\nexec {} --ottrin-index \"$@\"\n",
+        "#!/bin/sh\nexec {} \"$@\"\n",
         shell_quote(&appimage.display().to_string())
     );
     std::fs::write(&wrapper, script).ok()?;
@@ -1629,16 +1676,10 @@ fn install_sqlite_crontab_entry(
 #[cfg(target_os = "windows")]
 fn install_sqlite_windows_task(
     interval_hours: u32,
-    indexer: &Path,
-    roots: &[PathBuf],
+    ottrin: &Path,
+    _roots: &[PathBuf],
 ) -> Result<String, String> {
-    let mut command = format!("\"{}\" --rebuild", indexer.display());
-    for root in roots {
-        command.push(' ');
-        command.push('"');
-        command.push_str(&root.display().to_string());
-        command.push('"');
-    }
+    let mut command = format!("\"{}\" index update", ottrin.display());
     let status = internal_command("schtasks")
         .args([
             "/Create",
@@ -1665,13 +1706,11 @@ fn install_sqlite_windows_task(
 }
 
 #[cfg(target_os = "linux")]
-fn sqlite_refresh_shell_command(indexer: &Path, roots: &[PathBuf]) -> String {
-    let mut command = format!("{} --rebuild", shell_quote(&indexer.display().to_string()));
-    for root in roots {
-        command.push(' ');
-        command.push_str(&shell_quote(&root.display().to_string()));
-    }
-    command
+fn sqlite_refresh_shell_command(ottrin: &Path, _roots: &[PathBuf]) -> String {
+    format!(
+        "{} index update",
+        shell_quote(&ottrin.display().to_string())
+    )
 }
 
 #[cfg(target_os = "linux")]
@@ -2952,6 +2991,45 @@ mod tests {
         let service = SearchService::new(SearchConfig::default());
 
         assert_ne!(service.store_path, search_db_path());
+    }
+
+    #[test]
+    fn persisted_snapshot_can_be_read_without_starting_or_locking_a_writer() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-read-only-status-root-{}",
+            std::process::id()
+        ));
+        let db_path = temp_service_path("read-only-status");
+        std::fs::create_dir_all(&root).expect("create root");
+        std::fs::write(root.join("marker.txt"), b"marker").expect("write marker");
+        let config = SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            manage_locate_db: false,
+            refresh_interval_hours: 0,
+            ..SearchConfig::default()
+        };
+        let mut writer = SearchService::new_with_store_path(config.clone(), db_path.clone());
+        writer.start();
+        writer
+            .rebuild_index_blocking()
+            .expect("commit persisted generation");
+        writer.stop();
+
+        let reader = SearchService::load_persisted(config.clone(), db_path.clone())
+            .expect("load persisted generation read-only");
+        assert_eq!(reader.diagnostics().status, SearchIndexStatus::Ready);
+        assert_eq!(reader.diagnostics().indexed_items, 1);
+
+        let mut next_writer = SearchService::new_with_store_path(config, db_path.clone());
+        next_writer.start();
+        assert!(!matches!(
+            next_writer.diagnostics().last_error.as_deref(),
+            Some(error) if error.contains("already in use")
+        ));
+        next_writer.stop();
+        let _ = clear_sqlite_storage(&db_path);
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]

@@ -59,11 +59,9 @@ jobs:
           if [ "${{ runner.os }}" = "Windows" ]; then
             cp target/release/ottrin-app.exe ci-artifacts/ottrin-app.exe
             cp target/release/ottrin-priv-helper.exe ci-artifacts/ottrin-priv-helper.exe
-            cp target/release/ottrin-index.exe ci-artifacts/ottrin-index.exe
           else
             cp target/release/ottrin-app ci-artifacts/ottrin-app
             cp target/release/ottrin-priv-helper ci-artifacts/ottrin-priv-helper
-            cp target/release/ottrin-index ci-artifacts/ottrin-index
           fi
 
       - name: Upload release-build artifact

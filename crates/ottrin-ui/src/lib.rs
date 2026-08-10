@@ -1675,6 +1675,7 @@ pub struct OttrinApp {
     locations_rail_expanded: bool,
     // Explicit two-tab selection used by the tab context-menu Tandem action.
     tab_tandem_selection: Vec<u64>,
+    quick_inspector_only: bool,
 }
 
 struct OpenWithDialog {
@@ -1751,6 +1752,31 @@ impl OttrinApp {
         let app = Self::new_with_config_and_graphics_status(config, graphics_runtime);
         app.apply_theme_to_ctx(&cc.egui_ctx);
         app
+    }
+
+    /// Enter standalone Quick Inspector mode while retaining the production preview loader,
+    /// cache, renderer, and error presentation used by Space in the file manager.
+    pub fn open_quick_inspector_file(&mut self, path: PathBuf) {
+        let metadata = std::fs::metadata(&path).ok();
+        let modified_unix_secs = metadata
+            .as_ref()
+            .and_then(|metadata| metadata.modified().ok())
+            .and_then(|modified| modified.duration_since(std::time::UNIX_EPOCH).ok())
+            .map(|duration| duration.as_secs());
+        let entry = FileEntry {
+            name: path
+                .file_name()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_else(|| path.display().to_string()),
+            path,
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: metadata.as_ref().map(std::fs::Metadata::len),
+            modified_unix_secs,
+        };
+        self.quick_inspector_only = true;
+        self.open_preview_entry(entry);
     }
 
     fn new_with_config_and_graphics_status(
@@ -2197,6 +2223,7 @@ impl OttrinApp {
             smart_panel_rect: None,
             locations_rail_expanded: false,
             tab_tandem_selection: Vec::new(),
+            quick_inspector_only: false,
         };
 
         // Theme editing is per preset+mode scope; always hydrate the active
@@ -10839,10 +10866,7 @@ impl OttrinApp {
         // Fill the shared rail/canvas boundary explicitly. At fractional display scaling,
         // adjacent panel fills can otherwise expose the black clear color at the rounded edge.
         let rail_boundary = Rect::from_min_max(
-            egui::pos2(
-                rail.response.rect.right() - 2.0,
-                rail.response.rect.top(),
-            ),
+            egui::pos2(rail.response.rect.right() - 2.0, rail.response.rect.top()),
             rail.response.rect.max,
         );
         ctx.layer_painter(rail.response.layer_id)
@@ -19270,7 +19294,7 @@ impl OttrinApp {
                                                                 .stroke(Stroke::new(1.0, c.border)),
                                                         ).on_hover_text(
                                                             format!(
-                                                                "Installs or removes a user-level {} that runs ottrin-index --rebuild every 4 hours.",
+                                                                "Installs or removes a user-level {} that runs ottrin index update every 4 hours.",
                                                                 platform_capabilities.scheduler_name,
                                                             )
                                                         ).clicked() {
@@ -19980,6 +20004,18 @@ impl eframe::App for OttrinApp {
         self.poll_hash_results();
         self.poll_search_results();
         let preview_ready = self.poll_preview_jobs() | self.poll_preview_loads();
+        if self.quick_inspector_only {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+            self.render_preview_overlay(ctx);
+            if !self.preview.visible {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            } else if preview_ready
+                || self.preview_load_slots[PreviewTarget::Overlay.index()].is_pending()
+            {
+                ctx.request_repaint_after(std::time::Duration::from_millis(50));
+            }
+            return;
+        }
         self.sync_search_scope_root();
         // The locations rail reconciles direct-navigation roots while rendering.
         // Wake an otherwise idle UI so mount, removal, and mapping changes become visible.
@@ -22645,6 +22681,21 @@ mod tests {
         fn byte_size(&self) -> usize {
             0
         }
+    }
+
+    #[test]
+    fn quick_inspector_only_startup_uses_the_production_preview_request_pipeline() {
+        let root = tempfile::tempdir().expect("preview root");
+        let path = root.path().join("fixture.txt");
+        std::fs::write(&path, "preview\n").expect("preview fixture");
+        let mut app = OttrinApp::default();
+
+        app.open_quick_inspector_file(path.clone());
+
+        assert!(app.quick_inspector_only);
+        assert!(app.preview.visible);
+        assert_eq!(app.preview.path.as_ref(), Some(&path));
+        assert!(app.preview_load_slots[PreviewTarget::Overlay.index()].is_pending());
     }
 
     #[test]

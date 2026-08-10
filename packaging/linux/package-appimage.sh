@@ -57,7 +57,6 @@ mkdir -p "$APPDIR/usr/share/polkit-1/actions"
 mkdir -p "$APPDIR/usr/share/doc/ottrin"
 
 install -m 0755 "$ROOT/target/release/ottrin-app" "$APPDIR/usr/bin/ottrin"
-install -m 0755 "$ROOT/target/release/ottrin-index" "$APPDIR/usr/bin/ottrin-index"
 install -m 0755 "$ROOT/target/release/ottrin-priv-helper" "$APPDIR/usr/libexec/ottrin/ottrin-priv-helper"
 download_verify_and_package_pdfium "$APPDIR/usr/bin/pdfium"
 install -m 0644 "$ROOT/assets/icon.svg" "$APPDIR/usr/share/icons/hicolor/scalable/apps/ottrin.svg"
@@ -92,10 +91,6 @@ cat > "$APPDIR/AppRun" <<'APPRUN'
 APPDIR="$(dirname "$(readlink -f "$0")")"
 export LD_LIBRARY_PATH="$APPDIR/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export OTTRIN_PRIV_HELPER="$APPDIR/usr/libexec/ottrin/ottrin-priv-helper"
-if [ "$1" = "--ottrin-index" ]; then
-  shift
-  exec "$APPDIR/usr/bin/ottrin-index" "$@"
-fi
 exec "$APPDIR/usr/bin/ottrin" "$@"
 APPRUN
 chmod +x "$APPDIR/AppRun"

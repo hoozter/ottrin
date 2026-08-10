@@ -63,6 +63,24 @@ System locate/plocate is optional. It can help discover system paths, but it can
 
 Built-in generated-folder skips such as `.git`, `node_modules`, `target`, `__pycache__`, and Trash directories keep indexing practical. If you need to search one of those trees, adjust search settings instead of relying on the watcher.
 
+## Command Line
+
+Installed packages expose one `ottrin` command:
+
+```sh
+ottrin search "summer photos"
+ottrin -s "summer photos"
+
+ottrin index                  # update/reconcile the configured roots
+ottrin index status           # read the completed index without starting a worker
+ottrin index rebuild          # build and atomically publish a fresh replacement
+
+ottrin preview report.pdf
+ottrin -p report.pdf
+```
+
+`search` prints one matching path per line. Add `--json` to search or index commands for structured output. `index status` is read-only; watcher health is reported as unavailable when it cannot be proven from the persisted snapshot. Update and rebuild wait for the exact requested operation and return a nonzero exit code on failure. A failed or cancelled rebuild preserves the prior completed index. `preview` opens the same full Quick Inspector used by Space in the file manager and reports missing paths or unavailable renderers explicitly.
+
 ## Trash
 
 Open the Trash section in the smart panel to review trashed items, restore items, permanently delete selected trash entries, or empty Trash. Empty Trash asks for confirmation and runs in the background.
@@ -118,7 +136,6 @@ Ottrin also provides generated-data cleanup:
 ```sh
 ottrin --uninstall
 ottrin --uninstall --purge-config
-ottrin-index --remove-schedule
 ```
 
 ## Current Limitations

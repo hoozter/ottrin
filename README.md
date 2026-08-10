@@ -76,6 +76,7 @@ this compatibility path is accepted.
 - **Integrated privilege management** — denied operations can retry via helper flow
 - **Global search** — indexed search with scope switching and per-result actions
 - **Preview system** — text and images in-app, bounded multi-page PDF previews with Previous/Next/page selection, bounded SVG visuals admitted by source, XML, path-work, semantic reuse, filter-work, dimension, and pixel limits, bounded DOCX/XLSX/XLSM content-preview visuals, ODS worksheet previews, and Unix-only bounded PPTX first-slide text cards, plus rich archive/media metadata (Space bar). PDF and Office previews retain extracted-text and metadata fallbacks; EPS reports an actionable unavailable state until a vetted isolated renderer is packaged, rather than executing PostScript. The PPTX card is non-authoritative and not a faithful PowerPoint layout.
+- **Coherent command line** — `ottrin search`/`-s`, `ottrin index` (`update`, read-only `status`, atomic `rebuild`), and full Quick Inspector `ottrin preview`/`-p`
 
 ---
 

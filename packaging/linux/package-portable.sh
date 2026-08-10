@@ -51,7 +51,6 @@ mkdir -p "$STAGE/bin" "$STAGE/libexec/ottrin" "$STAGE/assets" "$STAGE/docs" \
 
 install -m 0755 "$BUILD_DIR/ottrin-app" "$STAGE/libexec/ottrin/ottrin"
 install -m 0755 "$BUILD_DIR/ottrin-priv-helper" "$STAGE/bin/ottrin-priv-helper"
-install -m 0755 "$BUILD_DIR/ottrin-index" "$STAGE/bin/ottrin-index"
 bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$STAGE" "$STAGE/third-party-notices/linux-runtime"
 cat > "$STAGE/bin/ottrin" <<'EOF'
 #!/bin/sh

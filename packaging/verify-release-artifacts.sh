@@ -96,7 +96,6 @@ require_zip_entry() {
 
 for entry in \
   '/bin/ottrin$' \
-  '/bin/ottrin-index$' \
   '/bin/ottrin-priv-helper$' \
   '/bin/pdfium/lib/libpdfium\.so$' \
   '/bin/pdfium/LICENSE$' \
@@ -118,7 +117,6 @@ done
 
 for entry in \
   '/bin/ottrin\.exe$' \
-  '/bin/ottrin-index\.exe$' \
   '/bin/ottrin-priv-helper\.exe$' \
   '/bin/pdfium/pdfium\.dll$' \
   '/bin/pdfium/LICENSE$' \
@@ -435,7 +433,6 @@ require_installer_entry() {
 
 for entry in \
   'bin/ottrin.exe' \
-  'bin/ottrin-index.exe' \
   'bin/ottrin-priv-helper.exe' \
   'bin/pdfium/pdfium.dll' \
   'bin/opengl32.dll' \
@@ -568,7 +565,6 @@ verify_linux_runtime_closure \
 for entry in \
   'AppRun' \
   'usr/bin/ottrin' \
-  'usr/bin/ottrin-index' \
   'usr/libexec/ottrin/ottrin-priv-helper' \
   'usr/bin/pdfium/lib/libpdfium.so' \
   'usr/bin/pdfium/LICENSE' \

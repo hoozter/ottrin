@@ -131,7 +131,6 @@ mkdir -p "$STAGE/bin" "$STAGE/assets" "$STAGE/docs" "$STAGE/third-party-notices"
 
 cp "$BUILD_DIR/ottrin-app.exe" "$STAGE/bin/ottrin.exe"
 cp "$BUILD_DIR/ottrin-priv-helper.exe" "$STAGE/bin/ottrin-priv-helper.exe"
-cp "$BUILD_DIR/ottrin-index.exe" "$STAGE/bin/ottrin-index.exe"
 download_verify_and_package_pdfium "$STAGE/bin/pdfium"
 package_graphics_compatibility_runtime "$STAGE/bin" "$STAGE/third-party-notices"
 cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/logo.svg" "$STAGE/assets/"

@@ -105,6 +105,21 @@ impl SearchStore {
         load_generation_inner(&self.conn, plan, Some(cancelled))
     }
 
+    pub(crate) fn load_read_only(
+        path: &Path,
+        plan: &ScanPlan,
+    ) -> Result<Option<GenerationSnapshot>, SearchDbError> {
+        if !path.is_file() {
+            return Ok(None);
+        }
+        let conn = Connection::open_with_flags(
+            path,
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+        )?;
+        conn.busy_timeout(std::time::Duration::from_millis(250))?;
+        load_generation(&conn, plan)
+    }
+
     pub(crate) fn commit(
         &mut self,
         plan: &ScanPlan,

@@ -13,14 +13,14 @@ use std::fs::OpenOptions;
 #[cfg(any(target_os = "windows", test))]
 use std::io::Write;
 use std::path::PathBuf;
-use std::thread::sleep;
-use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum HeadlessAction {
-    IndexStatus,
-    IndexRebuild,
-    Search(String),
+    IndexUpdate { json: bool },
+    IndexStatus { json: bool },
+    IndexRebuild { json: bool },
+    Search { query: String, json: bool },
+    Preview(PathBuf),
     DropStatus,
     DropCopy(Vec<PathBuf>),
     Invalid(String),
@@ -108,17 +108,29 @@ fn windows_graphics_evidence() -> GraphicsEvidence {
 }
 
 fn main() {
-    if handle_cli_action() {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let preview_path = match cli_headless_action(&args) {
+        Some(HeadlessAction::Preview(path)) => match resolve_preview_path(&path) {
+            Ok(path) => Some(path),
+            Err(error) => {
+                eprintln!("ottrin: {error}");
+                std::process::exit(2);
+            }
+        },
+        _ => None,
+    };
+    if preview_path.is_none() && handle_cli_action() {
         return;
     }
     install_windows_startup_panic_hook();
-    if let Err(error) = run_gui() {
+    if let Err(error) = run_gui(preview_path) {
+        eprintln!("ottrin: {error}");
         report_windows_startup_failure("Ottrin could not start", &error.to_string());
         std::process::exit(1);
     }
 }
 
-fn run_gui() -> eframe::Result<()> {
+fn run_gui(preview_path: Option<PathBuf>) -> eframe::Result<()> {
     apply_cli_overrides();
     ensure_dev_helper();
 
@@ -142,6 +154,7 @@ fn run_gui() -> eframe::Result<()> {
         ),
         viewport: egui::ViewportBuilder::default()
             .with_title("Ottrin")
+            .with_visible(preview_path.is_none())
             .with_decorations(false)
             .with_transparent(main_viewport_transparent(graphics_runtime.is_windows))
             .with_inner_size(window_size)
@@ -153,10 +166,11 @@ fn run_gui() -> eframe::Result<()> {
         "Ottrin",
         options,
         Box::new(move |cc| {
-            Ok(Box::new(OttrinApp::new_with_graphics_status(
-                cc,
-                graphics_runtime,
-            )))
+            let mut app = OttrinApp::new_with_graphics_status(cc, graphics_runtime);
+            if let Some(path) = preview_path {
+                app.open_quick_inspector_file(path);
+            }
+            Ok(Box::new(app))
         }),
     )
 }
@@ -238,16 +252,7 @@ fn show_windows_startup_failure_dialog(message: &str) {
 fn handle_cli_action() -> bool {
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args.iter().any(|arg| arg == "--help" || arg == "-h") {
-        println!("Ottrin");
-        println!("  --uninstall        Remove Ottrin background jobs and generated data");
-        println!("  --purge-config     With --uninstall, also remove saved preferences");
-        println!("  --helper-path PATH Developer override for privileged helper discovery");
-        println!("  --renderer opengl  Recovery override for a compatible OpenGL driver");
-        println!("  --index status     Print the persisted-search service status");
-        println!("  --index rebuild    Rebuild the configured search index and wait for it");
-        println!("  --search QUERY     Search the configured index after it is ready");
-        println!("  --drop status      Print configured Drop Folder state without changing it");
-        println!("  --drop copy PATH…  Copy paths into the configured Drop Folder");
+        print_cli_help();
         return true;
     }
     if let Some(action) = cli_headless_action(&args) {
@@ -307,52 +312,134 @@ fn handle_cli_action() -> bool {
     }
 }
 
+fn print_cli_help() {
+    println!("Ottrin — find, inspect, and manage files");
+    println!();
+    println!("Usage:");
+    println!("  ottrin                         Open the file manager");
+    println!("  ottrin search <QUERY> [--json] Search indexed files (-s)");
+    println!("  ottrin index [update] [--json]");
+    println!("                                 Update the configured search index");
+    println!("  ottrin index status [--json]   Show persisted index status without starting it");
+    println!("  ottrin index rebuild [--json]");
+    println!("                                 Build and atomically publish a fresh index");
+    println!("  ottrin preview <FILE>          Open the full Quick Inspector (-p)");
+    println!("  ottrin drop status             Show Drop Folder state");
+    println!("  ottrin drop copy <PATH>…       Copy paths into the Drop Folder");
+    println!();
+    println!("Options:");
+    println!("  --renderer opengl  Recovery override for a compatible OpenGL driver");
+    println!("  --helper-path PATH Developer override for privileged helper discovery");
+    println!("  --uninstall        Remove Ottrin background jobs and generated data");
+    println!("  --purge-config     With --uninstall, also remove saved preferences");
+}
+
 fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
+    let command = args.first().map(String::as_str)?;
+    match command {
+        "search" | "-s" => {
+            let json = args[1..].iter().any(|arg| arg == "--json");
+            let values = args[1..]
+                .iter()
+                .filter(|arg| arg.as_str() != "--json")
+                .collect::<Vec<_>>();
+            match values.as_slice() {
+                [query] if !query.is_empty() => Some(HeadlessAction::Search {
+                    query: (*query).clone(),
+                    json,
+                }),
+                [] => Some(HeadlessAction::Invalid(
+                    "search requires a query".to_string(),
+                )),
+                _ => Some(HeadlessAction::Invalid(
+                    "search accepts exactly one query argument".to_string(),
+                )),
+            }
+        }
+        "index" => Some(parse_index_action(&args[1..])),
+        "preview" | "-p" => Some(match &args[1..] {
+            [path] if !path.is_empty() => HeadlessAction::Preview(PathBuf::from(path)),
+            [] => HeadlessAction::Invalid("preview requires a file path".to_string()),
+            _ => HeadlessAction::Invalid("preview accepts exactly one file path".to_string()),
+        }),
+        "drop" => Some(match args.get(1).map(String::as_str) {
+            Some("status") if args.len() == 2 => HeadlessAction::DropStatus,
+            Some("copy") => HeadlessAction::DropCopy(args[2..].iter().map(PathBuf::from).collect()),
+            Some(value) => HeadlessAction::Invalid(format!("unknown drop action: {value}")),
+            None => HeadlessAction::Invalid("drop requires status or copy".to_string()),
+        }),
+        "--renderer" | "--helper-path" | "--uninstall" | "--purge-config" => None,
+        value if value.starts_with("--renderer=") || value.starts_with("--helper-path=") => None,
+        _ => Some(HeadlessAction::Invalid(format!(
+            "unknown command: {command}"
+        ))),
+    }
+}
+
+fn parse_index_action(args: &[String]) -> HeadlessAction {
+    let mut action = "update";
+    let mut action_seen = false;
+    let mut json = false;
+
     let mut index = 0;
     while index < args.len() {
         match args[index].as_str() {
-            "--index" => {
-                return Some(match args.get(index + 1).map(String::as_str) {
-                    Some("status") => HeadlessAction::IndexStatus,
-                    Some("rebuild") => HeadlessAction::IndexRebuild,
-                    Some(value) => {
-                        HeadlessAction::Invalid(format!("unknown index action: {value}"))
-                    }
-                    None => {
-                        HeadlessAction::Invalid("--index requires status or rebuild".to_string())
-                    }
-                });
+            "update" | "status" | "rebuild" if !action_seen => {
+                action = args[index].as_str();
+                action_seen = true;
             }
-            "--search" => {
-                return Some(
-                    match args.get(index + 1).filter(|value| !value.is_empty()) {
-                        Some(query) => HeadlessAction::Search(query.clone()),
-                        None => HeadlessAction::Invalid("--search requires a query".to_string()),
-                    },
+            "update" | "status" | "rebuild" => {
+                return HeadlessAction::Invalid(
+                    "index accepts one action: update, status, or rebuild".to_string(),
                 );
             }
-            "--drop" => {
-                return Some(match args.get(index + 1).map(String::as_str) {
-                    Some("status") => HeadlessAction::DropStatus,
-                    Some("copy") => HeadlessAction::DropCopy(
-                        args[index + 2..].iter().map(PathBuf::from).collect(),
-                    ),
-                    Some(value) => HeadlessAction::Invalid(format!("unknown drop action: {value}")),
-                    None => HeadlessAction::Invalid("--drop requires status or copy".to_string()),
-                });
+            "--json" if !json => json = true,
+            "--json" => {
+                return HeadlessAction::Invalid("--json may be specified only once".to_string());
             }
-            _ => index += 1,
+
+            value if value.starts_with('-') => {
+                return HeadlessAction::Invalid(format!("unknown index option: {value}"));
+            }
+            value => {
+                return HeadlessAction::Invalid(format!("unknown index action: {value}"));
+            }
         }
+        index += 1;
     }
-    None
+    match action {
+        "status" => HeadlessAction::IndexStatus { json },
+        "rebuild" => HeadlessAction::IndexRebuild { json },
+        _ => HeadlessAction::IndexUpdate { json },
+    }
 }
 
 fn configured_search_service() -> ottrin_search::SearchService {
+    ottrin_search::SearchService::new(configured_search_config())
+}
+
+fn configured_search_config() -> ottrin_core::SearchConfig {
     let mut config = load_config().search;
     if config.include_roots.is_empty() {
         config.include_roots = ottrin_search::default_roots();
     }
-    ottrin_search::SearchService::new(config)
+    config
+}
+
+fn resolve_preview_path(path: &std::path::Path) -> Result<PathBuf, String> {
+    let resolved = std::fs::canonicalize(path).map_err(|error| match error.kind() {
+        std::io::ErrorKind::NotFound => {
+            format!("preview file does not exist: {}", path.display())
+        }
+        _ => format!("could not resolve preview file {}: {error}", path.display()),
+    })?;
+    if !resolved.is_file() {
+        return Err(format!(
+            "preview path is not a file: {}",
+            resolved.display()
+        ));
+    }
+    Ok(resolved)
 }
 
 fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
@@ -367,28 +454,16 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
         HeadlessAction::DropCopy(sources) => return run_drop_copy(sources),
         _ => {}
     }
-    let mut service = configured_search_service();
-    service.start();
-    if matches!(service.diagnostics().status, SearchIndexStatus::Unavailable) {
-        return Err(service
-            .diagnostics()
-            .last_error
-            .unwrap_or_else(|| "search service unavailable".to_string()));
-    }
 
-    let result = match action {
-        HeadlessAction::IndexStatus => {
-            print_index_diagnostics(&service.diagnostics());
-            Ok(())
+    match action {
+        HeadlessAction::IndexStatus { json } => {
+            let service =
+                ottrin_search::SearchService::load_persisted_default(configured_search_config())?;
+            print_index_diagnostics(&service.diagnostics(), json)
         }
-        HeadlessAction::IndexRebuild => {
-            service.rebuild_index_blocking()?;
-            print_index_diagnostics(&service.diagnostics());
-            Ok(())
-        }
-        HeadlessAction::Search(query) => {
-            wait_for_index_ready(&service)?;
-            let config = load_config().search;
+        HeadlessAction::Search { query, json } => {
+            let config = configured_search_config();
+            let service = ottrin_search::SearchService::load_persisted_default(config.clone())?;
             let response = service.query(SearchQuery {
                 text: query,
                 scope: config.default_scope,
@@ -399,20 +474,53 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
                 offset: 0,
                 content_search: false,
             });
-            println!("status={:?}", response.status);
-            println!("total={}", response.total);
-            for item in response.items {
-                println!("result={}", item.path.display());
-            }
-            response.error.map_or(Ok(()), Err)
+            print_search_response(response, json)
+        }
+        HeadlessAction::IndexUpdate { json } => run_index_writer(json, false),
+        HeadlessAction::IndexRebuild { json } => run_index_writer(json, true),
+        HeadlessAction::Preview(_) => {
+            unreachable!("preview starts the inspector before headless routing")
         }
         HeadlessAction::DropStatus | HeadlessAction::DropCopy(_) => {
-            unreachable!("drop actions return before service startup")
+            unreachable!("drop actions return before search routing")
         }
-        HeadlessAction::Invalid(_) => unreachable!("invalid actions return before service startup"),
+        HeadlessAction::Invalid(_) => unreachable!("invalid actions return before search routing"),
+    }
+}
+
+fn run_index_writer(json: bool, rebuild: bool) -> Result<(), String> {
+    let mut service = configured_search_service();
+    service.start();
+    let startup = service.diagnostics();
+    if matches!(startup.status, SearchIndexStatus::Unavailable) {
+        service.stop();
+        return Err(startup
+            .last_error
+            .unwrap_or_else(|| "search service unavailable".to_string()));
+    }
+    let operation = if rebuild {
+        service.rebuild_index_blocking()
+    } else {
+        service.update_index_blocking()
     };
+    let result = operation.and_then(|()| print_index_diagnostics(&service.diagnostics(), json));
     service.stop();
     result
+}
+
+fn print_search_response(response: ottrin_core::SearchResponse, json: bool) -> Result<(), String> {
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&response)
+                .map_err(|error| format!("could not encode search response: {error}"))?
+        );
+    } else {
+        for item in &response.items {
+            println!("{}", item.path.display());
+        }
+    }
+    response.error.map_or(Ok(()), Err)
 }
 
 /// Executes only the existing production Copy command.  In particular, this
@@ -465,37 +573,70 @@ fn print_drop_status(target: &ottrin_core::TargetState) {
     }
 }
 
-fn wait_for_index_ready(service: &ottrin_search::SearchService) -> Result<(), String> {
-    let deadline = Instant::now() + Duration::from_secs(30);
-    loop {
-        let diagnostics = service.diagnostics();
-        match diagnostics.status {
-            SearchIndexStatus::Ready => return Ok(()),
-            SearchIndexStatus::Unavailable => {
-                return Err(diagnostics
-                    .last_error
-                    .unwrap_or_else(|| "search service unavailable".to_string()));
-            }
-            SearchIndexStatus::Indexing if Instant::now() >= deadline => {
-                return Err("search index did not become ready within 30 seconds".to_string());
-            }
-            SearchIndexStatus::Indexing => sleep(Duration::from_millis(50)),
-        }
+fn print_index_diagnostics(
+    diagnostics: &ottrin_search::SearchIndexDiagnostics,
+    json: bool,
+) -> Result<(), String> {
+    let status = match diagnostics.status {
+        SearchIndexStatus::Unavailable => "unavailable",
+        SearchIndexStatus::Indexing => "indexing",
+        SearchIndexStatus::Ready => "ready",
+    };
+    if json {
+        let value = serde_json::json!({
+            "status": status,
+            "indexed_items": diagnostics.indexed_items,
+            "last_completed_indexed_items": diagnostics.last_completed_indexed_items,
+            "estimated_total_items": diagnostics.estimated_total_items,
+            "snapshot_revision": diagnostics.snapshot_revision,
+            "configured_roots": diagnostics.configured_root_count,
+            "watched_roots": diagnostics.watched_root_count,
+            "watcher_ready": diagnostics.watcher_ready,
+            "watcher_error": diagnostics.watcher_last_error,
+            "active_root": diagnostics.active_root,
+            "active_root_index": diagnostics.active_root_index,
+            "total_roots": diagnostics.total_roots,
+            "last_scan_started_unix_secs": diagnostics.last_scan_started_unix_secs,
+            "last_scan_completed_unix_secs": diagnostics.last_scan_completed_unix_secs,
+            "last_scan_duration_ms": diagnostics.last_scan_duration_ms,
+            "last_progress_unix_secs": diagnostics.last_progress_unix_secs,
+            "detail": diagnostics.detail,
+            "error": diagnostics.last_error,
+        });
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&value)
+                .map_err(|error| format!("could not encode index status: {error}"))?
+        );
+        return Ok(());
     }
-}
 
-fn print_index_diagnostics(diagnostics: &ottrin_search::SearchIndexDiagnostics) {
-    println!("status={:?}", diagnostics.status);
-    println!("indexed_items={}", diagnostics.indexed_items);
-    println!("snapshot_revision={}", diagnostics.snapshot_revision);
-    println!("configured_roots={}", diagnostics.configured_root_count);
-    println!("watched_roots={}", diagnostics.watched_root_count);
+    println!("Index: {status}");
+    println!("Indexed: {} files", diagnostics.indexed_items);
+    if let Some(estimated) = diagnostics.estimated_total_items {
+        println!("Estimated total: ~{estimated}");
+    }
+    println!("Roots configured: {}", diagnostics.configured_root_count);
+    println!("Roots watched: {}", diagnostics.watched_root_count);
+    println!(
+        "Filesystem watching: {}",
+        if diagnostics.watcher_ready {
+            "active"
+        } else {
+            "unavailable"
+        }
+    );
     if let Some(detail) = &diagnostics.detail {
-        println!("detail={detail}");
+        println!("Detail: {detail}");
     }
-    if let Some(error) = &diagnostics.last_error {
-        println!("error={error}");
+    if let Some(error) = diagnostics
+        .last_error
+        .as_ref()
+        .or(diagnostics.watcher_last_error.as_ref())
+    {
+        println!("Warning: {error}");
     }
+    Ok(())
 }
 
 fn graphics_renderer_override() -> Result<Option<String>, String> {
@@ -793,26 +934,14 @@ mod tests {
     }
 
     #[test]
-    fn headless_index_actions_are_recognized_before_the_gui_starts() {
+    fn canonical_drop_actions_are_recognized_before_the_gui_starts() {
         assert_eq!(
-            cli_headless_action(&["--index".into(), "status".into()]),
-            Some(HeadlessAction::IndexStatus)
-        );
-        assert_eq!(
-            cli_headless_action(&["--index".into(), "rebuild".into()]),
-            Some(HeadlessAction::IndexRebuild)
-        );
-        assert_eq!(
-            cli_headless_action(&["--search".into(), "invoice".into()]),
-            Some(HeadlessAction::Search("invoice".into()))
-        );
-        assert_eq!(
-            cli_headless_action(&["--drop".into(), "status".into()]),
+            cli_headless_action(&["drop".into(), "status".into()]),
             Some(HeadlessAction::DropStatus)
         );
         assert_eq!(
             cli_headless_action(&[
-                "--drop".into(),
+                "drop".into(),
                 "copy".into(),
                 "one.txt".into(),
                 "two.txt".into(),
@@ -821,6 +950,108 @@ mod tests {
                 PathBuf::from("one.txt"),
                 PathBuf::from("two.txt"),
             ]))
+        );
+    }
+
+    #[test]
+    fn canonical_search_and_index_commands_are_recognized_before_the_gui_starts() {
+        for command in ["search", "-s"] {
+            assert_eq!(
+                cli_headless_action(&[command.into(), "invoice".into()]),
+                Some(HeadlessAction::Search {
+                    query: "invoice".into(),
+                    json: false,
+                })
+            );
+        }
+        assert_eq!(
+            cli_headless_action(&["search".into(), "invoice".into(), "--json".into()]),
+            Some(HeadlessAction::Search {
+                query: "invoice".into(),
+                json: true,
+            })
+        );
+        assert_eq!(
+            cli_headless_action(&["index".into(), "status".into()]),
+            Some(HeadlessAction::IndexStatus { json: false })
+        );
+        assert_eq!(
+            cli_headless_action(&["index".into(), "rebuild".into(), "--json".into()]),
+            Some(HeadlessAction::IndexRebuild { json: true })
+        );
+        assert_eq!(
+            cli_headless_action(&["index".into()]),
+            Some(HeadlessAction::IndexUpdate { json: false })
+        );
+        assert_eq!(
+            cli_headless_action(&["index".into(), "update".into()]),
+            Some(HeadlessAction::IndexUpdate { json: false })
+        );
+    }
+
+    #[test]
+    fn unowned_index_modifiers_are_rejected() {
+        assert_eq!(
+            cli_headless_action(&[
+                "index".into(),
+                "update".into(),
+                "--root".into(),
+                "/srv/files".into(),
+            ]),
+            Some(HeadlessAction::Invalid(
+                "unknown index option: --root".to_string()
+            ))
+        );
+    }
+
+    #[test]
+    fn canonical_preview_command_and_alias_preserve_the_requested_path() {
+        for command in ["preview", "-p"] {
+            assert_eq!(
+                cli_headless_action(&[command.into(), "fixture.pdf".into()]),
+                Some(HeadlessAction::Preview(PathBuf::from("fixture.pdf")))
+            );
+        }
+    }
+
+    #[test]
+    fn preview_path_resolution_rejects_missing_and_non_file_paths() {
+        let root =
+            std::env::temp_dir().join(format!("ottrin-cli-preview-path-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("create preview root");
+        let file = root.join("fixture.txt");
+        std::fs::write(&file, "preview\n").expect("write preview fixture");
+
+        assert_eq!(
+            resolve_preview_path(&file).expect("resolve file"),
+            std::fs::canonicalize(&file).expect("canonical fixture")
+        );
+        assert!(
+            resolve_preview_path(&root)
+                .unwrap_err()
+                .contains("not a file")
+        );
+        assert!(
+            resolve_preview_path(&root.join("missing.txt"))
+                .unwrap_err()
+                .contains("does not exist")
+        );
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn unknown_cli_syntax_is_rejected_instead_of_opening_the_gui() {
+        assert_eq!(
+            cli_headless_action(&["frobnicate".into()]),
+            Some(HeadlessAction::Invalid(
+                "unknown command: frobnicate".to_string()
+            ))
+        );
+        assert_eq!(
+            cli_headless_action(&["search".into(), "one".into(), "two".into()]),
+            Some(HeadlessAction::Invalid(
+                "search accepts exactly one query argument".to_string()
+            ))
         );
     }
 

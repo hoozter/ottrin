@@ -81,6 +81,7 @@ type WatchSetupHook = Arc<dyn Fn() + Send + Sync + 'static>;
 pub(crate) enum Command {
     UpdateConfig(SearchConfig),
     Rebuild(Option<mpsc::Sender<Result<(), String>>>),
+    Reconcile(mpsc::Sender<Result<(), String>>),
     FilesystemEvent(Vec<PathBuf>),
     WatchBackendError {
         paths: Vec<PathBuf>,
@@ -139,6 +140,17 @@ impl WorkerHandle {
             .map_err(|_| "Search worker stopped before rebuild completed".to_string())?
     }
 
+    pub(crate) fn reconcile_blocking(&self) -> Result<(), String> {
+        let (done, completed) = mpsc::channel();
+        self.fence.invalidate();
+        self.commands
+            .send(Command::Reconcile(done))
+            .map_err(|_| "Search worker stopped before update was requested".to_string())?;
+        completed
+            .recv()
+            .map_err(|_| "Search worker stopped before update completed".to_string())?
+    }
+
     #[cfg(test)]
     pub(crate) fn filesystem_event(&self) {
         let _ = self
@@ -167,6 +179,13 @@ struct ActiveScan {
     cancelled: Arc<AtomicBool>,
     join: Option<JoinHandle<()>>,
     completion: Option<mpsc::Sender<Result<(), String>>>,
+    mode: ScanMode,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum ScanMode {
+    Rebuild,
+    Reconcile,
 }
 
 struct WorkerLoop {
@@ -353,6 +372,9 @@ impl WorkerLoop {
                     }
                 }
                 Ok(Command::Rebuild(completion)) => self.start_scan(completion),
+                Ok(Command::Reconcile(completion)) => {
+                    self.start_scan_with_mode(Some(completion), ScanMode::Reconcile)
+                }
                 Ok(Command::FilesystemEvent(paths)) => {
                     self.filesystem_event_revision = self.filesystem_event_revision.wrapping_add(1);
                     self.pending_paths.extend(paths);
@@ -587,6 +609,14 @@ impl WorkerLoop {
     }
 
     fn start_scan(&mut self, completion: Option<mpsc::Sender<Result<(), String>>>) {
+        self.start_scan_with_mode(completion, ScanMode::Rebuild);
+    }
+
+    fn start_scan_with_mode(
+        &mut self,
+        completion: Option<mpsc::Sender<Result<(), String>>>,
+        mode: ScanMode,
+    ) {
         let Some(plan) = self.current_plan.as_ref().cloned() else {
             if let Some(completion) = completion {
                 let _ = completion.send(Err("Search plan is unavailable".to_string()));
@@ -605,6 +635,7 @@ impl WorkerLoop {
             cancelled: Arc::clone(&cancelled),
             join: None,
             completion,
+            mode,
         });
         {
             let mut index = self.index.write().expect("index write");
@@ -689,16 +720,26 @@ impl WorkerLoop {
                 let mut publish = |snapshot: &GenerationSnapshot| {
                     publish_snapshot(&index, snapshot);
                 };
+                let mutation = match active.mode {
+                    ScanMode::Rebuild => IndexMutation::ReplaceAll(items),
+                    ScanMode::Reconcile if !self.has_snapshot => IndexMutation::ReplaceAll(items),
+                    ScanMode::Reconcile => IndexMutation::Delta {
+                        upserts: items,
+                        remove_trees: plan.roots().to_vec(),
+                    },
+                };
                 match self.store.commit_guarded(
                     plan,
-                    IndexMutation::ReplaceAll(items),
+                    mutation,
                     &self.fence,
                     expected_epoch,
                     &mut publish,
                 ) {
                     Ok(()) => {
                         self.has_snapshot = true;
-                        self.last_full_rebuild_at = Some(Instant::now());
+                        if matches!(active.mode, ScanMode::Rebuild) {
+                            self.last_full_rebuild_at = Some(Instant::now());
+                        }
                         if active.covered_event_revision == self.filesystem_event_revision {
                             self.pending_paths.clear();
                             self.filesystem_rebuild_deadline = None;
@@ -1010,7 +1051,7 @@ impl WorkerLoop {
     }
 }
 
-fn publish_snapshot(index: &RwLock<IndexState>, snapshot: &GenerationSnapshot) {
+pub(crate) fn publish_snapshot(index: &RwLock<IndexState>, snapshot: &GenerationSnapshot) {
     let items = snapshot
         .items()
         .iter()
@@ -1316,6 +1357,82 @@ mod tests {
         assert_eq!(
             snapshot_items(&index),
             vec![PathBuf::from("/root/committed.txt")]
+        );
+        Arc::try_unwrap(worker)
+            .unwrap_or_else(|_| panic!("worker references remain"))
+            .stop();
+    }
+
+    #[test]
+    fn fresh_blocking_reconcile_publishes_an_initial_replace_all_generation() {
+        let state = Arc::new(Mutex::new(MemoryStoreState::default()));
+        let kinds = Arc::new(Mutex::new(Vec::new()));
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        let (launcher, scans) = controlled_launcher();
+        let worker = spawn_with(
+            config("/root"),
+            Arc::clone(&index),
+            Box::new(OrderedStore {
+                inner: MemoryStore(state),
+                kinds: Arc::clone(&kinds),
+            }),
+            launcher,
+        );
+        let startup = scans.recv_timeout(WAIT).expect("startup scan");
+        let worker = Arc::new(worker);
+        let waiting = Arc::clone(&worker);
+        let completed = std::thread::spawn(move || waiting.reconcile_blocking());
+
+        let requested = scans.recv_timeout(WAIT).expect("requested reconcile");
+        assert!(startup.cancelled.load(Ordering::Acquire));
+        requested.complete(vec![owned("/root", "initial.txt")]);
+
+        assert_eq!(completed.join().expect("join reconcile waiter"), Ok(()));
+        assert_eq!(
+            kinds.lock().expect("mutation kinds").as_slice(),
+            ["replace-all"]
+        );
+        assert_eq!(
+            snapshot_items(&index),
+            vec![PathBuf::from("/root/initial.txt")]
+        );
+        Arc::try_unwrap(worker)
+            .unwrap_or_else(|_| panic!("worker references remain"))
+            .stop();
+    }
+
+    #[test]
+    fn blocking_reconcile_completes_after_an_incremental_root_replacement_commits() {
+        let cfg = config("/root");
+        let plan = ScanPlan::new(&cfg).expect("plan");
+        let outside = owned("/outside", "kept.txt");
+        let stale = owned("/root", "stale.txt");
+        let store = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                4,
+                plan.identity().to_string(),
+                vec![outside.clone(), stale],
+            )),
+            commits: Vec::new(),
+            next_generation: 4,
+        }));
+        let (worker, index, scans) = start_controlled(cfg, store);
+        barrier(&worker.commands);
+        let worker = Arc::new(worker);
+        let waiting = Arc::clone(&worker);
+        let completed = std::thread::spawn(move || waiting.reconcile_blocking());
+
+        let requested = scans.recv_timeout(WAIT).expect("requested reconcile");
+        assert!(!completed.is_finished());
+        requested.complete(vec![owned("/root", "fresh.txt")]);
+
+        assert_eq!(completed.join().expect("join reconcile waiter"), Ok(()));
+        assert_eq!(
+            snapshot_items(&index),
+            vec![
+                PathBuf::from("/outside/kept.txt"),
+                PathBuf::from("/root/fresh.txt")
+            ]
         );
         Arc::try_unwrap(worker)
             .unwrap_or_else(|_| panic!("worker references remain"))

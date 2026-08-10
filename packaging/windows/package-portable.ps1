@@ -157,7 +157,6 @@ New-Item -ItemType Directory -Force -Path "$Stage\bin", "$Stage\assets", "$Stage
 
 Copy-Item "$BuildDir\ottrin-app.exe" "$Stage\bin\ottrin.exe"
 Copy-Item "$BuildDir\ottrin-priv-helper.exe" "$Stage\bin\ottrin-priv-helper.exe"
-Copy-Item "$BuildDir\ottrin-index.exe" "$Stage\bin\ottrin-index.exe"
 Resolve-PdfiumRuntime (Join-Path $Stage "bin\pdfium")
 Resolve-GraphicsCompatibilityRuntime (Join-Path $Stage "bin") (Join-Path $Stage "third-party-notices")
 Copy-Item "$Root\assets\icon.svg", "$Root\assets\icon.png", "$Root\assets\logo.svg" "$Stage\assets\"
