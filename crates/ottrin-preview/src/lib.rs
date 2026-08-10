@@ -10,7 +10,8 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::ptr::NonNull;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::time::{Duration, Instant};
 
 #[cfg(unix)]
 use std::ffi::{CStr, CString, OsStr, OsString};
@@ -135,10 +136,14 @@ const SQLITE_PROGRESS_OP_INTERVAL: i32 = 100;
 const MAX_CAMERA_RAW_TIFF_IFDS: usize = 8;
 const MAX_CAMERA_RAW_TIFF_ENTRIES_PER_IFD: usize = 256;
 const MAX_CAMERA_RAW_TIFF_TOTAL_ENTRIES: usize = 512;
-const MAX_TAR_COMPRESSED_BYTES: u64 = 32 * 1024 * 1024;
+const MAX_TAR_COMPRESSED_SCAN_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_TAR_SCAN_ENTRIES: usize = 4_096;
 const MAX_TAR_SCAN_BYTES: u64 = 256 * 1024 * 1024;
 const MAX_TAR_PATH_BYTES: usize = 768;
+const MAX_TAR_PATH_DEPTH: usize = 64;
+const MAX_TAR_EXPANSION_RATIO: u64 = 200;
+const MIN_TAR_EXPANSION_ALLOWANCE: u64 = 64 * 1024 * 1024;
+const MAX_TAR_SCAN_DURATION: Duration = Duration::from_secs(2);
 const MAX_TAR_LISTED_ENTRIES: usize = 200;
 const MAX_FOLDER_RECURSIVE_ENTRIES: usize = 16_384;
 #[cfg(unix)]
@@ -174,6 +179,40 @@ impl<R: Read> Read for LimitedReader<R> {
         let read = self.inner.read(&mut buffer[..readable])?;
         self.remaining -= read as u64;
         Ok(read)
+    }
+}
+
+struct InterruptibleReader<'a, R> {
+    inner: R,
+    cancelled: &'a AtomicBool,
+    deadline: Instant,
+}
+
+impl<'a, R> InterruptibleReader<'a, R> {
+    fn new(inner: R, cancelled: &'a AtomicBool, deadline: Instant) -> Self {
+        Self {
+            inner,
+            cancelled,
+            deadline,
+        }
+    }
+}
+
+impl<R: Read> Read for InterruptibleReader<'_, R> {
+    fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+        if self.cancelled.load(Ordering::Relaxed) {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Interrupted,
+                "archive preview scan cancelled",
+            ));
+        }
+        if Instant::now() >= self.deadline {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::TimedOut,
+                "archive preview scan exceeded its time budget",
+            ));
+        }
+        self.inner.read(buffer)
     }
 }
 
@@ -965,6 +1004,11 @@ pub fn is_epub_path(path: &Path) -> bool {
 }
 
 pub fn load_preview(request: &PreviewRequest) -> PreviewData {
+    let cancelled = AtomicBool::new(false);
+    load_preview_cancellable(request, &cancelled)
+}
+
+pub fn load_preview_cancellable(request: &PreviewRequest, cancelled: &AtomicBool) -> PreviewData {
     let title = request
         .path
         .file_name()
@@ -988,7 +1032,9 @@ pub fn load_preview(request: &PreviewRequest) -> PreviewData {
         PreviewKind::Pdf => preview_pdf(title, &request.path),
         PreviewKind::VideoMetadata => preview_video(title, &request.path),
         PreviewKind::AudioMetadata => preview_audio(title, &request.path),
-        PreviewKind::ArchiveMetadata => preview_archive(title, &request.path),
+        PreviewKind::ArchiveMetadata => {
+            preview_archive_cancellable(title, &request.path, cancelled)
+        }
         PreviewKind::CameraRawMetadata => preview_camera_raw(title, &request.path),
         PreviewKind::AffinityMetadata => preview_affinity(title, &request.path),
         PreviewKind::OfficeMetadata => preview_office(title, &request.path),
@@ -4489,7 +4535,13 @@ fn preview_video(title: String, path: &Path) -> PreviewData {
 
 // ── Archive preview via zip crate ──────────────────────────────────────
 
+#[cfg(test)]
 fn preview_archive(title: String, path: &Path) -> PreviewData {
+    let cancelled = AtomicBool::new(false);
+    preview_archive_cancellable(title, path, &cancelled)
+}
+
+fn preview_archive_cancellable(title: String, path: &Path, cancelled: &AtomicBool) -> PreviewData {
     let ext = path
         .extension()
         .and_then(|s| s.to_str())
@@ -4507,10 +4559,10 @@ fn preview_archive(title: String, path: &Path) -> PreviewData {
         .and_then(|name| name.to_str())
         .is_some_and(|name| name.to_ascii_lowercase().ends_with(".tar.gz"))
     {
-        return preview_tar_gz(title, path);
+        return preview_tar_gz(title, path, cancelled);
     }
     if ext == "tar" {
-        return preview_tar(title, path);
+        return preview_tar(title, path, cancelled);
     }
 
     // For non-zip archives, show metadata only
@@ -4528,9 +4580,9 @@ fn preview_archive(title: String, path: &Path) -> PreviewData {
     }
 }
 
-fn preview_tar(title: String, path: &Path) -> PreviewData {
+fn preview_tar(title: String, path: &Path, cancelled: &AtomicBool) -> PreviewData {
     let compressed_len = std::fs::metadata(path).map(|meta| meta.len()).unwrap_or(0);
-    if compressed_len > MAX_TAR_COMPRESSED_BYTES {
+    if compressed_len > MAX_TAR_COMPRESSED_SCAN_BYTES {
         let info = metadata_summary(
             path,
             "TAR archive.",
@@ -4556,30 +4608,22 @@ fn preview_tar(title: String, path: &Path) -> PreviewData {
         };
     };
 
+    let deadline = Instant::now() + MAX_TAR_SCAN_DURATION;
     preview_tar_reader(
         title,
         path,
-        TarHeaderGuard::new(LimitedReader::new(file, MAX_TAR_COMPRESSED_BYTES)),
+        TarHeaderGuard::new(LimitedReader::new(
+            InterruptibleReader::new(file, cancelled, deadline),
+            MAX_TAR_COMPRESSED_SCAN_BYTES,
+        )),
         "TAR archive",
+        cancelled,
+        deadline,
+        None,
     )
 }
 
-fn preview_tar_gz(title: String, path: &Path) -> PreviewData {
-    let compressed_len = std::fs::metadata(path).map(|meta| meta.len()).unwrap_or(0);
-    if compressed_len > MAX_TAR_COMPRESSED_BYTES {
-        let info = metadata_summary(
-            path,
-            "TAR.GZ archive.",
-            Some("Archive is too large for safe metadata scanning."),
-        );
-        return PreviewData {
-            title,
-            kind: PreviewKind::ArchiveMetadata,
-            body: info,
-            spreadsheet: None,
-            open_external: true,
-        };
-    }
+fn preview_tar_gz(title: String, path: &Path, cancelled: &AtomicBool) -> PreviewData {
     let Ok(file) = std::fs::File::open(path) else {
         let info = metadata_summary(path, "TAR.GZ archive.", Some("Could not open archive."));
         return PreviewData {
@@ -4590,14 +4634,22 @@ fn preview_tar_gz(title: String, path: &Path) -> PreviewData {
             open_external: true,
         };
     };
+    let compressed_len = std::fs::metadata(path).map(|meta| meta.len()).unwrap_or(0);
+    let deadline = Instant::now() + MAX_TAR_SCAN_DURATION;
     preview_tar_reader(
         title,
         path,
         TarHeaderGuard::new(LimitedReader::new(
-            flate2::read::MultiGzDecoder::new(LimitedReader::new(file, MAX_TAR_COMPRESSED_BYTES)),
+            flate2::read::MultiGzDecoder::new(LimitedReader::new(
+                InterruptibleReader::new(file, cancelled, deadline),
+                MAX_TAR_COMPRESSED_SCAN_BYTES,
+            )),
             MAX_TAR_SCAN_BYTES,
         )),
         "TAR.GZ archive",
+        cancelled,
+        deadline,
+        Some(compressed_len),
     )
 }
 
@@ -4606,6 +4658,9 @@ fn preview_tar_reader<R: std::io::Read>(
     path: &Path,
     reader: R,
     archive_label: &str,
+    cancelled: &AtomicBool,
+    deadline: Instant,
+    compressed_len: Option<u64>,
 ) -> PreviewData {
     let archive_description = format!("{archive_label}.");
     let mut archive = tar::Archive::new(reader);
@@ -4614,6 +4669,7 @@ fn preview_tar_reader<R: std::io::Read>(
     let mut dirs = 0usize;
     let mut files = 0usize;
     let mut listing = Vec::with_capacity(MAX_TAR_LISTED_ENTRIES);
+    let mut partial_reason = None;
 
     {
         let mut entries_iter = match archive.entries() {
@@ -4635,24 +4691,29 @@ fn preview_tar_reader<R: std::io::Read>(
         };
 
         for result in entries_iter.by_ref() {
-            total = total.saturating_add(1);
-            if total > MAX_TAR_SCAN_ENTRIES {
-                let info = metadata_summary(
-                    path,
-                    &archive_description,
-                    Some("Archive has too many entries for safe scanning."),
-                );
-                return PreviewData {
-                    title,
-                    kind: PreviewKind::ArchiveMetadata,
-                    body: info,
-                    spreadsheet: None,
-                    open_external: true,
-                };
+            if cancelled.load(Ordering::Relaxed) {
+                partial_reason = Some("scan cancelled.");
+                break;
+            }
+            if Instant::now() >= deadline {
+                partial_reason = Some("time budget reached.");
+                break;
+            }
+            if total >= MAX_TAR_SCAN_ENTRIES {
+                partial_reason = Some("entry scan limit reached.");
+                break;
             }
 
             let entry = match result {
                 Ok(entry) => entry,
+                Err(_) if cancelled.load(Ordering::Relaxed) => {
+                    partial_reason = Some("scan cancelled.");
+                    break;
+                }
+                Err(_) if Instant::now() >= deadline => {
+                    partial_reason = Some("time budget reached.");
+                    break;
+                }
                 Err(_) => {
                     let info = metadata_summary(
                         path,
@@ -4685,6 +4746,22 @@ fn preview_tar_reader<R: std::io::Read>(
                             open_external: true,
                         };
                     }
+                    if candidate.split('/').filter(|part| !part.is_empty()).count()
+                        > MAX_TAR_PATH_DEPTH
+                    {
+                        let info = metadata_summary(
+                            path,
+                            &archive_description,
+                            Some("Archive entry path exceeded safe preview depth."),
+                        );
+                        return PreviewData {
+                            title,
+                            kind: PreviewKind::ArchiveMetadata,
+                            body: info,
+                            spreadsheet: None,
+                            open_external: true,
+                        };
+                    }
                     candidate
                 }
                 Err(_) => {
@@ -4705,6 +4782,37 @@ fn preview_tar_reader<R: std::io::Read>(
 
             let is_dir = entry.header().entry_type().is_dir();
             let size = entry.size();
+            let next_uncompressed = if is_dir {
+                total_uncompressed
+            } else {
+                total_uncompressed.saturating_add(size)
+            };
+            let expansion_limit = compressed_len.map(|compressed| {
+                compressed
+                    .saturating_mul(MAX_TAR_EXPANSION_RATIO)
+                    .max(MIN_TAR_EXPANSION_ALLOWANCE)
+            });
+            if next_uncompressed > MAX_TAR_SCAN_BYTES
+                || expansion_limit.is_some_and(|limit| next_uncompressed > limit)
+            {
+                if total > 0 {
+                    partial_reason = Some("uncompressed-size or expansion-ratio limit reached.");
+                    break;
+                }
+                let info = metadata_summary(
+                    path,
+                    &archive_description,
+                    Some("Archive has too much data for safe preview scanning."),
+                );
+                return PreviewData {
+                    title,
+                    kind: PreviewKind::ArchiveMetadata,
+                    body: info,
+                    spreadsheet: None,
+                    open_external: true,
+                };
+            }
+            total = total.saturating_add(1);
             if is_dir {
                 dirs += 1;
                 if listing.len() < MAX_TAR_LISTED_ENTRIES {
@@ -4712,12 +4820,25 @@ fn preview_tar_reader<R: std::io::Read>(
                 }
             } else {
                 files += 1;
-                total_uncompressed = total_uncompressed.saturating_add(size);
-                if total_uncompressed > MAX_TAR_SCAN_BYTES {
+                total_uncompressed = next_uncompressed;
+                if listing.len() < MAX_TAR_LISTED_ENTRIES {
+                    listing.push(format!("  {entry_path}  ({})", format_size(size)));
+                }
+            }
+        }
+    }
+
+    if partial_reason.is_none() {
+        let mut remaining_input = archive.into_inner();
+        let mut trailing_bytes = [0; 8_192];
+        loop {
+            let read = match remaining_input.read(&mut trailing_bytes) {
+                Ok(read) => read,
+                Err(_) => {
                     let info = metadata_summary(
                         path,
                         &archive_description,
-                        Some("Archive has too much data for safe preview scanning."),
+                        Some("Could not read archive entries."),
                     );
                     return PreviewData {
                         title,
@@ -4727,19 +4848,11 @@ fn preview_tar_reader<R: std::io::Read>(
                         open_external: true,
                     };
                 }
-                if listing.len() < MAX_TAR_LISTED_ENTRIES {
-                    listing.push(format!("  {entry_path}  ({})", format_size(size)));
-                }
+            };
+            if read == 0 {
+                break;
             }
-        }
-    }
-
-    let mut remaining_input = archive.into_inner();
-    let mut trailing_bytes = [0; 8_192];
-    loop {
-        let read = match remaining_input.read(&mut trailing_bytes) {
-            Ok(read) => read,
-            Err(_) => {
+            if trailing_bytes[..read].iter().any(|byte| *byte != 0) {
                 let info = metadata_summary(
                     path,
                     &archive_description,
@@ -4753,28 +4866,16 @@ fn preview_tar_reader<R: std::io::Read>(
                     open_external: true,
                 };
             }
-        };
-        if read == 0 {
-            break;
-        }
-        if trailing_bytes[..read].iter().any(|byte| *byte != 0) {
-            let info = metadata_summary(
-                path,
-                &archive_description,
-                Some("Could not read archive entries."),
-            );
-            return PreviewData {
-                title,
-                kind: PreviewKind::ArchiveMetadata,
-                body: info,
-                spreadsheet: None,
-                open_external: true,
-            };
         }
     }
 
     let mut lines = vec![format!("Filetype: {archive_label}")];
-    lines.push(format!("Entries: {total}"));
+    if let Some(reason) = partial_reason {
+        lines.push(format!("Partial listing: {reason}"));
+        lines.push(format!("Entries scanned: {total}"));
+    } else {
+        lines.push(format!("Entries: {total}"));
+    }
     lines.push(format!("Files: {files}"));
     lines.push(format!("Folders: {dirs}"));
     lines.push(format!("Uncompressed: {}", format_size(total_uncompressed)));
@@ -9860,25 +9961,39 @@ mod tests {
     }
 
     #[test]
-    fn tar_gz_preview_rejects_oversized_compressed_input() {
-        let path = temp_path("huge-archive.tar.gz");
-        let file = std::fs::OpenOptions::new()
-            .create(true)
-            .truncate(true)
-            .write(true)
-            .open(&path)
-            .expect("create sparse gzip archive");
-        file.set_len(MAX_TAR_COMPRESSED_BYTES + 1)
-            .expect("inflate compressed test archive size");
+    fn tar_gz_preview_streams_valid_input_past_the_former_compressed_size_cliff() {
+        use flate2::Compression;
+        use flate2::write::GzEncoder;
 
-        let preview = preview_archive("huge-archive.tar.gz".to_string(), &path);
+        let path = temp_path("large-valid-archive.tar.gz");
+        let file = std::fs::File::create(&path).expect("create gzip archive");
+        let gzip = GzEncoder::new(file, Compression::none());
+        let mut tar = tar::Builder::new(gzip);
+        const FORMER_COMPRESSED_SIZE_CLIFF: u64 = 32 * 1024 * 1024;
+        let payload_size = FORMER_COMPRESSED_SIZE_CLIFF + 1;
+        let mut header = tar::Header::new_gnu();
+        header.set_size(payload_size);
+        header.set_mode(0o644);
+        header.set_cksum();
+        tar.append_data(
+            &mut header,
+            "large-valid.bin",
+            std::io::repeat(0).take(payload_size),
+        )
+        .expect("stream large archive entry");
+        tar.finish().expect("finish tar archive");
+        let gzip = tar.into_inner().expect("recover gzip encoder");
+        gzip.finish().expect("finish gzip archive");
+        assert!(
+            std::fs::metadata(&path).expect("archive metadata").len()
+                > FORMER_COMPRESSED_SIZE_CLIFF
+        );
+
+        let preview = preview_archive("large-valid-archive.tar.gz".to_string(), &path);
 
         assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
-        assert!(
-            preview
-                .body
-                .contains("Archive is too large for safe metadata scanning.")
-        );
+        assert!(preview.body.contains("Files: 1"), "{}", preview.body);
+        assert!(preview.body.contains("large-valid.bin"), "{}", preview.body);
 
         let _ = std::fs::remove_file(path);
     }
@@ -9991,8 +10106,11 @@ mod tests {
         assert!(
             preview
                 .body
-                .contains("Archive has too many entries for safe scanning.")
+                .contains("Partial listing: entry scan limit reached.")
         );
+        assert!(preview.body.contains("Entries scanned: 4096"));
+        assert!(preview.body.contains("entry-0"));
+        assert!(!preview.body.contains("entry-4096"));
 
         let _ = std::fs::remove_file(path);
     }
@@ -10096,7 +10214,7 @@ mod tests {
             .write(true)
             .open(&path)
             .expect("create sparse archive");
-        file.set_len(MAX_TAR_COMPRESSED_BYTES + 1)
+        file.set_len(MAX_TAR_COMPRESSED_SCAN_BYTES + 1)
             .expect("inflate test archive size");
 
         let preview = preview_archive("huge-archive.tar".to_string(), &path);
@@ -10112,7 +10230,7 @@ mod tests {
     }
 
     #[test]
-    fn tar_preview_rejects_too_many_entries() {
+    fn tar_preview_stops_at_the_entry_scan_limit_with_a_partial_listing() {
         let path = temp_path("many-entries.tar");
         {
             let file = std::fs::File::create(&path).expect("create tar");
@@ -10135,7 +10253,12 @@ mod tests {
         assert!(
             preview
                 .body
-                .contains("Archive has too many entries for safe scanning.")
+                .contains("Partial listing: entry scan limit reached.")
+        );
+        assert!(
+            preview
+                .body
+                .contains(&format!("Entries scanned: {MAX_TAR_SCAN_ENTRIES}"))
         );
 
         let _ = std::fs::remove_file(path);

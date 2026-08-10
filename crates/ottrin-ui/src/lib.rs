@@ -26,8 +26,10 @@ use ottrin_platform::{
 };
 #[cfg(target_os = "linux")]
 use ottrin_platform::{discover_retained_move_transactions, move_recovery::JournalPhase};
+#[cfg(test)]
+use ottrin_preview::load_preview;
 use ottrin_preview::{
-    PreviewData, PreviewKind, PreviewRequest, is_complete_text_preview, load_preview,
+    PreviewData, PreviewKind, PreviewRequest, is_complete_text_preview, load_preview_cancellable,
 };
 use ottrin_search::{
     LocateScheduleStatus, SearchIndexDiagnostics, SearchQueryResult, SearchService,
@@ -1100,15 +1102,20 @@ struct PreviewLoadSlot {
     desired: Option<(PathBuf, EntryKind)>,
     inflight: Option<u64>,
     completed: Option<u64>,
+    cancellation: Option<Arc<AtomicBool>>,
 }
 
 impl PreviewLoadSlot {
     fn select(&mut self, path: PathBuf, kind: EntryKind) -> u64 {
         if self.desired.as_ref() != Some(&(path.clone(), kind)) {
+            if let Some(cancellation) = self.cancellation.take() {
+                cancellation.store(true, Ordering::Relaxed);
+            }
             self.generation = self.generation.wrapping_add(1).max(1);
             self.desired = Some((path, kind));
             self.inflight = None;
             self.completed = None;
+            self.cancellation = Some(Arc::new(AtomicBool::new(false)));
         }
         self.generation
     }
@@ -1120,6 +1127,9 @@ impl PreviewLoadSlot {
     }
 
     fn invalidate(&mut self) {
+        if let Some(cancellation) = self.cancellation.take() {
+            cancellation.store(true, Ordering::Relaxed);
+        }
         self.generation = self.generation.wrapping_add(1).max(1);
         self.inflight = None;
         self.completed = None;
@@ -1139,6 +1149,14 @@ impl PreviewLoadSlot {
             && self.inflight != Some(self.generation)
             && self.completed != Some(self.generation))
         .then_some(self.generation)
+    }
+
+    fn cancellation(&self, generation: u64) -> Option<Arc<AtomicBool>> {
+        if generation == self.generation {
+            self.cancellation.as_ref().map(Arc::clone)
+        } else {
+            None
+        }
     }
 
     fn is_pending(&self) -> bool {
@@ -1176,6 +1194,7 @@ struct PreviewLoadRequest {
     target: PreviewTarget,
     generation: u64,
     request: PreviewRequest,
+    cancellation: Arc<AtomicBool>,
 }
 
 #[derive(Debug)]
@@ -1193,14 +1212,14 @@ fn spawn_preview_loader_with<F>(
     Receiver<PreviewLoadResponse>,
 )
 where
-    F: Fn(&PreviewRequest) -> PreviewData + Send + 'static,
+    F: Fn(&PreviewRequest, &AtomicBool) -> PreviewData + Send + 'static,
 {
     let (request_tx, request_rx) = mpsc::sync_channel::<PreviewLoadRequest>(1);
     let (response_tx, response_rx) = mpsc::channel::<PreviewLoadResponse>();
     std::thread::spawn(move || {
         while let Ok(job) = request_rx.recv() {
             let path = job.request.path.clone();
-            let data = loader(&job.request);
+            let data = loader(&job.request, &job.cancellation);
             let _ = response_tx.send(PreviewLoadResponse {
                 target: job.target,
                 generation: job.generation,
@@ -1793,7 +1812,8 @@ impl OttrinApp {
         let (hash_tx, hash_rx) = mpsc::channel::<(PathBuf, Result<String, String>)>();
         let (preview_req_tx, preview_req_rx) = mpsc::channel::<PreviewJobRequest>();
         let (preview_res_tx, preview_res_rx) = mpsc::channel::<PreviewJobResponse>();
-        let (preview_load_tx, preview_load_rx) = spawn_preview_loader_with(load_preview);
+        let (preview_load_tx, preview_load_rx) =
+            spawn_preview_loader_with(load_preview_cancellable);
         let (search_result_tx, search_result_rx) = mpsc::channel::<SearchQueryResponse>();
 
         // Single long-lived listing worker thread; later requests supersede stale responses.
@@ -5968,6 +5988,10 @@ impl OttrinApp {
         if self.preview_load_slots[slot_index].next_request() != Some(generation) {
             return;
         }
+        let Some(cancellation) = self.preview_load_slots[slot_index].cancellation(generation)
+        else {
+            return;
+        };
         let job = PreviewLoadRequest {
             target,
             generation,
@@ -5975,6 +5999,7 @@ impl OttrinApp {
                 path,
                 kind_hint: kind,
             },
+            cancellation,
         };
         match self.preview_load_tx.try_send(job) {
             Ok(()) => self.preview_load_slots[slot_index].mark_enqueued(generation),
@@ -24037,11 +24062,17 @@ mod tests {
     fn preview_slot_rejects_a_response_for_a_superseded_selection() {
         let mut slot = PreviewLoadSlot::default();
         let first = slot.select(PathBuf::from("/tmp/first.docx"), EntryKind::File);
+        let first_cancellation = slot.cancellation(first).expect("first cancellation token");
         slot.mark_enqueued(first);
 
         let second = slot.select(PathBuf::from("/tmp/second.xlsx"), EntryKind::File);
+        let second_cancellation = slot
+            .cancellation(second)
+            .expect("second cancellation token");
 
         assert_ne!(first, second);
+        assert!(first_cancellation.load(Ordering::Relaxed));
+        assert!(!second_cancellation.load(Ordering::Relaxed));
         assert!(!slot.accepts(first, Path::new("/tmp/first.docx")));
         assert!(slot.accepts(second, Path::new("/tmp/second.xlsx")));
         slot.mark_enqueued(second);
@@ -24050,6 +24081,7 @@ mod tests {
         assert!(!slot.is_pending());
 
         slot.invalidate();
+        assert!(second_cancellation.load(Ordering::Relaxed));
         let refreshed = slot.select(PathBuf::from("/tmp/second.xlsx"), EntryKind::File);
         assert_ne!(second, refreshed);
         assert_eq!(slot.next_request(), Some(refreshed));
@@ -25550,7 +25582,7 @@ mod tests {
     fn preview_loader_bounds_pending_work_to_one_request() {
         let (started_tx, started_rx) = mpsc::channel();
         let (release_tx, release_rx) = mpsc::channel();
-        let (tx, rx) = spawn_preview_loader_with(move |request| {
+        let (tx, rx) = spawn_preview_loader_with(move |request, _cancelled| {
             started_tx.send(()).expect("announce started load");
             release_rx.recv().expect("release blocked load");
             load_preview(request)
@@ -25562,6 +25594,7 @@ mod tests {
                 path: PathBuf::from(name),
                 kind_hint: EntryKind::File,
             },
+            cancellation: Arc::new(AtomicBool::new(false)),
         };
 
         tx.try_send(request(1, "/tmp/first.txt"))
