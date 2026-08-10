@@ -2,6 +2,7 @@ use crate::mutation::{ActivationFence, GenerationSnapshot, IndexMutation, OwnedI
 use crate::plan::ScanPlan;
 use ottrin_core::{EntryKind, SearchResultItem};
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
+use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -60,7 +61,20 @@ CREATE VIRTUAL TABLE IF NOT EXISTS search_generation_content USING fts5(
 #[allow(dead_code)] // Slice 2 storage API is intentionally isolated until worker integration.
 pub(crate) struct SearchStore {
     conn: Connection,
+    path: PathBuf,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub(crate) struct SearchStoreDiagnostics {
+    pub(crate) database_bytes: u64,
+    pub(crate) wal_bytes: u64,
+    pub(crate) freelist_pages: u64,
+    pub(crate) freelist_bytes: u64,
+}
+
+/// A checkpoint is expensive enough to reserve for whole-generation commits
+/// and unusually large incremental batches. Passive mode never blocks readers.
+const CHECKPOINT_MUTATION_ITEM_THRESHOLD: usize = 512;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct IndexedContentHit {
@@ -84,10 +98,10 @@ impl SearchStore {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
-        let conn = Connection::open(path)?;
+        let conn = Connection::open(&path)?;
         configure_writer_connection(&conn)?;
         migrate(&conn)?;
-        Ok(Self { conn })
+        Ok(Self { conn, path })
     }
 
     pub(crate) fn load(
@@ -118,6 +132,25 @@ impl SearchStore {
         )?;
         conn.busy_timeout(std::time::Duration::from_millis(250))?;
         load_generation(&conn, plan)
+    }
+
+    pub(crate) fn diagnostics(&self) -> Result<SearchStoreDiagnostics, SearchDbError> {
+        let freelist_pages = self
+            .conn
+            .query_row("PRAGMA freelist_count", [], |row| row.get::<_, u64>(0))?;
+        let page_size = self
+            .conn
+            .query_row("PRAGMA page_size", [], |row| row.get::<_, u64>(0))?;
+        Ok(SearchStoreDiagnostics {
+            database_bytes: std::fs::metadata(&self.path)
+                .map(|metadata| metadata.len())
+                .unwrap_or(0),
+            wal_bytes: std::fs::metadata(sqlite_sidecar_path(&self.path, "-wal"))
+                .map(|metadata| metadata.len())
+                .unwrap_or(0),
+            freelist_pages,
+            freelist_bytes: freelist_pages.saturating_mul(page_size),
+        })
     }
 
     pub(crate) fn commit(
@@ -193,8 +226,10 @@ impl SearchStore {
         before_activation: impl FnOnce(),
         after_commit: impl FnOnce(&GenerationSnapshot),
     ) -> Result<GenerationSnapshot, SearchDbError> {
+        let is_full_replacement = matches!(&mutation, IndexMutation::ReplaceAll(_));
+        let checkpoint_after_commit = requires_checkpoint_after_commit(&mutation);
         let tx = self.conn.transaction()?;
-        let current = if matches!(&mutation, IndexMutation::ReplaceAll(_)) {
+        let current = if is_full_replacement {
             GenerationSnapshot::new(0, plan.identity().to_string(), Vec::new())
         } else {
             load_generation(&tx, plan)?.ok_or_else(|| {
@@ -203,18 +238,36 @@ impl SearchStore {
                 )
             })?
         };
-        let candidate = current.apply(mutation);
-        tx.execute(
-            "INSERT INTO search_generations (plan_identity, completed, item_count) VALUES (?1, 0, ?2)",
-            params![plan.identity(), candidate.items().len() as i64],
-        )?;
-        let generation = tx.last_insert_rowid();
-        insert_generation_items(&tx, generation, candidate.items())?;
-        insert_generation_content(&tx, generation, candidate.items())?;
-        tx.execute(
-            "UPDATE search_generations SET completed = 1 WHERE id = ?1",
-            [generation],
-        )?;
+        let authoritative_content_refresh = incremental_content_refresh_items(&mutation);
+        let candidate = current.clone().apply(mutation);
+        let generation = if is_full_replacement {
+            tx.execute(
+                "INSERT INTO search_generations (plan_identity, completed, item_count) VALUES (?1, 0, ?2)",
+                params![plan.identity(), candidate.items().len() as i64],
+            )?;
+            let generation = tx.last_insert_rowid();
+            insert_generation_items(&tx, generation, candidate.items())?;
+            insert_generation_content(&tx, generation, candidate.items(), plan)?;
+            tx.execute(
+                "UPDATE search_generations SET completed = 1 WHERE id = ?1",
+                [generation],
+            )?;
+            generation
+        } else {
+            apply_incremental_mutation(
+                &tx,
+                current.generation(),
+                current.items(),
+                candidate.items(),
+                &authoritative_content_refresh,
+                plan,
+            )?;
+            tx.execute(
+                "UPDATE search_generations SET item_count = ?1 WHERE id = ?2",
+                params![candidate.items().len() as i64, current.generation()],
+            )?;
+            current.generation()
+        };
         before_activation();
         let activation_guard = activation.map(|(fence, expected_epoch)| {
             let guard = fence.lock();
@@ -224,19 +277,21 @@ impl SearchStore {
                 .ok_or(SearchDbError::ActivationCancelled)
         });
         let _activation_guard = activation_guard.transpose()?;
-        tx.execute(
-            "INSERT INTO search_store_state (singleton, active_generation_id) VALUES (1, ?1)
-             ON CONFLICT(singleton) DO UPDATE SET active_generation_id = excluded.active_generation_id",
-            [generation],
-        )?;
-        tx.execute(
-            "DELETE FROM search_generations WHERE id <> ?1",
-            [generation],
-        )?;
-        tx.execute(
-            "DELETE FROM search_generation_content WHERE generation_id <> ?1",
-            [generation],
-        )?;
+        if is_full_replacement {
+            tx.execute(
+                "INSERT INTO search_store_state (singleton, active_generation_id) VALUES (1, ?1)
+                 ON CONFLICT(singleton) DO UPDATE SET active_generation_id = excluded.active_generation_id",
+                [generation],
+            )?;
+            tx.execute(
+                "DELETE FROM search_generations WHERE id <> ?1",
+                [generation],
+            )?;
+            tx.execute(
+                "DELETE FROM search_generation_content WHERE generation_id <> ?1",
+                [generation],
+            )?;
+        }
 
         let snapshot = load_generation(&tx, plan)?.ok_or_else(|| {
             SearchDbError::InvalidGeneration("active generation disappeared".to_string())
@@ -245,9 +300,32 @@ impl SearchStore {
             return Err(SearchDbError::InjectedFailure);
         }
         tx.commit()?;
+        if checkpoint_after_commit {
+            checkpoint_wal_passively(&self.conn)?;
+        }
         after_commit(&snapshot);
         Ok(snapshot)
     }
+}
+
+fn requires_checkpoint_after_commit(mutation: &IndexMutation) -> bool {
+    match mutation {
+        IndexMutation::ReplaceAll(_) => true,
+        IndexMutation::ReplaceRoot { items, .. } => {
+            items.len() >= CHECKPOINT_MUTATION_ITEM_THRESHOLD
+        }
+        IndexMutation::Delta {
+            upserts,
+            remove_trees,
+        } => upserts.len().saturating_add(remove_trees.len()) >= CHECKPOINT_MUTATION_ITEM_THRESHOLD,
+    }
+}
+
+fn checkpoint_wal_passively(conn: &Connection) -> Result<(), SearchDbError> {
+    let _: (u64, u64, u64) = conn.query_row("PRAGMA wal_checkpoint(PASSIVE)", [], |row| {
+        Ok((row.get(0)?, row.get(1)?, row.get(2)?))
+    })?;
+    Ok(())
 }
 
 fn configure_writer_connection(conn: &Connection) -> Result<(), SearchDbError> {
@@ -264,11 +342,101 @@ fn configure_writer_connection(conn: &Connection) -> Result<(), SearchDbError> {
 }
 
 const MAX_INDEXED_TEXT_BYTES: u64 = 512 * 1024;
+const CONTENT_STATE_POLICY_DISABLED: i64 = 6;
+
+/// Filesystem watcher upserts are authoritative even when the scanner's
+/// metadata resolution cannot distinguish their old and new contents. Content
+/// state must therefore be refreshed from the mutation itself rather than the
+/// metadata-level current/candidate diff.
+fn incremental_content_refresh_items(mutation: &IndexMutation) -> Vec<OwnedItem> {
+    let items = match mutation {
+        IndexMutation::ReplaceAll(_) => return Vec::new(),
+        IndexMutation::ReplaceRoot { items, .. } => items,
+        IndexMutation::Delta { upserts, .. } => upserts,
+    };
+    items
+        .iter()
+        .map(|item| (item.item().path.clone(), item.clone()))
+        .collect::<BTreeMap<_, _>>()
+        .into_values()
+        .collect()
+}
+
+fn apply_incremental_mutation(
+    tx: &Transaction<'_>,
+    generation: i64,
+    current: &[OwnedItem],
+    candidate: &[OwnedItem],
+    authoritative_content_refresh: &[OwnedItem],
+    plan: &ScanPlan,
+) -> Result<(), SearchDbError> {
+    let current_by_path = current
+        .iter()
+        .map(|item| (item.item().path.clone(), item))
+        .collect::<BTreeMap<_, _>>();
+    let candidate_by_path = candidate
+        .iter()
+        .map(|item| (item.item().path.clone(), item))
+        .collect::<BTreeMap<_, _>>();
+    let removed = current_by_path
+        .iter()
+        .filter_map(|(path, item)| {
+            (candidate_by_path.get(path) != Some(item)).then_some((*item).clone())
+        })
+        .collect::<Vec<_>>();
+    let changed = candidate_by_path
+        .iter()
+        .filter_map(|(path, item)| {
+            (current_by_path.get(path) != Some(item)).then_some((*item).clone())
+        })
+        .collect::<Vec<_>>();
+    delete_generation_items(tx, generation, &removed)?;
+    insert_generation_items(tx, generation, &changed)?;
+    delete_generation_content(tx, generation, authoritative_content_refresh)?;
+    insert_generation_content(tx, generation, authoritative_content_refresh, plan)?;
+    Ok(())
+}
+
+fn delete_generation_content(
+    tx: &Transaction<'_>,
+    generation: i64,
+    items: &[OwnedItem],
+) -> Result<(), SearchDbError> {
+    let mut fts = tx.prepare_cached(
+        "DELETE FROM search_generation_content WHERE generation_id = ?1 AND path = ?2",
+    )?;
+    let mut state = tx.prepare_cached(
+        "DELETE FROM search_generation_content_state WHERE generation_id = ?1 AND path = ?2",
+    )?;
+    for item in items {
+        let path = encode_path(&item.item().path);
+        fts.execute(params![generation, &path])?;
+        state.execute(params![generation, path])?;
+    }
+    Ok(())
+}
+
+fn delete_generation_items(
+    tx: &Transaction<'_>,
+    generation: i64,
+    items: &[OwnedItem],
+) -> Result<(), SearchDbError> {
+    delete_generation_content(tx, generation, items)?;
+    let mut rows = tx.prepare_cached(
+        "DELETE FROM search_generation_items WHERE generation_id = ?1 AND path = ?2",
+    )?;
+    for item in items {
+        let path = encode_path(&item.item().path);
+        rows.execute(params![generation, path])?;
+    }
+    Ok(())
+}
 
 fn insert_generation_content(
     tx: &Transaction<'_>,
     generation: i64,
     items: &[OwnedItem],
+    plan: &ScanPlan,
 ) -> Result<(), SearchDbError> {
     let mut content_stmt = tx.prepare_cached(
         "INSERT INTO search_generation_content (generation_id, path, content) VALUES (?1, ?2, ?3)",
@@ -279,7 +447,9 @@ fn insert_generation_content(
     for owned in items {
         let item = owned.item();
         let path = encode_path(&item.path);
-        let (state, content) = if !matches!(item.kind, EntryKind::File) {
+        let (state, content) = if !plan.indexes_content_for(&item.path) {
+            (CONTENT_STATE_POLICY_DISABLED, None)
+        } else if !matches!(item.kind, EntryKind::File) {
             (2_i64, None)
         } else if item
             .size_bytes
@@ -314,7 +484,16 @@ fn insert_generation_items(
         "INSERT INTO search_generation_items
          (generation_id, path, parent_path, root_path, name, kind, size_bytes,
           modified_unix_secs, is_executable, symlink_target_is_dir)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+         ON CONFLICT(generation_id, path) DO UPDATE SET
+            parent_path = excluded.parent_path,
+            root_path = excluded.root_path,
+            name = excluded.name,
+            kind = excluded.kind,
+            size_bytes = excluded.size_bytes,
+            modified_unix_secs = excluded.modified_unix_secs,
+            is_executable = excluded.is_executable,
+            symlink_target_is_dir = excluded.symlink_target_is_dir",
     )?;
     for owned in items {
         let item = owned.item();
@@ -651,6 +830,12 @@ pub fn search_db_path() -> PathBuf {
     dir.join("search.db")
 }
 
+fn sqlite_sidecar_path(path: &Path, suffix: &str) -> PathBuf {
+    let mut sidecar = path.as_os_str().to_os_string();
+    sidecar.push(suffix);
+    PathBuf::from(sidecar)
+}
+
 fn migrate(conn: &Connection) -> Result<(), SearchDbError> {
     let version: u32 = conn.query_row("PRAGMA user_version", [], |row| row.get(0))?;
     match version {
@@ -819,6 +1004,8 @@ mod generation_tests {
         ScanPlan::new(&SearchConfig {
             include_roots: vec![root.to_path_buf()],
             include_hidden_system: true,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.to_path_buf()],
             ..SearchConfig::default()
         })
         .expect("valid plan")
@@ -873,6 +1060,62 @@ mod generation_tests {
         assert_eq!(committed.items(), &[owned(&root, "kept.txt", 3)]);
         assert_eq!(store.load(&plan).expect("load"), Some(committed));
         let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn diagnostics_report_freelist_pages_and_bytes_without_enabling_auto_vacuum() {
+        let db_path = temp_db_path("storage-diagnostics");
+        let store = SearchStore::open(db_path.clone()).expect("open store");
+        store
+            .conn
+            .execute_batch(
+                "CREATE TABLE diagnostic_churn (payload BLOB NOT NULL);
+                 INSERT INTO diagnostic_churn VALUES (zeroblob(65536));
+                 DELETE FROM diagnostic_churn;",
+            )
+            .expect("create diagnostic freelist");
+        let page_size: u64 = store
+            .conn
+            .query_row("PRAGMA page_size", [], |row| row.get(0))
+            .expect("read page size");
+        let auto_vacuum: u64 = store
+            .conn
+            .query_row("PRAGMA auto_vacuum", [], |row| row.get(0))
+            .expect("read auto vacuum policy");
+
+        let diagnostics = store.diagnostics().expect("read diagnostics");
+
+        assert_eq!(
+            auto_vacuum, 0,
+            "opening the GUI cache must not enable auto-VACUUM"
+        );
+        assert!(
+            diagnostics.freelist_pages > 0,
+            "fixture must create free pages"
+        );
+        assert_eq!(
+            diagnostics.freelist_bytes,
+            diagnostics.freelist_pages.saturating_mul(page_size)
+        );
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn checkpoint_policy_covers_full_and_large_mutations_only() {
+        let root = PathBuf::from("root");
+        assert!(requires_checkpoint_after_commit(
+            &IndexMutation::ReplaceAll(Vec::new())
+        ));
+        assert!(!requires_checkpoint_after_commit(&IndexMutation::Delta {
+            upserts: vec![owned(&root, "small.txt", 1)],
+            remove_trees: Vec::new(),
+        }));
+        assert!(requires_checkpoint_after_commit(&IndexMutation::Delta {
+            upserts: (0..CHECKPOINT_MUTATION_ITEM_THRESHOLD)
+                .map(|i| owned(&root, &format!("large-{i}.txt"), i as u64))
+                .collect(),
+            remove_trees: Vec::new(),
+        }));
     }
 
     #[test]
@@ -962,6 +1205,100 @@ mod generation_tests {
         assert_eq!(new_hits[0].snippet, "fresh unique content");
         assert_eq!(new_hits[0].content, "fresh unique content");
         assert!(new_hits[0].relevance > 0);
+        let _ = std::fs::remove_dir_all(root);
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn metadata_equal_incremental_upserts_refresh_content() {
+        let db_path = temp_db_path("delta-authoritative-content-refresh");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-delta-authoritative-content-refresh-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("system time")
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        let path = root.join("same.txt");
+        std::fs::write(&path, "oldcontent").expect("write old same-sized content");
+        let scan_plan = plan(&root);
+        let item = owned(&root, "same.txt", 10);
+        let mut store = SearchStore::open(db_path.clone()).expect("open store");
+        let initial = store
+            .commit(&scan_plan, IndexMutation::ReplaceAll(vec![item.clone()]))
+            .expect("commit initial generation");
+
+        std::fs::write(&path, "newcontent").expect("write new same-sized content");
+        let updated = store
+            .commit(
+                &scan_plan,
+                IndexMutation::Delta {
+                    upserts: vec![item.clone()],
+                    remove_trees: Vec::new(),
+                },
+            )
+            .expect("commit authoritative delta");
+
+        assert_eq!(updated.generation(), initial.generation());
+        assert!(
+            query_indexed_content_page(&db_path, &scan_plan, "oldcontent", 10, 0)
+                .expect("query stale content")
+                .is_empty(),
+            "a metadata-equal upsert must remove its stale positive FTS hit"
+        );
+        assert_eq!(
+            query_indexed_content_page(&db_path, &scan_plan, "newcontent", 10, 0)
+                .expect("query refreshed content")
+                .len(),
+            1
+        );
+        std::fs::write(&path, "oldcontent").expect("restore same-sized content");
+        let replaced = store
+            .commit(
+                &scan_plan,
+                IndexMutation::ReplaceRoot {
+                    root: root.clone(),
+                    items: vec![item],
+                },
+            )
+            .expect("commit authoritative root replacement");
+        assert_eq!(replaced.generation(), initial.generation());
+        assert!(
+            query_indexed_content_page(&db_path, &scan_plan, "newcontent", 10, 0)
+                .expect("query superseded replacement content")
+                .is_empty(),
+            "a metadata-equal root replacement must remove its stale positive FTS hit"
+        );
+        assert_eq!(
+            query_indexed_content_page(&db_path, &scan_plan, "oldcontent", 10, 0)
+                .expect("query root replacement content")
+                .len(),
+            1
+        );
+        let mut streamed = Vec::new();
+        stream_generation_content_items(&db_path, &scan_plan, None, |record| {
+            streamed.push((record.item.path, record.content, record.complete));
+        })
+        .expect("stream content for negated query");
+        assert_eq!(
+            streamed,
+            vec![(path.clone(), Some("oldcontent".to_string()), true)],
+            "negated queries must evaluate the refreshed complete content, not stale text"
+        );
+        let generations: i64 = store
+            .conn
+            .query_row("SELECT COUNT(*) FROM search_generations", [], |row| {
+                row.get(0)
+            })
+            .expect("count generations");
+        let freelist_pages: i64 = store
+            .conn
+            .query_row("PRAGMA freelist_count", [], |row| row.get(0))
+            .expect("count freelist pages");
+        assert_eq!(generations, 1);
+        assert_eq!(freelist_pages, 0);
         let _ = std::fs::remove_dir_all(root);
         let _ = std::fs::remove_file(db_path);
     }
@@ -1287,6 +1624,150 @@ mod generation_tests {
             .expect("delta generation");
 
         assert_eq!(store.load(&plan).expect("load"), Some(committed));
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn incremental_mutations_keep_the_active_generation_and_storage_bounded() {
+        let db_path = temp_db_path("incremental-storage-bounded");
+        let root = PathBuf::from("root");
+        let nested_root = root.join("nested");
+        let scan_plan = ScanPlan::new(&SearchConfig {
+            include_roots: vec![root.clone(), nested_root.clone()],
+            include_hidden_system: true,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            ..SearchConfig::default()
+        })
+        .expect("valid plan");
+        let mut store = SearchStore::open(db_path.clone()).expect("open store");
+        let mut initial = (0..255)
+            .map(|index| owned(&root, &format!("items/{index}.txt"), index))
+            .collect::<Vec<_>>();
+        initial.push(owned(&nested_root, "marker.txt", 255));
+        let initial = store
+            .commit(&scan_plan, IndexMutation::ReplaceAll(initial))
+            .expect("initial generation");
+
+        for revision in 0..128 {
+            store
+                .commit(
+                    &scan_plan,
+                    IndexMutation::Delta {
+                        upserts: vec![owned(&root, "items/0.txt", 10_000 + revision)],
+                        remove_trees: Vec::new(),
+                    },
+                )
+                .expect("bounded delta");
+        }
+        for revision in 0..128 {
+            store
+                .commit(
+                    &scan_plan,
+                    IndexMutation::ReplaceRoot {
+                        root: nested_root.clone(),
+                        items: vec![owned(&nested_root, "marker.txt", 20_000 + revision)],
+                    },
+                )
+                .expect("bounded root replacement");
+        }
+        let active = store
+            .load(&scan_plan)
+            .expect("load")
+            .expect("active generation");
+        let generations: i64 = store
+            .conn
+            .query_row("SELECT COUNT(*) FROM search_generations", [], |row| {
+                row.get(0)
+            })
+            .expect("count generations");
+        let freelist_pages: i64 = store
+            .conn
+            .query_row("PRAGMA freelist_count", [], |row| row.get(0))
+            .expect("freelist pages");
+
+        assert_eq!(active.generation(), initial.generation());
+        assert_eq!(active.items().len(), 256);
+        assert_eq!(generations, 1);
+        assert_eq!(freelist_pages, 0, "deltas must not churn whole generations");
+        let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn content_policy_controls_payloads_and_invalidates_prior_generations() {
+        let db_path = temp_db_path("content-policy");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let excluded_dir = root.join("excluded");
+        std::fs::create_dir_all(&excluded_dir).expect("create content roots");
+        std::fs::write(root.join("included.txt"), "included-needle").expect("write included");
+        std::fs::write(excluded_dir.join("excluded.txt"), "excluded-needle")
+            .expect("write excluded");
+        let mut enabled = SearchConfig {
+            include_roots: vec![root.clone()],
+            include_hidden_system: true,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_exclude_roots: vec![excluded_dir],
+            ..SearchConfig::default()
+        };
+        let enabled_plan = ScanPlan::new(&enabled).expect("enabled plan");
+        let mut store = SearchStore::open(db_path.clone()).expect("open store");
+        store
+            .commit(
+                &enabled_plan,
+                IndexMutation::ReplaceAll(vec![
+                    owned(&root, "included.txt", 16),
+                    owned(&root, "excluded/excluded.txt", 16),
+                ]),
+            )
+            .expect("commit enabled content");
+        assert_eq!(
+            query_indexed_content_page(&db_path, &enabled_plan, "\"included-needle\"", 10, 0)
+                .expect("query included")
+                .len(),
+            1
+        );
+        assert!(
+            query_indexed_content_page(&db_path, &enabled_plan, "\"excluded-needle\"", 10, 0)
+                .expect("query excluded")
+                .is_empty()
+        );
+
+        enabled.content_indexing_enabled = false;
+        let disabled_plan = ScanPlan::new(&enabled).expect("disabled plan");
+        assert_ne!(enabled_plan.identity(), disabled_plan.identity());
+        assert!(matches!(
+            store.load(&disabled_plan),
+            Err(SearchDbError::PlanIdentityMismatch)
+        ));
+        store
+            .commit(
+                &disabled_plan,
+                IndexMutation::ReplaceAll(vec![owned(&root, "included.txt", 16)]),
+            )
+            .expect("commit disabled content");
+        assert!(
+            query_indexed_content_page(&db_path, &disabled_plan, "\"included-needle\"", 10, 0)
+                .expect("query disabled")
+                .is_empty()
+        );
+        let content_state_rows: i64 = store
+            .conn
+            .query_row(
+                "SELECT COUNT(*) FROM search_generation_content_state",
+                [],
+                |row| row.get(0),
+            )
+            .expect("count explicit policy state");
+        assert_eq!(content_state_rows, 1);
+        let _ = std::fs::remove_dir_all(root);
         let _ = std::fs::remove_file(db_path);
     }
 

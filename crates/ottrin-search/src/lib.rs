@@ -58,6 +58,11 @@ struct IndexState {
     items: Arc<Vec<SearchResultItem>>,
     snapshot_revision: u64,
     status: SearchIndexStatus,
+    loading_saved_snapshot: bool,
+    database_bytes: u64,
+    wal_bytes: u64,
+    freelist_pages: u64,
+    freelist_bytes: u64,
     last_error: Option<String>,
     progress_text: Option<String>,
     last_completed_indexed_items: Option<usize>,
@@ -84,6 +89,11 @@ impl Default for IndexState {
             items: Arc::new(Vec::new()),
             snapshot_revision: 0,
             status: SearchIndexStatus::Indexing,
+            loading_saved_snapshot: false,
+            database_bytes: 0,
+            wal_bytes: 0,
+            freelist_pages: 0,
+            freelist_bytes: 0,
             last_error: None,
             progress_text: None,
             last_completed_indexed_items: None,
@@ -109,6 +119,13 @@ impl Default for IndexState {
 #[derive(Debug, Clone)]
 pub struct SearchIndexDiagnostics {
     pub status: SearchIndexStatus,
+    /// True only while SQLite is deserializing a matching completed snapshot;
+    /// it never represents a filesystem scan.
+    pub loading_saved_snapshot: bool,
+    pub database_bytes: u64,
+    pub wal_bytes: u64,
+    pub freelist_pages: u64,
+    pub freelist_bytes: u64,
     /// Monotonically advances whenever a complete query snapshot is replaced.
     pub snapshot_revision: u64,
     pub detail: Option<String>,
@@ -462,12 +479,18 @@ impl SearchHandle {
     pub fn diagnostics(&self) -> SearchIndexDiagnostics {
         let idx = self.index.read().expect("index read");
         let detail = match idx.status {
+            SearchIndexStatus::Loading => idx.progress_text.clone(),
             SearchIndexStatus::Indexing => idx.progress_text.clone(),
             SearchIndexStatus::Unavailable => idx.last_error.clone(),
             SearchIndexStatus::Ready => idx.progress_text.clone(),
         };
         SearchIndexDiagnostics {
             status: idx.status,
+            loading_saved_snapshot: idx.loading_saved_snapshot,
+            database_bytes: idx.database_bytes,
+            wal_bytes: idx.wal_bytes,
+            freelist_pages: idx.freelist_pages,
+            freelist_bytes: idx.freelist_bytes,
             snapshot_revision: idx.snapshot_revision,
             detail,
             indexed_items: if matches!(idx.status, SearchIndexStatus::Indexing) {
@@ -642,9 +665,9 @@ impl SearchHandle {
         }
 
         // ── Content search pass: query the active FTS generation first. ───────
-        // Ripgrep remains a supplemental fallback for content which is deliberately
-        // not indexed (unreadable, binary, oversized, or outside indexed roots).
-        if query.content_search && query.text.trim().len() >= 2 {
+        // The config is a privacy boundary, not a persistence preference: when
+        // disabled, avoid both indexed payloads and the live ripgrep fallback.
+        if query.content_search && cfg.content_indexing_enabled && query.text.trim().len() >= 2 {
             let fts_query = fts_content_match(&expr);
             if matches!(status, SearchIndexStatus::Ready)
                 && let Some(fts_query) = fts_query.as_deref()
@@ -706,8 +729,13 @@ impl SearchHandle {
             }
             let roots = ordered_query_roots(&query, &cfg);
             let content_limit = query.limit.max(50);
-            let rg_items =
-                query_content_ripgrep(&expr, &roots, query.include_hidden_system, content_limit);
+            let rg_items = query_content_ripgrep(
+                &expr,
+                &roots,
+                &cfg,
+                query.include_hidden_system,
+                content_limit,
+            );
             let mut seen: HashSet<PathBuf> =
                 matched.iter().map(|(_, item)| item.path.clone()).collect();
             for item in rg_items {
@@ -2732,12 +2760,102 @@ fn is_simple_single_word(text: &str) -> bool {
         && !t.starts_with('"')
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ContentRipgrepTraversal {
+    root: PathBuf,
+    exclude_globs: Vec<String>,
+}
+
+/// Return ripgrep working directories that cannot traverse outside the content
+/// policy. Excluded children become ripgrep ignore globs relative to their
+/// working directory; a path that cannot be represented as a glob is omitted
+/// rather than searched.
+fn content_ripgrep_traversal_plan(
+    query_roots: &[PathBuf],
+    config: &SearchConfig,
+) -> Vec<ContentRipgrepTraversal> {
+    if !config.content_indexing_enabled {
+        return Vec::new();
+    }
+
+    let mut plan = Vec::new();
+    for query_root in query_roots {
+        for content_root in &config.content_include_roots {
+            let root = if content_root.starts_with(query_root) {
+                content_root.clone()
+            } else if query_root.starts_with(content_root) {
+                query_root.clone()
+            } else {
+                continue;
+            };
+            if config
+                .content_exclude_roots
+                .iter()
+                .any(|excluded| root.starts_with(excluded))
+            {
+                continue;
+            }
+
+            let mut exclude_globs = Vec::new();
+            let mut representable = true;
+            for excluded in config
+                .content_exclude_roots
+                .iter()
+                .filter(|excluded| excluded.starts_with(&root))
+            {
+                let Some(relative) = excluded.strip_prefix(&root).ok() else {
+                    continue;
+                };
+                let Some(globs) = relative_path_to_ripgrep_globs(relative) else {
+                    representable = false;
+                    break;
+                };
+                exclude_globs.extend(globs);
+            }
+            if !representable {
+                continue;
+            }
+            exclude_globs.sort();
+            exclude_globs.dedup();
+            plan.push(ContentRipgrepTraversal {
+                root,
+                exclude_globs,
+            });
+        }
+    }
+    plan.sort_by(|left, right| left.root.cmp(&right.root));
+    plan.dedup_by(|left, right| left.root == right.root);
+    plan
+}
+
+fn relative_path_to_ripgrep_globs(path: &Path) -> Option<[String; 2]> {
+    let mut components = Vec::new();
+    for component in path.components() {
+        let std::path::Component::Normal(component) = component else {
+            return None;
+        };
+        let component = component.to_str()?;
+        let escaped = component
+            .chars()
+            .flat_map(|character| match character {
+                '\\' | '*' | '?' | '[' | ']' | '{' | '}' | '!' => ['\\', character],
+                _ => ['\0', character],
+            })
+            .filter(|character| *character != '\0')
+            .collect::<String>();
+        components.push(escaped);
+    }
+    let path = components.join("/");
+    (!path.is_empty()).then(|| [format!("!{path}"), format!("!{path}/**")])
+}
+
 /// Run ripgrep to find files whose *contents* match positive parsed content literals.
 /// Returns items with `content_snippet` populated (first matching line, trimmed).
 /// Regex-style queries are intentionally left unchanged here.
 fn query_content_ripgrep(
     expr: &Expr,
     roots: &[PathBuf],
+    config: &SearchConfig,
     include_hidden: bool,
     limit: usize,
 ) -> Vec<SearchResultItem> {
@@ -2751,32 +2869,44 @@ fn query_content_ripgrep(
     if terms.is_empty() {
         return Vec::new();
     }
+    let traversal_plan = content_ripgrep_traversal_plan(roots, config);
+    if traversal_plan.is_empty() {
+        return Vec::new();
+    }
 
     let mut matching_paths: Option<HashSet<PathBuf>> = None;
     for term in &terms {
-        let mut cmd = std::process::Command::new("rg");
-        cmd.arg("--files-with-matches")
-            .arg("--fixed-strings")
-            .arg("--ignore-case")
-            .arg("--max-count=1");
-        if include_hidden {
-            cmd.arg("--hidden");
+        let mut term_paths = HashSet::new();
+        for traversal in &traversal_plan {
+            let mut cmd = internal_command("rg");
+            cmd.current_dir(&traversal.root)
+                .arg("--files-with-matches")
+                .arg("--fixed-strings")
+                .arg("--ignore-case")
+                .arg("--max-count=1");
+            if include_hidden {
+                cmd.arg("--hidden");
+            }
+            for glob in &traversal.exclude_globs {
+                cmd.arg("--glob").arg(glob);
+            }
+            cmd.arg("-e").arg(term).arg("--").arg(".");
+            let file_output = match cmd.output() {
+                Ok(output) if output.status.success() || !output.stdout.is_empty() => output,
+                _ => continue,
+            };
+            term_paths.extend(
+                std::str::from_utf8(&file_output.stdout)
+                    .unwrap_or("")
+                    .lines()
+                    .filter(|line| !line.is_empty())
+                    .map(|line| traversal.root.join(line))
+                    // Defense in depth: command planning keeps excluded paths out
+                    // of traversal, and this preserves the result boundary if the
+                    // filesystem changes while ripgrep is running.
+                    .filter(|path| content_indexing_allows_path(config, path)),
+            );
         }
-        cmd.arg("-e").arg(term);
-        cmd.arg("--");
-        for root in roots {
-            cmd.arg(root);
-        }
-        let file_output = match cmd.output() {
-            Ok(o) if o.status.success() || !o.stdout.is_empty() => o,
-            _ => return Vec::new(),
-        };
-        let term_paths: HashSet<PathBuf> = std::str::from_utf8(&file_output.stdout)
-            .unwrap_or("")
-            .lines()
-            .filter(|l| !l.is_empty())
-            .map(PathBuf::from)
-            .collect();
         if term_paths.is_empty() {
             return Vec::new();
         }
@@ -2848,6 +2978,18 @@ fn query_content_ripgrep(
         .collect();
     items.truncate(limit);
     items
+}
+
+fn content_indexing_allows_path(config: &SearchConfig, path: &Path) -> bool {
+    config.content_indexing_enabled
+        && config
+            .content_include_roots
+            .iter()
+            .any(|root| path.starts_with(root))
+        && !config
+            .content_exclude_roots
+            .iter()
+            .any(|root| path.starts_with(root))
 }
 
 fn collect_positive_content_literals(
@@ -3375,6 +3517,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3576,6 +3720,8 @@ mod tests {
         let service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         {
@@ -3622,6 +3768,376 @@ mod tests {
     }
 
     #[test]
+    fn disabled_content_indexing_never_searches_file_bodies() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-disabled-content-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        fs::write(root.join("body-only.txt"), "private-body-needle")
+            .expect("write body-only content");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: false,
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "private-body-needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert!(response.items.is_empty());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn live_content_search_excludes_content_policy_roots() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-live-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let excluded = root.join("excluded");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&excluded).expect("create content roots");
+        fs::write(root.join("included.txt"), "shared-content-needle")
+            .expect("write included content");
+        fs::write(excluded.join("private.txt"), "shared-content-needle")
+            .expect("write excluded content");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_exclude_roots: vec![excluded],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "shared-content-needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].name, "included.txt");
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn live_content_search_excludes_a_configured_directory_after_it_becomes_a_file() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-replaced-root-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let excluded = root.join("was-directory");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create content root");
+        fs::write(root.join("included.txt"), "replacement-content-needle")
+            .expect("write included content");
+        fs::write(&excluded, "replacement-content-needle")
+            .expect("replace configured directory with file");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_exclude_roots: vec![excluded],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "replacement-content-needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].name, "included.txt");
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn live_content_search_excludes_hidden_policy_roots_when_hidden_search_is_enabled() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-hidden-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let excluded = root.join(".excluded");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&excluded).expect("create hidden content roots");
+        fs::write(root.join(".included.txt"), "hidden-content-needle")
+            .expect("write included hidden content");
+        fs::write(excluded.join("private.txt"), "hidden-content-needle")
+            .expect("write excluded hidden content");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_exclude_roots: vec![excluded],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "hidden-content-needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: true,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].name, ".included.txt");
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn live_content_search_honors_nested_include_and_exclude_roots() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-nested-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let included = root.join("documents");
+        let excluded = included.join("private");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&excluded).expect("create nested content roots");
+        fs::write(included.join("public.txt"), "nested-content-needle")
+            .expect("write included nested content");
+        fs::write(excluded.join("private.txt"), "nested-content-needle")
+            .expect("write excluded nested content");
+        fs::write(root.join("outside.txt"), "nested-content-needle")
+            .expect("write content outside include root");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![included],
+            content_exclude_roots: vec![excluded],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "nested-content-needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].name, "public.txt");
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn live_content_search_skips_a_scope_beneath_an_excluded_ancestor() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-ancestor-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let excluded = root.join("excluded");
+        let selected = excluded.join("selected");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&selected).expect("create excluded selected root");
+        fs::write(selected.join("private.txt"), "ancestor-content-needle")
+            .expect("write excluded selected content");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_exclude_roots: vec![excluded],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "ancestor-content-needle".to_string(),
+            scope: SearchScope::CurrentFolder,
+            root_path: Some(selected),
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert!(response.items.is_empty());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn live_content_search_does_not_cross_disjoint_query_and_content_roots() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-disjoint-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let content_root = root.join("content");
+        let selected = root.join("selected");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&content_root).expect("create content root");
+        fs::create_dir_all(&selected).expect("create selected root");
+        fs::write(content_root.join("other.txt"), "disjoint-content-needle")
+            .expect("write content in configured root");
+        fs::write(selected.join("selected.txt"), "disjoint-content-needle")
+            .expect("write content in selected root");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![content_root],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "disjoint-content-needle".to_string(),
+            scope: SearchScope::CurrentFolder,
+            root_path: Some(selected),
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert!(response.items.is_empty());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn content_ripgrep_exclude_globs_keep_exact_files_and_descendants_out_of_rg() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-ripgrep-globs-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let excluded_file = root.join("private.txt");
+        let excluded_metachar_file = root.join("private[?]*!.txt");
+        let excluded_dir = root.join("private-dir");
+        let plan = content_ripgrep_traversal_plan(
+            std::slice::from_ref(&root),
+            &SearchConfig {
+                content_indexing_enabled: true,
+                content_include_roots: vec![root.clone()],
+                content_exclude_roots: vec![
+                    excluded_file.clone(),
+                    excluded_metachar_file.clone(),
+                    excluded_dir.clone(),
+                ],
+                ..SearchConfig::default()
+            },
+        );
+
+        assert_eq!(plan.len(), 1);
+        assert_eq!(plan[0].root, root);
+        fs::create_dir_all(&excluded_dir).expect("create excluded directory");
+        fs::write(root.join("included.txt"), "content-policy-needle").expect("write included file");
+        fs::write(&excluded_file, "content-policy-needle").expect("write excluded file");
+        fs::write(&excluded_metachar_file, "content-policy-needle")
+            .expect("write excluded metacharacter file");
+        fs::write(excluded_dir.join("child.txt"), "content-policy-needle")
+            .expect("write excluded child");
+
+        let mut command = internal_command("rg");
+        command
+            .current_dir(&root)
+            .arg("--files-with-matches")
+            .arg("--fixed-strings")
+            .arg("--ignore-case")
+            .arg("--max-count=1");
+        for glob in &plan[0].exclude_globs {
+            command.arg("--glob").arg(glob);
+        }
+        let output = command
+            .arg("-e")
+            .arg("content-policy-needle")
+            .arg("--")
+            .arg(".")
+            .output()
+            .expect("run ripgrep");
+        assert!(output.status.success());
+        assert_eq!(
+            std::str::from_utf8(&output.stdout).expect("ripgrep stdout"),
+            "./included.txt\n"
+        );
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
     fn content_search_uses_active_fts_generation_before_ripgrep_fallback() {
         let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
         let root = std::env::temp_dir().join(format!(
@@ -3638,6 +4154,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3684,6 +4202,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3731,6 +4251,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3774,6 +4296,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3856,6 +4380,8 @@ mod tests {
         let service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.index.write().expect("index write").status = SearchIndexStatus::Indexing;
@@ -3897,6 +4423,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -3951,6 +4479,8 @@ mod tests {
         let config = SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         };
         let service = SearchService::new(config.clone());
@@ -4092,6 +4622,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -4144,6 +4676,8 @@ mod tests {
         let mut service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         service.start();
@@ -4189,6 +4723,8 @@ mod tests {
         let service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         {
@@ -4232,7 +4768,12 @@ mod tests {
             .expect("create test file");
 
         let expr = parse_query("needle").expect("parse query");
-        let results = query_content_ripgrep(&expr, std::slice::from_ref(&root), false, 10);
+        let config = SearchConfig {
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            ..SearchConfig::default()
+        };
+        let results = query_content_ripgrep(&expr, std::slice::from_ref(&root), &config, false, 10);
 
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].path, file_path);
@@ -4259,6 +4800,8 @@ mod tests {
         let service = SearchService::new(SearchConfig {
             include_roots: vec![root.clone()],
             use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
             ..SearchConfig::default()
         });
         {

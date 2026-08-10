@@ -12980,6 +12980,17 @@ impl OttrinApp {
                     // Indexing status near the bottom
                     ui.add_space(results_height * 0.16);
                     match diag.status {
+                        SearchIndexStatus::Loading => {
+                            ui.ctx().request_repaint();
+                            ui.horizontal(|ui| {
+                                ui.label(
+                                    RichText::new("Loading saved index…")
+                                        .color(c.text_muted)
+                                        .size(11.0),
+                                );
+                                ui.add(egui::Spinner::new().size(12.0).color(c.accent));
+                            });
+                        }
                         SearchIndexStatus::Indexing => {
                             ui.ctx().request_repaint();
                             // Estimate progress: multi-root uses root index, single-root
@@ -18546,8 +18557,10 @@ impl OttrinApp {
                                     settings_section_icon(ui, c, MI_SEARCH, "Index status", "Live health, progress, and rebuild controls.", |ui| {
                                         let diag = self.search_service.diagnostics();
                                         let is_indexing = matches!(diag.status, SearchIndexStatus::Indexing);
+                                        let is_loading = matches!(diag.status, SearchIndexStatus::Loading);
                                         let ready_col = ok_col;
                                         let (mut dot_col, mut status_word) = match diag.status {
+                                            SearchIndexStatus::Loading    => (c.accent, "Loading"),
                                             SearchIndexStatus::Indexing   => (c.accent, "Indexing"),
                                             SearchIndexStatus::Ready      => (ready_col, "Ready"),
                                             SearchIndexStatus::Unavailable => (c.error, "Unavailable"),
@@ -18564,7 +18577,9 @@ impl OttrinApp {
                                         } else {
                                             format!("{} files indexed", diag.indexed_items)
                                         };
-                                        let count_line = if is_indexing {
+                                        let count_line = if is_loading {
+                                            "Loading saved SQLite index".to_string()
+                                        } else if is_indexing {
                                             progress_caption.clone()
                                         } else if matches!(diag.status, SearchIndexStatus::Ready) {
                                             if let Some(total) = est_total {
@@ -18601,7 +18616,7 @@ impl OttrinApp {
                                         ui.horizontal(|ui| {
                                             ui.label(RichText::new("Status:").color(c.text_dim).size(11.0));
                                             ui.add_space(6.0);
-                                            if is_indexing {
+                                            if is_indexing || is_loading {
                                                 ui.add(egui::Spinner::new().color(dot_col).size(12.0));
                                             } else {
                                                 let (dot_r, _) = ui.allocate_exact_size(Vec2::new(8.0, 8.0), egui::Sense::hover());
@@ -18654,7 +18669,7 @@ impl OttrinApp {
                                             .fill(c.panel_raised)
                                             .stroke(Stroke::NONE)
                                             .min_size(Vec2::new(ui.available_width(), 28.0));
-                                        if ui.add_enabled(!is_indexing, btn).clicked() {
+                                        if ui.add_enabled(!is_indexing && !is_loading, btn).clicked() {
                                             self.search_service.rebuild_index();
                                         }
                                     });
@@ -22312,6 +22327,9 @@ fn search_root_summary(diagnostics: &SearchIndexDiagnostics) -> String {
 
 fn search_scan_summary(diagnostics: &SearchIndexDiagnostics) -> String {
     match diagnostics.status {
+        SearchIndexStatus::Loading => {
+            "Cache: loading saved SQLite snapshot · no filesystem scan running".to_string()
+        }
         SearchIndexStatus::Indexing => {
             let started = diagnostics
                 .last_scan_started_unix_secs
@@ -22366,6 +22384,13 @@ fn search_diagnostics_tooltip(
         search_scope_summary(scope, current_dir),
         search_root_summary(diagnostics),
         search_scan_summary(diagnostics),
+        format!(
+            "Storage: DB {} · WAL {} · freelist {} pages ({})",
+            format_size(diagnostics.database_bytes),
+            format_size(diagnostics.wal_bytes),
+            diagnostics.freelist_pages,
+            format_size(diagnostics.freelist_bytes)
+        ),
     ];
     if let Some(active_root) = diagnostics.active_root.as_ref() {
         lines.push(format!(

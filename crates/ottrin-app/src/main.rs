@@ -579,6 +579,7 @@ fn print_index_diagnostics(
 ) -> Result<(), String> {
     let status = match diagnostics.status {
         SearchIndexStatus::Unavailable => "unavailable",
+        SearchIndexStatus::Loading => "loading",
         SearchIndexStatus::Indexing => "indexing",
         SearchIndexStatus::Ready => "ready",
     };
@@ -600,6 +601,10 @@ fn print_index_diagnostics(
             "last_scan_completed_unix_secs": diagnostics.last_scan_completed_unix_secs,
             "last_scan_duration_ms": diagnostics.last_scan_duration_ms,
             "last_progress_unix_secs": diagnostics.last_progress_unix_secs,
+            "database_bytes": diagnostics.database_bytes,
+            "wal_bytes": diagnostics.wal_bytes,
+            "freelist_pages": diagnostics.freelist_pages,
+            "freelist_bytes": diagnostics.freelist_bytes,
             "detail": diagnostics.detail,
             "error": diagnostics.last_error,
         });
@@ -625,6 +630,12 @@ fn print_index_diagnostics(
         } else {
             "unavailable"
         }
+    );
+    println!("Database: {} bytes", diagnostics.database_bytes);
+    println!("WAL: {} bytes", diagnostics.wal_bytes);
+    println!(
+        "Free pages: {} ({} bytes)",
+        diagnostics.freelist_pages, diagnostics.freelist_bytes
     );
     if let Some(detail) = &diagnostics.detail {
         println!("Detail: {detail}");

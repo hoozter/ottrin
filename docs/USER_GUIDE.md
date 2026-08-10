@@ -57,11 +57,13 @@ Search freshness uses three mechanisms:
 | --- | --- | --- |
 | Saved SQLite index | Yes | Gives instant results from the last completed scan |
 | File watcher | No | Updates results while Ottrin is running |
-| Background updater | Yes | Reconciles changes made while Ottrin was closed |
+| Background updater | Yes | Runs a scheduled full refresh (every four hours when enabled) to reconcile changes made while Ottrin was closed; it is not an always-on watcher |
 
 System locate/plocate is optional. It can help discover system paths, but it can be stale and does not grant permission to read, preview, copy, or delete protected files.
 
 Built-in generated-folder skips such as `.git`, `node_modules`, `target`, `__pycache__`, and Trash directories keep indexing practical. If you need to search one of those trees, adjust search settings instead of relying on the watcher.
+
+Content search follows its own privacy policy. When content indexing is disabled, Ottrin does not read file bodies for either saved-index or live fallback search. When it is enabled, only explicitly included roots are eligible; excluded file bodies and descendants are not searched by live fallback and remain out of saved-index results. Live fallback can still enumerate excluded directories while ripgrep applies those exclusions.
 
 ## Command Line
 
@@ -89,7 +91,7 @@ Permanent deletion cannot be undone from Ottrin.
 
 ## Quick Inspector
 
-Press Space on a selected item to open Quick Inspector. Ottrin previews common text and image formats directly and renders bounded multi-page PDF visuals with Previous/Next/page selection when its packaged PDFium runtime is available; it also shows extracted PDF text and metadata. It renders bounded DOCX/XLSX/XLSM content-preview visuals and ODS worksheet previews alongside their extracted text and metadata. On Unix, PPTX receives a bounded, non-authoritative first-slide text card alongside its slide text and metadata; this is not a faithful PowerPoint layout and does not render native fonts, shapes, charts, media, animations, transitions, speaker notes, themes, or exact positioning. PPTX visual admission deliberately requires canonical matching local and central ZIP metadata, so files repacked by some third-party ZIP tools may retain text and metadata without a visual card. On non-Unix platforms, PPTX keeps its text and metadata fallback until a reparse-safe admission protocol exists.
+Press Space on a selected item to open Quick Inspector. Ottrin previews common text and image formats directly and renders bounded multi-page PDF visuals with Previous/Next/page selection when its packaged PDFium runtime is available; it also shows extracted PDF text and metadata as a fallback when visual rendering is unavailable. XLSX/XLSM and ODS use bounded structured worksheet previews. DOCX and PPTX currently expose clearly labeled, left-aligned extracted-text fallbacks because Ottrin does not yet package a sandboxed layout-faithful Office renderer; those fallbacks preserve text structure but do not claim native fonts, shapes, charts, media, themes, or exact positioning.
 
 Damaged, encrypted, unsupported, or unrenderable PDFs fall back to extracted text and metadata without exposing raw PDF bytes to the image renderer. SVG is rendered only after bounded source, XML element/attribute, path-work, dimension, and pixel admission; external references are blocked. Semantic expansion through reuse, embedded content, CSS, patterns, masks, clipping, markers, and animation is not admitted. Filter support is limited to a bounded number of finite drop shadows and applications; rejected SVGs show the admission reason instead of a blank preview. EPS/PostScript currently reports an actionable unavailable state because Ottrin does not package a vetted isolated renderer: it never executes PostScript in-process or through an unrestricted shell command. A future EPS renderer must be non-networked and separately enforce input, bounding-box/output pixels, CPU, memory, temporary-output, and process-lifetime limits on every supported platform. Legacy binary Office formats such as `.doc`, `.xls`, and `.ppt` currently show metadata and can be opened in their associated desktop application.
 
@@ -157,5 +159,5 @@ ottrin --uninstall --purge-config
 - Tab drag-and-drop is implemented and test-covered; packaged/manual desktop acceptance is pending.
 - Operation Activity records session file operations and labels whether entries are restorable or not undoable. Full undo execution is not implemented.
 - Context-menu actions, Open With application launching, thumbnail view options, and status messages still need manual QA.
-- Indexed FTS5 content search supports negated content terms. A negated content query uses a completed indexed generation and excludes entries whose content could not be indexed, rather than guessing that missing content is absent. Filename, path, extension, and type exclusions keep the established positive-content fallback behavior. Ripgrep is never used to form a negated content complement.
+- Indexed FTS5 content search supports negated content terms only against a completed indexed generation. Files with unknown indexed content (for example binary, oversized, unreadable, or excluded files) are omitted from complement results rather than treated as absent, and Ottrin reports that omission. Negated content search is unavailable while the generation is incomplete. Filename, path, extension, and type exclusions remain available; content-policy exclusions apply to both saved-index and live fallback search.
 - Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing are not complete. The current unsigned Windows candidates remain unaccepted pending real-Windows portable/install/UAC testing; signing and SmartScreen reputation remain release blockers.

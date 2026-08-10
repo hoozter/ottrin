@@ -1,4 +1,4 @@
-use crate::db::SearchStore;
+use crate::db::{SearchStore, SearchStoreDiagnostics};
 use crate::mutation::{ActivationFence, GenerationSnapshot, IndexMutation};
 use crate::plan::ScanPlan;
 use crate::scanner::{ScanOutcome, ScanProgress};
@@ -32,6 +32,10 @@ pub(crate) trait StoreBackend: Send {
         expected_epoch: u64,
         publish: &mut dyn FnMut(&GenerationSnapshot),
     ) -> Result<(), StoreBackendError>;
+
+    fn diagnostics(&mut self) -> Option<SearchStoreDiagnostics> {
+        None
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -66,6 +70,9 @@ impl StoreBackend for SearchStore {
                 }
                 other => StoreBackendError::Other(other.to_string()),
             })
+    }
+    fn diagnostics(&mut self) -> Option<SearchStoreDiagnostics> {
+        SearchStore::diagnostics(self).ok()
     }
 }
 
@@ -456,7 +463,18 @@ impl WorkerLoop {
             }
         };
         self.current_plan = Some(Arc::clone(&plan));
+        {
+            let mut index = self.index.write().expect("index write");
+            index.status = SearchIndexStatus::Loading;
+            index.loading_saved_snapshot = true;
+            index.progress_text = Some("Loading saved search index…".to_string());
+        }
         let load_result = self.store.load(&plan, &self.shutdown);
+        self.index
+            .write()
+            .expect("index write")
+            .loading_saved_snapshot = false;
+        self.update_storage_diagnostics();
         match &load_result {
             Ok(Some(snapshot)) => {
                 self.publish(snapshot.clone());
@@ -608,6 +626,17 @@ impl WorkerLoop {
         index.watcher_last_error = registry.last_error().map(str::to_string);
     }
 
+    fn update_storage_diagnostics(&mut self) {
+        let Some(storage) = self.store.diagnostics() else {
+            return;
+        };
+        let mut index = self.index.write().expect("index write");
+        index.database_bytes = storage.database_bytes;
+        index.wal_bytes = storage.wal_bytes;
+        index.freelist_pages = storage.freelist_pages;
+        index.freelist_bytes = storage.freelist_bytes;
+    }
+
     fn start_scan(&mut self, completion: Option<mpsc::Sender<Result<(), String>>>) {
         self.start_scan_with_mode(completion, ScanMode::Rebuild);
     }
@@ -639,6 +668,7 @@ impl WorkerLoop {
         });
         {
             let mut index = self.index.write().expect("index write");
+            index.loading_saved_snapshot = false;
             index.status = if self.has_snapshot {
                 SearchIndexStatus::Ready
             } else {
@@ -789,6 +819,7 @@ impl WorkerLoop {
 
     fn record_failure(&mut self, error: String) {
         let mut index = self.index.write().expect("index write");
+        index.loading_saved_snapshot = false;
         index.status = if self.has_snapshot {
             SearchIndexStatus::Ready
         } else {
@@ -803,6 +834,7 @@ impl WorkerLoop {
 
     fn record_stopped(&self) {
         let mut index = self.index.write().expect("index write");
+        index.loading_saved_snapshot = false;
         index.status = if self.has_snapshot {
             SearchIndexStatus::Ready
         } else {
@@ -832,6 +864,7 @@ impl WorkerLoop {
         {
             Ok(()) => {
                 self.has_snapshot = true;
+                self.update_storage_diagnostics();
                 true
             }
             Err(StoreBackendError::ActivationCancelled) => false,
@@ -1061,6 +1094,7 @@ pub(crate) fn publish_snapshot(index: &RwLock<IndexState>, snapshot: &Generation
     let mut index = index.write().expect("index write");
     index.items = Arc::new(items);
     index.snapshot_revision = index.snapshot_revision.wrapping_add(1);
+    index.loading_saved_snapshot = false;
     index.status = SearchIndexStatus::Ready;
     index.last_error = None;
     index.progress_text = Some(format!("Ready · {count} indexed"));
@@ -1481,7 +1515,7 @@ mod tests {
             }
         });
         let index = Arc::new(RwLock::new(IndexState::default()));
-        let (launcher, _scans) = controlled_launcher();
+        let (launcher, scans) = controlled_launcher();
         let worker = spawn_with_watch_setup_hook(
             cfg,
             Arc::clone(&index),
@@ -1500,6 +1534,10 @@ mod tests {
 
         assert_eq!(items_while_blocked, vec![prior.item().path.clone()]);
         assert_eq!(status_while_blocked, SearchIndexStatus::Ready);
+        assert!(
+            scans.try_recv().is_err(),
+            "a matching cached snapshot must not start a filesystem scan"
+        );
     }
 
     #[test]
@@ -1509,13 +1547,18 @@ mod tests {
         let (launcher, scans) = controlled_launcher();
         let worker = spawn_with(
             config("/root"),
-            index,
+            Arc::clone(&index),
             Box::new(BlockingLoadStore {
                 entered: entered_tx,
             }),
             launcher,
         );
         entered_rx.recv_timeout(WAIT).expect("load entered");
+        assert_eq!(
+            index.read().expect("index").status,
+            SearchIndexStatus::Loading,
+            "SQLite snapshot deserialization is loading, not a filesystem scan"
+        );
         let (stopped_tx, stopped_rx) = mpsc::channel();
         std::thread::spawn(move || {
             worker.stop();

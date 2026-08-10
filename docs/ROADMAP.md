@@ -79,6 +79,7 @@ These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 - Native desktop Open With discovery parity beyond Linux remains deferred.
 - Media playback and advanced image tools.
 - Fanotify helper/service packaging.
+- Phase 2 continuous indexing: an always-on per-user index daemon with instant attach/reconciliation is the intended replacement for the v1 in-process watcher plus scheduled full refresh. It is not implemented or claimed by the current background updater.
 - Tab drag-and-drop is implemented with source and automated tests; packaged/manual acceptance remains pending.
 - List rubber-band selection is implemented with shared Grid semantics and source tests; packaged/manual acceptance remains pending.
 - Full undo for file operations. Linux has an initial session-only undo action for one completed
