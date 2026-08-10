@@ -2793,11 +2793,13 @@ version = "0.1.0"
 dependencies = [
  "fs2",
  "globset",
+ "libc",
  "notify",
  "ottrin-core",
  "regex",
  "rusqlite",
  "serde",
+ "serde_json",
  "thiserror 2.0.18",
  "walkdir",
  "windows-sys 0.61.2",

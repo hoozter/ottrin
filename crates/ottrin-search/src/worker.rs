@@ -137,25 +137,33 @@ impl WorkerHandle {
     }
 
     pub(crate) fn rebuild_blocking(&self) -> Result<(), String> {
+        self.begin_rebuild()?
+            .recv()
+            .map_err(|_| "Search worker stopped before rebuild completed".to_string())?
+    }
+
+    pub(crate) fn begin_rebuild(&self) -> Result<mpsc::Receiver<Result<(), String>>, String> {
         let (done, completed) = mpsc::channel();
         self.fence.invalidate();
         self.commands
             .send(Command::Rebuild(Some(done)))
             .map_err(|_| "Search worker stopped before rebuild was requested".to_string())?;
-        completed
-            .recv()
-            .map_err(|_| "Search worker stopped before rebuild completed".to_string())?
+        Ok(completed)
     }
 
     pub(crate) fn reconcile_blocking(&self) -> Result<(), String> {
+        self.begin_reconcile()?
+            .recv()
+            .map_err(|_| "Search worker stopped before update completed".to_string())?
+    }
+
+    pub(crate) fn begin_reconcile(&self) -> Result<mpsc::Receiver<Result<(), String>>, String> {
         let (done, completed) = mpsc::channel();
         self.fence.invalidate();
         self.commands
             .send(Command::Reconcile(done))
             .map_err(|_| "Search worker stopped before update was requested".to_string())?;
-        completed
-            .recv()
-            .map_err(|_| "Search worker stopped before update completed".to_string())?
+        Ok(completed)
     }
 
     #[cfg(test)]

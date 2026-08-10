@@ -9,12 +9,16 @@ authors.workspace = true
 ottrin-core = { path = "../ottrin-core" }
 thiserror.workspace = true
 serde.workspace = true
+serde_json = "1"
 rusqlite = { version = "0.31", features = ["bundled"] }
 regex = "1"
 notify = "8"
 globset = "0.4"
 walkdir = "2"
 fs2 = "0.4"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem"] }

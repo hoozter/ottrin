@@ -12,7 +12,15 @@ use std::collections::HashSet;
 use std::fs::OpenOptions;
 #[cfg(any(target_os = "windows", test))]
 use std::io::Write;
+#[cfg(unix)]
+use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
+#[cfg(unix)]
+use std::process::{Command, Stdio};
+#[cfg(unix)]
+use std::thread;
+#[cfg(unix)]
+use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum HeadlessAction {
@@ -109,6 +117,22 @@ fn windows_graphics_evidence() -> GraphicsEvidence {
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    #[cfg(unix)]
+    if args.as_slice() == ["--index-daemon"] {
+        let socket = ottrin_search::default_daemon_socket_path().unwrap_or_else(|error| {
+            eprintln!("ottrin index daemon: {error}");
+            std::process::exit(1);
+        });
+        if let Err(error) = ottrin_search::run_search_daemon(
+            configured_search_config(),
+            ottrin_search::SearchService::search_db_path(),
+            socket,
+        ) {
+            eprintln!("ottrin index daemon: {error}");
+            std::process::exit(1);
+        }
+        return;
+    }
     let preview_path = match cli_headless_action(&args) {
         Some(HeadlessAction::Preview(path)) => match resolve_preview_path(&path) {
             Ok(path) => Some(path),
@@ -121,6 +145,11 @@ fn main() {
     };
     if preview_path.is_none() && handle_cli_action() {
         return;
+    }
+    #[cfg(unix)]
+    if let Err(error) = ensure_index_daemon() {
+        eprintln!("ottrin: {error}");
+        std::process::exit(1);
     }
     install_windows_startup_panic_hook();
     if let Err(error) = run_gui(preview_path) {
@@ -414,16 +443,62 @@ fn parse_index_action(args: &[String]) -> HeadlessAction {
     }
 }
 
-fn configured_search_service() -> ottrin_search::SearchService {
-    ottrin_search::SearchService::new(configured_search_config())
-}
-
 fn configured_search_config() -> ottrin_core::SearchConfig {
     let mut config = load_config().search;
     if config.include_roots.is_empty() {
         config.include_roots = ottrin_search::default_roots();
     }
     config
+}
+
+#[cfg(unix)]
+fn connected_index_daemon() -> Option<ottrin_search::SearchDaemonClient> {
+    let client = ottrin_search::SearchDaemonClient::connect_default().ok()?;
+    client.ping().ok()?;
+    Some(client)
+}
+
+#[cfg(unix)]
+fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
+    if let Some(client) = connected_index_daemon() {
+        return Ok(client);
+    }
+
+    let unit_path =
+        ottrin_core::default_home_dir().join(".config/systemd/user/ottrin-index.service");
+    if unit_path.is_file() {
+        let status = Command::new("systemctl")
+            .args(["--user", "start", "ottrin-index.service"])
+            .status()
+            .map_err(|error| format!("could not activate the Ottrin index service: {error}"))?;
+        if !status.success() {
+            return Err(format!(
+                "installed Ottrin index service failed to start ({status}); inspect `systemctl --user status ottrin-index.service`"
+            ));
+        }
+    } else {
+        let executable = std::env::current_exe()
+            .map_err(|error| format!("could not locate the Ottrin executable: {error}"))?;
+        let mut daemon = Command::new(executable);
+        daemon
+            .arg("--index-daemon")
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .process_group(0);
+        daemon
+            .spawn()
+            .map_err(|error| format!("could not start the session index daemon: {error}"))?;
+    }
+
+    let deadline = Instant::now() + Duration::from_secs(3);
+    while Instant::now() < deadline {
+        if let Some(client) = connected_index_daemon() {
+            return Ok(client);
+        }
+        thread::sleep(Duration::from_millis(25));
+    }
+    Err("Ottrin index daemon did not become ready within 3 seconds".to_string())
 }
 
 fn resolve_preview_path(path: &std::path::Path) -> Result<PathBuf, String> {
@@ -457,14 +532,17 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
 
     match action {
         HeadlessAction::IndexStatus { json } => {
-            let service =
+            #[cfg(unix)]
+            if let Some(client) = connected_index_daemon() {
+                return print_index_diagnostics(&client.diagnostics()?, json);
+            }
+            let snapshot =
                 ottrin_search::SearchService::load_persisted_default(configured_search_config())?;
-            print_index_diagnostics(&service.diagnostics(), json)
+            print_index_diagnostics(&snapshot.diagnostics(), json)
         }
         HeadlessAction::Search { query, json } => {
             let config = configured_search_config();
-            let service = ottrin_search::SearchService::load_persisted_default(config.clone())?;
-            let response = service.query(SearchQuery {
+            let query = SearchQuery {
                 text: query,
                 scope: config.default_scope,
                 root_path: None,
@@ -473,7 +551,13 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
                 limit: config.result_limit.max(1),
                 offset: 0,
                 content_search: false,
-            });
+            };
+            #[cfg(unix)]
+            if let Some(client) = connected_index_daemon() {
+                return print_search_response(client.query(query)?.response, json);
+            }
+            let snapshot = ottrin_search::SearchService::load_persisted_default(config)?;
+            let response = snapshot.query(query);
             print_search_response(response, json)
         }
         HeadlessAction::IndexUpdate { json } => run_index_writer(json, false),
@@ -489,23 +573,37 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
 }
 
 fn run_index_writer(json: bool, rebuild: bool) -> Result<(), String> {
-    let mut service = configured_search_service();
-    service.start();
-    let startup = service.diagnostics();
-    if matches!(startup.status, SearchIndexStatus::Unavailable) {
-        service.stop();
-        return Err(startup
-            .last_error
-            .unwrap_or_else(|| "search service unavailable".to_string()));
+    #[cfg(unix)]
+    {
+        let client = ensure_index_daemon()?;
+        client.update_config(configured_search_config())?;
+        if rebuild {
+            client.rebuild()?;
+        } else {
+            client.reconcile()?;
+        }
+        print_index_diagnostics(&client.diagnostics()?, json)
     }
-    let operation = if rebuild {
-        service.rebuild_index_blocking()
-    } else {
-        service.update_index_blocking()
-    };
-    let result = operation.and_then(|()| print_index_diagnostics(&service.diagnostics(), json));
-    service.stop();
-    result
+    #[cfg(not(unix))]
+    {
+        let mut service = ottrin_search::SearchService::new(configured_search_config());
+        service.start();
+        let startup = service.diagnostics();
+        if matches!(startup.status, SearchIndexStatus::Unavailable) {
+            service.stop();
+            return Err(startup
+                .last_error
+                .unwrap_or_else(|| "search service unavailable".to_string()));
+        }
+        let operation = if rebuild {
+            service.rebuild_index_blocking()
+        } else {
+            service.update_index_blocking()
+        };
+        let result = operation.and_then(|()| print_index_diagnostics(&service.diagnostics(), json));
+        service.stop();
+        result
+    }
 }
 
 fn print_search_response(response: ottrin_core::SearchResponse, json: bool) -> Result<(), String> {

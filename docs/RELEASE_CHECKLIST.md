@@ -74,7 +74,7 @@ implementation scope, and acceptance plan.
 - [ ] Installer performs a clean per-user install, launches Ottrin, appears in Installed Apps, and creates working Start Menu shortcuts.
 - [ ] Uninstall removes the app, shortcuts, scheduled/background integration, generated search data, and preview cache while retaining saved preferences.
 - [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; cross-filesystem/Windows Move remains unsupported without mutation.
-- [ ] Search indexing, restart, watcher updates, and background updater scheduling/removal pass.
+- [ ] Search indexing, daemon restart, watcher updates, concurrent GUI/CLI attach, and persistent background-service installation/removal pass.
 - [ ] Quick Inspector passes the Windows file-type matrix, including rendered PDF pages plus malformed/encrypted PDF text/metadata fallback paths.
 - [ ] If the graphics compatibility payload is shipped, native-driver and bundled-OpenGL launch paths each pass on their intended physical/virtual or remote adapters, including Automatic detection, the persisted renderer preference, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` diagnostic selection.
 - [ ] UAC allow, cancel, helper-missing, and denied-operation paths pass.

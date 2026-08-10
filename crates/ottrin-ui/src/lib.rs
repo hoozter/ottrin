@@ -7,6 +7,8 @@ use egui::{
     Shadow, Stroke, UiBuilder, Vec2, WidgetInfo, WidgetType,
 };
 use egui_extras::{Column, TableBuilder};
+#[cfg(all(unix, not(test)))]
+use ottrin_core::SearchResponse;
 use ottrin_core::{
     AppConfig, AppState, ConflictAction, DeleteMode, EntryKind, FileCategory, FileCommand,
     FileEntry, GraphicsRendererChoice, GraphicsRendererPreference, GraphicsRendererReason,
@@ -31,13 +33,19 @@ use ottrin_preview::load_preview;
 use ottrin_preview::{
     PreviewData, PreviewKind, PreviewRequest, is_complete_text_preview, load_preview_cancellable,
 };
+#[cfg(all(unix, not(test)))]
+use ottrin_search::SearchDaemonClient;
 use ottrin_search::{
-    LocateScheduleStatus, SearchIndexDiagnostics, SearchQueryResult, SearchService,
+    LocateScheduleStatus, SearchIndexDiagnostics, SearchQueryResult,
     default_roots as default_search_roots,
 };
+#[cfg(any(not(unix), test))]
+use ottrin_search::{SearchHandle, SearchService};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+#[cfg(all(unix, not(test)))]
+use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::time::{Duration, Instant};
@@ -1245,6 +1253,174 @@ fn loading_preview_data(path: &Path) -> PreviewData {
     }
 }
 
+struct UiSearchService {
+    #[cfg(all(unix, not(test)))]
+    client: SearchDaemonClient,
+    #[cfg(all(unix, not(test)))]
+    diagnostics_cache: Mutex<(Instant, SearchIndexDiagnostics)>,
+    #[cfg(any(not(unix), test))]
+    local: SearchService,
+}
+
+impl UiSearchService {
+    fn new(config: SearchConfig) -> Self {
+        #[cfg(all(unix, not(test)))]
+        {
+            let client = SearchDaemonClient::connect_default()
+                .expect("the package-owned index daemon path was validated before GUI startup");
+            let diagnostics = client
+                .diagnostics()
+                .unwrap_or_else(SearchIndexDiagnostics::unavailable);
+            let mut service = Self {
+                client,
+                diagnostics_cache: Mutex::new((Instant::now(), diagnostics)),
+            };
+            service.update_config(config);
+            service
+        }
+        #[cfg(any(not(unix), test))]
+        {
+            Self {
+                local: SearchService::new(config),
+            }
+        }
+    }
+
+    fn start(&mut self) {
+        #[cfg(any(not(unix), test))]
+        self.local.start();
+    }
+
+    fn stop(&mut self) {
+        #[cfg(any(not(unix), test))]
+        self.local.stop();
+    }
+
+    fn update_config(&mut self, config: SearchConfig) {
+        #[cfg(all(unix, not(test)))]
+        if let Err(error) = self.client.update_config(config) {
+            self.record_daemon_error(error);
+        }
+        #[cfg(any(not(unix), test))]
+        self.local.update_config(config);
+    }
+
+    fn diagnostics(&self) -> SearchIndexDiagnostics {
+        #[cfg(all(unix, not(test)))]
+        {
+            let mut cache = self.diagnostics_cache.lock().expect("search diagnostics");
+            if cache.0.elapsed() >= Duration::from_millis(100) {
+                match self.client.diagnostics() {
+                    Ok(diagnostics) => *cache = (Instant::now(), diagnostics),
+                    Err(error) => {
+                        cache.0 = Instant::now();
+                        cache.1.status = SearchIndexStatus::Unavailable;
+                        cache.1.last_error = Some(error);
+                    }
+                }
+            }
+            cache.1.clone()
+        }
+        #[cfg(any(not(unix), test))]
+        {
+            self.local.diagnostics()
+        }
+    }
+
+    fn handle(&self) -> UiSearchHandle {
+        #[cfg(all(unix, not(test)))]
+        {
+            UiSearchHandle {
+                remote: self.client.clone(),
+            }
+        }
+        #[cfg(any(not(unix), test))]
+        {
+            UiSearchHandle {
+                local: self.local.handle(),
+            }
+        }
+    }
+
+    fn rebuild_index(&mut self) {
+        #[cfg(all(unix, not(test)))]
+        {
+            let client = self.client.clone();
+            std::thread::spawn(move || {
+                let _ = client.rebuild();
+            });
+        }
+        #[cfg(any(not(unix), test))]
+        self.local.rebuild_index();
+    }
+
+    fn clear_storage(&mut self) -> Result<u64, String> {
+        #[cfg(all(unix, not(test)))]
+        {
+            let bytes = self.client.clear_storage()?;
+            self.client.shutdown()?;
+            Ok(bytes)
+        }
+        #[cfg(any(not(unix), test))]
+        {
+            self.local.clear_storage()
+        }
+    }
+
+    #[cfg(all(unix, not(test)))]
+    fn record_daemon_error(&self, error: String) {
+        let mut cache = self.diagnostics_cache.lock().expect("search diagnostics");
+        cache.0 = Instant::now();
+        cache.1.status = SearchIndexStatus::Unavailable;
+        cache.1.last_error = Some(error);
+    }
+}
+
+struct UiSearchHandle {
+    #[cfg(all(unix, not(test)))]
+    remote: SearchDaemonClient,
+    #[cfg(any(not(unix), test))]
+    local: SearchHandle,
+}
+
+impl UiSearchHandle {
+    fn query_cancellable_with_diagnostics(
+        &self,
+        query: SearchQuery,
+        cancelled: &AtomicBool,
+    ) -> SearchQueryResult {
+        #[cfg(all(unix, not(test)))]
+        {
+            if cancelled.load(Ordering::Acquire) {
+                return unavailable_search_result("Search cancelled".to_string());
+            }
+            match self.remote.query(query) {
+                Ok(result) if !cancelled.load(Ordering::Acquire) => result,
+                Ok(_) => unavailable_search_result("Search cancelled".to_string()),
+                Err(error) => unavailable_search_result(error),
+            }
+        }
+        #[cfg(any(not(unix), test))]
+        {
+            self.local
+                .query_cancellable_with_diagnostics(query, cancelled)
+        }
+    }
+}
+
+#[cfg(all(unix, not(test)))]
+fn unavailable_search_result(error: String) -> SearchQueryResult {
+    SearchQueryResult {
+        response: SearchResponse {
+            items: Vec::new(),
+            total: 0,
+            status: SearchIndexStatus::Unavailable,
+            error: Some(error),
+        },
+        warning: None,
+    }
+}
+
 #[derive(Debug)]
 struct SearchQueryResponse {
     request_id: u64,
@@ -1644,7 +1820,7 @@ pub struct OttrinApp {
     pending_privileged_retry: Option<PendingPrivilegedRetry>,
     privileged_availability: PrivilegedAvailability,
     privileged_status: Option<PrivilegedUiStatus>,
-    search_service: SearchService,
+    search_service: UiSearchService,
     search_cancellation: Option<Arc<AtomicBool>>,
     search_started: bool,
     search_ui: SearchUiState,
@@ -2212,7 +2388,7 @@ impl OttrinApp {
                 "Status not initialized".to_string(),
             ),
             privileged_status: None,
-            search_service: SearchService::new(search_config),
+            search_service: UiSearchService::new(search_config),
             search_cancellation: None,
             search_started: false,
             search_ui: SearchUiState::default(),
@@ -18476,17 +18652,17 @@ impl OttrinApp {
                                             .size(12.0)
                                             .color(if self.app_cleanup_confirm { c.error } else { c.text }),
                                     ).stroke(Stroke::new(1.0, if self.app_cleanup_confirm { c.error } else { c.border }))).on_hover_text(
-                                        "Removes Ottrin's background index schedule, search database, private locate fallback database, thumbnail cache, and terminal launcher. It keeps your preferences unless you use the separate config button."
+                                        "Removes Ottrin's background index service, search database, private locate fallback database, thumbnail cache, and terminal launcher. It keeps your preferences unless you use the separate config button."
                                     ).clicked() {
                                         if self.app_cleanup_confirm {
                                             let mut freed = 0_u64;
                                             let mut errors = Vec::new();
-                                            match ottrin_search::SearchService::uninstall_sqlite_schedule() {
-                                                Ok(_) => {}
-                                                Err(err) => errors.push(err),
-                                            }
                                             match self.search_service.clear_storage() {
                                                 Ok(bytes) => freed = freed.saturating_add(bytes),
+                                                Err(err) => errors.push(err),
+                                            }
+                                            match ottrin_search::SearchService::uninstall_sqlite_schedule() {
+                                                Ok(_) => {}
                                                 Err(err) => errors.push(err),
                                             }
                                             freed = freed.saturating_add(clear_preview_cache_storage());
@@ -18521,7 +18697,7 @@ impl OttrinApp {
                                     }
                                     if self.app_cleanup_confirm {
                                         ui.label(RichText::new(
-                                            "Click Confirm cleanup to remove generated data and the background updater. Your files are not touched."
+                                            "Click Confirm cleanup to remove generated data and background indexing. Your files are not touched."
                                         ).color(c.text_dim).size(10.5));
                                     }
                                 }
@@ -19161,6 +19337,7 @@ impl OttrinApp {
 
                                     ui.add_space(12.0);
                                     settings_section_icon(ui, c, MI_STORAGE, "Indexing & performance", "Recommended setup and startup fallbacks.", |ui| {
+                                        let persistent_index_daemon = cfg!(target_os = "linux");
                                         let (locate_ok, updatedb_ok) = if platform_capabilities.system_locate_controls_visible {
                                             (
                                                 ottrin_search::SearchService::system_locate_available(),
@@ -19214,7 +19391,11 @@ impl OttrinApp {
                                                     Some(diag.watcher_ready || matches!(diag.status, SearchIndexStatus::Indexing)),
                                                     "File watcher",
                                                     if diag.watcher_ready {
-                                                        "active while Ottrin is running"
+                                                        if persistent_index_daemon {
+                                                            "active in the per-user index daemon"
+                                                        } else {
+                                                            "active while Ottrin is running"
+                                                        }
                                                     } else if matches!(diag.status, SearchIndexStatus::Indexing) {
                                                         "starts after the first index is ready"
                                                     } else {
@@ -19223,13 +19404,15 @@ impl OttrinApp {
                                                 );
                                                 let sqlite_schedule_detail = if sqlite_sched.enabled {
                                                     format!("{} ({})", sqlite_sched.source, sqlite_sched.detail)
+                                                } else if persistent_index_daemon {
+                                                    "not enabled across logins; Ottrin still starts it for this session".to_string()
                                                 } else {
                                                     "not configured; changes made while Ottrin is closed need a later refresh".to_string()
                                                 };
                                                 health_row(
                                                     ui,
                                                     Some(sqlite_sched.enabled),
-                                                    "Background SQLite update",
+                                                    if persistent_index_daemon { "Persistent index daemon" } else { "Background SQLite update" },
                                                     &sqlite_schedule_detail,
                                                 );
                                                 if platform_capabilities.system_locate_controls_visible {
@@ -19278,7 +19461,11 @@ impl OttrinApp {
                                             });
                                         ui.add_space(12.0);
                                         ui.label(RichText::new("Recommended setup").color(c.text_dim).size(11.5).strong());
-                                        ui.label(RichText::new("Use Ottrin's SQLite index for everyday search. The watcher keeps it current while Ottrin is open. Locate fallbacks are only for optional path lookup, not better normal results.")
+                                        ui.label(RichText::new(if persistent_index_daemon {
+                                            "Use Ottrin's SQLite index for everyday search. The per-user daemon keeps it current independently of GUI windows. Locate fallbacks are only for optional path lookup."
+                                        } else {
+                                            "Use Ottrin's SQLite index for everyday search. The watcher keeps it current while Ottrin is open. Locate fallbacks are only for optional path lookup, not better normal results."
+                                        })
                                             .color(c.text_muted).size(10.5));
                                         ui.add_space(6.0);
 
@@ -19294,18 +19481,22 @@ impl OttrinApp {
                                                         ui.label(RichText::new("default").color(c.text_muted).size(10.5).italics());
                                                     });
                                                     ui.add_space(3.0);
-                                                    ui.label(RichText::new(
-                                                        "This is the main search database. Ottrin loads it on startup, updates it live while open, and refreshes it every 4 hours while the app is running."
-                                                    ).color(c.text_muted).size(10.5));
-                                                    ui.label(RichText::new(
+                                                    ui.label(RichText::new(if persistent_index_daemon {
+                                                        "This is the main search database. The per-user daemon loads it once, watches configured folders, and serves every Ottrin window and CLI client."
+                                                    } else {
+                                                        "This is the main search database. Ottrin loads it on startup and updates it live while open."
+                                                    }).color(c.text_muted).size(10.5));
+                                                    ui.label(RichText::new(if persistent_index_daemon {
+                                                        "Enable persistent startup to keep the daemon available across login sessions."
+                                                    } else {
                                                         "For best freshness after Ottrin has been closed, enable the background updater."
-                                                    ).color(c.text_muted).size(10.5));
+                                                    }).color(c.text_muted).size(10.5));
                                                     ui.add_space(8.0);
                                                     ui.horizontal(|ui| {
                                                         let status = if sqlite_sched.enabled {
-                                                            format!("Background updater: {} ({})", sqlite_sched.source, sqlite_sched.detail)
+                                                            format!("{}: {} ({})", if persistent_index_daemon { "Persistent startup" } else { "Background updater" }, sqlite_sched.source, sqlite_sched.detail)
                                                         } else {
-                                                            "Background updater: not configured".to_string()
+                                                            format!("{}: not configured", if persistent_index_daemon { "Persistent startup" } else { "Background updater" })
                                                         };
                                                         ui.label(RichText::new(status)
                                                             .color(if sqlite_sched.enabled { ok_col } else { warn_col })
@@ -19324,19 +19515,23 @@ impl OttrinApp {
                                                     ui.add_space(6.0);
                                                     ui.horizontal(|ui| {
                                                         let label = if sqlite_sched.enabled {
-                                                            "Disable background updater"
+                                                            if persistent_index_daemon { "Disable persistent startup" } else { "Disable background updater" }
                                                         } else {
-                                                            "Enable background updater"
+                                                            if persistent_index_daemon { "Enable persistent startup" } else { "Enable background updater" }
                                                         };
                                                         if ui.add(
                                                             egui::Button::new(RichText::new(label).size(12.0))
                                                                 .fill(c.panel_raised)
                                                                 .stroke(Stroke::new(1.0, c.border)),
                                                         ).on_hover_text(
-                                                            format!(
-                                                                "Installs or removes a user-level {} that runs ottrin index update every 4 hours.",
-                                                                platform_capabilities.scheduler_name,
-                                                            )
+                                                            if persistent_index_daemon {
+                                                                "Installs or removes a restartable systemd user service for the Ottrin index daemon. Legacy Ottrin index timers and cron entries are removed during installation.".to_string()
+                                                            } else {
+                                                                format!(
+                                                                    "Installs or removes a user-level {} that updates the index every 4 hours.",
+                                                                    platform_capabilities.scheduler_name,
+                                                                )
+                                                            }
                                                         ).clicked() {
                                                             let (text, ok) = if sqlite_sched.enabled {
                                                                 match ottrin_search::SearchService::uninstall_sqlite_schedule() {
@@ -27109,7 +27304,7 @@ mod tests {
             .expect("build indexed generation");
 
         let mut app = OttrinApp::default();
-        app.search_service = service;
+        app.search_service = UiSearchService { local: service };
         app.search_started = true;
         app.search_ui.query = "!needle".to_string();
         app.search_ui.content_search = true;

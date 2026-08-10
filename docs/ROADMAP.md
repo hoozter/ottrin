@@ -17,7 +17,7 @@ Implemented:
 - Context menus with default open, open-with-application, folder location, path copy, rename/delete, bookmarks, and copy destinations.
 - Smart panel sections for Info, Drop Folder, Search, Activity, and Trash.
 - Cross-platform Trash panel implementation with Linux Freedesktop trash support and Windows Recycle Bin backend.
-- SQLite-backed indexed search with watcher updates, background updater scheduling, generated-folder skips, content search snippets, column resizing, click selection, double-click/Enter opening, shared right-click actions, and Space-triggered full preview.
+- SQLite-backed indexed search with a Linux per-user daemon, watcher updates independent of GUI windows, generated-folder skips, content search snippets, column resizing, click selection, double-click/Enter opening, shared right-click actions, and Space-triggered full preview. Other platforms retain their current process/scheduler behavior until their daemon lifecycle is implemented and verified.
 - Quick Inspector as a full Space-triggered window with visual images, bounded layout-rendered multi-page PDF previews with Previous/Next/go-to-page navigation, format-aware spreadsheet grids, and bounded Office metadata/text extraction. Extracted Office text is explicitly labeled, left aligned, and presented only as a fallback; page-shaped PNGs generated from flattened Office XML are not presented as source-layout previews. Complete direct UTF-8 text previews can be edited on Linux through the fail-closed atomic replacement path; derived, truncated, linked, metadata-bearing, sparse, and unsupported-platform sources remain read-only.
 - Grid rubber-band selection is implemented and source-tested; packaged/manual acceptance is pending.
 - Linux native Open With discovery and launch path is implemented with source and automated coverage; other platform discovery remains fallback/manual.
@@ -79,7 +79,7 @@ These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 - Native desktop Open With discovery parity beyond Linux remains deferred.
 - Media playback and advanced image tools.
 - Fanotify helper/service packaging.
-- Phase 2 continuous indexing: an always-on per-user index daemon with instant attach/reconciliation is the intended replacement for the v1 in-process watcher plus scheduled full refresh. It is not implemented or claimed by the current background updater.
+- Phase 2 continuous indexing is implemented on Linux as a same-user Unix-socket daemon with a single SQLite writer, concurrent GUI/CLI clients, live watcher reconciliation, persisted snapshot restart, explicit status/rebuild/configuration IPC, and a restartable systemd user-service installer. Packaged Linux and upgrade-migration acceptance remains an exact-artifact gate.
 - Tab drag-and-drop is implemented with source and automated tests; packaged/manual acceptance remains pending.
 - List rubber-band selection is implemented with shared Grid semantics and source tests; packaged/manual acceptance remains pending.
 - Full undo for file operations. Linux has an initial session-only undo action for one completed

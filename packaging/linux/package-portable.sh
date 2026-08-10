@@ -63,7 +63,8 @@ chmod 0755 "$STAGE/bin/ottrin"
 download_verify_and_package_pdfium "$STAGE/bin/pdfium"
 cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/logo.svg" "$STAGE/assets/"
 cp "$ROOT/packaging/linux/org.ottrin.filesystem.policy" \
-  "$ROOT/packaging/linux/ottrin.appdata.xml" "$STAGE/packaging/linux/"
+  "$ROOT/packaging/linux/ottrin.appdata.xml" \
+  "$ROOT/packaging/linux/ottrin-index.service.in" "$STAGE/packaging/linux/"
 cp "$ROOT/README.md" "$ROOT/LICENSE" "$STAGE/" 2>/dev/null || cp "$ROOT/README.md" "$STAGE/"
 cp "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" "$ROOT/docs/ROADMAP.md" \
   "$ROOT/docs/RELEASE_NOTES.md" "$ROOT/docs/RELEASE_CHECKLIST.md" "$STAGE/docs/"
@@ -92,6 +93,12 @@ sudo install -m 0644 ./packaging/linux/org.ottrin.filesystem.policy /usr/share/p
 ```
 
 Without the helper, normal user-owned file operations still work.
+
+Ottrin starts its per-user index daemon when the app launches. To keep the
+daemon enabled across login sessions, open Settings → Search and enable
+background indexing. Ottrin installs the included systemd user-service
+template with this package's absolute launcher path; it does not install a
+periodic timer or cron job.
 
 EOF
 

@@ -53,6 +53,7 @@ mkdir -p "$APPDIR/usr/share/applications"
 mkdir -p "$APPDIR/usr/share/icons/hicolor/scalable/apps"
 mkdir -p "$APPDIR/usr/share/icons/hicolor/256x256/apps"
 mkdir -p "$APPDIR/usr/share/metainfo"
+mkdir -p "$APPDIR/usr/share/ottrin"
 mkdir -p "$APPDIR/usr/share/polkit-1/actions"
 mkdir -p "$APPDIR/usr/share/doc/ottrin"
 
@@ -63,6 +64,7 @@ install -m 0644 "$ROOT/assets/icon.svg" "$APPDIR/usr/share/icons/hicolor/scalabl
 install -m 0644 "$ROOT/assets/icon.png" "$APPDIR/usr/share/icons/hicolor/256x256/apps/ottrin.png"
 install -m 0644 "$ROOT/packaging/linux/ottrin.appdata.xml" "$APPDIR/usr/share/metainfo/org.ottrin.Ottrin.appdata.xml"
 install -m 0644 "$ROOT/packaging/linux/org.ottrin.filesystem.policy" "$APPDIR/usr/share/polkit-1/actions/"
+install -m 0644 "$ROOT/packaging/linux/ottrin-index.service.in" "$APPDIR/usr/share/ottrin/"
 install -m 0644 "$ROOT/README.md" "$ROOT/LICENSE" "$APPDIR/usr/share/doc/ottrin/"
 install -m 0644 "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" \
   "$ROOT/docs/ROADMAP.md" "$ROOT/docs/RELEASE_NOTES.md" \

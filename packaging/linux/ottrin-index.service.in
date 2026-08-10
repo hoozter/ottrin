@@ -1,0 +1,11 @@
+[Unit]
+Description=Ottrin persistent search index
+
+[Service]
+Type=simple
+ExecStart=@OTTRIN_EXECUTABLE@ --index-daemon
+Restart=on-failure
+RestartSec=2s
+
+[Install]
+WantedBy=default.target
