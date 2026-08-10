@@ -403,6 +403,35 @@ pub(crate) fn render_archive_body_preview(ui: &mut egui::Ui, c: Colors, name: &s
     render_preview_footer(ui, c, name, metadata);
 }
 
+const EXTRACTED_TEXT_FALLBACK_LABEL: &str = "Extracted text fallback";
+
+fn render_extracted_text_fallback_content(ui: &mut egui::Ui, c: Colors, text: &str) {
+    ui.with_layout(Layout::top_down(Align::Min), |ui| {
+        ui.label(
+            RichText::new(EXTRACTED_TEXT_FALLBACK_LABEL)
+                .color(c.text)
+                .size(12.5)
+                .strong(),
+        );
+        ui.label(
+            RichText::new(
+                "Source layout is unavailable. This fallback preserves extracted line breaks and whitespace only.",
+            )
+            .color(c.text_muted)
+            .size(10.5),
+        );
+        ui.add_space(6.0);
+        ui.add(
+            egui::Label::new(
+                RichText::new(text)
+                    .font(FontId::monospace(12.0))
+                    .color(c.text),
+            )
+            .selectable(true),
+        );
+    });
+}
+
 pub(crate) fn render_document_body_preview(
     ui: &mut egui::Ui,
     c: Colors,
@@ -412,7 +441,21 @@ pub(crate) fn render_document_body_preview(
 ) {
     let (metadata, extracted) = split_preview_extracted_text(body);
     if let Some(text) = extracted.filter(|text| !text.is_empty()) {
-        render_scrollable_preview_text(ui, text, c.text, 180.0, ("inspector_document", name));
+        let height = scrollable_preview_height(ui.available_height(), 180.0);
+        let width = ui.available_width();
+        egui::Frame::new()
+            .stroke(Stroke::new(1.0, Color32::from_white_alpha(28)))
+            .show(ui, |ui| {
+                ui.set_width(width);
+                ScrollArea::both()
+                    .id_salt(("inspector_document_fallback", name))
+                    .max_height(height)
+                    .auto_shrink([false, false])
+                    .show(ui, |ui| {
+                        ui.set_min_width(width);
+                        render_extracted_text_fallback_content(ui, c, text);
+                    });
+            });
         render_preview_footer(ui, c, name, metadata);
     } else {
         render_metadata_card_preview(ui, c, icon, name, metadata);
@@ -713,15 +756,14 @@ pub(crate) fn render_document_body_preview_in_scroll_content(
 ) {
     let (metadata, extracted) = split_preview_extracted_text(body);
     if let Some(text) = extracted.filter(|text| !text.is_empty()) {
-        ui.add(
-            egui::Label::new(
-                RichText::new(text)
-                    .font(FontId::monospace(12.0))
-                    .color(c.text),
-            )
-            .wrap()
-            .selectable(true),
-        );
+        egui::CollapsingHeader::new(
+            RichText::new(EXTRACTED_TEXT_FALLBACK_LABEL)
+                .color(c.text_muted)
+                .size(11.0),
+        )
+        .id_salt(("document_extracted_fallback", name))
+        .default_open(false)
+        .show(ui, |ui| render_extracted_text_fallback_content(ui, c, text));
         render_preview_footer(ui, c, name, metadata);
     } else {
         render_metadata_card_preview(ui, c, icon, name, metadata);
@@ -734,53 +776,10 @@ pub(crate) fn render_docx_page_preview(
     c: Colors,
     name: &str,
     body: &str,
-    fit: bool,
-    zoom: f32,
+    _fit: bool,
+    _zoom: f32,
 ) {
-    let (metadata, extracted) = split_preview_extracted_text(body);
-    let Some(text) = extracted.filter(|text| !text.is_empty()) else {
-        render_metadata_card_preview(ui, c, MI_OPEN_IN_NEW, name, metadata);
-        return;
-    };
-
-    const PAGE_WIDTH: f32 = 816.0;
-    const PAGE_HEIGHT: f32 = 1056.0;
-    let fit_scale = docx_width_fit_scale(PAGE_WIDTH, ui.available_width());
-    let scale = if fit { fit_scale } else { zoom.clamp(0.1, 8.0) };
-    let page_size = Vec2::new(PAGE_WIDTH * scale, PAGE_HEIGHT * scale);
-    let margin = 72.0 * scale;
-    let font_size = (15.0 * scale).max(4.0);
-
-    ui.vertical_centered(|ui| {
-        let page = egui::Frame::new()
-            .fill(Color32::WHITE)
-            .stroke(Stroke::new(1.0, Color32::from_gray(190)))
-            .inner_margin(egui::Margin::same(0))
-            .show(ui, |ui| {
-                ui.set_min_size(page_size);
-                ui.set_max_size(page_size);
-                ui.allocate_ui_at_rect(
-                    Rect::from_min_max(
-                        ui.min_rect().min + Vec2::splat(margin),
-                        ui.min_rect().min + page_size - Vec2::splat(margin),
-                    ),
-                    |ui| {
-                        ui.add(
-                            egui::Label::new(
-                                RichText::new(text)
-                                    .font(FontId::proportional(font_size))
-                                    .color(Color32::from_rgb(28, 28, 30)),
-                            )
-                            .wrap()
-                            .selectable(true),
-                        );
-                    },
-                );
-            });
-        page.response
-            .on_hover_text("Ctrl+wheel or pinch to zoom. Drag or scroll to pan.");
-        render_preview_footer(ui, c, name, metadata);
-    });
+    render_document_body_preview(ui, c, MI_OPEN_IN_NEW, name, body);
 }
 
 pub(crate) fn render_folder_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
@@ -1129,5 +1128,15 @@ mod tests {
             ),
             Some("Partial listing: 201 entries omitted after the first 200.")
         );
+    }
+
+    #[test]
+    fn document_extraction_is_truthfully_labeled_and_preserves_structure() {
+        let body =
+            "Filetype: DOCX document\n\nExtracted text:\nHeading\n\n  indented item\nline  two";
+        let (_, extracted) = split_preview_extracted_text(body);
+
+        assert_eq!(EXTRACTED_TEXT_FALLBACK_LABEL, "Extracted text fallback");
+        assert_eq!(extracted, Some("Heading\n\n  indented item\nline  two"));
     }
 }

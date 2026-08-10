@@ -1,6 +1,6 @@
 # Ottrin Roadmap
 
-Last updated: 2026-08-02
+Last updated: 2026-08-10
 
 Ottrin is in v1 release hardening. The product focus is daily-driver reliability: navigation, file operations, search, previews, packaging, and clear failure states.
 
@@ -18,7 +18,7 @@ Implemented:
 - Smart panel sections for Info, Drop Folder, Search, Activity, and Trash.
 - Cross-platform Trash panel implementation with Linux Freedesktop trash support and Windows Recycle Bin backend.
 - SQLite-backed indexed search with watcher updates, background updater scheduling, generated-folder skips, content search snippets, column resizing, click selection, double-click/Enter opening, shared right-click actions, and Space-triggered full preview.
-- Quick Inspector as a full Space-triggered window with visual image, bounded multi-page PDF previews with Previous/Next/go-to-page navigation, bounded DOCX/XLSX/XLSM/ODS content-preview PNGs, and a Unix-only bounded first-slide PPTX text card; it retains extracted PDF/Office text and metadata fallbacks. Complete direct UTF-8 text previews can be edited on Linux through the fail-closed atomic replacement path; derived, truncated, linked, metadata-bearing, sparse, and unsupported-platform sources remain read-only. The PPTX card is non-authoritative. Office output is a truthful content preview, not a faithful document layout.
+- Quick Inspector as a full Space-triggered window with visual images, bounded layout-rendered multi-page PDF previews with Previous/Next/go-to-page navigation, format-aware spreadsheet grids, and bounded Office metadata/text extraction. Extracted Office text is explicitly labeled, left aligned, and presented only as a fallback; page-shaped PNGs generated from flattened Office XML are not presented as source-layout previews. Complete direct UTF-8 text previews can be edited on Linux through the fail-closed atomic replacement path; derived, truncated, linked, metadata-bearing, sparse, and unsupported-platform sources remain read-only.
 - Grid rubber-band selection is implemented and source-tested; packaged/manual acceptance is pending.
 - Linux native Open With discovery and launch path is implemented with source and automated coverage; other platform discovery remains fallback/manual.
 - Generated visual text/source cards, bounded direct-child folder thumbnail collages, bounded recursive folder-size metadata, and bounded PDF page navigation are implemented and test-covered.
@@ -47,6 +47,7 @@ coverage, remain v1 work. Source tests do not satisfy those gates.
 - External-volume navigation must work without automatically indexing every attached drive. Users choose which additional volumes enter indexed search; direct browsing and scoped fallback search remain available independently.
 - Copy must be tested across volume boundaries, including removable drives. Cross-filesystem Move remains rejected without mutation and may not degrade into an unjournaled copy-then-delete operation.
 - Linux manual workflow QA across navigation, file operations, search, Tandem View, multi-select, Quick Inspector, context menus, thumbnail view options, and status messages.
+- DOCX and PPTX still need a sandboxed layout renderer that preserves pages, positions, tables, images, typography, and hierarchy. Until one is implemented and physically verified, their extracted text remains a clearly labeled fallback rather than a simulated document page.
 - Linux privileged helper and polkit smoke test from packaged layout.
 - Real Windows runtime smoke for portable zip: launch, navigation, file operations, Trash/Recycling Bin, search, Quick Inspector, UAC/helper behavior, and background updater.
 - Real Windows install/uninstall smoke for the installer candidate.
@@ -73,7 +74,7 @@ V1 should not ship until:
 
 These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 
-- Advanced Office navigation/editing or faithful Office layout beyond the bounded content preview required for v1.
+- Advanced Office navigation and editing beyond faithful read-only preview.
 - Rich file thumbnails beyond the implemented text-card and thumbnail-collage path remain deferred: video frame thumbnails and broader document variants where platform support or dependencies make sense. Video thumbnails now have an approved native-only Phase 1: Windows Media Foundation first, no bundled/invoked/recommended/downloaded FFmpeg, GStreamer codec payload, codec pack, external decoder, or additional codec implementation; unapproved platforms remain metadata-only. [Video Thumbnail Backend Spike](VIDEO_THUMBNAIL_SPIKE.md) preserves the rejected FFmpeg-first evaluation as historical evidence.
 - Native desktop Open With discovery parity beyond Linux remains deferred.
 - Media playback and advanced image tools.

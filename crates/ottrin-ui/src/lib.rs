@@ -16930,7 +16930,7 @@ impl OttrinApp {
                                 if ui
                                     .small_button("Fit")
                                     .on_hover_text(
-                                        "Fit DOCX pages to the available width; fit other previews in the inspector.",
+                                        "Fit visual previews in the inspector.",
                                     )
                                     .clicked()
                                 {
@@ -20435,12 +20435,12 @@ fn thumbnail_supported_preview_path(path: &Path) -> bool {
     profile.supports_thumbnail_visual() && !matches!(profile.kind(), PreviewKind::OfficeMetadata)
 }
 
-/// DOCX has a bounded page renderer in the preview broker. The inspector must
-/// consume that image instead of leaving the broker result off-screen.
-fn quick_inspector_uses_rendered_office_page(path: &Path) -> bool {
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| extension.eq_ignore_ascii_case("docx"))
+/// The current Office PNG broker draws extracted content into a page-shaped
+/// image; it does not preserve source layout. Do not present that generated
+/// image as a rendered Office page in Quick Inspector. A real layout renderer
+/// can opt formats back in here once its fidelity and sandbox are verified.
+fn quick_inspector_uses_rendered_office_page(_path: &Path) -> bool {
+    false
 }
 
 /// Submit a ready DOCX texture and then expose its completion to accessibility.
@@ -22724,7 +22724,7 @@ mod tests {
     }
 
     #[test]
-    fn docx_quick_inspector_binds_cached_raster_and_orders_ready_marker() {
+    fn docx_generated_raster_helper_stays_isolated_from_the_truthful_inspector_fallback() {
         let fixture = tempfile::Builder::new()
             .prefix("ottrin-docx-inspector-")
             .tempdir()
@@ -22789,13 +22789,9 @@ mod tests {
         );
         loader_ready.store(true, Ordering::SeqCst);
         render_docx_quick_inspector_frame(&mut app, &ctx);
-        assert_eq!(
-            take_docx_inspector_paint_events(),
-            vec![
-                DocxInspectorPaintEvent::RasterSubmitted,
-                DocxInspectorPaintEvent::ReadyMarker,
-            ],
-            "the production Quick Inspector must submit the ready raster before its accessibility marker"
+        assert!(
+            take_docx_inspector_paint_events().is_empty(),
+            "the production inspector must not present a page-shaped extracted-text raster as source layout"
         );
 
         let wrong_page_key = preview_cache_key_for_page_with_generations(
@@ -23617,7 +23613,7 @@ mod tests {
     }
 
     #[test]
-    fn docx_overlay_keeps_pending_fallback_in_the_fit_or_manual_scroll_container() {
+    fn docx_truthful_fallback_bypasses_the_generated_page_layout_container() {
         let fixture = tempfile::Builder::new()
             .prefix("ottrin-docx-scroll-container-")
             .tempdir()
@@ -23634,30 +23630,22 @@ mod tests {
         let ctx = docx_test_context(Arc::new(AtomicBool::new(false)));
 
         render_docx_quick_inspector_frame(&mut app, &ctx);
-        assert_eq!(
-            take_docx_inspector_layout_events(),
-            vec![DocxInspectorLayoutEvent::Fallback {
-                solid_scrollbars: true,
-                vertically_overflowing: true,
-            }],
-            "the pending DOCX fallback must remain vertically scrollable in width-fit mode without a horizontal track"
+        assert!(
+            take_docx_inspector_layout_events().is_empty(),
+            "the truthful extracted-text fallback must not enter the generated page overlay"
         );
 
         app.preview.visual_fit = false;
         app.preview.visual_zoom = 1.5;
         render_docx_quick_inspector_frame(&mut app, &ctx);
-        assert_eq!(
-            take_docx_inspector_layout_events(),
-            vec![DocxInspectorLayoutEvent::Fallback {
-                solid_scrollbars: true,
-                vertically_overflowing: true,
-            }],
-            "manual zoom must keep the pending fallback inside a two-axis scroll container"
+        assert!(
+            take_docx_inspector_layout_events().is_empty(),
+            "visual zoom controls must not turn extracted text into a simulated page"
         );
     }
 
     #[test]
-    fn docx_overlay_applies_fit_and_manual_scroll_axes_to_the_rendered_broker_page() {
+    fn docx_inspector_ignores_ready_generated_page_rasters() {
         let fixture = tempfile::Builder::new()
             .prefix("ottrin-docx-rendered-scroll-container-")
             .tempdir()
@@ -23693,31 +23681,17 @@ mod tests {
         let ctx = docx_test_context(Arc::new(AtomicBool::new(true)));
 
         render_docx_quick_inspector_frame(&mut app, &ctx);
-        assert_eq!(
-            take_docx_inspector_layout_events(),
-            vec![DocxInspectorLayoutEvent::Raster {
-                solid_scrollbars: true,
-                vertically_overflowing: true,
-                content_width_fits_viewport: true,
-                horizontally_overflowing: false,
-                ready_document_body_in_scroll_content: true,
-            }],
-            "the rendered broker page must use the width-fit vertical-only container"
+        assert!(
+            take_docx_inspector_layout_events().is_empty(),
+            "a ready page-shaped extraction raster must not enter the production inspector"
         );
 
         app.preview.visual_fit = false;
         app.preview.visual_zoom = 1.5;
         render_docx_quick_inspector_frame(&mut app, &ctx);
-        assert_eq!(
-            take_docx_inspector_layout_events(),
-            vec![DocxInspectorLayoutEvent::Raster {
-                solid_scrollbars: true,
-                vertically_overflowing: true,
-                content_width_fits_viewport: false,
-                horizontally_overflowing: true,
-                ready_document_body_in_scroll_content: true,
-            }],
-            "manual zoom must make both scroll axes available to the rendered broker page"
+        assert!(
+            take_docx_inspector_layout_events().is_empty(),
+            "manual zoom must not opt a generated extraction raster back into the inspector"
         );
     }
 
@@ -24248,11 +24222,11 @@ mod tests {
     }
 
     #[test]
-    fn docx_quick_inspector_uses_the_rendered_page_broker() {
-        assert!(quick_inspector_uses_rendered_office_page(Path::new(
+    fn docx_quick_inspector_rejects_generated_content_rasters_as_source_layout() {
+        assert!(!quick_inspector_uses_rendered_office_page(Path::new(
             "/tmp/report.docx"
         )));
-        assert!(quick_inspector_uses_rendered_office_page(Path::new(
+        assert!(!quick_inspector_uses_rendered_office_page(Path::new(
             "/tmp/REPORT.DOCX"
         )));
         assert!(!quick_inspector_uses_rendered_office_page(Path::new(
