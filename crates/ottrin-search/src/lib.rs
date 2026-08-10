@@ -3819,6 +3819,187 @@ mod tests {
     }
 
     #[test]
+    fn live_content_search_excludes_hidden_policy_roots_when_hidden_search_is_enabled() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-hidden-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let excluded = root.join(".excluded");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&excluded).expect("create hidden content roots");
+        fs::write(root.join(".included.txt"), "hidden-content-needle")
+            .expect("write included hidden content");
+        fs::write(excluded.join("private.txt"), "hidden-content-needle")
+            .expect("write excluded hidden content");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_exclude_roots: vec![excluded],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "hidden-content-needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: true,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].name, ".included.txt");
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn live_content_search_honors_nested_include_and_exclude_roots() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-nested-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let included = root.join("documents");
+        let excluded = included.join("private");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&excluded).expect("create nested content roots");
+        fs::write(included.join("public.txt"), "nested-content-needle")
+            .expect("write included nested content");
+        fs::write(excluded.join("private.txt"), "nested-content-needle")
+            .expect("write excluded nested content");
+        fs::write(root.join("outside.txt"), "nested-content-needle")
+            .expect("write content outside include root");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![included],
+            content_exclude_roots: vec![excluded],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "nested-content-needle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert_eq!(response.items.len(), 1);
+        assert_eq!(response.items[0].name, "public.txt");
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn live_content_search_skips_a_scope_beneath_an_excluded_ancestor() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-ancestor-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let excluded = root.join("excluded");
+        let selected = excluded.join("selected");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&selected).expect("create excluded selected root");
+        fs::write(selected.join("private.txt"), "ancestor-content-needle")
+            .expect("write excluded selected content");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_exclude_roots: vec![excluded],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "ancestor-content-needle".to_string(),
+            scope: SearchScope::CurrentFolder,
+            root_path: Some(selected),
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert!(response.items.is_empty());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn live_content_search_does_not_cross_disjoint_query_and_content_roots() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-policy-disjoint-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let content_root = root.join("content");
+        let selected = root.join("selected");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&content_root).expect("create content root");
+        fs::create_dir_all(&selected).expect("create selected root");
+        fs::write(content_root.join("other.txt"), "disjoint-content-needle")
+            .expect("write content in configured root");
+        fs::write(selected.join("selected.txt"), "disjoint-content-needle")
+            .expect("write content in selected root");
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![content_root],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "disjoint-content-needle".to_string(),
+            scope: SearchScope::CurrentFolder,
+            root_path: Some(selected),
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert!(response.items.is_empty());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
     fn content_ripgrep_exclude_globs_keep_exact_files_and_descendants_out_of_rg() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-content-ripgrep-globs-{}-{}",
