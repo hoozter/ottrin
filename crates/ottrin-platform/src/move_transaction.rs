@@ -1653,8 +1653,14 @@ thread_local! {
 }
 
 #[cfg(all(target_os = "linux", test))]
+fn replace_test_recovery_root(root: Option<std::path::PathBuf>) -> Option<std::path::PathBuf> {
+    TEST_RECOVERY_ROOT
+        .with(|configured_root| std::mem::replace(&mut *configured_root.borrow_mut(), root))
+}
+
+#[cfg(all(target_os = "linux", test))]
 pub(super) fn set_test_recovery_root(root: Option<std::path::PathBuf>) {
-    TEST_RECOVERY_ROOT.with(|configured_root| *configured_root.borrow_mut() = root);
+    let _ = replace_test_recovery_root(root);
 }
 
 /// Reads retained Move recovery status from an existing configured recovery root.
@@ -1702,7 +1708,6 @@ pub(super) fn move_entry_transactional_with_test_hook(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
 
     fn with_move_env_serializer<T>(work: impl FnOnce() -> T) -> T {
         let _guard = TEST_MOVE_ENV_SERIALIZER
@@ -1711,7 +1716,7 @@ mod tests {
         work()
     }
 
-    struct TestDir(PathBuf);
+    struct TestDir(std::path::PathBuf, Option<std::path::PathBuf>);
     impl TestDir {
         fn new(label: &str) -> Self {
             loop {
@@ -1724,7 +1729,12 @@ mod tests {
                 let path = std::env::temp_dir()
                     .join(format!("ottrin-move-crossfs-metadata-{label}-{suffix}"));
                 match std::fs::create_dir(&path) {
-                    Ok(()) => return Self(path),
+                    Ok(()) => {
+                        let previous_recovery_root = replace_test_recovery_root(Some(
+                            path.join("state").join("ottrin").join("moves"),
+                        ));
+                        return Self(path, previous_recovery_root);
+                    }
                     Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
                     Err(error) => panic!("create test directory: {error}"),
                 }
@@ -1752,7 +1762,25 @@ mod tests {
     impl Drop for TestDir {
         fn drop(&mut self) {
             let _ = std::fs::remove_dir_all(&self.0);
+            let _ = replace_test_recovery_root(self.1.take());
         }
+    }
+
+    #[test]
+    fn test_dir_restores_outer_recovery_root_after_nested_scope() {
+        let outer = TestDir::new("outer-recovery-root-isolation");
+        let outer_root = outer.0.join("state").join("ottrin").join("moves");
+        assert_eq!(default_recovery_root().unwrap(), outer_root);
+
+        {
+            let inner = TestDir::new("inner-recovery-root-isolation");
+            assert_eq!(
+                default_recovery_root().unwrap(),
+                inner.0.join("state").join("ottrin").join("moves")
+            );
+        }
+
+        assert_eq!(default_recovery_root().unwrap(), outer_root);
     }
 
     #[test]

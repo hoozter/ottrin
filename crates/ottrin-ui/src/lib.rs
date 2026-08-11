@@ -22686,8 +22686,10 @@ mod tests {
         assert!(
             !output.shapes.iter().any(|shape| matches!(
                 shape.shape,
-                egui::Shape::LineSegment { points, .. }
-                    if (points[0].x - points[1].x).abs() > 600.0
+                egui::Shape::LineSegment { points, stroke }
+                    if stroke.width > 0.0
+                        && stroke.color.a() > 0
+                        && (points[0].x - points[1].x).abs() > 600.0
                         && (points[0].y - CUSTOM_TITLEBAR_HEIGHT).abs() < f32::EPSILON
                         && (points[1].y - CUSTOM_TITLEBAR_HEIGHT).abs() < f32::EPSILON
             )),
