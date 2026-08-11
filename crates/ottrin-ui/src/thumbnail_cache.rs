@@ -29,6 +29,8 @@ const MAX_SVG_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_SVG_CACHE_PNG_DIMENSION: u32 = 2_048;
 const MAX_PDF_CACHE_PNG_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_PDF_CACHE_PNG_DIMENSION: u32 = 2_048;
+const MAX_VIDEO_CACHE_PNG_BYTES: u64 = 16 * 1024 * 1024;
+const MAX_VIDEO_CACHE_PNG_DIMENSION: u32 = 2_048;
 
 #[derive(Debug, Clone)]
 pub(crate) enum ImagePreviewCacheEntry {
@@ -303,6 +305,48 @@ fn preview_cache_path(cache_key: &str) -> Option<PathBuf> {
     let mut dir = preview_cache_dir()?;
     dir.push(cache_key);
     Some(dir)
+}
+
+pub(crate) fn load_cached_video_thumbnail(cache_key: &str) -> Option<Vec<u8>> {
+    let cache_path = preview_cache_path(cache_key)?;
+    let bytes = read_bounded_cache(
+        std::fs::File::open(&cache_path).ok()?,
+        MAX_VIDEO_CACHE_PNG_BYTES,
+    )
+    .ok()??;
+    if bounded_cached_png_is_safe(
+        &bytes,
+        MAX_VIDEO_CACHE_PNG_BYTES,
+        MAX_VIDEO_CACHE_PNG_DIMENSION,
+    ) {
+        Some(bytes)
+    } else {
+        let _ = std::fs::remove_file(cache_path);
+        None
+    }
+}
+
+/// A video cache key is derived from an already-admitted native file handle.
+/// Persisting it must not reopen the user path after that admission.
+pub(crate) fn persist_cached_video_thumbnail(cache_key: &str, bytes: &[u8], max_bytes: u64) {
+    if max_bytes == 0
+        || !bounded_cached_png_is_safe(
+            bytes,
+            MAX_VIDEO_CACHE_PNG_BYTES,
+            MAX_VIDEO_CACHE_PNG_DIMENSION,
+        )
+    {
+        return;
+    }
+    let Some(cache_path) = preview_cache_path(cache_key) else {
+        return;
+    };
+    if let Some(parent) = cache_path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if std::fs::write(cache_path, bytes).is_ok() {
+        prune_preview_cache_dir(max_bytes);
+    }
 }
 
 pub(crate) fn load_cached_thumbnail(
@@ -684,6 +728,7 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     }
                 }
             }
+            ottrin_preview::PreviewVisualRenderer::Video => None,
             _ => None,
         }
     })
@@ -1133,6 +1178,9 @@ fn build_thumbnail_bytes_with_visual_renderer(
             return render_visual(path, target_dim);
         }
         ottrin_preview::PreviewVisualRenderer::Affinity => return render_visual(path, target_dim),
+        // Video requires a retained admitted handle and is rendered only by the
+        // live preview worker, never by this path-only fallback.
+        ottrin_preview::PreviewVisualRenderer::Video => return None,
         ottrin_preview::PreviewVisualRenderer::Image => {
             if let Some(bytes) = render_visual(path, target_dim) {
                 return Some(bytes);

@@ -91,7 +91,8 @@ use theme_import::{decode_theme_import_json, sanitize_theme_file_name, theme_nam
 pub use thumbnail_cache::clear_preview_cache_storage;
 use thumbnail_cache::{
     ImagePreviewCacheEntry, clear_preview_cache_dir, full_preview_bytes_at_page,
-    load_cached_thumbnail, persist_cached_thumbnail, preview_cache_dir, preview_cache_key_for_page,
+    load_cached_thumbnail, load_cached_video_thumbnail, persist_cached_thumbnail,
+    persist_cached_video_thumbnail, preview_cache_dir, preview_cache_key_for_page,
     preview_cache_key_for_page_with_generations, preview_cache_key_for_page_with_sqlite_generation,
     preview_cache_stats, prune_preview_cache_dir, thumbnail_bytes_from_cache_or_build,
 };
@@ -960,8 +961,19 @@ struct PreviewJobRequest {
     obj_source_generation: Option<ottrin_preview::ObjPreviewSourceGeneration>,
     ply_source_generation: Option<ottrin_preview::PlyPreviewSourceGeneration>,
     office_source_generation: Option<ottrin_preview::OfficePreviewSourceGeneration>,
+    video_source: Option<ottrin_preview::AuthorizedVideoSource>,
+    cancellation: Arc<AtomicBool>,
     request_id: u64,
     cache_max_bytes: u64,
+}
+
+#[derive(Debug, Default)]
+struct PreviewJobSources {
+    sqlite: Option<ottrin_preview::SqlitePreviewSourceGeneration>,
+    obj: Option<ottrin_preview::ObjPreviewSourceGeneration>,
+    ply: Option<ottrin_preview::PlyPreviewSourceGeneration>,
+    office: Option<ottrin_preview::OfficePreviewSourceGeneration>,
+    video: Option<ottrin_preview::AuthorizedVideoSource>,
 }
 
 #[derive(Debug)]
@@ -975,6 +987,7 @@ struct PreviewJobResponse {
     obj_source_generation: Option<ottrin_preview::ObjPreviewSourceGeneration>,
     ply_source_generation: Option<ottrin_preview::PlyPreviewSourceGeneration>,
     office_source_generation: Option<ottrin_preview::OfficePreviewSourceGeneration>,
+    video_source_generation: Option<ottrin_preview::VideoThumbnailSourceGeneration>,
     request_id: u64,
     bytes: Option<Vec<u8>>,
     error: Option<String>,
@@ -1014,10 +1027,11 @@ impl PreviewRequestSlot {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 struct PreviewRequestState {
     request_id: u64,
     cache_key: String,
+    cancellation: Arc<AtomicBool>,
 }
 
 #[derive(Debug, Default)]
@@ -1041,11 +1055,16 @@ impl PreviewRequestScheduler {
         }
         self.next_request_id = self.next_request_id.wrapping_add(1).max(1);
         let request_id = self.next_request_id;
+        if let Some(previous) = self.current.remove(&slot) {
+            previous.cancellation.store(true, Ordering::Release);
+        }
+        let cancellation = Arc::new(AtomicBool::new(false));
         self.current.insert(
             slot.clone(),
             PreviewRequestState {
                 request_id,
                 cache_key,
+                cancellation,
             },
         );
         self.inflight.insert(slot);
@@ -1058,7 +1077,9 @@ impl PreviewRequestScheduler {
             .get(slot)
             .is_some_and(|state| state.request_id == request_id)
         {
-            self.current.remove(slot);
+            if let Some(state) = self.current.remove(slot) {
+                state.cancellation.store(true, Ordering::Release);
+            }
             self.inflight.remove(slot);
         }
     }
@@ -1077,9 +1098,18 @@ impl PreviewRequestScheduler {
             .cloned()
             .collect::<Vec<_>>();
         for slot in stale {
-            self.current.remove(&slot);
+            if let Some(state) = self.current.remove(&slot) {
+                state.cancellation.store(true, Ordering::Release);
+            }
             self.inflight.remove(&slot);
         }
+    }
+
+    fn cancellation(&self, slot: &PreviewRequestSlot, request_id: u64) -> Option<Arc<AtomicBool>> {
+        self.current
+            .get(slot)
+            .filter(|state| state.request_id == request_id)
+            .map(|state| Arc::clone(&state.cancellation))
     }
 
     fn accept_response(
@@ -2005,24 +2035,41 @@ impl OttrinApp {
         });
 
         std::thread::spawn(move || {
-            while let Ok(req) = preview_req_rx.recv() {
+            while let Ok(mut req) = preview_req_rx.recv() {
                 let sqlite_candidate = ottrin_preview::is_sqlite_preview_candidate(&req.path);
                 let obj_candidate = ottrin_preview::is_obj_path(&req.path);
                 let ply_candidate = ottrin_preview::is_ply_path(&req.path);
                 let pptx_candidate = ottrin_preview::is_pptx_visual_path(&req.path);
                 let office_candidate = ottrin_preview::is_office_visual_path(&req.path);
-                let generation_is_current = req.cache_key
-                    == preview_cache_key_for_page_with_generations(
-                        &req.path,
-                        req.target_dim,
-                        req.page_index,
-                        req.sqlite_source_generation.as_ref(),
-                        req.obj_source_generation.as_ref(),
-                        req.ply_source_generation.as_ref(),
-                        req.office_source_generation.as_ref(),
-                    );
+                let video_candidate = ottrin_preview::preview_profile(&req.path).visual_renderer()
+                    == ottrin_preview::PreviewVisualRenderer::Video;
+                let mut video_source_generation = req
+                    .video_source
+                    .as_ref()
+                    .map(|source| source.generation().clone());
+                let generation_is_current = if video_candidate {
+                    req.video_source.as_ref().is_none_or(|source| {
+                        req.cache_key
+                            == ottrin_preview::video_thumbnail_cache_key(
+                                source.generation(),
+                                req.target_dim,
+                            )
+                    })
+                } else {
+                    req.cache_key
+                        == preview_cache_key_for_page_with_generations(
+                            &req.path,
+                            req.target_dim,
+                            req.page_index,
+                            req.sqlite_source_generation.as_ref(),
+                            req.obj_source_generation.as_ref(),
+                            req.ply_source_generation.as_ref(),
+                            req.office_source_generation.as_ref(),
+                        )
+                };
                 let selected_pdf_page = req.page_index > 0
                     && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
+                let mut video_error = None;
                 let bytes = if !generation_is_current
                     || (sqlite_candidate
                         && (req.sqlite_source_generation.is_none()
@@ -2043,6 +2090,43 @@ impl OttrinApp {
                                 != ottrin_preview::office_preview_source_generation(&req.path)))
                 {
                     None
+                } else if video_candidate {
+                    if req.target_dim != PREVIEW_CACHE_ORIGINAL
+                        && let Some(cached) = load_cached_video_thumbnail(&req.cache_key)
+                    {
+                        Some(cached)
+                    } else if let Some(source) = req.video_source.take() {
+                        let decode_dimension = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                            PREVIEW_CACHE_BUCKET_XL
+                        } else {
+                            req.target_dim
+                        };
+                        match ottrin_preview::render_video_thumbnail_png(
+                            source,
+                            decode_dimension,
+                            Arc::clone(&req.cancellation),
+                        ) {
+                            Ok(rendered) => {
+                                video_source_generation = Some(rendered.source_generation);
+                                if req.target_dim != PREVIEW_CACHE_ORIGINAL {
+                                    persist_cached_video_thumbnail(
+                                        &req.cache_key,
+                                        &rendered.png,
+                                        req.cache_max_bytes,
+                                    );
+                                }
+                                Some(rendered.png)
+                            }
+                            Err(error) => {
+                                video_error = Some(error.to_string());
+                                None
+                            }
+                        }
+                    } else {
+                        video_error =
+                            Some(ottrin_preview::VideoThumbnailError::AdmissionFailed.to_string());
+                        None
+                    }
                 } else if sqlite_candidate {
                     if req.target_dim != PREVIEW_CACHE_ORIGINAL
                         && let Some(cached) = load_cached_thumbnail(
@@ -2062,6 +2146,7 @@ impl OttrinApp {
                             obj_source_generation: req.obj_source_generation,
                             ply_source_generation: req.ply_source_generation,
                             office_source_generation: req.office_source_generation,
+                            video_source_generation: None,
                             request_id: req.request_id,
                             bytes: Some(cached),
                             error: None,
@@ -2115,6 +2200,7 @@ impl OttrinApp {
                             obj_source_generation: req.obj_source_generation,
                             ply_source_generation: req.ply_source_generation,
                             office_source_generation: req.office_source_generation,
+                            video_source_generation: None,
                             request_id: req.request_id,
                             bytes: Some(cached),
                             error: None,
@@ -2166,6 +2252,7 @@ impl OttrinApp {
                             obj_source_generation: req.obj_source_generation,
                             ply_source_generation: req.ply_source_generation,
                             office_source_generation: req.office_source_generation,
+                            video_source_generation: None,
                             request_id: req.request_id,
                             bytes: Some(cached),
                             error: None,
@@ -2228,6 +2315,7 @@ impl OttrinApp {
                             obj_source_generation: req.obj_source_generation,
                             ply_source_generation: req.ply_source_generation,
                             office_source_generation: req.office_source_generation,
+                            video_source_generation: None,
                             request_id: req.request_id,
                             bytes: Some(cached),
                             error: None,
@@ -2285,7 +2373,9 @@ impl OttrinApp {
                         },
                     )
                 };
-                let error = if bytes.is_none() && ottrin_preview::is_svg_path(&req.path) {
+                let error = if video_error.is_some() {
+                    video_error
+                } else if bytes.is_none() && ottrin_preview::is_svg_path(&req.path) {
                     let target_dim = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
                         PREVIEW_CACHE_BUCKET_XL
                     } else {
@@ -2307,6 +2397,7 @@ impl OttrinApp {
                     obj_source_generation: req.obj_source_generation,
                     ply_source_generation: req.ply_source_generation,
                     office_source_generation: req.office_source_generation,
+                    video_source_generation,
                     request_id: req.request_id,
                     bytes,
                     error,
@@ -2591,12 +2682,7 @@ impl OttrinApp {
         target_dim: u32,
         page_index: usize,
         cache_key: String,
-        source_generations: (
-            Option<ottrin_preview::SqlitePreviewSourceGeneration>,
-            Option<ottrin_preview::ObjPreviewSourceGeneration>,
-            Option<ottrin_preview::PlyPreviewSourceGeneration>,
-            Option<ottrin_preview::OfficePreviewSourceGeneration>,
-        ),
+        sources: PreviewJobSources,
     ) {
         if self.preview_budget_remaining == 0 {
             return;
@@ -2614,10 +2700,15 @@ impl OttrinApp {
             target_dim,
             page_index,
             cache_key,
-            sqlite_source_generation: source_generations.0,
-            obj_source_generation: source_generations.1,
-            ply_source_generation: source_generations.2,
-            office_source_generation: source_generations.3,
+            sqlite_source_generation: sources.sqlite,
+            obj_source_generation: sources.obj,
+            ply_source_generation: sources.ply,
+            office_source_generation: sources.office,
+            video_source: sources.video,
+            cancellation: self
+                .preview_scheduler
+                .cancellation(&slot, request_id)
+                .expect("reserved preview request has cancellation state"),
             request_id,
             cache_max_bytes: self.thumbnail_cache_max_bytes(),
         });
@@ -2710,6 +2801,16 @@ impl OttrinApp {
             ply_source_generation.as_ref(),
             office_source_generation.as_ref(),
         );
+        let video_source = (ottrin_preview::preview_profile(path).visual_renderer()
+            == ottrin_preview::PreviewVisualRenderer::Video)
+            .then(|| ottrin_preview::admit_video_thumbnail_source(path).ok())
+            .flatten();
+        let cache_key = video_source
+            .as_ref()
+            .map(|source| {
+                ottrin_preview::video_thumbnail_cache_key(source.generation(), target_dim)
+            })
+            .unwrap_or(cache_key);
         self.discard_cached_pdf_preview_when_runtime_is_unavailable(path, &cache_key);
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2718,12 +2819,13 @@ impl OttrinApp {
                 target_dim,
                 page_index,
                 cache_key,
-                (
-                    sqlite_source_generation,
-                    obj_source_generation,
-                    ply_source_generation,
-                    office_source_generation,
-                ),
+                PreviewJobSources {
+                    sqlite: sqlite_source_generation,
+                    obj: obj_source_generation,
+                    ply: ply_source_generation,
+                    office: office_source_generation,
+                    video: video_source,
+                },
             );
             return None;
         }
@@ -2775,6 +2877,19 @@ impl OttrinApp {
             ply_source_generation.as_ref(),
             office_source_generation.as_ref(),
         );
+        let video_source = (ottrin_preview::preview_profile(path).visual_renderer()
+            == ottrin_preview::PreviewVisualRenderer::Video)
+            .then(|| ottrin_preview::admit_video_thumbnail_source(path).ok())
+            .flatten();
+        let cache_key = video_source
+            .as_ref()
+            .map(|source| {
+                ottrin_preview::video_thumbnail_cache_key(
+                    source.generation(),
+                    PREVIEW_CACHE_ORIGINAL,
+                )
+            })
+            .unwrap_or(cache_key);
         self.discard_cached_pdf_preview_when_runtime_is_unavailable(path, &cache_key);
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2783,12 +2898,13 @@ impl OttrinApp {
                 PREVIEW_CACHE_ORIGINAL,
                 page_index,
                 cache_key,
-                (
-                    sqlite_source_generation,
-                    obj_source_generation,
-                    ply_source_generation,
-                    office_source_generation,
-                ),
+                PreviewJobSources {
+                    sqlite: sqlite_source_generation,
+                    obj: obj_source_generation,
+                    ply: ply_source_generation,
+                    office: office_source_generation,
+                    video: video_source,
+                },
             );
             return None;
         }
@@ -2827,7 +2943,10 @@ impl OttrinApp {
                 PREVIEW_CACHE_ORIGINAL,
                 page_index,
                 cache_key,
-                (None, None, None, office_source_generation),
+                PreviewJobSources {
+                    office: office_source_generation,
+                    ..Default::default()
+                },
             );
             return None;
         }
@@ -2882,6 +3001,19 @@ impl OttrinApp {
             ply_source_generation.as_ref(),
             office_source_generation.as_ref(),
         );
+        let video_source = (ottrin_preview::preview_profile(path).visual_renderer()
+            == ottrin_preview::PreviewVisualRenderer::Video)
+            .then(|| ottrin_preview::admit_video_thumbnail_source(path).ok())
+            .flatten();
+        let cache_key = video_source
+            .as_ref()
+            .map(|source| {
+                ottrin_preview::video_thumbnail_cache_key(
+                    source.generation(),
+                    PREVIEW_CACHE_ORIGINAL,
+                )
+            })
+            .unwrap_or(cache_key);
         self.discard_cached_pdf_preview_when_runtime_is_unavailable(path, &cache_key);
         if !self.image_preview_cache.contains_key(&cache_key) {
             self.enqueue_image_preview(
@@ -2890,12 +3022,13 @@ impl OttrinApp {
                 PREVIEW_CACHE_ORIGINAL,
                 page_index,
                 cache_key,
-                (
-                    sqlite_source_generation,
-                    obj_source_generation,
-                    ply_source_generation,
-                    office_source_generation,
-                ),
+                PreviewJobSources {
+                    sqlite: sqlite_source_generation,
+                    obj: obj_source_generation,
+                    ply: ply_source_generation,
+                    office: office_source_generation,
+                    video: video_source,
+                },
             );
             return None;
         }
@@ -17111,9 +17244,13 @@ impl OttrinApp {
                                     | PreviewKind::ObjMetadata
                                     | PreviewKind::PlyMetadata
                                     | PreviewKind::ThreeMfMetadata
+                                    | PreviewKind::VideoMetadata
                                     | PreviewKind::Pdf
                             ) || quick_inspector_uses_rendered_office_page(&path);
-                            if is_zoomable_document {
+                            let video_visual_available = preview.kind != PreviewKind::VideoMetadata
+                                || ottrin_preview::preview_profile(&path).visual_renderer()
+                                    == ottrin_preview::PreviewVisualRenderer::Video;
+                            if is_zoomable_document && video_visual_available {
                                 if ui
                                     .small_button("Fit")
                                     .on_hover_text(
@@ -17193,7 +17330,7 @@ impl OttrinApp {
                                 render_text_body_preview(ui, c, &name, &preview.body);
                             }
                         }
-                        PreviewKind::Image
+                        visual_kind @ (PreviewKind::Image
                         | PreviewKind::CameraRawMetadata
                         | PreviewKind::AffinityMetadata
                         | PreviewKind::SqliteMetadata
@@ -17201,7 +17338,12 @@ impl OttrinApp {
                         | PreviewKind::ObjMetadata
                         | PreviewKind::PlyMetadata
                         | PreviewKind::ThreeMfMetadata
-                        | PreviewKind::Pdf => {
+                        | PreviewKind::VideoMetadata
+                        | PreviewKind::Pdf)
+                            if visual_kind != PreviewKind::VideoMetadata
+                                || ottrin_preview::preview_profile(&path).visual_renderer()
+                                    == ottrin_preview::PreviewVisualRenderer::Video =>
+                        {
                             ScrollArea::both().show(ui, |ui| {
                                 let max_w = (ui.available_width() - 24.0).max(120.0);
                                 let max_h = (ui.available_height() - 34.0).max(160.0);
@@ -17266,6 +17408,17 @@ impl OttrinApp {
                                                 &name,
                                                 &format!(
                                                     "{metadata}\nVisual PDF rendering failed. Open externally to inspect this file."
+                                                ),
+                                            );
+                                        } else if preview.kind == PreviewKind::VideoMetadata {
+                                            render_metadata_card_preview(
+                                                ui,
+                                                c,
+                                                MI_MOVIE,
+                                                &name,
+                                                &format!(
+                                                    "{}\nThumbnail: unavailable for this file; metadata remains available.",
+                                                    preview.body
                                                 ),
                                             );
                                         } else {
@@ -20128,6 +20281,11 @@ impl OttrinApp {
 }
 
 fn preview_response_matches_current_generation(response: &PreviewJobResponse) -> bool {
+    if ottrin_preview::preview_profile(&response.path).visual_renderer()
+        == ottrin_preview::PreviewVisualRenderer::Video
+    {
+        return video_response_matches_admitted_generation(response);
+    }
     if ottrin_preview::is_sqlite_preview_candidate(&response.path) {
         let Some(current_generation) =
             ottrin_preview::sqlite_preview_source_generation(&response.path)
@@ -20204,6 +20362,16 @@ fn preview_response_matches_current_generation(response: &PreviewJobResponse) ->
     }
     response.cache_key
         == preview_cache_key_for_page(&response.path, response.target_dim, response.page_index)
+}
+
+fn video_response_matches_admitted_generation(response: &PreviewJobResponse) -> bool {
+    if let Some(generation) = response.video_source_generation.as_ref() {
+        return response.cache_key
+            == ottrin_preview::video_thumbnail_cache_key(generation, response.target_dim);
+    }
+    response.bytes.is_none()
+        && response.cache_key
+            == preview_cache_key_for_page(&response.path, response.target_dim, response.page_index)
 }
 
 fn replace_search_cancellation(slot: &mut Option<Arc<AtomicBool>>) -> Arc<AtomicBool> {
@@ -20634,6 +20802,7 @@ fn image_thumbnail_candidate(entry: &FileEntry) -> bool {
             | PreviewKind::ObjMetadata
             | PreviewKind::PlyMetadata
             | PreviewKind::ThreeMfMetadata
+            | PreviewKind::VideoMetadata
             | PreviewKind::Pdf
             | PreviewKind::Text
     );
@@ -22744,12 +22913,23 @@ mod tests {
         let first_a = scheduler
             .reserve(slot.clone(), "cache-a".to_string())
             .unwrap();
+        let first_cancellation = scheduler
+            .cancellation(&slot, first_a)
+            .expect("first cancellation token");
         let b = scheduler
             .reserve(slot.clone(), "cache-b".to_string())
             .unwrap();
+        assert!(
+            first_cancellation.load(Ordering::Acquire),
+            "superseding a video-capable preview slot must cancel its old worker"
+        );
+        let second_cancellation = scheduler
+            .cancellation(&slot, b)
+            .expect("second cancellation token");
         let returning_a = scheduler
             .reserve(slot.clone(), "cache-a".to_string())
             .unwrap();
+        assert!(second_cancellation.load(Ordering::Acquire));
 
         assert!(first_a < b && b < returning_a);
         assert!(scheduler.is_inflight(&slot));
@@ -23114,12 +23294,36 @@ mod tests {
             obj_source_generation: None,
             ply_source_generation: None,
             office_source_generation: None,
+            video_source_generation: None,
             request_id: 1,
             bytes: Some(b"png".to_vec()),
             error: None,
         };
 
         assert!(preview_response_matches_current_generation(&response));
+    }
+
+    #[test]
+    fn video_response_is_bound_to_its_admitted_generation_without_reopening_the_path() {
+        let path = PathBuf::from("/definitely/not/reopened/clip.mp4");
+        let generation = ottrin_preview::VideoThumbnailSourceGeneration::from_bytes([0x5a; 32]);
+        let response = PreviewJobResponse {
+            slot: PreviewRequestSlot::new(path.clone(), PreviewRequestTarget::Thumbnail, 128, 0),
+            path,
+            target_dim: 128,
+            page_index: 0,
+            cache_key: ottrin_preview::video_thumbnail_cache_key(&generation, 128),
+            sqlite_source_generation: None,
+            obj_source_generation: None,
+            ply_source_generation: None,
+            office_source_generation: None,
+            video_source_generation: Some(generation),
+            request_id: 1,
+            bytes: Some(b"validated-png".to_vec()),
+            error: None,
+        };
+
+        assert!(video_response_matches_admitted_generation(&response));
     }
 
     #[test]
@@ -23151,6 +23355,7 @@ mod tests {
             obj_source_generation: None,
             ply_source_generation: None,
             office_source_generation: None,
+            video_source_generation: None,
             request_id: 1,
             bytes: Some(b"first-generation-card".to_vec()),
             error: None,
@@ -23204,6 +23409,7 @@ mod tests {
             obj_source_generation: Some(rendered_middle),
             ply_source_generation: None,
             office_source_generation: None,
+            video_source_generation: None,
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
             error: None,
@@ -23258,6 +23464,7 @@ mod tests {
             obj_source_generation: None,
             ply_source_generation: Some(rendered_middle),
             office_source_generation: None,
+            video_source_generation: None,
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
             error: None,
@@ -23300,6 +23507,7 @@ mod tests {
             obj_source_generation: None,
             ply_source_generation: None,
             office_source_generation: Some(middle_generation),
+            video_source_generation: None,
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
             error: None,
@@ -24403,11 +24611,24 @@ mod tests {
             size_bytes: Some(2048),
             modified_unix_secs: None,
         };
+        let video_entry = FileEntry {
+            name: "clip.mp4".to_string(),
+            path: PathBuf::from("/tmp/clip.mp4"),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: Some(2048),
+            modified_unix_secs: None,
+        };
 
         assert!(image_thumbnail_candidate(&image_entry));
         assert!(image_thumbnail_candidate(&pdf_entry));
         assert!(image_thumbnail_candidate(&source_entry));
         assert!(image_thumbnail_candidate(&stl_entry));
+        assert_eq!(
+            image_thumbnail_candidate(&video_entry),
+            cfg!(target_os = "windows")
+        );
         assert!(!image_thumbnail_candidate(&office_entry));
         assert!(!image_thumbnail_candidate(&FileEntry {
             name: "legacy.doc".to_string(),
@@ -24429,6 +24650,10 @@ mod tests {
             "/tmp/sample.PDF"
         )));
         assert!(thumbnail_supported_preview_path(Path::new("/tmp/main.rs")));
+        assert_eq!(
+            thumbnail_supported_preview_path(Path::new("/tmp/clip.mp4")),
+            cfg!(target_os = "windows")
+        );
         assert!(!thumbnail_supported_preview_path(Path::new(
             "/tmp/report.docx"
         )));

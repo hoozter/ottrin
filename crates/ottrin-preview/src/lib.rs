@@ -33,6 +33,7 @@ mod pdf_visual;
 mod ply_visual;
 mod stl_visual;
 mod threemf_visual;
+mod video_thumbnail;
 pub use affinity_visual::{
     AffinityPreviewSourceGeneration, AffinityVisualError, RenderedAffinityPreview,
     affinity_preview_is_available, affinity_preview_source_generation,
@@ -60,6 +61,12 @@ pub use threemf_visual::{
     ThreeMfMetadata, ThreeMfPreviewSourceGeneration, ThreeMfVisualError, inspect_3mf_metadata,
     render_3mf_preview_png, render_3mf_preview_png_with_generation,
     threemf_preview_source_generation,
+};
+pub use video_thumbnail::{
+    AuthorizedVideoSource, RenderedVideoThumbnail, ValidatedVideoThumbnail, VideoThumbnailError,
+    VideoThumbnailLimits, VideoThumbnailSourceGeneration, admit_video_thumbnail_source,
+    bounded_video_thumbnail_dimensions, render_video_thumbnail_png, validate_video_thumbnail_bgra,
+    video_thumbnail_cache_key,
 };
 
 const EXTRACTED_TEXT_MARKER: &str = "\n\nExtracted text:\n";
@@ -753,6 +760,7 @@ pub enum PreviewVisualRenderer {
     CameraRaw,
     Affinity,
     TextCard,
+    Video,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -847,11 +855,16 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
         },
         PreviewKind::VideoMetadata => PreviewProfile {
             kind,
-            views: [true, false, false],
-            visual_renderer: PreviewVisualRenderer::None,
-            // A video container is never image data. Until the bounded native
-            // backend produces a validated still, keep it metadata-only rather
-            // than handing arbitrary container bytes to an image decoder.
+            views: [true, false, cfg!(target_os = "windows")],
+            visual_renderer: if cfg!(target_os = "windows") {
+                PreviewVisualRenderer::Video
+            } else {
+                PreviewVisualRenderer::None
+            },
+            // A video container is never image data. Windows may expose only a
+            // validated native frame; every other platform and backend failure
+            // stays metadata-only rather than handing container bytes to an
+            // image decoder.
             raw_fallback_allowed: false,
         },
         PreviewKind::AudioMetadata => PreviewProfile {
@@ -4524,6 +4537,12 @@ fn preview_video(title: String, path: &Path) -> PreviewData {
         }
     }
     lines.push("Duration/codec: unavailable without opening in an external player.".to_string());
+    lines.push(if cfg!(target_os = "windows") {
+        "Thumbnail: Windows Media Foundation is used when the installed OS codec supports this file."
+            .to_string()
+    } else {
+        "Thumbnail: unavailable on this platform; video remains metadata-only.".to_string()
+    });
     PreviewData {
         title,
         kind: PreviewKind::VideoMetadata,

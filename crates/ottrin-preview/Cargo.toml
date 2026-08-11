@@ -37,3 +37,7 @@ stl_io = "0.11"
 tobj = { version = "=4.0.5", default-features = false }
 epaint_default_fonts = "0.33"
 pdfium-render = { version = "=0.9.3", default-features = false, features = ["image_latest", "pdfium_latest", "thread_safe"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.58", features = ["implement", "Win32_Foundation", "Win32_Media_MediaFoundation", "Win32_Storage_FileSystem", "Win32_System_Com"] }
+windows-core = "0.58"

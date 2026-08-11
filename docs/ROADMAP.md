@@ -23,6 +23,7 @@ Implemented:
 - Grid rubber-band selection is implemented and source-tested; packaged/manual acceptance is pending.
 - Linux native Open With discovery and launch path is implemented with source and automated coverage; other platform discovery remains fallback/manual.
 - Generated visual text/source cards, bounded direct-child folder thumbnail collages, bounded recursive folder-size metadata, and bounded PDF page navigation are implemented and test-covered.
+- Windows video thumbnails have a source-complete native-only Media Foundation Phase 1 path. It admits a no-follow regular file by retained handle, decodes at most one bounded frame, normalizes pixels before generation-scoped cache/UI admission, and falls back to metadata on every unavailable/error path. Linux and other platforms remain metadata-only; native Windows and exact-package acceptance are still pending.
 - Theme presets and custom theme editing.
 - A compact collapsible Locations rail is implemented with stable item ordering and selection across compact/expanded modes, Smart Panel surface treatment, semantic location icons, keyboard focus/tooltips, discovered storage reconciliation, and no automatic indexing of attached volumes. Source layout tests cover compact width, shared surface, and input-boundary leakage; native visual and device-lifecycle acceptance remains pending.
 - Linux portable tarball, Linux AppImage, Windows portable zip, and per-user Windows installer packaging scripts.
@@ -50,6 +51,7 @@ coverage, remain v1 work. Source tests do not satisfy those gates.
 - DOCX and PPTX still need a sandboxed layout renderer that preserves pages, positions, tables, images, typography, and hierarchy. Until one is implemented and physically verified, their extracted text remains a clearly labeled fallback rather than a simulated document page.
 - Linux privileged helper and polkit smoke test from packaged layout.
 - Real Windows runtime smoke for portable zip: launch, navigation, file operations, Trash/Recycling Bin, search, Quick Inspector, UAC/helper behavior, and background updater.
+- The Media Foundation thumbnail path still needs native Windows tests for retained-handle/reparse identity, cancellation/deadline behavior, malformed and unsupported media, installed-codec capability boundaries, source/resource limits, cache invalidation, and an exact-package audit proving that no decoder, codec payload, or installer was added. Cross-compilation and non-Windows contract tests are not native acceptance.
 - Real Windows install/uninstall smoke for the installer candidate.
 - Release-owner review of release notes and known limitations against the exact artifacts.
 
@@ -75,7 +77,7 @@ V1 should not ship until:
 These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
 
 - Advanced Office navigation and editing beyond faithful read-only preview.
-- Rich file thumbnails beyond the implemented text-card and thumbnail-collage path remain deferred: video frame thumbnails and broader document variants where platform support or dependencies make sense. Video thumbnails now have an approved native-only Phase 1: Windows Media Foundation first, no bundled/invoked/recommended/downloaded FFmpeg, GStreamer codec payload, codec pack, external decoder, or additional codec implementation; unapproved platforms remain metadata-only. [Video Thumbnail Backend Spike](VIDEO_THUMBNAIL_SPIKE.md) preserves the rejected FFmpeg-first evaluation as historical evidence.
+- Rich file thumbnails beyond the implemented text-card, thumbnail-collage, and Windows Media Foundation video path remain deferred where platform support or dependencies require a separate decision. The native-only video policy adds no bundled/invoked/recommended/downloaded FFmpeg, GStreamer codec payload, codec pack, external decoder, or additional codec implementation; unapproved platforms remain metadata-only. [Video Thumbnail Backend Spike](VIDEO_THUMBNAIL_SPIKE.md) preserves the rejected FFmpeg-first evaluation as historical evidence.
 - Native desktop Open With discovery parity beyond Linux remains deferred.
 - Media playback and advanced image tools.
 - Fanotify helper/service packaging.

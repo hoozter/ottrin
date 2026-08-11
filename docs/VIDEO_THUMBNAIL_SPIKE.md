@@ -41,12 +41,16 @@ capability reporting, resource bounds, cache invalidation, unsupported codecs,
 and confirmation that no video decoder/runtime/codec payload or installer was
 added. Linux or test-double success cannot establish Windows acceptance.
 
+The Phase 1 source path is implemented and cross-compiles for Windows. That is
+source evidence only: none of the native Windows or exact-package acceptance
+listed above is claimed complete.
+
 ## Existing architecture
 
 - `crates/ottrin-preview/src/lib.rs` classifies `.mp4`, `.mkv`, `.webm`,
-  `.mov`, `.avi`, and `.m4v` as `VideoMetadata`. Until a native backend provides
-  a validated still, those containers must remain metadata-only and must never
-  reach the generic raw-image fallback.
+  `.mov`, `.avi`, and `.m4v` as `VideoMetadata`. On Windows only, the dedicated
+  backend may attach a validated still; otherwise those containers remain
+  metadata-only and never reach the generic raw-image fallback.
 - `crates/ottrin-ui/src/thumbnail_cache.rs` owns PNG validation, thumbnail cache
   admission, invalidation, and worker-side requests. Video output must use that
   same ownership boundary.
