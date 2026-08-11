@@ -137,7 +137,8 @@ fi
 # misstate the exact artifact's Quick Inspector behavior.
 for expected in \
   'bounded multi-page PDF previews with Previous/Next/page selection' \
-  'bounded DOCX/XLSX/XLSM content-preview visuals' \
+  'bounded XLSX/XLSM and ODS structured worksheet previews' \
+  'clearly labeled DOCX/PPTX extracted-text fallbacks' \
   'PDF and Office previews retain extracted-text and metadata fallbacks'; do
   if ! grep -Fq -- "$expected" "$README"; then
     printf 'README.md is missing current Quick Inspector release detail: %s\n' \
@@ -152,7 +153,8 @@ done
 # documentation.
 for expected in \
   'bounded multi-page PDF visuals with Previous/Next/page selection' \
-  'bounded DOCX/XLSX/XLSM content-preview visuals' \
+  'XLSX/XLSM and ODS use bounded structured worksheet previews' \
+  'DOCX and PPTX currently expose clearly labeled, left-aligned extracted-text fallbacks' \
   'extracted PDF text and metadata'; do
   if ! grep -Fq -- "$expected" "$USER_GUIDE"; then
     printf 'docs/USER_GUIDE.md is missing current Quick Inspector release detail: %s\n' \
