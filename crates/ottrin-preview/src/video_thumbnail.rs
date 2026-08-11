@@ -5,6 +5,11 @@ use std::time::Duration;
 #[cfg(target_os = "windows")]
 use std::time::Instant;
 
+/// Maximum compressed video size admitted to the native thumbnail backend.
+/// Larger files remain metadata-only rather than exposing an unbounded stream
+/// to a synchronous container parser.
+pub const MAX_VIDEO_THUMBNAIL_SOURCE_BYTES: u64 = 512 * 1024 * 1024;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct VideoThumbnailSourceGeneration([u8; 32]);
 
@@ -20,6 +25,7 @@ impl VideoThumbnailSourceGeneration {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct VideoThumbnailLimits {
+    pub max_source_bytes: u64,
     pub max_source_dimension: u32,
     pub max_source_pixels: u64,
     pub max_output_dimension: u32,
@@ -31,6 +37,7 @@ pub struct VideoThumbnailLimits {
 impl VideoThumbnailLimits {
     pub const fn for_target(target_dimension: u32) -> Self {
         Self {
+            max_source_bytes: MAX_VIDEO_THUMBNAIL_SOURCE_BYTES,
             max_source_dimension: 8_192,
             max_source_pixels: 33_554_432,
             max_output_dimension: target_dimension,
@@ -88,6 +95,8 @@ pub struct AuthorizedVideoSource {
     file: Arc<std::fs::File>,
     #[cfg(target_os = "windows")]
     identity: WindowsFileIdentity,
+    #[cfg(target_os = "windows")]
+    admitted_length: u64,
 }
 
 impl AuthorizedVideoSource {
@@ -176,6 +185,8 @@ pub fn admit_video_thumbnail_source(
         .open(path)
         .map_err(|_| VideoThumbnailError::AdmissionFailed)?;
     let identity = windows_file_identity(&file)?;
+    let limits = VideoThumbnailLimits::for_target(1);
+    let admitted_length = bounded_video_thumbnail_source_length(identity.file_size, &limits)?;
     let mut digest = Sha256::new();
     digest.update(identity.volume_serial_number.to_le_bytes());
     digest.update(identity.file_index.to_le_bytes());
@@ -188,7 +199,19 @@ pub fn admit_video_thumbnail_source(
         generation,
         file: Arc::new(file),
         identity,
+        admitted_length,
     })
+}
+
+pub fn bounded_video_thumbnail_source_length(
+    file_size: u64,
+    limits: &VideoThumbnailLimits,
+) -> Result<u64, VideoThumbnailError> {
+    if file_size > limits.max_source_bytes {
+        Err(VideoThumbnailError::ResourceLimit)
+    } else {
+        Ok(file_size)
+    }
 }
 
 /// Converts one already-bounded native BGRA frame into the sole image form
@@ -198,10 +221,44 @@ pub fn validate_video_thumbnail_bgra(
     source_generation: VideoThumbnailSourceGeneration,
     width: u32,
     height: u32,
-    stride: usize,
+    stride: i32,
     bgra: &[u8],
     limits: &VideoThumbnailLimits,
 ) -> Result<ValidatedVideoThumbnail, VideoThumbnailError> {
+    let layout = checked_video_thumbnail_frame_layout(width, height, stride, limits)?;
+    let top_row_offset = if stride < 0 {
+        layout
+            .span_bytes
+            .checked_sub(layout.row_bytes)
+            .ok_or(VideoThumbnailError::InvalidFrame)?
+    } else {
+        0
+    };
+    validate_video_thumbnail_bgra_rows(
+        source_generation,
+        width,
+        height,
+        stride,
+        top_row_offset,
+        bgra,
+        limits,
+    )
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct VideoThumbnailFrameLayout {
+    row_bytes: usize,
+    stride_bytes: usize,
+    span_bytes: usize,
+    output_bytes: usize,
+}
+
+fn checked_video_thumbnail_frame_layout(
+    width: u32,
+    height: u32,
+    stride: i32,
+    limits: &VideoThumbnailLimits,
+) -> Result<VideoThumbnailFrameLayout, VideoThumbnailError> {
     let pixels = u64::from(width)
         .checked_mul(u64::from(height))
         .ok_or(VideoThumbnailError::ResourceLimit)?;
@@ -217,7 +274,6 @@ pub fn validate_video_thumbnail_bgra(
             .ok_or(VideoThumbnailError::ResourceLimit)?,
     )
     .map_err(|_| VideoThumbnailError::ResourceLimit)?;
-
     if width == 0
         || height == 0
         || width > limits.max_output_dimension
@@ -227,21 +283,55 @@ pub fn validate_video_thumbnail_bgra(
     {
         return Err(VideoThumbnailError::ResourceLimit);
     }
-    let required_input = stride
-        .checked_mul(usize::try_from(height - 1).map_err(|_| VideoThumbnailError::InvalidFrame)?)
-        .and_then(|prefix| prefix.checked_add(row_bytes))
-        .ok_or(VideoThumbnailError::InvalidFrame)?;
-    if stride < row_bytes || bgra.len() < required_input {
+    let stride_bytes =
+        usize::try_from(stride.unsigned_abs()).map_err(|_| VideoThumbnailError::InvalidFrame)?;
+    if stride == 0 || stride_bytes < row_bytes {
         return Err(VideoThumbnailError::InvalidFrame);
     }
+    let preceding_rows =
+        usize::try_from(height - 1).map_err(|_| VideoThumbnailError::InvalidFrame)?;
+    let span_bytes = stride_bytes
+        .checked_mul(preceding_rows)
+        .and_then(|prefix| prefix.checked_add(row_bytes))
+        .ok_or(VideoThumbnailError::InvalidFrame)?;
+    if span_bytes > limits.max_output_bytes {
+        return Err(VideoThumbnailError::ResourceLimit);
+    }
+    Ok(VideoThumbnailFrameLayout {
+        row_bytes,
+        stride_bytes,
+        span_bytes,
+        output_bytes,
+    })
+}
 
-    let mut rgba = Vec::with_capacity(output_bytes);
+fn validate_video_thumbnail_bgra_rows(
+    source_generation: VideoThumbnailSourceGeneration,
+    width: u32,
+    height: u32,
+    stride: i32,
+    top_row_offset: usize,
+    bgra: &[u8],
+    limits: &VideoThumbnailLimits,
+) -> Result<ValidatedVideoThumbnail, VideoThumbnailError> {
+    let layout = checked_video_thumbnail_frame_layout(width, height, stride, limits)?;
+
+    let mut rgba = Vec::with_capacity(layout.output_bytes);
     for row in 0..height as usize {
-        let start = row
-            .checked_mul(stride)
+        let row_delta = row
+            .checked_mul(layout.stride_bytes)
+            .ok_or(VideoThumbnailError::InvalidFrame)?;
+        let start = if stride < 0 {
+            top_row_offset.checked_sub(row_delta)
+        } else {
+            top_row_offset.checked_add(row_delta)
+        }
+        .ok_or(VideoThumbnailError::InvalidFrame)?;
+        let end = start
+            .checked_add(layout.row_bytes)
             .ok_or(VideoThumbnailError::InvalidFrame)?;
         let source = bgra
-            .get(start..start + row_bytes)
+            .get(start..end)
             .ok_or(VideoThumbnailError::InvalidFrame)?;
         for pixel in source.chunks_exact(4) {
             rgba.extend_from_slice(&[pixel[2], pixel[1], pixel[0], 255]);
@@ -358,13 +448,13 @@ mod windows_backend {
         STG_E_INVALIDFUNCTION, STG_E_INVALIDPOINTER,
     };
     use windows::Win32::Media::MediaFoundation::{
-        IMF2DBuffer2, IMFMediaType, IMFSourceReader, MF_MT_FRAME_SIZE, MF_MT_MAJOR_TYPE,
-        MF_MT_SUBTYPE, MF_SOURCE_READER_ALL_STREAMS,
+        IMF2DBuffer2, IMFMediaBuffer, IMFMediaType, IMFSourceReader, MF_MT_DEFAULT_STRIDE,
+        MF_MT_FRAME_SIZE, MF_MT_MAJOR_TYPE, MF_MT_SUBTYPE, MF_SOURCE_READER_ALL_STREAMS,
         MF_SOURCE_READER_ENABLE_ADVANCED_VIDEO_PROCESSING, MF_SOURCE_READER_FIRST_VIDEO_STREAM,
         MF_SOURCE_READERF_ENDOFSTREAM, MF_SOURCE_READERF_ERROR, MF_VERSION,
         MF2DBuffer_LockFlags_Read, MFCreateAttributes, MFCreateMFByteStreamOnStreamEx,
-        MFCreateMediaType, MFCreateSourceReaderFromByteStream, MFMediaType_Video, MFShutdown,
-        MFStartup, MFVideoFormat_RGB32,
+        MFCreateMediaType, MFCreateSourceReaderFromByteStream, MFGetStrideForBitmapInfoHeader,
+        MFMediaType_Video, MFShutdown, MFStartup, MFVideoFormat_RGB32,
     };
     use windows::Win32::System::Com::{
         COINIT_MULTITHREADED, CoInitializeEx, CoUninitialize, ISequentialStream_Impl, IStream,
@@ -504,6 +594,9 @@ mod windows_backend {
                 .checked_add(i128::from(move_by))
                 .and_then(|value| u64::try_from(value).ok())
                 .ok_or_else(|| Error::from_hresult(STG_E_INVALIDFUNCTION))?;
+            if next > self.length {
+                return Err(Error::from_hresult(STG_E_INVALIDFUNCTION));
+            }
             *position = next;
             if !new_position.is_null() {
                 // SAFETY: COM supplied an optional writable out parameter.
@@ -592,6 +685,8 @@ mod windows_backend {
             return Err(VideoThumbnailError::Cancelled);
         }
         let started = Instant::now();
+        let admitted_length =
+            bounded_video_thumbnail_source_length(source.admitted_length, limits)?;
         let deadline = started
             .checked_add(limits.deadline)
             .ok_or(VideoThumbnailError::TimedOut)?;
@@ -600,7 +695,7 @@ mod windows_backend {
         let stream: IStream = AdmittedFileStream {
             file: Arc::clone(&source.file),
             position: Mutex::new(0),
-            length: source.identity.file_size,
+            length: admitted_length,
             cancelled: Arc::clone(&cancelled),
             deadline,
         }
@@ -681,6 +776,17 @@ mod windows_backend {
             )
         }
         .map_err(|_| VideoThumbnailError::UnsupportedMedia)?;
+        let requested_stride =
+            unsafe { MFGetStrideForBitmapInfoHeader(MFVideoFormat_RGB32.data1, output_width) }
+                .map_err(|_| VideoThumbnailError::UnsupportedMedia)?;
+        checked_video_thumbnail_frame_layout(
+            output_width,
+            output_height,
+            requested_stride,
+            limits,
+        )?;
+        unsafe { output_type.SetUINT32(&MF_MT_DEFAULT_STRIDE, requested_stride as u32) }
+            .map_err(|_| VideoThumbnailError::UnsupportedMedia)?;
         unsafe { reader.SetCurrentMediaType(stream_index, None, &output_type) }
             .map_err(|_| VideoThumbnailError::UnsupportedMedia)?;
 
@@ -690,12 +796,26 @@ mod windows_backend {
         let current_size = unsafe { current_type.GetUINT64(&MF_MT_FRAME_SIZE) }
             .map_err(|_| VideoThumbnailError::InvalidFrame)?;
         let (width, height) = unpack_dimensions(current_size);
-        if width != output_width || height != output_height {
+        let current_subtype = unsafe { current_type.GetGUID(&MF_MT_SUBTYPE) }
+            .map_err(|_| VideoThumbnailError::InvalidFrame)?;
+        if width != output_width
+            || height != output_height
+            || current_subtype != MFVideoFormat_RGB32
+        {
             return Err(VideoThumbnailError::InvalidFrame);
         }
+        let negotiated_stride = negotiated_default_stride(&current_type, current_subtype, width)?;
+        checked_video_thumbnail_frame_layout(width, height, negotiated_stride, limits)?;
         let media_buffer = unsafe { sample.ConvertToContiguousBuffer() }
             .map_err(|_| VideoThumbnailError::InvalidFrame)?;
-        copy_2d_bgra(&media_buffer, generation, width, height, limits)
+        copy_media_buffer_bgra(
+            &media_buffer,
+            generation,
+            width,
+            height,
+            negotiated_stride,
+            limits,
+        )
     }
 
     fn check_interruption(
@@ -707,6 +827,23 @@ mod windows_backend {
 
     fn unpack_dimensions(value: u64) -> (u32, u32) {
         ((value >> 32) as u32, value as u32)
+    }
+
+    fn negotiated_default_stride(
+        media_type: &IMFMediaType,
+        subtype: windows_core::GUID,
+        width: u32,
+    ) -> Result<i32, VideoThumbnailError> {
+        if let Ok(stride) = unsafe { media_type.GetUINT32(&MF_MT_DEFAULT_STRIDE) } {
+            return Ok(stride as i32);
+        }
+        let stride = unsafe { MFGetStrideForBitmapInfoHeader(subtype.data1, width) }
+            .map_err(|_| VideoThumbnailError::InvalidFrame)?;
+        // Media Foundation documents this calculation as the fallback when a
+        // negotiated uncompressed media type omits MF_MT_DEFAULT_STRIDE. Cache
+        // it on that type so the signed layout remains explicit.
+        let _ = unsafe { media_type.SetUINT32(&MF_MT_DEFAULT_STRIDE, stride as u32) };
+        Ok(stride)
     }
 
     fn read_one_sample(
@@ -744,16 +881,66 @@ mod windows_backend {
         Err(VideoThumbnailError::UnsupportedMedia)
     }
 
-    fn copy_2d_bgra(
-        buffer: &windows::Win32::Media::MediaFoundation::IMFMediaBuffer,
+    fn copy_media_buffer_bgra(
+        buffer: &IMFMediaBuffer,
         generation: VideoThumbnailSourceGeneration,
         width: u32,
         height: u32,
+        negotiated_stride: i32,
         limits: &VideoThumbnailLimits,
     ) -> Result<ValidatedVideoThumbnail, VideoThumbnailError> {
-        let buffer_2d: IMF2DBuffer2 = buffer
-            .cast()
-            .map_err(|_| VideoThumbnailError::InvalidFrame)?;
+        let (current_length, max_length) = media_buffer_lengths(buffer, limits)?;
+        if let Ok(buffer_2d) = buffer.cast::<IMF2DBuffer2>() {
+            return copy_locked_2d_bgra(
+                &buffer_2d,
+                generation,
+                width,
+                height,
+                (current_length, max_length),
+                limits,
+            );
+        }
+        copy_locked_contiguous_bgra(
+            buffer,
+            generation,
+            width,
+            height,
+            negotiated_stride,
+            (current_length, max_length),
+            limits,
+        )
+    }
+
+    fn media_buffer_lengths(
+        buffer: &IMFMediaBuffer,
+        limits: &VideoThumbnailLimits,
+    ) -> Result<(usize, usize), VideoThumbnailError> {
+        let current_length = usize::try_from(
+            unsafe { buffer.GetCurrentLength() }.map_err(|_| VideoThumbnailError::InvalidFrame)?,
+        )
+        .map_err(|_| VideoThumbnailError::ResourceLimit)?;
+        let max_length = usize::try_from(
+            unsafe { buffer.GetMaxLength() }.map_err(|_| VideoThumbnailError::InvalidFrame)?,
+        )
+        .map_err(|_| VideoThumbnailError::ResourceLimit)?;
+        if current_length > max_length {
+            return Err(VideoThumbnailError::InvalidFrame);
+        }
+        if max_length > limits.max_output_bytes {
+            return Err(VideoThumbnailError::ResourceLimit);
+        }
+        Ok((current_length, max_length))
+    }
+
+    fn copy_locked_2d_bgra(
+        buffer_2d: &IMF2DBuffer2,
+        generation: VideoThumbnailSourceGeneration,
+        width: u32,
+        height: u32,
+        declared_lengths: (usize, usize),
+        limits: &VideoThumbnailLimits,
+    ) -> Result<ValidatedVideoThumbnail, VideoThumbnailError> {
+        let (current_length, max_length) = declared_lengths;
         let mut scanline = std::ptr::null_mut();
         let mut pitch = 0_i32;
         let mut buffer_start = std::ptr::null_mut();
@@ -768,48 +955,84 @@ mod windows_backend {
             )
         }
         .map_err(|_| VideoThumbnailError::InvalidFrame)?;
-        let _unlock = Buffer2dUnlock(&buffer_2d);
-
-        let row_bytes = usize::try_from(
-            u64::from(width)
-                .checked_mul(4)
-                .ok_or(VideoThumbnailError::ResourceLimit)?,
-        )
-        .map_err(|_| VideoThumbnailError::ResourceLimit)?;
-        let frame_bytes = row_bytes
-            .checked_mul(height as usize)
-            .ok_or(VideoThumbnailError::ResourceLimit)?;
-        if frame_bytes > limits.max_output_bytes || scanline.is_null() || buffer_start.is_null() {
-            return Err(VideoThumbnailError::ResourceLimit);
+        let _unlock = Buffer2dUnlock(buffer_2d);
+        if scanline.is_null() || buffer_start.is_null() {
+            return Err(VideoThumbnailError::InvalidFrame);
         }
-        if (pitch.unsigned_abs() as usize) < row_bytes {
+        let buffer_length =
+            usize::try_from(buffer_length).map_err(|_| VideoThumbnailError::ResourceLimit)?;
+        if buffer_length > max_length {
+            return Err(VideoThumbnailError::InvalidFrame);
+        }
+        let layout = checked_video_thumbnail_frame_layout(width, height, pitch, limits)?;
+        if current_length < layout.output_bytes {
             return Err(VideoThumbnailError::InvalidFrame);
         }
         let start_address = buffer_start as usize;
-        let end_address = start_address
-            .checked_add(buffer_length as usize)
+        let _end_address = start_address
+            .checked_add(buffer_length)
             .ok_or(VideoThumbnailError::InvalidFrame)?;
-        let mut packed = Vec::with_capacity(frame_bytes);
-        for row in 0..height as isize {
-            let offset = (pitch as isize)
-                .checked_mul(row)
-                .ok_or(VideoThumbnailError::InvalidFrame)?;
-            // SAFETY: the computed signed row address is checked against the
-            // locked buffer's complete range before a slice is constructed.
-            let row_pointer = scanline.wrapping_offset(offset);
-            let row_address = row_pointer as usize;
-            let row_end = row_address
-                .checked_add(row_bytes)
-                .ok_or(VideoThumbnailError::InvalidFrame)?;
-            if row_address < start_address || row_end > end_address {
-                return Err(VideoThumbnailError::InvalidFrame);
-            }
-            // SAFETY: Lock2DSize keeps this checked row range valid until guard drop.
-            packed.extend_from_slice(unsafe {
-                std::slice::from_raw_parts(row_pointer.cast_const(), row_bytes)
-            });
+        let top_row_offset = (scanline as usize)
+            .checked_sub(start_address)
+            .ok_or(VideoThumbnailError::InvalidFrame)?;
+        // SAFETY: Lock2DSize guarantees the returned buffer start is readable
+        // for buffer_length bytes until Unlock2D. The IMFMediaBuffer current
+        // length was separately checked for at least the packed pixel payload;
+        // Lock2DSize's range is authoritative for any surface padding.
+        let bytes = unsafe { std::slice::from_raw_parts(buffer_start.cast_const(), buffer_length) };
+        validate_video_thumbnail_bgra_rows(
+            generation,
+            width,
+            height,
+            pitch,
+            top_row_offset,
+            bytes,
+            limits,
+        )
+    }
+
+    fn copy_locked_contiguous_bgra(
+        buffer: &IMFMediaBuffer,
+        generation: VideoThumbnailSourceGeneration,
+        width: u32,
+        height: u32,
+        negotiated_stride: i32,
+        declared_lengths: (usize, usize),
+        limits: &VideoThumbnailLimits,
+    ) -> Result<ValidatedVideoThumbnail, VideoThumbnailError> {
+        let (declared_current_length, declared_max_length) = declared_lengths;
+        let layout =
+            checked_video_thumbnail_frame_layout(width, height, negotiated_stride, limits)?;
+        if declared_current_length < layout.span_bytes {
+            return Err(VideoThumbnailError::InvalidFrame);
         }
-        validate_video_thumbnail_bgra(generation, width, height, row_bytes, &packed, limits)
+        let mut bytes = std::ptr::null_mut();
+        let mut max_length = 0_u32;
+        let mut current_length = 0_u32;
+        unsafe { buffer.Lock(&mut bytes, Some(&mut max_length), Some(&mut current_length)) }
+            .map_err(|_| VideoThumbnailError::InvalidFrame)?;
+        let _unlock = MediaBufferUnlock(buffer);
+        let max_length =
+            usize::try_from(max_length).map_err(|_| VideoThumbnailError::ResourceLimit)?;
+        let current_length =
+            usize::try_from(current_length).map_err(|_| VideoThumbnailError::ResourceLimit)?;
+        if current_length != declared_current_length
+            || max_length != declared_max_length
+            || current_length > max_length
+        {
+            return Err(VideoThumbnailError::InvalidFrame);
+        }
+        if max_length > limits.max_output_bytes {
+            return Err(VideoThumbnailError::ResourceLimit);
+        }
+        if bytes.is_null() {
+            return Err(VideoThumbnailError::InvalidFrame);
+        }
+        // SAFETY: IMFMediaBuffer::Lock guarantees the returned pointer is valid
+        // through max_length until Unlock. Only current_length valid bytes are
+        // exposed to the row validator, and current_length <= max_length.
+        let bytes = unsafe { std::slice::from_raw_parts(bytes.cast_const(), current_length) };
+        validate_video_thumbnail_bgra(generation, width, height, negotiated_stride, bytes, limits)
     }
 
     struct Buffer2dUnlock<'a>(&'a IMF2DBuffer2);
@@ -818,6 +1041,15 @@ mod windows_backend {
         fn drop(&mut self) {
             // SAFETY: this guard exists only after a successful Lock2DSize call.
             let _ = unsafe { self.0.Unlock2D() };
+        }
+    }
+
+    struct MediaBufferUnlock<'a>(&'a IMFMediaBuffer);
+
+    impl Drop for MediaBufferUnlock<'_> {
+        fn drop(&mut self) {
+            // SAFETY: this guard exists only after a successful Lock call.
+            let _ = unsafe { self.0.Unlock() };
         }
     }
 }

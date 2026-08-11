@@ -63,10 +63,11 @@ pub use threemf_visual::{
     threemf_preview_source_generation,
 };
 pub use video_thumbnail::{
-    AuthorizedVideoSource, RenderedVideoThumbnail, ValidatedVideoThumbnail, VideoThumbnailError,
-    VideoThumbnailLimits, VideoThumbnailSourceGeneration, admit_video_thumbnail_source,
-    bounded_video_thumbnail_dimensions, render_video_thumbnail_png, validate_video_thumbnail_bgra,
-    video_thumbnail_cache_key,
+    AuthorizedVideoSource, MAX_VIDEO_THUMBNAIL_SOURCE_BYTES, RenderedVideoThumbnail,
+    ValidatedVideoThumbnail, VideoThumbnailError, VideoThumbnailLimits,
+    VideoThumbnailSourceGeneration, admit_video_thumbnail_source,
+    bounded_video_thumbnail_dimensions, bounded_video_thumbnail_source_length,
+    render_video_thumbnail_png, validate_video_thumbnail_bgra, video_thumbnail_cache_key,
 };
 
 const EXTRACTED_TEXT_MARKER: &str = "\n\nExtracted text:\n";

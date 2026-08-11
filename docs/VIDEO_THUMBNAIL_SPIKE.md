@@ -24,12 +24,17 @@ metadata.
 The backend must normalize one bounded still frame into the shared validated
 PNG/cache contract:
 
-- Admit only a no-follow regular file through a stable handle; do not reopen a
-  user path after admission.
+- Admit only a no-follow regular file of at most 512 MiB through a stable
+  handle; do not reopen a user path after admission. The retained stream and
+  every clone expose only that accepted length.
 - Produce at most one still frame. There is no playback, audio output, network,
   sidecar, plugin, executable lookup, or external process.
 - Enforce cancellation, resource, dimension, output-size, and cache-generation
   limits before a result can reach the UI or persistent cache.
+- Deadline and cancellation checks are cooperative around synchronous Media
+  Foundation calls and inside retained-stream operations. They cannot preempt a
+  native codec while one synchronous call is running and are not a hard
+  wall-clock guarantee.
 - Validate every backend result as a bounded PNG before cache admission.
 - Treat admission failure, unavailable native capability, malformed media,
   cancellation, generation change, decoder failure, and cache failure as the
@@ -37,7 +42,8 @@ PNG/cache contract:
 
 Windows implementation and package acceptance require real native Windows
 verification for reparse/file identity, cancellation, malformed input,
-capability reporting, resource bounds, cache invalidation, unsupported codecs,
+capability reporting, source and output resource bounds, cache invalidation,
+unsupported codecs, hostile-codec observed timing,
 and confirmation that no video decoder/runtime/codec payload or installer was
 added. Linux or test-double success cannot establish Windows acceptance.
 
