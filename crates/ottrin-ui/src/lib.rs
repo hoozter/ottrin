@@ -1134,6 +1134,15 @@ impl PreviewRequestScheduler {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+struct VisualPreviewRenderSpec {
+    max_size: Vec2,
+    corner_radius: u8,
+    page_index: usize,
+    fit: bool,
+    zoom: f32,
+}
+
 #[derive(Debug, Default)]
 struct PreviewLoadSlot {
     generation: u64,
@@ -2738,6 +2747,59 @@ impl OttrinApp {
         corner_radius: u8,
     ) -> Option<egui::Image<'static>> {
         self.cached_image_preview_widget_for_page(path, max_width, max_height, corner_radius, 0)
+    }
+
+    fn cached_shared_visual_preview_widget(
+        &mut self,
+        path: &Path,
+        kind: PreviewKind,
+        spec: VisualPreviewRenderSpec,
+    ) -> Option<egui::Image<'static>> {
+        if kind == PreviewKind::Pdf {
+            if spec.fit {
+                return self
+                    .cached_original_image_preview_widget_for_page(
+                        path,
+                        spec.max_size.x,
+                        spec.max_size.y,
+                        spec.corner_radius,
+                        spec.page_index,
+                    )
+                    .or_else(|| {
+                        self.cached_image_preview_widget_for_page(
+                            path,
+                            spec.max_size.x,
+                            spec.max_size.y,
+                            spec.corner_radius,
+                            spec.page_index,
+                        )
+                    });
+            }
+            return self
+                .cached_original_image_zoom_widget_for_page(
+                    path,
+                    spec.zoom,
+                    spec.corner_radius,
+                    spec.page_index,
+                )
+                .or_else(|| {
+                    self.cached_image_preview_widget_for_page(
+                        path,
+                        spec.max_size.x,
+                        spec.max_size.y,
+                        spec.corner_radius,
+                        spec.page_index,
+                    )
+                });
+        }
+
+        self.cached_image_preview_widget_for_page(
+            path,
+            spec.max_size.x,
+            spec.max_size.y,
+            spec.corner_radius,
+            spec.page_index,
+        )
     }
 
     fn cached_svg_preview_unavailable_reason(
@@ -15847,12 +15909,18 @@ impl OttrinApp {
                     | PreviewKind::ObjMetadata
                     | PreviewKind::PlyMetadata
                     | PreviewKind::ThreeMfMetadata
+                    | PreviewKind::VideoMetadata
                     | PreviewKind::Pdf => {
-                        if let Some(img) = self.cached_image_preview_widget(
+                        if let Some(img) = self.cached_shared_visual_preview_widget(
                             &entry.path,
-                            max_preview_w,
-                            max_preview_h,
-                            8,
+                            preview.kind,
+                            VisualPreviewRenderSpec {
+                                max_size: Vec2::new(max_preview_w, max_preview_h),
+                                corner_radius: 8,
+                                page_index: 0,
+                                fit: true,
+                                zoom: 1.0,
+                            },
                         ) {
                             preview_widget = Some(img);
                         } else {
@@ -15867,6 +15935,7 @@ impl OttrinApp {
                                 });
                             metadata_icon = Some(match preview.kind {
                                 PreviewKind::Pdf => MI_PICTURE_PDF,
+                                PreviewKind::VideoMetadata => MI_MOVIE,
                                 _ => MI_IMAGE,
                             });
                             if !snippet.is_empty() {
@@ -15879,16 +15948,6 @@ impl OttrinApp {
                     | PreviewKind::ArchiveMetadata
                     | PreviewKind::AudioMetadata
                     | PreviewKind::EpsMetadata => {}
-                    PreviewKind::VideoMetadata => {
-                        metadata_icon = Some(match preview.kind {
-                            PreviewKind::VideoMetadata => MI_MOVIE,
-                            _ => MI_FILE,
-                        });
-                        let snippet = metadata_preview_snippet(&preview.body, 14, 900);
-                        if !snippet.is_empty() {
-                            text_snippet = Some(snippet);
-                        }
-                    }
                     _ => {}
                 }
 
@@ -17374,42 +17433,17 @@ impl OttrinApp {
                                     } else {
                                         0
                                     };
-                                    let image = if !self.preview.visual_fit {
-                                        if preview.kind == PreviewKind::Pdf {
-                                            self.cached_original_image_zoom_widget_for_page(
-                                                &path,
-                                                self.preview.visual_zoom,
-                                                8,
-                                                pdf_page_index,
-                                            )
-                                            .or_else(
-                                                || {
-                                                    self.cached_image_preview_widget_for_page(
-                                                        &path, max_w, max_h, 8, pdf_page_index,
-                                                    )
-                                                },
-                                            )
-                                        } else {
-                                            self.cached_image_preview_widget(&path, max_w, max_h, 8)
-                                        }
-                                    } else if preview.kind == PreviewKind::Pdf {
-                                        self.cached_original_image_preview_widget_for_page(
-                                            &path,
-                                            max_w,
-                                            max_h,
-                                            8,
-                                            pdf_page_index,
-                                        )
-                                        .or_else(
-                                            || {
-                                                self.cached_image_preview_widget_for_page(
-                                                    &path, max_w, max_h, 8, pdf_page_index,
-                                                )
-                                            },
-                                        )
-                                    } else {
-                                        self.cached_image_preview_widget(&path, max_w, max_h, 8)
-                                    };
+                                    let image = self.cached_shared_visual_preview_widget(
+                                        &path,
+                                        preview.kind,
+                                        VisualPreviewRenderSpec {
+                                            max_size: Vec2::new(max_w, max_h),
+                                            corner_radius: 8,
+                                            page_index: pdf_page_index,
+                                            fit: self.preview.visual_fit,
+                                            zoom: self.preview.visual_zoom,
+                                        },
+                                    );
                                     let image_available = image.is_some();
                                     if let Some(img) = image {
                                         let image_resp = ui.add(img);
