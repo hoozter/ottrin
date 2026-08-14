@@ -5806,6 +5806,14 @@ impl OttrinApp {
                 continue;
             }
             let ui_state = self.tab_ui.entry(tab_id).or_default();
+            let rendered_main_selection_path = matches!(resp.key, ListingKey::TabMain(_))
+                .then(|| {
+                    ui_state
+                        .main_sel
+                        .and_then(|index| ui_state.main.entries.get(index))
+                        .map(|entry| entry.path.clone())
+                })
+                .flatten();
             let col = match resp.key {
                 ListingKey::TabMain(_) => &mut ui_state.main,
                 ListingKey::TabLeft(_) => &mut ui_state.left,
@@ -5878,7 +5886,8 @@ impl OttrinApp {
                     let desired = ui_state
                         .pending_select_path
                         .take()
-                        .or(retained_main_selection_path);
+                        .or(retained_main_selection_path)
+                        .or(rendered_main_selection_path);
                     let select_first = std::mem::take(&mut ui_state.pending_select_first);
                     let idx =
                         main_selection_index_for_path(desired.as_deref(), &ui_state.main.entries);
@@ -25355,6 +25364,46 @@ mod tests {
         );
 
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn right_arrow_selection_survives_async_listing_after_render() {
+        let fixture = tempfile::tempdir().expect("fixture");
+        let root = fixture.path().to_path_buf();
+        let child = root.join("child");
+        std::fs::create_dir_all(&child).expect("child");
+        std::fs::write(child.join("alpha.txt"), "alpha").expect("file");
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.state.active_tab_mut().view_mode = ViewMode::Miller;
+        app.state.active_tab_mut().current_dir = root.clone();
+        let entries = list_directory(&root, false).expect("list");
+        let selected = entries
+            .iter()
+            .position(|entry| entry.path == child)
+            .expect("row");
+        {
+            let ui = app.tab_ui.entry(tab_id).or_default();
+            ui.main.dir = root.clone();
+            ui.main.entries = entries;
+            ui.main_sel = Some(selected);
+            ui.miller_focus_dir = Some(root);
+        }
+        assert!(app.navigate_miller_right(tab_id));
+        let _ = app.build_miller_model(tab_id, app.miller_col_count);
+        assert!(!app.tab_ui[&tab_id].pending_select_first);
+        for _ in 0..100 {
+            app.poll_listing_results();
+            if !app.tab_ui[&tab_id].main.loading {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        }
+        assert!(!app.tab_ui[&tab_id].main.loading);
+        assert!(
+            app.tab_ui[&tab_id].main_sel.is_some(),
+            "async response cleared selection"
+        );
     }
 
     #[test]
