@@ -1169,6 +1169,7 @@ impl PreviewLoadSlot {
             cancellation.store(true, Ordering::Relaxed);
         }
         self.generation = self.generation.wrapping_add(1).max(1);
+        self.desired = None;
         self.inflight = None;
         self.completed = None;
     }
@@ -1281,6 +1282,18 @@ fn loading_preview_data(path: &Path) -> PreviewData {
         spreadsheet: None,
         open_external: false,
     }
+}
+
+fn miller_textual_preview_source(preview: &PreviewData) -> Option<String> {
+    if !matches!(
+        preview.kind,
+        PreviewKind::Text | PreviewKind::OfficeMetadata | PreviewKind::EpsMetadata
+    ) {
+        return None;
+    }
+    let (_, extracted) = split_preview_extracted_text(&preview.body);
+    let source = extracted.unwrap_or(&preview.body).trim();
+    (!source.is_empty()).then(|| source.to_string())
 }
 
 struct UiSearchService {
@@ -7616,6 +7629,69 @@ impl OttrinApp {
         }
     }
 
+    fn navigate_miller_right(&mut self, tab_id: u64) -> bool {
+        let (cols, current_col) = self.build_miller_model(tab_id, self.miller_col_count);
+        if cols.is_empty() {
+            return false;
+        }
+        let focus_col = self.effective_miller_focus_col(tab_id, &cols, current_col);
+        let col = &cols[focus_col];
+        let selected = col.selected.and_then(|i| col.entries.get(i)).cloned();
+        if let Some(entry) = selected.as_ref()
+            && matches!(entry.kind, EntryKind::Directory | EntryKind::Symlink)
+        {
+            let remembered = self
+                .tab_ui
+                .entry(tab_id)
+                .or_default()
+                .selection_memory
+                .get(&entry.path)
+                .cloned();
+            let ui_state = self.tab_ui.entry(tab_id).or_default();
+            ui_state.miller_focus_hint = Some(MillerFocusHint::CurrentDir);
+            ui_state.miller_preview_depth = 1;
+            if let Some(sel_path) = remembered {
+                ui_state.pending_select_path = Some(sel_path);
+            } else {
+                ui_state.pending_select_first = true;
+            }
+            self.navigate_tab_to(tab_id, entry.path.clone());
+            return true;
+        }
+        if focus_col < current_col && focus_col + 1 < cols.len() {
+            let target_col = &cols[focus_col + 1];
+            let new_dir = target_col.dir.clone();
+            {
+                let ui_state = self.tab_ui.entry(tab_id).or_default();
+                ui_state.miller_focus_dir = Some(new_dir.clone());
+                if let Some(sel_idx) = target_col.selected
+                    && let Some(sel_entry) = target_col.entries.get(sel_idx)
+                {
+                    ui_state.pending_select_path = Some(sel_entry.path.clone());
+                    ui_state
+                        .selection_memory
+                        .insert(new_dir.clone(), sel_entry.path.clone());
+                } else if let Some(sel_path) = ui_state.selection_memory.get(&new_dir).cloned() {
+                    ui_state.pending_select_path = Some(sel_path);
+                } else {
+                    ui_state.pending_select_first = true;
+                }
+            }
+            self.set_tab_anchor_dir_live(tab_id, new_dir);
+            return true;
+        }
+        if selected.is_some() && focus_col + 1 < cols.len() {
+            self.tab_ui.entry(tab_id).or_default().miller_focus_dir =
+                Some(cols[focus_col + 1].dir.clone());
+            return true;
+        }
+        if selected.is_some() {
+            self.sidebar = SidebarSection::Info;
+            return true;
+        }
+        false
+    }
+
     fn load_miller_right(&mut self, tab_id: u64) {
         let sel = {
             let ui = self.tab_ui.entry(tab_id).or_default();
@@ -7856,73 +7932,7 @@ impl OttrinApp {
             }
             if input.key_pressed(Key::ArrowRight) && !self.command_frame.visible {
                 if is_miller {
-                    let (cols, current_col) =
-                        self.build_miller_model(tab_id, self.miller_col_count);
-                    if !cols.is_empty() {
-                        let focus_col = self.effective_miller_focus_col(tab_id, &cols, current_col);
-                        let col = &cols[focus_col];
-                        let selected = col.selected.and_then(|i| col.entries.get(i));
-                        if focus_col < current_col && focus_col + 1 < cols.len() {
-                            let target_col = &cols[focus_col + 1];
-                            let new_dir = target_col.dir.clone();
-                            {
-                                let ui_state = self.tab_ui.entry(tab_id).or_default();
-                                ui_state.miller_focus_dir = Some(new_dir.clone());
-                                // Restore the remembered child selection so
-                                // the target column keeps its highlight.
-                                if let Some(sel_idx) = target_col.selected
-                                    && let Some(sel_entry) = target_col.entries.get(sel_idx)
-                                {
-                                    ui_state.pending_select_path = Some(sel_entry.path.clone());
-                                    ui_state
-                                        .selection_memory
-                                        .insert(new_dir.clone(), sel_entry.path.clone());
-                                } else {
-                                    // No remembered selection — use selection_memory
-                                    // or fall back to first item.
-                                    let remembered =
-                                        ui_state.selection_memory.get(&new_dir).cloned();
-                                    if let Some(sel_path) = remembered {
-                                        ui_state.pending_select_path = Some(sel_path);
-                                    } else {
-                                        ui_state.pending_select_first = true;
-                                    }
-                                }
-                            }
-                            self.set_tab_anchor_dir_live(tab_id, new_dir);
-                        } else if let Some(entry) = selected {
-                            if matches!(entry.kind, EntryKind::Directory | EntryKind::Symlink) {
-                                let ui_state = self.tab_ui.entry(tab_id).or_default();
-                                let depth = ui_state.miller_preview_depth.max(1);
-                                if depth > 1 {
-                                    // Re-entering a remembered path (after Left):
-                                    // advance current_dir one level without clearing
-                                    // miller_cache, so preview columns survive.
-                                    // Restore the remembered child selection so the
-                                    // new current_dir column keeps its highlight.
-                                    let remembered =
-                                        ui_state.selection_memory.get(&entry.path).cloned();
-                                    ui_state.miller_preview_depth = depth - 1;
-                                    ui_state.miller_focus_hint = Some(MillerFocusHint::CurrentDir);
-                                    if let Some(sel_path) = remembered {
-                                        ui_state.pending_select_path = Some(sel_path);
-                                    }
-                                    self.set_tab_anchor_dir_live(tab_id, entry.path.clone());
-                                } else {
-                                    // Fresh entry into folder: select first item.
-                                    ui_state.miller_focus_hint = Some(MillerFocusHint::CurrentDir);
-                                    ui_state.pending_select_first = true;
-                                    ui_state.miller_preview_depth = 1;
-                                    self.navigate_tab_to(tab_id, entry.path.clone());
-                                }
-                            } else if focus_col + 1 < cols.len() {
-                                self.tab_ui.entry(tab_id).or_default().miller_focus_dir =
-                                    Some(cols[focus_col + 1].dir.clone());
-                            } else {
-                                self.sidebar = SidebarSection::Info;
-                            }
-                        }
-                    }
+                    let _ = self.navigate_miller_right(tab_id);
                 } else if is_grid {
                     self.grid_move(1, extend_selection);
                 } else {
@@ -15875,12 +15885,11 @@ impl OttrinApp {
                             }
                         }
                     }
-                    PreviewKind::Text => {
+                    PreviewKind::Text | PreviewKind::OfficeMetadata | PreviewKind::EpsMetadata => {
                         const SNIPPET_MAX: usize = 800;
                         let mut snippet = String::new();
                         let mut left = SNIPPET_MAX;
-                        let (_, extracted) = split_preview_extracted_text(&preview.body);
-                        let source = extracted.unwrap_or(&preview.body);
+                        let source = miller_textual_preview_source(&preview).unwrap_or_default();
                         for (i, line) in source.lines().enumerate() {
                             if i >= 16 || left == 0 {
                                 break;
@@ -17075,7 +17084,7 @@ impl OttrinApp {
                     .inner_margin(egui::Margin::same(12)),
             )
             .show(inspector_ctx, |ui| {
-                ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                ui.with_layout(Layout::top_down(Align::Min), |ui| {
                     ui.horizontal(|ui| {
                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                             ui.menu_button(
@@ -24463,6 +24472,33 @@ mod tests {
     }
 
     #[test]
+    fn miller_preview_uses_truthful_text_for_office_and_eps_fallbacks() {
+        let office = PreviewData {
+            title: "report.docx".to_string(),
+            kind: PreviewKind::OfficeMetadata,
+            body: "Type: DOCX\n\nExtracted text:\nQuarterly report".to_string(),
+            spreadsheet: None,
+            open_external: true,
+        };
+        let eps = PreviewData {
+            title: "diagram.eps".to_string(),
+            kind: PreviewKind::EpsMetadata,
+            body: "EPS metadata\nBounding box unavailable".to_string(),
+            spreadsheet: None,
+            open_external: true,
+        };
+
+        assert_eq!(
+            miller_textual_preview_source(&office).as_deref(),
+            Some("Quarterly report")
+        );
+        assert_eq!(
+            miller_textual_preview_source(&eps).as_deref(),
+            Some("EPS metadata\nBounding box unavailable")
+        );
+    }
+
+    #[test]
     fn preview_slot_rejects_a_response_for_a_superseded_selection() {
         let mut slot = PreviewLoadSlot::default();
         let first = slot.select(PathBuf::from("/tmp/first.docx"), EntryKind::File);
@@ -24487,7 +24523,11 @@ mod tests {
         slot.invalidate();
         assert!(second_cancellation.load(Ordering::Relaxed));
         let refreshed = slot.select(PathBuf::from("/tmp/second.xlsx"), EntryKind::File);
+        let refreshed_cancellation = slot
+            .cancellation(refreshed)
+            .expect("reopening the same path must create a fresh cancellation token");
         assert_ne!(second, refreshed);
+        assert!(!refreshed_cancellation.load(Ordering::Relaxed));
         assert_eq!(slot.next_request(), Some(refreshed));
         assert!(slot.is_pending());
     }
@@ -24849,6 +24889,30 @@ mod tests {
             "overlay load should settle after response"
         );
 
+        app.close_preview(&Context::default());
+        app.open_preview_entry(FileEntry {
+            name: "diagram.svg".to_string(),
+            path: path.clone(),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: None,
+            modified_unix_secs: None,
+        });
+        let reopen_deadline = Instant::now() + Duration::from_secs(1);
+        while app.preview.data.is_none() && Instant::now() < reopen_deadline {
+            app.poll_preview_loads();
+            if app.preview.data.is_some() {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        assert_eq!(
+            app.preview.data.as_ref().map(|preview| preview.kind),
+            Some(PreviewKind::Image),
+            "closing and reopening the same file must enqueue and settle a fresh overlay load"
+        );
+
         let _ = std::fs::remove_dir_all(root);
     }
 
@@ -25186,6 +25250,70 @@ mod tests {
         let ui_state = app.tab_ui.get(&tab_id).expect("active tab UI state");
         assert!(ui_state.miller_pointer_reveal.is_some());
         assert!(ui_state.miller_scroll_selected);
+    }
+
+    #[test]
+    fn right_arrow_enters_the_selected_miller_folder_in_one_action() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-miller-right-entry-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos(),
+        ));
+        let child = root.join("selected-child");
+        std::fs::create_dir_all(&child).expect("create selected folder fixture");
+        std::fs::write(child.join("alpha.txt"), "alpha").expect("write first child entry");
+        std::fs::write(child.join("beta.txt"), "beta").expect("write second child entry");
+
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        app.state.active_tab_mut().view_mode = ViewMode::Miller;
+        app.state.active_tab_mut().current_dir = root.clone();
+        let entries = list_directory(&root, false).expect("list Miller fixture");
+        let selected = entries
+            .iter()
+            .position(|entry| entry.path == child)
+            .expect("selected child in fixture");
+        {
+            let ui = app.tab_ui.entry(tab_id).or_default();
+            ui.main.dir = root.clone();
+            ui.main.entries = entries;
+            ui.main_sel = Some(selected);
+            ui.miller_focus_dir = Some(root.clone());
+        }
+
+        assert!(app.navigate_miller_right(tab_id));
+        assert_eq!(app.state.active_tab().current_dir, child);
+        assert_eq!(
+            app.tab_ui.get(&tab_id).and_then(|ui| ui.miller_focus_hint),
+            Some(MillerFocusHint::CurrentDir)
+        );
+
+        let (columns, current_col) = app.build_miller_model(tab_id, app.miller_col_count);
+        assert_eq!(
+            app.effective_miller_focus_col(tab_id, &columns, current_col),
+            current_col,
+            "Up/Down after entering must operate in the entered folder, not a stale ancestor column"
+        );
+        let entered_column = &columns[current_col];
+        assert_eq!(entered_column.dir, child);
+        let next = entered_column.entries.len().saturating_sub(1).min(1);
+        app.set_miller_selection(
+            tab_id,
+            &entered_column.dir,
+            &entered_column.entries,
+            next,
+            true,
+        );
+        assert_eq!(
+            app.state.active_tab().current_dir,
+            child,
+            "vertical selection after Right must not navigate or fling the tab elsewhere"
+        );
+
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]

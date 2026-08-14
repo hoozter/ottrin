@@ -1087,7 +1087,9 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         "pdf" => PreviewKind::Pdf,
         "mp4" | "mkv" | "webm" | "mov" | "avi" | "m4v" => PreviewKind::VideoMetadata,
         "mp3" | "flac" | "wav" | "ogg" | "m4a" | "aac" => PreviewKind::AudioMetadata,
-        "zip" | "tar" | "gz" | "xz" | "bz2" | "7z" | "rar" | "epub" => PreviewKind::ArchiveMetadata,
+        "zip" | "tar" | "gz" | "tgz" | "xz" | "bz2" | "7z" | "rar" | "epub" => {
+            PreviewKind::ArchiveMetadata
+        }
         "doc" | "docx" | "xls" | "xlsx" | "xlsm" | "ppt" | "pptx" | "odt" | "ods" | "odp" => {
             PreviewKind::OfficeMetadata
         }
@@ -4590,6 +4592,7 @@ fn preview_archive_cancellable(title: String, path: &Path, cancelled: &AtomicBoo
         .file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| name.to_ascii_lowercase().ends_with(".tar.gz"))
+        || ext == "tgz"
     {
         return preview_tar_gz(title, path, cancelled);
     }
@@ -8458,6 +8461,14 @@ mod tests {
     }
 
     #[test]
+    fn tgz_is_classified_as_an_archive() {
+        assert_eq!(
+            classify_path(Path::new("backup.TGZ")),
+            PreviewKind::ArchiveMetadata
+        );
+    }
+
+    #[test]
     fn video_format_is_metadata_only_without_a_raw_fallback() {
         let path = Path::new("sample.MP4");
         let profile = preview_profile(path);
@@ -9866,6 +9877,33 @@ mod tests {
         write_gzip(&path, &tar_bytes);
 
         let preview = preview_archive("archive.tar.gz".to_string(), &path);
+
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(preview.body.contains("Filetype: TAR.GZ archive"));
+        assert!(preview.body.contains("Files: 1"));
+        assert!(preview.body.contains("docs/readme.txt"));
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn tgz_preview_lists_counts_sizes_and_contents() {
+        let path = temp_path("archive.tgz");
+        let mut tar_bytes = Vec::new();
+        {
+            let mut tar = tar::Builder::new(&mut tar_bytes);
+            let payload = b"hello from compressed ottrin";
+            let mut header = tar::Header::new_gnu();
+            header.set_size(payload.len() as u64);
+            header.set_mode(0o644);
+            header.set_cksum();
+            tar.append_data(&mut header, "docs/readme.txt", payload.as_slice())
+                .expect("add tar entry");
+            tar.finish().expect("finish tar");
+        }
+        write_gzip(&path, &tar_bytes);
+
+        let preview = preview_archive("archive.tgz".to_string(), &path);
 
         assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
         assert!(preview.body.contains("Filetype: TAR.GZ archive"));
