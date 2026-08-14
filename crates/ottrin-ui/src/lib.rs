@@ -1284,16 +1284,15 @@ fn loading_preview_data(path: &Path) -> PreviewData {
     }
 }
 
-fn miller_textual_preview_source(preview: &PreviewData) -> Option<String> {
-    if !matches!(
-        preview.kind,
-        PreviewKind::Text | PreviewKind::OfficeMetadata | PreviewKind::EpsMetadata
-    ) {
-        return None;
-    }
-    let (_, extracted) = split_preview_extracted_text(&preview.body);
-    let source = extracted.unwrap_or(&preview.body).trim();
-    (!source.is_empty()).then(|| source.to_string())
+fn uses_shared_preview_body_renderer(kind: PreviewKind) -> bool {
+    matches!(
+        kind,
+        PreviewKind::Text
+            | PreviewKind::OfficeMetadata
+            | PreviewKind::EpsMetadata
+            | PreviewKind::ArchiveMetadata
+            | PreviewKind::AudioMetadata
+    )
 }
 
 struct UiSearchService {
@@ -15849,6 +15848,7 @@ impl OttrinApp {
                 let max_preview_h = (height - info_total_h - 32.0).max(80.0);
 
                 let preview = self.cached_info_preview(entry);
+                let use_shared_body_renderer = uses_shared_preview_body_renderer(preview.kind);
                 match preview.kind {
                     PreviewKind::Image
                     | PreviewKind::CameraRawMetadata
@@ -15885,32 +15885,13 @@ impl OttrinApp {
                             }
                         }
                     }
-                    PreviewKind::Text | PreviewKind::OfficeMetadata | PreviewKind::EpsMetadata => {
-                        const SNIPPET_MAX: usize = 800;
-                        let mut snippet = String::new();
-                        let mut left = SNIPPET_MAX;
-                        let source = miller_textual_preview_source(&preview).unwrap_or_default();
-                        for (i, line) in source.lines().enumerate() {
-                            if i >= 16 || left == 0 {
-                                break;
-                            }
-                            if i > 0 {
-                                snippet.push('\n');
-                            }
-                            let take = line.len().min(left);
-                            snippet.push_str(&line[..take]);
-                            left = left.saturating_sub(take);
-                        }
-                        if !snippet.is_empty() {
-                            text_snippet = Some(snippet);
-                        }
-                    }
-                    PreviewKind::ArchiveMetadata
+                    PreviewKind::Text
+                    | PreviewKind::OfficeMetadata
+                    | PreviewKind::ArchiveMetadata
                     | PreviewKind::AudioMetadata
-                    | PreviewKind::VideoMetadata => {
+                    | PreviewKind::EpsMetadata => {}
+                    PreviewKind::VideoMetadata => {
                         metadata_icon = Some(match preview.kind {
-                            PreviewKind::ArchiveMetadata => MI_FOLDER_ZIP,
-                            PreviewKind::AudioMetadata => MI_MUSIC_NOTE,
                             PreviewKind::VideoMetadata => MI_MOVIE,
                             _ => MI_FILE,
                         });
@@ -15929,7 +15910,65 @@ impl OttrinApp {
                     Layout::top_down(Align::Center),
                     |ui| {
                         ui.add_space(16.0);
-                        if let Some(img) = preview_widget {
+                        if use_shared_body_renderer {
+                            ui.with_layout(Layout::top_down(Align::Min), |ui| {
+                                let body_width = (width - pad * 2.0).max(120.0);
+                                ui.set_width(body_width);
+                                match preview.kind {
+                                    PreviewKind::Text => {
+                                        render_text_body_preview(ui, c, &entry.name, &preview.body)
+                                    }
+                                    PreviewKind::OfficeMetadata => {
+                                        let sheet_id =
+                                            ui.id().with(("miller_spreadsheet_sheet", &entry.path));
+                                        let mut selected_sheet = ui.ctx().data_mut(|data| {
+                                            data.get_persisted::<String>(sheet_id)
+                                        });
+                                        if !render_spreadsheet_body_preview(
+                                            ui,
+                                            c,
+                                            &entry.name,
+                                            &preview,
+                                            &mut selected_sheet,
+                                        ) {
+                                            render_document_body_preview(
+                                                ui,
+                                                c,
+                                                MI_OPEN_IN_NEW,
+                                                &entry.name,
+                                                &preview.body,
+                                            );
+                                        }
+                                        if let Some(selected_sheet) = selected_sheet {
+                                            ui.ctx().data_mut(|data| {
+                                                data.insert_persisted(sheet_id, selected_sheet)
+                                            });
+                                        }
+                                    }
+                                    PreviewKind::ArchiveMetadata => render_archive_body_preview(
+                                        ui,
+                                        c,
+                                        &entry.name,
+                                        &preview.body,
+                                    ),
+                                    PreviewKind::AudioMetadata => render_metadata_card_preview(
+                                        ui,
+                                        c,
+                                        MI_MUSIC_NOTE,
+                                        &entry.name,
+                                        &preview.body,
+                                    ),
+                                    PreviewKind::EpsMetadata => render_document_body_preview(
+                                        ui,
+                                        c,
+                                        MI_OPEN_IN_NEW,
+                                        &entry.name,
+                                        &preview.body,
+                                    ),
+                                    _ => {}
+                                }
+                            });
+                        } else if let Some(img) = preview_widget {
                             ui.add(img.max_height(max_preview_h).max_width(max_preview_w));
                         } else if let Some(mut snippet) = text_snippet {
                             if let Some(meta_icon) = metadata_icon {
@@ -24472,30 +24511,24 @@ mod tests {
     }
 
     #[test]
-    fn miller_preview_uses_truthful_text_for_office_and_eps_fallbacks() {
-        let office = PreviewData {
-            title: "report.docx".to_string(),
-            kind: PreviewKind::OfficeMetadata,
-            body: "Type: DOCX\n\nExtracted text:\nQuarterly report".to_string(),
-            spreadsheet: None,
-            open_external: true,
-        };
-        let eps = PreviewData {
-            title: "diagram.eps".to_string(),
-            kind: PreviewKind::EpsMetadata,
-            body: "EPS metadata\nBounding box unavailable".to_string(),
-            spreadsheet: None,
-            open_external: true,
-        };
-
-        assert_eq!(
-            miller_textual_preview_source(&office).as_deref(),
-            Some("Quarterly report")
-        );
-        assert_eq!(
-            miller_textual_preview_source(&eps).as_deref(),
-            Some("EPS metadata\nBounding box unavailable")
-        );
+    fn miller_preview_reuses_inspector_body_renderers_for_nonvisual_formats() {
+        for kind in [
+            PreviewKind::Text,
+            PreviewKind::OfficeMetadata,
+            PreviewKind::ArchiveMetadata,
+            PreviewKind::AudioMetadata,
+            PreviewKind::EpsMetadata,
+        ] {
+            assert!(uses_shared_preview_body_renderer(kind), "{kind:?}");
+        }
+        for kind in [
+            PreviewKind::Image,
+            PreviewKind::Pdf,
+            PreviewKind::VideoMetadata,
+            PreviewKind::FolderMetadata,
+        ] {
+            assert!(!uses_shared_preview_body_renderer(kind), "{kind:?}");
+        }
     }
 
     #[test]
