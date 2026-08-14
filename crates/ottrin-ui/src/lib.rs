@@ -77,10 +77,10 @@ use listing::{
 };
 use preview_render::{
     GenericPreviewAction, compact_preview_metadata, inspector_icon_button,
-    preview_payload_for_copy, render_archive_body_preview, render_document_body_preview,
-    render_docx_page_preview, render_folder_body_preview, render_generic_body_preview,
-    render_image_hover_nav, render_metadata_card_preview, render_spreadsheet_body_preview,
-    render_text_body_preview, split_preview_extracted_text,
+    preview_payload_for_copy, render_document_body_preview, render_docx_page_preview,
+    render_folder_body_preview, render_generic_body_preview, render_image_hover_nav,
+    render_metadata_card_preview, render_shared_preview_body, shared_preview_body_kind,
+    split_preview_extracted_text,
 };
 use semantic_style::{
     EntryVisualState, file_icon_for_path, material_icon, semantic_for_path, semantic_palette,
@@ -1282,17 +1282,6 @@ fn loading_preview_data(path: &Path) -> PreviewData {
         spreadsheet: None,
         open_external: false,
     }
-}
-
-fn uses_shared_preview_body_renderer(kind: PreviewKind) -> bool {
-    matches!(
-        kind,
-        PreviewKind::Text
-            | PreviewKind::OfficeMetadata
-            | PreviewKind::EpsMetadata
-            | PreviewKind::ArchiveMetadata
-            | PreviewKind::AudioMetadata
-    )
 }
 
 struct UiSearchService {
@@ -15848,7 +15837,7 @@ impl OttrinApp {
                 let max_preview_h = (height - info_total_h - 32.0).max(80.0);
 
                 let preview = self.cached_info_preview(entry);
-                let use_shared_body_renderer = uses_shared_preview_body_renderer(preview.kind);
+                let use_shared_body_renderer = shared_preview_body_kind(preview.kind);
                 match preview.kind {
                     PreviewKind::Image
                     | PreviewKind::CameraRawMetadata
@@ -15914,58 +15903,22 @@ impl OttrinApp {
                             ui.with_layout(Layout::top_down(Align::Min), |ui| {
                                 let body_width = (width - pad * 2.0).max(120.0);
                                 ui.set_width(body_width);
-                                match preview.kind {
-                                    PreviewKind::Text => {
-                                        render_text_body_preview(ui, c, &entry.name, &preview.body)
-                                    }
-                                    PreviewKind::OfficeMetadata => {
-                                        let sheet_id =
-                                            ui.id().with(("miller_spreadsheet_sheet", &entry.path));
-                                        let mut selected_sheet = ui.ctx().data_mut(|data| {
-                                            data.get_persisted::<String>(sheet_id)
-                                        });
-                                        if !render_spreadsheet_body_preview(
-                                            ui,
-                                            c,
-                                            &entry.name,
-                                            &preview,
-                                            &mut selected_sheet,
-                                        ) {
-                                            render_document_body_preview(
-                                                ui,
-                                                c,
-                                                MI_OPEN_IN_NEW,
-                                                &entry.name,
-                                                &preview.body,
-                                            );
-                                        }
-                                        if let Some(selected_sheet) = selected_sheet {
-                                            ui.ctx().data_mut(|data| {
-                                                data.insert_persisted(sheet_id, selected_sheet)
-                                            });
-                                        }
-                                    }
-                                    PreviewKind::ArchiveMetadata => render_archive_body_preview(
-                                        ui,
-                                        c,
-                                        &entry.name,
-                                        &preview.body,
-                                    ),
-                                    PreviewKind::AudioMetadata => render_metadata_card_preview(
-                                        ui,
-                                        c,
-                                        MI_MUSIC_NOTE,
-                                        &entry.name,
-                                        &preview.body,
-                                    ),
-                                    PreviewKind::EpsMetadata => render_document_body_preview(
-                                        ui,
-                                        c,
-                                        MI_OPEN_IN_NEW,
-                                        &entry.name,
-                                        &preview.body,
-                                    ),
-                                    _ => {}
+                                let sheet_id =
+                                    ui.id().with(("miller_spreadsheet_sheet", &entry.path));
+                                let mut selected_sheet = ui
+                                    .ctx()
+                                    .data_mut(|data| data.get_persisted::<String>(sheet_id));
+                                let _ = render_shared_preview_body(
+                                    ui,
+                                    c,
+                                    &entry.name,
+                                    &preview,
+                                    &mut selected_sheet,
+                                );
+                                if let Some(selected_sheet) = selected_sheet {
+                                    ui.ctx().data_mut(|data| {
+                                        data.insert_persisted(sheet_id, selected_sheet)
+                                    });
                                 }
                             });
                         } else if let Some(img) = preview_widget {
@@ -17353,7 +17306,21 @@ impl OttrinApp {
                             (self.preview.visual_zoom * gesture_zoom).clamp(0.1, 8.0);
                     }
 
-                    match preview.kind {
+                    let use_shared_body_renderer = shared_preview_body_kind(preview.kind)
+                        && !(preview.kind == PreviewKind::Text
+                            && self.preview.text_editor.is_some())
+                        && !(preview.kind == PreviewKind::OfficeMetadata
+                            && quick_inspector_uses_rendered_office_page(&path));
+                    if use_shared_body_renderer {
+                        let _ = render_shared_preview_body(
+                            ui,
+                            c,
+                            &name,
+                            &preview,
+                            &mut self.preview.spreadsheet_sheet_id,
+                        );
+                    } else {
+                        match preview.kind {
                         PreviewKind::Text => {
                             if let Some(editor) = self.preview.text_editor.as_mut() {
                                 ScrollArea::vertical()
@@ -17375,7 +17342,13 @@ impl OttrinApp {
                                         }
                                     });
                             } else {
-                                render_text_body_preview(ui, c, &name, &preview.body);
+                                let _ = render_shared_preview_body(
+                                    ui,
+                                    c,
+                                    &name,
+                                    &preview,
+                                    &mut self.preview.spreadsheet_sheet_id,
+                                );
                             }
                         }
                         visual_kind @ (PreviewKind::Image
@@ -17583,24 +17556,24 @@ impl OttrinApp {
                                         });
                                     }
                                 });
-                            } else if !render_spreadsheet_body_preview(
+                            } else {
+                                let _ = render_shared_preview_body(
+                                    ui,
+                                    c,
+                                    &name,
+                                    &preview,
+                                    &mut self.preview.spreadsheet_sheet_id,
+                                );
+                            }
+                        }
+                        PreviewKind::ArchiveMetadata => {
+                            let _ = render_shared_preview_body(
                                 ui,
                                 c,
                                 &name,
                                 &preview,
                                 &mut self.preview.spreadsheet_sheet_id,
-                            ) {
-                                render_document_body_preview(
-                                    ui,
-                                    c,
-                                    MI_DESCRIPTION,
-                                    &name,
-                                    &preview.body,
-                                );
-                            }
-                        }
-                        PreviewKind::ArchiveMetadata => {
-                            render_archive_body_preview(ui, c, &name, &preview.body);
+                            );
                         }
                         PreviewKind::VideoMetadata => {
                             let icon = match preview.kind {
@@ -17614,13 +17587,13 @@ impl OttrinApp {
                                 PreviewKind::FolderMetadata => {
                                     render_folder_body_preview(ui, c, &name, &preview.body);
                                 }
-                                PreviewKind::AudioMetadata => {
-                                    render_metadata_card_preview(
+                                PreviewKind::AudioMetadata | PreviewKind::EpsMetadata => {
+                                    let _ = render_shared_preview_body(
                                         ui,
                                         c,
-                                        MI_MUSIC_NOTE,
                                         &name,
-                                        &preview.body,
+                                        &preview,
+                                        &mut self.preview.spreadsheet_sheet_id,
                                     );
                                 }
                                 _ => {
@@ -17642,6 +17615,7 @@ impl OttrinApp {
                                 }
                             });
                         }
+                    }
                     }
                 });
             });
@@ -24511,7 +24485,7 @@ mod tests {
     }
 
     #[test]
-    fn miller_preview_reuses_inspector_body_renderers_for_nonvisual_formats() {
+    fn main_preview_and_inspector_share_nonvisual_body_routing() {
         for kind in [
             PreviewKind::Text,
             PreviewKind::OfficeMetadata,
@@ -24519,7 +24493,7 @@ mod tests {
             PreviewKind::AudioMetadata,
             PreviewKind::EpsMetadata,
         ] {
-            assert!(uses_shared_preview_body_renderer(kind), "{kind:?}");
+            assert!(shared_preview_body_kind(kind), "{kind:?}");
         }
         for kind in [
             PreviewKind::Image,
@@ -24527,7 +24501,7 @@ mod tests {
             PreviewKind::VideoMetadata,
             PreviewKind::FolderMetadata,
         ] {
-            assert!(!uses_shared_preview_body_renderer(kind), "{kind:?}");
+            assert!(!shared_preview_body_kind(kind), "{kind:?}");
         }
     }
 

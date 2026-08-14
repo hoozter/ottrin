@@ -1,6 +1,6 @@
 use crate::{
-    Colors, MI_ARROW_BACK, MI_ARROW_FORWARD, MI_CONTENT_COPY, MI_DELETE, MI_EDIT, MI_FOLDER_OPEN,
-    MI_FOLDER_ZIP, MI_OPEN_IN_NEW, file_icon_for_path, mix_color,
+    Colors, MI_ARROW_BACK, MI_ARROW_FORWARD, MI_CONTENT_COPY, MI_DELETE, MI_DESCRIPTION, MI_EDIT,
+    MI_FOLDER_OPEN, MI_FOLDER_ZIP, MI_MUSIC_NOTE, MI_OPEN_IN_NEW, file_icon_for_path, mix_color,
 };
 use egui::{
     Align, Align2, Color32, FontId, Layout, Rect, RichText, ScrollArea, Sense, Stroke, Vec2,
@@ -14,6 +14,43 @@ use std::path::Path;
 pub(crate) enum GenericPreviewAction {
     Rename,
     Delete,
+}
+
+pub(crate) fn shared_preview_body_kind(kind: PreviewKind) -> bool {
+    matches!(
+        kind,
+        PreviewKind::Text
+            | PreviewKind::OfficeMetadata
+            | PreviewKind::ArchiveMetadata
+            | PreviewKind::AudioMetadata
+            | PreviewKind::EpsMetadata
+    )
+}
+
+pub(crate) fn render_shared_preview_body(
+    ui: &mut egui::Ui,
+    c: Colors,
+    name: &str,
+    preview: &PreviewData,
+    selected_sheet: &mut Option<String>,
+) -> bool {
+    match preview.kind {
+        PreviewKind::Text => render_text_body_preview(ui, c, name, &preview.body),
+        PreviewKind::OfficeMetadata => {
+            if !render_spreadsheet_body_preview(ui, c, name, preview, selected_sheet) {
+                render_document_body_preview(ui, c, MI_DESCRIPTION, name, &preview.body);
+            }
+        }
+        PreviewKind::ArchiveMetadata => render_archive_body_preview(ui, c, name, &preview.body),
+        PreviewKind::AudioMetadata => {
+            render_metadata_card_preview(ui, c, MI_MUSIC_NOTE, name, &preview.body);
+        }
+        PreviewKind::EpsMetadata => {
+            render_document_body_preview(ui, c, MI_OPEN_IN_NEW, name, &preview.body);
+        }
+        _ => return false,
+    }
+    true
 }
 
 pub(crate) fn inspector_action_button(
