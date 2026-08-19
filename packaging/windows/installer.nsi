@@ -51,6 +51,19 @@ Section "Ottrin" SEC_MAIN
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Ottrin" "UninstallString" '"$INSTDIR\Uninstall.exe"'
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Ottrin" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Ottrin" "NoRepair" 1
+
+  ClearErrors
+  ExecWait '"$INSTDIR\bin\ottrin.exe" index service-install' $0
+  IfErrors background_integration_launch_failed
+  ${If} $0 != 0
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background search refresh could not be enabled. You can retry from Search settings."
+  ${EndIf}
+  Goto background_integration_done
+
+background_integration_launch_failed:
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background search refresh could not be enabled. You can retry from Search settings."
+
+background_integration_done:
 SectionEnd
 
 Section "Uninstall"
