@@ -6,7 +6,10 @@ use egui::{
     Align, Align2, Color32, Context, FontId, Frame, Key, Layout, Rect, RichText, ScrollArea, Sense,
     Shadow, Stroke, UiBuilder, Vec2, WidgetInfo, WidgetType,
 };
-use egui_extras::{Column, TableBuilder};
+use egui_extras::{
+    Column, TableBuilder,
+    syntax_highlighting::{CodeTheme, highlight},
+};
 #[cfg(all(unix, not(test)))]
 use ottrin_core::SearchResponse;
 use ottrin_core::{
@@ -19125,19 +19128,64 @@ impl OttrinApp {
                             if let Some(editor) = self.preview.text_editor.as_mut() {
                                 let document_editor =
                                     markdown_quick_inspector_uses_document_editor(&path);
+                                let code_editor =
+                                    source_quick_inspector_uses_code_editor(&path);
                                 ScrollArea::vertical()
                                     .id_salt(("inspector_text_editor", &path))
                                     .show(ui, |ui| {
-                                        ui.add(
-                                            egui::TextEdit::multiline(&mut editor.buffer)
-                                                .font(if document_editor {
-                                                    FontId::proportional(16.0)
-                                                } else {
-                                                    FontId::monospace(12.0)
-                                                })
-                                                .desired_rows(if document_editor { 24 } else { 18 })
-                                                .lock_focus(true),
-                                        );
+                                        if code_editor {
+                                            let language = path
+                                                .extension()
+                                                .and_then(|extension| extension.to_str())
+                                                .expect("supported source files have a UTF-8 extension")
+                                                .to_ascii_lowercase();
+                                            let line_numbers =
+                                                (1..=editor.buffer.matches('\n').count() + 1)
+                                                .map(|line| format!("{line}\n"))
+                                                .collect::<String>();
+                                            ui.horizontal_top(|ui| {
+                                                ui.add(
+                                                    egui::Label::new(
+                                                        RichText::new(line_numbers)
+                                                            .font(FontId::monospace(12.0))
+                                                            .color(c.text_dim),
+                                                    )
+                                                    .selectable(false),
+                                                );
+                                                let mut layouter = |ui: &egui::Ui,
+                                                                    buffer: &dyn egui::TextBuffer,
+                                                                    wrap_width: f32| {
+                                                    let theme = CodeTheme::from_style(ui.style());
+                                                    let mut job = highlight(
+                                                        ui.ctx(),
+                                                        ui.style(),
+                                                        &theme,
+                                                        buffer.as_str(),
+                                                        &language,
+                                                    );
+                                                    job.wrap.max_width = wrap_width;
+                                                    ui.fonts_mut(|fonts| fonts.layout_job(job))
+                                                };
+                                                ui.add(
+                                                    egui::TextEdit::multiline(&mut editor.buffer)
+                                                        .font(FontId::monospace(12.0))
+                                                        .desired_rows(18)
+                                                        .layouter(&mut layouter)
+                                                        .lock_focus(true),
+                                                );
+                                            });
+                                        } else {
+                                            ui.add(
+                                                egui::TextEdit::multiline(&mut editor.buffer)
+                                                    .font(if document_editor {
+                                                        FontId::proportional(16.0)
+                                                    } else {
+                                                        FontId::monospace(12.0)
+                                                    })
+                                                    .desired_rows(if document_editor { 24 } else { 18 })
+                                                    .lock_focus(true),
+                                            );
+                                        }
                                         if let Some(error) = &editor.error {
                                             ui.add_space(8.0);
                                             ui.label(
@@ -23040,6 +23088,10 @@ fn markdown_quick_inspector_uses_document_editor(path: &Path) -> bool {
     path.extension().is_some_and(|extension| {
         extension.eq_ignore_ascii_case("md") || extension.eq_ignore_ascii_case("markdown")
     })
+}
+
+fn source_quick_inspector_uses_code_editor(path: &Path) -> bool {
+    ContentFileGroup::SourceCode.supports_path(path)
 }
 
 #[cfg(target_os = "linux")]
@@ -31827,6 +31879,22 @@ mod tests {
             "NOTES.MARKDOWN"
         )));
         assert!(!markdown_quick_inspector_uses_document_editor(Path::new(
+            "notes.txt"
+        )));
+    }
+
+    #[test]
+    fn source_quick_inspector_uses_code_editor_only_for_supported_source_files() {
+        assert!(source_quick_inspector_uses_code_editor(Path::new(
+            "main.rs"
+        )));
+        assert!(source_quick_inspector_uses_code_editor(Path::new(
+            "settings.YAML"
+        )));
+        assert!(!source_quick_inspector_uses_code_editor(Path::new(
+            "notes.md"
+        )));
+        assert!(!source_quick_inspector_uses_code_editor(Path::new(
             "notes.txt"
         )));
     }
