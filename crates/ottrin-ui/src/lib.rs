@@ -1231,8 +1231,12 @@ struct PreviewTextEditor {
 
 impl PreviewTextEditor {
     fn is_dirty(&self) -> bool {
-        self.buffer != self.session.contents()
+        text_edit_contents_changed(self.session.contents(), &self.buffer)
     }
+}
+
+fn text_edit_contents_changed(original: &str, edited: &str) -> bool {
+    original != edited
 }
 
 #[derive(Debug)]
@@ -9561,6 +9565,12 @@ impl OttrinApp {
         let Some(editor) = self.preview.text_editor.as_mut() else {
             return;
         };
+        if !editor.is_dirty() {
+            self.preview.text_editor = None;
+            self.preview.text_edit_discard_confirmation = false;
+            self.set_status_message("No changes to save", true, 3);
+            return;
+        }
         let original = editor.session.contents().to_string();
         let mut undo_available_for_saved_text = false;
         match editor.session.save(&editor.buffer) {
@@ -27897,6 +27907,40 @@ mod tests {
         assert_eq!(std::fs::read_to_string(path).unwrap(), "external edit\n");
 
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn text_edit_contents_changed_only_for_different_contents() {
+        assert!(!text_edit_contents_changed("unchanged\n", "unchanged\n"));
+        assert!(text_edit_contents_changed("before\n", "after\n"));
+    }
+
+    #[test]
+    fn unchanged_quick_inspector_text_save_does_not_create_an_undo_operation() {
+        let fixture = tempfile::tempdir_in(std::env::current_dir().expect("current directory"))
+            .expect("create text-edit fixture root");
+        let path = fixture.path().join("notes.txt");
+        std::fs::write(&path, "unchanged\n").expect("write original text");
+        let Ok(session) = TextEditSession::open(&path) else {
+            eprintln!("skipping Quick Inspector text-edit fixture: FIEMAP is unavailable");
+            return;
+        };
+        let mut app = OttrinApp::default();
+        app.preview.path = Some(path.clone());
+        app.preview.text_editor = Some(PreviewTextEditor {
+            buffer: session.contents().to_string(),
+            session,
+            error: None,
+        });
+
+        app.save_preview_text_edit();
+
+        assert!(app.preview.text_editor.is_none());
+        assert!(
+            app.operation_history.is_empty(),
+            "saving unchanged text must not create a meaningless Undo operation"
+        );
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "unchanged\n");
     }
 
     #[test]
