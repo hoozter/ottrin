@@ -1269,6 +1269,10 @@ fn next_text_search_match(
     Some(match_start..match_start + query.chars().count())
 }
 
+fn source_code_editor_id(path: &Path) -> egui::Id {
+    egui::Id::new(("quick_inspector_source_code_editor", path))
+}
+
 #[derive(Debug)]
 struct PreviewJobRequest {
     slot: PreviewRequestSlot,
@@ -19163,7 +19167,7 @@ impl OttrinApp {
                                     .id_salt(("inspector_text_editor", &path))
                                     .show(ui, |ui| {
                                         if code_editor {
-                                            let editor_id = ui.id().with(("source_code_editor", &path));
+                                            let editor_id = source_code_editor_id(&path);
                                             let mut find_next = false;
                                             ui.horizontal(|ui| {
                                                 ui.label(RichText::new("Find").size(11.5));
@@ -31995,6 +31999,18 @@ mod tests {
         assert_eq!(next_text_search_match("åβå", "å", 1), Some(2..3),);
         assert_eq!(next_text_search_match("åβå", "å", 3), Some(0..1));
         assert_eq!(next_text_search_match("åβå", "", 0), None);
+    }
+
+    #[test]
+    fn source_code_editor_id_is_stable_per_path() {
+        assert_eq!(
+            source_code_editor_id(Path::new("src/main.rs")),
+            source_code_editor_id(Path::new("src/main.rs")),
+        );
+        assert_ne!(
+            source_code_editor_id(Path::new("src/main.rs")),
+            source_code_editor_id(Path::new("src/lib.rs")),
+        );
     }
 
     #[cfg(target_os = "linux")]
