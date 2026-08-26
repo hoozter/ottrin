@@ -66,7 +66,6 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 - Complete native Windows Move acceptance against the same product contract. The source-complete same-volume and cross-volume Skip/Rename/Overwrite implementation described above remains fail-closed pending native Windows crash, ACL, sharing-mode, filesystem, retained-transaction lifecycle, and packaged acceptance. Non-symbolic reparse points remain deliberately rejected. Keep Windows-specific publication and identity primitives isolated and require native evidence before release claims.
 - Apply the Deelab transaction findings proportionally: inspectable effects, item-level receipts, precondition revalidation, evidence-bound Undo, and explicit refusal when reversal cannot be proved. Ordinary same-volume renames must remain direct and fast.
-- Extend session undo to the remaining supported operations, one operation type at a time, with conflict checks.
 
 ### 3. Finish packaging source
 
