@@ -9,6 +9,12 @@ BIN="$TMP/bin"
 APP="$TMP/Ottrin.app"
 mkdir -p "$BIN"
 
+expected_tree_state=clean
+if ! git -C "$ROOT" diff --quiet --ignore-submodules -- \
+  || ! git -C "$ROOT" diff --cached --quiet --ignore-submodules --; then
+  expected_tree_state=dirty
+fi
+
 for executable in ottrin-app ottrin-indexd; do
   printf '#!/bin/sh\nexit 0\n' > "$BIN/$executable"
   chmod 0755 "$BIN/$executable"
@@ -48,6 +54,6 @@ grep -A1 -Fq '<key>CFBundleShortVersionString</key>' "$APP/Contents/Info.plist"
 grep -Fq '<string>0.1.0</string>' "$APP/Contents/Info.plist"
 grep -Fq '<string>NSApplication</string>' "$APP/Contents/Info.plist"
 grep -Fqx 'Git revision: test-revision' "$APP/Contents/Resources/SOURCE_REVISION.txt"
-grep -Fqx 'Tracked tree: dirty' "$APP/Contents/Resources/SOURCE_REVISION.txt"
+grep -Fqx "Tracked tree: $expected_tree_state" "$APP/Contents/Resources/SOURCE_REVISION.txt"
 
 printf 'macOS app-bundle staging contract: PASS\n'
