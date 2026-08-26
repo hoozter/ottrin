@@ -11,15 +11,14 @@ use std::fs::OpenOptions;
 #[cfg(target_os = "windows")]
 use std::mem::{self, MaybeUninit};
 #[cfg(target_os = "windows")]
-use std::os::windows::fs::OpenOptionsExt;
+use std::os::windows::{fs::OpenOptionsExt, io::AsRawHandle};
 #[cfg(target_os = "windows")]
-use std::os::windows::io::AsRawHandle;
-#[cfg(target_os = "windows")]
-use windows_sys::Win32::Foundation::HANDLE;
+use windows_sys::Win32::Foundation::{GENERIC_READ, HANDLE};
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::Storage::FileSystem::{
-    FILE_ATTRIBUTE_REPARSE_POINT, FILE_ATTRIBUTE_TAG_INFO, FILE_FLAG_BACKUP_SEMANTICS,
-    FILE_FLAG_OPEN_REPARSE_POINT, FILE_ID_INFO, FileAttributeTagInfo, FileIdInfo,
+    DELETE, FILE_ATTRIBUTE_REPARSE_POINT, FILE_ATTRIBUTE_TAG_INFO, FILE_FLAG_BACKUP_SEMANTICS,
+    FILE_FLAG_OPEN_REPARSE_POINT, FILE_ID_INFO, FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE,
+    FILE_SHARE_READ, FILE_SHARE_WRITE, FileAttributeTagInfo, FileIdInfo,
     GetFileInformationByHandleEx,
 };
 
@@ -32,6 +31,17 @@ pub const JOURNAL_SCHEMA_MINOR: u16 = 0;
 pub struct SourceTreeSnapshotEntry {
     path: NativePath,
     identity: LinuxStableIdentity,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    content: Option<SourceContentEvidence>,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "kebab-case", deny_unknown_fields)]
+pub enum SourceContentEvidence {
+    Regular { size: u64, sha256_hex: String },
+    Symlink { target: NativePath },
+    Directory,
 }
 
 #[cfg(target_os = "linux")]
@@ -47,6 +57,19 @@ impl SourceTreeSnapshotEntry {
         Self {
             path: NativePath::encode(path),
             identity,
+            content: None,
+        }
+    }
+
+    pub fn with_content(
+        path: &Path,
+        identity: LinuxStableIdentity,
+        content: SourceContentEvidence,
+    ) -> Self {
+        Self {
+            path: NativePath::encode(path),
+            identity,
+            content: Some(content),
         }
     }
 }
@@ -60,6 +83,32 @@ impl SourceTreeSnapshot {
                 .map(|(path, identity)| SourceTreeSnapshotEntry::new(&path, identity))
                 .collect(),
         }
+    }
+
+    pub fn from_evidenced_entries(
+        entries: Vec<(PathBuf, LinuxStableIdentity, SourceContentEvidence)>,
+    ) -> Self {
+        Self {
+            entries: entries
+                .into_iter()
+                .map(|(path, identity, content)| {
+                    SourceTreeSnapshotEntry::with_content(&path, identity, content)
+                })
+                .collect(),
+        }
+    }
+
+    pub fn has_same_paths_and_content(&self, other: &Self) -> bool {
+        self.entries.len() == other.entries.len()
+            && self
+                .entries
+                .iter()
+                .zip(&other.entries)
+                .all(|(left, right)| {
+                    left.path == right.path
+                        && left.content.is_some()
+                        && left.content == right.content
+                })
     }
 }
 
@@ -146,6 +195,25 @@ pub struct WindowsStableIdentity {
     file_id: [u8; 16],
     reparse_tag: Option<u32>,
     file_type: WindowsFileType,
+}
+
+#[cfg(target_os = "windows")]
+impl WindowsStableIdentity {
+    pub(crate) fn volume_serial_number(self) -> u64 {
+        self.volume_serial_number
+    }
+
+    pub(crate) fn is_regular_file_without_reparse(self) -> bool {
+        self.file_type == WindowsFileType::File && self.reparse_tag.is_none()
+    }
+
+    pub(crate) fn is_directory_without_reparse(self) -> bool {
+        self.file_type == WindowsFileType::Directory && self.reparse_tag.is_none()
+    }
+
+    pub(crate) fn is_symbolic_link(self) -> bool {
+        self.file_type == WindowsFileType::Symlink && self.reparse_tag.is_some()
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -951,6 +1019,183 @@ pub struct LinuxClaimedSourceDeletionPreflight {
     _claimed_source: OwnedFd,
 }
 
+/// Opaque authority for unlinking the exact claimed source observed in a transaction directory.
+///
+/// The transaction directory and claimed entry are both retained as kernel handles. The final
+/// unlink re-opens the transaction-relative name without following links and refuses mutation if
+/// that name no longer resolves to the retained entry.
+#[cfg(target_os = "linux")]
+#[derive(Debug)]
+pub struct LinuxClaimedSourceCleanupAuthority {
+    transaction_directory: OwnedFd,
+    claimed_source: OwnedFd,
+    name: std::ffi::OsString,
+    identity: LinuxStableIdentity,
+    is_directory: bool,
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Error, Eq, PartialEq)]
+pub enum LinuxClaimedSourceCleanupError {
+    #[error("claimed-source cleanup authority could not be opened: {0}")]
+    Io(String),
+    #[error("claimed source does not match the expected identity")]
+    IdentityMismatch,
+}
+
+#[cfg(target_os = "linux")]
+impl LinuxClaimedSourceCleanupAuthority {
+    /// Removes only the retained entry while its transaction-relative name still resolves to it.
+    pub fn unlink(self) -> Result<(), LinuxClaimedSourceCleanupError> {
+        self.unlink_with_child_observer(|_| {})
+    }
+
+    fn unlink_with_child_observer<F>(
+        self,
+        mut after_child_inspection: F,
+    ) -> Result<(), LinuxClaimedSourceCleanupError>
+    where
+        F: FnMut(&std::path::Path),
+    {
+        use std::os::fd::{AsFd, AsRawFd};
+
+        use rustix::fs::{
+            AtFlags, FileType, Mode, OFlags, RenameFlags, fstat, openat, renameat_with, unlinkat,
+        };
+        use rustix::io::Errno;
+
+        fn remove_directory_contents<F>(
+            transaction_directory: &impl AsFd,
+            directory: &impl AsFd,
+            after_child_inspection: &mut F,
+        ) -> Result<(), LinuxClaimedSourceCleanupError>
+        where
+            F: FnMut(&std::path::Path),
+        {
+            let directory_path = format!("/proc/self/fd/{}", directory.as_fd().as_raw_fd());
+            for entry in std::fs::read_dir(&directory_path)
+                .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?
+            {
+                let entry =
+                    entry.map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+                let name = entry.file_name();
+                let path = entry.path();
+                let pinned = openat(
+                    directory,
+                    &name,
+                    OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                    Mode::empty(),
+                )
+                .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+                let pinned_stat = fstat(&pinned)
+                    .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+                let pinned_type = FileType::from_raw_mode(pinned_stat.st_mode);
+                after_child_inspection(&path);
+
+                let quarantine_name = loop {
+                    let candidate = format!(
+                        ".ottrin-cleanup-{}",
+                        encode_hex(
+                            &getrandom::u64()
+                                .map_err(|error| {
+                                    LinuxClaimedSourceCleanupError::Io(error.to_string())
+                                })?
+                                .to_ne_bytes()
+                        )
+                    );
+                    match renameat_with(
+                        directory,
+                        &name,
+                        transaction_directory,
+                        &candidate,
+                        RenameFlags::NOREPLACE,
+                    ) {
+                        Ok(()) => break candidate,
+                        Err(Errno::EXIST) => continue,
+                        Err(error) => {
+                            return Err(LinuxClaimedSourceCleanupError::Io(error.to_string()));
+                        }
+                    }
+                };
+                let quarantined = openat(
+                    transaction_directory,
+                    &quarantine_name,
+                    OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                    Mode::empty(),
+                )
+                .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+                let quarantined_stat = fstat(&quarantined)
+                    .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+                if quarantined_stat.st_dev != pinned_stat.st_dev
+                    || quarantined_stat.st_ino != pinned_stat.st_ino
+                    || FileType::from_raw_mode(quarantined_stat.st_mode) != pinned_type
+                {
+                    // The name changed after it was pinned. Restore only if doing so cannot
+                    // replace another entry; otherwise retain the unexpected object privately.
+                    let _ = renameat_with(
+                        transaction_directory,
+                        &quarantine_name,
+                        directory,
+                        &name,
+                        RenameFlags::NOREPLACE,
+                    );
+                    return Err(LinuxClaimedSourceCleanupError::IdentityMismatch);
+                }
+
+                if pinned_type == FileType::Directory {
+                    remove_directory_contents(
+                        transaction_directory,
+                        &quarantined,
+                        after_child_inspection,
+                    )?;
+                    unlinkat(transaction_directory, &quarantine_name, AtFlags::REMOVEDIR)
+                        .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+                } else {
+                    unlinkat(transaction_directory, &quarantine_name, AtFlags::empty())
+                        .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+                }
+            }
+            Ok(())
+        }
+
+        let named = openat(
+            &self.transaction_directory,
+            &self.name,
+            OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+        let named_stat =
+            fstat(&named).map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+        let retained_stat = fstat(&self.claimed_source)
+            .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+        if named_stat.st_dev != retained_stat.st_dev
+            || named_stat.st_ino != retained_stat.st_ino
+            || LinuxStableIdentity::new(
+                retained_stat.st_dev,
+                retained_stat.st_ino,
+                self.identity.file_type,
+            ) != self.identity
+        {
+            return Err(LinuxClaimedSourceCleanupError::IdentityMismatch);
+        }
+        if self.is_directory {
+            remove_directory_contents(
+                &self.transaction_directory,
+                &self.claimed_source,
+                &mut after_child_inspection,
+            )?;
+        }
+        let flags = if self.is_directory {
+            AtFlags::REMOVEDIR
+        } else {
+            AtFlags::empty()
+        };
+        unlinkat(&self.transaction_directory, &self.name, flags)
+            .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))
+    }
+}
+
 /// Failure while preparing the first prospective retained-source deletion.
 #[cfg(target_os = "linux")]
 #[derive(Debug, Error, Eq, PartialEq)]
@@ -1343,24 +1588,49 @@ pub enum LinuxDiscoverPreparedError {
 ///
 /// This intentionally exposes only the transaction ID and its validated durable phase.
 /// It does not expose source or destination path hints, nor does it grant journal or cleanup
-/// authority. Callers must treat every result as retained for manual recovery until a later,
-/// identity-verified recovery action is implemented.
+/// authority. Its disposition distinguishes a committed publication awaiting source cleanup,
+/// but remains read-only until a later identity-verified recovery action is implemented.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct LinuxDiscoveredMoveTransaction {
     pub transaction_id: [u8; 16],
     pub phase: JournalPhase,
 }
 
+/// The durable Windows journal family represented by one retained Move transaction.
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub enum WindowsMoveTransactionKind {
+    SameVolumeOverwrite,
+    CrossVolume,
+}
+
+/// Read-only Windows Move status discovered from the central journal namespace.
+///
+/// Cross-volume entries remain visible while `recovery_available` is false. This explicit
+/// boundary prevents callers from treating source cleanup as accepted before native Windows
+/// crash, ACL, sharing-mode, and second-volume evidence exists.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct WindowsDiscoveredMoveTransaction {
+    pub transaction_id: [u8; 16],
+    pub kind: WindowsMoveTransactionKind,
+    pub recovery_available: bool,
+}
+
 #[cfg(target_os = "linux")]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LinuxMoveRecoveryDisposition {
+    PublicationCommittedSourceCleanupPending,
     RetainedForManualRecovery,
 }
 
 #[cfg(target_os = "linux")]
 impl LinuxDiscoveredMoveTransaction {
     pub fn disposition(self) -> LinuxMoveRecoveryDisposition {
-        LinuxMoveRecoveryDisposition::RetainedForManualRecovery
+        match self.phase {
+            JournalPhase::Published => {
+                LinuxMoveRecoveryDisposition::PublicationCommittedSourceCleanupPending
+            }
+            _ => LinuxMoveRecoveryDisposition::RetainedForManualRecovery,
+        }
     }
 }
 
@@ -1602,6 +1872,76 @@ impl LinuxSourceParentDirectory {
         self.create_transaction_with_hooks(transaction_id, || Ok(()), || Ok(()))
     }
 
+    /// Opens a transaction created through this anchored parent only while its
+    /// current directory entry still has the identity observed at creation.
+    pub fn open_created_transaction(
+        &self,
+        transaction: &LinuxUnprovenSourceTransaction,
+    ) -> Result<LinuxJournalDirectory, JournalError> {
+        use rustix::fs::{AtFlags, FileType, Mode, OFlags, fstat, openat, statat};
+
+        let directory = openat(
+            &self.directory,
+            &transaction.name,
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|error| JournalError::Io(error.to_string()))?;
+        let opened = fstat(&directory).map_err(|error| JournalError::Io(error.to_string()))?;
+        let named = statat(
+            &self.directory,
+            &transaction.name,
+            AtFlags::SYMLINK_NOFOLLOW,
+        )
+        .map_err(|error| JournalError::Io(error.to_string()))?;
+        let observed =
+            LinuxStableIdentity::new(opened.st_dev, opened.st_ino, LinuxFileType::Directory);
+        if FileType::from_raw_mode(opened.st_mode) != FileType::Directory
+            || opened.st_uid != rustix::process::geteuid().as_raw()
+            || opened.st_dev != named.st_dev
+            || opened.st_ino != named.st_ino
+            || observed != transaction.observed_identity
+        {
+            return Err(JournalError::InvalidLinuxIdentity);
+        }
+        Ok(LinuxJournalDirectory { directory })
+    }
+
+    /// Reopens a retained transaction after restart only when its anchored
+    /// pathname still matches the identity persisted in the central journal.
+    pub fn open_existing_transaction(
+        &self,
+        name: &Path,
+        expected_identity: LinuxStableIdentity,
+    ) -> Result<LinuxJournalDirectory, JournalError> {
+        use rustix::fs::{AtFlags, FileType, Mode, OFlags, fstat, openat, statat};
+
+        if name.file_name() != Some(name.as_os_str()) {
+            return Err(JournalError::InvalidLinuxIdentity);
+        }
+        let directory = openat(
+            &self.directory,
+            name,
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|error| JournalError::Io(error.to_string()))?;
+        let opened = fstat(&directory).map_err(|error| JournalError::Io(error.to_string()))?;
+        let named = statat(&self.directory, name, AtFlags::SYMLINK_NOFOLLOW)
+            .map_err(|error| JournalError::Io(error.to_string()))?;
+        let observed =
+            LinuxStableIdentity::new(opened.st_dev, opened.st_ino, LinuxFileType::Directory);
+        if FileType::from_raw_mode(opened.st_mode) != FileType::Directory
+            || opened.st_uid != rustix::process::geteuid().as_raw()
+            || opened.st_dev != named.st_dev
+            || opened.st_ino != named.st_ino
+            || observed != expected_identity
+        {
+            return Err(JournalError::InvalidLinuxIdentity);
+        }
+        Ok(LinuxJournalDirectory { directory })
+    }
+
     #[cfg(test)]
     fn create_transaction_with_post_create<F>(
         &self,
@@ -1787,6 +2127,47 @@ impl LinuxRetainedSourceTransaction {
 
 #[cfg(target_os = "linux")]
 impl LinuxJournalDirectory {
+    /// Pins the transaction-relative claimed source before runtime cleanup can be interrupted.
+    pub fn claimed_source_cleanup_authority(
+        &self,
+        name: &std::ffi::OsStr,
+        expected: LinuxStableIdentity,
+    ) -> Result<LinuxClaimedSourceCleanupAuthority, LinuxClaimedSourceCleanupError> {
+        use rustix::{
+            fs::{FileType, Mode, OFlags, fstat, openat},
+            io::dup,
+        };
+
+        let transaction_directory = dup(&self.directory)
+            .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+        let claimed_source = openat(
+            &transaction_directory,
+            name,
+            OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+        let stat = fstat(&claimed_source)
+            .map_err(|error| LinuxClaimedSourceCleanupError::Io(error.to_string()))?;
+        let file_type = match FileType::from_raw_mode(stat.st_mode) {
+            FileType::RegularFile => LinuxFileType::Regular,
+            FileType::Directory => LinuxFileType::Directory,
+            FileType::Symlink => LinuxFileType::Symlink,
+            _ => LinuxFileType::Other,
+        };
+        let identity = LinuxStableIdentity::new(stat.st_dev, stat.st_ino, file_type);
+        if identity != expected {
+            return Err(LinuxClaimedSourceCleanupError::IdentityMismatch);
+        }
+        Ok(LinuxClaimedSourceCleanupAuthority {
+            transaction_directory,
+            claimed_source,
+            name: name.to_os_string(),
+            identity,
+            is_directory: file_type == LinuxFileType::Directory,
+        })
+    }
+
     pub fn open_configured(path: &Path) -> Result<Self, LinuxCentralRootOpenError> {
         Self::open_configured_inner(path, true)
     }
@@ -2782,6 +3163,30 @@ impl LinuxJournalDirectory {
             RenameFlags::EXCHANGE,
         )
         .map_err(|error| std::io::Error::other(error.to_string()))
+    }
+
+    pub(super) fn rename_within_no_replace(
+        &self,
+        source_name: &std::ffi::OsStr,
+        destination_name: &std::ffi::OsStr,
+    ) -> std::io::Result<()> {
+        use rustix::fs::{RenameFlags, renameat_with};
+        use rustix::io::Errno;
+
+        renameat_with(
+            &self.directory,
+            source_name,
+            &self.directory,
+            destination_name,
+            RenameFlags::NOREPLACE,
+        )
+        .map_err(|error| {
+            if error == Errno::EXIST {
+                std::io::Error::from(std::io::ErrorKind::AlreadyExists)
+            } else {
+                std::io::Error::other(error.to_string())
+            }
+        })
     }
 }
 
@@ -5822,6 +6227,10 @@ impl PendingDestinationRecord {
         self.source_transaction_name.decode()
     }
 
+    pub fn source_transaction_identity(&self) -> LinuxStableIdentity {
+        self.source_transaction_identity
+    }
+
     pub fn original_name(&self) -> Result<std::path::PathBuf, JournalError> {
         self.original_name.decode()
     }
@@ -5865,12 +6274,15 @@ impl PendingDestinationRecord {
         self.staged_destination_identity
     }
 
+    pub fn expected_displaced_destination_identity(&self) -> Option<LinuxStableIdentity> {
+        self.expected_displaced_destination_identity
+    }
+
     pub fn has_cross_device_destination_state(&self) -> bool {
         self.destination_transaction_name.is_some()
             || self.destination_transaction_identity.is_some()
             || self.source_tree_snapshot.is_some()
             || self.staged_destination_identity.is_some()
-            || self.expected_displaced_destination_identity.is_some()
     }
 }
 
@@ -6021,6 +6433,61 @@ impl PublishedRecord {
         let raw: RawPublishedRecord = serde_json::from_slice(bytes)
             .map_err(|error| JournalError::InvalidJson(error.to_string()))?;
         Self::try_from(raw)
+    }
+
+    pub fn source_parent(&self) -> Result<std::path::PathBuf, JournalError> {
+        self.source_parent.decode()
+    }
+
+    pub fn source_parent_identity(&self) -> LinuxStableIdentity {
+        self.source_parent_identity
+    }
+
+    pub fn original_name(&self) -> Result<std::path::PathBuf, JournalError> {
+        self.original_name.decode()
+    }
+
+    pub fn source_transaction_name(&self) -> Result<std::path::PathBuf, JournalError> {
+        self.source_transaction_name.decode()
+    }
+
+    pub fn source_transaction_identity(&self) -> LinuxStableIdentity {
+        self.source_transaction_identity
+    }
+
+    pub fn claimed_source_identity(&self) -> LinuxStableIdentity {
+        self.claimed_source_identity
+    }
+
+    pub fn pending_destination_name(&self) -> Result<std::path::PathBuf, JournalError> {
+        self.pending_destination_name.decode()
+    }
+
+    pub fn destination_transaction_name(&self) -> Result<std::path::PathBuf, JournalError> {
+        self.destination_transaction_name
+            .as_ref()
+            .ok_or_else(|| {
+                JournalError::InvalidJson(
+                    "published destination transaction name is missing".to_string(),
+                )
+            })?
+            .decode()
+    }
+
+    pub fn destination_transaction_identity(&self) -> Option<LinuxStableIdentity> {
+        self.destination_transaction_identity
+    }
+
+    pub fn source_tree_snapshot(&self) -> Option<SourceTreeSnapshot> {
+        self.source_tree_snapshot.clone()
+    }
+
+    pub fn staged_destination_identity(&self) -> Option<LinuxStableIdentity> {
+        self.staged_destination_identity
+    }
+
+    pub fn observed_displaced_destination_identity(&self) -> Option<LinuxStableIdentity> {
+        self.observed_displaced_destination_identity
     }
 }
 
@@ -6421,6 +6888,7 @@ fn classify_windows_file_type(metadata: &std::fs::Metadata) -> WindowsFileType {
 }
 
 #[cfg(target_os = "windows")]
+#[cfg_attr(not(test), allow(dead_code))]
 fn open_reparse_safe_entry(path: &Path) -> Result<std::fs::File, JournalError> {
     OpenOptions::new()
         .read(true)
@@ -6430,7 +6898,95 @@ fn open_reparse_safe_entry(path: &Path) -> Result<std::fs::File, JournalError> {
 }
 
 #[cfg(target_os = "windows")]
-fn stable_identity_from_handle(
+pub(crate) fn open_reparse_safe_entry_for_rename(
+    path: &Path,
+) -> Result<std::fs::File, JournalError> {
+    OpenOptions::new()
+        .access_mode(GENERIC_READ | FILE_READ_ATTRIBUTES | DELETE)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+        .open(path)
+        .map_err(|error| JournalError::Io(error.to_string()))
+}
+
+/// Share reads, but exclude concurrent writers and renames while a cross-volume
+/// source is copied, verified, and removed through its open handle.
+#[cfg(any(target_os = "windows", test))]
+pub(crate) const WINDOWS_CROSS_VOLUME_SOURCE_SHARE_MODE: u32 = 0x0000_0001;
+
+/// Publication holds the staged candidate exclusively so verified bytes cannot be
+/// rewritten or renamed between the final hash and the handle-relative publish.
+#[cfg(any(target_os = "windows", test))]
+pub(crate) const WINDOWS_CROSS_VOLUME_CANDIDATE_SHARE_MODE: u32 = 0;
+
+/// A publication/recovery handle must retain GENERIC_WRITE so FlushFileBuffers can
+/// establish durability before source removal. It also retains read, identity, and
+/// handle-relative rename/delete access.
+#[cfg(any(target_os = "windows", test))]
+pub(crate) const WINDOWS_CROSS_VOLUME_CANDIDATE_ACCESS_MODE: u32 = 0xC001_0080;
+
+/// Incomplete private staging cleanup needs only identity and delete rights. Avoid
+/// GENERIC_WRITE so copied read-only entries can still be recovered.
+#[cfg(target_os = "windows")]
+pub(crate) const WINDOWS_CROSS_VOLUME_CLEANUP_ACCESS_MODE: u32 = 0x0001_0080;
+
+/// Destination namespace flushing is issued through this directory handle after
+/// cross-volume publication. GENERIC_WRITE is required by FlushFileBuffers; the
+/// remaining bits retain attribute and traversal access for identity checks and
+/// handle-relative publication.
+#[cfg(any(target_os = "windows", test))]
+pub(crate) const WINDOWS_DESTINATION_PARENT_ACCESS_MODE: u32 = 0x4000_00A0;
+
+#[cfg(target_os = "windows")]
+pub(crate) fn open_reparse_safe_cross_volume_candidate(
+    path: &Path,
+) -> Result<std::fs::File, JournalError> {
+    OpenOptions::new()
+        .access_mode(WINDOWS_CROSS_VOLUME_CANDIDATE_ACCESS_MODE)
+        .share_mode(WINDOWS_CROSS_VOLUME_CANDIDATE_SHARE_MODE)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+        .open(path)
+        .map_err(|error| JournalError::Io(error.to_string()))
+}
+
+#[cfg(target_os = "windows")]
+pub(crate) fn open_reparse_safe_cross_volume_cleanup_entry(
+    path: &Path,
+) -> Result<std::fs::File, JournalError> {
+    OpenOptions::new()
+        .access_mode(WINDOWS_CROSS_VOLUME_CLEANUP_ACCESS_MODE)
+        .share_mode(WINDOWS_CROSS_VOLUME_CANDIDATE_SHARE_MODE)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+        .open(path)
+        .map_err(|error| JournalError::Io(error.to_string()))
+}
+
+#[cfg(target_os = "windows")]
+pub(crate) fn open_reparse_safe_cross_volume_source(
+    path: &Path,
+) -> Result<std::fs::File, JournalError> {
+    OpenOptions::new()
+        .access_mode(GENERIC_READ | FILE_READ_ATTRIBUTES | DELETE)
+        .share_mode(WINDOWS_CROSS_VOLUME_SOURCE_SHARE_MODE)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+        .open(path)
+        .map_err(|error| JournalError::Io(error.to_string()))
+}
+
+#[cfg(target_os = "windows")]
+pub(crate) fn open_reparse_safe_directory_for_rename(
+    path: &Path,
+) -> Result<std::fs::File, JournalError> {
+    OpenOptions::new()
+        .access_mode(WINDOWS_DESTINATION_PARENT_ACCESS_MODE)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+        .open(path)
+        .map_err(|error| JournalError::Io(error.to_string()))
+}
+
+#[cfg(target_os = "windows")]
+pub(crate) fn stable_identity_from_handle(
     file: &std::fs::File,
 ) -> Result<WindowsStableIdentity, JournalError> {
     let metadata = file
@@ -6491,6 +7047,7 @@ fn stable_identity_from_handle(
 }
 
 #[cfg(target_os = "windows")]
+#[cfg_attr(not(test), allow(dead_code))]
 pub(crate) fn stable_identity_of_entry(path: &Path) -> Result<WindowsStableIdentity, JournalError> {
     let file = open_reparse_safe_entry(path)?;
     stable_identity_from_handle(&file)
@@ -6499,6 +7056,64 @@ pub(crate) fn stable_identity_of_entry(path: &Path) -> Result<WindowsStableIdent
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recursive_cleanup_does_not_unlink_a_child_replaced_after_inspection() {
+        use rustix::fs::{CWD, Mode, OFlags, fstat, openat};
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-move-recursive-cleanup-race-{}",
+            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
+        ));
+        let transaction_path = root.join("transaction");
+        let claimed_path = transaction_path.join("claimed");
+        let victim_path = claimed_path.join("victim");
+        let original_away = root.join("original-away");
+        let replacement_path = root.join("replacement");
+        std::fs::create_dir_all(&claimed_path).unwrap();
+        std::fs::write(&victim_path, b"expected").unwrap();
+        std::fs::write(&replacement_path, b"must survive").unwrap();
+
+        let transaction_directory = openat(
+            CWD,
+            &transaction_path,
+            OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .unwrap();
+        let claimed_source = openat(
+            &transaction_directory,
+            "claimed",
+            OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .unwrap();
+        let stat = fstat(&claimed_source).unwrap();
+        let identity = LinuxStableIdentity::new(stat.st_dev, stat.st_ino, LinuxFileType::Directory);
+        let authority = LinuxClaimedSourceCleanupAuthority {
+            transaction_directory,
+            claimed_source,
+            name: "claimed".into(),
+            identity,
+            is_directory: true,
+        };
+
+        let mut replaced = false;
+        let result = authority.unlink_with_child_observer(|path| {
+            if !replaced && path.file_name() == Some(std::ffi::OsStr::new("victim")) {
+                std::fs::rename(&victim_path, &original_away).unwrap();
+                std::fs::rename(&replacement_path, &victim_path).unwrap();
+                replaced = true;
+            }
+        });
+
+        assert!(replaced);
+        assert!(result.is_err(), "replacement must make cleanup uncertain");
+        assert_eq!(std::fs::read(&victim_path).unwrap(), b"must survive");
+        assert_eq!(std::fs::read(&original_away).unwrap(), b"expected");
+        std::fs::remove_dir_all(root).unwrap();
+    }
 
     #[cfg(unix)]
     #[test]
@@ -7327,7 +7942,7 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn central_discovery_reports_validated_phase_as_manual_recovery_without_paths() {
+    fn central_discovery_classifies_published_as_source_cleanup_pending_without_paths() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-move-discover-status-{}",
             encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
@@ -7367,7 +7982,7 @@ mod tests {
         );
         assert_eq!(
             discovered.unwrap()[0].disposition(),
-            LinuxMoveRecoveryDisposition::RetainedForManualRecovery
+            LinuxMoveRecoveryDisposition::PublicationCommittedSourceCleanupPending
         );
         assert_eq!(std::fs::read(journal_path).unwrap(), journal_before);
         std::fs::remove_dir_all(root).unwrap();
@@ -8388,6 +9003,7 @@ mod tests {
             entries: vec![SourceTreeSnapshotEntry {
                 path: NativePath::encode(Path::new("claimed-child")),
                 identity: LinuxStableIdentity::new(77, 88, LinuxFileType::Regular),
+                content: None,
             }],
         };
         std::fs::create_dir_all(&central_path).unwrap();

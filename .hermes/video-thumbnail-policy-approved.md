@@ -2,6 +2,11 @@
 
 Approved by David on 2026-08-06. This policy supersedes all earlier FFmpeg-first and hybrid recommendations.
 
+> **Historical policy:** The Linux metadata-only, no-plugin, and no-playback
+> restrictions below were superseded by `docs/SYSTEM_MEDIA_POLICY.md`, approved
+> by David on 2026-08-14. The bounded Windows still-thumbnail contract remains
+> relevant where it does not conflict with that newer policy.
+
 ## Phase 1: native-only, lowest licensing risk
 
 1. Use only video-decoding frameworks supplied as part of the operating system.

@@ -1,9 +1,11 @@
 # Video Thumbnail Backend Spike
 
-Status: historical evaluation superseded by the approved native-only Phase 1 policy in `.hermes/video-thumbnail-policy-approved.md`.
+Status: historical evaluation. The native-only thumbnail policy was subsequently
+superseded for system media playback by `docs/SYSTEM_MEDIA_POLICY.md`, approved
+2026-08-14. This document is not the current Linux implementation authority.
 Date: 2026-08-06
 
-## Current product decision
+## Historical decision evaluated by this spike
 
 Phase 1 uses only video-decoding frameworks supplied by the operating system.
 Windows Media Foundation is the first implementation target, for the codecs and
@@ -12,12 +14,11 @@ bundle, download, install, recommend, mirror, or invoke FFmpeg, GStreamer,
 codec/plugin payloads, codec packs, external decoders, or any additional codec
 implementation.
 
-Linux and other platforms remain metadata-only until a separately reviewed,
-OS-supplied backend with a stable bounded API is accepted. Ottrin does not
-promise a codec list: native capability detection determines whether a given
-file can receive a still thumbnail. Unsupported and malformed media return a
-deterministic unavailable-thumbnail result while retaining ordinary video
-metadata.
+The current Linux decision is instead `SYSTEM_MEDIA_POLICY.md`: use the user's
+system GStreamer runtime and its enabled plugins without bundling, downloading,
+or installing codec/plugin payloads. Ottrin does not promise a codec list;
+runtime capability detection determines support. Metadata and **Open
+externally** remain the fallback when playback is unavailable or rejected.
 
 ## Common implementation contract
 

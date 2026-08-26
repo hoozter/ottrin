@@ -1,6 +1,6 @@
-use super::{ConflictAction, PlatformError};
+use super::{ConflictAction, PathMoveIdentity, PlatformError};
 #[cfg(target_os = "linux")]
-use super::{copy_entry, next_available_name};
+use super::{copy_entry, next_available_name, rename_identity};
 #[cfg(target_os = "linux")]
 use std::ffi::OsStr;
 #[cfg(any(target_os = "linux", test))]
@@ -8,13 +8,16 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 #[cfg(target_os = "linux")]
-const CANDIDATE: &str = "candidate";
+pub(super) const CANDIDATE: &str = "candidate";
 
 #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(super) enum CopyPublication {
     Published {
         retained_transaction: PathBuf,
+        published_path: PathBuf,
+        published_identity: PathMoveIdentity,
+        displaced_identity: Option<PathMoveIdentity>,
     },
     Skipped {
         retained_transaction: Option<PathBuf>,
@@ -34,6 +37,38 @@ pub(super) fn copy_entry_transactional(
     {
         portable::copy(source, destination_dir, conflict)
     }
+}
+
+#[cfg(target_os = "linux")]
+pub(super) fn create_retained_transaction(
+    destination_dir: &Path,
+) -> Result<PathBuf, PlatformError> {
+    linux::create_retained_transaction(destination_dir)
+}
+
+#[cfg(target_os = "linux")]
+pub(super) fn create_empty_file(
+    destination_dir: &Path,
+    name: &str,
+) -> Result<CopyPublication, PlatformError> {
+    linux::create_empty_file(destination_dir, name)
+}
+
+#[cfg(target_os = "linux")]
+pub(super) fn create_empty_directory(
+    destination_dir: &Path,
+    name: &str,
+) -> Result<CopyPublication, PlatformError> {
+    linux::create_empty_directory(destination_dir, name)
+}
+
+#[cfg(target_os = "linux")]
+pub(super) fn create_symlink(
+    destination_dir: &Path,
+    name: &OsStr,
+    target: &Path,
+) -> Result<CopyPublication, PlatformError> {
+    linux::create_symlink(destination_dir, name, target)
 }
 
 #[cfg(any(target_os = "linux", test))]
@@ -282,6 +317,117 @@ mod linux {
         copy_impl(source, destination_dir, conflict, |_| Ok(()))
     }
 
+    /// Creates an identity-checked private transaction in `destination_dir` for a caller-owned
+    /// cleanup step. The caller must persist its cleanup intent before moving an entry into it.
+    pub(super) fn create_retained_transaction(
+        destination_dir: &Path,
+    ) -> Result<PathBuf, PlatformError> {
+        let mut hook = |_| Ok(());
+        Transaction::create(destination_dir, &mut hook).map(Transaction::retain)
+    }
+
+    pub(super) fn create_empty_file(
+        destination_dir: &Path,
+        name: &str,
+    ) -> Result<CopyPublication, PlatformError> {
+        create_empty_entry(destination_dir, OsStr::new(name), "file", |transaction| {
+            let candidate = openat(
+                &transaction.stage,
+                CANDIDATE,
+                OFlags::CREATE | OFlags::EXCL | OFlags::WRONLY | OFlags::CLOEXEC,
+                Mode::RUSR | Mode::WUSR,
+            )
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+            rustix::fs::fsync(&candidate).map_err(|error| PlatformError::Io(error.to_string()))
+        })
+    }
+
+    pub(super) fn create_empty_directory(
+        destination_dir: &Path,
+        name: &str,
+    ) -> Result<CopyPublication, PlatformError> {
+        create_empty_entry(destination_dir, OsStr::new(name), "folder", |transaction| {
+            mkdirat(&transaction.stage, CANDIDATE, Mode::from_raw_mode(0o777))
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            let candidate = openat(
+                &transaction.stage,
+                CANDIDATE,
+                OFlags::RDONLY | OFlags::DIRECTORY | OFlags::CLOEXEC | OFlags::NOFOLLOW,
+                Mode::empty(),
+            )
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+            rustix::fs::fsync(&candidate).map_err(|error| PlatformError::Io(error.to_string()))
+        })
+    }
+
+    pub(super) fn create_symlink(
+        destination_dir: &Path,
+        name: &OsStr,
+        target: &Path,
+    ) -> Result<CopyPublication, PlatformError> {
+        create_empty_entry(destination_dir, name, "symlink", |transaction| {
+            std::os::unix::fs::symlink(target, transaction.candidate_path())
+                .map_err(|error| PlatformError::Io(error.to_string()))
+        })
+    }
+
+    fn create_empty_entry(
+        destination_dir: &Path,
+        name: &OsStr,
+        entry_kind: &str,
+        stage_candidate: impl FnOnce(&Transaction) -> Result<(), PlatformError>,
+    ) -> Result<CopyPublication, PlatformError> {
+        let target = destination_dir.join(name);
+        if std::fs::symlink_metadata(&target).is_ok() {
+            return Err(PlatformError::DestinationExists(
+                target.display().to_string(),
+            ));
+        }
+        let mut hook = |_| Ok(());
+        let transaction = Transaction::create(destination_dir, &mut hook)?;
+        let stage_result = stage_candidate(&transaction).and_then(|()| {
+            rustix::fs::fsync(&transaction.stage)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            rustix::fs::fsync(&transaction.parent)
+                .map_err(|error| PlatformError::Io(error.to_string()))
+        });
+        if let Err(error) = stage_result {
+            return Err(transaction.abandon(error));
+        }
+        let published_identity = match rename_identity(&transaction.candidate_path()) {
+            Ok(identity) => identity,
+            Err(error) => {
+                return Err(transaction.abandon(PlatformError::Io(error.to_string())));
+            }
+        };
+        if let Err(error) = renameat_with(
+            &transaction.stage,
+            CANDIDATE,
+            &transaction.parent,
+            name,
+            RenameFlags::NOREPLACE,
+        ) {
+            let publication_error = if error == Errno::EXIST {
+                PlatformError::DestinationExists(target.display().to_string())
+            } else {
+                PlatformError::Io(error.to_string())
+            };
+            return Err(transaction.abandon(publication_error));
+        }
+        rustix::fs::fsync(&transaction.parent).map_err(|error| {
+            PlatformError::CommittedCleanupPending {
+                transaction: transaction.recovery_path().display().to_string(),
+                message: format!("created {entry_kind} parent flush failed: {error}"),
+            }
+        })?;
+        Ok(CopyPublication::Published {
+            retained_transaction: transaction.retain(),
+            published_path: target,
+            published_identity,
+            displaced_identity: None,
+        })
+    }
+
     #[cfg(test)]
     pub(super) fn copy_with_test_hook(
         source: &Path,
@@ -351,6 +497,13 @@ mod linux {
             return Err(transaction.abandon(error));
         }
 
+        let published_identity = match rename_identity(&transaction.candidate_path()) {
+            Ok(identity) => identity,
+            Err(error) => {
+                return Err(transaction.abandon(PlatformError::Io(error.to_string())));
+            }
+        };
+        let mut retained_displaced_identity = None;
         loop {
             match renameat_with(
                 &transaction.stage,
@@ -401,7 +554,21 @@ mod linux {
                                     },
                                 );
                                 match displaced_identity {
-                                    Ok(true) => {}
+                                    Ok(true) => {
+                                        retained_displaced_identity = Some(
+                                            rename_identity(&transaction.candidate_path()).map_err(
+                                                |error| PlatformError::CommittedCleanupPending {
+                                                    transaction: transaction
+                                                        .recovery_path()
+                                                        .display()
+                                                        .to_string(),
+                                                    message: format!(
+                                                        "could not bind displaced destination identity; entry was preserved: {error}"
+                                                    ),
+                                                },
+                                            )?,
+                                        );
+                                    }
                                     Ok(false) => {
                                         return Err(PlatformError::CommittedCleanupPending {
                                             transaction: transaction
@@ -456,8 +623,12 @@ mod linux {
                 message: error.to_string(),
             }
         })?;
+        let published_path = destination_dir.join(&target_name);
         Ok(CopyPublication::Published {
             retained_transaction: transaction.retain(),
+            published_path,
+            published_identity,
+            displaced_identity: retained_displaced_identity,
         })
     }
 }
@@ -568,6 +739,7 @@ mod tests {
         match result {
             Ok(CopyPublication::Published {
                 retained_transaction,
+                ..
             }) => retained_transaction,
             other => panic!("expected published copy with retained transaction, got {other:?}"),
         }

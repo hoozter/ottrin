@@ -78,12 +78,25 @@ shell_scripts=(
   build-all.sh
   packaging/linux/package-appimage.sh
   packaging/linux/package-portable.sh
+  packaging/linux/sign-release-artifacts.sh
+  packaging/linux/verify-release-signatures.sh
+  packaging/linux/stage-native-package.sh
+  packaging/linux/package-deb.sh
+  packaging/linux/package-rpm.sh
   packaging/linux/bundle-runtime-libs.sh
+  packaging/macos/stage-app-bundle.sh
+  packaging/macos/package-app.sh
+  packaging/macos/sign-and-notarize-release.sh
+  packaging/macos/verify-release-signatures.sh
   packaging/verify-release-artifacts.sh
   packaging/windows/package-installer.sh
+  packaging/windows/package-msi.sh
   packaging/windows/package-portable.sh
   packaging/tests/verify-release-workflow-dependencies.sh
+  packaging/tests/verify-release-signing-integration.sh
   packaging/tests/verify-windows-installer-clean-checkout.sh
+  packaging/tests/verify-windows-installer-index-lifecycle.sh
+  packaging/tests/verify-windows-msi-lifecycle.sh
   packaging/tests/verify-windows-installer-output-path.sh
   packaging/tests/verify-windows-installer-powershell-provenance.sh
   packaging/tests/verify-windows-installer-stage-version.sh
@@ -91,6 +104,9 @@ shell_scripts=(
   packaging/tests/verify-linux-appimage-documentation.sh
   packaging/tests/verify-linux-gio-runtime-contract.sh
   packaging/tests/verify-linux-portable-running-instructions.sh
+  packaging/tests/verify-linux-native-package-contract.sh
+  packaging/tests/verify-macos-app-bundle-contract.sh
+  packaging/tests/verify-macos-package-contract.sh
   scripts/linux-launch-smoke.sh
   scripts/windows-gui-subsystem-smoke.sh
   scripts/windows-runtime-launch-smoke.sh
@@ -111,14 +127,28 @@ run_gate "Windows installer staged package-version guard" \
   bash packaging/tests/verify-windows-installer-stage-version.sh
 run_gate "Windows installer clean-checkout guard" \
   bash packaging/tests/verify-windows-installer-clean-checkout.sh
+run_gate "Windows installer background-index lifecycle" \
+  bash packaging/tests/verify-windows-installer-index-lifecycle.sh
+run_gate "Windows MSI lifecycle and provenance" \
+  bash packaging/tests/verify-windows-msi-lifecycle.sh
 run_gate "Release workflow dependency guards" \
   bash packaging/tests/verify-release-workflow-dependencies.sh
+run_gate "Release signing integration contract" \
+  bash packaging/tests/verify-release-signing-integration.sh
+run_gate "Linux release signing runtime" \
+  python3 packaging/tests/verify-linux-release-signing-runtime.py
 run_gate "Linux AppImage documentation contract" \
   bash packaging/tests/verify-linux-appimage-documentation.sh
 run_gate "Linux GIO runtime packaging contract" \
   bash packaging/tests/verify-linux-gio-runtime-contract.sh
 run_gate "Linux portable runtime-instructions contract" \
   bash packaging/tests/verify-linux-portable-running-instructions.sh
+run_gate "Linux native package contract" \
+  bash packaging/tests/verify-linux-native-package-contract.sh
+run_gate "macOS app-bundle staging contract" \
+  bash packaging/tests/verify-macos-app-bundle-contract.sh
+run_gate "macOS app archive contract" \
+  bash packaging/tests/verify-macos-package-contract.sh
 run_gate "Linux privileged-helper policy contract" \
   bash packaging/tests/verify-linux-privileged-helper-policy.sh
 run_gate "Release checklist provenance contract" \

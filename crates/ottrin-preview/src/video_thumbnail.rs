@@ -88,6 +88,37 @@ pub enum VideoThumbnailError {
     DecodeFailed,
 }
 
+impl VideoThumbnailError {
+    /// Truthful card copy for a failed optional native thumbnail. The file stays
+    /// externally openable; this message must not turn missing OS capability
+    /// into an unsupported-file claim.
+    pub const fn fallback_message(self) -> &'static str {
+        match self {
+            Self::UnsupportedPlatform | Self::NativeBackendUnavailable => {
+                "Video thumbnail unavailable because the operating-system video components are unavailable. This does not mean the file is invalid. Open externally to use another application."
+            }
+            Self::UnsupportedMedia => {
+                "Video thumbnail unavailable because no installed codec supports this format. This does not mean the file is invalid. Open externally to use another application."
+            }
+            Self::DecodeFailed | Self::InvalidFrame => {
+                "Video thumbnail unavailable because the media is malformed or unsupported by the operating-system decoder. Open externally to try another application."
+            }
+            Self::Cancelled => {
+                "Video thumbnail generation was cancelled. Open externally to continue in another application."
+            }
+            Self::TimedOut => {
+                "Video thumbnail generation exceeded its time limit. Open externally to use another application."
+            }
+            Self::AdmissionFailed | Self::UnsafeSource | Self::SourceChanged => {
+                "Video thumbnail unavailable because the file could not be admitted safely or changed during inspection. Open externally to use another application."
+            }
+            Self::ResourceLimit => {
+                "Video thumbnail unavailable because the file exceeded Ottrin's preview safety limits. Open externally to use another application."
+            }
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct AuthorizedVideoSource {
     generation: VideoThumbnailSourceGeneration,

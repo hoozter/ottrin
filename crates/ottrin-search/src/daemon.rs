@@ -120,6 +120,16 @@ impl SearchDaemonClient {
         }
     }
 
+    pub fn server_pid(&self) -> Result<u32, String> {
+        let stream = UnixStream::connect(&self.socket_path).map_err(|error| error.to_string())?;
+        let credentials = peer_credentials(&stream)?;
+        if credentials.uid != current_uid() {
+            return Err("index daemon belongs to another user".to_string());
+        }
+        u32::try_from(credentials.pid)
+            .map_err(|_| "index daemon reported an invalid process id".to_string())
+    }
+
     pub fn diagnostics(&self) -> Result<SearchIndexDiagnostics, String> {
         match self.transact(DaemonRequest::Status)? {
             DaemonResponse::Status { diagnostics } => Ok(*diagnostics),
@@ -233,12 +243,20 @@ fn unexpected_response(response: DaemonResponse) -> String {
 }
 
 pub fn default_daemon_socket_path() -> Result<PathBuf, String> {
-    let runtime = std::env::var_os("XDG_RUNTIME_DIR")
-        .map(PathBuf::from)
-        .ok_or_else(|| {
-            "XDG_RUNTIME_DIR is unavailable; cannot authenticate a user daemon".to_string()
-        })?;
-    let metadata = fs::metadata(&runtime).map_err(|error| {
+    let socket_path = daemon_socket_path_for_unix_user(
+        // SAFETY: geteuid has no preconditions and no side effects.
+        unsafe { libc::geteuid() },
+        std::env::var_os("XDG_RUNTIME_DIR")
+            .as_deref()
+            .map(Path::new),
+    )?;
+    let runtime = if current_uid() == 0 {
+        socket_path.parent()
+    } else {
+        socket_path.parent().and_then(Path::parent)
+    }
+    .expect("daemon socket path has a runtime parent");
+    let metadata = fs::metadata(runtime).map_err(|error| {
         format!(
             "could not inspect runtime directory {}: {error}",
             runtime.display()
@@ -250,7 +268,21 @@ pub fn default_daemon_socket_path() -> Result<PathBuf, String> {
             runtime.display()
         ));
     }
-    Ok(runtime.join("ottrin").join("index-v1.sock"))
+    Ok(socket_path)
+}
+
+fn daemon_socket_path_for_unix_user(
+    effective_uid: u32,
+    xdg_runtime_dir: Option<&Path>,
+) -> Result<PathBuf, String> {
+    if effective_uid == 0 {
+        return Ok(PathBuf::from("/run/ottrin-administrator/index-v1.sock"));
+    }
+    xdg_runtime_dir
+        .map(|runtime| runtime.join("ottrin/index-v1.sock"))
+        .ok_or_else(|| {
+            "XDG_RUNTIME_DIR is unavailable; cannot authenticate a user daemon".to_string()
+        })
 }
 
 pub fn run_search_daemon(
@@ -281,19 +313,51 @@ pub fn run_search_daemon(
 
     while !shutdown.load(Ordering::Acquire) {
         match listener.accept() {
-            Ok((stream, _)) => {
+            Ok((mut stream, _)) => {
                 if active_clients.fetch_add(1, Ordering::AcqRel) >= MAX_ACTIVE_CLIENTS {
                     active_clients.fetch_sub(1, Ordering::AcqRel);
+                    let _ = write_frame(
+                        &mut stream,
+                        &ResponseFrame {
+                            version: PROTOCOL_VERSION,
+                            response: DaemonResponse::Error {
+                                code: "server_busy".to_string(),
+                                message: format!(
+                                    "Ottrin index daemon has reached its {MAX_ACTIVE_CLIENTS}-request limit"
+                                ),
+                            },
+                        },
+                    );
                     continue;
                 }
                 let service = Arc::clone(&service);
                 let search = Arc::clone(&search);
                 let shutdown = Arc::clone(&shutdown);
-                let active_clients = Arc::clone(&active_clients);
-                thread::spawn(move || {
-                    let _active = ActiveClient(active_clients);
-                    let _ = serve_client(stream, &service, &search, &shutdown);
-                });
+                let worker_active_clients = Arc::clone(&active_clients);
+                let mut rejected_client = stream.try_clone().ok();
+                let worker = thread::Builder::new()
+                    .name("ottrin-index-client".to_string())
+                    .spawn(move || {
+                        let _active = ActiveClient(worker_active_clients);
+                        let _ = serve_client(stream, &service, &search, &shutdown);
+                    });
+                if let Err(error) = worker {
+                    active_clients.fetch_sub(1, Ordering::AcqRel);
+                    if let Some(ref mut client) = rejected_client {
+                        let _ = write_frame(
+                            client,
+                            &ResponseFrame {
+                                version: PROTOCOL_VERSION,
+                                response: DaemonResponse::Error {
+                                    code: "server_unavailable".to_string(),
+                                    message: format!(
+                                        "Ottrin index daemon could not start a request worker: {error}"
+                                    ),
+                                },
+                            },
+                        );
+                    }
+                }
             }
             Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
                 thread::sleep(Duration::from_millis(10));
@@ -473,7 +537,7 @@ fn bind_socket(path: &Path) -> Result<UnixListener, String> {
     Ok(listener)
 }
 
-fn verify_peer(stream: &UnixStream) -> Result<(), String> {
+fn peer_credentials(stream: &UnixStream) -> Result<libc::ucred, String> {
     let mut credentials = libc::ucred {
         pid: 0,
         uid: 0,
@@ -493,6 +557,11 @@ fn verify_peer(stream: &UnixStream) -> Result<(), String> {
     if result != 0 {
         return Err(std::io::Error::last_os_error().to_string());
     }
+    Ok(credentials)
+}
+
+fn verify_peer(stream: &UnixStream) -> Result<(), String> {
+    let credentials = peer_credentials(stream)?;
     if credentials.uid != current_uid() {
         return Err("index daemon rejected a client from another user".to_string());
     }
@@ -508,6 +577,14 @@ fn current_uid() -> u32 {
 mod tests {
     use super::*;
     use ottrin_core::{SearchIndexStatus, SearchScope, SearchSort};
+
+    #[test]
+    fn administrator_socket_path_ignores_preserved_user_runtime() {
+        assert_eq!(
+            daemon_socket_path_for_unix_user(0, Some(Path::new("/run/user/1000"))),
+            Ok(PathBuf::from("/run/ottrin-administrator/index-v1.sock"))
+        );
+    }
     use std::io::Cursor;
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -522,6 +599,42 @@ mod tests {
 
         let actual: RequestFrame = read_frame(&mut Cursor::new(bytes)).expect("read request frame");
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn client_reports_the_connected_daemon_process() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock")
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-daemon-peer-{}-{unique}",
+            std::process::id()
+        ));
+        let files = root.join("files");
+        let store = root.join("search.db");
+        let socket = root.join("runtime/index-v1.sock");
+        fs::create_dir_all(&files).expect("create fixture root");
+        let config = SearchConfig {
+            include_roots: vec![files],
+            use_system_locate: false,
+            manage_locate_db: false,
+            refresh_interval_hours: 0,
+            ..SearchConfig::default()
+        };
+        let daemon_socket = socket.clone();
+        let daemon = thread::spawn(move || run_search_daemon(config, store, daemon_socket));
+        wait_for_socket(&socket);
+        let client = SearchDaemonClient::new(socket);
+
+        assert_eq!(client.server_pid(), Ok(std::process::id()));
+
+        client.shutdown().expect("shutdown daemon");
+        daemon
+            .join()
+            .expect("join daemon")
+            .expect("daemon clean exit");
+        let _ = fs::remove_dir_all(root);
     }
 
     #[test]
@@ -680,7 +793,9 @@ mod tests {
                 .query(query("beta.txt"))
                 .is_ok_and(|result| result.response.total == 1)
         });
-        client_b.shutdown().expect("shutdown first daemon");
+        client_b
+            .prepare_upgrade()
+            .expect("prepare first daemon for upgrade");
         first
             .join()
             .expect("join first daemon")
@@ -700,6 +815,57 @@ mod tests {
             .join()
             .expect("join restarted daemon")
             .expect("restarted daemon clean exit");
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn daemon_returns_a_protocol_error_when_the_request_capacity_is_full() {
+        const BLOCKED_CLIENTS: usize = MAX_ACTIVE_CLIENTS;
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock")
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-daemon-request-capacity-{}-{unique}",
+            std::process::id()
+        ));
+        let files = root.join("files");
+        let store = root.join("search.db");
+        let socket = root.join("runtime/index-v1.sock");
+        fs::create_dir_all(&files).expect("create fixture root");
+        fs::write(files.join("needle.txt"), []).expect("write fixture file");
+        let config = SearchConfig {
+            include_roots: vec![files],
+            use_system_locate: false,
+            manage_locate_db: false,
+            refresh_interval_hours: 0,
+            content_indexing_enabled: false,
+            ..SearchConfig::default()
+        };
+        let daemon_socket = socket.clone();
+        let daemon = thread::spawn(move || run_search_daemon(config, store, daemon_socket));
+        wait_for_socket(&socket);
+        let mut blocked = Vec::with_capacity(BLOCKED_CLIENTS);
+        for _ in 0..BLOCKED_CLIENTS {
+            blocked.push(UnixStream::connect(&socket).expect("open blocked client"));
+        }
+        thread::sleep(Duration::from_millis(100));
+        let queued_socket = socket.clone();
+        let queued = thread::spawn(move || SearchDaemonClient::new(queued_socket).ping());
+        let error = queued
+            .join()
+            .expect("join queued client")
+            .expect_err("full daemon must return a protocol error");
+        assert!(error.contains("server_busy"), "unexpected error: {error}");
+        assert!(!error.contains("os error 11"), "unexpected error: {error}");
+        drop(blocked);
+        wait_until(Duration::from_secs(1), || {
+            SearchDaemonClient::new(socket.clone()).shutdown().is_ok()
+        });
+        daemon
+            .join()
+            .expect("join daemon")
+            .expect("daemon clean exit");
         let _ = fs::remove_dir_all(root);
     }
 }

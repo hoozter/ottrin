@@ -8,10 +8,13 @@ use regex::{Regex, RegexBuilder};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fs::{File, OpenOptions};
+use std::io::Read;
 use std::path::{Path, PathBuf};
 #[cfg(test)]
 use std::sync::Mutex;
-use std::sync::{Arc, RwLock, atomic::AtomicBool, mpsc};
+#[cfg(unix)]
+use std::sync::mpsc;
+use std::sync::{Arc, RwLock, atomic::AtomicBool};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 use walkdir::WalkDir;
@@ -26,7 +29,9 @@ mod scanner;
 mod watch;
 mod worker;
 use db::{
-    SearchStore, query_indexed_content_page, search_db_path, stream_generation_content_items,
+    SearchStore, SimpleTermPage, active_generation_contains_paths, generation_content_db_paths,
+    query_indexed_content_page, query_simple_term_page, search_db_path,
+    stream_generation_content_items, stream_generation_items,
 };
 
 #[cfg(test)]
@@ -249,13 +254,13 @@ impl SearchService {
     /// worker. This is the read-only authority used by status and one-shot query clients.
     pub fn load_persisted(config: SearchConfig, store_path: PathBuf) -> Result<Self, String> {
         let plan = plan::ScanPlan::new(&config)?;
-        let snapshot = SearchStore::load_read_only(&store_path, &plan)
+        let count = SearchStore::load_count_read_only(&store_path, &plan)
             .map_err(|error| error.to_string())?
             .ok_or_else(|| {
                 "No completed search index exists for the configured roots".to_string()
             })?;
         let service = Self::new_with_store_path(config, store_path);
-        worker::publish_snapshot(&service.index, &snapshot);
+        worker::publish_ready_count(&service.index, count);
         {
             let mut index = service.index.write().expect("index write");
             index.configured_root_count = plan.roots().len();
@@ -382,6 +387,7 @@ impl SearchService {
             .rebuild_blocking()
     }
 
+    #[cfg(unix)]
     fn begin_rebuild_index(&self) -> Result<mpsc::Receiver<Result<(), String>>, String> {
         self.worker
             .as_ref()
@@ -400,6 +406,7 @@ impl SearchService {
             .reconcile_blocking()
     }
 
+    #[cfg(unix)]
     fn begin_index_reconcile(&self) -> Result<mpsc::Receiver<Result<(), String>>, String> {
         self.worker
             .as_ref()
@@ -429,6 +436,10 @@ impl SearchService {
         sqlite_schedule_status()
     }
 
+    pub fn restart_sqlite_schedule() -> Result<String, String> {
+        restart_sqlite_schedule()
+    }
+
     /// Age of Ottrin's managed locate.db in seconds, if it exists.
     pub fn locate_db_age_secs() -> Option<u64> {
         locate_db_age_secs()
@@ -449,11 +460,8 @@ impl SearchService {
         install_locate_schedule(interval_hours, root)
     }
 
-    pub fn install_sqlite_schedule(
-        interval_hours: u32,
-        roots: &[PathBuf],
-    ) -> Result<String, String> {
-        install_sqlite_schedule(interval_hours, roots)
+    pub fn install_sqlite_schedule(config: &SearchConfig) -> Result<String, String> {
+        install_sqlite_schedule(config)
     }
 
     pub fn uninstall_sqlite_schedule() -> Result<String, String> {
@@ -547,7 +555,7 @@ impl SearchHandle {
             indexed_items: if matches!(idx.status, SearchIndexStatus::Indexing) {
                 idx.building_indexed_items
             } else {
-                idx.items.len()
+                idx.last_completed_indexed_items.unwrap_or(idx.items.len())
             },
             last_completed_indexed_items: idx.last_completed_indexed_items,
             estimated_total_items: idx.estimated_total_items,
@@ -569,6 +577,14 @@ impl SearchHandle {
     }
 
     pub fn query(&self, query: SearchQuery) -> SearchResponse {
+        self.query_with_system_locate(query, query_system_locate)
+    }
+
+    fn query_with_system_locate(
+        &self,
+        query: SearchQuery,
+        system_locate: fn(&str, Option<&Path>, bool, usize) -> Vec<SearchResultItem>,
+    ) -> SearchResponse {
         let (status, items) = {
             let idx = self.index.read().expect("index read");
             (idx.status, Arc::clone(&idx.items))
@@ -614,6 +630,9 @@ impl SearchHandle {
                 .map(|root| !root_is_indexed(root, &cfg))
                 .unwrap_or(false);
 
+        let result_capacity = query.offset.saturating_add(query.limit).max(1);
+        let mut streamed_index = false;
+        let mut total_matches_override = None;
         let mut matched: Vec<(i64, SearchResultItem)> =
             if matches!(query.scope, SearchScope::CurrentFolder)
                 && (matches!(
@@ -637,6 +656,105 @@ impl SearchHandle {
                     target_hits,
                     Duration::from_millis(140),
                 )
+            } else if matches!(status, SearchIndexStatus::Ready)
+                && items.is_empty()
+                && self.store_path.exists()
+            {
+                let plan = match plan::ScanPlan::new(&cfg) {
+                    Ok(plan) => plan,
+                    Err(error) => {
+                        return SearchResponse {
+                            items: Vec::new(),
+                            total: 0,
+                            status,
+                            error: Some(error),
+                        };
+                    }
+                };
+                let simple_page = if is_simple_single_word(&query.text)
+                    && query.text.trim().chars().count() >= 3
+                    && query.text.trim().is_ascii()
+                    && !matches!(query.scope, SearchScope::CurrentFolder)
+                    && !matches!(query.sort, SearchSort::Path)
+                {
+                    query_simple_term_page(
+                        self.store_path.as_ref(),
+                        &plan,
+                        SimpleTermPage {
+                            term: query.text.trim(),
+                            include_hidden: query.include_hidden_system,
+                            sort: query.sort,
+                            limit: result_capacity,
+                            offset: 0,
+                        },
+                    )
+                    .ok()
+                    .filter(|(_, total)| {
+                        should_use_simple_term_page(*total, query.limit, query.content_search)
+                    })
+                } else {
+                    None
+                };
+                if let Some((page, total)) = simple_page {
+                    streamed_index = true;
+                    total_matches_override = Some(total);
+                    page.into_iter()
+                        .map(|item| (relevance_score(&query, &item), item))
+                        .collect()
+                } else {
+                    let fuzzy_query =
+                        is_simple_single_word(&query.text).then(|| query.text.trim().to_string());
+                    let mut exact = Vec::with_capacity(result_capacity);
+                    let mut fuzzy = Vec::with_capacity(query.limit.saturating_mul(2).max(200));
+                    let mut exact_total = 0usize;
+                    let stream_result =
+                        stream_generation_items(self.store_path.as_ref(), &plan, None, |item| {
+                            if !root_is_indexed(&item.path, &cfg)
+                                || !scope_match(&query, &item)
+                                || (!query.include_hidden_system && item.name.starts_with('.'))
+                            {
+                                return;
+                            }
+                            if eval_expr(&expr, &item) {
+                                exact_total = exact_total.saturating_add(1);
+                                push_bounded_result(
+                                    &mut exact,
+                                    (relevance_score(&query, &item), item),
+                                    result_capacity,
+                                    query.sort,
+                                );
+                            } else if let Some(fuzzy_query) = fuzzy_query.as_deref()
+                                && fuzzy.len() < query.limit.saturating_mul(2).max(200)
+                                && let Some(score) =
+                                    fuzzy_subsequence_score(fuzzy_query, &item.name)
+                            {
+                                fuzzy.push((score, item));
+                            }
+                        });
+                    if let Err(error) = stream_result {
+                        return SearchResponse {
+                            items: Vec::new(),
+                            total: 0,
+                            status,
+                            error: Some(format!("Search index query failed: {error}")),
+                        };
+                    }
+                    if exact_total < query.limit {
+                        let remaining = query
+                            .limit
+                            .saturating_mul(2)
+                            .max(200)
+                            .saturating_sub(exact.len());
+                        let fuzzy_added = fuzzy.len().min(remaining);
+                        exact_total = exact_total.saturating_add(fuzzy_added);
+                        for candidate in fuzzy.into_iter().take(fuzzy_added) {
+                            push_bounded_result(&mut exact, candidate, result_capacity, query.sort);
+                        }
+                    }
+                    streamed_index = true;
+                    total_matches_override = Some(exact_total);
+                    exact
+                }
             } else {
                 items
                     .iter()
@@ -655,6 +773,7 @@ impl SearchHandle {
                     })
                     .collect()
             };
+        let mut total_matches = total_matches_override.unwrap_or(matched.len());
 
         if global_root_outside_index && query.text.trim().len() >= 2 {
             let mut seen: HashSet<PathBuf> =
@@ -662,6 +781,7 @@ impl SearchHandle {
             for (score, item) in query_current_folder_fallback(&query, &expr, &cfg) {
                 if seen.insert(item.path.clone()) {
                     matched.push((score, item));
+                    total_matches = total_matches.saturating_add(1);
                 }
                 if matched.len() >= query.limit.saturating_mul(2).max(200) {
                     break;
@@ -669,31 +789,56 @@ impl SearchHandle {
             }
         }
 
-        // Supplement with system locate/plocate when: query is non-trivial,
-        // the user has opted in, and we have budget (index empty or still building).
-        // Zero privilege required — we just read the database the OS already maintains.
-        let budget_remaining = matched.len() < query.limit && query.text.trim().len() >= 2;
-        let index_thin = matches!(status, SearchIndexStatus::Indexing) && items.len() < 5_000;
-        if cfg.use_system_locate && budget_remaining && (index_thin || matched.is_empty()) {
-            let roots = effective_roots(&cfg);
-            let locate_hits = query_system_locate(
+        // System filename discovery is a peer global source, not a sparse-index
+        // fallback. Query it whenever enabled so native results cannot hide
+        // broader system paths; exact-path deduplication still prefers native rows.
+        if cfg.use_system_locate && query.text.trim().len() >= 2 {
+            let scope_root = if matches!(query.scope, SearchScope::CurrentFolder) {
+                query.root_path.as_deref()
+            } else {
+                None
+            };
+            let locate_hits = system_locate(
                 &query.text,
-                &roots,
+                scope_root,
                 query.include_hidden_system,
-                query.limit.saturating_sub(matched.len()).max(50),
+                result_capacity.max(50),
             );
+            let persisted_native = if matches!(status, SearchIndexStatus::Ready)
+                && items.is_empty()
+                && self.store_path.exists()
+            {
+                plan::ScanPlan::new(&cfg).ok().and_then(|plan| {
+                    let paths = locate_hits
+                        .iter()
+                        .map(|item| item.path.clone())
+                        .collect::<Vec<_>>();
+                    active_generation_contains_paths(self.store_path.as_ref(), &plan, &paths).ok()
+                })
+            } else {
+                None
+            };
             let mut seen: HashSet<PathBuf> =
                 matched.iter().map(|(_, item)| item.path.clone()).collect();
-            for item in locate_hits {
+            for (index, item) in locate_hits.into_iter().enumerate() {
+                if persisted_native
+                    .as_ref()
+                    .and_then(|present| present.get(index))
+                    .copied()
+                    .unwrap_or(false)
+                {
+                    continue;
+                }
                 if eval_expr(&expr, &item) && seen.insert(item.path.clone()) {
                     matched.push((relevance_score(&query, &item), item));
+                    total_matches = total_matches.saturating_add(1);
                 }
             }
         }
 
         // ── Fuzzy pass: supplement with subsequence-matched filenames ─────────
         // Only runs when query is a single bare word and exact results are sparse.
-        if is_simple_single_word(&query.text) && matched.len() < query.limit {
+        if !streamed_index && is_simple_single_word(&query.text) && matched.len() < query.limit {
             let q = query.text.trim();
             let mut seen: HashSet<PathBuf> =
                 matched.iter().map(|(_, item)| item.path.clone()).collect();
@@ -708,6 +853,7 @@ impl SearchHandle {
                 if let Some(score) = fuzzy_subsequence_score(q, &item.name) {
                     seen.insert(item.path.clone());
                     matched.push((score, item.clone()));
+                    total_matches = total_matches.saturating_add(1);
                     if matched.len() >= query.limit.saturating_mul(2).max(200) {
                         break;
                     }
@@ -724,10 +870,6 @@ impl SearchHandle {
                 && let Some(fts_query) = fts_query.as_deref()
                 && let Ok(plan) = plan::ScanPlan::new(&cfg)
             {
-                let mut by_path = items
-                    .iter()
-                    .map(|item| (item.path.as_path(), item))
-                    .collect::<std::collections::HashMap<_, _>>();
                 let mut seen: HashSet<PathBuf> =
                     matched.iter().map(|(_, item)| item.path.clone()).collect();
                 let desired_hits = query.offset.saturating_add(query.limit).max(1);
@@ -746,10 +888,8 @@ impl SearchHandle {
                     };
                     let fetched = fts_hits.len();
                     for hit in fts_hits {
-                        let Some(indexed) = by_path.remove(hit.path.as_path()) else {
-                            continue;
-                        };
-                        let mut item = indexed.clone();
+                        let mut item = hit.item;
+                        let filename_match = eval_expr(&expr, &item);
                         // Evaluate against the bounded indexed content, not the short
                         // display snippet: boolean and negated terms can occur on a
                         // different line than the snippet selected for presentation.
@@ -767,7 +907,15 @@ impl SearchHandle {
                                 *existing_score = (*existing_score).max(score);
                                 *existing_item = item;
                             } else if seen.insert(item.path.clone()) {
-                                matched.push((score, item));
+                                push_bounded_result(
+                                    &mut matched,
+                                    (score, item),
+                                    result_capacity,
+                                    query.sort,
+                                );
+                                if !filename_match {
+                                    total_matches = total_matches.saturating_add(1);
+                                }
                             }
                             accepted_hits += 1;
                         }
@@ -791,22 +939,33 @@ impl SearchHandle {
                 matched.iter().map(|(_, item)| item.path.clone()).collect();
             for item in rg_items {
                 if scope_match(&query, &item) && seen.insert(item.path.clone()) {
-                    // Content matches get a high base score — they are strong signals
-                    matched.push((8_000, item));
-                    if matched.len() >= query.limit.saturating_mul(2).max(200) {
-                        break;
+                    let mut filename_item = item.clone();
+                    filename_item.content_snippet = None;
+                    let filename_match = eval_expr(&expr, &filename_item);
+                    // Content matches get a high base score — they are strong signals.
+                    push_bounded_result(&mut matched, (8_000, item), result_capacity, query.sort);
+                    if !filename_match {
+                        total_matches = total_matches.saturating_add(1);
                     }
                 }
             }
         }
 
         sort_results(&mut matched, query.sort);
-        let total = matched.len();
+        matched.truncate(result_capacity);
+        let total = total_matches;
         let items = matched
             .into_iter()
             .skip(query.offset)
             .take(query.limit)
-            .map(|(_, item)| item)
+            .map(|(_, mut item)| {
+                item.parent_path = item
+                    .path
+                    .parent()
+                    .map(Path::to_path_buf)
+                    .unwrap_or_default();
+                item
+            })
             .collect();
 
         SearchResponse {
@@ -996,7 +1155,14 @@ impl SearchHandle {
             .into_iter()
             .skip(query.offset)
             .take(query.limit)
-            .map(|(_, item)| item)
+            .map(|(_, mut item)| {
+                item.parent_path = item
+                    .path
+                    .parent()
+                    .map(Path::to_path_buf)
+                    .unwrap_or_default();
+                item
+            })
             .collect();
         SearchQueryResult {
             response: SearchResponse {
@@ -1032,13 +1198,9 @@ impl Drop for SearchService {
 fn effective_roots(cfg: &SearchConfig) -> Vec<PathBuf> {
     let mut roots = cfg.include_roots.clone();
     roots.extend(cfg.active_indexed_volume_roots.iter().cloned());
-    if !roots.is_empty() {
-        roots.sort();
-        roots.dedup();
-        roots
-    } else {
-        default_roots()
-    }
+    roots.sort();
+    roots.dedup();
+    roots
 }
 
 fn ordered_query_roots(query: &SearchQuery, cfg: &SearchConfig) -> Vec<PathBuf> {
@@ -1061,10 +1223,6 @@ fn ordered_query_roots(query: &SearchQuery, cfg: &SearchConfig) -> Vec<PathBuf> 
         }
     }
     ordered
-}
-
-pub fn default_roots() -> Vec<PathBuf> {
-    vec![ottrin_core::default_home_dir()]
 }
 
 fn current_unix_secs() -> u64 {
@@ -1141,6 +1299,9 @@ fn clear_sqlite_storage(path: &Path) -> Result<u64, String> {
         let mut sidecar = path.as_os_str().to_os_string();
         sidecar.push(suffix);
         freed = freed.saturating_add(remove_file_if_present(Path::new(&sidecar))?);
+    }
+    for content_path in generation_content_db_paths(path) {
+        freed = freed.saturating_add(clear_sqlite_storage(&content_path)?);
     }
     Ok(freed)
 }
@@ -1293,31 +1454,266 @@ pub struct SystemLocateScheduleStatus {
     pub managed_by_ottrin: bool,
 }
 
+#[cfg(any(target_os = "windows", test))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct SqliteWindowsTaskRegistration {
+    enabled: bool,
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn parse_sqlite_windows_task_xml(output: &[u8]) -> Result<SqliteWindowsTaskRegistration, String> {
+    let xml = if output.starts_with(&[0xff, 0xfe]) {
+        let units = output[2..]
+            .chunks_exact(2)
+            .map(|bytes| u16::from_le_bytes([bytes[0], bytes[1]]))
+            .collect::<Vec<_>>();
+        String::from_utf16(&units)
+            .map_err(|error| format!("invalid Task Scheduler XML: {error}"))?
+    } else if output.starts_with(&[0xfe, 0xff]) {
+        let units = output[2..]
+            .chunks_exact(2)
+            .map(|bytes| u16::from_be_bytes([bytes[0], bytes[1]]))
+            .collect::<Vec<_>>();
+        String::from_utf16(&units)
+            .map_err(|error| format!("invalid Task Scheduler XML: {error}"))?
+    } else {
+        String::from_utf8(output.to_vec())
+            .map_err(|error| format!("invalid Task Scheduler XML: {error}"))?
+    };
+    if !xml.contains("<Task") {
+        return Err("Task Scheduler returned malformed task XML".to_string());
+    }
+    let enabled = match xml.split_once("<Enabled>") {
+        None => true,
+        Some((_, rest)) => {
+            let (value, _) = rest.split_once("</Enabled>").ok_or_else(|| {
+                "Task Scheduler XML has an unterminated Enabled value".to_string()
+            })?;
+            match value.trim() {
+                "true" => true,
+                "false" => false,
+                _ => return Err("Task Scheduler XML has an invalid Enabled value".to_string()),
+            }
+        }
+    };
+    Ok(SqliteWindowsTaskRegistration { enabled })
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn sqlite_windows_task_status_with(
+    query: impl FnOnce() -> Result<Option<SqliteWindowsTaskRegistration>, String>,
+) -> LocateScheduleStatus {
+    match query() {
+        Ok(Some(registration)) if registration.enabled => LocateScheduleStatus {
+            source: "Windows Task Scheduler".to_string(),
+            enabled: true,
+            detail: "Ready for scheduled refresh".to_string(),
+        },
+        Ok(Some(_)) => LocateScheduleStatus {
+            source: "Windows Task Scheduler".to_string(),
+            enabled: false,
+            detail: "Installed but disabled".to_string(),
+        },
+        Ok(None) => LocateScheduleStatus {
+            source: "none".to_string(),
+            enabled: false,
+            detail: "No background Ottrin index task installed".to_string(),
+        },
+        Err(error) => LocateScheduleStatus {
+            source: "Windows Task Scheduler".to_string(),
+            enabled: false,
+            detail: format!("Status unavailable: {error}"),
+        },
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SqliteWindowsTaskOperation {
+    Query,
+    QueryXml,
+    Run,
+    Delete,
+}
+
+#[cfg(any(target_os = "windows", test))]
+impl SqliteWindowsTaskOperation {
+    fn args(self) -> &'static [&'static str] {
+        match self {
+            Self::Query => &["/Query", "/TN", "Ottrin Index"],
+            Self::QueryXml => &["/Query", "/TN", "Ottrin Index", "/XML"],
+            Self::Run => &["/Run", "/TN", "Ottrin Index"],
+            Self::Delete => &["/Delete", "/F", "/TN", "Ottrin Index"],
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    fn label(self) -> &'static str {
+        match self {
+            Self::Query => "query the Ottrin Index task",
+            Self::QueryXml => "inspect the Ottrin Index task",
+            Self::Run => "start the Ottrin Index task",
+            Self::Delete => "delete the Ottrin Index task",
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn run_sqlite_windows_task(operation: SqliteWindowsTaskOperation) -> Result<bool, String> {
+    internal_command("schtasks")
+        .args(operation.args())
+        .status()
+        .map(|status| status.success())
+        .map_err(|error| format!("Failed to {}: {error}", operation.label()))
+}
+
+#[cfg(target_os = "windows")]
+fn query_sqlite_windows_task() -> Result<Option<SqliteWindowsTaskRegistration>, String> {
+    let operation = SqliteWindowsTaskOperation::QueryXml;
+    let output = internal_command("schtasks")
+        .args(operation.args())
+        .output()
+        .map_err(|error| format!("Failed to {}: {error}", operation.label()))?;
+    if !output.status.success() {
+        return Ok(None);
+    }
+    parse_sqlite_windows_task_xml(&output.stdout).map(Some)
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn restart_sqlite_windows_task_with(
+    mut run: impl FnMut(SqliteWindowsTaskOperation) -> Result<bool, String>,
+) -> Result<String, String> {
+    if !run(SqliteWindowsTaskOperation::Query)? {
+        return Err("Persistent Ottrin index task is not installed".to_string());
+    }
+    if !run(SqliteWindowsTaskOperation::Run)? {
+        return Err("Task Scheduler failed to start the Ottrin Index task".to_string());
+    }
+    Ok("Background Ottrin index task started.".to_string())
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn uninstall_sqlite_windows_task_with(
+    mut run: impl FnMut(SqliteWindowsTaskOperation) -> Result<bool, String>,
+) -> Result<String, String> {
+    if !run(SqliteWindowsTaskOperation::Query)? {
+        return Ok("No background Ottrin index task was installed.".to_string());
+    }
+    if !run(SqliteWindowsTaskOperation::Delete)? {
+        return Err("Task Scheduler failed to delete the Ottrin Index task".to_string());
+    }
+    Ok("Background Ottrin index task removed.".to_string())
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SqliteSystemdOperation {
+    IsEnabled,
+    IsActive,
+    Restart,
+    Stop,
+    DisableNowTimer,
+    DisableNowService,
+}
+
+#[cfg(target_os = "linux")]
+impl SqliteSystemdOperation {
+    fn args(self) -> &'static [&'static str] {
+        match self {
+            Self::IsEnabled => &["--user", "is-enabled", "--quiet", "ottrin-index.service"],
+            Self::IsActive => &["--user", "is-active", "--quiet", "ottrin-index.service"],
+            Self::Restart => &["--user", "restart", "ottrin-index.service"],
+            Self::Stop => &["--user", "stop", "ottrin-index.service"],
+            Self::DisableNowTimer => &["--user", "disable", "--now", "ottrin-index.timer"],
+            Self::DisableNowService => &["--user", "disable", "--now", "ottrin-index.service"],
+        }
+    }
+
+    fn label(self) -> &'static str {
+        match self {
+            Self::IsEnabled => "query whether the service is enabled",
+            Self::IsActive => "query whether the service is active",
+            Self::Restart => "restart the service",
+            Self::Stop => "stop the service",
+            Self::DisableNowTimer => "disable and stop the legacy timer",
+            Self::DisableNowService => "disable and stop the service",
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn run_sqlite_systemd(operation: SqliteSystemdOperation) -> Result<bool, String> {
+    std::process::Command::new("systemctl")
+        .args(operation.args())
+        .status()
+        .map(|status| status.success())
+        .map_err(|error| format!("Failed to {}: {error}", operation.label()))
+}
+
+#[cfg(target_os = "linux")]
+fn sqlite_systemd_status_with(
+    unit_exists: bool,
+    mut run: impl FnMut(SqliteSystemdOperation) -> Result<bool, String>,
+) -> LocateScheduleStatus {
+    if !unit_exists {
+        return LocateScheduleStatus {
+            source: "none".to_string(),
+            enabled: false,
+            detail: "No persistent Ottrin index daemon detected".to_string(),
+        };
+    }
+    let unavailable = |error: String| LocateScheduleStatus {
+        source: "systemd user service".to_string(),
+        enabled: false,
+        detail: format!("Status unavailable: {error}"),
+    };
+    let enabled = match run(SqliteSystemdOperation::IsEnabled) {
+        Ok(enabled) => enabled,
+        Err(error) => return unavailable(error),
+    };
+    let active = match run(SqliteSystemdOperation::IsActive) {
+        Ok(active) => active,
+        Err(error) => return unavailable(error),
+    };
+    let detail = match (enabled, active) {
+        (true, true) => "Enabled and running",
+        (true, false) => "Enabled but stopped",
+        (false, true) => "Running but disabled",
+        (false, false) => "Installed but disabled and stopped",
+    };
+    LocateScheduleStatus {
+        source: "systemd user service".to_string(),
+        enabled,
+        detail: detail.to_string(),
+    }
+}
+
+fn systemd_user_unit_dir() -> PathBuf {
+    std::env::var_os("XDG_CONFIG_HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| ottrin_core::default_home_dir().join(".config"))
+        .join("systemd/user")
+}
+
+pub fn sqlite_systemd_service_path() -> PathBuf {
+    systemd_user_unit_dir().join("ottrin-index.service")
+}
+
 /// Detect whether Ottrin's primary SQLite index has a persistent daemon installed.
 pub fn sqlite_schedule_status() -> LocateScheduleStatus {
     #[cfg(target_os = "linux")]
     {
-        let home = ottrin_core::default_home_dir();
-        let unit_dir = home.join(".config/systemd/user");
+        let unit_dir = systemd_user_unit_dir();
         let service_path = unit_dir.join("ottrin-index.service");
         if service_path.exists() {
-            let enabled = if command_exists("systemctl") {
-                std::process::Command::new("systemctl")
-                    .args(["--user", "is-enabled", "ottrin-index.service"])
-                    .status()
-                    .map(|s| s.success())
-                    .unwrap_or(true)
-            } else {
-                true
-            };
+            if command_exists("systemctl") {
+                return sqlite_systemd_status_with(true, run_sqlite_systemd);
+            }
             return LocateScheduleStatus {
                 source: "systemd user service".to_string(),
-                enabled,
-                detail: if enabled {
-                    "Enabled".to_string()
-                } else {
-                    "Installed but disabled".to_string()
-                },
+                enabled: false,
+                detail: "Installed but systemctl is unavailable".to_string(),
             };
         }
 
@@ -1333,29 +1729,22 @@ pub fn sqlite_schedule_status() -> LocateScheduleStatus {
 
     #[cfg(target_os = "windows")]
     {
-        let output = internal_command("schtasks")
-            .args(["/Query", "/TN", "Ottrin Index"])
-            .output();
-        if output.map(|o| o.status.success()).unwrap_or(false) {
-            return LocateScheduleStatus {
-                source: "Windows Task Scheduler".to_string(),
-                enabled: true,
-                detail: "Task found: Ottrin Index".to_string(),
-            };
-        }
+        sqlite_windows_task_status_with(query_sqlite_windows_task)
     }
 
-    LocateScheduleStatus {
-        source: "none".to_string(),
-        enabled: false,
-        detail: "No persistent Ottrin index daemon detected".to_string(),
+    #[cfg(not(target_os = "windows"))]
+    {
+        LocateScheduleStatus {
+            source: "none".to_string(),
+            enabled: false,
+            detail: "No persistent Ottrin index daemon detected".to_string(),
+        }
     }
 }
 
 /// Detect whether Ottrin's user-level locate schedule is installed (systemd user timer or crontab).
 pub fn locate_schedule_status() -> LocateScheduleStatus {
-    let home = ottrin_core::default_home_dir();
-    let unit_dir = home.join(".config/systemd/user");
+    let unit_dir = systemd_user_unit_dir();
     let timer_path = unit_dir.join("ottrin-updatedb.timer");
     if timer_path.exists() {
         let enabled = if command_exists("systemctl") {
@@ -1399,10 +1788,37 @@ pub fn locate_schedule_status() -> LocateScheduleStatus {
     }
 }
 
-/// Detect whether the system locate database is scheduled (systemd timer or cron).
+/// Detect whether healthy system locate database maintenance is scheduled.
 pub fn system_locate_schedule_status() -> SystemLocateScheduleStatus {
+    #[cfg(target_os = "linux")]
+    {
+        system_locate_schedule_status_with(
+            |path| std::fs::metadata(path).is_ok(),
+            |timer| {
+                std::process::Command::new("systemctl")
+                    .args(["is-enabled", "--quiet", timer])
+                    .status()
+                    .is_ok_and(|status| status.success())
+            },
+        )
+    }
+
+    #[cfg(not(target_os = "linux"))]
+    SystemLocateScheduleStatus {
+        source: None,
+        detail: None,
+        needs_setup: true,
+        managed_by_ottrin: false,
+    }
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn system_locate_schedule_status_with(
+    mut path_exists: impl FnMut(&str) -> bool,
+    mut systemd_timer_enabled: impl FnMut(&str) -> bool,
+) -> SystemLocateScheduleStatus {
     let ottrin_cron = "/etc/cron.daily/ottrin-updatedb";
-    if std::fs::metadata(ottrin_cron).is_ok() {
+    if path_exists(ottrin_cron) {
         return SystemLocateScheduleStatus {
             source: Some("cron".to_string()),
             detail: Some(ottrin_cron.to_string()),
@@ -1412,21 +1828,14 @@ pub fn system_locate_schedule_status() -> SystemLocateScheduleStatus {
     }
 
     let timer_names = ["plocate-updatedb.timer", "mlocate.timer", "updatedb.timer"];
-    if command_exists("systemctl")
-        && let Ok(out) = std::process::Command::new("systemctl")
-            .args(["list-timers", "--all", "--no-legend"])
-            .output()
-    {
-        let text = String::from_utf8_lossy(&out.stdout);
-        for name in &timer_names {
-            if text.contains(name) {
-                return SystemLocateScheduleStatus {
-                    source: Some("systemd".to_string()),
-                    detail: Some((*name).to_string()),
-                    needs_setup: false,
-                    managed_by_ottrin: false,
-                };
-            }
+    for name in timer_names {
+        if systemd_timer_enabled(name) {
+            return SystemLocateScheduleStatus {
+                source: Some("systemd".to_string()),
+                detail: Some(name.to_string()),
+                needs_setup: false,
+                managed_by_ottrin: false,
+            };
         }
     }
 
@@ -1437,11 +1846,11 @@ pub fn system_locate_schedule_status() -> SystemLocateScheduleStatus {
         "/etc/cron.weekly/updatedb",
         "/etc/cron.weekly/plocate",
     ];
-    for path in &cron_paths {
-        if std::fs::metadata(path).is_ok() {
+    for path in cron_paths {
+        if path_exists(path) {
             return SystemLocateScheduleStatus {
                 source: Some("cron".to_string()),
-                detail: Some((*path).to_string()),
+                detail: Some(path.to_string()),
                 needs_setup: false,
                 managed_by_ottrin: false,
             };
@@ -1456,14 +1865,95 @@ pub fn system_locate_schedule_status() -> SystemLocateScheduleStatus {
     }
 }
 
-pub fn install_sqlite_schedule(interval_hours: u32, roots: &[PathBuf]) -> Result<String, String> {
+#[cfg(target_os = "linux")]
+fn restart_sqlite_systemd_with(
+    unit_exists: bool,
+    mut run: impl FnMut(SqliteSystemdOperation) -> Result<bool, String>,
+) -> Result<String, String> {
+    if !unit_exists {
+        return Err("Persistent Ottrin index service is not installed".to_string());
+    }
+    if !run(SqliteSystemdOperation::Restart)? {
+        return Err("systemctl failed to restart the Ottrin index service".to_string());
+    }
+    Ok("Persistent Ottrin index daemon restarted.".to_string())
+}
+
+pub fn restart_sqlite_schedule() -> Result<String, String> {
+    #[cfg(target_os = "linux")]
+    {
+        let service_path = sqlite_systemd_service_path();
+        if !command_exists("systemctl") {
+            return Err(
+                "Cannot restart background indexing because systemctl is unavailable".to_string(),
+            );
+        }
+        restart_sqlite_systemd_with(service_path.is_file(), run_sqlite_systemd)
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        restart_sqlite_windows_task_with(run_sqlite_windows_task)
+    }
+
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+    {
+        Err(
+            "Restarting the persistent index service is not supported on this platform yet."
+                .to_string(),
+        )
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn prepare_sqlite_systemd_upgrade_with(
+    unit_exists: bool,
+    prepare_daemon: impl FnOnce() -> Result<(), String>,
+    mut run: impl FnMut(SqliteSystemdOperation) -> Result<bool, String>,
+) -> Result<(), String> {
+    if !unit_exists {
+        return Ok(());
+    }
+    prepare_daemon()?;
+    if !run(SqliteSystemdOperation::Stop)? {
+        return Err(
+            "systemctl failed to stop the existing Ottrin index service for upgrade".to_string(),
+        );
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn prepare_running_daemon_for_upgrade() -> Result<(), String> {
+    let socket = match default_daemon_socket_path() {
+        Ok(socket) if socket.exists() => socket,
+        _ => return Ok(()),
+    };
+    let client = SearchDaemonClient::new(socket.clone());
+    if client.ping().is_err() {
+        return Ok(());
+    }
+    client.prepare_upgrade()?;
+    let deadline = Instant::now() + Duration::from_secs(5);
+    while socket.exists() && Instant::now() < deadline {
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    if socket.exists() {
+        return Err(
+            "Ottrin index daemon did not finish preparing for upgrade within 5 seconds".to_string(),
+        );
+    }
+    Ok(())
+}
+
+pub fn install_sqlite_schedule(config: &SearchConfig) -> Result<String, String> {
     let ottrin = find_ottrin_binary().ok_or_else(|| {
         "Could not find the ottrin executable next to the running app or on PATH.".to_string()
     })?;
 
     #[cfg(target_os = "linux")]
     {
-        let _ = (interval_hours, roots);
+        let _ = config;
         let has_systemd = std::process::Command::new("systemctl")
             .args(["--user", "is-system-running"])
             .stdout(std::process::Stdio::null())
@@ -1479,17 +1969,12 @@ pub fn install_sqlite_schedule(interval_hours: u32, roots: &[PathBuf]) -> Result
 
     #[cfg(target_os = "windows")]
     {
-        let roots = if roots.is_empty() {
-            vec![ottrin_core::default_home_dir()]
-        } else {
-            roots.to_vec()
-        };
-        install_sqlite_windows_task(interval_hours.max(1), &ottrin, &roots)
+        install_sqlite_windows_task(config, &ottrin)
     }
 
     #[cfg(not(any(target_os = "linux", target_os = "windows")))]
     {
-        let _ = (interval_hours, roots, ottrin);
+        let _ = (config, ottrin);
         Err(
             "Background SQLite refresh scheduling is not supported on this platform yet."
                 .to_string(),
@@ -1497,29 +1982,54 @@ pub fn install_sqlite_schedule(interval_hours: u32, roots: &[PathBuf]) -> Result
     }
 }
 
+#[cfg(target_os = "linux")]
+fn stop_sqlite_systemd_for_removal_with(
+    timer_exists: bool,
+    service_exists: bool,
+    mut run: impl FnMut(SqliteSystemdOperation) -> Result<bool, String>,
+) -> Result<(), String> {
+    for operation in [
+        timer_exists.then_some(SqliteSystemdOperation::DisableNowTimer),
+        service_exists.then_some(SqliteSystemdOperation::DisableNowService),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        if !run(operation)? {
+            return Err(format!("systemctl failed to {}", operation.label()));
+        }
+    }
+    Ok(())
+}
+
 pub fn uninstall_sqlite_schedule() -> Result<String, String> {
     #[cfg(target_os = "linux")]
     {
-        let home = ottrin_core::default_home_dir();
-        let unit_dir = home.join(".config/systemd/user");
+        let unit_dir = systemd_user_unit_dir();
         let service_path = unit_dir.join("ottrin-index.service");
         let timer_path = unit_dir.join("ottrin-index.timer");
         let mut changed = false;
         if timer_path.exists() || service_path.exists() {
             if command_exists("systemctl") {
-                let _ = std::process::Command::new("systemctl")
-                    .args(["--user", "disable", "--now", "ottrin-index.timer"])
-                    .status();
-                let _ = std::process::Command::new("systemctl")
-                    .args(["--user", "disable", "ottrin-index.service"])
-                    .status();
+                stop_sqlite_systemd_for_removal_with(
+                    timer_path.is_file(),
+                    service_path.is_file(),
+                    run_sqlite_systemd,
+                )?;
+            } else {
+                return Err(
+                    "Cannot remove background indexing safely because systemctl is unavailable"
+                        .to_string(),
+                );
             }
-            let _ = std::fs::remove_file(&timer_path);
-            let _ = std::fs::remove_file(&service_path);
-            if command_exists("systemctl") {
-                let _ = std::process::Command::new("systemctl")
-                    .args(["--user", "daemon-reload"])
-                    .status();
+            remove_file_if_present(&timer_path)?;
+            remove_file_if_present(&service_path)?;
+            let status = std::process::Command::new("systemctl")
+                .args(["--user", "daemon-reload"])
+                .status()
+                .map_err(|error| format!("Failed to reload systemd user units: {error}"))?;
+            if !status.success() {
+                return Err(format!("systemctl daemon-reload exited with {status}"));
             }
             changed = true;
         }
@@ -1534,15 +2044,7 @@ pub fn uninstall_sqlite_schedule() -> Result<String, String> {
 
     #[cfg(target_os = "windows")]
     {
-        let status = internal_command("schtasks")
-            .args(["/Delete", "/F", "/TN", "Ottrin Index"])
-            .status()
-            .map_err(|e| format!("Failed to run schtasks: {}", e))?;
-        if status.success() {
-            Ok("Background Ottrin index task removed.".to_string())
-        } else {
-            Ok("No background Ottrin index task was installed.".to_string())
-        }
+        uninstall_sqlite_windows_task_with(run_sqlite_windows_task)
     }
 
     #[cfg(not(any(target_os = "linux", target_os = "windows")))]
@@ -1605,6 +2107,13 @@ fn find_ottrin_binary() -> Option<PathBuf> {
         return Some(wrapper);
     }
     if let Ok(current) = std::env::current_exe() {
+        #[cfg(target_os = "linux")]
+        if let Some(directory) = current.parent() {
+            let dedicated = directory.join("ottrin-indexd");
+            if dedicated.is_file() {
+                return Some(dedicated);
+            }
+        }
         let current_name = current.file_name().and_then(|name| name.to_str());
         if matches!(
             current_name,
@@ -1669,19 +2178,18 @@ fn remove_appimage_index_wrapper() -> Result<bool, String> {
 
 #[cfg(target_os = "linux")]
 fn install_sqlite_systemd_user_daemon(indexer: &Path) -> Result<String, String> {
-    let home = ottrin_core::default_home_dir();
-    let unit_dir = home.join(".config/systemd/user");
+    let unit_dir = systemd_user_unit_dir();
     std::fs::create_dir_all(&unit_dir)
         .map_err(|e| format!("Cannot create systemd unit dir: {}", e))?;
     let service_path = unit_dir.join("ottrin-index.service");
     let timer_path = unit_dir.join("ottrin-index.timer");
 
-    let _ = std::process::Command::new("systemctl")
-        .args(["--user", "disable", "--now", "ottrin-index.timer"])
-        .status();
-    let _ = std::process::Command::new("systemctl")
-        .args(["--user", "stop", "ottrin-index.service"])
-        .status();
+    prepare_sqlite_systemd_upgrade_with(
+        service_path.is_file(),
+        prepare_running_daemon_for_upgrade,
+        run_sqlite_systemd,
+    )?;
+    stop_sqlite_systemd_for_removal_with(timer_path.is_file(), false, run_sqlite_systemd)?;
     match std::fs::remove_file(&timer_path) {
         Ok(()) => {}
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
@@ -1724,6 +2232,409 @@ fn sqlite_daemon_systemd_unit(indexer: &Path) -> String {
 }
 
 #[cfg(target_os = "linux")]
+fn write_administrator_index_config(path: &Path, config: &SearchConfig) -> Result<(), String> {
+    use std::io::Write as _;
+    use std::os::unix::fs::OpenOptionsExt as _;
+
+    let mut protected = config.clone();
+    protected.content_indexing_enabled = false;
+    protected.content_include_roots.clear();
+    protected.content_exclude_roots.clear();
+    let bytes = serde_json::to_vec_pretty(&protected).map_err(|error| {
+        format!("Could not serialize Administrator index configuration: {error}")
+    })?;
+    let parent = path
+        .parent()
+        .ok_or_else(|| "Administrator index configuration path has no parent".to_string())?;
+    match std::fs::symlink_metadata(parent) {
+        Ok(metadata) if metadata.file_type().is_dir() => {}
+        Ok(_) => {
+            return Err(format!(
+                "Refusing non-directory Administrator configuration namespace at {}",
+                parent.display()
+            ));
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            std::fs::create_dir_all(parent).map_err(|error| {
+                format!("Could not create protected Administrator configuration directory: {error}")
+            })?;
+        }
+        Err(error) => {
+            return Err(format!(
+                "Could not inspect Administrator configuration directory: {error}"
+            ));
+        }
+    }
+    use std::os::unix::fs::PermissionsExt as _;
+    std::fs::set_permissions(parent, std::fs::Permissions::from_mode(0o700)).map_err(|error| {
+        format!("Could not protect Administrator configuration directory: {error}")
+    })?;
+    let temporary = parent.join(format!(".search.json.{}.tmp", std::process::id()));
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(&temporary)
+        .map_err(|error| {
+            format!("Could not create protected Administrator configuration: {error}")
+        })?;
+    if let Err(error) = file.write_all(&bytes).and_then(|()| file.sync_all()) {
+        let _ = std::fs::remove_file(&temporary);
+        return Err(format!(
+            "Could not write protected Administrator configuration: {error}"
+        ));
+    }
+    if let Err(error) = std::fs::rename(&temporary, path) {
+        let _ = std::fs::remove_file(&temporary);
+        return Err(format!(
+            "Could not publish protected Administrator configuration: {error}"
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Clone)]
+struct AdministratorIndexPaths {
+    unit: PathBuf,
+    config: PathBuf,
+    state: PathBuf,
+    runtime: PathBuf,
+}
+
+#[cfg(target_os = "linux")]
+impl AdministratorIndexPaths {
+    fn system() -> Self {
+        Self {
+            unit: PathBuf::from("/etc/systemd/system/ottrin-administrator-index.service"),
+            config: PathBuf::from("/etc/ottrin-administrator/search.json"),
+            state: PathBuf::from("/var/lib/ottrin-administrator"),
+            runtime: PathBuf::from("/run/ottrin-administrator"),
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum AdministratorSystemdOperation {
+    DaemonReload,
+    EnableNow,
+    IsEnabled,
+    IsActive,
+    Restart,
+    DisableNow,
+}
+
+#[cfg(target_os = "linux")]
+impl AdministratorSystemdOperation {
+    fn args(self) -> &'static [&'static str] {
+        match self {
+            Self::DaemonReload => &["daemon-reload"],
+            Self::EnableNow => &["enable", "--now", "ottrin-administrator-index.service"],
+            Self::IsEnabled => &[
+                "is-enabled",
+                "--quiet",
+                "ottrin-administrator-index.service",
+            ],
+            Self::IsActive => &["is-active", "--quiet", "ottrin-administrator-index.service"],
+            Self::Restart => &["restart", "ottrin-administrator-index.service"],
+            Self::DisableNow => &["disable", "--now", "ottrin-administrator-index.service"],
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn write_administrator_index_unit(path: &Path, contents: &str) -> Result<(), String> {
+    use std::io::Write as _;
+    use std::os::unix::fs::OpenOptionsExt as _;
+
+    if let Ok(existing) = std::fs::read_to_string(path)
+        && !existing.starts_with("# Managed by Ottrin\n")
+    {
+        return Err(format!(
+            "Refusing to replace non-Ottrin service at {}",
+            path.display()
+        ));
+    }
+    let parent = path
+        .parent()
+        .ok_or_else(|| "Service path has no parent".to_string())?;
+    std::fs::create_dir_all(parent)
+        .map_err(|error| format!("Could not create service directory: {error}"))?;
+    let temporary = parent.join(format!(
+        ".ottrin-administrator-index.{}.tmp",
+        std::process::id()
+    ));
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o644)
+        .open(&temporary)
+        .map_err(|error| format!("Could not create Administrator service unit: {error}"))?;
+    if let Err(error) = file
+        .write_all(contents.as_bytes())
+        .and_then(|()| file.sync_all())
+    {
+        let _ = std::fs::remove_file(&temporary);
+        return Err(format!(
+            "Could not write Administrator service unit: {error}"
+        ));
+    }
+    if let Err(error) = std::fs::rename(&temporary, path) {
+        let _ = std::fs::remove_file(&temporary);
+        return Err(format!(
+            "Could not publish Administrator service unit: {error}"
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn install_administrator_index_service_with(
+    paths: &AdministratorIndexPaths,
+    indexer: &Path,
+    config: &SearchConfig,
+    mut run: impl FnMut(AdministratorSystemdOperation) -> Result<bool, String>,
+) -> Result<(), String> {
+    if config.include_roots.is_empty() {
+        return Err(
+            "Select at least one location before enabling the persistent Administrator index."
+                .to_string(),
+        );
+    }
+    write_administrator_index_config(&paths.config, config)?;
+    write_administrator_index_unit(&paths.unit, &administrator_index_systemd_unit(indexer))?;
+    for operation in [
+        AdministratorSystemdOperation::DaemonReload,
+        AdministratorSystemdOperation::EnableNow,
+    ] {
+        if !run(operation)? {
+            return Err(format!("systemctl {:?} failed", operation.args()));
+        }
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn run_administrator_systemd(operation: AdministratorSystemdOperation) -> Result<bool, String> {
+    std::process::Command::new("systemctl")
+        .args(operation.args())
+        .status()
+        .map(|status| status.success())
+        .map_err(|error| format!("Failed to run systemctl {:?}: {error}", operation.args()))
+}
+
+#[cfg(target_os = "linux")]
+fn require_administrator_process() -> Result<(), String> {
+    // SAFETY: geteuid has no preconditions and no side effects.
+    if unsafe { libc::geteuid() } == 0 {
+        Ok(())
+    } else {
+        Err(
+            "Persistent Administrator indexing can be managed only from an Administrator session."
+                .to_string(),
+        )
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn find_dedicated_indexer() -> Option<PathBuf> {
+    let current = std::env::current_exe().ok()?;
+    if current.file_name().and_then(|name| name.to_str()) == Some("ottrin-indexd") {
+        return Some(current);
+    }
+    current
+        .parent()
+        .map(|parent| parent.join("ottrin-indexd"))
+        .filter(|candidate| candidate.is_file())
+}
+
+#[cfg(target_os = "linux")]
+pub fn administrator_index_service_status() -> LocateScheduleStatus {
+    let paths = AdministratorIndexPaths::system();
+    if !paths.unit.is_file() {
+        return LocateScheduleStatus {
+            source: "none".to_string(),
+            enabled: false,
+            detail: "Persistent Administrator index service is not installed".to_string(),
+        };
+    }
+    if !command_exists("systemctl") {
+        return LocateScheduleStatus {
+            source: "systemd system service".to_string(),
+            enabled: false,
+            detail: "Installed but systemctl is unavailable".to_string(),
+        };
+    }
+    let enabled = run_administrator_systemd(AdministratorSystemdOperation::IsEnabled);
+    let active = run_administrator_systemd(AdministratorSystemdOperation::IsActive);
+    match (enabled, active) {
+        (Ok(enabled), Ok(active)) => LocateScheduleStatus {
+            source: "systemd system service".to_string(),
+            enabled,
+            detail: match (enabled, active) {
+                (true, true) => "Enabled and running",
+                (true, false) => "Enabled but stopped",
+                (false, true) => "Running but disabled",
+                (false, false) => "Installed but disabled and stopped",
+            }
+            .to_string(),
+        },
+        (Err(error), _) | (_, Err(error)) => LocateScheduleStatus {
+            source: "systemd system service".to_string(),
+            enabled: false,
+            detail: format!("Status unavailable: {error}"),
+        },
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+pub fn administrator_index_service_status() -> LocateScheduleStatus {
+    LocateScheduleStatus {
+        source: "none".to_string(),
+        enabled: false,
+        detail: "Persistent Administrator indexing is supported only on Linux".to_string(),
+    }
+}
+
+#[cfg(target_os = "linux")]
+pub fn administrator_index_database_bytes() -> u64 {
+    std::fs::read_dir("/var/lib/ottrin-administrator")
+        .into_iter()
+        .flatten()
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_name().to_string_lossy().starts_with("search.db"))
+        .filter_map(|entry| entry.metadata().ok())
+        .filter(|metadata| metadata.is_file())
+        .map(|metadata| metadata.len())
+        .sum()
+}
+
+#[cfg(not(target_os = "linux"))]
+pub fn administrator_index_database_bytes() -> u64 {
+    0
+}
+
+#[cfg(target_os = "linux")]
+pub fn install_administrator_index_service(config: &SearchConfig) -> Result<String, String> {
+    require_administrator_process()?;
+    if !command_exists("systemctl") {
+        return Err("Persistent Administrator indexing requires systemd.".to_string());
+    }
+    let indexer = find_dedicated_indexer().ok_or_else(|| {
+        "Could not find the dedicated ottrin-indexd executable beside Ottrin.".to_string()
+    })?;
+    install_administrator_index_service_with(
+        &AdministratorIndexPaths::system(),
+        &indexer,
+        config,
+        run_administrator_systemd,
+    )?;
+    Ok("Persistent Administrator index enabled with an isolated system service.".to_string())
+}
+
+#[cfg(not(target_os = "linux"))]
+pub fn install_administrator_index_service(_config: &SearchConfig) -> Result<String, String> {
+    Err("Persistent Administrator indexing is supported only on Linux.".to_string())
+}
+
+#[cfg(target_os = "linux")]
+pub fn restart_administrator_index_service() -> Result<String, String> {
+    require_administrator_process()?;
+    let paths = AdministratorIndexPaths::system();
+    if !paths.unit.is_file() {
+        return Err("Persistent Administrator index service is not installed.".to_string());
+    }
+    if !run_administrator_systemd(AdministratorSystemdOperation::Restart)? {
+        return Err("systemctl failed to restart the Administrator index service.".to_string());
+    }
+    Ok("Persistent Administrator index service restarted.".to_string())
+}
+
+#[cfg(not(target_os = "linux"))]
+pub fn restart_administrator_index_service() -> Result<String, String> {
+    Err("Persistent Administrator indexing is supported only on Linux.".to_string())
+}
+
+#[cfg(target_os = "linux")]
+fn remove_administrator_directory(path: &Path) -> Result<(), String> {
+    match std::fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_dir() => std::fs::remove_dir_all(path)
+            .map_err(|error| format!("Could not remove {}: {error}", path.display())),
+        Ok(_) => Err(format!(
+            "Refusing to purge non-directory Administrator state at {}",
+            path.display()
+        )),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(format!("Could not inspect {}: {error}", path.display())),
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn uninstall_administrator_index_service_with(
+    paths: &AdministratorIndexPaths,
+    purge: bool,
+    mut run: impl FnMut(AdministratorSystemdOperation) -> Result<bool, String>,
+) -> Result<String, String> {
+    if paths.unit.exists() {
+        let unit = std::fs::read_to_string(&paths.unit)
+            .map_err(|error| format!("Could not inspect Administrator service: {error}"))?;
+        if !unit.starts_with("# Managed by Ottrin\n") {
+            return Err("Refusing to remove a non-Ottrin Administrator service.".to_string());
+        }
+        if !run(AdministratorSystemdOperation::DisableNow)? {
+            return Err(
+                "systemctl failed to stop and disable the Administrator index service.".to_string(),
+            );
+        }
+        std::fs::remove_file(&paths.unit)
+            .map_err(|error| format!("Could not remove Administrator service unit: {error}"))?;
+        if !run(AdministratorSystemdOperation::DaemonReload)? {
+            return Err(
+                "systemctl failed to reload units after Administrator service removal.".to_string(),
+            );
+        }
+    }
+    if purge {
+        if let Some(config_directory) = paths.config.parent() {
+            remove_administrator_directory(config_directory)?;
+        }
+        remove_administrator_directory(&paths.state)?;
+        remove_administrator_directory(&paths.runtime)?;
+    }
+    Ok(if purge {
+        "Persistent Administrator index service and its protected index data were removed."
+            .to_string()
+    } else {
+        "Persistent Administrator index service removed; protected configuration and index data were retained."
+            .to_string()
+    })
+}
+
+#[cfg(target_os = "linux")]
+pub fn uninstall_administrator_index_service(purge: bool) -> Result<String, String> {
+    require_administrator_process()?;
+    uninstall_administrator_index_service_with(
+        &AdministratorIndexPaths::system(),
+        purge,
+        run_administrator_systemd,
+    )
+}
+
+#[cfg(not(target_os = "linux"))]
+pub fn uninstall_administrator_index_service(_purge: bool) -> Result<String, String> {
+    Err("Persistent Administrator indexing is supported only on Linux.".to_string())
+}
+
+#[cfg(target_os = "linux")]
+fn administrator_index_systemd_unit(indexer: &Path) -> String {
+    format!(
+        "# Managed by Ottrin\n[Unit]\nDescription=Ottrin persistent Administrator search index\n\n[Service]\nType=simple\nExecStart={} --administrator-index-daemon\nRestart=on-failure\nRestartSec=2s\nRuntimeDirectory=ottrin-administrator\nRuntimeDirectoryMode=0700\nStateDirectory=ottrin-administrator\nStateDirectoryMode=0700\nConfigurationDirectory=ottrin-administrator\nConfigurationDirectoryMode=0700\nUMask=0077\n\n[Install]\nWantedBy=multi-user.target\n",
+        systemd_exec_quote(indexer),
+    )
+}
+
+#[cfg(target_os = "linux")]
 fn systemd_exec_quote(path: &Path) -> String {
     let value = path.display().to_string();
     format!(
@@ -1736,35 +2647,52 @@ fn systemd_exec_quote(path: &Path) -> String {
 }
 
 #[cfg(target_os = "windows")]
-fn install_sqlite_windows_task(
-    interval_hours: u32,
-    ottrin: &Path,
-    _roots: &[PathBuf],
-) -> Result<String, String> {
-    let mut command = format!("\"{}\" index update", ottrin.display());
+fn install_sqlite_windows_task(config: &SearchConfig, ottrin: &Path) -> Result<String, String> {
+    let args = sqlite_windows_task_create_args(config, ottrin)?;
     let status = internal_command("schtasks")
-        .args([
-            "/Create",
-            "/F",
-            "/SC",
-            "HOURLY",
-            "/MO",
-            &interval_hours.to_string(),
-            "/TN",
-            "Ottrin Index",
-            "/TR",
-            &command,
-        ])
+        .args(args)
         .status()
         .map_err(|e| format!("Failed to run schtasks: {}", e))?;
     if status.success() {
         Ok(format!(
             "Background Ottrin index refresh enabled every {}h with Windows Task Scheduler.",
-            interval_hours
+            config.refresh_interval_hours
         ))
     } else {
         Err(format!("schtasks exited with {}", status))
     }
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn sqlite_windows_task_create_args(
+    config: &SearchConfig,
+    ottrin: &Path,
+) -> Result<Vec<std::ffi::OsString>, String> {
+    let interval_hours = config.refresh_interval_hours;
+    if interval_hours == 0 {
+        return Err("Periodic search refresh is disabled in Search settings".to_string());
+    }
+    if interval_hours > 999 {
+        return Err(
+            "Windows Task Scheduler supports hourly refresh intervals only up to 999 hours"
+                .to_string(),
+        );
+    }
+    let mut action = std::ffi::OsString::from("\"");
+    action.push(ottrin);
+    action.push("\" index update");
+    Ok(vec![
+        "/Create".into(),
+        "/F".into(),
+        "/SC".into(),
+        "HOURLY".into(),
+        "/MO".into(),
+        interval_hours.to_string().into(),
+        "/TN".into(),
+        "Ottrin Index".into(),
+        "/TR".into(),
+        action,
+    ])
 }
 
 #[cfg(target_os = "linux")]
@@ -1811,8 +2739,7 @@ pub fn install_locate_schedule(interval_hours: u32, root: &Path) -> Result<Strin
 
 #[cfg(target_os = "linux")]
 fn install_systemd_user_timer(interval_hours: u32, root: &str, db: &str) -> Result<String, String> {
-    let home = ottrin_core::default_home_dir();
-    let unit_dir = home.join(".config/systemd/user");
+    let unit_dir = systemd_user_unit_dir();
     std::fs::create_dir_all(&unit_dir)
         .map_err(|e| format!("Cannot create systemd unit dir: {}", e))?;
 
@@ -1891,7 +2818,7 @@ fn install_crontab_entry(interval_hours: u32, root: &str, db: &str) -> Result<St
 /// plocate/locate if no managed DB exists yet.
 fn query_system_locate(
     text: &str,
-    roots: &[PathBuf],
+    scope_root: Option<&Path>,
     include_hidden: bool,
     limit: usize,
 ) -> Vec<SearchResultItem> {
@@ -1921,34 +2848,73 @@ fn query_system_locate(
         _ => return Vec::new(),
     };
 
-    let effective_roots: Vec<PathBuf> = if roots.is_empty() {
-        vec![ottrin_core::default_home_dir()]
-    } else {
-        roots.to_vec()
-    };
+    parse_system_locate_output(&output.stdout, scope_root, include_hidden, limit)
+        .into_iter()
+        .filter_map(|path| make_system_locate_item(&path))
+        .take(limit)
+        .collect()
+}
 
-    String::from_utf8_lossy(&output.stdout)
+fn parse_system_locate_output(
+    output: &[u8],
+    scope_root: Option<&Path>,
+    include_hidden: bool,
+    limit: usize,
+) -> Vec<PathBuf> {
+    String::from_utf8_lossy(output)
         .lines()
-        .filter_map(|line| {
-            let path = PathBuf::from(line.trim());
-            if !effective_roots.iter().any(|r| path.starts_with(r)) {
-                return None;
-            }
-            if !include_hidden && path.file_name()?.to_str()?.starts_with('.') {
-                return None;
-            }
-            make_item_from_path(&path)
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .map(PathBuf::from)
+        .filter(|path| scope_root.is_none_or(|root| path.starts_with(root)))
+        .filter(|path| {
+            include_hidden
+                || path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| !name.starts_with('.'))
         })
         .take(limit)
         .collect()
 }
 
+fn make_system_locate_item(path: &Path) -> Option<SearchResultItem> {
+    make_system_locate_item_with(path, |path| std::fs::symlink_metadata(path))
+}
+
+fn make_system_locate_item_with(
+    path: &Path,
+    metadata: impl FnOnce(&Path) -> std::io::Result<std::fs::Metadata>,
+) -> Option<SearchResultItem> {
+    match metadata(path) {
+        Ok(metadata) => make_item_from_metadata(path, metadata),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(_) => make_path_only_item(path),
+    }
+}
+
+fn make_path_only_item(path: &Path) -> Option<SearchResultItem> {
+    let mut item = SearchResultItem {
+        path: path.to_path_buf(),
+        parent_path: path.parent().map(Path::to_path_buf).unwrap_or_default(),
+        name: path.file_name()?.to_string_lossy().into_owned(),
+        kind: EntryKind::Other,
+        is_executable: false,
+        symlink_target_is_dir: None,
+        size_bytes: None,
+        modified_unix_secs: None,
+        content_snippet: None,
+        name_lower: String::new(),
+        path_str: String::new(),
+        path_lower: String::new(),
+    };
+    item.prepare();
+    Some(item)
+}
+
 // ── Incremental index updates ──────────────────────────────────────────────────
 
-/// Build a single `SearchResultItem` by statting `path`. Returns `None` if the path no longer
-/// exists or we can't read its metadata (transient race — handled gracefully).
-fn make_item_from_path(path: &Path) -> Option<SearchResultItem> {
-    let meta = std::fs::symlink_metadata(path).ok()?;
+fn make_item_from_metadata(path: &Path, meta: std::fs::Metadata) -> Option<SearchResultItem> {
     let file_type = meta.file_type();
     let kind = if file_type.is_symlink() {
         EntryKind::Symlink
@@ -2604,26 +3570,49 @@ fn eval_expr(expr: &Expr, item: &SearchResultItem) -> bool {
     }
 }
 
+fn ascii_contains_ignore_case(haystack: &str, needle_lower: &str) -> bool {
+    let haystack = haystack.as_bytes();
+    let needle = needle_lower.as_bytes();
+    needle.is_empty()
+        || haystack
+            .windows(needle.len())
+            .any(|window| window.eq_ignore_ascii_case(needle))
+}
+
+fn cached_contains_ignore_case(primary: &str, lowercase_cache: &str, needle_lower: &str) -> bool {
+    if lowercase_cache.is_empty() {
+        ascii_contains_ignore_case(primary, needle_lower)
+    } else {
+        lowercase_cache.contains(needle_lower)
+    }
+}
+
 fn eval_term(t: &Term, item: &SearchResultItem) -> bool {
-    // Use pre-computed lowercase fields — zero allocations in the hot query path.
-    let name_l = &item.name_lower;
-    let path_l = &item.path_lower;
+    let path = if item.path_str.is_empty() {
+        item.path.to_string_lossy()
+    } else {
+        std::borrow::Cow::Borrowed(item.path_str.as_str())
+    };
+    let name_contains =
+        |value: &str| cached_contains_ignore_case(&item.name, &item.name_lower, value);
+    let path_contains =
+        |value: &str| cached_contains_ignore_case(path.as_ref(), &item.path_lower, value);
     match t {
         Term::Contains { field, value } => match field {
             // Substring match on name OR path — grep-like behavior.
             // "cat" matches "angelcat.pdf", "cat_photo.jpg", "/cats/file.txt".
             // Multi-term AND queries ("angel cat pdf") match all terms independently.
             Field::Any => {
-                name_l.contains(value.as_str())
-                    || path_l.contains(value.as_str())
+                name_contains(value.as_str())
+                    || path_contains(value.as_str())
                     || item
                         .content_snippet
                         .as_ref()
-                        .map(|snippet| snippet.to_ascii_lowercase().contains(value.as_str()))
+                        .map(|snippet| ascii_contains_ignore_case(snippet, value.as_str()))
                         .unwrap_or(false)
             }
-            Field::Name => name_l.contains(value.as_str()),
-            Field::Path => path_l.contains(value.as_str()),
+            Field::Name => name_contains(value.as_str()),
+            Field::Path => path_contains(value.as_str()),
             Field::Ext => item
                 .path
                 .extension()
@@ -2634,7 +3623,7 @@ fn eval_term(t: &Term, item: &SearchResultItem) -> bool {
         Term::Regex { field, regex } => match field {
             Field::Any => {
                 regex.is_match(&item.name)
-                    || regex.is_match(&item.path_str)
+                    || regex.is_match(path.as_ref())
                     || item
                         .content_snippet
                         .as_ref()
@@ -2642,7 +3631,7 @@ fn eval_term(t: &Term, item: &SearchResultItem) -> bool {
                         .unwrap_or(false)
             }
             Field::Name => regex.is_match(&item.name),
-            Field::Path => regex.is_match(&item.path_str),
+            Field::Path => regex.is_match(path.as_ref()),
             Field::Ext => item
                 .path
                 .extension()
@@ -2720,15 +3709,31 @@ fn expr_has_negated_content(expr: &Expr, negated: bool) -> bool {
 
 fn relevance_score(query: &SearchQuery, item: &SearchResultItem) -> i64 {
     let q = query.text.to_ascii_lowercase();
-    // Use pre-computed lowercase fields — zero allocations.
-    let name = &item.name_lower;
-    if name == &q {
+    let name_is_exact = if item.name_lower.is_empty() {
+        item.name.eq_ignore_ascii_case(&q)
+    } else {
+        item.name_lower == q
+    };
+    let name_starts = if item.name_lower.is_empty() {
+        item.name
+            .get(..q.len())
+            .map(|prefix| prefix.eq_ignore_ascii_case(&q))
+            .unwrap_or(false)
+    } else {
+        item.name_lower.starts_with(&q)
+    };
+    let path = if item.path_str.is_empty() {
+        item.path.to_string_lossy()
+    } else {
+        std::borrow::Cow::Borrowed(item.path_str.as_str())
+    };
+    if name_is_exact {
         10_000
-    } else if name.starts_with(&*q) {
+    } else if name_starts {
         7_500
-    } else if name.contains(&*q) {
+    } else if cached_contains_ignore_case(&item.name, &item.name_lower, &q) {
         5_000
-    } else if item.path_lower.contains(&*q) {
+    } else if cached_contains_ignore_case(path.as_ref(), &item.path_lower, &q) {
         2_500
     } else {
         0
@@ -2786,6 +3791,13 @@ fn is_simple_single_word(text: &str) -> bool {
         && !t.starts_with('"')
 }
 
+/// A SQLite simple-term page is authoritative for name/path matches, even when
+/// it contains fewer rows than the requested limit. Falling back in that case
+/// streams the whole persisted generation solely for optional fuzzy matches.
+fn should_use_simple_term_page(_total: usize, _limit: usize, content_search: bool) -> bool {
+    !content_search
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ContentRipgrepTraversal {
     root: PathBuf,
@@ -2800,7 +3812,7 @@ fn content_ripgrep_traversal_plan(
     query_roots: &[PathBuf],
     config: &SearchConfig,
 ) -> Vec<ContentRipgrepTraversal> {
-    if !config.content_indexing_enabled {
+    if !config.content_indexing_enabled || config.content_file_groups.is_empty() {
         return Vec::new();
     }
 
@@ -2916,6 +3928,13 @@ fn query_content_ripgrep(
             for glob in &traversal.exclude_globs {
                 cmd.arg("--glob").arg(glob);
             }
+            for extension in config
+                .content_file_groups
+                .iter()
+                .flat_map(|group| group.extensions())
+            {
+                cmd.arg("--glob").arg(format!("*.{extension}"));
+            }
             cmd.arg("-e").arg(term).arg("--").arg(".");
             let file_output = match cmd.output() {
                 Ok(output) if output.status.success() || !output.stdout.is_empty() => output,
@@ -2951,7 +3970,18 @@ fn query_content_ripgrep(
         .into_iter()
         .filter_map(|path| {
             let meta = std::fs::metadata(&path).ok()?;
-            let content = std::fs::read(&path).ok()?;
+            if meta.len() > config.content_max_file_size_bytes {
+                return None;
+            }
+            let mut content = Vec::new();
+            File::open(&path)
+                .ok()?
+                .take(config.content_max_file_size_bytes.saturating_add(1))
+                .read_to_end(&mut content)
+                .ok()?;
+            if content.len() as u64 > config.content_max_file_size_bytes {
+                return None;
+            }
             let content = String::from_utf8_lossy(&content).into_owned();
             let name = path.file_name()?.to_string_lossy().into_owned();
             let parent = path.parent().unwrap_or(Path::new("")).to_path_buf();
@@ -3016,6 +4046,10 @@ fn content_indexing_allows_path(config: &SearchConfig, path: &Path) -> bool {
             .content_exclude_roots
             .iter()
             .any(|root| path.starts_with(root))
+        && config
+            .content_file_groups
+            .iter()
+            .any(|group| group.supports_path(path))
 }
 
 fn collect_positive_content_literals(
@@ -3041,12 +4075,34 @@ fn collect_positive_content_literals(
     }
 }
 
+fn compare_ascii_case_insensitive(left: &str, right: &str) -> std::cmp::Ordering {
+    left.bytes()
+        .map(|byte| byte.to_ascii_lowercase())
+        .cmp(right.bytes().map(|byte| byte.to_ascii_lowercase()))
+}
+
+fn push_bounded_result(
+    results: &mut Vec<(i64, SearchResultItem)>,
+    candidate: (i64, SearchResultItem),
+    capacity: usize,
+    sort: SearchSort,
+) {
+    if capacity == 0 {
+        return;
+    }
+    results.push(candidate);
+    if results.len() > capacity.saturating_mul(2) {
+        sort_results(results, sort);
+        results.truncate(capacity);
+    }
+}
+
 fn sort_results(v: &mut [(i64, SearchResultItem)], sort: SearchSort) {
     match sort {
         SearchSort::Relevance => {
             v.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.name.cmp(&b.1.name)))
         }
-        SearchSort::Name => v.sort_by(|a, b| a.1.name_lower.cmp(&b.1.name_lower)),
+        SearchSort::Name => v.sort_by(|a, b| compare_ascii_case_insensitive(&a.1.name, &b.1.name)),
         SearchSort::Path => v.sort_by(|a, b| a.1.path.cmp(&b.1.path)),
         SearchSort::Modified => v.sort_by(|a, b| {
             b.1.modified_unix_secs
@@ -3068,6 +4124,194 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    fn administrator_index_configuration_is_private_and_metadata_only_by_default() {
+        use std::os::unix::fs::PermissionsExt as _;
+
+        let directory = std::env::temp_dir().join(format!(
+            "ottrin-administrator-config-{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&directory);
+        fs::create_dir_all(&directory).expect("create test directory");
+        let path = directory.join("search.json");
+        let config = SearchConfig {
+            include_roots: vec![PathBuf::from("/etc")],
+            content_indexing_enabled: true,
+            content_include_roots: vec![PathBuf::from("/etc")],
+            ..SearchConfig::default()
+        };
+
+        write_administrator_index_config(&path, &config).expect("write protected config");
+
+        let stored: SearchConfig =
+            serde_json::from_slice(&fs::read(&path).expect("read config")).expect("parse config");
+        assert_eq!(stored.include_roots, vec![PathBuf::from("/etc")]);
+        assert!(!stored.content_indexing_enabled);
+        assert!(stored.content_include_roots.is_empty());
+        assert_eq!(
+            fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+            0o600
+        );
+        let _ = fs::remove_dir_all(directory);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn administrator_index_configuration_refuses_a_symlink_namespace() {
+        use std::os::unix::fs::symlink;
+
+        let directory = std::env::temp_dir().join(format!(
+            "ottrin-administrator-config-symlink-{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&directory);
+        fs::create_dir_all(directory.join("target")).unwrap();
+        symlink(directory.join("target"), directory.join("namespace")).unwrap();
+        let config = SearchConfig {
+            include_roots: vec![PathBuf::from("/etc")],
+            ..SearchConfig::default()
+        };
+
+        let error =
+            write_administrator_index_config(&directory.join("namespace/search.json"), &config)
+                .expect_err("symlink namespace must be rejected");
+
+        assert!(error.contains("directory"), "unexpected error: {error}");
+        assert!(!directory.join("target/search.json").exists());
+        let _ = fs::remove_dir_all(directory);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn administrator_index_install_writes_owned_files_before_enabling_service() {
+        let directory = std::env::temp_dir().join(format!(
+            "ottrin-administrator-install-{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&directory);
+        fs::create_dir_all(&directory).unwrap();
+        let paths = AdministratorIndexPaths {
+            unit: directory.join("ottrin-administrator-index.service"),
+            config: directory.join("etc/search.json"),
+            state: directory.join("state"),
+            runtime: directory.join("runtime"),
+        };
+        let config = SearchConfig {
+            include_roots: vec![PathBuf::from("/etc")],
+            ..SearchConfig::default()
+        };
+        let mut operations = Vec::new();
+
+        install_administrator_index_service_with(
+            &paths,
+            Path::new("/opt/Ottrin/ottrin-indexd"),
+            &config,
+            |operation| {
+                assert!(paths.unit.is_file());
+                assert!(paths.config.is_file());
+                operations.push(operation);
+                Ok(true)
+            },
+        )
+        .expect("install Administrator service");
+
+        assert_eq!(
+            operations,
+            vec![
+                AdministratorSystemdOperation::DaemonReload,
+                AdministratorSystemdOperation::EnableNow,
+            ]
+        );
+        assert!(
+            fs::read_to_string(&paths.unit)
+                .unwrap()
+                .starts_with("# Managed by Ottrin\n")
+        );
+        let _ = fs::remove_dir_all(directory);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn administrator_index_removal_stops_service_before_optional_purge() {
+        let directory = std::env::temp_dir().join(format!(
+            "ottrin-administrator-remove-{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&directory);
+        let paths = AdministratorIndexPaths {
+            unit: directory.join("ottrin-administrator-index.service"),
+            config: directory.join("etc/search.json"),
+            state: directory.join("state"),
+            runtime: directory.join("runtime"),
+        };
+        fs::create_dir_all(paths.config.parent().unwrap()).unwrap();
+        fs::create_dir_all(&paths.state).unwrap();
+        fs::create_dir_all(&paths.runtime).unwrap();
+        fs::write(&paths.unit, "# Managed by Ottrin\n[Unit]\n").unwrap();
+        fs::write(&paths.config, "{}").unwrap();
+        fs::write(paths.state.join("search.db"), b"index").unwrap();
+        let mut operations = Vec::new();
+
+        uninstall_administrator_index_service_with(&paths, true, |operation| {
+            operations.push(operation);
+            Ok(true)
+        })
+        .expect("remove Administrator service and data");
+
+        assert_eq!(
+            operations,
+            vec![
+                AdministratorSystemdOperation::DisableNow,
+                AdministratorSystemdOperation::DaemonReload,
+            ]
+        );
+        assert!(!paths.unit.exists());
+        assert!(!paths.config.parent().unwrap().exists());
+        assert!(!paths.state.exists());
+        assert!(!paths.runtime.exists());
+        let _ = fs::remove_dir_all(directory);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn administrator_index_unit_uses_fixed_private_namespaces() {
+        let unit = administrator_index_systemd_unit(Path::new("/opt/Ottrin/ottrin-indexd"));
+
+        assert!(
+            unit.contains("ExecStart=\"/opt/Ottrin/ottrin-indexd\" --administrator-index-daemon")
+        );
+        assert!(unit.contains("RuntimeDirectory=ottrin-administrator"));
+        assert!(unit.contains("StateDirectory=ottrin-administrator"));
+        assert!(unit.contains("ConfigurationDirectory=ottrin-administrator"));
+        assert!(unit.contains("UMask=0077"));
+        assert!(!unit.contains("--user"));
+    }
+
+    #[test]
+    fn enabled_distro_updatedb_timer_is_reused_without_duplicate_setup() {
+        let status = system_locate_schedule_status_with(
+            |_| false,
+            |timer| timer == "plocate-updatedb.timer",
+        );
+
+        assert_eq!(status.source.as_deref(), Some("systemd"));
+        assert_eq!(status.detail.as_deref(), Some("plocate-updatedb.timer"));
+        assert!(!status.needs_setup);
+        assert!(!status.managed_by_ottrin);
+    }
+
+    #[test]
+    fn disabled_distro_updatedb_timer_does_not_hide_missing_maintenance() {
+        let status = system_locate_schedule_status_with(|_| false, |_| false);
+
+        assert_eq!(status.source, None);
+        assert_eq!(status.detail, None);
+        assert!(status.needs_setup);
+        assert!(!status.managed_by_ottrin);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn sqlite_background_install_renders_one_persistent_daemon_unit() {
         let unit = sqlite_daemon_systemd_unit(Path::new("/opt/Ottrin 100%/ottrin"));
 
@@ -3079,6 +4323,264 @@ mod tests {
         assert!(!unit.contains("index update"));
         assert!(!unit.contains("[Timer]"));
     }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn sqlite_background_removal_stops_the_service_before_deleting_its_unit() {
+        assert_eq!(
+            SqliteSystemdOperation::DisableNowTimer.args(),
+            ["--user", "disable", "--now", "ottrin-index.timer"]
+        );
+        assert_eq!(
+            SqliteSystemdOperation::DisableNowService.args(),
+            ["--user", "disable", "--now", "ottrin-index.service"]
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn sqlite_background_removal_reports_stop_failure_before_file_deletion() {
+        let error = stop_sqlite_systemd_for_removal_with(false, true, |operation| {
+            assert_eq!(operation, SqliteSystemdOperation::DisableNowService);
+            Ok(false)
+        })
+        .expect_err("failed service stop must block removal");
+
+        assert!(
+            error.contains("disable and stop"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn sqlite_background_status_distinguishes_enabled_but_stopped() {
+        let status = sqlite_systemd_status_with(true, |operation| match operation {
+            SqliteSystemdOperation::IsEnabled => Ok(true),
+            SqliteSystemdOperation::IsActive => Ok(false),
+            _ => panic!("status must not mutate the service"),
+        });
+
+        assert!(status.enabled);
+        assert_eq!(status.detail, "Enabled but stopped");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn sqlite_background_status_reports_an_unavailable_systemd_probe() {
+        let status = sqlite_systemd_status_with(true, |_| Err("user bus unavailable".to_string()));
+
+        assert!(!status.enabled);
+        assert!(status.detail.contains("user bus unavailable"));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn sqlite_background_restart_reports_systemctl_failure() {
+        let mut operations = Vec::new();
+        let error = restart_sqlite_systemd_with(true, |operation| {
+            operations.push(operation);
+            Ok(false)
+        })
+        .expect_err("failed restart must be reported");
+
+        assert_eq!(operations, vec![SqliteSystemdOperation::Restart]);
+        assert!(error.contains("restart"), "unexpected error: {error}");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn sqlite_background_upgrade_prepares_daemon_before_stopping_service() {
+        let events = std::cell::RefCell::new(Vec::new());
+
+        prepare_sqlite_systemd_upgrade_with(
+            true,
+            || {
+                events.borrow_mut().push("prepare");
+                Ok(())
+            },
+            |operation| {
+                assert_eq!(operation, SqliteSystemdOperation::Stop);
+                events.borrow_mut().push("stop");
+                Ok(true)
+            },
+        )
+        .expect("prepare upgrade");
+
+        assert_eq!(events.into_inner(), vec!["prepare", "stop"]);
+    }
+
+    #[test]
+    fn windows_background_status_reports_an_absent_task() {
+        let status = sqlite_windows_task_status_with(|| Ok(None));
+
+        assert_eq!(status.source, "none");
+        assert!(!status.enabled);
+        assert_eq!(status.detail, "No background Ottrin index task installed");
+    }
+
+    #[test]
+    fn windows_background_status_reports_an_enabled_task_as_ready() {
+        let status = sqlite_windows_task_status_with(|| {
+            Ok(Some(SqliteWindowsTaskRegistration { enabled: true }))
+        });
+
+        assert_eq!(status.source, "Windows Task Scheduler");
+        assert!(status.enabled);
+        assert_eq!(status.detail, "Ready for scheduled refresh");
+    }
+
+    #[test]
+    fn windows_background_status_does_not_mask_query_errors() {
+        let status =
+            sqlite_windows_task_status_with(|| Err("could not start schtasks".to_string()));
+
+        assert_eq!(status.source, "Windows Task Scheduler");
+        assert!(!status.enabled);
+        assert_eq!(
+            status.detail,
+            "Status unavailable: could not start schtasks"
+        );
+    }
+
+    #[test]
+    fn windows_background_status_reports_a_disabled_task() {
+        let status = sqlite_windows_task_status_with(|| {
+            Ok(Some(SqliteWindowsTaskRegistration { enabled: false }))
+        });
+
+        assert_eq!(status.source, "Windows Task Scheduler");
+        assert!(!status.enabled);
+        assert_eq!(status.detail, "Installed but disabled");
+    }
+
+    #[test]
+    fn windows_status_query_requests_locale_independent_task_xml() {
+        assert_eq!(
+            SqliteWindowsTaskOperation::QueryXml.args(),
+            ["/Query", "/TN", "Ottrin Index", "/XML"]
+        );
+    }
+
+    #[test]
+    fn windows_background_install_replaces_the_task_with_configured_interval_and_quoted_path() {
+        let config = SearchConfig {
+            refresh_interval_hours: 6,
+            ..SearchConfig::default()
+        };
+        let args = sqlite_windows_task_create_args(
+            &config,
+            Path::new(r"C:\Program Files\Ottrin\bin\ottrin.exe"),
+        )
+        .expect("valid task definition");
+
+        assert_eq!(
+            args,
+            [
+                "/Create",
+                "/F",
+                "/SC",
+                "HOURLY",
+                "/MO",
+                "6",
+                "/TN",
+                "Ottrin Index",
+                "/TR",
+                r#""C:\Program Files\Ottrin\bin\ottrin.exe" index update"#,
+            ]
+        );
+    }
+
+    #[test]
+    fn windows_background_install_rejects_a_disabled_refresh_interval() {
+        let config = SearchConfig {
+            refresh_interval_hours: 0,
+            ..SearchConfig::default()
+        };
+        let error = sqlite_windows_task_create_args(&config, Path::new(r"C:\Ottrin\ottrin.exe"))
+            .expect_err("zero means periodic refresh is disabled");
+
+        assert!(error.contains("disabled"), "unexpected error: {error}");
+    }
+
+    #[test]
+    fn windows_background_install_rejects_an_interval_task_scheduler_cannot_represent() {
+        let config = SearchConfig {
+            refresh_interval_hours: 1_000,
+            ..SearchConfig::default()
+        };
+        let error = sqlite_windows_task_create_args(&config, Path::new(r"C:\Ottrin\ottrin.exe"))
+            .expect_err("Task Scheduler hourly modifiers stop at 999");
+
+        assert!(error.contains("999"), "unexpected error: {error}");
+    }
+
+    #[test]
+    fn windows_task_xml_reads_the_invariant_enabled_flag_from_utf16() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-16"?>
+<Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <Settings><Enabled>false</Enabled></Settings>
+</Task>"#;
+        let mut output = vec![0xff, 0xfe];
+        output.extend(xml.encode_utf16().flat_map(u16::to_le_bytes));
+
+        let registration = parse_sqlite_windows_task_xml(&output).expect("parse task XML");
+
+        assert!(!registration.enabled);
+    }
+
+    #[test]
+    fn windows_task_xml_rejects_an_unknown_enabled_value() {
+        let error = parse_sqlite_windows_task_xml(
+            br#"<Task><Settings><Enabled>sometimes</Enabled></Settings></Task>"#,
+        )
+        .expect_err("unknown enabled value must not be reported ready");
+
+        assert!(error.contains("Enabled"), "unexpected error: {error}");
+    }
+
+    #[test]
+    fn windows_background_restart_requires_an_existing_task_and_runs_it() {
+        let mut operations = Vec::new();
+        let message = restart_sqlite_windows_task_with(|operation| {
+            operations.push(operation);
+            Ok(true)
+        })
+        .expect("restart existing task");
+
+        assert_eq!(
+            operations,
+            vec![
+                SqliteWindowsTaskOperation::Query,
+                SqliteWindowsTaskOperation::Run,
+            ]
+        );
+        assert!(message.contains("started"), "unexpected message: {message}");
+    }
+
+    #[test]
+    fn windows_background_removal_does_not_mask_task_scheduler_failure() {
+        let mut operations = Vec::new();
+        let error = uninstall_sqlite_windows_task_with(|operation| {
+            operations.push(operation);
+            match operation {
+                SqliteWindowsTaskOperation::Query => Ok(true),
+                SqliteWindowsTaskOperation::Delete => Ok(false),
+                _ => panic!("removal must only query and delete"),
+            }
+        })
+        .expect_err("failed deletion must block uninstall");
+
+        assert_eq!(
+            operations,
+            vec![
+                SqliteWindowsTaskOperation::Query,
+                SqliteWindowsTaskOperation::Delete,
+            ]
+        );
+        assert!(error.contains("delete"), "unexpected error: {error}");
+    }
+
     use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
     #[test]
@@ -3176,6 +4678,65 @@ mod tests {
     }
 
     #[test]
+    fn partial_sqlite_simple_term_page_is_used_instead_of_streaming_the_generation() {
+        assert!(should_use_simple_term_page(1, 10, false));
+    }
+
+    #[test]
+    fn persisted_simple_term_no_match_does_not_fall_back_to_generation_wide_fuzzy_results() {
+        let _guard = SEARCH_SERVICE_TEST_LOCK.lock().expect("test lock");
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-persisted-simple-term-no-fuzzy-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let db_path = temp_service_path("persisted-simple-term-no-fuzzy");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create fixture root");
+        let config = SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            manage_locate_db: false,
+            refresh_interval_hours: 0,
+            ..SearchConfig::default()
+        };
+        let plan = plan::ScanPlan::new(&config).expect("valid fixture plan");
+        let items = (0..10_000)
+            .map(|index| {
+                // Every name is a fuzzy subsequence match for "needle", but none contains
+                // it as a name or path substring. The old persisted fallback scanned all of
+                // these rows solely to return optional fuzzy results.
+                let name = format!("n-{index:05}-e-e-d-l-e.txt");
+                let path = root.join(&name);
+                mutation::OwnedItem::new(
+                    root.clone(),
+                    mk_item(&path.to_string_lossy(), &name, EntryKind::File),
+                )
+            })
+            .collect();
+        let mut store = SearchStore::open(db_path.clone()).expect("open fixture store");
+        store
+            .commit(&plan, mutation::IndexMutation::ReplaceAll(items))
+            .expect("commit persisted fixture generation");
+        drop(store);
+
+        let reader = SearchService::load_persisted(config, db_path.clone())
+            .expect("load persisted fixture generation");
+        let response = reader.query(query_by_name("needle"));
+
+        assert!(
+            response.error.is_none(),
+            "unexpected error: {:?}",
+            response.error
+        );
+        assert!(response.items.is_empty());
+        assert_eq!(response.total, 0);
+
+        let _ = clear_sqlite_storage(&db_path);
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
     fn persisted_snapshot_can_be_read_without_starting_or_locking_a_writer() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-read-only-status-root-{}",
@@ -3202,6 +4763,19 @@ mod tests {
             .expect("load persisted generation read-only");
         assert_eq!(reader.diagnostics().status, SearchIndexStatus::Ready);
         assert_eq!(reader.diagnostics().indexed_items, 1);
+        assert!(reader.index.read().expect("index read").items.is_empty());
+        let response = reader.query(SearchQuery {
+            text: "marker".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 10,
+            offset: 0,
+            content_search: false,
+        });
+        assert_eq!(response.total, 1);
+        assert_eq!(response.items[0].path, root.join("marker.txt"));
 
         let mut next_writer = SearchService::new_with_store_path(config, db_path.clone());
         next_writer.start();
@@ -3210,6 +4784,84 @@ mod tests {
             Some(error) if error.contains("already in use")
         ));
         next_writer.stop();
+        let _ = clear_sqlite_storage(&db_path);
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn persisted_queries_preserve_component_non_utf8_scope_and_ascii_case_semantics() {
+        use std::os::unix::ffi::OsStringExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-persisted-scope-root-{}",
+            std::process::id()
+        ));
+        let db_path = temp_service_path("persisted-scope");
+        let foo = root.join("foo");
+        let foobar = root.join("foobar");
+        let non_utf8 = root.join(std::ffi::OsString::from_vec(b"non-utf8-\xff".to_vec()));
+        for directory in [&foo, &foobar, &non_utf8] {
+            std::fs::create_dir_all(directory).expect("create scoped directory");
+        }
+        std::fs::write(foo.join("needle.txt"), b"needle").expect("write scoped file");
+        std::fs::write(foobar.join("needle.txt"), b"needle").expect("write sibling file");
+        std::fs::write(non_utf8.join("marker.txt"), b"marker").expect("write non-UTF8 file");
+        std::fs::write(root.join("ÉCOLE.txt"), b"case").expect("write Unicode file");
+        let config = SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            manage_locate_db: false,
+            refresh_interval_hours: 0,
+            ..SearchConfig::default()
+        };
+        let mut writer = SearchService::new_with_store_path(config.clone(), db_path.clone());
+        writer.start();
+        writer
+            .rebuild_index_blocking()
+            .expect("commit persisted generation");
+        writer.stop();
+        let reader = SearchService::load_persisted(config, db_path.clone())
+            .expect("load persisted generation");
+
+        let scoped = reader.query(SearchQuery {
+            text: "needle".to_string(),
+            scope: SearchScope::CurrentFolder,
+            root_path: Some(foo.clone()),
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 10,
+            offset: 0,
+            content_search: false,
+        });
+        assert_eq!(scoped.total, 1, "foo scope must not include foobar");
+        assert!(scoped.items[0].path.starts_with(&foo));
+
+        let raw_scope = reader.query(SearchQuery {
+            text: "marker".to_string(),
+            scope: SearchScope::CurrentFolder,
+            root_path: Some(non_utf8.clone()),
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 10,
+            offset: 0,
+            content_search: false,
+        });
+        assert_eq!(raw_scope.total, 1);
+        assert!(raw_scope.items[0].path.starts_with(&non_utf8));
+
+        let unicode_case = reader.query(SearchQuery {
+            text: "école".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 10,
+            offset: 0,
+            content_search: false,
+        });
+        assert_eq!(unicode_case.total, 0, "legacy matching is ASCII-case-only");
+
         let _ = clear_sqlite_storage(&db_path);
         let _ = std::fs::remove_dir_all(root);
     }
@@ -3456,16 +5108,70 @@ mod tests {
             fs::write(&path, b"stale sqlite sidecar").expect("create sidecar");
             path
         });
+        let mut content_name = db_path.as_os_str().to_os_string();
+        content_name.push(".content-42.db");
+        let content_db = PathBuf::from(content_name);
+        fs::write(&content_db, b"generation content database").expect("create content database");
+        let content_sidecars = ["-wal", "-shm", "-journal"].map(|suffix| {
+            let mut path = content_db.as_os_str().to_os_string();
+            path.push(suffix);
+            let path = PathBuf::from(path);
+            fs::write(&path, b"content sqlite sidecar").expect("create content sidecar");
+            path
+        });
+        let expected_content_freed = [&content_db]
+            .into_iter()
+            .chain(content_sidecars.iter())
+            .map(|path| fs::metadata(path).expect("storage metadata").len())
+            .sum::<u64>();
 
-        service.clear_storage().expect("clear owned storage");
+        let freed = service.clear_storage().expect("clear owned storage");
 
         assert_eq!(exits.load(Ordering::Acquire), 1);
         assert!(!db_path.exists());
         assert!(sidecars.iter().all(|path| !path.exists()));
+        assert!(!content_db.exists());
+        assert!(content_sidecars.iter().all(|path| !path.exists()));
+        assert!(freed >= expected_content_freed);
         let diagnostics = service.diagnostics();
         assert!(matches!(diagnostics.status, SearchIndexStatus::Unavailable));
         assert_eq!(diagnostics.indexed_items, 0);
         assert!(service.query(query_by_name("anything")).items.is_empty());
+    }
+
+    #[test]
+    fn clear_sqlite_storage_removes_and_reports_all_generation_content_files() {
+        let db_path = temp_service_path("clear-generation-storage");
+        let mut paths = vec![db_path.clone()];
+        for suffix in ["-wal", "-shm", "-journal"] {
+            let mut path = db_path.as_os_str().to_os_string();
+            path.push(suffix);
+            paths.push(PathBuf::from(path));
+        }
+        for generation in [3, 9] {
+            let mut path = db_path.as_os_str().to_os_string();
+            path.push(format!(".content-{generation}.db"));
+            let content_db = PathBuf::from(path);
+            paths.push(content_db.clone());
+            for suffix in ["-wal", "-shm", "-journal"] {
+                let mut sidecar = content_db.as_os_str().to_os_string();
+                sidecar.push(suffix);
+                paths.push(PathBuf::from(sidecar));
+            }
+        }
+        for (index, path) in paths.iter().enumerate() {
+            fs::write(path, vec![b'x'; index + 1]).expect("create storage fixture");
+        }
+        let expected_freed = paths
+            .iter()
+            .map(|path| fs::metadata(path).expect("storage metadata").len())
+            .sum::<u64>();
+
+        assert_eq!(
+            clear_sqlite_storage(&db_path).expect("clear complete sqlite storage"),
+            expected_freed
+        );
+        assert!(paths.iter().all(|path| !path.exists()));
     }
 
     #[test]
@@ -3520,6 +5226,16 @@ mod tests {
             effective_roots(&SearchConfig::default()),
             vec![ottrin_core::default_home_dir()]
         );
+    }
+
+    #[test]
+    fn explicit_zero_native_roots_remain_empty() {
+        let config = SearchConfig {
+            include_roots: Vec::new(),
+            ..SearchConfig::default()
+        };
+
+        assert!(effective_roots(&config).is_empty());
     }
 
     #[test]
@@ -3624,6 +5340,183 @@ mod tests {
         let out_scope = mk_item("/tmp/c/foo.txt", "foo.txt", EntryKind::File);
         assert!(scope_match(&query, &in_scope));
         assert!(!scope_match(&query, &out_scope));
+    }
+
+    #[test]
+    fn global_search_merges_system_results_when_native_results_already_exist() {
+        fn system_results(
+            _text: &str,
+            _scope_root: Option<&Path>,
+            _include_hidden: bool,
+            _limit: usize,
+        ) -> Vec<SearchResultItem> {
+            vec![mk_item(
+                "/opt/shared/shared-needle.txt",
+                "shared-needle.txt",
+                EntryKind::File,
+            )]
+        }
+
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![PathBuf::from("/home/alice")],
+            use_system_locate: true,
+            ..SearchConfig::default()
+        });
+        {
+            let mut index = service.index.write().expect("index write");
+            index.status = SearchIndexStatus::Ready;
+            index.items = Arc::new(vec![mk_item(
+                "/home/alice/native-needle.txt",
+                "native-needle.txt",
+                EntryKind::File,
+            )]);
+        }
+
+        let response = service.handle().query_with_system_locate(
+            SearchQuery {
+                text: "needle".to_string(),
+                scope: SearchScope::Global,
+                root_path: None,
+                include_hidden_system: false,
+                sort: SearchSort::Relevance,
+                limit: 20,
+                offset: 0,
+                content_search: false,
+            },
+            system_results,
+        );
+
+        assert_eq!(response.total, 2);
+        assert!(
+            response
+                .items
+                .iter()
+                .any(|item| item.path == Path::new("/home/alice/native-needle.txt"))
+        );
+        assert!(
+            response
+                .items
+                .iter()
+                .any(|item| item.path == Path::new("/opt/shared/shared-needle.txt"))
+        );
+    }
+
+    #[test]
+    fn persisted_native_rows_deduplicate_system_results_outside_the_loaded_page() {
+        fn duplicate_system_result(
+            _text: &str,
+            _scope_root: Option<&Path>,
+            _include_hidden: bool,
+            _limit: usize,
+        ) -> Vec<SearchResultItem> {
+            vec![mk_item(
+                "/tmp/ottrin-persisted-locate-dedupe/z-needle.txt",
+                "z-needle.txt",
+                EntryKind::Other,
+            )]
+        }
+
+        let root = PathBuf::from("/tmp/ottrin-persisted-locate-dedupe");
+        let db_path = temp_service_path("persisted-locate-dedupe");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create native root");
+        fs::write(root.join("a-needle.txt"), b"first").expect("write first native item");
+        fs::write(root.join("z-needle.txt"), b"native metadata")
+            .expect("write duplicate native item");
+        let config = SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: true,
+            refresh_interval_hours: 0,
+            ..SearchConfig::default()
+        };
+        let mut writer = SearchService::new_with_store_path(config.clone(), db_path.clone());
+        writer.start();
+        writer
+            .rebuild_index_blocking()
+            .expect("persist native generation");
+        writer.stop();
+        let reader = SearchService::load_persisted(config, db_path.clone())
+            .expect("load persisted generation");
+
+        let response = reader.handle().query_with_system_locate(
+            SearchQuery {
+                text: "needle".to_string(),
+                scope: SearchScope::Global,
+                root_path: None,
+                include_hidden_system: false,
+                sort: SearchSort::Relevance,
+                limit: 1,
+                offset: 0,
+                content_search: false,
+            },
+            duplicate_system_result,
+        );
+
+        assert_eq!(
+            response.total, 2,
+            "exact native path must not be counted twice"
+        );
+        let _ = clear_sqlite_storage(&db_path);
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn global_locate_output_is_not_bounded_to_native_roots() {
+        let paths = parse_system_locate_output(
+            b"/home/alice/native/needle.txt\n/opt/shared/needle.txt\n",
+            None,
+            true,
+            20,
+        );
+
+        assert_eq!(
+            paths,
+            vec![
+                PathBuf::from("/home/alice/native/needle.txt"),
+                PathBuf::from("/opt/shared/needle.txt"),
+            ]
+        );
+    }
+
+    #[test]
+    fn current_folder_locate_output_cannot_escape_its_scope() {
+        let paths = parse_system_locate_output(
+            b"/home/alice/current/needle.txt\n/home/alice/currently/needle.txt\n/opt/shared/needle.txt\n",
+            Some(Path::new("/home/alice/current")),
+            true,
+            20,
+        );
+
+        assert_eq!(paths, vec![PathBuf::from("/home/alice/current/needle.txt")]);
+    }
+
+    #[test]
+    fn inaccessible_system_locate_path_remains_a_truthful_path_only_result() {
+        let path = Path::new("/protected/reports/needle.txt");
+
+        let item = make_system_locate_item_with(path, |_| {
+            Err(std::io::Error::from(std::io::ErrorKind::PermissionDenied))
+        })
+        .expect("database-visible inaccessible path remains discoverable");
+
+        assert_eq!(item.path, path);
+        assert_eq!(item.parent_path, Path::new("/protected/reports"));
+        assert_eq!(item.name, "needle.txt");
+        assert_eq!(item.kind, EntryKind::Other);
+        assert!(!item.is_executable);
+        assert_eq!(item.symlink_target_is_dir, None);
+        assert_eq!(item.size_bytes, None);
+        assert_eq!(item.modified_unix_secs, None);
+        assert_eq!(item.path_lower, "/protected/reports/needle.txt");
+    }
+
+    #[test]
+    fn provably_absent_system_locate_path_is_omitted_as_stale() {
+        let item = make_system_locate_item_with(Path::new("/stale/needle.txt"), |_| {
+            Err(std::io::Error::from(std::io::ErrorKind::NotFound))
+        });
+
+        assert_eq!(item, None);
     }
 
     #[test]
@@ -3805,6 +5698,88 @@ mod tests {
         assert_eq!(item.content_snippet.as_deref(), Some("needle appears here"));
 
         let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn content_fallback_honors_selected_file_groups() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-groups-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        fs::write(root.join("notes.txt"), b"documentneedle").expect("create document");
+        fs::write(root.join("main.rs"), b"sourceneedle").expect("create source");
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_file_groups: vec![ottrin_core::ContentFileGroup::TextDocuments],
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let query = |text: &str| {
+            service.query(SearchQuery {
+                text: text.to_string(),
+                scope: SearchScope::Global,
+                root_path: None,
+                include_hidden_system: false,
+                sort: SearchSort::Relevance,
+                limit: 20,
+                offset: 0,
+                content_search: true,
+            })
+        };
+
+        assert_eq!(query("documentneedle").items.len(), 1);
+        assert!(query("sourceneedle").items.is_empty());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn content_fallback_honors_configured_extraction_size_limit() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-content-limit-search-{}-{}",
+            std::process::id(),
+            current_unix_secs()
+        ));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("create test root");
+        fs::write(root.join("large.txt"), b"largeneedle").expect("create test file");
+        let service = SearchService::new(SearchConfig {
+            include_roots: vec![root.clone()],
+            use_system_locate: false,
+            content_indexing_enabled: true,
+            content_include_roots: vec![root.clone()],
+            content_max_file_size_bytes: 4,
+            ..SearchConfig::default()
+        });
+        {
+            let mut idx = service.index.write().expect("index write");
+            idx.status = SearchIndexStatus::Ready;
+            idx.items = Arc::new(Vec::new());
+        }
+
+        let response = service.query(SearchQuery {
+            text: "largeneedle".to_string(),
+            scope: SearchScope::Global,
+            root_path: None,
+            include_hidden_system: false,
+            sort: SearchSort::Relevance,
+            limit: 20,
+            offset: 0,
+            content_search: true,
+        });
+
+        assert!(response.items.is_empty());
+        let _ = fs::remove_dir_all(root);
     }
 
     #[test]

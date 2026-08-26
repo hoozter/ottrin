@@ -21,13 +21,18 @@ for script in \
   packaging/tests/verify-linux-gio-runtime-contract.sh \
   packaging/tests/verify-linux-portable-running-instructions.sh \
   packaging/tests/verify-linux-privileged-helper-policy.sh \
+  packaging/tests/verify-macos-app-bundle-contract.sh \
+  packaging/tests/verify-macos-package-contract.sh \
   packaging/tests/verify-release-checklist-provenance.sh \
   packaging/tests/verify-release-preflight-contract-coverage.sh \
   packaging/tests/verify-release-preflight-shell-coverage.sh \
   packaging/tests/verify-release-provenance.sh \
+  packaging/tests/verify-release-signing-integration.sh \
   packaging/tests/verify-release-workflow-dependencies.sh \
   packaging/tests/verify-windows-graphics-runtime.sh \
   packaging/tests/verify-windows-installer-clean-checkout.sh \
+  packaging/tests/verify-windows-installer-index-lifecycle.sh \
+  packaging/tests/verify-windows-msi-lifecycle.sh \
   packaging/tests/verify-windows-installer-output-path.sh \
   packaging/tests/verify-windows-installer-powershell-provenance.sh \
   packaging/tests/verify-windows-installer-stage-version.sh \

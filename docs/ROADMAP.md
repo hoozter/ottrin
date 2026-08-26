@@ -1,92 +1,133 @@
-# Ottrin Roadmap
+# Ottrin roadmap
 
-Last updated: 2026-08-11
+Last updated: 2026-08-26
 
-Ottrin is in v1 release hardening. The product focus is daily-driver reliability: navigation, file operations, search, previews, packaging, and clear failure states.
+Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
-## Current Status
+Linux is the primary implementation and daily-driver platform. Windows follows the same product contract in parallel where that does not materially slow Linux, and both ship in the same release. Further macOS implementation and acceptance are deferred until the Linux and Windows roadmap is complete.
 
-Implemented:
+The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
 
-- Miller, List, and Grid views.
-- View Options popover for current view mode, thumbnail toggles, hidden files, sorting, and list columns.
-- Tabs, bookmarks, path navigation, and keyboard-first movement.
-- Tandem View with side-by-side panes and pane-to-pane copy.
-- Multi-select for current-folder selections.
-- File operations: copy, rename, trash, permanent delete, create file/folder, and command-frame actions. Linux same-filesystem Move now has source- and automation-level support for Skip/Rename/Overwrite/Cancel with explicit dispositions and native rename behavior. Cross-filesystem Move and Windows Move remain disabled without mutation; reopening either requires a separately accepted protocol and evidence for that platform and mode.
-- First-class New File and New Folder dialogs target the displayed directory, preserve spaces and Unicode, reject unsafe/reserved/existing names without overwrite, support Enter/Escape, refresh the originating tab, and select the created item only after success. Main-menu and folder-context entry points share the same validated command path; native Linux and Windows workflow acceptance remains pending.
-- Context menus with default open, open-with-application, folder location, path copy, rename/delete, bookmarks, and copy destinations.
-- Smart panel sections for Info, Drop Folder, Search, Activity, and Trash.
-- Cross-platform Trash panel implementation with Linux Freedesktop trash support and Windows Recycle Bin backend.
-- SQLite-backed indexed search with a Linux per-user daemon, watcher updates independent of GUI windows, generated-folder skips, content search snippets, column resizing, click selection, double-click/Enter opening, shared right-click actions, and Space-triggered full preview. Other platforms retain their current process/scheduler behavior until their daemon lifecycle is implemented and verified.
-- Quick Inspector as a full Space-triggered window with visual images, bounded layout-rendered multi-page PDF previews with Previous/Next/go-to-page navigation, format-aware spreadsheet grids, and bounded Office metadata/text extraction. Extracted Office text is explicitly labeled, left aligned, and presented only as a fallback; page-shaped PNGs generated from flattened Office XML are not presented as source-layout previews. Complete direct UTF-8 text previews can be edited on Linux through the fail-closed atomic replacement path; derived, truncated, linked, metadata-bearing, sparse, and unsupported-platform sources remain read-only.
-- Grid rubber-band selection is implemented and source-tested; packaged/manual acceptance is pending.
-- Linux native Open With discovery and launch path is implemented with source and automated coverage; other platform discovery remains fallback/manual.
-- Generated visual text/source cards, bounded direct-child folder thumbnail collages, bounded recursive folder-size metadata, and bounded PDF page navigation are implemented and test-covered.
-- Windows video thumbnails have a source-complete native-only Media Foundation Phase 1 path. It admits a no-follow regular file of at most 512 MiB by retained handle, exposes only that accepted length to Media Foundation, decodes at most one bounded frame, normalizes signed-stride 2-D or ordinary contiguous RGB32 buffers before generation-scoped cache/UI admission, and falls back to metadata on every unavailable/error path. Linux and other platforms remain metadata-only; native Windows and exact-package acceptance are still pending.
-- Theme presets and custom theme editing.
-- A compact collapsible Locations rail is implemented with stable item ordering and selection across compact/expanded modes, Smart Panel surface treatment, semantic location icons, keyboard focus/tooltips, discovered storage reconciliation, and no automatic indexing of attached volumes. Source layout tests cover compact width, shared surface, and input-boundary leakage; native visual and device-lifecycle acceptance remains pending.
-- Linux portable tarball, Linux AppImage, Windows portable zip, and per-user Windows installer packaging scripts.
-- Windows portable and installer packaging is designed to retain native WGPU as the Automatic fallback and include a checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime, app-local loader/driver payload, renderer preferences, diagnostic override, and complete notices. These remain exact-artifact verification and native-runtime gates; no current package acceptance is claimed.
-- Strict formatting, tests, and Clippy gates.
+## How to use this roadmap
 
-## Still needs implementation or real QA before v1:
+- Work on the first dependency-ready outcome in the order below.
+- Prefer the smallest user-visible or release-enabling slice.
+- During implementation, run focused tests for the behavior changed. Run broad workspace, package and platform matrices only at an integration milestone or against the exact release candidate.
+- Complete source outcomes before physical QA. Batch desktop, device and exact-artifact acceptance near the end. Run an earlier physical check only when runtime evidence is required to choose or unblock the implementation; unavailable hardware does not justify synthetic QA infrastructure.
+- Research is allowed only when a named product decision blocks the next implementation slice. Answer that decision with bounded evidence, record it, and stop.
+- Historical spikes, possible architectures and provider comparisons are references, not active tasks.
+- Do not reopen accepted boundaries without a new product decision. File Move is a required product capability on Linux and Windows; safety semantics are implementation scope, not a feature gate. Ottrin does not silently install renderers, codecs or privileged services.
 
-Storage Locations have source-level evidence in the tracked
-[Storage Locations status](STORAGE_LOCATIONS_STATUS.md). Keyboard focus now
-requests the same full location detail as pointer hover; however, AccessKit is
-intentionally excluded while its Unix AT-SPI event loop can abort after a D-Bus
-endpoint disappears. Native assistive integration and physical/manual
-acceptance, including real attachment/removal and real Windows drive/share
-coverage, remain v1 work. Source tests do not satisfy those gates.
+## Implemented foundation
 
-- Storage Locations must expose every user-accessible filesystem root instead of assuming the home profile is the whole machine. Windows must discover and navigate fixed, removable, optical, and mapped-network drive letters such as `D:` and `P:`; Linux must discover user-visible mounted volumes and removable-media mount points.
-- New File and New Folder are source-implemented and focused tests cover targeting, spaces, Unicode, unsafe/reserved/existing-name rejection, no-overwrite command construction, compact controls, and post-success selection. Native Linux and Windows workflows still need to confirm Enter/Escape, main-menu and blank-folder discovery, correct-tab refresh/selection, and rendered modal behavior.
-- The compact and expanded Locations rail is source-implemented and tested for compact width, Smart Panel surface continuity, and pointer-input boundaries. Native visual, pointer, keyboard, tooltip, stable-order/selection parity, attachment/removal/mapping refresh, and unavailable-volume behavior remain v1 QA gates.
-- Keep the current Material Symbols family until a focused, side-by-side icon prototype proves a replacement clearer at Ottrin's real 16/20/24 px sizes. Follow the [Icon System Evaluation](ICON_SYSTEM_EVALUATION.md): evaluate selected Tabler SVGs before any broad migration and do not adopt a whole icon font merely for coverage. Filesystem labels (`NTFS`, `ext4`, `Btrfs`, and similar) and semantic device state are preferable to using an operating-system logo as a filesystem guess, while removable, optical, network, unavailable, and system-volume identities should remain visually distinct.
-- Drive/volume discovery must refresh after attachment, removal, mapping, or disconnection. An unavailable or removed current volume must produce a clear non-destructive state and a safe navigation route; it must never silently redirect a file operation.
-- External-volume navigation must work without automatically indexing every attached drive. Users choose which additional volumes enter indexed search; direct browsing and scoped fallback search remain available independently.
-- Copy must be tested across volume boundaries, including removable drives. Cross-filesystem Move remains rejected without mutation and may not degrade into an unjournaled copy-then-delete operation.
-- Linux manual workflow QA across navigation, file operations, search, Tandem View, multi-select, Quick Inspector, context menus, thumbnail view options, and status messages.
-- DOCX and PPTX still need a sandboxed layout renderer that preserves pages, positions, tables, images, typography, and hierarchy. Until one is implemented and physically verified, their extracted text remains a clearly labeled fallback rather than a simulated document page.
-- Linux privileged helper and polkit smoke test from packaged layout.
-- Real Windows runtime smoke for portable zip: launch, navigation, file operations, Trash/Recycling Bin, search, Quick Inspector, UAC/helper behavior, and background updater.
-- The Media Foundation thumbnail path still needs native Windows tests for retained-handle/reparse identity, cancellation/deadline behavior, malformed and unsupported media, installed-codec capability boundaries, source/resource limits, signed-stride orientation, cache invalidation, and an exact-package audit proving that no decoder, codec payload, or installer was added. Deadline and cancellation checks are cooperative around synchronous native codec calls, not a hard wall-clock guarantee; hostile-codec observed timing remains a native acceptance gate. Cross-compilation and non-Windows contract tests are not native acceptance.
-- Real Windows install/uninstall smoke for the installer candidate.
-- Release-owner review of release notes and known limitations against the exact artifacts.
+- Miller, List and Grid views; tabs, bookmarks, path navigation and keyboard navigation.
+- Tandem View, multi-select, context menus, Smart Panel sections and view options.
+- Copy, rename, Trash, permanent delete and validated New File/New Folder flows.
+- Linux same-filesystem and cross-filesystem Move with explicit Skip/Rename/Overwrite/Cancel handling. Cross-filesystem files, directories, and symlinks use destination-local staging, complete-tree verification, durable publication evidence, guarded recursive source cleanup, restart recovery, honest batch/Activity accounting, and evidence-bound single-entry Undo. Native packaged interruption and removable-volume acceptance remains in final Linux QA.
+- Windows same-volume Skip/Rename Move is source-complete through identity-pinned source and destination handles plus `SetFileInformationByHandle(FileRenameInfoEx)` no-replace publication. Occupied regular-file Overwrite uses a current-user-private, same-volume transaction plus paired durable journals, identity-pinned source/target/retained evidence, `ReplaceFileW` displaced-file retention, and topology-driven restart recovery before later Moves. Cross-volume transaction code covers unoccupied, Rename, and Overwrite regular-file and top-level symbolic-link targets, plus Skip and Rename directory trees containing symbolic links, through a current-user-private destination stage, paired durable journals, complete manifest/content verification, identity-pinned publication, retained displaced-target evidence where applicable, and source identity/content revalidation. Non-symbolic reparse points remain rejected. The reviewed source-removal, concurrent-recovery, and native API safety boundaries are addressed in source, but the user-facing cross-volume route remains fail-closed pending native Windows crash, ACL, sharing-mode, and packaged acceptance.
+- Session undo for rename, single-entry Copy with Skip, Rename, or Overwrite conflict handling, newly created empty files and folders, newly created symlinks, permission changes, one proven Linux home-Trash entry, and single-entry Linux same-filesystem Move with Skip, Rename, or Overwrite conflict handling. Pathname inverses are guarded by link-entry identity, no-replace publication, storage identity, and in-flight path conflict checks. Copy and Move Overwrite additionally bind the exact retained displaced destination and atomically exchange it back only while both entries retain their recorded identities. Move Overwrite keeps durable recovery evidence until undo cleanup completes and can roll back both entries after interruption immediately following publication. File and folder creation undo is offered only while the exact entry remains empty and unchanged; symlink undo never dereferences the link target. Linux permission undo retains an identity-bound descriptor and restores the prior mode only while that same non-symlink entry still has the mode Ottrin applied. Home-Trash undo binds the exact native payload and refuses an occupied original path; mounted-volume Trash and Windows Recycle Bin entries remain outside this session-undo guarantee because their native metadata does not prove durable source-volume identity. Multi-entry Copy and Move undo remains unavailable: independent pathname inverses cannot be committed atomically, so a conflict on a later inverse could leave a partially undone batch that no retry can safely reconstruct. Operation History now labels this boundary explicitly as `No batch undo` instead of implying that a batch receipt exists. Quick Inspector image rotation remains an in-place rewrite with no retained original-byte or identity-bound transaction receipt, so Operation History truthfully labels it `Not undoable` rather than offering a lossy counter-rotation. Manual retained-Move recovery is likewise labelled `Not undoable`: it repairs an interrupted transaction but does not create a second inverse receipt.
+- Linux and Windows Trash backends.
+- SQLite search, Linux `ottrin-indexd`, watcher updates, scoped content snippets and result actions.
+- Linux global filename/path search merges native metadata with system `plocate` results, works with zero native roots, and deduplicates by exact path with native metadata preferred.
+- Linux system filename maintenance detects and reuses existing distribution timers or cron jobs. Stale databases can be updated through the fixed-operation privileged helper; Ottrin offers its own removable daily job only when no existing maintenance is detected.
+- Native metadata roots and optional content-extraction roots are separate persisted user selections. Content indexing is off by default, reads only explicitly selected content roots, and has independent exclusions.
+- Quick Inspector for text, images, multi-page PDF, spreadsheets, archives, folders and generic metadata.
+- Native structured DOCX preview with headings, runs, alignment, lists, page-break cues, tables and bounded inline raster images. Unsupported documents retain a labelled extracted fallback.
+- Linux installed-LibreOffice provider pipeline in source: bounded discovery, probing, isolation, validated PDF rendering, provider labels, page navigation, stale-response rejection, persisted enable/disable control and native fallback.
+- Windows Job Object Office process boundary in source: atomic job assignment, kill-on-close descendant ownership, aggregate/process memory and active-process limits, explicit standard-I/O handle inheritance, timeout/cancellation cleanup and private profile/output path translation. This is not a filesystem or network sandbox, and the Windows provider remains disabled pending native fixture acceptance.
+- Safe direct UTF-8 text editing on Linux for complete admitted files.
+- Linux and Windows native Open With discovery. Choices retain opaque native handler identities and are re-queried before launch; unsupported platforms retain the manual picker.
+- Folder thumbnail collages, folder-size metadata and generated text/source cards.
+- Source-complete Windows Media Foundation video thumbnails with truthful metadata fallback.
+- Source-complete Linux media playback through an optional system-GStreamer helper: the GUI remains launchable without GStreamer, admitted descriptors cross the helper boundary, and portable/AppImage verification rejects bundled framework, plugin and codec payloads.
+- Compact and expanded Locations rail with stable identities and no automatic external-volume indexing.
+- Theme presets and custom themes.
+- Linux portable/AppImage and Windows portable/installer packaging scripts.
+- Native Linux `.deb` and `.rpm` packaging from one `/usr` staging source of truth. Native packages use distribution runtime dependencies rather than bundling the portable library closure; locally built archives have been inspected for payload, executable modes, dynamic resolution, and dependency metadata.
+- Source tests, formatting and strict Clippy gates.
+- Cohesive first-run Search setup for the three independent layers: system filenames, native metadata and optional content. The completed choice is persisted without overwriting existing search scopes.
+- Packaged Linux `ottrin-indexd` lifecycle with install, status, restart, rebuild, configuration propagation, graceful upgrade migration and removal, verified under an isolated per-user systemd manager with concurrent clients, watcher reconciliation and persisted-state recovery.
+- Source-complete Windows background index lifecycle using the current user’s Task Scheduler: install/upgrade replaces the configured periodic task after final payload publication, status uses locale-independent task XML, restart requires an existing task, and removal refuses to mask scheduler cleanup failure. Installer ordering and the Windows cross-build are verified; native Task Scheduler acceptance remains in final Windows QA.
+- Source-complete per-user Windows MSI built from the same provenance-checked portable stage as the NSIS candidate. It schedules application-owned background setup after file publication and blocks uninstall before `RemoveFiles` when application-owned integration/data cleanup fails. WiX source and package contracts are verified; native MSI construction, upgrade, rollback, and Installed Apps acceptance remain in final Windows QA.
+- Source-complete macOS app-bundle ZIP and DMG with one staging layout for the GUI, index daemon, bundle metadata, icon, release documentation, and source provenance. The release workflow uses an ephemeral keychain to Developer ID sign the app, notarizes and staples the app and DMG, publishes fresh checksums, and verifies downloaded identities, tickets, and Gatekeeper assessment. Native construction, launch, Finder behavior, and production-identity acceptance remain pending on macOS.
+- Source-complete Unix Administrator profile with visibly identified application and save surfaces, index-free direct file use, process-scoped temporary indexing, and a separately confirmed persistent root service isolated in protected root-owned configuration, state, database, lock and socket namespaces.
+- Source-complete storage locations: Linux mounted/removable roots and Windows fixed, removable, optical and mapped-network drives are discovered with stable identities; attachment/removal refresh retains unavailable locations without redirecting operations; direct browsing remains independent from explicit indexed-volume opt-in.
+- Source-complete release signing: the tag workflow imports an approved Linux OpenPGP identity, creates armored detached signatures for the portable tarball and AppImage, signs Windows payload binaries before packaging and the final portable/MSI/installer artifacts afterward, and Developer ID signs, notarizes, and staples the macOS app and DMG. It recomputes checksums after signing and verifies downloaded Linux signatures, Windows Authenticode identities, and macOS team identities/tickets/Gatekeeper assessment before publication. Production identities and exact-artifact acceptance remain in final platform QA.
 
-Move enablement is per platform and mode. Accepted Linux same-filesystem native rename does not enable cross-filesystem or Windows Move. The frozen [Durable Move Recovery Design](MOVE_RECOVERY_DESIGN.md) records one possible future source-claim protocol, not a prerequisite for the accepted same-filesystem path.
+## Remaining work
 
-## V1 Release Gate
+### 1. Finish previews and editing
 
-V1 should not ship until:
+- Complete native Windows fixture acceptance for the Job Object Office process boundary before enabling the provider. Verify conversion, timeout/cancellation descendant cleanup, memory/process limits, inherited-handle restriction, private profile/output cleanup and fallback behavior on a supported Windows host.
+- Keep native DOCX useful without an office suite. PPTX may remain a clearly labelled extracted fallback when no accepted layout provider is available.
+- Continue the Notner-informed editor after faithful read-only preview. Add editing format by format with explicit save, conflict and recovery behavior; conversion alone is not editing.
 
-- `cargo fmt --check`, `cargo test --workspace`, and strict Clippy pass.
-- Linux and Windows CI pass.
-- Linux AppImage and portable tarball launch from clean artifacts.
-- New File and New Folder pass native Linux and Windows workflows with spaces, Unicode, invalid-name and existing-entry rejection, correct post-create selection, and no overwrite.
-- The collapsed and expanded Locations rail pass native visual, pointer, keyboard, tooltip, and selection-parity review alongside the Smart Panel.
-- Windows portable zip launches and passes real desktop smoke testing.
-- Windows secondary fixed drives, removable drives, and mapped network drives are discoverable and navigable; Linux user-visible mounted/removable volumes pass the equivalent attach, browse, detach, and unavailable-state checks.
-- Cross-volume Copy passes. Cross-volume Move remains disabled without mutation unless a separately accepted protocol later passes its platform-specific safety, hot-unplug, packaged, and native acceptance gates.
-- Privileged helper behavior is validated on Linux and Windows.
-- Known limitations match the actual tested state.
+### 2. Complete file operations and desktop workflows
 
-## Deferred Work
+- Complete Windows Move against the same product contract. Cross-volume Skip/Rename now covers regular files, plain directory trees, and top-level symbolic links with deterministic raw-target evidence and no reparse-point traversal; directory trees containing links and non-symbolic reparse points remain conservatively rejected pending explicit semantics and native acceptance. Continue with Overwrite parity, native crash/ACL/filesystem acceptance, and the retained-transaction user lifecycle; keep Windows-specific publication and identity primitives isolated and require native acceptance before release claims.
+- Apply the Deelab transaction findings proportionally: inspectable effects, item-level receipts, precondition revalidation, evidence-bound Undo, and explicit refusal when reversal cannot be proved. Ordinary same-volume renames must remain direct and fast.
+- Extend session undo to the remaining supported operations, one operation type at a time, with conflict checks.
 
-These are useful ideas, but they are not v1 blockers unless QA proves otherwise:
+### 3. Finish packaging source
 
-- Advanced Office navigation and editing beyond faithful read-only preview.
-- Rich file thumbnails beyond the implemented text-card, thumbnail-collage, and Windows Media Foundation video path remain deferred where platform support or dependencies require a separate decision. The native-only video policy adds no bundled/invoked/recommended/downloaded FFmpeg, GStreamer codec payload, codec pack, external decoder, or additional codec implementation; unapproved platforms remain metadata-only. [Video Thumbnail Backend Spike](VIDEO_THUMBNAIL_SPIKE.md) preserves the rejected FFmpeg-first evaluation as historical evidence.
-- Native desktop Open With discovery parity beyond Linux remains deferred.
-- Media playback and advanced image tools.
-- Fanotify helper/service packaging.
-- Phase 2 continuous indexing is implemented on Linux as a same-user Unix-socket daemon with a single SQLite writer, concurrent GUI/CLI clients, live watcher reconciliation, persisted snapshot restart, explicit status/rebuild/configuration IPC, and a restartable systemd user-service installer. Packaged Linux and upgrade-migration acceptance remains an exact-artifact gate.
-- Tab drag-and-drop is implemented with source and automated tests; packaged/manual acceptance remains pending.
-- List rubber-band selection is implemented with shared Grid semantics and source tests; packaged/manual acceptance remains pending.
-- Full undo for file operations. Linux has an initial session-only undo action for one completed
-  same-directory Rename: it rechecks the renamed link entry immediately before the same atomic
-  no-clobber rename used forward. Linux has no identity-conditional rename, so this is a
-  fail-closed stale-entry check with a residual external mutation TOCTOU window, not an
-  adversarial-race guarantee; undo for all other operations remains deferred.
-- Native Linux `.deb`/`.rpm`, Windows MSI, macOS packages, and code signing.
+- Finish native Windows acceptance of the MSI and installer/uninstaller cleanup integration.
+
+## Triggered work, not background work
+
+These outcomes remain available, but they start only when their trigger is met. Workers must not choose them merely because another lane is waiting for physical QA.
+
+- **MiniPdf preview pack:** run the bounded Linux/Windows comparison only when deciding whether Ottrin needs a downloadable lightweight pack. The decision needs representative fidelity and failure evidence, not an exhaustive format survey.
+- **Portable LibreOffice fidelity pack:** start only after installed-provider acceptance shows a concrete need and provenance, update ownership, licence and removal responsibilities are acceptable.
+- **Generic pack manager:** build it only after one pack candidate has passed its product decision. Do not build package infrastructure for hypothetical providers.
+- **Renderer, codec or icon replacement research:** start only for a reproduced product gap that the current accepted path cannot solve.
+- **Advanced image tools:** the repository does not define this outcome. Do not invent features from the label; start only after David chooses a concrete tool and acceptance behavior.
+- **Fanotify helper/service:** the current Linux indexer uses its accepted watcher design and no active document defines a fanotify requirement. Reopen this only for a reproduced coverage gap and an accepted replacement or supplemental design.
+
+## Final physical and platform QA
+
+Start this phase after source and packaging outcomes are complete. Keep it as one concentrated acceptance pass against exact candidate artifacts. Fix reproducible defects at their source, then rerun only the affected acceptance path until the candidate is ready for the final gate.
+
+### Linux
+
+- Launch the AppImage, portable tarball and native packages on a clean supported desktop.
+- Run one daily-driver workflow covering navigation, New File/New Folder, file operations, cross-volume Copy, Tandem View, multi-select, search, Quick Inspector, context menus and status messages.
+- Attach, browse, index by explicit choice, detach and reconnect real mounted/removable volumes. Check compact/expanded Locations pointer, keyboard, tooltip, ordering, selection and unavailable states.
+- Exercise installed LibreOffice with representative DOCX, XLSX and PPTX files. Confirm conversion, cancellation, cleanup, provider labels, page navigation and native fallback. Add fixtures only for defects found or features Ottrin claims to support.
+- Exercise system GStreamer playback and truthful fallback without adding codecs.
+- Check tab drag-and-drop and Grid/List rubber-band selection.
+- Check packaged privileged-helper and polkit allow, cancel, missing-helper and policy-error paths.
+- Recheck native assistive integration once. If the upstream Unix AT-SPI lifecycle remains unusable, record the observed limitation rather than starting replacement infrastructure during QA.
+
+### Windows
+
+- Launch the portable zip and installed application on real Windows hardware or a representative real Windows VM.
+- Check install, Installed Apps registration, shortcuts, launch, upgrade and uninstall cleanup without deleting user files.
+- Run the Windows daily-driver workflow: navigation, New File/New Folder, file operations, Recycle Bin, Tandem View, search lifecycle, Quick Inspector, UAC/helper behavior and background integration.
+- Attach and remove secondary fixed, removable and optical storage; connect and disconnect a mapped-network drive; check unavailable states and explicit indexing.
+- Exercise Office previews through the accepted Windows provider boundary and confirm native/extracted fallback.
+- Exercise Media Foundation with representative ordinary, malformed and unsupported media, cancellation, source replacement and the exact package contents.
+- Exercise native WGPU and bundled Mesa OpenGL on adapters that need each path. Confirm Automatic selection, saved preference, diagnostic override, startup log and loaded-DLL provenance.
+- Exercise same-volume and cross-volume Move with Skip/Rename/Overwrite/Cancel handling, interrupted work, edited-output Undo refusal, removable drives, and explicit partial/recovery outcomes.
+
+### Signing
+
+- Linux and Windows code-signing integration is source-complete; production identities and exact downloaded-artifact verification remain release gates.
+- Sign the exact Linux and Windows release artifacts with the approved production identities where required and verify the downloaded signatures.
+
+## Release candidate gate
+
+Run this gate once the implementation outcomes above are source-complete and exact candidate artifacts exist. Earlier focused checks remain useful evidence but do not satisfy release acceptance. The Windows candidate design includes the checksum-pinned Mesa 26.1.3 OpenGL compatibility runtime; exact-artifact verification must cover its payload, renderer preferences, diagnostic override, and loaded-DLL provenance, and no current package acceptance is claimed before those gates pass.
+
+- `cargo fmt --all --check`, `cargo check --workspace --all-targets`, `cargo test --workspace` and strict workspace Clippy pass.
+- Linux and Windows CI pass for the release commit.
+- Rebuilt artifact checksums verify and archive inspection finds the expected app, indexer, helper, policies, assets and documentation.
+- Linux AppImage and portable tarball launch and pass the Linux workflow.
+- Windows portable and installer launch and pass the Windows workflow.
+- The Windows packages contain the pinned Mesa 26.1.3/DXC payload and notices; Automatic, native and OpenGL paths report the correct loaded DLLs.
+- New File/New Folder, Locations, cross-volume Copy and Move, and privileged-helper behavior pass on their target platforms.
+- Same-volume and cross-volume Move preserve source data on uncertainty and report complete, partial, blocked, and recovery-required outcomes truthfully.
+- Known limitations match observed behavior.
+- `README.md`, `USER_GUIDE.md`, `ROADMAP.md` and `RELEASE_NOTES.md` agree with the exact artifacts.
+- Version, artifact names, checksums and generated release notes agree.
+- Required signatures verify after download.
+- David reviews the release notes and any remaining known limitations. No blocker is waived without a written decision.

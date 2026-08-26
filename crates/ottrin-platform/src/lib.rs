@@ -37,6 +37,21 @@ pub fn discover_retained_move_transactions()
     move_transaction::discover_retained_move_transactions()
 }
 
+/// Lists retained Windows Move journals without creating recovery state or attempting cleanup.
+#[cfg(target_os = "windows")]
+pub fn discover_retained_move_transactions_at(
+    recovery_root: &Path,
+) -> Result<Vec<move_recovery::WindowsDiscoveredMoveTransaction>, PlatformError> {
+    move_transaction::discover_retained_windows_move_transactions_at(recovery_root)
+}
+
+/// Lists retained Windows Move journals at Ottrin's configured state-home recovery root.
+#[cfg(target_os = "windows")]
+pub fn discover_retained_move_transactions()
+-> Result<Vec<move_recovery::WindowsDiscoveredMoveTransaction>, PlatformError> {
+    move_transaction::discover_retained_windows_move_transactions()
+}
+
 #[derive(Debug, Clone)]
 pub struct FileProperties {
     pub path: PathBuf,
@@ -92,10 +107,17 @@ pub enum PlatformError {
     InvalidDestination(String),
     #[error("destination entry already exists: {0}")]
     DestinationExists(String),
-    #[error("rename undo receipt is invalid: {0}")]
-    InvalidRenameUndoReceipt(String),
-    #[error("rename undo target is missing or no longer the renamed entry: {0}")]
-    StaleRenameUndo(String),
+    #[error("filesystem undo receipt is invalid: {0}")]
+    InvalidPathMoveUndoReceipt(String),
+    #[error("undo target is missing or no longer the same entry: {0}")]
+    StalePathMoveUndo(String),
+    #[error("undo completed but recovery cleanup is pending at {transaction}: {message}")]
+    CommittedUndoCleanupPending {
+        transaction: String,
+        message: String,
+    },
+    #[error("permission undo target is missing, replaced, or changed again: {0}")]
+    StaleChmodUndo(String),
     #[error("safe copy is unsupported on this platform: {0}")]
     UnsupportedSafeCopy(String),
     #[error("safe overwrite of an existing entry is unsupported on this platform: {0}")]
@@ -106,6 +128,11 @@ pub enum PlatformError {
     UnsupportedSafeMove(String),
     #[error("filesystem operation committed, but cleanup is pending at {transaction}: {message}")]
     CommittedCleanupPending {
+        transaction: String,
+        message: String,
+    },
+    #[error("move source is retained for recovery before publication at {transaction}: {message}")]
+    ClaimedRecoveryPending {
         transaction: String,
         message: String,
     },
@@ -179,28 +206,91 @@ pub fn is_windows_reserved_creation_name(name: &str) -> bool {
         })
 }
 
-/// Link-entry identity captured around a successful Linux rename.
+/// Link-entry identity captured for a reversible Linux pathname publication.
 ///
 /// On Linux this is `symlink_metadata`'s device and inode pair, so it binds a
 /// symlink entry rather than the symlink target. It is intentionally opaque to
 /// callers: only this crate may compare it before an inverse rename.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RenameIdentity {
+pub struct PathMoveIdentity {
     #[cfg(target_os = "linux")]
     device: u64,
     #[cfg(target_os = "linux")]
     inode: u64,
 }
 
-/// Session-only proof required to attempt one inverse of a completed rename.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RenameUndoReceipt {
-    before_path: PathBuf,
-    after_path: PathBuf,
-    identity: RenameIdentity,
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PathMoveUndoRequirement {
+    None,
+    EmptyFile,
+    EmptyDirectory,
 }
 
-impl RenameUndoReceipt {
+#[cfg(target_os = "linux")]
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct CrossFilesystemUndoState {
+    restored_identity: PathMoveIdentity,
+    restoration_transaction: PathBuf,
+    destination_transaction: Option<PathBuf>,
+}
+
+/// Session-only proof required to attempt one inverse of a completed pathname publication.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PathMoveUndoReceipt {
+    before_path: PathBuf,
+    after_path: PathBuf,
+    identity: PathMoveIdentity,
+    displaced_identity: Option<PathMoveIdentity>,
+    retained_displaced_path: Option<PathBuf>,
+    requirement: PathMoveUndoRequirement,
+    #[cfg(target_os = "linux")]
+    published_content: Option<move_recovery::SourceTreeSnapshot>,
+    #[cfg(target_os = "linux")]
+    cross_filesystem_state: std::sync::Arc<std::sync::OnceLock<CrossFilesystemUndoState>>,
+}
+
+/// Session-only proof for restoring a Linux permission change to the exact
+/// unchanged non-symlink entry. The retained descriptor prevents an inverse
+/// from ever chmodding a pathname replacement.
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+#[derive(Debug, Clone)]
+pub struct ChmodUndoReceipt {
+    path: PathBuf,
+    identity: PathMoveIdentity,
+    before_mode: u32,
+    after_mode: u32,
+    #[cfg(target_os = "linux")]
+    descriptor: std::sync::Arc<std::os::fd::OwnedFd>,
+}
+
+impl ChmodUndoReceipt {
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+}
+
+/// Session-only proof for restoring the exact Linux home-Trash payload created
+/// by one completed delete. Mounted-volume and Windows Trash entries do not
+/// expose enough durable origin evidence to construct this receipt.
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+#[derive(Debug, Clone)]
+pub struct TrashUndoReceipt {
+    item: TrashItem,
+    identity: PathMoveIdentity,
+}
+
+impl TrashUndoReceipt {
+    pub fn original_path(&self) -> &Path {
+        &self.item.original_path
+    }
+
+    pub fn trash_path(&self) -> &Path {
+        &self.item.trash_path
+    }
+}
+
+impl PathMoveUndoReceipt {
     pub fn before_path(&self) -> &Path {
         &self.before_path
     }
@@ -548,14 +638,14 @@ pub enum PrivilegedAvailability {
 /// A display-safe application choice discovered for one exact target. The
 /// target binding is lexical `PathBuf` equality, not inode or immutable-file
 /// identity; desktop associations and the target can change within the
-/// same-user desktop trust model. The desktop-file path remains opaque, so
-/// callers can show the name but cannot turn it into an arbitrary command.
+/// same-user desktop trust model. The native handler identity remains opaque,
+/// so callers can show the name but cannot turn it into an arbitrary command.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OpenWithApplication {
     name: String,
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     native_id: String,
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     target: PathBuf,
 }
 
@@ -563,6 +653,69 @@ impl OpenWithApplication {
     pub fn name(&self) -> &str {
         &self.name
     }
+}
+
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct NativeOpenWithApplication {
+    id: String,
+    name: String,
+}
+
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
+impl NativeOpenWithApplication {
+    fn new(id: impl Into<String>, name: impl Into<String>) -> Self {
+        Self {
+            id: id.into(),
+            name: name.into(),
+        }
+    }
+}
+
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
+fn open_with_choices_from_native(
+    target: &Path,
+    applications: Vec<NativeOpenWithApplication>,
+) -> Vec<OpenWithApplication> {
+    use std::collections::BTreeMap;
+
+    let mut unique = BTreeMap::new();
+    for application in applications {
+        if !application.id.is_empty() && !application.name.is_empty() {
+            unique.entry(application.id).or_insert(application.name);
+        }
+    }
+    let mut choices = unique
+        .into_iter()
+        .map(|(native_id, name)| OpenWithApplication {
+            name,
+            native_id,
+            target: target.to_path_buf(),
+        })
+        .collect::<Vec<_>>();
+    choices.sort_by(|left, right| {
+        left.name
+            .cmp(&right.name)
+            .then_with(|| left.native_id.cmp(&right.native_id))
+    });
+    choices
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn select_native_open_with_handler<T>(
+    handlers: Vec<(NativeOpenWithApplication, T)>,
+    selected_id: &str,
+    launch: impl FnOnce(T) -> Result<(), PlatformError>,
+) -> Result<(), PlatformError> {
+    let (_, handler) = handlers
+        .into_iter()
+        .find(|(descriptor, _)| descriptor.id == selected_id)
+        .ok_or_else(|| {
+            PlatformError::InvalidSource(
+                "Open With choice is no longer discovered for this target".into(),
+            )
+        })?;
+    launch(handler)
 }
 
 /// Lists native Open With choices.  Platforms without safe native discovery
@@ -574,7 +727,11 @@ pub fn discover_open_with_applications(
     {
         linux_open_with::discover(target)
     }
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(target_os = "windows")]
+    {
+        windows_open_with::discover(target)
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
     {
         let _ = target;
         Ok(Vec::new())
@@ -597,13 +754,27 @@ pub trait PlatformOps: Send + Sync {
         self.execute_command(command)
             .map(|result| (result, Vec::new()))
     }
+    /// Moves one entry to Trash and returns an inverse receipt only when the
+    /// backend exposes the exact payload plus proven original-storage context.
+    fn execute_trash_with_undo_receipt(
+        &self,
+        target: &Path,
+    ) -> Result<Option<TrashUndoReceipt>, PlatformError> {
+        self.delete_path(target, DeleteMode::Trash).map(|_| None)
+    }
+    fn undo_trash_with_receipt(&self, receipt: &TrashUndoReceipt) -> Result<(), PlatformError> {
+        let _ = receipt;
+        Err(PlatformError::NotAvailable(
+            "session-only Trash undo is supported only for proven Linux home-Trash entries",
+        ))
+    }
     /// Performs one same-parent Rename and returns an inverse receipt only
     /// when the link entry has the same identity before and after the rename.
     fn execute_rename_with_undo_receipt(
         &self,
         source: &Path,
         new_name: &str,
-    ) -> Result<Option<RenameUndoReceipt>, PlatformError> {
+    ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
         self.execute_command(&FileCommand::Rename {
             source: source.to_path_buf(),
             new_name: new_name.to_string(),
@@ -613,10 +784,121 @@ pub trait PlatformOps: Send + Sync {
     /// Attempts the receipt's inverse with the same atomic no-replace primitive
     /// as forward Rename. The identity preflight detects staleness but cannot
     /// make Linux's pathname rename an identity-conditional compare-and-swap.
-    fn undo_rename_with_receipt(&self, receipt: &RenameUndoReceipt) -> Result<(), PlatformError> {
+    fn undo_rename_with_receipt(&self, receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
         let _ = receipt;
         Err(PlatformError::NotAvailable(
             "session-only rename undo is supported only on Linux",
+        ))
+    }
+    fn execute_create_file_with_undo_receipt(
+        &self,
+        parent: &Path,
+        name: &str,
+    ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+        self.execute_command(&FileCommand::CreateFile {
+            parent: parent.to_path_buf(),
+            name: name.to_string(),
+        })
+        .map(|_| None)
+    }
+    fn undo_create_file_with_receipt(
+        &self,
+        receipt: &PathMoveUndoReceipt,
+    ) -> Result<(), PlatformError> {
+        let _ = receipt;
+        Err(PlatformError::NotAvailable(
+            "session-only create file undo is supported only on Linux",
+        ))
+    }
+    fn execute_create_folder_with_undo_receipt(
+        &self,
+        parent: &Path,
+        name: &str,
+    ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+        self.execute_command(&FileCommand::CreateFolder {
+            parent: parent.to_path_buf(),
+            name: name.to_string(),
+        })
+        .map(|_| None)
+    }
+    fn undo_create_folder_with_receipt(
+        &self,
+        receipt: &PathMoveUndoReceipt,
+    ) -> Result<(), PlatformError> {
+        let _ = receipt;
+        Err(PlatformError::NotAvailable(
+            "session-only create folder undo is supported only on Linux",
+        ))
+    }
+    fn execute_symlink_with_undo_receipt(
+        &self,
+        link_path: &Path,
+        target: &Path,
+    ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+        self.execute_command(&FileCommand::Symlink {
+            link_path: link_path.to_path_buf(),
+            target: target.to_path_buf(),
+        })
+        .map(|_| None)
+    }
+    fn undo_symlink_with_receipt(
+        &self,
+        receipt: &PathMoveUndoReceipt,
+    ) -> Result<(), PlatformError> {
+        let _ = receipt;
+        Err(PlatformError::NotAvailable(
+            "session-only symlink undo is supported only on Linux",
+        ))
+    }
+    fn execute_chmod_with_undo_receipt(
+        &self,
+        target: &Path,
+        mode_str: &str,
+    ) -> Result<Option<ChmodUndoReceipt>, PlatformError> {
+        self.execute_command(&FileCommand::Chmod {
+            target: target.to_path_buf(),
+            mode_str: mode_str.to_string(),
+        })
+        .map(|_| None)
+    }
+    fn undo_chmod_with_receipt(&self, receipt: &ChmodUndoReceipt) -> Result<(), PlatformError> {
+        let _ = receipt;
+        Err(PlatformError::NotAvailable(
+            "session-only chmod undo is supported only on Linux",
+        ))
+    }
+    fn execute_copy_with_undo_receipt(
+        &self,
+        source: &Path,
+        destination: &Path,
+        conflict: ConflictAction,
+    ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+        self.execute_command(&FileCommand::Copy {
+            sources: vec![source.to_path_buf()],
+            destination: destination.to_path_buf(),
+            conflict,
+        })
+        .map(|_| None)
+    }
+    fn undo_copy_with_receipt(&self, receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
+        let _ = receipt;
+        Err(PlatformError::NotAvailable(
+            "session-only copy undo is supported only on Linux",
+        ))
+    }
+    fn execute_move_with_undo_receipt(
+        &self,
+        source: &Path,
+        destination: &Path,
+        conflict: ConflictAction,
+    ) -> Result<(MoveDisposition, Option<PathMoveUndoReceipt>), PlatformError> {
+        move_entry_transactional(source, destination, conflict)
+            .map(|publication| (publication.disposition, None))
+    }
+    fn undo_move_with_receipt(&self, receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
+        let _ = receipt;
+        Err(PlatformError::NotAvailable(
+            "session-only move undo is supported only on Linux",
         ))
     }
     fn execute_privileged(
@@ -768,8 +1050,9 @@ impl PlatformOps for DefaultPlatform {
                     validate_copy_source(source)?;
                     reject_directory_copy_into_itself(source, destination)?;
                 }
-                execute_batch(sources, |source| {
-                    move_entry_transactional(source, destination, *conflict).map(|_| ())
+                execute_move_batch(sources, |source| {
+                    move_entry_transactional(source, destination, *conflict)
+                        .map(|publication| publication.disposition)
                 })?;
                 Ok(None)
             }
@@ -778,15 +1061,23 @@ impl PlatformOps for DefaultPlatform {
                 move_transaction::recover_retained_move_pending_destination(*transaction_id)?;
                 Ok(None)
             }
-            #[cfg(not(target_os = "linux"))]
+            #[cfg(target_os = "windows")]
+            FileCommand::RecoverRetainedMove { transaction_id } => {
+                move_transaction::recover_retained_windows_move_transaction(*transaction_id)?;
+                Ok(None)
+            }
+            #[cfg(not(any(target_os = "linux", target_os = "windows")))]
             FileCommand::RecoverRetainedMove { .. } => Err(PlatformError::NotAvailable(
-                "Retained Move recovery is supported only on Linux",
+                "Retained Move recovery is supported only on Linux and Windows",
             )),
             FileCommand::ShowProperties { target } => {
                 let props = read_properties(target)?;
                 Ok(Some(props))
             }
             FileCommand::Chmod { target, mode_str } => {
+                #[cfg(target_os = "linux")]
+                let _ = chmod_with_undo_receipt_linux(target, mode_str)?;
+                #[cfg(not(target_os = "linux"))]
                 chmod_path(target, mode_str).map_err(PlatformError::Io)?;
                 Ok(None)
             }
@@ -814,6 +1105,7 @@ impl PlatformOps for DefaultPlatform {
                 }
                 let completed_dispositions = execute_move_batch(sources, |source| {
                     move_entry_transactional(source, destination, *conflict)
+                        .map(|publication| publication.disposition)
                 })?;
                 Ok((None, completed_dispositions))
             }
@@ -821,28 +1113,81 @@ impl PlatformOps for DefaultPlatform {
         }
     }
 
+    fn execute_trash_with_undo_receipt(
+        &self,
+        target: &Path,
+    ) -> Result<Option<TrashUndoReceipt>, PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            let original_path = canonical_trash_source_path(target)?;
+            let before_identity = rename_identity(&original_path)
+                .map_err(|_| PlatformError::InvalidSource(target.display().to_string()))?;
+            self.delete_path(&original_path, DeleteMode::Trash)?;
+            Ok(exact_trash_undo_receipt(
+                &original_path,
+                &before_identity,
+                list_trash_items(),
+            ))
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            self.delete_path(target, DeleteMode::Trash).map(|_| None)
+        }
+    }
+
+    fn undo_trash_with_receipt(&self, receipt: &TrashUndoReceipt) -> Result<(), PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            let current_identity = rename_identity(&receipt.item.trash_path).map_err(|_| {
+                PlatformError::StalePathMoveUndo(receipt.item.trash_path.display().to_string())
+            })?;
+            if current_identity != receipt.identity {
+                return Err(PlatformError::StalePathMoveUndo(
+                    receipt.item.trash_path.display().to_string(),
+                ));
+            }
+            match std::fs::symlink_metadata(&receipt.item.original_path) {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Ok(_) => {
+                    return Err(PlatformError::DestinationExists(
+                        receipt.item.original_path.display().to_string(),
+                    ));
+                }
+                Err(error) => return Err(PlatformError::Io(error.to_string())),
+            }
+            restore_trash_item(&receipt.item)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = receipt;
+            Err(PlatformError::NotAvailable(
+                "session-only Trash undo is supported only for proven Linux home-Trash entries",
+            ))
+        }
+    }
+
     fn execute_rename_with_undo_receipt(
         &self,
         source: &Path,
         new_name: &str,
-    ) -> Result<Option<RenameUndoReceipt>, PlatformError> {
+    ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
         #[cfg(target_os = "linux")]
         {
-            if !rename_target_has_same_parent(source, new_name) {
-                return Err(PlatformError::InvalidRenameUndoReceipt(
-                    "forward rename must remain in the source parent".to_string(),
-                ));
-            }
             let before_identity = rename_identity(source)
                 .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
             let after_path = rename_in_same_parent(source, new_name)?;
             let after_identity = rename_identity(&after_path).ok();
             Ok(after_identity
                 .filter(|identity| identity == &before_identity)
-                .map(|identity| RenameUndoReceipt {
+                .map(|identity| PathMoveUndoReceipt {
                     before_path: source.to_path_buf(),
                     after_path,
                     identity,
+                    displaced_identity: None,
+                    retained_displaced_path: None,
+                    requirement: PathMoveUndoRequirement::None,
+                    published_content: None,
+                    cross_filesystem_state: Default::default(),
                 }))
         }
         #[cfg(not(target_os = "linux"))]
@@ -855,25 +1200,380 @@ impl PlatformOps for DefaultPlatform {
         }
     }
 
-    fn undo_rename_with_receipt(&self, receipt: &RenameUndoReceipt) -> Result<(), PlatformError> {
+    fn undo_rename_with_receipt(&self, receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
         #[cfg(target_os = "linux")]
         {
-            validate_rename_undo_receipt(receipt)?;
-            let observed_identity = rename_identity(&receipt.after_path).map_err(|_| {
-                PlatformError::StaleRenameUndo(receipt.after_path.display().to_string())
-            })?;
-            if observed_identity != receipt.identity {
-                return Err(PlatformError::StaleRenameUndo(
-                    receipt.after_path.display().to_string(),
+            if receipt.before_path.parent() != receipt.after_path.parent() {
+                return Err(PlatformError::InvalidPathMoveUndoReceipt(
+                    "rename undo must remain in the same lexical parent".to_string(),
                 ));
             }
-            rename_without_replacement(&receipt.after_path, &receipt.before_path)
+            undo_path_move_linux(receipt)
         }
         #[cfg(not(target_os = "linux"))]
         {
             let _ = receipt;
             Err(PlatformError::NotAvailable(
                 "session-only rename undo is supported only on Linux",
+            ))
+        }
+    }
+
+    fn execute_create_file_with_undo_receipt(
+        &self,
+        parent: &Path,
+        name: &str,
+    ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            ensure_existing_dir(parent)?;
+            validate_creation_name(name).map_err(PlatformError::Io)?;
+            let publication = copy_transaction::create_empty_file(parent, name)?;
+            let CopyPublication::Published {
+                retained_transaction,
+                published_path,
+                published_identity,
+                ..
+            } = publication
+            else {
+                return Ok(None);
+            };
+            undo_receipt_for_published_identity(
+                retained_transaction,
+                published_path,
+                published_identity,
+                None,
+                PathMoveUndoRequirement::EmptyFile,
+                "file creation",
+            )
+            .map(Some)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            self.execute_command(&FileCommand::CreateFile {
+                parent: parent.to_path_buf(),
+                name: name.to_string(),
+            })
+            .map(|_| None)
+        }
+    }
+
+    fn undo_create_file_with_receipt(
+        &self,
+        receipt: &PathMoveUndoReceipt,
+    ) -> Result<(), PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            undo_path_move_linux(receipt)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = receipt;
+            Err(PlatformError::NotAvailable(
+                "session-only create file undo is supported only on Linux",
+            ))
+        }
+    }
+
+    fn execute_create_folder_with_undo_receipt(
+        &self,
+        parent: &Path,
+        name: &str,
+    ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            ensure_existing_dir(parent)?;
+            validate_creation_name(name).map_err(PlatformError::Io)?;
+            let publication = copy_transaction::create_empty_directory(parent, name)?;
+            let CopyPublication::Published {
+                retained_transaction,
+                published_path,
+                published_identity,
+                ..
+            } = publication
+            else {
+                return Ok(None);
+            };
+            undo_receipt_for_published_identity(
+                retained_transaction,
+                published_path,
+                published_identity,
+                None,
+                PathMoveUndoRequirement::EmptyDirectory,
+                "folder creation",
+            )
+            .map(Some)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            self.execute_command(&FileCommand::CreateFolder {
+                parent: parent.to_path_buf(),
+                name: name.to_string(),
+            })
+            .map(|_| None)
+        }
+    }
+
+    fn undo_create_folder_with_receipt(
+        &self,
+        receipt: &PathMoveUndoReceipt,
+    ) -> Result<(), PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            undo_path_move_linux(receipt)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = receipt;
+            Err(PlatformError::NotAvailable(
+                "session-only create folder undo is supported only on Linux",
+            ))
+        }
+    }
+
+    fn execute_symlink_with_undo_receipt(
+        &self,
+        link_path: &Path,
+        target: &Path,
+    ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            let parent = link_path.parent().ok_or_else(|| {
+                PlatformError::InvalidDestination(link_path.display().to_string())
+            })?;
+            let name = link_path.file_name().ok_or_else(|| {
+                PlatformError::InvalidDestination(link_path.display().to_string())
+            })?;
+            ensure_existing_dir(parent)?;
+            let publication = copy_transaction::create_symlink(parent, name, target)?;
+            let CopyPublication::Published {
+                retained_transaction,
+                published_path,
+                published_identity,
+                ..
+            } = publication
+            else {
+                return Ok(None);
+            };
+            undo_receipt_for_published_identity(
+                retained_transaction,
+                published_path,
+                published_identity,
+                None,
+                PathMoveUndoRequirement::None,
+                "symlink creation",
+            )
+            .map(Some)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            self.execute_command(&FileCommand::Symlink {
+                link_path: link_path.to_path_buf(),
+                target: target.to_path_buf(),
+            })
+            .map(|_| None)
+        }
+    }
+
+    fn undo_symlink_with_receipt(
+        &self,
+        receipt: &PathMoveUndoReceipt,
+    ) -> Result<(), PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            undo_path_move_linux(receipt)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = receipt;
+            Err(PlatformError::NotAvailable(
+                "session-only symlink undo is supported only on Linux",
+            ))
+        }
+    }
+
+    fn execute_chmod_with_undo_receipt(
+        &self,
+        target: &Path,
+        mode_str: &str,
+    ) -> Result<Option<ChmodUndoReceipt>, PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            chmod_with_undo_receipt_linux(target, mode_str).map(Some)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            self.execute_command(&FileCommand::Chmod {
+                target: target.to_path_buf(),
+                mode_str: mode_str.to_string(),
+            })
+            .map(|_| None)
+        }
+    }
+
+    fn undo_chmod_with_receipt(&self, receipt: &ChmodUndoReceipt) -> Result<(), PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            undo_chmod_linux(receipt)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = receipt;
+            Err(PlatformError::NotAvailable(
+                "session-only chmod undo is supported only on Linux",
+            ))
+        }
+    }
+
+    fn execute_copy_with_undo_receipt(
+        &self,
+        source: &Path,
+        destination: &Path,
+        conflict: ConflictAction,
+    ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            ensure_existing_dir(destination)?;
+            validate_copy_source(source)?;
+            reject_directory_copy_into_itself(source, destination)?;
+            let publication = copy_entry_transactional(source, destination, conflict)?;
+            let (retained_transaction, after_path, published_identity, displaced_identity) =
+                match publication {
+                    CopyPublication::Published {
+                        retained_transaction,
+                        published_path,
+                        published_identity,
+                        displaced_identity,
+                    } => (
+                        retained_transaction,
+                        published_path,
+                        published_identity,
+                        displaced_identity,
+                    ),
+                    CopyPublication::Skipped {
+                        retained_transaction: None,
+                    } => return Ok(None),
+                    CopyPublication::Skipped {
+                        retained_transaction: Some(transaction),
+                    } => {
+                        return Err(PlatformError::CommittedCleanupPending {
+                        transaction: transaction.display().to_string(),
+                        message: "copy was skipped; its private staged candidate was retained because pathname-based cleanup cannot prove ownership".into(),
+                    });
+                    }
+                };
+            undo_receipt_for_published_identity(
+                retained_transaction,
+                after_path,
+                published_identity,
+                displaced_identity,
+                PathMoveUndoRequirement::None,
+                "copy",
+            )
+            .map(Some)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            self.execute_command(&FileCommand::Copy {
+                sources: vec![source.to_path_buf()],
+                destination: destination.to_path_buf(),
+                conflict,
+            })
+            .map(|_| None)
+        }
+    }
+
+    fn undo_copy_with_receipt(&self, receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            undo_path_move_linux(receipt)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = receipt;
+            Err(PlatformError::NotAvailable(
+                "session-only copy undo is supported only on Linux",
+            ))
+        }
+    }
+
+    fn execute_move_with_undo_receipt(
+        &self,
+        source: &Path,
+        destination: &Path,
+        conflict: ConflictAction,
+    ) -> Result<(MoveDisposition, Option<PathMoveUndoReceipt>), PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            let publication = move_entry_transactional(source, destination, conflict)?;
+            let receipt = match publication.published_path.as_ref() {
+                None => None,
+                Some(after_path) => {
+                    let observed = rename_identity(after_path).map_err(|error| {
+                        PlatformError::CommittedCleanupPending {
+                            transaction: publication
+                                .retained_displaced_path
+                                .as_ref()
+                                .and_then(|path| path.parent())
+                                .unwrap_or(after_path)
+                                .display()
+                                .to_string(),
+                            message: format!(
+                                "Move completed, but its published entry identity could not be verified: {error}"
+                            ),
+                        }
+                    })?;
+
+                    let displaced_identity = publication
+                        .retained_displaced_path
+                        .as_ref()
+                        .map(|path| {
+                            rename_identity(path).map_err(|error| {
+                                PlatformError::CommittedCleanupPending {
+                                    transaction: path
+                                        .parent()
+                                        .unwrap_or(path)
+                                        .display()
+                                        .to_string(),
+                                    message: format!(
+                                        "Move completed, but its retained displaced destination identity could not be verified: {error}"
+                                    ),
+                                }
+                            })
+                        })
+                        .transpose()?;
+                    let published_content = publication.published_content.clone();
+                    Some(PathMoveUndoReceipt {
+                        before_path: source.to_path_buf(),
+                        after_path: after_path.clone(),
+                        identity: observed,
+                        displaced_identity,
+                        retained_displaced_path: publication.retained_displaced_path.clone(),
+                        requirement: PathMoveUndoRequirement::None,
+                        published_content,
+                        cross_filesystem_state: Default::default(),
+                    })
+                }
+            };
+            Ok((publication.disposition, receipt))
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            move_entry_transactional(source, destination, conflict)
+                .map(|publication| (publication.disposition, None))
+        }
+    }
+
+    fn undo_move_with_receipt(&self, receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
+        #[cfg(target_os = "linux")]
+        {
+            undo_path_move_linux(receipt)
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = receipt;
+            Err(PlatformError::NotAvailable(
+                "session-only move undo is supported only on Linux",
             ))
         }
     }
@@ -965,7 +1665,16 @@ impl DefaultPlatform {
             }
             linux_open_with::launch_selected(target, &application.native_id)
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(target_os = "windows")]
+        {
+            if application.target != target {
+                return Err(PlatformError::InvalidSource(
+                    "Open With choice belongs to another target".into(),
+                ));
+            }
+            windows_open_with::launch_selected(target, &application.native_id)
+        }
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
             let _ = (target, application);
             Err(PlatformError::NotAvailable("native Open With discovery"))
@@ -973,11 +1682,146 @@ impl DefaultPlatform {
     }
 }
 
+#[cfg(target_os = "windows")]
+mod windows_open_with {
+    use super::*;
+    use std::os::windows::ffi::OsStrExt;
+    use windows::Win32::Foundation::RPC_E_CHANGED_MODE;
+    use windows::Win32::System::Com::{
+        COINIT_APARTMENTTHREADED, COINIT_DISABLE_OLE1DDE, CoInitializeEx, CoTaskMemFree,
+        CoUninitialize, IDataObject,
+    };
+    use windows::Win32::UI::Shell::{
+        ASSOC_FILTER_NONE, BHID_DataObject, IAssocHandler, IShellItem, SHAssocEnumHandlers,
+        SHCreateItemFromParsingName,
+    };
+    use windows::core::{PCWSTR, PWSTR};
+
+    struct ComApartment(bool);
+
+    impl ComApartment {
+        fn enter() -> Result<Self, PlatformError> {
+            let result =
+                unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE) };
+            if result.is_ok() {
+                Ok(Self(true))
+            } else if result == RPC_E_CHANGED_MODE {
+                Ok(Self(false))
+            } else {
+                Err(PlatformError::Io(format!(
+                    "could not initialize Windows Open With discovery: {result:?}"
+                )))
+            }
+        }
+    }
+
+    impl Drop for ComApartment {
+        fn drop(&mut self) {
+            if self.0 {
+                unsafe { CoUninitialize() };
+            }
+        }
+    }
+
+    fn wide_null(value: &std::ffi::OsStr) -> Vec<u16> {
+        value.encode_wide().chain(std::iter::once(0)).collect()
+    }
+
+    fn owned_shell_string(value: PWSTR) -> Result<String, PlatformError> {
+        if value.is_null() {
+            return Ok(String::new());
+        }
+        let converted =
+            unsafe { value.to_string() }.map_err(|error| PlatformError::Io(error.to_string()));
+        unsafe { CoTaskMemFree(Some(value.as_ptr().cast())) };
+        converted
+    }
+
+    fn descriptor(handler: &IAssocHandler) -> Result<NativeOpenWithApplication, PlatformError> {
+        let id = owned_shell_string(
+            unsafe { handler.GetName() }.map_err(|error| PlatformError::Io(error.to_string()))?,
+        )?;
+        let name = owned_shell_string(
+            unsafe { handler.GetUIName() }.map_err(|error| PlatformError::Io(error.to_string()))?,
+        )?;
+        Ok(NativeOpenWithApplication::new(id, name))
+    }
+
+    fn extension_for(target: &Path) -> Option<Vec<u16>> {
+        let extension = target.extension()?;
+        if extension.is_empty() {
+            return None;
+        }
+        let mut dotted = std::ffi::OsString::from(".");
+        dotted.push(extension);
+        Some(wide_null(&dotted))
+    }
+
+    fn native_handlers(
+        target: &Path,
+    ) -> Result<Vec<(NativeOpenWithApplication, IAssocHandler)>, PlatformError> {
+        let Some(extension) = extension_for(target) else {
+            return Ok(Vec::new());
+        };
+        let enumerator = unsafe {
+            SHAssocEnumHandlers(PCWSTR(extension.as_ptr()), ASSOC_FILTER_NONE)
+                .map_err(|error| PlatformError::Io(error.to_string()))?
+        };
+        let mut handlers = Vec::new();
+        loop {
+            let mut slot = [None];
+            unsafe {
+                enumerator
+                    .Next(&mut slot, None)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?;
+            }
+            let Some(handler) = slot[0].take() else {
+                break;
+            };
+            let descriptor = descriptor(&handler)?;
+            // The Shell enumeration is the native filtered Open With source.
+            // Reject malformed registrations before exposing them to the UI.
+            if !descriptor.id.is_empty() && !descriptor.name.is_empty() {
+                handlers.push((descriptor, handler));
+            }
+        }
+        Ok(handlers)
+    }
+
+    pub(super) fn discover(target: &Path) -> Result<Vec<OpenWithApplication>, PlatformError> {
+        let _apartment = ComApartment::enter()?;
+        let applications = native_handlers(target)?
+            .into_iter()
+            .map(|(descriptor, _)| descriptor)
+            .collect();
+        Ok(open_with_choices_from_native(target, applications))
+    }
+
+    pub(super) fn launch_selected(target: &Path, selected_id: &str) -> Result<(), PlatformError> {
+        let _apartment = ComApartment::enter()?;
+        select_native_open_with_handler(native_handlers(target)?, selected_id, |handler| {
+            let path = wide_null(target.as_os_str());
+            let item: IShellItem = unsafe {
+                SHCreateItemFromParsingName(PCWSTR(path.as_ptr()), None)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?
+            };
+            let data: IDataObject = unsafe {
+                item.BindToHandler(None, &BHID_DataObject)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?
+            };
+            unsafe {
+                handler
+                    .Invoke(&data)
+                    .map_err(|error| PlatformError::Io(error.to_string()))
+            }
+        })
+    }
+}
+
 #[cfg(target_os = "linux")]
 mod linux_open_with {
     use super::*;
     use gio::prelude::*;
-    use std::collections::BTreeMap;
 
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub(super) struct NativeApplication {
@@ -1029,26 +1873,13 @@ mod linux_open_with {
         target: &Path,
         applications: Vec<NativeApplication>,
     ) -> Vec<OpenWithApplication> {
-        let mut unique = BTreeMap::new();
-        for application in applications {
-            if !application.id.is_empty() && !application.name.is_empty() {
-                unique.entry(application.id).or_insert(application.name);
-            }
-        }
-        let mut choices = unique
-            .into_iter()
-            .map(|(native_id, name)| OpenWithApplication {
-                name,
-                native_id,
-                target: target.to_path_buf(),
-            })
-            .collect::<Vec<_>>();
-        choices.sort_by(|left, right| {
-            left.name
-                .cmp(&right.name)
-                .then_with(|| left.native_id.cmp(&right.native_id))
-        });
-        choices
+        open_with_choices_from_native(
+            target,
+            applications
+                .into_iter()
+                .map(|application| NativeOpenWithApplication::new(application.id, application.name))
+                .collect(),
+        )
     }
 
     pub(super) fn discover(target: &Path) -> Result<Vec<OpenWithApplication>, PlatformError> {
@@ -1089,6 +1920,7 @@ mod linux_open_with {
 fn error_recovery_paths(error: &PlatformError) -> Vec<PathBuf> {
     match error {
         PlatformError::CleanupPending { transaction, .. }
+        | PlatformError::ClaimedRecoveryPending { transaction, .. }
         | PlatformError::CommittedCleanupPending { transaction, .. } => {
             vec![PathBuf::from(transaction)]
         }
@@ -1113,6 +1945,7 @@ fn message_with_recovery(error: &PlatformError, recovery_paths: &[PathBuf]) -> S
     }
 }
 
+#[cfg(test)]
 fn execute_batch(
     sources: &[PathBuf],
     mut execute: impl FnMut(&Path) -> Result<(), PlatformError>,
@@ -1148,7 +1981,7 @@ fn execute_move_batch(
 ) -> Result<Vec<MoveDisposition>, PlatformError> {
     let total = sources.len();
     let mut completed_dispositions = Vec::with_capacity(total);
-    for (index, source) in sources.iter().enumerate() {
+    for source in sources {
         match execute(source) {
             Ok(disposition) => {
                 completed_dispositions.push(disposition);
@@ -1159,7 +1992,11 @@ fn execute_move_batch(
                     PlatformError::CommittedCleanupPending { .. }
                         | PlatformError::PartialBatch { .. }
                 );
-                let completed = index + usize::from(current_committed);
+                let completed = completed_dispositions
+                    .iter()
+                    .filter(|disposition| **disposition == MoveDisposition::Moved)
+                    .count()
+                    + usize::from(current_committed);
                 if current_committed {
                     completed_dispositions.push(MoveDisposition::Moved);
                 }
@@ -1201,6 +2038,7 @@ fn execute_copy_batch_with(
         match execute(source) {
             Ok(CopyPublication::Published {
                 retained_transaction,
+                ..
             }) => retained.push(retained_transaction),
             Ok(CopyPublication::Skipped {
                 retained_transaction: Some(transaction),
@@ -1399,6 +2237,7 @@ fn ensure_existing_dir(path: &Path) -> Result<(), PlatformError> {
 }
 
 fn rename_in_same_parent(source: &Path, new_name: &str) -> Result<PathBuf, PlatformError> {
+    validate_creation_name(new_name).map_err(PlatformError::InvalidDestination)?;
     let parent = source
         .parent()
         .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
@@ -1409,35 +2248,651 @@ fn rename_in_same_parent(source: &Path, new_name: &str) -> Result<PathBuf, Platf
 }
 
 #[cfg(target_os = "linux")]
-fn rename_target_has_same_parent(source: &Path, new_name: &str) -> bool {
-    let Some(parent) = source.parent() else {
-        return false;
-    };
-    parent.join(new_name).parent() == Some(parent)
-}
-
-#[cfg(target_os = "linux")]
-fn rename_identity(path: &Path) -> std::io::Result<RenameIdentity> {
+fn rename_identity(path: &Path) -> std::io::Result<PathMoveIdentity> {
     use std::os::unix::fs::MetadataExt;
 
     let metadata = std::fs::symlink_metadata(path)?;
-    Ok(RenameIdentity {
+    Ok(PathMoveIdentity {
         device: metadata.dev(),
         inode: metadata.ino(),
     })
 }
 
 #[cfg(target_os = "linux")]
-fn validate_rename_undo_receipt(receipt: &RenameUndoReceipt) -> Result<(), PlatformError> {
+fn undo_receipt_for_published_identity(
+    retained_transaction: PathBuf,
+    after_path: PathBuf,
+    published_identity: PathMoveIdentity,
+    displaced_identity: Option<PathMoveIdentity>,
+    requirement: PathMoveUndoRequirement,
+    operation: &str,
+) -> Result<PathMoveUndoReceipt, PlatformError> {
+    let observed_identity =
+        rename_identity(&after_path).map_err(|error| PlatformError::CommittedCleanupPending {
+            transaction: retained_transaction.display().to_string(),
+            message: format!(
+                "{operation} completed, but its published entry identity could not be verified: {error}"
+            ),
+        })?;
+    if observed_identity != published_identity {
+        return Err(PlatformError::CommittedCleanupPending {
+            transaction: retained_transaction.display().to_string(),
+            message: format!(
+                "{operation} completed, but the destination entry was replaced before its undo receipt could be issued"
+            ),
+        });
+    }
+    let before_path = retained_transaction.join(copy_transaction::CANDIDATE);
+    if let Some(expected_displaced) = displaced_identity.as_ref() {
+        let observed_displaced = rename_identity(&before_path).map_err(|error| {
+            PlatformError::CommittedCleanupPending {
+                transaction: retained_transaction.display().to_string(),
+                message: format!(
+                    "{operation} completed, but its displaced destination identity could not be verified: {error}"
+                ),
+            }
+        })?;
+        if &observed_displaced != expected_displaced {
+            return Err(PlatformError::CommittedCleanupPending {
+                transaction: retained_transaction.display().to_string(),
+                message: format!(
+                    "{operation} completed, but its retained displaced destination was replaced before its undo receipt could be issued"
+                ),
+            });
+        }
+    }
+    Ok(PathMoveUndoReceipt {
+        before_path,
+        after_path,
+        identity: published_identity,
+        displaced_identity,
+        retained_displaced_path: None,
+        requirement,
+        published_content: None,
+        cross_filesystem_state: Default::default(),
+    })
+}
+
+#[cfg(target_os = "linux")]
+fn undo_path_move_linux(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
     if receipt.before_path == receipt.after_path
         || receipt.before_path.parent().is_none()
-        || receipt.before_path.parent() != receipt.after_path.parent()
+        || receipt.after_path.parent().is_none()
     {
-        return Err(PlatformError::InvalidRenameUndoReceipt(
-            "before and after paths must have the same lexical parent".to_string(),
+        return Err(PlatformError::InvalidPathMoveUndoReceipt(
+            "before and after paths must be distinct entries with parents".to_string(),
         ));
     }
+    use std::os::unix::fs::MetadataExt;
+    let before_parent = receipt.before_path.parent().expect("validated parent");
+    let after_parent = receipt.after_path.parent().expect("validated parent");
+    let before_device = std::fs::symlink_metadata(before_parent)
+        .map_err(|error| PlatformError::Io(error.to_string()))?
+        .dev();
+    let after_device = std::fs::symlink_metadata(after_parent)
+        .map_err(|error| PlatformError::Io(error.to_string()))?
+        .dev();
+    if before_device != after_device {
+        return undo_cross_filesystem_path_move_linux(receipt, before_parent);
+    }
+    if let (Some(displaced_identity), Some(retained_displaced_path)) = (
+        receipt.displaced_identity.as_ref(),
+        receipt.retained_displaced_path.as_ref(),
+    ) {
+        let inverse_already_completed = rename_identity(&receipt.before_path)
+            .is_ok_and(|identity| identity == receipt.identity)
+            && rename_identity(&receipt.after_path)
+                .is_ok_and(|identity| &identity == displaced_identity)
+            && std::fs::symlink_metadata(retained_displaced_path)
+                .is_err_and(|error| error.kind() == std::io::ErrorKind::NotFound);
+        if inverse_already_completed {
+            return cleanup_completed_overwrite_move_undo(retained_displaced_path);
+        }
+    }
+    let observed_identity = rename_identity(&receipt.after_path)
+        .map_err(|_| PlatformError::StalePathMoveUndo(receipt.after_path.display().to_string()))?;
+    if observed_identity != receipt.identity {
+        return Err(PlatformError::StalePathMoveUndo(
+            receipt.after_path.display().to_string(),
+        ));
+    }
+    match receipt.requirement {
+        PathMoveUndoRequirement::None => {}
+        PathMoveUndoRequirement::EmptyFile => {
+            let metadata = std::fs::symlink_metadata(&receipt.after_path).map_err(|_| {
+                PlatformError::StalePathMoveUndo(receipt.after_path.display().to_string())
+            })?;
+            if !metadata.is_file() || metadata.len() != 0 {
+                return Err(PlatformError::StalePathMoveUndo(
+                    receipt.after_path.display().to_string(),
+                ));
+            }
+        }
+        PathMoveUndoRequirement::EmptyDirectory => {
+            let is_empty_directory = std::fs::symlink_metadata(&receipt.after_path)
+                .is_ok_and(|metadata| metadata.is_dir())
+                && std::fs::read_dir(&receipt.after_path)
+                    .is_ok_and(|mut entries| entries.next().is_none());
+            if !is_empty_directory {
+                return Err(PlatformError::StalePathMoveUndo(
+                    receipt.after_path.display().to_string(),
+                ));
+            }
+        }
+    }
+    if let Some(displaced_identity) = receipt.displaced_identity.as_ref() {
+        let displaced_path = receipt
+            .retained_displaced_path
+            .as_ref()
+            .unwrap_or(&receipt.before_path);
+        let observed_displaced = rename_identity(displaced_path)
+            .map_err(|_| PlatformError::StalePathMoveUndo(displaced_path.display().to_string()))?;
+        if &observed_displaced != displaced_identity {
+            return Err(PlatformError::StalePathMoveUndo(
+                displaced_path.display().to_string(),
+            ));
+        }
+        if receipt.retained_displaced_path.is_some() {
+            match std::fs::symlink_metadata(&receipt.before_path) {
+                Ok(_) => {
+                    return Err(PlatformError::DestinationExists(
+                        receipt.before_path.display().to_string(),
+                    ));
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(PlatformError::Io(error.to_string())),
+            }
+        }
+        exchange_paths(&receipt.after_path, displaced_path)?;
+        if receipt.retained_displaced_path.is_some() {
+            rename_without_replacement(displaced_path, &receipt.before_path)?;
+            cleanup_completed_overwrite_move_undo(displaced_path)?;
+        }
+        Ok(())
+    } else {
+        rename_without_replacement(&receipt.after_path, &receipt.before_path)
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn undo_cross_filesystem_path_move_linux(
+    receipt: &PathMoveUndoReceipt,
+    before_parent: &Path,
+) -> Result<(), PlatformError> {
+    undo_cross_filesystem_path_move_linux_with_hook(receipt, before_parent, |_| Ok(()))
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum CrossFilesystemUndoPoint {
+    PlainSourceRestored,
+    PlainDestinationQuarantined,
+    OverwriteExchangeCompleted,
+}
+
+#[cfg(target_os = "linux")]
+fn undo_cross_filesystem_path_move_linux_with_hook(
+    receipt: &PathMoveUndoReceipt,
+    before_parent: &Path,
+    mut hook: impl FnMut(CrossFilesystemUndoPoint) -> Result<(), &'static str>,
+) -> Result<(), PlatformError> {
+    if receipt.displaced_identity.is_some() != receipt.retained_displaced_path.is_some() {
+        return Err(PlatformError::InvalidPathMoveUndoReceipt(
+            "cross-filesystem overwrite receipt must retain both displaced identity and path"
+                .to_string(),
+        ));
+    }
+    if let Some(state) = receipt.cross_filesystem_state.get() {
+        return resume_cross_filesystem_path_move_undo(receipt, state);
+    }
+    let observed_identity = rename_identity(&receipt.after_path)
+        .map_err(|_| PlatformError::StalePathMoveUndo(receipt.after_path.display().to_string()))?;
+    if observed_identity != receipt.identity {
+        return Err(PlatformError::StalePathMoveUndo(
+            receipt.after_path.display().to_string(),
+        ));
+    }
+    if let Some(expected_content) = receipt.published_content.as_ref() {
+        let observed_content = move_transaction::source_tree_snapshot_for_path(&receipt.after_path)
+            .map_err(|_| {
+                PlatformError::StalePathMoveUndo(receipt.after_path.display().to_string())
+            })?;
+        if !expected_content.has_same_paths_and_content(&observed_content) {
+            return Err(PlatformError::StalePathMoveUndo(
+                receipt.after_path.display().to_string(),
+            ));
+        }
+    }
+    match std::fs::symlink_metadata(&receipt.before_path) {
+        Ok(_) => {
+            return Err(PlatformError::DestinationExists(
+                receipt.before_path.display().to_string(),
+            ));
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(PlatformError::Io(error.to_string())),
+    }
+
+    if let (Some(displaced_identity), Some(retained_displaced_path)) = (
+        receipt.displaced_identity.as_ref(),
+        receipt.retained_displaced_path.as_ref(),
+    ) {
+        let observed_displaced = rename_identity(retained_displaced_path).map_err(|_| {
+            PlatformError::StalePathMoveUndo(retained_displaced_path.display().to_string())
+        })?;
+        if &observed_displaced != displaced_identity {
+            return Err(PlatformError::StalePathMoveUndo(
+                retained_displaced_path.display().to_string(),
+            ));
+        }
+    }
+
+    let destination_transaction = if receipt.displaced_identity.is_none() {
+        let after_parent = receipt.after_path.parent().expect("validated parent");
+        Some(copy_transaction::create_retained_transaction(after_parent)?)
+    } else {
+        None
+    };
+    let restored =
+        match copy_entry_transactional(&receipt.after_path, before_parent, ConflictAction::Skip) {
+            Ok(restored) => restored,
+            Err(error) => {
+                if let Some(transaction) = destination_transaction.as_ref() {
+                    let _ = std::fs::remove_dir(transaction);
+                }
+                return Err(error);
+            }
+        };
+    let CopyPublication::Published {
+        retained_transaction,
+        published_path,
+        published_identity,
+        ..
+    } = restored
+    else {
+        if let Some(transaction) = destination_transaction.as_ref() {
+            let _ = std::fs::remove_dir(transaction);
+        }
+        return Err(PlatformError::StalePathMoveUndo(
+            receipt.before_path.display().to_string(),
+        ));
+    };
+    if published_path != receipt.before_path {
+        if let Some(transaction) = destination_transaction.as_ref() {
+            let _ = std::fs::remove_dir(transaction);
+        }
+        return Err(PlatformError::StalePathMoveUndo(
+            receipt.before_path.display().to_string(),
+        ));
+    }
+    receipt
+        .cross_filesystem_state
+        .set(CrossFilesystemUndoState {
+            restored_identity: published_identity,
+            restoration_transaction: retained_transaction.clone(),
+            destination_transaction,
+        })
+        .map_err(|_| {
+            PlatformError::InvalidPathMoveUndoReceipt(
+                "cross-filesystem undo state was initialized twice".to_string(),
+            )
+        })?;
+    let state = receipt
+        .cross_filesystem_state
+        .get()
+        .expect("cross-filesystem undo state was just initialized");
+    if receipt.displaced_identity.is_none() {
+        persist_plain_cross_filesystem_undo_intent(receipt, state)?;
+        hook(CrossFilesystemUndoPoint::PlainSourceRestored).map_err(|message| {
+            PlatformError::CommittedUndoCleanupPending {
+                transaction: state
+                    .destination_transaction
+                    .as_ref()
+                    .expect("plain undo has a destination transaction")
+                    .display()
+                    .to_string(),
+                message: format!("undo interrupted after restoring the source: {message}"),
+            }
+        })?;
+    }
+
+    if let (Some(_), Some(retained_displaced_path)) = (
+        receipt.displaced_identity.as_ref(),
+        receipt.retained_displaced_path.as_ref(),
+    ) {
+        exchange_paths(&receipt.after_path, retained_displaced_path)?;
+        hook(CrossFilesystemUndoPoint::OverwriteExchangeCompleted).map_err(|message| {
+            PlatformError::CommittedUndoCleanupPending {
+                transaction: retained_displaced_path.display().to_string(),
+                message: format!("undo interrupted after overwrite exchange: {message}"),
+            }
+        })?;
+        let observed_displaced = rename_identity(&receipt.after_path).map_err(|_| {
+            PlatformError::CommittedUndoCleanupPending {
+                transaction: retained_displaced_path.display().to_string(),
+                message: "retained destination disappeared after undo exchange".to_string(),
+            }
+        })?;
+        if Some(&observed_displaced) != receipt.displaced_identity.as_ref() {
+            return Err(PlatformError::CommittedUndoCleanupPending {
+                transaction: retained_displaced_path.display().to_string(),
+                message: "retained destination changed during undo exchange".to_string(),
+            });
+        }
+        let quarantine = retained_displaced_path.with_file_name("undo-source-quarantine");
+        rename_without_replacement(retained_displaced_path, &quarantine)?;
+        let quarantined_identity = rename_identity(&quarantine)
+            .map_err(|_| PlatformError::StalePathMoveUndo(quarantine.display().to_string()))?;
+        if quarantined_identity != receipt.identity {
+            let _ = rename_without_replacement(&quarantine, retained_displaced_path);
+            return Err(PlatformError::StalePathMoveUndo(
+                retained_displaced_path.display().to_string(),
+            ));
+        }
+        delete_permanent(&quarantine).map_err(|error| {
+            PlatformError::CommittedUndoCleanupPending {
+                transaction: quarantine
+                    .parent()
+                    .unwrap_or(&quarantine)
+                    .display()
+                    .to_string(),
+                message: error.to_string(),
+            }
+        })?;
+        cleanup_completed_overwrite_move_undo(retained_displaced_path)?;
+    } else {
+        let destination_transaction = state
+            .destination_transaction
+            .as_ref()
+            .expect("plain undo has a destination transaction");
+        let quarantine = destination_transaction.join("moved-source");
+        rename_without_replacement(&receipt.after_path, &quarantine)?;
+        hook(CrossFilesystemUndoPoint::PlainDestinationQuarantined).map_err(|message| {
+            PlatformError::CommittedUndoCleanupPending {
+                transaction: destination_transaction.display().to_string(),
+                message: format!("undo interrupted after destination quarantine: {message}"),
+            }
+        })?;
+        let quarantined_identity = rename_identity(&quarantine)
+            .map_err(|_| PlatformError::StalePathMoveUndo(quarantine.display().to_string()))?;
+        if quarantined_identity != receipt.identity {
+            let _ = rename_without_replacement(&quarantine, &receipt.after_path);
+            return Err(PlatformError::StalePathMoveUndo(
+                receipt.after_path.display().to_string(),
+            ));
+        }
+        delete_permanent(&quarantine)?;
+        cleanup_plain_cross_filesystem_undo_transaction(destination_transaction)?;
+    }
+    match std::fs::remove_dir(&retained_transaction) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(PlatformError::CommittedUndoCleanupPending {
+            transaction: retained_transaction.display().to_string(),
+            message: error.to_string(),
+        }),
+    }
+}
+
+#[cfg(target_os = "linux")]
+const PLAIN_CROSS_FILESYSTEM_UNDO_INTENT: &str = "undo-intent";
+
+#[cfg(target_os = "linux")]
+fn persist_plain_cross_filesystem_undo_intent(
+    receipt: &PathMoveUndoReceipt,
+    state: &CrossFilesystemUndoState,
+) -> Result<(), PlatformError> {
+    use std::io::Write;
+
+    let transaction = state.destination_transaction.as_ref().ok_or_else(|| {
+        PlatformError::InvalidPathMoveUndoReceipt(
+            "plain cross-filesystem undo lost its destination transaction".to_string(),
+        )
+    })?;
+    let transaction_identity = rename_identity(transaction).map_err(|error| {
+        PlatformError::CommittedUndoCleanupPending {
+            transaction: transaction.display().to_string(),
+            message: format!("undo destination transaction identity is unavailable: {error}"),
+        }
+    })?;
+    let contents = format!(
+        "ottrin-cross-filesystem-undo-v1\nrestored={}:{}\nmoved={}:{}\ntransaction={}:{}\n",
+        state.restored_identity.device,
+        state.restored_identity.inode,
+        receipt.identity.device,
+        receipt.identity.inode,
+        transaction_identity.device,
+        transaction_identity.inode,
+    );
+    let intent = transaction.join(PLAIN_CROSS_FILESYSTEM_UNDO_INTENT);
+    match std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&intent)
+    {
+        Ok(mut file) => {
+            file.write_all(contents.as_bytes())
+                .and_then(|()| file.sync_all())
+                .map_err(|error| PlatformError::CommittedUndoCleanupPending {
+                    transaction: transaction.display().to_string(),
+                    message: format!("undo intent persistence failed: {error}"),
+                })?;
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+            let observed = std::fs::read(&intent).map_err(|error| {
+                PlatformError::CommittedUndoCleanupPending {
+                    transaction: transaction.display().to_string(),
+                    message: format!("undo intent could not be revalidated: {error}"),
+                }
+            })?;
+            if observed != contents.as_bytes() {
+                return Err(PlatformError::CommittedUndoCleanupPending {
+                    transaction: transaction.display().to_string(),
+                    message: "undo intent changed; destination cleanup was refused".to_string(),
+                });
+            }
+        }
+        Err(error) => {
+            return Err(PlatformError::CommittedUndoCleanupPending {
+                transaction: transaction.display().to_string(),
+                message: format!("undo intent creation failed: {error}"),
+            });
+        }
+    }
+    std::fs::File::open(transaction)
+        .and_then(|directory| directory.sync_all())
+        .map_err(|error| PlatformError::CommittedUndoCleanupPending {
+            transaction: transaction.display().to_string(),
+            message: format!("undo intent directory flush failed: {error}"),
+        })
+}
+
+#[cfg(target_os = "linux")]
+fn cleanup_plain_cross_filesystem_undo_transaction(
+    transaction: &Path,
+) -> Result<(), PlatformError> {
+    let intent = transaction.join(PLAIN_CROSS_FILESYSTEM_UNDO_INTENT);
+    match std::fs::remove_file(&intent) {
+        Ok(()) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => {
+            return Err(PlatformError::CommittedUndoCleanupPending {
+                transaction: transaction.display().to_string(),
+                message: format!("undo intent cleanup failed: {error}"),
+            });
+        }
+    }
+    std::fs::File::open(transaction)
+        .and_then(|directory| directory.sync_all())
+        .map_err(|error| PlatformError::CommittedUndoCleanupPending {
+            transaction: transaction.display().to_string(),
+            message: format!("undo transaction flush failed: {error}"),
+        })?;
+    match std::fs::remove_dir(transaction) {
+        Ok(()) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => {
+            return Err(PlatformError::CommittedUndoCleanupPending {
+                transaction: transaction.display().to_string(),
+                message: error.to_string(),
+            });
+        }
+    }
+    if let Some(parent) = transaction.parent() {
+        std::fs::File::open(parent)
+            .and_then(|directory| directory.sync_all())
+            .map_err(|error| PlatformError::CommittedUndoCleanupPending {
+                transaction: transaction.display().to_string(),
+                message: format!("undo transaction parent flush failed: {error}"),
+            })?;
+    }
     Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn resume_cross_filesystem_path_move_undo(
+    receipt: &PathMoveUndoReceipt,
+    state: &CrossFilesystemUndoState,
+) -> Result<(), PlatformError> {
+    if rename_identity(&receipt.before_path).ok().as_ref() != Some(&state.restored_identity) {
+        return Err(PlatformError::StalePathMoveUndo(
+            receipt.before_path.display().to_string(),
+        ));
+    }
+
+    if receipt.displaced_identity.is_none()
+        && state
+            .destination_transaction
+            .as_ref()
+            .is_some_and(|transaction| {
+                std::fs::symlink_metadata(transaction)
+                    .is_err_and(|error| error.kind() == std::io::ErrorKind::NotFound)
+            })
+        && std::fs::symlink_metadata(&receipt.after_path)
+            .is_err_and(|error| error.kind() == std::io::ErrorKind::NotFound)
+    {
+        return match std::fs::remove_dir(&state.restoration_transaction) {
+            Ok(()) => Ok(()),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(error) => Err(PlatformError::CommittedUndoCleanupPending {
+                transaction: state.restoration_transaction.display().to_string(),
+                message: error.to_string(),
+            }),
+        };
+    }
+
+    if let (Some(displaced_identity), Some(retained_displaced_path)) = (
+        receipt.displaced_identity.as_ref(),
+        receipt.retained_displaced_path.as_ref(),
+    ) {
+        let after_identity = rename_identity(&receipt.after_path).ok();
+        let retained_identity = rename_identity(retained_displaced_path).ok();
+        if after_identity.as_ref() == Some(&receipt.identity)
+            && retained_identity.as_ref() == Some(displaced_identity)
+        {
+            exchange_paths(&receipt.after_path, retained_displaced_path)?;
+        } else if after_identity.as_ref() != Some(displaced_identity)
+            || retained_identity
+                .as_ref()
+                .is_some_and(|identity| identity != &receipt.identity)
+        {
+            return Err(PlatformError::StalePathMoveUndo(
+                receipt.after_path.display().to_string(),
+            ));
+        }
+        let quarantine = retained_displaced_path.with_file_name("undo-source-quarantine");
+        if rename_identity(retained_displaced_path).ok().as_ref() == Some(&receipt.identity) {
+            rename_without_replacement(retained_displaced_path, &quarantine)?;
+        }
+        match rename_identity(&quarantine) {
+            Ok(identity) if identity == receipt.identity => {
+                delete_permanent(&quarantine).map_err(|error| {
+                    PlatformError::CommittedUndoCleanupPending {
+                        transaction: quarantine
+                            .parent()
+                            .unwrap_or(&quarantine)
+                            .display()
+                            .to_string(),
+                        message: error.to_string(),
+                    }
+                })?;
+            }
+            Ok(_) => {
+                return Err(PlatformError::StalePathMoveUndo(
+                    quarantine.display().to_string(),
+                ));
+            }
+            Err(_) if std::fs::symlink_metadata(retained_displaced_path).is_ok() => {
+                return Err(PlatformError::StalePathMoveUndo(
+                    retained_displaced_path.display().to_string(),
+                ));
+            }
+            Err(_) => {}
+        }
+        cleanup_completed_overwrite_move_undo(retained_displaced_path)?;
+    } else {
+        persist_plain_cross_filesystem_undo_intent(receipt, state)?;
+        let destination_transaction = state.destination_transaction.as_ref().ok_or_else(|| {
+            PlatformError::InvalidPathMoveUndoReceipt(
+                "plain cross-filesystem undo lost its destination transaction".to_string(),
+            )
+        })?;
+        let quarantine = destination_transaction.join("moved-source");
+        match rename_identity(&receipt.after_path) {
+            Ok(identity) if identity == receipt.identity => {
+                rename_without_replacement(&receipt.after_path, &quarantine)?;
+            }
+            Ok(_) => {
+                return Err(PlatformError::StalePathMoveUndo(
+                    receipt.after_path.display().to_string(),
+                ));
+            }
+            Err(_) => {}
+        }
+        match rename_identity(&quarantine) {
+            Ok(identity) if identity == receipt.identity => delete_permanent(&quarantine)?,
+            Ok(_) => {
+                return Err(PlatformError::StalePathMoveUndo(
+                    quarantine.display().to_string(),
+                ));
+            }
+            Err(_) => {}
+        }
+        cleanup_plain_cross_filesystem_undo_transaction(destination_transaction)?;
+    }
+
+    match std::fs::remove_dir(&state.restoration_transaction) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(PlatformError::CommittedUndoCleanupPending {
+            transaction: state.restoration_transaction.display().to_string(),
+            message: error.to_string(),
+        }),
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn cleanup_completed_overwrite_move_undo(
+    retained_displaced_path: &Path,
+) -> Result<(), PlatformError> {
+    move_transaction::cleanup_completed_overwrite_undo(retained_displaced_path).map_err(|error| {
+        PlatformError::CommittedUndoCleanupPending {
+            transaction: retained_displaced_path
+                .parent()
+                .unwrap_or(retained_displaced_path)
+                .display()
+                .to_string(),
+            message: error.to_string(),
+        }
+    })
+}
+
+#[cfg(target_os = "linux")]
+fn exchange_paths(left: &Path, right: &Path) -> Result<(), PlatformError> {
+    use rustix::fs::{CWD, RenameFlags, renameat_with};
+
+    renameat_with(CWD, left, CWD, right, RenameFlags::EXCHANGE)
+        .map_err(|error| PlatformError::Io(error.to_string()))
 }
 
 #[cfg(target_os = "linux")]
@@ -1458,15 +2913,21 @@ fn rename_without_replacement(source: &Path, target: &Path) -> Result<(), Platfo
 
 #[cfg(target_os = "windows")]
 fn rename_without_replacement(source: &Path, target: &Path) -> Result<(), PlatformError> {
-    std::fs::rename(source, target).map_err(|error| {
-        if error.kind() == std::io::ErrorKind::AlreadyExists
-            || std::fs::symlink_metadata(target).is_ok()
-        {
-            PlatformError::DestinationExists(target.display().to_string())
-        } else {
-            PlatformError::Io(error.to_string())
-        }
-    })
+    let target_parent = target
+        .parent()
+        .ok_or_else(|| PlatformError::InvalidDestination(target.display().to_string()))?;
+    let target_name = target
+        .file_name()
+        .ok_or_else(|| PlatformError::InvalidDestination(target.display().to_string()))?;
+    let source_handle = move_recovery::open_reparse_safe_entry_for_rename(source)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let target_parent_handle = move_recovery::open_reparse_safe_directory_for_rename(target_parent)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    move_transaction::rename_windows_handle_no_replace(
+        &source_handle,
+        &target_parent_handle,
+        target_name,
+    )
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "windows")))]
@@ -1567,6 +3028,40 @@ fn delete_permanent(target: &Path) -> Result<(), PlatformError> {
         }
         Err(e) => Err(PlatformError::Io(e.to_string())),
     }
+}
+
+#[cfg(target_os = "linux")]
+fn canonical_trash_source_path(target: &Path) -> Result<PathBuf, PlatformError> {
+    let name = target
+        .file_name()
+        .ok_or_else(|| PlatformError::InvalidSource(target.display().to_string()))?;
+    let parent = target
+        .parent()
+        .ok_or_else(|| PlatformError::InvalidSource(target.display().to_string()))?;
+    std::fs::canonicalize(parent)
+        .map(|parent| parent.join(name))
+        .map_err(|_| PlatformError::InvalidSource(target.display().to_string()))
+}
+
+#[cfg(target_os = "linux")]
+fn exact_trash_undo_receipt(
+    original_path: &Path,
+    before_identity: &PathMoveIdentity,
+    listed_items: Result<Vec<TrashItem>, PlatformError>,
+) -> Option<TrashUndoReceipt> {
+    let mut matches = listed_items.ok()?.into_iter().filter(|item| {
+        item.original_path == original_path
+            && item.origin_storage.is_some()
+            && rename_identity(&item.trash_path).ok().as_ref() == Some(before_identity)
+    });
+    let item = matches.next()?;
+    if matches.next().is_some() {
+        return None;
+    }
+    Some(TrashUndoReceipt {
+        item,
+        identity: before_identity.clone(),
+    })
 }
 
 fn list_trash_items() -> Result<Vec<TrashItem>, PlatformError> {
@@ -1930,7 +3425,7 @@ fn parse_trashinfo_field(text: &str, field: &str) -> Option<String> {
     })
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 fn next_available_name(base: &Path) -> PathBuf {
     let parent = base.parent().map(Path::to_path_buf).unwrap_or_default();
     let stem = base.file_stem().unwrap_or(base.as_os_str());
@@ -2027,21 +3522,151 @@ fn copy_dir_recursive(source_dir: &Path, target_dir: &Path) -> Result<(), Platfo
     Ok(())
 }
 
+#[cfg(target_os = "linux")]
+fn chmod_descriptor_mode(
+    descriptor: &std::os::fd::OwnedFd,
+    mode: u32,
+) -> Result<(), PlatformError> {
+    use rustix::fs::{Mode, fchmod};
+    use rustix::io::Errno;
+    use std::os::fd::AsRawFd;
+
+    match fchmod(descriptor, Mode::from_raw_mode(mode)) {
+        Ok(()) => return Ok(()),
+        Err(error) if error != Errno::BADF => {
+            return Err(PlatformError::Io(error.to_string()));
+        }
+        Err(_) => {}
+    }
+
+    // O_PATH descriptors cannot be passed to fchmod. Linux 6.5 added the
+    // identity-anchored AT_EMPTY_PATH form used as the safe fallback for
+    // entries that could not be opened read-only (for example mode 000).
+    let empty_path = b"\0";
+    let result = unsafe {
+        libc::syscall(
+            libc::SYS_fchmodat2,
+            descriptor.as_raw_fd(),
+            empty_path.as_ptr().cast::<libc::c_char>(),
+            mode as libc::mode_t,
+            libc::AT_EMPTY_PATH,
+        )
+    };
+    if result == 0 {
+        Ok(())
+    } else {
+        Err(PlatformError::Io(
+            std::io::Error::last_os_error().to_string(),
+        ))
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn chmod_descriptor_state(
+    descriptor: &std::os::fd::OwnedFd,
+) -> Result<(PathMoveIdentity, u32), PlatformError> {
+    let stat =
+        rustix::fs::fstat(descriptor).map_err(|error| PlatformError::Io(error.to_string()))?;
+    if stat.st_mode & libc::S_IFMT == libc::S_IFLNK {
+        return Err(PlatformError::Io(
+            "changing permissions through a symbolic link is not supported".to_string(),
+        ));
+    }
+    Ok((
+        PathMoveIdentity {
+            device: stat.st_dev,
+            inode: stat.st_ino,
+        },
+        stat.st_mode & 0o7777,
+    ))
+}
+
+#[cfg(target_os = "linux")]
+fn chmod_with_undo_receipt_linux(
+    path: &Path,
+    mode_str: &str,
+) -> Result<ChmodUndoReceipt, PlatformError> {
+    use rustix::fs::{CWD, Mode, OFlags, openat};
+    use std::sync::Arc;
+
+    let descriptor = Arc::new(
+        openat(
+            CWD,
+            path,
+            OFlags::CLOEXEC | OFlags::NOFOLLOW | OFlags::NONBLOCK,
+            Mode::empty(),
+        )
+        .or_else(|_| {
+            openat(
+                CWD,
+                path,
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+        })
+        .map_err(|error| PlatformError::Io(error.to_string()))?,
+    );
+    let (identity, before_mode) = chmod_descriptor_state(&descriptor)?;
+    let after_mode = chmod_mode(before_mode, mode_str).map_err(PlatformError::Io)? & 0o7777;
+    chmod_descriptor_mode(&descriptor, after_mode)?;
+    let path_identity = rename_identity(path)
+        .map_err(|_| PlatformError::StaleChmodUndo(path.display().to_string()))?;
+    let (descriptor_identity, actual_mode) = chmod_descriptor_state(&descriptor)?;
+    if path_identity != identity || descriptor_identity != identity || actual_mode != after_mode {
+        return Err(PlatformError::StaleChmodUndo(path.display().to_string()));
+    }
+    Ok(ChmodUndoReceipt {
+        path: path.to_path_buf(),
+        identity,
+        before_mode,
+        after_mode,
+        descriptor,
+    })
+}
+
+#[cfg(target_os = "linux")]
+fn undo_chmod_linux(receipt: &ChmodUndoReceipt) -> Result<(), PlatformError> {
+    use std::os::unix::fs::PermissionsExt;
+
+    let path_metadata = std::fs::symlink_metadata(&receipt.path)
+        .map_err(|_| PlatformError::StaleChmodUndo(receipt.path.display().to_string()))?;
+    let path_identity = PathMoveIdentity {
+        device: std::os::unix::fs::MetadataExt::dev(&path_metadata),
+        inode: std::os::unix::fs::MetadataExt::ino(&path_metadata),
+    };
+    let path_mode = path_metadata.permissions().mode() & 0o7777;
+    let (descriptor_identity, descriptor_mode) = chmod_descriptor_state(&receipt.descriptor)?;
+    if path_metadata.file_type().is_symlink()
+        || path_identity != receipt.identity
+        || descriptor_identity != receipt.identity
+        || path_mode != receipt.after_mode
+        || descriptor_mode != receipt.after_mode
+    {
+        return Err(PlatformError::StaleChmodUndo(
+            receipt.path.display().to_string(),
+        ));
+    }
+    chmod_descriptor_mode(&receipt.descriptor, receipt.before_mode)
+}
+
+#[cfg(unix)]
+fn chmod_mode(current: u32, mode_str: &str) -> Result<u32, String> {
+    if let Some(stripped) = mode_str.strip_prefix('+') {
+        Ok(current | symbolic_bits(stripped)?)
+    } else if let Some(stripped) = mode_str.strip_prefix('-') {
+        Ok(current & !symbolic_bits(stripped)?)
+    } else {
+        u32::from_str_radix(mode_str, 8).map_err(|_| format!("Invalid mode: {}", mode_str))
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
 fn chmod_path(path: &Path, mode_str: &str) -> Result<(), String> {
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
         let meta = std::fs::metadata(path).map_err(|e| e.to_string())?;
-        let current = meta.permissions().mode();
-        let new_mode = if let Some(stripped) = mode_str.strip_prefix('+') {
-            let bits = symbolic_bits(stripped)?;
-            current | bits
-        } else if let Some(stripped) = mode_str.strip_prefix('-') {
-            let bits = symbolic_bits(stripped)?;
-            current & !bits
-        } else {
-            u32::from_str_radix(mode_str, 8).map_err(|_| format!("Invalid mode: {}", mode_str))?
-        };
+        let new_mode = chmod_mode(meta.permissions().mode(), mode_str)?;
         std::fs::set_permissions(path, std::fs::Permissions::from_mode(new_mode))
             .map_err(|e| e.to_string())
     }
@@ -2105,6 +3730,56 @@ fn read_properties(path: &Path) -> Result<FileProperties, PlatformError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn open_with_native_choices_bind_target_filter_deduplicate_and_sort() {
+        let target = PathBuf::from("sample.txt");
+        let choices = open_with_choices_from_native(
+            &target,
+            vec![
+                NativeOpenWithApplication::new("z-handler", "Zed"),
+                NativeOpenWithApplication::new("a-handler", "Alpha"),
+                NativeOpenWithApplication::new("z-handler", "Other Zed"),
+                NativeOpenWithApplication::new("", "Missing ID"),
+                NativeOpenWithApplication::new("hidden-handler", ""),
+            ],
+        );
+
+        assert_eq!(
+            choices
+                .iter()
+                .map(OpenWithApplication::name)
+                .collect::<Vec<_>>(),
+            vec!["Alpha", "Zed"]
+        );
+        assert_eq!(choices[0].target, target);
+        assert_eq!(choices[0].native_id, "a-handler");
+    }
+
+    #[test]
+    fn open_with_selection_rejects_stale_ids_and_launches_the_requeried_object() {
+        let launched = std::cell::Cell::new(None);
+        select_native_open_with_handler(
+            vec![
+                (NativeOpenWithApplication::new("old-handler", "Old"), 7_u8),
+                (NativeOpenWithApplication::new("new-handler", "New"), 9_u8),
+            ],
+            "new-handler",
+            |native_object| {
+                launched.set(Some(native_object));
+                Ok(())
+            },
+        )
+        .unwrap();
+        assert_eq!(launched.get(), Some(9));
+
+        let stale = select_native_open_with_handler(
+            vec![(NativeOpenWithApplication::new("fresh-handler", "Fresh"), ())],
+            "forged-handler",
+            |_| Ok(()),
+        );
+        assert!(matches!(stale, Err(PlatformError::InvalidSource(_))));
+    }
 
     #[cfg(target_os = "linux")]
     #[test]
@@ -2259,6 +3934,121 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    fn committed_trash_delete_does_not_become_failure_when_receipt_discovery_fails() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-trash-postcommit-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let source = root.join("report.txt");
+        std::fs::write(&source, b"report").unwrap();
+        let identity = rename_identity(&source).unwrap();
+
+        let receipt = exact_trash_undo_receipt(
+            &source,
+            &identity,
+            Err(PlatformError::Io("Trash listing unavailable".to_string())),
+        );
+
+        assert!(receipt.is_none());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn single_home_trash_delete_returns_a_receipt_that_restores_the_exact_item() {
+        use std::time::UNIX_EPOCH;
+
+        const ROOT_ENV: &str = "OTTRIN_TRASH_UNDO_TEST_ROOT";
+        if let Some(root) = std::env::var_os(ROOT_ENV) {
+            let root = PathBuf::from(root);
+            let documents = root.join("home/Documents");
+            std::fs::create_dir_all(&documents).expect("create isolated home documents");
+            let source = documents.join("report.txt");
+            std::fs::write(&source, b"exact report").expect("create source fixture");
+
+            let platform = DefaultPlatform;
+            let receipt = platform
+                .execute_trash_with_undo_receipt(&source)
+                .expect("move source to isolated home Trash")
+                .expect("home Trash deletion must produce an exact receipt");
+            assert!(!source.exists(), "forward Trash removes the original path");
+
+            platform
+                .undo_trash_with_receipt(&receipt)
+                .expect("restore exact isolated Trash item");
+            assert_eq!(
+                std::fs::read(&source).expect("read restored source"),
+                b"exact report"
+            );
+
+            let occupied_receipt = platform
+                .execute_trash_with_undo_receipt(&source)
+                .expect("move source to Trash again")
+                .expect("second home Trash deletion must produce a receipt");
+            std::fs::write(&source, b"replacement").expect("occupy original pathname");
+            assert!(matches!(
+                platform.undo_trash_with_receipt(&occupied_receipt),
+                Err(PlatformError::DestinationExists(_))
+            ));
+            assert_eq!(std::fs::read(&source).unwrap(), b"replacement");
+            assert_eq!(
+                std::fs::read(occupied_receipt.trash_path()).unwrap(),
+                b"exact report"
+            );
+            std::fs::remove_file(&source).expect("remove replacement");
+            platform
+                .undo_trash_with_receipt(&occupied_receipt)
+                .expect("restore after original pathname is free");
+
+            let stale_receipt = platform
+                .execute_trash_with_undo_receipt(&source)
+                .expect("move source to Trash for stale test")
+                .expect("third home Trash deletion must produce a receipt");
+            let displaced_payload = stale_receipt.trash_path().with_extension("displaced");
+            std::fs::rename(stale_receipt.trash_path(), &displaced_payload)
+                .expect("replace exact Trash payload");
+            std::fs::write(stale_receipt.trash_path(), b"other item")
+                .expect("publish replacement Trash payload");
+            assert!(matches!(
+                platform.undo_trash_with_receipt(&stale_receipt),
+                Err(PlatformError::StalePathMoveUndo(_))
+            ));
+            assert!(!source.exists());
+            assert_eq!(
+                std::fs::read(stale_receipt.trash_path()).unwrap(),
+                b"other item"
+            );
+            return;
+        }
+
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock after epoch")
+            .as_nanos();
+        let root =
+            std::env::temp_dir().join(format!("ottrin-trash-undo-{}-{nonce}", std::process::id()));
+        std::fs::create_dir_all(root.join("home")).expect("create isolated home");
+        let status = std::process::Command::new(std::env::current_exe().expect("test executable"))
+            .arg("--exact")
+            .arg("tests::single_home_trash_delete_returns_a_receipt_that_restores_the_exact_item")
+            .arg("--nocapture")
+            .env(ROOT_ENV, &root)
+            .env("HOME", root.join("home"))
+            .env("XDG_DATA_HOME", root.join("data"))
+            .status()
+            .expect("run isolated Trash undo child test");
+        let cleanup = std::fs::remove_dir_all(&root);
+        assert!(cleanup.is_ok(), "clean isolated Trash state: {cleanup:?}");
+        assert!(status.success(), "isolated Trash undo child test failed");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn native_home_trash_proof_rejects_traversal_and_symlink_payloads() {
         use std::os::unix::fs::symlink;
         use std::time::UNIX_EPOCH;
@@ -2372,7 +4162,36 @@ mod tests {
     }
 
     #[test]
-    fn move_batch_collects_ordered_dispositions_for_partial_source_failures() {
+    fn move_batch_claimed_recovery_does_not_count_the_stopped_item_as_completed() {
+        let sources = vec![PathBuf::from("first"), PathBuf::from("second")];
+        let result = execute_move_batch(&sources, |source| {
+            if source == Path::new("first") {
+                Ok(MoveDisposition::Moved)
+            } else {
+                Err(PlatformError::ClaimedRecoveryPending {
+                    transaction: "claimed-transaction".into(),
+                    message: "publication was not reached".into(),
+                })
+            }
+        });
+
+        match result {
+            Err(PlatformError::PartialBatch {
+                completed,
+                completed_dispositions,
+                recovery_paths,
+                ..
+            }) => {
+                assert_eq!(completed, 1);
+                assert_eq!(completed_dispositions, vec![MoveDisposition::Moved]);
+                assert_eq!(recovery_paths, vec![PathBuf::from("claimed-transaction")]);
+            }
+            other => panic!("expected typed partial move batch result, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn move_batch_does_not_count_skipped_sources_as_completed() {
         let sources = vec![
             PathBuf::from("first"),
             PathBuf::from("second"),
@@ -2397,7 +4216,7 @@ mod tests {
                 stopped_source,
                 ..
             }) => {
-                assert_eq!(completed, 2);
+                assert_eq!(completed, 1);
                 assert_eq!(total, 3);
                 assert_eq!(stopped_source, Path::new("third"));
                 assert_eq!(
@@ -2407,6 +4226,63 @@ mod tests {
             }
             other => panic!("expected typed partial move batch result, got {other:?}"),
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn public_move_batch_reports_only_published_sources_as_completed() {
+        let dir = TestDir::new("move-batch-published-completion-count");
+        let recovery_root = dir.path().join("state").join("ottrin").join("moves");
+        let _recovery_root = TestMoveRecoveryRoot::new(recovery_root);
+        let skipped_source = dir.path().join("occupied.txt");
+        let moved_source = dir.path().join("moved.txt");
+        let destination = dir.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&skipped_source, "keep at source").unwrap();
+        std::fs::write(&moved_source, "publish once").unwrap();
+        std::fs::write(destination.join("occupied.txt"), "keep at destination").unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Move {
+            sources: vec![
+                skipped_source.clone(),
+                moved_source.clone(),
+                moved_source.clone(),
+            ],
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        });
+
+        match result {
+            Err(PlatformError::PartialBatch {
+                completed,
+                total,
+                stopped_source,
+                completed_dispositions,
+                ..
+            }) => {
+                assert_eq!(completed, 1);
+                assert_eq!(total, 3);
+                assert_eq!(stopped_source, moved_source);
+                assert_eq!(
+                    completed_dispositions,
+                    vec![MoveDisposition::Skipped, MoveDisposition::Moved]
+                );
+            }
+            other => panic!("expected typed partial move batch result, got {other:?}"),
+        }
+        assert_eq!(
+            std::fs::read_to_string(&skipped_source).unwrap(),
+            "keep at source"
+        );
+        assert_eq!(
+            std::fs::read_to_string(destination.join("occupied.txt")).unwrap(),
+            "keep at destination"
+        );
+        assert!(!moved_source.exists());
+        assert_eq!(
+            std::fs::read_to_string(destination.join("moved.txt")).unwrap(),
+            "publish once"
+        );
     }
 
     #[derive(Default)]
@@ -2501,7 +4377,39 @@ mod tests {
 
     static TEMP_ID: AtomicU64 = AtomicU64::new(0);
 
-    struct TestDir(PathBuf);
+    struct TestDir {
+        path: PathBuf,
+        #[cfg(target_os = "linux")]
+        previous_recovery_root: Option<PathBuf>,
+    }
+
+    #[cfg(target_os = "linux")]
+    struct TestMoveRecoveryRoot {
+        _env_guard: std::sync::MutexGuard<'static, ()>,
+        previous_recovery_root: Option<PathBuf>,
+    }
+
+    #[cfg(target_os = "linux")]
+    impl TestMoveRecoveryRoot {
+        fn new(root: PathBuf) -> Self {
+            let env_guard = move_transaction::TEST_MOVE_ENV_SERIALIZER
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            let previous_recovery_root = move_transaction::replace_test_recovery_root(Some(root));
+            Self {
+                _env_guard: env_guard,
+                previous_recovery_root,
+            }
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    impl Drop for TestMoveRecoveryRoot {
+        fn drop(&mut self) {
+            let _ =
+                move_transaction::replace_test_recovery_root(self.previous_recovery_root.take());
+        }
+    }
 
     impl TestDir {
         fn new(name: &str) -> Self {
@@ -2515,18 +4423,57 @@ mod tests {
                 std::process::id()
             ));
             std::fs::create_dir(&path).expect("create test directory");
-            Self(path)
+            #[cfg(target_os = "linux")]
+            let previous_recovery_root =
+                move_transaction::replace_test_recovery_root(Some(path.join("move-state")));
+            Self {
+                path,
+                #[cfg(target_os = "linux")]
+                previous_recovery_root,
+            }
         }
 
         fn path(&self) -> &Path {
-            &self.0
+            &self.path
         }
     }
 
     impl Drop for TestDir {
         fn drop(&mut self) {
-            let _ = std::fs::remove_dir_all(&self.0);
+            let _ = std::fs::remove_dir_all(&self.path);
+            #[cfg(target_os = "linux")]
+            let _ =
+                move_transaction::replace_test_recovery_root(self.previous_recovery_root.take());
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn test_dir_isolates_retained_move_journals_from_outer_discovery() {
+        let outer = TestDir::new("outer-move-recovery-discovery");
+        let outer_recovery_root = outer.path().join("move-state");
+        let _outer_recovery = TestMoveRecoveryRoot::new(outer_recovery_root.clone());
+        let fixture = TestDir::new("inner-move-recovery-discovery");
+        let source = fixture.path().join("entry.txt");
+        let destination = fixture.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&source, "moved bytes").unwrap();
+        std::fs::write(destination.join("entry.txt"), "displaced bytes").unwrap();
+
+        DefaultPlatform
+            .execute_command(&FileCommand::Move {
+                sources: vec![source],
+                destination,
+                conflict: ConflictAction::Overwrite,
+            })
+            .unwrap();
+
+        assert!(
+            discover_retained_move_transactions_at(&outer_recovery_root)
+                .unwrap()
+                .is_empty(),
+            "an ordinary test fixture must not publish retained Move state into an outer discovery namespace"
+        );
     }
 
     #[test]
@@ -2707,12 +4654,417 @@ mod tests {
             new_name: "destination.txt".to_string(),
         });
 
-        assert!(matches!(result, Err(PlatformError::DestinationExists(_))));
+        assert!(
+            matches!(result, Err(PlatformError::DestinationExists(_))),
+            "unexpected Rename collision result: {result:?}"
+        );
         assert_eq!(std::fs::read_to_string(source).unwrap(), "source contents");
         assert_eq!(
             std::fs::read_to_string(destination).unwrap(),
             "destination contents"
         );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn copy_undo_receipt_removes_the_exact_published_entry() {
+        let dir = TestDir::new("copy-undo");
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir(&source_dir).unwrap();
+        std::fs::create_dir(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "copied bytes").unwrap();
+
+        let receipt = DefaultPlatform
+            .execute_copy_with_undo_receipt(&source, &destination_dir, ConflictAction::Skip)
+            .unwrap()
+            .expect("copy receipt");
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "copied bytes"
+        );
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
+
+        DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+
+        assert!(!destination.exists());
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn conflict_renamed_copy_undo_removes_the_exact_published_entry() {
+        let dir = TestDir::new("copy-rename-undo");
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir(&source_dir).unwrap();
+        std::fs::create_dir(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let occupied = destination_dir.join("entry.txt");
+        let renamed = destination_dir.join("entry (1).txt");
+        std::fs::write(&source, "copied bytes").unwrap();
+        std::fs::write(&occupied, "existing bytes").unwrap();
+
+        let receipt = DefaultPlatform
+            .execute_copy_with_undo_receipt(&source, &destination_dir, ConflictAction::Rename)
+            .unwrap()
+            .expect("renamed copy receipt");
+        assert_eq!(receipt.after_path(), renamed);
+        assert_eq!(std::fs::read_to_string(&renamed).unwrap(), "copied bytes");
+
+        DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+
+        assert!(!renamed.exists());
+        assert_eq!(
+            std::fs::read_to_string(&occupied).unwrap(),
+            "existing bytes"
+        );
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn overwritten_copy_undo_restores_the_exact_displaced_destination() {
+        let dir = TestDir::new("copy-overwrite-undo");
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir(&source_dir).unwrap();
+        std::fs::create_dir(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "copied bytes").unwrap();
+        std::fs::write(&destination, "displaced bytes").unwrap();
+        let displaced_identity = rename_identity(&destination).unwrap();
+
+        let receipt = DefaultPlatform
+            .execute_copy_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .unwrap()
+            .expect("overwrite copy receipt");
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "copied bytes"
+        );
+
+        DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "displaced bytes"
+        );
+        assert_eq!(rename_identity(&destination).unwrap(), displaced_identity);
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn overwritten_copy_undo_refuses_a_replaced_displaced_destination() {
+        let dir = TestDir::new("copy-overwrite-undo-stale-displaced");
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir(&source_dir).unwrap();
+        std::fs::create_dir(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "copied bytes").unwrap();
+        std::fs::write(&destination, "displaced bytes").unwrap();
+        let receipt = DefaultPlatform
+            .execute_copy_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .unwrap()
+            .expect("overwrite copy receipt");
+        std::fs::remove_file(receipt.before_path()).unwrap();
+        std::fs::write(receipt.before_path(), "replacement displaced bytes").unwrap();
+
+        let result = DefaultPlatform.undo_copy_with_receipt(&receipt);
+
+        assert!(matches!(result, Err(PlatformError::StalePathMoveUndo(_))));
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "copied bytes"
+        );
+        assert_eq!(
+            std::fs::read_to_string(receipt.before_path()).unwrap(),
+            "replacement displaced bytes"
+        );
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn create_file_undo_receipt_withdraws_only_the_exact_unchanged_entry() {
+        let dir = TestDir::new("create-file-undo");
+        let created = dir.path().join("notes.txt");
+
+        let receipt = DefaultPlatform
+            .execute_create_file_with_undo_receipt(dir.path(), "notes.txt")
+            .unwrap()
+            .expect("create file receipt");
+        assert_eq!(std::fs::read(&created).unwrap(), b"");
+
+        std::fs::remove_file(&created).unwrap();
+        std::fs::write(&created, "replacement bytes").unwrap();
+        assert!(matches!(
+            DefaultPlatform.undo_create_file_with_receipt(&receipt),
+            Err(PlatformError::StalePathMoveUndo(_))
+        ));
+        assert_eq!(
+            std::fs::read_to_string(&created).unwrap(),
+            "replacement bytes"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn create_file_undo_refuses_to_withdraw_an_edited_file() {
+        let dir = TestDir::new("create-file-undo-edited");
+        let created = dir.path().join("notes.txt");
+        let receipt = DefaultPlatform
+            .execute_create_file_with_undo_receipt(dir.path(), "notes.txt")
+            .unwrap()
+            .expect("create file receipt");
+
+        std::fs::write(&created, "user content").unwrap();
+        assert!(matches!(
+            DefaultPlatform.undo_create_file_with_receipt(&receipt),
+            Err(PlatformError::StalePathMoveUndo(_))
+        ));
+        assert_eq!(std::fs::read_to_string(created).unwrap(), "user content");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn create_folder_undo_receipt_withdraws_the_exact_unchanged_empty_directory() {
+        let dir = TestDir::new("create-folder-undo");
+        let created = dir.path().join("Notes");
+
+        let receipt = DefaultPlatform
+            .execute_create_folder_with_undo_receipt(dir.path(), "Notes")
+            .unwrap()
+            .expect("create folder receipt");
+        assert!(created.is_dir());
+
+        DefaultPlatform
+            .undo_create_folder_with_receipt(&receipt)
+            .unwrap();
+
+        assert!(!created.exists());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn create_folder_undo_refuses_to_withdraw_a_populated_directory() {
+        let dir = TestDir::new("create-folder-undo-populated");
+        let created = dir.path().join("Notes");
+        let child = created.join("saved.txt");
+        let receipt = DefaultPlatform
+            .execute_create_folder_with_undo_receipt(dir.path(), "Notes")
+            .unwrap()
+            .expect("create folder receipt");
+        std::fs::write(&child, "user content").unwrap();
+
+        assert!(matches!(
+            DefaultPlatform.undo_create_folder_with_receipt(&receipt),
+            Err(PlatformError::StalePathMoveUndo(_))
+        ));
+        assert_eq!(std::fs::read_to_string(child).unwrap(), "user content");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn symlink_undo_receipt_withdraws_the_exact_unchanged_link_entry() {
+        let dir = TestDir::new("symlink-undo");
+        let link = dir.path().join("shortcut");
+        let target = PathBuf::from("missing-relative-target");
+
+        let receipt = DefaultPlatform
+            .execute_symlink_with_undo_receipt(&link, &target)
+            .unwrap()
+            .expect("symlink receipt");
+        assert_eq!(std::fs::read_link(&link).unwrap(), target);
+
+        DefaultPlatform.undo_symlink_with_receipt(&receipt).unwrap();
+
+        assert!(std::fs::symlink_metadata(&link).is_err());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn symlink_undo_refuses_to_withdraw_a_pathname_replacement() {
+        use std::os::unix::fs::symlink;
+
+        let dir = TestDir::new("symlink-undo-replacement");
+        let link = dir.path().join("shortcut");
+        let receipt = DefaultPlatform
+            .execute_symlink_with_undo_receipt(&link, Path::new("original-target"))
+            .unwrap()
+            .expect("symlink receipt");
+        std::fs::remove_file(&link).unwrap();
+        symlink("replacement-target", &link).unwrap();
+
+        assert!(matches!(
+            DefaultPlatform.undo_symlink_with_receipt(&receipt),
+            Err(PlatformError::StalePathMoveUndo(_))
+        ));
+        assert_eq!(
+            std::fs::read_link(&link).unwrap(),
+            PathBuf::from("replacement-target")
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn chmod_undo_receipt_restores_the_prior_mode_of_the_exact_unchanged_entry() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = TestDir::new("chmod-undo");
+        let target = dir.path().join("script.sh");
+        std::fs::write(&target, "#!/bin/sh\n").unwrap();
+        std::fs::set_permissions(&target, std::fs::Permissions::from_mode(0o640)).unwrap();
+
+        let receipt = DefaultPlatform
+            .execute_chmod_with_undo_receipt(&target, "755")
+            .unwrap()
+            .expect("chmod receipt");
+        assert_eq!(
+            std::fs::symlink_metadata(&target)
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o7777,
+            0o755
+        );
+
+        DefaultPlatform.undo_chmod_with_receipt(&receipt).unwrap();
+
+        assert_eq!(
+            std::fs::symlink_metadata(&target)
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o7777,
+            0o640
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn chmod_undo_refuses_to_mutate_a_pathname_replacement() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = TestDir::new("chmod-undo-replacement");
+        let target = dir.path().join("script.sh");
+        std::fs::write(&target, "original").unwrap();
+        std::fs::set_permissions(&target, std::fs::Permissions::from_mode(0o640)).unwrap();
+        let receipt = DefaultPlatform
+            .execute_chmod_with_undo_receipt(&target, "755")
+            .unwrap()
+            .expect("chmod receipt");
+
+        std::fs::remove_file(&target).unwrap();
+        std::fs::write(&target, "replacement").unwrap();
+        std::fs::set_permissions(&target, std::fs::Permissions::from_mode(0o600)).unwrap();
+
+        assert!(matches!(
+            DefaultPlatform.undo_chmod_with_receipt(&receipt),
+            Err(PlatformError::StaleChmodUndo(_))
+        ));
+        assert_eq!(std::fs::read_to_string(&target).unwrap(), "replacement");
+        assert_eq!(
+            std::fs::symlink_metadata(target)
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o7777,
+            0o600
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn chmod_command_rejects_symlinks_without_changing_the_target() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = TestDir::new("chmod-symlink-rejection");
+        let target = dir.path().join("target.txt");
+        let link = dir.path().join("link.txt");
+        std::fs::write(&target, "target bytes").unwrap();
+        std::fs::set_permissions(&target, std::fs::Permissions::from_mode(0o640)).unwrap();
+        std::os::unix::fs::symlink(&target, &link).unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Chmod {
+            target: link,
+            mode_str: "755".to_string(),
+        });
+
+        assert!(result.is_err());
+        assert_eq!(
+            std::fs::symlink_metadata(target)
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o7777,
+            0o640
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn copy_receipt_is_not_issued_for_an_entry_replaced_after_publication() {
+        let dir = TestDir::new("copy-receipt-publication-race");
+        let transaction = dir.path().join("transaction");
+        let published = dir.path().join("published.txt");
+        std::fs::create_dir(&transaction).unwrap();
+        std::fs::write(&published, "copied bytes").unwrap();
+        let published_identity = rename_identity(&published).unwrap();
+        std::fs::remove_file(&published).unwrap();
+        std::fs::write(&published, "replacement bytes").unwrap();
+
+        let result = undo_receipt_for_published_identity(
+            transaction,
+            published.clone(),
+            published_identity,
+            None,
+            PathMoveUndoRequirement::None,
+            "copy",
+        );
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { .. })
+        ));
+        assert_eq!(
+            std::fs::read_to_string(published).unwrap(),
+            "replacement bytes"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn copy_undo_rejects_a_replaced_published_entry_without_mutation() {
+        let dir = TestDir::new("copy-undo-stale");
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir(&source_dir).unwrap();
+        std::fs::create_dir(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "copied bytes").unwrap();
+        let receipt = DefaultPlatform
+            .execute_copy_with_undo_receipt(&source, &destination_dir, ConflictAction::Skip)
+            .unwrap()
+            .expect("copy receipt");
+        std::fs::remove_file(&destination).unwrap();
+        std::fs::write(&destination, "replacement bytes").unwrap();
+
+        let result = DefaultPlatform.undo_copy_with_receipt(&receipt);
+
+        assert!(matches!(result, Err(PlatformError::StalePathMoveUndo(_))));
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "replacement bytes"
+        );
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
     }
 
     #[cfg(target_os = "linux")]
@@ -2740,6 +5092,700 @@ mod tests {
         assert!(!after.exists());
         assert_eq!(restored_metadata.dev(), before_metadata.dev());
         assert_eq!(restored_metadata.ino(), before_metadata.ino());
+    }
+
+    #[test]
+    fn rename_command_rejects_a_cross_parent_name_without_mutation() {
+        let dir = TestDir::new("rename-cross-parent-name");
+        let source_parent = dir.path().join("source");
+        std::fs::create_dir(&source_parent).unwrap();
+        let source = source_parent.join("before.txt");
+        let outside = dir.path().join("after.txt");
+        std::fs::write(&source, "original bytes").unwrap();
+
+        let result = DefaultPlatform.execute_command(&FileCommand::Rename {
+            source: source.clone(),
+            new_name: "../after.txt".to_string(),
+        });
+
+        assert!(matches!(result, Err(PlatformError::InvalidDestination(_))));
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "original bytes");
+        assert!(!outside.exists());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn move_undo_receipt_restores_the_original_entry() {
+        use std::os::unix::fs::MetadataExt;
+
+        let dir = TestDir::new("move-undo");
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "original bytes").unwrap();
+        let before_metadata = std::fs::symlink_metadata(&source).unwrap();
+
+        let (disposition, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Skip)
+            .unwrap();
+
+        assert_eq!(disposition, MoveDisposition::Moved);
+        let receipt = receipt.expect("move receipt");
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "original bytes"
+        );
+
+        DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+
+        let restored_metadata = std::fs::symlink_metadata(&source).unwrap();
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "original bytes");
+        assert!(!destination.exists());
+        assert_eq!(restored_metadata.dev(), before_metadata.dev());
+        assert_eq!(restored_metadata.ino(), before_metadata.ino());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn renamed_move_undo_restores_the_exact_original_entry() {
+        use std::os::unix::fs::MetadataExt;
+
+        let dir = TestDir::new("renamed-move-undo");
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let occupied_destination = destination_dir.join("entry.txt");
+        let renamed_destination = destination_dir.join("entry (1).txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+        std::fs::write(&occupied_destination, "occupied bytes").unwrap();
+        let before_metadata = std::fs::symlink_metadata(&source).unwrap();
+
+        let (disposition, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Rename)
+            .unwrap();
+
+        assert_eq!(disposition, MoveDisposition::Moved);
+        let receipt = receipt.expect("renamed move receipt");
+        assert_eq!(receipt.after_path(), renamed_destination);
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read_to_string(&occupied_destination).unwrap(),
+            "occupied bytes"
+        );
+        assert_eq!(
+            std::fs::read_to_string(&renamed_destination).unwrap(),
+            "moved bytes"
+        );
+
+        DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+
+        let restored_metadata = std::fs::symlink_metadata(&source).unwrap();
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert_eq!(
+            std::fs::read_to_string(&occupied_destination).unwrap(),
+            "occupied bytes"
+        );
+        assert!(!renamed_destination.exists());
+        assert_eq!(restored_metadata.dev(), before_metadata.dev());
+        assert_eq!(restored_metadata.ino(), before_metadata.ino());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn overwritten_move_undo_restores_moved_and_displaced_entries() {
+        use std::os::unix::fs::MetadataExt;
+
+        let dir = TestDir::new("move-overwrite-undo");
+        let _recovery = TestMoveRecoveryRoot::new(dir.path().join("move-state"));
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+        std::fs::write(&destination, "displaced bytes").unwrap();
+        let source_metadata = std::fs::symlink_metadata(&source).unwrap();
+        let displaced_metadata = std::fs::symlink_metadata(&destination).unwrap();
+
+        let (disposition, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .unwrap();
+
+        assert_eq!(disposition, MoveDisposition::Moved);
+        let receipt = receipt.expect("overwrite move receipt");
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "moved bytes"
+        );
+
+        DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+
+        let restored_source_metadata = std::fs::symlink_metadata(&source).unwrap();
+        let restored_destination_metadata = std::fs::symlink_metadata(&destination).unwrap();
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "displaced bytes"
+        );
+        assert_eq!(restored_source_metadata.dev(), source_metadata.dev());
+        assert_eq!(restored_source_metadata.ino(), source_metadata.ino());
+        assert_eq!(
+            restored_destination_metadata.dev(),
+            displaced_metadata.dev()
+        );
+        assert_eq!(
+            restored_destination_metadata.ino(),
+            displaced_metadata.ino()
+        );
+        assert!(
+            discover_retained_move_transactions_at(&dir.path().join("move-state"))
+                .unwrap()
+                .is_empty()
+        );
+        assert!(!std::fs::read_dir(&source_dir).unwrap().any(|entry| {
+            entry.is_ok_and(|entry| {
+                let name = entry.file_name();
+                let name = name.to_string_lossy();
+                name.len() == ".ottrin-move-".len() + 32
+                    && name.starts_with(".ottrin-move-")
+                    && name[".ottrin-move-".len()..]
+                        .chars()
+                        .all(|character| character.is_ascii_hexdigit())
+            })
+        }));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_filesystem_move_undo_rejects_published_content_edited_in_place() {
+        let (source_root, destination_root) =
+            match cross_filesystem_test_dirs("cross-device-undo-edited-output") {
+                Ok(Some(dirs)) => dirs,
+                Ok(None) => return,
+                Err(reason) => panic!("cannot prepare cross-filesystem Move Undo test: {reason}"),
+            };
+        let _recovery = TestMoveRecoveryRoot::new(source_root.path().join("move-state"));
+        let source_dir = source_root.path().join("source");
+        let destination_dir = destination_root.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+
+        let (_, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Skip)
+            .unwrap();
+        let receipt = receipt.expect("cross-filesystem Move receipt");
+        std::fs::write(&destination, "edited bytes").unwrap();
+
+        let error = DefaultPlatform
+            .undo_move_with_receipt(&receipt)
+            .expect_err("edited published content must refuse Undo");
+
+        assert!(matches!(error, PlatformError::StalePathMoveUndo(_)));
+        assert!(
+            !source.exists(),
+            "refused Undo must not recreate the source"
+        );
+        assert_eq!(
+            std::fs::read_to_string(destination).unwrap(),
+            "edited bytes"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_filesystem_directory_move_undo_restores_exact_tree_and_withdraws_destination() {
+        use std::os::unix::fs::symlink;
+
+        let (source_root, destination_root) =
+            match cross_filesystem_test_dirs("cross-device-directory-undo") {
+                Ok(Some(dirs)) => dirs,
+                Ok(None) => return,
+                Err(reason) => panic!("cannot prepare cross-filesystem Move Undo test: {reason}"),
+            };
+        let _recovery = TestMoveRecoveryRoot::new(source_root.path().join("move-state"));
+        let source_parent = source_root.path().join("source");
+        let destination_parent = destination_root.path().join("destination");
+        let source = source_parent.join("tree");
+        let nested = source.join("nested/deeper");
+        std::fs::create_dir_all(&nested).unwrap();
+        std::fs::create_dir_all(&destination_parent).unwrap();
+        std::fs::write(source.join("root.txt"), b"root payload").unwrap();
+        std::fs::write(nested.join("payload.bin"), b"nested payload\0bytes").unwrap();
+        symlink("nested/deeper/payload.bin", source.join("payload-link")).unwrap();
+        symlink("missing-target", nested.join("dangling-link")).unwrap();
+
+        let (disposition, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_parent, ConflictAction::Skip)
+            .unwrap();
+
+        assert_eq!(disposition, MoveDisposition::Moved);
+        let receipt = receipt.expect("cross-filesystem directory Move receipt");
+        let published = destination_parent.join("tree");
+        assert!(std::fs::symlink_metadata(&source).is_err());
+        assert_eq!(
+            std::fs::read(published.join("nested/deeper/payload.bin")).unwrap(),
+            b"nested payload\0bytes"
+        );
+
+        DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+
+        assert!(
+            std::fs::symlink_metadata(&published).is_err(),
+            "Undo must withdraw the published destination tree"
+        );
+        assert_eq!(
+            std::fs::read(source.join("root.txt")).unwrap(),
+            b"root payload"
+        );
+        assert_eq!(
+            std::fs::read(source.join("nested/deeper/payload.bin")).unwrap(),
+            b"nested payload\0bytes"
+        );
+        assert_eq!(
+            std::fs::read_link(source.join("payload-link")).unwrap(),
+            PathBuf::from("nested/deeper/payload.bin")
+        );
+        assert_eq!(
+            std::fs::read_link(source.join("nested/deeper/dangling-link")).unwrap(),
+            PathBuf::from("missing-target")
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_filesystem_overwrite_undo_rejects_stale_retained_destination_before_restoring_source()
+    {
+        let (source_root, destination_root) =
+            match cross_filesystem_test_dirs("cross-device-overwrite-undo-stale-retained") {
+                Ok(Some(dirs)) => dirs,
+                Ok(None) => return,
+                Err(reason) => panic!("cannot prepare cross-filesystem Move Undo test: {reason}"),
+            };
+        let _recovery = TestMoveRecoveryRoot::new(source_root.path().join("move-state"));
+        let source_dir = source_root.path().join("source");
+        std::fs::create_dir_all(&source_dir).expect("create source directory");
+        let source = source_dir.join("entry.txt");
+        let destination = destination_root.path().join("destination");
+        std::fs::create_dir_all(&destination).expect("create destination");
+        let target = destination.join("entry.txt");
+        std::fs::write(&source, b"incoming").expect("write source");
+        std::fs::write(&target, b"existing").expect("write destination");
+
+        let (_, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination, ConflictAction::Overwrite)
+            .expect("cross-filesystem overwrite should move");
+        let receipt = receipt.expect("moved entry should retain an undo receipt");
+        let retained = receipt
+            .retained_displaced_path
+            .as_ref()
+            .expect("overwrite should retain displaced destination");
+        let preserved = retained.with_file_name("preserved-retained-destination");
+        std::fs::rename(retained, &preserved).expect("preserve retained destination");
+        std::fs::write(retained, b"tampered").expect("replace retained destination");
+
+        let error = DefaultPlatform
+            .undo_move_with_receipt(&receipt)
+            .expect_err("stale retained data must reject undo");
+
+        assert!(matches!(error, PlatformError::StalePathMoveUndo(_)));
+        assert!(
+            !source.exists(),
+            "rejected undo must not recreate the source"
+        );
+        assert_eq!(std::fs::read(&target).expect("read target"), b"incoming");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_filesystem_overwrite_move_is_undoable() {
+        let (source_root, destination_root) = match cross_filesystem_test_dirs(
+            "cross-device-overwrite-undo",
+        ) {
+            Ok(Some(dirs)) => dirs,
+            Ok(None) => {
+                eprintln!(
+                    "skipping cross-filesystem Move Undo test: HOME and current directory share /tmp's device"
+                );
+                return;
+            }
+            Err(reason) => panic!("cannot prepare cross-filesystem Move Undo test: {reason}"),
+        };
+        let _recovery = TestMoveRecoveryRoot::new(source_root.path().join("move-state"));
+        let source_dir = source_root.path().join("source");
+        let destination_dir = destination_root.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+        std::fs::write(&destination, "displaced bytes").unwrap();
+
+        let (disposition, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .unwrap();
+
+        assert_eq!(disposition, MoveDisposition::Moved);
+        let receipt = receipt.expect("cross-filesystem overwrite Move receipt");
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "moved bytes"
+        );
+
+        DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "displaced bytes"
+        );
+        assert!(
+            discover_retained_move_transactions_at(&source_root.path().join("move-state"))
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_filesystem_overwrite_undo_retries_after_exchange_interruption() {
+        let (source_root, destination_root) =
+            match cross_filesystem_test_dirs("cross-device-overwrite-undo-retry") {
+                Ok(Some(dirs)) => dirs,
+                Ok(None) => return,
+                Err(reason) => panic!("cannot prepare cross-filesystem Move Undo test: {reason}"),
+            };
+        let _recovery = TestMoveRecoveryRoot::new(source_root.path().join("move-state"));
+        let source_dir = source_root.path().join("source");
+        let destination_dir = destination_root.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+        std::fs::write(&destination, "displaced bytes").unwrap();
+
+        let (_, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .unwrap();
+        let receipt = receipt.expect("cross-filesystem overwrite Move receipt");
+        let interrupted =
+            undo_cross_filesystem_path_move_linux_with_hook(&receipt, &source_dir, |point| {
+                match point {
+                    CrossFilesystemUndoPoint::PlainSourceRestored => Ok(()),
+                    CrossFilesystemUndoPoint::PlainDestinationQuarantined => Ok(()),
+                    CrossFilesystemUndoPoint::OverwriteExchangeCompleted => {
+                        Err("simulate interruption")
+                    }
+                }
+            });
+        assert!(matches!(
+            interrupted,
+            Err(PlatformError::CommittedUndoCleanupPending { .. })
+        ));
+
+        DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "displaced bytes"
+        );
+        assert!(
+            discover_retained_move_transactions_at(&source_root.path().join("move-state"))
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn plain_cross_filesystem_move_undo_retries_after_source_restore_interruption() {
+        let (source_root, destination_root) =
+            match cross_filesystem_test_dirs("cross-device-plain-undo-source-restore-retry") {
+                Ok(Some(dirs)) => dirs,
+                Ok(None) => return,
+                Err(reason) => panic!("cannot prepare cross-filesystem Move Undo test: {reason}"),
+            };
+        let _recovery = TestMoveRecoveryRoot::new(source_root.path().join("move-state"));
+        let source_dir = source_root.path().join("source");
+        let destination_dir = destination_root.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+
+        let (_, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Skip)
+            .unwrap();
+        let receipt = receipt.expect("cross-filesystem Move receipt");
+        let interrupted =
+            undo_cross_filesystem_path_move_linux_with_hook(&receipt, &source_dir, |point| {
+                match point {
+                    CrossFilesystemUndoPoint::PlainSourceRestored => Err("simulate interruption"),
+                    CrossFilesystemUndoPoint::PlainDestinationQuarantined => Ok(()),
+                    CrossFilesystemUndoPoint::OverwriteExchangeCompleted => Ok(()),
+                }
+            });
+        assert!(matches!(
+            interrupted,
+            Err(PlatformError::CommittedUndoCleanupPending { .. })
+        ));
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "moved bytes"
+        );
+
+        DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert!(!destination.exists());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn plain_cross_filesystem_move_undo_retries_after_destination_quarantine_interruption() {
+        let (source_root, destination_root) =
+            match cross_filesystem_test_dirs("cross-device-plain-undo-quarantine-retry") {
+                Ok(Some(dirs)) => dirs,
+                Ok(None) => return,
+                Err(reason) => panic!("cannot prepare cross-filesystem Move Undo test: {reason}"),
+            };
+        let _recovery = TestMoveRecoveryRoot::new(source_root.path().join("move-state"));
+        let source_dir = source_root.path().join("source");
+        let destination_dir = destination_root.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+        let (_, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Skip)
+            .unwrap();
+        let receipt = receipt.expect("cross-filesystem Move receipt");
+
+        let interrupted =
+            undo_cross_filesystem_path_move_linux_with_hook(&receipt, &source_dir, |point| {
+                match point {
+                    CrossFilesystemUndoPoint::PlainDestinationQuarantined => {
+                        Err("simulate interruption")
+                    }
+                    CrossFilesystemUndoPoint::PlainSourceRestored
+                    | CrossFilesystemUndoPoint::OverwriteExchangeCompleted => Ok(()),
+                }
+            });
+        assert!(matches!(
+            interrupted,
+            Err(PlatformError::CommittedUndoCleanupPending { .. })
+        ));
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert!(!destination.exists());
+
+        DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert!(!destination.exists());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn overwrite_move_without_a_conflict_remains_a_plain_undoable_move() {
+        let dir = TestDir::new("move-overwrite-without-conflict");
+        let _recovery = TestMoveRecoveryRoot::new(dir.path().join("move-state"));
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+
+        let (disposition, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .unwrap();
+
+        assert_eq!(disposition, MoveDisposition::Moved);
+        let receipt = receipt.expect("plain move receipt");
+        assert!(receipt.retained_displaced_path.is_none());
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "moved bytes"
+        );
+        DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert!(!destination.exists());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn overwritten_move_undo_source_collision_refuses_without_mutation() {
+        let dir = TestDir::new("move-overwrite-undo-source-collision");
+        let _recovery = TestMoveRecoveryRoot::new(dir.path().join("move-state"));
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+        std::fs::write(&destination, "displaced bytes").unwrap();
+        let (_, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .unwrap();
+        let receipt = receipt.expect("overwrite move receipt");
+        std::fs::write(&source, "source collision").unwrap();
+
+        let result = DefaultPlatform.undo_move_with_receipt(&receipt);
+
+        assert!(matches!(result, Err(PlatformError::DestinationExists(_))));
+        assert_eq!(
+            std::fs::read_to_string(&source).unwrap(),
+            "source collision"
+        );
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "moved bytes"
+        );
+        assert_eq!(
+            std::fs::read_to_string(receipt.retained_displaced_path.as_ref().unwrap()).unwrap(),
+            "displaced bytes"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn overwritten_move_undo_rejects_a_replaced_published_entry_without_mutation() {
+        let dir = TestDir::new("move-overwrite-undo-published-replacement");
+        let _recovery = TestMoveRecoveryRoot::new(dir.path().join("move-state"));
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+        std::fs::write(&destination, "displaced bytes").unwrap();
+        let (_, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .unwrap();
+        let receipt = receipt.expect("overwrite move receipt");
+        std::fs::remove_file(&destination).unwrap();
+        std::fs::write(&destination, "published replacement").unwrap();
+
+        let result = DefaultPlatform.undo_move_with_receipt(&receipt);
+
+        assert!(matches!(result, Err(PlatformError::StalePathMoveUndo(_))));
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "published replacement"
+        );
+        assert_eq!(
+            std::fs::read_to_string(receipt.retained_displaced_path.as_ref().unwrap()).unwrap(),
+            "displaced bytes"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn overwritten_move_undo_rejects_a_replaced_retained_entry_without_mutation() {
+        let dir = TestDir::new("move-overwrite-undo-retained-replacement");
+        let _recovery = TestMoveRecoveryRoot::new(dir.path().join("move-state"));
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+        std::fs::write(&destination, "displaced bytes").unwrap();
+        let (_, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .unwrap();
+        let receipt = receipt.expect("overwrite move receipt");
+        let retained = receipt.retained_displaced_path.as_ref().unwrap();
+        std::fs::remove_file(retained).unwrap();
+        std::fs::write(retained, "retained replacement").unwrap();
+
+        let result = DefaultPlatform.undo_move_with_receipt(&receipt);
+
+        assert!(matches!(result, Err(PlatformError::StalePathMoveUndo(_))));
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "moved bytes"
+        );
+        assert_eq!(
+            std::fs::read_to_string(retained).unwrap(),
+            "retained replacement"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn overwritten_move_undo_cleanup_failure_is_retryable_after_paths_are_restored() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = TestDir::new("move-overwrite-undo-cleanup-retry");
+        let recovery_root = dir.path().join("move-state");
+        let _recovery = TestMoveRecoveryRoot::new(recovery_root.clone());
+        let source_dir = dir.path().join("source");
+        let destination_dir = dir.path().join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+        std::fs::write(&destination, "displaced bytes").unwrap();
+        let (_, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .unwrap();
+        let receipt = receipt.expect("overwrite move receipt");
+        std::fs::set_permissions(&recovery_root, std::fs::Permissions::from_mode(0o500)).unwrap();
+
+        let first_result = DefaultPlatform.undo_move_with_receipt(&receipt);
+
+        assert!(matches!(
+            first_result,
+            Err(PlatformError::CommittedUndoCleanupPending { .. })
+        ));
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "displaced bytes"
+        );
+        assert!(
+            !discover_retained_move_transactions_at(&recovery_root)
+                .unwrap()
+                .is_empty()
+        );
+
+        std::fs::set_permissions(&recovery_root, std::fs::Permissions::from_mode(0o700)).unwrap();
+        DefaultPlatform.undo_move_with_receipt(&receipt).unwrap();
+
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "displaced bytes"
+        );
+        assert!(
+            discover_retained_move_transactions_at(&recovery_root)
+                .unwrap()
+                .is_empty()
+        );
     }
 
     #[cfg(target_os = "linux")]
@@ -2781,7 +5827,7 @@ mod tests {
 
         let result = DefaultPlatform.undo_rename_with_receipt(&receipt);
 
-        assert!(matches!(result, Err(PlatformError::StaleRenameUndo(_))));
+        assert!(matches!(result, Err(PlatformError::StalePathMoveUndo(_))));
         assert!(!before.exists());
         assert_eq!(
             std::fs::read_to_string(&after).unwrap(),
@@ -2804,7 +5850,7 @@ mod tests {
 
         let result = DefaultPlatform.undo_rename_with_receipt(&receipt);
 
-        assert!(matches!(result, Err(PlatformError::StaleRenameUndo(_))));
+        assert!(matches!(result, Err(PlatformError::StalePathMoveUndo(_))));
         assert!(!before.exists());
         assert!(!after.exists());
     }
@@ -2855,7 +5901,7 @@ mod tests {
             .execute_rename_with_undo_receipt(&before, "after.txt")
             .unwrap()
             .expect("rename receipt");
-        let malformed = RenameUndoReceipt {
+        let malformed = PathMoveUndoReceipt {
             before_path: other_parent.join("before.txt"),
             ..receipt
         };
@@ -2864,7 +5910,7 @@ mod tests {
 
         assert!(matches!(
             result,
-            Err(PlatformError::InvalidRenameUndoReceipt(_))
+            Err(PlatformError::InvalidPathMoveUndoReceipt(_))
         ));
         assert!(!before.exists());
         assert_eq!(std::fs::read_to_string(&after).unwrap(), "original bytes");
@@ -3302,6 +6348,7 @@ mod tests {
         );
     }
 
+    #[cfg(target_os = "linux")]
     #[test]
     fn partial_copy_batch_reports_every_retained_recovery_path() {
         let dir = TestDir::new("partial-copy-recovery-paths");
@@ -3316,6 +6363,9 @@ mod tests {
             if source == Path::new("first") {
                 Ok(CopyPublication::Published {
                     retained_transaction: first_stage.clone(),
+                    published_path: PathBuf::from("first-published"),
+                    published_identity: rename_identity(&first_stage.join("candidate")).unwrap(),
+                    displaced_identity: None,
                 })
             } else {
                 Err(PlatformError::CleanupPending {
@@ -3344,7 +6394,7 @@ mod tests {
         }
     }
 
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
     #[test]
     fn move_is_rejected_before_mutating_even_for_a_valid_file_source() {
         let dir = TestDir::new("move-safe-rejection-file");
@@ -3365,6 +6415,31 @@ mod tests {
             "original contents"
         );
         assert!(std::fs::symlink_metadata(destination.join("source.txt")).is_err());
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_same_volume_file_move_publishes_the_exact_source() {
+        let dir = TestDir::new("move-windows-file");
+        let source = dir.path().join("source.txt");
+        let destination = dir.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&source, "original contents").unwrap();
+
+        let (_, dispositions) = DefaultPlatform
+            .execute_command_with_move_dispositions(&FileCommand::Move {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Skip,
+            })
+            .unwrap();
+
+        assert_eq!(dispositions, vec![MoveDisposition::Moved]);
+        assert!(std::fs::symlink_metadata(&source).is_err());
+        assert_eq!(
+            std::fs::read_to_string(destination.join("source.txt")).unwrap(),
+            "original contents"
+        );
     }
 
     #[cfg(target_os = "linux")]
@@ -3449,38 +6524,65 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn linux_cross_filesystem_move_returns_typed_error_without_mutation() {
+    fn linux_cross_filesystem_regular_file_move_supports_skip_and_rename() {
         use std::os::unix::fs::MetadataExt;
 
-        let dir = TestDir::new("move-cross-device-rejection");
-        let source = dir.path().join("source.txt");
+        let dir = TestDir::new("move-cross-device-regular-file");
+        let recovery_root = dir.path().join("state").join("ottrin").join("moves");
+        let _recovery_root = TestMoveRecoveryRoot::new(recovery_root);
         let destination_root = std::path::Path::new("/dev/shm");
         if std::fs::metadata(dir.path()).unwrap().dev()
             == std::fs::metadata(destination_root).unwrap().dev()
         {
             return;
         }
-        let destination =
-            destination_root.join(format!("ottrin-move-cross-device-{}", std::process::id()));
-        std::fs::create_dir(&destination).unwrap();
-        std::fs::write(&source, "source contents").unwrap();
-
-        let result = DefaultPlatform.execute_command(&FileCommand::Move {
-            sources: vec![source.clone()],
-            destination: destination.clone(),
-            conflict: ConflictAction::Skip,
-        });
-
-        assert!(matches!(
-            result,
-            Err(PlatformError::UnsupportedSafeCrossDeviceMove(_))
+        let destination = destination_root.join(format!(
+            "ottrin-move-cross-device-{}-{}",
+            std::process::id(),
+            getrandom::u64().unwrap()
         ));
-        assert_eq!(std::fs::read_to_string(&source).unwrap(), "source contents");
-        assert!(!destination.join("source.txt").exists());
-        std::fs::remove_dir(&destination).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("source.txt"), "occupied").unwrap();
+
+        for (conflict, expected_name) in [
+            (ConflictAction::Skip, None),
+            (ConflictAction::Rename, Some("source (1).txt")),
+        ] {
+            let source = dir.path().join("source.txt");
+            std::fs::write(&source, "source contents").unwrap();
+
+            let (_, dispositions) = DefaultPlatform
+                .execute_command_with_move_dispositions(&FileCommand::Move {
+                    sources: vec![source.clone()],
+                    destination: destination.clone(),
+                    conflict,
+                })
+                .unwrap();
+
+            match expected_name {
+                None => {
+                    assert_eq!(dispositions, vec![MoveDisposition::Skipped]);
+                    assert_eq!(std::fs::read_to_string(&source).unwrap(), "source contents");
+                }
+                Some(name) => {
+                    assert_eq!(dispositions, vec![MoveDisposition::Moved]);
+                    assert!(!source.exists());
+                    assert_eq!(
+                        std::fs::read_to_string(destination.join(name)).unwrap(),
+                        "source contents"
+                    );
+                }
+            }
+            assert_eq!(
+                std::fs::read_to_string(destination.join("source.txt")).unwrap(),
+                "occupied"
+            );
+        }
+
+        std::fs::remove_dir_all(&destination).unwrap();
     }
 
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
     #[test]
     fn move_is_rejected_before_mutating_even_for_a_valid_directory_source() {
         let dir = TestDir::new("move-safe-rejection-directory");
@@ -3504,7 +6606,34 @@ mod tests {
         assert!(std::fs::read_dir(&destination).unwrap().next().is_none());
     }
 
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_same_volume_directory_move_preserves_nested_content() {
+        let dir = TestDir::new("move-windows-directory");
+        let source = dir.path().join("source-dir");
+        let source_file = source.join("inner.txt");
+        let destination = dir.path().join("destination");
+        std::fs::create_dir(&source).unwrap();
+        std::fs::write(&source_file, "keep-safe").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let (_, dispositions) = DefaultPlatform
+            .execute_command_with_move_dispositions(&FileCommand::Move {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Skip,
+            })
+            .unwrap();
+
+        assert_eq!(dispositions, vec![MoveDisposition::Moved]);
+        assert!(std::fs::symlink_metadata(&source).is_err());
+        assert_eq!(
+            std::fs::read_to_string(destination.join("source-dir/inner.txt")).unwrap(),
+            "keep-safe"
+        );
+    }
+
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
     #[test]
     fn move_is_rejected_before_mutating_for_all_conflict_actions() {
         for conflict in [
@@ -3533,7 +6662,38 @@ mod tests {
         }
     }
 
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_same_volume_unoccupied_move_supports_every_conflict_action() {
+        for conflict in [
+            ConflictAction::Skip,
+            ConflictAction::Overwrite,
+            ConflictAction::Rename,
+        ] {
+            let dir = TestDir::new("move-windows-unoccupied-conflict-matrix");
+            let source = dir.path().join("source.txt");
+            let destination = dir.path().join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            std::fs::write(&source, "original contents").unwrap();
+
+            let (_, dispositions) = DefaultPlatform
+                .execute_command_with_move_dispositions(&FileCommand::Move {
+                    sources: vec![source.clone()],
+                    destination: destination.clone(),
+                    conflict,
+                })
+                .unwrap();
+
+            assert_eq!(dispositions, vec![MoveDisposition::Moved]);
+            assert!(std::fs::symlink_metadata(&source).is_err());
+            assert_eq!(
+                std::fs::read_to_string(destination.join("source.txt")).unwrap(),
+                "original contents"
+            );
+        }
+    }
+
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
     #[test]
     fn move_directory_is_rejected_before_mutating_for_all_conflict_actions() {
         for conflict in [
@@ -3575,9 +6735,68 @@ mod tests {
         }
     }
 
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_same_volume_directory_conflicts_move_or_fail_closed_without_loss() {
+        for conflict in [
+            ConflictAction::Skip,
+            ConflictAction::Overwrite,
+            ConflictAction::Rename,
+        ] {
+            let dir = TestDir::new("move-windows-dir-conflict-matrix");
+            let source = dir.path().join("source-dir");
+            let source_file = source.join("inner.txt");
+            let destination = dir.path().join("destination");
+            let destination_conflict = destination.join("source-dir");
+
+            std::fs::create_dir(&source).unwrap();
+            std::fs::write(&source_file, "nested").unwrap();
+            std::fs::create_dir(&destination).unwrap();
+            std::fs::create_dir(&destination_conflict).unwrap();
+            std::fs::write(
+                destination_conflict.join("retained.txt"),
+                "destination retained",
+            )
+            .unwrap();
+
+            let result =
+                DefaultPlatform.execute_command_with_move_dispositions(&FileCommand::Move {
+                    sources: vec![source.clone()],
+                    destination: destination.clone(),
+                    conflict,
+                });
+
+            match conflict {
+                ConflictAction::Skip => {
+                    let (_, dispositions) = result.unwrap();
+                    assert_eq!(dispositions, vec![MoveDisposition::Skipped]);
+                    assert_eq!(std::fs::read_to_string(&source_file).unwrap(), "nested");
+                }
+                ConflictAction::Rename => {
+                    let (_, dispositions) = result.unwrap();
+                    assert_eq!(dispositions, vec![MoveDisposition::Moved]);
+                    assert!(std::fs::symlink_metadata(&source).is_err());
+                    assert_eq!(
+                        std::fs::read_to_string(destination.join("source-dir (1)/inner.txt"))
+                            .unwrap(),
+                        "nested"
+                    );
+                }
+                ConflictAction::Overwrite => {
+                    assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
+                    assert_eq!(std::fs::read_to_string(&source_file).unwrap(), "nested");
+                }
+            }
+            assert_eq!(
+                std::fs::read_to_string(destination_conflict.join("retained.txt")).unwrap(),
+                "destination retained"
+            );
+        }
+    }
+
     #[cfg(windows)]
     #[test]
-    fn move_is_rejected_before_mutating_even_for_a_valid_symlink_source() {
+    fn windows_same_volume_move_preserves_a_dangling_symlink() {
         use std::os::windows::fs::symlink_file as symlink;
 
         let dir = TestDir::new("move-safe-rejection");
@@ -3586,18 +6805,20 @@ mod tests {
         std::fs::create_dir(&destination).unwrap();
         symlink("missing-target", &source).unwrap();
 
-        let result = DefaultPlatform.execute_command(&FileCommand::Move {
-            sources: vec![source.clone()],
-            destination: destination.clone(),
-            conflict: ConflictAction::Skip,
-        });
+        let (_, dispositions) = DefaultPlatform
+            .execute_command_with_move_dispositions(&FileCommand::Move {
+                sources: vec![source.clone()],
+                destination: destination.clone(),
+                conflict: ConflictAction::Skip,
+            })
+            .unwrap();
 
-        assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
+        assert_eq!(dispositions, vec![MoveDisposition::Moved]);
+        assert!(std::fs::symlink_metadata(&source).is_err());
         assert_eq!(
-            std::fs::read_link(&source).unwrap(),
+            std::fs::read_link(destination.join("dangling")).unwrap(),
             Path::new("missing-target")
         );
-        assert!(std::fs::symlink_metadata(destination.join("dangling")).is_err());
     }
 
     #[cfg(target_os = "linux")]
@@ -3649,9 +6870,9 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn default_retained_move_status_uses_isolated_state_home_without_initializing_it() {
-        static STATE_HOME_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-
-        let _lock = STATE_HOME_LOCK.lock().unwrap();
+        let _lock = move_transaction::TEST_MOVE_ENV_SERIALIZER
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         let dir = TestDir::new("default-move-retained-status");
         let state_home = dir.path().join("state-home");
         let previous = std::env::var_os("XDG_STATE_HOME");
@@ -3688,7 +6909,7 @@ mod tests {
         let dir = TestDir::new("move-retained-recover-known");
         let state_home = dir.path().join("state");
         let recovery_root = state_home.join("ottrin").join("moves");
-        move_transaction::set_test_recovery_root(Some(recovery_root.clone()));
+        let _recovery_root = TestMoveRecoveryRoot::new(recovery_root.clone());
 
         let source = dir.path().join("source");
         let destination = dir.path().join("destination");
@@ -3747,6 +6968,5 @@ mod tests {
             .join(format!("{transaction_id_hex}.journal"));
         assert!(!std::fs::exists(&local_path).unwrap_or_default());
         assert!(!std::fs::exists(&central_journal).unwrap_or_default());
-        move_transaction::set_test_recovery_root(None);
     }
 }

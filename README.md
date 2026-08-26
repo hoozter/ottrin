@@ -20,8 +20,9 @@ artifact is claimed as published or accepted. See the
 [Release Checklist](docs/RELEASE_CHECKLIST.md) for outstanding gates.
 
 The intended first release formats are Linux AppImage and portable tarball,
-plus Windows portable zip and per-user installer. Windows MSI and macOS
-packages remain planned work.
+Windows portable zip, per-user installer and per-user MSI, plus an unsigned
+macOS app-bundle archive. The Windows MSI and macOS package sources are
+complete, but both remain pending native platform construction and acceptance.
 
 ### Linux
 
@@ -57,6 +58,13 @@ override. Exact release artifacts must still verify the app-local
 `opengl32.dll`, `libgallium_wgl.dll`, EGL/GLES, DXIL, and complete notices before
 this compatibility path is accepted.
 
+### macOS
+
+The macOS package source produces `Ottrin-*-macos-*.zip`, containing
+`Ottrin.app`. It is not yet a published or accepted artifact: native launch,
+Finder behavior, quarantine/Gatekeeper handling, and production signing remain
+release gates on macOS.
+
 ---
 
 ## Features
@@ -75,7 +83,7 @@ this compatibility path is accepted.
 - **Drop Folder workflow** — quick copy destination with recents and pinned entries
 - **Integrated privilege management** — denied operations can retry via helper flow
 - **Global search** — indexed search with scope switching and per-result actions
-- **Preview system** — text and images in-app, bounded multi-page PDF previews with Previous/Next/page selection, bounded SVG visuals admitted by source, XML, path-work, semantic reuse, filter-work, dimension, and pixel limits, bounded XLSX/XLSM and ODS structured worksheet previews, and clearly labeled DOCX/PPTX extracted-text fallbacks, plus rich archive/media metadata (Space bar). PDF and Office previews retain extracted-text and metadata fallbacks; EPS reports an actionable unavailable state rather than executing PostScript without a vetted isolated renderer.
+- **Preview system** — text and images in-app, bounded multi-page PDF previews with Previous/Next/page selection, bounded SVG visuals admitted by source, XML, path-work, semantic reuse, filter-work, dimension, and pixel limits, bounded XLSX/XLSM and ODS structured worksheet previews, a bounded native DOCX structure view, and a clearly labeled PPTX extracted-text fallback, plus rich archive/media metadata (Space bar). The DOCX view preserves paragraphs, styled runs, alignment cues, and bordered tables without claiming exact pagination or Office fidelity; PDF and Office previews retain extracted-text and metadata fallbacks. On Linux, EPS can use separately installed Ghostscript through bounded non-networked isolation; Ottrin does not bundle it and retains metadata/external-open fallback when unavailable.
 - **Coherent command line** — `ottrin search`/`-s`, `ottrin index` (`update`, read-only `status`, atomic `rebuild`), and full Quick Inspector `ottrin preview`/`-p`
 
 ---
@@ -102,7 +110,7 @@ this compatibility path is accepted.
 
 ## Build from Source
 
-Requires Rust 1.94.0. CI and release workflows pin this exact toolchain for Linux and Windows builds. macOS packaging is deferred.
+Requires Rust 1.94.0. CI and release workflows pin this exact toolchain for Linux, Windows, and macOS builds.
 
 ```sh
 git clone https://github.com/hoozter/ottrin.git
@@ -121,7 +129,8 @@ Linux dependencies:
 ```sh
 sudo apt-get install -y \
     libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-    libxkbcommon-dev libssl-dev
+    libxkbcommon-dev libssl-dev libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev
 ```
 
 ---
@@ -141,7 +150,7 @@ sudo apt-get install -y \
 
 ## Status
 
-v0.1.0 is in release hardening. Linux AppImage/portable artifacts and Windows portable/installer artifacts are the current release path. See [docs/USER_GUIDE.md](docs/USER_GUIDE.md), [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), and [docs/ROADMAP.md](docs/ROADMAP.md).
+v0.1.0 is in release hardening. Linux AppImage, portable, `.deb`, and `.rpm` package sources plus Windows portable/installer sources are the current release path. See [docs/USER_GUIDE.md](docs/USER_GUIDE.md), [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), and [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 

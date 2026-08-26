@@ -18,6 +18,45 @@ linux_runtime_is_host_base_abi() {
   esac
 }
 
+# The playback helper intentionally resolves the user's system media stack at
+# runtime. The GUI and its portable closure must remain independent of that
+# stack so a missing GStreamer installation cannot prevent Ottrin from
+# launching. Reject framework, plugin, and codec payloads anywhere in the
+# artifact rather than relying on an incomplete library exclusion list.
+verify_linux_media_runtime_boundary() {
+  local artifact_label="$1"
+  local artifact_root="$2"
+  local media_helper="$3"
+  local lib_dir="$4"
+  local canonical_root canonical_helper canonical_lib_dir
+
+  [[ -d "$artifact_root" && ! -L "$artifact_root" && -x "$media_helper" && -f "$media_helper" \
+    && ! -L "$media_helper" && -d "$lib_dir" && ! -L "$lib_dir" ]] || {
+    printf '%s is missing a trusted media helper or runtime root.\n' "$artifact_label" >&2
+    return 1
+  }
+  canonical_root="$(realpath -e -- "$artifact_root")" || return 1
+  canonical_helper="$(realpath -e -- "$media_helper")" || return 1
+  canonical_lib_dir="$(realpath -e -- "$lib_dir")" || return 1
+  [[ "$canonical_root" != / && "$canonical_helper" == "$canonical_root/"* \
+    && "$canonical_lib_dir" == "$canonical_root/"* ]] || {
+    printf '%s has an unsafe media runtime root.\n' "$artifact_label" >&2
+    return 1
+  }
+
+  local payload basename_lower
+  while IFS= read -r -d '' payload; do
+    basename_lower="$(basename -- "$payload" | tr '[:upper:]' '[:lower:]')"
+    case "$basename_lower" in
+      *gstreamer*|libgst*|*gst-plugin*|*avcodec*|*avformat*|*avutil*|*swresample*|*swscale*|*ffmpeg*)
+        printf '%s contains a bundled media framework or codec payload: %s\n' \
+          "$artifact_label" "${payload#"$canonical_root"/}" >&2
+        return 1
+        ;;
+    esac
+  done < <(find "$canonical_root" -type f -print0)
+}
+
 # Verify the runtime closure from an extracted artifact. This deliberately
 # lives beside the builder so both behavioral tests and the final release
 # verifier enforce the same format and safety boundary. The manifest binds

@@ -66,7 +66,7 @@ Build all release artifacts available on the current machine:
 ./build-all.sh
 ```
 
-On Linux this builds the Linux portable tarball and AppImage. It also builds the Windows portable zip when the Windows GNU target is already installed. To require the Windows artifact:
+On Linux this builds the Linux portable tarball and AppImage. It also builds the Windows portable zip when the Windows GNU target is already installed. On macOS it builds the unsigned app-bundle archive. To require the Windows artifact:
 
 ```sh
 rustup target add x86_64-pc-windows-gnu
@@ -84,6 +84,30 @@ Linux AppImage:
 ```sh
 ./packaging/linux/package-appimage.sh
 ```
+
+Native Linux packages:
+
+```sh
+./packaging/linux/package-deb.sh
+./packaging/linux/package-rpm.sh  # requires rpmbuild
+```
+
+Both native formats consume `stage-native-package.sh`. Unlike the portable and
+AppImage builders, native staging does not bundle a private runtime-library
+closure; package metadata declares the system libraries used by the GUI and
+optional system-GStreamer playback helper.
+
+macOS app archive (must run on macOS):
+
+```sh
+./packaging/macos/package-app.sh
+```
+
+`stage-app-bundle.sh` is the single app-layout source of truth. It stages the
+GUI, index daemon, `Info.plist`, icon, documentation, and source provenance;
+the packager preserves that `.app` layout in a checksum-sidecar ZIP. Native
+launch, Finder, quarantine/Gatekeeper, and signing acceptance remain separate
+macOS gates.
 
 Windows portable from Linux with the GNU target:
 
@@ -103,7 +127,13 @@ Windows installer from an extracted portable payload (requires NSIS):
 .\packaging\windows\package-installer.ps1 -Stage .\dist\Ottrin-0.1.0-windows-x64
 ```
 
-Linux AppImage is the first public Linux package target. Native `.deb` and `.rpm` packages are deferred until after the first portable/AppImage smoke-test cycle. Windows ships a portable zip and an NSIS per-user installer candidate; MSI work remains.
+Windows MSI from the same extracted portable payload (requires WiX Toolset 5):
+
+```sh
+./packaging/windows/package-msi.sh ./dist/Ottrin-0.1.0-windows-x64
+```
+
+Linux portable, AppImage, `.deb`, and `.rpm` package sources are available. Windows has portable zip, NSIS per-user installer, and per-user MSI package sources. macOS has an unsigned app-bundle ZIP package source. Native Windows MSI and macOS archive construction plus install/launch/platform acceptance remain pending on their target systems. Exact native package installation and desktop acceptance remain part of the final Linux candidate pass.
 
 ## Privileged Helper Model
 
@@ -130,7 +160,7 @@ Runtime helper discovery checks explicit override, environment variable, app dir
 
 - Navigate Miller/List/Grid, tabs, bookmarks, and address bar.
 - Search first index, restart from DB, rebuild, current-folder search, content search, and result actions.
-- Create, rename, copy, trash delete, and permanent delete; verify same-filesystem Linux Move with Skip/Rename/Overwrite/Cancel and explicit dispositions. Cross-filesystem and Windows Move must continue to reject without mutation unless a separately accepted protocol is implemented and proven for that platform and mode.
+- Create, rename, copy, trash delete, and permanent delete; verify Linux same-filesystem and cross-filesystem Move with Skip/Rename/Overwrite/Cancel and explicit dispositions. Cross-filesystem Move must stage and verify the complete destination tree before publication, revalidate before guarded source cleanup, retain explicit recovery evidence on uncertainty, and offer Undo only from identity/content-bound single-entry evidence. On Windows, verify the source-complete handle-relative same-volume Skip/Rename path without treating cross-compilation as native acceptance; occupied Overwrite and cross-volume paths must remain fail-closed until their retained-data and staged-copy slices are proven.
 - Tandem activation, pinning, side switching, and pane-to-pane copy.
 - Quick Inspector for text, image, PDF text/metadata, DOCX, XLSX/XLSM, PPTX, archive, folder, and generic fallback files.
 - Privileged helper smoke with helper and policy installed.
@@ -160,7 +190,7 @@ Before a public v1 release:
   gate. Use `--source-only` before artifacts exist, or
   `--require-optional-tools` on a fully provisioned release workstation.
 - `cargo fmt --check`, workspace check/test, strict Clippy, and release build pass.
-- Linux and Windows CI are green.
+- Linux, Windows, and macOS CI are green.
 - Linux AppImage and portable tarball are checksum-verified and smoke-tested from clean artifacts.
 - Windows portable zip is launched and smoke-tested on real Windows.
 - Linux privileged helper/polkit smoke test passes.

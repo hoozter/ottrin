@@ -45,6 +45,7 @@ download_verify_and_package_pdfium() {
 
 cd "$ROOT"
 cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
+cargo build --release -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer
 
 rm -rf "$APPDIR"
 mkdir -p "$APPDIR/usr/bin"
@@ -58,6 +59,8 @@ mkdir -p "$APPDIR/usr/share/polkit-1/actions"
 mkdir -p "$APPDIR/usr/share/doc/ottrin"
 
 install -m 0755 "$ROOT/target/release/ottrin-app" "$APPDIR/usr/bin/ottrin"
+install -m 0755 "$ROOT/target/release/ottrin-media-playback" "$APPDIR/usr/bin/ottrin-media-playback"
+install -m 0755 "$ROOT/target/release/ottrin-indexd" "$APPDIR/usr/bin/ottrin-indexd"
 install -m 0755 "$ROOT/target/release/ottrin-priv-helper" "$APPDIR/usr/libexec/ottrin/ottrin-priv-helper"
 download_verify_and_package_pdfium "$APPDIR/usr/bin/pdfium"
 install -m 0644 "$ROOT/assets/icon.svg" "$APPDIR/usr/share/icons/hicolor/scalable/apps/ottrin.svg"
@@ -68,7 +71,8 @@ install -m 0644 "$ROOT/packaging/linux/ottrin-index.service.in" "$APPDIR/usr/sha
 install -m 0644 "$ROOT/README.md" "$ROOT/LICENSE" "$APPDIR/usr/share/doc/ottrin/"
 install -m 0644 "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" \
   "$ROOT/docs/ROADMAP.md" "$ROOT/docs/RELEASE_NOTES.md" \
-  "$ROOT/docs/RELEASE_CHECKLIST.md" "$APPDIR/usr/share/doc/ottrin/"
+  "$ROOT/docs/RELEASE_CHECKLIST.md" "$ROOT/docs/SEARCH_PERFORMANCE.md" \
+  "$APPDIR/usr/share/doc/ottrin/"
 bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$APPDIR/usr"
 cat > "$APPDIR/usr/share/doc/ottrin/SOURCE_REVISION.txt" <<EOF
 Ottrin source revision

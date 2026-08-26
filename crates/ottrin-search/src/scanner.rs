@@ -17,8 +17,16 @@ pub(crate) struct ScanProgress {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+#[cfg_attr(test, allow(dead_code))]
 pub(crate) enum ScanOutcome {
     Completed(Vec<OwnedItem>),
+    Staged { indexed_items: usize },
+    Cancelled,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum BatchedScanOutcome {
+    Completed { indexed_items: usize },
     Cancelled,
 }
 
@@ -30,14 +38,42 @@ fn walk_error_is_skippable(depth: usize, kind: Option<std::io::ErrorKind>) -> bo
         )
 }
 
+#[cfg(test)]
 pub(crate) fn scan(
     plan: &ScanPlan,
     cancelled: &AtomicBool,
-    mut on_progress: impl FnMut(ScanProgress),
+    on_progress: impl FnMut(ScanProgress),
 ) -> Result<ScanOutcome, String> {
+    let mut items = Vec::new();
+    match scan_batched(
+        plan,
+        cancelled,
+        usize::MAX,
+        |batch| {
+            items.extend(batch);
+            Ok(())
+        },
+        on_progress,
+    )? {
+        BatchedScanOutcome::Completed { .. } => Ok(ScanOutcome::Completed(items)),
+        BatchedScanOutcome::Cancelled => Ok(ScanOutcome::Cancelled),
+    }
+}
+
+pub(crate) fn scan_batched(
+    plan: &ScanPlan,
+    cancelled: &AtomicBool,
+    batch_size: usize,
+    mut on_batch: impl FnMut(Vec<OwnedItem>) -> Result<(), String>,
+    mut on_progress: impl FnMut(ScanProgress),
+) -> Result<BatchedScanOutcome, String> {
+    if batch_size == 0 {
+        return Err("scan batch size must be greater than zero".to_string());
+    }
     let roots = plan.roots();
     let total_roots = roots.len();
-    let mut items = Vec::new();
+    let mut batch = Vec::with_capacity(batch_size.min(4096));
+    let mut indexed_items = 0_usize;
     let placeholder = roots.first().cloned().unwrap_or_default();
     on_progress(ScanProgress {
         message: "Indexing · preparing filters…".to_string(),
@@ -48,12 +84,12 @@ pub(crate) fn scan(
         last_indexed_path: None,
     });
     if cancelled.load(Ordering::Acquire) {
-        return Ok(ScanOutcome::Cancelled);
+        return Ok(BatchedScanOutcome::Cancelled);
     }
 
     for (root_index, root) in roots.iter().enumerate() {
         if cancelled.load(Ordering::Acquire) {
-            return Ok(ScanOutcome::Cancelled);
+            return Ok(BatchedScanOutcome::Cancelled);
         }
         if let Err(error) = std::fs::symlink_metadata(root) {
             return Err(format!(
@@ -68,7 +104,7 @@ pub(crate) fn scan(
             .filter_entry(|entry| plan.includes_path_for_root(entry.path(), root));
         for entry in walker {
             if cancelled.load(Ordering::Acquire) {
-                return Ok(ScanOutcome::Cancelled);
+                return Ok(BatchedScanOutcome::Cancelled);
             }
             let entry = match entry {
                 Ok(entry) => entry,
@@ -82,77 +118,43 @@ pub(crate) fn scan(
                 }
                 Err(error) => return Err(error.to_string()),
             };
-            let path = entry.path();
-            if path == root {
+            if entry.path() == root {
                 continue;
             }
-            let name = entry.file_name().to_string_lossy().into_owned();
-            if !plan.includes_item_name(&name) {
+            let Some(item) = candidate_for_path(plan, entry.path())? else {
                 continue;
+            };
+            let last_path = item.item().path.clone();
+            batch.push(item);
+            indexed_items = indexed_items.saturating_add(1);
+            if batch.len() == batch_size {
+                on_batch(std::mem::replace(
+                    &mut batch,
+                    Vec::with_capacity(batch_size.min(4096)),
+                ))?;
             }
-            let metadata = match entry.metadata() {
-                Ok(metadata) => metadata,
-                Err(_) => continue,
-            };
-            let file_type = entry.file_type();
-            let kind = if file_type.is_symlink() {
-                EntryKind::Symlink
-            } else if file_type.is_dir() {
-                EntryKind::Directory
-            } else if file_type.is_file() {
-                EntryKind::File
-            } else {
-                EntryKind::Other
-            };
-            let mut item = SearchResultItem {
-                path: path.to_path_buf(),
-                parent_path: path
-                    .parent()
-                    .map(std::path::Path::to_path_buf)
-                    .unwrap_or_default(),
-                name,
-                kind,
-                size_bytes: matches!(kind, EntryKind::File).then(|| metadata.len()),
-                modified_unix_secs: metadata
-                    .modified()
-                    .ok()
-                    .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
-                    .map(|duration| duration.as_secs()),
-                is_executable: crate::detect_executable(&metadata),
-                symlink_target_is_dir: matches!(kind, EntryKind::Symlink)
-                    .then(|| metadata.is_dir()),
-                content_snippet: None,
-                name_lower: String::new(),
-                path_str: String::new(),
-                path_lower: String::new(),
-            };
-            item.prepare();
-            let last_path = item.path.clone();
-            let owner = plan
-                .root_for(path)
-                .expect("walked path belongs to its exact plan")
-                .to_path_buf();
-            items.push(OwnedItem::new(owner, item));
             on_progress(ScanProgress {
                 message: crate::format_progress(
                     root_index + 1,
                     total_roots.max(1),
-                    items.len(),
-                    items.len(),
+                    indexed_items,
+                    indexed_items,
                 ),
                 active_root: root.clone(),
                 active_root_index: root_index + 1,
                 total_roots,
-                indexed_items: items.len(),
+                indexed_items,
                 last_indexed_path: Some(last_path),
             });
         }
     }
     if cancelled.load(Ordering::Acquire) {
-        Ok(ScanOutcome::Cancelled)
-    } else {
-        Ok(ScanOutcome::Completed(items))
+        return Ok(BatchedScanOutcome::Cancelled);
     }
+    if !batch.is_empty() {
+        on_batch(batch)?;
+    }
+    Ok(BatchedScanOutcome::Completed { indexed_items })
 }
 
 /// Build a private candidate for one exact configured root.
@@ -383,6 +385,44 @@ mod tests {
 
         assert!(matches!(outcome, ScanOutcome::Cancelled));
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn scan_batched_emits_a_complete_generation_without_an_unbounded_result() {
+        let root = temp_root("batched-generation");
+        for index in 0..25 {
+            std::fs::write(root.join(format!("item-{index:02}.txt")), b"item")
+                .expect("write fixture");
+        }
+        let plan = plan(root.clone());
+        let cancelled = AtomicBool::new(false);
+        let mut batch_sizes = Vec::new();
+        let mut paths = Vec::new();
+
+        let outcome = scan_batched(
+            &plan,
+            &cancelled,
+            7,
+            |batch: Vec<OwnedItem>| {
+                batch_sizes.push(batch.len());
+                paths.extend(batch.into_iter().map(|owned| owned.item().path.clone()));
+                Ok(())
+            },
+            |_| {},
+        )
+        .expect("scan succeeds");
+
+        assert_eq!(outcome, BatchedScanOutcome::Completed { indexed_items: 25 });
+        assert_eq!(batch_sizes, vec![7, 7, 7, 4]);
+        assert_eq!(paths.len(), 25);
+        assert_eq!(
+            paths
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len(),
+            25
+        );
+        std::fs::remove_dir_all(root).expect("remove fixture");
     }
 
     #[test]

@@ -6,12 +6,17 @@ use ottrin_core::{
     SearchIndexStatus, SearchQuery, format_size, select_graphics_renderer,
 };
 use ottrin_platform::{DefaultPlatform, PlatformOps, set_privileged_helper_override};
-use ottrin_ui::{OttrinApp, clear_preview_cache_storage, load_config, remove_config_file};
+use ottrin_ui::{
+    OttrinApp, administrator_surface_label, clear_preview_cache_storage, load_config,
+    remove_config_file,
+};
 use std::collections::HashSet;
 #[cfg(any(target_os = "windows", test))]
 use std::fs::OpenOptions;
 #[cfg(any(target_os = "windows", test))]
 use std::io::Write;
+#[cfg(target_os = "linux")]
+use std::os::unix::fs::MetadataExt;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
@@ -23,12 +28,25 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+enum GuiLaunchTarget {
+    QuickInspector(PathBuf),
+    Directory(PathBuf),
+    Select(PathBuf),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum HeadlessAction {
     IndexUpdate { json: bool },
     IndexStatus { json: bool },
     IndexRebuild { json: bool },
+    IndexServiceInstall,
+    IndexServiceStatus,
+    IndexServiceRestart,
+    IndexServiceRemove,
     Search { query: String, json: bool },
     Preview(PathBuf),
+    OpenPath(PathBuf),
+    SelectPath(PathBuf),
     DropStatus,
     DropCopy(Vec<PathBuf>),
     Invalid(String),
@@ -44,6 +62,23 @@ fn renderer_for_selection(is_windows: bool, choice: GraphicsRendererChoice) -> e
 
 fn main_viewport_transparent(is_windows: bool) -> bool {
     !is_windows
+}
+
+#[cfg(unix)]
+fn application_window_title_for_unix_user(effective_uid: u32) -> String {
+    administrator_surface_label("Ottrin", effective_uid == 0)
+}
+
+fn application_window_title() -> String {
+    #[cfg(unix)]
+    {
+        // SAFETY: geteuid has no preconditions and no side effects.
+        application_window_title_for_unix_user(unsafe { libc::geteuid() })
+    }
+    #[cfg(not(unix))]
+    {
+        administrator_surface_label("Ottrin", false)
+    }
 }
 
 fn graphics_runtime_status(
@@ -133,9 +168,23 @@ fn main() {
         }
         return;
     }
-    let preview_path = match cli_headless_action(&args) {
+    let gui_target = match cli_headless_action(&args) {
         Some(HeadlessAction::Preview(path)) => match resolve_preview_path(&path) {
-            Ok(path) => Some(path),
+            Ok(path) => Some(GuiLaunchTarget::QuickInspector(path)),
+            Err(error) => {
+                eprintln!("ottrin: {error}");
+                std::process::exit(2);
+            }
+        },
+        Some(HeadlessAction::OpenPath(path)) => match resolve_direct_open_path(&path) {
+            Ok(target) => Some(target),
+            Err(error) => {
+                eprintln!("ottrin: {error}");
+                std::process::exit(2);
+            }
+        },
+        Some(HeadlessAction::SelectPath(path)) => match resolve_preview_path(&path) {
+            Ok(path) => Some(GuiLaunchTarget::Select(path)),
             Err(error) => {
                 eprintln!("ottrin: {error}");
                 std::process::exit(2);
@@ -143,23 +192,25 @@ fn main() {
         },
         _ => None,
     };
-    if preview_path.is_none() && handle_cli_action() {
+    if gui_target.is_none() && handle_cli_action() {
         return;
     }
     #[cfg(unix)]
-    if let Err(error) = ensure_index_daemon() {
+    if should_ensure_index_daemon(unsafe { libc::geteuid() })
+        && let Err(error) = ensure_index_daemon()
+    {
         eprintln!("ottrin: {error}");
         std::process::exit(1);
     }
     install_windows_startup_panic_hook();
-    if let Err(error) = run_gui(preview_path) {
+    if let Err(error) = run_gui(gui_target) {
         eprintln!("ottrin: {error}");
         report_windows_startup_failure("Ottrin could not start", &error.to_string());
         std::process::exit(1);
     }
 }
 
-fn run_gui(preview_path: Option<PathBuf>) -> eframe::Result<()> {
+fn run_gui(gui_target: Option<GuiLaunchTarget>) -> eframe::Result<()> {
     apply_cli_overrides();
     ensure_dev_helper();
 
@@ -176,14 +227,16 @@ fn run_gui(preview_path: Option<PathBuf>) -> eframe::Result<()> {
     let graphics_runtime = graphics_runtime_status(renderer_override.is_some(), &config);
     let window_size = config.window_size.unwrap_or([1024.0, 680.0]);
 
+    let standalone_inspector = matches!(gui_target, Some(GuiLaunchTarget::QuickInspector(_)));
+    let window_title = application_window_title();
     let options = NativeOptions {
         renderer: renderer_for_selection(
             graphics_runtime.is_windows,
             graphics_runtime.selection.choice,
         ),
         viewport: egui::ViewportBuilder::default()
-            .with_title("Ottrin")
-            .with_visible(preview_path.is_none())
+            .with_title(window_title.clone())
+            .with_visible(!standalone_inspector)
             .with_decorations(false)
             .with_transparent(main_viewport_transparent(graphics_runtime.is_windows))
             .with_inner_size(window_size)
@@ -192,12 +245,21 @@ fn run_gui(preview_path: Option<PathBuf>) -> eframe::Result<()> {
         ..Default::default()
     };
     eframe::run_native(
-        "Ottrin",
+        &window_title,
         options,
         Box::new(move |cc| {
             let mut app = OttrinApp::new_with_graphics_status(cc, graphics_runtime);
-            if let Some(path) = preview_path {
-                app.open_quick_inspector_file(path);
+            match gui_target {
+                Some(GuiLaunchTarget::QuickInspector(path)) => {
+                    app.open_quick_inspector_file(path);
+                }
+                Some(GuiLaunchTarget::Directory(path)) => {
+                    app.open_directory_at_startup(path);
+                }
+                Some(GuiLaunchTarget::Select(path)) => {
+                    app.select_file_at_startup(path);
+                }
+                None => {}
             }
             Ok(Box::new(app))
         }),
@@ -346,6 +408,9 @@ fn print_cli_help() {
     println!();
     println!("Usage:");
     println!("  ottrin                         Open the file manager");
+    println!("  ottrin <FILE>                  Open the file directly in Quick Inspector");
+    println!("  ottrin <DIRECTORY>             Open the file manager in that directory");
+    println!("  ottrin --select <FILE>         Open the parent folder with the file selected");
     println!("  ottrin search <QUERY> [--json] Search indexed files (-s)");
     println!("  ottrin index [update] [--json]");
     println!("                                 Update the configured search index");
@@ -391,6 +456,11 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
             [] => HeadlessAction::Invalid("preview requires a file path".to_string()),
             _ => HeadlessAction::Invalid("preview accepts exactly one file path".to_string()),
         }),
+        "--select" => Some(match &args[1..] {
+            [path] if !path.is_empty() => HeadlessAction::SelectPath(PathBuf::from(path)),
+            [] => HeadlessAction::Invalid("--select requires a file path".to_string()),
+            _ => HeadlessAction::Invalid("--select accepts exactly one file path".to_string()),
+        }),
         "drop" => Some(match args.get(1).map(String::as_str) {
             Some("status") if args.len() == 2 => HeadlessAction::DropStatus,
             Some("copy") => HeadlessAction::DropCopy(args[2..].iter().map(PathBuf::from).collect()),
@@ -399,10 +469,24 @@ fn cli_headless_action(args: &[String]) -> Option<HeadlessAction> {
         }),
         "--renderer" | "--helper-path" | "--uninstall" | "--purge-config" => None,
         value if value.starts_with("--renderer=") || value.starts_with("--helper-path=") => None,
-        _ => Some(HeadlessAction::Invalid(format!(
-            "unknown command: {command}"
-        ))),
+        _ => Some(
+            direct_open_path(args)
+                .map(HeadlessAction::OpenPath)
+                .unwrap_or_else(|| HeadlessAction::Invalid(format!("unknown command: {command}"))),
+        ),
     }
+}
+
+fn direct_open_path(args: &[String]) -> Option<PathBuf> {
+    let [value] = args else {
+        return None;
+    };
+    if value.starts_with('-') {
+        return None;
+    }
+    let path = PathBuf::from(value);
+    let explicitly_path_like = path.is_absolute() || path.components().count() > 1;
+    (path.exists() || explicitly_path_like).then_some(path)
 }
 
 fn parse_index_action(args: &[String]) -> HeadlessAction {
@@ -413,14 +497,16 @@ fn parse_index_action(args: &[String]) -> HeadlessAction {
     let mut index = 0;
     while index < args.len() {
         match args[index].as_str() {
-            "update" | "status" | "rebuild" if !action_seen => {
+            "update" | "status" | "rebuild" | "service-install" | "service-status"
+            | "service-restart" | "service-remove"
+                if !action_seen =>
+            {
                 action = args[index].as_str();
                 action_seen = true;
             }
-            "update" | "status" | "rebuild" => {
-                return HeadlessAction::Invalid(
-                    "index accepts one action: update, status, or rebuild".to_string(),
-                );
+            "update" | "status" | "rebuild" | "service-install" | "service-status"
+            | "service-restart" | "service-remove" => {
+                return HeadlessAction::Invalid("index accepts exactly one action".to_string());
             }
             "--json" if !json => json = true,
             "--json" => {
@@ -439,16 +525,24 @@ fn parse_index_action(args: &[String]) -> HeadlessAction {
     match action {
         "status" => HeadlessAction::IndexStatus { json },
         "rebuild" => HeadlessAction::IndexRebuild { json },
+        "service-install" if !json => HeadlessAction::IndexServiceInstall,
+        "service-status" if !json => HeadlessAction::IndexServiceStatus,
+        "service-restart" if !json => HeadlessAction::IndexServiceRestart,
+        "service-remove" if !json => HeadlessAction::IndexServiceRemove,
+        action if action.starts_with("service-") => HeadlessAction::Invalid(
+            "--json is available only for index update, status, and rebuild".to_string(),
+        ),
         _ => HeadlessAction::IndexUpdate { json },
     }
 }
 
 fn configured_search_config() -> ottrin_core::SearchConfig {
-    let mut config = load_config().search;
-    if config.include_roots.is_empty() {
-        config.include_roots = ottrin_search::default_roots();
-    }
-    config
+    load_config().search
+}
+
+#[cfg(unix)]
+fn should_ensure_index_daemon(effective_uid: u32) -> bool {
+    effective_uid != 0
 }
 
 #[cfg(unix)]
@@ -459,13 +553,70 @@ fn connected_index_daemon() -> Option<ottrin_search::SearchDaemonClient> {
 }
 
 #[cfg(unix)]
+fn index_daemon_executable() -> std::io::Result<PathBuf> {
+    let current = std::env::current_exe()?;
+    if std::env::var_os("APPIMAGE").is_none()
+        && let Some(directory) = current.parent()
+    {
+        let dedicated = directory.join("ottrin-indexd");
+        if dedicated.is_file() {
+            return Ok(dedicated);
+        }
+    }
+    Ok(current)
+}
+
+#[cfg(unix)]
+fn same_executable_identity(left: (u64, u64), right: (u64, u64)) -> bool {
+    left == right
+}
+
+#[cfg(target_os = "linux")]
+fn daemon_uses_executable(
+    client: &ottrin_search::SearchDaemonClient,
+    expected: &std::path::Path,
+) -> Result<bool, String> {
+    let pid = client.server_pid()?;
+    let running = std::fs::metadata(format!("/proc/{pid}/exe"))
+        .map_err(|error| format!("could not inspect the running index daemon: {error}"))?;
+    let expected = std::fs::metadata(expected)
+        .map_err(|error| format!("could not inspect the current index daemon: {error}"))?;
+    Ok(same_executable_identity(
+        (running.dev(), running.ino()),
+        (expected.dev(), expected.ino()),
+    ))
+}
+
+#[cfg(all(unix, not(target_os = "linux")))]
+fn daemon_uses_executable(
+    _client: &ottrin_search::SearchDaemonClient,
+    _expected: &std::path::Path,
+) -> Result<bool, String> {
+    Ok(true)
+}
+
+#[cfg(unix)]
 fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
     if let Some(client) = connected_index_daemon() {
-        return Ok(client);
+        let executable = index_daemon_executable()
+            .map_err(|error| format!("could not locate the Ottrin index daemon: {error}"))?;
+        if daemon_uses_executable(&client, &executable)? {
+            return Ok(client);
+        }
+        client.prepare_upgrade()?;
+        let socket = ottrin_search::default_daemon_socket_path()?;
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while socket.exists() && Instant::now() < deadline {
+            thread::sleep(Duration::from_millis(10));
+        }
+        if socket.exists() {
+            return Err(
+                "Ottrin index daemon did not finish upgrading within 5 seconds".to_string(),
+            );
+        }
     }
 
-    let unit_path =
-        ottrin_core::default_home_dir().join(".config/systemd/user/ottrin-index.service");
+    let unit_path = ottrin_search::sqlite_systemd_service_path();
     if unit_path.is_file() {
         let status = Command::new("systemctl")
             .args(["--user", "start", "ottrin-index.service"])
@@ -477,8 +628,8 @@ fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
             ));
         }
     } else {
-        let executable = std::env::current_exe()
-            .map_err(|error| format!("could not locate the Ottrin executable: {error}"))?;
+        let executable = index_daemon_executable()
+            .map_err(|error| format!("could not locate the Ottrin index daemon: {error}"))?;
         let mut daemon = Command::new(executable);
         daemon
             .arg("--index-daemon")
@@ -499,6 +650,23 @@ fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
         thread::sleep(Duration::from_millis(25));
     }
     Err("Ottrin index daemon did not become ready within 3 seconds".to_string())
+}
+
+fn resolve_direct_open_path(path: &std::path::Path) -> Result<GuiLaunchTarget, String> {
+    let resolved = std::fs::canonicalize(path).map_err(|error| match error.kind() {
+        std::io::ErrorKind::NotFound => format!("path does not exist: {}", path.display()),
+        _ => format!("could not resolve path {}: {error}", path.display()),
+    })?;
+    if resolved.is_file() {
+        Ok(GuiLaunchTarget::QuickInspector(resolved))
+    } else if resolved.is_dir() {
+        Ok(GuiLaunchTarget::Directory(resolved))
+    } else {
+        Err(format!(
+            "path is not a regular file or directory: {}",
+            resolved.display()
+        ))
+    }
 }
 
 fn resolve_preview_path(path: &std::path::Path) -> Result<PathBuf, String> {
@@ -562,8 +730,39 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
         }
         HeadlessAction::IndexUpdate { json } => run_index_writer(json, false),
         HeadlessAction::IndexRebuild { json } => run_index_writer(json, true),
-        HeadlessAction::Preview(_) => {
-            unreachable!("preview starts the inspector before headless routing")
+        HeadlessAction::IndexServiceInstall => {
+            let config = configured_search_config();
+            println!(
+                "{}",
+                ottrin_search::SearchService::install_sqlite_schedule(&config)?
+            );
+            Ok(())
+        }
+        HeadlessAction::IndexServiceStatus => {
+            let status = ottrin_search::SearchService::sqlite_schedule_status();
+            println!("source={}", status.source);
+            println!("enabled={}", status.enabled);
+            println!("detail={}", status.detail);
+            Ok(())
+        }
+        HeadlessAction::IndexServiceRestart => {
+            println!(
+                "{}",
+                ottrin_search::SearchService::restart_sqlite_schedule()?
+            );
+            Ok(())
+        }
+        HeadlessAction::IndexServiceRemove => {
+            println!(
+                "{}",
+                ottrin_search::SearchService::uninstall_sqlite_schedule()?
+            );
+            Ok(())
+        }
+        HeadlessAction::Preview(_)
+        | HeadlessAction::OpenPath(_)
+        | HeadlessAction::SelectPath(_) => {
+            unreachable!("GUI paths start before headless routing")
         }
         HeadlessAction::DropStatus | HeadlessAction::DropCopy(_) => {
             unreachable!("drop actions return before search routing")
@@ -941,6 +1140,31 @@ fn cargo_helper_artifact_from_messages(
 mod tests {
     use super::*;
 
+    #[cfg(unix)]
+    #[test]
+    fn executable_identity_distinguishes_replaced_daemon_binary() {
+        assert!(same_executable_identity((7, 11), (7, 11)));
+        assert!(!same_executable_identity((7, 11), (7, 12)));
+        assert!(!same_executable_identity((7, 11), (8, 11)));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn administrator_gui_launch_does_not_start_index() {
+        assert!(!should_ensure_index_daemon(0));
+        assert!(should_ensure_index_daemon(1000));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn administrator_window_title_identifies_the_privileged_session() {
+        assert_eq!(
+            application_window_title_for_unix_user(0),
+            "Ottrin (Administrator)"
+        );
+        assert_eq!(application_window_title_for_unix_user(1000), "Ottrin");
+    }
+
     #[test]
     fn native_renderer_uses_wgpu_on_windows_and_glow_elsewhere() {
         assert_eq!(
@@ -1096,6 +1320,22 @@ mod tests {
             cli_headless_action(&["index".into(), "update".into()]),
             Some(HeadlessAction::IndexUpdate { json: false })
         );
+        assert_eq!(
+            cli_headless_action(&["index".into(), "service-install".into()]),
+            Some(HeadlessAction::IndexServiceInstall)
+        );
+        assert_eq!(
+            cli_headless_action(&["index".into(), "service-status".into()]),
+            Some(HeadlessAction::IndexServiceStatus)
+        );
+        assert_eq!(
+            cli_headless_action(&["index".into(), "service-restart".into()]),
+            Some(HeadlessAction::IndexServiceRestart)
+        );
+        assert_eq!(
+            cli_headless_action(&["index".into(), "service-remove".into()]),
+            Some(HeadlessAction::IndexServiceRemove)
+        );
     }
 
     #[test]
@@ -1114,6 +1354,26 @@ mod tests {
     }
 
     #[test]
+    fn direct_path_resolution_distinguishes_files_and_directories() {
+        let root =
+            std::env::temp_dir().join(format!("ottrin-cli-direct-target-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("create direct target root");
+        let file = root.join("note.md");
+        std::fs::write(&file, "# Note\n").expect("write direct target file");
+
+        assert_eq!(
+            resolve_direct_open_path(&file).expect("resolve direct file"),
+            GuiLaunchTarget::QuickInspector(std::fs::canonicalize(&file).expect("canonical file"))
+        );
+        assert_eq!(
+            resolve_direct_open_path(&root).expect("resolve direct directory"),
+            GuiLaunchTarget::Directory(std::fs::canonicalize(&root).expect("canonical directory"))
+        );
+
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
     fn canonical_preview_command_and_alias_preserve_the_requested_path() {
         for command in ["preview", "-p"] {
             assert_eq!(
@@ -1121,6 +1381,58 @@ mod tests {
                 Some(HeadlessAction::Preview(PathBuf::from("fixture.pdf")))
             );
         }
+    }
+
+    #[test]
+    fn select_option_reveals_exactly_one_file_in_the_main_window() {
+        assert_eq!(
+            cli_headless_action(&["--select".into(), "/tmp/report.pdf".into()]),
+            Some(HeadlessAction::SelectPath(PathBuf::from("/tmp/report.pdf")))
+        );
+        assert_eq!(
+            cli_headless_action(&["--select".into()]),
+            Some(HeadlessAction::Invalid(
+                "--select requires a file path".to_string()
+            ))
+        );
+    }
+
+    #[test]
+    fn direct_directory_argument_is_a_gui_open_path() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-cli-direct-directory-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&root).expect("create direct directory");
+        let value = root.to_string_lossy().into_owned();
+
+        assert_eq!(
+            cli_headless_action(std::slice::from_ref(&value)),
+            Some(HeadlessAction::OpenPath(root.clone()))
+        );
+
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn direct_file_argument_opens_quick_inspector_without_an_index_command() {
+        let root =
+            std::env::temp_dir().join(format!("ottrin-cli-direct-preview-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("create direct-preview root");
+        let file = root.join("fstab");
+        std::fs::write(&file, "rootfs / ext4 defaults 0 1\n")
+            .expect("write direct-preview fixture");
+
+        assert_eq!(
+            cli_headless_action(&[file.display().to_string()]),
+            Some(HeadlessAction::OpenPath(file.clone()))
+        );
+        assert_eq!(
+            cli_headless_action(&[root.join("missing.conf").display().to_string()]),
+            Some(HeadlessAction::OpenPath(root.join("missing.conf")))
+        );
+
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]

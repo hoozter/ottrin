@@ -1,3 +1,4 @@
+use base64::Engine as _;
 use ottrin_core::{EntryKind, format_modified};
 use rusqlite::config::DbConfig;
 use rusqlite::hooks::{AuthAction, Authorization};
@@ -5,7 +6,7 @@ use rusqlite::limits::Limit;
 use rusqlite::serialize::OwnedData;
 use rusqlite::{Connection, DatabaseName, OpenFlags};
 use serde::{Deserialize, Serialize};
-use std::io::{Cursor, Read};
+use std::io::{Cursor, Read, Seek, SeekFrom};
 use std::path::Path;
 use std::path::PathBuf;
 use std::ptr::NonNull;
@@ -27,8 +28,16 @@ use std::os::unix::fs::OpenOptionsExt;
 use sha2::{Digest, Sha256};
 
 mod affinity_visual;
+#[cfg(target_os = "linux")]
+mod eps_visual;
+#[cfg(target_os = "linux")]
+mod html_visual;
+mod isolated_process;
+#[cfg(target_os = "linux")]
+mod media_playback;
 mod mesh_visual;
 mod obj_visual;
+mod office_provider;
 mod pdf_visual;
 mod ply_visual;
 mod stl_visual;
@@ -39,10 +48,44 @@ pub use affinity_visual::{
     affinity_preview_is_available, affinity_preview_source_generation,
     render_affinity_embedded_preview_png, render_affinity_embedded_preview_png_with_generation,
 };
+#[cfg(target_os = "linux")]
+pub use eps_visual::{
+    EpsVisualError, eps_preview_runtime_is_available, render_eps_content_preview_png,
+};
+#[cfg(target_os = "linux")]
+pub use html_visual::{
+    HtmlVisualError, html_preview_runtime_available, render_html_content_preview_png,
+};
+#[cfg(target_os = "linux")]
+pub use isolated_process::LinuxBubblewrapIsolation;
+#[cfg(target_os = "windows")]
+pub use isolated_process::WindowsJobObjectIsolation;
+#[cfg(all(target_os = "linux", feature = "system-gstreamer"))]
+pub use media_playback::run_media_playback_helper;
+#[cfg(target_os = "linux")]
+pub use media_playback::{
+    AdmittedMediaPlaybackSource, MAX_MEDIA_PLAYBACK_SOURCE_BYTES,
+    MAX_MEDIA_PLAYBACK_VIDEO_DIMENSION, MediaPlaybackAdmissionError, MediaPlaybackEvent,
+    MediaPlaybackFrame, MediaPlaybackFrameError, MediaPlaybackRuntimeFailure, MediaPlaybackSession,
+    MediaPlaybackSourceIdentity, MediaPlaybackStartError, admit_media_playback_source,
+    start_media_playback, validate_media_playback_rgba_frame,
+};
 pub use obj_visual::{
     ObjMetadata, ObjPreviewSourceGeneration, ObjVisualError, RenderedObjPreview,
     inspect_obj_metadata, obj_preview_source_generation, render_obj_preview_png,
     render_obj_preview_png_with_generation,
+};
+pub use office_provider::{
+    DetectedInstalledLibreOffice, InstalledLibreOfficeConverter, IsolatedProcessFailure,
+    IsolatedProcessInput, IsolatedProcessLauncher, IsolatedProcessOutput, IsolatedProcessRequest,
+    OfficeConversionOutput, OfficeConverterLauncher, OfficeFormat, OfficePreviewPageError,
+    OfficeProviderAttemptFailure, OfficeProviderCapability, OfficeProviderId,
+    OfficeProviderProbeResult, OfficeProviderUnavailableReason, OfficeRenderCacheIdentity,
+    OfficeRenderError, OfficeRenderFailure, OfficeRenderPolicy, OfficeRenderRequest,
+    RenderedOfficePdf, RenderedOfficePreviewPage, detect_installed_libreoffice,
+    detect_installed_libreoffice_from_candidates, extract_legacy_doc_text_at,
+    installed_libreoffice_candidates, office_format_for_path, probe_installed_libreoffice_at,
+    render_office_pdf, render_office_preview_page,
 };
 pub use pdf_visual::{
     PdfVisualError, pdfium_runtime_is_available, render_pdf_first_page_png,
@@ -75,13 +118,34 @@ const EXTRACTED_TEXT_LIMIT: usize = 24_000;
 const MAX_OFFICE_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_OFFICE_PARTS: usize = 4_096;
 const MAX_OFFICE_XML_BYTES: u64 = 8 * 1024 * 1024;
+#[cfg(test)]
 const MAX_OFFICE_UNCOMPRESSED_BYTES: u64 = 64 * 1024 * 1024;
+#[cfg(test)]
 const MAX_OFFICE_XML_DEPTH: usize = 64;
+#[cfg(test)]
 const PRESENTATIONML_NAMESPACE: &[u8] =
     b"http://schemas.openxmlformats.org/presentationml/2006/main";
 const DRAWINGML_NAMESPACE: &[u8] = b"http://schemas.openxmlformats.org/drawingml/2006/main";
+const WORDPROCESSING_DRAWING_NAMESPACE: &[u8] =
+    b"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
+const WORDPROCESSINGML_NAMESPACE: &[u8] =
+    b"http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const MAX_DOCX_BLOCKS: usize = 512;
+const MAX_DOCX_RUNS: usize = 4_096;
+const MAX_DOCX_TABLE_ROWS: usize = 256;
+const MAX_DOCX_TABLE_CELLS: usize = 2_048;
+const MAX_DOCX_TEXT_CHARS: usize = 24_000;
+const MAX_DOCX_NUMBERING_DEFINITIONS: usize = 128;
+const MAX_DOCX_NUMBERING_LEVELS: usize = 9;
 const RELATIONSHIPS_NAMESPACE: &[u8] =
     b"http://schemas.openxmlformats.org/package/2006/relationships";
+const MAX_DOCX_IMAGES: usize = 64;
+const MAX_DOCX_IMAGE_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_DOCX_IMAGE_DIMENSION: u32 = 4_096;
+const MAX_DOCX_IMAGE_PIXELS: u64 = 16 * 1024 * 1024;
+const MAX_DOCX_RENDERED_IMAGE_DIMENSION: u32 = 1_600;
+const MAX_DOCX_RENDERED_IMAGE_BYTES: usize = 8 * 1024 * 1024;
+const MAX_DOCX_RENDERED_IMAGE_TOTAL_BYTES: usize = 32 * 1024 * 1024;
 const MAX_EPUB_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_EPUB_PARTS: usize = 4_096;
 const MAX_EPUB_PACKAGE_PATH_BYTES: usize = 1_024;
@@ -93,12 +157,16 @@ const EPUB_DC_NAMESPACE: &[u8] = b"http://purl.org/dc/elements/1.1/";
 const MAX_SHARED_STRINGS: usize = 4_096;
 const OFFICE_VISUAL_TEXT_LIMIT: usize = 4_096;
 const MAX_TEXT_VISUAL_INPUT_BYTES: u64 = 128 * 1024;
+const MAX_CALENDAR_VISUAL_INPUT_BYTES: u64 = 512 * 1024;
 const TEXT_VISUAL_LINE_LIMIT: usize = 18;
 const TEXT_VISUAL_CHAR_LIMIT: usize = 1_600;
 // SVG admission is deliberately structural rather than a small serialized-byte
 // cliff. The snapshot cap still bounds allocation, while XML work caps bound
 // the parser before resvg receives a tree.
 const MAX_SVG_VISUAL_INPUT_BYTES: u64 = 4 * 1024 * 1024;
+const MAX_SVG_EMBEDDED_IMAGE_BYTES: usize = 3 * 1024 * 1024;
+const MAX_SVG_EMBEDDED_IMAGE_DIMENSION: u32 = 8 * 1024;
+const MAX_SVG_EMBEDDED_IMAGE_PIXELS: u64 = 16 * 1024 * 1024;
 const MAX_SVG_XML_ELEMENTS: usize = 16 * 1024;
 const MAX_SVG_XML_ATTRIBUTES: usize = 64 * 1024;
 const MAX_SVG_XML_ATTRIBUTE_BYTES: usize = 1024 * 1024;
@@ -153,6 +221,8 @@ const MAX_TAR_EXPANSION_RATIO: u64 = 200;
 const MIN_TAR_EXPANSION_ALLOWANCE: u64 = 64 * 1024 * 1024;
 const MAX_TAR_SCAN_DURATION: Duration = Duration::from_secs(2);
 const MAX_TAR_LISTED_ENTRIES: usize = 200;
+const MAX_DEB_PACKAGE_BYTES: u64 = 512 * 1024 * 1024;
+const MAX_DEB_MEMBERS: usize = 64;
 const MAX_FOLDER_RECURSIVE_ENTRIES: usize = 16_384;
 #[cfg(unix)]
 const MAX_FOLDER_RECURSIVE_DEPTH: usize = 64;
@@ -718,11 +788,105 @@ pub enum SpreadsheetOmissionReason {
     },
 }
 
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DocxAlignment {
+    #[default]
+    Left,
+    Center,
+    Right,
+    Justified,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DocxRun {
+    pub text: String,
+    pub bold: bool,
+    pub italic: bool,
+    pub color: Option<String>,
+    pub font_size_half_points: Option<u16>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DocxImageFallback {
+    MissingRelationship,
+    UnsafeRelationship,
+    InvalidImage,
+    ImageBoundsExceeded,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DocxInlineImage {
+    pub alt_text: Option<String>,
+    pub width: Option<u32>,
+    pub height: Option<u32>,
+    pub png: Option<Vec<u8>>,
+    pub fallback: Option<DocxImageFallback>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DocxParagraphContent {
+    Text(DocxRun),
+    Image(DocxInlineImage),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DocxListKind {
+    Unmarked,
+    Bullet,
+    Ordered,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DocxList {
+    pub kind: DocxListKind,
+    pub level: u8,
+    pub marker: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DocxParagraph {
+    pub style_name: Option<String>,
+    pub alignment: DocxAlignment,
+    #[serde(default)]
+    pub list: Option<DocxList>,
+    pub content: Vec<DocxParagraphContent>,
+    pub has_page_break: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DocxTableCell {
+    pub paragraphs: Vec<DocxParagraph>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DocxTableRow {
+    pub cells: Vec<DocxTableCell>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DocxTable {
+    pub rows: Vec<DocxTableRow>,
+    pub bordered: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DocxBlock {
+    Paragraph(DocxParagraph),
+    Table(DocxTable),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DocxPreview {
+    pub blocks: Vec<DocxBlock>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PreviewData {
     pub title: String,
     pub kind: PreviewKind,
     pub body: String,
+    #[serde(default)]
+    pub document: Option<DocxPreview>,
     #[serde(default)]
     pub spreadsheet: Option<SpreadsheetPreview>,
     pub open_external: bool,
@@ -751,6 +915,7 @@ pub enum PreviewVisualRenderer {
     None,
     Image,
     Pdf,
+    Eps,
     Office,
     Font,
     Sqlite,
@@ -761,6 +926,7 @@ pub enum PreviewVisualRenderer {
     CameraRaw,
     Affinity,
     TextCard,
+    Html,
     Video,
 }
 
@@ -898,13 +1064,14 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
             visual_renderer: PreviewVisualRenderer::Office,
             raw_fallback_allowed: false,
         },
-        // EPS is PostScript. This candidate has no vetted isolated renderer,
-        // so it exposes metadata and an actionable unavailable state rather
-        // than raw bytes or an in-process interpreter.
         PreviewKind::EpsMetadata => PreviewProfile {
             kind,
-            views: [true, false, false],
-            visual_renderer: PreviewVisualRenderer::None,
+            views: [true, false, cfg!(target_os = "linux")],
+            visual_renderer: if cfg!(target_os = "linux") {
+                PreviewVisualRenderer::Eps
+            } else {
+                PreviewVisualRenderer::None
+            },
             raw_fallback_allowed: false,
         },
         PreviewKind::FolderMetadata => PreviewProfile {
@@ -924,6 +1091,24 @@ const fn profile_from_kind(kind: PreviewKind) -> PreviewProfile {
 
 pub fn preview_profile(path: &Path) -> PreviewProfile {
     let mut profile = profile_from_kind(classify_path(path));
+    if path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| matches!(extension.to_ascii_lowercase().as_str(), "docx" | "pptx"))
+    {
+        // Extracted document/presentation text remains useful, but it is not
+        // source layout and must not be routed through a visual renderer.
+        profile.views[2] = false;
+        profile.visual_renderer = PreviewVisualRenderer::None;
+    }
+    #[cfg(target_os = "linux")]
+    if path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| matches!(extension.to_ascii_lowercase().as_str(), "html" | "htm"))
+    {
+        profile.visual_renderer = PreviewVisualRenderer::Html;
+    }
     if is_epub_path(path) {
         // EPUB is deliberately metadata-only. Its package bytes must never be
         // offered to an image decoder or displayed through the raw fallback.
@@ -976,7 +1161,7 @@ pub fn is_affinity_path(path: &Path) -> bool {
         .is_some_and(|extension| {
             matches!(
                 extension.to_ascii_lowercase().as_str(),
-                "afphoto" | "afdesign" | "afpub"
+                "af" | "afphoto" | "afdesign" | "afpub"
             )
         })
 }
@@ -1083,11 +1268,11 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         }
         "eps" => PreviewKind::EpsMetadata,
         "dng" | "arw" => PreviewKind::CameraRawMetadata,
-        "afphoto" | "afdesign" | "afpub" => PreviewKind::AffinityMetadata,
+        "af" | "afphoto" | "afdesign" | "afpub" => PreviewKind::AffinityMetadata,
         "pdf" => PreviewKind::Pdf,
         "mp4" | "mkv" | "webm" | "mov" | "avi" | "m4v" => PreviewKind::VideoMetadata,
-        "mp3" | "flac" | "wav" | "ogg" | "m4a" | "aac" => PreviewKind::AudioMetadata,
-        "zip" | "tar" | "gz" | "tgz" | "xz" | "bz2" | "7z" | "rar" | "epub" => {
+        "mp3" | "flac" | "wav" | "ogg" | "m4a" | "aac" | "wma" => PreviewKind::AudioMetadata,
+        "zip" | "tar" | "gz" | "tgz" | "xz" | "bz2" | "7z" | "rar" | "epub" | "deb" => {
             PreviewKind::ArchiveMetadata
         }
         "doc" | "docx" | "xls" | "xlsx" | "xlsm" | "ppt" | "pptx" | "odt" | "ods" | "odp" => {
@@ -1903,8 +2088,7 @@ fn validate_exact_jpeg(jpeg: &[u8]) -> Result<(), CameraRawVisualError> {
     }
 }
 
-/// Renders bounded extracted DOCX/XLSX/XLSM/ODS/PPTX content as a PNG. This is a
-/// content preview, not a faithful Office layout engine; unsupported or
+/// Renders bounded extracted spreadsheet content as a PNG. Unsupported or
 /// malformed packages fail closed so callers retain the metadata/text view.
 pub fn render_office_content_preview_png(
     path: &Path,
@@ -1914,20 +2098,9 @@ pub fn render_office_content_preview_png(
 }
 
 pub fn office_preview_source_generation(path: &Path) -> Option<OfficePreviewSourceGeneration> {
-    // PPTX snapshots belong exclusively to the worker.  Calling this from a
-    // widget/cache-key path used to synchronously open and hash up to 128 MiB.
-    if is_pptx_visual_path(path) {
-        return None;
-    }
     read_office_snapshot(path)
         .ok()
         .map(|snapshot| snapshot.generation)
-}
-
-pub fn is_pptx_visual_path(path: &Path) -> bool {
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| extension.eq_ignore_ascii_case("pptx"))
 }
 
 pub fn is_office_visual_path(path: &Path) -> bool {
@@ -1937,7 +2110,7 @@ pub fn is_office_visual_path(path: &Path) -> bool {
             .unwrap_or_default()
             .to_ascii_lowercase()
             .as_str(),
-        "docx" | "xlsx" | "xlsm" | "ods" | "pptx"
+        "xlsx" | "xlsm" | "ods"
     )
 }
 
@@ -1950,129 +2123,28 @@ pub fn render_office_content_preview_png_with_generation(
         .and_then(|extension| extension.to_str())
         .unwrap_or_default()
         .to_ascii_lowercase();
-    if !matches!(ext.as_str(), "docx" | "xlsx" | "xlsm" | "ods" | "pptx") {
+    if !matches!(ext.as_str(), "xlsx" | "xlsm" | "ods") {
         return Err(OfficeVisualError::UnsupportedFormat);
     }
-    // Native opened-handle admission is not yet available on non-Unix
-    // platforms. Keep PPTX fail-closed before touching its path there, while
-    // preserving the established DOCX/XLSX/XLSM/ODS renderer behaviour.
-    if ext == "pptx" && !cfg!(unix) {
-        return Err(OfficeVisualError::PreviewDisabledOnPlatform);
-    }
-    let snapshot = if ext == "pptx" {
-        read_pptx_snapshot(path)?
-    } else {
-        read_office_snapshot(path)?
-    };
-    let mut archive = zip::ZipArchive::new(Cursor::new(&snapshot.bytes)).map_err(|error| {
-        if ext == "pptx" {
-            // A concurrent in-place writer can leave an otherwise admitted
-            // single read with a non-package byte sequence. Treat that as a
-            // rejected stable-read attempt, never as renderable content.
-            OfficeVisualError::InputChanged
-        } else {
-            OfficeVisualError::Package(error.to_string())
-        }
-    })?;
+    let snapshot = read_office_snapshot(path)?;
+    let mut archive = zip::ZipArchive::new(Cursor::new(&snapshot.bytes))
+        .map_err(|error| OfficeVisualError::Package(error.to_string()))?;
     if archive.len() > MAX_OFFICE_PARTS {
         return Err(OfficeVisualError::TooManyParts {
             actual: archive.len(),
             limit: MAX_OFFICE_PARTS,
         });
     }
-    if ext == "pptx" && !pptx_package_is_safe(&snapshot.bytes, &mut archive) {
-        return Err(OfficeVisualError::NoContent);
-    }
     let text = match ext.as_str() {
-        "docx" => extract_docx_text(&mut archive),
         "xlsx" | "xlsm" => extract_xlsx_text(&mut archive),
         "ods" => extract_ods_text(&mut archive),
-        "pptx" => extract_pptx_visual_text(&mut archive),
         _ => None,
     }
     .ok_or(OfficeVisualError::NoContent)?;
     Ok(RenderedOfficePreview {
-        png: render_office_content_png(&text, &ext, target_dim)?,
+        png: render_office_content_png(&text, target_dim)?,
         source_generation: snapshot.generation,
     })
-}
-
-/// PPTX gets exactly one worker-owned stable read. The bytes admitted here are
-/// the bytes parsed and rendered below; callers never preflight a second copy
-/// just to construct a cache key.
-#[cfg(unix)]
-fn read_pptx_snapshot(path: &Path) -> Result<OfficeSnapshot, OfficeVisualError> {
-    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
-
-    let path_metadata = std::fs::symlink_metadata(path)
-        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?;
-    if !path_metadata.is_file() {
-        return Err(OfficeVisualError::InputNotRegular);
-    }
-    let mut file = std::fs::OpenOptions::new()
-        .read(true)
-        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
-        .open(path)
-        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?;
-    let opened = file
-        .metadata()
-        .map_err(|error| OfficeVisualError::InputMetadata(error.to_string()))?;
-    let same_state = |left: &std::fs::Metadata, right: &std::fs::Metadata| {
-        left.is_file()
-            && right.is_file()
-            && left.dev() == right.dev()
-            && left.ino() == right.ino()
-            && left.len() == right.len()
-            && left.mtime() == right.mtime()
-            && left.mtime_nsec() == right.mtime_nsec()
-            && left.ctime() == right.ctime()
-            && left.ctime_nsec() == right.ctime_nsec()
-    };
-    if !opened.is_file()
-        || path_metadata.dev() != opened.dev()
-        || path_metadata.ino() != opened.ino()
-    {
-        return Err(OfficeVisualError::InputNotRegular);
-    }
-    if !same_state(&path_metadata, &opened) {
-        return Err(OfficeVisualError::InputChanged);
-    }
-    if opened.len() > MAX_OFFICE_PACKAGE_BYTES {
-        return Err(OfficeVisualError::InputTooLarge {
-            actual: opened.len(),
-            limit: MAX_OFFICE_PACKAGE_BYTES,
-        });
-    }
-    let mut bytes = Vec::with_capacity(usize::try_from(opened.len()).map_err(|_| {
-        OfficeVisualError::InputTooLarge {
-            actual: opened.len(),
-            limit: MAX_OFFICE_PACKAGE_BYTES,
-        }
-    })?);
-    file.by_ref()
-        .take(MAX_OFFICE_PACKAGE_BYTES + 1)
-        .read_to_end(&mut bytes)
-        .map_err(|error| OfficeVisualError::Read(error.to_string()))?;
-    let finished = file
-        .metadata()
-        .map_err(|error| OfficeVisualError::Read(error.to_string()))?;
-    let current = std::fs::symlink_metadata(path).map_err(|_| OfficeVisualError::InputChanged)?;
-    if bytes.len() as u64 != opened.len()
-        || bytes.len() as u64 > MAX_OFFICE_PACKAGE_BYTES
-        || !same_state(&opened, &finished)
-        || !same_state(&opened, &current)
-    {
-        return Err(OfficeVisualError::InputChanged);
-    }
-    Ok(OfficeSnapshot {
-        generation: OfficePreviewSourceGeneration(Sha256::digest(&bytes).into()),
-        bytes,
-    })
-}
-
-#[cfg(not(unix))]
-fn read_pptx_snapshot(_path: &Path) -> Result<OfficeSnapshot, OfficeVisualError> {
-    Err(OfficeVisualError::PreviewDisabledOnPlatform)
 }
 
 #[cfg(unix)]
@@ -2198,7 +2270,129 @@ fn read_office_snapshot(path: &Path) -> Result<OfficeSnapshot, OfficeVisualError
     })
 }
 
-/// Renders a bounded, syntax-neutral card for text/source files. The input is
+fn text_visual_card_body(path: &Path, source: &str) -> String {
+    let extension = path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .unwrap_or("");
+    let is_vcard = extension.eq_ignore_ascii_case("vcf");
+    if is_vcard {
+        let contact_count = source
+            .lines()
+            .filter(|line| line.trim().eq_ignore_ascii_case("BEGIN:VCARD"))
+            .count();
+        let names = source
+            .lines()
+            .filter_map(|line| {
+                let (property, value) = line.split_once(':')?;
+                property
+                    .split(';')
+                    .next()
+                    .is_some_and(|name| name.eq_ignore_ascii_case("FN"))
+                    .then(|| value.trim())
+                    .filter(|value| !value.is_empty())
+            })
+            .take(TEXT_VISUAL_LINE_LIMIT.saturating_sub(2))
+            .collect::<Vec<_>>();
+        if contact_count > 0 && !names.is_empty() {
+            return format!("Contacts: {contact_count}\n\n{}", names.join("\n"))
+                .chars()
+                .take(TEXT_VISUAL_CHAR_LIMIT)
+                .collect();
+        }
+    }
+
+    if extension.eq_ignore_ascii_case("ldif") {
+        let contact_count = source
+            .lines()
+            .filter(|line| {
+                line.split_once(':')
+                    .is_some_and(|(property, _)| property.eq_ignore_ascii_case("dn"))
+            })
+            .count();
+        let names = source
+            .lines()
+            .filter_map(|line| {
+                let (property, value) = line.split_once(':')?;
+                if !property.eq_ignore_ascii_case("displayname") {
+                    return None;
+                }
+                let value = if let Some(encoded) = value.strip_prefix(':') {
+                    let bytes = base64::engine::general_purpose::STANDARD
+                        .decode(encoded.trim())
+                        .ok()?;
+                    String::from_utf8(bytes).ok()?
+                } else {
+                    value.trim().to_string()
+                };
+                (!value.is_empty()).then_some(value)
+            })
+            .take(TEXT_VISUAL_LINE_LIMIT.saturating_sub(2))
+            .collect::<Vec<_>>();
+        if contact_count > 0 && !names.is_empty() {
+            return format!("Contacts: {contact_count}\n\n{}", names.join("\n"))
+                .chars()
+                .take(TEXT_VISUAL_CHAR_LIMIT)
+                .collect();
+        }
+    }
+
+    if extension.eq_ignore_ascii_case("ics") || extension.eq_ignore_ascii_case("ical") {
+        let mut event_count = 0usize;
+        let mut in_event = false;
+        let mut summaries = Vec::new();
+        for line in source.lines() {
+            let line = line.trim();
+            if line.eq_ignore_ascii_case("BEGIN:VEVENT") {
+                event_count = event_count.saturating_add(1);
+                in_event = true;
+            } else if line.eq_ignore_ascii_case("END:VEVENT") {
+                in_event = false;
+            } else if in_event
+                && summaries.len() < TEXT_VISUAL_LINE_LIMIT.saturating_sub(2)
+                && let Some((property, value)) = line.split_once(':')
+                && property
+                    .split(';')
+                    .next()
+                    .is_some_and(|name| name.eq_ignore_ascii_case("SUMMARY"))
+                && !value.trim().is_empty()
+            {
+                summaries.push(value.trim());
+            }
+        }
+        if event_count > 0 && !summaries.is_empty() {
+            return format!("Events: {event_count}\n\n{}", summaries.join("\n"))
+                .chars()
+                .take(TEXT_VISUAL_CHAR_LIMIT)
+                .collect();
+        }
+    }
+
+    source
+        .lines()
+        .take(TEXT_VISUAL_LINE_LIMIT)
+        .collect::<Vec<_>>()
+        .join("\n")
+        .chars()
+        .take(TEXT_VISUAL_CHAR_LIMIT)
+        .collect()
+}
+
+fn text_visual_input_limit(path: &Path) -> u64 {
+    match path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "ics" | "ical" => MAX_CALENDAR_VISUAL_INPUT_BYTES,
+        _ => MAX_TEXT_VISUAL_INPUT_BYTES,
+    }
+}
+
+/// Renders a bounded text/source card, with semantic vCard, LDIF, and calendar
+/// summaries and syntax-neutral leading text for other formats. The input is
 /// deliberately constrained before decoding so thumbnail generation never
 /// treats arbitrary bytes as an image or consumes an unbounded document.
 pub fn render_text_content_preview_png(
@@ -2211,10 +2405,11 @@ pub fn render_text_content_preview_png(
     let input_size = std::fs::metadata(path)
         .map_err(|error| TextVisualError::InputMetadata(error.to_string()))?
         .len();
-    if input_size > MAX_TEXT_VISUAL_INPUT_BYTES {
+    let input_limit = text_visual_input_limit(path);
+    if input_size > input_limit {
         return Err(TextVisualError::InputTooLarge {
             actual: input_size,
-            limit: MAX_TEXT_VISUAL_INPUT_BYTES,
+            limit: input_limit,
         });
     }
     let bytes = std::fs::read(path).map_err(|error| TextVisualError::Read(error.to_string()))?;
@@ -2246,12 +2441,7 @@ pub fn render_text_content_preview_png(
         .and_then(|name| name.to_str())
         .unwrap_or("Text file");
     let kind = text_kind_label(path);
-    let leading = source
-        .lines()
-        .take(TEXT_VISUAL_LINE_LIMIT)
-        .collect::<Vec<_>>()
-        .join("\n");
-    let leading: String = leading.chars().take(TEXT_VISUAL_CHAR_LIMIT).collect();
+    let leading = text_visual_card_body(path, source);
     let header = format!("{filename}\n{kind}");
     render_document_text(
         &mut image,
@@ -2281,11 +2471,7 @@ pub fn render_text_content_preview_png(
     Ok(bytes)
 }
 
-fn render_office_content_png(
-    text: &str,
-    format: &str,
-    target_dim: u32,
-) -> Result<Vec<u8>, OfficeVisualError> {
+fn render_office_content_png(text: &str, target_dim: u32) -> Result<Vec<u8>, OfficeVisualError> {
     use image::{ImageEncoder, Rgba, RgbaImage};
 
     let text = text
@@ -2293,49 +2479,32 @@ fn render_office_content_png(
         .take(OFFICE_VISUAL_TEXT_LIMIT)
         .collect::<String>();
     let dimension = target_dim.clamp(64, 2_048);
-    let width = if format == "docx" {
-        (dimension as f32 * 8.5 / 11.0).round() as u32
-    } else {
-        dimension
-    };
-    let height = dimension;
-    let mut image = RgbaImage::from_pixel(width, height, Rgba([255, 255, 255, 255]));
-    let margin = (width / 9).clamp(6, 96);
-    if format == "docx" {
-        render_document_text(
-            &mut image,
-            &text,
-            margin,
-            margin,
-            width - margin,
-            height.saturating_sub(margin),
-        );
-    } else {
-        let header_height = (dimension / 9).clamp(12, 96);
-        fill_rect(
-            &mut image,
-            margin,
-            margin,
-            dimension - margin,
-            margin + header_height,
-            [42, 92, 154, 255],
-        );
-        let body_top = margin + header_height + (margin / 2);
-        render_sheet_grid(
-            &mut image,
-            &text,
-            margin,
-            body_top,
-            dimension - margin,
-            dimension.saturating_sub(margin),
-        );
-    }
+    let mut image = RgbaImage::from_pixel(dimension, dimension, Rgba([255, 255, 255, 255]));
+    let margin = (dimension / 9).clamp(6, 96);
+    let header_height = (dimension / 9).clamp(12, 96);
+    fill_rect(
+        &mut image,
+        margin,
+        margin,
+        dimension - margin,
+        margin + header_height,
+        [42, 92, 154, 255],
+    );
+    let body_top = margin + header_height + (margin / 2);
+    render_sheet_grid(
+        &mut image,
+        &text,
+        margin,
+        body_top,
+        dimension - margin,
+        dimension.saturating_sub(margin),
+    );
     let mut bytes = Vec::new();
     image::codecs::png::PngEncoder::new(&mut bytes)
         .write_image(
             image.as_raw(),
-            width,
-            height,
+            dimension,
+            dimension,
             image::ExtendedColorType::Rgba8,
         )
         .map_err(|error| OfficeVisualError::Encode(error.to_string()))?;
@@ -2537,6 +2706,7 @@ fn preview_text(title: String, path: &Path) -> PreviewData {
                         title,
                         kind: PreviewKind::Unsupported,
                         body: format!("Failed to read file: {err}"),
+                        document: None,
                         spreadsheet: None,
                         open_external: true,
                     };
@@ -2550,6 +2720,7 @@ fn preview_text(title: String, path: &Path) -> PreviewData {
                     title,
                     kind: PreviewKind::Unsupported,
                     body: format!("Failed to read file: {err}"),
+                    document: None,
                     spreadsheet: None,
                     open_external: true,
                 };
@@ -2588,8 +2759,10 @@ fn preview_text(title: String, path: &Path) -> PreviewData {
                         title,
                         kind: PreviewKind::Text,
                         body: format!("{}{}{}", lines.join("\n"), EXTRACTED_TEXT_MARKER, text),
+                        document: None,
                         spreadsheet: None,
-                        open_external: false,
+                        open_external: preview_profile(path).visual_renderer()
+                            == PreviewVisualRenderer::Html,
                     }
                 }
                 Err(_) => PreviewData {
@@ -2601,6 +2774,7 @@ fn preview_text(title: String, path: &Path) -> PreviewData {
                         file_kind_label(path),
                         "Text preview unavailable."
                     ),
+                    document: None,
                     spreadsheet: None,
                     open_external: true,
                 },
@@ -2610,6 +2784,7 @@ fn preview_text(title: String, path: &Path) -> PreviewData {
             title,
             kind: PreviewKind::Unsupported,
             body: format!("Failed to read file: {err}"),
+            document: None,
             spreadsheet: None,
             open_external: true,
         },
@@ -2642,6 +2817,7 @@ fn preview_image(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::Image,
         body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -2656,6 +2832,7 @@ fn preview_camera_raw(title: String, path: &Path) -> PreviewData {
             "Camera RAW image.",
             Some("Visual preview uses a bounded embedded JPEG when available."),
         ),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -2670,6 +2847,7 @@ fn preview_affinity(title: String, path: &Path) -> PreviewData {
             "Affinity document.",
             Some("Best-effort embedded preview — may differ from the saved canvas."),
         ),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -2683,9 +2861,10 @@ fn preview_eps(title: String, path: &Path) -> PreviewData {
             path,
             "EPS image",
             Some(
-                "Preview: No safe isolated EPS renderer is available in this build. Ottrin will not execute PostScript directly; open this file in a trusted external viewer.",
+                "Preview: Uses a separately installed Ghostscript renderer inside bounded non-networked isolation when that system capability is available. Ottrin does not bundle or execute PostScript in-process.",
             ),
         ),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -2715,6 +2894,7 @@ fn preview_sqlite(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::SqliteMetadata,
         body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -2740,6 +2920,7 @@ fn preview_stl(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::StlMetadata,
         body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -2773,6 +2954,7 @@ fn preview_obj(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::ObjMetadata,
         body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -2803,6 +2985,7 @@ fn preview_ply(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::PlyMetadata,
         body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -2841,6 +3024,7 @@ fn preview_3mf(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::ThreeMfMetadata,
         body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -2869,6 +3053,7 @@ fn preview_font(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::FontMetadata,
         body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -3736,7 +3921,7 @@ pub fn render_svg_content_preview_png(
     let options = usvg::Options {
         resources_dir: None,
         image_href_resolver: usvg::ImageHrefResolver {
-            resolve_data: Box::new(|_, _, _| None),
+            resolve_data: Box::new(resolve_bounded_svg_data_image),
             resolve_string: Box::new(|_, _| None),
         },
         ..usvg::Options::default()
@@ -3789,6 +3974,42 @@ pub fn render_svg_content_preview_png(
     Ok(bytes)
 }
 
+fn resolve_bounded_svg_data_image(
+    mime: &str,
+    data: std::sync::Arc<Vec<u8>>,
+    _options: &usvg::Options,
+) -> Option<usvg::ImageKind> {
+    if data.len() > MAX_SVG_EMBEDDED_IMAGE_BYTES {
+        return None;
+    }
+    let format = match mime {
+        "image/png" => image::ImageFormat::Png,
+        "image/jpg" | "image/jpeg" => image::ImageFormat::Jpeg,
+        "image/gif" => image::ImageFormat::Gif,
+        "image/webp" => image::ImageFormat::WebP,
+        _ => return None,
+    };
+    let (width, height) =
+        image::ImageReader::with_format(std::io::Cursor::new(data.as_slice()), format)
+            .into_dimensions()
+            .ok()?;
+    if width == 0
+        || height == 0
+        || width > MAX_SVG_EMBEDDED_IMAGE_DIMENSION
+        || height > MAX_SVG_EMBEDDED_IMAGE_DIMENSION
+        || u64::from(width) * u64::from(height) > MAX_SVG_EMBEDDED_IMAGE_PIXELS
+    {
+        return None;
+    }
+    match format {
+        image::ImageFormat::Png => Some(usvg::ImageKind::PNG(data)),
+        image::ImageFormat::Jpeg => Some(usvg::ImageKind::JPEG(data)),
+        image::ImageFormat::Gif => Some(usvg::ImageKind::GIF(data)),
+        image::ImageFormat::WebP => Some(usvg::ImageKind::WEBP(data)),
+        _ => None,
+    }
+}
+
 fn admit_svg_visual_complexity(input: &[u8]) -> Result<(), SvgVisualError> {
     use quick_xml::events::Event;
 
@@ -3813,9 +4034,17 @@ fn admit_svg_visual_complexity(input: &[u8]) -> Result<(), SvgVisualError> {
                     SvgVisualError::ComplexityLimit("XML depth underflow".to_string())
                 })?;
             }
-            Ok(Event::DocType(_) | Event::PI(_)) => {
+            Ok(Event::DocType(doctype)) => {
+                if doctype.as_ref().contains(&b'[') {
+                    return Err(SvgVisualError::ComplexityLimit(
+                        "DTD internal subsets and entity declarations are not permitted"
+                            .to_string(),
+                    ));
+                }
+            }
+            Ok(Event::PI(_)) => {
                 return Err(SvgVisualError::ComplexityLimit(
-                    "DTD and processing instructions are not permitted".to_string(),
+                    "processing instructions are not permitted".to_string(),
                 ));
             }
             Ok(Event::Eof) => break,
@@ -3871,7 +4100,6 @@ fn admit_svg_element_bounds(
             | b"mask"
             | b"clipPath"
             | b"marker"
-            | b"image"
             | b"foreignObject"
             | b"style"
             | b"script"
@@ -3928,15 +4156,33 @@ fn admit_svg_element_bounds(
             )));
         }
         if attribute_name == b"style" {
-            return Err(SvgVisualError::ComplexityLimit(
-                "CSS style attributes are not admitted because their render work is not structurally countable"
-                    .to_string(),
-            ));
+            let value = std::str::from_utf8(attribute.value.as_ref())
+                .map_err(|error| SvgVisualError::Parse(error.to_string()))?;
+            if !is_bounded_static_svg_style(value) {
+                return Err(SvgVisualError::ComplexityLimit(
+                    "inline style contains non-static or unsupported CSS".to_string(),
+                ));
+            }
         }
         if attribute_name == b"href" {
-            return Err(SvgVisualError::ComplexityLimit(
-                "local or external href reuse is not admitted".to_string(),
-            ));
+            let value = std::str::from_utf8(attribute.value.as_ref())
+                .map_err(|error| SvgVisualError::Parse(error.to_string()))?;
+            let bounded_embedded_raster = element_name == b"image"
+                && [
+                    "data:image/png;base64,",
+                    "data:image/jpeg;base64,",
+                    "data:image/jpg;base64,",
+                    "data:image/gif;base64,",
+                    "data:image/webp;base64,",
+                ]
+                .iter()
+                .any(|prefix| value.trim_start().starts_with(prefix));
+            if !bounded_embedded_raster {
+                return Err(SvgVisualError::ComplexityLimit(
+                    "only bounded embedded raster data images are admitted as href values"
+                        .to_string(),
+                ));
+            }
         }
         if attribute
             .value
@@ -4022,6 +4268,48 @@ fn admit_svg_element_bounds(
         }
     }
     Ok(())
+}
+
+fn is_bounded_static_svg_style(value: &str) -> bool {
+    if value.len() > 512 || !value.is_ascii() {
+        return false;
+    }
+    value.split(';').all(|declaration| {
+        let declaration = declaration.trim();
+        if declaration.is_empty() {
+            return true;
+        }
+        let Some((property, raw_value)) = declaration.split_once(':') else {
+            return false;
+        };
+        let property = property.trim().to_ascii_lowercase();
+        let raw_value = raw_value.trim();
+        matches!(
+            property.as_str(),
+            "fill"
+                | "fill-opacity"
+                | "fill-rule"
+                | "clip-rule"
+                | "stroke"
+                | "stroke-width"
+                | "stroke-opacity"
+                | "stroke-linecap"
+                | "stroke-linejoin"
+                | "stroke-miterlimit"
+                | "stroke-dasharray"
+                | "stroke-dashoffset"
+                | "opacity"
+                | "display"
+                | "visibility"
+        ) && !raw_value.is_empty()
+            && raw_value.len() <= 128
+            && !raw_value.to_ascii_lowercase().contains("url(")
+            && !raw_value.to_ascii_lowercase().contains("var(")
+            && !raw_value.contains('@')
+            && raw_value
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || b"#.,%()+- /".contains(&byte))
+    })
 }
 
 fn svg_filter_region_length_is_bounded(value: &str, positive: bool) -> bool {
@@ -4131,6 +4419,7 @@ fn preview_folder(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::FolderMetadata,
                 body: lines.join("\n"),
+                document: None,
                 spreadsheet: None,
                 open_external: false,
             }
@@ -4139,6 +4428,7 @@ fn preview_folder(title: String, path: &Path) -> PreviewData {
             title,
             kind: PreviewKind::FolderMetadata,
             body: format!("Folder metadata unavailable: {err}"),
+            document: None,
             spreadsheet: None,
             open_external: false,
         },
@@ -4396,6 +4686,7 @@ fn preview_pdf(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::Pdf,
                 body,
+                document: None,
                 spreadsheet: None,
                 open_external: true,
             }
@@ -4410,6 +4701,7 @@ fn preview_pdf(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::Pdf,
                 body: info,
+                document: None,
                 spreadsheet: None,
                 open_external: true,
             }
@@ -4507,6 +4799,7 @@ fn preview_audio(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::AudioMetadata,
                 body: lines.join("\n"),
+                document: None,
                 spreadsheet: None,
                 open_external: true,
             }
@@ -4517,6 +4810,7 @@ fn preview_audio(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::AudioMetadata,
                 body: info,
+                document: None,
                 spreadsheet: None,
                 open_external: true,
             }
@@ -4543,6 +4837,9 @@ fn preview_video(title: String, path: &Path) -> PreviewData {
     lines.push(if cfg!(target_os = "windows") {
         "Thumbnail: Windows Media Foundation is used when the installed OS codec supports this file."
             .to_string()
+    } else if cfg!(target_os = "linux") {
+        "System playback: unavailable in this Ottrin build. This does not mean this file is invalid. On Linux, playback depends on GStreamer components made available by the operating system or user. Ottrin does not install codecs. Open externally to use another application."
+            .to_string()
     } else {
         "Thumbnail: unavailable on this platform; video remains metadata-only.".to_string()
     });
@@ -4550,6 +4847,7 @@ fn preview_video(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::VideoMetadata,
         body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -4588,6 +4886,9 @@ fn preview_archive_cancellable(title: String, path: &Path, cancelled: &AtomicBoo
     if ext == "epub" {
         return preview_epub(title, path);
     }
+    if ext == "deb" {
+        return preview_deb(title, path);
+    }
     if path
         .file_name()
         .and_then(|name| name.to_str())
@@ -4610,6 +4911,122 @@ fn preview_archive_cancellable(title: String, path: &Path, cancelled: &AtomicBoo
         title,
         kind: PreviewKind::ArchiveMetadata,
         body: info,
+        document: None,
+        spreadsheet: None,
+        open_external: true,
+    }
+}
+
+fn preview_deb(title: String, path: &Path) -> PreviewData {
+    let failure = || PreviewData {
+        title: title.clone(),
+        kind: PreviewKind::ArchiveMetadata,
+        body: metadata_summary(
+            path,
+            "Debian package.",
+            Some("Could not read Debian package members safely."),
+        ),
+        document: None,
+        spreadsheet: None,
+        open_external: true,
+    };
+
+    #[cfg(unix)]
+    let opened = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(path);
+    #[cfg(not(unix))]
+    let opened = std::fs::File::open(path);
+    let Ok(mut file) = opened else {
+        return failure();
+    };
+    let Ok(metadata) = file.metadata() else {
+        return failure();
+    };
+    if !metadata.is_file() || metadata.len() > MAX_DEB_PACKAGE_BYTES {
+        return failure();
+    }
+
+    let mut magic = [0_u8; 8];
+    if file.read_exact(&mut magic).is_err() || magic != *b"!<arch>\n" {
+        return failure();
+    }
+    let mut members = Vec::new();
+    let mut offset = 8_u64;
+    while offset < metadata.len() {
+        if members.len() >= MAX_DEB_MEMBERS || metadata.len() - offset < 60 {
+            return failure();
+        }
+        let mut header = [0_u8; 60];
+        if file.read_exact(&mut header).is_err() || header[58..] != *b"`\n" {
+            return failure();
+        }
+        let Ok(raw_name) = std::str::from_utf8(&header[..16]) else {
+            return failure();
+        };
+        let name = raw_name.trim().trim_end_matches('/');
+        if name.is_empty()
+            || name.len() > 15
+            || name.chars().any(|character| character.is_control())
+        {
+            return failure();
+        }
+        let Ok(raw_size) = std::str::from_utf8(&header[48..58]) else {
+            return failure();
+        };
+        let Ok(size) = raw_size.trim().parse::<u64>() else {
+            return failure();
+        };
+        let padded_size = size.saturating_add(size % 2);
+        let Some(next_offset) = offset
+            .checked_add(60)
+            .and_then(|value| value.checked_add(padded_size))
+        else {
+            return failure();
+        };
+        if next_offset > metadata.len() || padded_size > i64::MAX as u64 {
+            return failure();
+        }
+
+        if members.is_empty() {
+            if name != "debian-binary" || size > 16 {
+                return failure();
+            }
+            let mut version = vec![0_u8; size as usize];
+            if file.read_exact(&mut version).is_err() || version != b"2.0\n" {
+                return failure();
+            }
+            if size % 2 != 0 && file.seek(SeekFrom::Current(1)).is_err() {
+                return failure();
+            }
+        } else if file.seek(SeekFrom::Current(padded_size as i64)).is_err() {
+            return failure();
+        }
+        members.push((name.to_string(), size));
+        offset = next_offset;
+    }
+    if offset != metadata.len() || members.is_empty() {
+        return failure();
+    }
+
+    let mut lines = vec![
+        "Filetype: Debian package".to_string(),
+        format!("Members: {}", members.len()),
+        format!("Package size: {}", format_size(metadata.len())),
+        String::new(),
+        "Contents:".to_string(),
+    ];
+    lines.extend(
+        members
+            .into_iter()
+            .map(|(name, size)| format!("  {name}  ({})", format_size(size))),
+    );
+    PreviewData {
+        title,
+        kind: PreviewKind::ArchiveMetadata,
+        body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -4627,6 +5044,7 @@ fn preview_tar(title: String, path: &Path, cancelled: &AtomicBool) -> PreviewDat
             title,
             kind: PreviewKind::ArchiveMetadata,
             body: info,
+            document: None,
             spreadsheet: None,
             open_external: true,
         };
@@ -4638,6 +5056,7 @@ fn preview_tar(title: String, path: &Path, cancelled: &AtomicBool) -> PreviewDat
             title,
             kind: PreviewKind::ArchiveMetadata,
             body: info,
+            document: None,
             spreadsheet: None,
             open_external: true,
         };
@@ -4665,6 +5084,7 @@ fn preview_tar_gz(title: String, path: &Path, cancelled: &AtomicBool) -> Preview
             title,
             kind: PreviewKind::ArchiveMetadata,
             body: info,
+            document: None,
             spreadsheet: None,
             open_external: true,
         };
@@ -4719,6 +5139,7 @@ fn preview_tar_reader<R: std::io::Read>(
                     title,
                     kind: PreviewKind::ArchiveMetadata,
                     body: info,
+                    document: None,
                     spreadsheet: None,
                     open_external: true,
                 };
@@ -4759,6 +5180,7 @@ fn preview_tar_reader<R: std::io::Read>(
                         title,
                         kind: PreviewKind::ArchiveMetadata,
                         body: info,
+                        document: None,
                         spreadsheet: None,
                         open_external: true,
                     };
@@ -4777,6 +5199,7 @@ fn preview_tar_reader<R: std::io::Read>(
                             title,
                             kind: PreviewKind::ArchiveMetadata,
                             body: info,
+                            document: None,
                             spreadsheet: None,
                             open_external: true,
                         };
@@ -4793,6 +5216,7 @@ fn preview_tar_reader<R: std::io::Read>(
                             title,
                             kind: PreviewKind::ArchiveMetadata,
                             body: info,
+                            document: None,
                             spreadsheet: None,
                             open_external: true,
                         };
@@ -4809,6 +5233,7 @@ fn preview_tar_reader<R: std::io::Read>(
                         title,
                         kind: PreviewKind::ArchiveMetadata,
                         body: info,
+                        document: None,
                         spreadsheet: None,
                         open_external: true,
                     };
@@ -4843,6 +5268,7 @@ fn preview_tar_reader<R: std::io::Read>(
                     title,
                     kind: PreviewKind::ArchiveMetadata,
                     body: info,
+                    document: None,
                     spreadsheet: None,
                     open_external: true,
                 };
@@ -4880,6 +5306,7 @@ fn preview_tar_reader<R: std::io::Read>(
                         title,
                         kind: PreviewKind::ArchiveMetadata,
                         body: info,
+                        document: None,
                         spreadsheet: None,
                         open_external: true,
                     };
@@ -4898,6 +5325,7 @@ fn preview_tar_reader<R: std::io::Read>(
                     title,
                     kind: PreviewKind::ArchiveMetadata,
                     body: info,
+                    document: None,
                     spreadsheet: None,
                     open_external: true,
                 };
@@ -4938,6 +5366,7 @@ fn preview_tar_reader<R: std::io::Read>(
         title,
         kind: PreviewKind::ArchiveMetadata,
         body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -5008,6 +5437,7 @@ fn preview_zip(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::ArchiveMetadata,
                 body: lines.join("\n"),
+                document: None,
                 spreadsheet: None,
                 open_external: true,
             }
@@ -5022,6 +5452,7 @@ fn preview_zip(title: String, path: &Path) -> PreviewData {
                 title,
                 kind: PreviewKind::ArchiveMetadata,
                 body: info,
+                document: None,
                 spreadsheet: None,
                 open_external: true,
             }
@@ -5038,6 +5469,7 @@ fn epub_error(title: String, path: &Path) -> PreviewData {
             "EPUB ebook.",
             Some("Could not read EPUB metadata safely."),
         ),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -5125,6 +5557,7 @@ fn preview_epub(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::ArchiveMetadata,
         body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -5662,6 +6095,28 @@ fn extract_epub_metadata(package: &str) -> Option<(Option<String>, Option<String
 
 // ── Office preview (metadata-only) ─────────────────────────────────────
 
+fn legacy_doc_preview_body(metadata: &str, text: &str) -> String {
+    format!(
+        "{metadata}\nText extracted by installed catdoc; formatting is not preserved.{EXTRACTED_TEXT_MARKER}{}",
+        limit_preview_text(text)
+    )
+}
+
+#[cfg(target_os = "linux")]
+fn extract_installed_legacy_doc_text(path: &Path) -> Option<String> {
+    extract_legacy_doc_text_at(
+        path,
+        Path::new("/usr/bin/catdoc"),
+        &LinuxBubblewrapIsolation,
+        &AtomicBool::new(false),
+    )
+}
+
+#[cfg(not(target_os = "linux"))]
+fn extract_installed_legacy_doc_text(_path: &Path) -> Option<String> {
+    None
+}
+
 fn preview_office(title: String, path: &Path) -> PreviewData {
     // OOXML files (.docx, .xlsx, .pptx) are ZIP archives — try to read basic info
     let ext = path
@@ -5701,6 +6156,10 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
                 lines.push(format!("Modified: {}", format_modified(dur.as_secs())));
             }
         }
+        let document = match ext.as_str() {
+            "docx" => extract_docx_structure(&mut archive),
+            _ => None,
+        };
         let extracted_text = match ext.as_str() {
             "docx" => extract_docx_text(&mut archive),
             "xlsx" | "xlsm" => extract_xlsx_text(&mut archive),
@@ -5727,6 +6186,7 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
             title,
             kind: PreviewKind::OfficeMetadata,
             body,
+            document,
             spreadsheet,
             open_external: true,
         };
@@ -5737,13 +6197,1119 @@ fn preview_office(title: String, path: &Path) -> PreviewData {
         &format!("{} document.", ext.to_ascii_uppercase()),
         None,
     );
+    let body = if ext == "doc" {
+        extract_installed_legacy_doc_text(path)
+            .map(|text| legacy_doc_preview_body(&info, &text))
+            .unwrap_or(info)
+    } else {
+        info
+    };
     PreviewData {
         title,
         kind: PreviewKind::OfficeMetadata,
-        body: info,
+        body,
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
+}
+
+fn docx_attribute(event: &quick_xml::events::BytesStart<'_>, name: &[u8]) -> Option<String> {
+    let mut value = None;
+    for attribute in event.attributes() {
+        let attribute = attribute.ok()?;
+        if attribute.key.local_name().as_ref() == name {
+            if value.is_some() {
+                return None;
+            }
+            value = Some(attribute.unescape_value().ok()?.into_owned());
+        }
+    }
+    value
+}
+
+fn docx_on_off(event: &quick_xml::events::BytesStart<'_>) -> Option<bool> {
+    Some(!matches!(
+        docx_attribute(event, b"val")
+            .unwrap_or_else(|| "true".to_string())
+            .to_ascii_lowercase()
+            .as_str(),
+        "0" | "false" | "off" | "none"
+    ))
+}
+
+#[derive(Debug, Clone, Default)]
+struct DocxStyleDefinition {
+    name: Option<String>,
+    based_on: Option<String>,
+    bold: Option<bool>,
+    italic: Option<bool>,
+    color: Option<String>,
+    font_size_half_points: Option<u16>,
+}
+
+#[derive(Debug, Clone, Default)]
+struct ResolvedDocxStyle {
+    name: Option<String>,
+    bold: bool,
+    italic: bool,
+    color: Option<String>,
+    font_size_half_points: Option<u16>,
+}
+
+fn resolve_docx_style(
+    style_id: Option<&str>,
+    default_style_id: Option<&str>,
+    styles: &std::collections::HashMap<String, DocxStyleDefinition>,
+) -> ResolvedDocxStyle {
+    fn apply(
+        style_id: &str,
+        styles: &std::collections::HashMap<String, DocxStyleDefinition>,
+        resolved: &mut ResolvedDocxStyle,
+        visited: &mut std::collections::HashSet<String>,
+    ) {
+        if visited.len() >= 16 || !visited.insert(style_id.to_string()) {
+            return;
+        }
+        let Some(style) = styles.get(style_id) else {
+            return;
+        };
+        if let Some(base) = style.based_on.as_deref() {
+            apply(base, styles, resolved, visited);
+        }
+        if let Some(value) = style.bold {
+            resolved.bold = value;
+        }
+        if let Some(value) = style.italic {
+            resolved.italic = value;
+        }
+        if let Some(value) = style.color.as_ref() {
+            resolved.color = Some(value.clone());
+        }
+        if let Some(value) = style.font_size_half_points {
+            resolved.font_size_half_points = Some(value);
+        }
+        resolved.name = style.name.clone().or_else(|| Some(style_id.to_string()));
+    }
+
+    let mut resolved = ResolvedDocxStyle::default();
+    let mut visited = std::collections::HashSet::new();
+    if let Some(default_style_id) = default_style_id {
+        apply(default_style_id, styles, &mut resolved, &mut visited);
+    }
+    if let Some(style_id) = style_id
+        && Some(style_id) != default_style_id
+    {
+        apply(style_id, styles, &mut resolved, &mut visited);
+    }
+    resolved
+}
+
+fn extract_docx_styles<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> (
+    std::collections::HashMap<String, DocxStyleDefinition>,
+    Option<String>,
+) {
+    let Some(xml) = zip_entry_text(archive, "word/styles.xml") else {
+        return (std::collections::HashMap::new(), None);
+    };
+    let mut reader = quick_xml::NsReader::from_str(&xml);
+    reader.config_mut().trim_text(true);
+    reader.config_mut().check_comments = true;
+    let mut styles = std::collections::HashMap::new();
+    let mut current: Option<(String, DocxStyleDefinition)> = None;
+    let mut default_style_id = None;
+
+    loop {
+        let Ok((namespace, event)) = reader.read_resolved_event() else {
+            return (std::collections::HashMap::new(), None);
+        };
+        let is_word = matches!(
+            namespace,
+            quick_xml::name::ResolveResult::Bound(namespace)
+                if namespace.as_ref() == WORDPROCESSINGML_NAMESPACE
+        );
+        match event {
+            quick_xml::events::Event::Start(event) if is_word => {
+                match event.local_name().as_ref() {
+                    b"style" if docx_attribute(&event, b"type").as_deref() == Some("paragraph") => {
+                        let Some(id) = docx_attribute(&event, b"styleId") else {
+                            continue;
+                        };
+                        if docx_on_off(&event) == Some(true)
+                            && docx_attribute(&event, b"default").is_some()
+                        {
+                            default_style_id = Some(id.clone());
+                        }
+                        current = Some((id, DocxStyleDefinition::default()));
+                    }
+                    b"name" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.name = docx_attribute(&event, b"val");
+                        }
+                    }
+                    b"basedOn" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.based_on = docx_attribute(&event, b"val");
+                        }
+                    }
+                    b"b" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.bold = docx_on_off(&event);
+                        }
+                    }
+                    b"i" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.italic = docx_on_off(&event);
+                        }
+                    }
+                    b"color" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.color = docx_attribute(&event, b"val");
+                        }
+                    }
+                    b"sz" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.font_size_half_points =
+                                docx_attribute(&event, b"val").and_then(|value| value.parse().ok());
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::Empty(event) if is_word => {
+                match event.local_name().as_ref() {
+                    b"name" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.name = docx_attribute(&event, b"val");
+                        }
+                    }
+                    b"basedOn" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.based_on = docx_attribute(&event, b"val");
+                        }
+                    }
+                    b"b" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.bold = docx_on_off(&event);
+                        }
+                    }
+                    b"i" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.italic = docx_on_off(&event);
+                        }
+                    }
+                    b"color" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.color = docx_attribute(&event, b"val");
+                        }
+                    }
+                    b"sz" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.font_size_half_points =
+                                docx_attribute(&event, b"val").and_then(|value| value.parse().ok());
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::End(event)
+                if is_word && event.local_name().as_ref() == b"style" =>
+            {
+                if let Some((id, style)) = current.take()
+                    && (styles.len() >= 512 || styles.insert(id, style).is_some())
+                {
+                    return (std::collections::HashMap::new(), None);
+                }
+            }
+            quick_xml::events::Event::DocType(_) => {
+                return (std::collections::HashMap::new(), None);
+            }
+            quick_xml::events::Event::Eof => break,
+            _ => {}
+        }
+    }
+    (styles, default_style_id)
+}
+
+struct DocxParagraphBuilder {
+    paragraph: DocxParagraph,
+    style: ResolvedDocxStyle,
+    list_num_id: Option<u32>,
+    list_level: Option<usize>,
+}
+
+fn apply_docx_character_property(
+    event: &quick_xml::events::BytesStart<'_>,
+    paragraph: &mut Option<DocxParagraphBuilder>,
+    run: &mut Option<DocxRun>,
+) -> Option<()> {
+    match event.local_name().as_ref() {
+        b"b" => {
+            let value = docx_on_off(event)?;
+            if let Some(run) = run.as_mut() {
+                run.bold = value;
+            } else {
+                paragraph.as_mut()?.style.bold = value;
+            }
+        }
+        b"i" => {
+            let value = docx_on_off(event)?;
+            if let Some(run) = run.as_mut() {
+                run.italic = value;
+            } else {
+                paragraph.as_mut()?.style.italic = value;
+            }
+        }
+        b"color" => {
+            let value = docx_attribute(event, b"val");
+            if let Some(run) = run.as_mut() {
+                run.color = value;
+            } else {
+                paragraph.as_mut()?.style.color = value;
+            }
+        }
+        b"sz" => {
+            let value = docx_attribute(event, b"val")?.parse().ok();
+            if let Some(run) = run.as_mut() {
+                run.font_size_half_points = value;
+            } else {
+                paragraph.as_mut()?.style.font_size_half_points = value;
+            }
+        }
+        _ => return None,
+    }
+    Some(())
+}
+
+#[derive(Debug, Clone, Copy)]
+enum DocxNumberFormat {
+    None,
+    Bullet,
+    Decimal,
+    LowerLetter,
+    UpperLetter,
+    LowerRoman,
+    UpperRoman,
+}
+
+#[derive(Debug, Clone)]
+struct DocxNumberingLevel {
+    start: u32,
+    format: DocxNumberFormat,
+    text: String,
+}
+
+#[derive(Debug, Default)]
+struct DocxNumbering {
+    abstracts: std::collections::HashMap<u32, Vec<Option<DocxNumberingLevel>>>,
+    numbers: std::collections::HashMap<u32, u32>,
+    counters: std::collections::HashMap<u32, [u32; MAX_DOCX_NUMBERING_LEVELS]>,
+}
+
+#[derive(Debug, Default)]
+struct DocxNumberingLevelBuilder {
+    start: Option<u32>,
+    format: Option<DocxNumberFormat>,
+    text: Option<String>,
+}
+
+fn docx_number_format(value: &str) -> Option<DocxNumberFormat> {
+    match value {
+        "none" => Some(DocxNumberFormat::None),
+        "bullet" => Some(DocxNumberFormat::Bullet),
+        "decimal" => Some(DocxNumberFormat::Decimal),
+        "lowerLetter" => Some(DocxNumberFormat::LowerLetter),
+        "upperLetter" => Some(DocxNumberFormat::UpperLetter),
+        "lowerRoman" => Some(DocxNumberFormat::LowerRoman),
+        "upperRoman" => Some(DocxNumberFormat::UpperRoman),
+        _ => None,
+    }
+}
+
+fn docx_letter(mut value: u32, uppercase: bool) -> Option<String> {
+    if value == 0 {
+        return None;
+    }
+    let mut reversed = Vec::new();
+    while value > 0 {
+        value -= 1;
+        let base = if uppercase { b'A' } else { b'a' };
+        reversed.push(char::from(base + (value % 26) as u8));
+        value /= 26;
+    }
+    Some(reversed.into_iter().rev().collect())
+}
+
+fn docx_roman(mut value: u32, uppercase: bool) -> Option<String> {
+    if value == 0 || value > 3_999 {
+        return None;
+    }
+    let mut result = String::new();
+    for (unit, symbol) in [
+        (1000, "M"),
+        (900, "CM"),
+        (500, "D"),
+        (400, "CD"),
+        (100, "C"),
+        (90, "XC"),
+        (50, "L"),
+        (40, "XL"),
+        (10, "X"),
+        (9, "IX"),
+        (5, "V"),
+        (4, "IV"),
+        (1, "I"),
+    ] {
+        while value >= unit {
+            result.push_str(symbol);
+            value -= unit;
+        }
+    }
+    Some(if uppercase {
+        result
+    } else {
+        result.to_ascii_lowercase()
+    })
+}
+
+fn format_docx_counter(format: DocxNumberFormat, value: u32) -> Option<String> {
+    match format {
+        DocxNumberFormat::None | DocxNumberFormat::Bullet => None,
+        DocxNumberFormat::Decimal => Some(value.to_string()),
+        DocxNumberFormat::LowerLetter => docx_letter(value, false),
+        DocxNumberFormat::UpperLetter => docx_letter(value, true),
+        DocxNumberFormat::LowerRoman => docx_roman(value, false),
+        DocxNumberFormat::UpperRoman => docx_roman(value, true),
+    }
+}
+
+impl DocxNumbering {
+    fn next_list(&mut self, num_id: u32, level: usize) -> Option<DocxList> {
+        if level >= MAX_DOCX_NUMBERING_LEVELS {
+            return None;
+        }
+        let abstract_id = *self.numbers.get(&num_id)?;
+        let levels = self.abstracts.get(&abstract_id)?;
+        let current = levels.get(level)?.as_ref()?;
+        let counters = self.counters.entry(num_id).or_default();
+        counters[level + 1..].fill(0);
+
+        if matches!(current.format, DocxNumberFormat::None) {
+            if !current.text.is_empty() {
+                return None;
+            }
+            return Some(DocxList {
+                kind: DocxListKind::Unmarked,
+                level: u8::try_from(level).ok()?,
+                marker: String::new(),
+            });
+        }
+
+        if matches!(current.format, DocxNumberFormat::Bullet) {
+            if current.text.is_empty()
+                || current.text.chars().count() > 8
+                || current.text.chars().any(char::is_control)
+                || current.text.contains('%')
+            {
+                return None;
+            }
+            return Some(DocxList {
+                kind: DocxListKind::Bullet,
+                level: u8::try_from(level).ok()?,
+                marker: current.text.clone(),
+            });
+        }
+
+        counters[level] = if counters[level] == 0 {
+            current.start
+        } else {
+            counters[level].checked_add(1)?
+        };
+        let mut marker = String::new();
+        let mut chars = current.text.chars();
+        while let Some(character) = chars.next() {
+            if character != '%' {
+                marker.push(character);
+                continue;
+            }
+            let placeholder = chars.next()?.to_digit(10)?;
+            if placeholder == 0 || placeholder as usize > level + 1 {
+                return None;
+            }
+            let index = placeholder as usize - 1;
+            let definition = levels.get(index)?.as_ref()?;
+            marker.push_str(&format_docx_counter(definition.format, counters[index])?);
+        }
+        if marker.is_empty() || marker.chars().count() > 32 || marker.chars().any(char::is_control)
+        {
+            return None;
+        }
+        Some(DocxList {
+            kind: DocxListKind::Ordered,
+            level: u8::try_from(level).ok()?,
+            marker,
+        })
+    }
+}
+
+fn apply_docx_numbering_property(
+    event: &quick_xml::events::BytesStart<'_>,
+    level: &mut Option<(usize, DocxNumberingLevelBuilder)>,
+    number: &mut Option<(u32, Option<u32>)>,
+) -> Option<()> {
+    match event.local_name().as_ref() {
+        b"start" => {
+            let value = docx_attribute(event, b"val")?.parse().ok()?;
+            if level.as_mut()?.1.start.replace(value).is_some() {
+                return None;
+            }
+        }
+        b"numFmt" => {
+            let value = docx_number_format(&docx_attribute(event, b"val")?)?;
+            if level.as_mut()?.1.format.replace(value).is_some() {
+                return None;
+            }
+        }
+        b"lvlText" => {
+            let value = docx_attribute(event, b"val")?;
+            if level.as_mut()?.1.text.replace(value).is_some() {
+                return None;
+            }
+        }
+        b"abstractNumId" => {
+            let value = docx_attribute(event, b"val")?.parse().ok()?;
+            if number.as_mut()?.1.replace(value).is_some() {
+                return None;
+            }
+        }
+        _ => return None,
+    }
+    Some(())
+}
+
+fn extract_docx_numbering<R: Read + Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> Option<DocxNumbering> {
+    let Some(xml) = zip_entry_text(archive, "word/numbering.xml") else {
+        return archive
+            .by_name("word/numbering.xml")
+            .is_err()
+            .then(DocxNumbering::default);
+    };
+    let mut reader = quick_xml::NsReader::from_str(&xml);
+    reader.config_mut().trim_text(true);
+    reader.config_mut().check_comments = true;
+    let mut numbering = DocxNumbering::default();
+    let mut abstract_definition: Option<(u32, Vec<Option<DocxNumberingLevel>>)> = None;
+    let mut level: Option<(usize, DocxNumberingLevelBuilder)> = None;
+    let mut number: Option<(u32, Option<u32>)> = None;
+
+    loop {
+        let (namespace, event) = reader.read_resolved_event().ok()?;
+        let is_word = matches!(
+            namespace,
+            quick_xml::name::ResolveResult::Bound(namespace)
+                if namespace.as_ref() == WORDPROCESSINGML_NAMESPACE
+        );
+        match event {
+            quick_xml::events::Event::Start(event) if is_word => {
+                match event.local_name().as_ref() {
+                    b"abstractNum" => {
+                        if abstract_definition.is_some() || number.is_some() {
+                            return None;
+                        }
+                        let id = docx_attribute(&event, b"abstractNumId")?.parse().ok()?;
+                        abstract_definition = Some((id, vec![None; MAX_DOCX_NUMBERING_LEVELS]));
+                    }
+                    b"lvl" => {
+                        if level.is_some() || abstract_definition.is_none() {
+                            return None;
+                        }
+                        let index = docx_attribute(&event, b"ilvl")?.parse().ok()?;
+                        if index >= MAX_DOCX_NUMBERING_LEVELS {
+                            return None;
+                        }
+                        level = Some((index, DocxNumberingLevelBuilder::default()));
+                    }
+                    b"num" => {
+                        if number.is_some() || abstract_definition.is_some() {
+                            return None;
+                        }
+                        number = Some((docx_attribute(&event, b"numId")?.parse().ok()?, None));
+                    }
+                    b"lvlOverride" | b"startOverride" => return None,
+                    b"start" | b"numFmt" | b"lvlText" | b"abstractNumId" => {
+                        apply_docx_numbering_property(&event, &mut level, &mut number)?;
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::Empty(event) if is_word => {
+                match event.local_name().as_ref() {
+                    b"lvlOverride" | b"startOverride" => return None,
+                    b"start" | b"numFmt" | b"lvlText" | b"abstractNumId" => {
+                        apply_docx_numbering_property(&event, &mut level, &mut number)?;
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::End(event) if is_word => match event.local_name().as_ref() {
+                b"lvl" => {
+                    let (index, level) = level.take()?;
+                    let definition = DocxNumberingLevel {
+                        start: level.start.unwrap_or(1),
+                        format: level.format?,
+                        text: level.text?,
+                    };
+                    if definition.start == 0 {
+                        return None;
+                    }
+                    let levels = &mut abstract_definition.as_mut()?.1;
+                    if levels[index].replace(definition).is_some() {
+                        return None;
+                    }
+                }
+                b"abstractNum" => {
+                    if level.is_some() {
+                        return None;
+                    }
+                    let (id, levels) = abstract_definition.take()?;
+                    if numbering.abstracts.len() >= MAX_DOCX_NUMBERING_DEFINITIONS
+                        || numbering.abstracts.insert(id, levels).is_some()
+                    {
+                        return None;
+                    }
+                }
+                b"num" => {
+                    let (id, abstract_id) = number.take()?;
+                    if numbering.numbers.len() >= MAX_DOCX_NUMBERING_DEFINITIONS
+                        || numbering.numbers.insert(id, abstract_id?).is_some()
+                    {
+                        return None;
+                    }
+                }
+                _ => {}
+            },
+            quick_xml::events::Event::DocType(_) | quick_xml::events::Event::GeneralRef(_) => {
+                return None;
+            }
+            quick_xml::events::Event::Eof => break,
+            _ => {}
+        }
+    }
+    if abstract_definition.is_some() || level.is_some() || number.is_some() {
+        return None;
+    }
+    Some(numbering)
+}
+
+#[derive(Debug, Clone)]
+enum DocxImageRelationship {
+    PackagePart(String),
+    Unsafe,
+}
+
+fn docx_image_relationships<R: Read + Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> std::collections::HashMap<String, DocxImageRelationship> {
+    let Some(xml) = zip_entry_text(archive, "word/_rels/document.xml.rels") else {
+        return std::collections::HashMap::new();
+    };
+    let mut reader = quick_xml::NsReader::from_str(&xml);
+    reader.config_mut().trim_text(true);
+    reader.config_mut().check_comments = true;
+    let mut relationships = std::collections::HashMap::new();
+    loop {
+        let Ok((namespace, event)) = reader.read_resolved_event() else {
+            return std::collections::HashMap::new();
+        };
+        let is_relationships = matches!(
+            namespace,
+            quick_xml::name::ResolveResult::Bound(namespace)
+                if namespace.as_ref() == RELATIONSHIPS_NAMESPACE
+        );
+        match event {
+            quick_xml::events::Event::Start(event) | quick_xml::events::Event::Empty(event)
+                if is_relationships && event.local_name().as_ref() == b"Relationship" =>
+            {
+                let (Some(id), Some(kind), Some(target)) = (
+                    docx_attribute(&event, b"Id"),
+                    docx_attribute(&event, b"Type"),
+                    docx_attribute(&event, b"Target"),
+                ) else {
+                    continue;
+                };
+                let external = docx_attribute(&event, b"TargetMode")
+                    .is_some_and(|mode| mode.eq_ignore_ascii_case("external"));
+                let resolved = if !kind.ends_with("/image") || external {
+                    DocxImageRelationship::Unsafe
+                } else if let Some(part) = safe_docx_relationship_target(&target) {
+                    DocxImageRelationship::PackagePart(part)
+                } else {
+                    DocxImageRelationship::Unsafe
+                };
+                if relationships.insert(id.clone(), resolved).is_some() {
+                    relationships.insert(id, DocxImageRelationship::Unsafe);
+                }
+            }
+            quick_xml::events::Event::DocType(_) => return std::collections::HashMap::new(),
+            quick_xml::events::Event::Eof => break,
+            _ => {}
+        }
+    }
+    relationships
+}
+
+fn safe_docx_relationship_target(target: &str) -> Option<String> {
+    if target.is_empty() || target.starts_with('/') || target.contains('\\') || target.contains(':')
+    {
+        return None;
+    }
+    let mut components = vec!["word"];
+    for component in target.split('/') {
+        if component.is_empty() || component == "." || component == ".." {
+            return None;
+        }
+        components.push(component);
+    }
+    Some(components.join("/"))
+}
+
+fn read_docx_inline_image<R: Read + Seek>(
+    archive: &mut zip::ZipArchive<R>,
+    relationship: Option<&DocxImageRelationship>,
+    alt_text: Option<String>,
+) -> DocxInlineImage {
+    let fallback = |reason| DocxInlineImage {
+        alt_text: alt_text.clone(),
+        width: None,
+        height: None,
+        png: None,
+        fallback: Some(reason),
+    };
+    let Some(relationship) = relationship else {
+        return fallback(DocxImageFallback::MissingRelationship);
+    };
+    let DocxImageRelationship::PackagePart(part) = relationship else {
+        return fallback(DocxImageFallback::UnsafeRelationship);
+    };
+    let Ok(entry) = archive.by_name(part) else {
+        return fallback(DocxImageFallback::MissingRelationship);
+    };
+    if entry.size() > MAX_DOCX_IMAGE_BYTES {
+        return fallback(DocxImageFallback::ImageBoundsExceeded);
+    }
+    let mut bytes = Vec::with_capacity(entry.size() as usize);
+    if entry
+        .take(MAX_DOCX_IMAGE_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .is_err()
+        || bytes.len() as u64 > MAX_DOCX_IMAGE_BYTES
+    {
+        return fallback(DocxImageFallback::ImageBoundsExceeded);
+    }
+    let Ok(format) = image::guess_format(&bytes) else {
+        return fallback(DocxImageFallback::InvalidImage);
+    };
+    if !matches!(
+        format,
+        image::ImageFormat::Png
+            | image::ImageFormat::Jpeg
+            | image::ImageFormat::Gif
+            | image::ImageFormat::WebP
+            | image::ImageFormat::Bmp
+            | image::ImageFormat::Tiff
+    ) {
+        return fallback(DocxImageFallback::InvalidImage);
+    }
+    let reader = image::ImageReader::with_format(Cursor::new(&bytes), format);
+    let Ok((width, height)) = reader.into_dimensions() else {
+        return fallback(DocxImageFallback::InvalidImage);
+    };
+    if width == 0
+        || height == 0
+        || width > MAX_DOCX_IMAGE_DIMENSION
+        || height > MAX_DOCX_IMAGE_DIMENSION
+        || u64::from(width)
+            .checked_mul(u64::from(height))
+            .is_none_or(|pixels| pixels > MAX_DOCX_IMAGE_PIXELS)
+    {
+        return fallback(DocxImageFallback::ImageBoundsExceeded);
+    }
+    let Ok(decoded) = image::ImageReader::with_format(Cursor::new(&bytes), format).decode() else {
+        return fallback(DocxImageFallback::InvalidImage);
+    };
+    let rendered = decoded.thumbnail(
+        MAX_DOCX_RENDERED_IMAGE_DIMENSION,
+        MAX_DOCX_RENDERED_IMAGE_DIMENSION,
+    );
+    let mut png = Vec::new();
+    if rendered
+        .write_to(&mut Cursor::new(&mut png), image::ImageFormat::Png)
+        .is_err()
+        || png.len() > MAX_DOCX_RENDERED_IMAGE_BYTES
+    {
+        return fallback(DocxImageFallback::ImageBoundsExceeded);
+    }
+    DocxInlineImage {
+        alt_text,
+        width: Some(width),
+        height: Some(height),
+        png: Some(png),
+        fallback: None,
+    }
+}
+
+fn reserve_docx_rendered_image_bytes(admitted: &mut usize, candidate: usize) -> bool {
+    let Some(total) = admitted.checked_add(candidate) else {
+        return false;
+    };
+    if total > MAX_DOCX_RENDERED_IMAGE_TOTAL_BYTES {
+        return false;
+    }
+    *admitted = total;
+    true
+}
+
+fn extract_docx_structure<R: std::io::Read + std::io::Seek>(
+    archive: &mut zip::ZipArchive<R>,
+) -> Option<DocxPreview> {
+    let (styles, default_style_id) = extract_docx_styles(archive);
+    let mut numbering = extract_docx_numbering(archive)?;
+    let image_relationships = docx_image_relationships(archive);
+    let xml = zip_entry_text(archive, "word/document.xml")?;
+    let mut reader = quick_xml::NsReader::from_str(&xml);
+    reader.config_mut().trim_text(false);
+    reader.config_mut().check_comments = true;
+
+    let mut blocks = Vec::new();
+    let mut paragraph: Option<DocxParagraphBuilder> = None;
+    let mut run: Option<DocxRun> = None;
+    let mut inside_text = false;
+    let mut table: Option<DocxTable> = None;
+    let mut row: Option<DocxTableRow> = None;
+    let mut cell: Option<DocxTableCell> = None;
+    let mut run_count = 0usize;
+    let mut row_count = 0usize;
+    let mut cell_count = 0usize;
+    let mut text_characters = 0usize;
+    let mut image_count = 0usize;
+    let mut rendered_image_bytes = 0usize;
+    let mut inside_inline_image = false;
+    let mut inline_alt_text = None;
+
+    loop {
+        let (namespace, event) = reader.read_resolved_event().ok()?;
+        let is_word = matches!(
+            namespace,
+            quick_xml::name::ResolveResult::Bound(namespace)
+                if namespace.as_ref() == WORDPROCESSINGML_NAMESPACE
+        );
+        let is_word_drawing = matches!(
+            namespace,
+            quick_xml::name::ResolveResult::Bound(namespace)
+                if namespace.as_ref() == WORDPROCESSING_DRAWING_NAMESPACE
+        );
+        let is_drawing = matches!(
+            namespace,
+            quick_xml::name::ResolveResult::Bound(namespace)
+                if namespace.as_ref() == DRAWINGML_NAMESPACE
+        );
+        match event {
+            quick_xml::events::Event::Start(event) if is_word => {
+                match event.local_name().as_ref() {
+                    b"tbl" => {
+                        if table.is_some() {
+                            return None;
+                        }
+                        table = Some(DocxTable {
+                            rows: Vec::new(),
+                            bordered: false,
+                        });
+                    }
+                    b"tblBorders" => {
+                        if let Some(table) = table.as_mut() {
+                            table.bordered = true;
+                        }
+                    }
+                    b"tr" => row = Some(DocxTableRow { cells: Vec::new() }),
+                    b"tc" => {
+                        cell = Some(DocxTableCell {
+                            paragraphs: Vec::new(),
+                        })
+                    }
+                    b"p" => {
+                        let style = resolve_docx_style(None, default_style_id.as_deref(), &styles);
+                        paragraph = Some(DocxParagraphBuilder {
+                            paragraph: DocxParagraph {
+                                style_name: None,
+                                alignment: DocxAlignment::Left,
+                                list: None,
+                                content: Vec::new(),
+                                has_page_break: false,
+                            },
+                            style,
+                            list_num_id: None,
+                            list_level: None,
+                        });
+                    }
+                    b"r" => {
+                        let style = paragraph.as_ref()?.style.clone();
+                        run = Some(DocxRun {
+                            text: String::new(),
+                            bold: style.bold,
+                            italic: style.italic,
+                            color: style.color,
+                            font_size_half_points: style.font_size_half_points,
+                        });
+                    }
+                    b"t" => inside_text = true,
+                    b"pStyle" => {
+                        let style_id = docx_attribute(&event, b"val")?;
+                        let resolved = resolve_docx_style(
+                            Some(&style_id),
+                            default_style_id.as_deref(),
+                            &styles,
+                        );
+                        let paragraph = paragraph.as_mut()?;
+                        paragraph.paragraph.style_name = resolved.name.clone().or(Some(style_id));
+                        paragraph.style = resolved;
+                    }
+                    b"jc" => {
+                        if let Some(paragraph) = paragraph.as_mut() {
+                            let value = docx_attribute(&event, b"val")?;
+                            paragraph.paragraph.alignment = match value.as_str() {
+                                "center" => DocxAlignment::Center,
+                                "right" | "end" => DocxAlignment::Right,
+                                "both" | "distribute" => DocxAlignment::Justified,
+                                _ => DocxAlignment::Left,
+                            };
+                        }
+                    }
+                    b"ilvl" => {
+                        let paragraph = paragraph.as_mut()?;
+                        let value = docx_attribute(&event, b"val")?.parse().ok()?;
+                        if paragraph.list_level.replace(value).is_some() {
+                            return None;
+                        }
+                    }
+                    b"numId" => {
+                        let paragraph = paragraph.as_mut()?;
+                        let value = docx_attribute(&event, b"val")?.parse().ok()?;
+                        if paragraph.list_num_id.replace(value).is_some() {
+                            return None;
+                        }
+                    }
+                    b"b" | b"i" | b"color" | b"sz" => {
+                        apply_docx_character_property(&event, &mut paragraph, &mut run)?;
+                    }
+                    b"br" => {
+                        if docx_attribute(&event, b"type").as_deref() == Some("page") {
+                            paragraph.as_mut()?.paragraph.has_page_break = true;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::Start(event)
+                if is_word_drawing && event.local_name().as_ref() == b"inline" =>
+            {
+                if inside_inline_image {
+                    return None;
+                }
+                inside_inline_image = true;
+                inline_alt_text = None;
+            }
+            quick_xml::events::Event::Start(event) | quick_xml::events::Event::Empty(event)
+                if is_word_drawing
+                    && inside_inline_image
+                    && event.local_name().as_ref() == b"docPr" =>
+            {
+                inline_alt_text = docx_attribute(&event, b"descr")
+                    .or_else(|| docx_attribute(&event, b"title"))
+                    .or_else(|| docx_attribute(&event, b"name"))
+                    .map(|text| text.chars().take(512).collect());
+            }
+            quick_xml::events::Event::Start(event) | quick_xml::events::Event::Empty(event)
+                if is_drawing && inside_inline_image && event.local_name().as_ref() == b"blip" =>
+            {
+                image_count += 1;
+                if image_count > MAX_DOCX_IMAGES {
+                    return None;
+                }
+                let relationship_id = docx_attribute(&event, b"embed");
+                let mut image = read_docx_inline_image(
+                    archive,
+                    relationship_id
+                        .as_deref()
+                        .and_then(|id| image_relationships.get(id)),
+                    inline_alt_text.clone(),
+                );
+                if let Some(png) = image.png.as_ref()
+                    && !reserve_docx_rendered_image_bytes(&mut rendered_image_bytes, png.len())
+                {
+                    image.png = None;
+                    image.fallback = Some(DocxImageFallback::ImageBoundsExceeded);
+                }
+                let paragraph = paragraph.as_mut()?;
+                if let Some(run) = run.as_mut()
+                    && !run.text.is_empty()
+                {
+                    run_count += 1;
+                    if run_count > MAX_DOCX_RUNS {
+                        return None;
+                    }
+                    let text_run = DocxRun {
+                        text: std::mem::take(&mut run.text),
+                        ..run.clone()
+                    };
+                    paragraph
+                        .paragraph
+                        .content
+                        .push(DocxParagraphContent::Text(text_run));
+                }
+                paragraph
+                    .paragraph
+                    .content
+                    .push(DocxParagraphContent::Image(image));
+            }
+            quick_xml::events::Event::Empty(event) if is_word => {
+                match event.local_name().as_ref() {
+                    b"tblBorders" => {
+                        if let Some(table) = table.as_mut() {
+                            table.bordered = true;
+                        }
+                    }
+                    b"pStyle" => {
+                        let style_id = docx_attribute(&event, b"val")?;
+                        let resolved = resolve_docx_style(
+                            Some(&style_id),
+                            default_style_id.as_deref(),
+                            &styles,
+                        );
+                        let paragraph = paragraph.as_mut()?;
+                        paragraph.paragraph.style_name = resolved.name.clone().or(Some(style_id));
+                        paragraph.style = resolved;
+                    }
+                    b"jc" => {
+                        if let Some(paragraph) = paragraph.as_mut() {
+                            let value = docx_attribute(&event, b"val")?;
+                            paragraph.paragraph.alignment = match value.as_str() {
+                                "center" => DocxAlignment::Center,
+                                "right" | "end" => DocxAlignment::Right,
+                                "both" | "distribute" => DocxAlignment::Justified,
+                                _ => DocxAlignment::Left,
+                            };
+                        }
+                    }
+                    b"ilvl" => {
+                        let paragraph = paragraph.as_mut()?;
+                        let value = docx_attribute(&event, b"val")?.parse().ok()?;
+                        if paragraph.list_level.replace(value).is_some() {
+                            return None;
+                        }
+                    }
+                    b"numId" => {
+                        let paragraph = paragraph.as_mut()?;
+                        let value = docx_attribute(&event, b"val")?.parse().ok()?;
+                        if paragraph.list_num_id.replace(value).is_some() {
+                            return None;
+                        }
+                    }
+                    b"b" | b"i" | b"color" | b"sz" => {
+                        apply_docx_character_property(&event, &mut paragraph, &mut run)?;
+                    }
+                    b"tab" => run.as_mut()?.text.push('\t'),
+                    b"br" => {
+                        if docx_attribute(&event, b"type").as_deref() == Some("page") {
+                            paragraph.as_mut()?.paragraph.has_page_break = true;
+                        } else if let Some(run) = run.as_mut() {
+                            run.text.push('\n');
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            quick_xml::events::Event::Text(event) if inside_text => {
+                let chunk = event.decode().ok()?;
+                let added = chunk.chars().count();
+                text_characters = text_characters.checked_add(added)?;
+                if text_characters > MAX_DOCX_TEXT_CHARS {
+                    return None;
+                }
+                run.as_mut()?.text.push_str(&chunk);
+            }
+            quick_xml::events::Event::End(event)
+                if is_word_drawing && event.local_name().as_ref() == b"inline" =>
+            {
+                inside_inline_image = false;
+                inline_alt_text = None;
+            }
+            quick_xml::events::Event::End(event) if is_word => match event.local_name().as_ref() {
+                b"t" => inside_text = false,
+                b"r" => {
+                    let run = run.take()?;
+                    if !run.text.is_empty() {
+                        run_count += 1;
+                        if run_count > MAX_DOCX_RUNS {
+                            return None;
+                        }
+                        paragraph
+                            .as_mut()?
+                            .paragraph
+                            .content
+                            .push(DocxParagraphContent::Text(run));
+                    }
+                }
+                b"p" => {
+                    let mut paragraph = paragraph.take()?;
+                    paragraph.paragraph.list = match (paragraph.list_num_id, paragraph.list_level) {
+                        (None, None) => None,
+                        (Some(num_id), Some(level)) => Some(numbering.next_list(num_id, level)?),
+                        _ => return None,
+                    };
+                    let paragraph = paragraph.paragraph;
+                    if let Some(cell) = cell.as_mut() {
+                        cell.paragraphs.push(paragraph);
+                    } else {
+                        blocks.push(DocxBlock::Paragraph(paragraph));
+                        if blocks.len() > MAX_DOCX_BLOCKS {
+                            return None;
+                        }
+                    }
+                }
+                b"tc" => {
+                    let cell = cell.take()?;
+                    cell_count += 1;
+                    if cell_count > MAX_DOCX_TABLE_CELLS {
+                        return None;
+                    }
+                    row.as_mut()?.cells.push(cell);
+                }
+                b"tr" => {
+                    let row = row.take()?;
+                    row_count += 1;
+                    if row_count > MAX_DOCX_TABLE_ROWS {
+                        return None;
+                    }
+                    table.as_mut()?.rows.push(row);
+                }
+                b"tbl" => {
+                    blocks.push(DocxBlock::Table(table.take()?));
+                    if blocks.len() > MAX_DOCX_BLOCKS {
+                        return None;
+                    }
+                }
+                _ => {}
+            },
+            quick_xml::events::Event::DocType(_) => return None,
+            quick_xml::events::Event::Eof => break,
+            _ => {}
+        }
+    }
+    (!blocks.is_empty()).then_some(DocxPreview { blocks })
 }
 
 fn extract_docx_text<R: std::io::Read + std::io::Seek>(
@@ -5752,23 +7318,31 @@ fn extract_docx_text<R: std::io::Read + std::io::Seek>(
     let xml = zip_entry_text(archive, "word/document.xml")?;
 
     let mut reader = quick_xml::Reader::from_str(&xml);
-    reader.config_mut().trim_text(true);
+    reader.config_mut().trim_text(false);
     let mut text = String::new();
+    let mut inside_text = false;
     loop {
         match reader.read_event() {
-            Ok(quick_xml::events::Event::Text(event)) => {
+            Ok(quick_xml::events::Event::Text(event)) if inside_text => {
                 if let Ok(chunk) = event.decode() {
                     text.push_str(&chunk);
                 }
             }
-            Ok(quick_xml::events::Event::Empty(event))
-            | Ok(quick_xml::events::Event::Start(event)) => match event.name().as_ref() {
+            Ok(quick_xml::events::Event::Empty(event)) => match event.name().as_ref() {
+                b"w:tab" => text.push('\t'),
+                b"w:br" => text.push('\n'),
+                _ => {}
+            },
+            Ok(quick_xml::events::Event::Start(event)) => match event.name().as_ref() {
+                b"w:t" => inside_text = true,
                 b"w:tab" => text.push('\t'),
                 b"w:br" => text.push('\n'),
                 _ => {}
             },
             Ok(quick_xml::events::Event::End(event)) => {
-                if event.name().as_ref() == b"w:tc" {
+                if event.name().as_ref() == b"w:t" {
+                    inside_text = false;
+                } else if event.name().as_ref() == b"w:tc" {
                     text.push('\t');
                 } else if matches!(event.name().as_ref(), b"w:p" | b"w:tr") {
                     text.push('\n');
@@ -5862,6 +7436,7 @@ fn extract_pptx_text<R: std::io::Read + std::io::Seek>(
 /// slide. Metadata text can summarize more slides, but rendering a second
 /// slide after an empty or malformed first slide would hide a damaged package
 /// and make the preview's source ambiguous.
+#[cfg(test)]
 fn extract_pptx_visual_text<R: std::io::Read + std::io::Seek>(
     archive: &mut zip::ZipArchive<R>,
 ) -> Option<String> {
@@ -5870,6 +7445,7 @@ fn extract_pptx_visual_text<R: std::io::Read + std::io::Seek>(
     extract_pptx_slide_text(&xml)
 }
 
+#[cfg(test)]
 fn pptx_package_is_safe<R: std::io::Read + std::io::Seek>(
     bytes: &[u8],
     archive: &mut zip::ZipArchive<R>,
@@ -5940,6 +7516,7 @@ fn pptx_package_is_safe<R: std::io::Read + std::io::Seek>(
     })
 }
 
+#[cfg(test)]
 fn safe_office_zip_name(name: &str) -> bool {
     let name = name.strip_suffix('/').unwrap_or(name);
     !name.is_empty()
@@ -5954,6 +7531,7 @@ fn safe_office_zip_name(name: &str) -> bool {
 
 /// Visual PPTX cards do not inspect or render packages that contain active,
 /// auxiliary, or embedded content. Callers pass the case-normalized ZIP name.
+#[cfg(test)]
 fn pptx_part_is_forbidden(name: &str) -> bool {
     name.starts_with("ppt/vba")
         || name.starts_with("ppt/moderncomment")
@@ -5971,12 +7549,14 @@ fn pptx_part_is_forbidden(name: &str) -> bool {
         .any(|prefix| name.starts_with(prefix))
 }
 
+#[cfg(test)]
 #[derive(Clone, Copy)]
 enum OfficeRawZipEntryType {
     NonUnix,
     Unix(u16),
 }
 
+#[cfg(test)]
 impl OfficeRawZipEntryType {
     fn allows(self, is_file: bool, is_dir: bool) -> bool {
         match self {
@@ -5991,6 +7571,7 @@ impl OfficeRawZipEntryType {
 /// Validates the raw ZIP names before `zip` decodes them. Office package part
 /// names are UTF-8; accepting CP437 or a lossy replacement would make policy
 /// classification diverge from the bytes that the central directory names.
+#[cfg(test)]
 fn office_raw_zip_entry_types(
     bytes: &[u8],
     expected_entries: usize,
@@ -6071,6 +7652,7 @@ fn office_raw_zip_entry_types(
 /// The ZIP reader lets Info-ZIP's Unicode Path field replace the archive name
 /// it reports. PPTX policy must classify the original central/local names, so
 /// refuse that alternate name channel rather than reconcile two identities.
+#[cfg(test)]
 fn office_extra_fields_are_safe(extra: &[u8]) -> bool {
     const UNICODE_PATH_EXTRA_FIELD_ID: u16 = 0x7075;
 
@@ -6103,6 +7685,7 @@ fn office_extra_fields_are_safe(extra: &[u8]) -> bool {
     true
 }
 
+#[cfg(test)]
 fn office_extra_fields_match(central: &[u8], local: &[u8]) -> bool {
     central == local && office_extra_fields_are_safe(central)
 }
@@ -6110,6 +7693,7 @@ fn office_extra_fields_match(central: &[u8], local: &[u8]) -> bool {
 /// Forces `zip` to decompress and CRC-check every already-admitted file with
 /// bounded memory. The logical content readers below may re-read selected
 /// entries from the same immutable snapshot.
+#[cfg(test)]
 fn office_zip_entry_decodes_to_eof<R: std::io::Read + std::io::Seek>(
     archive: &mut zip::ZipArchive<R>,
     index: usize,
@@ -6141,6 +7725,7 @@ fn office_zip_entry_decodes_to_eof<R: std::io::Read + std::io::Seek>(
     }
 }
 
+#[cfg(test)]
 fn office_local_header_uses_data_descriptor(bytes: &[u8], offset: u64) -> bool {
     usize::try_from(offset)
         .ok()
@@ -6152,6 +7737,7 @@ fn office_local_header_uses_data_descriptor(bytes: &[u8], offset: u64) -> bool {
         .is_none_or(|flags| flags & 0x0008 != 0)
 }
 
+#[cfg(test)]
 fn pptx_first_slide<R: std::io::Read + std::io::Seek>(
     archive: &mut zip::ZipArchive<R>,
 ) -> Option<(u32, String)> {
@@ -6172,6 +7758,7 @@ fn pptx_first_slide<R: std::io::Read + std::io::Seek>(
     slides.into_iter().next()
 }
 
+#[cfg(test)]
 fn pptx_relationships_are_internal(xml: &str) -> Option<bool> {
     use quick_xml::events::Event;
     use quick_xml::name::ResolveResult;
@@ -6229,6 +7816,7 @@ fn pptx_relationships_are_internal(xml: &str) -> Option<bool> {
     }
 }
 
+#[cfg(test)]
 fn pptx_relationship_event_is_internal(
     reader: &quick_xml::NsReader<&[u8]>,
     event: &quick_xml::events::BytesStart<'_>,
@@ -6249,11 +7837,13 @@ fn pptx_relationship_event_is_internal(
     Some(true)
 }
 
+#[cfg(test)]
 fn pptx_relationship_target_is_external(target: &str) -> bool {
     let target = target.trim_start();
     target.starts_with("//") || target.starts_with("\\\\") || target.contains(':')
 }
 
+#[cfg(test)]
 fn extract_pptx_slide_text(xml: &str) -> Option<String> {
     use quick_xml::events::Event;
     use quick_xml::name::ResolveResult;
@@ -6337,6 +7927,7 @@ fn extract_pptx_slide_text(xml: &str) -> Option<String> {
     }
 }
 
+#[cfg(test)]
 fn pptx_xml_attributes_are_well_formed(
     reader: &quick_xml::NsReader<&[u8]>,
     event: &quick_xml::events::BytesStart<'_>,
@@ -7778,6 +9369,7 @@ fn preview_fallback(title: String, path: &Path) -> PreviewData {
         title,
         kind: PreviewKind::Unsupported,
         body: lines.join("\n"),
+        document: None,
         spreadsheet: None,
         open_external: true,
     }
@@ -8469,6 +10061,49 @@ mod tests {
     }
 
     #[test]
+    fn deb_preview_lists_bounded_package_members() {
+        let path = temp_path("sample.deb");
+        let mut package = b"!<arch>\n".to_vec();
+        for (name, payload) in [
+            ("debian-binary", b"2.0\n".as_slice()),
+            ("control.tar.xz", b"ctl".as_slice()),
+            ("data.tar.xz", b"files".as_slice()),
+        ] {
+            package.extend_from_slice(
+                format!(
+                    "{name:<16}{:<12}{:<6}{:<6}{:<8}{:<10}`\n",
+                    0,
+                    0,
+                    0,
+                    0o100644,
+                    payload.len()
+                )
+                .as_bytes(),
+            );
+            package.extend_from_slice(payload);
+            if payload.len() % 2 != 0 {
+                package.push(b'\n');
+            }
+        }
+        std::fs::write(&path, package).expect("write Debian package fixture");
+
+        assert_eq!(classify_path(&path), PreviewKind::ArchiveMetadata);
+        let preview = load_preview(&PreviewRequest {
+            path: path.clone(),
+            kind_hint: EntryKind::File,
+        });
+        assert_eq!(preview.kind, PreviewKind::ArchiveMetadata);
+        assert!(preview.body.contains("Filetype: Debian package"));
+        assert!(preview.body.contains("Members: 3"));
+        assert!(preview.body.contains("debian-binary  (4 B)"));
+        assert!(preview.body.contains("control.tar.xz  (3 B)"));
+        assert!(preview.body.contains("data.tar.xz  (5 B)"));
+        assert!(preview.open_external);
+
+        std::fs::remove_file(path).expect("remove Debian package fixture");
+    }
+
+    #[test]
     fn video_format_is_metadata_only_without_a_raw_fallback() {
         let path = Path::new("sample.MP4");
         let profile = preview_profile(path);
@@ -8478,6 +10113,27 @@ mod tests {
         assert!(!profile.supports_view(PreviewView::TextCard));
         assert!(!profile.supports_view(PreviewView::Visual));
         assert!(!profile.raw_fallback_allowed());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn linux_video_fallback_reports_unavailable_system_playback_without_blaming_the_file() {
+        let path = temp_path("system-playback-unavailable.mp4");
+        std::fs::write(&path, []).expect("write video fixture");
+
+        let preview = load_preview(&PreviewRequest {
+            path: path.clone(),
+            kind_hint: EntryKind::File,
+        });
+
+        assert_eq!(preview.kind, PreviewKind::VideoMetadata);
+        assert!(preview.open_external);
+        assert!(preview.body.contains("System playback: unavailable"));
+        assert!(preview.body.contains("does not mean this file is invalid"));
+        assert!(preview.body.contains("GStreamer"));
+        assert!(preview.body.contains("Ottrin does not install codecs"));
+
+        std::fs::remove_file(path).expect("remove video fixture");
     }
 
     #[test]
@@ -8779,6 +10435,76 @@ mod tests {
     }
 
     #[test]
+    fn svg_admission_accepts_a_bounded_embedded_png_data_image() {
+        let path = temp_path("embedded-data-image.svg");
+        std::fs::write(
+            &path,
+            r#"<svg width="1" height="1" xmlns="http://www.w3.org/2000/svg"><image width="1" height="1" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="/></svg>"#,
+        )
+        .expect("write embedded image fixture");
+
+        let bytes = render_svg_content_preview_png(&path, 64)
+            .expect("bounded embedded PNG should render without external access");
+        assert_eq!(
+            image::load_from_memory(&bytes)
+                .expect("decode embedded-image preview")
+                .dimensions(),
+            (1, 1)
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn svg_admission_accepts_standard_external_doctype_without_an_internal_subset() {
+        let path = temp_path("standard-doctype.svg");
+        std::fs::write(
+            &path,
+            r#"<?xml version="1.0"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg width="12" height="12" xmlns="http://www.w3.org/2000/svg"><rect width="12" height="12"/></svg>"#,
+        )
+        .expect("write standard doctype fixture");
+
+        let bytes = render_svg_content_preview_png(&path, 64)
+            .expect("external doctype declaration must not imply external resource loading");
+        assert_eq!(
+            image::load_from_memory(&bytes)
+                .expect("decode doctype preview")
+                .dimensions(),
+            (12, 12)
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn affinity_unified_af_extension_uses_the_affinity_preview_contract() {
+        let path = temp_path("unified-format.af");
+        std::fs::write(&path, b"Affinity placeholder").expect("write unified Affinity fixture");
+
+        assert!(is_affinity_path(&path));
+        assert_eq!(preview_profile(&path).kind(), PreviewKind::AffinityMetadata);
+        assert_eq!(
+            preview_profile(&path).visual_renderer(),
+            PreviewVisualRenderer::Affinity
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn wma_routes_to_truthful_audio_metadata_with_external_fallback() {
+        let path = temp_path("recording.WMA");
+        std::fs::write(&path, b"synthetic ASF container").expect("write WMA fixture");
+
+        assert_eq!(classify_path(&path), PreviewKind::AudioMetadata);
+        let preview = load_preview(&PreviewRequest {
+            path: path.clone(),
+            kind_hint: EntryKind::File,
+        });
+        assert_eq!(preview.kind, PreviewKind::AudioMetadata);
+        assert!(preview.body.contains("Could not read audio tags."));
+        assert!(preview.open_external);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
     fn svg_admission_accepts_a_bounded_checkerboard_larger_than_the_legacy_byte_cliff() {
         let path = temp_path("bounded-checkerboard.svg");
         let rectangles = (0..5_001)
@@ -8863,18 +10589,13 @@ mod tests {
     }
 
     #[test]
-    fn eps_has_an_actionable_safe_renderer_unavailable_state() {
+    fn eps_routes_to_the_isolated_optional_system_renderer() {
         let path = temp_path("diagram.eps");
         std::fs::write(&path, b"%!PS-Adobe-3.0\nshowpage\n").expect("write EPS fixture");
 
         let profile = preview_profile(&path);
+        assert_eq!(profile.visual_renderer(), PreviewVisualRenderer::Eps);
         assert!(!profile.raw_fallback_allowed());
-        let preview = load_preview(&PreviewRequest {
-            path: path.clone(),
-            kind_hint: EntryKind::File,
-        });
-        assert!(preview.body.contains("safe isolated EPS renderer"));
-        assert!(preview.open_external);
 
         let _ = std::fs::remove_file(path);
     }
@@ -8982,6 +10703,7 @@ mod tests {
             title: "report.pdf".to_string(),
             kind: PreviewKind::Pdf,
             body: "Extracted text is read-only".to_string(),
+            document: None,
             spreadsheet: None,
             open_external: true,
         };
@@ -8989,6 +10711,148 @@ mod tests {
 
         let _ = std::fs::remove_file(complete);
         let _ = std::fs::remove_file(truncated);
+    }
+
+    #[test]
+    fn vcard_visual_card_summarizes_contacts_instead_of_showing_container_syntax() {
+        let path = temp_path("contacts.vcf");
+        let source = "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Isak Nilsson\r\nEND:VCARD\r\nBEGIN:VCARD\r\nVERSION:4.0\r\nFN:Malena Öhrman\r\nEND:VCARD\r\n";
+
+        assert_eq!(
+            text_visual_card_body(&path, source),
+            "Contacts: 2\n\nIsak Nilsson\nMalena Öhrman"
+        );
+    }
+
+    #[test]
+    fn calendar_visual_card_summarizes_events_instead_of_showing_container_syntax() {
+        let path = temp_path("calendar.ics");
+        let source = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VTIMEZONE\r\nTZID:Europe/Stockholm\r\nEND:VTIMEZONE\r\nBEGIN:VEVENT\r\nSUMMARY:Skolstart 📒📓\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:Hämta keramik 13.30-17.00\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
+
+        assert_eq!(
+            text_visual_card_body(&path, source),
+            "Events: 2\n\nSkolstart 📒📓\nHämta keramik 13.30-17.00"
+        );
+    }
+
+    #[test]
+    fn ldif_visual_card_summarizes_contacts_instead_of_showing_directory_syntax() {
+        let path = temp_path("address-book.ldif");
+        let source = "dn: cn=Isak Nilsson\nobjectClass: inetOrgPerson\ndisplayname: Isak Nilsson\n\ndn: cn=Jessika Loftbring\nobjectClass: inetOrgPerson\ndisplayname: Jessika Loftbring\n";
+
+        assert_eq!(
+            text_visual_card_body(&path, source),
+            "Contacts: 2\n\nIsak Nilsson\nJessika Loftbring"
+        );
+    }
+
+    #[test]
+    fn ldif_visual_card_decodes_base64_utf8_display_names() {
+        let path = temp_path("encoded-address-book.ldif");
+        let source = "dn:: Y249TWFsZW5hIMOWaHJtYW4=\nobjectClass: inetOrgPerson\ndisplayname:: TWFsZW5hIMOWaHJtYW4=\n";
+
+        assert_eq!(
+            text_visual_card_body(&path, source),
+            "Contacts: 1\n\nMalena Öhrman"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn html_uses_the_offline_system_renderer_instead_of_a_source_text_card() {
+        let path = temp_path("saved-page.html");
+        std::fs::write(&path, "<p>Offline preview</p>").expect("write HTML fixture");
+        let profile = preview_profile(&path);
+
+        assert_eq!(profile.visual_renderer(), PreviewVisualRenderer::Html);
+        assert!(profile.supports_view(PreviewView::Visual));
+        assert!(!profile.raw_fallback_allowed());
+        assert!(
+            load_preview(&PreviewRequest {
+                path: path.clone(),
+                kind_hint: EntryKind::File,
+            })
+            .open_external,
+            "system-rendered HTML must retain the external-open fallback"
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn html_system_renderer_preserves_local_relative_stylesheets() {
+        if !html_preview_runtime_available() {
+            return;
+        }
+        let directory = temp_path("html-relative-assets");
+        std::fs::create_dir(&directory).expect("create HTML fixture directory");
+        let path = directory.join("saved-page.html");
+        std::fs::write(
+            directory.join("page.css"),
+            "html,body{margin:0;background:#2468ac}",
+        )
+        .expect("write local stylesheet");
+        std::fs::write(
+            &path,
+            r#"<!doctype html><link rel="stylesheet" href="page.css"><p>Local assets</p>"#,
+        )
+        .expect("write HTML fixture");
+
+        let rendered = render_html_content_preview_png(&path, 256)
+            .expect("installed offline HTML renderer should load a local relative stylesheet");
+        let image = image::load_from_memory(&rendered)
+            .expect("decode HTML preview")
+            .to_rgb8();
+        assert_eq!(image.get_pixel(1, 1).0, [0x24, 0x68, 0xac]);
+
+        std::fs::remove_dir_all(directory).expect("remove HTML fixture directory");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn html_system_renderer_renders_inline_layout_without_executing_scripts() {
+        if !html_preview_runtime_available() {
+            return;
+        }
+        let path = temp_path("offline-layout.html");
+        std::fs::write(
+            &path,
+            r#"<!doctype html><style>html,body{margin:0;background:#123456}.card{margin:24px;width:120px;height:80px;background:#abcdef}</style><div class="card"></div><script>document.body.style.background='#ff0000'</script>"#,
+        )
+        .expect("write HTML fixture");
+
+        let rendered = render_html_content_preview_png(&path, 256)
+            .expect("installed offline HTML renderer should render");
+        let image = image::load_from_memory(&rendered)
+            .expect("decode HTML preview")
+            .to_rgb8();
+        assert_eq!(image.dimensions(), (256, 256));
+        assert_eq!(image.get_pixel(1, 1).0, [0x12, 0x34, 0x56]);
+        assert_eq!(image.get_pixel(30, 30).0, [0xab, 0xcd, 0xef]);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn bounded_calendar_larger_than_the_generic_text_limit_renders_a_visual_card() {
+        let path = temp_path("export.ics");
+        let mut source = String::from(
+            "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nSUMMARY:Roadmap review\r\nEND:VEVENT\r\n",
+        );
+        while source.len() <= MAX_TEXT_VISUAL_INPUT_BYTES as usize {
+            source.push_str("COMMENT:bounded calendar export padding\r\n");
+        }
+        source.push_str("END:VCALENDAR\r\n");
+        std::fs::write(&path, source).expect("write bounded calendar fixture");
+
+        let rendered = render_text_content_preview_png(&path, 256)
+            .expect("bounded calendar exports should render");
+        assert_eq!(
+            image::load_from_memory(&rendered)
+                .expect("decode calendar visual card")
+                .dimensions(),
+            (256, 256)
+        );
+        let _ = std::fs::remove_file(path);
     }
 
     #[test]
@@ -11244,30 +13108,348 @@ mod tests {
     }
 
     #[test]
-    fn docx_visual_preview_is_bounded_png_not_package_bytes() {
-        let path = temp_path("letter.docx");
+    fn docx_baseline_exposes_bounded_structured_preview() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/docx-baseline.docx");
+
+        let preview = load_preview(&PreviewRequest {
+            path,
+            kind_hint: EntryKind::File,
+        });
+        let document = preview.document.expect("typed DOCX structure");
+
+        let DocxBlock::Paragraph(title) = &document.blocks[0] else {
+            panic!("first block must be the title paragraph");
+        };
+        assert_eq!(title.style_name.as_deref(), Some("Title"));
+        assert_eq!(title.alignment, DocxAlignment::Center);
+        let DocxParagraphContent::Text(title_run) = &title.content[0] else {
+            panic!("title must contain text");
+        };
+        assert_eq!(title_run.text, "DOCX BASELINE");
+        assert!(title_run.bold);
+        assert_eq!(title_run.color.as_deref(), Some("2455A4"));
+        assert_eq!(title_run.font_size_half_points, Some(40));
+
+        let DocxBlock::Paragraph(formatted) = &document.blocks[2] else {
+            panic!("third block must be the formatted paragraph");
+        };
+        assert_eq!(
+            formatted
+                .content
+                .iter()
+                .filter_map(|content| match content {
+                    DocxParagraphContent::Text(run) => Some(run.text.as_str()),
+                    DocxParagraphContent::Image(_) => None,
+                })
+                .collect::<String>(),
+            "Bold text beside italic text and ordinary body text."
+        );
+        assert!(matches!(&formatted.content[0], DocxParagraphContent::Text(run) if run.bold));
+        assert!(matches!(&formatted.content[2], DocxParagraphContent::Text(run) if run.italic));
+
+        let DocxBlock::Table(table) = &document.blocks[3] else {
+            panic!("fourth block must be the table");
+        };
+        assert!(table.bordered);
+        assert_eq!(table.rows.len(), 3);
+        assert_eq!(table.rows[0].cells.len(), 2);
+        assert!(matches!(
+            &table.rows[0].cells[0].paragraphs[0].content[0],
+            DocxParagraphContent::Text(run) if run.text == "Feature" && run.bold
+        ));
+        assert!(matches!(
+            &table.rows[2].cells[1].paragraphs[0].content[0],
+            DocxParagraphContent::Text(run) if run.text == "Truthful extracted text only"
+        ));
+
+        let page_break = document
+            .blocks
+            .iter()
+            .find_map(|block| match block {
+                DocxBlock::Paragraph(paragraph) if paragraph.has_page_break => Some(paragraph),
+                _ => None,
+            })
+            .expect("explicit page-break cue");
+        assert!(page_break.content.is_empty());
+
+        let DocxBlock::Paragraph(last) = document.blocks.last().expect("last block") else {
+            panic!("last block must be a paragraph");
+        };
+        assert_eq!(last.alignment, DocxAlignment::Right);
+        assert!(matches!(
+            &last.content[0],
+            DocxParagraphContent::Text(run) if run.text == "PAGE TWO — right aligned in the source."
+        ));
+    }
+
+    #[test]
+    fn docx_lists_preserve_markers_levels_and_ordered_counters() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/docx-lists.docx");
+
+        let preview = load_preview(&PreviewRequest {
+            path,
+            kind_hint: EntryKind::File,
+        });
+        let document = preview.document.expect("typed DOCX list structure");
+        let lists = document
+            .blocks
+            .iter()
+            .map(|block| match block {
+                DocxBlock::Paragraph(paragraph) => paragraph.list.as_ref().expect("list paragraph"),
+                DocxBlock::Table(_) => panic!("fixture contains only paragraphs"),
+            })
+            .collect::<Vec<_>>();
+
+        assert_eq!(lists.len(), 7);
+        assert_eq!(
+            lists
+                .iter()
+                .map(|list| (list.kind.clone(), list.level, list.marker.as_str()))
+                .collect::<Vec<_>>(),
+            vec![
+                (DocxListKind::Bullet, 0, "•"),
+                (DocxListKind::Bullet, 1, "◦"),
+                (DocxListKind::Bullet, 0, "•"),
+                (DocxListKind::Ordered, 0, "1."),
+                (DocxListKind::Ordered, 0, "2."),
+                (DocxListKind::Ordered, 1, "a)"),
+                (DocxListKind::Ordered, 0, "3."),
+            ]
+        );
+    }
+
+    #[test]
+    fn legacy_doc_preview_labels_installed_extraction_without_claiming_formatting() {
+        let body = legacy_doc_preview_body("DOC document.\nSize: 1 KiB", "Hello");
+        assert!(body.contains("Text extracted by installed catdoc; formatting is not preserved."));
+        assert!(body.contains(EXTRACTED_TEXT_MARKER));
+        assert!(body.ends_with("Hello"));
+    }
+
+    #[test]
+    fn docx_unmarked_numbering_preserves_indented_paragraphs() {
+        let path = temp_path("unmarked-numbering.docx");
         {
             let file = std::fs::File::create(&path).expect("create docx");
             let mut zip = zip::ZipWriter::new(file);
             let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("word/numbering.xml", options)
+                .expect("numbering");
+            zip.write_all(
+                br#"<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:abstractNum w:abstractNumId="1"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="none"/><w:lvlText w:val=""/></w:lvl></w:abstractNum>
+<w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num></w:numbering>"#,
+            )
+            .expect("write numbering");
             zip.start_file("word/document.xml", options)
                 .expect("document");
-            zip.write_all(br#"<w:document><w:body><w:p><w:r><w:t>Ottrin visual preview</w:t></w:r></w:p></w:body></w:document>"#)
-                .expect("write document");
-            zip.finish().expect("finish");
+            zip.write_all(
+                br#"<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:tbl><w:tblPr><w:jc w:val="left"/></w:tblPr><w:tr><w:tc><w:p><w:r><w:t>Cell</w:t></w:r></w:p></w:tc></w:tr></w:tbl><w:p><w:pPr><w:rPr><w:b/><w:color w:val="2455A4"/></w:rPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr><w:r><w:t>Indented without a marker</w:t></w:r></w:p></w:body></w:document>"#,
+            )
+            .expect("write document");
+            zip.finish().expect("finish docx");
         }
 
-        let png = render_office_content_preview_png(&path, 1).expect("bounded visual PNG");
-        let decoded = image::load_from_memory(&png).expect("decode visual PNG");
-        assert_eq!(decoded.dimensions(), (49, 64));
-        assert!(
-            decoded
-                .pixels()
-                .any(|(_, _, pixel)| pixel.0 != [255, 255, 255, 255]),
-            "DOCX preview must rasterize readable glyphs, not an empty page"
-        );
-        assert_ne!(png, std::fs::read(&path).expect("read package"));
+        let preview = preview_office("unmarked-numbering.docx".to_string(), &path);
+        let document = preview.document.expect("typed DOCX structure");
+        let DocxBlock::Paragraph(paragraph) = &document.blocks[1] else {
+            panic!("fixture must produce a paragraph");
+        };
+        let list = paragraph.list.as_ref().expect("indentation metadata");
+        assert_eq!(list.kind, DocxListKind::Unmarked);
+        assert_eq!(list.level, 0);
+        assert!(list.marker.is_empty());
+        assert!(matches!(
+            &paragraph.content[0],
+            DocxParagraphContent::Text(run)
+                if run.text == "Indented without a marker"
+                    && run.bold
+                    && run.color.as_deref() == Some("2455A4")
+        ));
         let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn malformed_docx_numbering_falls_back_without_claiming_structure() {
+        let path = temp_path("malformed-numbering.docx");
+        {
+            let file = std::fs::File::create(&path).expect("create docx");
+            let mut zip = zip::ZipWriter::new(file);
+            let options = zip::write::SimpleFileOptions::default();
+            zip.start_file("word/numbering.xml", options)
+                .expect("numbering");
+            zip.write_all(
+                br#"<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:abstractNum w:abstractNumId="1"><w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/><w:lvlText w:val="%1)"/></w:lvl></w:abstractNum>
+<w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num></w:numbering>"#,
+            )
+            .expect("write numbering");
+            zip.start_file("word/document.xml", options)
+                .expect("document");
+            zip.write_all(
+                br#"<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr><w:r><w:t>Safe fallback text</w:t></w:r></w:p></w:body></w:document>"#,
+            )
+            .expect("write document");
+            zip.finish().expect("finish docx");
+        }
+
+        let preview = preview_office("malformed-numbering.docx".to_string(), &path);
+
+        assert!(preview.document.is_none());
+        assert!(preview.body.contains("Safe fallback text"));
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn docx_inline_images_preserve_order_and_fail_closed_relationships() {
+        let path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/docx-inline-images.docx");
+
+        let preview = load_preview(&PreviewRequest {
+            path,
+            kind_hint: EntryKind::File,
+        });
+        let document = preview.document.expect("typed DOCX structure");
+        let DocxBlock::Paragraph(paragraph) = &document.blocks[0] else {
+            panic!("fixture must produce one ordered paragraph");
+        };
+
+        assert_eq!(paragraph.content.len(), 6);
+        assert!(matches!(
+            &paragraph.content[0],
+            DocxParagraphContent::Text(run) if run.text == "Before image."
+        ));
+        let DocxParagraphContent::Image(image) = &paragraph.content[1] else {
+            panic!("second item must be the admitted image");
+        };
+        assert_eq!(
+            image.alt_text.as_deref(),
+            Some("Rights-cleared generated green square")
+        );
+        assert_eq!((image.width, image.height), (Some(3), Some(2)));
+        assert!(
+            image
+                .png
+                .as_ref()
+                .is_some_and(|bytes| bytes.starts_with(b"\x89PNG"))
+        );
+        assert_eq!(image.fallback, None);
+        assert!(matches!(
+            &paragraph.content[2],
+            DocxParagraphContent::Text(run) if run.text == "Between images."
+        ));
+        assert!(matches!(
+            &paragraph.content[3],
+            DocxParagraphContent::Image(DocxInlineImage {
+                fallback: Some(DocxImageFallback::MissingRelationship),
+                png: None,
+                ..
+            })
+        ));
+        assert!(matches!(
+            &paragraph.content[4],
+            DocxParagraphContent::Image(DocxInlineImage {
+                fallback: Some(DocxImageFallback::UnsafeRelationship),
+                png: None,
+                ..
+            })
+        ));
+        assert!(matches!(
+            &paragraph.content[5],
+            DocxParagraphContent::Text(run) if run.text == "After images."
+        ));
+    }
+
+    #[test]
+    fn docx_rendered_image_total_is_bounded() {
+        let mut admitted = MAX_DOCX_RENDERED_IMAGE_TOTAL_BYTES - 1;
+
+        assert!(reserve_docx_rendered_image_bytes(&mut admitted, 1));
+        assert_eq!(admitted, MAX_DOCX_RENDERED_IMAGE_TOTAL_BYTES);
+        assert!(!reserve_docx_rendered_image_bytes(&mut admitted, 1));
+        assert_eq!(admitted, MAX_DOCX_RENDERED_IMAGE_TOTAL_BYTES);
+    }
+
+    #[test]
+    fn docx_extracted_text_preserves_spaces_between_formatted_runs() {
+        let path = temp_path("formatted-runs.docx");
+        {
+            let file = std::fs::File::create(&path).expect("create docx");
+            let mut zip = zip::ZipWriter::new(file);
+            zip.start_file(
+                "word/document.xml",
+                zip::write::SimpleFileOptions::default(),
+            )
+            .expect("document");
+            zip.write_all(
+                br#"<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body><w:p>
+    <w:r><w:rPr><w:b/></w:rPr><w:t>Hello</w:t></w:r>
+    <w:r><w:rPr><w:i/></w:rPr><w:t xml:space="preserve"> world</w:t></w:r>
+  </w:p></w:body>
+</w:document>"#,
+            )
+            .expect("write document");
+            zip.finish().expect("finish docx");
+        }
+
+        let preview = preview_office("formatted-runs.docx".to_string(), &path);
+
+        let extracted = preview
+            .body
+            .split_once(EXTRACTED_TEXT_MARKER)
+            .map(|(_, text)| text)
+            .expect("DOCX extracted-text fallback");
+        assert_eq!(extracted, "Hello world");
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn docx_uses_extracted_fallback_until_a_layout_renderer_is_available() {
+        let path = Path::new("letter.docx");
+
+        assert_eq!(
+            preview_profile(path).visual_renderer(),
+            PreviewVisualRenderer::None,
+            "flattened DOCX text must not be presented as a source-layout visual"
+        );
+    }
+
+    #[test]
+    fn docx_flattened_text_renderer_is_not_a_visual_preview_path() {
+        assert!(!is_office_visual_path(Path::new("letter.docx")));
+    }
+
+    #[test]
+    fn docx_flattened_text_renderer_rejects_direct_calls() {
+        assert!(matches!(
+            render_office_content_preview_png(Path::new("letter.docx"), 256),
+            Err(OfficeVisualError::UnsupportedFormat)
+        ));
+    }
+
+    #[test]
+    fn pptx_uses_extracted_fallback_until_a_layout_renderer_is_available() {
+        let path = Path::new("deck.pptx");
+
+        assert_eq!(
+            preview_profile(path).visual_renderer(),
+            PreviewVisualRenderer::None,
+            "flattened PPTX text must not be presented as a source-layout visual"
+        );
+    }
+
+    #[test]
+    fn pptx_flattened_text_renderer_is_not_a_visual_preview_path() {
+        assert!(!is_office_visual_path(Path::new("deck.pptx")));
+    }
+
+    #[test]
+    fn pptx_flattened_text_renderer_rejects_direct_calls() {
+        assert!(matches!(
+            render_office_content_preview_png(Path::new("deck.pptx"), 256),
+            Err(OfficeVisualError::UnsupportedFormat)
+        ));
     }
 
     #[test]
@@ -11290,82 +13472,6 @@ mod tests {
         assert!(preview.body.contains("Launch plan"));
         assert!(preview.body.contains("Ready for v1"));
         let _ = std::fs::remove_file(path);
-    }
-
-    #[test]
-    fn pptx_visual_preview_is_bounded_png_not_package_bytes() {
-        let path = temp_path("slides.PPTX");
-        {
-            let file = std::fs::File::create(&path).expect("create pptx");
-            let mut zip = zip::ZipWriter::new(file);
-            let options = zip::write::SimpleFileOptions::default();
-            zip.start_file("ppt/slides/slide1.xml", options)
-                .expect("slide");
-            zip.write_all(
-                br#"<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:t>First slide title</a:t><a:t>Bounded preview text</a:t></p:sld>"#,
-            )
-            .expect("write slide");
-            zip.finish().expect("finish");
-        }
-
-        let png = render_office_content_preview_png(&path, 256).expect("bounded visual PNG");
-        let decoded = image::load_from_memory(&png).expect("decode visual PNG");
-        assert_eq!(decoded.dimensions(), (256, 256));
-        assert!(
-            decoded
-                .pixels()
-                .any(|(_, _, pixel)| pixel.0 != [255, 255, 255, 255]),
-            "PPTX preview must rasterize slide text, not an empty page"
-        );
-        assert_ne!(png, std::fs::read(&path).expect("read package"));
-        let _ = std::fs::remove_file(path);
-    }
-
-    #[cfg(unix)]
-    #[test]
-    fn pptx_visual_preview_rejects_a_symlink_before_opening_the_package() {
-        use std::os::unix::fs::symlink;
-
-        let target = temp_path("pptx-symlink-target.pptx");
-        let link = temp_path("pptx-symlink.pptx");
-        std::fs::write(&target, b"not a package").expect("write target");
-        symlink(&target, &link).expect("create symlink");
-
-        assert!(matches!(
-            render_office_content_preview_png(&link, 256),
-            Err(OfficeVisualError::InputNotRegular)
-        ));
-        let _ = std::fs::remove_file(link);
-        let _ = std::fs::remove_file(target);
-    }
-
-    #[cfg(not(unix))]
-    #[test]
-    fn non_unix_keeps_document_cards_but_rejects_pptx_before_path_access() {
-        let pptx = temp_path("non-unix-unopened.pptx");
-        assert!(matches!(
-            render_office_content_preview_png(&pptx, 128),
-            Err(OfficeVisualError::PreviewDisabledOnPlatform)
-        ));
-
-        let document = temp_path("non-unix-document.docx");
-        {
-            let file = std::fs::File::create(&document).expect("create document");
-            let mut zip = zip::ZipWriter::new(file);
-            zip.start_file(
-                "word/document.xml",
-                zip::write::SimpleFileOptions::default(),
-            )
-            .expect("document entry");
-            zip.write_all(b"<w:document><w:t>Visible document card</w:t></w:document>")
-                .expect("document XML");
-            zip.finish().expect("finish document");
-        }
-        assert!(
-            render_office_content_preview_png(&document, 128).is_ok(),
-            "DOCX keeps its established bounded renderer on non-Unix platforms"
-        );
-        let _ = std::fs::remove_file(document);
     }
 
     #[test]
@@ -11456,84 +13562,6 @@ mod tests {
         let _ = std::fs::remove_file(path);
     }
 
-    #[cfg(unix)]
-    #[test]
-    fn pptx_worker_snapshot_is_stable_during_same_inode_active_writes() {
-        use std::io::{Seek, SeekFrom};
-        use std::os::unix::fs::MetadataExt;
-        use std::sync::{
-            Arc, Barrier,
-            atomic::{AtomicBool, Ordering},
-        };
-
-        fn valid_pptx_bytes(text: &str) -> Vec<u8> {
-            let mut bytes = Cursor::new(Vec::new());
-            {
-                let mut zip = zip::ZipWriter::new(&mut bytes);
-                let options = zip::write::SimpleFileOptions::default()
-                    .compression_method(zip::CompressionMethod::Stored);
-                zip.start_file("ppt/slides/slide1.xml", options)
-                    .expect("slide entry");
-                write!(
-                    zip,
-                    "<p:sld xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><a:t>{text}</a:t></p:sld>"
-                )
-                .expect("slide text");
-                zip.finish().expect("finish package");
-            }
-            bytes.into_inner()
-        }
-
-        let path = temp_path("pptx-active-writer.pptx");
-        let first = valid_pptx_bytes("Alpha stable slide");
-        let second = valid_pptx_bytes("Bravo stable slide");
-        assert_eq!(first.len(), second.len(), "fixtures must have equal length");
-        std::fs::write(&path, &first).expect("write first fixture");
-        let inode = std::fs::metadata(&path).expect("first metadata").ino();
-        let first_generation = OfficePreviewSourceGeneration(Sha256::digest(&first).into());
-        let second_generation = OfficePreviewSourceGeneration(Sha256::digest(&second).into());
-        let start = Arc::new(Barrier::new(2));
-        let running = Arc::new(AtomicBool::new(true));
-        let writer_path = path.clone();
-        let writer_start = Arc::clone(&start);
-        let writer_running = Arc::clone(&running);
-        let writer = std::thread::spawn(move || {
-            writer_start.wait();
-            for generation in [&first, &second].into_iter().cycle().take(256) {
-                if !writer_running.load(Ordering::Acquire) {
-                    break;
-                }
-                let mut file = std::fs::OpenOptions::new()
-                    .write(true)
-                    .open(&writer_path)
-                    .expect("open same inode package");
-                file.seek(SeekFrom::Start(0)).expect("rewind package");
-                file.write_all(generation).expect("rewrite package");
-            }
-        });
-
-        start.wait();
-        for _ in 0..128 {
-            match render_office_content_preview_png_with_generation(&path, 128) {
-                Ok(rendered) => assert!(
-                    rendered.source_generation == first_generation
-                        || rendered.source_generation == second_generation,
-                    "a rendered PPTX must carry the SHA of its admitted A or B snapshot"
-                ),
-                Err(OfficeVisualError::InputChanged) => {}
-                Err(error) => panic!("active writer must yield A, B, or InputChanged; got {error}"),
-            }
-        }
-        running.store(false, Ordering::Release);
-        writer.join().expect("writer joins");
-        assert_eq!(
-            std::fs::metadata(&path).expect("final metadata").ino(),
-            inode,
-            "the active writer must retain the inode"
-        );
-        let _ = std::fs::remove_file(path);
-    }
-
     #[test]
     fn pptx_slide_text_requires_truthful_namespaces() {
         let valid = r#"<slide:sld xmlns:slide="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:text="http://schemas.openxmlformats.org/drawingml/2006/main"><text:t>Visible</text:t></slide:sld>"#;
@@ -11589,130 +13617,6 @@ mod tests {
             Some("First slide".to_string())
         );
         let _ = std::fs::remove_file(path);
-    }
-
-    #[test]
-    fn pptx_visual_preview_fails_closed_for_unsafe_or_noncanonical_packages() {
-        let cases = [
-            (
-                "empty-first-slide",
-                vec![
-                    ("ppt/slides/slide1.xml", "<p:sld><a:t/></p:sld>"),
-                    (
-                        "ppt/slides/slide2.xml",
-                        "<p:sld><a:t>Later slide</a:t></p:sld>",
-                    ),
-                ],
-            ),
-            (
-                "malformed-slide",
-                vec![("ppt/slides/slide1.xml", "<p:sld><a:t>Unclosed</p:sld>")],
-            ),
-            (
-                "colliding-slide-identity",
-                vec![
-                    ("ppt/slides/slide1.xml", "<p:sld><a:t>One</a:t></p:sld>"),
-                    ("ppt/slides/slide01.xml", "<p:sld><a:t>Alias</a:t></p:sld>"),
-                ],
-            ),
-            (
-                "traversal-entry",
-                vec![
-                    ("ppt/slides/slide1.xml", "<p:sld><a:t>Safe</a:t></p:sld>"),
-                    (
-                        "../ppt/slides/slide2.xml",
-                        "<p:sld><a:t>Unsafe</a:t></p:sld>",
-                    ),
-                ],
-            ),
-            (
-                "media-entry",
-                vec![
-                    ("ppt/slides/slide1.xml", "<p:sld><a:t>Safe</a:t></p:sld>"),
-                    ("ppt/media/video.bin", "not rendered"),
-                ],
-            ),
-            (
-                "external-relationship",
-                vec![
-                    ("ppt/slides/slide1.xml", "<p:sld><a:t>Safe</a:t></p:sld>"),
-                    (
-                        "ppt/_rels/presentation.xml.rels",
-                        "<Relationships><Relationship TargetMode=\"External\" Target=\"https://example.invalid\"/></Relationships>",
-                    ),
-                ],
-            ),
-        ];
-
-        for (suffix, entries) in cases {
-            let path = temp_path(&format!("{suffix}.pptx"));
-            {
-                let file = std::fs::File::create(&path).expect("create pptx");
-                let mut zip = zip::ZipWriter::new(file);
-                let options = zip::write::SimpleFileOptions::default();
-                for (name, contents) in entries {
-                    zip.start_file(name, options).expect("entry");
-                    zip.write_all(contents.as_bytes()).expect("write entry");
-                }
-                zip.finish().expect("finish");
-            }
-
-            assert!(matches!(
-                render_office_content_preview_png(&path, 256),
-                Err(OfficeVisualError::NoContent)
-            ));
-            let _ = std::fs::remove_file(path);
-        }
-    }
-
-    #[test]
-    fn pptx_visual_admission_rejects_forbidden_active_content_parts() {
-        const SLIDE: &[u8] = br#"<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:t>Safe</a:t></p:sld>"#;
-        let forbidden_parts = [
-            "ppt/vbaProject.bin",
-            "PPT/vbaData.xml",
-            "ppt/vbaProjectSignature.bin",
-            "ppt/VBAProjectSignatureAgile.bin",
-            "ppt/notesSlides/notesSlide1.xml",
-            "ppt/comments/comment1.xml",
-            "ppt/embeddings/oleObject1.bin",
-            "ppt/externalLinks/externalLink1.xml",
-            "ppt/activeX/activeX1.bin",
-            "ppt/ctrlProps/ctrlProp1.xml",
-            "ppt/notesMasters/notesMaster1.xml",
-            "ppt/commentAuthors.xml",
-            "ppt/modernComment1.xml",
-            "PPT/modernCommentAuthors.xml",
-        ];
-
-        for (index, forbidden_part) in forbidden_parts.iter().enumerate() {
-            let path = temp_path(&format!("forbidden-content-part-{index}.pptx"));
-            {
-                let file = std::fs::File::create(&path).expect("create pptx");
-                let mut zip = zip::ZipWriter::new(file);
-                let options = zip::write::SimpleFileOptions::default();
-                zip.start_file("ppt/slides/slide1.xml", options)
-                    .expect("slide entry");
-                zip.write_all(SLIDE).expect("write slide");
-                zip.start_file(*forbidden_part, options)
-                    .expect("forbidden entry");
-                zip.write_all(b"active content")
-                    .expect("write forbidden entry");
-                zip.finish().expect("finish package");
-            }
-
-            let file = std::fs::File::open(&path).expect("open pptx");
-            let mut archive = zip::ZipArchive::new(file).expect("open package");
-            assert!(
-                !pptx_package_is_safe(&std::fs::read(&path).expect("read package"), &mut archive),
-                "must reject {forbidden_part}"
-            );
-            assert!(matches!(
-                render_office_content_preview_png(&path, 256),
-                Err(OfficeVisualError::NoContent)
-            ));
-            let _ = std::fs::remove_file(path);
-        }
     }
 
     #[test]
@@ -12082,45 +13986,6 @@ mod tests {
     }
 
     #[test]
-    fn pptx_visual_preview_rejects_excess_parts_and_oversized_slide_xml() {
-        let many_parts = temp_path("too-many-parts.pptx");
-        {
-            let file = std::fs::File::create(&many_parts).expect("create pptx");
-            let mut zip = zip::ZipWriter::new(file);
-            let options = zip::write::SimpleFileOptions::default();
-            for index in 0..=MAX_OFFICE_PARTS {
-                zip.start_file(format!("ppt/slides/slide{index}.xml"), options)
-                    .expect("entry");
-                zip.write_all(b"<p:sld><a:t>Ignored</a:t></p:sld>")
-                    .expect("write entry");
-            }
-            zip.finish().expect("finish");
-        }
-        assert!(matches!(
-            render_office_content_preview_png(&many_parts, 256),
-            Err(OfficeVisualError::TooManyParts { .. })
-        ));
-        let _ = std::fs::remove_file(many_parts);
-
-        let oversized = temp_path("oversized-slide.pptx");
-        {
-            let file = std::fs::File::create(&oversized).expect("create pptx");
-            let mut zip = zip::ZipWriter::new(file);
-            let options = zip::write::SimpleFileOptions::default();
-            zip.start_file("ppt/slides/slide1.xml", options)
-                .expect("slide");
-            zip.write_all(&vec![b'x'; MAX_OFFICE_XML_BYTES as usize + 1])
-                .expect("write oversized slide");
-            zip.finish().expect("finish");
-        }
-        assert!(matches!(
-            render_office_content_preview_png(&oversized, 256),
-            Err(OfficeVisualError::NoContent)
-        ));
-        let _ = std::fs::remove_file(oversized);
-    }
-
-    #[test]
     fn office_preview_rejects_oversized_decompressed_xml_part() {
         let path = temp_path("oversized.docx");
         {
@@ -12140,10 +14005,6 @@ mod tests {
         assert_eq!(preview.kind, PreviewKind::OfficeMetadata);
         assert!(!preview.body.contains(EXTRACTED_TEXT_MARKER));
         assert!(preview.body.contains("Internal parts: 1"));
-        assert!(matches!(
-            render_office_content_preview_png(&path, 256),
-            Err(OfficeVisualError::NoContent)
-        ));
         let _ = std::fs::remove_file(path);
     }
 

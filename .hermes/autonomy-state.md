@@ -1,62 +1,76 @@
-# Arthur · Ottrin Media Foundation Phase 1 Corrections
+# Ottrin autonomy state
 
-Status: complete
-Model route: difficult
+Updated: 2026-08-26T03:08:55+02:00
+Status: paused
+Model route: balanced
+Repository: /home/campbell/Projects/Ottrin
+Branch: main
+HEAD: d399451682411a28e5f93db0c24aa76af3670ae1
+Tracked dirty files: .github/workflows/release.yml, .gitignore, .hermes/autonomy-state.md, .hermes/video-thumbnail-policy-approved.md, Cargo.lock, README.md, build-all.sh, crates/ottrin-app/Cargo.toml, crates/ottrin-app/src/main.rs, crates/ottrin-core/Cargo.toml, crates/ottrin-core/src/lib.rs, crates/ottrin-platform/Cargo.toml, crates/ottrin-platform/src/bin/ottrin-priv-helper.rs, crates/ottrin-platform/src/copy_transaction.rs, crates/ottrin-platform/src/lib.rs, crates/ottrin-platform/src/move_recovery.rs, crates/ottrin-platform/src/move_transaction.rs, crates/ottrin-preview/Cargo.toml, crates/ottrin-preview/src/affinity_visual.rs, crates/ottrin-preview/src/lib.rs, crates/ottrin-preview/src/video_thumbnail.rs, crates/ottrin-preview/tests/video_thumbnail_contract.rs, crates/ottrin-search/Cargo.toml, crates/ottrin-search/src/daemon.rs, crates/ottrin-search/src/db.rs, crates/ottrin-search/src/lib.rs, crates/ottrin-search/src/plan.rs, crates/ottrin-search/src/scanner.rs, crates/ottrin-search/src/worker.rs, crates/ottrin-ui/Cargo.toml, crates/ottrin-ui/src/config.rs, crates/ottrin-ui/src/lib.rs, crates/ottrin-ui/src/preview_render.rs, crates/ottrin-ui/src/thumbnail_cache.rs, docs/DEVELOPMENT.md, docs/MOVE_RECOVERY_DESIGN.md, docs/RELEASE_CHECKLIST.md, docs/RELEASE_NOTES.md, docs/ROADMAP.md, docs/USER_GUIDE.md, docs/VIDEO_THUMBNAIL_SPIKE.md, packaging/linux/bundle-runtime-libs.sh, packaging/linux/org.ottrin.filesystem.policy, packaging/linux/package-appimage.sh, packaging/linux/package-portable.sh, packaging/tests/verify-linux-index-daemon-contract.sh, packaging/tests/verify-release-checklist-provenance.sh, packaging/tests/verify-release-preflight-contract-coverage.sh, packaging/tests/verify-release-preflight-shell-coverage.sh, packaging/tests/verify-release-provenance.sh, packaging/tests/verify-release-workflow-dependencies.sh, packaging/tests/verify-windows-installer-index-lifecycle.sh, packaging/verify-release-artifacts.sh, scripts/release-preflight.sh
+## Authority
+The roadmap and release checklist make Windows Move the first remaining release outcome. Windows cross-volume directory trees containing symbolic links for Skip and Rename are now source-complete, while non-symbolic reparse points remain rejected. The completed top-level symbolic-link Overwrite and nested-link slices must not be replayed. Native Windows crash, ACL, sharing-mode, and packaged acceptance remain separate final gates.
 
-## Repository boundary
+## Just completed
+EPS now reaches the existing bounded, non-networked Ghostscript renderer from the UI preview worker and Quick Inspector. The renderer remains optional and host-supplied; its established metadata/external-open fallback remains authoritative on unavailable or failed capability. Quick Inspector treats EPS as a visual preview with Fit/100%/zoom controls rather than silently routing it to metadata only.
 
-- Repository: `/home/campbell/.hermes/worktrees/Ottrin-media-foundation`
-- Branch: `work/media-foundation-phase1`
-- Reviewed implementation retained unchanged: `21650a408c57406c388331bf434975bcc2c8e243 Add native Windows video thumbnails`
-- Prior source handoff retained unchanged: `60db10843ea040a3f3e6c4dffb675472b040d6f8 Record Media Foundation source handoff`
-- Focused correction commit: `024ecff Bound native video thumbnail inputs`
-- Shared build output: `/home/campbell/Projects/Ottrin/target`
-- Arthur remained the sole mutation owner. Nothing was integrated into `main`, pushed, published, deployed, released, signed, or run against user media; no codecs were installed.
+The typed Excel grid no longer claims that a bounded blank column was omitted when it is visibly rendered between populated columns. Sparse-range safety limits remain authoritative: the UI suppresses only a short-gap omission that its own grid expands into visible blanks; genuinely hidden ranges remain disclosed.
 
-## Corrected blockers
+## Evidence actually run
+- RED: `cargo test -p ottrin-ui eps_quick_inspector_uses_the_isolated_visual_preview_path -- --nocapture` failed because EPS was excluded from the Quick Inspector visual path.
+- GREEN: the same focused test passed after routing EPS through the preview worker and visual inspector path.
+- EPS isolation: `cargo test -p ottrin-preview --test eps_visual -- --nocapture` passed against installed Ghostscript, bubblewrap, and systemd-user isolation.
+- Regressions: `cargo test -p ottrin-ui quick_inspector -- --nocapture` passed 17 tests; three existing FIEMAP-dependent text-edit fixtures reported their host skip. `cargo test -p ottrin-preview eps -- --nocapture` passed 8 EPS-selected tests across unit/integration targets.
+- Build and source gates: `cargo build -p ottrin-app`, `cargo fmt --all --check`, and `git diff --check` passed.
+- Real rendered verification: a disposable Xvfb session with isolated state/cache/config paths and no restored desktop variables launched `target/debug/ottrin-app` directly into `Ottrin Quick Inspector — fixture.eps`. The active window rendered the EPS artwork, exposed Fit/100%/zoom controls, retained metadata, had empty app stderr, and closed on Escape. The transient window-only PNG was SHA-256 `be9474ca1e8b39be3bf168dc63fea45ab28d647f1411d1a42b4f9d6b0036b16d` (720x560).
+- Excel RED/GREEN: `cargo test -p ottrin-ui spreadsheet_grid_does_not_report_a_visible_blank_column_as_omitted -- --nocapture` initially failed on the contradictory omission notice, then passed after the presentation correction. `cargo test -p ottrin-ui spreadsheet_grid -- --nocapture` passed both spreadsheet-grid tests, and `cargo test -p ottrin-preview xlsx -- --nocapture` passed 9 typed-XLSX safety/extraction tests.
+- Excel real rendered verification: a disposable Xvfb Quick Inspector opened a generated A/C worksheet with the visible A, B, and C headers and Name/Score data. Before the correction it displayed duplicate `Columns B–B omitted` notices; after, it displayed no false omission notice, had empty app stderr, and closed on Escape. Fixed window-only PNG SHA-256: `41c3794c293b4e9355494d774ad574e765790c22d53ea32e3064d7b78d39531b`.
 
-1. Compressed input is now hard-bounded before authorization. The default policy admits at most 512 MiB, rejects an oversize retained handle before `AuthorizedVideoSource` construction, records the accepted length, and gives `IStream::Stat`, `Read`, bounded `Seek`, and every clone only that length. Oversize videos therefore retain the existing unavailable/metadata-only behavior and never reach Media Foundation.
-2. Contiguous RGB32 output no longer requires `IMF2DBuffer2`. The backend prefers bounded `Lock2DSize`, then uses an RAII-balanced `IMFMediaBuffer::Lock`/`Unlock` fallback for ordinary contiguous buffers. It obtains signed default stride from the negotiated media type, using Media Foundation's documented stride calculation only when the attribute is absent, validates subtype/dimensions/current and maximum lengths/pointer ranges/row and output arithmetic, and normalizes positive or negative padded rows into one top-down RGBA result.
-3. Roadmap, user guide, and spike documentation now state the 512 MiB source policy and the real timing boundary: deadline/cancellation checks are cooperative around synchronous native codec calls, not a hard wall-clock guarantee.
+## Current outcome
+Legacy `.doc` files now enter the existing optional installed-LibreOffice visual Office provider when it is available. `.doc` has an explicit typed format and sandbox input mapping (`/input/source.doc`); the accepted DOCX path and the truthful catdoc/metadata/external-open fallback remain unchanged.
 
-## RED–GREEN evidence
+## Evidence actually run
+- RED: `cargo test -p ottrin-preview --test office_provider_contract production_provider_format_mapping_accepts_only_the_bounded_office_contract -- --exact` failed because `.doc` mapped to `None`; the same test passed after the provider change.
+- Provider contract: `cargo test -p ottrin-preview --test office_provider_contract` passed all 14 tests, including installed-LibreOffice capability detection, sandboxing, timeout, cancellation, output validation, fallback, and legacy-doc extraction.
+- Focused regression: `cargo test -p ottrin-preview office_provider` passed across all relevant targets.
+- Source gates: `cargo fmt --all --check`, `cargo build -p ottrin-app`, and `git diff --check` passed.
+- Real rendered verification was unavailable: `DISPLAY=:0` and a Wayland socket exist, but no `soffice` or `libreoffice` executable is installed. `catdoc` is installed, so the established bounded text fallback remains available.
 
-- RED: `cargo test -p ottrin-preview --test video_thumbnail_contract` failed before production edits because the source-byte constant/helper/limit field did not exist and negative stride could not type-check against the old unsigned contract.
-- GREEN: the focused contract now has 6 passing tests covering exact source-size admission arithmetic, overflow-side rejection, packed BGRA, padded positive stride, negative bottom-up stride, invalid shape/output bounds, generation/target cache identity, and deterministic non-Windows unavailability.
-- A Windows-target sparse-file admission test is compiled and ready to assert that a retained handle sized one byte over the policy returns `ResourceLimit`; it is not represented as native runtime acceptance.
+## Remaining gate
+Visual LibreOffice-backed `.doc` rendering still needs a representative real document on a machine where the user has independently installed and enabled LibreOffice. No dependency was installed or bundled during this work.
 
-## Final verification at `024ecff`
+## Media boundary revalidated
+Linux media playback is already source-complete through the optional `ottrin-media-playback` helper linked to the user's system GStreamer. The GUI remains launchable without GStreamer, packages reject bundled framework/plugin/codec payloads, and unavailable capability falls back truthfully with **Open externally** retained.
 
-- `cargo test -p ottrin-preview --test video_thumbnail_contract` — 6 passed.
-- `cargo test -p ottrin-preview -p ottrin-ui` — preview 159 unit, 2 PDF integration, and 6 video contract tests passed; 4 packaged-PDFium tests remained ignored by their existing runtime requirement; UI 197 passed; doc tests passed.
-- `cargo fmt --all --check` passed.
-- `cargo clippy -p ottrin-preview -p ottrin-ui --all-targets -- -D warnings` passed on the host.
-- `cargo check -p ottrin-app --all-targets --target x86_64-pc-windows-gnu` passed. It retained only the two pre-existing Windows-only `ottrin-search` warnings (`unused_mut`; dead private rebuild/reconcile methods).
-- `cargo clippy -p ottrin-preview --all-targets --target x86_64-pc-windows-gnu -- -D warnings` passed.
-- `cargo clippy -p ottrin-ui --all-targets --target x86_64-pc-windows-gnu --no-deps -- -D warnings` passed; dependency output retained the same two unrelated search warnings.
-- `git diff --check cc8d7d3..024ecff` passed for the full feature range.
-- The correction changed no dependency manifest, lockfile, packaging, installer, runtime-staging, or release file. The feature range still contains only the original target-scoped references to already-resolved `windows 0.58.0` and `windows-core 0.58.0`; no decoder/runtime/package payload drift was introduced.
-- The unrelated stale `USER_GUIDE` release-preflight literal was not changed or worked around.
+Focused source evidence passed on this machine: two `ottrin-preview` media-playback tests, the `ottrin-ui` Linux audio/video routing test, `verify-linux-system-media-boundary.sh`, and `verify-linux-native-package-contract.sh`. No `gst-launch-1.0`, `gst-inspect-1.0`, or `gstreamer-1.0` pkg-config capability is installed here, so enabled physical playback and exact-package acceptance remain external release gates; no dependency was installed or bundled.
 
-## Self-review boundary
+## HTML and theme boundary revalidated
+The accepted offline HTML renderer passed its sanitizer and bounded browser-isolation evidence against this host's installed Google Chrome and bubblewrap runtime. Focused tests covered a real bounded PNG render, local relative stylesheet rendering, disabled script execution, active/external-content removal, traversal rejection, and truthful UI fallback.
 
-- Reviewed only `024ecff` and its interaction with retained-handle identity, `IStream` clones, Media Foundation media-type negotiation and both lock paths, generation-keyed cache admission, unavailable responses, and the existing UI scheduler.
-- All successful native buffer locks have matching RAII unlocks on every return path. The 2-D path uses `Lock2DSize`'s bounded padded-surface range while separately validating current/max lengths; the ordinary path exposes only current valid bytes. Signed row offsets are checked before safe slice access.
-- Oversize admission produces no authorized source, so the existing UI request path has no video bytes to decode or cache and retains metadata fallback. Successful output still passes the existing bounded PNG cache validation and generation checks.
+Existing syntax highlighting and theme-editor save/import semantics also passed their focused UI tests. No source defect was reproduced and no compensating implementation was added.
 
-## Residual native and release gates
+## Current outcome
+Windows cross-volume directory snapshots now classify symbolic links as link entries rather than traversing them, bind each raw UTF-16 target and link kind into durable manifest evidence, recreate and verify links in destination-local staging, and revalidate source and published trees before identity-pinned cleanup. Skip and Rename directory publication use this path; non-symbolic reparse points remain fail-closed.
 
-- Cross-compilation does not prove COM/Media Foundation runtime behavior, installed-codec capability, buffer implementation variants, decoded pixel usefulness, or observed timing inside a synchronous hostile codec call.
-- Native Windows must test real exact-limit and oversize admission, retained-handle/reparse identity, path replacement and in-place mutation, malformed/truncated/unsupported media, both 2-D and ordinary contiguous RGB32 buffers, positive/negative padded orientation and color, cancellation/deadline observations, repeated lifecycle cleanup, Grid/List and Quick Inspector fallback, and absence of audio/network/sidecar/plugin/process activity.
-- The cooperative two-second deadline and cancellation policy is not a preemptive wall-clock bound. Hostile-codec observed latency remains an explicit native acceptance gate.
-- Exact portable and installer payloads still require an audit proving no decoder DLL, codec implementation, FFmpeg/GStreamer payload, codec pack/installer, or dependency drift, followed by the separate licensing/patent product-claim review.
-- Linux and other platforms remain metadata-only. No native Windows, physical desktop, portable-package, installer, UAC, signing, or release acceptance is claimed.
+## Evidence actually run
+- RED: `cargo test -p ottrin-platform windows_directory_manifest_accepts_and_binds_nested_symbolic_links -- --exact` failed because directory manifest evidence had no symbolic-link-kind field. The focused test passed after binding the kind bit into every manifest entry and aggregate digest.
+- `cargo test -p ottrin-platform move_transaction::windows_source_tests -- --nocapture` passed all 42 focused source-contract tests, including nested-link manifest binding, snapshot target/kind revalidation, child-first manifest cleanup, and non-symbolic reparse rejection.
+- `cargo check -p ottrin-platform --target x86_64-pc-windows-gnu` passed.
+- `cargo fmt --all --check` and focused `git diff --check` passed.
 
-## Preserved dirty state
+## Remaining gate
+Native Windows crash, ACL, sharing-mode, second-volume, and packaged acceptance cannot be exercised on this Linux host. The user-facing cross-volume route remains fail-closed until those gates pass.
 
-- The pre-existing untracked `.hermes/arthur-correction-goal.md`, `.hermes/arthur-goal.md`, `.hermes/arthur-last-message.md`, and `.hermes/worker-project` remain unstaged and unmodified by the product correction.
-- No unrelated tracked work is present in this worktree.
+## First exact next action
+On a representative native Windows machine with a real second volume, run the cross-volume directory Skip/Rename matrix with file and directory symbolic links, interruption recovery, hostile ACLs, and sharing conflicts; enable the route only if the durable journal and cleanup evidence survive every case.
 
-## Resume action
+## Accessibility and privileged-action boundaries revalidated
+Ottrin's accessibility source contract passed the focused UI accessibility tests and a current `ottrin-app` build. The Unix AccessKit/AT-SPI lifecycle is still owned upstream by egui/winit, so native assistive-technology behavior remains a representative desktop QA gate rather than a reason to add a parallel accessibility stack.
 
-Yuki should use source correction `024ecff` for native Windows and exact-package acceptance. No David action is required for source completion.
+The Linux privileged-helper implementation and package boundary also passed focused helper and native-package tests. The release-provenance test had drifted behind the authoritative Move and signing wording in `docs/RELEASE_CHECKLIST.md` and `docs/ROADMAP.md`; its exact contract strings were corrected after reproducing the failure. `verify-release-checklist-provenance.sh`, `verify-linux-native-package-contract.sh`, and `git diff --check` now pass. Interactive polkit allow/cancel behavior remains a packaged Linux desktop QA gate.
+
+## Milestone Report
+Report ID: pdf-initial-zoom-20260825
+Completed: stable initial width-fit PDF Quick Inspector presentation across cached and refined rasters
+Evidence: focused RED/GREEN tests, PDF/Quick Inspector regressions, current app build, formatting/diff gates, and a real window-only KWin/Xvfb render
+Safety status: enabled; renderer/cache bounds and multi-page/non-PDF behavior preserved
+Next milestone: EPS rendering, active under the coordinator queue

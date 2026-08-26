@@ -10,21 +10,26 @@ use egui_extras::{Column, TableBuilder};
 #[cfg(all(unix, not(test)))]
 use ottrin_core::SearchResponse;
 use ottrin_core::{
-    AppConfig, AppState, ConflictAction, DeleteMode, EntryKind, FileCategory, FileCommand,
-    FileEntry, GraphicsRendererChoice, GraphicsRendererPreference, GraphicsRendererReason,
-    GraphicsRuntimeStatus, IndexedVolumeLocation, ListColumn, MillerColumnWidthMode,
-    PrivilegedCommand, PrivilegedContext, PrivilegedPayload, PrivilegedRequest, PrivilegedStatus,
-    SavedTheme, SearchConfig, SearchIndexStatus, SearchQuery, SearchResultItem, SearchScope,
-    SearchSort, SortBy, TandemSide, ThemeCustomization, ThemeMode, ThemePreset, ViewMode,
-    default_home_dir, format_modified, format_size, format_size_units,
+    AppConfig, AppState, ConflictAction, ContentFileGroup, DeleteMode, EntryKind, FileCategory,
+    FileCommand, FileEntry, GraphicsRendererChoice, GraphicsRendererPreference,
+    GraphicsRendererReason, GraphicsRuntimeStatus, IndexedVolumeLocation, ListColumn,
+    MillerColumnWidthMode, PrivilegedCommand, PrivilegedContext, PrivilegedPayload,
+    PrivilegedRequest, PrivilegedStatus, SavedTheme, SearchConfig, SearchIndexStatus, SearchQuery,
+    SearchResultItem, SearchScope, SearchSort, SortBy, SystemLocateMaintenance, TandemSide,
+    ThemeCustomization, ThemeMode, ThemePreset, ViewMode, default_home_dir, format_modified,
+    format_size, format_size_units,
 };
+#[cfg(target_os = "windows")]
+use ottrin_platform::discover_retained_move_transactions;
 #[cfg(test)]
 use ottrin_platform::is_windows_reserved_creation_name;
+#[cfg(any(target_os = "windows", test))]
+use ottrin_platform::move_recovery::WindowsMoveTransactionKind;
 use ottrin_platform::text_edit::{TextEditSession, text_editing_supported};
 use ottrin_platform::{
-    DefaultPlatform, MoveDisposition, OpenWithApplication, PlatformError, PlatformOps,
-    PrivilegedAvailability, RenameUndoReceipt, StorageLocation, StorageLocationKind, TrashItem,
-    discover_storage_locations, validate_creation_name,
+    ChmodUndoReceipt, DefaultPlatform, MoveDisposition, OpenWithApplication, PathMoveUndoReceipt,
+    PlatformError, PlatformOps, PrivilegedAvailability, StorageLocation, StorageLocationKind,
+    TrashItem, TrashUndoReceipt, discover_storage_locations, validate_creation_name,
 };
 #[cfg(target_os = "linux")]
 use ottrin_platform::{discover_retained_move_transactions, move_recovery::JournalPhase};
@@ -36,19 +41,16 @@ use ottrin_preview::{
 #[cfg(all(unix, not(test)))]
 use ottrin_search::SearchDaemonClient;
 use ottrin_search::{
-    LocateScheduleStatus, SearchIndexDiagnostics, SearchQueryResult,
-    default_roots as default_search_roots,
+    LocateScheduleStatus, SearchHandle, SearchIndexDiagnostics, SearchQueryResult, SearchService,
 };
-#[cfg(any(not(unix), test))]
-use ottrin_search::{SearchHandle, SearchService};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
-#[cfg(all(unix, not(test)))]
-use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc::{self, Receiver, Sender};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+
+const LINUX_SYSTEM_MEDIA_DISCLOSURE: &str = "On Linux, Ottrin uses GStreamer installed on this system. Ottrin does not include, download, install, or select codec implementations. Playback depends on the media plugins made available by the operating system or user.";
 
 mod config;
 mod file_details;
@@ -75,12 +77,14 @@ use listing::{
     default_sort_direction, list_directory, nearest_existing_dir, sibling_from_entries,
     sort_entries, sort_supports_direction,
 };
+#[cfg(not(target_os = "linux"))]
+use preview_render::render_document_body_preview;
 use preview_render::{
     GenericPreviewAction, compact_preview_metadata, inspector_icon_button,
-    preview_payload_for_copy, render_document_body_preview, render_docx_page_preview,
-    render_folder_body_preview, render_generic_body_preview, render_image_hover_nav,
-    render_metadata_card_preview, render_shared_preview_body, shared_preview_body_kind,
-    split_preview_extracted_text,
+    preview_payload_for_copy, render_docx_page_preview, render_folder_body_preview,
+    render_generic_body_preview, render_image_hover_nav, render_metadata_card_preview,
+    render_preview_card_action, render_shared_preview_body, shared_preview_body_kind,
+    specialized_preview_body_action, split_preview_extracted_text,
 };
 use semantic_style::{
     EntryVisualState, file_icon_for_path, material_icon, semantic_for_path, semantic_palette,
@@ -91,10 +95,11 @@ use theme_import::{decode_theme_import_json, sanitize_theme_file_name, theme_nam
 pub use thumbnail_cache::clear_preview_cache_storage;
 use thumbnail_cache::{
     ImagePreviewCacheEntry, clear_preview_cache_dir, full_preview_bytes_at_page,
-    load_cached_thumbnail, load_cached_video_thumbnail, persist_cached_thumbnail,
-    persist_cached_video_thumbnail, preview_cache_dir, preview_cache_key_for_page,
-    preview_cache_key_for_page_with_generations, preview_cache_key_for_page_with_sqlite_generation,
-    preview_cache_stats, prune_preview_cache_dir, thumbnail_bytes_from_cache_or_build,
+    load_cached_thumbnail, load_cached_video_thumbnail, office_provider_preview_cache_key,
+    persist_cached_thumbnail, persist_cached_video_thumbnail, preview_cache_dir,
+    preview_cache_key_for_page, preview_cache_key_for_page_with_generations,
+    preview_cache_key_for_page_with_sqlite_generation, preview_cache_stats,
+    prune_preview_cache_dir, thumbnail_bytes_from_cache_or_build,
 };
 use window_chrome::{
     WmBtn, cursor_icon_for_resize_direction, render_custom_titlebar, resize_direction_for_pos,
@@ -104,6 +109,26 @@ use window_chrome::{
 const STORAGE_LOCATION_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 const CREATION_MODAL_INPUT_HEIGHT: f32 = 38.0;
 const CREATION_MODAL_ACTION_SIZE: Vec2 = Vec2::new(84.0, 32.0);
+
+pub fn administrator_surface_label(label: &str, administrator: bool) -> String {
+    if administrator {
+        format!("{label} (Administrator)")
+    } else {
+        label.to_string()
+    }
+}
+
+fn administrator_session() -> bool {
+    #[cfg(unix)]
+    {
+        // SAFETY: geteuid has no preconditions and no side effects.
+        unsafe { libc::geteuid() == 0 }
+    }
+    #[cfg(not(unix))]
+    {
+        false
+    }
+}
 
 fn single_file_pane_background(colors: &Colors) -> Color32 {
     colors.smart_panel_bg
@@ -250,14 +275,6 @@ fn creation_completion_target(
     }
 }
 
-fn locations_rail_tile_text(icon: &str, name: &str, path: &Path, expanded: bool) -> String {
-    if expanded {
-        format!("{icon} {name}\n{}", path.display())
-    } else {
-        icon.to_string()
-    }
-}
-
 fn locations_rail_accessibility_label(name: &str, path: &Path, indexed: Option<bool>) -> String {
     locations_rail_tile_detail(name, path, indexed)
 }
@@ -363,6 +380,10 @@ fn format_age_str(secs: u64) -> String {
     }
 }
 
+fn reset_search_config(config: &mut SearchConfig) {
+    *config = SearchConfig::default();
+}
+
 fn graphics_settings_visible(is_windows: bool) -> bool {
     is_windows
 }
@@ -427,17 +448,44 @@ fn system_locate_schedule_guidance(
     status: &ottrin_search::SystemLocateScheduleStatus,
 ) -> &'static str {
     let detail = status.detail.as_deref().unwrap_or_default();
-    if detail.contains("cron.weekly") {
+    if status.managed_by_ottrin {
+        "Ottrin installed this system updatedb job for plocate fallback only; it does not update the SQLite index."
+    } else if detail.contains("cron.weekly") {
         "Weekly system updates are fine for mostly stable system paths. Use a daily schedule only if you rely on plocate for frequently changing system-wide results."
     } else if detail.contains("cron.daily")
         || detail.contains("timer")
         || detail.contains("updatedb.timer")
     {
         "This is a good default for system path fallback. Ottrin's own SQLite index remains the main search source."
-    } else if status.managed_by_ottrin {
-        "Ottrin installed this system updatedb job for plocate fallback only; it does not update the SQLite index."
     } else {
         "Existing system maintenance detected. No extra setup is needed unless plocate results are stale."
+    }
+}
+
+fn execute_system_locate_maintenance(
+    platform: &DefaultPlatform,
+    operation: SystemLocateMaintenance,
+) -> (String, bool) {
+    let request = PrivilegedRequest {
+        command: PrivilegedCommand::SystemLocateMaintenance(operation),
+        context: PrivilegedContext {
+            reason: Some("Maintain the operating system filename database".to_string()),
+            cwd: None,
+        },
+    };
+    match platform.execute_privileged(&request) {
+        Ok(response) => {
+            let ok = response.status == PrivilegedStatus::Success;
+            let message = response.message.unwrap_or_else(|| {
+                if ok {
+                    "System filename maintenance completed.".to_string()
+                } else {
+                    "System filename maintenance failed.".to_string()
+                }
+            });
+            (message, ok)
+        }
+        Err(error) => (format!("Failed to run privileged helper: {error}"), false),
     }
 }
 
@@ -452,6 +500,13 @@ const PREVIEW_CACHE_BUCKET_SMALL: u32 = 256;
 const PREVIEW_CACHE_BUCKET_LARGE: u32 = 640;
 const PREVIEW_CACHE_BUCKET_XL: u32 = 2048;
 const PREVIEW_CACHE_ORIGINAL: u32 = 0;
+
+fn preview_fallback_dimensions(target_dim: u32) -> Vec<u32> {
+    [PREVIEW_CACHE_BUCKET_LARGE, PREVIEW_CACHE_BUCKET_SMALL]
+        .into_iter()
+        .filter(|candidate| *candidate < target_dim)
+        .collect()
+}
 const PREVIEW_REQUESTS_PER_FRAME: usize = 2;
 const MILLER_FIXED_WIDTH: f32 = 240.0;
 const TANDEM_PANE_HEADER_HEIGHT: f32 = 38.0;
@@ -526,14 +581,16 @@ struct OpResult {
     clipboard_generation: Option<u64>,
     completed_sources: Option<usize>,
     completed_source_paths: Vec<PathBuf>,
-    rename_receipt: Option<RenameUndoReceipt>,
-    rename_bindings: Option<Vec<StorageOperationBinding>>,
+    move_dispositions: Option<Vec<MoveDisposition>>,
+    path_move_receipt: Option<OperationUndoReceipt>,
+    path_move_bindings: Option<Vec<StorageOperationBinding>>,
 }
 
 #[derive(Debug)]
-struct RenameUndoResult {
+struct PathMoveUndoResult {
     op_id: u64,
     result: Result<(), String>,
+    retryable: bool,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -680,6 +737,7 @@ enum OperationStatus {
 enum OperationRecoverability {
     Restorable,
     NotUndoable,
+    BatchUndoUnavailable,
     SessionTracked,
     Informational,
 }
@@ -694,31 +752,124 @@ struct OperationRecord {
     queued_at: Instant,
     finished_at: Option<Instant>,
     message: Option<String>,
-    rename_paths: Option<(PathBuf, PathBuf)>,
-    rename_undo: Option<RenameUndoState>,
-    rename_undo_token: Option<RenameUndoToken>,
+    path_move_paths: Option<(PathBuf, PathBuf)>,
+    path_move_undo: Option<PathMoveUndoState>,
+    path_move_undo_token: Option<PathMoveUndoToken>,
 }
 
 #[derive(Debug, Clone)]
-struct RenameUndoToken {
-    receipt: RenameUndoReceipt,
+struct PathMoveUndoToken {
+    receipt: OperationUndoReceipt,
+    kind: PathMoveUndoKind,
     storage_bindings: Vec<StorageOperationBinding>,
     origin_tab_id: Option<u64>,
 }
 
+#[derive(Debug, Clone)]
+struct TextEditUndoReceipt {
+    session: Arc<TextEditSession>,
+    original: String,
+    path: PathBuf,
+}
+
+#[derive(Debug, Clone)]
+enum OperationUndoReceipt {
+    PathMove(PathMoveUndoReceipt),
+    Chmod(ChmodUndoReceipt),
+    Trash(TrashUndoReceipt),
+    TextEdit(TextEditUndoReceipt),
+}
+
+impl OperationUndoReceipt {
+    fn before_path(&self) -> &Path {
+        match self {
+            Self::PathMove(receipt) => receipt.before_path(),
+            Self::Chmod(receipt) => receipt.path(),
+            Self::Trash(receipt) => receipt.original_path(),
+            Self::TextEdit(receipt) => &receipt.path,
+        }
+    }
+
+    fn after_path(&self) -> &Path {
+        match self {
+            Self::PathMove(receipt) => receipt.after_path(),
+            Self::Chmod(receipt) => receipt.path(),
+            Self::Trash(receipt) => receipt.trash_path(),
+            Self::TextEdit(receipt) => &receipt.path,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PathMoveUndoKind {
+    CreateFile,
+    CreateFolder,
+    Symlink,
+    Chmod,
+    Trash,
+    TextEdit,
+    Rename,
+    Copy,
+    Move,
+}
+
+fn path_move_undo_conflict_message(kind: PathMoveUndoKind) -> String {
+    let operation = match kind {
+        PathMoveUndoKind::CreateFile => "create file",
+        PathMoveUndoKind::CreateFolder => "create folder",
+        PathMoveUndoKind::Symlink => "symlink",
+        PathMoveUndoKind::Chmod => "permission change",
+        PathMoveUndoKind::Trash => "Trash move",
+        PathMoveUndoKind::TextEdit => "text edit",
+        PathMoveUndoKind::Rename => "rename",
+        PathMoveUndoKind::Copy => "copy",
+        PathMoveUndoKind::Move => "move",
+    };
+    format!(
+        "Undo {operation} was not started because a conflicting file operation is still running."
+    )
+}
+
+fn path_move_parent_directories(before: &Path, after: &Path) -> Vec<PathBuf> {
+    let mut parents = before
+        .parent()
+        .map(Path::to_path_buf)
+        .into_iter()
+        .collect::<Vec<_>>();
+    if let Some(after_parent) = after.parent()
+        && !parents.iter().any(|parent| parent == after_parent)
+    {
+        parents.push(after_parent.to_path_buf());
+    }
+    parents
+}
+
+fn path_move_paths_overlap(
+    first_before: &Path,
+    first_after: &Path,
+    second_before: &Path,
+    second_after: &Path,
+) -> bool {
+    [first_before, first_after].into_iter().any(|first| {
+        [second_before, second_after]
+            .into_iter()
+            .any(|second| first.starts_with(second) || second.starts_with(first))
+    })
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum RenameUndoState {
+enum PathMoveUndoState {
     Available,
     UndoQueued,
     Undone,
     Unavailable { reason: String },
 }
 
-fn rename_undo_action_is_available(
+fn path_move_undo_action_is_available(
     status: OperationStatus,
-    state: Option<&RenameUndoState>,
+    state: Option<&PathMoveUndoState>,
 ) -> bool {
-    status == OperationStatus::Completed && matches!(state, Some(RenameUndoState::Available))
+    status == OperationStatus::Completed && matches!(state, Some(PathMoveUndoState::Available))
 }
 
 fn rename_selection_for_tab(
@@ -737,6 +888,7 @@ fn rename_selection_for_tab(
 struct RetainedMoveActivity {
     transaction_id: [u8; 16],
     phase: &'static str,
+    recovery_available: bool,
 }
 
 impl RetainedMoveActivity {
@@ -756,6 +908,7 @@ fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) 
                 .into_iter()
                 .map(|transaction| RetainedMoveActivity {
                     transaction_id: transaction.transaction_id,
+                    recovery_available: transaction.phase == JournalPhase::PendingDestination,
                     phase: match transaction.phase {
                         JournalPhase::Prepared => "prepared",
                         JournalPhase::ClaimIntent => "claim intent",
@@ -777,7 +930,35 @@ fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) 
     }
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(any(target_os = "windows", test))]
+fn windows_retained_move_activity(
+    transaction: ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction,
+) -> RetainedMoveActivity {
+    RetainedMoveActivity {
+        transaction_id: transaction.transaction_id,
+        phase: match transaction.kind {
+            WindowsMoveTransactionKind::SameVolumeOverwrite => "same-volume overwrite",
+            WindowsMoveTransactionKind::CrossVolume => "cross-volume recovery disabled",
+        },
+        recovery_available: transaction.recovery_available,
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) {
+    match discover_retained_move_transactions() {
+        Ok(transactions) => (
+            transactions
+                .into_iter()
+                .map(windows_retained_move_activity)
+                .collect(),
+            None,
+        ),
+        Err(error) => (Vec::new(), Some(error.to_string())),
+    }
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
 fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) {
     (Vec::new(), None)
 }
@@ -930,11 +1111,115 @@ struct PreviewOverlay {
     spreadsheet_sheet_id: Option<String>,
     text_editor: Option<PreviewTextEditor>,
     text_edit_discard_confirmation: bool,
+    #[cfg(target_os = "linux")]
+    media_playback: Option<PreviewMediaPlayback>,
     /// The Space press that opens a native child viewport can also be
     /// delivered to that viewport. Ignore Space briefly after opening so that
     /// press cannot immediately close it. A time guard does not depend on the
     /// child viewport receiving the corresponding key-release event.
     space_close_ready_at: Option<Instant>,
+}
+
+#[cfg(target_os = "linux")]
+struct PreviewMediaPlayback {
+    path: PathBuf,
+    session: Option<ottrin_preview::MediaPlaybackSession>,
+    status: PreviewMediaPlaybackStatus,
+    texture: Option<egui::TextureHandle>,
+}
+
+#[cfg(target_os = "linux")]
+impl std::fmt::Debug for PreviewMediaPlayback {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("PreviewMediaPlayback")
+            .field("path", &self.path)
+            .field("session", &self.session)
+            .field("status", &self.status)
+            .field("has_texture", &self.texture.is_some())
+            .finish()
+    }
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum PreviewMediaPlaybackStatus {
+    Loading,
+    Playing,
+    Paused,
+    Ended,
+    Unavailable(String),
+    Failed(String),
+}
+
+#[cfg(target_os = "linux")]
+impl PreviewMediaPlayback {
+    fn start(path: PathBuf) -> Self {
+        match ottrin_preview::admit_media_playback_source(&path) {
+            Ok(source) => match ottrin_preview::start_media_playback(source) {
+                Ok(session) => Self {
+                    path,
+                    session: Some(session),
+                    status: PreviewMediaPlaybackStatus::Loading,
+                    texture: None,
+                },
+                Err(error) => Self {
+                    path,
+                    session: None,
+                    status: PreviewMediaPlaybackStatus::Unavailable(error.to_string()),
+                    texture: None,
+                },
+            },
+            Err(error) => Self {
+                path,
+                session: None,
+                status: PreviewMediaPlaybackStatus::Unavailable(error.to_string()),
+                texture: None,
+            },
+        }
+    }
+
+    fn poll(&mut self, ctx: &Context) {
+        let Some(session) = self.session.as_ref() else {
+            return;
+        };
+        while let Ok(event) = session.try_recv() {
+            match event {
+                ottrin_preview::MediaPlaybackEvent::Playing => {
+                    self.status = PreviewMediaPlaybackStatus::Playing;
+                }
+                ottrin_preview::MediaPlaybackEvent::Paused => {
+                    self.status = PreviewMediaPlaybackStatus::Paused;
+                }
+                ottrin_preview::MediaPlaybackEvent::Ended => {
+                    self.status = PreviewMediaPlaybackStatus::Ended;
+                }
+                ottrin_preview::MediaPlaybackEvent::Frame(frame) => {
+                    let image = egui::ColorImage::from_rgba_unmultiplied(
+                        [frame.width as usize, frame.height as usize],
+                        &frame.rgba,
+                    );
+                    self.texture = Some(ctx.load_texture(
+                        "quick-inspector-media-frame",
+                        image,
+                        egui::TextureOptions::LINEAR,
+                    ));
+                }
+                ottrin_preview::MediaPlaybackEvent::Unavailable(failure) => {
+                    self.status =
+                        PreviewMediaPlaybackStatus::Unavailable(failure.user_message().to_string());
+                }
+                ottrin_preview::MediaPlaybackEvent::Failed(error) => {
+                    self.status = PreviewMediaPlaybackStatus::Failed(format!(
+                        "System GStreamer could not play this file: {error}. This does not mean the file is invalid. Ottrin does not install codecs."
+                    ));
+                }
+            }
+        }
+        if self.status == PreviewMediaPlaybackStatus::Playing {
+            ctx.request_repaint_after(Duration::from_millis(16));
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -961,6 +1246,7 @@ struct PreviewJobRequest {
     obj_source_generation: Option<ottrin_preview::ObjPreviewSourceGeneration>,
     ply_source_generation: Option<ottrin_preview::PlyPreviewSourceGeneration>,
     office_source_generation: Option<ottrin_preview::OfficePreviewSourceGeneration>,
+    office_provider: Option<ottrin_preview::DetectedInstalledLibreOffice>,
     video_source: Option<ottrin_preview::AuthorizedVideoSource>,
     cancellation: Arc<AtomicBool>,
     request_id: u64,
@@ -973,6 +1259,7 @@ struct PreviewJobSources {
     obj: Option<ottrin_preview::ObjPreviewSourceGeneration>,
     ply: Option<ottrin_preview::PlyPreviewSourceGeneration>,
     office: Option<ottrin_preview::OfficePreviewSourceGeneration>,
+    office_provider: Option<ottrin_preview::DetectedInstalledLibreOffice>,
     video: Option<ottrin_preview::AuthorizedVideoSource>,
 }
 
@@ -988,9 +1275,19 @@ struct PreviewJobResponse {
     ply_source_generation: Option<ottrin_preview::PlyPreviewSourceGeneration>,
     office_source_generation: Option<ottrin_preview::OfficePreviewSourceGeneration>,
     video_source_generation: Option<ottrin_preview::VideoThumbnailSourceGeneration>,
+    office_render: Option<OfficeRenderedPage>,
     request_id: u64,
     bytes: Option<Vec<u8>>,
     error: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+struct OfficeRenderedPage {
+    source_path: PathBuf,
+    source_generation: ottrin_preview::OfficePreviewSourceGeneration,
+    label: String,
+    page_count: usize,
+    cache_identity: ottrin_preview::OfficeRenderCacheIdentity,
 }
 
 /// A UI request is distinct from the immutable cache entry it expects. A file
@@ -1084,32 +1381,17 @@ impl PreviewRequestScheduler {
         }
     }
 
-    /// A listing refresh is the local filesystem-change boundary for preview
-    /// requests. It must make an older worker response ineligible even when a
-    /// file changes A -> B -> A and therefore returns to the same logical key.
-    fn invalidate_pptx_in_directory(&mut self, directory: &Path) {
-        let stale = self
-            .current
-            .keys()
-            .filter(|slot| {
-                ottrin_preview::is_pptx_visual_path(&slot.path)
-                    && slot.path.parent() == Some(directory)
-            })
-            .cloned()
-            .collect::<Vec<_>>();
-        for slot in stale {
-            if let Some(state) = self.current.remove(&slot) {
-                state.cancellation.store(true, Ordering::Release);
-            }
-            self.inflight.remove(&slot);
-        }
-    }
-
     fn cancellation(&self, slot: &PreviewRequestSlot, request_id: u64) -> Option<Arc<AtomicBool>> {
         self.current
             .get(slot)
             .filter(|state| state.request_id == request_id)
             .map(|state| Arc::clone(&state.cancellation))
+    }
+
+    fn is_inflight_for(&self, path: &Path, page_index: usize) -> bool {
+        self.inflight
+            .iter()
+            .any(|slot| slot.path == path && slot.page_index == page_index)
     }
 
     fn accept_response(
@@ -1141,6 +1423,49 @@ struct VisualPreviewRenderSpec {
     page_index: usize,
     fit: bool,
     zoom: f32,
+}
+
+impl VisualPreviewRenderSpec {
+    fn fit_bounds(self, kind: PreviewKind) -> Vec2 {
+        if kind == PreviewKind::Pdf {
+            Vec2::new(self.max_size.x, f32::INFINITY)
+        } else {
+            self.max_size
+        }
+    }
+}
+
+fn width_fit_size(source_size: Vec2, bounds: Vec2) -> Option<Vec2> {
+    (bounds.y.is_infinite() && source_size.x > 0.0).then(|| {
+        let scale = bounds.x / source_size.x;
+        Vec2::new(bounds.x, source_size.y * scale)
+    })
+}
+
+fn preview_image_with_fit_bounds(
+    uri: String,
+    bytes: Vec<u8>,
+    bounds: Vec2,
+    corner_radius: u8,
+) -> egui::Image<'static> {
+    let width_fit = bounds
+        .y
+        .is_infinite()
+        .then(|| {
+            image::load_from_memory(&bytes).ok().and_then(|decoded| {
+                width_fit_size(
+                    Vec2::new(decoded.width() as f32, decoded.height() as f32),
+                    bounds,
+                )
+            })
+        })
+        .flatten();
+    let image = egui::Image::from_bytes(uri, bytes).corner_radius(corner_radius);
+    if let Some(size) = width_fit {
+        image.fit_to_exact_size(size)
+    } else {
+        image.max_width(bounds.x).max_height(bounds.y)
+    }
 }
 
 #[derive(Debug, Default)]
@@ -1288,14 +1613,92 @@ fn loading_preview_data(path: &Path) -> PreviewData {
             .to_string(),
         kind: PreviewKind::Unsupported,
         body: "Loading preview…".to_string(),
+        document: None,
         spreadsheet: None,
         open_external: false,
     }
 }
 
+#[cfg(test)]
+static NEXT_TEST_SEARCH_STORE_ID: AtomicU64 = AtomicU64::new(1);
+
+#[cfg(test)]
+fn test_search_store_path_in(project: &Path, process_id: u32, id: u64) -> PathBuf {
+    project
+        .join("target/test-state/ottrin-ui-search")
+        .join(format!("{process_id}-{id}"))
+        .join("search.db")
+}
+
+#[cfg(test)]
+fn test_search_store_path() -> PathBuf {
+    test_search_store_path_in(
+        &std::env::current_dir().expect("Ottrin UI tests require the project directory"),
+        std::process::id(),
+        NEXT_TEST_SEARCH_STORE_ID.fetch_add(1, Ordering::Relaxed),
+    )
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct AdministratorSessionIndexPaths {
+    directory: PathBuf,
+    store: PathBuf,
+}
+
+#[cfg(unix)]
+fn administrator_session_index_paths_in(
+    runtime: &Path,
+    process_id: u32,
+) -> AdministratorSessionIndexPaths {
+    let directory = runtime
+        .join("ottrin-administrator")
+        .join(format!("session-{process_id}"));
+    AdministratorSessionIndexPaths {
+        store: directory.join("search.db"),
+        directory,
+    }
+}
+
+#[cfg(unix)]
+fn remove_administrator_session_index_directory(
+    paths: &AdministratorSessionIndexPaths,
+) -> Result<(), String> {
+    match std::fs::remove_dir_all(&paths.directory) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(format!(
+            "Could not remove the Administrator session index at {}: {error}",
+            paths.directory.display()
+        )),
+    }
+}
+
+fn administrator_session_search_config(config: &SearchConfig) -> Result<SearchConfig, String> {
+    if config.include_roots.is_empty() {
+        return Err(
+            "Select at least one location before starting an Administrator session index."
+                .to_string(),
+        );
+    }
+    let mut session = config.clone();
+    session.active_indexed_volume_roots.clear();
+    session.content_indexing_enabled = false;
+    session.content_include_roots.clear();
+    session.content_exclude_roots.clear();
+    Ok(session)
+}
+
+#[cfg(all(unix, not(test)))]
+struct AdministratorSessionIndex {
+    service: SearchService,
+    paths: AdministratorSessionIndexPaths,
+}
+
 struct UiSearchService {
     #[cfg(all(unix, not(test)))]
-    client: SearchDaemonClient,
+    client: Option<SearchDaemonClient>,
+    #[cfg(all(unix, not(test)))]
+    administrator_session: Option<AdministratorSessionIndex>,
     #[cfg(all(unix, not(test)))]
     diagnostics_cache: Mutex<(Instant, SearchIndexDiagnostics)>,
     #[cfg(any(not(unix), test))]
@@ -1306,13 +1709,26 @@ impl UiSearchService {
     fn new(config: SearchConfig) -> Self {
         #[cfg(all(unix, not(test)))]
         {
-            let client = SearchDaemonClient::connect_default()
-                .expect("the package-owned index daemon path was validated before GUI startup");
-            let diagnostics = client
-                .diagnostics()
-                .unwrap_or_else(SearchIndexDiagnostics::unavailable);
+            // SAFETY: geteuid has no preconditions and no side effects.
+            let client = daemon_connection_required(unsafe { libc::geteuid() }).then(|| {
+                SearchDaemonClient::connect_default()
+                    .expect("the package-owned index daemon path was validated before GUI startup")
+            });
+            let diagnostics = client.as_ref().map_or_else(
+                || {
+                    SearchIndexDiagnostics::unavailable(
+                        "Administrator indexing is disabled until explicitly enabled".to_string(),
+                    )
+                },
+                |client| {
+                    client
+                        .diagnostics()
+                        .unwrap_or_else(SearchIndexDiagnostics::unavailable)
+                },
+            );
             let mut service = Self {
                 client,
+                administrator_session: None,
                 diagnostics_cache: Mutex::new((Instant::now(), diagnostics)),
             };
             service.update_config(config);
@@ -1320,6 +1736,14 @@ impl UiSearchService {
         }
         #[cfg(any(not(unix), test))]
         {
+            #[cfg(test)]
+            {
+                let store = test_search_store_path();
+                Self {
+                    local: SearchService::new_with_store_path(config, store),
+                }
+            }
+            #[cfg(all(not(unix), not(test)))]
             Self {
                 local: SearchService::new(config),
             }
@@ -1332,13 +1756,160 @@ impl UiSearchService {
     }
 
     fn stop(&mut self) {
+        #[cfg(all(unix, not(test)))]
+        if let Some(mut session) = self.administrator_session.take() {
+            session.service.stop();
+            let _ = remove_administrator_session_index_directory(&session.paths);
+        }
         #[cfg(any(not(unix), test))]
         self.local.stop();
     }
 
+    #[cfg(all(unix, not(test)))]
+    fn start_administrator_session_index(&mut self, config: &SearchConfig) -> Result<(), String> {
+        // SAFETY: geteuid has no preconditions and no side effects.
+        if unsafe { libc::geteuid() } != 0 {
+            return Err(
+                "Administrator session indexing is available only in an Administrator session."
+                    .to_string(),
+            );
+        }
+        if self.administrator_session.is_some() {
+            return Ok(());
+        }
+        let config = administrator_session_search_config(config)?;
+        let paths =
+            administrator_session_index_paths_in(Path::new("/run/user/0"), std::process::id());
+        let namespace = paths
+            .directory
+            .parent()
+            .expect("Administrator session index has a namespace");
+        std::fs::create_dir_all(namespace).map_err(|error| {
+            format!("Could not create the private Administrator index namespace: {error}")
+        })?;
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(namespace, std::fs::Permissions::from_mode(0o700)).map_err(
+            |error| format!("Could not protect the Administrator index namespace: {error}"),
+        )?;
+        std::fs::create_dir(&paths.directory).map_err(|error| {
+            format!("Could not create the private Administrator session index directory: {error}")
+        })?;
+        if let Err(error) =
+            std::fs::set_permissions(&paths.directory, std::fs::Permissions::from_mode(0o700))
+        {
+            let _ = std::fs::remove_dir(&paths.directory);
+            return Err(format!(
+                "Could not protect the Administrator session index directory: {error}"
+            ));
+        }
+        let mut service = SearchService::new_with_store_path(config, paths.store.clone());
+        service.start();
+        if let Some(error) = service
+            .diagnostics()
+            .last_error
+            .filter(|_| service.handle().diagnostics().status == SearchIndexStatus::Unavailable)
+        {
+            service.stop();
+            let _ = remove_administrator_session_index_directory(&paths);
+            return Err(error);
+        }
+        *self.diagnostics_cache.lock().expect("search diagnostics") =
+            (Instant::now(), service.diagnostics());
+        self.client = None;
+        self.administrator_session = Some(AdministratorSessionIndex { service, paths });
+        Ok(())
+    }
+
+    #[cfg(all(unix, not(test)))]
+    fn stop_administrator_session_index(&mut self) {
+        if let Some(mut session) = self.administrator_session.take() {
+            session.service.stop();
+            let _ = remove_administrator_session_index_directory(&session.paths);
+        }
+    }
+
+    #[cfg(any(not(unix), test))]
+    fn stop_administrator_session_index(&mut self) {}
+
+    #[cfg(all(unix, not(test)))]
+    fn connect_administrator_persistent_index(&mut self) -> Result<(), String> {
+        // SAFETY: geteuid has no preconditions and no side effects.
+        if unsafe { libc::geteuid() } != 0 {
+            return Err(
+                "Persistent Administrator indexing is available only in an Administrator session."
+                    .to_string(),
+            );
+        }
+        let deadline = Instant::now() + Duration::from_secs(2);
+        loop {
+            if let Ok(client) = SearchDaemonClient::connect_default()
+                && client.ping().is_ok()
+            {
+                let diagnostics = client.diagnostics()?;
+                self.client = Some(client);
+                *self.diagnostics_cache.lock().expect("search diagnostics") =
+                    (Instant::now(), diagnostics);
+                return Ok(());
+            }
+            if Instant::now() >= deadline {
+                return Err("Persistent Administrator index service was enabled but its private socket did not become ready within 2 seconds.".to_string());
+            }
+            std::thread::sleep(Duration::from_millis(20));
+        }
+    }
+
+    #[cfg(any(not(unix), test))]
+    fn connect_administrator_persistent_index(&mut self) -> Result<(), String> {
+        Err("Persistent Administrator indexing is available only on Unix.".to_string())
+    }
+
+    fn disconnect_administrator_persistent_index(&mut self) {
+        #[cfg(all(unix, not(test)))]
+        {
+            self.client = None;
+            *self.diagnostics_cache.lock().expect("search diagnostics") = (
+                Instant::now(),
+                SearchIndexDiagnostics::unavailable(
+                    "Administrator indexing is disabled until explicitly enabled".to_string(),
+                ),
+            );
+        }
+    }
+
+    #[cfg(any(not(unix), test))]
+    fn start_administrator_session_index(&mut self, _config: &SearchConfig) -> Result<(), String> {
+        Err("Administrator session indexing is available only on Unix.".to_string())
+    }
+
+    fn administrator_session_index_active(&self) -> bool {
+        #[cfg(all(unix, not(test)))]
+        return self.administrator_session.is_some();
+        #[cfg(any(not(unix), test))]
+        false
+    }
+
     fn update_config(&mut self, config: SearchConfig) {
         #[cfg(all(unix, not(test)))]
-        if let Err(error) = self.client.update_config(config) {
+        if self.administrator_session.is_some() {
+            match administrator_session_search_config(&config) {
+                Ok(config) => self
+                    .administrator_session
+                    .as_mut()
+                    .expect("checked Administrator session")
+                    .service
+                    .update_config(config),
+                Err(error) => {
+                    if let Some(mut session) = self.administrator_session.take() {
+                        session.service.stop();
+                        let _ = remove_administrator_session_index_directory(&session.paths);
+                    }
+                    *self.diagnostics_cache.lock().expect("search diagnostics") =
+                        (Instant::now(), SearchIndexDiagnostics::unavailable(error));
+                }
+            }
+        } else if let Some(client) = &self.client
+            && let Err(error) = client.update_config(config)
+        {
             self.record_daemon_error(error);
         }
         #[cfg(any(not(unix), test))]
@@ -1349,8 +1920,14 @@ impl UiSearchService {
         #[cfg(all(unix, not(test)))]
         {
             let mut cache = self.diagnostics_cache.lock().expect("search diagnostics");
+            if let Some(session) = &self.administrator_session {
+                return session.service.diagnostics();
+            }
             if cache.0.elapsed() >= Duration::from_millis(100) {
-                match self.client.diagnostics() {
+                let Some(client) = &self.client else {
+                    return cache.1.clone();
+                };
+                match client.diagnostics() {
                     Ok(diagnostics) => *cache = (Instant::now(), diagnostics),
                     Err(error) => {
                         cache.0 = Instant::now();
@@ -1372,6 +1949,10 @@ impl UiSearchService {
         {
             UiSearchHandle {
                 remote: self.client.clone(),
+                administrator_session: self
+                    .administrator_session
+                    .as_ref()
+                    .map(|session| session.service.handle()),
             }
         }
         #[cfg(any(not(unix), test))]
@@ -1385,10 +1966,13 @@ impl UiSearchService {
     fn rebuild_index(&mut self) {
         #[cfg(all(unix, not(test)))]
         {
-            let client = self.client.clone();
-            std::thread::spawn(move || {
-                let _ = client.rebuild();
-            });
+            if let Some(session) = &mut self.administrator_session {
+                session.service.rebuild_index();
+            } else if let Some(client) = self.client.clone() {
+                std::thread::spawn(move || {
+                    let _ = client.rebuild();
+                });
+            }
         }
         #[cfg(any(not(unix), test))]
         self.local.rebuild_index();
@@ -1397,8 +1981,17 @@ impl UiSearchService {
     fn clear_storage(&mut self) -> Result<u64, String> {
         #[cfg(all(unix, not(test)))]
         {
-            let bytes = self.client.clear_storage()?;
-            self.client.shutdown()?;
+            if let Some(mut session) = self.administrator_session.take() {
+                let bytes = session.service.clear_storage()?;
+                session.service.stop();
+                remove_administrator_session_index_directory(&session.paths)?;
+                return Ok(bytes);
+            }
+            let Some(client) = &self.client else {
+                return Ok(0);
+            };
+            let bytes = client.clear_storage()?;
+            client.shutdown()?;
             Ok(bytes)
         }
         #[cfg(any(not(unix), test))]
@@ -1418,7 +2011,9 @@ impl UiSearchService {
 
 struct UiSearchHandle {
     #[cfg(all(unix, not(test)))]
-    remote: SearchDaemonClient,
+    remote: Option<SearchDaemonClient>,
+    #[cfg(all(unix, not(test)))]
+    administrator_session: Option<SearchHandle>,
     #[cfg(any(not(unix), test))]
     local: SearchHandle,
 }
@@ -1434,7 +2029,15 @@ impl UiSearchHandle {
             if cancelled.load(Ordering::Acquire) {
                 return unavailable_search_result("Search cancelled".to_string());
             }
-            match self.remote.query(query) {
+            if let Some(session) = &self.administrator_session {
+                return session.query_cancellable_with_diagnostics(query, cancelled);
+            }
+            let Some(remote) = &self.remote else {
+                return unavailable_search_result(
+                    "Administrator indexing is disabled until explicitly enabled".to_string(),
+                );
+            };
+            match remote.query(query) {
                 Ok(result) if !cancelled.load(Ordering::Acquire) => result,
                 Ok(_) => unavailable_search_result("Search cancelled".to_string()),
                 Err(error) => unavailable_search_result(error),
@@ -1459,6 +2062,21 @@ fn unavailable_search_result(error: String) -> SearchQueryResult {
         },
         warning: None,
     }
+}
+
+#[cfg(unix)]
+fn daemon_connection_required(effective_uid: u32) -> bool {
+    effective_uid != 0
+}
+
+fn is_administrator_session() -> bool {
+    #[cfg(unix)]
+    {
+        // SAFETY: geteuid has no preconditions and no side effects.
+        unsafe { libc::geteuid() == 0 }
+    }
+    #[cfg(not(unix))]
+    false
 }
 
 #[derive(Debug)]
@@ -1580,6 +2198,14 @@ enum SettingsTab {
     Cache,
 }
 
+fn initial_settings_state(config: &AppConfig) -> (bool, SettingsTab) {
+    if config.search_setup_completed {
+        (false, SettingsTab::General)
+    } else {
+        (true, SettingsTab::Search)
+    }
+}
+
 type SettingsNavItem = (SettingsTab, &'static str, &'static str);
 type SettingsNavGroup = (&'static str, &'static [SettingsNavItem]);
 
@@ -1638,6 +2264,24 @@ struct ThemePresetCardSize {
     width: f32,
     card_h: f32,
     thumb_h: f32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct ThemeEditorActionModel {
+    allow_scope_changes: bool,
+    show_save_as: bool,
+    show_reset: bool,
+}
+
+impl ThemeEditorActionModel {
+    fn for_source(source_saved_idx: Option<usize>) -> Self {
+        let editing_saved_theme = source_saved_idx.is_some();
+        Self {
+            allow_scope_changes: !editing_saved_theme,
+            show_save_as: editing_saved_theme,
+            show_reset: !editing_saved_theme,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -1752,6 +2396,8 @@ struct SearchUiState {
     latest_request_id: u64,
     search_inflight: bool,
     sqlite_schedule_status: Option<LocateScheduleStatus>,
+    administrator_persistent_confirmation: bool,
+    administrator_purge_on_remove: bool,
 }
 
 impl Default for SearchUiState {
@@ -1785,8 +2431,30 @@ impl Default for SearchUiState {
             latest_request_id: 0,
             search_inflight: false,
             sqlite_schedule_status: None,
+            administrator_persistent_confirmation: false,
+            administrator_purge_on_remove: false,
         }
     }
+}
+
+fn administrator_persistent_index_disclosure(config: &SearchConfig, database_bytes: u64) -> String {
+    let scope = config
+        .include_roots
+        .iter()
+        .map(|root| root.display().to_string())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let storage = if database_bytes == 0 {
+        "No protected database exists yet".to_string()
+    } else {
+        format!(
+            "Current protected database size: {}",
+            format_size(database_bytes)
+        )
+    };
+    format!(
+        "Selected metadata scope: {scope}. {storage}. The ordinary user index may keep running, so the machine can have two independent indexers, databases, watcher sets, storage footprints, and refresh work. Content extraction stays off for the persistent Administrator index."
+    )
 }
 
 fn cached_sqlite_schedule_status(
@@ -1794,6 +2462,18 @@ fn cached_sqlite_schedule_status(
     probe: impl FnOnce() -> LocateScheduleStatus,
 ) -> LocateScheduleStatus {
     cached.get_or_insert_with(probe).clone()
+}
+
+fn search_storage_detail(database_bytes: u64, wal_bytes: u64) -> String {
+    match (database_bytes, wal_bytes) {
+        (0, 0) => "No database stored yet".to_string(),
+        (database, 0) => format!("{} database", format_size(database)),
+        (database, wal) => format!(
+            "{} database + {} live changes",
+            format_size(database),
+            format_size(wal)
+        ),
+    }
 }
 
 fn advance_search_snapshot(last_seen: &mut u64, current: u64, has_query: bool) -> bool {
@@ -1818,8 +2498,8 @@ pub struct OttrinApp {
     // File operation results
     op_tx: Sender<OpResult>,
     op_rx: Receiver<OpResult>,
-    rename_undo_tx: Sender<RenameUndoResult>,
-    rename_undo_rx: Receiver<RenameUndoResult>,
+    path_move_undo_tx: Sender<PathMoveUndoResult>,
+    path_move_undo_rx: Receiver<PathMoveUndoResult>,
     trash_tx: Sender<TrashLoadResponse>,
     trash_rx: Receiver<TrashLoadResponse>,
     trash_empty_tx: Sender<TrashEmptyResponse>,
@@ -1835,6 +2515,10 @@ pub struct OttrinApp {
     info_panel_preview: Option<(PathBuf, PreviewData)>,
     info_panel_details: Option<(PathBuf, InfoPanelDetails)>,
     image_preview_cache: HashMap<String, ImagePreviewCacheEntry>,
+    office_rendered_pages: HashMap<String, OfficeRenderedPage>,
+    office_provider: Arc<Mutex<Option<ottrin_preview::DetectedInstalledLibreOffice>>>,
+    failed_office_provider_generations:
+        HashMap<PathBuf, ottrin_preview::OfficePreviewSourceGeneration>,
     preview_tx: Sender<PreviewJobRequest>,
     preview_rx: Receiver<PreviewJobResponse>,
     preview_scheduler: PreviewRequestScheduler,
@@ -1989,9 +2673,27 @@ impl OttrinApp {
         app
     }
 
+    /// Open the active tab at a directory supplied by the launcher.
+    pub fn open_directory_at_startup(&mut self, path: PathBuf) {
+        let tab_id = self.state.active_tab().id;
+        self.navigate_tab_to(tab_id, path);
+    }
+
+    /// Open a file's parent in the main window and reveal that file when its listing arrives.
+    pub fn select_file_at_startup(&mut self, path: PathBuf) {
+        let Some(parent) = path.parent().map(Path::to_path_buf) else {
+            return;
+        };
+        let tab_id = self.state.active_tab().id;
+        self.tab_ui.entry(tab_id).or_default().pending_select_path = Some(path);
+        self.navigate_tab_to(tab_id, parent);
+    }
+
     /// Enter standalone Quick Inspector mode while retaining the production preview loader,
-    /// cache, renderer, and error presentation used by Space in the file manager.
+    /// cache, renderer, and error presentation used by Space in the file manager. The file's
+    /// immediate parent is loaded as navigation context so arrows can move through siblings.
     pub fn open_quick_inspector_file(&mut self, path: PathBuf) {
+        self.select_file_at_startup(path.clone());
         let metadata = std::fs::metadata(&path).ok();
         let modified_unix_secs = metadata
             .as_ref()
@@ -2014,6 +2716,18 @@ impl OttrinApp {
         self.open_preview_entry(entry);
     }
 
+    fn show_quick_inspector_in_main(&mut self) -> bool {
+        if !self.quick_inspector_only {
+            return false;
+        }
+        let Some(path) = self.preview.path.clone() else {
+            return false;
+        };
+        self.quick_inspector_only = false;
+        self.select_file_at_startup(path);
+        true
+    }
+
     fn new_with_config_and_graphics_status(
         config: AppConfig,
         graphics_runtime: GraphicsRuntimeStatus,
@@ -2021,13 +2735,27 @@ impl OttrinApp {
         let (listing_tx, listing_worker_rx) = mpsc::channel::<ListingRequest>();
         let (listing_worker_tx, listing_rx) = mpsc::channel::<ListingResponse>();
         let (op_tx, op_rx) = mpsc::channel::<OpResult>();
-        let (rename_undo_tx, rename_undo_rx) = mpsc::channel::<RenameUndoResult>();
+        let (path_move_undo_tx, path_move_undo_rx) = mpsc::channel::<PathMoveUndoResult>();
         let (trash_tx, trash_rx) = mpsc::channel::<TrashLoadResponse>();
         let (trash_empty_tx, trash_empty_rx) = mpsc::channel::<TrashEmptyResponse>();
 
         let (hash_tx, hash_rx) = mpsc::channel::<(PathBuf, Result<String, String>)>();
         let (preview_req_tx, preview_req_rx) = mpsc::channel::<PreviewJobRequest>();
         let (preview_res_tx, preview_res_rx) = mpsc::channel::<PreviewJobResponse>();
+        let office_provider = Arc::new(Mutex::new(None));
+        #[cfg(all(target_os = "linux", not(test)))]
+        {
+            let office_provider = Arc::clone(&office_provider);
+            std::thread::spawn(move || {
+                let cancelled = AtomicBool::new(false);
+                if let Ok(detected) = ottrin_preview::detect_installed_libreoffice(
+                    &ottrin_preview::LinuxBubblewrapIsolation,
+                    &cancelled,
+                ) {
+                    *office_provider.lock().expect("Office provider cache") = Some(detected);
+                }
+            });
+        }
         let (preview_load_tx, preview_load_rx) =
             spawn_preview_loader_with(load_preview_cancellable);
         let (search_result_tx, search_result_rx) = mpsc::channel::<SearchQueryResponse>();
@@ -2049,15 +2777,37 @@ impl OttrinApp {
                 let sqlite_candidate = ottrin_preview::is_sqlite_preview_candidate(&req.path);
                 let obj_candidate = ottrin_preview::is_obj_path(&req.path);
                 let ply_candidate = ottrin_preview::is_ply_path(&req.path);
-                let pptx_candidate = ottrin_preview::is_pptx_visual_path(&req.path);
                 let office_candidate = ottrin_preview::is_office_visual_path(&req.path);
+                let office_provider_candidate =
+                    req.office_provider.as_ref().is_some_and(|detected| {
+                        ottrin_preview::office_format_for_path(&req.path)
+                            .is_some_and(|format| detected.capability.formats.contains(&format))
+                    });
                 let video_candidate = ottrin_preview::preview_profile(&req.path).visual_renderer()
                     == ottrin_preview::PreviewVisualRenderer::Video;
+                let html_candidate = ottrin_preview::preview_profile(&req.path).visual_renderer()
+                    == ottrin_preview::PreviewVisualRenderer::Html;
+                let eps_candidate = ottrin_preview::preview_profile(&req.path).visual_renderer()
+                    == ottrin_preview::PreviewVisualRenderer::Eps;
                 let mut video_source_generation = req
                     .video_source
                     .as_ref()
                     .map(|source| source.generation().clone());
-                let generation_is_current = if video_candidate {
+                let generation_is_current = if office_provider_candidate {
+                    let detected = req.office_provider.as_ref().expect("checked above");
+                    let identity = ottrin_preview::OfficeRenderCacheIdentity {
+                        provider: detected.capability.id,
+                        provider_version: detected.capability.version.clone(),
+                        policy_version: 1,
+                    };
+                    req.cache_key
+                        == office_provider_preview_cache_key(
+                            req.target_dim,
+                            req.page_index,
+                            req.office_source_generation.as_ref(),
+                            &identity,
+                        )
+                } else if video_candidate {
                     req.video_source.as_ref().is_none_or(|source| {
                         req.cache_key
                             == ottrin_preview::video_thumbnail_cache_key(
@@ -2080,6 +2830,10 @@ impl OttrinApp {
                 let selected_pdf_page = req.page_index > 0
                     && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
                 let mut video_error = None;
+                let mut html_error = None;
+                let mut eps_error: Option<String> = None;
+                let mut office_error = None;
+                let mut office_render = None;
                 let bytes = if !generation_is_current
                     || (sqlite_candidate
                         && (req.sqlite_source_generation.is_none()
@@ -2094,12 +2848,89 @@ impl OttrinApp {
                             || req.ply_source_generation
                                 != ottrin_preview::ply_preview_source_generation(&req.path)))
                     || (office_candidate
-                        && !pptx_candidate
                         && (req.office_source_generation.is_none()
                             || req.office_source_generation
                                 != ottrin_preview::office_preview_source_generation(&req.path)))
                 {
                     None
+                } else if office_provider_candidate {
+                    #[cfg(target_os = "linux")]
+                    {
+                        let detected = req.office_provider.as_ref().expect("checked above");
+                        let format = ottrin_preview::office_format_for_path(&req.path)
+                            .expect("checked above");
+                        let render_dimension = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                            PREVIEW_CACHE_BUCKET_XL
+                        } else {
+                            req.target_dim
+                        };
+                        let unique = std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap_or_default()
+                            .as_nanos();
+                        let output_dir = std::env::temp_dir().join(format!(
+                            "ottrin-office-preview-{}-{unique}",
+                            std::process::id()
+                        ));
+                        let rendered = std::fs::create_dir(&output_dir)
+                            .map_err(|error| error.to_string())
+                            .and_then(|()| {
+                                let isolation = ottrin_preview::LinuxBubblewrapIsolation;
+                                let converter = ottrin_preview::InstalledLibreOfficeConverter::new(
+                                    detected.executable.clone(),
+                                    &isolation,
+                                );
+                                let request = ottrin_preview::OfficeRenderRequest {
+                                    source_path: req.path.clone(),
+                                    format,
+                                    private_output_dir: output_dir.clone(),
+                                    policy: ottrin_preview::OfficeRenderPolicy {
+                                        version: 1,
+                                        max_input_bytes: 256 * 1024 * 1024,
+                                        max_output_bytes: 512 * 1024 * 1024,
+                                        max_pages: 1000,
+                                        timeout: Duration::from_secs(60),
+                                    },
+                                };
+                                ottrin_preview::render_office_preview_page(
+                                    std::slice::from_ref(&detected.capability),
+                                    &request,
+                                    &converter,
+                                    req.page_index,
+                                    render_dimension,
+                                    req.cancellation.as_ref(),
+                                    |pdf, page, dimension| {
+                                        ottrin_preview::render_pdf_page_png(pdf, page, dimension)
+                                            .map_err(|error| error.to_string())
+                                    },
+                                )
+                                .map_err(|error| error.to_string())
+                            });
+                        let _ = std::fs::remove_dir_all(&output_dir);
+                        match rendered {
+                            Ok(rendered) => {
+                                office_render = Some(OfficeRenderedPage {
+                                    source_path: req.path.clone(),
+                                    source_generation: req
+                                        .office_source_generation
+                                        .clone()
+                                        .expect("provider requests require a source generation"),
+                                    label: rendered.provider_label,
+                                    page_count: rendered.page_count,
+                                    cache_identity: rendered.cache_identity,
+                                });
+                                Some(rendered.png)
+                            }
+                            Err(error) => {
+                                office_error = Some(error);
+                                None
+                            }
+                        }
+                    }
+                    #[cfg(not(target_os = "linux"))]
+                    {
+                        None
+                    }
                 } else if video_candidate {
                     if req.target_dim != PREVIEW_CACHE_ORIGINAL
                         && let Some(cached) = load_cached_video_thumbnail(&req.cache_key)
@@ -2128,13 +2959,16 @@ impl OttrinApp {
                                 Some(rendered.png)
                             }
                             Err(error) => {
-                                video_error = Some(error.to_string());
+                                video_error = Some(error.fallback_message().to_string());
                                 None
                             }
                         }
                     } else {
-                        video_error =
-                            Some(ottrin_preview::VideoThumbnailError::AdmissionFailed.to_string());
+                        video_error = Some(
+                            ottrin_preview::VideoThumbnailError::AdmissionFailed
+                                .fallback_message()
+                                .to_string(),
+                        );
                         None
                     }
                 } else if sqlite_candidate {
@@ -2157,6 +2991,7 @@ impl OttrinApp {
                             ply_source_generation: req.ply_source_generation,
                             office_source_generation: req.office_source_generation,
                             video_source_generation: None,
+                            office_render: None,
                             request_id: req.request_id,
                             bytes: Some(cached),
                             error: None,
@@ -2211,6 +3046,7 @@ impl OttrinApp {
                             ply_source_generation: req.ply_source_generation,
                             office_source_generation: req.office_source_generation,
                             video_source_generation: None,
+                            office_render: None,
                             request_id: req.request_id,
                             bytes: Some(cached),
                             error: None,
@@ -2263,6 +3099,7 @@ impl OttrinApp {
                             ply_source_generation: req.ply_source_generation,
                             office_source_generation: req.office_source_generation,
                             video_source_generation: None,
+                            office_render: None,
                             request_id: req.request_id,
                             bytes: Some(cached),
                             error: None,
@@ -2295,17 +3132,6 @@ impl OttrinApp {
                         }
                         _ => None,
                     }
-                } else if pptx_candidate {
-                    ottrin_preview::render_office_content_preview_png_with_generation(
-                        &req.path,
-                        if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                            PREVIEW_CACHE_BUCKET_XL
-                        } else {
-                            req.target_dim
-                        },
-                    )
-                    .ok()
-                    .map(|rendered| rendered.png)
                 } else if office_candidate {
                     if req.target_dim != PREVIEW_CACHE_ORIGINAL
                         && let Some(cached) = load_cached_thumbnail(
@@ -2326,6 +3152,7 @@ impl OttrinApp {
                             ply_source_generation: req.ply_source_generation,
                             office_source_generation: req.office_source_generation,
                             video_source_generation: None,
+                            office_render: None,
                             request_id: req.request_id,
                             bytes: Some(cached),
                             error: None,
@@ -2358,6 +3185,107 @@ impl OttrinApp {
                         }
                         _ => None,
                     }
+                } else if html_candidate {
+                    #[cfg(target_os = "linux")]
+                    {
+                        let persistent_cache_allowed =
+                            visual_renderer_uses_persistent_thumbnail_cache(
+                                ottrin_preview::PreviewVisualRenderer::Html,
+                            );
+                        if persistent_cache_allowed
+                            && req.target_dim != PREVIEW_CACHE_ORIGINAL
+                            && let Some(cached) = load_cached_thumbnail(
+                                &req.path,
+                                req.target_dim,
+                                req.page_index,
+                                &req.cache_key,
+                            )
+                        {
+                            Some(cached)
+                        } else {
+                            let render_dimension = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                                PREVIEW_CACHE_BUCKET_XL
+                            } else {
+                                req.target_dim
+                            };
+                            match ottrin_preview::render_html_content_preview_png(
+                                &req.path,
+                                render_dimension,
+                            ) {
+                                Ok(bytes) => {
+                                    if persistent_cache_allowed
+                                        && req.target_dim != PREVIEW_CACHE_ORIGINAL
+                                    {
+                                        persist_cached_thumbnail(
+                                            &req.path,
+                                            req.target_dim,
+                                            req.page_index,
+                                            &req.cache_key,
+                                            &bytes,
+                                            req.cache_max_bytes,
+                                        );
+                                    }
+                                    Some(bytes)
+                                }
+                                Err(error) => {
+                                    html_error = Some(error.to_string());
+                                    None
+                                }
+                            }
+                        }
+                    }
+                    #[cfg(not(target_os = "linux"))]
+                    {
+                        None
+                    }
+                } else if eps_candidate {
+                    #[cfg(target_os = "linux")]
+                    {
+                        if req.target_dim != PREVIEW_CACHE_ORIGINAL
+                            && let Some(cached) = load_cached_thumbnail(
+                                &req.path,
+                                req.target_dim,
+                                req.page_index,
+                                &req.cache_key,
+                            )
+                        {
+                            Some(cached)
+                        } else {
+                            let render_dimension = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                                PREVIEW_CACHE_BUCKET_XL
+                            } else {
+                                req.target_dim
+                            };
+                            match ottrin_preview::render_eps_content_preview_png(
+                                &req.path,
+                                render_dimension,
+                            ) {
+                                Ok(bytes) => {
+                                    if req.target_dim != PREVIEW_CACHE_ORIGINAL {
+                                        persist_cached_thumbnail(
+                                            &req.path,
+                                            req.target_dim,
+                                            req.page_index,
+                                            &req.cache_key,
+                                            &bytes,
+                                            req.cache_max_bytes,
+                                        );
+                                    }
+                                    Some(bytes)
+                                }
+                                Err(error) => {
+                                    eps_error = Some(format!(
+                                        "EPS preview unavailable ({error:?}). Open externally to view this file."
+                                    ));
+                                    None
+                                }
+                            }
+                        }
+                    }
+                    #[cfg(not(target_os = "linux"))]
+                    {
+                        None
+                    }
                 } else if req.target_dim == PREVIEW_CACHE_ORIGINAL || selected_pdf_page {
                     full_preview_bytes_at_page(&req.path, PREVIEW_CACHE_BUCKET_XL, req.page_index)
                 } else {
@@ -2383,8 +3311,14 @@ impl OttrinApp {
                         },
                     )
                 };
-                let error = if video_error.is_some() {
+                let error = if office_error.is_some() {
+                    office_error
+                } else if video_error.is_some() {
                     video_error
+                } else if html_error.is_some() {
+                    html_error
+                } else if eps_error.is_some() {
+                    eps_error
                 } else if bytes.is_none() && ottrin_preview::is_svg_path(&req.path) {
                     let target_dim = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
                         PREVIEW_CACHE_BUCKET_XL
@@ -2408,6 +3342,7 @@ impl OttrinApp {
                     ply_source_generation: req.ply_source_generation,
                     office_source_generation: req.office_source_generation,
                     video_source_generation,
+                    office_render,
                     request_id: req.request_id,
                     bytes,
                     error,
@@ -2424,11 +3359,9 @@ impl OttrinApp {
         for tab in &mut state.tabs {
             tab.view_mode = state.config.default_view_mode;
         }
-        if state.config.search.include_roots.is_empty() {
-            state.config.search.include_roots = default_search_roots();
-        }
         state.config.folder_column_widths.clear();
         let search_config = state.config.search.clone();
+        let (show_settings, settings_tab) = initial_settings_state(&state.config);
         let (retained_move_activity, retained_move_activity_error) = load_retained_move_activity();
 
         let show_graphics_compatibility_notice = graphics_runtime.is_windows
@@ -2447,8 +3380,8 @@ impl OttrinApp {
             listing_rx,
             op_tx,
             op_rx,
-            rename_undo_tx,
-            rename_undo_rx,
+            path_move_undo_tx,
+            path_move_undo_rx,
             trash_tx,
             trash_rx,
             trash_empty_tx,
@@ -2462,6 +3395,9 @@ impl OttrinApp {
             info_panel_preview: None,
             info_panel_details: None,
             image_preview_cache: HashMap::new(),
+            office_rendered_pages: HashMap::new(),
+            office_provider,
+            failed_office_provider_generations: HashMap::new(),
             preview_tx: preview_req_tx,
             preview_rx: preview_res_rx,
             preview_scheduler: PreviewRequestScheduler::default(),
@@ -2506,8 +3442,8 @@ impl OttrinApp {
             miller_col_count: 3,
             list_col_px: [360.0, 140.0, 120.0, 180.0],
             show_about: false,
-            show_settings: false,
-            settings_tab: SettingsTab::General,
+            show_settings,
+            settings_tab,
             graphics_runtime,
             show_graphics_compatibility_notice,
             theme_status: None,
@@ -2714,6 +3650,7 @@ impl OttrinApp {
             obj_source_generation: sources.obj,
             ply_source_generation: sources.ply,
             office_source_generation: sources.office,
+            office_provider: sources.office_provider,
             video_source: sources.video,
             cancellation: self
                 .preview_scheduler
@@ -2757,19 +3694,20 @@ impl OttrinApp {
     ) -> Option<egui::Image<'static>> {
         if kind == PreviewKind::Pdf {
             if spec.fit {
+                let fit_bounds = spec.fit_bounds(kind);
                 return self
                     .cached_original_image_preview_widget_for_page(
                         path,
-                        spec.max_size.x,
-                        spec.max_size.y,
+                        fit_bounds.x,
+                        fit_bounds.y,
                         spec.corner_radius,
                         spec.page_index,
                     )
                     .or_else(|| {
                         self.cached_image_preview_widget_for_page(
                             path,
-                            spec.max_size.x,
-                            spec.max_size.y,
+                            fit_bounds.x,
+                            fit_bounds.y,
                             spec.corner_radius,
                             spec.page_index,
                         )
@@ -2802,15 +3740,12 @@ impl OttrinApp {
         )
     }
 
-    fn cached_svg_preview_unavailable_reason(
+    fn cached_visual_preview_unavailable_reason(
         &self,
         path: &Path,
         max_width: f32,
         max_height: f32,
     ) -> Option<String> {
-        if !ottrin_preview::is_svg_path(path) {
-            return None;
-        }
         let max_dim = max_width.max(max_height);
         let target_dim = if max_dim >= 900.0 {
             PREVIEW_CACHE_BUCKET_XL
@@ -2819,11 +3754,72 @@ impl OttrinApp {
         } else {
             PREVIEW_CACHE_BUCKET_SMALL
         };
-        let cache_key = preview_cache_key_for_page(path, target_dim, 0);
+        let video_source_generation = (ottrin_preview::preview_profile(path).visual_renderer()
+            == ottrin_preview::PreviewVisualRenderer::Video)
+            .then(|| ottrin_preview::admit_video_thumbnail_source(path).ok())
+            .flatten()
+            .map(|source| source.generation().clone());
+        let cache_key = visual_preview_unavailable_cache_key(
+            path,
+            target_dim,
+            video_source_generation.as_ref(),
+        );
         self.image_preview_cache
             .get(&cache_key)
             .and_then(ImagePreviewCacheEntry::unavailable_reason)
-            .map(str::to_owned)
+            .map(|reason| visual_preview_unavailable_message(path, reason))
+    }
+
+    fn office_provider_for_path(
+        &self,
+        path: &Path,
+    ) -> Option<ottrin_preview::DetectedInstalledLibreOffice> {
+        if !self.state.config.installed_office_previews_enabled {
+            return None;
+        }
+        let format = ottrin_preview::office_format_for_path(path)?;
+        let generation = ottrin_preview::office_preview_source_generation(path)?;
+        if self
+            .failed_office_provider_generations
+            .get(path)
+            .is_some_and(|failed| failed == &generation)
+        {
+            return None;
+        }
+        self.office_provider
+            .lock()
+            .expect("Office provider cache")
+            .as_ref()
+            .filter(|detected| detected.capability.formats.contains(&format))
+            .cloned()
+    }
+
+    fn office_provider_cache_key(
+        &self,
+        path: &Path,
+        target_dim: u32,
+        page_index: usize,
+        generation: Option<&ottrin_preview::OfficePreviewSourceGeneration>,
+    ) -> Option<String> {
+        let detected = self.office_provider_for_path(path)?;
+        let identity = ottrin_preview::OfficeRenderCacheIdentity {
+            provider: detected.capability.id,
+            provider_version: detected.capability.version,
+            policy_version: 1,
+        };
+        Some(office_provider_preview_cache_key(
+            target_dim, page_index, generation, &identity,
+        ))
+    }
+
+    fn office_rendered_page_for_path(&self, path: &Path) -> Option<&OfficeRenderedPage> {
+        if !self.state.config.installed_office_previews_enabled {
+            return None;
+        }
+        let current_generation = ottrin_preview::office_preview_source_generation(path)?;
+        self.office_rendered_pages.values().find(|rendered| {
+            rendered.source_path == path && rendered.source_generation == current_generation
+        })
     }
 
     fn cached_image_preview_widget_for_page(
@@ -2851,10 +3847,10 @@ impl OttrinApp {
         let ply_source_generation = ottrin_preview::is_ply_path(path)
             .then(|| ottrin_preview::ply_preview_source_generation(path))
             .flatten();
-        let office_source_generation = (ottrin_preview::is_office_visual_path(path)
-            && !ottrin_preview::is_pptx_visual_path(path))
-        .then(|| ottrin_preview::office_preview_source_generation(path))
-        .flatten();
+        let office_source_generation = ottrin_preview::office_format_for_path(path)
+            .is_some()
+            .then(|| ottrin_preview::office_preview_source_generation(path))
+            .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             target_dim,
@@ -2868,37 +3864,85 @@ impl OttrinApp {
             == ottrin_preview::PreviewVisualRenderer::Video)
             .then(|| ottrin_preview::admit_video_thumbnail_source(path).ok())
             .flatten();
-        let cache_key = video_source
-            .as_ref()
-            .map(|source| {
-                ottrin_preview::video_thumbnail_cache_key(source.generation(), target_dim)
+        let cache_key = self
+            .office_provider_cache_key(
+                path,
+                target_dim,
+                page_index,
+                office_source_generation.as_ref(),
+            )
+            .or_else(|| {
+                video_source.as_ref().map(|source| {
+                    ottrin_preview::video_thumbnail_cache_key(source.generation(), target_dim)
+                })
             })
             .unwrap_or(cache_key);
         self.discard_cached_pdf_preview_when_runtime_is_unavailable(path, &cache_key);
         if !self.image_preview_cache.contains_key(&cache_key) {
+            let fallback_cache_keys = preview_fallback_dimensions(target_dim)
+                .into_iter()
+                .map(|fallback_dim| {
+                    video_source
+                        .as_ref()
+                        .map(|source| {
+                            ottrin_preview::video_thumbnail_cache_key(
+                                source.generation(),
+                                fallback_dim,
+                            )
+                        })
+                        .unwrap_or_else(|| {
+                            preview_cache_key_for_page_with_generations(
+                                path,
+                                fallback_dim,
+                                page_index,
+                                sqlite_source_generation.as_ref(),
+                                obj_source_generation.as_ref(),
+                                ply_source_generation.as_ref(),
+                                office_source_generation.as_ref(),
+                            )
+                        })
+                })
+                .collect::<Vec<_>>();
             self.enqueue_image_preview(
                 path,
                 PreviewRequestTarget::Thumbnail,
                 target_dim,
                 page_index,
-                cache_key,
+                cache_key.clone(),
                 PreviewJobSources {
                     sqlite: sqlite_source_generation,
                     obj: obj_source_generation,
                     ply: ply_source_generation,
                     office: office_source_generation,
+                    office_provider: self.office_provider_for_path(path),
                     video: video_source,
                 },
             );
+            for fallback_key in fallback_cache_keys {
+                self.discard_cached_pdf_preview_when_runtime_is_unavailable(path, &fallback_key);
+                if let Some(bytes) = self
+                    .image_preview_cache
+                    .get(&fallback_key)
+                    .and_then(ImagePreviewCacheEntry::bytes)
+                    .map(ToOwned::to_owned)
+                {
+                    return Some(preview_image_with_fit_bounds(
+                        format!("bytes://preview/{fallback_key}"),
+                        bytes,
+                        Vec2::new(max_width, max_height),
+                        corner_radius,
+                    ));
+                }
+            }
             return None;
         }
         let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
-        Some(
-            egui::Image::from_bytes(format!("bytes://preview/{cache_key}"), bytes)
-                .max_width(max_width)
-                .max_height(max_height)
-                .corner_radius(corner_radius),
-        )
+        Some(preview_image_with_fit_bounds(
+            format!("bytes://preview/{cache_key}"),
+            bytes,
+            Vec2::new(max_width, max_height),
+            corner_radius,
+        ))
     }
 
     fn cached_original_image_preview_widget_for_page(
@@ -2927,10 +3971,10 @@ impl OttrinApp {
         let ply_source_generation = ottrin_preview::is_ply_path(path)
             .then(|| ottrin_preview::ply_preview_source_generation(path))
             .flatten();
-        let office_source_generation = (ottrin_preview::is_office_visual_path(path)
-            && !ottrin_preview::is_pptx_visual_path(path))
-        .then(|| ottrin_preview::office_preview_source_generation(path))
-        .flatten();
+        let office_source_generation = ottrin_preview::office_format_for_path(path)
+            .is_some()
+            .then(|| ottrin_preview::office_preview_source_generation(path))
+            .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             PREVIEW_CACHE_ORIGINAL,
@@ -2944,13 +3988,20 @@ impl OttrinApp {
             == ottrin_preview::PreviewVisualRenderer::Video)
             .then(|| ottrin_preview::admit_video_thumbnail_source(path).ok())
             .flatten();
-        let cache_key = video_source
-            .as_ref()
-            .map(|source| {
-                ottrin_preview::video_thumbnail_cache_key(
-                    source.generation(),
-                    PREVIEW_CACHE_ORIGINAL,
-                )
+        let cache_key = self
+            .office_provider_cache_key(
+                path,
+                PREVIEW_CACHE_ORIGINAL,
+                page_index,
+                office_source_generation.as_ref(),
+            )
+            .or_else(|| {
+                video_source.as_ref().map(|source| {
+                    ottrin_preview::video_thumbnail_cache_key(
+                        source.generation(),
+                        PREVIEW_CACHE_ORIGINAL,
+                    )
+                })
             })
             .unwrap_or(cache_key);
         self.discard_cached_pdf_preview_when_runtime_is_unavailable(path, &cache_key);
@@ -2966,18 +4017,19 @@ impl OttrinApp {
                     obj: obj_source_generation,
                     ply: ply_source_generation,
                     office: office_source_generation,
+                    office_provider: self.office_provider_for_path(path),
                     video: video_source,
                 },
             );
             return None;
         }
         let bytes = self.image_preview_cache.get(&cache_key)?.bytes()?.to_vec();
-        Some(
-            egui::Image::from_bytes(format!("bytes://preview/{cache_key}"), bytes)
-                .max_width(max_width)
-                .max_height(max_height)
-                .corner_radius(corner_radius),
-        )
+        Some(preview_image_with_fit_bounds(
+            format!("bytes://preview/{cache_key}"),
+            bytes,
+            Vec2::new(max_width, max_height),
+            corner_radius,
+        ))
     }
 
     /// Poll the exact cache generation that supplies the DOCX inspector page.
@@ -3051,10 +4103,10 @@ impl OttrinApp {
         let ply_source_generation = ottrin_preview::is_ply_path(path)
             .then(|| ottrin_preview::ply_preview_source_generation(path))
             .flatten();
-        let office_source_generation = (ottrin_preview::is_office_visual_path(path)
-            && !ottrin_preview::is_pptx_visual_path(path))
-        .then(|| ottrin_preview::office_preview_source_generation(path))
-        .flatten();
+        let office_source_generation = ottrin_preview::office_format_for_path(path)
+            .is_some()
+            .then(|| ottrin_preview::office_preview_source_generation(path))
+            .flatten();
         let cache_key = preview_cache_key_for_page_with_generations(
             path,
             PREVIEW_CACHE_ORIGINAL,
@@ -3068,13 +4120,20 @@ impl OttrinApp {
             == ottrin_preview::PreviewVisualRenderer::Video)
             .then(|| ottrin_preview::admit_video_thumbnail_source(path).ok())
             .flatten();
-        let cache_key = video_source
-            .as_ref()
-            .map(|source| {
-                ottrin_preview::video_thumbnail_cache_key(
-                    source.generation(),
-                    PREVIEW_CACHE_ORIGINAL,
-                )
+        let cache_key = self
+            .office_provider_cache_key(
+                path,
+                PREVIEW_CACHE_ORIGINAL,
+                page_index,
+                office_source_generation.as_ref(),
+            )
+            .or_else(|| {
+                video_source.as_ref().map(|source| {
+                    ottrin_preview::video_thumbnail_cache_key(
+                        source.generation(),
+                        PREVIEW_CACHE_ORIGINAL,
+                    )
+                })
             })
             .unwrap_or(cache_key);
         self.discard_cached_pdf_preview_when_runtime_is_unavailable(path, &cache_key);
@@ -3090,6 +4149,7 @@ impl OttrinApp {
                     obj: obj_source_generation,
                     ply: ply_source_generation,
                     office: office_source_generation,
+                    office_provider: self.office_provider_for_path(path),
                     video: video_source,
                 },
             );
@@ -3117,7 +4177,7 @@ impl OttrinApp {
         let op_id = self.queue_activity_record_with_recoverability(
             title,
             path.display().to_string(),
-            OperationRecoverability::SessionTracked,
+            image_rotation_recoverability(),
         );
         match rotate_image_file(path, clockwise) {
             Ok(()) => {
@@ -4583,6 +5643,7 @@ impl OttrinApp {
 
     fn render_theme_editor_embedded(&mut self, ctx: &Context) -> bool {
         let c = self.colors;
+        let action_model = ThemeEditorActionModel::for_source(self.theme_editor.source_saved_idx);
         let mut close_requested = false;
         let popup_title = format!(
             "Theme - {}",
@@ -4932,68 +5993,29 @@ impl OttrinApp {
                         ThemePreset::Nord,
                         ThemePreset::G33k,
                     ];
-                    let is_user_theme = self.theme_editor.source_saved_idx.is_some();
                     let mut requested_scope: Option<(ThemePreset, ThemeMode)> = None;
-                    let mut cancel_requested = false;
-                    let mut save_requested = false;
-                    let mut save_as_requested = false;
-                    let mut import_requested = false;
-                    let mut export_requested = false;
-                    let mut reset_requested = false;
                     let mut mode_choice = self.theme_editor.mode;
 
                     {
                         let mut body = |ui: &mut egui::Ui| {
                             ui.horizontal_wrapped(|ui| {
-                                if ui.add_sized([84.0, 26.0], egui::Button::new("Cancel")).clicked() {
-                                    cancel_requested = true;
-                                }
-                                if ui.add_sized([72.0, 26.0], egui::Button::new("Save")).clicked() {
-                                    save_requested = true;
-                                }
-                                if ui.add_sized([84.0, 26.0], egui::Button::new("Import")).clicked() {
-                                    import_requested = true;
-                                }
-                                if ui.add_sized([84.0, 26.0], egui::Button::new("Export")).clicked() {
-                                    export_requested = true;
-                                }
-                                if is_user_theme
-                                    && ui.add_sized([84.0, 26.0], egui::Button::new("Save As")).clicked()
-                                {
-                                    save_as_requested = true;
-                                }
-                                if !is_user_theme
-                                    && ui
-                                        .add_sized([136.0, 26.0], egui::Button::new("Reset to default"))
-                                        .clicked()
-                                {
-                                    reset_requested = true;
-                                }
-                                ui.add_sized(
-                                    [240.0, 26.0],
-                                    egui::TextEdit::singleline(&mut self.theme_editor.save_as_name)
-                                        .hint_text("Theme name"),
-                                );
-                            });
-                            ui.add_space(8.0);
-                            ui.horizontal_wrapped(|ui| {
                                 ui.label(RichText::new("Mode").color(c.text_dim).size(10.6).strong());
                                 let dark = ui.add_enabled(
-                                    !is_user_theme,
+                                    action_model.allow_scope_changes,
                                     egui::Button::new("Dark").selected(mode_choice == ThemeMode::Dark),
                                 );
                                 if dark.clicked() {
                                     mode_choice = ThemeMode::Dark;
                                 }
                                 let light = ui.add_enabled(
-                                    !is_user_theme,
+                                    action_model.allow_scope_changes,
                                     egui::Button::new("Light").selected(mode_choice == ThemeMode::Light),
                                 );
                                 if light.clicked() {
                                     mode_choice = ThemeMode::Light;
                                 }
                                 let system = ui.add_enabled(
-                                    !is_user_theme,
+                                    action_model.allow_scope_changes,
                                     egui::Button::new("System").selected(mode_choice == ThemeMode::System),
                                 );
                                 if system.clicked() {
@@ -5017,55 +6039,37 @@ impl OttrinApp {
                                         if selected { c.accent } else { mix_color(c.border, card_fill, 0.36) },
                                     ))
                                     .corner_radius(section_radius);
-                                    let response = ui.add_enabled(!is_user_theme, button);
+                                    let response = ui.add_enabled(action_model.allow_scope_changes, button);
                                     if response.clicked() {
                                         requested_scope = Some((preset, mode_choice));
                                     }
                                 }
                             });
-                            if is_user_theme {
-                                ui.add_space(6.0);
-                                ui.label(
-                                    RichText::new("Saved themes keep their preset and mode. Use Save As if you want to branch into another base scope.")
-                                        .color(c.text_muted)
-                                        .size(9.8),
-                                );
-                            }
+                            ui.add_space(6.0);
+                            let scope_explanation = if action_model.allow_scope_changes {
+                                "Built-in preset: choose a base preset and mode. Saving creates a user theme; the built-in remains unchanged."
+                            } else {
+                                "Saved user theme: preset and mode identify its base and stay fixed while editing."
+                            };
+                            ui.label(
+                                RichText::new(scope_explanation)
+                                    .color(c.text_muted)
+                                    .size(9.8),
+                            );
                         };
                         section_card(
                             ui,
                             "Theme scope",
-                            "Keep scope and save controls in view while you tune the live preview.",
+                            "Choose the visual base for this editor model.",
                             &mut body,
                         );
                     }
 
-                    if cancel_requested {
-                        self.cancel_theme_editor(ctx);
-                    } else {
-                        if import_requested {
-                            self.import_theme_editor_json(ctx);
-                            mode_choice = self.theme_editor.mode;
-                            requested_scope = None;
-                        }
-                        if export_requested {
-                            self.export_theme_editor_json();
-                        }
-                        if save_requested {
-                            self.save_theme_editor(ctx);
-                        }
-                        if save_as_requested {
-                            self.save_theme_editor_as();
-                        }
-                        if reset_requested {
-                            self.reset_theme_editor_to_default(ctx);
-                        }
-                        if !is_user_theme && mode_choice != self.theme_editor.mode {
-                            requested_scope = Some((self.theme_editor.preset, mode_choice));
-                        }
-                        if let Some((preset, mode)) = requested_scope {
-                            self.switch_theme_editor_scope(preset, mode, ctx);
-                        }
+                    if action_model.allow_scope_changes && mode_choice != self.theme_editor.mode {
+                        requested_scope = Some((self.theme_editor.preset, mode_choice));
+                    }
+                    if let Some((preset, mode)) = requested_scope {
+                        self.switch_theme_editor_scope(preset, mode, ctx);
                     }
 
                     if self.theme_editor.open {
@@ -5452,11 +6456,10 @@ impl OttrinApp {
                         .inner_margin(egui::Margin::symmetric(10, 8))
                         .show(ui, |ui| {
                             ui.horizontal(|ui| {
-                                let is_user_theme = self.theme_editor.source_saved_idx.is_some();
                                 if ui.add_sized([84.0, 26.0], egui::Button::new("Cancel")).clicked() {
                                     self.cancel_theme_editor(ctx);
                                 }
-                                if is_user_theme {
+                                if action_model.show_save_as {
                                     // User-created theme: "Save" overwrites in place.
                                     if ui.add_sized([72.0, 26.0], egui::Button::new("Save")).clicked() {
                                         self.save_theme_editor(ctx);
@@ -5474,7 +6477,7 @@ impl OttrinApp {
                                     egui::TextEdit::singleline(&mut self.theme_editor.save_as_name)
                                         .hint_text("Theme name"),
                                 );
-                                if is_user_theme {
+                                if action_model.show_save_as {
                                     // "Save As" creates a new copy.
                                     if ui.add_sized([84.0, 26.0], egui::Button::new("Save As")).clicked() {
                                         self.save_theme_editor_as();
@@ -5485,7 +6488,7 @@ impl OttrinApp {
                                         self.save_theme_editor(ctx);
                                     }
                                 }
-                                if self.theme_editor.source_saved_idx.is_none()
+                                if action_model.show_reset
                                     && ui
                                         .add_sized([136.0, 26.0], egui::Button::new("Reset to default"))
                                         .clicked()
@@ -5713,12 +6716,7 @@ impl OttrinApp {
         // A refresh replaces the destination model, so it must not later
         // consume an earlier pointer navigation's one-shot reveal.
         self.cancel_miller_pointer_reveal(tab_id);
-        // PPTX results are deliberately request-local. A directory refresh
-        // (including F5 and completed file operations) is its watcher/event
-        // invalidation boundary, so an older worker cannot repopulate it.
-        self.image_preview_cache
-            .retain(|key, _| !key.starts_with("pptx-request-v1-"));
-        self.preview_scheduler.invalidate_pptx_in_directory(&dir);
+
         // Capture an ordinary same-directory pointer selection before this
         // refresh clears the old model. Navigation supplies pending_select_path
         // instead, so it deliberately does not retain the previous directory's
@@ -5936,8 +6934,8 @@ impl OttrinApp {
     fn poll_op_results(&mut self) {
         while let Ok(res) = self.op_rx.try_recv() {
             let completed_cmd = res.cmd.clone();
-            let rename_receipt = res.rename_receipt.clone();
-            let rename_bindings = res.rename_bindings.clone();
+            let path_move_receipt = res.path_move_receipt.clone();
+            let path_move_bindings = res.path_move_bindings.clone();
             self.apply_clipboard_operation_result(
                 res.clipboard_generation,
                 &completed_cmd,
@@ -5945,6 +6943,13 @@ impl OttrinApp {
                 res.completed_sources,
                 &res.completed_source_paths,
             );
+            let should_refresh_move_activity = should_refresh_retained_move_activity(
+                &completed_cmd,
+                res.error.is_some() || res.warning.is_some(),
+            );
+            if should_refresh_move_activity {
+                self.refresh_retained_move_activity();
+            }
             if let Some(err) = res.error {
                 self.finish_operation_record(res.op_id, OperationStatus::Failed, Some(err.clone()));
                 self.command_frame.error = Some(err);
@@ -5957,27 +6962,56 @@ impl OttrinApp {
                 }
                 continue;
             }
+            if let Some(detail) =
+                successful_mixed_move_batch_detail(&completed_cmd, res.move_dispositions.as_deref())
+                && let Some(record) = self
+                    .operation_history
+                    .iter_mut()
+                    .find(|record| record.id == res.op_id)
+            {
+                record.detail = detail;
+            }
             self.finish_operation_record(
                 res.op_id,
                 OperationStatus::Completed,
                 res.warning.clone(),
             );
             if res.warning.is_none()
-                && let (FileCommand::Rename { .. }, Some(receipt), Some(storage_bindings)) =
-                    (&completed_cmd, rename_receipt, rename_bindings)
+                && let (Some(kind), Some(receipt), Some(storage_bindings)) = (
+                    match &completed_cmd {
+                        FileCommand::CreateFile { .. } => Some(PathMoveUndoKind::CreateFile),
+                        FileCommand::CreateFolder { .. } => Some(PathMoveUndoKind::CreateFolder),
+                        FileCommand::Symlink { .. } => Some(PathMoveUndoKind::Symlink),
+                        FileCommand::Chmod { .. } => Some(PathMoveUndoKind::Chmod),
+                        FileCommand::Delete {
+                            targets,
+                            mode: DeleteMode::Trash,
+                        } if targets.len() == 1 => Some(PathMoveUndoKind::Trash),
+                        FileCommand::Rename { .. } => Some(PathMoveUndoKind::Rename),
+                        FileCommand::Copy { .. } => Some(PathMoveUndoKind::Copy),
+                        FileCommand::Move { .. } => Some(PathMoveUndoKind::Move),
+                        _ => None,
+                    },
+                    path_move_receipt,
+                    path_move_bindings,
+                )
                 && let Some(record) = self
                     .operation_history
                     .iter_mut()
                     .find(|record| record.id == res.op_id)
             {
-                record.rename_undo = Some(RenameUndoState::Available);
-                record.rename_undo_token = Some(RenameUndoToken {
+                record.path_move_paths = Some((
+                    receipt.before_path().to_path_buf(),
+                    receipt.after_path().to_path_buf(),
+                ));
+                record.path_move_undo = Some(PathMoveUndoState::Available);
+                record.path_move_undo_token = Some(PathMoveUndoToken {
                     receipt,
+                    kind,
                     storage_bindings,
                     origin_tab_id: res.tab_id,
                 });
             }
-            let has_warning = res.warning.is_some();
             if let Some(warning) = res.warning {
                 self.command_frame.error = None;
                 self.command_frame.message = Some(warning);
@@ -6021,9 +7055,6 @@ impl OttrinApp {
                 if self.trash_panel.loaded {
                     self.refresh_trash_panel();
                 }
-            }
-            if should_refresh_retained_move_activity(&completed_cmd, has_warning) {
-                self.refresh_retained_move_activity();
             }
             let mut refresh_tabs = if let FileCommand::Rename { source, new_name } = &completed_cmd
             {
@@ -6122,39 +7153,39 @@ impl OttrinApp {
         }
     }
 
-    fn rename_undo_conflicts(&self, op_id: u64, receipt: &RenameUndoReceipt) -> bool {
+    fn path_move_undo_conflicts(&self, op_id: u64, receipt: &OperationUndoReceipt) -> bool {
         self.operation_history.iter().any(|record| {
             record.id != op_id
                 && (record.status == OperationStatus::Queued
-                    || matches!(record.rename_undo, Some(RenameUndoState::UndoQueued)))
-                && record.rename_paths.as_ref().is_some_and(|(before, after)| {
-                    before == receipt.before_path()
-                        || before == receipt.after_path()
-                        || after == receipt.before_path()
-                        || after == receipt.after_path()
-                })
+                    || matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued)))
+                && record
+                    .path_move_paths
+                    .as_ref()
+                    .is_some_and(|(before, after)| {
+                        path_move_paths_overlap(
+                            before,
+                            after,
+                            receipt.before_path(),
+                            receipt.after_path(),
+                        )
+                    })
         })
     }
 
-    fn run_rename_undo(&mut self, op_id: u64) {
+    fn run_path_move_undo(&mut self, op_id: u64) {
         let Some(token) = self
             .operation_history
             .iter()
             .find(|record| record.id == op_id)
             .filter(|record| {
-                rename_undo_action_is_available(record.status, record.rename_undo.as_ref())
+                path_move_undo_action_is_available(record.status, record.path_move_undo.as_ref())
             })
-            .and_then(|record| record.rename_undo_token.clone())
+            .and_then(|record| record.path_move_undo_token.clone())
         else {
             return;
         };
-        if self.rename_undo_conflicts(op_id, &token.receipt) {
-            self.set_status_message(
-                "Undo rename was not started because a conflicting rename is still running."
-                    .to_string(),
-                false,
-                6,
-            );
+        if self.path_move_undo_conflicts(op_id, &token.receipt) {
+            self.set_status_message(path_move_undo_conflict_message(token.kind), false, 6);
             return;
         }
         self.reconcile_storage_location_availability(discover_storage_locations());
@@ -6162,7 +7193,7 @@ impl OttrinApp {
             &token.storage_bindings,
             &self.known_storage_locations,
         ) {
-            self.finish_rename_undo(op_id, Err(reason));
+            self.finish_path_move_undo(op_id, Err(reason), false);
             return;
         }
         if let Some(record) = self
@@ -6170,61 +7201,132 @@ impl OttrinApp {
             .iter_mut()
             .find(|record| record.id == op_id)
         {
-            record.rename_undo = Some(RenameUndoState::UndoQueued);
+            record.path_move_undo = Some(PathMoveUndoState::UndoQueued);
         }
         let platform = Arc::clone(&self.platform);
-        let tx = self.rename_undo_tx.clone();
+        let tx = self.path_move_undo_tx.clone();
         std::thread::spawn(move || {
-            let result = validate_operation_storage_bindings(
+            let (result, retryable) = match validate_operation_storage_bindings(
                 &token.storage_bindings,
                 &discover_storage_locations(),
-            )
-            .map_err(|error| error.to_string())
-            .and_then(|()| {
-                platform
-                    .undo_rename_with_receipt(&token.receipt)
-                    .map_err(|e| e.to_string())
+            ) {
+                Err(error) => (Err(error.to_string()), false),
+                Ok(()) => match match (&token.kind, &token.receipt) {
+                    (PathMoveUndoKind::CreateFile, OperationUndoReceipt::PathMove(receipt)) => {
+                        platform.undo_create_file_with_receipt(receipt)
+                    }
+                    (PathMoveUndoKind::CreateFolder, OperationUndoReceipt::PathMove(receipt)) => {
+                        platform.undo_create_folder_with_receipt(receipt)
+                    }
+                    (PathMoveUndoKind::Symlink, OperationUndoReceipt::PathMove(receipt)) => {
+                        platform.undo_symlink_with_receipt(receipt)
+                    }
+                    (PathMoveUndoKind::Chmod, OperationUndoReceipt::Chmod(receipt)) => {
+                        platform.undo_chmod_with_receipt(receipt)
+                    }
+                    (PathMoveUndoKind::Trash, OperationUndoReceipt::Trash(receipt)) => {
+                        platform.undo_trash_with_receipt(receipt)
+                    }
+                    (PathMoveUndoKind::TextEdit, OperationUndoReceipt::TextEdit(receipt)) => {
+                        receipt
+                            .session
+                            .save(&receipt.original)
+                            .map_err(|error| PlatformError::Io(error.to_string()))
+                    }
+                    (PathMoveUndoKind::Rename, OperationUndoReceipt::PathMove(receipt)) => {
+                        platform.undo_rename_with_receipt(receipt)
+                    }
+                    (PathMoveUndoKind::Copy, OperationUndoReceipt::PathMove(receipt)) => {
+                        platform.undo_copy_with_receipt(receipt)
+                    }
+                    (PathMoveUndoKind::Move, OperationUndoReceipt::PathMove(receipt)) => {
+                        platform.undo_move_with_receipt(receipt)
+                    }
+                    _ => Err(PlatformError::Io(
+                        "operation undo receipt does not match its operation".to_string(),
+                    )),
+                } {
+                    Ok(()) => (Ok(()), false),
+                    Err(error) => {
+                        let retryable =
+                            matches!(error, PlatformError::CommittedUndoCleanupPending { .. });
+                        (Err(error.to_string()), retryable)
+                    }
+                },
+            };
+            let _ = tx.send(PathMoveUndoResult {
+                op_id,
+                result,
+                retryable,
             });
-            let _ = tx.send(RenameUndoResult { op_id, result });
         });
     }
 
-    fn poll_rename_undo_results(&mut self) {
-        while let Ok(result) = self.rename_undo_rx.try_recv() {
-            self.finish_rename_undo(result.op_id, result.result);
+    fn poll_path_move_undo_results(&mut self) {
+        while let Ok(result) = self.path_move_undo_rx.try_recv() {
+            self.finish_path_move_undo(result.op_id, result.result, result.retryable);
         }
     }
 
-    fn finish_rename_undo(&mut self, op_id: u64, result: Result<(), String>) {
-        let Some((parent, selected_path, origin_tab_id)) = self
+    fn finish_path_move_undo(&mut self, op_id: u64, result: Result<(), String>, retryable: bool) {
+        let Some((before_path, after_path, origin_tab_id, undo_kind)) = self
             .operation_history
             .iter_mut()
             .find(|record| record.id == op_id)
             .filter(|record| {
                 matches!(
-                    record.rename_undo,
-                    Some(RenameUndoState::UndoQueued) | Some(RenameUndoState::Available)
+                    record.path_move_undo,
+                    Some(PathMoveUndoState::UndoQueued) | Some(PathMoveUndoState::Available)
                 )
             })
             .and_then(|record| {
-                let token = record.rename_undo_token.as_ref()?;
+                let token = record.path_move_undo_token.as_ref()?;
                 match result {
                     Ok(()) => {
-                        record.rename_undo = Some(RenameUndoState::Undone);
-                        record.message = Some("Rename undone".to_string());
-                        token.receipt.before_path().parent().map(|parent| {
-                            (
-                                parent.to_path_buf(),
-                                token.receipt.before_path().to_path_buf(),
-                                token.origin_tab_id,
-                            )
-                        })
+                        record.path_move_undo = Some(PathMoveUndoState::Undone);
+                        record.message = Some(match token.kind {
+                            PathMoveUndoKind::CreateFile => "Create file undone".to_string(),
+                            PathMoveUndoKind::CreateFolder => "Create folder undone".to_string(),
+                            PathMoveUndoKind::Symlink => "Symlink undone".to_string(),
+                            PathMoveUndoKind::Chmod => "Permission change undone".to_string(),
+                            PathMoveUndoKind::Trash => "Trash move undone".to_string(),
+                            PathMoveUndoKind::TextEdit => "Text edit undone".to_string(),
+                            PathMoveUndoKind::Rename => "Rename undone".to_string(),
+                            PathMoveUndoKind::Copy => "Copy undone".to_string(),
+                            PathMoveUndoKind::Move => "Move undone".to_string(),
+                        });
+                        let completed = (
+                            token.receipt.before_path().to_path_buf(),
+                            token.receipt.after_path().to_path_buf(),
+                            token.origin_tab_id,
+                            token.kind,
+                        );
+                        if token.kind == PathMoveUndoKind::TextEdit {
+                            record.path_move_undo_token = None;
+                        }
+                        Some(completed)
+                    }
+                    Err(reason) if retryable => {
+                        record.path_move_undo = Some(PathMoveUndoState::Available);
+                        record.message = Some(format!(
+                            "Undo completed, but recovery cleanup is pending: {reason} Select Undo again to retry cleanup."
+                        ));
+                        Some((
+                            token.receipt.before_path().to_path_buf(),
+                            token.receipt.after_path().to_path_buf(),
+                            token.origin_tab_id,
+                            token.kind,
+                        ))
                     }
                     Err(reason) => {
-                        record.rename_undo = Some(RenameUndoState::Unavailable {
+                        let kind = token.kind;
+                        record.path_move_undo = Some(PathMoveUndoState::Unavailable {
                             reason: reason.clone(),
                         });
                         record.message = Some(format!("Undo unavailable: {reason}"));
+                        if kind == PathMoveUndoKind::TextEdit {
+                            record.path_move_undo_token = None;
+                        }
                         None
                     }
                 }
@@ -6232,7 +7334,29 @@ impl OttrinApp {
         else {
             return;
         };
-        self.refresh_rename_parent(&parent, origin_tab_id, &selected_path);
+        for parent in path_move_parent_directories(&before_path, &after_path) {
+            let restores_source_parent = before_path.parent() == Some(parent.as_path());
+            self.refresh_rename_parent(
+                &parent,
+                if restores_source_parent {
+                    origin_tab_id
+                } else {
+                    None
+                },
+                if restores_source_parent {
+                    &before_path
+                } else {
+                    &after_path
+                },
+            );
+        }
+        if undo_kind == PathMoveUndoKind::TextEdit
+            && self.preview.path.as_ref() == Some(&after_path)
+        {
+            self.preview.data = None;
+            self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
+            self.request_preview_load(PreviewTarget::Overlay, after_path, EntryKind::File);
+        }
     }
 
     fn apply_clipboard_operation_result(
@@ -6424,11 +7548,39 @@ impl OttrinApp {
             {
                 continue;
             }
+            if !self.state.config.installed_office_previews_enabled
+                && resp.cache_key.starts_with("office-provider-v1-")
+            {
+                self.office_rendered_pages.remove(&resp.cache_key);
+                self.image_preview_cache.remove(&resp.cache_key);
+                continue;
+            }
             if !preview_response_matches_current_generation(&resp) {
+                self.office_rendered_pages.remove(&resp.cache_key);
+                continue;
+            }
+            let provider_failed = resp.office_render.is_none()
+                && resp.cache_key.starts_with("office-provider-v1-")
+                && resp.bytes.is_none();
+            if provider_failed {
+                if let Some(generation) = resp.office_source_generation.clone() {
+                    self.failed_office_provider_generations
+                        .insert(resp.path.clone(), generation);
+                }
+                self.office_rendered_pages.remove(&resp.cache_key);
+                self.image_preview_cache.remove(&resp.cache_key);
+                changed = true;
                 continue;
             }
             if self.image_preview_cache.len() >= MAX_CACHED_IMAGE_PREVIEWS {
                 self.image_preview_cache.clear();
+            }
+            if let Some(office_render) = resp.office_render {
+                self.failed_office_provider_generations.remove(&resp.path);
+                self.office_rendered_pages
+                    .insert(resp.cache_key.clone(), office_render);
+            } else {
+                self.office_rendered_pages.remove(&resp.cache_key);
             }
             self.image_preview_cache.insert(
                 resp.cache_key,
@@ -8337,6 +9489,10 @@ impl OttrinApp {
 
     fn close_preview(&mut self, ctx: &Context) {
         cancel_inspector_entry_modals(&mut self.pending_rename, &mut self.pending_delete);
+        #[cfg(target_os = "linux")]
+        {
+            self.preview.media_playback = None;
+        }
         self.preview.visible = false;
         self.preview.path = None;
         self.preview.data = None;
@@ -8346,6 +9502,29 @@ impl OttrinApp {
         self.preview.text_edit_discard_confirmation = false;
         self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
         ctx.request_repaint();
+    }
+
+    #[cfg(target_os = "linux")]
+    fn sync_preview_media_playback(&mut self, ctx: &Context, path: &Path, kind: PreviewKind) {
+        if !preview_uses_media_playback(kind) {
+            self.preview.media_playback = None;
+            return;
+        }
+        if self
+            .preview
+            .media_playback
+            .as_ref()
+            .is_none_or(|playback| playback.path != path)
+        {
+            self.preview.media_playback = Some(PreviewMediaPlayback::start(path.to_path_buf()));
+        }
+        if let Some(playback) = self.preview.media_playback.as_mut() {
+            playback.poll(ctx);
+        }
+    }
+
+    fn native_preview_close_is_cancelled(&mut self) -> bool {
+        !self.request_preview_close()
     }
 
     fn request_preview_close(&mut self) -> bool {
@@ -8382,9 +9561,62 @@ impl OttrinApp {
         let Some(editor) = self.preview.text_editor.as_mut() else {
             return;
         };
+        let original = editor.session.contents().to_string();
+        let mut undo_available_for_saved_text = false;
         match editor.session.save(&editor.buffer) {
             Ok(()) => {
                 let path = self.preview.path.clone();
+                if let Some(path) = path.as_ref() {
+                    self.reconcile_storage_location_availability(discover_storage_locations());
+                    let undo_session = TextEditSession::open(path);
+                    let storage_bindings = operation_storage_bindings(
+                        &FileCommand::Chmod {
+                            target: path.clone(),
+                            mode_str: String::new(),
+                        },
+                        &self.known_storage_locations,
+                    );
+                    let undo_available = undo_session.is_ok() && !storage_bindings.is_empty();
+                    let op_id = self.queue_activity_record_with_recoverability(
+                        "Edit text",
+                        path.display().to_string(),
+                        if undo_available {
+                            OperationRecoverability::SessionTracked
+                        } else {
+                            OperationRecoverability::NotUndoable
+                        },
+                    );
+                    if let Some(record) = self
+                        .operation_history
+                        .iter_mut()
+                        .find(|record| record.id == op_id)
+                    {
+                        record.status = OperationStatus::Completed;
+                        record.finished_at = Some(Instant::now());
+                        if let Ok(session) = undo_session
+                            && !storage_bindings.is_empty()
+                        {
+                            record.path_move_paths = Some((path.clone(), path.clone()));
+                            record.path_move_undo = Some(PathMoveUndoState::Available);
+                            record.path_move_undo_token = Some(PathMoveUndoToken {
+                                receipt: OperationUndoReceipt::TextEdit(TextEditUndoReceipt {
+                                    session: Arc::new(session),
+                                    original,
+                                    path: path.clone(),
+                                }),
+                                kind: PathMoveUndoKind::TextEdit,
+                                storage_bindings,
+                                origin_tab_id: Some(self.state.active_tab().id),
+                            });
+                            undo_available_for_saved_text = true;
+                        } else {
+                            record.message = Some(
+                                "Text saved; session Undo is unavailable because the saved file or its storage identity could not be captured."
+                                    .to_string(),
+                            );
+                        }
+                    }
+                }
                 self.preview.text_editor = None;
                 self.preview.text_edit_discard_confirmation = false;
                 self.preview.data = None;
@@ -8392,7 +9624,18 @@ impl OttrinApp {
                 if let Some(path) = path {
                     self.request_preview_load(PreviewTarget::Overlay, path, EntryKind::File);
                 }
-                self.set_status_message("Text saved; private staging directory retained", true, 4);
+                self.set_status_message(
+                    administrator_surface_label(
+                        if undo_available_for_saved_text {
+                            "Text saved; Undo is available in Activity"
+                        } else {
+                            "Text saved; Undo could not be captured safely"
+                        },
+                        administrator_session(),
+                    ),
+                    true,
+                    4,
+                );
             }
             Err(error) => {
                 editor.error = Some(error.to_string());
@@ -8403,6 +9646,13 @@ impl OttrinApp {
     fn cancel_preview_text_edit(&mut self) {
         self.preview.text_editor = None;
         self.preview.text_edit_discard_confirmation = false;
+    }
+
+    fn optimistic_preview_data(&self, path: &Path) -> Option<PreviewData> {
+        self.info_panel_preview
+            .as_ref()
+            .filter(|(cached_path, _)| cached_path == path)
+            .map(|(_, data)| data.clone())
     }
 
     fn open_preview_entry(&mut self, entry: FileEntry) {
@@ -8422,6 +9672,7 @@ impl OttrinApp {
             );
             return;
         }
+        let optimistic_data = self.optimistic_preview_data(&path);
         self.preview.path = Some(path.clone());
         self.preview.visible = true;
         self.preview.space_close_ready_at = Some(Instant::now() + Duration::from_millis(180));
@@ -8431,7 +9682,7 @@ impl OttrinApp {
         self.preview.spreadsheet_sheet_id = None;
         self.preview.text_editor = None;
         self.preview.text_edit_discard_confirmation = false;
-        self.preview.data = None;
+        self.preview.data = optimistic_data;
         self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
         self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
     }
@@ -8487,6 +9738,7 @@ impl OttrinApp {
             return;
         }
         let path = entry.path.clone();
+        let optimistic_data = self.optimistic_preview_data(&path);
         self.preview.path = Some(path.clone());
         self.preview.visual_fit = true;
         self.preview.visual_zoom = 1.0;
@@ -8494,12 +9746,22 @@ impl OttrinApp {
         self.preview.spreadsheet_sheet_id = None;
         self.preview.text_editor = None;
         self.preview.text_edit_discard_confirmation = false;
-        self.preview.data = None;
+        self.preview.data = optimistic_data;
         self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
     }
 
-    fn set_pdf_preview_page(&mut self, page_index: usize) -> bool {
-        let Some(page_count) = self.preview.data.as_ref().and_then(pdf_page_count) else {
+    fn set_preview_page(&mut self, page_index: usize) -> bool {
+        let office_render = self
+            .preview
+            .path
+            .as_deref()
+            .and_then(|path| self.office_rendered_page_for_path(path));
+        let Some(page_count) = self
+            .preview
+            .data
+            .as_ref()
+            .and_then(|preview| preview_page_count(preview, office_render))
+        else {
             return false;
         };
         if page_index >= page_count {
@@ -9207,13 +10469,129 @@ impl OttrinApp {
             // discovery API permits. The OS can still replace a pathname after
             // this check and before the platform syscall; Rust cannot make that
             // final cross-platform pathname operation identity-conditional.
-            let (outcome, completed_source_paths, rename_receipt) =
+            let mut move_dispositions = None;
+            let (outcome, completed_source_paths, path_move_receipt) =
                 match validate_operation_storage_bindings(&bindings, &discover_storage_locations())
                 {
                     Ok(()) => match &cmd {
+                        FileCommand::CreateFile { parent, name } => {
+                            match platform.execute_create_file_with_undo_receipt(parent, name) {
+                                Ok(receipt) => (
+                                    FileOpOutcome::Completed,
+                                    Vec::new(),
+                                    receipt.map(OperationUndoReceipt::PathMove),
+                                ),
+                                Err(error) => {
+                                    (classify_file_op_result(Err(error)), Vec::new(), None)
+                                }
+                            }
+                        }
+                        FileCommand::CreateFolder { parent, name } => {
+                            match platform.execute_create_folder_with_undo_receipt(parent, name) {
+                                Ok(receipt) => (
+                                    FileOpOutcome::Completed,
+                                    Vec::new(),
+                                    receipt.map(OperationUndoReceipt::PathMove),
+                                ),
+                                Err(error) => {
+                                    (classify_file_op_result(Err(error)), Vec::new(), None)
+                                }
+                            }
+                        }
+                        FileCommand::Symlink { link_path, target } => {
+                            match platform.execute_symlink_with_undo_receipt(link_path, target) {
+                                Ok(receipt) => (
+                                    FileOpOutcome::Completed,
+                                    Vec::new(),
+                                    receipt.map(OperationUndoReceipt::PathMove),
+                                ),
+                                Err(error) => {
+                                    (classify_file_op_result(Err(error)), Vec::new(), None)
+                                }
+                            }
+                        }
+                        FileCommand::Chmod { target, mode_str } => {
+                            match platform.execute_chmod_with_undo_receipt(target, mode_str) {
+                                Ok(receipt) => (
+                                    FileOpOutcome::Completed,
+                                    Vec::new(),
+                                    receipt.map(OperationUndoReceipt::Chmod),
+                                ),
+                                Err(error) => {
+                                    (classify_file_op_result(Err(error)), Vec::new(), None)
+                                }
+                            }
+                        }
+                        FileCommand::Delete {
+                            targets,
+                            mode: DeleteMode::Trash,
+                        } if targets.len() == 1 => {
+                            match platform.execute_trash_with_undo_receipt(&targets[0]) {
+                                Ok(receipt) => (
+                                    FileOpOutcome::Completed,
+                                    vec![targets[0].clone()],
+                                    receipt.map(OperationUndoReceipt::Trash),
+                                ),
+                                Err(error) => {
+                                    (classify_file_op_result(Err(error)), Vec::new(), None)
+                                }
+                            }
+                        }
                         FileCommand::Rename { source, new_name } => {
                             match platform.execute_rename_with_undo_receipt(source, new_name) {
-                                Ok(receipt) => (FileOpOutcome::Completed, Vec::new(), receipt),
+                                Ok(receipt) => (
+                                    FileOpOutcome::Completed,
+                                    Vec::new(),
+                                    receipt.map(OperationUndoReceipt::PathMove),
+                                ),
+                                Err(error) => {
+                                    (classify_file_op_result(Err(error)), Vec::new(), None)
+                                }
+                            }
+                        }
+                        FileCommand::Copy {
+                            sources,
+                            destination,
+                            conflict,
+                        } if sources.len() == 1 => {
+                            match platform.execute_copy_with_undo_receipt(
+                                &sources[0],
+                                destination,
+                                *conflict,
+                            ) {
+                                Ok(receipt) => (
+                                    FileOpOutcome::Completed,
+                                    Vec::new(),
+                                    receipt.map(OperationUndoReceipt::PathMove),
+                                ),
+                                Err(error) => {
+                                    (classify_file_op_result(Err(error)), Vec::new(), None)
+                                }
+                            }
+                        }
+                        FileCommand::Move {
+                            sources,
+                            destination,
+                            conflict,
+                        } if sources.len() == 1 => {
+                            match platform.execute_move_with_undo_receipt(
+                                &sources[0],
+                                destination,
+                                *conflict,
+                            ) {
+                                Ok((disposition, receipt)) => {
+                                    let completed_source_paths =
+                                        if disposition == MoveDisposition::Moved {
+                                            vec![sources[0].clone()]
+                                        } else {
+                                            Vec::new()
+                                        };
+                                    (
+                                        FileOpOutcome::Completed,
+                                        completed_source_paths,
+                                        receipt.map(OperationUndoReceipt::PathMove),
+                                    )
+                                }
                                 Err(error) => {
                                     (classify_file_op_result(Err(error)), Vec::new(), None)
                                 }
@@ -9224,12 +10602,13 @@ impl OttrinApp {
                                 Ok((_, dispositions)) => {
                                     let completed_source_paths = sources
                                         .iter()
-                                        .zip(dispositions)
+                                        .zip(&dispositions)
                                         .filter_map(|(source, disposition)| {
-                                            (disposition == MoveDisposition::Moved)
+                                            (disposition == &MoveDisposition::Moved)
                                                 .then_some(source.clone())
                                         })
                                         .collect();
+                                    move_dispositions = Some(dispositions);
                                     (FileOpOutcome::Completed, completed_source_paths, None)
                                 }
                                 Err(error) => {
@@ -9293,7 +10672,17 @@ impl OttrinApp {
                     None,
                 ),
             };
-            let is_rename = matches!(&cmd, FileCommand::Rename { .. });
+            let path_move_bindings = path_move_receipt.as_ref().map(|receipt| {
+                if matches!(&cmd, FileCommand::Copy { .. }) {
+                    bindings
+                        .iter()
+                        .filter(|binding| receipt.after_path().starts_with(&binding.root))
+                        .cloned()
+                        .collect()
+                } else {
+                    bindings.clone()
+                }
+            });
             let _ = op_tx.send(OpResult {
                 op_id,
                 tab_id: refresh_tab,
@@ -9305,8 +10694,9 @@ impl OttrinApp {
                 clipboard_generation,
                 completed_sources,
                 completed_source_paths,
-                rename_receipt,
-                rename_bindings: is_rename.then_some(bindings),
+                move_dispositions,
+                path_move_receipt,
+                path_move_bindings,
             });
         });
         true
@@ -9356,7 +10746,7 @@ impl OttrinApp {
             .iter_mut()
             .find(|record| record.id == id)
         {
-            record.rename_paths = rename_paths_for_command(&cmd);
+            record.path_move_paths = path_move_paths_for_command(&cmd);
         }
         id
     }
@@ -9377,9 +10767,9 @@ impl OttrinApp {
             queued_at: Instant::now(),
             finished_at: None,
             message: None,
-            rename_paths: None,
-            rename_undo: None,
-            rename_undo_token: None,
+            path_move_paths: None,
+            path_move_undo: None,
+            path_move_undo_token: None,
         });
         while self.operation_history.len() > 100 {
             self.operation_history.pop_back();
@@ -10359,6 +11749,16 @@ impl OttrinApp {
                         if min_btn.clicked() {
                             ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(true));
                         }
+                        if administrator_session() {
+                            ui.add_space(8.0);
+                            ui.label(
+                                RichText::new("Administrator")
+                                    .color(c.accent)
+                                    .strong()
+                                    .size(11.5),
+                            )
+                            .on_hover_text("This Ottrin session is running as Administrator.");
+                        }
                     });
                 });
             })
@@ -11120,20 +12520,40 @@ impl OttrinApp {
                 let tile_w = ui.available_width();
                 ui.spacing_mut().interact_size.x = tile_w;
 
-                let toggle_response = ui
-                    .add_sized(
-                        Vec2::new(tile_w, 28.0),
-                        egui::Button::new(
-                            RichText::new(toggle_icon).size(15.0).color(c.text_muted),
-                        )
-                        .fill(if expanded {
-                            c.selected_bg
-                        } else {
-                            mix_color(c.smart_panel_bg, c.panel, 0.22)
-                        })
-                        .corner_radius(c.border_radius as f32),
-                    )
-                    .on_hover_text(toggle_tooltip);
+                let (toggle_rect, toggle_response) =
+                    ui.allocate_exact_size(Vec2::new(tile_w, 30.0), Sense::click());
+                let toggle_fill = if toggle_response.hovered() || toggle_response.has_focus() {
+                    mix_color(c.smart_panel_bg, c.panel_raised, 0.58)
+                } else {
+                    Color32::TRANSPARENT
+                };
+                ui.painter()
+                    .rect_filled(toggle_rect, c.border_radius as f32, toggle_fill);
+                if expanded {
+                    ui.painter().text(
+                        egui::pos2(toggle_rect.left() + 15.0, toggle_rect.center().y),
+                        Align2::CENTER_CENTER,
+                        toggle_icon,
+                        FontId::proportional(16.0 * c.font_scale),
+                        c.text_muted,
+                    );
+                    ui.painter().text(
+                        egui::pos2(toggle_rect.left() + 34.0, toggle_rect.center().y),
+                        Align2::LEFT_CENTER,
+                        "Locations",
+                        FontId::proportional(12.5 * c.font_scale),
+                        c.text_muted,
+                    );
+                } else {
+                    ui.painter().text(
+                        toggle_rect.center(),
+                        Align2::CENTER_CENTER,
+                        toggle_icon,
+                        FontId::proportional(16.0 * c.font_scale),
+                        c.text_muted,
+                    );
+                }
+                let toggle_response = toggle_response.on_hover_text(toggle_tooltip);
                 toggle_response
                     .widget_info(|| WidgetInfo::labeled(WidgetType::Button, true, toggle_tooltip));
                 input_rects.push(toggle_response.rect);
@@ -11173,31 +12593,76 @@ impl OttrinApp {
                                 .find(|opt_in| opt_in.last_known_path == path)
                                 .map(|_| true)
                         });
-                    // All locations are keyboard-focusable tiles; active one uses accent tint.
-                    let (text_col, bg_col) = if is_here {
-                        (c.text, c.selected_bg.gamma_multiply(0.62))
-                    } else {
-                        (c.text_muted, mix_color(c.smart_panel_bg, c.panel, 0.22))
-                    };
-
-                    let btn = if expanded {
-                        egui::Button::new(
-                            RichText::new(locations_rail_tile_text(icon, name, &path, true))
-                                .size(12.0)
-                                .color(text_col),
-                        )
-                    } else {
-                        egui::Button::new(RichText::new(icon).size(21.0).color(text_col))
-                    }
-                    .fill(bg_col)
-                    .stroke(Stroke::NONE)
-                    .corner_radius(c.border_radius as f32);
-
                     let detail = locations_rail_tile_detail(name, &path, volume_index_status);
                     let accessibility_label =
                         locations_rail_accessibility_label(name, &path, volume_index_status);
-                    let resp =
-                        ui.add_sized(Vec2::new(tile_w, if expanded { 42.0 } else { 36.0 }), btn);
+                    let resp = if expanded {
+                        let (rect, resp) =
+                            ui.allocate_exact_size(Vec2::new(tile_w, 52.0), Sense::click());
+                        let hovered = resp.hovered() || resp.has_focus();
+                        let fill = if is_here {
+                            c.selected_bg.gamma_multiply(0.62)
+                        } else if hovered {
+                            mix_color(c.smart_panel_bg, c.panel_raised, 0.52)
+                        } else {
+                            Color32::TRANSPARENT
+                        };
+                        let painter = ui.painter().with_clip_rect(rect);
+                        painter.rect_filled(rect, c.border_radius as f32, fill);
+                        if is_here {
+                            painter.rect_filled(
+                                Rect::from_min_size(
+                                    egui::pos2(rect.left(), rect.top() + 10.0),
+                                    Vec2::new(3.0, rect.height() - 20.0),
+                                ),
+                                1.5,
+                                c.accent,
+                            );
+                        }
+                        let icon_color = if is_here {
+                            c.accent
+                        } else if hovered {
+                            c.text
+                        } else {
+                            c.text_muted
+                        };
+                        painter.text(
+                            egui::pos2(rect.left() + 18.0, rect.center().y),
+                            Align2::CENTER_CENTER,
+                            icon,
+                            FontId::proportional(18.0 * c.font_scale),
+                            icon_color,
+                        );
+                        let text_left = rect.left() + 38.0;
+                        painter.text(
+                            egui::pos2(text_left, rect.top() + 17.0),
+                            Align2::LEFT_CENTER,
+                            name,
+                            FontId::proportional(13.5 * c.font_scale),
+                            c.text,
+                        );
+                        painter.text(
+                            egui::pos2(text_left, rect.top() + 35.0),
+                            Align2::LEFT_CENTER,
+                            path.display().to_string(),
+                            FontId::proportional(10.5 * c.font_scale),
+                            c.text_dim,
+                        );
+                        resp
+                    } else {
+                        let text_col = if is_here { c.text } else { c.text_muted };
+                        ui.add_sized(
+                            Vec2::new(tile_w, 36.0),
+                            egui::Button::new(RichText::new(icon).size(21.0).color(text_col))
+                                .fill(if is_here {
+                                    c.selected_bg.gamma_multiply(0.62)
+                                } else {
+                                    mix_color(c.smart_panel_bg, c.panel, 0.22)
+                                })
+                                .stroke(Stroke::NONE)
+                                .corner_radius(c.border_radius as f32),
+                        )
+                    };
                     input_rects.push(resp.rect);
                     resp.widget_info(|| {
                         WidgetInfo::labeled(WidgetType::Button, true, accessibility_label.clone())
@@ -11760,7 +13225,7 @@ impl OttrinApp {
                                     if preview_widget.is_none() {
                                         let max_w = (ui.available_width() - 28.0).max(96.0);
                                         text_snippet = self
-                                            .cached_svg_preview_unavailable_reason(
+                                            .cached_visual_preview_unavailable_reason(
                                                 &entry.path,
                                                 max_w,
                                                 132.0,
@@ -12988,7 +14453,7 @@ impl OttrinApp {
                                     .color(c.text_muted)
                                     .size(10.0),
                                 );
-                                if retained.phase == "pending destination" {
+                                if retained.recovery_available {
                                     if ui
                                         .add_enabled(
                                             true,
@@ -13082,27 +14547,127 @@ impl OttrinApp {
                             ui.add_space(4.0);
                             ui.label(RichText::new(msg).color(c.error).size(10.0));
                         }
-                        if rename_undo_action_is_available(
+                        if path_move_undo_action_is_available(
                             record.status,
-                            record.rename_undo.as_ref(),
+                            record.path_move_undo.as_ref(),
                         ) {
+                            let kind = record
+                                .path_move_undo_token
+                                .as_ref()
+                                .map(|token| token.kind)
+                                .unwrap_or(PathMoveUndoKind::Rename);
+                            let (button_label, hover_text) = match kind {
+                                PathMoveUndoKind::CreateFile => (
+                                    "Undo create file",
+                                    "Remove this created file if it has not changed or been replaced.",
+                                ),
+                                PathMoveUndoKind::CreateFolder => (
+                                    "Undo create folder",
+                                    "Remove this created folder if it is still empty and has not been replaced.",
+                                ),
+                                PathMoveUndoKind::Symlink => (
+                                    "Undo symlink",
+                                    "Remove this link entry if it has not been replaced.",
+                                ),
+                                PathMoveUndoKind::Chmod => (
+                                    "Undo permission change",
+                                    "Restore the prior permissions if this entry has not been replaced or changed again.",
+                                ),
+                                PathMoveUndoKind::Trash => (
+                                    "Undo Trash move",
+                                    "Restore this exact Trash item only if its original path is still free.",
+                                ),
+                                PathMoveUndoKind::TextEdit => (
+                                    "Undo text edit",
+                                    "Restore the prior text if this file has not changed or been replaced.",
+                                ),
+                                PathMoveUndoKind::Rename => (
+                                    "Undo rename",
+                                    "Restore this renamed entry if it has not changed or been replaced.",
+                                ),
+                                PathMoveUndoKind::Copy => (
+                                    "Undo copy",
+                                    "Reverse this copy if its published entry and any displaced destination are still the exact retained entries.",
+                                ),
+                                PathMoveUndoKind::Move => (
+                                    "Undo move",
+                                    "Move this entry back if it has not changed or been replaced.",
+                                ),
+                            };
                             ui.add_space(4.0);
                             if ui
-                                .button("Undo rename")
-                                .on_hover_text(
-                                    "Restore this renamed entry if it has not changed or been replaced.",
-                                )
+                                .button(button_label)
+                                .on_hover_text(hover_text)
                                 .clicked()
                             {
                                 undo_rename = Some(record.id);
                             }
-                        } else if let Some(rename_undo) = &record.rename_undo {
+                        } else if let Some(path_move_undo) = &record.path_move_undo {
                             ui.add_space(4.0);
-                            let (label, color) = match rename_undo {
-                                RenameUndoState::Available => ("Undo available", c.accent),
-                                RenameUndoState::UndoQueued => ("Undoing rename…", c.accent_dim),
-                                RenameUndoState::Undone => ("Rename undone", c.accent),
-                                RenameUndoState::Unavailable { .. } => ("Undo unavailable", c.error),
+                            let kind = record
+                                .path_move_undo_token
+                                .as_ref()
+                                .map(|token| token.kind)
+                                .unwrap_or(PathMoveUndoKind::Rename);
+                            let (label, color) = match (path_move_undo, kind) {
+                                (PathMoveUndoState::Available, _) => ("Undo available", c.accent),
+                                (PathMoveUndoState::UndoQueued, PathMoveUndoKind::CreateFile) => {
+                                    ("Undoing file creation…", c.accent_dim)
+                                }
+                                (PathMoveUndoState::UndoQueued, PathMoveUndoKind::CreateFolder) => {
+                                    ("Undoing folder creation…", c.accent_dim)
+                                }
+                                (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Symlink) => {
+                                    ("Undoing symlink…", c.accent_dim)
+                                }
+                                (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Chmod) => {
+                                    ("Undoing permission change…", c.accent_dim)
+                                }
+                                (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Trash) => {
+                                    ("Undoing Trash move…", c.accent_dim)
+                                }
+                                (PathMoveUndoState::UndoQueued, PathMoveUndoKind::TextEdit) => {
+                                    ("Undoing text edit…", c.accent_dim)
+                                }
+                                (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Rename) => {
+                                    ("Undoing rename…", c.accent_dim)
+                                }
+                                (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Copy) => {
+                                    ("Undoing copy…", c.accent_dim)
+                                }
+                                (PathMoveUndoState::UndoQueued, PathMoveUndoKind::Move) => {
+                                    ("Undoing move…", c.accent_dim)
+                                }
+                                (PathMoveUndoState::Undone, PathMoveUndoKind::CreateFile) => {
+                                    ("File creation undone", c.accent)
+                                }
+                                (PathMoveUndoState::Undone, PathMoveUndoKind::CreateFolder) => {
+                                    ("Folder creation undone", c.accent)
+                                }
+                                (PathMoveUndoState::Undone, PathMoveUndoKind::Symlink) => {
+                                    ("Symlink undone", c.accent)
+                                }
+                                (PathMoveUndoState::Undone, PathMoveUndoKind::Chmod) => {
+                                    ("Permission change undone", c.accent)
+                                }
+                                (PathMoveUndoState::Undone, PathMoveUndoKind::Trash) => {
+                                    ("Trash move undone", c.accent)
+                                }
+                                (PathMoveUndoState::Undone, PathMoveUndoKind::TextEdit) => {
+                                    ("Text edit undone", c.accent)
+                                }
+                                (PathMoveUndoState::Undone, PathMoveUndoKind::Rename) => {
+                                    ("Rename undone", c.accent)
+                                }
+                                (PathMoveUndoState::Undone, PathMoveUndoKind::Copy) => {
+                                    ("Copy undone", c.accent)
+                                }
+                                (PathMoveUndoState::Undone, PathMoveUndoKind::Move) => {
+                                    ("Move undone", c.accent)
+                                }
+                                (PathMoveUndoState::Unavailable { .. }, _) => {
+                                    ("Undo unavailable", c.error)
+                                }
                             };
                             ui.label(RichText::new(label).color(color).size(10.0));
                         } else if record.status == OperationStatus::Completed {
@@ -13127,7 +14692,7 @@ impl OttrinApp {
             }
         });
         if let Some(op_id) = undo_rename {
-            self.run_rename_undo(op_id);
+            self.run_path_move_undo(op_id);
         }
     }
 
@@ -13980,18 +15545,35 @@ impl OttrinApp {
                                     {
                                         ui.add(img);
                                     } else {
+                                        let visual_loading =
+                                            self.preview_scheduler.is_inflight_for(&item.path, 0);
                                         let unavailable = self
-                                            .cached_svg_preview_unavailable_reason(
+                                            .cached_visual_preview_unavailable_reason(
                                                 &item.path, avail_w, max_h,
-                                            )
-                                            .unwrap_or_else(|| {
-                                                "Image preview unavailable".to_string()
-                                            });
-                                        ui.label(
-                                            RichText::new(unavailable)
-                                                .size(10.5)
-                                                .color(c.text_muted),
-                                        );
+                                            );
+                                        match visual_preview_fallback(
+                                            &pv,
+                                            visual_loading,
+                                            unavailable.as_deref(),
+                                        ) {
+                                            VisualPreviewFallback::Loading => {
+                                                ui.horizontal(|ui| {
+                                                    ui.spinner();
+                                                    ui.label(
+                                                        RichText::new("Loading preview…")
+                                                            .size(10.5)
+                                                            .color(c.text_muted),
+                                                    );
+                                                });
+                                            }
+                                            VisualPreviewFallback::Metadata(metadata) => {
+                                                ui.label(
+                                                    RichText::new(metadata)
+                                                        .size(10.5)
+                                                        .color(c.text_muted),
+                                                );
+                                            }
+                                        }
                                     }
                                 }
                                 _ => {
@@ -14560,7 +16142,7 @@ impl OttrinApp {
     }
 
     fn open_with_application_dialog(&mut self, path: &Path) {
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         match ottrin_platform::discover_open_with_applications(path) {
             Ok(choices) if !choices.is_empty() => {
                 self.open_with_dialog = Some(OpenWithDialog {
@@ -15905,9 +17487,13 @@ impl OttrinApp {
                 let mut metadata_icon: Option<&'static str> = None;
                 let max_preview_w = (width - pad * 2.0).max(96.0);
                 // Preview fills the space above the info panel
-                let max_preview_h = (height - info_total_h - 32.0).max(80.0);
-
                 let preview = self.cached_info_preview(entry);
+                let action_height = if specialized_preview_body_action(&preview).is_some() {
+                    38.0
+                } else {
+                    0.0
+                };
+                let max_preview_h = (height - info_total_h - 32.0 - action_height).max(80.0);
                 let use_shared_body_renderer = shared_preview_body_kind(preview.kind);
                 match preview.kind {
                     PreviewKind::Image
@@ -15934,7 +17520,7 @@ impl OttrinApp {
                             preview_widget = Some(img);
                         } else {
                             let snippet = self
-                                .cached_svg_preview_unavailable_reason(
+                                .cached_visual_preview_unavailable_reason(
                                     &entry.path,
                                     max_preview_w,
                                     max_preview_h,
@@ -15979,6 +17565,7 @@ impl OttrinApp {
                                 let _ = render_shared_preview_body(
                                     ui,
                                     c,
+                                    &entry.path,
                                     &entry.name,
                                     &preview,
                                     &mut selected_sheet,
@@ -16008,6 +17595,10 @@ impl OttrinApp {
                         } else {
                             ui.add_space((preview_h * 0.3).max(16.0));
                             ui.label(RichText::new(icon).size(52.0).color(icon_color));
+                        }
+                        if specialized_preview_body_action(&preview).is_some() {
+                            ui.add_space(8.0);
+                            render_preview_card_action(ui, c, &entry.path, &preview);
                         }
                     },
                 );
@@ -17015,6 +18606,76 @@ impl OttrinApp {
         }
     }
 
+    #[cfg(target_os = "linux")]
+    fn render_preview_media_playback(
+        &mut self,
+        ui: &mut egui::Ui,
+        path: &Path,
+        preview: &PreviewData,
+    ) {
+        let Some(playback) = self.preview.media_playback.as_mut() else {
+            return;
+        };
+        ui.vertical_centered(|ui| {
+            if let Some(texture) = playback.texture.as_ref() {
+                let available = Vec2::new(
+                    (ui.available_width() - 24.0).max(120.0),
+                    (ui.available_height() - 110.0).max(120.0),
+                );
+                ui.add(egui::Image::new(texture).max_size(available));
+                ui.add_space(8.0);
+            } else if preview.kind == PreviewKind::VideoMetadata
+                && matches!(
+                    playback.status,
+                    PreviewMediaPlaybackStatus::Loading
+                        | PreviewMediaPlaybackStatus::Playing
+                        | PreviewMediaPlaybackStatus::Paused
+                )
+            {
+                ui.spinner();
+                ui.label("Waiting for a decoded video frame…");
+                ui.add_space(8.0);
+            }
+
+            ui.horizontal(|ui| {
+                if ui
+                    .add_enabled(playback.session.is_some(), egui::Button::new("Play"))
+                    .clicked()
+                    && let Some(session) = playback.session.as_ref()
+                {
+                    session.play();
+                }
+                if ui
+                    .add_enabled(playback.session.is_some(), egui::Button::new("Pause"))
+                    .clicked()
+                    && let Some(session) = playback.session.as_ref()
+                {
+                    session.pause();
+                }
+            });
+
+            let status = match &playback.status {
+                PreviewMediaPlaybackStatus::Loading => "Starting system GStreamer…".to_string(),
+                PreviewMediaPlaybackStatus::Playing => "Playing".to_string(),
+                PreviewMediaPlaybackStatus::Paused => "Paused".to_string(),
+                PreviewMediaPlaybackStatus::Ended => "Playback ended".to_string(),
+                PreviewMediaPlaybackStatus::Unavailable(message)
+                | PreviewMediaPlaybackStatus::Failed(message) => message.clone(),
+            };
+            ui.label(RichText::new(status).color(self.colors.text_dim).size(11.5));
+            ui.add_space(8.0);
+            ui.label(
+                RichText::new(compact_preview_metadata(&preview.title, &preview.body))
+                    .color(self.colors.text_dim)
+                    .size(11.0),
+            );
+            if specialized_preview_body_action(preview).is_some() {
+                ui.add_space(8.0);
+                render_preview_card_action(ui, self.colors, path, preview);
+            }
+        });
+    }
+
     #[allow(deprecated)]
     fn render_preview_overlay(&mut self, ctx: &Context) {
         if !self.preview.visible {
@@ -17038,10 +18699,18 @@ impl OttrinApp {
             .data
             .clone()
             .unwrap_or_else(|| loading_preview_data(&path));
+        #[cfg(target_os = "linux")]
+        self.sync_preview_media_playback(ctx, &path, preview.kind);
+        let office_render = self.office_rendered_page_for_path(&path).cloned();
+        let uses_office_provider =
+            office_render.is_some() || self.office_provider_for_path(&path).is_some();
         let name = preview.title.clone();
         let mut close_requested = false;
         let builder = egui::ViewportBuilder::default()
-            .with_title(format!("Ottrin Quick Inspector — {name}"))
+            .with_title(administrator_surface_label(
+                &format!("Ottrin Quick Inspector — {name}"),
+                administrator_session(),
+            ))
             .with_inner_size([720.0, 560.0])
             .with_min_inner_size([420.0, 320.0])
             .with_resizable(true);
@@ -17049,9 +18718,13 @@ impl OttrinApp {
 
         ctx.show_viewport_immediate(vp_id, builder, |inspector_ctx, _class| {
         self.apply_theme_to_ctx(inspector_ctx);
-        if inspector_ctx.input(|i| i.viewport().close_requested()) && self.request_preview_close() {
-            close_requested = true;
-            return;
+        if inspector_ctx.input(|i| i.viewport().close_requested()) {
+            if self.native_preview_close_is_cancelled() {
+                inspector_ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            } else {
+                close_requested = true;
+                return;
+            }
         }
         let inspector_modal_active = self.pending_rename.is_some()
             || self.pending_delete.is_some()
@@ -17150,6 +18823,15 @@ impl OttrinApp {
                             ui.menu_button(
                                 RichText::new(MI_MORE_VERT).color(c.text).size(18.0),
                                 |ui| {
+                                    if self.quick_inspector_only
+                                        && menu_item(ui, MI_FOLDER_OPEN, "Show in Ottrin", &c)
+                                            .clicked()
+                                    {
+                                        if self.show_quick_inspector_in_main() {
+                                            ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
+                                        }
+                                        ui.close();
+                                    }
                                     if menu_item(ui, MI_CONTENT_COPY, "Copy Path", &c).clicked() {
                                         ui.ctx().copy_text(path.display().to_string());
                                         self.set_status_message("Copied file path", true, 3);
@@ -17179,6 +18861,20 @@ impl OttrinApp {
                                     }
                                     if menu_item(ui, MI_EDIT, "Rename", &c).clicked() {
                                         self.begin_rename();
+                                        ui.close();
+                                    }
+                                    if preview.open_external
+                                        && menu_item(ui, MI_OPEN_IN_NEW, "Open externally", &c)
+                                            .clicked()
+                                    {
+                                        match self.platform.reveal_in_system(&path) {
+                                            Ok(()) => self.set_status_message("Opened file", true, 3),
+                                            Err(err) => self.set_status_message(
+                                                format!("Open failed: {err}"),
+                                                false,
+                                                5,
+                                            ),
+                                        }
                                         ui.close();
                                     }
                                     if menu_item(ui, MI_OPEN_IN_NEW, "Reveal", &c).clicked() {
@@ -17224,9 +18920,15 @@ impl OttrinApp {
                                     .text_editor
                                     .as_ref()
                                     .is_some_and(PreviewTextEditor::is_dirty);
+                                let administrator = administrator_session();
+                                let save_label =
+                                    administrator_surface_label("Save", administrator);
                                 if ui
-                                    .add_enabled(save_enabled, egui::Button::new("Save"))
-                                    .on_hover_text("Atomically save the edited text (Ctrl+S).")
+                                    .add_enabled(save_enabled, egui::Button::new(save_label))
+                                    .on_hover_text(administrator_surface_label(
+                                        "Atomically save the edited text (Ctrl+S).",
+                                        administrator,
+                                    ))
                                     .clicked()
                                 {
                                     self.save_preview_text_edit();
@@ -17268,7 +18970,9 @@ impl OttrinApp {
                                     self.rotate_inspector_image(&path, false);
                                 }
                             }
-                            if let Some(page_count) = pdf_page_count(&preview) {
+                            if let Some(page_count) =
+                                preview_page_count(&preview, office_render.as_ref())
+                            {
                                 let page_index = self.preview.pdf_page_index.min(page_count - 1);
                                 if ui
                                     .add_enabled(
@@ -17278,7 +18982,7 @@ impl OttrinApp {
                                     .on_hover_text("Show the previous PDF page.")
                                     .clicked()
                                 {
-                                    self.set_pdf_preview_page(page_index - 1);
+                                    self.set_preview_page(page_index - 1);
                                 }
                                 let mut selected_page = page_index + 1;
                                 if ui
@@ -17289,7 +18993,7 @@ impl OttrinApp {
                                     )
                                     .changed()
                                 {
-                                    self.set_pdf_preview_page(selected_page - 1);
+                                    self.set_preview_page(selected_page - 1);
                                 }
                                 ui.label(RichText::new(format!("of {page_count}")).color(c.text_dim));
                                 if ui
@@ -17300,7 +19004,7 @@ impl OttrinApp {
                                     .on_hover_text("Show the next PDF page.")
                                     .clicked()
                                 {
-                                    self.set_pdf_preview_page(page_index + 1);
+                                    self.set_preview_page(page_index + 1);
                                 }
                             }
                             let is_zoomable_document = matches!(
@@ -17315,11 +19019,14 @@ impl OttrinApp {
                                     | PreviewKind::ThreeMfMetadata
                                     | PreviewKind::VideoMetadata
                                     | PreviewKind::Pdf
-                            ) || quick_inspector_uses_rendered_office_page(&path);
+                                    | PreviewKind::EpsMetadata
+                            ) || quick_inspector_uses_rendered_office_page(&path)
+                                || uses_office_provider;
                             let video_visual_available = preview.kind != PreviewKind::VideoMetadata
                                 || ottrin_preview::preview_profile(&path).visual_renderer()
                                     == ottrin_preview::PreviewVisualRenderer::Video;
                             if is_zoomable_document && video_visual_available {
+                                ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                                 if ui
                                     .small_button("Fit")
                                     .on_hover_text(
@@ -17361,6 +19068,7 @@ impl OttrinApp {
                                     self.preview.visual_zoom =
                                         (self.preview.visual_zoom * 1.2).clamp(0.1, 8.0);
                                 }
+                                });
                             }
                         });
                     });
@@ -17374,22 +19082,36 @@ impl OttrinApp {
                             (self.preview.visual_zoom * gesture_zoom).clamp(0.1, 8.0);
                     }
 
-                    let use_shared_body_renderer = shared_preview_body_kind(preview.kind)
-                        && !(preview.kind == PreviewKind::Text
-                            && self.preview.text_editor.is_some())
-                        && !(preview.kind == PreviewKind::OfficeMetadata
-                            && quick_inspector_uses_rendered_office_page(&path));
+                    let specialized_body_renderer = (preview.kind == PreviewKind::Text
+                        && self.preview.text_editor.is_some())
+                        || (preview.kind == PreviewKind::OfficeMetadata
+                            && (quick_inspector_uses_rendered_office_page(&path)
+                                || uses_office_provider))
+                        || quick_inspector_uses_visual_preview(&path, preview.kind);
+                    let use_shared_body_renderer =
+                        shared_preview_body_kind(preview.kind) && !specialized_body_renderer;
+                    #[cfg(target_os = "linux")]
+                    let use_shared_body_renderer = use_shared_body_renderer
+                        && !preview_uses_media_playback(preview.kind);
                     if use_shared_body_renderer {
                         let _ = render_shared_preview_body(
                             ui,
                             c,
+                            &path,
                             &name,
                             &preview,
                             &mut self.preview.spreadsheet_sheet_id,
                         );
                     } else {
                         match preview.kind {
-                        PreviewKind::Text => {
+                        #[cfg(target_os = "linux")]
+                        PreviewKind::VideoMetadata | PreviewKind::AudioMetadata => {
+                            self.render_preview_media_playback(ui, &path, &preview);
+                        }
+                        PreviewKind::Text
+                            if self.preview.text_editor.is_some()
+                                || !quick_inspector_uses_visual_preview(&path, preview.kind) =>
+                        {
                             if let Some(editor) = self.preview.text_editor.as_mut() {
                                 ScrollArea::vertical()
                                     .id_salt(("inspector_text_editor", &path))
@@ -17413,13 +19135,15 @@ impl OttrinApp {
                                 let _ = render_shared_preview_body(
                                     ui,
                                     c,
+                                    &path,
                                     &name,
                                     &preview,
                                     &mut self.preview.spreadsheet_sheet_id,
                                 );
                             }
                         }
-                        visual_kind @ (PreviewKind::Image
+                        visual_kind @ (PreviewKind::Text
+                        | PreviewKind::Image
                         | PreviewKind::CameraRawMetadata
                         | PreviewKind::AffinityMetadata
                         | PreviewKind::SqliteMetadata
@@ -17427,11 +19151,9 @@ impl OttrinApp {
                         | PreviewKind::ObjMetadata
                         | PreviewKind::PlyMetadata
                         | PreviewKind::ThreeMfMetadata
-                        | PreviewKind::VideoMetadata
-                        | PreviewKind::Pdf)
-                            if visual_kind != PreviewKind::VideoMetadata
-                                || ottrin_preview::preview_profile(&path).visual_renderer()
-                                    == ottrin_preview::PreviewVisualRenderer::Video =>
+                        | PreviewKind::Pdf
+                        | PreviewKind::EpsMetadata)
+                            if quick_inspector_uses_visual_preview(&path, visual_kind) =>
                         {
                             ScrollArea::both().show(ui, |ui| {
                                 let max_w = (ui.available_width() - 24.0).max(120.0);
@@ -17454,6 +19176,9 @@ impl OttrinApp {
                                         },
                                     );
                                     let image_available = image.is_some();
+                                    let visual_refining = self
+                                        .preview_scheduler
+                                        .is_inflight_for(&path, pdf_page_index);
                                     if let Some(img) = image {
                                         let image_resp = ui.add(img);
                                         if let Some(delta) =
@@ -17461,6 +19186,26 @@ impl OttrinApp {
                                         {
                                             let _ = self.select_adjacent_preview_item(delta);
                                         }
+                                        if visual_refining {
+                                            ui.add_space(6.0);
+                                            ui.horizontal(|ui| {
+                                                ui.spinner();
+                                                ui.label(
+                                                    RichText::new("Loading full resolution…")
+                                                        .color(c.text_dim)
+                                                        .size(11.0),
+                                                );
+                                            });
+                                        }
+                                    } else if visual_refining {
+                                        ui.horizontal(|ui| {
+                                            ui.spinner();
+                                            ui.label(
+                                                RichText::new("Loading preview…")
+                                                    .color(c.text_dim)
+                                                    .size(11.0),
+                                            );
+                                        });
                                     } else {
                                         if preview.kind == PreviewKind::Pdf {
                                             let (metadata, _) =
@@ -17475,29 +19220,36 @@ impl OttrinApp {
                                                 ),
                                             );
                                         } else if preview.kind == PreviewKind::VideoMetadata {
+                                            let unavailable = self
+                                                .cached_visual_preview_unavailable_reason(
+                                                    &path, max_w, max_h,
+                                                );
                                             render_metadata_card_preview(
                                                 ui,
                                                 c,
                                                 MI_MOVIE,
                                                 &name,
-                                                &format!(
-                                                    "{}\nThumbnail: unavailable for this file; metadata remains available.",
-                                                    preview.body
+                                                &video_metadata_visual_fallback_body(
+                                                    &preview.body,
+                                                    unavailable.as_deref(),
                                                 ),
                                             );
                                         } else {
                                             let unavailable = self
-                                                .cached_svg_preview_unavailable_reason(
+                                                .cached_visual_preview_unavailable_reason(
                                                     &path, max_w, max_h,
+                                                );
+                                            if let VisualPreviewFallback::Metadata(metadata) =
+                                                visual_preview_fallback(
+                                                    &preview,
+                                                    false,
+                                                    unavailable.as_deref(),
                                                 )
-                                                .unwrap_or_else(|| {
-                                                    "Image preview unavailable".to_string()
-                                                });
-                                            ui.label(
-                                                RichText::new(unavailable)
-                                                    .color(c.text_dim)
-                                                    .size(11.0),
-                                            );
+                                            {
+                                                render_metadata_card_preview(
+                                                    ui, c, MI_IMAGE, &name, &metadata,
+                                                );
+                                            }
                                         }
                                     }
                                     if image_available && !preview.body.is_empty() {
@@ -17515,7 +19267,46 @@ impl OttrinApp {
                             });
                         }
                         PreviewKind::OfficeMetadata => {
-                            if quick_inspector_uses_rendered_office_page(&path) {
+                            if uses_office_provider {
+                                ScrollArea::both().show(ui, |ui| {
+                                    let max_w = (ui.available_width() - 24.0).max(120.0);
+                                    let max_h = (ui.available_height() - 34.0).max(160.0);
+                                    ui.vertical_centered(|ui| {
+                                        let page_index = self.preview.pdf_page_index;
+                                        let image = self.cached_shared_visual_preview_widget(
+                                            &path,
+                                            PreviewKind::OfficeMetadata,
+                                            VisualPreviewRenderSpec {
+                                                max_size: Vec2::new(max_w, max_h),
+                                                corner_radius: 8,
+                                                page_index,
+                                                fit: self.preview.visual_fit,
+                                                zoom: self.preview.visual_zoom,
+                                            },
+                                        );
+                                        if let Some(image) = image {
+                                            ui.add(image);
+                                        } else {
+                                            ui.horizontal(|ui| {
+                                                ui.spinner();
+                                                ui.label(
+                                                    RichText::new("Rendering Office preview…")
+                                                        .color(c.text_dim)
+                                                        .size(11.0),
+                                                );
+                                            });
+                                        }
+                                        if let Some(rendered) = office_render.as_ref() {
+                                            ui.add_space(6.0);
+                                            ui.label(
+                                                RichText::new(&rendered.label)
+                                                    .color(c.text_dim)
+                                                    .size(11.0),
+                                            );
+                                        }
+                                    });
+                                });
+                            } else if quick_inspector_uses_rendered_office_page(&path) {
                                 ui.scope(|ui| {
                                     // DOCX is width-fitted, so a horizontal bar is never a
                                     // valid affordance. The vertical bar reserves its own space
@@ -17603,6 +19394,7 @@ impl OttrinApp {
                                 let _ = render_shared_preview_body(
                                     ui,
                                     c,
+                                    &path,
                                     &name,
                                     &preview,
                                     &mut self.preview.spreadsheet_sheet_id,
@@ -17613,11 +19405,13 @@ impl OttrinApp {
                             let _ = render_shared_preview_body(
                                 ui,
                                 c,
+                                &path,
                                 &name,
                                 &preview,
                                 &mut self.preview.spreadsheet_sheet_id,
                             );
                         }
+                        #[cfg(not(target_os = "linux"))]
                         PreviewKind::VideoMetadata => {
                             let icon = match preview.kind {
                                 PreviewKind::VideoMetadata => MI_MOVIE,
@@ -17634,6 +19428,7 @@ impl OttrinApp {
                                     let _ = render_shared_preview_body(
                                         ui,
                                         c,
+                                        &path,
                                         &name,
                                         &preview,
                                         &mut self.preview.spreadsheet_sheet_id,
@@ -17658,6 +19453,9 @@ impl OttrinApp {
                                 }
                             });
                         }
+                    }
+                    if specialized_preview_body_action(&preview).is_some() {
+                        render_preview_card_action(ui, c, &path, &preview);
                     }
                     }
                 });
@@ -18924,7 +20722,7 @@ impl OttrinApp {
                                 }
                                 SettingsTab::Files => {
                                     ui.label(RichText::new("Files").color(c.text).size(settings_title).strong());
-                                    ui.label(RichText::new("Defaults for file and folder visibility.")
+                                    ui.label(RichText::new("Defaults for file visibility and document previews.")
                                         .color(c.text_muted).size(settings_subtitle));
                                     ui.add_space(12.0);
                                     let show_hidden = self.state.config.show_hidden_files;
@@ -18936,6 +20734,84 @@ impl OttrinApp {
                                         self.state.config.show_hidden_files = !show_hidden;
                                         self.refresh_active_tab();
                                     }
+
+                                    #[cfg(target_os = "linux")]
+                                    {
+                                        ui.add_space(14.0);
+                                        ui.separator();
+                                        ui.add_space(10.0);
+                                        ui.label(RichText::new("Media playback").color(c.text).size(13.0).strong());
+                                        ui.label(
+                                            RichText::new(LINUX_SYSTEM_MEDIA_DISCLOSURE)
+                                                .color(c.text_muted)
+                                                .size(10.5),
+                                        );
+                                    }
+
+                                    ui.add_space(14.0);
+                                    ui.separator();
+                                    ui.add_space(10.0);
+                                    ui.label(RichText::new("Office previews").color(c.text).size(13.0).strong());
+                                    let detected = self
+                                        .office_provider
+                                        .lock()
+                                        .expect("Office provider cache")
+                                        .clone();
+                                    if let Some(detected) = detected {
+                                        ui.label(
+                                            RichText::new(format!(
+                                                "LibreOffice {}",
+                                                detected.capability.version
+                                            ))
+                                            .color(c.text)
+                                            .size(12.0),
+                                        );
+                                        ui.label(
+                                            RichText::new(detected.executable.display().to_string())
+                                                .color(c.text_muted)
+                                                .size(10.5)
+                                                .monospace(),
+                                        );
+                                        ui.add_space(6.0);
+                                        let enabled = self
+                                            .state
+                                            .config
+                                            .installed_office_previews_enabled;
+                                        let check = if enabled { MI_CHECK } else { "  " };
+                                        if ui
+                                            .add(
+                                                egui::Button::new(
+                                                    RichText::new(format!(
+                                                        "{check} Use installed LibreOffice for Office previews"
+                                                    ))
+                                                    .size(12.5)
+                                                    .color(if enabled { c.text } else { c.text_dim }),
+                                                )
+                                                .frame(true)
+                                                .min_size(Vec2::new(ui.available_width(), 28.0)),
+                                            )
+                                            .clicked()
+                                        {
+                                            self.state.config.installed_office_previews_enabled =
+                                                !enabled;
+                                            self.persist_config();
+                                        }
+                                        ui.label(
+                                            RichText::new(
+                                                "When disabled, Quick Inspector uses Ottrin's native structured or extracted preview.",
+                                            )
+                                            .color(c.text_muted)
+                                            .size(10.5),
+                                        );
+                                    } else {
+                                        ui.label(
+                                            RichText::new(
+                                                "No compatible installed LibreOffice provider was detected. Ottrin is using native previews.",
+                                            )
+                                            .color(c.text_muted)
+                                            .size(11.0),
+                                        );
+                                    }
                                 }
                                 SettingsTab::Search => {
                                     self.ensure_search_started();
@@ -18946,6 +20822,244 @@ impl OttrinApp {
                                         "Control where Ottrin looks, what to skip, and how the index stays current."
                                     ).color(c.text_muted).size(settings_subtitle));
                                     ui.add_space(12.0);
+
+                                    if is_administrator_session() {
+                                        let session_active = self.search_service.administrator_session_index_active();
+                                        let persistent_status = cached_sqlite_schedule_status(
+                                            &mut self.search_ui.sqlite_schedule_status,
+                                            ottrin_search::administrator_index_service_status,
+                                        );
+                                        let persistent_installed = persistent_status.source != "none";
+                                        Frame::new()
+                                            .fill(mix_color(c.panel, c.accent, 0.10))
+                                            .stroke(Stroke::new(1.0, mix_color(c.border, c.accent, 0.35)))
+                                            .corner_radius(7.0)
+                                            .inner_margin(egui::Margin::symmetric(14, 12))
+                                            .show(ui, |ui| {
+                                                ui.set_width(ui.available_width());
+                                                ui.label(RichText::new("Administrator session").color(c.text).size(13.0).strong());
+                                                ui.label(RichText::new(
+                                                    "Browsing and direct file use do not require a root index. Indexing starts only after an explicit choice below."
+                                                ).color(c.text_muted).size(10.8));
+                                                ui.add_space(8.0);
+                                                if ui.button("Continue without a root Ottrin index").clicked() {
+                                                    self.set_status_message(
+                                                        "Administrator session will continue without a root Ottrin index.",
+                                                        true,
+                                                        6,
+                                                    );
+                                                }
+                                                let selected = self.state.config.search.include_roots.len();
+                                                let session_button = egui::Button::new(if session_active {
+                                                    "Administrator session index is active".to_string()
+                                                } else {
+                                                    format!("Index {selected} selected location{} for this session", if selected == 1 { "" } else { "s" })
+                                                });
+                                                if ui.add_enabled(!session_active && !persistent_installed && selected > 0, session_button).clicked() {
+                                                    let config = self.state.config.search.clone();
+                                                    match self.search_service.start_administrator_session_index(&config) {
+                                                        Ok(()) => self.set_status_message(
+                                                            "Temporary Administrator index started. It will stop and be removed when this Ottrin session ends.",
+                                                            true,
+                                                            8,
+                                                        ),
+                                                        Err(error) => self.set_status_message(error, false, 10),
+                                                    }
+                                                }
+                                                ui.label(RichText::new(
+                                                    "Session indexing uses only the selected locations. Content extraction stays off, and no service is installed."
+                                                ).color(c.text_muted).size(10.5));
+                                                let database_bytes =
+                                                    ottrin_search::administrator_index_database_bytes();
+                                                ui.label(
+                                                    RichText::new(format!(
+                                                        "Persistent root index: {}",
+                                                        persistent_status.detail
+                                                    ))
+                                                    .color(c.text_muted)
+                                                    .size(10.5),
+                                                );
+                                                if !self.search_ui.administrator_persistent_confirmation {
+                                                    let label = if persistent_installed {
+                                                        "Manage persistent root index (advanced)"
+                                                    } else {
+                                                        "Review persistent root index setup (advanced)"
+                                                    };
+                                                    if ui
+                                                        .add_enabled(selected > 0, egui::Button::new(label))
+                                                        .clicked()
+                                                    {
+                                                        self.search_ui
+                                                            .administrator_persistent_confirmation = true;
+                                                    }
+                                                } else {
+                                                    Frame::new()
+                                                        .fill(c.panel)
+                                                        .stroke(Stroke::new(1.0, c.border))
+                                                        .corner_radius(6.0)
+                                                        .inner_margin(egui::Margin::symmetric(10, 8))
+                                                        .show(ui, |ui| {
+                                                            ui.label(
+                                                                RichText::new(
+                                                                    administrator_persistent_index_disclosure(
+                                                                        &self.state.config.search,
+                                                                        database_bytes,
+                                                                    ),
+                                                                )
+                                                                .color(c.text_muted)
+                                                                .size(10.5),
+                                                            );
+                                                            ui.add_space(6.0);
+                                                            if persistent_installed {
+                                                                if ui
+                                                                    .button("Apply selected scope and restart")
+                                                                    .clicked()
+                                                                {
+                                                                    let result = ottrin_search::install_administrator_index_service(
+                                                                        &self.state.config.search,
+                                                                    )
+                                                                    .and_then(|_| {
+                                                                        ottrin_search::restart_administrator_index_service()
+                                                                    })
+                                                                    .and_then(|message| {
+                                                                        self.search_service
+                                                                            .connect_administrator_persistent_index()
+                                                                            .map(|()| message)
+                                                                    });
+                                                                    match result {
+                                                                        Ok(message) => self.set_status_message(message, true, 10),
+                                                                        Err(error) => self.set_status_message(error, false, 12),
+                                                                    }
+                                                                    self.search_ui.sqlite_schedule_status = None;
+                                                                    self.search_ui.administrator_persistent_confirmation = false;
+                                                                }
+                                                                if ui.button("Restart persistent index").clicked() {
+                                                                    match ottrin_search::restart_administrator_index_service() {
+                                                                        Ok(message) => self.set_status_message(message, true, 10),
+                                                                        Err(error) => self.set_status_message(error, false, 12),
+                                                                    }
+                                                                    self.search_ui.sqlite_schedule_status = None;
+                                                                }
+                                                                ui.checkbox(
+                                                                    &mut self.search_ui.administrator_purge_on_remove,
+                                                                    "Also purge protected configuration and index data",
+                                                                );
+                                                                if ui.button("Remove persistent root index").clicked() {
+                                                                    let purge = self
+                                                                        .search_ui
+                                                                        .administrator_purge_on_remove;
+                                                                    match ottrin_search::uninstall_administrator_index_service(purge) {
+                                                                        Ok(message) => {
+                                                                            self.search_service
+                                                                                .disconnect_administrator_persistent_index();
+                                                                            self.set_status_message(message, true, 10);
+                                                                        }
+                                                                        Err(error) => self.set_status_message(error, false, 12),
+                                                                    }
+                                                                    self.search_ui.sqlite_schedule_status = None;
+                                                                    self.search_ui.administrator_persistent_confirmation = false;
+                                                                    self.search_ui.administrator_purge_on_remove = false;
+                                                                }
+                                                            } else if ui
+                                                                .button("Confirm and enable persistent root index")
+                                                                .clicked()
+                                                            {
+                                                                self.search_service
+                                                                    .stop_administrator_session_index();
+                                                                let result = ottrin_search::install_administrator_index_service(
+                                                                    &self.state.config.search,
+                                                                )
+                                                                .and_then(|message| {
+                                                                    self.search_service
+                                                                        .connect_administrator_persistent_index()
+                                                                        .map(|()| message)
+                                                                });
+                                                                match result {
+                                                                    Ok(message) => self.set_status_message(message, true, 10),
+                                                                    Err(error) => self.set_status_message(error, false, 12),
+                                                                }
+                                                                self.search_ui.sqlite_schedule_status = None;
+                                                                self.search_ui.administrator_persistent_confirmation = false;
+                                                            }
+                                                            if ui.button("Cancel").clicked() {
+                                                                self.search_ui.administrator_persistent_confirmation = false;
+                                                                self.search_ui.administrator_purge_on_remove = false;
+                                                            }
+                                                        });
+                                                }
+                                            });
+                                        ui.add_space(12.0);
+                                    }
+
+                                    if !self.state.config.search_setup_completed {
+                                        Frame::new()
+                                            .fill(mix_color(c.panel, c.accent, 0.10))
+                                            .stroke(Stroke::new(1.0, mix_color(c.border, c.accent, 0.35)))
+                                            .corner_radius(7.0)
+                                            .inner_margin(egui::Margin::symmetric(14, 12))
+                                            .show(ui, |ui| {
+                                                ui.set_width(ui.available_width());
+                                                ui.label(RichText::new("Set up Search").color(c.text).size(13.0).strong());
+                                                ui.label(RichText::new(
+                                                    "Ottrin has three independent search layers. Review each choice; enabling one never enables another."
+                                                ).color(c.text_muted).size(10.8));
+                                                ui.add_space(9.0);
+
+                                                ui.label(RichText::new("1  System filenames").color(c.text).size(11.8).strong());
+                                                ui.label(RichText::new(
+                                                    "Broad filename and path results from the operating system locate database. No file contents are read."
+                                                ).color(c.text_muted).size(10.5));
+                                                if platform_capabilities.system_locate_controls_visible {
+                                                    let locate_available = ottrin_search::SearchService::system_locate_available();
+                                                    let before = self.state.config.search.use_system_locate;
+                                                    ui.add_enabled(
+                                                        locate_available,
+                                                        egui::Checkbox::new(
+                                                            &mut self.state.config.search.use_system_locate,
+                                                            if locate_available { "Use available system filename search" } else { "System locate database unavailable" },
+                                                        ),
+                                                    );
+                                                    if before != self.state.config.search.use_system_locate {
+                                                        self.search_service.update_config(self.state.config.search.clone());
+                                                    }
+                                                } else {
+                                                    ui.label(RichText::new("Not available on this platform yet.").color(c.text_muted).italics().size(10.5));
+                                                }
+                                                ui.add_space(8.0);
+
+                                                ui.label(RichText::new("2  Native metadata").color(c.text).size(11.8).strong());
+                                                ui.label(RichText::new(format!(
+                                                    "Rich, live metadata for {} selected folder{}. Folder bodies are not read by this layer.",
+                                                    self.state.config.search.include_roots.len(),
+                                                    if self.state.config.search.include_roots.len() == 1 { "" } else { "s" },
+                                                )).color(c.text_muted).size(10.5));
+                                                ui.add_space(8.0);
+
+                                                ui.label(RichText::new("3  Optional content").color(c.text).size(11.8).strong());
+                                                ui.label(RichText::new(
+                                                    "Full-text search only inside explicit content folders, using the file groups and size limit below. Off by default."
+                                                ).color(c.text_muted).size(10.5));
+                                                let before = self.state.config.search.content_indexing_enabled;
+                                                ui.checkbox(
+                                                    &mut self.state.config.search.content_indexing_enabled,
+                                                    "Enable optional content indexing",
+                                                );
+                                                if before != self.state.config.search.content_indexing_enabled {
+                                                    self.search_service.update_config(self.state.config.search.clone());
+                                                }
+                                                ui.add_space(10.0);
+                                                ui.label(RichText::new(
+                                                    "Review selected folders and detailed privacy controls below before finishing."
+                                                ).color(c.text_muted).size(10.5).italics());
+                                                if ui.button("Finish search setup").clicked() {
+                                                    self.state.config.search_setup_completed = true;
+                                                    self.persist_config();
+                                                    self.set_status_message("Search setup saved.", true, 5);
+                                                }
+                                            });
+                                        ui.add_space(12.0);
+                                    }
+
                                     let ok_col = Color32::from_rgb(80, 185, 110);
                                     let warn_col = Color32::from_rgb(214, 167, 78);
                                     settings_section_icon(ui, c, MI_SEARCH, "Index status", "Live health, progress, and rebuild controls.", |ui| {
@@ -19037,6 +21151,14 @@ impl OttrinApp {
                                         });
                                         ui.add_space(6.0);
                                         ui.label(RichText::new(&count_line).color(c.text).size(13.0).strong());
+                                        ui.label(
+                                            RichText::new(search_storage_detail(
+                                                diag.database_bytes,
+                                                diag.wal_bytes,
+                                            ))
+                                            .color(c.text_muted)
+                                            .size(10.5),
+                                        );
                                         ui.add_space(2.0);
                                         let path_full = second_line.unwrap_or_else(|| "—".to_string());
                                         let path_height = 18.0;
@@ -19090,7 +21212,7 @@ impl OttrinApp {
                                                     if n == 0 {
                                                         Frame::new().inner_margin(egui::Margin::symmetric(12, 10)).show(ui, |ui| {
                                                             ui.label(RichText::new(
-                                                                "No folders added — Ottrin will not find any files until you add at least one."
+                                                                "No native folders indexed. Enabled system filename search can still find database-visible paths."
                                                             ).color(c.text_muted).italics().size(11.0));
                                                         });
                                                     } else {
@@ -19390,6 +21512,59 @@ impl OttrinApp {
                                         ).color(c.text_muted).size(10.5));
                                         ui.add_space(10.0);
 
+                                        ui.label(RichText::new("File types").color(c.text).size(12.0).strong());
+                                        ui.label(RichText::new(
+                                            "Only selected supported groups have their file bodies read."
+                                        ).color(c.text_muted).size(10.5));
+                                        ui.add_space(4.0);
+                                        for group in ContentFileGroup::ALL {
+                                            let mut selected = self.state.config.search.content_file_groups.contains(&group);
+                                            let response = ui.checkbox(&mut selected, group.label());
+                                            if response.changed() {
+                                                if selected {
+                                                    self.state.config.search.content_file_groups.push(group);
+                                                } else {
+                                                    self.state.config.search.content_file_groups.retain(|candidate| *candidate != group);
+                                                }
+                                                self.search_service.update_config(self.state.config.search.clone());
+                                            }
+                                        }
+                                        if self.state.config.search.content_file_groups.is_empty() {
+                                            ui.label(RichText::new(
+                                                "No file groups selected — file bodies will not be read."
+                                            ).color(c.text_muted).italics().size(10.5));
+                                        }
+                                        ui.add_space(10.0);
+
+                                        ui.horizontal(|ui| {
+                                            ui.label(RichText::new("Maximum file size").color(c.text).size(11.5).strong());
+                                            let before = self.state.config.search.content_max_file_size_bytes;
+                                            egui::ComboBox::from_id_salt("content_max_file_size_bytes")
+                                                .selected_text(format_size(before))
+                                                .width(100.0)
+                                                .show_ui(ui, |ui| {
+                                                    for (bytes, label) in [
+                                                        (128 * 1024, "128 KiB"),
+                                                        (512 * 1024, "512 KiB"),
+                                                        (1024 * 1024, "1 MiB"),
+                                                        (5 * 1024 * 1024, "5 MiB"),
+                                                    ] {
+                                                        ui.selectable_value(
+                                                            &mut self.state.config.search.content_max_file_size_bytes,
+                                                            bytes,
+                                                            label,
+                                                        );
+                                                    }
+                                                });
+                                            if before != self.state.config.search.content_max_file_size_bytes {
+                                                self.search_service.update_config(self.state.config.search.clone());
+                                            }
+                                        });
+                                        ui.label(RichText::new(
+                                            "Larger files are skipped without reading their bodies."
+                                        ).color(c.text_muted).size(10.5));
+                                        ui.add_space(10.0);
+
                                         ui.label(RichText::new("Content sources").color(c.text).size(12.0).strong());
                                         ui.label(RichText::new(
                                             "Only these folders are eligible for content indexing."
@@ -19641,11 +21816,11 @@ impl OttrinApp {
                                                         } else {
                                                             None
                                                         },
-                                                        "plocate fallback",
+                                                        "System filename search",
                                                         if self.state.config.search.use_system_locate {
                                                             if locate_ok { "enabled and available" } else { "enabled but not installed" }
                                                         } else {
-                                                            "off; not needed for normal Ottrin search"
+                                                            "off"
                                                         },
                                                     );
                                                     let sys_age = ottrin_search::SearchService::system_locate_db_age_secs();
@@ -19655,7 +21830,7 @@ impl OttrinApp {
                                                             .map(|s| format!("age {}", format_age_str(s)))
                                                             .unwrap_or_else(|| "unknown age".to_string())
                                                     } else {
-                                                        "not used unless plocate fallback is enabled".to_string()
+                                                        "not used unless system filename search is enabled".to_string()
                                                     };
                                                     health_row(
                                                         ui,
@@ -19680,14 +21855,14 @@ impl OttrinApp {
                                         ui.add_space(12.0);
                                         ui.label(RichText::new("Recommended setup").color(c.text_dim).size(11.5).strong());
                                         ui.label(RichText::new(if persistent_index_daemon {
-                                            "Use Ottrin's SQLite index for everyday search. The per-user daemon keeps it current independently of GUI windows. Locate fallbacks are only for optional path lookup."
+                                            "Use Ottrin's SQLite index for rich metadata in selected folders. The per-user daemon keeps it current independently of GUI windows. System filename search can independently cover broader paths."
                                         } else {
-                                            "Use Ottrin's SQLite index for everyday search. The watcher keeps it current while Ottrin is open. Locate fallbacks are only for optional path lookup, not better normal results."
+                                            "Use Ottrin's SQLite index for rich metadata in selected folders. The watcher keeps it current while Ottrin is open. System filename search can independently cover broader paths."
                                         })
                                             .color(c.text_muted).size(10.5));
                                         ui.add_space(6.0);
 
-                                        {
+                                        if !is_administrator_session() {
                                             Frame::new()
                                                 .fill(c.panel).corner_radius(6.0)
                                                 .inner_margin(egui::Margin::symmetric(12, 10))
@@ -19757,18 +21932,28 @@ impl OttrinApp {
                                                                     Err(e) => (format!("Failed: {}", e), false),
                                                                 }
                                                             } else {
-                                                                let roots = if self.state.config.search.include_roots.is_empty() {
-                                                                    default_search_roots()
-                                                                } else {
-                                                                    self.state.config.search.include_roots.clone()
-                                                                };
-                                                                match ottrin_search::SearchService::install_sqlite_schedule(4, &roots) {
+                                                                match ottrin_search::SearchService::install_sqlite_schedule(&self.state.config.search) {
                                                                     Ok(msg) => (msg, true),
                                                                     Err(e) => (format!("Failed: {}", e), false),
                                                                 }
                                                             };
                                                             self.status_message = Some(UiStatusMessage {
                                                                 text, ok,
+                                                                until: Instant::now() + Duration::from_secs(10),
+                                                            });
+                                                            self.search_ui.sqlite_schedule_status = None;
+                                                        }
+                                                        if persistent_index_daemon
+                                                            && sqlite_sched.enabled
+                                                            && ui.button("Restart daemon").clicked()
+                                                        {
+                                                            let (text, ok) = match ottrin_search::SearchService::restart_sqlite_schedule() {
+                                                                Ok(message) => (message, true),
+                                                                Err(error) => (format!("Failed: {error}"), false),
+                                                            };
+                                                            self.status_message = Some(UiStatusMessage {
+                                                                text,
+                                                                ok,
                                                                 until: Instant::now() + Duration::from_secs(10),
                                                             });
                                                             self.search_ui.sqlite_schedule_status = None;
@@ -19789,17 +21974,17 @@ impl OttrinApp {
                                                     let before = self.state.config.search.use_system_locate;
                                                     ui.add_enabled(locate_ok, egui::Checkbox::new(
                                                         &mut self.state.config.search.use_system_locate,
-                                                        "Use system path fallback (plocate)",
+                                                        "Use system filename search (plocate)",
                                                     ));
                                                     if before != self.state.config.search.use_system_locate {
                                                         self.search_service.update_config(self.state.config.search.clone());
                                                     }
                                                     ui.add_space(2.0);
                                                     ui.label(RichText::new(
-                                                        "Why enable: optional path lookup from the operating system database, useful for broad system paths like /usr, /etc, or /var."
+                                                        "Adds filename and path results from the operating system database, including broad paths such as /usr, /etc, or /var."
                                                     ).color(c.text_muted).size(10.5));
                                                     ui.label(RichText::new(
-                                                        "Leave off: it is not part of normal Ottrin search, does not improve the SQLite index, and cannot bypass permissions."
+                                                        "This works with no native indexed folders, does not add rich metadata to the SQLite index, and cannot bypass permissions."
                                                     ).color(c.text_muted).size(10.5));
                                                     ui.add_space(4.0);
                                                     if locate_ok {
@@ -19812,6 +21997,21 @@ impl OttrinApp {
                                                         ui.label(RichText::new(age_label)
                                                             .size(10.5)
                                                             .color(if stale { warn_col } else { c.text_muted }));
+                                                        if self.state.config.search.use_system_locate
+                                                            && updatedb_ok
+                                                            && (stale || sys_age.is_none())
+                                                            && ui.button("Update system filename database now…").clicked()
+                                                        {
+                                                            let (text, ok) = execute_system_locate_maintenance(
+                                                                self.platform.as_ref(),
+                                                                SystemLocateMaintenance::UpdateNow,
+                                                            );
+                                                            self.status_message = Some(UiStatusMessage {
+                                                                text,
+                                                                ok,
+                                                                until: Instant::now() + Duration::from_secs(8),
+                                                            });
+                                                        }
                                                         let sys_sched = ottrin_search::SearchService::system_locate_schedule_status();
                                                         let mut keep_system_locate_fresh = !sys_sched.needs_setup;
                                                         let schedule_control_enabled = updatedb_ok
@@ -19825,44 +22025,20 @@ impl OttrinApp {
                                                             ),
                                                         );
                                                         if schedule_resp.clicked() {
-                                                            if keep_system_locate_fresh {
-                                                                let script = "#!/bin/sh\n/usr/bin/updatedb\n";
-                                                                let cmd = format!(
-                                                                    "printf '{}' > /etc/cron.daily/ottrin-updatedb && chmod 755 /etc/cron.daily/ottrin-updatedb",
-                                                                        script
-                                                                    );
-                                                                    let result = std::process::Command::new("pkexec")
-                                                                        .args(["sh", "-c", &cmd])
-                                                                        .status();
-                                                                    let (text, ok) = match result {
-                                                                        Ok(s) if s.success() => (
-                                                                            "Daily updatedb cron job installed at /etc/cron.daily/ottrin-updatedb.".to_string(),
-                                                                            true,
-                                                                        ),
-                                                                        Ok(s) => (format!("pkexec exited with status {}", s), false),
-                                                                        Err(e) => (format!("Failed to run pkexec: {}", e), false),
-                                                                    };
-                                                                self.status_message = Some(UiStatusMessage {
-                                                                    text, ok,
-                                                                    until: Instant::now() + Duration::from_secs(8),
-                                                                });
-                                                            } else if sys_sched.managed_by_ottrin {
-                                                                let result = std::process::Command::new("pkexec")
-                                                                    .args(["rm", "-f", "/etc/cron.daily/ottrin-updatedb"])
-                                                                    .status();
-                                                                let (text, ok) = match result {
-                                                                    Ok(s) if s.success() => (
-                                                                        "Daily Ottrin updatedb cron job removed.".to_string(),
-                                                                        true,
-                                                                    ),
-                                                                    Ok(s) => (format!("pkexec exited with status {}", s), false),
-                                                                    Err(e) => (format!("Failed to run pkexec: {}", e), false),
-                                                                };
-                                                                self.status_message = Some(UiStatusMessage {
-                                                                    text, ok,
-                                                                    until: Instant::now() + Duration::from_secs(8),
-                                                                });
-                                                            }
+                                                            let operation = if keep_system_locate_fresh {
+                                                                SystemLocateMaintenance::InstallDaily
+                                                            } else {
+                                                                SystemLocateMaintenance::Remove
+                                                            };
+                                                            let (text, ok) = execute_system_locate_maintenance(
+                                                                self.platform.as_ref(),
+                                                                operation,
+                                                            );
+                                                            self.status_message = Some(UiStatusMessage {
+                                                                text,
+                                                                ok,
+                                                                until: Instant::now() + Duration::from_secs(8),
+                                                            });
                                                         }
                                                         if !self.state.config.search.use_system_locate {
                                                             ui.label(RichText::new(
@@ -19909,7 +22085,7 @@ impl OttrinApp {
                                                     .color(if adv_parent_open { c.text } else { c.text_dim })
                                                     .size(12.0).strong());
                                                 if !adv_parent_open {
-                                                    ui.label(RichText::new("system locate maintenance · fanotify")
+                                                    ui.label(RichText::new("fanotify")
                                                         .color(c.text_muted).size(10.5).italics());
                                                 }
                                             });
@@ -19920,75 +22096,7 @@ impl OttrinApp {
                                             ).color(c.text_muted).size(10.5));
                                             ui.add_space(8.0);
 
-                                    // ── Advanced 1: Root updatedb schedule ────
-                                    {
-                                        let upd_state = egui::collapsing_header::CollapsingState::load_with_default_open(
-                                            ui.ctx(), ui.id().with("adv_root_updatedb"), false,
-                                        );
-                                        let upd_open = upd_state.is_open();
-                                        upd_state.show_header(ui, |ui| {
-                                            ui.horizontal(|ui| {
-                                                ui.label(RichText::new("Maintain system locate database")
-                                                    .color(if upd_open { c.text } else { c.text_dim }).size(11.5));
-                                                ui.label(RichText::new("for system path fallback")
-                                                    .color(c.text_muted).size(10.0).italics());
-                                            });
-                                        }).body(|ui| {
-                                            ui.add_space(6.0);
-                                            ui.label(RichText::new(
-                                                "If plocate fallback is enabled, stale system locate data means stale fallback results."
-                                            ).color(c.text_muted).size(10.5));
-                                            ui.add_space(6.0);
-                                            ui.label(RichText::new(
-                                                "Schedule root updatedb only if you want system-wide fallback paths kept fresh. It can create a large OS database and does not improve Ottrin's own index."
-                                            ).color(c.text_muted).size(10.5));
-                                            ui.add_space(8.0);
-                                            ui.horizontal(|ui| {
-                                                if ui.add(egui::Button::new(
-                                                    RichText::new("Install daily updatedb cron job via pkexec…").size(12.0)
-                                                ).fill(c.panel_raised).stroke(Stroke::new(1.0, c.border))).on_hover_text(
-                                                    "Writes /etc/cron.daily/ottrin-updatedb via pkexec:\n\
-                                                     #!/bin/sh\n\
-                                                     /usr/bin/updatedb\n\n\
-                                                     This rebuilds the system locate database daily as root.\n\
-                                                     One-time setup. Remove: sudo rm /etc/cron.daily/ottrin-updatedb"
-                                                ).clicked() {
-                                                    let script = "#!/bin/sh\n/usr/bin/updatedb\n";
-                                                    let cmd = format!(
-                                                        "printf '{}' > /etc/cron.daily/ottrin-updatedb && chmod 755 /etc/cron.daily/ottrin-updatedb",
-                                                        script
-                                                    );
-                                                    let result = std::process::Command::new("pkexec")
-                                                        .args(["sh", "-c", &cmd])
-                                                        .status();
-                                                    let (text, ok) = match result {
-                                                        Ok(s) if s.success() => (
-                                                            "Daily updatedb cron job installed at /etc/cron.daily/ottrin-updatedb.".to_string(),
-                                                            true,
-                                                        ),
-                                                        Ok(s) => (format!("pkexec exited with status {}", s), false),
-                                                        Err(e) => (format!("Failed to run pkexec: {}", e), false),
-                                                    };
-                                                    self.status_message = Some(UiStatusMessage {
-                                                        text, ok,
-                                                        until: Instant::now() + Duration::from_secs(8),
-                                                    });
-                                                }
-                                                ui.label(RichText::new("Requires admin password")
-                                                    .color(c.text_muted).size(10.5).italics());
-                                            });
-                                            ui.add_space(4.0);
-                                            ui.label(RichText::new(
-                                                "Alternatively: run  sudo updatedb  manually at any time, or add the \
-                                                 line  0 3 * * * root /usr/bin/updatedb  to /etc/crontab yourself."
-                                            ).color(c.text_muted).size(10.5).italics());
-                                            ui.add_space(6.0);
-                                        });
-                                    }
-
-                                    ui.add_space(4.0);
-
-                                    // ── Advanced 2: Privileged indexing daemon ─
+                                    // ── Privileged indexing daemon ─────────────
                                     {
                                         let priv_state = egui::collapsing_header::CollapsingState::load_with_default_open(
                                             ui.ctx(), ui.id().with("adv_priv_indexing"), false,
@@ -20059,16 +22167,7 @@ impl OttrinApp {
                                         if ui.add(egui::Button::new(
                                             RichText::new("Reset search settings to defaults").size(12.0).color(c.error)
                                         ).stroke(Stroke::new(1.0, c.error))).clicked() {
-                                            let defaults = ottrin_core::SearchConfig::default();
-                                            self.state.config.search.include_roots = default_search_roots();
-                                            self.state.config.search.exclude_roots = defaults.exclude_roots;
-                                            self.state.config.search.exclude_globs = defaults.exclude_globs;
-                                            self.state.config.search.include_globs = defaults.include_globs;
-                                            self.state.config.search.default_scope = defaults.default_scope;
-                                            self.state.config.search.include_hidden_system = defaults.include_hidden_system;
-                                            self.state.config.search.refresh_interval_hours = defaults.refresh_interval_hours;
-                                            self.state.config.search.use_system_locate = defaults.use_system_locate;
-                                            self.state.config.search.manage_locate_db = defaults.manage_locate_db;
+                                            reset_search_config(&mut self.state.config.search);
                                             self.search_service.update_config(self.state.config.search.clone());
                                         }
                                         ui.add_space(4.0);
@@ -20402,19 +22501,26 @@ fn preview_response_matches_current_generation(response: &PreviewJobResponse) ->
                     None,
                 );
     }
-    if ottrin_preview::is_pptx_visual_path(&response.path) {
-        // The scheduler's request id is the supersession fence for a worker
-        // owned PPTX snapshot; do not synchronously reopen it on the UI thread.
-        return true;
-    }
-    if ottrin_preview::is_office_visual_path(&response.path) {
+    if ottrin_preview::office_format_for_path(&response.path).is_some() {
         let Some(current_generation) =
             ottrin_preview::office_preview_source_generation(&response.path)
         else {
             return false;
         };
-        return response.office_source_generation.as_ref() == Some(&current_generation)
-            && response.cache_key
+        if response.office_source_generation.as_ref() != Some(&current_generation) {
+            return false;
+        }
+        if let Some(rendered) = response.office_render.as_ref() {
+            return response.cache_key
+                == office_provider_preview_cache_key(
+                    response.target_dim,
+                    response.page_index,
+                    Some(&current_generation),
+                    &rendered.cache_identity,
+                );
+        }
+        return response.cache_key.starts_with("office-provider-v1-")
+            || response.cache_key
                 == preview_cache_key_for_page_with_generations(
                     &response.path,
                     response.target_dim,
@@ -20466,7 +22572,7 @@ impl eframe::App for OttrinApp {
         // Process async results
         self.poll_listing_results();
         self.poll_op_results();
-        self.poll_rename_undo_results();
+        self.poll_path_move_undo_results();
         self.poll_trash_results();
 
         self.poll_hash_results();
@@ -20885,6 +22991,93 @@ fn thumbnail_supported_preview_path(path: &Path) -> bool {
 /// can opt formats back in here once its fidelity and sandbox are verified.
 fn quick_inspector_uses_rendered_office_page(_path: &Path) -> bool {
     false
+}
+
+fn visual_renderer_uses_persistent_thumbnail_cache(
+    renderer: ottrin_preview::PreviewVisualRenderer,
+) -> bool {
+    renderer != ottrin_preview::PreviewVisualRenderer::Html
+}
+
+fn quick_inspector_uses_visual_preview(path: &Path, kind: PreviewKind) -> bool {
+    ottrin_preview::preview_profile(path).visual_renderer()
+        == ottrin_preview::PreviewVisualRenderer::Html
+        || (matches!(
+            kind,
+            PreviewKind::Image
+                | PreviewKind::CameraRawMetadata
+                | PreviewKind::AffinityMetadata
+                | PreviewKind::SqliteMetadata
+                | PreviewKind::StlMetadata
+                | PreviewKind::ObjMetadata
+                | PreviewKind::PlyMetadata
+                | PreviewKind::ThreeMfMetadata
+                | PreviewKind::Pdf
+                | PreviewKind::EpsMetadata
+        ))
+        || (kind == PreviewKind::VideoMetadata
+            && ottrin_preview::preview_profile(path).visual_renderer()
+                == ottrin_preview::PreviewVisualRenderer::Video)
+}
+
+#[cfg(target_os = "linux")]
+fn preview_uses_media_playback(kind: PreviewKind) -> bool {
+    matches!(
+        kind,
+        PreviewKind::VideoMetadata | PreviewKind::AudioMetadata
+    )
+}
+
+fn visual_preview_unavailable_message(path: &Path, reason: &str) -> String {
+    if ottrin_preview::preview_profile(path).visual_renderer()
+        == ottrin_preview::PreviewVisualRenderer::Html
+    {
+        format!("Offline HTML preview unavailable: {reason}. Open externally to view this file.")
+    } else {
+        reason.to_string()
+    }
+}
+
+fn visual_preview_unavailable_cache_key(
+    path: &Path,
+    target_dim: u32,
+    video_source_generation: Option<&ottrin_preview::VideoThumbnailSourceGeneration>,
+) -> String {
+    video_source_generation
+        .map(|generation| ottrin_preview::video_thumbnail_cache_key(generation, target_dim))
+        .unwrap_or_else(|| preview_cache_key_for_page(path, target_dim, 0))
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum VisualPreviewFallback {
+    Loading,
+    Metadata(String),
+}
+
+fn visual_preview_fallback(
+    preview: &PreviewData,
+    inflight: bool,
+    reason: Option<&str>,
+) -> VisualPreviewFallback {
+    if inflight {
+        return VisualPreviewFallback::Loading;
+    }
+    let reason = reason.unwrap_or("Visual preview unavailable; metadata remains available.");
+    let metadata = preview.body.trim();
+    if metadata.is_empty() {
+        VisualPreviewFallback::Metadata(reason.to_string())
+    } else {
+        VisualPreviewFallback::Metadata(format!("{metadata}\n{reason}"))
+    }
+}
+
+fn video_metadata_visual_fallback_body(metadata: &str, reason: Option<&str>) -> String {
+    match reason {
+        Some(reason) => format!("{metadata}\n{reason}"),
+        None => {
+            format!("{metadata}\nThumbnail: unavailable for this file; metadata remains available.")
+        }
+    }
 }
 
 /// Submit a ready DOCX texture and then expose its completion to accessibility.
@@ -21465,6 +23658,13 @@ fn operation_title(cmd: &FileCommand) -> &'static str {
     }
 }
 
+fn image_rotation_recoverability() -> OperationRecoverability {
+    // Rotation rewrites the file in place and retains neither the admitted
+    // original bytes nor an identity-bound replacement transaction. A lossy
+    // counter-rotation is not a safe inverse.
+    OperationRecoverability::NotUndoable
+}
+
 fn operation_recoverability(cmd: &FileCommand) -> OperationRecoverability {
     match cmd {
         FileCommand::Delete {
@@ -21474,26 +23674,48 @@ fn operation_recoverability(cmd: &FileCommand) -> OperationRecoverability {
         FileCommand::Delete {
             mode: DeleteMode::Permanent,
             ..
-        } => OperationRecoverability::NotUndoable,
+        }
+        | FileCommand::RecoverRetainedMove { .. } => OperationRecoverability::NotUndoable,
         FileCommand::ShowProperties { .. } => OperationRecoverability::Informational,
+        FileCommand::Copy { sources, .. } | FileCommand::Move { sources, .. }
+            if sources.len() > 1 =>
+        {
+            OperationRecoverability::BatchUndoUnavailable
+        }
         FileCommand::CreateFile { .. }
         | FileCommand::CreateFolder { .. }
         | FileCommand::Rename { .. }
         | FileCommand::Copy { .. }
-        | FileCommand::RecoverRetainedMove { .. }
         | FileCommand::Move { .. }
         | FileCommand::Chmod { .. }
         | FileCommand::Symlink { .. } => OperationRecoverability::SessionTracked,
     }
 }
 
-fn rename_paths_for_command(cmd: &FileCommand) -> Option<(PathBuf, PathBuf)> {
-    let FileCommand::Rename { source, new_name } = cmd else {
-        return None;
-    };
-    source
-        .parent()
-        .map(|parent| (source.clone(), parent.join(new_name)))
+fn path_move_paths_for_command(cmd: &FileCommand) -> Option<(PathBuf, PathBuf)> {
+    match cmd {
+        FileCommand::CreateFile { parent, name } | FileCommand::CreateFolder { parent, name } => {
+            let created = parent.join(name);
+            Some((created.clone(), created))
+        }
+        FileCommand::Rename { source, new_name } => source
+            .parent()
+            .map(|parent| (source.clone(), parent.join(new_name))),
+        FileCommand::Symlink { link_path, .. } => Some((link_path.clone(), link_path.clone())),
+        FileCommand::Copy {
+            sources,
+            destination,
+            conflict: ConflictAction::Skip | ConflictAction::Rename,
+        }
+        | FileCommand::Move {
+            sources,
+            destination,
+            conflict: ConflictAction::Skip,
+        } if sources.len() == 1 => sources[0]
+            .file_name()
+            .map(|name| (sources[0].clone(), destination.join(name))),
+        _ => None,
+    }
 }
 
 fn operation_recoverability_label(
@@ -21509,7 +23731,12 @@ fn operation_recoverability_label(
         OperationRecoverability::NotUndoable => (
             "Not undoable",
             c.error,
-            "This bypassed or emptied Trash and cannot be restored by Ottrin.",
+            "Ottrin has no safe inverse for this action; deleted data or original image bytes were not retained.",
+        ),
+        OperationRecoverability::BatchUndoUnavailable => (
+            "No batch undo",
+            c.error,
+            "Ottrin will not partially reverse a multi-item Copy or Move because a later conflict could leave the batch in an unsafe mixed state.",
         ),
         OperationRecoverability::SessionTracked => (
             "Tracked this session",
@@ -21572,6 +23799,40 @@ fn operation_detail(cmd: &FileCommand) -> String {
     }
 }
 
+fn successful_mixed_move_batch_detail(
+    cmd: &FileCommand,
+    dispositions: Option<&[MoveDisposition]>,
+) -> Option<String> {
+    let FileCommand::Move {
+        sources,
+        destination,
+        ..
+    } = cmd
+    else {
+        return None;
+    };
+    let dispositions = dispositions?;
+    if sources.len() <= 1 || dispositions.len() != sources.len() {
+        return None;
+    }
+    let moved = dispositions
+        .iter()
+        .filter(|disposition| **disposition == MoveDisposition::Moved)
+        .count();
+    let skipped = dispositions
+        .iter()
+        .filter(|disposition| **disposition == MoveDisposition::Skipped)
+        .count();
+    if moved == 0 || skipped == 0 {
+        return None;
+    }
+    Some(format!(
+        "{} items to {} — {moved} moved, {skipped} skipped",
+        sources.len(),
+        destination.display()
+    ))
+}
+
 fn operation_sources_detail(paths: &[PathBuf]) -> String {
     if paths.len() == 1 {
         paths
@@ -21619,7 +23880,15 @@ fn preview_space_should_close(
     space_pressed && ready_at.is_some_and(|ready_at| now >= ready_at)
 }
 
-fn pdf_page_count(preview: &PreviewData) -> Option<usize> {
+fn preview_page_count(
+    preview: &PreviewData,
+    office_render: Option<&OfficeRenderedPage>,
+) -> Option<usize> {
+    if preview.kind == PreviewKind::OfficeMetadata {
+        return office_render
+            .map(|rendered| rendered.page_count)
+            .filter(|count| *count > 0);
+    }
     (preview.kind == PreviewKind::Pdf)
         .then(|| {
             preview.body.lines().find_map(|line| {
@@ -22902,6 +25171,305 @@ mod tests {
     use super::*;
 
     #[test]
+    fn theme_editor_actions_match_builtin_and_saved_theme_semantics() {
+        let builtin = ThemeEditorActionModel::for_source(None);
+        assert!(builtin.allow_scope_changes);
+        assert!(builtin.show_reset);
+        assert!(!builtin.show_save_as);
+
+        let saved = ThemeEditorActionModel::for_source(Some(0));
+        assert!(!saved.allow_scope_changes);
+        assert!(!saved.show_reset);
+        assert!(saved.show_save_as);
+    }
+
+    #[test]
+    fn image_rotation_reports_that_undo_is_unavailable() {
+        let recoverability = image_rotation_recoverability();
+        let (label, _, explanation) = operation_recoverability_label(
+            recoverability,
+            Colors::preset(ThemePreset::Ottrin, true),
+        );
+
+        assert_eq!(recoverability, OperationRecoverability::NotUndoable);
+        assert_eq!(label, "Not undoable");
+        assert!(explanation.contains("original image bytes"));
+    }
+
+    #[test]
+    fn retained_move_recovery_reports_that_undo_is_unavailable() {
+        let command = FileCommand::RecoverRetainedMove {
+            transaction_id: [0_u8; 16],
+        };
+
+        assert_eq!(
+            operation_recoverability(&command),
+            OperationRecoverability::NotUndoable
+        );
+    }
+
+    #[test]
+    fn windows_retained_move_activity_preserves_cross_volume_recovery_gate() {
+        let same_volume = windows_retained_move_activity(
+            ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction {
+                transaction_id: [0x11; 16],
+                kind: WindowsMoveTransactionKind::SameVolumeOverwrite,
+                recovery_available: true,
+            },
+        );
+        let cross_volume = windows_retained_move_activity(
+            ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction {
+                transaction_id: [0x22; 16],
+                kind: WindowsMoveTransactionKind::CrossVolume,
+                recovery_available: false,
+            },
+        );
+
+        assert!(same_volume.recovery_available);
+        assert_eq!(same_volume.phase, "same-volume overwrite");
+        assert!(!cross_volume.recovery_available);
+        assert_eq!(cross_volume.phase, "cross-volume recovery disabled");
+    }
+
+    #[test]
+    fn multi_entry_copy_reports_that_batch_undo_is_unavailable() {
+        let command = FileCommand::Copy {
+            sources: vec![PathBuf::from("first"), PathBuf::from("second")],
+            destination: PathBuf::from("destination"),
+            conflict: ConflictAction::Skip,
+        };
+
+        assert_eq!(
+            operation_recoverability(&command),
+            OperationRecoverability::BatchUndoUnavailable
+        );
+        let (label, _, explanation) = operation_recoverability_label(
+            operation_recoverability(&command),
+            Colors::preset(ThemePreset::Ottrin, true),
+        );
+        assert_eq!(label, "No batch undo");
+        assert!(explanation.contains("partially reverse"));
+    }
+
+    #[test]
+    fn administrator_surfaces_are_visibly_identified() {
+        assert_eq!(
+            administrator_surface_label("Ottrin", true),
+            "Ottrin (Administrator)"
+        );
+        assert_eq!(
+            administrator_surface_label("Save", true),
+            "Save (Administrator)"
+        );
+        assert_eq!(administrator_surface_label("Ottrin", false), "Ottrin");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn ui_tests_keep_search_storage_under_the_project_target() {
+        let path = test_search_store_path_in(Path::new("/project"), 42, 7);
+
+        assert_eq!(
+            path,
+            PathBuf::from("/project/target/test-state/ottrin-ui-search/42-7/search.db")
+        );
+    }
+
+    #[test]
+    fn administrator_search_starts_without_a_daemon_client() {
+        assert!(!daemon_connection_required(0));
+        assert!(daemon_connection_required(1000));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn administrator_session_cleanup_removes_only_its_process_directory() {
+        let runtime = std::env::temp_dir().join(format!(
+            "ottrin-administrator-session-cleanup-{}",
+            std::process::id()
+        ));
+        let paths = administrator_session_index_paths_in(&runtime, 4242);
+        let sibling = runtime.join("ottrin-administrator/session-4343/keep.txt");
+        std::fs::create_dir_all(&paths.directory).expect("create session directory");
+        std::fs::write(&paths.store, "temporary index").expect("write temporary index");
+        std::fs::create_dir_all(sibling.parent().expect("sibling parent"))
+            .expect("create sibling session");
+        std::fs::write(&sibling, "keep").expect("write sibling marker");
+
+        remove_administrator_session_index_directory(&paths)
+            .expect("remove one Administrator session index");
+
+        assert!(!paths.directory.exists());
+        assert_eq!(std::fs::read_to_string(&sibling).unwrap(), "keep");
+        std::fs::remove_dir_all(runtime).unwrap();
+    }
+
+    #[test]
+    fn administrator_session_index_requires_selected_roots_and_disables_content() {
+        let mut config = SearchConfig {
+            content_indexing_enabled: true,
+            include_roots: Vec::new(),
+            content_include_roots: vec![PathBuf::from("/secret-content")],
+            ..SearchConfig::default()
+        };
+
+        assert_eq!(
+            administrator_session_search_config(&config),
+            Err(
+                "Select at least one location before starting an Administrator session index."
+                    .to_string()
+            )
+        );
+
+        config.include_roots = vec![PathBuf::from("/etc"), PathBuf::from("/var/log")];
+        let session = administrator_session_search_config(&config)
+            .expect("selected Administrator roots should be admitted");
+
+        assert_eq!(session.include_roots, config.include_roots);
+        assert!(!session.content_indexing_enabled);
+        assert!(session.content_include_roots.is_empty());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn administrator_session_index_uses_a_process_scoped_runtime_store() {
+        let paths = administrator_session_index_paths_in(Path::new("/run/user/0"), 4242);
+
+        assert_eq!(
+            paths.directory,
+            PathBuf::from("/run/user/0/ottrin-administrator/session-4242")
+        );
+        assert_eq!(paths.store, paths.directory.join("search.db"));
+    }
+
+    #[test]
+    fn pending_search_setup_opens_search_settings_until_completed() {
+        let pending = initial_settings_state(&AppConfig::default());
+        assert_eq!(pending, (true, SettingsTab::Search));
+
+        let completed = AppConfig {
+            search_setup_completed: true,
+            ..AppConfig::default()
+        };
+        assert_eq!(
+            initial_settings_state(&completed),
+            (false, SettingsTab::General)
+        );
+    }
+
+    #[test]
+    fn resetting_search_settings_restores_separate_metadata_and_content_defaults() {
+        let mut config = SearchConfig {
+            include_roots: vec![PathBuf::from("/metadata")],
+            indexed_volumes: vec![IndexedVolumeLocation {
+                identity: "volume-id".to_string(),
+                last_known_path: PathBuf::from("/media/volume"),
+            }],
+            active_indexed_volume_roots: vec![PathBuf::from("/media/volume")],
+            content_indexing_enabled: true,
+            content_include_roots: vec![PathBuf::from("/content")],
+            content_exclude_roots: vec![PathBuf::from("/content/private")],
+            ..SearchConfig::default()
+        };
+
+        reset_search_config(&mut config);
+
+        assert_eq!(config, SearchConfig::default());
+    }
+
+    #[test]
+    fn managed_system_locate_schedule_is_identified_as_ottrin_owned() {
+        let status = ottrin_search::SystemLocateScheduleStatus {
+            source: Some("cron".to_string()),
+            detail: Some("/etc/cron.daily/ottrin-updatedb".to_string()),
+            needs_setup: false,
+            managed_by_ottrin: true,
+        };
+
+        assert!(system_locate_schedule_guidance(&status).starts_with("Ottrin installed"));
+    }
+
+    #[test]
+    fn linux_settings_disclose_the_system_media_boundary() {
+        assert_eq!(
+            LINUX_SYSTEM_MEDIA_DISCLOSURE,
+            "On Linux, Ottrin uses GStreamer installed on this system. Ottrin does not include, download, install, or select codec implementations. Playback depends on the media plugins made available by the operating system or user."
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn linux_inspector_routes_video_and_audio_to_system_media_playback() {
+        assert!(preview_uses_media_playback(PreviewKind::VideoMetadata));
+        assert!(preview_uses_media_playback(PreviewKind::AudioMetadata));
+        assert!(!preview_uses_media_playback(PreviewKind::Image));
+    }
+
+    #[test]
+    fn image_visual_fallback_reports_loading_while_the_renderer_is_inflight() {
+        let preview = PreviewData {
+            title: "photo.png".to_string(),
+            kind: PreviewKind::Image,
+            body: "Dimensions: 1920 × 1080\nSize: 2.1 MB".to_string(),
+            document: None,
+            spreadsheet: None,
+            open_external: true,
+        };
+
+        assert_eq!(
+            visual_preview_fallback(&preview, true, None),
+            VisualPreviewFallback::Loading
+        );
+    }
+
+    #[test]
+    fn image_visual_failure_preserves_metadata_and_the_failure_reason() {
+        let preview = PreviewData {
+            title: "photo.png".to_string(),
+            kind: PreviewKind::Image,
+            body: "Dimensions: 1920 × 1080\nSize: 2.1 MB".to_string(),
+            document: None,
+            spreadsheet: None,
+            open_external: true,
+        };
+
+        assert_eq!(
+            visual_preview_fallback(&preview, false, Some("Image preview unavailable")),
+            VisualPreviewFallback::Metadata(
+                "Dimensions: 1920 × 1080\nSize: 2.1 MB\nImage preview unavailable".to_string()
+            )
+        );
+    }
+
+    #[test]
+    fn video_visual_failure_preserves_the_typed_native_reason() {
+        let metadata = "Filetype: Video file";
+        let reason = ottrin_preview::VideoThumbnailError::UnsupportedMedia.fallback_message();
+
+        let card = video_metadata_visual_fallback_body(metadata, Some(reason));
+
+        assert!(card.contains(metadata));
+        assert!(card.contains("no installed codec supports this format"));
+        assert!(card.contains("does not mean the file is invalid"));
+        assert!(!card.contains("Thumbnail: unavailable for this file"));
+    }
+
+    #[test]
+    fn video_visual_unavailable_reason_uses_the_generation_cache_key() {
+        let path = Path::new("sample.mp4");
+        let generation = ottrin_preview::VideoThumbnailSourceGeneration::from_bytes([5; 32]);
+
+        assert_eq!(
+            visual_preview_unavailable_cache_key(
+                path,
+                PREVIEW_CACHE_BUCKET_LARGE,
+                Some(&generation),
+            ),
+            ottrin_preview::video_thumbnail_cache_key(&generation, PREVIEW_CACHE_BUCKET_LARGE)
+        );
+    }
+
+    #[test]
     fn stacked_header_has_no_full_width_separator_between_tab_and_navigation_rows() {
         let mut app = OttrinApp::default();
         let ctx = Context::default();
@@ -23123,6 +25691,7 @@ mod tests {
                 .to_string(),
             kind: PreviewKind::OfficeMetadata,
             body: "Filetype: DOCX document".to_string(),
+            document: None,
             spreadsheet: None,
             open_external: true,
         });
@@ -23187,7 +25756,34 @@ mod tests {
         assert!(app.quick_inspector_only);
         assert!(app.preview.visible);
         assert_eq!(app.preview.path.as_ref(), Some(&path));
+        assert_eq!(app.state.active_tab().current_dir, root.path());
+        assert_eq!(
+            app.tab_ui
+                .get(&app.state.active_tab().id)
+                .and_then(|state| state.pending_select_path.as_ref()),
+            Some(&path)
+        );
         assert!(app.preview_load_slots[PreviewTarget::Overlay.index()].is_pending());
+    }
+
+    #[test]
+    fn standalone_quick_inspector_can_reveal_its_file_in_ottrin() {
+        let root = tempfile::tempdir().expect("preview root");
+        let path = root.path().join("fixture.txt");
+        std::fs::write(&path, "preview\n").expect("preview fixture");
+        let mut app = OttrinApp::default();
+        app.open_quick_inspector_file(path.clone());
+
+        assert!(app.show_quick_inspector_in_main());
+        assert!(!app.quick_inspector_only);
+        assert!(app.preview.visible);
+        assert_eq!(app.state.active_tab().current_dir, root.path());
+        assert_eq!(
+            app.tab_ui
+                .get(&app.state.active_tab().id)
+                .and_then(|state| state.pending_select_path.as_ref()),
+            Some(&path)
+        );
     }
 
     #[test]
@@ -23360,6 +25956,7 @@ mod tests {
             ply_source_generation: None,
             office_source_generation: None,
             video_source_generation: None,
+            office_render: None,
             request_id: 1,
             bytes: Some(b"png".to_vec()),
             error: None,
@@ -23383,6 +25980,7 @@ mod tests {
             ply_source_generation: None,
             office_source_generation: None,
             video_source_generation: Some(generation),
+            office_render: None,
             request_id: 1,
             bytes: Some(b"validated-png".to_vec()),
             error: None,
@@ -23421,6 +26019,7 @@ mod tests {
             ply_source_generation: None,
             office_source_generation: None,
             video_source_generation: None,
+            office_render: None,
             request_id: 1,
             bytes: Some(b"first-generation-card".to_vec()),
             error: None,
@@ -23475,6 +26074,7 @@ mod tests {
             ply_source_generation: None,
             office_source_generation: None,
             video_source_generation: None,
+            office_render: None,
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
             error: None,
@@ -23530,6 +26130,7 @@ mod tests {
             ply_source_generation: Some(rendered_middle),
             office_source_generation: None,
             video_source_generation: None,
+            office_render: None,
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
             error: None,
@@ -23573,6 +26174,7 @@ mod tests {
             ply_source_generation: None,
             office_source_generation: Some(middle_generation),
             video_source_generation: None,
+            office_render: None,
             request_id: 1,
             bytes: Some(b"intermediate-png".to_vec()),
             error: None,
@@ -23586,54 +26188,242 @@ mod tests {
     }
 
     #[test]
-    fn pptx_cache_key_is_logical_and_does_not_follow_source_bytes() {
+    fn current_provider_response_admits_pixels_and_quick_inspector_metadata_together() {
         let path = std::env::temp_dir().join(format!(
-            "ottrin-pptx-logical-preview-key-{}.pptx",
+            "ottrin-office-provider-response-{}.xlsx",
             std::process::id()
         ));
-        std::fs::write(&path, b"first office bytes").expect("write first source bytes");
-        let first = preview_cache_key_for_page(&path, 128, 0);
-        std::fs::write(&path, b"second office bytes").expect("replace source bytes");
-        let second = preview_cache_key_for_page(&path, 128, 0);
+        std::fs::write(&path, b"current-office-provider-generation").expect("write Office source");
+        let generation = ottrin_preview::office_preview_source_generation(&path)
+            .expect("capture current Office generation");
+        let identity = ottrin_preview::OfficeRenderCacheIdentity {
+            provider: ottrin_preview::OfficeProviderId::InstalledLibreOffice,
+            provider_version: "24.2.7.2".to_string(),
+            policy_version: 1,
+        };
+        let cache_key = office_provider_preview_cache_key(128, 0, Some(&generation), &identity);
+        let slot = PreviewRequestSlot::new(path.clone(), PreviewRequestTarget::Thumbnail, 128, 0);
+        let mut app = OttrinApp::default();
+        let request_id = app
+            .preview_scheduler
+            .reserve(slot.clone(), cache_key.clone())
+            .expect("reserve provider response");
+        let (tx, rx) = mpsc::channel();
+        app.preview_rx = rx;
+        tx.send(PreviewJobResponse {
+            slot,
+            path: path.clone(),
+            target_dim: 128,
+            page_index: 0,
+            cache_key: cache_key.clone(),
+            sqlite_source_generation: None,
+            obj_source_generation: None,
+            ply_source_generation: None,
+            office_source_generation: Some(generation.clone()),
+            video_source_generation: None,
+            office_render: Some(OfficeRenderedPage {
+                source_path: path.clone(),
+                source_generation: generation,
+                label: "Rendered with LibreOffice 24.2.7.2".to_string(),
+                page_count: 3,
+                cache_identity: identity,
+            }),
+            request_id,
+            bytes: Some(b"provider-png".to_vec()),
+            error: None,
+        })
+        .expect("send provider response");
 
+        assert!(app.poll_preview_jobs());
         assert_eq!(
-            first, second,
-            "PPTX cache identity is a logical request key; the worker owns its one snapshot"
+            app.image_preview_cache
+                .get(&cache_key)
+                .and_then(ImagePreviewCacheEntry::bytes),
+            Some(b"provider-png".as_slice())
         );
-        std::fs::remove_file(path).expect("remove PPTX source");
+        let metadata = app
+            .office_rendered_pages
+            .get(&cache_key)
+            .expect("provider metadata must be admitted with its pixels");
+        assert_eq!(metadata.label, "Rendered with LibreOffice 24.2.7.2");
+        assert_eq!(metadata.page_count, 3);
+
+        std::fs::remove_file(path).expect("remove Office source");
     }
 
     #[test]
-    fn pptx_intermediate_worker_response_is_rejected_after_a_to_b_to_a_refreshes() {
-        let path = PathBuf::from("/tmp/ottrin-pptx-refresh.pptx");
-        let slot = PreviewRequestSlot::new(
-            path.clone(),
-            PreviewRequestTarget::Thumbnail,
-            PREVIEW_CACHE_BUCKET_SMALL,
-            0,
+    fn provider_response_completing_after_disable_is_rejected_for_native_fallback() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-office-provider-disabled-response-{}.xlsx",
+            std::process::id()
+        ));
+        std::fs::write(&path, b"disabled-response-generation").expect("write Office source");
+        let generation = ottrin_preview::office_preview_source_generation(&path)
+            .expect("capture current Office generation");
+        let identity = ottrin_preview::OfficeRenderCacheIdentity {
+            provider: ottrin_preview::OfficeProviderId::InstalledLibreOffice,
+            provider_version: "24.2.7.2".to_string(),
+            policy_version: 1,
+        };
+        let cache_key = office_provider_preview_cache_key(128, 0, Some(&generation), &identity);
+        let slot = PreviewRequestSlot::new(path.clone(), PreviewRequestTarget::Thumbnail, 128, 0);
+        let mut app = OttrinApp::default();
+        let request_id = app
+            .preview_scheduler
+            .reserve(slot.clone(), cache_key.clone())
+            .expect("reserve provider response");
+        app.state.config.installed_office_previews_enabled = false;
+        let (tx, rx) = mpsc::channel();
+        app.preview_rx = rx;
+        tx.send(PreviewJobResponse {
+            slot,
+            path: path.clone(),
+            target_dim: 128,
+            page_index: 0,
+            cache_key: cache_key.clone(),
+            sqlite_source_generation: None,
+            obj_source_generation: None,
+            ply_source_generation: None,
+            office_source_generation: Some(generation.clone()),
+            video_source_generation: None,
+            office_render: Some(OfficeRenderedPage {
+                source_path: path.clone(),
+                source_generation: generation,
+                label: "Rendered with LibreOffice 24.2.7.2".to_string(),
+                page_count: 3,
+                cache_identity: identity,
+            }),
+            request_id,
+            bytes: Some(b"provider-png".to_vec()),
+            error: None,
+        })
+        .expect("send provider response");
+
+        assert!(!app.poll_preview_jobs());
+        assert!(!app.image_preview_cache.contains_key(&cache_key));
+        assert!(!app.office_rendered_pages.contains_key(&cache_key));
+
+        std::fs::remove_file(path).expect("remove Office source");
+    }
+
+    #[test]
+    fn installed_office_previews_disabled_selects_native_fallback_without_discarding_detection() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-office-provider-disabled-{}.xlsx",
+            std::process::id()
+        ));
+        std::fs::write(&path, b"disabled-provider-generation").expect("write Office source");
+        let detected = ottrin_preview::DetectedInstalledLibreOffice {
+            executable: PathBuf::from("/usr/bin/libreoffice"),
+            capability: ottrin_preview::OfficeProviderCapability {
+                id: ottrin_preview::OfficeProviderId::InstalledLibreOffice,
+                version: "24.2.7.2".to_string(),
+                formats: vec![ottrin_preview::OfficeFormat::Xlsx],
+            },
+        };
+        let mut app = OttrinApp::default();
+        app.state.config.installed_office_previews_enabled = false;
+        *app.office_provider.lock().expect("provider cache") = Some(detected.clone());
+
+        assert!(app.office_provider_for_path(&path).is_none());
+        assert_eq!(
+            app.office_provider.lock().expect("provider cache").as_ref(),
+            Some(&detected),
+            "disabling scheduling must retain the cached capability for settings and re-enable"
         );
-        let key = preview_cache_key_for_page(&path, PREVIEW_CACHE_BUCKET_SMALL, 0);
-        let directory = path.parent().expect("test directory");
-        let mut scheduler = PreviewRequestScheduler::default();
 
-        let first_a = scheduler
-            .reserve(slot.clone(), key.clone())
-            .expect("first A");
-        scheduler.invalidate_pptx_in_directory(directory);
-        let middle_b = scheduler
-            .reserve(slot.clone(), key.clone())
-            .expect("B refresh");
-        scheduler.invalidate_pptx_in_directory(directory);
-        let returning_a = scheduler
-            .reserve(slot.clone(), key.clone())
-            .expect("returning A");
+        std::fs::remove_file(path).expect("remove Office source");
+    }
 
-        assert!(first_a < middle_b && middle_b < returning_a);
+    #[test]
+    fn disabled_installed_office_previews_hide_prior_provider_metadata() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-office-provider-metadata-disabled-{}.docx",
+            std::process::id()
+        ));
+        std::fs::write(&path, b"provider-metadata-generation").expect("write Office source");
+        let generation = ottrin_preview::office_preview_source_generation(&path)
+            .expect("capture Office generation");
+        let mut app = OttrinApp::default();
+        app.office_rendered_pages.insert(
+            "provider-cache-key".to_string(),
+            OfficeRenderedPage {
+                source_path: path.clone(),
+                source_generation: generation,
+                label: "Rendered with LibreOffice 24.2.7.2".to_string(),
+                page_count: 3,
+                cache_identity: ottrin_preview::OfficeRenderCacheIdentity {
+                    provider: ottrin_preview::OfficeProviderId::InstalledLibreOffice,
+                    provider_version: "24.2.7.2".to_string(),
+                    policy_version: 1,
+                },
+            },
+        );
+        app.state.config.installed_office_previews_enabled = false;
+
+        assert!(app.office_rendered_page_for_path(&path).is_none());
+
+        std::fs::remove_file(path).expect("remove Office source");
+    }
+
+    #[test]
+    fn provider_failure_is_not_terminally_cached_and_selects_native_fallback_for_that_generation() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-office-provider-failure-{}.xlsx",
+            std::process::id()
+        ));
+        std::fs::write(&path, b"provider-failure-generation").expect("write Office source");
+        let generation = ottrin_preview::office_preview_source_generation(&path)
+            .expect("capture Office generation");
+        let detected = ottrin_preview::DetectedInstalledLibreOffice {
+            executable: PathBuf::from("/usr/bin/libreoffice"),
+            capability: ottrin_preview::OfficeProviderCapability {
+                id: ottrin_preview::OfficeProviderId::InstalledLibreOffice,
+                version: "24.2.7.2".to_string(),
+                formats: vec![ottrin_preview::OfficeFormat::Xlsx],
+            },
+        };
+        let identity = ottrin_preview::OfficeRenderCacheIdentity {
+            provider: detected.capability.id,
+            provider_version: detected.capability.version.clone(),
+            policy_version: 1,
+        };
+        let cache_key = office_provider_preview_cache_key(128, 0, Some(&generation), &identity);
+        let slot = PreviewRequestSlot::new(path.clone(), PreviewRequestTarget::Thumbnail, 128, 0);
+        let mut app = OttrinApp::default();
+        *app.office_provider.lock().expect("provider cache") = Some(detected);
+        let request_id = app
+            .preview_scheduler
+            .reserve(slot.clone(), cache_key.clone())
+            .expect("reserve provider response");
+        let (tx, rx) = mpsc::channel();
+        app.preview_rx = rx;
+        tx.send(PreviewJobResponse {
+            slot,
+            path: path.clone(),
+            target_dim: 128,
+            page_index: 0,
+            cache_key: cache_key.clone(),
+            sqlite_source_generation: None,
+            obj_source_generation: None,
+            ply_source_generation: None,
+            office_source_generation: Some(generation),
+            video_source_generation: None,
+            office_render: None,
+            request_id,
+            bytes: None,
+            error: Some("provider conversion failed".to_string()),
+        })
+        .expect("send provider failure");
+
+        assert!(app.poll_preview_jobs());
+        assert!(!app.image_preview_cache.contains_key(&cache_key));
         assert!(
-            !scheduler.accept_response(&slot, middle_b, &key),
-            "the B worker result cannot survive a later A refresh with the same logical key"
+            app.office_provider_for_path(&path).is_none(),
+            "the current source generation must proceed through the native fallback"
         );
-        assert!(scheduler.accept_response(&slot, returning_a, &key));
+
+        std::fs::remove_file(path).expect("remove Office source");
     }
 
     #[test]
@@ -23772,24 +26562,24 @@ mod tests {
     }
 
     #[test]
-    fn rename_undo_action_requires_a_completed_available_rename() {
-        assert!(rename_undo_action_is_available(
+    fn path_move_undo_action_requires_a_completed_available_rename() {
+        assert!(path_move_undo_action_is_available(
             OperationStatus::Completed,
-            Some(&RenameUndoState::Available),
+            Some(&PathMoveUndoState::Available),
         ));
-        assert!(!rename_undo_action_is_available(
+        assert!(!path_move_undo_action_is_available(
             OperationStatus::Queued,
-            Some(&RenameUndoState::Available),
+            Some(&PathMoveUndoState::Available),
         ));
-        assert!(!rename_undo_action_is_available(
+        assert!(!path_move_undo_action_is_available(
             OperationStatus::Completed,
-            Some(&RenameUndoState::UndoQueued),
+            Some(&PathMoveUndoState::UndoQueued),
         ));
-        assert!(!rename_undo_action_is_available(
+        assert!(!path_move_undo_action_is_available(
             OperationStatus::Completed,
-            Some(&RenameUndoState::Undone),
+            Some(&PathMoveUndoState::Undone),
         ));
-        assert!(!rename_undo_action_is_available(
+        assert!(!path_move_undo_action_is_available(
             OperationStatus::Completed,
             None
         ));
@@ -23859,7 +26649,7 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn successful_rename_receipt_is_single_use_and_undo_completion_updates_the_same_record() {
+    fn successful_path_move_receipt_is_single_use_and_undo_completion_updates_the_same_record() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-ui-rename-undo-{}-{}",
             std::process::id(),
@@ -23891,38 +26681,761 @@ mod tests {
                 clipboard_generation: None,
                 completed_sources: None,
                 completed_source_paths: Vec::new(),
-                rename_receipt: Some(receipt),
-                rename_bindings: Some(Vec::new()),
+                move_dispositions: None,
+                path_move_receipt: Some(OperationUndoReceipt::PathMove(receipt)),
+                path_move_bindings: Some(Vec::new()),
             })
             .unwrap();
         app.poll_op_results();
         assert!(matches!(
             app.operation_history
                 .front()
-                .and_then(|record| record.rename_undo.as_ref()),
-            Some(RenameUndoState::Available)
+                .and_then(|record| record.path_move_undo.as_ref()),
+            Some(PathMoveUndoState::Available)
         ));
 
-        app.run_rename_undo(op_id);
-        app.run_rename_undo(op_id);
+        app.run_path_move_undo(op_id);
+        app.run_path_move_undo(op_id);
         assert!(matches!(
             app.operation_history
                 .front()
-                .and_then(|record| record.rename_undo.as_ref()),
-            Some(RenameUndoState::UndoQueued)
+                .and_then(|record| record.path_move_undo.as_ref()),
+            Some(PathMoveUndoState::UndoQueued)
         ));
         let result = app
-            .rename_undo_rx
+            .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
             .expect("undo worker result");
-        app.finish_rename_undo(result.op_id, result.result);
+        app.finish_path_move_undo(result.op_id, result.result, result.retryable);
 
         let record = app.operation_history.front().unwrap();
         assert_eq!(record.status, OperationStatus::Completed);
-        assert!(matches!(record.rename_undo, Some(RenameUndoState::Undone)));
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        ));
         assert_eq!(std::fs::read_to_string(&before).unwrap(), "original bytes");
         assert!(!after.exists());
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn renamed_single_move_receipt_is_available_and_restores_the_source() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-move-undo-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        let source_dir = root.join("source");
+        let destination_dir = root.join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let occupied = destination_dir.join("entry.txt");
+        let moved = destination_dir.join("entry (1).txt");
+        std::fs::write(&source, "original bytes").unwrap();
+        std::fs::write(&occupied, "occupied bytes").unwrap();
+        let command = FileCommand::Move {
+            sources: vec![source.clone()],
+            destination: destination_dir.clone(),
+            conflict: ConflictAction::Rename,
+        };
+        let (disposition, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Rename)
+            .unwrap();
+        assert_eq!(disposition, MoveDisposition::Moved);
+        let mut app = OttrinApp::default();
+        let op_id = app.queue_operation_record(command.clone());
+        app.op_tx
+            .send(OpResult {
+                op_id,
+                tab_id: Some(app.state.active_tab().id),
+                cmd: command,
+                delete_nav: Vec::new(),
+                error: None,
+                warning: None,
+                retry: None,
+                clipboard_generation: None,
+                completed_sources: Some(1),
+                completed_source_paths: vec![source.clone()],
+                move_dispositions: None,
+                path_move_receipt: receipt.map(OperationUndoReceipt::PathMove),
+                path_move_bindings: Some(Vec::new()),
+            })
+            .unwrap();
+
+        app.poll_op_results();
+        assert!(matches!(
+            app.operation_history
+                .front()
+                .and_then(|record| record.path_move_undo.as_ref()),
+            Some(PathMoveUndoState::Available)
+        ));
+
+        app.run_path_move_undo(op_id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("undo worker result");
+        app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "original bytes");
+        assert_eq!(
+            std::fs::read_to_string(&occupied).unwrap(),
+            "occupied bytes"
+        );
+        assert!(!moved.exists());
+        assert!(matches!(
+            app.operation_history.front().unwrap().path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        ));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn overwritten_single_move_is_available_in_activity_and_restores_both_entries() {
+        use std::process::Command;
+
+        if std::env::var_os("OTTRIN_UI_MOVE_OVERWRITE_UNDO_CHILD").as_deref()
+            != Some(std::ffi::OsStr::new("1"))
+        {
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-ui-move-overwrite-undo-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos()
+            ));
+            let status = Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "tests::overwritten_single_move_is_available_in_activity_and_restores_both_entries",
+                    "--test-threads=1",
+                    "--nocapture",
+                ])
+                .env("OTTRIN_UI_MOVE_OVERWRITE_UNDO_CHILD", "1")
+                .env("OTTRIN_UI_MOVE_OVERWRITE_UNDO_ROOT", &root)
+                .env("XDG_STATE_HOME", root.join("state"))
+                .status()
+                .unwrap();
+            assert!(
+                status.success(),
+                "isolated overwrite undo test failed: {status}"
+            );
+            return;
+        }
+
+        let root = PathBuf::from(
+            std::env::var_os("OTTRIN_UI_MOVE_OVERWRITE_UNDO_ROOT")
+                .expect("isolated overwrite undo root"),
+        );
+        let source_dir = root.join("source");
+        let destination_dir = root.join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "moved bytes").unwrap();
+        std::fs::write(&destination, "displaced bytes").unwrap();
+        let command = FileCommand::Move {
+            sources: vec![source.clone()],
+            destination: destination_dir.clone(),
+            conflict: ConflictAction::Overwrite,
+        };
+        let (disposition, receipt) = DefaultPlatform
+            .execute_move_with_undo_receipt(&source, &destination_dir, ConflictAction::Overwrite)
+            .unwrap();
+        assert_eq!(disposition, MoveDisposition::Moved);
+        let mut app = OttrinApp::default();
+        let op_id = app.queue_operation_record(command.clone());
+        app.op_tx
+            .send(OpResult {
+                op_id,
+                tab_id: Some(app.state.active_tab().id),
+                cmd: command,
+                delete_nav: Vec::new(),
+                error: None,
+                warning: None,
+                retry: None,
+                clipboard_generation: None,
+                completed_sources: Some(1),
+                completed_source_paths: vec![source.clone()],
+                move_dispositions: None,
+                path_move_receipt: receipt.map(OperationUndoReceipt::PathMove),
+                path_move_bindings: Some(Vec::new()),
+            })
+            .unwrap();
+
+        app.poll_op_results();
+        let record = app.operation_history.front().expect("move activity record");
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+
+        let recovery_root = root.join("state").join("ottrin").join("moves");
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&recovery_root, std::fs::Permissions::from_mode(0o500)).unwrap();
+        app.run_path_move_undo(op_id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("overwrite move undo worker result");
+        assert!(result.retryable);
+        app.path_move_undo_tx.send(result).unwrap();
+        app.poll_path_move_undo_results();
+        assert!(matches!(
+            app.operation_history.front().unwrap().path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+
+        std::fs::set_permissions(&recovery_root, std::fs::Permissions::from_mode(0o700)).unwrap();
+        app.run_path_move_undo(op_id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("overwrite move cleanup retry result");
+        assert!(!result.retryable);
+        app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved bytes");
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "displaced bytes"
+        );
+        assert_eq!(
+            app.operation_history.front().unwrap().message.as_deref(),
+            Some("Move undone")
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn file_operation_worker_publishes_and_executes_undo_for_a_conflict_free_single_copy() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-copy-worker-undo-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        let source_dir = root.join("source");
+        let destination_dir = root.join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let copied = destination_dir.join("entry.txt");
+        std::fs::write(&source, "original bytes").unwrap();
+        let command = FileCommand::Copy {
+            sources: vec![source.clone()],
+            destination: destination_dir,
+            conflict: ConflictAction::Rename,
+        };
+        let mut app = OttrinApp::default();
+
+        assert!(app.run_file_op_bound(command, None, Vec::new(), Some(Vec::new()), None, None,));
+        let result = app
+            .op_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("copy worker result");
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+
+        let record = app.operation_history.front().expect("copy activity record");
+        assert_eq!(record.status, OperationStatus::Completed);
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        let op_id = record.id;
+        app.run_path_move_undo(op_id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("copy undo worker result");
+        app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+
+        assert!(!copied.exists());
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "original bytes");
+        assert_eq!(
+            app.operation_history.front().unwrap().message.as_deref(),
+            Some("Copy undone")
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn file_operation_worker_publishes_and_executes_undo_for_an_overwritten_copy() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-copy-overwrite-worker-undo-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        let source_dir = root.join("source");
+        let destination_dir = root.join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        let destination = destination_dir.join("entry.txt");
+        std::fs::write(&source, "copied bytes").unwrap();
+        std::fs::write(&destination, "displaced bytes").unwrap();
+        let command = FileCommand::Copy {
+            sources: vec![source.clone()],
+            destination: destination_dir,
+            conflict: ConflictAction::Overwrite,
+        };
+        let mut app = OttrinApp::default();
+
+        assert!(app.run_file_op_bound(command, None, Vec::new(), Some(Vec::new()), None, None));
+        let result = app
+            .op_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("overwrite copy worker result");
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+
+        let record = app.operation_history.front().expect("copy activity record");
+        assert_eq!(record.status, OperationStatus::Completed);
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        let op_id = record.id;
+        app.run_path_move_undo(op_id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("overwrite copy undo worker result");
+        app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+
+        assert_eq!(
+            std::fs::read_to_string(&destination).unwrap(),
+            "displaced bytes"
+        );
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
+        assert_eq!(
+            app.operation_history.front().unwrap().message.as_deref(),
+            Some("Copy undone")
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn file_operation_worker_publishes_and_executes_undo_for_a_created_file() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-create-file-worker-undo-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let created = root.join("notes.txt");
+        let command = FileCommand::CreateFile {
+            parent: root.clone(),
+            name: "notes.txt".to_string(),
+        };
+        let mut app = OttrinApp::default();
+
+        assert!(app.run_file_op_bound(command, None, Vec::new(), Some(Vec::new()), None, None));
+        let result = app
+            .op_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("create file worker result");
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+
+        let record = app
+            .operation_history
+            .front()
+            .expect("create file activity record");
+        assert_eq!(record.status, OperationStatus::Completed);
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        let op_id = record.id;
+        app.run_path_move_undo(op_id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("create file undo worker result");
+        app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+
+        assert!(!created.exists());
+        assert_eq!(
+            app.operation_history.front().unwrap().message.as_deref(),
+            Some("Create file undone")
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn file_operation_worker_publishes_and_executes_undo_for_a_created_folder() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-create-folder-worker-undo-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let created = root.join("Notes");
+        let command = FileCommand::CreateFolder {
+            parent: root.clone(),
+            name: "Notes".to_string(),
+        };
+        let mut app = OttrinApp::default();
+
+        assert!(app.run_file_op_bound(command, None, Vec::new(), Some(Vec::new()), None, None));
+        let result = app
+            .op_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("create folder worker result");
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+
+        let record = app
+            .operation_history
+            .front()
+            .expect("create folder activity record");
+        assert_eq!(record.status, OperationStatus::Completed);
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        let op_id = record.id;
+        app.run_path_move_undo(op_id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("create folder undo worker result");
+        app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+
+        assert!(!created.exists());
+        assert_eq!(
+            app.operation_history.front().unwrap().message.as_deref(),
+            Some("Create folder undone")
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn file_operation_worker_publishes_and_executes_undo_for_a_symlink() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-symlink-worker-undo-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let link = root.join("shortcut");
+        let target = PathBuf::from("missing-relative-target");
+        let command = FileCommand::Symlink {
+            link_path: link.clone(),
+            target: target.clone(),
+        };
+        let mut app = OttrinApp::default();
+
+        assert!(app.run_file_op_bound(command, None, Vec::new(), Some(Vec::new()), None, None));
+        let result = app
+            .op_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("symlink worker result");
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+
+        assert_eq!(std::fs::read_link(&link).unwrap(), target);
+        let record = app
+            .operation_history
+            .front()
+            .expect("symlink activity record");
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        let op_id = record.id;
+        app.run_path_move_undo(op_id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("symlink undo worker result");
+        app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+
+        assert!(std::fs::symlink_metadata(&link).is_err());
+        assert_eq!(
+            app.operation_history.front().unwrap().message.as_deref(),
+            Some("Symlink undone")
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn file_operation_worker_publishes_and_executes_undo_for_single_home_trash() {
+        const ROOT_ENV: &str = "OTTRIN_UI_TRASH_UNDO_TEST_ROOT";
+        if let Some(root) = std::env::var_os(ROOT_ENV) {
+            let root = PathBuf::from(root);
+            let documents = root.join("home/Documents");
+            std::fs::create_dir_all(&documents).unwrap();
+            let target = documents.join("report.txt");
+            std::fs::write(&target, b"session report").unwrap();
+            let command = FileCommand::Delete {
+                targets: vec![target.clone()],
+                mode: DeleteMode::Trash,
+            };
+            let mut app = OttrinApp::default();
+
+            assert!(
+                app.run_file_op_bound(command, None, Vec::new(), Some(Vec::new()), None, None,)
+            );
+            let result = app
+                .op_rx
+                .recv_timeout(Duration::from_secs(2))
+                .expect("Trash worker result");
+            app.op_tx.send(result).unwrap();
+            app.poll_op_results();
+
+            assert!(!target.exists());
+            let record = app
+                .operation_history
+                .front()
+                .expect("Trash activity record");
+            assert!(matches!(
+                record.path_move_undo,
+                Some(PathMoveUndoState::Available)
+            ));
+            let op_id = record.id;
+            app.run_path_move_undo(op_id);
+            let result = app
+                .path_move_undo_rx
+                .recv_timeout(Duration::from_secs(2))
+                .expect("Trash undo worker result");
+            app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+
+            assert_eq!(std::fs::read(&target).unwrap(), b"session report");
+            assert_eq!(
+                app.operation_history.front().unwrap().message.as_deref(),
+                Some("Trash move undone")
+            );
+            return;
+        }
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-trash-worker-undo-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        std::fs::create_dir_all(root.join("home")).unwrap();
+        let status = std::process::Command::new(std::env::current_exe().unwrap())
+            .arg("--exact")
+            .arg("tests::file_operation_worker_publishes_and_executes_undo_for_single_home_trash")
+            .arg("--nocapture")
+            .env(ROOT_ENV, &root)
+            .env("HOME", root.join("home"))
+            .env("XDG_DATA_HOME", root.join("data"))
+            .env("XDG_CONFIG_HOME", root.join("config"))
+            .env("XDG_CACHE_HOME", root.join("cache"))
+            .status()
+            .unwrap();
+        std::fs::remove_dir_all(&root).unwrap();
+        assert!(status.success());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn file_operation_worker_publishes_and_executes_undo_for_chmod() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-chmod-worker-undo-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let target = root.join("script.sh");
+        std::fs::write(&target, "#!/bin/sh\n").unwrap();
+        std::fs::set_permissions(&target, std::fs::Permissions::from_mode(0o640)).unwrap();
+        let command = FileCommand::Chmod {
+            target: target.clone(),
+            mode_str: "755".to_string(),
+        };
+        let mut app = OttrinApp::default();
+
+        assert!(app.run_file_op_bound(command, None, Vec::new(), Some(Vec::new()), None, None));
+        let result = app
+            .op_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("chmod worker result");
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+
+        assert_eq!(
+            std::fs::symlink_metadata(&target)
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o7777,
+            0o755
+        );
+        let record = app
+            .operation_history
+            .front()
+            .expect("chmod activity record");
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        let op_id = record.id;
+        app.run_path_move_undo(op_id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("chmod undo worker result");
+        app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+
+        assert_eq!(
+            std::fs::symlink_metadata(&target)
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o7777,
+            0o640
+        );
+        assert_eq!(
+            app.operation_history.front().unwrap().message.as_deref(),
+            Some("Permission change undone")
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn file_operation_worker_publishes_undo_for_a_successful_single_move() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-move-worker-undo-{}-{}",
+            std::process::id(),
+            Instant::now().elapsed().as_nanos()
+        ));
+        let source_dir = root.join("source");
+        let destination_dir = root.join("destination");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&destination_dir).unwrap();
+        let source = source_dir.join("entry.txt");
+        std::fs::write(&source, "original bytes").unwrap();
+        let command = FileCommand::Move {
+            sources: vec![source.clone()],
+            destination: destination_dir,
+            conflict: ConflictAction::Skip,
+        };
+        let mut app = OttrinApp::default();
+
+        assert!(app.run_file_op_bound(
+            command,
+            None,
+            Vec::new(),
+            Some(Vec::new()),
+            None,
+            Some(ConflictAction::Skip),
+        ));
+        let result = app
+            .op_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("move worker result");
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+
+        let record = app.operation_history.front().expect("move activity record");
+        assert_eq!(record.status, OperationStatus::Completed);
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn symlink_records_its_created_link_path_for_conflict_checks() {
+        let link = PathBuf::from("/destination/shortcut");
+        let command = FileCommand::Symlink {
+            link_path: link.clone(),
+            target: PathBuf::from("relative-target"),
+        };
+
+        assert_eq!(
+            path_move_paths_for_command(&command),
+            Some((link.clone(), link))
+        );
+    }
+
+    #[test]
+    fn single_conflict_free_copy_records_its_source_and_destination_paths() {
+        let command = FileCommand::Copy {
+            sources: vec![PathBuf::from("/source/entry.txt")],
+            destination: PathBuf::from("/destination"),
+            conflict: ConflictAction::Skip,
+        };
+
+        assert_eq!(
+            path_move_paths_for_command(&command),
+            Some((
+                PathBuf::from("/source/entry.txt"),
+                PathBuf::from("/destination/entry.txt"),
+            ))
+        );
+    }
+
+    #[test]
+    fn single_move_records_its_source_and_destination_paths() {
+        let command = FileCommand::Move {
+            sources: vec![PathBuf::from("/source/entry.txt")],
+            destination: PathBuf::from("/destination"),
+            conflict: ConflictAction::Skip,
+        };
+
+        assert_eq!(
+            path_move_paths_for_command(&command),
+            Some((
+                PathBuf::from("/source/entry.txt"),
+                PathBuf::from("/destination/entry.txt"),
+            ))
+        );
+    }
+
+    #[test]
+    fn move_undo_refreshes_both_distinct_parent_directories() {
+        assert_eq!(
+            path_move_parent_directories(
+                Path::new("/source/entry.txt"),
+                Path::new("/destination/entry.txt"),
+            ),
+            vec![PathBuf::from("/source"), PathBuf::from("/destination")]
+        );
+    }
+
+    #[test]
+    fn path_move_undo_conflicts_with_descendant_operation_paths() {
+        assert!(path_move_paths_overlap(
+            Path::new("/destination/Notes"),
+            Path::new("/destination/Notes"),
+            Path::new("/destination/Notes/draft.txt"),
+            Path::new("/archive/draft.txt"),
+        ));
+        assert!(!path_move_paths_overlap(
+            Path::new("/destination/Notes"),
+            Path::new("/destination/Notes"),
+            Path::new("/destination/Notes-old/draft.txt"),
+            Path::new("/archive/draft.txt"),
+        ));
+    }
+
+    #[test]
+    fn pending_move_conflict_message_names_the_move_operation() {
+        assert_eq!(
+            path_move_undo_conflict_message(PathMoveUndoKind::Move),
+            "Undo move was not started because a conflicting file operation is still running."
+        );
     }
 
     #[test]
@@ -23945,8 +27458,9 @@ mod tests {
                 clipboard_generation: None,
                 completed_sources: None,
                 completed_source_paths: Vec::new(),
-                rename_receipt: None,
-                rename_bindings: None,
+                move_dispositions: None,
+                path_move_receipt: None,
+                path_move_bindings: None,
             })
             .unwrap();
         let warning_id = app.queue_operation_record(command.clone());
@@ -23962,8 +27476,9 @@ mod tests {
                 clipboard_generation: None,
                 completed_sources: None,
                 completed_source_paths: Vec::new(),
-                rename_receipt: None,
-                rename_bindings: None,
+                move_dispositions: None,
+                path_move_receipt: None,
+                path_move_bindings: None,
             })
             .unwrap();
         app.poll_op_results();
@@ -23972,13 +27487,13 @@ mod tests {
         assert!(
             app.operation_history
                 .iter()
-                .all(|record| record.rename_undo.is_none())
+                .all(|record| record.path_move_undo.is_none())
         );
     }
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn rename_undo_collision_is_terminal_and_visible_on_the_original_record() {
+    fn path_move_undo_collision_is_terminal_and_visible_on_the_original_record() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-ui-rename-undo-collision-{}-{}",
             std::process::id(),
@@ -24009,24 +27524,25 @@ mod tests {
                 clipboard_generation: None,
                 completed_sources: None,
                 completed_source_paths: Vec::new(),
-                rename_receipt: Some(receipt),
-                rename_bindings: Some(Vec::new()),
+                move_dispositions: None,
+                path_move_receipt: Some(OperationUndoReceipt::PathMove(receipt)),
+                path_move_bindings: Some(Vec::new()),
             })
             .unwrap();
         app.poll_op_results();
         std::fs::write(&before, "replacement bytes").unwrap();
 
-        app.run_rename_undo(op_id);
+        app.run_path_move_undo(op_id);
         let result = app
-            .rename_undo_rx
+            .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
             .expect("undo worker result");
-        app.finish_rename_undo(result.op_id, result.result);
+        app.finish_path_move_undo(result.op_id, result.result, result.retryable);
 
         let record = app.operation_history.front().unwrap();
         assert!(matches!(
-            record.rename_undo,
-            Some(RenameUndoState::Unavailable { .. })
+            record.path_move_undo,
+            Some(PathMoveUndoState::Unavailable { .. })
         ));
         assert!(
             record
@@ -24090,6 +27606,77 @@ mod tests {
             preview_render::scrollable_preview_height(260.0, 160.0),
             230.0
         );
+    }
+
+    #[test]
+    fn optimistic_preview_falls_back_from_xl_to_existing_smaller_buckets() {
+        assert_eq!(
+            preview_fallback_dimensions(PREVIEW_CACHE_BUCKET_XL),
+            vec![PREVIEW_CACHE_BUCKET_LARGE, PREVIEW_CACHE_BUCKET_SMALL]
+        );
+        assert_eq!(
+            preview_fallback_dimensions(PREVIEW_CACHE_BUCKET_LARGE),
+            vec![PREVIEW_CACHE_BUCKET_SMALL]
+        );
+        assert!(preview_fallback_dimensions(PREVIEW_CACHE_BUCKET_SMALL).is_empty());
+    }
+
+    #[test]
+    fn quick_inspector_reuses_main_preview_data_while_refreshing() {
+        let path = PathBuf::from("/tmp/optimistic-preview.png");
+        let cached = PreviewData {
+            title: "optimistic-preview.png".to_string(),
+            kind: PreviewKind::Image,
+            body: "cached main preview".to_string(),
+            document: None,
+            spreadsheet: None,
+            open_external: false,
+        };
+        let mut app = OttrinApp::default();
+        app.info_panel_preview = Some((path.clone(), cached));
+
+        app.open_preview_entry(FileEntry {
+            name: "optimistic-preview.png".to_string(),
+            path: path.clone(),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: None,
+            modified_unix_secs: None,
+        });
+
+        let visible = app.preview.data.as_ref().expect("optimistic preview data");
+        assert_eq!(visible.kind, PreviewKind::Image);
+        assert_eq!(visible.body, "cached main preview");
+        assert_eq!(
+            app.preview_load_slots[PreviewTarget::Overlay.index()]
+                .desired
+                .as_ref()
+                .map(|(desired, _)| desired),
+            Some(&path),
+            "the optimistic data must not suppress the authoritative refresh"
+        );
+    }
+
+    #[test]
+    fn pdf_fit_uses_viewport_width_without_a_height_cap() {
+        let pdf = VisualPreviewRenderSpec {
+            max_size: Vec2::new(640.0, 360.0),
+            corner_radius: 8,
+            page_index: 0,
+            fit: true,
+            zoom: 1.0,
+        };
+        let bounds = pdf.fit_bounds(PreviewKind::Pdf);
+        assert_eq!(bounds.x, 640.0);
+        assert!(bounds.y.is_infinite());
+        let fitted = width_fit_size(Vec2::new(612.0, 792.0), bounds)
+            .expect("PDF fit must have an explicit display size");
+        assert_eq!(fitted.x, 640.0);
+        assert!((fitted.y - 640.0 * 792.0 / 612.0).abs() < 0.001);
+
+        let image_bounds = pdf.fit_bounds(PreviewKind::Image);
+        assert_eq!(image_bounds, Vec2::new(640.0, 360.0));
     }
 
     #[test]
@@ -24191,6 +27778,30 @@ mod tests {
     }
 
     #[test]
+    fn dirty_quick_inspector_native_close_request_is_cancelled() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping Quick Inspector text-edit fixture: FIEMAP is unavailable");
+            return;
+        }
+        let fixture = tempfile::tempdir().expect("create text-edit fixture root");
+        let path = fixture.path().join("original.txt");
+        std::fs::write(&path, "original\n").expect("write original text");
+        let session = TextEditSession::open(&path).expect("open editable text");
+        let mut app = OttrinApp::default();
+        app.preview.visible = true;
+        app.preview.path = Some(path);
+        app.preview.text_editor = Some(PreviewTextEditor {
+            session,
+            buffer: "unsaved change\n".to_string(),
+            error: None,
+        });
+
+        assert!(app.native_preview_close_is_cancelled());
+        assert!(app.preview.text_edit_discard_confirmation);
+        assert!(app.preview.text_editor.is_some());
+    }
+
+    #[test]
     fn dirty_quick_inspector_text_edits_require_an_explicit_close_or_cancel() {
         if !text_edit_fixture_supported() {
             eprintln!("skipping Quick Inspector text-edit fixture: FIEMAP is unavailable");
@@ -24286,6 +27897,58 @@ mod tests {
         assert_eq!(std::fs::read_to_string(path).unwrap(), "external edit\n");
 
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn quick_inspector_text_save_is_session_undoable() {
+        let fixture = tempfile::tempdir_in(std::env::current_dir().expect("current directory"))
+            .expect("create text-edit fixture root");
+        let path = fixture.path().join("notes.txt");
+        std::fs::write(&path, "original\n").expect("write source text");
+        let Ok(session) = TextEditSession::open(&path) else {
+            eprintln!("skipping Quick Inspector text-edit fixture: FIEMAP is unavailable");
+            return;
+        };
+
+        let mut app = OttrinApp::default();
+        app.preview.path = Some(path.clone());
+        app.preview.text_editor = Some(PreviewTextEditor {
+            session,
+            buffer: "saved edit\n".to_string(),
+            error: None,
+        });
+
+        app.save_preview_text_edit();
+
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "saved edit\n");
+        let record = app.operation_history.front().expect("text edit activity");
+        assert_eq!(record.title, "Edit text");
+        assert_eq!(record.status, OperationStatus::Completed);
+        assert_eq!(record.path_move_undo, Some(PathMoveUndoState::Available));
+        assert_eq!(
+            record.path_move_undo_token.as_ref().map(|token| token.kind),
+            Some(PathMoveUndoKind::TextEdit)
+        );
+        let op_id = record.id;
+
+        app.run_path_move_undo(op_id);
+        for _ in 0..100 {
+            app.poll_path_move_undo_results();
+            if app
+                .operation_history
+                .front()
+                .is_some_and(|record| record.path_move_undo == Some(PathMoveUndoState::Undone))
+            {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        }
+
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "original\n");
+        assert_eq!(
+            app.operation_history.front().unwrap().path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        );
     }
 
     #[test]
@@ -24386,6 +28049,7 @@ mod tests {
         app.retained_move_activity = vec![RetainedMoveActivity {
             transaction_id: [0x55; 16],
             phase: "stale",
+            recovery_available: false,
         }];
         app.retained_move_activity_error = Some("stale marker".to_string());
 
@@ -24412,8 +28076,9 @@ mod tests {
             clipboard_generation: None,
             completed_sources: Some(1),
             completed_source_paths: Vec::new(),
-            rename_receipt: None,
-            rename_bindings: None,
+            move_dispositions: None,
+            path_move_receipt: None,
+            path_move_bindings: None,
         });
 
         app.poll_op_results();
@@ -24421,6 +28086,132 @@ mod tests {
         let (refreshed_activity, refreshed_error) = load_retained_move_activity();
         assert_eq!(app.retained_move_activity, refreshed_activity);
         assert_eq!(app.retained_move_activity_error, refreshed_error);
+    }
+
+    #[test]
+    fn failed_move_batch_reconciles_retained_move_activity_snapshot() {
+        let mut app = OttrinApp::default();
+        app.retained_move_activity = vec![RetainedMoveActivity {
+            transaction_id: [0x66; 16],
+            phase: "stale",
+            recovery_available: false,
+        }];
+        app.retained_move_activity_error = Some("stale marker".to_string());
+
+        let move_cmd = FileCommand::Move {
+            sources: vec![
+                PathBuf::from("/tmp/source"),
+                PathBuf::from("/tmp/source-two"),
+            ],
+            destination: PathBuf::from("/tmp/destination"),
+            conflict: ConflictAction::Skip,
+        };
+        let op_id = app.queue_operation_record(move_cmd.clone());
+        let _ = app.op_tx.send(OpResult {
+            op_id,
+            tab_id: None,
+            cmd: move_cmd,
+            delete_nav: Vec::new(),
+            error: Some(
+                "move source is retained for recovery before publication at transaction"
+                    .to_string(),
+            ),
+            warning: None,
+            retry: None,
+            clipboard_generation: None,
+            completed_sources: None,
+            completed_source_paths: Vec::new(),
+            move_dispositions: None,
+            path_move_receipt: None,
+            path_move_bindings: None,
+        });
+
+        app.poll_op_results();
+
+        let (refreshed_activity, refreshed_error) = load_retained_move_activity();
+        assert_eq!(app.retained_move_activity, refreshed_activity);
+        assert_eq!(app.retained_move_activity_error, refreshed_error);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn successful_mixed_move_batch_activity_reports_exact_dispositions() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-ui-mixed-move-activity-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock after epoch")
+                .as_nanos()
+        ));
+        let source_dir = root.join("source");
+        let destination = root.join("destination");
+        std::fs::create_dir_all(&source_dir).expect("create source directory");
+        std::fs::create_dir_all(&destination).expect("create destination directory");
+        let moved_source = source_dir.join("moved.txt");
+        let skipped_source = source_dir.join("skipped.txt");
+        std::fs::write(&moved_source, "moved payload").expect("create moved source");
+        std::fs::write(&skipped_source, "skipped payload").expect("create skipped source");
+        std::fs::write(destination.join("skipped.txt"), "occupied payload")
+            .expect("create occupied destination");
+
+        let mut app = OttrinApp::default();
+        let move_cmd = FileCommand::Move {
+            sources: vec![moved_source.clone(), skipped_source.clone()],
+            destination: destination.clone(),
+            conflict: ConflictAction::Skip,
+        };
+        assert!(app.run_file_op_bound(
+            move_cmd,
+            None,
+            Vec::new(),
+            Some(Vec::new()),
+            None,
+            Some(ConflictAction::Skip),
+        ));
+        let result = app
+            .op_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("mixed Move worker result");
+        assert_eq!(
+            result.move_dispositions,
+            Some(vec![MoveDisposition::Moved, MoveDisposition::Skipped])
+        );
+        let op_id = result.op_id;
+        app.op_tx.send(result).unwrap();
+
+        app.poll_op_results();
+
+        let record = app
+            .operation_history
+            .iter()
+            .find(|record| record.id == op_id)
+            .expect("Move Activity record");
+        assert_eq!(record.status, OperationStatus::Completed);
+        assert_eq!(
+            record.detail,
+            format!("2 items to {} — 1 moved, 1 skipped", destination.display())
+        );
+        assert_eq!(
+            record.recoverability,
+            OperationRecoverability::BatchUndoUnavailable
+        );
+        assert!(!moved_source.exists());
+        assert_eq!(
+            std::fs::read_to_string(destination.join("moved.txt"))
+                .expect("moved destination remains readable"),
+            "moved payload"
+        );
+        assert_eq!(
+            std::fs::read_to_string(&skipped_source).expect("skipped source remains readable"),
+            "skipped payload"
+        );
+        assert_eq!(
+            std::fs::read_to_string(destination.join("skipped.txt"))
+                .expect("occupied destination remains readable"),
+            "occupied payload"
+        );
+        std::fs::remove_dir_all(root).expect("remove mixed Move fixture");
     }
 
     #[test]
@@ -24625,6 +28416,7 @@ mod tests {
                 title: "fixture".to_string(),
                 kind,
                 body: body.to_string(),
+                document: None,
                 spreadsheet: None,
                 open_external: true,
             };
@@ -24644,6 +28436,7 @@ mod tests {
                 title: "fixture".to_string(),
                 kind,
                 body: "must stay on its specialized path".to_string(),
+                document: None,
                 spreadsheet: None,
                 open_external: false,
             };
@@ -26196,13 +29989,14 @@ mod tests {
             title: "report.pdf".to_string(),
             kind: PreviewKind::Pdf,
             body: "Filetype: PDF document\nPages: 3".to_string(),
+            document: None,
             spreadsheet: None,
             open_external: true,
         });
 
-        assert!(app.set_pdf_preview_page(2));
+        assert!(app.set_preview_page(2));
         assert_eq!(app.preview.pdf_page_index, 2);
-        assert!(!app.set_pdf_preview_page(3));
+        assert!(!app.set_preview_page(3));
         assert_eq!(app.preview.pdf_page_index, 2);
 
         app.open_preview_entry(FileEntry {
@@ -26215,6 +30009,85 @@ mod tests {
             modified_unix_secs: None,
         });
         assert_eq!(app.preview.pdf_page_index, 0);
+    }
+
+    #[test]
+    fn quick_inspector_page_count_prefers_generation_bound_office_provider_metadata() {
+        let source_path = std::env::temp_dir().join(format!(
+            "ottrin-office-page-count-{}.pptx",
+            std::process::id()
+        ));
+        std::fs::write(&source_path, b"office-page-count-source")
+            .expect("write Office page-count source");
+        let source_generation = ottrin_preview::office_preview_source_generation(&source_path)
+            .expect("capture Office page-count generation");
+        let office = PreviewData {
+            title: "slides.pptx".to_string(),
+            kind: PreviewKind::OfficeMetadata,
+            body: "Office presentation\nExtracted text fallback".to_string(),
+            document: None,
+            spreadsheet: None,
+            open_external: true,
+        };
+        let identity = ottrin_preview::OfficeRenderCacheIdentity {
+            provider: ottrin_preview::OfficeProviderId::InstalledLibreOffice,
+            provider_version: "24.2.7.2".to_string(),
+            policy_version: 1,
+        };
+        let rendered = OfficeRenderedPage {
+            source_path: source_path.clone(),
+            source_generation,
+            label: "Rendered with LibreOffice 24.2.7.2".to_string(),
+            page_count: 7,
+            cache_identity: identity,
+        };
+
+        assert_eq!(preview_page_count(&office, Some(&rendered)), Some(7));
+
+        let pdf = PreviewData {
+            title: "report.pdf".to_string(),
+            kind: PreviewKind::Pdf,
+            body: "PDF document\nPages: 3".to_string(),
+            document: None,
+            spreadsheet: None,
+            open_external: true,
+        };
+        assert_eq!(preview_page_count(&pdf, None), Some(3));
+        std::fs::remove_file(source_path).expect("remove Office page-count source");
+    }
+
+    #[test]
+    fn office_provider_metadata_lookup_rejects_a_replaced_source_generation() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-office-provider-metadata-{}.pptx",
+            std::process::id()
+        ));
+        std::fs::write(&path, b"first-provider-source").expect("write first source");
+        let first_generation = ottrin_preview::office_preview_source_generation(&path)
+            .expect("capture first generation");
+        let mut app = OttrinApp::default();
+        app.office_rendered_pages.insert(
+            "provider-key".to_string(),
+            OfficeRenderedPage {
+                source_path: path.clone(),
+                source_generation: first_generation,
+                label: "Rendered with LibreOffice 24.2.7.2".to_string(),
+                page_count: 5,
+                cache_identity: ottrin_preview::OfficeRenderCacheIdentity {
+                    provider: ottrin_preview::OfficeProviderId::InstalledLibreOffice,
+                    provider_version: "24.2.7.2".to_string(),
+                    policy_version: 1,
+                },
+            },
+        );
+
+        assert!(app.office_rendered_page_for_path(&path).is_some());
+        std::fs::write(&path, b"other-provider-source").expect("replace source");
+        assert!(
+            app.office_rendered_page_for_path(&path).is_none(),
+            "metadata from provider pixels must not survive a source-generation change"
+        );
+        std::fs::remove_file(path).expect("remove Office source");
     }
 
     #[test]
@@ -26254,7 +30127,32 @@ mod tests {
     }
 
     #[test]
-    fn repeated_search_settings_renders_reuse_schedule_status_until_invalidated() {
+    fn search_storage_detail_reports_database_and_live_wal_bytes() {
+        assert_eq!(
+            search_storage_detail(8 * 1024 * 1024, 512 * 1024),
+            "8.0 MB database + 512 KB live changes"
+        );
+        assert_eq!(search_storage_detail(0, 0), "No database stored yet");
+    }
+
+    #[test]
+    fn administrator_persistent_index_disclosure_names_scope_storage_and_parallel_work() {
+        let config = SearchConfig {
+            include_roots: vec![PathBuf::from("/etc"), PathBuf::from("/root/Documents")],
+            ..SearchConfig::default()
+        };
+
+        let disclosure = administrator_persistent_index_disclosure(&config, 1_572_864);
+
+        assert!(disclosure.contains("/etc"));
+        assert!(disclosure.contains("/root/Documents"));
+        assert!(disclosure.contains("1.5 MB"));
+        assert!(disclosure.contains("two independent indexers"));
+        assert!(disclosure.contains("Content extraction stays off"));
+    }
+
+    #[test]
+    fn sqlite_schedule_status_is_cached_until_explicit_refresh() {
         let mut cached = None;
         let mut probes = 0;
 
@@ -26451,14 +30349,6 @@ mod tests {
     }
 
     #[test]
-    fn collapsed_locations_tile_contains_only_its_semantic_icon() {
-        assert_eq!(
-            locations_rail_tile_text(MI_HOME, "Home", Path::new("/home/alice"), false),
-            MI_HOME
-        );
-    }
-
-    #[test]
     fn locations_rail_defaults_to_compact_width() {
         let app = OttrinApp::default();
         assert_eq!(app.locations_rail_width(), 44.0);
@@ -26555,19 +30445,6 @@ mod tests {
     fn locations_rail_and_single_file_canvas_share_the_smart_panel_surface() {
         let colors = Colors::for_config(&AppConfig::default());
         assert_eq!(single_file_pane_background(&colors), colors.smart_panel_bg);
-    }
-
-    #[test]
-    fn expanded_locations_tile_includes_a_secondary_mount_path() {
-        assert_eq!(
-            locations_rail_tile_text(
-                MI_FOLDER_OPEN,
-                "Backup",
-                Path::new("/media/alice/Backup"),
-                true,
-            ),
-            format!("{MI_FOLDER_OPEN} Backup\n/media/alice/Backup")
-        );
     }
 
     #[test]
@@ -27152,7 +31029,7 @@ mod tests {
     }
 
     #[test]
-    fn move_conflict_modal_escape_cancels_pending_resolution() {
+    fn move_conflict_modal_escape_cancels_without_mutating_source_or_destination() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-ui-move-conflict-escape-{}-{}",
             std::process::id(),
@@ -27164,12 +31041,15 @@ mod tests {
         let destination = root.join("destination");
         std::fs::create_dir_all(&destination).expect("create destination");
         let source = root.join("report.txt");
-        std::fs::write(destination.join("report.txt"), "occupied").expect("create conflict");
+        let destination_entry = destination.join("report.txt");
+        std::fs::write(&source, "source payload").expect("create source");
+        std::fs::write(&destination_entry, "occupied").expect("create conflict");
 
         let mut app = OttrinApp::default();
+        app.operation_history.clear();
         app.pending_move_conflict = Some(PendingMoveConflict {
             cmd: FileCommand::Move {
-                sources: vec![source],
+                sources: vec![source.clone()],
                 destination,
                 conflict: ConflictAction::Rename,
             },
@@ -27191,6 +31071,16 @@ mod tests {
         app.handle_move_conflict_confirmation_keyboard(&ctx);
 
         assert!(app.pending_move_conflict.is_none());
+        assert_eq!(
+            std::fs::read_to_string(&source).expect("source remains readable"),
+            "source payload"
+        );
+        assert_eq!(
+            std::fs::read_to_string(&destination_entry)
+                .expect("existing destination remains readable"),
+            "occupied"
+        );
+        assert!(app.operation_history.is_empty());
         let _ = std::fs::remove_dir_all(root);
     }
 
@@ -27376,6 +31266,37 @@ mod tests {
 
     #[test]
     fn move_conflict_modal_resolution_actions_clears_pending_without_reentry() {
+        #[cfg(target_os = "linux")]
+        if std::env::var_os("OTTRIN_UI_MOVE_CONFLICT_ACTIONS_CHILD").is_none() {
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-ui-move-conflict-actions-state-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .expect("clock after epoch")
+                    .as_nanos(),
+            ));
+            std::fs::create_dir(&root).expect("create isolated Move state root");
+            let status = std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "tests::move_conflict_modal_resolution_actions_clears_pending_without_reentry",
+                    "--test-threads=1",
+                    "--nocapture",
+                ])
+                .env("OTTRIN_UI_MOVE_CONFLICT_ACTIONS_CHILD", "1")
+                .env("XDG_STATE_HOME", root.join("state"))
+                .status()
+                .unwrap();
+            let cleanup = std::fs::remove_dir_all(&root);
+            assert!(cleanup.is_ok(), "clean isolated Move state: {cleanup:?}");
+            assert!(
+                status.success(),
+                "isolated Move action test failed: {status}"
+            );
+            return;
+        }
+
         let root = std::env::temp_dir().join(format!(
             "ottrin-ui-move-conflict-button-paths-{}-{}",
             std::process::id(),
@@ -27420,6 +31341,14 @@ mod tests {
             app.resolve_move_conflict(action);
 
             assert!(app.pending_move_conflict.is_none());
+            if action.is_some() {
+                let result = app
+                    .op_rx
+                    .recv_timeout(Duration::from_secs(2))
+                    .expect("resolved Move worker result");
+                app.op_tx.send(result).unwrap();
+                app.poll_op_results();
+            }
             assert!(app.request_move_conflict_confirmation(&cmd, None, &Vec::new(), None, None));
             assert!(app.pending_move_conflict.is_some());
             app.pending_move_conflict = None;
@@ -27822,5 +31751,46 @@ mod tests {
             ),
             "projects"
         );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn html_quick_inspector_uses_the_visual_preview_path() {
+        assert!(quick_inspector_uses_visual_preview(
+            Path::new("saved-page.html"),
+            PreviewKind::Text,
+        ));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn eps_quick_inspector_uses_the_isolated_visual_preview_path() {
+        assert!(quick_inspector_uses_visual_preview(
+            Path::new("diagram.eps"),
+            PreviewKind::EpsMetadata,
+        ));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn html_preview_failure_is_truthful_and_keeps_the_external_fallback_actionable() {
+        assert_eq!(
+            visual_preview_unavailable_message(
+                Path::new("saved-page.html"),
+                "no supported system HTML renderer and sandbox are installed",
+            ),
+            "Offline HTML preview unavailable: no supported system HTML renderer and sandbox are installed. Open externally to view this file."
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn html_visuals_do_not_use_a_source_only_persistent_thumbnail_cache() {
+        assert!(!visual_renderer_uses_persistent_thumbnail_cache(
+            ottrin_preview::PreviewVisualRenderer::Html,
+        ));
+        assert!(visual_renderer_uses_persistent_thumbnail_cache(
+            ottrin_preview::PreviewVisualRenderer::Eps,
+        ));
     }
 }

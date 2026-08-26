@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+      Name="Ottrin"
+      Manufacturer="hoozter"
+      Version="$(var.Version)"
+      UpgradeCode="04304CE2-990E-4053-9EDA-AF3E69548C9D"
+      Scope="perUser">
+    <SummaryInformation Description="Ottrin file manager" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Ottrin is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="Ottrin">
+          <Directory Id="BinFolder" Name="bin" />
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <Component Id="MainExecutableComponent" Directory="BinFolder" Guid="*">
+      <File Id="MainExecutable" Source="$(var.Stage)/bin/ottrin.exe" KeyPath="yes" />
+    </Component>
+
+    <ComponentGroup Id="PortablePayload" Directory="INSTALLFOLDER">
+      <Files Include="$(var.Stage)/**/*">
+        <Exclude Files="$(var.Stage)/bin/ottrin.exe" />
+      </Files>
+    </ComponentGroup>
+
+    <Feature Id="MainFeature" Title="Ottrin" Level="1">
+      <ComponentRef Id="MainExecutableComponent" />
+      <ComponentGroupRef Id="PortablePayload" />
+    </Feature>
+
+    <CustomAction
+        Id="InstallBackgroundIndex"
+        FileRef="MainExecutable"
+        ExeCommand="index service-install"
+        Execute="deferred"
+        Impersonate="yes"
+        Return="check" />
+    <CustomAction
+        Id="CleanupBeforeUninstall"
+        FileRef="MainExecutable"
+        ExeCommand="--uninstall"
+        Execute="deferred"
+        Impersonate="yes"
+        Return="check" />
+
+    <InstallExecuteSequence>
+      <Custom Action="InstallBackgroundIndex" After="InstallFiles" Condition="NOT REMOVE" />
+      <Custom Action="CleanupBeforeUninstall" Before="RemoveFiles" Condition="REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+    </InstallExecuteSequence>
+  </Package>
+</Wix>

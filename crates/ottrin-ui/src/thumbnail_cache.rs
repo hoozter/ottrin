@@ -29,6 +29,8 @@ const MAX_SVG_CACHE_PNG_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_SVG_CACHE_PNG_DIMENSION: u32 = 2_048;
 const MAX_PDF_CACHE_PNG_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_PDF_CACHE_PNG_DIMENSION: u32 = 2_048;
+const MAX_EPS_CACHE_PNG_BYTES: u64 = 32 * 1024 * 1024;
+const MAX_EPS_CACHE_PNG_DIMENSION: u32 = 4_096;
 const MAX_VIDEO_CACHE_PNG_BYTES: u64 = 16 * 1024 * 1024;
 const MAX_VIDEO_CACHE_PNG_DIMENSION: u32 = 2_048;
 
@@ -148,9 +150,6 @@ pub(crate) fn preview_cache_key_for_page_with_generations(
         let generation = ottrin_preview::affinity_preview_source_generation(path);
         return affinity_preview_cache_key(target_dim, page_index, generation.as_ref());
     }
-    if ottrin_preview::is_pptx_visual_path(path) {
-        return pptx_preview_request_key(path, target_dim, page_index);
-    }
     if ottrin_preview::is_office_visual_path(path) {
         let generation = office_source_generation
             .cloned()
@@ -186,17 +185,6 @@ pub(crate) fn preview_cache_key_for_page_with_generations(
     target_dim.hash(&mut hasher);
     page_index.hash(&mut hasher);
     format!("{:016x}_{}.png", hasher.finish(), target_dim)
-}
-
-/// PPTX never reaches the persistent thumbnail cache. This is only an
-/// in-memory request identity, deliberately independent of path metadata and
-/// source bytes so widget construction cannot open or hash a presentation.
-fn pptx_preview_request_key(path: &Path, target_dim: u32, page_index: usize) -> String {
-    let mut hasher = DefaultHasher::new();
-    path.hash(&mut hasher);
-    target_dim.hash(&mut hasher);
-    page_index.hash(&mut hasher);
-    format!("pptx-request-v1-{:016x}.png", hasher.finish())
 }
 
 fn stl_preview_cache_key(
@@ -241,6 +229,26 @@ fn office_preview_cache_key(
         .map(|generation| hex_digest(generation.as_bytes()))
         .unwrap_or_else(|| "unavailable".to_string());
     format!("office-v1-{generation}-{target_dim}-{page_index}.png")
+}
+
+pub(crate) fn office_provider_preview_cache_key(
+    target_dim: u32,
+    page_index: usize,
+    source_generation: Option<&ottrin_preview::OfficePreviewSourceGeneration>,
+    identity: &ottrin_preview::OfficeRenderCacheIdentity,
+) -> String {
+    let generation = source_generation
+        .map(|generation| hex_digest(generation.as_bytes()))
+        .unwrap_or_else(|| "unavailable".to_string());
+    let provider = match identity.provider {
+        ottrin_preview::OfficeProviderId::InstalledLibreOffice => "installed-libreoffice",
+        ottrin_preview::OfficeProviderId::LightweightPack => "lightweight-pack",
+        ottrin_preview::OfficeProviderId::FidelityPack => "fidelity-pack",
+    };
+    format!(
+        "office-provider-v1-{generation}-{provider}-{}-policy{}-{target_dim}-{page_index}.png",
+        identity.provider_version, identity.policy_version
+    )
 }
 
 fn threemf_preview_cache_key(
@@ -355,9 +363,6 @@ pub(crate) fn load_cached_thumbnail(
     page_index: usize,
     cache_key: &str,
 ) -> Option<Vec<u8>> {
-    if ottrin_preview::is_pptx_visual_path(path) {
-        return None;
-    }
     if !preview_cache_key_matches(path, target_dim, page_index, cache_key) {
         return None;
     }
@@ -558,9 +563,6 @@ fn persist_cached_thumbnail_at_path_if_current(
     max_bytes: u64,
     cache_path: PathBuf,
 ) -> bool {
-    if ottrin_preview::is_pptx_visual_path(source_path) {
-        return false;
-    }
     if max_bytes == 0 {
         return false;
     }
@@ -595,6 +597,19 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     }
                 }
             }
+            #[cfg(target_os = "linux")]
+            ottrin_preview::PreviewVisualRenderer::Eps => {
+                match ottrin_preview::render_eps_content_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "EPS thumbnail render failed for {}: {error:?}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
             ottrin_preview::PreviewVisualRenderer::Office => {
                 match ottrin_preview::render_office_content_preview_png(path, target_dim) {
                     Ok(bytes) => Some(bytes),
@@ -613,6 +628,19 @@ pub(crate) fn build_thumbnail_bytes(path: &Path, target_dim: u32) -> Option<Vec<
                     Err(error) => {
                         eprintln!(
                             "Text thumbnail render failed for {}: {error}",
+                            path.display()
+                        );
+                        None
+                    }
+                }
+            }
+            #[cfg(target_os = "linux")]
+            ottrin_preview::PreviewVisualRenderer::Html => {
+                match ottrin_preview::render_html_content_preview_png(path, target_dim) {
+                    Ok(bytes) => Some(bytes),
+                    Err(error) => {
+                        eprintln!(
+                            "Offline HTML thumbnail render failed for {}: {error}",
                             path.display()
                         );
                         None
@@ -814,8 +842,7 @@ fn cached_thumbnail_is_safe_for_path_with_pdfium_runtime(
     pdfium_runtime_is_available: impl FnOnce() -> bool,
 ) -> bool {
     if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::None {
-        // Metadata-only types (notably EPS while no isolated renderer is
-        // packaged) may not resurrect a stale raster cache as a visual claim.
+        // Metadata-only types may not resurrect a stale raster cache as a visual claim.
         return false;
     }
     if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Pdf {
@@ -827,6 +854,15 @@ fn cached_thumbnail_is_safe_for_path_with_pdfium_runtime(
                 bytes,
                 MAX_PDF_CACHE_PNG_BYTES,
                 MAX_PDF_CACHE_PNG_DIMENSION,
+            );
+    }
+    #[cfg(target_os = "linux")]
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Eps {
+        return ottrin_preview::eps_preview_runtime_is_available()
+            && bounded_cached_png_is_safe(
+                bytes,
+                MAX_EPS_CACHE_PNG_BYTES,
+                MAX_EPS_CACHE_PNG_DIMENSION,
             );
     }
     if ottrin_preview::is_svg_path(path) {
@@ -986,6 +1022,19 @@ pub(crate) fn full_preview_bytes_at_page(
             }
         };
     }
+    #[cfg(target_os = "linux")]
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Eps {
+        return match ottrin_preview::render_eps_content_preview_png(path, target_dim) {
+            Ok(bytes) => Some(bytes),
+            Err(error) => {
+                eprintln!(
+                    "EPS preview render failed for {}: {error:?}",
+                    path.display()
+                );
+                None
+            }
+        };
+    }
     if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Image {
         match ottrin_preview::render_svg_content_preview_png(path, target_dim) {
             Ok(bytes) => return Some(bytes),
@@ -1071,6 +1120,19 @@ pub(crate) fn full_preview_bytes_at_page(
             }
         };
     }
+    #[cfg(target_os = "linux")]
+    if preview_visual_renderer(path) == ottrin_preview::PreviewVisualRenderer::Html {
+        return match ottrin_preview::render_html_content_preview_png(path, target_dim) {
+            Ok(bytes) => Some(bytes),
+            Err(error) => {
+                eprintln!(
+                    "Offline HTML preview render failed for {}: {error}",
+                    path.display()
+                );
+                None
+            }
+        };
+    }
     full_preview_bytes_with_visual_renderer(path, target_dim, |path, target_dim| {
         match preview_visual_renderer(path) {
             ottrin_preview::PreviewVisualRenderer::Office => {
@@ -1140,6 +1202,7 @@ fn full_preview_bytes_with_visual_renderer(
     if matches!(
         preview_visual_renderer(path),
         ottrin_preview::PreviewVisualRenderer::Pdf
+            | ottrin_preview::PreviewVisualRenderer::Eps
             | ottrin_preview::PreviewVisualRenderer::Office
             | ottrin_preview::PreviewVisualRenderer::CameraRaw
             | ottrin_preview::PreviewVisualRenderer::TextCard
@@ -1166,9 +1229,11 @@ fn build_thumbnail_bytes_with_visual_renderer(
     }
     match preview_visual_renderer(path) {
         ottrin_preview::PreviewVisualRenderer::Pdf
+        | ottrin_preview::PreviewVisualRenderer::Eps
         | ottrin_preview::PreviewVisualRenderer::Office
         | ottrin_preview::PreviewVisualRenderer::CameraRaw
         | ottrin_preview::PreviewVisualRenderer::TextCard
+        | ottrin_preview::PreviewVisualRenderer::Html
         | ottrin_preview::PreviewVisualRenderer::Font
         | ottrin_preview::PreviewVisualRenderer::Sqlite
         | ottrin_preview::PreviewVisualRenderer::Stl
@@ -1922,41 +1987,10 @@ mod tests {
         let pptx = Path::new("deck.PPTX");
         assert_eq!(
             ottrin_preview::preview_profile(pptx).visual_renderer(),
-            ottrin_preview::PreviewVisualRenderer::Office
+            ottrin_preview::PreviewVisualRenderer::None
         );
         assert!(!ottrin_preview::preview_profile(pptx).raw_fallback_allowed());
         assert_eq!(fallback_preview_bytes(pptx, None), None);
-    }
-
-    #[test]
-    fn pptx_never_persists_a_disk_thumbnail() {
-        let nonce = format!(
-            "{}-{}",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .expect("system clock after epoch")
-                .as_nanos()
-        );
-        let source = std::env::temp_dir().join(format!("ottrin-office-{nonce}.pptx"));
-        let cache = std::env::temp_dir().join(format!("ottrin-office-{nonce}.png"));
-        std::fs::write(&source, b"first-pptx-generation").expect("write first generation");
-        let request_key = preview_cache_key_for_page(&source, 128, 0);
-
-        assert!(
-            !persist_cached_thumbnail_at_path_if_current(
-                &source,
-                128,
-                0,
-                &request_key,
-                b"rendered PPTX card",
-                1024 * 1024,
-                cache.clone(),
-            ),
-            "PPTX uses request-local memory only, never the disk thumbnail cache"
-        );
-        assert!(!cache.exists());
-        let _ = std::fs::remove_file(source);
     }
 
     #[test]
@@ -2127,31 +2161,36 @@ mod tests {
     }
 
     #[test]
-    fn eps_rejects_stale_raster_cache_without_a_safe_renderer() {
-        let svg = std::env::temp_dir().join(format!(
-            "ottrin-eps-cache-source-{}.svg",
-            std::process::id()
-        ));
+    #[cfg(target_os = "linux")]
+    fn eps_rejects_stale_raster_cache_and_uses_only_the_isolated_renderer() {
+        if !ottrin_preview::eps_preview_runtime_is_available() {
+            return;
+        }
         let eps = std::env::temp_dir().join(format!(
             "ottrin-eps-cache-target-{}.eps",
             std::process::id()
         ));
         std::fs::write(
-            &svg,
-            r##"<svg width="12" height="12" xmlns="http://www.w3.org/2000/svg"><rect width="12" height="12" fill="#00ff00"/></svg>"##,
+            &eps,
+            b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 160 100\n1 0 0 setrgbcolor\n10 10 140 80 rectfill\nshowpage\n",
         )
-        .expect("write SVG cache source");
-        std::fs::write(&eps, b"%!PS-Adobe-3.0\nshowpage\n").expect("write EPS fixture");
-        let stale_png = build_thumbnail_bytes(&svg, 128).expect("render SVG cache source");
+        .expect("write EPS fixture");
+        let stale_cache = b"not renderer-produced PNG data".to_vec();
 
-        assert_eq!(
-            thumbnail_bytes_from_cache_or_build(&eps, 128, Some(stale_png)),
-            None,
-            "EPS must not reuse a stale cache when no safe isolated renderer is available"
+        let (thumbnail, should_persist) =
+            thumbnail_bytes_from_cache_or_build(&eps, 128, Some(stale_cache.clone()))
+                .expect("isolated EPS renderer must replace the stale cache");
+        assert_ne!(
+            thumbnail, stale_cache,
+            "EPS must not reuse a stale raster cache"
         );
-        assert_eq!(full_preview_bytes_at_page(&eps, 128, 0), None);
+        assert!(
+            should_persist,
+            "fresh isolated render must replace the cache"
+        );
+        assert!(image::load_from_memory(&thumbnail).is_ok());
+        assert!(full_preview_bytes_at_page(&eps, 128, 0).is_some());
 
-        std::fs::remove_file(svg).expect("remove SVG cache source");
         std::fs::remove_file(eps).expect("remove EPS fixture");
     }
 

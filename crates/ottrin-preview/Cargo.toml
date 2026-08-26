@@ -5,6 +5,15 @@ edition.workspace = true
 license.workspace = true
 authors.workspace = true
 
+[features]
+default = []
+system-gstreamer = ["dep:gstreamer", "dep:gstreamer-app"]
+
+[[bin]]
+name = "ottrin-media-playback"
+path = "src/bin/ottrin-media-playback.rs"
+required-features = ["system-gstreamer"]
+
 [dependencies]
 ottrin-core = { path = "../ottrin-core" }
 thiserror.workspace = true
@@ -28,7 +37,9 @@ ttf-parser = "0.25.1"
 rusqlite = { version = "0.31", features = ["bundled", "serialize", "hooks", "limits"] }
 sha2 = "0.10"
 crc32fast = "1"
+base64 = "0.22"
 libc = "0.2"
+
 # `stl_io` 0.11.x (MIT; https://github.com/hmeyer/stl_io) is a pure-Rust
 # streaming parser. Preview-specific input, triangle, and raster bounds remain local.
 stl_io = "0.11"
@@ -38,6 +49,12 @@ tobj = { version = "=4.0.5", default-features = false }
 epaint_default_fonts = "0.33"
 pdfium-render = { version = "=0.9.3", default-features = false, features = ["image_latest", "pdfium_latest", "thread_safe"] }
 
+[target.'cfg(target_os = "linux")'.dependencies]
+lol_html = "3.0.1"
+gstreamer = { version = "=0.24.4", optional = true }
+gstreamer-app = { version = "=0.24.4", optional = true }
+
 [target.'cfg(target_os = "windows")'.dependencies]
 windows = { version = "0.58", features = ["implement", "Win32_Foundation", "Win32_Media_MediaFoundation", "Win32_Storage_FileSystem", "Win32_System_Com"] }
 windows-core = "0.58"
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_UI_Shell"] }

@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+STAGER="$ROOT/packaging/linux/stage-native-package.sh"
+DEB="$ROOT/packaging/linux/package-deb.sh"
+RPM="$ROOT/packaging/linux/package-rpm.sh"
+BUILD_ALL="$ROOT/build-all.sh"
+PREFLIGHT="$ROOT/scripts/release-preflight.sh"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+BIN="$TMP/bin"
+STAGE="$TMP/stage"
+mkdir -p "$BIN"
+
+for executable in ottrin-app ottrin-indexd ottrin-priv-helper ottrin-media-playback; do
+  printf '#!/bin/sh\nexit 0\n' > "$BIN/$executable"
+  chmod 0755 "$BIN/$executable"
+done
+
+OTTRIN_BUILD_DIR="$BIN" OTTRIN_SKIP_BUILD=1 "$STAGER" "$STAGE"
+
+for executable in \
+  usr/bin/ottrin \
+  usr/bin/ottrin-indexd \
+  usr/bin/ottrin-media-playback \
+  usr/libexec/ottrin/ottrin-priv-helper; do
+  test -x "$STAGE/$executable"
+done
+for payload in \
+  usr/share/applications/org.ottrin.Ottrin.desktop \
+  usr/share/icons/hicolor/scalable/apps/ottrin.svg \
+  usr/share/icons/hicolor/256x256/apps/ottrin.png \
+  usr/share/metainfo/org.ottrin.Ottrin.appdata.xml \
+  usr/share/polkit-1/actions/org.ottrin.filesystem.policy \
+  usr/share/ottrin/ottrin-index.service.in \
+  usr/share/doc/ottrin/SOURCE_REVISION.txt; do
+  test -f "$STAGE/$payload"
+done
+
+if find "$STAGE/usr/lib" -type f -print -quit 2>/dev/null | grep -q .; then
+  printf 'native package staging bundled portable runtime libraries\n' >&2
+  exit 1
+fi
+
+grep -Fq 'Exec=ottrin' "$STAGE/usr/share/applications/org.ottrin.Ottrin.desktop"
+grep -Fq 'Git revision:' "$STAGE/usr/share/doc/ottrin/SOURCE_REVISION.txt"
+for directory in usr usr/bin usr/share usr/share/doc/ottrin; do
+  test "$(stat -c %a "$STAGE/$directory")" = 755
+done
+for packager in "$DEB" "$RPM"; do
+  test -x "$packager"
+  grep -Fq 'stage-native-package.sh' "$packager"
+  grep -Fq 'sha256sum "$OUTPUT"' "$packager"
+done
+grep -Fq 'libglib2.0-0' "$DEB"
+for soname in \
+  'libc.so.6()(64bit)' \
+  'libgcc_s.so.1()(64bit)' \
+  'libgio-2.0.so.0()(64bit)' \
+  'libgobject-2.0.so.0()(64bit)' \
+  'libglib-2.0.so.0()(64bit)' \
+  'libgstreamer-1.0.so.0()(64bit)' \
+  'libgstbase-1.0.so.0()(64bit)' \
+  'libgstapp-1.0.so.0()(64bit)'; do
+  grep -Fq "Requires: $soname" "$RPM"
+done
+grep -Fq 'package-deb.sh' "$BUILD_ALL"
+grep -Fq 'package-rpm.sh' "$BUILD_ALL"
+for covered in \
+  'packaging/linux/stage-native-package.sh' \
+  'packaging/linux/package-deb.sh' \
+  'packaging/linux/package-rpm.sh' \
+  'packaging/tests/verify-linux-native-package-contract.sh'; do
+  grep -Fq "$covered" "$PREFLIGHT"
+done
+grep -Fq 'Linux native package contract' "$PREFLIGHT"
+
+printf 'Linux native package staging contract: PASS\n'

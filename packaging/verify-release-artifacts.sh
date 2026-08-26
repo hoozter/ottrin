@@ -39,6 +39,8 @@ LINUX_ARCHIVE="$(find_one "Ottrin-$VERSION-linux-x86_64-portable.tar.gz" 'Linux 
 LINUX_APPIMAGE="$(find_one "Ottrin-$VERSION-x86_64.AppImage" 'Linux AppImage')"
 WINDOWS_ARCHIVE="$(find_one "Ottrin-$VERSION-windows-x64-portable.zip" 'Windows portable archive')"
 WINDOWS_INSTALLER="$(find_one "Ottrin-$VERSION-windows-x64-setup.exe" 'Windows installer')"
+WINDOWS_MSI="$(find_one "Ottrin-$VERSION-windows-x64.msi" 'Windows MSI')"
+MACOS_ARCHIVE="$(find_one "Ottrin-$VERSION-macos-*.zip" 'macOS app archive')"
 
 expect_artifact_name() {
   local artifact="$1"
@@ -54,8 +56,9 @@ expect_artifact_name "$LINUX_ARCHIVE" "Ottrin-$VERSION-linux-x86_64-portable.tar
 expect_artifact_name "$LINUX_APPIMAGE" "Ottrin-$VERSION-x86_64.AppImage"
 expect_artifact_name "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64-portable.zip"
 expect_artifact_name "$WINDOWS_INSTALLER" "Ottrin-$VERSION-windows-x64-setup.exe"
+expect_artifact_name "$WINDOWS_MSI" "Ottrin-$VERSION-windows-x64.msi"
 
-for artifact in "$LINUX_ARCHIVE" "$LINUX_APPIMAGE" "$WINDOWS_ARCHIVE" "$WINDOWS_INSTALLER"; do
+for artifact in "$LINUX_ARCHIVE" "$LINUX_APPIMAGE" "$WINDOWS_ARCHIVE" "$WINDOWS_INSTALLER" "$WINDOWS_MSI" "$MACOS_ARCHIVE"; do
   checksum="$artifact.sha256"
   if [[ ! -s "$checksum" ]]; then
     printf 'release artifact checksum is missing: %s\n' "$checksum" >&2
@@ -77,6 +80,7 @@ done
 
 LINUX_CONTENTS="$(tar -tzf "$LINUX_ARCHIVE")"
 WINDOWS_CONTENTS="$(unzip -Z1 "$WINDOWS_ARCHIVE")"
+MACOS_CONTENTS="$(unzip -Z1 "$MACOS_ARCHIVE")"
 
 require_tar_entry() {
   local pattern="$1"
@@ -94,9 +98,18 @@ require_zip_entry() {
   fi
 }
 
+require_macos_zip_entry() {
+  local pattern="$1"
+  if ! grep -Eq "$pattern" <<<"$MACOS_CONTENTS"; then
+    echo "macOS app archive is missing: $pattern" >&2
+    exit 1
+  fi
+}
+
 for entry in \
   '/bin/ottrin$' \
   '/bin/ottrin-priv-helper$' \
+  '/libexec/ottrin/ottrin-media-playback$' \
   '/bin/pdfium/lib/libpdfium\.so$' \
   '/bin/pdfium/LICENSE$' \
   '/bin/pdfium/licenses/pdfium\.txt$' \
@@ -149,6 +162,22 @@ for entry in \
   require_zip_entry "$entry"
 done
 
+for entry in \
+  '^Ottrin\.app/Contents/Info\.plist$' \
+  '^Ottrin\.app/Contents/MacOS/Ottrin$' \
+  '^Ottrin\.app/Contents/MacOS/ottrin-indexd$' \
+  '^Ottrin\.app/Contents/Resources/Ottrin\.png$' \
+  '^Ottrin\.app/Contents/Resources/LICENSE$' \
+  '^Ottrin\.app/Contents/Resources/README\.md$' \
+  '^Ottrin\.app/Contents/Resources/SOURCE_REVISION\.txt$' \
+  '^Ottrin\.app/Contents/Resources/docs/USER_GUIDE\.md$' \
+  '^Ottrin\.app/Contents/Resources/docs/DEVELOPMENT\.md$' \
+  '^Ottrin\.app/Contents/Resources/docs/ROADMAP\.md$' \
+  '^Ottrin\.app/Contents/Resources/docs/RELEASE_NOTES\.md$' \
+  '^Ottrin\.app/Contents/Resources/docs/RELEASE_CHECKLIST\.md$'; do
+  require_macos_zip_entry "$entry"
+done
+
 if ! grep -Fq "<release version=\"$VERSION\"" "$ROOT/packaging/linux/ottrin.appdata.xml"; then
   printf 'AppStream metadata does not contain release version %s\n' "$VERSION" >&2
   exit 1
@@ -171,6 +200,16 @@ verify_release_file_bytes() {
     <(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/$relative_path") \
     "$ROOT/$relative_path"; then
     printf 'Windows portable archive contains stale content: %s\n' "$relative_path" >&2
+    exit 1
+  fi
+  local macos_relative_path="$relative_path"
+  if [[ "$relative_path" != LICENSE && "$relative_path" != README.md ]]; then
+    macos_relative_path="docs/${relative_path#docs/}"
+  fi
+  if ! cmp -s \
+    <(unzip -p "$MACOS_ARCHIVE" "Ottrin.app/Contents/Resources/$macos_relative_path") \
+    "$ROOT/$relative_path"; then
+    printf 'macOS app archive contains stale content: %s\n' "$relative_path" >&2
     exit 1
   fi
 }
@@ -206,6 +245,9 @@ verify_source_revision \
 verify_source_revision \
   'Windows portable archive' \
   "$(unzip -p "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64/SOURCE_REVISION.txt")"
+verify_source_revision \
+  'macOS app archive' \
+  "$(unzip -p "$MACOS_ARCHIVE" 'Ottrin.app/Contents/Resources/SOURCE_REVISION.txt')"
 
 # RUNNING.md is the artifact-local setup guidance for the portable Linux
 # release.  Require its safety-critical helper instructions independently of
@@ -554,6 +596,11 @@ verify_linux_runtime_closure \
   "$PORTABLE_STAGE/lib" \
   "$PORTABLE_STAGE/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
   "$PORTABLE_STAGE/third-party-notices/linux-runtime"
+verify_linux_media_runtime_boundary \
+  'Linux portable archive' \
+  "$PORTABLE_STAGE" \
+  "$PORTABLE_STAGE/libexec/ottrin/ottrin-media-playback" \
+  "$PORTABLE_STAGE/lib"
 verify_linux_runtime_closure \
   'Linux AppImage' \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root" \
@@ -561,10 +608,16 @@ verify_linux_runtime_closure \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/lib" \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime"
+verify_linux_media_runtime_boundary \
+  'Linux AppImage' \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root" \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/bin/ottrin-media-playback" \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/lib"
 
 for entry in \
   'AppRun' \
   'usr/bin/ottrin' \
+  'usr/bin/ottrin-media-playback' \
   'usr/libexec/ottrin/ottrin-priv-helper' \
   'usr/bin/pdfium/lib/libpdfium.so' \
   'usr/bin/pdfium/LICENSE' \

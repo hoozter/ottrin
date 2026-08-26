@@ -21,4 +21,8 @@ fi
 
 grep -Fq 'ottrin-index.service.in' "$PORTABLE"
 grep -Fq 'ottrin-index.service.in' "$APPIMAGE"
+grep -Fq '$BUILD_DIR/ottrin-indexd" "$STAGE/libexec/ottrin/ottrin-indexd' "$PORTABLE"
+grep -Fq '$ROOT/target/release/ottrin-indexd" "$APPDIR/usr/bin/ottrin-indexd' "$APPIMAGE"
+grep -Fq 'SEARCH_PERFORMANCE.md' "$PORTABLE"
+grep -Fq 'SEARCH_PERFORMANCE.md' "$APPIMAGE"
 printf 'linux index daemon packaging contract: PASS\n'

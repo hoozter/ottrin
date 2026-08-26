@@ -7,20 +7,1240 @@
 use super::move_recovery;
 #[cfg(target_os = "windows")]
 use super::move_recovery;
+#[cfg(target_os = "linux")]
+use super::next_available_name;
 use super::{ConflictAction, MoveDisposition, PlatformError, reject_directory_copy_into_itself};
 #[cfg(target_os = "linux")]
-use super::{copy_entry, next_available_name, rename_without_replacement};
+use super::{copy_entry, rename_without_replacement};
 #[cfg(target_os = "linux")]
 use std::os::unix::fs::MetadataExt;
-use std::path::Path;
+#[cfg(target_os = "windows")]
+use std::os::windows::{
+    ffi::{OsStrExt, OsStringExt},
+    fs::OpenOptionsExt,
+    io::AsRawHandle,
+};
+use std::path::{Path, PathBuf};
+#[cfg(target_os = "windows")]
+use std::{
+    fs::OpenOptions,
+    io::{Read, Seek, Write},
+    mem, ptr,
+};
+#[cfg(target_os = "windows")]
+use windows_sys::Wdk::Storage::FileSystem::{
+    FILE_RENAME_INFORMATION, FileRenameInformation, NtSetInformationFile,
+};
+#[cfg(target_os = "windows")]
+use windows_sys::Win32::Foundation::{
+    CloseHandle, ERROR_HANDLE_EOF, ERROR_INSUFFICIENT_BUFFER, HANDLE, INVALID_HANDLE_VALUE,
+    LocalFree, RtlNtStatusToDosError, STATUS_OBJECT_NAME_COLLISION,
+};
+#[cfg(target_os = "windows")]
+use windows_sys::Win32::Security::Authorization::{
+    EXPLICIT_ACCESS_W, GRANT_ACCESS, SE_FILE_OBJECT, SetEntriesInAclW, SetNamedSecurityInfoW,
+    TRUSTEE_IS_SID, TRUSTEE_IS_USER,
+};
+#[cfg(target_os = "windows")]
+use windows_sys::Win32::Security::{
+    DACL_SECURITY_INFORMATION, GetTokenInformation, PROTECTED_DACL_SECURITY_INFORMATION,
+    SUB_CONTAINERS_AND_OBJECTS_INHERIT, TOKEN_QUERY, TOKEN_USER, TokenUser,
+};
+#[cfg(target_os = "windows")]
+use windows_sys::Win32::Storage::FileSystem::{
+    FILE_ALL_ACCESS, FILE_BASIC_INFO, FILE_DISPOSITION_FLAG_DELETE,
+    FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE, FILE_DISPOSITION_FLAG_POSIX_SEMANTICS,
+    FILE_DISPOSITION_INFO_EX, FileBasicInfo, FileDispositionInfoEx, FindClose, FindFirstStreamW,
+    FindNextStreamW, FindStreamInfoStandard, GetFileInformationByHandleEx,
+    REPLACEFILE_WRITE_THROUGH, ReplaceFileW, SetFileInformationByHandle, WIN32_FIND_STREAM_DATA,
+};
+#[cfg(target_os = "windows")]
+use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
+#[cfg(target_os = "windows")]
+use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
+
+pub(super) struct MovePublication {
+    pub disposition: MoveDisposition,
+    pub published_path: Option<PathBuf>,
+    pub retained_displaced_path: Option<PathBuf>,
+    #[cfg(target_os = "linux")]
+    pub published_content: Option<move_recovery::SourceTreeSnapshot>,
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum WindowsMoveRoute {
+    SameVolume,
+    CrossVolume,
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum WindowsSameVolumeSourceKind {
+    File,
+    Directory,
+    Link,
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum WindowsSameVolumeOverwritePublication {
+    ReplaceFile,
+    RetainedRename,
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_same_volume_overwrite_publication(
+    source: WindowsSameVolumeSourceKind,
+    displaced: WindowsSameVolumeSourceKind,
+) -> WindowsSameVolumeOverwritePublication {
+    if source == WindowsSameVolumeSourceKind::File && displaced == WindowsSameVolumeSourceKind::File
+    {
+        WindowsSameVolumeOverwritePublication::ReplaceFile
+    } else {
+        WindowsSameVolumeOverwritePublication::RetainedRename
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn windows_same_volume_kind_from_identity(
+    identity: move_recovery::WindowsStableIdentity,
+) -> Option<WindowsSameVolumeSourceKind> {
+    windows_same_volume_source_kind(
+        identity.is_regular_file_without_reparse(),
+        identity.is_directory_without_reparse(),
+        identity.is_symbolic_link(),
+    )
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_same_volume_source_kind(
+    regular_file_without_reparse: bool,
+    directory_without_reparse: bool,
+    symbolic_link: bool,
+) -> Option<WindowsSameVolumeSourceKind> {
+    match (
+        regular_file_without_reparse,
+        directory_without_reparse,
+        symbolic_link,
+    ) {
+        (true, false, false) => Some(WindowsSameVolumeSourceKind::File),
+        (false, true, false) => Some(WindowsSameVolumeSourceKind::Directory),
+        (false, false, true) => Some(WindowsSameVolumeSourceKind::Link),
+        _ => None,
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[cfg_attr(target_os = "windows", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(target_os = "windows", serde(rename_all = "kebab-case"))]
+enum WindowsCrossVolumeSourceKind {
+    File,
+    Directory,
+    SymbolicLink,
+}
+
+#[cfg(target_os = "windows")]
+fn default_windows_cross_volume_source_kind() -> WindowsCrossVolumeSourceKind {
+    WindowsCrossVolumeSourceKind::File
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct WindowsDirectoryManifestEntry {
+    /// Relative Windows path encoded as its original UTF-16 code units.
+    relative_path: Vec<u16>,
+    kind: WindowsCrossVolumeSourceKind,
+    size: u64,
+    /// File-content SHA-256; empty only for directories.
+    sha256: String,
+    /// Distinguishes file and directory symbolic links without dereferencing either target.
+    link_is_directory: bool,
+}
+
+#[cfg(target_os = "windows")]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct WindowsDirectoryJournalEntry {
+    relative_path: Vec<u16>,
+    kind: WindowsCrossVolumeSourceKind,
+    identity: move_recovery::WindowsStableIdentity,
+    size: u64,
+    sha256: String,
+    #[serde(default)]
+    link_target: Vec<u16>,
+    #[serde(default)]
+    link_is_directory: bool,
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_manifest_relative_path_is_safe(path: &[u16]) -> bool {
+    if path.is_empty() {
+        return false;
+    }
+    path.split(|unit| *unit == u16::from(b'\\') || *unit == u16::from(b'/'))
+        .all(|component| {
+            !component.is_empty()
+                && component != [b'.' as u16]
+                && component != [b'.' as u16, b'.' as u16]
+        })
+}
+
+/// Encodes a symbolic link's stored target without resolving or normalizing it.
+#[cfg(any(target_os = "windows", test))]
+fn windows_symbolic_link_evidence(target: &[u16]) -> (u64, String) {
+    use sha2::{Digest, Sha256};
+
+    let mut hasher = Sha256::new();
+    for unit in target {
+        hasher.update(unit.to_le_bytes());
+    }
+    (
+        (target.len() as u64) * 2,
+        format!("{:x}", hasher.finalize()),
+    )
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_symbolic_link_snapshot_matches(
+    expected_target: &[u16],
+    expected_is_directory: bool,
+    observed_target: &[u16],
+    observed_is_directory: bool,
+) -> bool {
+    expected_target == observed_target && expected_is_directory == observed_is_directory
+}
+
+#[cfg(target_os = "windows")]
+fn read_windows_symbolic_link(path: &Path) -> Result<(Vec<u16>, bool), PlatformError> {
+    use std::os::windows::ffi::OsStrExt;
+    use std::os::windows::fs::MetadataExt;
+    use windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_DIRECTORY;
+
+    let target = std::fs::read_link(path).map_err(|error| PlatformError::Io(error.to_string()))?;
+    let attributes = std::fs::symlink_metadata(path)
+        .map_err(|error| PlatformError::Io(error.to_string()))?
+        .file_attributes();
+    Ok((
+        target.as_os_str().encode_wide().collect(),
+        attributes & FILE_ATTRIBUTE_DIRECTORY != 0,
+    ))
+}
+
+#[cfg(target_os = "windows")]
+fn create_windows_symbolic_link(
+    path: &Path,
+    target: &[u16],
+    is_directory: bool,
+) -> Result<(), PlatformError> {
+    use std::ffi::OsString;
+    use std::os::windows::ffi::OsStringExt;
+    use std::os::windows::fs::{symlink_dir, symlink_file};
+
+    let target = OsString::from_wide(target);
+    if is_directory {
+        symlink_dir(target, path)
+    } else {
+        symlink_file(target, path)
+    }
+    .map_err(|error| PlatformError::Io(error.to_string()))
+}
+
+#[cfg(target_os = "windows")]
+fn verify_windows_symbolic_link(
+    path: &Path,
+    expected_target: &[u16],
+    expected_is_directory: bool,
+) -> Result<(u64, String), PlatformError> {
+    let (target, is_directory) = read_windows_symbolic_link(path)?;
+    if !windows_symbolic_link_snapshot_matches(
+        expected_target,
+        expected_is_directory,
+        &target,
+        is_directory,
+    ) {
+        return Err(PlatformError::Io(format!(
+            "Windows Move symbolic-link evidence changed: {}",
+            path.display()
+        )));
+    }
+    Ok(windows_symbolic_link_evidence(&target))
+}
+
+/// Produces the content evidence stored in the existing size/hash journal fields for a tree.
+/// Paths and entry kinds are part of the digest so equal bytes at a different topology do not
+/// verify. Sorting removes filesystem enumeration order from the durable evidence.
+#[cfg(any(target_os = "windows", test))]
+fn windows_directory_manifest_evidence(
+    mut entries: Vec<WindowsDirectoryManifestEntry>,
+) -> Result<(u64, String), PlatformError> {
+    use sha2::{Digest, Sha256};
+
+    entries.sort_unstable_by(|left, right| left.relative_path.cmp(&right.relative_path));
+    let entry_kinds = entries
+        .iter()
+        .map(|entry| (entry.relative_path.as_slice(), entry.kind))
+        .collect::<std::collections::BTreeMap<_, _>>();
+    if entry_kinds.len() != entries.len() {
+        return Err(PlatformError::Io(
+            "Windows Move directory manifest is inconsistent".into(),
+        ));
+    }
+
+    let mut total_size = 0_u64;
+    let mut hasher = Sha256::new();
+    hasher.update((entries.len() as u64).to_le_bytes());
+    for entry in &entries {
+        let has_invalid_ancestor = entry
+            .relative_path
+            .iter()
+            .enumerate()
+            .filter(|(_, unit)| **unit == u16::from(b'\\') || **unit == u16::from(b'/'))
+            .any(|(separator, _)| {
+                entry_kinds.get(&entry.relative_path[..separator])
+                    != Some(&WindowsCrossVolumeSourceKind::Directory)
+            });
+        if !windows_manifest_relative_path_is_safe(&entry.relative_path)
+            || has_invalid_ancestor
+            || (entry.kind == WindowsCrossVolumeSourceKind::Directory
+                && (entry.size != 0 || !entry.sha256.is_empty()))
+            || (matches!(
+                entry.kind,
+                WindowsCrossVolumeSourceKind::File | WindowsCrossVolumeSourceKind::SymbolicLink
+            ) && entry.sha256.is_empty())
+            || (entry.kind != WindowsCrossVolumeSourceKind::SymbolicLink && entry.link_is_directory)
+        {
+            return Err(PlatformError::Io(
+                "Windows Move directory manifest is inconsistent".into(),
+            ));
+        }
+        hasher.update((entry.relative_path.len() as u64).to_le_bytes());
+        for unit in &entry.relative_path {
+            hasher.update(unit.to_le_bytes());
+        }
+        hasher.update([match entry.kind {
+            WindowsCrossVolumeSourceKind::File => 0,
+            WindowsCrossVolumeSourceKind::Directory => 1,
+            WindowsCrossVolumeSourceKind::SymbolicLink => 2,
+        }]);
+        hasher.update(entry.size.to_le_bytes());
+        hasher.update((entry.sha256.len() as u64).to_le_bytes());
+        hasher.update(entry.sha256.as_bytes());
+        hasher.update([u8::from(entry.link_is_directory)]);
+        total_size = total_size
+            .checked_add(entry.size)
+            .ok_or_else(|| PlatformError::Io("Windows Move directory size overflow".into()))?;
+    }
+    Ok((total_size, format!("{:x}", hasher.finalize())))
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_cross_volume_source_kind(
+    is_file: bool,
+    is_directory: bool,
+    is_symbolic_link: bool,
+) -> Option<WindowsCrossVolumeSourceKind> {
+    match (is_file, is_directory, is_symbolic_link) {
+        (true, false, false) => Some(WindowsCrossVolumeSourceKind::File),
+        (false, true, false) => Some(WindowsCrossVolumeSourceKind::Directory),
+        (false, false, true) => Some(WindowsCrossVolumeSourceKind::SymbolicLink),
+        _ => None,
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_cross_volume_source_supports_conflict(
+    _source_kind: WindowsCrossVolumeSourceKind,
+    _conflict: ConflictAction,
+) -> bool {
+    true
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_move_route(source_volume: u64, destination_volume: u64) -> WindowsMoveRoute {
+    if source_volume == destination_volume {
+        WindowsMoveRoute::SameVolume
+    } else {
+        WindowsMoveRoute::CrossVolume
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_destination_parent_is_pinned<T: Eq>(opened: T, expected: T) -> bool {
+    opened == expected
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_stream_set_is_copy_safe<I, S>(streams: I) -> bool
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<std::ffi::OsStr>,
+{
+    let mut streams = streams.into_iter();
+    matches!(streams.next(), Some(name) if name.as_ref() == std::ffi::OsStr::new("::$DATA"))
+        && streams.next().is_none()
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_cross_volume_uses_metadata_preserving_copy() -> bool {
+    true
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn publish_windows_cross_volume_candidate_with<R, F, N>(
+    rename: R,
+    flush_published: F,
+    flush_namespace: N,
+) -> Result<(), PlatformError>
+where
+    R: FnOnce() -> Result<(), PlatformError>,
+    F: FnOnce() -> Result<(), PlatformError>,
+    N: FnOnce() -> Result<(), PlatformError>,
+{
+    rename()?;
+    flush_published()?;
+    flush_namespace()
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn publish_windows_cross_volume_directory_overwrite_with<R, D, P, F, N>(
+    retain_displaced: R,
+    flush_retained_namespace: D,
+    publish_candidate: P,
+    flush_published: F,
+    flush_published_namespace: N,
+) -> Result<(), PlatformError>
+where
+    R: FnOnce() -> Result<(), PlatformError>,
+    D: FnOnce() -> Result<(), PlatformError>,
+    P: FnOnce() -> Result<(), PlatformError>,
+    F: FnOnce() -> Result<(), PlatformError>,
+    N: FnOnce() -> Result<(), PlatformError>,
+{
+    retain_displaced()?;
+    flush_retained_namespace()?;
+    publish_candidate()?;
+    flush_published()?;
+    flush_published_namespace()
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn flush_windows_cross_volume_recovered_publication_with<P, R, N, J>(
+    flush_published: P,
+    flush_retained: R,
+    flush_namespace: N,
+    record_publication: J,
+) -> Result<(), PlatformError>
+where
+    P: FnOnce() -> Result<(), PlatformError>,
+    R: FnOnce() -> Result<(), PlatformError>,
+    N: FnOnce() -> Result<(), PlatformError>,
+    J: FnOnce() -> Result<(), PlatformError>,
+{
+    flush_published()?;
+    flush_retained()?;
+    flush_namespace()?;
+    record_publication()
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn complete_windows_cross_volume_source_removal_with<F, C>(
+    flush_source_namespace: F,
+    complete: C,
+) -> Result<(), PlatformError>
+where
+    F: FnOnce() -> Result<(), PlatformError>,
+    C: FnOnce() -> Result<(), PlatformError>,
+{
+    flush_source_namespace()?;
+    complete()
+}
+
+#[cfg(target_os = "windows")]
+fn copy_windows_file_and_metadata(
+    source: &mut std::fs::File,
+    staged: &mut std::fs::File,
+) -> Result<(), PlatformError> {
+    std::io::copy(source, staged).map_err(|error| PlatformError::Io(error.to_string()))?;
+
+    copy_windows_basic_metadata(source, staged)
+}
+
+#[cfg(target_os = "windows")]
+fn copy_windows_basic_metadata(
+    source: &std::fs::File,
+    staged: &std::fs::File,
+) -> Result<(), PlatformError> {
+    let mut basic = FILE_BASIC_INFO::default();
+    if unsafe {
+        GetFileInformationByHandleEx(
+            source.as_raw_handle() as HANDLE,
+            FileBasicInfo,
+            ptr::addr_of_mut!(basic).cast(),
+            mem::size_of::<FILE_BASIC_INFO>() as u32,
+        )
+    } == 0
+    {
+        return Err(PlatformError::Io(format!(
+            "Windows Move source metadata read failed: {}",
+            std::io::Error::last_os_error()
+        )));
+    }
+    if unsafe {
+        SetFileInformationByHandle(
+            staged.as_raw_handle() as HANDLE,
+            FileBasicInfo,
+            ptr::addr_of!(basic).cast(),
+            mem::size_of::<FILE_BASIC_INFO>() as u32,
+        )
+    } == 0
+    {
+        return Err(PlatformError::Io(format!(
+            "Windows Move staged metadata write failed: {}",
+            std::io::Error::last_os_error()
+        )));
+    }
+    staged
+        .sync_all()
+        .map_err(|error| PlatformError::Io(error.to_string()))
+}
+
+#[cfg(target_os = "windows")]
+fn windows_file_streams(path: &Path) -> Result<Vec<std::ffi::OsString>, PlatformError> {
+    struct FindStreamHandle(HANDLE);
+    impl Drop for FindStreamHandle {
+        fn drop(&mut self) {
+            unsafe { FindClose(self.0) };
+        }
+    }
+
+    let mut path_units: Vec<u16> = path.as_os_str().encode_wide().collect();
+    path_units.push(0);
+    let mut data = WIN32_FIND_STREAM_DATA::default();
+    let handle = unsafe {
+        FindFirstStreamW(
+            path_units.as_ptr(),
+            FindStreamInfoStandard,
+            ptr::from_mut(&mut data).cast(),
+            0,
+        )
+    };
+    if handle == INVALID_HANDLE_VALUE {
+        return Err(PlatformError::Io(format!(
+            "Windows Move could not enumerate source streams: {}",
+            std::io::Error::last_os_error()
+        )));
+    }
+    let handle = FindStreamHandle(handle);
+    let mut streams = Vec::new();
+    loop {
+        let name_length = data
+            .cStreamName
+            .iter()
+            .position(|unit| *unit == 0)
+            .unwrap_or(data.cStreamName.len());
+        streams.push(std::ffi::OsString::from_wide(
+            &data.cStreamName[..name_length],
+        ));
+        if unsafe { FindNextStreamW(handle.0, ptr::from_mut(&mut data).cast()) } == 0 {
+            let error = std::io::Error::last_os_error();
+            if error.raw_os_error() == Some(ERROR_HANDLE_EOF as i32) {
+                break;
+            }
+            return Err(PlatformError::Io(format!(
+                "Windows Move source stream enumeration failed: {error}"
+            )));
+        }
+    }
+    Ok(streams)
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_cross_volume_test_gate(requested: bool) -> bool {
+    cfg!(test) && requested
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_cross_volume_runtime_enabled() -> bool {
+    // The transaction code remains compiled for source review, but native process-death,
+    // concurrent-recovery, ACL, and sharing-mode acceptance has not established that source
+    // cleanup is safe. Keep the user-facing route closed until those release gates pass.
+    #[cfg(all(test, target_os = "windows"))]
+    let test_override = std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE").as_deref()
+        == Some(std::ffi::OsStr::new("1"));
+    #[cfg(not(all(test, target_os = "windows")))]
+    let test_override = false;
+    windows_cross_volume_test_gate(test_override)
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_cross_volume_recovery_enabled() -> bool {
+    // Resuming a durable cross-volume record can reach source cleanup, so it must stay behind
+    // the same acceptance gate as starting a new cross-volume Move.
+    #[cfg(all(test, target_os = "windows"))]
+    if std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY").as_deref()
+        == Some(std::ffi::OsStr::new("1"))
+    {
+        return true;
+    }
+    windows_cross_volume_runtime_enabled()
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum WindowsCrossVolumePreflight {
+    Skip,
+    TransactionRequired,
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum WindowsSourceRemovalDecision {
+    RemoveOpenedSource,
+    PreserveForRecovery,
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum WindowsDirectoryCleanupTopology {
+    ClaimSource,
+    DrainClaimedSource,
+    Complete,
+    RetainAmbiguous,
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn classify_windows_directory_cleanup_topology(
+    source_matches: bool,
+    claimed_source_matches: bool,
+) -> WindowsDirectoryCleanupTopology {
+    match (source_matches, claimed_source_matches) {
+        (true, false) => WindowsDirectoryCleanupTopology::ClaimSource,
+        (false, true) => WindowsDirectoryCleanupTopology::DrainClaimedSource,
+        (false, false) => WindowsDirectoryCleanupTopology::Complete,
+        (true, true) => WindowsDirectoryCleanupTopology::RetainAmbiguous,
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_directory_cleanup_order(
+    journal: &[WindowsDirectoryManifestEntry],
+    observed: &[WindowsDirectoryManifestEntry],
+) -> Option<Vec<usize>> {
+    let mut journal_by_path = std::collections::BTreeMap::new();
+    for entry in journal {
+        if journal_by_path
+            .insert(entry.relative_path.as_slice(), entry)
+            .is_some()
+        {
+            return None;
+        }
+    }
+    let mut observed_paths = std::collections::BTreeSet::new();
+    for entry in observed {
+        if !observed_paths.insert(entry.relative_path.as_slice())
+            || journal_by_path.get(entry.relative_path.as_slice()) != Some(&entry)
+        {
+            return None;
+        }
+    }
+    let mut order = (0..observed.len()).collect::<Vec<_>>();
+    order.sort_unstable_by(|left, right| {
+        let depth = |path: &[u16]| {
+            path.iter()
+                .filter(|unit| **unit == u16::from(b'\\') || **unit == u16::from(b'/'))
+                .count()
+        };
+        depth(&observed[*right].relative_path)
+            .cmp(&depth(&observed[*left].relative_path))
+            .then_with(|| {
+                observed[*right]
+                    .relative_path
+                    .cmp(&observed[*left].relative_path)
+            })
+    });
+    Some(order)
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn classify_windows_cross_volume_preflight(
+    conflict: ConflictAction,
+    destination_exists: bool,
+) -> WindowsCrossVolumePreflight {
+    if conflict == ConflictAction::Skip && destination_exists {
+        WindowsCrossVolumePreflight::Skip
+    } else {
+        WindowsCrossVolumePreflight::TransactionRequired
+    }
+}
+
+fn reconcile_windows_rename_candidates<T: Clone + PartialEq>(
+    conflict: ConflictAction,
+    central: &[T],
+    local: &[T],
+) -> Option<Vec<T>> {
+    if central == local {
+        return Some(central.to_vec());
+    }
+    if conflict != ConflictAction::Rename {
+        return None;
+    }
+    if central.starts_with(local) {
+        Some(central.to_vec())
+    } else if local.starts_with(central) {
+        Some(local.to_vec())
+    } else {
+        None
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn next_windows_rename_candidate(candidates: &[PathBuf]) -> Option<PathBuf> {
+    let base = candidates.first()?;
+    let parent = base.parent().map(Path::to_path_buf).unwrap_or_default();
+    let stem = base.file_stem().unwrap_or(base.as_os_str());
+    let extension = base.extension();
+    for index in 1.. {
+        let mut name = stem.to_os_string();
+        name.push(format!(" ({index})"));
+        if let Some(extension) = extension {
+            name.push(".");
+            name.push(extension);
+        }
+        let candidate = parent.join(name);
+        if !candidates.contains(&candidate) && std::fs::symlink_metadata(&candidate).is_err() {
+            return Some(candidate);
+        }
+    }
+    None
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn classify_windows_source_removal(
+    opened_identity_matches: bool,
+    named_identity_matches: bool,
+    content_matches: bool,
+) -> WindowsSourceRemovalDecision {
+    if opened_identity_matches && named_identity_matches && content_matches {
+        WindowsSourceRemovalDecision::RemoveOpenedSource
+    } else {
+        WindowsSourceRemovalDecision::PreserveForRecovery
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum WindowsCrossVolumeRestartAction {
+    CopyAndVerify,
+    DiscardIncompleteStaging,
+    PublishStaged,
+    FlushPublished,
+    RemoveSource,
+    Complete,
+    RetainAmbiguous,
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum WindowsIncompleteStagingEntryKind {
+    File,
+    Directory,
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_incomplete_staging_entry_kind(
+    regular_file_without_reparse: bool,
+    directory_without_reparse: bool,
+) -> Option<WindowsIncompleteStagingEntryKind> {
+    match (regular_file_without_reparse, directory_without_reparse) {
+        (true, false) => Some(WindowsIncompleteStagingEntryKind::File),
+        (false, true) => Some(WindowsIncompleteStagingEntryKind::Directory),
+        _ => None,
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_staging_candidate_matches_transaction(transaction: &Path, candidate: &Path) -> bool {
+    candidate == transaction.join(WINDOWS_CROSS_VOLUME_CANDIDATE_NAME)
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn classify_windows_incomplete_directory_candidate(
+    source_kind: WindowsCrossVolumeSourceKind,
+    source_matches: bool,
+    target_absent: bool,
+    construction_pending: bool,
+    candidate_identity_recorded: bool,
+    candidate_identity_matches: bool,
+    candidate_exists: bool,
+) -> Option<WindowsCrossVolumeRestartAction> {
+    (source_kind == WindowsCrossVolumeSourceKind::Directory
+        && source_matches
+        && target_absent
+        && construction_pending
+        && candidate_exists
+        && (!candidate_identity_recorded || candidate_identity_matches))
+        .then_some(WindowsCrossVolumeRestartAction::DiscardIncompleteStaging)
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn classify_windows_directory_slice_action(
+    source_kind: WindowsCrossVolumeSourceKind,
+    action: WindowsCrossVolumeRestartAction,
+) -> WindowsCrossVolumeRestartAction {
+    match (source_kind, action) {
+        (
+            WindowsCrossVolumeSourceKind::Directory,
+            WindowsCrossVolumeRestartAction::CopyAndVerify
+            | WindowsCrossVolumeRestartAction::DiscardIncompleteStaging
+            | WindowsCrossVolumeRestartAction::PublishStaged
+            | WindowsCrossVolumeRestartAction::FlushPublished
+            | WindowsCrossVolumeRestartAction::RemoveSource
+            | WindowsCrossVolumeRestartAction::Complete,
+        ) => action,
+        (WindowsCrossVolumeSourceKind::Directory, _) => {
+            WindowsCrossVolumeRestartAction::RetainAmbiguous
+        }
+        (
+            WindowsCrossVolumeSourceKind::File | WindowsCrossVolumeSourceKind::SymbolicLink,
+            action,
+        ) => action,
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn require_windows_publication_durability(
+    action: WindowsCrossVolumeRestartAction,
+    publication_recorded: bool,
+) -> WindowsCrossVolumeRestartAction {
+    if action == WindowsCrossVolumeRestartAction::RemoveSource && !publication_recorded {
+        WindowsCrossVolumeRestartAction::FlushPublished
+    } else {
+        action
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn classify_windows_cross_volume_restart<T: Eq>(
+    source: Option<T>,
+    target: Option<T>,
+    staged: Option<T>,
+    expected_source: T,
+    expected_staged: Option<T>,
+) -> WindowsCrossVolumeRestartAction {
+    if source.as_ref() == Some(&expected_source) && target.is_none() && staged.is_none() {
+        WindowsCrossVolumeRestartAction::CopyAndVerify
+    } else if source.as_ref() == Some(&expected_source)
+        && target.is_none()
+        && staged.as_ref() == expected_staged.as_ref()
+        && expected_staged.is_some()
+    {
+        WindowsCrossVolumeRestartAction::PublishStaged
+    } else if source.as_ref() == Some(&expected_source)
+        && target.as_ref() == expected_staged.as_ref()
+        && expected_staged.is_some()
+        && staged.is_none()
+    {
+        WindowsCrossVolumeRestartAction::RemoveSource
+    } else if source.is_none()
+        && target.as_ref() == expected_staged.as_ref()
+        && expected_staged.is_some()
+        && staged.is_none()
+    {
+        WindowsCrossVolumeRestartAction::Complete
+    } else {
+        WindowsCrossVolumeRestartAction::RetainAmbiguous
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[allow(
+    clippy::too_many_arguments,
+    reason = "the classifier compares four observed identities with three expected identities and the source kind; grouping them would only hide the recovery topology"
+)]
+fn classify_windows_cross_volume_overwrite_restart<T: Eq>(
+    source_kind: WindowsCrossVolumeSourceKind,
+    source: Option<T>,
+    target: Option<T>,
+    staged: Option<T>,
+    retained_displaced: Option<T>,
+    expected_source: T,
+    expected_staged: T,
+    expected_displaced: T,
+) -> WindowsCrossVolumeRestartAction {
+    if source.as_ref() == Some(&expected_source)
+        && target.as_ref() == Some(&expected_displaced)
+        && staged.is_none()
+        && retained_displaced.is_none()
+    {
+        WindowsCrossVolumeRestartAction::CopyAndVerify
+    } else if source.as_ref() == Some(&expected_source)
+        && target.as_ref() == Some(&expected_displaced)
+        && staged.as_ref() == Some(&expected_staged)
+        && retained_displaced.is_none()
+    {
+        WindowsCrossVolumeRestartAction::PublishStaged
+    } else if source_kind == WindowsCrossVolumeSourceKind::Directory
+        && source.as_ref() == Some(&expected_source)
+        && target.is_none()
+        && staged.as_ref() == Some(&expected_staged)
+        && retained_displaced.as_ref() == Some(&expected_displaced)
+    {
+        // Directory replacement uses two durable no-replace renames rather than ReplaceFileW.
+        // A restart between retaining the old target and publishing the candidate must finish
+        // publication; the pinned identities make this topology unambiguous.
+        WindowsCrossVolumeRestartAction::PublishStaged
+    } else if source.as_ref() == Some(&expected_source)
+        && target.as_ref() == Some(&expected_staged)
+        && staged.is_none()
+        && retained_displaced.as_ref() == Some(&expected_displaced)
+    {
+        WindowsCrossVolumeRestartAction::RemoveSource
+    } else if source.is_none()
+        && target.as_ref() == Some(&expected_staged)
+        && staged.is_none()
+        && retained_displaced.as_ref() == Some(&expected_displaced)
+    {
+        WindowsCrossVolumeRestartAction::Complete
+    } else {
+        WindowsCrossVolumeRestartAction::RetainAmbiguous
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum WindowsReplaceTopology {
+    PublishedAndRetained,
+    PublishedAmbiguous,
+    NotPublished,
+    Ambiguous,
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn classify_windows_replace_topology<T: Eq>(
+    target: Option<T>,
+    replacement: Option<T>,
+    retained_displaced: Option<T>,
+    expected_source: T,
+    expected_displaced: T,
+) -> WindowsReplaceTopology {
+    if target.as_ref() == Some(&expected_source) {
+        if replacement.is_none() && retained_displaced.as_ref() == Some(&expected_displaced) {
+            WindowsReplaceTopology::PublishedAndRetained
+        } else {
+            WindowsReplaceTopology::PublishedAmbiguous
+        }
+    } else if target.as_ref() == Some(&expected_displaced)
+        && replacement.as_ref() == Some(&expected_source)
+        && retained_displaced.is_none()
+    {
+        WindowsReplaceTopology::NotPublished
+    } else {
+        WindowsReplaceTopology::Ambiguous
+    }
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum WindowsOverwriteRestartAction {
+    ClaimSource,
+    PublishClaimed,
+    PublishAfterRetain,
+    FinishPublished,
+    RetainAmbiguous,
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn classify_windows_overwrite_restart<T: Eq>(
+    original: Option<T>,
+    target: Option<T>,
+    replacement: Option<T>,
+    retained_displaced: Option<T>,
+    expected_source: T,
+    expected_displaced: T,
+) -> WindowsOverwriteRestartAction {
+    if original.as_ref() == Some(&expected_source)
+        && target.as_ref() == Some(&expected_displaced)
+        && replacement.is_none()
+        && retained_displaced.is_none()
+    {
+        WindowsOverwriteRestartAction::ClaimSource
+    } else if original.is_none()
+        && target.as_ref() == Some(&expected_displaced)
+        && replacement.as_ref() == Some(&expected_source)
+        && retained_displaced.is_none()
+    {
+        WindowsOverwriteRestartAction::PublishClaimed
+    } else if original.is_none()
+        && target.as_ref() == Some(&expected_source)
+        && replacement.is_none()
+        && retained_displaced.as_ref() == Some(&expected_displaced)
+    {
+        WindowsOverwriteRestartAction::FinishPublished
+    } else if original.is_none()
+        && target.is_none()
+        && replacement.as_ref() == Some(&expected_source)
+        && retained_displaced.as_ref() == Some(&expected_displaced)
+    {
+        WindowsOverwriteRestartAction::PublishAfterRetain
+    } else {
+        WindowsOverwriteRestartAction::RetainAmbiguous
+    }
+}
+
+#[cfg(target_os = "windows")]
+const WINDOWS_REPLACEMENT_NAME: &str = "replacement";
+#[cfg(target_os = "windows")]
+const WINDOWS_RETAINED_NAME: &str = "retained-displaced";
+#[cfg(any(target_os = "windows", test))]
+const WINDOWS_LOCAL_JOURNAL_NAME: &str = "journal";
+#[cfg(any(target_os = "windows", test))]
+const WINDOWS_OVERWRITE_REPLACE_FLAGS: u32 = 0x0000_0001;
+#[cfg(any(target_os = "windows", test))]
+const WINDOWS_CROSS_VOLUME_CANDIDATE_NAME: &str = "candidate";
+#[cfg(target_os = "windows")]
+const WINDOWS_INCOMPLETE_STAGING_DISPOSITION_FLAGS: u32 = FILE_DISPOSITION_FLAG_DELETE
+    | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS
+    | FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE;
+#[cfg(all(test, not(target_os = "windows")))]
+const WINDOWS_INCOMPLETE_STAGING_DISPOSITION_FLAGS: u32 = 0x13;
+#[cfg(any(target_os = "windows", test))]
+const WINDOWS_RECOVERY_LOCK_SHARE_MODE: u32 = 0;
+
+#[cfg(target_os = "windows")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+enum WindowsOverwritePhase {
+    Prepared,
+    SourceClaimed,
+    Published,
+}
+
+#[cfg(target_os = "windows")]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct WindowsOverwriteRecord {
+    schema_major: u16,
+    schema_minor: u16,
+    transaction_id: String,
+    phase: WindowsOverwritePhase,
+    source: move_recovery::NativePath,
+    source_parent_identity: move_recovery::WindowsStableIdentity,
+    source_identity: move_recovery::WindowsStableIdentity,
+    destination_parent: move_recovery::NativePath,
+    destination_parent_identity: move_recovery::WindowsStableIdentity,
+    target: move_recovery::NativePath,
+    destination_identity: move_recovery::WindowsStableIdentity,
+    transaction_directory: move_recovery::NativePath,
+    transaction_directory_identity: move_recovery::WindowsStableIdentity,
+    replacement: move_recovery::NativePath,
+    retained_displaced: move_recovery::NativePath,
+    retained_identity: move_recovery::WindowsStableIdentity,
+}
+
+#[cfg(target_os = "windows")]
+impl WindowsOverwriteRecord {
+    fn same_transaction_evidence(&self, other: &Self) -> bool {
+        let mut left = self.clone();
+        let mut right = other.clone();
+        left.phase = WindowsOverwritePhase::Prepared;
+        right.phase = WindowsOverwritePhase::Prepared;
+        left == right
+    }
+
+    fn transaction_id(&self) -> Result<[u8; 16], PlatformError> {
+        let bytes = self.transaction_id.as_bytes();
+        if bytes.len() != 32 {
+            return Err(PlatformError::Io(
+                "Windows Move journal has an invalid transaction ID".to_string(),
+            ));
+        }
+        let mut id = [0_u8; 16];
+        for (index, pair) in bytes.chunks_exact(2).enumerate() {
+            let text =
+                std::str::from_utf8(pair).map_err(|error| PlatformError::Io(error.to_string()))?;
+            id[index] = u8::from_str_radix(text, 16)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+        }
+        Ok(id)
+    }
+
+    fn source_path(&self) -> Result<PathBuf, PlatformError> {
+        self.source
+            .decode()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+
+    fn destination_parent_path(&self) -> Result<PathBuf, PlatformError> {
+        self.destination_parent
+            .decode()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+
+    fn target_path(&self) -> Result<PathBuf, PlatformError> {
+        self.target
+            .decode()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+
+    fn transaction_path(&self) -> Result<PathBuf, PlatformError> {
+        self.transaction_directory
+            .decode()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+
+    fn replacement_path(&self) -> Result<PathBuf, PlatformError> {
+        self.replacement
+            .decode()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+
+    fn retained_path(&self) -> Result<PathBuf, PlatformError> {
+        self.retained_displaced
+            .decode()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+}
+
+#[cfg(target_os = "windows")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+enum WindowsCrossVolumePhase {
+    Prepared,
+    Staged,
+    Published,
+}
+
+#[cfg(target_os = "windows")]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct WindowsCrossVolumeRecord {
+    schema_major: u16,
+    schema_minor: u16,
+    transaction_id: String,
+    phase: WindowsCrossVolumePhase,
+    source: move_recovery::NativePath,
+    source_parent_identity: move_recovery::WindowsStableIdentity,
+    source_identity: move_recovery::WindowsStableIdentity,
+    #[serde(default = "default_windows_cross_volume_source_kind")]
+    source_kind: WindowsCrossVolumeSourceKind,
+    source_size: u64,
+    source_sha256: String,
+    #[serde(default)]
+    source_link_target: Option<Vec<u16>>,
+    #[serde(default)]
+    source_link_is_directory: Option<bool>,
+    #[serde(default)]
+    source_manifest: Vec<WindowsDirectoryJournalEntry>,
+    destination_parent: move_recovery::NativePath,
+    destination_parent_identity: move_recovery::WindowsStableIdentity,
+    #[serde(default)]
+    destination_identity: Option<move_recovery::WindowsStableIdentity>,
+    #[serde(default)]
+    destination_manifest: Vec<WindowsDirectoryJournalEntry>,
+    conflict: ConflictAction,
+    target_candidates: Vec<move_recovery::NativePath>,
+    transaction_directory: move_recovery::NativePath,
+    transaction_directory_identity: move_recovery::WindowsStableIdentity,
+    candidate: move_recovery::NativePath,
+    candidate_identity: Option<move_recovery::WindowsStableIdentity>,
+    #[serde(default)]
+    retained_displaced: Option<move_recovery::NativePath>,
+}
+
+#[cfg(target_os = "windows")]
+impl WindowsCrossVolumeRecord {
+    fn transaction_id(&self) -> Result<[u8; 16], PlatformError> {
+        let bytes = self.transaction_id.as_bytes();
+        if bytes.len() != 32 {
+            return Err(PlatformError::Io(
+                "Windows Move journal has an invalid transaction ID".into(),
+            ));
+        }
+        let mut id = [0_u8; 16];
+        for (index, pair) in bytes.chunks_exact(2).enumerate() {
+            let text =
+                std::str::from_utf8(pair).map_err(|error| PlatformError::Io(error.to_string()))?;
+            id[index] = u8::from_str_radix(text, 16)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+        }
+        Ok(id)
+    }
+
+    fn source_path(&self) -> Result<PathBuf, PlatformError> {
+        self.source
+            .decode()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+
+    fn destination_parent_path(&self) -> Result<PathBuf, PlatformError> {
+        self.destination_parent
+            .decode()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+
+    fn target_path(&self) -> Result<PathBuf, PlatformError> {
+        self.target_candidates
+            .last()
+            .ok_or_else(|| {
+                PlatformError::Io("Windows cross-volume target journal is empty".into())
+            })?
+            .decode()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+
+    fn transaction_path(&self) -> Result<PathBuf, PlatformError> {
+        self.transaction_directory
+            .decode()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+
+    fn candidate_path(&self) -> Result<PathBuf, PlatformError> {
+        self.candidate
+            .decode()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+
+    fn retained_path(&self) -> Result<Option<PathBuf>, PlatformError> {
+        self.retained_displaced
+            .as_ref()
+            .map(move_recovery::NativePath::decode)
+            .transpose()
+            .map_err(|error| PlatformError::Io(error.to_string()))
+    }
+
+    fn same_transaction_evidence(&self, other: &Self) -> bool {
+        let candidate_identity_agrees = self.candidate_identity.is_none()
+            || other.candidate_identity.is_none()
+            || self.candidate_identity == other.candidate_identity;
+        let target_candidates_agree = reconcile_windows_rename_candidates(
+            self.conflict,
+            &self.target_candidates,
+            &other.target_candidates,
+        )
+        .is_some();
+        let mut left = self.clone();
+        let mut right = other.clone();
+        left.phase = WindowsCrossVolumePhase::Prepared;
+        right.phase = WindowsCrossVolumePhase::Prepared;
+        left.candidate_identity = None;
+        right.candidate_identity = None;
+        left.target_candidates.clear();
+        right.target_candidates.clear();
+        candidate_identity_agrees && target_candidates_agree && left == right
+    }
+}
 
 #[cfg(target_os = "linux")]
 const CROSS_DEVICE_STAGED_NAME: &str = "candidate";
+#[cfg(target_os = "linux")]
+const SOURCE_CLEANUP_NAME: &str = "source-cleanup";
 
 #[cfg(all(test, target_os = "linux"))]
 static TEST_MOVE_SERIALIZER: std::sync::Mutex<()> = std::sync::Mutex::new(());
 #[cfg(all(test, target_os = "linux"))]
-static TEST_MOVE_ENV_SERIALIZER: std::sync::Mutex<()> = std::sync::Mutex::new(());
+pub(crate) static TEST_MOVE_ENV_SERIALIZER: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 /// Runtime Move stays fail-closed except where the exact Linux-safe implementation is proven.
 #[cfg(target_os = "linux")]
@@ -28,9 +1248,17 @@ pub(super) fn move_entry_transactional(
     source: &Path,
     destination_dir: &Path,
     conflict: ConflictAction,
-) -> Result<MoveDisposition, PlatformError> {
-    let source_metadata = std::fs::symlink_metadata(source)
-        .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
+) -> Result<MovePublication, PlatformError> {
+    let source_metadata = match std::fs::symlink_metadata(source) {
+        Ok(metadata) => metadata,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            // A recoverable Move has already claimed the source under its private transaction
+            // name. Let the journal/topology recovery path resolve that state before reporting
+            // the original pathname as invalid.
+            return move_with_hooks(source, destination_dir, conflict, |_| Ok(()));
+        }
+        Err(_) => return Err(PlatformError::InvalidSource(source.display().to_string())),
+    };
     let destination_dir = std::fs::canonicalize(destination_dir)
         .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
     let destination_metadata = std::fs::symlink_metadata(&destination_dir)
@@ -38,9 +1266,7 @@ pub(super) fn move_entry_transactional(
     reject_directory_copy_into_itself(source, &destination_dir)?;
 
     if source_metadata.dev() != destination_metadata.dev() {
-        return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
-            source.display().to_string(),
-        ));
+        return move_with_hooks(source, &destination_dir, conflict, |_| Ok(()));
     }
 
     let target = destination_dir.join(
@@ -50,15 +1276,32 @@ pub(super) fn move_entry_transactional(
     );
     match conflict {
         ConflictAction::Skip => match rename_without_replacement(source, &target) {
-            Ok(()) => Ok(MoveDisposition::Moved),
-            Err(PlatformError::DestinationExists(_)) => Ok(MoveDisposition::Skipped),
+            Ok(()) => Ok(MovePublication {
+                disposition: MoveDisposition::Moved,
+                published_path: Some(target),
+                retained_displaced_path: None,
+                published_content: None,
+            }),
+            Err(PlatformError::DestinationExists(_)) => Ok(MovePublication {
+                disposition: MoveDisposition::Skipped,
+                published_path: None,
+                retained_displaced_path: None,
+                published_content: None,
+            }),
             Err(error) => Err(error),
         },
         ConflictAction::Rename => {
             let mut candidate = target;
             loop {
                 match rename_without_replacement(source, &candidate) {
-                    Ok(()) => return Ok(MoveDisposition::Moved),
+                    Ok(()) => {
+                        return Ok(MovePublication {
+                            disposition: MoveDisposition::Moved,
+                            published_path: Some(candidate),
+                            retained_displaced_path: None,
+                            published_content: None,
+                        });
+                    }
                     Err(PlatformError::DestinationExists(_)) => {
                         candidate = next_available_name(&candidate);
                     }
@@ -66,15 +1309,19 @@ pub(super) fn move_entry_transactional(
                 }
             }
         }
-        ConflictAction::Overwrite => std::fs::rename(source, target)
-            .map_err(|error| {
-                if error.kind() == std::io::ErrorKind::CrossesDevices {
-                    PlatformError::UnsupportedSafeCrossDeviceMove(source.display().to_string())
-                } else {
-                    PlatformError::Io(error.to_string())
-                }
-            })
-            .map(|_| MoveDisposition::Moved),
+        ConflictAction::Overwrite => match std::fs::symlink_metadata(&target) {
+            Ok(_) => move_with_hooks(source, &destination_dir, conflict, |_| Ok(())),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                rename_without_replacement(source, &target)?;
+                Ok(MovePublication {
+                    disposition: MoveDisposition::Moved,
+                    published_path: Some(target),
+                    retained_displaced_path: None,
+                    published_content: None,
+                })
+            }
+            Err(error) => Err(PlatformError::Io(error.to_string())),
+        },
     }
 }
 
@@ -82,24 +1329,3542 @@ pub(super) fn move_entry_transactional(
 pub(super) fn move_entry_transactional(
     source: &Path,
     destination_dir: &Path,
-    _conflict: ConflictAction,
-) -> Result<MoveDisposition, PlatformError> {
+    conflict: ConflictAction,
+) -> Result<MovePublication, PlatformError> {
+    // Every recovery scan and transaction mutation shares one process-lifetime-independent
+    // ownership domain. Windows releases the exclusive share reservation if this process dies.
+    let _recovery_lock = acquire_windows_recovery_lock()?;
+    if let Some(publication) = recover_windows_overwrites_before_move(source, destination_dir)? {
+        return Ok(publication);
+    }
     std::fs::symlink_metadata(source)
         .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
     std::fs::symlink_metadata(destination_dir)
         .map_err(|_| PlatformError::InvalidDestination(destination_dir.display().to_string()))?;
     reject_directory_copy_into_itself(source, destination_dir)?;
 
-    let _source_identity = move_recovery::stable_identity_of_entry(source)
+    let source_handle = move_recovery::open_reparse_safe_entry_for_rename(source)
+        .map_err(|error| PlatformError::Io(format!("source handle open failed: {error}")))?;
+    let source_identity = move_recovery::stable_identity_from_handle(&source_handle)
         .map_err(|error| PlatformError::Io(format!("source identity probe failed: {error}")))?;
-    let _destination_identity =
-        move_recovery::stable_identity_of_entry(destination_dir).map_err(|error| {
+    let destination_handle = move_recovery::open_reparse_safe_directory_for_rename(destination_dir)
+        .map_err(|error| PlatformError::Io(format!("destination handle open failed: {error}")))?;
+    let destination_identity = move_recovery::stable_identity_from_handle(&destination_handle)
+        .map_err(|error| {
             PlatformError::Io(format!("destination identity probe failed: {error}"))
         })?;
 
-    Err(PlatformError::UnsupportedSafeMove(
-        source.display().to_string(),
+    match windows_move_route(
+        source_identity.volume_serial_number(),
+        destination_identity.volume_serial_number(),
+    ) {
+        WindowsMoveRoute::SameVolume => {
+            windows_same_volume_source_kind(
+                source_identity.is_regular_file_without_reparse(),
+                source_identity.is_directory_without_reparse(),
+                source_identity.is_symbolic_link(),
+            )
+            .ok_or_else(|| PlatformError::UnsupportedSafeMove(source.display().to_string()))?;
+            move_windows_same_volume(
+                source,
+                destination_dir,
+                conflict,
+                source_handle,
+                destination_handle,
+            )
+        }
+        WindowsMoveRoute::CrossVolume if windows_cross_volume_runtime_enabled() => {
+            move_windows_cross_volume_preflight(
+                source,
+                destination_dir,
+                conflict,
+                source_handle,
+                destination_handle,
+            )
+        }
+        WindowsMoveRoute::CrossVolume => Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+            source.display().to_string(),
+        )),
+    }
+}
+
+#[cfg(target_os = "windows")]
+static WINDOWS_RECOVERY_PROCESS_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+#[cfg(target_os = "windows")]
+struct WindowsRecoveryLock {
+    _process: std::sync::MutexGuard<'static, ()>,
+    _system: std::fs::File,
+}
+
+#[cfg(target_os = "windows")]
+fn acquire_windows_recovery_lock() -> Result<WindowsRecoveryLock, PlatformError> {
+    // Serialize callers in this process before taking the cross-process share reservation.
+    // Without this layer, ordinary parallel Move commands from the same Ottrin process report
+    // a false external-recovery conflict instead of waiting for the current owner to finish.
+    let process = WINDOWS_RECOVERY_PROCESS_LOCK
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let recovery_root = windows_recovery_root()?;
+    let recovery_lock = windows_recovery_lock_path(&recovery_root);
+    let lock_parent = recovery_lock
+        .parent()
+        .ok_or_else(|| PlatformError::Io("Windows Move recovery lock has no parent".to_string()))?;
+    std::fs::create_dir_all(lock_parent).map_err(|error| {
+        PlatformError::Io(format!(
+            "Windows Move recovery lock parent creation failed: {error}"
+        ))
+    })?;
+    let system = OpenOptions::new()
+        .create(true)
+        .read(true)
+        .write(true)
+        .share_mode(WINDOWS_RECOVERY_LOCK_SHARE_MODE)
+        .open(&recovery_lock)
+        .map_err(|error| PlatformError::ClaimedRecoveryPending {
+            transaction: recovery_lock.display().to_string(),
+            message: format!("another Windows Move recovery owner may be active: {error}"),
+        })?;
+    Ok(WindowsRecoveryLock {
+        _process: process,
+        _system: system,
+    })
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_recovery_lock_path(recovery_root: &Path) -> PathBuf {
+    recovery_root.with_extension("lock")
+}
+
+#[cfg(target_os = "windows")]
+fn move_windows_cross_volume_preflight(
+    source: &Path,
+    destination_dir: &Path,
+    conflict: ConflictAction,
+    source_handle: std::fs::File,
+    destination_handle: std::fs::File,
+) -> Result<MovePublication, PlatformError> {
+    let source_name = source
+        .file_name()
+        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
+    let destination_exists = match std::fs::symlink_metadata(destination_dir.join(source_name)) {
+        Ok(_) => true,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => false,
+        Err(error) => return Err(PlatformError::Io(error.to_string())),
+    };
+    match classify_windows_cross_volume_preflight(conflict, destination_exists) {
+        WindowsCrossVolumePreflight::Skip => Ok(MovePublication {
+            disposition: MoveDisposition::Skipped,
+            published_path: None,
+            retained_displaced_path: None,
+        }),
+        WindowsCrossVolumePreflight::TransactionRequired
+            if !destination_exists || conflict == ConflictAction::Rename =>
+        {
+            let source_identity = move_recovery::stable_identity_from_handle(&source_handle)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            drop(source_handle);
+            let source_handle = move_recovery::open_reparse_safe_cross_volume_source(source)
+                .map_err(|error| {
+                    PlatformError::Io(format!("cross-volume source lock failed: {error}"))
+                })?;
+            if move_recovery::stable_identity_from_handle(&source_handle)
+                .map_err(|error| PlatformError::Io(error.to_string()))?
+                != source_identity
+            {
+                return Err(PlatformError::Io(
+                    "Windows cross-volume source changed while acquiring its Move lock".into(),
+                ));
+            }
+            start_windows_cross_volume_move(
+                source,
+                destination_dir,
+                &destination_dir.join(source_name),
+                conflict,
+                source_handle,
+                destination_handle,
+                None,
+            )
+        }
+        WindowsCrossVolumePreflight::TransactionRequired
+            if conflict == ConflictAction::Overwrite =>
+        {
+            let target = destination_dir.join(source_name);
+            let destination_identity = move_recovery::stable_identity_of_entry(&target)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            let source_identity = move_recovery::stable_identity_from_handle(&source_handle)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            let compatible_plain_entries = (source_identity.is_regular_file_without_reparse()
+                && destination_identity.is_regular_file_without_reparse())
+                || (source_identity.is_directory_without_reparse()
+                    && destination_identity.is_directory_without_reparse());
+            if !compatible_plain_entries {
+                return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+                    source.display().to_string(),
+                ));
+            }
+            drop(source_handle);
+            let source_handle = move_recovery::open_reparse_safe_cross_volume_source(source)
+                .map_err(|error| {
+                    PlatformError::Io(format!("cross-volume source lock failed: {error}"))
+                })?;
+            if move_recovery::stable_identity_from_handle(&source_handle)
+                .map_err(|error| PlatformError::Io(error.to_string()))?
+                != source_identity
+                || observe_windows_identity(&target)? != Some(destination_identity)
+            {
+                return Err(PlatformError::Io(
+                    "Windows cross-volume Overwrite input changed while acquiring its Move lock"
+                        .into(),
+                ));
+            }
+            start_windows_cross_volume_move(
+                source,
+                destination_dir,
+                &target,
+                conflict,
+                source_handle,
+                destination_handle,
+                Some(destination_identity),
+            )
+        }
+        WindowsCrossVolumePreflight::TransactionRequired => Err(
+            PlatformError::UnsupportedSafeCrossDeviceMove(source.display().to_string()),
+        ),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn remove_windows_source_by_handle_if_still_named(
+    source: &Path,
+    source_handle: &std::fs::File,
+    expected_identity: move_recovery::WindowsStableIdentity,
+    source_kind: WindowsCrossVolumeSourceKind,
+    expected_size: u64,
+    expected_sha256: &str,
+    expected_link_target: Option<&[u16]>,
+    expected_link_is_directory: Option<bool>,
+    recovery_transaction: &Path,
+) -> Result<(), PlatformError> {
+    let opened_matches =
+        move_recovery::stable_identity_from_handle(source_handle).map_err(|error| {
+            PlatformError::CommittedCleanupPending {
+                transaction: recovery_transaction.display().to_string(),
+                message: format!("opened source identity revalidation failed: {error}"),
+            }
+        })? == expected_identity;
+    let named_matches = match move_recovery::stable_identity_of_entry(source) {
+        Ok(identity) => identity == expected_identity,
+        Err(error) => {
+            return Err(PlatformError::CommittedCleanupPending {
+                transaction: recovery_transaction.display().to_string(),
+                message: format!("named source identity revalidation failed: {error}"),
+            });
+        }
+    };
+    let content_matches = match source_kind {
+        WindowsCrossVolumeSourceKind::File => {
+            let mut content_handle = source_handle.try_clone().map_err(|error| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: recovery_transaction.display().to_string(),
+                    message: format!("source content revalidation handle clone failed: {error}"),
+                }
+            })?;
+            hash_windows_file(&mut content_handle).map_err(|error| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: recovery_transaction.display().to_string(),
+                    message: format!("source content revalidation failed: {error}"),
+                }
+            })? == (expected_size, expected_sha256.to_string())
+        }
+        WindowsCrossVolumeSourceKind::SymbolicLink => {
+            let expected_target =
+                expected_link_target.ok_or_else(|| PlatformError::CommittedCleanupPending {
+                    transaction: recovery_transaction.display().to_string(),
+                    message: "symbolic-link cleanup evidence is missing its target".into(),
+                })?;
+            let expected_is_directory = expected_link_is_directory.ok_or_else(|| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: recovery_transaction.display().to_string(),
+                    message: "symbolic-link cleanup evidence is missing its kind".into(),
+                }
+            })?;
+            verify_windows_symbolic_link(source, expected_target, expected_is_directory).map_err(
+                |error| PlatformError::CommittedCleanupPending {
+                    transaction: recovery_transaction.display().to_string(),
+                    message: format!("source symbolic-link revalidation failed: {error}"),
+                },
+            )? == (expected_size, expected_sha256.to_string())
+        }
+        WindowsCrossVolumeSourceKind::Directory => false,
+    };
+    if classify_windows_source_removal(opened_matches, named_matches, content_matches)
+        == WindowsSourceRemovalDecision::PreserveForRecovery
+    {
+        return Err(PlatformError::CommittedCleanupPending {
+            transaction: recovery_transaction.display().to_string(),
+            message: "source identity or content changed after destination publication; source was preserved"
+                .into(),
+        });
+    }
+
+    let disposition = FILE_DISPOSITION_INFO_EX {
+        Flags: FILE_DISPOSITION_FLAG_DELETE,
+    };
+    let disposition_size =
+        u32::try_from(mem::size_of::<FILE_DISPOSITION_INFO_EX>()).map_err(|error| {
+            PlatformError::CommittedCleanupPending {
+                transaction: recovery_transaction.display().to_string(),
+                message: error.to_string(),
+            }
+        })?;
+    let removed = unsafe {
+        SetFileInformationByHandle(
+            source_handle.as_raw_handle() as HANDLE,
+            FileDispositionInfoEx,
+            ptr::from_ref(&disposition).cast_mut().cast(),
+            disposition_size,
+        )
+    };
+    if removed == 0 {
+        return Err(PlatformError::CommittedCleanupPending {
+            transaction: recovery_transaction.display().to_string(),
+            message: format!(
+                "handle-authoritative source removal failed: {}",
+                std::io::Error::last_os_error()
+            ),
+        });
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn windows_directory_source_claim_path(
+    source_parent: &Path,
+    record: &WindowsCrossVolumeRecord,
+) -> Result<PathBuf, PlatformError> {
+    record.transaction_id()?;
+    Ok(source_parent.join(format!(".ottrin-move-{}-source", record.transaction_id)))
+}
+
+#[cfg(target_os = "windows")]
+fn set_windows_directory_source_delete_disposition(
+    handle: &std::fs::File,
+    path: &Path,
+    recovery_transaction: &Path,
+) -> Result<(), PlatformError> {
+    let disposition = FILE_DISPOSITION_INFO_EX {
+        Flags: WINDOWS_INCOMPLETE_STAGING_DISPOSITION_FLAGS,
+    };
+    let removed = unsafe {
+        SetFileInformationByHandle(
+            handle.as_raw_handle() as HANDLE,
+            FileDispositionInfoEx,
+            ptr::from_ref(&disposition).cast_mut().cast(),
+            u32::try_from(mem::size_of::<FILE_DISPOSITION_INFO_EX>()).map_err(|error| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: recovery_transaction.display().to_string(),
+                    message: error.to_string(),
+                }
+            })?,
+        )
+    };
+    if removed == 0 {
+        return Err(PlatformError::CommittedCleanupPending {
+            transaction: recovery_transaction.display().to_string(),
+            message: format!(
+                "handle-authoritative directory source removal failed for {}: {}",
+                path.display(),
+                std::io::Error::last_os_error()
+            ),
+        });
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn drain_windows_claimed_source_directory(
+    claimed_source: &Path,
+    claimed_source_handle: std::fs::File,
+    record: &WindowsCrossVolumeRecord,
+    recovery_transaction: &Path,
+) -> Result<(), PlatformError> {
+    let cleanup_error = |message: String| PlatformError::CommittedCleanupPending {
+        transaction: recovery_transaction.display().to_string(),
+        message,
+    };
+    if move_recovery::stable_identity_from_handle(&claimed_source_handle)
+        .map_err(|error| cleanup_error(format!("claimed source identity probe failed: {error}")))?
+        != record.source_identity
+        || move_recovery::stable_identity_of_entry(claimed_source)
+            .map_err(|error| cleanup_error(format!("named claimed source probe failed: {error}")))?
+            != record.source_identity
+        || !windows_stream_set_is_copy_safe(
+            windows_file_streams(claimed_source)
+                .map_err(|error| cleanup_error(error.to_string()))?,
+        )
+    {
+        return Err(cleanup_error(
+            "claimed source directory identity or streams changed; cleanup was preserved".into(),
+        ));
+    }
+
+    let snapshot = capture_windows_directory_snapshot(claimed_source)
+        .map_err(|error| cleanup_error(format!("claimed source scan failed: {error}")))?;
+    let observed_journal = snapshot
+        .journal_entries()
+        .map_err(|error| cleanup_error(error.to_string()))?;
+    let durable_by_path = record
+        .source_manifest
+        .iter()
+        .map(|entry| (entry.relative_path.as_slice(), entry))
+        .collect::<std::collections::BTreeMap<_, _>>();
+    if durable_by_path.len() != record.source_manifest.len()
+        || observed_journal
+            .iter()
+            .any(|entry| durable_by_path.get(entry.relative_path.as_slice()) != Some(&entry))
+    {
+        return Err(cleanup_error(
+            "claimed source directory no longer matches the durable removal manifest".into(),
+        ));
+    }
+    let durable_manifest = record
+        .source_manifest
+        .iter()
+        .map(|entry| WindowsDirectoryManifestEntry {
+            relative_path: entry.relative_path.clone(),
+            kind: entry.kind,
+            size: entry.size,
+            sha256: entry.sha256.clone(),
+            link_is_directory: entry.link_is_directory,
+        })
+        .collect::<Vec<_>>();
+    let observed_manifest = snapshot
+        .manifest_entries()
+        .map_err(|error| cleanup_error(error.to_string()))?;
+    let order = windows_directory_cleanup_order(&durable_manifest, &observed_manifest).ok_or_else(
+        || cleanup_error("claimed source directory contains changed or unjournaled entries".into()),
+    )?;
+    let mut entries = snapshot.entries.into_iter().map(Some).collect::<Vec<_>>();
+    for index in order {
+        let entry = entries[index]
+            .take()
+            .expect("cleanup order contains each observed entry once");
+        let path = claimed_source.join(&entry.relative_path);
+        if move_recovery::stable_identity_from_handle(&entry.handle)
+            .map_err(|error| cleanup_error(format!("opened cleanup entry probe failed: {error}")))?
+            != entry.identity
+            || move_recovery::stable_identity_of_entry(&path).map_err(|error| {
+                cleanup_error(format!("named cleanup entry probe failed: {error}"))
+            })? != entry.identity
+        {
+            return Err(cleanup_error(format!(
+                "claimed source entry changed before removal: {}",
+                path.display()
+            )));
+        }
+        set_windows_directory_source_delete_disposition(
+            &entry.handle,
+            &path,
+            recovery_transaction,
+        )?;
+        drop(entry);
+        match std::fs::symlink_metadata(&path) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(cleanup_error(error.to_string())),
+            Ok(_) => {
+                return Err(cleanup_error(format!(
+                    "claimed source entry remained after handle removal: {}",
+                    path.display()
+                )));
+            }
+        }
+    }
+
+    if move_recovery::stable_identity_from_handle(&claimed_source_handle)
+        .map_err(|error| cleanup_error(format!("claimed source root probe failed: {error}")))?
+        != record.source_identity
+        || move_recovery::stable_identity_of_entry(claimed_source)
+            .map_err(|error| cleanup_error(format!("named source root probe failed: {error}")))?
+            != record.source_identity
+    {
+        return Err(cleanup_error(
+            "claimed source root changed before handle removal".into(),
+        ));
+    }
+    set_windows_directory_source_delete_disposition(
+        &claimed_source_handle,
+        claimed_source,
+        recovery_transaction,
+    )?;
+    drop(claimed_source_handle);
+    match std::fs::symlink_metadata(claimed_source) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(cleanup_error(error.to_string())),
+        Ok(_) => Err(cleanup_error(
+            "claimed source root remained after handle removal".into(),
+        )),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn move_windows_same_volume(
+    source: &Path,
+    destination_dir: &Path,
+    conflict: ConflictAction,
+    source_handle: std::fs::File,
+    destination_handle: std::fs::File,
+) -> Result<MovePublication, PlatformError> {
+    let source_name = source
+        .file_name()
+        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
+    let mut candidate = source_name.to_os_string();
+    loop {
+        let published_path = destination_dir.join(&candidate);
+        match rename_windows_handle_no_replace(&source_handle, &destination_handle, &candidate) {
+            Ok(()) => {
+                return Ok(MovePublication {
+                    disposition: MoveDisposition::Moved,
+                    published_path: Some(published_path),
+                    retained_displaced_path: None,
+                });
+            }
+            Err(PlatformError::DestinationExists(_)) => match conflict {
+                ConflictAction::Skip => {
+                    return Ok(MovePublication {
+                        disposition: MoveDisposition::Skipped,
+                        published_path: None,
+                        retained_displaced_path: None,
+                    });
+                }
+                ConflictAction::Rename => {
+                    candidate = super::next_available_name(&published_path)
+                        .file_name()
+                        .expect("generated candidate has a file name")
+                        .to_os_string();
+                }
+                ConflictAction::Overwrite => {
+                    return start_windows_same_volume_overwrite(
+                        source,
+                        destination_dir,
+                        &published_path,
+                    );
+                }
+            },
+            Err(error) => return Err(error),
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
+pub(super) fn rename_windows_handle_no_replace(
+    source: &std::fs::File,
+    destination_directory: &std::fs::File,
+    destination_name: &std::ffi::OsStr,
+) -> Result<(), PlatformError> {
+    let name = destination_name.encode_wide().collect::<Vec<_>>();
+    let name_bytes = name
+        .len()
+        .checked_mul(mem::size_of::<u16>())
+        .and_then(|length| u32::try_from(length).ok())
+        .ok_or_else(|| {
+            PlatformError::InvalidDestination(destination_name.to_string_lossy().into())
+        })?;
+    let buffer_size = mem::size_of::<FILE_RENAME_INFORMATION>()
+        .checked_add(name_bytes as usize)
+        .ok_or_else(|| {
+            PlatformError::InvalidDestination(destination_name.to_string_lossy().into())
+        })?;
+    // FILE_RENAME_INFORMATION contains pointer-sized fields; retain matching alignment while
+    // appending its variable-length UTF-16 name rather than casting an alignment-1 byte allocation.
+    let mut buffer = vec![0_u64; buffer_size.div_ceil(mem::size_of::<u64>())];
+    let info = buffer.as_mut_ptr().cast::<FILE_RENAME_INFORMATION>();
+    unsafe {
+        ptr::addr_of_mut!((*info).Anonymous.ReplaceIfExists).write(false);
+        ptr::addr_of_mut!((*info).RootDirectory)
+            .write(destination_directory.as_raw_handle() as HANDLE);
+        ptr::addr_of_mut!((*info).FileNameLength).write(name_bytes);
+        ptr::copy_nonoverlapping(
+            name.as_ptr(),
+            ptr::addr_of_mut!((*info).FileName).cast(),
+            name.len(),
+        );
+    }
+    let buffer_size = u32::try_from(buffer_size)
+        .map_err(|error| PlatformError::InvalidDestination(error.to_string()))?;
+    let mut io_status = IO_STATUS_BLOCK::default();
+    let status = unsafe {
+        NtSetInformationFile(
+            source.as_raw_handle() as HANDLE,
+            &mut io_status,
+            buffer.as_ptr().cast(),
+            buffer_size,
+            FileRenameInformation,
+        )
+    };
+    if status >= 0 {
+        return Ok(());
+    }
+    if status == STATUS_OBJECT_NAME_COLLISION {
+        Err(PlatformError::DestinationExists(
+            destination_name.to_string_lossy().into_owned(),
+        ))
+    } else {
+        let error =
+            std::io::Error::from_raw_os_error(unsafe { RtlNtStatusToDosError(status) } as i32);
+        Err(PlatformError::Io(error.to_string()))
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn windows_wide_path(path: &Path) -> Result<Vec<u16>, PlatformError> {
+    let mut wide = path.as_os_str().encode_wide().collect::<Vec<_>>();
+    if wide.contains(&0) {
+        return Err(PlatformError::InvalidDestination(
+            path.display().to_string(),
+        ));
+    }
+    wide.push(0);
+    Ok(wide)
+}
+
+#[cfg(target_os = "windows")]
+fn observe_windows_identity(
+    path: &Path,
+) -> Result<Option<move_recovery::WindowsStableIdentity>, PlatformError> {
+    match std::fs::symlink_metadata(path) {
+        Ok(_) => move_recovery::stable_identity_of_entry(path)
+            .map(Some)
+            .map_err(|error| PlatformError::Io(error.to_string())),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(PlatformError::Io(error.to_string())),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn discard_incomplete_windows_directory_candidate(
+    path: &Path,
+    expected_identity: move_recovery::WindowsStableIdentity,
+) -> Result<(), PlatformError> {
+    let handle = move_recovery::open_reparse_safe_cross_volume_cleanup_entry(path)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let opened_identity = move_recovery::stable_identity_from_handle(&handle)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    if opened_identity != expected_identity
+        || move_recovery::stable_identity_of_entry(path)
+            .map_err(|error| PlatformError::Io(error.to_string()))?
+            != expected_identity
+    {
+        return Err(PlatformError::Io(format!(
+            "incomplete Windows staging entry changed while it was opened: {}",
+            path.display()
+        )));
+    }
+
+    let entry_kind = windows_incomplete_staging_entry_kind(
+        opened_identity.is_regular_file_without_reparse(),
+        opened_identity.is_directory_without_reparse(),
+    )
+    .ok_or_else(|| {
+        PlatformError::Io(format!(
+            "incomplete Windows staging entry has an unsupported type or reparse tag: {}",
+            path.display()
+        ))
+    })?;
+    if !windows_stream_set_is_copy_safe(windows_file_streams(path)?) {
+        return Err(PlatformError::Io(format!(
+            "incomplete Windows staging entry has unsupported named streams: {}",
+            path.display()
+        )));
+    }
+    if entry_kind == WindowsIncompleteStagingEntryKind::Directory {
+        let children = std::fs::read_dir(path)
+            .map_err(|error| PlatformError::Io(error.to_string()))?
+            .map(|entry| entry.map(|entry| entry.path()))
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        for child in children {
+            let child_identity = move_recovery::stable_identity_of_entry(&child)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            discard_incomplete_windows_directory_candidate(&child, child_identity)?;
+        }
+    }
+
+    if move_recovery::stable_identity_from_handle(&handle)
+        .map_err(|error| PlatformError::Io(error.to_string()))?
+        != opened_identity
+        || move_recovery::stable_identity_of_entry(path)
+            .map_err(|error| PlatformError::Io(error.to_string()))?
+            != opened_identity
+    {
+        return Err(PlatformError::Io(format!(
+            "incomplete Windows staging entry changed before handle removal: {}",
+            path.display()
+        )));
+    }
+    let disposition = FILE_DISPOSITION_INFO_EX {
+        Flags: WINDOWS_INCOMPLETE_STAGING_DISPOSITION_FLAGS,
+    };
+    let removed = unsafe {
+        SetFileInformationByHandle(
+            handle.as_raw_handle() as HANDLE,
+            FileDispositionInfoEx,
+            ptr::from_ref(&disposition).cast_mut().cast(),
+            u32::try_from(mem::size_of::<FILE_DISPOSITION_INFO_EX>())
+                .map_err(|error| PlatformError::Io(error.to_string()))?,
+        )
+    };
+    if removed == 0 {
+        return Err(PlatformError::Io(format!(
+            "handle-authoritative incomplete Windows staging removal failed for {}: {}",
+            path.display(),
+            std::io::Error::last_os_error()
+        )));
+    }
+    drop(handle);
+    match std::fs::symlink_metadata(path) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(PlatformError::Io(error.to_string())),
+        Ok(_) => Err(PlatformError::Io(format!(
+            "incomplete Windows staging entry remained after handle removal: {}",
+            path.display()
+        ))),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn windows_recovery_root() -> Result<PathBuf, PlatformError> {
+    #[cfg(test)]
+    if let Some(root) = std::env::var_os("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT") {
+        return Ok(PathBuf::from(root));
+    }
+    let local_app_data = std::env::var_os("LOCALAPPDATA")
+        .ok_or_else(|| PlatformError::Io("LOCALAPPDATA is unavailable".to_string()))?;
+    Ok(PathBuf::from(local_app_data)
+        .join("Ottrin")
+        .join("State")
+        .join("moves"))
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn encode_transaction_id(id: [u8; 16]) -> String {
+    id.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+#[cfg(any(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+enum WindowsJournalKind {
+    SameVolumeOverwrite,
+    CrossVolume,
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn parse_windows_journal_name(name: &std::ffi::OsStr) -> Option<([u8; 16], WindowsJournalKind)> {
+    let name = name.to_str()?;
+    let (encoded, kind) = if let Some(encoded) = name.strip_suffix(".cross-journal") {
+        (encoded, WindowsJournalKind::CrossVolume)
+    } else if let Some(encoded) = name.strip_suffix(".journal") {
+        (encoded, WindowsJournalKind::SameVolumeOverwrite)
+    } else {
+        return None;
+    };
+    if encoded.len() != 32 {
+        return None;
+    }
+    let mut transaction_id = [0_u8; 16];
+    for (index, pair) in encoded.as_bytes().chunks_exact(2).enumerate() {
+        let pair = std::str::from_utf8(pair).ok()?;
+        transaction_id[index] = u8::from_str_radix(pair, 16).ok()?;
+    }
+    Some((transaction_id, kind))
+}
+
+/// Lists retained Windows Move journals without creating or mutating recovery state.
+#[cfg(any(target_os = "windows", test))]
+pub(super) fn discover_retained_windows_move_transactions_at(
+    recovery_root: &Path,
+) -> Result<Vec<move_recovery::WindowsDiscoveredMoveTransaction>, PlatformError> {
+    let entries = match std::fs::read_dir(recovery_root) {
+        Ok(entries) => entries,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(error) => return Err(PlatformError::Io(error.to_string())),
+    };
+    let mut discovered = Vec::new();
+    for entry in entries {
+        let entry = entry.map_err(|error| PlatformError::Io(error.to_string()))?;
+        let Some((transaction_id, kind)) = parse_windows_journal_name(&entry.file_name()) else {
+            continue;
+        };
+        if !entry
+            .file_type()
+            .map_err(|error| PlatformError::Io(error.to_string()))?
+            .is_file()
+        {
+            return Err(PlatformError::Io(format!(
+                "Windows Move journal is not a regular file: {}",
+                entry.path().display()
+            )));
+        }
+        #[cfg(target_os = "windows")]
+        {
+            let record_transaction_id = match kind {
+                WindowsJournalKind::SameVolumeOverwrite => {
+                    load_windows_overwrite_record(&entry.path())?.transaction_id()?
+                }
+                WindowsJournalKind::CrossVolume => {
+                    load_windows_cross_volume_record(&entry.path())?.transaction_id()?
+                }
+            };
+            if record_transaction_id != transaction_id {
+                return Err(PlatformError::Io(format!(
+                    "Windows Move journal filename transaction ID {} does not match its record",
+                    encode_transaction_id(transaction_id)
+                )));
+            }
+        }
+        let (kind, recovery_available) = match kind {
+            WindowsJournalKind::SameVolumeOverwrite => (
+                move_recovery::WindowsMoveTransactionKind::SameVolumeOverwrite,
+                true,
+            ),
+            WindowsJournalKind::CrossVolume => (
+                move_recovery::WindowsMoveTransactionKind::CrossVolume,
+                false,
+            ),
+        };
+        discovered.push(move_recovery::WindowsDiscoveredMoveTransaction {
+            transaction_id,
+            kind,
+            recovery_available,
+        });
+    }
+    discovered.sort_by_key(|transaction| (transaction.transaction_id, transaction.kind));
+    if discovered
+        .windows(2)
+        .any(|pair| pair[0].transaction_id == pair[1].transaction_id)
+    {
+        return Err(PlatformError::Io(
+            "multiple durable Windows Move journals share a transaction ID".to_string(),
+        ));
+    }
+    Ok(discovered)
+}
+
+#[cfg(target_os = "windows")]
+pub(super) fn discover_retained_windows_move_transactions()
+-> Result<Vec<move_recovery::WindowsDiscoveredMoveTransaction>, PlatformError> {
+    discover_retained_windows_move_transactions_at(&windows_recovery_root()?)
+}
+
+#[cfg(target_os = "windows")]
+fn windows_journal_path(root: &Path, transaction_id: [u8; 16]) -> PathBuf {
+    root.join(format!("{}.journal", encode_transaction_id(transaction_id)))
+}
+
+#[cfg(target_os = "windows")]
+fn restrict_windows_transaction_directory(path: &Path) -> Result<(), PlatformError> {
+    let mut token = ptr::null_mut();
+    if unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) } == 0 {
+        return Err(PlatformError::Io(format!(
+            "current-user token open failed: {}",
+            std::io::Error::last_os_error()
+        )));
+    }
+    struct TokenHandle(HANDLE);
+    impl Drop for TokenHandle {
+        fn drop(&mut self) {
+            unsafe {
+                CloseHandle(self.0);
+            }
+        }
+    }
+    let token = TokenHandle(token);
+    let mut required = 0_u32;
+    unsafe {
+        GetTokenInformation(token.0, TokenUser, ptr::null_mut(), 0, &mut required);
+    }
+    if std::io::Error::last_os_error()
+        .raw_os_error()
+        .map(|code| code as u32)
+        != Some(ERROR_INSUFFICIENT_BUFFER)
+        || required < mem::size_of::<TOKEN_USER>() as u32
+    {
+        return Err(PlatformError::Io(
+            "current-user token size query failed".to_string(),
+        ));
+    }
+    let mut token_user = vec![0_u64; (required as usize).div_ceil(mem::size_of::<u64>())];
+    if unsafe {
+        GetTokenInformation(
+            token.0,
+            TokenUser,
+            token_user.as_mut_ptr().cast(),
+            required,
+            &mut required,
+        )
+    } == 0
+    {
+        return Err(PlatformError::Io(format!(
+            "current-user token query failed: {}",
+            std::io::Error::last_os_error()
+        )));
+    }
+    let user = unsafe { &*token_user.as_ptr().cast::<TOKEN_USER>() };
+    let access = EXPLICIT_ACCESS_W {
+        grfAccessPermissions: FILE_ALL_ACCESS,
+        grfAccessMode: GRANT_ACCESS,
+        grfInheritance: SUB_CONTAINERS_AND_OBJECTS_INHERIT,
+        Trustee: windows_sys::Win32::Security::Authorization::TRUSTEE_W {
+            TrusteeForm: TRUSTEE_IS_SID,
+            TrusteeType: TRUSTEE_IS_USER,
+            ptstrName: user.User.Sid.cast(),
+            ..Default::default()
+        },
+    };
+    let mut acl = ptr::null_mut();
+    let status = unsafe { SetEntriesInAclW(1, &access, ptr::null(), &mut acl) };
+    if status != 0 {
+        return Err(PlatformError::Io(format!(
+            "private transaction ACL creation failed with status {status}"
+        )));
+    }
+    struct LocalAcl(*mut windows_sys::Win32::Security::ACL);
+    impl Drop for LocalAcl {
+        fn drop(&mut self) {
+            unsafe {
+                LocalFree(self.0.cast());
+            }
+        }
+    }
+    let acl = LocalAcl(acl);
+    let mut wide = windows_wide_path(path)?;
+    let status = unsafe {
+        SetNamedSecurityInfoW(
+            wide.as_mut_ptr(),
+            SE_FILE_OBJECT,
+            DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            acl.0,
+            ptr::null(),
+        )
+    };
+    if status != 0 {
+        return Err(PlatformError::Io(format!(
+            "private transaction ACL application failed with status {status}"
+        )));
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn write_windows_record_file<T: serde::Serialize>(
+    path: &Path,
+    record: &T,
+) -> Result<(), PlatformError> {
+    let bytes = serde_json::to_vec(record).map_err(|error| PlatformError::Io(error.to_string()))?;
+    if !path.exists() {
+        let mut file = OpenOptions::new()
+            .create_new(true)
+            .write(true)
+            .open(path)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        file.write_all(&bytes)
+            .and_then(|()| file.sync_all())
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        return Ok(());
+    }
+    let parent = path
+        .parent()
+        .ok_or_else(|| PlatformError::Io("journal has no parent".to_string()))?;
+    let mut temp_id = [0_u8; 16];
+    getrandom::fill(&mut temp_id).map_err(|error| PlatformError::Io(error.to_string()))?;
+    let temporary = parent.join(format!("journal.next-{}", encode_transaction_id(temp_id)));
+    let mut file = OpenOptions::new()
+        .create_new(true)
+        .write(true)
+        .open(&temporary)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    file.write_all(&bytes)
+        .and_then(|()| file.sync_all())
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    drop(file);
+    let path_wide = windows_wide_path(path)?;
+    let temporary_wide = windows_wide_path(&temporary)?;
+    if unsafe {
+        ReplaceFileW(
+            path_wide.as_ptr(),
+            temporary_wide.as_ptr(),
+            ptr::null(),
+            REPLACEFILE_WRITE_THROUGH,
+            ptr::null(),
+            ptr::null(),
+        )
+    } == 0
+    {
+        return Err(PlatformError::Io(format!(
+            "durable journal replacement failed: {}",
+            std::io::Error::last_os_error()
+        )));
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn persist_windows_overwrite_record(
+    recovery_root: &Path,
+    record: &WindowsOverwriteRecord,
+) -> Result<(), PlatformError> {
+    let transaction_id = record.transaction_id()?;
+    let local = record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME);
+    write_windows_record_file(&local, record)?;
+    write_windows_record_file(&windows_journal_path(recovery_root, transaction_id), record)
+}
+
+#[cfg(target_os = "windows")]
+fn load_windows_overwrite_record(path: &Path) -> Result<WindowsOverwriteRecord, PlatformError> {
+    let bytes = std::fs::read(path).map_err(|error| PlatformError::Io(error.to_string()))?;
+    let record: WindowsOverwriteRecord =
+        serde_json::from_slice(&bytes).map_err(|error| PlatformError::Io(error.to_string()))?;
+    if record.schema_major != move_recovery::JOURNAL_SCHEMA_MAJOR
+        || record.schema_minor > move_recovery::JOURNAL_SCHEMA_MINOR
+    {
+        return Err(PlatformError::Io(format!(
+            "unsupported Windows Move journal schema {}.{}",
+            record.schema_major, record.schema_minor
+        )));
+    }
+    Ok(record)
+}
+
+#[cfg(target_os = "windows")]
+fn load_windows_cross_volume_record(
+    path: &Path,
+) -> Result<WindowsCrossVolumeRecord, PlatformError> {
+    let bytes = std::fs::read(path).map_err(|error| PlatformError::Io(error.to_string()))?;
+    let record: WindowsCrossVolumeRecord =
+        serde_json::from_slice(&bytes).map_err(|error| PlatformError::Io(error.to_string()))?;
+    if record.schema_major != move_recovery::JOURNAL_SCHEMA_MAJOR
+        || record.schema_minor > move_recovery::JOURNAL_SCHEMA_MINOR
+    {
+        return Err(PlatformError::Io(format!(
+            "unsupported Windows cross-volume Move journal schema {}.{}",
+            record.schema_major, record.schema_minor
+        )));
+    }
+    Ok(record)
+}
+
+#[cfg(target_os = "windows")]
+fn recover_windows_overwrites_before_move(
+    source: &Path,
+    destination_dir: &Path,
+) -> Result<Option<MovePublication>, PlatformError> {
+    let recovery_root = windows_recovery_root()?;
+    let entries = match std::fs::read_dir(&recovery_root) {
+        Ok(entries) => entries,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(PlatformError::Io(error.to_string())),
+    };
+    let mut matching = None;
+    for entry in entries {
+        let entry = entry.map_err(|error| PlatformError::Io(error.to_string()))?;
+        let path = entry.path();
+        let (is_matching, publication) = if path.extension()
+            == Some(std::ffi::OsStr::new("journal"))
+        {
+            let record = load_windows_overwrite_record(&path)?;
+            let is_matching = record.source_path()? == source
+                && record.destination_parent_path()? == destination_dir;
+            (
+                is_matching,
+                resume_windows_overwrite(&recovery_root, record)?,
+            )
+        } else if path.extension() == Some(std::ffi::OsStr::new("cross-journal")) {
+            if !windows_cross_volume_recovery_enabled() {
+                return Err(PlatformError::ClaimedRecoveryPending {
+                        transaction: path.display().to_string(),
+                        message: "Windows cross-volume Move recovery remains disabled until source-cleanup acceptance passes".to_string(),
+                    });
+            }
+            let mut record = load_windows_cross_volume_record(&path)?;
+            let is_matching = record.source_path()? == source
+                && record.destination_parent_path()? == destination_dir;
+            let publication = resume_windows_cross_volume(&recovery_root, &mut record, None)?;
+            (is_matching, publication)
+        } else {
+            continue;
+        };
+        if is_matching {
+            if matching.is_some() {
+                return Err(PlatformError::ClaimedRecoveryPending {
+                    transaction: recovery_root.display().to_string(),
+                    message: "multiple durable Windows Overwrite transactions match this Move"
+                        .to_string(),
+                });
+            }
+            matching = Some(publication);
+        }
+    }
+    Ok(matching)
+}
+
+#[cfg(target_os = "windows")]
+fn windows_cross_volume_journal_path(root: &Path, transaction_id: [u8; 16]) -> PathBuf {
+    root.join(format!(
+        "{}.cross-journal",
+        encode_transaction_id(transaction_id)
     ))
+}
+
+#[cfg(target_os = "windows")]
+pub(super) fn recover_retained_windows_move_transaction(
+    transaction_id: [u8; 16],
+) -> Result<(), PlatformError> {
+    let _recovery_lock = acquire_windows_recovery_lock()?;
+    let recovery_root = windows_recovery_root()?;
+    let same_volume_journal = windows_journal_path(&recovery_root, transaction_id);
+    let cross_volume_journal = windows_cross_volume_journal_path(&recovery_root, transaction_id);
+    let same_volume_exists = same_volume_journal
+        .try_exists()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let cross_volume_exists = cross_volume_journal
+        .try_exists()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+
+    if same_volume_exists && cross_volume_exists {
+        return Err(PlatformError::ClaimedRecoveryPending {
+            transaction: encode_transaction_id(transaction_id),
+            message: "multiple durable Windows Move journals share this transaction ID".to_string(),
+        });
+    }
+    if cross_volume_exists {
+        return Err(PlatformError::ClaimedRecoveryPending {
+            transaction: cross_volume_journal.display().to_string(),
+            message: "Windows cross-volume Move recovery remains disabled until source-cleanup acceptance passes"
+                .to_string(),
+        });
+    }
+    if !same_volume_exists {
+        return Err(PlatformError::Io(format!(
+            "retained Windows Move transaction was not found: {}",
+            encode_transaction_id(transaction_id)
+        )));
+    }
+
+    let record = load_windows_overwrite_record(&same_volume_journal)?;
+    if record.transaction_id()? != transaction_id {
+        return Err(PlatformError::Io(
+            "Windows Move journal filename does not match its transaction ID".to_string(),
+        ));
+    }
+    resume_windows_overwrite(&recovery_root, record).map(|_| ())
+}
+
+#[cfg(target_os = "windows")]
+fn persist_windows_cross_volume_record(
+    recovery_root: &Path,
+    record: &WindowsCrossVolumeRecord,
+) -> Result<(), PlatformError> {
+    let transaction_id = record.transaction_id()?;
+    write_windows_record_file(
+        &windows_cross_volume_journal_path(recovery_root, transaction_id),
+        record,
+    )?;
+    write_windows_record_file(
+        &record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME),
+        record,
+    )
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn cleanup_windows_cross_volume_transaction_with<RemoveFile, RemoveDir>(
+    transaction: &Path,
+    central_journal: &Path,
+    mut remove_file: RemoveFile,
+    mut remove_dir: RemoveDir,
+) -> Result<(), PlatformError>
+where
+    RemoveFile: FnMut(&Path) -> std::io::Result<()>,
+    RemoveDir: FnMut(&Path) -> std::io::Result<()>,
+{
+    let local_journal = transaction.join(WINDOWS_LOCAL_JOURNAL_NAME);
+    remove_file(&local_journal).map_err(|error| PlatformError::CommittedCleanupPending {
+        transaction: transaction.display().to_string(),
+        message: format!(
+            "Windows cross-volume local journal cleanup failed; central recovery evidence was retained: {error}"
+        ),
+    })?;
+    remove_file(central_journal).map_err(|error| PlatformError::CommittedCleanupPending {
+        transaction: transaction.display().to_string(),
+        message: format!(
+            "Windows cross-volume central journal cleanup failed; recovery evidence was retained: {error}"
+        ),
+    })?;
+    remove_dir(transaction).map_err(|error| PlatformError::CommittedCleanupPending {
+        transaction: transaction.display().to_string(),
+        message: format!("Windows cross-volume transaction cleanup failed: {error}"),
+    })
+}
+
+#[cfg(target_os = "windows")]
+fn advance_windows_cross_volume_rename_target(
+    recovery_root: &Path,
+    record: &mut WindowsCrossVolumeRecord,
+) -> Result<PathBuf, PlatformError> {
+    let candidates = record
+        .target_candidates
+        .iter()
+        .map(move_recovery::NativePath::decode)
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let next = next_windows_rename_candidate(&candidates)
+        .ok_or_else(|| PlatformError::Io("Windows cross-volume target journal is empty".into()))?;
+    record
+        .target_candidates
+        .push(move_recovery::NativePath::encode(&next));
+    persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
+        PlatformError::ClaimedRecoveryPending {
+            transaction: record
+                .transaction_path()
+                .map_or_else(|_| "unknown".into(), |path| path.display().to_string()),
+            message: format!(
+                "Windows Rename candidate was not durable before publication: {error}"
+            ),
+        }
+    })?;
+    Ok(next)
+}
+
+#[cfg(target_os = "windows")]
+fn hash_windows_file(file: &mut std::fs::File) -> Result<(u64, String), PlatformError> {
+    use sha2::{Digest, Sha256};
+
+    file.seek(std::io::SeekFrom::Start(0))
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let mut hasher = Sha256::new();
+    let mut size = 0_u64;
+    let mut buffer = [0_u8; 128 * 1024];
+    loop {
+        let read = file
+            .read(&mut buffer)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..read]);
+        size = size
+            .checked_add(read as u64)
+            .ok_or_else(|| PlatformError::Io("Windows Move source size overflow".into()))?;
+    }
+    Ok((size, format!("{:x}", hasher.finalize())))
+}
+
+#[cfg(target_os = "windows")]
+struct WindowsDirectorySnapshotEntry {
+    relative_path: PathBuf,
+    path: PathBuf,
+    kind: WindowsCrossVolumeSourceKind,
+    identity: move_recovery::WindowsStableIdentity,
+    size: u64,
+    sha256: String,
+    link_target: Vec<u16>,
+    link_is_directory: bool,
+    handle: std::fs::File,
+}
+
+#[cfg(target_os = "windows")]
+struct WindowsDirectorySnapshot {
+    entries: Vec<WindowsDirectorySnapshotEntry>,
+    evidence: (u64, String),
+}
+
+#[cfg(target_os = "windows")]
+impl WindowsDirectorySnapshot {
+    fn manifest_entries(&self) -> Result<Vec<WindowsDirectoryManifestEntry>, PlatformError> {
+        self.entries
+            .iter()
+            .map(|entry| {
+                Ok(WindowsDirectoryManifestEntry {
+                    relative_path: windows_manifest_path(&entry.relative_path)?,
+                    kind: entry.kind,
+                    size: entry.size,
+                    sha256: entry.sha256.clone(),
+                    link_is_directory: entry.link_is_directory,
+                })
+            })
+            .collect()
+    }
+
+    fn journal_entries(&self) -> Result<Vec<WindowsDirectoryJournalEntry>, PlatformError> {
+        let mut entries = self
+            .entries
+            .iter()
+            .map(|entry| {
+                Ok(WindowsDirectoryJournalEntry {
+                    relative_path: windows_manifest_path(&entry.relative_path)?,
+                    kind: entry.kind,
+                    identity: entry.identity,
+                    size: entry.size,
+                    sha256: entry.sha256.clone(),
+                    link_target: entry.link_target.clone(),
+                    link_is_directory: entry.link_is_directory,
+                })
+            })
+            .collect::<Result<Vec<_>, PlatformError>>()?;
+        entries.sort_unstable_by(|left, right| left.relative_path.cmp(&right.relative_path));
+        Ok(entries)
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn windows_manifest_path(path: &Path) -> Result<Vec<u16>, PlatformError> {
+    let mut encoded = Vec::new();
+    for component in path.components() {
+        let std::path::Component::Normal(component) = component else {
+            return Err(PlatformError::Io(
+                "Windows Move directory manifest contains a non-relative path".into(),
+            ));
+        };
+        if !encoded.is_empty() {
+            encoded.push(u16::from(b'\\'));
+        }
+        encoded.extend(component.encode_wide());
+    }
+    if !windows_manifest_relative_path_is_safe(&encoded) {
+        return Err(PlatformError::Io(
+            "Windows Move directory manifest contains an unsafe path".into(),
+        ));
+    }
+    Ok(encoded)
+}
+
+#[cfg(target_os = "windows")]
+fn capture_windows_directory_snapshot(
+    root: &Path,
+) -> Result<WindowsDirectorySnapshot, PlatformError> {
+    fn visit(
+        root: &Path,
+        relative_directory: &Path,
+        entries: &mut Vec<WindowsDirectorySnapshotEntry>,
+    ) -> Result<(), PlatformError> {
+        let directory = root.join(relative_directory);
+        let mut children = std::fs::read_dir(&directory)
+            .map_err(|error| PlatformError::Io(error.to_string()))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        children.sort_unstable_by(|left, right| {
+            left.file_name()
+                .encode_wide()
+                .cmp(right.file_name().encode_wide())
+        });
+        for child in children {
+            let relative_path = relative_directory.join(child.file_name());
+            let path = root.join(&relative_path);
+            let mut handle = move_recovery::open_reparse_safe_cross_volume_source(&path)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            let identity = move_recovery::stable_identity_from_handle(&handle)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            let kind = windows_cross_volume_source_kind(
+                identity.is_regular_file_without_reparse(),
+                identity.is_directory_without_reparse(),
+                identity.is_symbolic_link(),
+            )
+            .ok_or_else(|| {
+                PlatformError::UnsupportedSafeCrossDeviceMove(path.display().to_string())
+            })?;
+            if !windows_stream_set_is_copy_safe(windows_file_streams(&path)?) {
+                return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+                    path.display().to_string(),
+                ));
+            }
+            if entries.iter().any(|entry| entry.identity == identity) {
+                return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+                    path.display().to_string(),
+                ));
+            }
+            let (size, sha256, link_target, link_is_directory) = match kind {
+                WindowsCrossVolumeSourceKind::File => {
+                    let (size, sha256) = hash_windows_file(&mut handle)?;
+                    (size, sha256, Vec::new(), false)
+                }
+                WindowsCrossVolumeSourceKind::Directory => (0, String::new(), Vec::new(), false),
+                WindowsCrossVolumeSourceKind::SymbolicLink => {
+                    let (target, is_directory) = read_windows_symbolic_link(&path)?;
+                    let (size, sha256) = windows_symbolic_link_evidence(&target);
+                    (size, sha256, target, is_directory)
+                }
+            };
+            entries.push(WindowsDirectorySnapshotEntry {
+                relative_path: relative_path.clone(),
+                path,
+                kind,
+                identity,
+                size,
+                sha256,
+                link_target,
+                link_is_directory,
+                handle,
+            });
+            if kind == WindowsCrossVolumeSourceKind::Directory {
+                visit(root, &relative_path, entries)?;
+            }
+        }
+        Ok(())
+    }
+
+    let mut entries = Vec::new();
+    visit(root, Path::new(""), &mut entries)?;
+    let manifest = entries
+        .iter()
+        .map(|entry| {
+            Ok(WindowsDirectoryManifestEntry {
+                relative_path: windows_manifest_path(&entry.relative_path)?,
+                kind: entry.kind,
+                size: entry.size,
+                sha256: entry.sha256.clone(),
+                link_is_directory: entry.link_is_directory,
+            })
+        })
+        .collect::<Result<Vec<_>, PlatformError>>()?;
+    let evidence = windows_directory_manifest_evidence(manifest)?;
+    Ok(WindowsDirectorySnapshot { entries, evidence })
+}
+
+#[cfg(target_os = "windows")]
+fn current_windows_directory_snapshot_evidence(
+    snapshot: &mut WindowsDirectorySnapshot,
+) -> Result<(u64, String), PlatformError> {
+    let manifest = snapshot
+        .entries
+        .iter_mut()
+        .map(|entry| {
+            if move_recovery::stable_identity_from_handle(&entry.handle)
+                .map_err(|error| PlatformError::Io(error.to_string()))?
+                != entry.identity
+            {
+                return Err(PlatformError::Io(
+                    "Windows Move directory entry identity changed".into(),
+                ));
+            }
+            let (size, sha256) = match entry.kind {
+                WindowsCrossVolumeSourceKind::File => hash_windows_file(&mut entry.handle)?,
+                WindowsCrossVolumeSourceKind::Directory => (0, String::new()),
+                WindowsCrossVolumeSourceKind::SymbolicLink => {
+                    let (target, is_directory) = read_windows_symbolic_link(&entry.path)?;
+                    if target != entry.link_target || is_directory != entry.link_is_directory {
+                        return Err(PlatformError::Io(
+                            "Windows Move symbolic-link target changed".into(),
+                        ));
+                    }
+                    windows_symbolic_link_evidence(&target)
+                }
+            };
+            Ok(WindowsDirectoryManifestEntry {
+                relative_path: windows_manifest_path(&entry.relative_path)?,
+                kind: entry.kind,
+                size,
+                sha256,
+                link_is_directory: entry.link_is_directory,
+            })
+        })
+        .collect::<Result<Vec<_>, PlatformError>>()?;
+    windows_directory_manifest_evidence(manifest)
+}
+
+#[cfg(target_os = "windows")]
+fn stage_windows_directory_snapshot(
+    source_root_handle: &std::fs::File,
+    source_snapshot: &mut WindowsDirectorySnapshot,
+    candidate: &Path,
+) -> Result<(std::fs::File, WindowsDirectorySnapshot), PlatformError> {
+    // The caller creates and identity-pins this private root before tree construction.
+
+    for entry in source_snapshot
+        .entries
+        .iter()
+        .filter(|entry| entry.kind == WindowsCrossVolumeSourceKind::Directory)
+    {
+        std::fs::create_dir(candidate.join(&entry.relative_path))
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+    }
+    for entry in source_snapshot
+        .entries
+        .iter()
+        .filter(|entry| entry.kind == WindowsCrossVolumeSourceKind::SymbolicLink)
+    {
+        create_windows_symbolic_link(
+            &candidate.join(&entry.relative_path),
+            &entry.link_target,
+            entry.link_is_directory,
+        )?;
+        let (target, is_directory) =
+            read_windows_symbolic_link(&candidate.join(&entry.relative_path))?;
+        if target != entry.link_target || is_directory != entry.link_is_directory {
+            return Err(PlatformError::Io(
+                "Windows Move staged symbolic-link verification failed".into(),
+            ));
+        }
+    }
+    for entry in source_snapshot
+        .entries
+        .iter_mut()
+        .filter(|entry| entry.kind == WindowsCrossVolumeSourceKind::File)
+    {
+        entry
+            .handle
+            .seek(std::io::SeekFrom::Start(0))
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        let mut staged = OpenOptions::new()
+            .create_new(true)
+            .read(true)
+            .write(true)
+            .open(candidate.join(&entry.relative_path))
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        copy_windows_file_and_metadata(&mut entry.handle, &mut staged)?;
+        if hash_windows_file(&mut staged)? != (entry.size, entry.sha256.clone()) {
+            return Err(PlatformError::Io(
+                "Windows Move staged directory file verification failed".into(),
+            ));
+        }
+    }
+    for entry in source_snapshot
+        .entries
+        .iter()
+        .rev()
+        .filter(|entry| entry.kind == WindowsCrossVolumeSourceKind::Directory)
+    {
+        let staged = move_recovery::open_reparse_safe_cross_volume_candidate(
+            &candidate.join(&entry.relative_path),
+        )
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+        copy_windows_basic_metadata(&entry.handle, &staged)?;
+    }
+    let staged_root = move_recovery::open_reparse_safe_cross_volume_candidate(candidate)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    copy_windows_basic_metadata(source_root_handle, &staged_root)?;
+    drop(staged_root);
+
+    let staged_root = move_recovery::open_reparse_safe_cross_volume_source(candidate)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let mut staged_snapshot = capture_windows_directory_snapshot(candidate)?;
+    let staged_evidence = current_windows_directory_snapshot_evidence(&mut staged_snapshot)?;
+    if staged_evidence != staged_snapshot.evidence
+        || current_windows_directory_snapshot_evidence(source_snapshot)? != source_snapshot.evidence
+    {
+        return Err(PlatformError::Io(
+            "Windows Move directory changed during staged copy verification".into(),
+        ));
+    }
+    Ok((staged_root, staged_snapshot))
+}
+
+#[cfg(target_os = "windows")]
+fn start_windows_cross_volume_move(
+    source: &Path,
+    destination_dir: &Path,
+    target: &Path,
+    conflict: ConflictAction,
+    mut source_handle: std::fs::File,
+    destination_handle: std::fs::File,
+    destination_identity: Option<move_recovery::WindowsStableIdentity>,
+) -> Result<MovePublication, PlatformError> {
+    let source_identity = move_recovery::stable_identity_from_handle(&source_handle)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let destination_parent_identity =
+        move_recovery::stable_identity_from_handle(&destination_handle)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let source_kind = windows_cross_volume_source_kind(
+        source_identity.is_regular_file_without_reparse(),
+        source_identity.is_directory_without_reparse(),
+        source_identity.is_symbolic_link(),
+    )
+    .ok_or_else(|| PlatformError::UnsupportedSafeCrossDeviceMove(source.display().to_string()))?;
+    if !destination_parent_identity.is_directory_without_reparse() {
+        return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+            source.display().to_string(),
+        ));
+    }
+    let source_parent = source
+        .parent()
+        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
+    let source_parent_identity = move_recovery::stable_identity_of_entry(source_parent)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    if !source_parent_identity.is_directory_without_reparse() {
+        return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+            source.display().to_string(),
+        ));
+    }
+    let (source_size, source_sha256, source_manifest, source_link_target, source_link_is_directory) =
+        match source_kind {
+            WindowsCrossVolumeSourceKind::File => {
+                if !windows_stream_set_is_copy_safe(windows_file_streams(source)?) {
+                    return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+                        source.display().to_string(),
+                    ));
+                }
+                let (size, sha256) = hash_windows_file(&mut source_handle)?;
+                (size, sha256, Vec::new(), None, None)
+            }
+            WindowsCrossVolumeSourceKind::Directory => {
+                let snapshot = capture_windows_directory_snapshot(source)?;
+                let (size, sha256) = snapshot.evidence.clone();
+                (size, sha256, snapshot.journal_entries()?, None, None)
+            }
+            WindowsCrossVolumeSourceKind::SymbolicLink => {
+                let (target, is_directory) = read_windows_symbolic_link(source)?;
+                let (size, sha256) = windows_symbolic_link_evidence(&target);
+                (size, sha256, Vec::new(), Some(target), Some(is_directory))
+            }
+        };
+    let destination_manifest = if source_kind == WindowsCrossVolumeSourceKind::Directory
+        && conflict == ConflictAction::Overwrite
+    {
+        capture_windows_directory_snapshot(target)?.journal_entries()?
+    } else {
+        Vec::new()
+    };
+    if move_recovery::stable_identity_of_entry(source)
+        .map_err(|error| PlatformError::Io(error.to_string()))?
+        != source_identity
+    {
+        return Err(PlatformError::Io(
+            "Windows Move source identity changed before durable intent".into(),
+        ));
+    }
+
+    let recovery_root = windows_recovery_root()?;
+    std::fs::create_dir_all(&recovery_root)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let (transaction_id, transaction_path) = loop {
+        let mut transaction_id = [0_u8; 16];
+        getrandom::fill(&mut transaction_id)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        let candidate = destination_dir.join(format!(
+            ".ottrin-move-{}",
+            encode_transaction_id(transaction_id)
+        ));
+        match std::fs::create_dir(&candidate) {
+            Ok(()) => break (transaction_id, candidate),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(error) => return Err(PlatformError::Io(error.to_string())),
+        }
+    };
+    if let Err(error) = restrict_windows_transaction_directory(&transaction_path) {
+        let _ = std::fs::remove_dir(&transaction_path);
+        return Err(error);
+    }
+    let transaction_identity = move_recovery::stable_identity_of_entry(&transaction_path)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let mut record = WindowsCrossVolumeRecord {
+        schema_major: move_recovery::JOURNAL_SCHEMA_MAJOR,
+        schema_minor: move_recovery::JOURNAL_SCHEMA_MINOR,
+        transaction_id: encode_transaction_id(transaction_id),
+        phase: WindowsCrossVolumePhase::Prepared,
+        source: move_recovery::NativePath::encode(source),
+        source_parent_identity,
+        source_identity,
+        source_kind,
+        source_size,
+        source_sha256,
+        source_link_target,
+        source_link_is_directory,
+        source_manifest,
+        destination_parent: move_recovery::NativePath::encode(destination_dir),
+        destination_parent_identity,
+        destination_identity,
+        destination_manifest,
+        conflict,
+        target_candidates: vec![move_recovery::NativePath::encode(target)],
+        transaction_directory: move_recovery::NativePath::encode(&transaction_path),
+        transaction_directory_identity: transaction_identity,
+        candidate: move_recovery::NativePath::encode(
+            &transaction_path.join(WINDOWS_CROSS_VOLUME_CANDIDATE_NAME),
+        ),
+        candidate_identity: None,
+        retained_displaced: (conflict == ConflictAction::Overwrite).then(|| {
+            move_recovery::NativePath::encode(&transaction_path.join(WINDOWS_RETAINED_NAME))
+        }),
+    };
+    persist_windows_cross_volume_record(&recovery_root, &record).map_err(|error| {
+        PlatformError::Io(format!(
+            "durable Windows cross-volume Move intent failed before staging: {error}"
+        ))
+    })?;
+    resume_windows_cross_volume(&recovery_root, &mut record, Some(source_handle))
+}
+
+#[cfg(target_os = "windows")]
+fn resume_windows_cross_volume(
+    recovery_root: &Path,
+    record: &mut WindowsCrossVolumeRecord,
+    mut source_handle: Option<std::fs::File>,
+) -> Result<MovePublication, PlatformError> {
+    let transaction = record.transaction_path()?;
+    let local_bytes =
+        std::fs::read(transaction.join(WINDOWS_LOCAL_JOURNAL_NAME)).map_err(|error| {
+            PlatformError::ClaimedRecoveryPending {
+                transaction: transaction.display().to_string(),
+                message: format!("Windows cross-volume local journal read failed: {error}"),
+            }
+        })?;
+    let local: WindowsCrossVolumeRecord =
+        serde_json::from_slice(&local_bytes).map_err(|error| {
+            PlatformError::ClaimedRecoveryPending {
+                transaction: transaction.display().to_string(),
+                message: format!("Windows cross-volume local journal is invalid: {error}"),
+            }
+        })?;
+    if !record.same_transaction_evidence(&local) {
+        return Err(PlatformError::ClaimedRecoveryPending {
+            transaction: transaction.display().to_string(),
+            message: "Windows cross-volume durable journals disagree".into(),
+        });
+    }
+    let reconciled_targets = reconcile_windows_rename_candidates(
+        record.conflict,
+        &record.target_candidates,
+        &local.target_candidates,
+    )
+    .ok_or_else(|| PlatformError::ClaimedRecoveryPending {
+        transaction: transaction.display().to_string(),
+        message: "Windows cross-volume target candidate journals disagree".into(),
+    })?;
+    let journals_need_convergence = record.target_candidates != reconciled_targets
+        || local.target_candidates != reconciled_targets;
+    record.target_candidates = reconciled_targets;
+    if record.candidate_identity.is_none() {
+        record.candidate_identity = local.candidate_identity;
+    }
+    if journals_need_convergence {
+        persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
+            PlatformError::ClaimedRecoveryPending {
+                transaction: transaction.display().to_string(),
+                message: format!(
+                    "Windows cross-volume candidate journal convergence failed: {error}"
+                ),
+            }
+        })?;
+    }
+    let source = record.source_path()?;
+    let source_parent = source
+        .parent()
+        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
+    let claimed_directory_source = windows_directory_source_claim_path(source_parent, record)?;
+    let destination_parent = record.destination_parent_path()?;
+    let mut target = record.target_path()?;
+    let candidate = record.candidate_path()?;
+    let retained_displaced = record.retained_path()?;
+    if !windows_staging_candidate_matches_transaction(&transaction, &candidate) {
+        return Err(PlatformError::ClaimedRecoveryPending {
+            transaction: transaction.display().to_string(),
+            message: "Windows cross-volume staging candidate escaped its transaction directory"
+                .into(),
+        });
+    }
+    let overwrite_evidence_is_complete = record.conflict == ConflictAction::Overwrite
+        && record.destination_identity.is_some()
+        && retained_displaced.is_some();
+    if !windows_cross_volume_source_supports_conflict(record.source_kind, record.conflict)
+        || (record.conflict == ConflictAction::Overwrite) != overwrite_evidence_is_complete
+        || (record.conflict != ConflictAction::Overwrite
+            && (record.destination_identity.is_some() || retained_displaced.is_some()))
+        || (record.source_kind == WindowsCrossVolumeSourceKind::File
+            && (!record.source_manifest.is_empty() || !record.destination_manifest.is_empty()))
+        || (record.source_kind == WindowsCrossVolumeSourceKind::Directory
+            && record.conflict != ConflictAction::Overwrite
+            && !record.destination_manifest.is_empty())
+        || ((record.source_kind == WindowsCrossVolumeSourceKind::SymbolicLink)
+            != (record.source_link_target.is_some() && record.source_link_is_directory.is_some()))
+        || (record.source_kind != WindowsCrossVolumeSourceKind::SymbolicLink
+            && (record.source_link_target.is_some() || record.source_link_is_directory.is_some()))
+    {
+        return Err(PlatformError::ClaimedRecoveryPending {
+            transaction: transaction.display().to_string(),
+            message: "Windows cross-volume conflict evidence is incomplete or inconsistent".into(),
+        });
+    }
+    for (path, expected) in [
+        (source_parent, record.source_parent_identity),
+        (
+            destination_parent.as_path(),
+            record.destination_parent_identity,
+        ),
+        (transaction.as_path(), record.transaction_directory_identity),
+    ] {
+        if observe_windows_identity(path)? != Some(expected) {
+            return Err(PlatformError::ClaimedRecoveryPending {
+                transaction: transaction.display().to_string(),
+                message: format!(
+                    "Windows cross-volume parent identity changed: {}",
+                    path.display()
+                ),
+            });
+        }
+    }
+
+    loop {
+        let source_observed = observe_windows_identity(&source)?;
+        let claimed_directory_source_observed =
+            if record.source_kind == WindowsCrossVolumeSourceKind::Directory {
+                observe_windows_identity(&claimed_directory_source)?
+            } else {
+                None
+            };
+        let target_observed = observe_windows_identity(&target)?;
+        let candidate_observed = observe_windows_identity(&candidate)?;
+        if classify_windows_incomplete_directory_candidate(
+            record.source_kind,
+            source_observed == Some(record.source_identity),
+            target_observed.is_none(),
+            record.phase == WindowsCrossVolumePhase::Prepared,
+            record.candidate_identity.is_some(),
+            candidate_observed == record.candidate_identity,
+            candidate_observed.is_some(),
+        ) == Some(WindowsCrossVolumeRestartAction::DiscardIncompleteStaging)
+        {
+            let cleanup_identity = match (record.candidate_identity, candidate_observed) {
+                (Some(expected), Some(observed)) if expected == observed => expected,
+                (None, Some(observed)) => observed,
+                _ => unreachable!("classified identity-pinnable private candidate"),
+            };
+            discard_incomplete_windows_directory_candidate(
+                &candidate,
+                cleanup_identity,
+            )
+            .map_err(|error| {
+                PlatformError::ClaimedRecoveryPending {
+                    transaction: transaction.display().to_string(),
+                    message: format!(
+                        "incomplete private Windows directory staging could not be discarded safely; source and recovery evidence were preserved: {error}"
+                    ),
+                }
+            })?;
+            record.candidate_identity = None;
+            persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
+                PlatformError::ClaimedRecoveryPending {
+                    transaction: transaction.display().to_string(),
+                    message: format!(
+                        "Windows cross-volume incomplete staging cleanup was not durable: {error}"
+                    ),
+                }
+            })?;
+            continue;
+        }
+        let candidate_is_still_staged = match record.candidate_identity {
+            Some(expected) => candidate_observed == Some(expected),
+            None => candidate_observed.is_none(),
+        };
+        if record.conflict == ConflictAction::Rename
+            && source_observed == Some(record.source_identity)
+            && target_observed.is_some()
+            && target_observed != record.candidate_identity
+            && candidate_is_still_staged
+        {
+            target = advance_windows_cross_volume_rename_target(recovery_root, record)?;
+            continue;
+        }
+        let action = if record.conflict == ConflictAction::Overwrite {
+            match (record.candidate_identity, record.destination_identity) {
+                (Some(expected_staged), Some(expected_displaced)) => {
+                    classify_windows_cross_volume_overwrite_restart(
+                        record.source_kind,
+                        source_observed,
+                        target_observed,
+                        candidate_observed,
+                        observe_windows_identity(
+                            retained_displaced
+                                .as_deref()
+                                .expect("validated retained Overwrite path"),
+                        )?,
+                        record.source_identity,
+                        expected_staged,
+                        expected_displaced,
+                    )
+                }
+                (None, Some(expected_displaced))
+                    if source_observed == Some(record.source_identity)
+                        && target_observed == Some(expected_displaced)
+                        && candidate_observed.is_none()
+                        && observe_windows_identity(
+                            retained_displaced
+                                .as_deref()
+                                .expect("validated retained Overwrite path"),
+                        )?
+                        .is_none() =>
+                {
+                    WindowsCrossVolumeRestartAction::CopyAndVerify
+                }
+                _ => WindowsCrossVolumeRestartAction::RetainAmbiguous,
+            }
+        } else {
+            classify_windows_cross_volume_restart(
+                source_observed,
+                target_observed,
+                candidate_observed,
+                record.source_identity,
+                record.candidate_identity,
+            )
+        };
+        if record.source_kind == WindowsCrossVolumeSourceKind::Directory
+            && record.conflict == ConflictAction::Overwrite
+        {
+            let retained_path = retained_displaced
+                .as_deref()
+                .expect("validated retained Overwrite path");
+            if observe_windows_identity(retained_path)? == record.destination_identity {
+                let retained_manifest = capture_windows_directory_snapshot(retained_path)
+                    .and_then(|snapshot| snapshot.journal_entries());
+                match retained_manifest {
+                    Ok(manifest) if manifest == record.destination_manifest => {}
+                    Ok(_) | Err(_) if record.phase == WindowsCrossVolumePhase::Published => {
+                        return Err(PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: "Windows cross-volume retained directory contents changed after publication"
+                                .into(),
+                        });
+                    }
+                    Ok(_) | Err(_) => {
+                        return Err(PlatformError::ClaimedRecoveryPending {
+                            transaction: transaction.display().to_string(),
+                            message: "Windows cross-volume retained directory contents changed before publication"
+                                .into(),
+                        });
+                    }
+                }
+            }
+        }
+        let action = require_windows_publication_durability(
+            action,
+            record.phase == WindowsCrossVolumePhase::Published,
+        );
+        let action = if record.source_kind == WindowsCrossVolumeSourceKind::Directory {
+            if claimed_directory_source_observed.is_some()
+                && claimed_directory_source_observed != Some(record.source_identity)
+            {
+                WindowsCrossVolumeRestartAction::RetainAmbiguous
+            } else {
+                match classify_windows_directory_cleanup_topology(
+                    source_observed == Some(record.source_identity),
+                    claimed_directory_source_observed == Some(record.source_identity),
+                ) {
+                    WindowsDirectoryCleanupTopology::DrainClaimedSource
+                        if action == WindowsCrossVolumeRestartAction::Complete =>
+                    {
+                        WindowsCrossVolumeRestartAction::RemoveSource
+                    }
+                    WindowsDirectoryCleanupTopology::RetainAmbiguous => {
+                        WindowsCrossVolumeRestartAction::RetainAmbiguous
+                    }
+                    _ => action,
+                }
+            }
+        } else {
+            action
+        };
+        let action = classify_windows_directory_slice_action(record.source_kind, action);
+        match action {
+            WindowsCrossVolumeRestartAction::DiscardIncompleteStaging => {
+                return Err(PlatformError::ClaimedRecoveryPending {
+                    transaction: transaction.display().to_string(),
+                    message: "incomplete Windows staging cleanup was not resolved before restart classification"
+                        .into(),
+                });
+            }
+            WindowsCrossVolumeRestartAction::CopyAndVerify => {
+                if source_handle.is_none() {
+                    source_handle = Some(
+                        move_recovery::open_reparse_safe_cross_volume_source(&source).map_err(
+                            |error| PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume source reopen failed: {error}"
+                                ),
+                            },
+                        )?,
+                    );
+                }
+                let retained_source = source_handle
+                    .as_ref()
+                    .expect("source handle is retained after successful reopen");
+                if move_recovery::stable_identity_from_handle(retained_source)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?
+                    != record.source_identity
+                {
+                    return Err(PlatformError::ClaimedRecoveryPending {
+                        transaction: transaction.display().to_string(),
+                        message: "Windows cross-volume source identity changed before copy".into(),
+                    });
+                }
+                let mut retained_directory_snapshots = None;
+                let staged = match record.source_kind {
+                    WindowsCrossVolumeSourceKind::File => {
+                        let mut source_copy = retained_source.try_clone().map_err(|error| {
+                            PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume source clone failed: {error}"
+                                ),
+                            }
+                        })?;
+                        source_copy
+                            .seek(std::io::SeekFrom::Start(0))
+                            .map_err(|error| PlatformError::Io(error.to_string()))?;
+                        let mut staged = OpenOptions::new()
+                            .create_new(true)
+                            .read(true)
+                            .write(true)
+                            .open(&candidate)
+                            .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume stage creation failed: {error}"
+                                ),
+                            })?;
+                        copy_windows_file_and_metadata(&mut source_copy, &mut staged).map_err(
+                            |error| PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!("Windows cross-volume stage copy failed: {error}"),
+                            },
+                        )?;
+                        let staged_evidence = hash_windows_file(&mut staged)?;
+                        let source_evidence = hash_windows_file(&mut source_copy)?;
+                        if staged_evidence != (record.source_size, record.source_sha256.clone())
+                            || source_evidence != staged_evidence
+                            || observe_windows_identity(&source)? != Some(record.source_identity)
+                        {
+                            return Err(PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message:
+                                    "Windows cross-volume copy verification lost source certainty"
+                                        .into(),
+                            });
+                        }
+                        staged
+                    }
+                    WindowsCrossVolumeSourceKind::Directory => {
+                        std::fs::create_dir(&candidate).map_err(|error| {
+                            PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume private directory stage creation failed: {error}"
+                                ),
+                            }
+                        })?;
+                        let candidate_handle =
+                            move_recovery::open_reparse_safe_cross_volume_cleanup_entry(&candidate)
+                                .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows cross-volume private directory stage reopen failed: {error}"
+                                    ),
+                                })?;
+                        record.candidate_identity = Some(
+                            move_recovery::stable_identity_from_handle(&candidate_handle)
+                                .map_err(|error| PlatformError::Io(error.to_string()))?,
+                        );
+                        persist_windows_cross_volume_record(recovery_root, record).map_err(
+                            |error| PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume private directory stage identity was not durable: {error}"
+                                ),
+                            },
+                        )?;
+                        drop(candidate_handle);
+                        let mut source_snapshot = capture_windows_directory_snapshot(&source)
+                            .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume directory snapshot failed: {error}"
+                                ),
+                            })?;
+                        if source_snapshot.evidence
+                            != (record.source_size, record.source_sha256.clone())
+                            || source_snapshot.journal_entries()? != record.source_manifest
+                        {
+                            return Err(PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: "Windows cross-volume directory changed before staging"
+                                    .into(),
+                            });
+                        }
+                        let (staged, staged_snapshot) = stage_windows_directory_snapshot(
+                            retained_source,
+                            &mut source_snapshot,
+                            &candidate,
+                        )
+                        .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows cross-volume directory staging failed: {error}"
+                            ),
+                        })?;
+                        if staged_snapshot.evidence
+                            != (record.source_size, record.source_sha256.clone())
+                            || observe_windows_identity(&source)? != Some(record.source_identity)
+                        {
+                            return Err(PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: "Windows cross-volume staged directory verification lost source certainty"
+                                    .into(),
+                            });
+                        }
+                        retained_directory_snapshots = Some((source_snapshot, staged_snapshot));
+                        staged
+                    }
+                    WindowsCrossVolumeSourceKind::SymbolicLink => {
+                        let target = record
+                            .source_link_target
+                            .as_deref()
+                            .expect("validated symbolic-link target evidence");
+                        let is_directory = record
+                            .source_link_is_directory
+                            .expect("validated symbolic-link kind evidence");
+                        verify_windows_symbolic_link(&source, target, is_directory)?;
+                        create_windows_symbolic_link(&candidate, target, is_directory)?;
+                        let staged =
+                            move_recovery::open_reparse_safe_cross_volume_candidate(&candidate)
+                                .map_err(|error| PlatformError::Io(error.to_string()))?;
+                        if verify_windows_symbolic_link(&candidate, target, is_directory)?
+                            != (record.source_size, record.source_sha256.clone())
+                            || observe_windows_identity(&source)? != Some(record.source_identity)
+                        {
+                            return Err(PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: "Windows cross-volume staged symbolic link lost source certainty"
+                                    .into(),
+                            });
+                        }
+                        staged
+                    }
+                };
+                record.candidate_identity = Some(
+                    move_recovery::stable_identity_from_handle(&staged)
+                        .map_err(|error| PlatformError::Io(error.to_string()))?,
+                );
+                record.phase = WindowsCrossVolumePhase::Staged;
+                persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
+                    PlatformError::ClaimedRecoveryPending {
+                        transaction: transaction.display().to_string(),
+                        message: format!(
+                            "Windows cross-volume staged state was not durable: {error}"
+                        ),
+                    }
+                })?;
+                drop(retained_directory_snapshots);
+                #[cfg(test)]
+                if std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_AFTER_STAGED").is_some()
+                {
+                    std::process::exit(86);
+                }
+            }
+            WindowsCrossVolumeRestartAction::PublishStaged => {
+                let mut staged =
+                    move_recovery::open_reparse_safe_cross_volume_candidate(&candidate)
+                        .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows cross-volume candidate could not be locked for publication: {error}"
+                            ),
+                        })?;
+                let mut _retained_source_snapshot = None;
+                let mut _retained_candidate_snapshot = None;
+                let staged_evidence = match record.source_kind {
+                    WindowsCrossVolumeSourceKind::File => hash_windows_file(&mut staged),
+                    WindowsCrossVolumeSourceKind::Directory => {
+                        let source_snapshot = capture_windows_directory_snapshot(&source).map_err(
+                            |error| PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume source directory reverification failed: {error}"
+                                ),
+                            },
+                        )?;
+                        let source_manifest = source_snapshot.journal_entries().map_err(|error| {
+                            PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume source directory manifest could not be reverified: {error}"
+                                ),
+                            }
+                        })?;
+                        if source_snapshot.evidence
+                            != (record.source_size, record.source_sha256.clone())
+                            || source_manifest != record.source_manifest
+                            || !move_recovery::stable_identity_from_handle(&staged)
+                                .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows cross-volume staged directory identity probe failed: {error}"
+                                    ),
+                                })?
+                                .is_directory_without_reparse()
+                        {
+                            return Err(PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: "Windows cross-volume source or staged directory changed before publication"
+                                    .into(),
+                            });
+                        }
+                        _retained_source_snapshot = Some(source_snapshot);
+                        let candidate_snapshot =
+                            capture_windows_directory_snapshot(&candidate)?;
+                        let evidence = candidate_snapshot.evidence.clone();
+                        _retained_candidate_snapshot = Some(candidate_snapshot);
+                        Ok(evidence)
+                    }
+                    WindowsCrossVolumeSourceKind::SymbolicLink => {
+                        let target = record
+                            .source_link_target
+                            .as_deref()
+                            .expect("validated symbolic-link target evidence");
+                        let is_directory = record
+                            .source_link_is_directory
+                            .expect("validated symbolic-link kind evidence");
+                        let source_evidence =
+                            verify_windows_symbolic_link(&source, target, is_directory)?;
+                        let candidate_evidence =
+                            verify_windows_symbolic_link(&candidate, target, is_directory)?;
+                        if source_evidence != candidate_evidence {
+                            return Err(PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: "Windows cross-volume source or staged symbolic link changed before publication"
+                                    .into(),
+                            });
+                        }
+                        Ok(candidate_evidence)
+                    }
+                }
+                .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                    transaction: transaction.display().to_string(),
+                    message: format!(
+                        "Windows cross-volume candidate could not be reverified before publication: {error}"
+                    ),
+                })?;
+                if move_recovery::stable_identity_from_handle(&staged)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?
+                    != record
+                        .candidate_identity
+                        .expect("classified staged identity")
+                    || staged_evidence != (record.source_size, record.source_sha256.clone())
+                    || observe_windows_identity(&source)? != Some(record.source_identity)
+                {
+                    return Err(PlatformError::ClaimedRecoveryPending {
+                        transaction: transaction.display().to_string(),
+                        message: "Windows cross-volume identities changed before publication"
+                            .into(),
+                    });
+                }
+                let destination_handle =
+                    move_recovery::open_reparse_safe_directory_for_rename(&destination_parent)
+                        .map_err(|error| PlatformError::Io(error.to_string()))?;
+                let opened_destination_identity = move_recovery::stable_identity_from_handle(
+                    &destination_handle,
+                )
+                .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                    transaction: transaction.display().to_string(),
+                    message: format!(
+                        "Windows cross-volume destination identity probe failed: {error}"
+                    ),
+                })?;
+                if !windows_destination_parent_is_pinned(
+                    opened_destination_identity,
+                    record.destination_parent_identity,
+                ) {
+                    return Err(PlatformError::ClaimedRecoveryPending {
+                        transaction: transaction.display().to_string(),
+                        message: "Windows cross-volume destination parent changed before publication; source and staged candidate were preserved".into(),
+                    });
+                }
+                let publication = if record.conflict == ConflictAction::Overwrite {
+                    let retained = retained_displaced
+                        .as_deref()
+                        .expect("validated retained Overwrite path");
+                    if record.source_kind != WindowsCrossVolumeSourceKind::File {
+                        let transaction_handle =
+                            move_recovery::open_reparse_safe_directory_for_rename(&transaction)
+                                .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows cross-volume transaction directory could not be locked for publication: {error}"
+                                    ),
+                                })?;
+                        if target_observed == record.destination_identity {
+                            let displaced =
+                                move_recovery::open_reparse_safe_cross_volume_candidate(&target)
+                                    .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                                        transaction: transaction.display().to_string(),
+                                        message: format!(
+                                            "Windows cross-volume displaced directory could not be locked for retention: {error}"
+                                        ),
+                                    })?;
+                            if move_recovery::stable_identity_from_handle(&displaced)
+                                .map_err(|error| PlatformError::Io(error.to_string()))?
+                                != record
+                                    .destination_identity
+                                    .expect("validated displaced destination identity")
+                            {
+                                return Err(PlatformError::ClaimedRecoveryPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: "Windows cross-volume displaced directory changed before retention"
+                                        .into(),
+                                });
+                            }
+                            publish_windows_cross_volume_directory_overwrite_with(
+                                || {
+                                    rename_windows_handle_no_replace(
+                                        &displaced,
+                                        &transaction_handle,
+                                        std::ffi::OsStr::new(WINDOWS_RETAINED_NAME),
+                                    )
+                                },
+                                || {
+                                    displaced.sync_all().map_err(|error| {
+                                        PlatformError::Io(format!(
+                                            "Windows cross-volume retained directory flush failed: {error}"
+                                        ))
+                                    })?;
+                                    destination_handle.sync_all().map_err(|error| {
+                                        PlatformError::Io(format!(
+                                            "Windows cross-volume displaced namespace flush failed: {error}"
+                                        ))
+                                    })?;
+                                    transaction_handle.sync_all().map_err(|error| {
+                                        PlatformError::Io(format!(
+                                            "Windows cross-volume retained namespace flush failed: {error}"
+                                        ))
+                                    })
+                                },
+                                || {
+                                    rename_windows_handle_no_replace(
+                                        &staged,
+                                        &destination_handle,
+                                        target.file_name().ok_or_else(|| {
+                                            PlatformError::InvalidDestination(
+                                                target.display().to_string(),
+                                            )
+                                        })?,
+                                    )
+                                },
+                                || {
+                                    staged.sync_all().map_err(|error| {
+                                        PlatformError::Io(format!(
+                                            "Windows cross-volume published directory flush failed: {error}"
+                                        ))
+                                    })
+                                },
+                                || {
+                                    destination_handle.sync_all().map_err(|error| {
+                                        PlatformError::Io(format!(
+                                            "Windows cross-volume publication namespace flush failed: {error}"
+                                        ))
+                                    })?;
+                                    transaction_handle.sync_all().map_err(|error| {
+                                        PlatformError::Io(format!(
+                                            "Windows cross-volume transaction namespace flush failed: {error}"
+                                        ))
+                                    })
+                                },
+                            )?;
+                        } else {
+                            let retained_handle =
+                                move_recovery::open_reparse_safe_cross_volume_candidate(retained)
+                                    .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                                        transaction: transaction.display().to_string(),
+                                        message: format!(
+                                            "Windows cross-volume retained directory could not be locked before recovered publication: {error}"
+                                        ),
+                                    })?;
+                            retained_handle.sync_all().map_err(|error| {
+                                PlatformError::ClaimedRecoveryPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows cross-volume retained directory was not durable before recovered publication: {error}"
+                                    ),
+                                }
+                            })?;
+                            destination_handle.sync_all().map_err(|error| {
+                                PlatformError::ClaimedRecoveryPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows cross-volume displaced namespace was not durable before recovered publication: {error}"
+                                    ),
+                                }
+                            })?;
+                            transaction_handle.sync_all().map_err(|error| {
+                                PlatformError::ClaimedRecoveryPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows cross-volume retained namespace was not durable before recovered publication: {error}"
+                                    ),
+                                }
+                            })?;
+                            publish_windows_cross_volume_candidate_with(
+                                || {
+                                    rename_windows_handle_no_replace(
+                                        &staged,
+                                        &destination_handle,
+                                        target.file_name().ok_or_else(|| {
+                                            PlatformError::InvalidDestination(
+                                                target.display().to_string(),
+                                            )
+                                        })?,
+                                    )
+                                },
+                                || {
+                                    staged.sync_all().map_err(|error| {
+                                        PlatformError::Io(format!(
+                                            "Windows cross-volume recovered directory publication flush failed: {error}"
+                                        ))
+                                    })
+                                },
+                                || {
+                                    destination_handle.sync_all().map_err(|error| {
+                                        PlatformError::Io(format!(
+                                            "Windows cross-volume recovered publication namespace flush failed: {error}"
+                                        ))
+                                    })?;
+                                    transaction_handle.sync_all().map_err(|error| {
+                                        PlatformError::Io(format!(
+                                            "Windows cross-volume recovered transaction namespace flush failed: {error}"
+                                        ))
+                                    })
+                                },
+                            )?;
+                        }
+                    } else {
+                        drop(staged);
+                        replace_windows_file_retaining_displaced(
+                            &target,
+                            &candidate,
+                            retained,
+                            &transaction,
+                            record
+                                .candidate_identity
+                                .expect("classified staged identity"),
+                            record
+                                .destination_identity
+                                .expect("validated displaced destination identity"),
+                        )?;
+                    }
+                    let mut published =
+                        move_recovery::open_reparse_safe_cross_volume_candidate(&target).map_err(
+                            |error| PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume Overwrite target could not be locked after publication: {error}"
+                                ),
+                            },
+                        )?;
+                    let published_evidence = match record.source_kind {
+                        WindowsCrossVolumeSourceKind::File => hash_windows_file(&mut published)?,
+                        WindowsCrossVolumeSourceKind::Directory => {
+                            capture_windows_directory_snapshot(&target)?.evidence
+                        }
+                        WindowsCrossVolumeSourceKind::SymbolicLink => {
+                            let expected_target = record
+                                .source_link_target
+                                .as_deref()
+                                .expect("validated symbolic-link target evidence");
+                            let expected_is_directory = record
+                                .source_link_is_directory
+                                .expect("validated symbolic-link kind evidence");
+                            verify_windows_symbolic_link(
+                                &target,
+                                expected_target,
+                                expected_is_directory,
+                            )?
+                        }
+                    };
+                    if move_recovery::stable_identity_from_handle(&published)
+                        .map_err(|error| PlatformError::Io(error.to_string()))?
+                        != record
+                            .candidate_identity
+                            .expect("classified staged identity")
+                        || published_evidence != (record.source_size, record.source_sha256.clone())
+                    {
+                        return Err(PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: "Windows cross-volume Overwrite target changed before durability flush"
+                                .into(),
+                        });
+                    }
+                    published.sync_all().map_err(|error| {
+                        PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows cross-volume Overwrite publication flush failed: {error}"
+                            ),
+                        }
+                    })?;
+                    let retained_handle = move_recovery::open_reparse_safe_cross_volume_source(
+                        retained,
+                    )
+                    .map_err(|error| {
+                        PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows cross-volume retained destination reopen failed: {error}"
+                            ),
+                        }
+                    })?;
+                    if move_recovery::stable_identity_from_handle(&retained_handle)
+                        .map_err(|error| PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows cross-volume retained destination identity check failed: {error}"
+                            ),
+                        })?
+                        != record
+                            .destination_identity
+                            .expect("validated displaced destination identity")
+                    {
+                        return Err(PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message:
+                                "Windows cross-volume retained destination changed before durability flush"
+                                    .into(),
+                        });
+                    }
+                    retained_handle.sync_all().map_err(|error| {
+                        PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows cross-volume retained destination flush failed: {error}"
+                            ),
+                        }
+                    })?;
+                    destination_handle.sync_all().map_err(|error| {
+                        PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows cross-volume Overwrite namespace flush failed: {error}"
+                            ),
+                        }
+                    })
+                } else {
+                    publish_windows_cross_volume_candidate_with(
+                        || {
+                            rename_windows_handle_no_replace(
+                                &staged,
+                                &destination_handle,
+                                target.file_name().ok_or_else(|| {
+                                    PlatformError::InvalidDestination(target.display().to_string())
+                                })?,
+                            )
+                        },
+                        || {
+                            staged.sync_all().map_err(|error| {
+                                PlatformError::Io(format!(
+                                    "Windows cross-volume published candidate flush failed: {error}"
+                                ))
+                            })
+                        },
+                        || {
+                            destination_handle.sync_all().map_err(|error| {
+                                PlatformError::Io(format!(
+                                    "Windows cross-volume publication namespace flush failed: {error}"
+                                ))
+                            })
+                        },
+                    )
+                };
+                match publication {
+                    Ok(()) => {}
+                    Err(PlatformError::DestinationExists(_))
+                        if record.conflict == ConflictAction::Rename =>
+                    {
+                        target = advance_windows_cross_volume_rename_target(recovery_root, record)?;
+                        continue;
+                    }
+                    Err(error) => {
+                        return Err(PlatformError::ClaimedRecoveryPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows cross-volume publication needs recovery: {error}"
+                            ),
+                        });
+                    }
+                }
+                record.phase = WindowsCrossVolumePhase::Published;
+                persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
+                    PlatformError::CommittedCleanupPending {
+                        transaction: transaction.display().to_string(),
+                        message: format!(
+                            "Windows cross-volume published state was not durable: {error}"
+                        ),
+                    }
+                })?;
+                drop((_retained_source_snapshot, _retained_candidate_snapshot));
+            }
+            WindowsCrossVolumeRestartAction::FlushPublished => {
+                let mut published =
+                    move_recovery::open_reparse_safe_cross_volume_candidate(&target).map_err(
+                        |error| PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows cross-volume published candidate could not be locked for durability recovery: {error}"
+                            ),
+                        },
+                    )?;
+                let mut _retained_recovery_source_snapshot = None;
+                let mut _retained_published_snapshot = None;
+                let published_evidence = match record.source_kind {
+                    WindowsCrossVolumeSourceKind::File => hash_windows_file(&mut published),
+                    WindowsCrossVolumeSourceKind::Directory => {
+                        let source_snapshot = capture_windows_directory_snapshot(&source)?;
+                        let source_manifest = source_snapshot.journal_entries()?;
+                        if source_snapshot.evidence
+                            != (record.source_size, record.source_sha256.clone())
+                            || source_manifest != record.source_manifest
+                        {
+                            return Err(PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: "Windows cross-volume source directory changed before publication durability recovery".into(),
+                            });
+                        }
+                        let published_snapshot = capture_windows_directory_snapshot(&target)?;
+                        let evidence = published_snapshot.evidence.clone();
+                        _retained_recovery_source_snapshot = Some(source_snapshot);
+                        _retained_published_snapshot = Some(published_snapshot);
+                        Ok(evidence)
+                    }
+                    WindowsCrossVolumeSourceKind::SymbolicLink => {
+                        let expected_target = record.source_link_target.as_deref().ok_or_else(|| {
+                            PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: "Windows cross-volume symbolic-link target evidence is missing"
+                                    .into(),
+                            }
+                        })?;
+                        let expected_is_directory =
+                            record.source_link_is_directory.ok_or_else(|| {
+                                PlatformError::CommittedCleanupPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: "Windows cross-volume symbolic-link kind evidence is missing"
+                                        .into(),
+                                }
+                            })?;
+                        let source_evidence = verify_windows_symbolic_link(
+                            &source,
+                            expected_target,
+                            expected_is_directory,
+                        )?;
+                        let published_evidence = verify_windows_symbolic_link(
+                            &target,
+                            expected_target,
+                            expected_is_directory,
+                        )?;
+                        if source_evidence != published_evidence {
+                            return Err(PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: "Windows cross-volume symbolic-link evidence changed before publication durability recovery"
+                                    .into(),
+                            });
+                        }
+                        Ok(published_evidence)
+                    }
+                }
+                .map_err(|error| PlatformError::CommittedCleanupPending {
+                    transaction: transaction.display().to_string(),
+                    message: format!(
+                        "Windows cross-volume published candidate could not be reverified for durability recovery: {error}"
+                    ),
+                })?;
+                if move_recovery::stable_identity_from_handle(&published)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?
+                    != record
+                        .candidate_identity
+                        .expect("classified published candidate identity")
+                    || published_evidence != (record.source_size, record.source_sha256.clone())
+                    || observe_windows_identity(&source)? != Some(record.source_identity)
+                {
+                    return Err(PlatformError::CommittedCleanupPending {
+                        transaction: transaction.display().to_string(),
+                        message: "Windows cross-volume identities changed before publication durability recovery"
+                            .into(),
+                    });
+                }
+                let destination_handle =
+                    move_recovery::open_reparse_safe_directory_for_rename(&destination_parent)
+                        .map_err(|error| PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows cross-volume destination parent could not be locked for durability recovery: {error}"
+                            ),
+                        })?;
+                if move_recovery::stable_identity_from_handle(&destination_handle)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?
+                    != record.destination_parent_identity
+                {
+                    return Err(PlatformError::CommittedCleanupPending {
+                        transaction: transaction.display().to_string(),
+                        message: "Windows cross-volume destination parent changed before durability recovery".into(),
+                    });
+                }
+                let retained = if record.conflict == ConflictAction::Overwrite {
+                    let retained_path = retained_displaced.as_ref().ok_or_else(|| {
+                        PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: "Windows cross-volume retained destination is missing during durability recovery".into(),
+                        }
+                    })?;
+                    let retained =
+                        move_recovery::open_reparse_safe_cross_volume_candidate(retained_path)
+                            .map_err(|error| PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume retained destination could not be locked for durability recovery: {error}"
+                                ),
+                            })?;
+                    if move_recovery::stable_identity_from_handle(&retained)
+                        .map_err(|error| PlatformError::Io(error.to_string()))?
+                        != record.destination_identity.ok_or_else(|| {
+                            PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: "Windows cross-volume retained destination identity is missing during durability recovery".into(),
+                            }
+                        })?
+                    {
+                        return Err(PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: "Windows cross-volume retained destination changed before durability recovery".into(),
+                        });
+                    }
+                    Some(retained)
+                } else {
+                    None
+                };
+                flush_windows_cross_volume_recovered_publication_with(
+                    || {
+                        published.sync_all().map_err(|error| {
+                            PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume publication durability recovery failed: {error}"
+                                ),
+                            }
+                        })
+                    },
+                    || {
+                        retained.as_ref().map_or(Ok(()), |retained| {
+                            retained.sync_all().map_err(|error| {
+                                PlatformError::CommittedCleanupPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows cross-volume retained destination durability recovery failed: {error}"
+                                    ),
+                                }
+                            })
+                        })
+                    },
+                    || {
+                        destination_handle.sync_all().map_err(|error| {
+                            PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume publication namespace durability recovery failed: {error}"
+                                ),
+                            }
+                        })
+                    },
+                    || {
+                        record.phase = WindowsCrossVolumePhase::Published;
+                        persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
+                            PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume recovered published state was not durable: {error}"
+                                ),
+                            }
+                        })
+                    },
+                )?;
+            }
+            WindowsCrossVolumeRestartAction::RemoveSource => {
+                if record.source_kind == WindowsCrossVolumeSourceKind::Directory {
+                    let source_now = observe_windows_identity(&source)?;
+                    let claimed_now = observe_windows_identity(&claimed_directory_source)?;
+                    let topology =
+                        if claimed_now.is_some() && claimed_now != Some(record.source_identity) {
+                            WindowsDirectoryCleanupTopology::RetainAmbiguous
+                        } else {
+                            classify_windows_directory_cleanup_topology(
+                                source_now == Some(record.source_identity),
+                                claimed_now == Some(record.source_identity),
+                            )
+                        };
+                    match topology {
+                        WindowsDirectoryCleanupTopology::ClaimSource => {
+                            if source_handle.is_none() {
+                                source_handle = Some(
+                                    move_recovery::open_reparse_safe_cross_volume_source(&source)
+                                        .map_err(|error| PlatformError::CommittedCleanupPending {
+                                        transaction: transaction.display().to_string(),
+                                        message: format!(
+                                            "Windows directory source claim reopen failed: {error}"
+                                        ),
+                                    })?,
+                                );
+                            }
+                            let retained_source = source_handle
+                                .as_ref()
+                                .expect("directory source handle retained for claim");
+                            if move_recovery::stable_identity_from_handle(retained_source)
+                                .map_err(|error| PlatformError::CommittedCleanupPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows directory source claim identity probe failed: {error}"
+                                    ),
+                                })?
+                                != record.source_identity
+                                || !windows_stream_set_is_copy_safe(windows_file_streams(&source)?)
+                            {
+                                return Err(PlatformError::CommittedCleanupPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: "Windows directory source changed before private claim"
+                                        .into(),
+                                });
+                            }
+                            let source_snapshot = capture_windows_directory_snapshot(&source)
+                                .map_err(|error| PlatformError::CommittedCleanupPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows directory source claim scan failed: {error}"
+                                    ),
+                                })?;
+                            if source_snapshot.evidence
+                                != (record.source_size, record.source_sha256.clone())
+                                || source_snapshot.journal_entries()? != record.source_manifest
+                            {
+                                return Err(PlatformError::CommittedCleanupPending {
+                                    transaction: transaction.display().to_string(),
+                                    message:
+                                        "Windows directory source changed before private claim"
+                                            .into(),
+                                });
+                            }
+                            let source_parent_handle =
+                                move_recovery::open_reparse_safe_directory_for_rename(source_parent)
+                                    .map_err(|error| {
+                                        PlatformError::CommittedCleanupPending {
+                                            transaction: transaction.display().to_string(),
+                                            message: format!(
+                                                "Windows directory source parent claim open failed: {error}"
+                                            ),
+                                        }
+                                    })?;
+                            if move_recovery::stable_identity_from_handle(&source_parent_handle)
+                                .map_err(|error| PlatformError::CommittedCleanupPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows directory source parent claim probe failed: {error}"
+                                    ),
+                                })?
+                                != record.source_parent_identity
+                            {
+                                return Err(PlatformError::CommittedCleanupPending {
+                                    transaction: transaction.display().to_string(),
+                                    message:
+                                        "Windows directory source parent changed before private claim"
+                                            .into(),
+                                });
+                            }
+                            rename_windows_handle_no_replace(
+                                retained_source,
+                                &source_parent_handle,
+                                claimed_directory_source.file_name().ok_or_else(|| {
+                                    PlatformError::InvalidSource(
+                                        claimed_directory_source.display().to_string(),
+                                    )
+                                })?,
+                            )
+                            .map_err(|error| {
+                                PlatformError::CommittedCleanupPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows directory source private claim failed: {error}"
+                                    ),
+                                }
+                            })?;
+                            source_parent_handle.sync_all().map_err(|error| {
+                                PlatformError::CommittedCleanupPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows directory source claim namespace flush failed: {error}"
+                                    ),
+                                }
+                            })?;
+                            drop(source_snapshot);
+                            continue;
+                        }
+                        WindowsDirectoryCleanupTopology::DrainClaimedSource => {
+                            let claimed_handle = match source_handle.take() {
+                                Some(handle)
+                                    if move_recovery::stable_identity_from_handle(&handle)
+                                        .map_err(|error| {
+                                            PlatformError::CommittedCleanupPending {
+                                                transaction: transaction.display().to_string(),
+                                                message: format!(
+                                                    "retained claimed source handle probe failed: {error}"
+                                                ),
+                                            }
+                                        })?
+                                        == record.source_identity =>
+                                {
+                                    handle
+                                }
+                                Some(_) | None => {
+                                    move_recovery::open_reparse_safe_cross_volume_source(
+                                        &claimed_directory_source,
+                                    )
+                                    .map_err(|error| {
+                                        PlatformError::CommittedCleanupPending {
+                                            transaction: transaction.display().to_string(),
+                                            message: format!(
+                                                "Windows claimed directory source reopen failed: {error}"
+                                            ),
+                                        }
+                                    })?
+                                }
+                            };
+                            drain_windows_claimed_source_directory(
+                                &claimed_directory_source,
+                                claimed_handle,
+                                record,
+                                &transaction,
+                            )?;
+                            continue;
+                        }
+                        WindowsDirectoryCleanupTopology::Complete => continue,
+                        WindowsDirectoryCleanupTopology::RetainAmbiguous => {
+                            return Err(PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: "Windows directory source cleanup topology is ambiguous; source and recovery evidence were preserved".into(),
+                            });
+                        }
+                    }
+                }
+                if source_handle.is_none() {
+                    source_handle = Some(
+                        move_recovery::open_reparse_safe_cross_volume_source(&source).map_err(
+                            |error| PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume source cleanup reopen failed: {error}"
+                                ),
+                            },
+                        )?,
+                    );
+                }
+                let removal_handle = source_handle
+                    .as_ref()
+                    .expect("source handle is retained after successful reopen")
+                    .try_clone()
+                    .map_err(|error| PlatformError::CommittedCleanupPending {
+                        transaction: transaction.display().to_string(),
+                        message: format!(
+                            "Windows cross-volume source cleanup clone failed: {error}"
+                        ),
+                    })?;
+                remove_windows_source_by_handle_if_still_named(
+                    &source,
+                    &removal_handle,
+                    record.source_identity,
+                    record.source_kind,
+                    record.source_size,
+                    &record.source_sha256,
+                    record.source_link_target.as_deref(),
+                    record.source_link_is_directory,
+                    &transaction,
+                )?;
+                drop(removal_handle);
+                drop(source_handle.take());
+            }
+            WindowsCrossVolumeRestartAction::Complete => {
+                let source_parent_handle =
+                    move_recovery::open_reparse_safe_directory_for_rename(source_parent).map_err(
+                        |error| PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows cross-volume source parent could not be locked for removal durability: {error}"
+                            ),
+                        },
+                    )?;
+                if move_recovery::stable_identity_from_handle(&source_parent_handle)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?
+                    != record.source_parent_identity
+                {
+                    return Err(PlatformError::CommittedCleanupPending {
+                        transaction: transaction.display().to_string(),
+                        message: "Windows cross-volume source parent changed before removal durability flush".into(),
+                    });
+                }
+                complete_windows_cross_volume_source_removal_with(
+                    || {
+                        source_parent_handle.sync_all().map_err(|error| {
+                            PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume source removal namespace flush failed: {error}"
+                                ),
+                            }
+                        })
+                    },
+                    || Ok(()),
+                )?;
+                if record.conflict == ConflictAction::Overwrite {
+                    return Ok(MovePublication {
+                        disposition: MoveDisposition::Moved,
+                        published_path: Some(target),
+                        retained_displaced_path: retained_displaced,
+                    });
+                }
+                let journal =
+                    windows_cross_volume_journal_path(recovery_root, record.transaction_id()?);
+                cleanup_windows_cross_volume_transaction_with(
+                    &transaction,
+                    &journal,
+                    |path| std::fs::remove_file(path),
+                    |path| std::fs::remove_dir(path),
+                )?;
+                return Ok(MovePublication {
+                    disposition: MoveDisposition::Moved,
+                    published_path: Some(target),
+                    retained_displaced_path: None,
+                });
+            }
+            WindowsCrossVolumeRestartAction::RetainAmbiguous => {
+                return Err(PlatformError::ClaimedRecoveryPending {
+                    transaction: transaction.display().to_string(),
+                    message: "Windows cross-volume topology is ambiguous; source and evidence were preserved".into(),
+                });
+            }
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn start_windows_same_volume_overwrite(
+    source: &Path,
+    destination_dir: &Path,
+    target: &Path,
+) -> Result<MovePublication, PlatformError> {
+    let source_parent = source
+        .parent()
+        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
+    let source_parent_handle = move_recovery::open_reparse_safe_directory_for_rename(source_parent)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let source_parent_identity = move_recovery::stable_identity_from_handle(&source_parent_handle)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let source_identity = move_recovery::stable_identity_of_entry(source)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let destination_parent_handle =
+        move_recovery::open_reparse_safe_directory_for_rename(destination_dir)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let destination_parent_identity =
+        move_recovery::stable_identity_from_handle(&destination_parent_handle)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let destination_identity = move_recovery::stable_identity_of_entry(target)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let source_kind = windows_same_volume_kind_from_identity(source_identity);
+    let destination_kind = windows_same_volume_kind_from_identity(destination_identity);
+    if source_kind.is_none()
+        || destination_kind.is_none()
+        || !source_parent_identity.is_directory_without_reparse()
+        || !destination_parent_identity.is_directory_without_reparse()
+    {
+        return Err(PlatformError::UnsupportedSafeMove(
+            source.display().to_string(),
+        ));
+    }
+    if source_identity == destination_identity {
+        return Err(PlatformError::UnsupportedSafeMove(
+            source.display().to_string(),
+        ));
+    }
+    if source_identity.volume_serial_number() != destination_identity.volume_serial_number() {
+        return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+            source.display().to_string(),
+        ));
+    }
+
+    let recovery_root = windows_recovery_root()?;
+    std::fs::create_dir_all(&recovery_root)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let (transaction_id, transaction_path) = loop {
+        let mut transaction_id = [0_u8; 16];
+        getrandom::fill(&mut transaction_id)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        let candidate = destination_dir.join(format!(
+            ".ottrin-move-{}",
+            encode_transaction_id(transaction_id)
+        ));
+        match std::fs::create_dir(&candidate) {
+            Ok(()) => break (transaction_id, candidate),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(error) => return Err(PlatformError::Io(error.to_string())),
+        }
+    };
+    if let Err(error) = restrict_windows_transaction_directory(&transaction_path) {
+        let _ = std::fs::remove_dir(&transaction_path);
+        return Err(error);
+    }
+    let transaction_handle =
+        move_recovery::open_reparse_safe_directory_for_rename(&transaction_path)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let transaction_directory_identity =
+        move_recovery::stable_identity_from_handle(&transaction_handle)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+    if !transaction_directory_identity.is_directory_without_reparse() {
+        drop(transaction_handle);
+        let _ = std::fs::remove_dir(&transaction_path);
+        return Err(PlatformError::UnsupportedSafeMove(
+            source.display().to_string(),
+        ));
+    }
+    let replacement = transaction_path.join(WINDOWS_REPLACEMENT_NAME);
+    let retained_displaced = transaction_path.join(WINDOWS_RETAINED_NAME);
+    let record = WindowsOverwriteRecord {
+        schema_major: move_recovery::JOURNAL_SCHEMA_MAJOR,
+        schema_minor: move_recovery::JOURNAL_SCHEMA_MINOR,
+        transaction_id: encode_transaction_id(transaction_id),
+        phase: WindowsOverwritePhase::Prepared,
+        source: move_recovery::NativePath::encode(source),
+        source_parent_identity,
+        source_identity,
+        destination_parent: move_recovery::NativePath::encode(destination_dir),
+        destination_parent_identity,
+        target: move_recovery::NativePath::encode(target),
+        destination_identity,
+        transaction_directory: move_recovery::NativePath::encode(&transaction_path),
+        transaction_directory_identity,
+        replacement: move_recovery::NativePath::encode(&replacement),
+        retained_displaced: move_recovery::NativePath::encode(&retained_displaced),
+        retained_identity: destination_identity,
+    };
+    persist_windows_overwrite_record(&recovery_root, &record).map_err(|error| {
+        PlatformError::Io(format!(
+            "durable Windows Overwrite intent failed before source mutation: {error}"
+        ))
+    })?;
+    resume_windows_overwrite(&recovery_root, record)
+}
+
+#[cfg(target_os = "windows")]
+fn resume_windows_overwrite(
+    recovery_root: &Path,
+    mut record: WindowsOverwriteRecord,
+) -> Result<MovePublication, PlatformError> {
+    let transaction = record.transaction_path()?;
+    let local_record = load_windows_overwrite_record(&transaction.join(WINDOWS_LOCAL_JOURNAL_NAME))
+        .map_err(|error| PlatformError::ClaimedRecoveryPending {
+            transaction: transaction.display().to_string(),
+            message: format!("Windows Overwrite local journal could not be validated: {error}"),
+        })?;
+    if !local_record.same_transaction_evidence(&record)
+        || record.retained_identity != record.destination_identity
+    {
+        return Err(PlatformError::ClaimedRecoveryPending {
+            transaction: transaction.display().to_string(),
+            message: "Windows Overwrite durable journals or retained identity disagree".to_string(),
+        });
+    }
+    let source = record.source_path()?;
+    let source_parent = source
+        .parent()
+        .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?;
+    let destination_parent = record.destination_parent_path()?;
+    let target = record.target_path()?;
+    let replacement = record.replacement_path()?;
+    let retained = record.retained_path()?;
+    for (path, expected) in [
+        (source_parent, record.source_parent_identity),
+        (
+            destination_parent.as_path(),
+            record.destination_parent_identity,
+        ),
+        (transaction.as_path(), record.transaction_directory_identity),
+    ] {
+        if observe_windows_identity(path)? != Some(expected) {
+            return Err(PlatformError::ClaimedRecoveryPending {
+                transaction: transaction.display().to_string(),
+                message: format!(
+                    "Windows Overwrite parent identity changed: {}",
+                    path.display()
+                ),
+            });
+        }
+    }
+
+    loop {
+        let action = classify_windows_overwrite_restart(
+            observe_windows_identity(&source)?,
+            observe_windows_identity(&target)?,
+            observe_windows_identity(&replacement)?,
+            observe_windows_identity(&retained)?,
+            record.source_identity,
+            record.destination_identity,
+        );
+        match action {
+            WindowsOverwriteRestartAction::ClaimSource => {
+                let source_handle = move_recovery::open_reparse_safe_entry_for_rename(&source)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?;
+                if move_recovery::stable_identity_from_handle(&source_handle)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?
+                    != record.source_identity
+                {
+                    return Err(PlatformError::ClaimedRecoveryPending {
+                        transaction: transaction.display().to_string(),
+                        message: "Windows Overwrite source changed before private claim"
+                            .to_string(),
+                    });
+                }
+                let transaction_handle =
+                    move_recovery::open_reparse_safe_directory_for_rename(&transaction)
+                        .map_err(|error| PlatformError::Io(error.to_string()))?;
+                rename_windows_handle_no_replace(
+                    &source_handle,
+                    &transaction_handle,
+                    std::ffi::OsStr::new(WINDOWS_REPLACEMENT_NAME),
+                )
+                .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                    transaction: transaction.display().to_string(),
+                    message: format!("Windows Overwrite source claim failed: {error}"),
+                })?;
+                if observe_windows_identity(&replacement)? != Some(record.source_identity) {
+                    return Err(PlatformError::ClaimedRecoveryPending {
+                        transaction: transaction.display().to_string(),
+                        message: "Windows Overwrite private claim identity is ambiguous"
+                            .to_string(),
+                    });
+                }
+                record.phase = WindowsOverwritePhase::SourceClaimed;
+                persist_windows_overwrite_record(recovery_root, &record).map_err(|error| {
+                    PlatformError::ClaimedRecoveryPending {
+                        transaction: transaction.display().to_string(),
+                        message: format!(
+                            "Windows Overwrite claimed state was not durable: {error}"
+                        ),
+                    }
+                })?;
+            }
+            WindowsOverwriteRestartAction::PublishClaimed => {
+                let source_kind = windows_same_volume_kind_from_identity(record.source_identity)
+                    .ok_or_else(|| PlatformError::ClaimedRecoveryPending {
+                        transaction: transaction.display().to_string(),
+                        message: "Windows Overwrite source kind is unsupported".to_string(),
+                    })?;
+                let displaced_kind =
+                    windows_same_volume_kind_from_identity(record.destination_identity)
+                        .ok_or_else(|| PlatformError::ClaimedRecoveryPending {
+                            transaction: transaction.display().to_string(),
+                            message: "Windows Overwrite displaced kind is unsupported".to_string(),
+                        })?;
+                match windows_same_volume_overwrite_publication(source_kind, displaced_kind) {
+                    WindowsSameVolumeOverwritePublication::ReplaceFile => {
+                        replace_windows_file_retaining_displaced(
+                            &target,
+                            &replacement,
+                            &retained,
+                            &transaction,
+                            record.source_identity,
+                            record.destination_identity,
+                        )?;
+                    }
+                    WindowsSameVolumeOverwritePublication::RetainedRename => {
+                        publish_windows_entry_retaining_displaced_by_rename(
+                            &target,
+                            &replacement,
+                            &retained,
+                            &transaction,
+                            record.source_identity,
+                            record.destination_identity,
+                        )?;
+                    }
+                }
+                record.phase = WindowsOverwritePhase::Published;
+                persist_windows_overwrite_record(recovery_root, &record).map_err(|error| {
+                    PlatformError::CommittedCleanupPending {
+                        transaction: transaction.display().to_string(),
+                        message: format!(
+                            "Windows Overwrite publication state was not durable: {error}"
+                        ),
+                    }
+                })?;
+            }
+            WindowsOverwriteRestartAction::PublishAfterRetain => {
+                let publication = windows_same_volume_kind_from_identity(record.source_identity)
+                    .zip(windows_same_volume_kind_from_identity(
+                        record.destination_identity,
+                    ))
+                    .map(|(source, displaced)| {
+                        windows_same_volume_overwrite_publication(source, displaced)
+                    });
+                if publication != Some(WindowsSameVolumeOverwritePublication::RetainedRename) {
+                    return Err(PlatformError::CommittedCleanupPending {
+                        transaction: transaction.display().to_string(),
+                        message: "Windows Overwrite retained topology has unsupported entry kinds"
+                            .to_string(),
+                    });
+                }
+                publish_windows_entry_retaining_displaced_by_rename(
+                    &target,
+                    &replacement,
+                    &retained,
+                    &transaction,
+                    record.source_identity,
+                    record.destination_identity,
+                )?;
+                record.phase = WindowsOverwritePhase::Published;
+                persist_windows_overwrite_record(recovery_root, &record).map_err(|error| {
+                    PlatformError::CommittedCleanupPending {
+                        transaction: transaction.display().to_string(),
+                        message: format!(
+                            "Windows Overwrite resumed publication state was not durable: {error}"
+                        ),
+                    }
+                })?;
+            }
+            WindowsOverwriteRestartAction::FinishPublished => {
+                if record.phase != WindowsOverwritePhase::Published {
+                    record.phase = WindowsOverwritePhase::Published;
+                    persist_windows_overwrite_record(recovery_root, &record).map_err(|error| {
+                        PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!(
+                                "Windows Overwrite restart topology was proven but not persisted: {error}"
+                            ),
+                        }
+                    })?;
+                }
+                return Ok(MovePublication {
+                    disposition: MoveDisposition::Moved,
+                    published_path: Some(target),
+                    retained_displaced_path: Some(retained),
+                });
+            }
+            WindowsOverwriteRestartAction::RetainAmbiguous => {
+                return Err(PlatformError::CommittedCleanupPending {
+                    transaction: transaction.display().to_string(),
+                    message:
+                        "Windows Overwrite restart topology is ambiguous; all entries were retained"
+                            .to_string(),
+                });
+            }
+        }
+    }
+}
+
+/// Atomically publishes one already-private regular-file replacement while retaining the
+/// displaced destination at another already-private path on the same volume.
+///
+/// The caller owns transaction creation, durable intent, and later cleanup. Keeping this
+/// primitive separate lets Windows Overwrite remain fail-closed until those existing recovery
+/// seams have Windows implementations. `ReplaceFileW` is pathname-based, so the caller must have
+/// identity-verified both private names before entry; observed topology, not the API return bit,
+/// decides whether publication completed.
+#[cfg(target_os = "windows")]
+fn replace_windows_file_retaining_displaced(
+    target: &Path,
+    replacement: &Path,
+    retained_displaced: &Path,
+    transaction: &Path,
+    expected_source: move_recovery::WindowsStableIdentity,
+    expected_displaced: move_recovery::WindowsStableIdentity,
+) -> Result<(), PlatformError> {
+    for path in [target, replacement] {
+        let metadata = std::fs::symlink_metadata(path)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        if !metadata.is_file() || metadata.file_type().is_symlink() {
+            return Err(PlatformError::UnsupportedSafeMove(
+                path.display().to_string(),
+            ));
+        }
+    }
+    match std::fs::symlink_metadata(retained_displaced) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Ok(_) => {
+            return Err(PlatformError::DestinationExists(
+                retained_displaced.display().to_string(),
+            ));
+        }
+        Err(error) => return Err(PlatformError::Io(error.to_string())),
+    }
+
+    if observe_windows_identity(replacement)? != Some(expected_source)
+        || observe_windows_identity(target)? != Some(expected_displaced)
+    {
+        return Err(PlatformError::ClaimedRecoveryPending {
+            transaction: transaction.display().to_string(),
+            message: "Windows Overwrite inputs changed before retained replacement".to_string(),
+        });
+    }
+
+    let target_wide = windows_wide_path(target)?;
+    let replacement_wide = windows_wide_path(replacement)?;
+    let retained_wide = windows_wide_path(retained_displaced)?;
+    let replaced = unsafe {
+        ReplaceFileW(
+            target_wide.as_ptr(),
+            replacement_wide.as_ptr(),
+            retained_wide.as_ptr(),
+            WINDOWS_OVERWRITE_REPLACE_FLAGS,
+            ptr::null(),
+            ptr::null(),
+        )
+    };
+    let replace_error = (replaced == 0).then(std::io::Error::last_os_error);
+    let observe_after_replace = |path: &Path| {
+        observe_windows_identity(path).map_err(|error| PlatformError::CommittedCleanupPending {
+            transaction: transaction.display().to_string(),
+            message: format!(
+                "Windows retained replacement topology could not be observed after the syscall: {error}"
+            ),
+        })
+    };
+    let observed = classify_windows_replace_topology(
+        observe_after_replace(target)?,
+        observe_after_replace(replacement)?,
+        observe_after_replace(retained_displaced)?,
+        expected_source,
+        expected_displaced,
+    );
+    match observed {
+        WindowsReplaceTopology::PublishedAndRetained => Ok(()),
+        WindowsReplaceTopology::NotPublished => {
+            let message = replace_error.map_or_else(
+                || "Windows retained replacement reported success without publication".to_string(),
+                |error| format!("Windows retained replacement was not published: {error}"),
+            );
+            Err(PlatformError::ClaimedRecoveryPending {
+                transaction: transaction.display().to_string(),
+                message,
+            })
+        }
+        WindowsReplaceTopology::PublishedAmbiguous | WindowsReplaceTopology::Ambiguous => {
+            Err(PlatformError::CommittedCleanupPending {
+                transaction: transaction.display().to_string(),
+                message: replace_error.map_or_else(
+                    || "Windows retained replacement produced ambiguous topology".to_string(),
+                    |error| {
+                        format!(
+                            "Windows retained replacement failed with ambiguous topology: {error}"
+                        )
+                    },
+                ),
+            })
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn publish_windows_entry_retaining_displaced_by_rename(
+    target: &Path,
+    replacement: &Path,
+    retained: &Path,
+    transaction: &Path,
+    expected_source: move_recovery::WindowsStableIdentity,
+    expected_displaced: move_recovery::WindowsStableIdentity,
+) -> Result<(), PlatformError> {
+    let target_parent = target
+        .parent()
+        .ok_or_else(|| PlatformError::CommittedCleanupPending {
+            transaction: transaction.display().to_string(),
+            message: "Windows Overwrite target has no parent".to_string(),
+        })?;
+    let target_name = target
+        .file_name()
+        .ok_or_else(|| PlatformError::CommittedCleanupPending {
+            transaction: transaction.display().to_string(),
+            message: "Windows Overwrite target has no file name".to_string(),
+        })?;
+    let retained_name =
+        retained
+            .file_name()
+            .ok_or_else(|| PlatformError::CommittedCleanupPending {
+                transaction: transaction.display().to_string(),
+                message: "Windows Overwrite retained entry has no file name".to_string(),
+            })?;
+    let target_parent_handle = move_recovery::open_reparse_safe_directory_for_rename(target_parent)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let transaction_handle = move_recovery::open_reparse_safe_directory_for_rename(transaction)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+
+    match (
+        observe_windows_identity(target)?,
+        observe_windows_identity(retained)?,
+    ) {
+        (Some(target_identity), None) if target_identity == expected_displaced => {
+            let displaced_handle = move_recovery::open_reparse_safe_cross_volume_candidate(target)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            if move_recovery::stable_identity_from_handle(&displaced_handle)
+                .map_err(|error| PlatformError::Io(error.to_string()))?
+                != expected_displaced
+            {
+                return Err(PlatformError::CommittedCleanupPending {
+                    transaction: transaction.display().to_string(),
+                    message: "Windows Overwrite displaced entry changed before retention"
+                        .to_string(),
+                });
+            }
+            rename_windows_handle_no_replace(&displaced_handle, &transaction_handle, retained_name)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            displaced_handle
+                .sync_all()
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            target_parent_handle
+                .sync_all()
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            transaction_handle
+                .sync_all()
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+        }
+        (None, Some(retained_identity)) if retained_identity == expected_displaced => {}
+        _ => {
+            return Err(PlatformError::CommittedCleanupPending {
+                transaction: transaction.display().to_string(),
+                message: "Windows Overwrite retained-rename topology changed before publication"
+                    .to_string(),
+            });
+        }
+    }
+
+    let replacement_handle = move_recovery::open_reparse_safe_cross_volume_candidate(replacement)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    if move_recovery::stable_identity_from_handle(&replacement_handle)
+        .map_err(|error| PlatformError::Io(error.to_string()))?
+        != expected_source
+    {
+        return Err(PlatformError::CommittedCleanupPending {
+            transaction: transaction.display().to_string(),
+            message: "Windows Overwrite claimed source changed before publication".to_string(),
+        });
+    }
+    rename_windows_handle_no_replace(&replacement_handle, &target_parent_handle, target_name)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    replacement_handle
+        .sync_all()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    transaction_handle
+        .sync_all()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    target_parent_handle
+        .sync_all()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+
+    if observe_windows_identity(target)? != Some(expected_source)
+        || observe_windows_identity(replacement)?.is_some()
+        || observe_windows_identity(retained)? != Some(expected_displaced)
+    {
+        return Err(PlatformError::CommittedCleanupPending {
+            transaction: transaction.display().to_string(),
+            message: "Windows Overwrite retained-rename publication topology is ambiguous"
+                .to_string(),
+        });
+    }
+    Ok(())
 }
 
 #[cfg(not(any(target_os = "linux", target_os = "windows")))]
@@ -107,7 +4872,7 @@ pub(super) fn move_entry_transactional(
     source: &Path,
     destination_dir: &Path,
     _conflict: ConflictAction,
-) -> Result<MoveDisposition, PlatformError> {
+) -> Result<MovePublication, PlatformError> {
     std::fs::symlink_metadata(source)
         .map_err(|_| PlatformError::InvalidSource(source.display().to_string()))?;
     reject_directory_copy_into_itself(source, destination_dir)?;
@@ -123,8 +4888,12 @@ pub(crate) enum TestPoint {
     Claim,
     ClassifyCrossDevice,
     PendingDestination,
+    DestinationPublished,
     Publication,
+    DestinationParentSynced,
     BeforeSourceCleanup,
+    AfterSourceRevalidation,
+    SourceCleanupQuarantined,
 }
 
 #[cfg(target_os = "linux")]
@@ -133,7 +4902,7 @@ fn move_with_hooks(
     destination_dir: &Path,
     conflict: ConflictAction,
     mut hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
-) -> Result<MoveDisposition, PlatformError> {
+) -> Result<MovePublication, PlatformError> {
     #[cfg(test)]
     let _test_move_guard = TEST_MOVE_SERIALIZER
         .lock()
@@ -197,11 +4966,16 @@ fn move_with_hooks(
             conflict,
         )?
     {
-        return Ok(disposition);
+        return Ok(MovePublication {
+            disposition,
+            published_path: None,
+            retained_displaced_path: None,
+            published_content: None,
+        });
     }
     if is_cross_device
         && (conflict == ConflictAction::Skip || conflict == ConflictAction::Rename)
-        && let Some(disposition) = recover_cross_filesystem_pending_destination(
+        && let Some(publication) = recover_cross_filesystem_pending_destination(
             source,
             &destination_dir,
             source_name,
@@ -211,9 +4985,10 @@ fn move_with_hooks(
             source_entry_identity,
             &destination_parent,
             conflict,
+            &mut hook,
         )?
     {
-        return Ok(disposition);
+        return Ok(publication);
     }
 
     reject_directory_copy_into_itself(source, &destination_dir)?;
@@ -224,7 +4999,12 @@ fn move_with_hooks(
         && destination_dir.join(source_name).exists()
         && conflict == ConflictAction::Skip
     {
-        return Ok(MoveDisposition::Skipped);
+        return Ok(MovePublication {
+            disposition: MoveDisposition::Skipped,
+            published_path: None,
+            retained_displaced_path: None,
+            published_content: None,
+        });
     }
     let source_entry_identity = move_recovery::LinuxStableIdentity::new(
         source_metadata.dev(),
@@ -240,15 +5020,6 @@ fn move_with_hooks(
         },
     );
 
-    // Cross-device Overwrite has no durable displaced-entry lifecycle yet. Decide that before
-    // creating a recovery root or claiming the source so an unsupported request is truly
-    // non-mutating for both the source and the occupied destination.
-    if is_cross_device && conflict == ConflictAction::Overwrite {
-        return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
-            source.display().to_string(),
-        ));
-    }
-
     let recovery_root = default_recovery_root()?;
     std::fs::create_dir_all(&recovery_root)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -261,7 +5032,8 @@ fn move_with_hooks(
         .map_err(|error| PlatformError::Io(error.to_string()))?;
     let source_transaction_identity = local_transaction.observed_identity();
     let local_path = source_parent_path.join(local_transaction.name());
-    let local = move_recovery::LinuxJournalDirectory::open_configured(&local_path)
+    let local = source_parent
+        .open_created_transaction(&local_transaction)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
 
     let prepared = move_recovery::PreparedRecord::new_linux(
@@ -301,19 +5073,21 @@ fn move_with_hooks(
 
     let _ = recovery
         .claim_source_after_intent(&source_parent, &local, recovery_transaction_id)
-        .map_err(|error| PlatformError::CommittedCleanupPending {
+        .map_err(|error| PlatformError::ClaimedRecoveryPending {
             transaction: local_path.display().to_string(),
             message: format!("source claim failed: {error}"),
         })?;
 
     recovery
         .advance_to_claimed_with_local(&local, recovery_transaction_id)
-        .map_err(|error| PlatformError::CommittedCleanupPending {
+        .map_err(|error| PlatformError::ClaimedRecoveryPending {
             transaction: local_path.display().to_string(),
             message: format!("claimed durable state failed: {error}"),
         })?;
-    hook(TestPoint::Claim)
-        .map_err(|message| PlatformError::Io(format!("move test hook failed: {message}")))?;
+    hook(TestPoint::Claim).map_err(|message| PlatformError::ClaimedRecoveryPending {
+        transaction: local_path.display().to_string(),
+        message: format!("move test hook failed before publication: {message}"),
+    })?;
     let claimed_path = local_path.join("claimed");
     let mut destination_name = source_name.to_os_string();
     let mut destination_target = destination_dir.join(&destination_name);
@@ -321,13 +5095,14 @@ fn move_with_hooks(
     if is_cross_device {
         let destination_transaction = destination_parent
             .create_transaction(recovery_transaction_id)
-            .map_err(|error| PlatformError::CommittedCleanupPending {
+            .map_err(|error| PlatformError::ClaimedRecoveryPending {
                 transaction: local_path.display().to_string(),
                 message: format!("destination transaction creation failed: {error}"),
             })?;
         let destination_transaction_identity = destination_transaction.observed_identity();
         let destination_transaction_path = destination_dir.join(destination_transaction.name());
         let mut staged_destination_identity = None;
+        let mut retained_displaced_identity = None;
         let destination_tree_snapshot = source_tree_snapshot_for_path(&claimed_path)?;
 
         loop {
@@ -335,13 +5110,13 @@ fn move_with_hooks(
                 let staged_destination_path =
                     destination_transaction_path.join(CROSS_DEVICE_STAGED_NAME);
                 copy_entry(&claimed_path, &staged_destination_path).map_err(|error| {
-                    PlatformError::CommittedCleanupPending {
+                    PlatformError::ClaimedRecoveryPending {
                         transaction: local_path.display().to_string(),
                         message: format!("cross-device stage copy failed: {error}"),
                     }
                 })?;
                 flush_tree_bottom_up(&staged_destination_path).map_err(|error| {
-                    PlatformError::CommittedCleanupPending {
+                    PlatformError::ClaimedRecoveryPending {
                         transaction: local_path.display().to_string(),
                         message: format!("cross-device stage flush failed: {error}"),
                     }
@@ -354,11 +5129,27 @@ fn move_with_hooks(
             let destination_transaction_path_path = destination_transaction_path.as_path();
             let staged_identity = staged_destination_identity
                 .ok_or_else(|| PlatformError::InvalidSource(claimed_path.display().to_string()))?;
+            let expected_displaced_destination_identity = if conflict == ConflictAction::Overwrite {
+                match std::fs::symlink_metadata(&destination_target) {
+                    Ok(metadata) => Some(stable_identity_from_metadata(&metadata)),
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+                    Err(error) => {
+                        return Err(PlatformError::ClaimedRecoveryPending {
+                            transaction: local_path.display().to_string(),
+                            message: format!(
+                                "cross-device overwrite destination identity probe failed: {error}"
+                            ),
+                        });
+                    }
+                }
+            } else {
+                None
+            };
             recovery
                 .advance_to_pending_destination_with_local_with_metadata(
                     &local,
                     recovery_transaction_id,
-                    destination_name.as_ref(),
+                    &destination_target,
                     move_recovery::PendingDestinationMetadata {
                         destination_transaction_name: Some(
                             destination_transaction.name().to_path_buf(),
@@ -366,34 +5157,57 @@ fn move_with_hooks(
                         destination_transaction_identity: Some(destination_transaction_identity),
                         source_tree_snapshot: Some(destination_tree_snapshot.clone()),
                         staged_destination_identity: Some(staged_identity),
-                        expected_displaced_destination_identity: None,
+                        expected_displaced_destination_identity,
                     },
                 )
-                .map_err(|error| PlatformError::CommittedCleanupPending {
+                .map_err(|error| PlatformError::ClaimedRecoveryPending {
                     transaction: local_path.display().to_string(),
                     message: format!("pending destination persistence failed: {error}"),
                 })?;
             hook(TestPoint::PendingDestination).map_err(|message| {
-                PlatformError::Io(format!("move test hook failed: {message}"))
+                PlatformError::ClaimedRecoveryPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("move test hook failed before publication: {message}"),
+                }
             })?;
+            let staged_destination_path =
+                destination_transaction_path.join(CROSS_DEVICE_STAGED_NAME);
+            let staged_tree_snapshot = source_tree_snapshot_for_path(&staged_destination_path)
+                .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!(
+                        "cross-device staged destination verification failed: {error}"
+                    ),
+                })?;
+            if !destination_tree_snapshot.has_same_paths_and_content(&staged_tree_snapshot) {
+                return Err(PlatformError::ClaimedRecoveryPending {
+                    transaction: local_path.display().to_string(),
+                    message: "cross-device staged destination does not match source snapshot"
+                        .to_string(),
+                });
+            }
+            if !verify_source_tree_snapshot(&claimed_path, &destination_tree_snapshot).map_err(
+                |error| PlatformError::ClaimedRecoveryPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!(
+                        "cross-device source verification failed before publication: {error}"
+                    ),
+                },
+            )? {
+                return Err(PlatformError::ClaimedRecoveryPending {
+                    transaction: local_path.display().to_string(),
+                    message: "cross-device source snapshot changed before publication".to_string(),
+                });
+            }
             flush_tree_bottom_up(destination_transaction_path_path).map_err(|error| {
-                PlatformError::CommittedCleanupPending {
+                PlatformError::ClaimedRecoveryPending {
                     transaction: local_path.display().to_string(),
                     message: format!("cross-device transaction flush failed: {error}"),
                 }
             })?;
-            std::fs::File::open(&destination_dir)
-                .and_then(|directory| directory.sync_all())
-                .map_err(|error| PlatformError::CommittedCleanupPending {
-                    transaction: local_path.display().to_string(),
-                    message: format!("destination parent flush failed: {error}"),
-                })?;
-
-            let destination_transaction_directory =
-                move_recovery::LinuxJournalDirectory::open_configured(
-                    destination_transaction_path.as_path(),
-                )
-                .map_err(|error| PlatformError::CommittedCleanupPending {
+            let destination_transaction_directory = destination_parent
+                .open_created_transaction(&destination_transaction)
+                .map_err(|error| PlatformError::ClaimedRecoveryPending {
                     transaction: local_path.display().to_string(),
                     message: format!("destination transaction reopen failed: {error}"),
                 })?;
@@ -413,7 +5227,7 @@ fn move_with_hooks(
                             &local,
                             source_name,
                         )
-                        .map_err(|restore_error| PlatformError::CommittedCleanupPending {
+                        .map_err(|restore_error| PlatformError::ClaimedRecoveryPending {
                             transaction: local_path.display().to_string(),
                             message: format!(
                                 "skip-mode publication conflict but claim could not be restored: {restore_error}"
@@ -425,9 +5239,21 @@ fn move_with_hooks(
                             &recovery_transaction_id,
                         );
                         let _ = std::fs::remove_dir_all(destination_transaction_path_path);
-                        return Ok(MoveDisposition::Skipped);
+                        return Ok(MovePublication {
+                            disposition: MoveDisposition::Skipped,
+                            published_path: None,
+                            retained_displaced_path: None,
+                            published_content: None,
+                        });
                     }
                     if conflict == ConflictAction::Overwrite {
+                        let Some(expected_displaced_destination_identity) =
+                            expected_displaced_destination_identity
+                        else {
+                            // The target appeared after the absent observation. Persist its exact
+                            // identity before attempting the destructive exchange.
+                            continue;
+                        };
                         publish_claimed_to_destination_with_exchange(
                             &destination_transaction_directory,
                             &destination_parent,
@@ -435,11 +5261,12 @@ fn move_with_hooks(
                             destination_name.as_os_str(),
                         )
                         .map_err(|publish_error| {
-                            PlatformError::CommittedCleanupPending {
+                            PlatformError::ClaimedRecoveryPending {
                                 transaction: local_path.display().to_string(),
                                 message: format!("publication failed: {publish_error}"),
                             }
                         })?;
+                        retained_displaced_identity = Some(expected_displaced_destination_identity);
                         break;
                     }
                     destination_name = next_available_name(&destination_target)
@@ -450,14 +5277,14 @@ fn move_with_hooks(
                     if conflict == ConflictAction::Rename {
                         continue;
                     }
-                    return Err(PlatformError::CleanupPending {
+                    return Err(PlatformError::ClaimedRecoveryPending {
                         transaction: local_path.display().to_string(),
                         message: "publication conflict occurred for unsupported conflict mode"
                             .to_string(),
                     });
                 }
                 Err(publish_error) => {
-                    return Err(PlatformError::CommittedCleanupPending {
+                    return Err(PlatformError::ClaimedRecoveryPending {
                         transaction: local_path.display().to_string(),
                         message: format!("publication failed: {publish_error}"),
                     });
@@ -465,8 +5292,37 @@ fn move_with_hooks(
             }
         }
 
-        hook(TestPoint::Publication)
-            .map_err(|message| PlatformError::Io(format!("move test hook failed: {message}")))?;
+        hook(TestPoint::DestinationPublished).map_err(|message| {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("move test hook failed after destination publication: {message}"),
+            }
+        })?;
+        destination_parent
+            .sync()
+            .map_err(|error| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("destination parent flush failed after publication: {error}"),
+            })?;
+        hook(TestPoint::DestinationParentSynced).map_err(|message| {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("move test hook failed after destination-parent sync: {message}"),
+            }
+        })?;
+
+        hook(TestPoint::Publication).map_err(|message| {
+            if conflict == ConflictAction::Overwrite {
+                PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!(
+                        "move test hook failed after cross-device overwrite publication: {message}"
+                    ),
+                }
+            } else {
+                PlatformError::Io(format!("move test hook failed: {message}"))
+            }
+        })?;
 
         let destination_identity = staged_destination_identity
             .ok_or_else(|| PlatformError::InvalidSource(claimed_path.display().to_string()))?;
@@ -484,6 +5340,28 @@ fn move_with_hooks(
                     .to_string(),
             });
         }
+        if let Some(expected_displaced_identity) = retained_displaced_identity {
+            let retained_displaced_path =
+                destination_transaction_path.join(CROSS_DEVICE_STAGED_NAME);
+            let observed_displaced_identity = stable_identity_from_metadata(
+                &std::fs::symlink_metadata(&retained_displaced_path).map_err(|error| {
+                    PlatformError::CommittedCleanupPending {
+                        transaction: local_path.display().to_string(),
+                        message: format!(
+                            "cross-device retained displaced destination probe failed: {error}"
+                        ),
+                    }
+                })?,
+            );
+            if observed_displaced_identity != expected_displaced_identity {
+                return Err(PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message:
+                        "cross-device displaced destination identity changed during publication"
+                            .to_string(),
+                });
+            }
+        }
         if !verify_source_tree_snapshot(&claimed_path, &destination_tree_snapshot)
             .map_err(|error| PlatformError::Io(error.to_string()))?
         {
@@ -493,12 +5371,25 @@ fn move_with_hooks(
             });
         }
 
-        recovery
-            .advance_to_published_with_local(&local, recovery_transaction_id)
-            .map_err(|error| PlatformError::CommittedCleanupPending {
-                transaction: local_path.display().to_string(),
-                message: format!("publication durable state failed: {error}"),
-            })?;
+        if let Some(observed_displaced_identity) = retained_displaced_identity {
+            recovery
+                .advance_to_published_with_observed_displaced_identity_with_local(
+                    &local,
+                    recovery_transaction_id,
+                    observed_displaced_identity,
+                )
+                .map_err(|error| PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("overwrite publication durable state failed: {error}"),
+                })?;
+        } else {
+            recovery
+                .advance_to_published_with_local(&local, recovery_transaction_id)
+                .map_err(|error| PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("publication durable state failed: {error}"),
+                })?;
+        }
         hook(TestPoint::BeforeSourceCleanup).map_err(|message| {
             PlatformError::CommittedCleanupPending {
                 transaction: local_path.display().to_string(),
@@ -506,24 +5397,121 @@ fn move_with_hooks(
             }
         })?;
 
-        remove_source_entry(&claimed_path).map_err(|error| {
+        if !verify_source_tree_snapshot(&claimed_path, &destination_tree_snapshot).map_err(
+            |error| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!(
+                    "source identity revalidation failed at cross-device cleanup boundary: {error}"
+                ),
+            },
+        )? {
+            return Err(PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: "cross-device source snapshot changed at cleanup boundary".to_string(),
+            });
+        }
+
+        hook(TestPoint::AfterSourceRevalidation).map_err(|message| {
             PlatformError::CommittedCleanupPending {
                 transaction: local_path.display().to_string(),
-                message: format!("cross-device source cleanup failed: {error}"),
+                message: format!("move test hook failed after source revalidation: {message}"),
             }
         })?;
+        let cleanup_path = local_path.join(SOURCE_CLEANUP_NAME);
+        local
+            .rename_within_no_replace(
+                std::ffi::OsStr::new("claimed"),
+                std::ffi::OsStr::new(SOURCE_CLEANUP_NAME),
+            )
+            .map_err(|error| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("cross-device source cleanup quarantine failed: {error}"),
+            })?;
+        if !verify_source_tree_snapshot(&cleanup_path, &destination_tree_snapshot).map_err(
+            |error| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("quarantined source identity revalidation failed: {error}"),
+            },
+        )? {
+            let restore = local.rename_within_no_replace(
+                std::ffi::OsStr::new(SOURCE_CLEANUP_NAME),
+                std::ffi::OsStr::new("claimed"),
+            );
+            return Err(PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: match restore {
+                    Ok(()) => "cross-device source changed during cleanup; replacement restored"
+                        .to_string(),
+                    Err(error) => format!(
+                        "cross-device source changed during cleanup and remains quarantined: {error}"
+                    ),
+                },
+            });
+        }
 
-        let _ = std::fs::remove_dir_all(destination_transaction_path);
-        let _ = cleanup_transaction_journals(&recovery_root, &local_path, &recovery_transaction_id);
-        return Ok(MoveDisposition::Moved);
+        let cleanup_authority = local
+            .claimed_source_cleanup_authority(
+                std::ffi::OsStr::new(SOURCE_CLEANUP_NAME),
+                source_entry_identity,
+            )
+            .map_err(|error| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!(
+                    "cross-device source cleanup authority could not be retained: {error}"
+                ),
+            })?;
+        hook(TestPoint::SourceCleanupQuarantined).map_err(|message| {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!(
+                    "move test hook failed after source cleanup quarantine: {message}"
+                ),
+            }
+        })?;
+        cleanup_authority
+            .unlink()
+            .map_err(|error| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("cross-device source cleanup failed: {error}"),
+            })?;
+
+        let retained_displaced_path = retained_displaced_identity
+            .map(|_| destination_transaction_path.join(CROSS_DEVICE_STAGED_NAME));
+        if retained_displaced_path.is_none() {
+            let _ = std::fs::remove_dir_all(destination_transaction_path);
+            let _ =
+                cleanup_transaction_journals(&recovery_root, &local_path, &recovery_transaction_id);
+        }
+        return Ok(MovePublication {
+            disposition: MoveDisposition::Moved,
+            published_path: Some(destination_target),
+            retained_displaced_path,
+            published_content: Some(destination_tree_snapshot),
+        });
     }
 
     loop {
+        let expected_displaced_destination_identity = if conflict == ConflictAction::Overwrite {
+            Some(stable_identity_from_metadata(
+                &std::fs::symlink_metadata(&destination_target).map_err(|error| {
+                    PlatformError::CommittedCleanupPending {
+                        transaction: local_path.display().to_string(),
+                        message: format!("overwrite destination identity probe failed: {error}"),
+                    }
+                })?,
+            ))
+        } else {
+            None
+        };
         recovery
-            .advance_to_pending_destination_with_local(
+            .advance_to_pending_destination_with_local_with_metadata(
                 &local,
                 recovery_transaction_id,
-                destination_name.as_ref(),
+                &destination_target,
+                move_recovery::PendingDestinationMetadata {
+                    expected_displaced_destination_identity,
+                    ..Default::default()
+                },
             )
             .map_err(|error| PlatformError::CommittedCleanupPending {
                 transaction: local_path.display().to_string(),
@@ -559,7 +5547,12 @@ fn move_with_hooks(
                         &local_path,
                         &recovery_transaction_id,
                     );
-                    return Ok(MoveDisposition::Skipped);
+                    return Ok(MovePublication {
+                        disposition: MoveDisposition::Skipped,
+                        published_path: None,
+                        retained_displaced_path: None,
+                        published_content: None,
+                    });
                 }
 
                 if conflict == ConflictAction::Overwrite {
@@ -570,7 +5563,7 @@ fn move_with_hooks(
                         destination_name.as_os_str(),
                     )
                     .map_err(|publish_error| {
-                        PlatformError::CommittedCleanupPending {
+                        PlatformError::ClaimedRecoveryPending {
                             transaction: local_path.display().to_string(),
                             message: format!("publication failed: {publish_error}"),
                         }
@@ -586,14 +5579,14 @@ fn move_with_hooks(
                 if conflict == ConflictAction::Rename {
                     continue;
                 }
-                return Err(PlatformError::CleanupPending {
+                return Err(PlatformError::ClaimedRecoveryPending {
                     transaction: local_path.display().to_string(),
                     message: "publication conflict occurred for unsupported conflict mode"
                         .to_string(),
                 });
             }
             Err(publish_error) => {
-                return Err(PlatformError::CommittedCleanupPending {
+                return Err(PlatformError::ClaimedRecoveryPending {
                     transaction: local_path.display().to_string(),
                     message: format!("publication failed: {publish_error}"),
                 });
@@ -601,18 +5594,59 @@ fn move_with_hooks(
         }
     }
 
-    hook(TestPoint::Publication)
-        .map_err(|message| PlatformError::Io(format!("move test hook failed: {message}")))?;
+    hook(TestPoint::Publication).map_err(|message| {
+        if conflict == ConflictAction::Overwrite {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("move test hook failed after publication: {message}"),
+            }
+        } else {
+            PlatformError::Io(format!("move test hook failed: {message}"))
+        }
+    })?;
 
-    recovery
-        .advance_to_published_with_local(&local, recovery_transaction_id)
-        .map_err(|error| PlatformError::CommittedCleanupPending {
-            transaction: local_path.display().to_string(),
-            message: format!("publication durable state failed: {error}"),
-        })?;
+    if conflict == ConflictAction::Overwrite {
+        let retained_displaced_path = local_path.join("claimed");
+        let displaced_identity = stable_identity_from_metadata(
+            &std::fs::symlink_metadata(&retained_displaced_path).map_err(|error| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("retained displaced destination probe failed: {error}"),
+                }
+            })?,
+        );
+        recovery
+            .advance_to_published_with_observed_displaced_identity_with_local(
+                &local,
+                recovery_transaction_id,
+                displaced_identity,
+            )
+            .map_err(|error| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("overwrite publication durable state failed: {error}"),
+            })?;
+        Ok(MovePublication {
+            disposition: MoveDisposition::Moved,
+            published_path: Some(destination_target),
+            retained_displaced_path: Some(retained_displaced_path),
+            published_content: None,
+        })
+    } else {
+        recovery
+            .advance_to_published_with_local(&local, recovery_transaction_id)
+            .map_err(|error| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("publication durable state failed: {error}"),
+            })?;
 
-    let _ = cleanup_transaction_journals(&recovery_root, &local_path, &recovery_transaction_id);
-    Ok(MoveDisposition::Moved)
+        let _ = cleanup_transaction_journals(&recovery_root, &local_path, &recovery_transaction_id);
+        Ok(MovePublication {
+            disposition: MoveDisposition::Moved,
+            published_path: Some(destination_target),
+            retained_displaced_path: None,
+            published_content: None,
+        })
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -653,11 +5687,28 @@ fn recover_same_filesystem_pending_destination(
             ".ottrin-move-{}",
             transaction_id_hex(&entry.transaction_id)
         ));
-        let local =
-            match move_recovery::LinuxJournalDirectory::open_configured_read_only(&local_path) {
-                Ok(local) => local,
-                Err(_) => continue,
-            };
+        let central_pending = match std::fs::read(recovery_root.join(format!(
+            "{}.journal",
+            transaction_id_hex(&entry.transaction_id)
+        )))
+        .map_err(|error| PlatformError::Io(error.to_string()))
+        .and_then(|bytes| {
+            move_recovery::PendingDestinationRecord::parse(&bytes)
+                .map_err(|error| PlatformError::Io(error.to_string()))
+        }) {
+            Ok(pending) => pending,
+            Err(_) => continue,
+        };
+        let local_name = match central_pending.source_transaction_name() {
+            Ok(name) => name,
+            Err(_) => continue,
+        };
+        let local = match source_parent
+            .open_existing_transaction(&local_name, central_pending.source_transaction_identity())
+        {
+            Ok(local) => local,
+            Err(_) => continue,
+        };
 
         let state =
             match central.load_pending_destination_restart_state(&local, entry.transaction_id) {
@@ -728,7 +5779,8 @@ fn recover_cross_filesystem_pending_destination(
     source_entry_identity: Option<move_recovery::LinuxStableIdentity>,
     destination_parent: &move_recovery::LinuxSourceParentDirectory,
     conflict: ConflictAction,
-) -> Result<Option<MoveDisposition>, PlatformError> {
+    hook: &mut impl FnMut(TestPoint) -> Result<(), &'static str>,
+) -> Result<Option<MovePublication>, PlatformError> {
     let recovery_root = default_recovery_root()?;
     let discovered = discover_retained_move_transactions_at(&recovery_root)?;
     if !discovered
@@ -754,11 +5806,28 @@ fn recover_cross_filesystem_pending_destination(
             ".ottrin-move-{}",
             transaction_id_hex(&entry.transaction_id)
         ));
-        let local =
-            match move_recovery::LinuxJournalDirectory::open_configured_read_only(&local_path) {
-                Ok(local) => local,
-                Err(_) => continue,
-            };
+        let central_pending = match std::fs::read(recovery_root.join(format!(
+            "{}.journal",
+            transaction_id_hex(&entry.transaction_id)
+        )))
+        .map_err(|error| PlatformError::Io(error.to_string()))
+        .and_then(|bytes| {
+            move_recovery::PendingDestinationRecord::parse(&bytes)
+                .map_err(|error| PlatformError::Io(error.to_string()))
+        }) {
+            Ok(pending) => pending,
+            Err(_) => continue,
+        };
+        let local_name = match central_pending.source_transaction_name() {
+            Ok(name) => name,
+            Err(_) => continue,
+        };
+        let local = match source_parent
+            .open_existing_transaction(&local_name, central_pending.source_transaction_identity())
+        {
+            Ok(local) => local,
+            Err(_) => continue,
+        };
 
         let state =
             match central.load_pending_destination_restart_state(&local, entry.transaction_id) {
@@ -809,6 +5878,7 @@ fn recover_cross_filesystem_pending_destination(
             &mut recovery,
             pending,
             conflict,
+            hook,
         )? {
             return Ok(Some(disposition));
         }
@@ -826,18 +5896,212 @@ pub(super) fn recover_retained_move_pending_destination(
 }
 
 #[cfg(target_os = "linux")]
+fn recover_published_cross_device_move_at(
+    recovery_root: &Path,
+    transaction_id: [u8; 16],
+) -> Result<(), PlatformError> {
+    let transaction_id_hex = transaction_id_hex(&transaction_id);
+    let central = move_recovery::LinuxJournalDirectory::open_configured(recovery_root)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let mut recovery = central
+        .try_lock_recovery()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let central_journal =
+        std::fs::read(recovery_root.join(format!("{transaction_id_hex}.journal")))
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let published = move_recovery::PublishedRecord::parse(&central_journal).map_err(|error| {
+        PlatformError::Io(format!("failed to parse published Move journal: {error}"))
+    })?;
+    let source_parent_path = published
+        .source_parent()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let source_parent_metadata = std::fs::symlink_metadata(&source_parent_path)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    if stable_identity_from_metadata(&source_parent_metadata) != published.source_parent_identity()
+    {
+        return Err(PlatformError::Io(format!(
+            "source parent identity changed for published Move transaction {transaction_id_hex}"
+        )));
+    }
+    let source_parent = move_recovery::LinuxSourceParentDirectory::open(&source_parent_path)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let local_name = published
+        .source_transaction_name()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let local_path = source_parent_path.join(&local_name);
+    let local = source_parent
+        .open_existing_transaction(&local_name, published.source_transaction_identity())
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    recovery
+        .resume_published_with_local(&local, transaction_id)
+        .map_err(|error| {
+            PlatformError::Io(format!("failed to resume published Move journals: {error}"))
+        })?;
+    let published = match central
+        .load_published_restart_state(&local, transaction_id)
+        .map_err(|error| PlatformError::Io(error.to_string()))?
+    {
+        move_recovery::LinuxPublishedRestartState::MatchingPair(record) => record,
+        _ => {
+            return Err(PlatformError::Io(format!(
+                "published Move transaction {transaction_id_hex} requires manual review"
+            )));
+        }
+    };
+    let retained_displaced_identity = published.observed_displaced_destination_identity();
+    let destination = published
+        .pending_destination_name()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let expected_destination_identity =
+        published.staged_destination_identity().ok_or_else(|| {
+            PlatformError::Io("published Move is missing destination identity evidence".to_string())
+        })?;
+    let destination_metadata = std::fs::symlink_metadata(&destination)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    if stable_identity_from_metadata(&destination_metadata) != expected_destination_identity {
+        return Err(PlatformError::Io(
+            "published Move destination identity changed before source cleanup".to_string(),
+        ));
+    }
+    let claimed_path = local_path.join("claimed");
+    let claimed_metadata = match std::fs::symlink_metadata(&claimed_path) {
+        Ok(metadata) => Some(metadata),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(error) => return Err(PlatformError::Io(error.to_string())),
+    };
+    let cleanup_path = local_path.join(SOURCE_CLEANUP_NAME);
+    let cleanup_metadata = match std::fs::symlink_metadata(&cleanup_path) {
+        Ok(metadata) => Some(metadata),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(error) => return Err(PlatformError::Io(error.to_string())),
+    };
+    if claimed_metadata.is_some() && cleanup_metadata.is_some() {
+        return Err(PlatformError::Io(
+            "published Move has both claimed and quarantined source entries".to_string(),
+        ));
+    }
+    let retained_source = claimed_metadata
+        .as_ref()
+        .map(|metadata| (&claimed_path, metadata))
+        .or_else(|| {
+            cleanup_metadata
+                .as_ref()
+                .map(|metadata| (&cleanup_path, metadata))
+        });
+    if let Some((retained_source_path, retained_source_metadata)) = retained_source {
+        if stable_identity_from_metadata(retained_source_metadata)
+            != published.claimed_source_identity()
+        {
+            return Err(PlatformError::Io(
+                "published Move retained source identity changed before cleanup".to_string(),
+            ));
+        }
+        let source_snapshot = published.source_tree_snapshot().ok_or_else(|| {
+            PlatformError::Io("published Move is missing source snapshot evidence".to_string())
+        })?;
+        if !verify_source_tree_snapshot(retained_source_path, &source_snapshot)
+            .map_err(|error| PlatformError::Io(error.to_string()))?
+        {
+            return Err(PlatformError::Io(
+                "published Move retained source content changed before cleanup".to_string(),
+            ));
+        }
+    } else {
+        let original_name = published
+            .original_name()
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        let original_path = source_parent_path.join(original_name);
+        if std::fs::symlink_metadata(&original_path).is_ok() {
+            return Err(PlatformError::Io(
+                "published Move source reappeared after claimed source cleanup".to_string(),
+            ));
+        }
+    }
+    let destination_transaction_name = published
+        .destination_transaction_name()
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let destination_transaction_identity = published
+        .destination_transaction_identity()
+        .ok_or_else(|| {
+            PlatformError::Io(
+                "published Move is missing destination transaction identity".to_string(),
+            )
+        })?;
+    let destination_transaction_path = destination
+        .parent()
+        .ok_or_else(|| PlatformError::Io("published Move destination has no parent".to_string()))?
+        .join(destination_transaction_name);
+    let destination_transaction_metadata = std::fs::symlink_metadata(&destination_transaction_path)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    if stable_identity_from_metadata(&destination_transaction_metadata)
+        != destination_transaction_identity
+    {
+        return Err(PlatformError::Io(
+            "published Move destination transaction identity changed before cleanup".to_string(),
+        ));
+    }
+
+    if let Some(expected_displaced_identity) = retained_displaced_identity {
+        let retained_displaced_path = destination_transaction_path.join(CROSS_DEVICE_STAGED_NAME);
+        let retained_displaced_metadata = std::fs::symlink_metadata(&retained_displaced_path)
+            .map_err(|error| {
+                PlatformError::Io(format!(
+                    "published overwrite retained destination is unavailable: {error}"
+                ))
+            })?;
+        if stable_identity_from_metadata(&retained_displaced_metadata)
+            != expected_displaced_identity
+        {
+            return Err(PlatformError::Io(
+                "published overwrite retained destination identity changed".to_string(),
+            ));
+        }
+    }
+
+    if let Some((retained_source_path, _)) = retained_source {
+        let retained_name = retained_source_path.file_name().ok_or_else(|| {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: "published source cleanup name is unavailable".to_string(),
+            }
+        })?;
+        local
+            .claimed_source_cleanup_authority(retained_name, published.claimed_source_identity())
+            .and_then(move_recovery::LinuxClaimedSourceCleanupAuthority::unlink)
+            .map_err(|error| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("published source cleanup failed: {error}"),
+            })?;
+    }
+    if retained_displaced_identity.is_some() {
+        return Ok(());
+    }
+    std::fs::remove_dir_all(&destination_transaction_path).map_err(|error| {
+        PlatformError::CommittedCleanupPending {
+            transaction: local_path.display().to_string(),
+            message: format!("destination transaction cleanup failed: {error}"),
+        }
+    })?;
+    cleanup_transaction_journals(recovery_root, &local_path, &transaction_id)
+}
+
+#[cfg(target_os = "linux")]
 pub(super) fn recover_retained_move_pending_destination_at(
     recovery_root: &Path,
     transaction_id: [u8; 16],
 ) -> Result<(), PlatformError> {
     let transaction_id_hex = transaction_id_hex(&transaction_id);
     let discovered = discover_retained_move_transactions_at(recovery_root)?;
-    if !discovered.iter().any(|entry| {
-        entry.transaction_id == transaction_id
-            && entry.phase == move_recovery::JournalPhase::PendingDestination
-    }) {
+    let discovered_phase = discovered
+        .iter()
+        .find(|entry| entry.transaction_id == transaction_id)
+        .map(|entry| entry.phase);
+    if discovered_phase == Some(move_recovery::JournalPhase::Published) {
+        return recover_published_cross_device_move_at(recovery_root, transaction_id);
+    }
+    if discovered_phase != Some(move_recovery::JournalPhase::PendingDestination) {
         return Err(PlatformError::Io(format!(
-            "retained Move transaction {transaction_id_hex} is not in pending destination state",
+            "retained Move transaction {transaction_id_hex} is not recoverable",
         )));
     }
 
@@ -879,14 +6143,16 @@ pub(super) fn recover_retained_move_pending_destination_at(
     let source_parent = move_recovery::LinuxSourceParentDirectory::open(&source_parent_path)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
     let local_path = source_parent_path.join(format!(".ottrin-move-{transaction_id_hex}"));
-    let local = match move_recovery::LinuxJournalDirectory::open_configured(&local_path) {
-        Ok(local) => local,
-        Err(error) => {
-            return Err(PlatformError::Io(format!(
+    let local_name = pending.source_transaction_name().map_err(|error| {
+        PlatformError::Io(format!("failed to decode source transaction name: {error}"))
+    })?;
+    let local = source_parent
+        .open_existing_transaction(&local_name, pending.source_transaction_identity())
+        .map_err(|error| {
+            PlatformError::Io(format!(
                 "unable to open source transaction directory for {transaction_id_hex}: {error}"
-            )));
-        }
-    };
+            ))
+        })?;
 
     let pending = match central
         .load_pending_destination_restart_state(&local, transaction_id)
@@ -914,21 +6180,226 @@ pub(super) fn recover_retained_move_pending_destination_at(
         PlatformError::Io("invalid original source path for retained Move entry".into())
     })?;
     let claimed_path = local_path.join("claimed");
-    let claimed_metadata = std::fs::symlink_metadata(&claimed_path)
-        .map_err(|error| PlatformError::Io(error.to_string()))?;
-    if stable_identity_from_metadata(&claimed_metadata) != pending.claimed_source_identity() {
+    let claimed_identity = match std::fs::symlink_metadata(&claimed_path) {
+        Ok(metadata) => Some(stable_identity_from_metadata(&metadata)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(error) => return Err(PlatformError::Io(error.to_string())),
+    };
+    let mut cross_device_transaction_to_cleanup = None;
+    let mut source_already_restored = false;
+    if let Some(destination_transaction_identity) = pending.destination_transaction_identity() {
+        let expected_displaced_identity = pending
+            .expected_displaced_destination_identity()
+            .ok_or_else(|| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message:
+                    "cross-device overwrite recovery is missing displaced destination evidence"
+                        .to_string(),
+            })?;
+        let staged_destination_identity =
+            pending.staged_destination_identity().ok_or_else(|| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: "cross-device overwrite recovery is missing staged source evidence"
+                        .to_string(),
+                }
+            })?;
+        let destination_target = pending.pending_destination_name().map_err(|error| {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("cross-device overwrite destination path decode failed: {error}"),
+            }
+        })?;
+        if !destination_target.is_absolute() {
+            return Err(PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: "cross-device overwrite recovery destination is not absolute".to_string(),
+            });
+        }
+        let destination_parent_path =
+            destination_target
+                .parent()
+                .ok_or_else(|| PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: "cross-device overwrite recovery destination has no parent"
+                        .to_string(),
+                })?;
+        let destination_name = destination_target.file_name().ok_or_else(|| {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: "cross-device overwrite recovery destination has no name".to_string(),
+            }
+        })?;
+        let destination_transaction_name =
+            pending.destination_transaction_name().map_err(|error| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("cross-device transaction name decode failed: {error}"),
+                }
+            })?;
+        let destination_parent = move_recovery::LinuxSourceParentDirectory::open(
+            destination_parent_path,
+        )
+        .map_err(|error| PlatformError::CommittedCleanupPending {
+            transaction: local_path.display().to_string(),
+            message: format!("cross-device destination parent open failed: {error}"),
+        })?;
+        let destination_transaction = destination_parent
+            .open_existing_transaction(
+                &destination_transaction_name,
+                destination_transaction_identity,
+            )
+            .map_err(|error| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("cross-device destination transaction open failed: {error}"),
+            })?;
+        let staged_path = destination_parent_path
+            .join(&destination_transaction_name)
+            .join(CROSS_DEVICE_STAGED_NAME);
+        let destination_identity = stable_identity_from_metadata(
+            &std::fs::symlink_metadata(&destination_target).map_err(|error| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("cross-device overwrite destination probe failed: {error}"),
+                }
+            })?,
+        );
+        let staged_identity =
+            stable_identity_from_metadata(&std::fs::symlink_metadata(&staged_path).map_err(
+                |error| PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("cross-device retained destination probe failed: {error}"),
+                },
+            )?);
+
+        if destination_identity == staged_destination_identity
+            && staged_identity == expected_displaced_identity
+        {
+            publish_claimed_to_destination_with_exchange(
+                &destination_transaction,
+                &destination_parent,
+                std::ffi::OsStr::new(CROSS_DEVICE_STAGED_NAME),
+                destination_name,
+            )
+            .map_err(|error| PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("cross-device overwrite rollback exchange failed: {error}"),
+            })?;
+        } else if destination_identity != expected_displaced_identity
+            || staged_identity != staged_destination_identity
+        {
+            return Err(PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message:
+                    "cross-device overwrite entries no longer match retained recovery evidence"
+                        .to_string(),
+            });
+        }
+
+        if claimed_identity.is_none() {
+            let source_identity = stable_identity_from_metadata(
+                &std::fs::symlink_metadata(source_parent_path.join(source_name)).map_err(
+                    |error| PlatformError::CommittedCleanupPending {
+                        transaction: local_path.display().to_string(),
+                        message: format!("cross-device source restore probe failed: {error}"),
+                    },
+                )?,
+            );
+            if source_identity != pending.claimed_source_identity() {
+                return Err(PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: "cross-device source no longer matches retained recovery evidence"
+                        .to_string(),
+                });
+            }
+            source_already_restored = true;
+        }
+
+        cross_device_transaction_to_cleanup =
+            Some(destination_parent_path.join(&destination_transaction_name));
+    }
+    if let Some(claimed_identity) = claimed_identity {
+        if claimed_identity != pending.claimed_source_identity() {
+            let expected_displaced = pending
+                .expected_displaced_destination_identity()
+                .filter(|identity| *identity == claimed_identity)
+                .ok_or_else(|| PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: "claimed identity no longer matches retained recovery evidence"
+                        .to_string(),
+                })?;
+            let destination_target = pending.pending_destination_name().map_err(|error| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("overwrite destination path decode failed: {error}"),
+                }
+            })?;
+            if !destination_target.is_absolute() {
+                return Err(PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message:
+                        "overwrite recovery journal does not contain an absolute destination path"
+                            .to_string(),
+                });
+            }
+            let destination_identity = stable_identity_from_metadata(
+                &std::fs::symlink_metadata(&destination_target).map_err(|error| {
+                    PlatformError::CommittedCleanupPending {
+                        transaction: local_path.display().to_string(),
+                        message: format!("overwrite destination identity probe failed: {error}"),
+                    }
+                })?,
+            );
+            if destination_identity != pending.claimed_source_identity()
+                || expected_displaced != claimed_identity
+            {
+                return Err(PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message:
+                    "overwrite destination identity no longer matches retained recovery evidence"
+                        .to_string(),
+            });
+            }
+            match std::fs::symlink_metadata(source_parent_path.join(source_name)) {
+                Ok(_) => {
+                    return Err(PlatformError::DestinationExists(
+                        source_parent_path.join(source_name).display().to_string(),
+                    ));
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(PlatformError::Io(error.to_string())),
+            }
+            super::exchange_paths(&claimed_path, &destination_target).map_err(|error| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: local_path.display().to_string(),
+                    message: format!("overwrite recovery exchange failed: {error}"),
+                }
+            })?;
+        }
+    } else if !source_already_restored {
         return Err(PlatformError::CommittedCleanupPending {
             transaction: local_path.display().to_string(),
-            message: "claimed identity no longer matches retained recovery evidence".to_string(),
+            message: "claimed source is missing before recovery completed".to_string(),
         });
     }
 
-    restore_claimed_to_source(&source_parent, &local, source_name).map_err(|error| {
-        PlatformError::CommittedCleanupPending {
-            transaction: local_path.display().to_string(),
-            message: format!("restore claimed source failed: {error}"),
-        }
-    })?;
+    if !source_already_restored {
+        restore_claimed_to_source(&source_parent, &local, source_name).map_err(|error| {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("restore claimed source failed: {error}"),
+            }
+        })?;
+    }
+
+    if let Some(destination_transaction_path) = cross_device_transaction_to_cleanup {
+        std::fs::remove_dir_all(&destination_transaction_path).map_err(|error| {
+            PlatformError::CommittedCleanupPending {
+                transaction: local_path.display().to_string(),
+                message: format!("cross-device transaction cleanup failed: {error}"),
+            }
+        })?;
+    }
 
     let _ = cleanup_transaction_journals(recovery_root, &local_path, &transaction_id);
     Ok(())
@@ -948,7 +6419,8 @@ fn replay_cross_filesystem_pending_destination_with_record(
     recovery: &mut move_recovery::LinuxRecoveryLock<'_>,
     pending: move_recovery::PendingDestinationRecord,
     conflict: ConflictAction,
-) -> Result<Option<MoveDisposition>, PlatformError> {
+    hook: &mut impl FnMut(TestPoint) -> Result<(), &'static str>,
+) -> Result<Option<MovePublication>, PlatformError> {
     let source_name = pending
         .original_name()
         .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -1045,10 +6517,28 @@ fn replay_cross_filesystem_pending_destination_with_record(
                             .to_string(),
                     });
                 }
+                let staged_destination_path =
+                    destination_transaction_path.join(CROSS_DEVICE_STAGED_NAME);
+                let staged_tree_snapshot = source_tree_snapshot_for_path(&staged_destination_path)
+                    .map_err(|error| PlatformError::CommittedCleanupPending {
+                        transaction: local_path.display().to_string(),
+                        message: format!(
+                            "recovery staged destination content verification failed: {error}"
+                        ),
+                    })?;
+                if !source_tree_snapshot.has_same_paths_and_content(&staged_tree_snapshot) {
+                    return Err(PlatformError::CommittedCleanupPending {
+                        transaction: local_path.display().to_string(),
+                        message:
+                            "recovery staged destination content does not match source snapshot"
+                                .to_string(),
+                    });
+                }
 
-                let destination_transaction_directory =
-                    move_recovery::LinuxJournalDirectory::open_configured(
-                        &destination_transaction_path,
+                let destination_transaction_directory = destination_parent
+                    .open_existing_transaction(
+                        &destination_transaction_name,
+                        destination_transaction_identity,
                     )
                     .map_err(|error| {
                         PlatformError::Io(format!(
@@ -1081,6 +6571,7 @@ fn replay_cross_filesystem_pending_destination_with_record(
                                         .to_string(),
                             });
                         }
+                        sync_replayed_destination_parent(destination_parent, local_path, hook)?;
                         if !verify_source_tree_snapshot(&claimed_path, &source_tree_snapshot)
                             .map_err(|error| PlatformError::Io(error.to_string()))?
                         {
@@ -1091,6 +6582,17 @@ fn replay_cross_filesystem_pending_destination_with_record(
                             });
                         }
 
+                        let cleanup_authority = local
+                            .claimed_source_cleanup_authority(
+                                std::ffi::OsStr::new("claimed"),
+                                claimed_source_identity,
+                            )
+                            .map_err(|error| PlatformError::CommittedCleanupPending {
+                                transaction: local_path.display().to_string(),
+                                message: format!(
+                                    "cross-device source cleanup authority could not be retained: {error}"
+                                ),
+                            })?;
                         recovery
                             .advance_to_published_with_local(local, transaction_id)
                             .map_err(|error| PlatformError::CommittedCleanupPending {
@@ -1099,7 +6601,7 @@ fn replay_cross_filesystem_pending_destination_with_record(
                                     "cross-device publication durable state failed: {error}"
                                 ),
                             })?;
-                        remove_source_entry(&claimed_path).map_err(|error| {
+                        cleanup_authority.unlink().map_err(|error| {
                             PlatformError::CommittedCleanupPending {
                                 transaction: local_path.display().to_string(),
                                 message: format!("cross-device source cleanup failed: {error}"),
@@ -1111,7 +6613,12 @@ fn replay_cross_filesystem_pending_destination_with_record(
                             local_path,
                             &transaction_id,
                         );
-                        return Ok(Some(MoveDisposition::Moved));
+                        return Ok(Some(MovePublication {
+                            disposition: MoveDisposition::Moved,
+                            published_path: Some(destination_target),
+                            retained_displaced_path: None,
+                            published_content: Some(source_tree_snapshot.clone()),
+                        }));
                     }
                     Err(publish_error)
                         if publish_error.kind() == std::io::ErrorKind::AlreadyExists =>
@@ -1132,6 +6639,7 @@ fn replay_cross_filesystem_pending_destination_with_record(
                         if stable_identity_from_metadata(&destination_metadata)
                             == staged_destination_identity
                         {
+                            sync_replayed_destination_parent(destination_parent, local_path, hook)?;
                             if !verify_source_tree_snapshot(&claimed_path, &source_tree_snapshot)
                                 .map_err(|error| PlatformError::Io(error.to_string()))?
                             {
@@ -1141,6 +6649,17 @@ fn replay_cross_filesystem_pending_destination_with_record(
                                         .to_string(),
                                 });
                             }
+                            let cleanup_authority = local
+                                .claimed_source_cleanup_authority(
+                                    std::ffi::OsStr::new("claimed"),
+                                    claimed_source_identity,
+                                )
+                                .map_err(|error| PlatformError::CommittedCleanupPending {
+                                    transaction: local_path.display().to_string(),
+                                    message: format!(
+                                        "cross-device source cleanup authority could not be retained: {error}"
+                                    ),
+                                })?;
                             recovery
                                 .advance_to_published_with_local(local, transaction_id)
                                 .map_err(|error| PlatformError::CommittedCleanupPending {
@@ -1149,7 +6668,7 @@ fn replay_cross_filesystem_pending_destination_with_record(
                                         "cross-device publication durable state failed: {error}"
                                     ),
                                 })?;
-                            remove_source_entry(&claimed_path).map_err(|error| {
+                            cleanup_authority.unlink().map_err(|error| {
                                 PlatformError::CommittedCleanupPending {
                                     transaction: local_path.display().to_string(),
                                     message: format!("cross-device source cleanup failed: {error}"),
@@ -1161,7 +6680,12 @@ fn replay_cross_filesystem_pending_destination_with_record(
                                 local_path,
                                 &transaction_id,
                             );
-                            return Ok(Some(MoveDisposition::Moved));
+                            return Ok(Some(MovePublication {
+                                disposition: MoveDisposition::Moved,
+                                published_path: Some(destination_target),
+                                retained_displaced_path: None,
+                                published_content: Some(source_tree_snapshot.clone()),
+                            }));
                         }
 
                         if conflict == ConflictAction::Skip {
@@ -1192,7 +6716,12 @@ fn replay_cross_filesystem_pending_destination_with_record(
                                 local_path,
                                 &transaction_id,
                             );
-                            return Ok(Some(MoveDisposition::Skipped));
+                            return Ok(Some(MovePublication {
+                                disposition: MoveDisposition::Skipped,
+                                published_path: None,
+                                retained_displaced_path: None,
+                                published_content: None,
+                            }));
                         }
 
                         if conflict == ConflictAction::Rename {
@@ -1250,6 +6779,36 @@ fn replay_cross_filesystem_pending_destination_with_record(
             }
         }
     }
+}
+
+#[cfg(target_os = "linux")]
+fn sync_replayed_destination_parent(
+    destination_parent: &move_recovery::LinuxSourceParentDirectory,
+    local_path: &Path,
+    hook: &mut impl FnMut(TestPoint) -> Result<(), &'static str>,
+) -> Result<(), PlatformError> {
+    hook(TestPoint::DestinationPublished).map_err(|message| {
+        PlatformError::CommittedCleanupPending {
+            transaction: local_path.display().to_string(),
+            message: format!(
+                "move test hook failed after replay destination publication: {message}"
+            ),
+        }
+    })?;
+    destination_parent
+        .sync()
+        .map_err(|error| PlatformError::CommittedCleanupPending {
+            transaction: local_path.display().to_string(),
+            message: format!("destination parent flush failed after replay publication: {error}"),
+        })?;
+    hook(TestPoint::DestinationParentSynced).map_err(|message| {
+        PlatformError::CommittedCleanupPending {
+            transaction: local_path.display().to_string(),
+            message: format!(
+                "move test hook failed after replay destination-parent sync: {message}"
+            ),
+        }
+    })
 }
 
 #[cfg(target_os = "linux")]
@@ -1484,6 +7043,43 @@ fn cleanup_transaction_journals(
 }
 
 #[cfg(target_os = "linux")]
+pub(super) fn cleanup_completed_overwrite_undo(
+    retained_displaced_path: &Path,
+) -> Result<(), PlatformError> {
+    let local_path = retained_displaced_path.parent().ok_or_else(|| {
+        PlatformError::InvalidPathMoveUndoReceipt(
+            "retained Move overwrite entry has no transaction parent".to_string(),
+        )
+    })?;
+    let transaction_id = local_path
+        .file_name()
+        .and_then(std::ffi::OsStr::to_str)
+        .and_then(|name| name.strip_prefix(".ottrin-move-"))
+        .filter(|id| id.len() == 32 && id.chars().all(|character| character.is_ascii_hexdigit()))
+        .ok_or_else(|| {
+            PlatformError::InvalidPathMoveUndoReceipt(
+                "retained Move overwrite transaction name is invalid".to_string(),
+            )
+        })?;
+    let central_journal = default_recovery_root()?.join(format!("{transaction_id}.journal"));
+    match std::fs::remove_file(local_path.join("journal")) {
+        Ok(()) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(PlatformError::Io(error.to_string())),
+    }
+    match std::fs::remove_dir(local_path) {
+        Ok(()) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => return Err(PlatformError::Io(error.to_string())),
+    }
+    match std::fs::remove_file(&central_journal) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(PlatformError::Io(error.to_string())),
+    }
+}
+
+#[cfg(target_os = "linux")]
 fn publish_claimed_to_destination_with_no_replace(
     claimed: &move_recovery::LinuxJournalDirectory,
     destination_parent: &move_recovery::LinuxSourceParentDirectory,
@@ -1535,29 +7131,99 @@ fn stable_identity_from_metadata(
 }
 
 #[cfg(target_os = "linux")]
-fn source_tree_snapshot_for_path(
+pub(super) fn source_tree_snapshot_for_path(
     source_path: &Path,
 ) -> Result<move_recovery::SourceTreeSnapshot, PlatformError> {
     let mut entries = Vec::new();
     collect_source_tree_snapshot(source_path, source_path, &mut entries)?;
-    entries.sort_by(|(left, _), (right, _)| left.cmp(right));
-    Ok(move_recovery::SourceTreeSnapshot::from_entries(entries))
+    entries.sort_by(|(left, _, _), (right, _, _)| left.cmp(right));
+    Ok(move_recovery::SourceTreeSnapshot::from_evidenced_entries(
+        entries,
+    ))
 }
 
 #[cfg(target_os = "linux")]
 fn collect_source_tree_snapshot(
     source_path: &Path,
     root: &Path,
-    entries: &mut Vec<(std::path::PathBuf, move_recovery::LinuxStableIdentity)>,
+    entries: &mut Vec<(
+        std::path::PathBuf,
+        move_recovery::LinuxStableIdentity,
+        move_recovery::SourceContentEvidence,
+    )>,
 ) -> Result<(), PlatformError> {
+    use sha2::{Digest, Sha256};
+    use std::io::Read;
+
     let metadata = std::fs::symlink_metadata(source_path)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
     let relative = source_path
         .strip_prefix(root)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let content = if metadata.is_file() {
+        use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+
+        let mut file = std::fs::OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .open(source_path)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        let before_read = file
+            .metadata()
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        if stable_identity_from_metadata(&before_read) != stable_identity_from_metadata(&metadata) {
+            return Err(PlatformError::Io(
+                "source changed while content evidence was opened".to_string(),
+            ));
+        }
+        let mut hasher = Sha256::new();
+        let mut buffer = [0_u8; 64 * 1024];
+        loop {
+            let read = file
+                .read(&mut buffer)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            if read == 0 {
+                break;
+            }
+            hasher.update(&buffer[..read]);
+        }
+        let after_read = file
+            .metadata()
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        let stable_during_read = stable_identity_from_metadata(&after_read)
+            == stable_identity_from_metadata(&before_read)
+            && after_read.len() == before_read.len()
+            && after_read.mtime() == before_read.mtime()
+            && after_read.mtime_nsec() == before_read.mtime_nsec()
+            && after_read.ctime() == before_read.ctime()
+            && after_read.ctime_nsec() == before_read.ctime_nsec();
+        if !stable_during_read {
+            return Err(PlatformError::Io(
+                "source changed while content evidence was read".to_string(),
+            ));
+        }
+        move_recovery::SourceContentEvidence::Regular {
+            size: before_read.len(),
+            sha256_hex: format!("{:x}", hasher.finalize()),
+        }
+    } else if metadata.is_dir() {
+        move_recovery::SourceContentEvidence::Directory
+    } else if metadata.file_type().is_symlink() {
+        move_recovery::SourceContentEvidence::Symlink {
+            target: move_recovery::NativePath::encode(
+                &std::fs::read_link(source_path)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?,
+            ),
+        }
+    } else {
+        return Err(PlatformError::InvalidSource(
+            source_path.display().to_string(),
+        ));
+    };
     entries.push((
         relative.to_path_buf(),
         stable_identity_from_metadata(&metadata),
+        content,
     ));
 
     if metadata.is_dir() {
@@ -1607,20 +7273,6 @@ fn flush_tree_bottom_up(path: &Path) -> Result<(), PlatformError> {
 }
 
 #[cfg(target_os = "linux")]
-fn remove_source_entry(claimed_path: &Path) -> Result<(), String> {
-    let metadata = std::fs::symlink_metadata(claimed_path).map_err(|error| error.to_string())?;
-    if metadata.is_file() || metadata.file_type().is_symlink() {
-        std::fs::remove_file(claimed_path).map_err(|error| error.to_string())?;
-        return Ok(());
-    }
-    if metadata.is_dir() {
-        std::fs::remove_dir_all(claimed_path).map_err(|error| error.to_string())?;
-        return Ok(());
-    }
-    Err("unsupported source tree entry type".into())
-}
-
-#[cfg(target_os = "linux")]
 fn default_recovery_root() -> Result<std::path::PathBuf, PlatformError> {
     #[cfg(test)]
     if let Some(root) = TEST_RECOVERY_ROOT.with(|root| root.borrow().clone()) {
@@ -1653,14 +7305,11 @@ thread_local! {
 }
 
 #[cfg(all(target_os = "linux", test))]
-fn replace_test_recovery_root(root: Option<std::path::PathBuf>) -> Option<std::path::PathBuf> {
+pub(super) fn replace_test_recovery_root(
+    root: Option<std::path::PathBuf>,
+) -> Option<std::path::PathBuf> {
     TEST_RECOVERY_ROOT
         .with(|configured_root| std::mem::replace(&mut *configured_root.borrow_mut(), root))
-}
-
-#[cfg(all(target_os = "linux", test))]
-pub(super) fn set_test_recovery_root(root: Option<std::path::PathBuf>) {
-    let _ = replace_test_recovery_root(root);
 }
 
 /// Reads retained Move recovery status from an existing configured recovery root.
@@ -1702,10 +7351,1590 @@ pub(super) fn move_entry_transactional_with_test_hook(
     hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
 ) -> Result<MoveDisposition, PlatformError> {
     move_with_hooks(source, destination_dir, conflict, hook)
+        .map(|publication| publication.disposition)
+}
+
+#[cfg(test)]
+mod windows_source_tests {
+    use super::{
+        WINDOWS_INCOMPLETE_STAGING_DISPOSITION_FLAGS, WINDOWS_LOCAL_JOURNAL_NAME,
+        WINDOWS_OVERWRITE_REPLACE_FLAGS, WINDOWS_RECOVERY_LOCK_SHARE_MODE,
+        WindowsCrossVolumePreflight, WindowsCrossVolumeRestartAction,
+        WindowsIncompleteStagingEntryKind, WindowsJournalKind, WindowsMoveRoute,
+        WindowsOverwriteRestartAction, WindowsReplaceTopology, WindowsSourceRemovalDecision,
+        classify_windows_cross_volume_overwrite_restart, classify_windows_cross_volume_preflight,
+        classify_windows_cross_volume_restart, classify_windows_directory_cleanup_topology,
+        classify_windows_directory_slice_action, classify_windows_incomplete_directory_candidate,
+        classify_windows_overwrite_restart, classify_windows_replace_topology,
+        classify_windows_source_removal, cleanup_windows_cross_volume_transaction_with,
+        complete_windows_cross_volume_source_removal_with,
+        flush_windows_cross_volume_recovered_publication_with, next_windows_rename_candidate,
+        parse_windows_journal_name, publish_windows_cross_volume_candidate_with,
+        publish_windows_cross_volume_directory_overwrite_with, reconcile_windows_rename_candidates,
+        require_windows_publication_durability, windows_cross_volume_recovery_enabled,
+        windows_cross_volume_runtime_enabled, windows_cross_volume_source_kind,
+        windows_cross_volume_test_gate, windows_cross_volume_uses_metadata_preserving_copy,
+        windows_destination_parent_is_pinned, windows_directory_cleanup_order,
+        windows_incomplete_staging_entry_kind, windows_move_route, windows_recovery_lock_path,
+        windows_same_volume_source_kind, windows_staging_candidate_matches_transaction,
+        windows_stream_set_is_copy_safe,
+    };
+
+    use crate::{ConflictAction, PlatformError, move_recovery};
+
+    #[test]
+    fn windows_move_route_distinguishes_same_and_cross_volume_paths() {
+        assert_eq!(windows_move_route(41, 41), WindowsMoveRoute::SameVolume);
+        assert_eq!(windows_move_route(41, 42), WindowsMoveRoute::CrossVolume);
+    }
+
+    #[test]
+    fn windows_recovery_discovery_accepts_only_exact_durable_journal_names() {
+        let id = [0xab; 16];
+        let encoded = "abababababababababababababababab";
+
+        assert_eq!(
+            parse_windows_journal_name(std::ffi::OsStr::new(&format!("{encoded}.journal"))),
+            Some((id, WindowsJournalKind::SameVolumeOverwrite))
+        );
+        assert_eq!(
+            parse_windows_journal_name(std::ffi::OsStr::new(&format!("{encoded}.cross-journal"))),
+            Some((id, WindowsJournalKind::CrossVolume))
+        );
+        for invalid in [
+            format!("{encoded}.journal.tmp"),
+            format!("x{encoded}.journal"),
+            format!("{encoded}f.journal"),
+            "not-hexadecimal-but-32-bytes!!.journal".to_string(),
+            "move-recovery.lock".to_string(),
+        ] {
+            assert_eq!(
+                parse_windows_journal_name(std::ffi::OsStr::new(&invalid)),
+                None
+            );
+        }
+    }
+
+    #[test]
+    fn windows_retained_move_discovery_reads_real_journal_entries_without_initializing_state() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-windows-retained-move-discovery-{}",
+            getrandom::u64().unwrap()
+        ));
+        let same_volume_id = [0x11; 16];
+        let cross_volume_id = [0x22; 16];
+
+        assert!(
+            super::discover_retained_windows_move_transactions_at(&root)
+                .unwrap()
+                .is_empty()
+        );
+        assert!(!root.exists());
+
+        std::fs::create_dir(&root).unwrap();
+        std::fs::write(
+            root.join(format!(
+                "{}.journal",
+                super::encode_transaction_id(same_volume_id)
+            )),
+            b"same-volume journal",
+        )
+        .unwrap();
+        std::fs::write(
+            root.join(format!(
+                "{}.cross-journal",
+                super::encode_transaction_id(cross_volume_id)
+            )),
+            b"cross-volume journal",
+        )
+        .unwrap();
+        std::fs::write(root.join("move-recovery.lock"), b"").unwrap();
+
+        assert_eq!(
+            super::discover_retained_windows_move_transactions_at(&root).unwrap(),
+            vec![
+                move_recovery::WindowsDiscoveredMoveTransaction {
+                    transaction_id: same_volume_id,
+                    kind: move_recovery::WindowsMoveTransactionKind::SameVolumeOverwrite,
+                    recovery_available: true,
+                },
+                move_recovery::WindowsDiscoveredMoveTransaction {
+                    transaction_id: cross_volume_id,
+                    kind: move_recovery::WindowsMoveTransactionKind::CrossVolume,
+                    recovery_available: false,
+                },
+            ]
+        );
+
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn windows_same_volume_source_kind_accepts_links_but_rejects_other_reparse_points() {
+        assert_eq!(
+            windows_same_volume_source_kind(true, false, false),
+            Some(super::WindowsSameVolumeSourceKind::File)
+        );
+        assert_eq!(
+            windows_same_volume_source_kind(false, true, false),
+            Some(super::WindowsSameVolumeSourceKind::Directory)
+        );
+        assert_eq!(
+            windows_same_volume_source_kind(false, false, true),
+            Some(super::WindowsSameVolumeSourceKind::Link)
+        );
+        assert_eq!(windows_same_volume_source_kind(true, false, true), None);
+        assert_eq!(windows_same_volume_source_kind(false, true, true), None);
+        assert_eq!(windows_same_volume_source_kind(false, false, false), None);
+    }
+
+    #[test]
+    fn windows_same_volume_overwrite_uses_rename_publication_for_non_file_entries() {
+        assert_eq!(
+            super::windows_same_volume_overwrite_publication(
+                super::WindowsSameVolumeSourceKind::File,
+                super::WindowsSameVolumeSourceKind::File,
+            ),
+            super::WindowsSameVolumeOverwritePublication::ReplaceFile
+        );
+        for kind in [
+            super::WindowsSameVolumeSourceKind::Directory,
+            super::WindowsSameVolumeSourceKind::Link,
+        ] {
+            assert_eq!(
+                super::windows_same_volume_overwrite_publication(
+                    kind,
+                    super::WindowsSameVolumeSourceKind::File,
+                ),
+                super::WindowsSameVolumeOverwritePublication::RetainedRename
+            );
+            assert_eq!(
+                super::windows_same_volume_overwrite_publication(
+                    super::WindowsSameVolumeSourceKind::File,
+                    kind,
+                ),
+                super::WindowsSameVolumeOverwritePublication::RetainedRename
+            );
+        }
+    }
+
+    #[test]
+    fn windows_cross_volume_source_kind_accepts_supported_entries_only() {
+        assert_eq!(
+            windows_cross_volume_source_kind(true, false, false),
+            Some(super::WindowsCrossVolumeSourceKind::File)
+        );
+        assert_eq!(
+            windows_cross_volume_source_kind(false, true, false),
+            Some(super::WindowsCrossVolumeSourceKind::Directory)
+        );
+        assert_eq!(
+            windows_cross_volume_source_kind(false, false, true),
+            Some(super::WindowsCrossVolumeSourceKind::SymbolicLink)
+        );
+        assert_eq!(windows_cross_volume_source_kind(true, false, true), None);
+        assert_eq!(windows_cross_volume_source_kind(false, true, true), None);
+        assert_eq!(windows_cross_volume_source_kind(false, false, false), None);
+    }
+
+    #[test]
+    fn windows_symbolic_link_conflicts_include_overwrite() {
+        assert!(super::windows_cross_volume_source_supports_conflict(
+            super::WindowsCrossVolumeSourceKind::SymbolicLink,
+            ConflictAction::Skip,
+        ));
+        assert!(super::windows_cross_volume_source_supports_conflict(
+            super::WindowsCrossVolumeSourceKind::SymbolicLink,
+            ConflictAction::Rename,
+        ));
+        assert!(super::windows_cross_volume_source_supports_conflict(
+            super::WindowsCrossVolumeSourceKind::SymbolicLink,
+            ConflictAction::Overwrite,
+        ));
+    }
+
+    #[test]
+    fn windows_directory_manifest_evidence_is_order_independent_and_path_bound() {
+        let file = super::WindowsDirectoryManifestEntry {
+            relative_path: vec![b'n' as u16, b'e' as u16, b's' as u16, b't' as u16],
+            kind: super::WindowsCrossVolumeSourceKind::File,
+            size: 7,
+            sha256: "payload-digest".into(),
+            link_is_directory: false,
+        };
+        let directory = super::WindowsDirectoryManifestEntry {
+            relative_path: vec![b'd' as u16, b'i' as u16, b'r' as u16],
+            kind: super::WindowsCrossVolumeSourceKind::Directory,
+            size: 0,
+            sha256: String::new(),
+            link_is_directory: false,
+        };
+
+        let evidence =
+            super::windows_directory_manifest_evidence(vec![file.clone(), directory.clone()])
+                .expect("manifest evidence");
+        let reversed = super::windows_directory_manifest_evidence(vec![directory, file.clone()])
+            .expect("reversed manifest evidence");
+        let renamed = super::windows_directory_manifest_evidence(vec![
+            super::WindowsDirectoryManifestEntry {
+                relative_path: vec![
+                    b'o' as u16,
+                    b't' as u16,
+                    b'h' as u16,
+                    b'e' as u16,
+                    b'r' as u16,
+                ],
+                ..file
+            },
+        ])
+        .expect("renamed manifest evidence");
+
+        assert_eq!(evidence, reversed);
+        assert_eq!(evidence.0, 7);
+        assert_ne!(evidence.1, renamed.1);
+    }
+
+    #[test]
+    fn windows_symbolic_link_evidence_preserves_raw_utf16_target() {
+        let relative = [b'.' as u16, b'.' as u16, b'\\' as u16, b't' as u16];
+        let absolute = [b'C' as u16, b':' as u16, b'\\' as u16, b't' as u16];
+
+        let relative_evidence = super::windows_symbolic_link_evidence(&relative);
+        let absolute_evidence = super::windows_symbolic_link_evidence(&absolute);
+
+        assert_eq!(relative_evidence.0, 8);
+        assert_eq!(absolute_evidence.0, 8);
+        assert_ne!(relative_evidence.1, absolute_evidence.1);
+    }
+
+    #[test]
+    fn windows_symbolic_link_snapshot_requires_target_and_kind_to_match() {
+        let expected_target = [b'.' as u16, b'.' as u16, b'\\' as u16, b't' as u16];
+
+        assert!(super::windows_symbolic_link_snapshot_matches(
+            &expected_target,
+            true,
+            &expected_target,
+            true,
+        ));
+        assert!(!super::windows_symbolic_link_snapshot_matches(
+            &expected_target,
+            true,
+            &[b't' as u16],
+            true,
+        ));
+        assert!(!super::windows_symbolic_link_snapshot_matches(
+            &expected_target,
+            true,
+            &expected_target,
+            false,
+        ));
+    }
+
+    #[test]
+    fn windows_directory_manifest_accepts_and_binds_nested_symbolic_links() {
+        let link = super::WindowsDirectoryManifestEntry {
+            relative_path: vec![b'l' as u16, b'i' as u16, b'n' as u16, b'k' as u16],
+            kind: super::WindowsCrossVolumeSourceKind::SymbolicLink,
+            size: 8,
+            sha256: "link-target-digest".into(),
+            link_is_directory: false,
+        };
+        let evidence = super::windows_directory_manifest_evidence(vec![link.clone()])
+            .expect("nested symbolic link should be valid tree evidence");
+        let changed_target = super::windows_directory_manifest_evidence(vec![
+            super::WindowsDirectoryManifestEntry {
+                sha256: "different-target-digest".into(),
+                ..link.clone()
+            },
+        ])
+        .expect("changed nested symbolic link should remain valid tree evidence");
+        let changed_kind = super::windows_directory_manifest_evidence(vec![
+            super::WindowsDirectoryManifestEntry {
+                link_is_directory: true,
+                ..link
+            },
+        ])
+        .expect("changed nested symbolic-link kind should remain valid tree evidence");
+
+        assert_eq!(evidence.0, 8);
+        assert_ne!(evidence.1, changed_target.1);
+        assert_ne!(evidence.1, changed_kind.1);
+    }
+
+    #[test]
+    fn windows_directory_manifest_rejects_paths_that_escape_or_alias_tree_entries() {
+        for relative_path in [
+            vec![b'\\' as u16, b'a' as u16],
+            vec![b'a' as u16, b'\\' as u16],
+            vec![b'a' as u16, b'\\' as u16, b'\\' as u16, b'b' as u16],
+            vec![b'.' as u16],
+            vec![b'.' as u16, b'.' as u16],
+            vec![b'a' as u16, b'\\' as u16, b'.' as u16, b'.' as u16],
+        ] {
+            let result = super::windows_directory_manifest_evidence(vec![
+                super::WindowsDirectoryManifestEntry {
+                    relative_path,
+                    kind: super::WindowsCrossVolumeSourceKind::File,
+                    size: 7,
+                    sha256: "payload-digest".into(),
+                    link_is_directory: false,
+                },
+            ]);
+            assert!(result.is_err());
+        }
+    }
+
+    #[test]
+    fn windows_directory_manifest_rejects_missing_or_nondirectory_ancestors() {
+        let nested_file = super::WindowsDirectoryManifestEntry {
+            relative_path: vec![
+                b'p' as u16,
+                b'a' as u16,
+                b'r' as u16,
+                b'e' as u16,
+                b'n' as u16,
+                b't' as u16,
+                b'\\' as u16,
+                b'f' as u16,
+                b'i' as u16,
+                b'l' as u16,
+                b'e' as u16,
+            ],
+            kind: super::WindowsCrossVolumeSourceKind::File,
+            size: 7,
+            sha256: "payload-digest".into(),
+            link_is_directory: false,
+        };
+
+        assert!(super::windows_directory_manifest_evidence(vec![nested_file.clone()]).is_err());
+        assert!(
+            super::windows_directory_manifest_evidence(vec![
+                super::WindowsDirectoryManifestEntry {
+                    relative_path: vec![
+                        b'p' as u16,
+                        b'a' as u16,
+                        b'r' as u16,
+                        b'e' as u16,
+                        b'n' as u16,
+                        b't' as u16,
+                    ],
+                    kind: super::WindowsCrossVolumeSourceKind::File,
+                    size: 1,
+                    sha256: "ancestor-digest".into(),
+                    link_is_directory: false,
+                },
+                nested_file,
+            ])
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn windows_directory_slice_allows_verified_publication_but_keeps_source_removal_fail_closed() {
+        assert_eq!(
+            classify_windows_directory_slice_action(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                WindowsCrossVolumeRestartAction::CopyAndVerify,
+            ),
+            WindowsCrossVolumeRestartAction::CopyAndVerify
+        );
+        assert_eq!(
+            classify_windows_directory_slice_action(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                WindowsCrossVolumeRestartAction::DiscardIncompleteStaging,
+            ),
+            WindowsCrossVolumeRestartAction::DiscardIncompleteStaging
+        );
+        assert_eq!(
+            classify_windows_directory_slice_action(
+                super::WindowsCrossVolumeSourceKind::File,
+                WindowsCrossVolumeRestartAction::PublishStaged,
+            ),
+            WindowsCrossVolumeRestartAction::PublishStaged
+        );
+        assert_eq!(
+            classify_windows_directory_slice_action(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                WindowsCrossVolumeRestartAction::PublishStaged,
+            ),
+            WindowsCrossVolumeRestartAction::PublishStaged
+        );
+        assert_eq!(
+            classify_windows_directory_slice_action(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                WindowsCrossVolumeRestartAction::FlushPublished,
+            ),
+            WindowsCrossVolumeRestartAction::FlushPublished
+        );
+        assert_eq!(
+            classify_windows_directory_slice_action(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                WindowsCrossVolumeRestartAction::RemoveSource,
+            ),
+            WindowsCrossVolumeRestartAction::RemoveSource
+        );
+    }
+
+    #[test]
+    fn windows_directory_cleanup_claims_once_and_resumes_only_the_pinned_claim() {
+        use super::WindowsDirectoryCleanupTopology;
+
+        assert_eq!(
+            classify_windows_directory_cleanup_topology(true, false),
+            WindowsDirectoryCleanupTopology::ClaimSource,
+        );
+        assert_eq!(
+            classify_windows_directory_cleanup_topology(false, true),
+            WindowsDirectoryCleanupTopology::DrainClaimedSource,
+        );
+        assert_eq!(
+            classify_windows_directory_cleanup_topology(false, false),
+            WindowsDirectoryCleanupTopology::Complete,
+        );
+        assert_eq!(
+            classify_windows_directory_cleanup_topology(true, true),
+            WindowsDirectoryCleanupTopology::RetainAmbiguous,
+        );
+    }
+
+    #[test]
+    fn windows_directory_cleanup_accepts_only_manifest_subsets_and_orders_children_first() {
+        use super::{WindowsCrossVolumeSourceKind, WindowsDirectoryManifestEntry};
+
+        let entry = |path: &[u8], kind, size, sha256: &str| WindowsDirectoryManifestEntry {
+            relative_path: path.iter().copied().map(u16::from).collect(),
+            kind,
+            size,
+            sha256: sha256.into(),
+            link_is_directory: false,
+        };
+        let journal = vec![
+            entry(b"parent", WindowsCrossVolumeSourceKind::Directory, 0, ""),
+            entry(
+                b"parent\\child",
+                WindowsCrossVolumeSourceKind::Directory,
+                0,
+                "",
+            ),
+            entry(
+                b"parent\\child\\file",
+                WindowsCrossVolumeSourceKind::File,
+                7,
+                "digest",
+            ),
+            entry(b"removed", WindowsCrossVolumeSourceKind::File, 3, "old"),
+        ];
+        let observed = journal[..3].to_vec();
+
+        let order = windows_directory_cleanup_order(&journal, &observed)
+            .expect("a remaining exact manifest subset is resumable");
+        assert_eq!(order, vec![2, 1, 0]);
+
+        let mut replacement = observed.clone();
+        replacement[2].sha256 = "replacement".into();
+        assert!(windows_directory_cleanup_order(&journal, &replacement).is_none());
+
+        let mut added = observed;
+        added.push(entry(
+            b"unexpected",
+            WindowsCrossVolumeSourceKind::File,
+            1,
+            "new",
+        ));
+        assert!(windows_directory_cleanup_order(&journal, &added).is_none());
+    }
+
+    #[test]
+    fn windows_incomplete_private_directory_candidate_is_discarded_before_retry() {
+        // A candidate created before its identity reaches the paired journal is
+        // still recoverable when the exact private name can be identity-pinned
+        // during cleanup. A recorded identity remains authoritative when present.
+        assert_eq!(
+            classify_windows_incomplete_directory_candidate(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+            ),
+            Some(WindowsCrossVolumeRestartAction::DiscardIncompleteStaging),
+        );
+        assert_eq!(
+            classify_windows_incomplete_directory_candidate(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
+                true,
+                false,
+                true,
+                true,
+                true,
+            ),
+            None,
+        );
+        assert_eq!(
+            classify_windows_incomplete_directory_candidate(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
+                true,
+                true,
+                false,
+                false,
+                true,
+            ),
+            Some(WindowsCrossVolumeRestartAction::DiscardIncompleteStaging),
+        );
+        assert_eq!(
+            classify_windows_incomplete_directory_candidate(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
+                true,
+                true,
+                true,
+                false,
+                true,
+            ),
+            None,
+        );
+        assert_eq!(
+            classify_windows_incomplete_directory_candidate(
+                super::WindowsCrossVolumeSourceKind::File,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+            ),
+            None,
+        );
+        assert_eq!(
+            classify_windows_incomplete_directory_candidate(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                false,
+                true,
+                true,
+                true,
+                true,
+                true,
+            ),
+            None,
+        );
+    }
+
+    #[test]
+    fn windows_incomplete_staging_cleanup_is_bound_to_its_transaction_directory() {
+        let transaction = std::path::Path::new(r"D:\recovery\.ottrin-move-abc");
+
+        assert!(windows_staging_candidate_matches_transaction(
+            transaction,
+            &transaction.join(super::WINDOWS_CROSS_VOLUME_CANDIDATE_NAME),
+        ));
+        assert!(!windows_staging_candidate_matches_transaction(
+            transaction,
+            std::path::Path::new(r"D:\unrelated\candidate"),
+        ));
+        assert_eq!(WINDOWS_INCOMPLETE_STAGING_DISPOSITION_FLAGS, 0x13);
+        assert_eq!(windows_incomplete_staging_entry_kind(false, false), None,);
+        assert_eq!(
+            windows_incomplete_staging_entry_kind(false, true),
+            Some(WindowsIncompleteStagingEntryKind::Directory),
+        );
+    }
+
+    #[test]
+    fn windows_cross_volume_move_remains_fail_closed_until_native_safety_gates_pass() {
+        assert!(!windows_cross_volume_runtime_enabled());
+    }
+
+    #[test]
+    fn windows_cross_volume_native_acceptance_can_open_only_the_test_gate() {
+        assert!(windows_cross_volume_test_gate(true));
+        assert!(!windows_cross_volume_test_gate(false));
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_native_same_volume_directory_move_preserves_the_complete_tree() {
+        struct Fixture(std::path::PathBuf);
+
+        impl Drop for Fixture {
+            fn drop(&mut self) {
+                let _ = std::fs::remove_dir_all(&self.0);
+            }
+        }
+
+        let mut fixture_id = [0_u8; 16];
+        getrandom::fill(&mut fixture_id).expect("same-volume fixture id");
+        let fixture = Fixture(std::env::temp_dir().join(format!(
+            "ottrin-native-same-volume-{}",
+            super::encode_transaction_id(fixture_id)
+        )));
+        std::fs::create_dir(&fixture.0).expect("create same-volume directory fixture");
+        let source = fixture.0.join("source-tree");
+        let destination_root = fixture.0.join("destination");
+        let nested = source.join("nested");
+        std::fs::create_dir_all(&nested).expect("create nested source tree");
+        std::fs::create_dir(&destination_root).expect("create destination directory");
+        std::fs::write(nested.join("payload.bin"), b"same-volume directory payload")
+            .expect("write nested payload");
+
+        let publication =
+            super::move_entry_transactional(&source, &destination_root, ConflictAction::Rename)
+                .expect("same-volume directory Move should complete");
+        let destination = destination_root.join("source-tree");
+
+        assert_eq!(publication.disposition, crate::MoveDisposition::Moved);
+        assert_eq!(
+            publication.published_path.as_deref(),
+            Some(destination.as_path())
+        );
+        assert!(
+            !source.exists(),
+            "the original directory name must be absent"
+        );
+        assert_eq!(
+            std::fs::read(destination.join("nested").join("payload.bin"))
+                .expect("read moved nested payload"),
+            b"same-volume directory payload"
+        );
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_regular_file_move_preserves_verified_bytes() {
+        assert!(
+            windows_cross_volume_runtime_enabled(),
+            "set OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE=1 for native acceptance"
+        );
+        assert!(
+            std::env::var_os("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT").is_some(),
+            "set OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT to an isolated empty fixture root"
+        );
+        let destination_volume = std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT")
+            .map(std::path::PathBuf::from)
+            .expect("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT must name a second Windows volume");
+        let mut transaction_id = [0_u8; 16];
+        getrandom::fill(&mut transaction_id).expect("native test transaction id");
+        let test_name = format!(
+            "ottrin-native-cross-volume-{}",
+            super::encode_transaction_id(transaction_id)
+        );
+        let source_root = std::env::temp_dir().join(&test_name);
+        let destination_root = destination_volume.join(&test_name);
+        std::fs::create_dir(&source_root).expect("create source test directory");
+        std::fs::create_dir(&destination_root).expect("create destination test directory");
+        let source = source_root.join("payload.bin");
+        let destination = destination_root.join("payload.bin");
+        let payload = b"Ottrin native cross-volume verified payload\0\xff";
+        std::fs::write(&source, payload).expect("write source payload");
+
+        let source_handle = move_recovery::open_reparse_safe_entry_for_rename(&source)
+            .expect("open source identity handle");
+        let destination_handle =
+            move_recovery::open_reparse_safe_directory_for_rename(&destination_root)
+                .expect("open destination directory handle");
+        let source_identity = move_recovery::stable_identity_from_handle(&source_handle)
+            .expect("read source identity");
+        let destination_identity = move_recovery::stable_identity_from_handle(&destination_handle)
+            .expect("read destination identity");
+        assert_ne!(
+            source_identity.volume_serial_number(),
+            destination_identity.volume_serial_number(),
+            "native test paths must reside on different Windows volumes"
+        );
+        drop(source_handle);
+        drop(destination_handle);
+
+        let publication =
+            super::move_entry_transactional(&source, &destination_root, ConflictAction::Rename)
+                .expect("cross-volume transaction should complete");
+        assert_eq!(publication.disposition, crate::MoveDisposition::Moved);
+        assert_eq!(
+            publication.published_path.as_deref(),
+            Some(destination.as_path())
+        );
+        assert!(
+            !source.exists(),
+            "source must be removed only after publication"
+        );
+        assert_eq!(
+            std::fs::read(&destination).expect("read destination"),
+            payload
+        );
+
+        std::fs::remove_file(&destination).expect("remove native test destination");
+        std::fs::remove_dir(&source_root).expect("remove native test source directory");
+        std::fs::remove_dir(&destination_root).expect("remove native test destination directory");
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_symbolic_link_preserves_raw_target_without_dereferencing() {
+        use std::os::windows::fs::symlink_file;
+
+        assert!(
+            windows_cross_volume_runtime_enabled(),
+            "set OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE=1 for native acceptance"
+        );
+        assert!(
+            std::env::var_os("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT").is_some(),
+            "set OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT to an isolated empty fixture root"
+        );
+        let destination_volume = std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT")
+            .map(std::path::PathBuf::from)
+            .expect("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT must name a second Windows volume");
+        let mut transaction_id = [0_u8; 16];
+        getrandom::fill(&mut transaction_id).expect("native test transaction id");
+        let test_name = format!(
+            "ottrin-native-cross-volume-link-{}",
+            super::encode_transaction_id(transaction_id)
+        );
+        let source_root = std::env::temp_dir().join(&test_name);
+        let destination_root = destination_volume.join(&test_name);
+        std::fs::create_dir(&source_root).expect("create source test directory");
+        std::fs::create_dir(&destination_root).expect("create destination test directory");
+        let raw_target = std::path::PathBuf::from("missing-target.txt");
+        let source = source_root.join("payload-link");
+        let destination = destination_root.join("payload-link");
+        symlink_file(&raw_target, &source).expect("create dangling source symbolic link");
+
+        let publication =
+            super::move_entry_transactional(&source, &destination_root, ConflictAction::Rename)
+                .expect("cross-volume symbolic-link transaction should complete");
+
+        assert_eq!(publication.disposition, crate::MoveDisposition::Moved);
+        assert!(std::fs::symlink_metadata(&source).is_err());
+        assert!(
+            std::fs::symlink_metadata(&destination)
+                .expect("published symbolic link")
+                .file_type()
+                .is_symlink()
+        );
+        assert_eq!(
+            std::fs::read_link(&destination).expect("published raw target"),
+            raw_target
+        );
+        assert!(
+            !destination.exists(),
+            "the dangling link was not dereferenced"
+        );
+
+        std::fs::remove_file(&destination).expect("remove native test symbolic link");
+        std::fs::remove_dir(&source_root).expect("remove native test source directory");
+        std::fs::remove_dir(&destination_root).expect("remove native test destination directory");
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_directory_move_publishes_verified_tree() {
+        struct Fixture {
+            source_root: std::path::PathBuf,
+            destination_root: std::path::PathBuf,
+            recovery_root: std::path::PathBuf,
+        }
+
+        impl Drop for Fixture {
+            fn drop(&mut self) {
+                let _ = std::fs::remove_dir_all(&self.source_root);
+                let _ = std::fs::remove_dir_all(&self.destination_root);
+                let _ = std::fs::remove_dir_all(&self.recovery_root);
+            }
+        }
+
+        assert!(
+            windows_cross_volume_runtime_enabled(),
+            "set OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE=1 for native acceptance"
+        );
+        let recovery_root = std::env::var_os("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT")
+            .map(std::path::PathBuf::from)
+            .expect("set OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT to an isolated empty fixture root");
+        let destination_volume = std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT")
+            .map(std::path::PathBuf::from)
+            .expect("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT must name a second Windows volume");
+        let mut transaction_id = [0_u8; 16];
+        getrandom::fill(&mut transaction_id).expect("native directory test transaction id");
+        let test_name = format!(
+            "ottrin-native-cross-volume-directory-{}",
+            super::encode_transaction_id(transaction_id)
+        );
+        let fixture = Fixture {
+            source_root: std::env::temp_dir().join(&test_name),
+            destination_root: destination_volume.join(&test_name),
+            recovery_root,
+        };
+        let source = fixture.source_root.join("source-tree");
+        let nested = source.join("nested");
+        std::fs::create_dir_all(&nested).expect("create cross-volume source tree");
+        std::fs::create_dir(&fixture.destination_root)
+            .expect("create cross-volume destination root");
+        let payload = b"cross-volume directory verified payload";
+        std::fs::write(nested.join("payload.bin"), payload).expect("write nested payload");
+
+        let publication = super::move_entry_transactional(
+            &source,
+            &fixture.destination_root,
+            ConflictAction::Rename,
+        )
+        .expect("cross-volume directory transaction should complete");
+
+        assert_eq!(publication.disposition, crate::MoveDisposition::Moved);
+        assert_eq!(
+            publication.published_path,
+            Some(fixture.destination_root.join("source-tree"))
+        );
+        assert!(
+            !source.exists(),
+            "source must be removed only after publication"
+        );
+        assert_eq!(
+            std::fs::read(
+                fixture
+                    .destination_root
+                    .join("source-tree")
+                    .join("nested")
+                    .join("payload.bin")
+            )
+            .expect("read published nested payload"),
+            payload
+        );
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_staged_process_exit_recovers_through_move_entry() {
+        use std::process::Command;
+
+        let destination_volume = std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT")
+            .map(std::path::PathBuf::from)
+            .expect("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT must name a second Windows volume");
+        if std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_CHILD").is_some() {
+            let source = std::path::PathBuf::from(
+                std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE")
+                    .expect("child source path"),
+            );
+            let destination_root = std::path::PathBuf::from(
+                std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION")
+                    .expect("child destination path"),
+            );
+            let _recovery_lock = super::acquire_windows_recovery_lock()
+                .expect("acquire child Windows Move recovery lock");
+            let source_handle = move_recovery::open_reparse_safe_entry_for_rename(&source)
+                .expect("open child source identity handle");
+            let destination_handle =
+                move_recovery::open_reparse_safe_directory_for_rename(&destination_root)
+                    .expect("open child destination directory handle");
+            super::move_windows_cross_volume_preflight(
+                &source,
+                &destination_root,
+                ConflictAction::Rename,
+                source_handle,
+                destination_handle,
+            )
+            .expect("child should exit after durable staged state");
+            panic!("child returned without exercising the process-exit hook");
+        }
+
+        let mut transaction_id = [0_u8; 16];
+        getrandom::fill(&mut transaction_id).expect("native interruption test transaction id");
+        let test_name = format!(
+            "ottrin-native-cross-volume-interrupt-{}",
+            super::encode_transaction_id(transaction_id)
+        );
+        let source_root = std::env::temp_dir().join(&test_name);
+        let destination_root = destination_volume.join(&test_name);
+        let state_root = source_root.join("state");
+        std::fs::create_dir_all(&source_root).expect("create interruption source root");
+        std::fs::create_dir_all(&destination_root).expect("create interruption destination root");
+        std::fs::create_dir_all(&state_root).expect("create interruption state root");
+        let source = source_root.join("payload.bin");
+        let destination = destination_root.join("payload.bin");
+        let payload = b"Ottrin native process-exit recovery payload\0\xff";
+        std::fs::write(&source, payload).expect("write interruption source payload");
+
+        let status = Command::new(std::env::current_exe().expect("native test executable"))
+            .args([
+                "--ignored",
+                "--exact",
+                "move_transaction::windows_source_tests::windows_native_cross_volume_staged_process_exit_recovers_through_move_entry",
+                "--test-threads=1",
+                "--nocapture",
+            ])
+            .env("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT", &destination_volume)
+            .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_CHILD", "1")
+            .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_AFTER_STAGED", "1")
+            .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE", &source)
+            .env(
+                "OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION",
+                &destination_root,
+            )
+            .env("LOCALAPPDATA", &state_root)
+            .status()
+            .expect("run interruption child");
+        assert_eq!(
+            status.code(),
+            Some(86),
+            "child must exit at staged boundary"
+        );
+        assert!(
+            source.exists(),
+            "interruption before publication must preserve source"
+        );
+        assert!(
+            !destination.exists(),
+            "staged candidate must not yet be published"
+        );
+        let transaction = std::fs::read_dir(&destination_root)
+            .expect("inspect interrupted destination root")
+            .filter_map(Result::ok)
+            .find(|entry| {
+                entry
+                    .file_name()
+                    .to_string_lossy()
+                    .starts_with(".ottrin-move-")
+            })
+            .expect("durable transaction directory must remain")
+            .path();
+        assert_eq!(
+            std::fs::read(transaction.join(super::WINDOWS_CROSS_VOLUME_CANDIDATE_NAME))
+                .expect("read interrupted staged candidate"),
+            payload
+        );
+
+        let previous_local_app_data = std::env::var_os("LOCALAPPDATA");
+        unsafe {
+            std::env::set_var("LOCALAPPDATA", &state_root);
+            std::env::set_var("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY", "1");
+        }
+        let recovery =
+            super::move_entry_transactional(&source, &destination_root, ConflictAction::Rename);
+        unsafe {
+            std::env::remove_var("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY");
+            if let Some(previous) = previous_local_app_data {
+                std::env::set_var("LOCALAPPDATA", previous);
+            } else {
+                std::env::remove_var("LOCALAPPDATA");
+            }
+        }
+        let publication = recovery.expect("ordinary Move entry should resume staged transaction");
+        assert_eq!(publication.disposition, crate::MoveDisposition::Moved);
+        assert_eq!(
+            publication.published_path.as_deref(),
+            Some(destination.as_path())
+        );
+        assert!(
+            !source.exists(),
+            "recovery removes source only after publication"
+        );
+        assert_eq!(
+            std::fs::read(&destination).expect("read recovered destination"),
+            payload
+        );
+        assert!(
+            !transaction.exists(),
+            "successful recovery cleans transaction data"
+        );
+
+        std::fs::remove_file(&destination).expect("remove recovered destination");
+        std::fs::remove_dir_all(&source_root).expect("remove interruption source root");
+        std::fs::remove_dir(&destination_root).expect("remove interruption destination root");
+    }
+
+    #[test]
+    fn windows_cross_volume_regular_file_rejects_named_data_streams() {
+        assert!(windows_stream_set_is_copy_safe(["::$DATA"]));
+        assert!(!windows_stream_set_is_copy_safe([
+            "::$DATA",
+            ":retained-metadata:$DATA",
+        ]));
+        assert!(!windows_stream_set_is_copy_safe(std::iter::empty::<&str>()));
+    }
+
+    #[test]
+    fn windows_cross_volume_copy_preserves_windows_file_metadata() {
+        assert!(windows_cross_volume_uses_metadata_preserving_copy());
+    }
+
+    #[test]
+    fn windows_cross_volume_overwrite_requests_write_through_publication() {
+        assert_eq!(WINDOWS_OVERWRITE_REPLACE_FLAGS, 0x0000_0001);
+    }
+
+    #[test]
+    fn windows_cross_volume_publication_flushes_file_and_namespace_after_rename() {
+        let events = std::cell::RefCell::new(Vec::new());
+        publish_windows_cross_volume_candidate_with(
+            || {
+                events.borrow_mut().push("rename");
+                Ok(())
+            },
+            || {
+                events.borrow_mut().push("file");
+                Ok(())
+            },
+            || {
+                events.borrow_mut().push("namespace");
+                Ok(())
+            },
+        )
+        .unwrap();
+        assert_eq!(events.into_inner(), vec!["rename", "file", "namespace"]);
+    }
+
+    #[test]
+    fn windows_cross_volume_directory_overwrite_retains_before_publishing() {
+        let events = std::cell::RefCell::new(Vec::new());
+        publish_windows_cross_volume_directory_overwrite_with(
+            || {
+                events.borrow_mut().push("retain");
+                Ok(())
+            },
+            || {
+                events.borrow_mut().push("flush-retained-namespace");
+                Ok(())
+            },
+            || {
+                events.borrow_mut().push("publish");
+                Ok(())
+            },
+            || {
+                events.borrow_mut().push("flush-published");
+                Ok(())
+            },
+            || {
+                events.borrow_mut().push("flush-published-namespace");
+                Ok(())
+            },
+        )
+        .expect("directory publication");
+
+        assert_eq!(
+            events.into_inner(),
+            [
+                "retain",
+                "flush-retained-namespace",
+                "publish",
+                "flush-published",
+                "flush-published-namespace",
+            ]
+        );
+    }
+
+    #[test]
+    fn windows_cross_volume_completion_flushes_source_namespace_before_cleanup() {
+        let events = std::cell::RefCell::new(Vec::new());
+        complete_windows_cross_volume_source_removal_with(
+            || {
+                events.borrow_mut().push("source-namespace");
+                Ok(())
+            },
+            || {
+                events.borrow_mut().push("cleanup");
+                Ok(())
+            },
+        )
+        .expect("source removal should become durable before cleanup");
+
+        assert_eq!(events.into_inner(), vec!["source-namespace", "cleanup"]);
+    }
+
+    #[test]
+    fn windows_cross_volume_recovery_flushes_retained_and_namespace_before_recording() {
+        let events = std::cell::RefCell::new(Vec::new());
+        flush_windows_cross_volume_recovered_publication_with(
+            || {
+                events.borrow_mut().push("published");
+                Ok(())
+            },
+            || {
+                events.borrow_mut().push("retained");
+                Ok(())
+            },
+            || {
+                events.borrow_mut().push("namespace");
+                Ok(())
+            },
+            || {
+                events.borrow_mut().push("recorded");
+                Ok(())
+            },
+        )
+        .expect("recovered publication should become durable");
+
+        assert_eq!(
+            events.into_inner(),
+            vec!["published", "retained", "namespace", "recorded"]
+        );
+    }
+
+    #[test]
+    fn windows_cross_volume_publication_does_not_flush_namespace_after_file_flush_failure() {
+        let events = std::cell::RefCell::new(Vec::new());
+        let result = publish_windows_cross_volume_candidate_with(
+            || {
+                events.borrow_mut().push("rename");
+                Ok(())
+            },
+            || {
+                events.borrow_mut().push("file");
+                Err(PlatformError::Io("injected file flush failure".into()))
+            },
+            || {
+                events.borrow_mut().push("namespace");
+                Ok(())
+            },
+        );
+        assert!(matches!(result, Err(PlatformError::Io(_))));
+        assert_eq!(events.into_inner(), vec!["rename", "file"]);
+    }
+
+    #[test]
+    fn windows_cross_volume_restart_flushes_unrecorded_publication_before_source_removal() {
+        assert_eq!(
+            require_windows_publication_durability(
+                WindowsCrossVolumeRestartAction::RemoveSource,
+                false,
+            ),
+            WindowsCrossVolumeRestartAction::FlushPublished,
+        );
+        assert_eq!(
+            require_windows_publication_durability(
+                WindowsCrossVolumeRestartAction::RemoveSource,
+                true,
+            ),
+            WindowsCrossVolumeRestartAction::RemoveSource,
+        );
+    }
+
+    #[test]
+    fn windows_cross_volume_recovery_remains_fail_closed_until_native_safety_gates_pass() {
+        assert!(!windows_cross_volume_recovery_enabled());
+    }
+
+    #[test]
+    fn windows_cross_volume_skip_finishes_without_mutating_an_existing_destination() {
+        assert_eq!(
+            classify_windows_cross_volume_preflight(ConflictAction::Skip, true),
+            WindowsCrossVolumePreflight::Skip,
+        );
+        for conflict in [
+            ConflictAction::Skip,
+            ConflictAction::Rename,
+            ConflictAction::Overwrite,
+        ] {
+            assert_eq!(
+                classify_windows_cross_volume_preflight(conflict, false),
+                WindowsCrossVolumePreflight::TransactionRequired,
+            );
+        }
+        for conflict in [ConflictAction::Rename, ConflictAction::Overwrite] {
+            assert_eq!(
+                classify_windows_cross_volume_preflight(conflict, true),
+                WindowsCrossVolumePreflight::TransactionRequired,
+            );
+        }
+    }
+
+    #[test]
+    fn windows_cross_volume_source_handle_denies_write_and_delete_sharing() {
+        assert_eq!(
+            move_recovery::WINDOWS_CROSS_VOLUME_SOURCE_SHARE_MODE,
+            0x0000_0001
+        );
+    }
+
+    #[test]
+    fn windows_cross_volume_candidate_handle_denies_all_concurrent_mutation() {
+        assert_eq!(move_recovery::WINDOWS_CROSS_VOLUME_CANDIDATE_SHARE_MODE, 0);
+        assert_ne!(
+            move_recovery::WINDOWS_CROSS_VOLUME_CANDIDATE_ACCESS_MODE & 0x4000_0000,
+            0,
+            "publication handle must be write-capable for FlushFileBuffers"
+        );
+    }
+
+    #[test]
+    fn windows_cross_volume_destination_parent_handle_can_flush_publication_namespace() {
+        assert_ne!(
+            move_recovery::WINDOWS_DESTINATION_PARENT_ACCESS_MODE & 0x4000_0000,
+            0,
+            "FlushFileBuffers requires a write-capable destination directory handle"
+        );
+    }
+
+    #[test]
+    fn windows_recovery_lock_denies_concurrent_recovery_owners() {
+        assert_eq!(WINDOWS_RECOVERY_LOCK_SHARE_MODE, 0);
+        assert_eq!(
+            windows_recovery_lock_path(std::path::Path::new("Ottrin/move-recovery")),
+            std::path::PathBuf::from("Ottrin/move-recovery.lock")
+        );
+    }
+
+    #[test]
+    fn windows_cross_volume_publication_requires_the_recorded_destination_parent() {
+        assert!(windows_destination_parent_is_pinned(41_u64, 41));
+        assert!(!windows_destination_parent_is_pinned(42_u64, 41));
+    }
+
+    #[test]
+    fn windows_cross_volume_teardown_keeps_central_evidence_when_local_removal_fails() {
+        let transaction = std::path::Path::new("destination/.ottrin-move-01");
+        let central = std::path::Path::new("recovery/01.cross-journal");
+        let removals = std::cell::RefCell::new(Vec::new());
+
+        let result = cleanup_windows_cross_volume_transaction_with(
+            transaction,
+            central,
+            |path| {
+                removals.borrow_mut().push(path.to_path_buf());
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::PermissionDenied,
+                    "injected local journal removal failure",
+                ))
+            },
+            |_| panic!("transaction directory must remain while journal evidence remains"),
+        );
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { .. })
+        ));
+        assert_eq!(
+            removals.into_inner(),
+            vec![transaction.join(WINDOWS_LOCAL_JOURNAL_NAME)]
+        );
+    }
+
+    #[test]
+    fn windows_source_removal_requires_identity_and_content_evidence() {
+        assert_eq!(
+            classify_windows_source_removal(true, true, true),
+            WindowsSourceRemovalDecision::RemoveOpenedSource,
+        );
+        for evidence in [
+            (false, true, true),
+            (true, false, true),
+            (true, true, false),
+            (false, false, false),
+        ] {
+            assert_eq!(
+                classify_windows_source_removal(evidence.0, evidence.1, evidence.2),
+                WindowsSourceRemovalDecision::PreserveForRecovery,
+            );
+        }
+    }
+
+    #[test]
+    fn windows_cross_volume_rename_advances_from_latest_durable_candidate() {
+        let candidates = [
+            std::path::PathBuf::from("report.txt"),
+            std::path::PathBuf::from("report (1).txt"),
+        ];
+        assert_eq!(
+            next_windows_rename_candidate(&candidates),
+            Some(std::path::PathBuf::from("report (2).txt")),
+        );
+    }
+
+    #[test]
+    fn windows_cross_volume_rename_candidate_journals_reconcile_only_by_prefix() {
+        assert_eq!(
+            reconcile_windows_rename_candidates(
+                ConflictAction::Rename,
+                &["report.txt", "report (2).txt"],
+                &["report.txt"],
+            ),
+            Some(vec!["report.txt", "report (2).txt"]),
+        );
+        assert_eq!(
+            reconcile_windows_rename_candidates(
+                ConflictAction::Rename,
+                &["report.txt", "report (3).txt"],
+                &["report.txt", "report (2).txt"],
+            ),
+            None,
+        );
+        assert_eq!(
+            reconcile_windows_rename_candidates(
+                ConflictAction::Skip,
+                &["report.txt", "report (2).txt"],
+                &["report.txt"],
+            ),
+            None,
+        );
+    }
+
+    #[test]
+    fn windows_cross_volume_overwrite_restart_requires_retained_displaced_identity() {
+        let source = 11_u64;
+        let staged = 22_u64;
+        let displaced = 33_u64;
+        assert_eq!(
+            classify_windows_cross_volume_overwrite_restart(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                Some(source),
+                Some(displaced),
+                None,
+                None,
+                source,
+                staged,
+                displaced,
+            ),
+            WindowsCrossVolumeRestartAction::CopyAndVerify,
+        );
+        assert_eq!(
+            classify_windows_cross_volume_overwrite_restart(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                Some(source),
+                Some(displaced),
+                Some(staged),
+                None,
+                source,
+                staged,
+                displaced,
+            ),
+            WindowsCrossVolumeRestartAction::PublishStaged,
+        );
+        assert_eq!(
+            classify_windows_cross_volume_overwrite_restart(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                Some(source),
+                Some(staged),
+                None,
+                Some(displaced),
+                source,
+                staged,
+                displaced,
+            ),
+            WindowsCrossVolumeRestartAction::RemoveSource,
+        );
+        assert_eq!(
+            classify_windows_cross_volume_overwrite_restart(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                Some(source),
+                None,
+                Some(staged),
+                Some(displaced),
+                source,
+                staged,
+                displaced,
+            ),
+            WindowsCrossVolumeRestartAction::PublishStaged,
+            "a non-atomic directory replacement must resume after retaining the displaced target",
+        );
+        assert_eq!(
+            classify_windows_cross_volume_overwrite_restart(
+                super::WindowsCrossVolumeSourceKind::File,
+                Some(source),
+                None,
+                Some(staged),
+                Some(displaced),
+                source,
+                staged,
+                displaced,
+            ),
+            WindowsCrossVolumeRestartAction::RetainAmbiguous,
+            "the directory-only intermediate topology must not weaken file replacement recovery",
+        );
+        assert_eq!(
+            classify_windows_cross_volume_overwrite_restart(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                None,
+                Some(staged),
+                None,
+                Some(displaced),
+                source,
+                staged,
+                displaced,
+            ),
+            WindowsCrossVolumeRestartAction::Complete,
+        );
+        for ambiguous in [
+            classify_windows_cross_volume_overwrite_restart(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                Some(source),
+                Some(staged),
+                None,
+                None,
+                source,
+                staged,
+                displaced,
+            ),
+            classify_windows_cross_volume_overwrite_restart(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                Some(source),
+                Some(displaced),
+                Some(displaced),
+                None,
+                source,
+                staged,
+                displaced,
+            ),
+            classify_windows_cross_volume_overwrite_restart(
+                super::WindowsCrossVolumeSourceKind::Directory,
+                Some(source),
+                Some(staged),
+                Some(staged),
+                Some(displaced),
+                source,
+                staged,
+                displaced,
+            ),
+        ] {
+            assert_eq!(ambiguous, WindowsCrossVolumeRestartAction::RetainAmbiguous);
+        }
+    }
+
+    #[test]
+    fn windows_cross_volume_restart_uses_durable_identity_topology() {
+        let source = 11_u64;
+        let staged = 22_u64;
+        assert_eq!(
+            classify_windows_cross_volume_restart(Some(source), None, None, source, None),
+            WindowsCrossVolumeRestartAction::CopyAndVerify,
+        );
+        assert_eq!(
+            classify_windows_cross_volume_restart(
+                Some(source),
+                None,
+                Some(staged),
+                source,
+                Some(staged),
+            ),
+            WindowsCrossVolumeRestartAction::PublishStaged,
+        );
+        assert_eq!(
+            classify_windows_cross_volume_restart(
+                Some(source),
+                Some(staged),
+                None,
+                source,
+                Some(staged),
+            ),
+            WindowsCrossVolumeRestartAction::RemoveSource,
+        );
+        assert_eq!(
+            classify_windows_cross_volume_restart(None, Some(staged), None, source, Some(staged),),
+            WindowsCrossVolumeRestartAction::Complete,
+        );
+        assert_eq!(
+            classify_windows_cross_volume_restart(
+                Some(99),
+                Some(staged),
+                None,
+                source,
+                Some(staged),
+            ),
+            WindowsCrossVolumeRestartAction::RetainAmbiguous,
+        );
+    }
+
+    #[test]
+    fn windows_overwrite_requires_published_source_and_retained_displaced_identity() {
+        let source = 11;
+        let displaced = 22;
+
+        assert_eq!(
+            classify_windows_replace_topology(
+                Some(source),
+                None,
+                Some(displaced),
+                source,
+                displaced,
+            ),
+            WindowsReplaceTopology::PublishedAndRetained,
+        );
+        assert_eq!(
+            classify_windows_replace_topology(Some(source), None, Some(99), source, displaced,),
+            WindowsReplaceTopology::PublishedAmbiguous,
+        );
+        assert_eq!(
+            classify_windows_replace_topology(
+                Some(displaced),
+                Some(source),
+                None,
+                source,
+                displaced,
+            ),
+            WindowsReplaceTopology::NotPublished,
+        );
+        assert_eq!(
+            classify_windows_replace_topology(None, None, None, source, displaced),
+            WindowsReplaceTopology::Ambiguous,
+        );
+    }
+
+    #[test]
+    fn windows_overwrite_restart_uses_durable_identities_not_advisory_phase() {
+        let source = 11_u64;
+        let displaced = 22_u64;
+
+        assert_eq!(
+            classify_windows_overwrite_restart(
+                None,
+                Some(displaced),
+                Some(source),
+                None,
+                source,
+                displaced,
+            ),
+            WindowsOverwriteRestartAction::PublishClaimed,
+        );
+        assert_eq!(
+            classify_windows_overwrite_restart(
+                None,
+                Some(source),
+                None,
+                Some(displaced),
+                source,
+                displaced,
+            ),
+            WindowsOverwriteRestartAction::FinishPublished,
+        );
+        assert_eq!(
+            classify_windows_overwrite_restart(
+                None,
+                None,
+                Some(source),
+                Some(displaced),
+                source,
+                displaced,
+            ),
+            WindowsOverwriteRestartAction::PublishAfterRetain,
+        );
+        assert_eq!(
+            classify_windows_overwrite_restart(
+                Some(source),
+                Some(displaced),
+                None,
+                None,
+                source,
+                displaced,
+            ),
+            WindowsOverwriteRestartAction::ClaimSource,
+        );
+        assert_eq!(
+            classify_windows_overwrite_restart(
+                None,
+                Some(source),
+                Some(displaced),
+                None,
+                source,
+                displaced,
+            ),
+            WindowsOverwriteRestartAction::RetainAmbiguous,
+        );
+    }
 }
 
 #[cfg(all(test, target_os = "linux"))]
-#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -1784,6 +9013,62 @@ mod tests {
     }
 
     #[test]
+    fn cross_filesystem_retry_through_public_api_recovers_claimed_source() {
+        let destination_root = TestDir::new("public-retry");
+        let source_root = std::env::current_dir()
+            .unwrap()
+            .join("target")
+            .join("test-state")
+            .join(format!(
+                "ottrin-move-public-retry-{}",
+                getrandom::u64().unwrap()
+            ));
+        std::fs::create_dir_all(&source_root).unwrap();
+        let source = source_root.join("source");
+        let destination = destination_root.0.join("destination");
+        std::fs::write(&source, "payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let source_device = std::fs::symlink_metadata(&source_root).unwrap().dev();
+        let destination_device = std::fs::symlink_metadata(&destination).unwrap().dev();
+        assert_ne!(
+            source_device, destination_device,
+            "test requires repository storage and the system temporary directory on distinct filesystems"
+        );
+
+        let interrupted = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| {
+                if point == TestPoint::PendingDestination {
+                    Err("simulate interruption after source claim")
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        assert!(matches!(
+            interrupted,
+            Err(PlatformError::ClaimedRecoveryPending { .. })
+        ));
+        assert!(!source.exists());
+
+        let recovered = move_entry_transactional(&source, &destination, ConflictAction::Skip);
+
+        let recovered = recovered.unwrap_or_else(|error| panic!("public retry failed: {error}"));
+        assert_eq!(recovered.disposition, MoveDisposition::Moved);
+        assert_eq!(recovered.published_path, Some(destination.join("source")));
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"payload"
+        );
+        assert!(!source.exists());
+        assert!(!has_local_transaction_dir(&source_root));
+        std::fs::remove_dir_all(source_root).unwrap();
+    }
+
+    #[test]
     fn cross_filesystem_move_publishes_destination_metadata_with_snapshot() {
         let dir = TestDir::new("metadata");
         let source = dir.0.join("source");
@@ -1841,6 +9126,239 @@ mod tests {
         assert!(!central_journal["destination_transaction_name"].is_null());
         assert!(!central_journal["source_tree_snapshot"].is_null());
         assert!(!central_journal["staged_destination_identity"].is_null());
+    }
+
+    #[test]
+    fn cross_filesystem_directory_move_preserves_nested_files_and_symlinks() {
+        with_move_env_serializer(|| {
+            use std::os::unix::fs::symlink;
+
+            let dir = TestDir::new("directory-tree");
+            let source = dir.0.join("source-tree");
+            let nested = source.join("nested");
+            let destination = dir.0.join("destination");
+            std::fs::create_dir_all(&nested).unwrap();
+            std::fs::create_dir(&destination).unwrap();
+            std::fs::write(nested.join("payload.txt"), b"nested payload").unwrap();
+            symlink("nested/payload.txt", source.join("payload-link")).unwrap();
+
+            let publication = move_entry_transactional_with_test_hook(
+                &source,
+                &destination,
+                ConflictAction::Skip,
+                |point| {
+                    if point == TestPoint::ClassifyCrossDevice {
+                        Err("force cross-device move")
+                    } else {
+                        Ok(())
+                    }
+                },
+            )
+            .unwrap();
+
+            let published = destination.join("source-tree");
+            assert_eq!(publication, MoveDisposition::Moved);
+            assert!(!source.exists());
+            assert_eq!(
+                std::fs::read(published.join("nested/payload.txt")).unwrap(),
+                b"nested payload"
+            );
+            assert_eq!(
+                std::fs::read_link(published.join("payload-link")).unwrap(),
+                PathBuf::from("nested/payload.txt")
+            );
+        });
+    }
+
+    #[test]
+    fn cross_filesystem_symlink_move_preserves_link_without_touching_target() {
+        with_move_env_serializer(|| {
+            use std::os::unix::fs::symlink;
+
+            let dir = TestDir::new("symlink-entry");
+            let target = dir.0.join("target.txt");
+            let source = dir.0.join("source-link");
+            let destination = dir.0.join("destination");
+            std::fs::write(&target, b"target payload").unwrap();
+            std::fs::create_dir(&destination).unwrap();
+            symlink("target.txt", &source).unwrap();
+
+            let publication = move_entry_transactional_with_test_hook(
+                &source,
+                &destination,
+                ConflictAction::Skip,
+                |point| {
+                    if point == TestPoint::ClassifyCrossDevice {
+                        Err("force cross-device move")
+                    } else {
+                        Ok(())
+                    }
+                },
+            )
+            .unwrap();
+
+            let published = destination.join("source-link");
+            assert_eq!(publication, MoveDisposition::Moved);
+            assert!(std::fs::symlink_metadata(&source).is_err());
+            assert_eq!(
+                std::fs::read_link(&published).unwrap(),
+                PathBuf::from("target.txt")
+            );
+            assert_eq!(std::fs::read(&target).unwrap(), b"target payload");
+        });
+    }
+
+    #[test]
+    fn cross_filesystem_source_mutation_after_publication_preserves_both_entries() {
+        let dir = TestDir::new("source-mutation-after-publication");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "original payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| {
+                if point == TestPoint::ClassifyCrossDevice {
+                    Err("force cross-device move")
+                } else if point == TestPoint::Publication {
+                    let transaction = std::fs::read_dir(&dir.0)
+                        .unwrap()
+                        .filter_map(Result::ok)
+                        .find(|entry| is_move_transaction_directory(&entry.file_name()))
+                        .unwrap();
+                    std::fs::write(transaction.path().join("claimed"), "mutated payload").unwrap();
+                    Ok(())
+                } else {
+                    Ok(())
+                }
+            },
+        );
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { message, .. })
+                if message == "cross-device source snapshot changed before cleanup"
+        ));
+        assert_eq!(
+            std::fs::read_to_string(destination.join("source")).unwrap(),
+            "original payload"
+        );
+        let transaction = std::fs::read_dir(&dir.0)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| is_move_transaction_directory(&entry.file_name()))
+            .unwrap();
+        assert_eq!(
+            std::fs::read_to_string(transaction.path().join("claimed")).unwrap(),
+            "mutated payload"
+        );
+    }
+
+    #[test]
+    fn cross_filesystem_staged_content_mutation_before_publication_preserves_source() {
+        let dir = TestDir::new("staged-content-mutation-before-publication");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "original payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| {
+                if point == TestPoint::ClassifyCrossDevice {
+                    Err("force cross-device move")
+                } else if point == TestPoint::PendingDestination {
+                    let destination_transaction = std::fs::read_dir(&destination)
+                        .unwrap()
+                        .filter_map(Result::ok)
+                        .find(|entry| is_move_transaction_directory(&entry.file_name()))
+                        .expect("destination transaction exists after staging");
+                    std::fs::write(
+                        destination_transaction
+                            .path()
+                            .join(CROSS_DEVICE_STAGED_NAME),
+                        "mutated staged payload",
+                    )
+                    .unwrap();
+                    Ok(())
+                } else {
+                    Ok(())
+                }
+            },
+        );
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::ClaimedRecoveryPending { message, .. })
+                if message == "cross-device staged destination does not match source snapshot"
+        ));
+        assert!(
+            !destination.join("source").exists(),
+            "unverified staged content must not be published"
+        );
+        let source_transaction = std::fs::read_dir(&dir.0)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| is_move_transaction_directory(&entry.file_name()))
+            .expect("claimed source remains recoverable");
+        assert_eq!(
+            std::fs::read(source_transaction.path().join("claimed")).unwrap(),
+            b"original payload"
+        );
+    }
+
+    #[test]
+    fn cross_filesystem_source_mutation_at_cleanup_boundary_preserves_both_entries() {
+        let dir = TestDir::new("source-mutation-at-cleanup-boundary");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "original payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| {
+                if point == TestPoint::ClassifyCrossDevice {
+                    Err("force cross-device move")
+                } else if point == TestPoint::BeforeSourceCleanup {
+                    let transaction = std::fs::read_dir(&dir.0)
+                        .unwrap()
+                        .filter_map(Result::ok)
+                        .find(|entry| is_move_transaction_directory(&entry.file_name()))
+                        .unwrap();
+                    std::fs::write(transaction.path().join("claimed"), "mutated payload").unwrap();
+                    Ok(())
+                } else {
+                    Ok(())
+                }
+            },
+        );
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { message, .. })
+                if message == "cross-device source snapshot changed at cleanup boundary"
+        ));
+        assert_eq!(
+            std::fs::read_to_string(destination.join("source")).unwrap(),
+            "original payload"
+        );
+        let transaction = std::fs::read_dir(&dir.0)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| is_move_transaction_directory(&entry.file_name()))
+            .unwrap();
+        assert_eq!(
+            std::fs::read_to_string(transaction.path().join("claimed")).unwrap(),
+            "mutated payload"
+        );
     }
 
     #[test]
@@ -1909,8 +9427,167 @@ mod tests {
     }
 
     #[test]
-    fn cross_filesystem_overwrite_is_rejected_before_claiming_source_or_destination() {
-        let dir = TestDir::new("overwrite-rejected-before-claim");
+    fn cross_filesystem_recovery_finishes_published_move_source_cleanup() {
+        let dir = TestDir::new("recover-published-before-cleanup");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| match point {
+                TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                TestPoint::BeforeSourceCleanup => Err("stop before source cleanup"),
+                _ => Ok(()),
+            },
+        );
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { message, .. })
+                if message == "move test hook failed: stop before source cleanup"
+        ));
+
+        let recovery_root = default_recovery_root().unwrap();
+        let retained = discover_retained_move_transactions_at(&recovery_root).unwrap();
+        assert_eq!(retained.len(), 1);
+        assert_eq!(retained[0].phase, move_recovery::JournalPhase::Published);
+
+        recover_retained_move_pending_destination_at(&recovery_root, retained[0].transaction_id)
+            .unwrap();
+
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"payload"
+        );
+        assert!(
+            discover_retained_move_transactions_at(&recovery_root)
+                .unwrap()
+                .is_empty()
+        );
+        assert!(!has_local_transaction_dir(&dir.0));
+        assert!(
+            !std::fs::read_dir(&destination)
+                .unwrap()
+                .filter_map(Result::ok)
+                .any(|entry| is_move_transaction_directory(&entry.file_name()))
+        );
+    }
+
+    #[test]
+    fn cross_filesystem_recovery_finishes_cleanup_after_source_was_unlinked() {
+        let dir = TestDir::new("recover-published-after-unlink");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| match point {
+                TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                TestPoint::BeforeSourceCleanup => Err("stop before source cleanup"),
+                _ => Ok(()),
+            },
+        );
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { .. })
+        ));
+
+        let recovery_root = default_recovery_root().unwrap();
+        let retained = discover_retained_move_transactions_at(&recovery_root).unwrap();
+        let local = std::fs::read_dir(&dir.0)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| is_move_transaction_directory(&entry.file_name()))
+            .unwrap();
+        std::fs::remove_file(local.path().join("claimed")).unwrap();
+
+        recover_retained_move_pending_destination_at(&recovery_root, retained[0].transaction_id)
+            .unwrap();
+
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"payload"
+        );
+        assert!(
+            discover_retained_move_transactions_at(&recovery_root)
+                .unwrap()
+                .is_empty()
+        );
+        assert!(!has_local_transaction_dir(&dir.0));
+    }
+
+    #[test]
+    fn same_filesystem_overwrite_publication_interruption_is_committed_and_retained() {
+        let dir = TestDir::new("overwrite-publication-interruption");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "moved payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("source"), "displaced payload").unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Overwrite,
+            |point| {
+                if point == TestPoint::Publication {
+                    Err("simulate termination after publication")
+                } else {
+                    Ok(())
+                }
+            },
+        );
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { message, .. })
+                if message == "move test hook failed after publication: simulate termination after publication"
+        ));
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read_to_string(destination.join("source")).unwrap(),
+            "moved payload"
+        );
+        let local = std::fs::read_dir(&dir.0)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| is_move_transaction_directory(&entry.file_name()))
+            .expect("durable local transaction");
+        assert_eq!(
+            std::fs::read_to_string(local.path().join("claimed")).unwrap(),
+            "displaced payload"
+        );
+        let recovery_root = default_recovery_root().unwrap();
+        let retained = discover_retained_move_transactions_at(&recovery_root).unwrap();
+        assert_eq!(retained.len(), 1);
+
+        recover_retained_move_pending_destination_at(&recovery_root, retained[0].transaction_id)
+            .unwrap();
+
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "moved payload");
+        assert_eq!(
+            std::fs::read_to_string(destination.join("source")).unwrap(),
+            "displaced payload"
+        );
+        assert!(
+            discover_retained_move_transactions_at(&recovery_root)
+                .unwrap()
+                .is_empty()
+        );
+        assert!(!has_local_transaction_dir(&dir.0));
+    }
+
+    #[test]
+    fn cross_filesystem_overwrite_interruption_after_exchange_preserves_all_three_entries() {
+        let dir = TestDir::new("cross-overwrite-post-exchange");
         let source = dir.0.join("source");
         let destination = dir.0.join("destination");
         std::fs::write(&source, "source payload").unwrap();
@@ -1923,26 +9600,472 @@ mod tests {
             ConflictAction::Overwrite,
             |point| match point {
                 TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                TestPoint::Publication => Err("simulate interruption after exchange"),
                 _ => Ok(()),
             },
         );
 
         assert!(matches!(
             result,
-            Err(PlatformError::UnsupportedSafeCrossDeviceMove(_))
+            Err(PlatformError::CommittedCleanupPending { message, .. })
+                if message == "move test hook failed after cross-device overwrite publication: simulate interruption after exchange"
         ));
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"source payload"
+        );
+
+        let source_transaction = std::fs::read_dir(&dir.0)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| {
+                entry.path().is_dir() && is_move_transaction_directory(&entry.file_name())
+            })
+            .expect("source transaction remains for recovery");
+        assert_eq!(
+            std::fs::read(source_transaction.path().join("claimed")).unwrap(),
+            b"source payload"
+        );
+
+        let destination_transaction = std::fs::read_dir(&destination)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| {
+                entry.path().is_dir() && is_move_transaction_directory(&entry.file_name())
+            })
+            .expect("destination transaction retains displaced destination");
+        assert_eq!(
+            std::fs::read(
+                destination_transaction
+                    .path()
+                    .join(CROSS_DEVICE_STAGED_NAME)
+            )
+            .unwrap(),
+            b"displaced destination payload"
+        );
+
+        let recovery_root = default_recovery_root().unwrap();
+        let retained = discover_retained_move_transactions_at(&recovery_root).unwrap();
+        assert_eq!(retained.len(), 1);
+        recover_retained_move_pending_destination_at(&recovery_root, retained[0].transaction_id)
+            .unwrap();
+
         assert_eq!(std::fs::read(&source).unwrap(), b"source payload");
         assert_eq!(
             std::fs::read(destination.join("source")).unwrap(),
             b"displaced destination payload"
         );
-        assert!(std::fs::read_dir(&dir.0).unwrap().all(|entry| {
-            !entry
+        assert!(!has_local_transaction_dir(&dir.0));
+        assert!(!has_local_transaction_dir(&destination));
+        assert!(
+            discover_retained_move_transactions_at(&recovery_root)
                 .unwrap()
-                .file_name()
-                .to_string_lossy()
-                .starts_with(".ottrin-move-")
-        }));
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn cross_filesystem_overwrite_recovery_resumes_after_source_restore() {
+        let dir = TestDir::new("cross-overwrite-resume-after-source-restore");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        let destination_target = destination.join("source");
+        std::fs::write(&source, "source payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&destination_target, "displaced destination payload").unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Overwrite,
+            |point| match point {
+                TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                TestPoint::Publication => Err("simulate interruption after exchange"),
+                _ => Ok(()),
+            },
+        );
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { .. })
+        ));
+
+        let source_transaction = std::fs::read_dir(&dir.0)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| {
+                entry.path().is_dir() && is_move_transaction_directory(&entry.file_name())
+            })
+            .expect("source transaction remains for recovery");
+        let destination_transaction = std::fs::read_dir(&destination)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| {
+                entry.path().is_dir() && is_move_transaction_directory(&entry.file_name())
+            })
+            .expect("destination transaction remains for recovery");
+
+        super::super::exchange_paths(
+            &destination_transaction
+                .path()
+                .join(CROSS_DEVICE_STAGED_NAME),
+            &destination_target,
+        )
+        .unwrap();
+        std::fs::rename(source_transaction.path().join("claimed"), &source).unwrap();
+
+        let recovery_root = default_recovery_root().unwrap();
+        let retained = discover_retained_move_transactions_at(&recovery_root).unwrap();
+        assert_eq!(retained.len(), 1);
+        recover_retained_move_pending_destination_at(&recovery_root, retained[0].transaction_id)
+            .unwrap();
+
+        assert_eq!(std::fs::read(&source).unwrap(), b"source payload");
+        assert_eq!(
+            std::fs::read(&destination_target).unwrap(),
+            b"displaced destination payload"
+        );
+        assert!(!has_local_transaction_dir(&dir.0));
+        assert!(!has_local_transaction_dir(&destination));
+        assert!(
+            discover_retained_move_transactions_at(&recovery_root)
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn cross_filesystem_overwrite_success_retains_displaced_destination_and_recovery_evidence() {
+        let dir = TestDir::new("cross-overwrite-retained");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "source payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("source"), "displaced destination payload").unwrap();
+
+        let publication = move_with_hooks(
+            &source,
+            &destination,
+            ConflictAction::Overwrite,
+            |point| match point {
+                TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                _ => Ok(()),
+            },
+        )
+        .unwrap();
+
+        assert_eq!(publication.disposition, MoveDisposition::Moved);
+        assert_eq!(publication.published_path, Some(destination.join("source")));
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"source payload"
+        );
+        let retained_displaced_path = publication
+            .retained_displaced_path
+            .expect("overwrite must retain the displaced destination");
+        assert_eq!(
+            std::fs::read(&retained_displaced_path).unwrap(),
+            b"displaced destination payload"
+        );
+
+        let retained =
+            discover_retained_move_transactions_at(&default_recovery_root().unwrap()).unwrap();
+        assert_eq!(retained.len(), 1);
+        assert_eq!(retained[0].phase, move_recovery::JournalPhase::Published);
+    }
+
+    #[test]
+    fn cross_filesystem_published_overwrite_restart_finishes_source_cleanup_and_retains_undo_data()
+    {
+        let dir = TestDir::new("cross-overwrite-published-restart");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "source payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("source"), "displaced destination payload").unwrap();
+
+        let publication = move_with_hooks(
+            &source,
+            &destination,
+            ConflictAction::Overwrite,
+            |point| match point {
+                TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                _ => Ok(()),
+            },
+        )
+        .unwrap();
+        let retained_displaced_path = publication
+            .retained_displaced_path
+            .expect("overwrite must retain displaced data");
+        let recovery_root = default_recovery_root().unwrap();
+        let retained = discover_retained_move_transactions_at(&recovery_root).unwrap();
+
+        recover_retained_move_pending_destination_at(&recovery_root, retained[0].transaction_id)
+            .unwrap();
+
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"source payload"
+        );
+        assert_eq!(
+            std::fs::read(&retained_displaced_path).unwrap(),
+            b"displaced destination payload"
+        );
+        let retained_after_restart =
+            discover_retained_move_transactions_at(&recovery_root).unwrap();
+        assert_eq!(retained_after_restart.len(), 1);
+        assert_eq!(
+            retained_after_restart[0].phase,
+            move_recovery::JournalPhase::Published
+        );
+    }
+
+    #[test]
+    fn cross_filesystem_destination_parent_is_synced_after_publication_before_source_cleanup() {
+        let dir = TestDir::new("cross-parent-sync-order");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "source payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        let mut observed = Vec::new();
+
+        move_with_hooks(&source, &destination, ConflictAction::Skip, |point| {
+            observed.push(point);
+            match point {
+                TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                _ => Ok(()),
+            }
+        })
+        .unwrap();
+
+        let publication = observed
+            .iter()
+            .position(|point| *point == TestPoint::DestinationPublished)
+            .expect("publication must be observable");
+        let parent_sync = observed
+            .iter()
+            .position(|point| *point == TestPoint::DestinationParentSynced)
+            .expect("post-publication destination-parent sync must be observable");
+        let source_cleanup = observed
+            .iter()
+            .position(|point| *point == TestPoint::BeforeSourceCleanup)
+            .expect("source cleanup boundary must be observable");
+        assert!(publication < parent_sync);
+        assert!(parent_sync < source_cleanup);
+    }
+
+    #[test]
+    fn cross_filesystem_source_replacement_after_revalidation_is_not_deleted() {
+        let dir = TestDir::new("cross-source-post-revalidation-race");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "source payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| match point {
+                TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                TestPoint::AfterSourceRevalidation => {
+                    let transaction = std::fs::read_dir(&dir.0)
+                        .unwrap()
+                        .filter_map(Result::ok)
+                        .find(|entry| {
+                            entry.path().is_dir()
+                                && is_move_transaction_directory(&entry.file_name())
+                        })
+                        .expect("source transaction remains during cleanup");
+                    std::fs::rename(
+                        transaction.path().join("claimed"),
+                        transaction.path().join("original-away"),
+                    )
+                    .unwrap();
+                    std::fs::write(transaction.path().join("claimed"), "replacement payload")
+                        .unwrap();
+                    Ok(())
+                }
+                _ => Ok(()),
+            },
+        );
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { .. })
+        ));
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"source payload"
+        );
+        let transaction = std::fs::read_dir(&dir.0)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| {
+                entry.path().is_dir() && is_move_transaction_directory(&entry.file_name())
+            })
+            .expect("source transaction remains for recovery");
+        assert_eq!(
+            std::fs::read(transaction.path().join("claimed")).unwrap(),
+            b"replacement payload"
+        );
+        assert_eq!(
+            std::fs::read(transaction.path().join("original-away")).unwrap(),
+            b"source payload"
+        );
+    }
+
+    #[test]
+    fn cross_filesystem_recovery_handles_source_cleanup_quarantine() {
+        let dir = TestDir::new("cross-source-cleanup-quarantine-recovery");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "source payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| match point {
+                TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                TestPoint::SourceCleanupQuarantined => {
+                    Err("simulate interruption after source quarantine")
+                }
+                _ => Ok(()),
+            },
+        );
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { .. })
+        ));
+        let transaction = std::fs::read_dir(&dir.0)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| {
+                entry.path().is_dir() && is_move_transaction_directory(&entry.file_name())
+            })
+            .expect("source transaction remains for recovery");
+        assert_eq!(
+            std::fs::read(transaction.path().join(SOURCE_CLEANUP_NAME)).unwrap(),
+            b"source payload"
+        );
+
+        std::fs::rename(
+            transaction.path().join(SOURCE_CLEANUP_NAME),
+            transaction.path().join("original-away"),
+        )
+        .unwrap();
+        std::fs::write(
+            transaction.path().join(SOURCE_CLEANUP_NAME),
+            "replacement payload",
+        )
+        .unwrap();
+
+        let recovery_root = default_recovery_root().unwrap();
+        let retained = discover_retained_move_transactions_at(&recovery_root).unwrap();
+        assert_eq!(retained.len(), 1);
+        let recovery_result = recover_retained_move_pending_destination_at(
+            &recovery_root,
+            retained[0].transaction_id,
+        );
+
+        assert!(recovery_result.is_err());
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"source payload"
+        );
+        assert_eq!(
+            std::fs::read(transaction.path().join(SOURCE_CLEANUP_NAME)).unwrap(),
+            b"replacement payload"
+        );
+        assert_eq!(
+            std::fs::read(transaction.path().join("original-away")).unwrap(),
+            b"source payload"
+        );
+
+        std::fs::remove_file(transaction.path().join(SOURCE_CLEANUP_NAME)).unwrap();
+        std::fs::rename(
+            transaction.path().join("original-away"),
+            transaction.path().join(SOURCE_CLEANUP_NAME),
+        )
+        .unwrap();
+        recover_retained_move_pending_destination_at(&recovery_root, retained[0].transaction_id)
+            .unwrap();
+
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"source payload"
+        );
+        assert!(!has_local_transaction_dir(&dir.0));
+    }
+
+    #[test]
+    fn cross_filesystem_cleanup_preserves_quarantine_replacement() {
+        let dir = TestDir::new("cross-source-cleanup-quarantine-replacement");
+        let source = dir.0.join("source");
+        let destination = dir.0.join("destination");
+        std::fs::write(&source, "source payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| match point {
+                TestPoint::ClassifyCrossDevice => Err("force cross-device move"),
+                TestPoint::SourceCleanupQuarantined => {
+                    let transaction = std::fs::read_dir(&dir.0)
+                        .unwrap()
+                        .filter_map(Result::ok)
+                        .find(|entry| {
+                            entry.path().is_dir()
+                                && is_move_transaction_directory(&entry.file_name())
+                        })
+                        .expect("source transaction remains until cleanup completes");
+                    std::fs::rename(
+                        transaction.path().join(SOURCE_CLEANUP_NAME),
+                        transaction.path().join("original-away"),
+                    )
+                    .unwrap();
+                    std::fs::write(
+                        transaction.path().join(SOURCE_CLEANUP_NAME),
+                        "replacement payload",
+                    )
+                    .unwrap();
+                    Ok(())
+                }
+                _ => Ok(()),
+            },
+        );
+
+        assert!(matches!(
+            result,
+            Err(PlatformError::CommittedCleanupPending { .. })
+        ));
+        assert_eq!(
+            std::fs::read(destination.join("source")).unwrap(),
+            b"source payload"
+        );
+        let transaction = std::fs::read_dir(&dir.0)
+            .unwrap()
+            .filter_map(Result::ok)
+            .find(|entry| {
+                entry.path().is_dir() && is_move_transaction_directory(&entry.file_name())
+            })
+            .expect("source transaction remains for recovery");
+        assert_eq!(
+            std::fs::read(transaction.path().join(SOURCE_CLEANUP_NAME)).unwrap(),
+            b"replacement payload"
+        );
+        assert_eq!(
+            std::fs::read(transaction.path().join("original-away")).unwrap(),
+            b"source payload"
+        );
     }
 
     #[test]
@@ -2134,6 +10257,99 @@ mod tests {
     }
 
     #[cfg(target_os = "linux")]
+    fn run_overwrite_publication_sigkill_child(root: &Path) {
+        use rustix::process;
+
+        let source = root.join("source");
+        let destination = root.join("destination");
+        std::fs::write(&source, "moved payload").unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("source"), "displaced payload").unwrap();
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Overwrite,
+            |point| {
+                if point == TestPoint::Publication {
+                    let _ = process::kill_process(process::getpid(), process::Signal::Kill);
+                    panic!("overwrite publication child was not terminated");
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        panic!("overwrite publication move returned {result:?} without being terminated");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn same_filesystem_overwrite_publication_sigkill_recovers_both_entries_after_restart() {
+        use std::os::unix::process::ExitStatusExt;
+        use std::process::Command;
+
+        with_move_env_serializer(|| {
+            if std::env::var_os("OTTRIN_MOVE_OVERWRITE_SIGKILL_CHILD").as_deref()
+                == Some(std::ffi::OsStr::new("1"))
+            {
+                let root = std::env::var_os("OTTRIN_MOVE_OVERWRITE_SIGKILL_ROOT").unwrap();
+                run_overwrite_publication_sigkill_child(Path::new(&root));
+                panic!("overwrite publication child returned without being terminated");
+            }
+
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-move-overwrite-publication-kill-{}",
+                getrandom::u64().unwrap()
+            ));
+            std::fs::create_dir(&root).unwrap();
+            let state_root = root.join("state");
+            std::fs::create_dir_all(&state_root).unwrap();
+            let status = Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "move_transaction::tests::same_filesystem_overwrite_publication_sigkill_recovers_both_entries_after_restart",
+                    "--test-threads=1",
+                    "--nocapture",
+                ])
+                .env("OTTRIN_MOVE_OVERWRITE_SIGKILL_CHILD", "1")
+                .env("OTTRIN_MOVE_OVERWRITE_SIGKILL_ROOT", &root)
+                .env("XDG_STATE_HOME", &state_root)
+                .status()
+                .unwrap();
+            assert_eq!(status.signal(), Some(9));
+            assert!(!root.join("source").exists());
+            assert_eq!(
+                std::fs::read_to_string(root.join("destination").join("source")).unwrap(),
+                "moved payload"
+            );
+
+            let recovery_root = state_root.join("ottrin").join("moves");
+            let retained = discover_retained_move_transactions_at(&recovery_root).unwrap();
+            assert_eq!(retained.len(), 1);
+            recover_retained_move_pending_destination_at(
+                &recovery_root,
+                retained[0].transaction_id,
+            )
+            .unwrap();
+
+            assert_eq!(
+                std::fs::read_to_string(root.join("source")).unwrap(),
+                "moved payload"
+            );
+            assert_eq!(
+                std::fs::read_to_string(root.join("destination").join("source")).unwrap(),
+                "displaced payload"
+            );
+            assert!(
+                discover_retained_move_transactions_at(&recovery_root)
+                    .unwrap()
+                    .is_empty()
+            );
+            assert!(!has_local_transaction_dir(&root));
+            std::fs::remove_dir_all(root).unwrap();
+        });
+    }
+
+    #[cfg(target_os = "linux")]
     fn run_pending_destination_sigkill_child(root: &Path) {
         use rustix::process;
 
@@ -2273,6 +10489,217 @@ mod tests {
         panic!(
             "cross-device pending destination move returned {result:?} without being terminated"
         );
+    }
+
+    #[cfg(target_os = "linux")]
+    fn run_cross_filesystem_unoccupied_pending_destination_sigkill_child(root: &Path) {
+        use rustix::process;
+
+        let source = root.join("source");
+        let destination = root.join("destination");
+        std::fs::write(&source, "payload").unwrap();
+        std::fs::create_dir_all(&destination).unwrap();
+
+        let result = move_entry_transactional_with_test_hook(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+            |point| {
+                if point == TestPoint::ClassifyCrossDevice {
+                    Err("force cross-device move")
+                } else if point == TestPoint::PendingDestination {
+                    let _ = process::kill_process(process::getpid(), process::Signal::Kill);
+                    panic!("cross-device pending destination child was not terminated");
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        panic!(
+            "cross-device pending destination move returned {result:?} without being terminated"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_filesystem_replay_rejects_staged_content_changed_without_identity_change() {
+        use std::os::unix::process::ExitStatusExt;
+        use std::process::Command;
+
+        with_move_env_serializer(|| {
+            if std::env::var_os("OTTRIN_MOVE_REPLAY_CONTENT_CHILD").as_deref()
+                == Some(std::ffi::OsStr::new("1"))
+            {
+                let root = std::env::var_os("OTTRIN_MOVE_REPLAY_CONTENT_ROOT").unwrap();
+                run_cross_filesystem_unoccupied_pending_destination_sigkill_child(Path::new(&root));
+                panic!("cross-device replay-content child returned without being terminated");
+            }
+
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-move-cross-replay-content-{}",
+                getrandom::u64().unwrap()
+            ));
+            std::fs::create_dir(&root).unwrap();
+            let state_root = root.join("state");
+            std::fs::create_dir_all(&state_root).unwrap();
+            let status = Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "move_transaction::tests::cross_filesystem_replay_rejects_staged_content_changed_without_identity_change",
+                    "--test-threads=1",
+                    "--nocapture",
+                ])
+                .env("OTTRIN_MOVE_REPLAY_CONTENT_CHILD", "1")
+                .env("OTTRIN_MOVE_REPLAY_CONTENT_ROOT", &root)
+                .env("XDG_STATE_HOME", &state_root)
+                .status()
+                .unwrap();
+            assert_eq!(status.signal(), Some(9));
+
+            let destination_transaction = std::fs::read_dir(root.join("destination"))
+                .unwrap()
+                .filter_map(Result::ok)
+                .find(|entry| is_move_transaction_directory(&entry.file_name()))
+                .expect("destination transaction exists after staging");
+            let staged = destination_transaction
+                .path()
+                .join(CROSS_DEVICE_STAGED_NAME);
+            let staged_identity =
+                stable_identity_from_metadata(&std::fs::symlink_metadata(&staged).unwrap());
+            std::fs::write(&staged, b"corrupt").unwrap();
+            assert_eq!(
+                stable_identity_from_metadata(&std::fs::symlink_metadata(&staged).unwrap()),
+                staged_identity,
+                "the corruption must preserve the staged inode identity"
+            );
+
+            let previous_state_home = std::env::var_os("XDG_STATE_HOME");
+            unsafe {
+                std::env::set_var("XDG_STATE_HOME", &state_root);
+            }
+            let recovery = move_entry_transactional_with_test_hook(
+                &root.join("source"),
+                &root.join("destination"),
+                ConflictAction::Skip,
+                |point| {
+                    if point == TestPoint::ClassifyCrossDevice {
+                        Err("force cross-device move")
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            if let Some(previous_state_home) = previous_state_home {
+                unsafe {
+                    std::env::set_var("XDG_STATE_HOME", previous_state_home);
+                }
+            } else {
+                unsafe {
+                    std::env::remove_var("XDG_STATE_HOME");
+                }
+            }
+
+            assert!(matches!(
+                recovery,
+                Err(PlatformError::CommittedCleanupPending { message, .. })
+                    if message == "recovery staged destination content does not match source snapshot"
+            ));
+            assert!(!root.join("destination").join("source").exists());
+            let source_transaction = std::fs::read_dir(&root)
+                .unwrap()
+                .filter_map(Result::ok)
+                .find(|entry| is_move_transaction_directory(&entry.file_name()))
+                .expect("claimed source remains recoverable");
+            assert_eq!(
+                std::fs::read(source_transaction.path().join("claimed")).unwrap(),
+                b"payload"
+            );
+            assert_eq!(std::fs::read(staged).unwrap(), b"corrupt");
+            std::fs::remove_dir_all(root).unwrap();
+        });
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn cross_filesystem_replay_syncs_destination_parent_before_completion() {
+        use std::os::unix::process::ExitStatusExt;
+        use std::process::Command;
+
+        with_move_env_serializer(|| {
+            if std::env::var_os("OTTRIN_MOVE_REPLAY_SYNC_CHILD").as_deref()
+                == Some(std::ffi::OsStr::new("1"))
+            {
+                let root = std::env::var_os("OTTRIN_MOVE_REPLAY_SYNC_ROOT").unwrap();
+                run_cross_filesystem_unoccupied_pending_destination_sigkill_child(Path::new(&root));
+                panic!("cross-device replay-sync child returned without being terminated");
+            }
+
+            let root = std::env::temp_dir().join(format!(
+                "ottrin-move-cross-replay-sync-{}",
+                getrandom::u64().unwrap()
+            ));
+            std::fs::create_dir(&root).unwrap();
+            let state_root = root.join("state");
+            std::fs::create_dir_all(&state_root).unwrap();
+            let status = Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "move_transaction::tests::cross_filesystem_replay_syncs_destination_parent_before_completion",
+                    "--test-threads=1",
+                    "--nocapture",
+                ])
+                .env("OTTRIN_MOVE_REPLAY_SYNC_CHILD", "1")
+                .env("OTTRIN_MOVE_REPLAY_SYNC_ROOT", &root)
+                .env("XDG_STATE_HOME", &state_root)
+                .status()
+                .unwrap();
+            assert_eq!(status.signal(), Some(9));
+
+            let previous_state_home = std::env::var_os("XDG_STATE_HOME");
+            unsafe {
+                std::env::set_var("XDG_STATE_HOME", &state_root);
+            }
+            let mut observed = Vec::new();
+            let recovery = move_entry_transactional_with_test_hook(
+                &root.join("source"),
+                &root.join("destination"),
+                ConflictAction::Skip,
+                |point| {
+                    observed.push(point);
+                    if point == TestPoint::ClassifyCrossDevice {
+                        Err("force cross-device move")
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            if let Some(previous_state_home) = previous_state_home {
+                unsafe {
+                    std::env::set_var("XDG_STATE_HOME", previous_state_home);
+                }
+            } else {
+                unsafe {
+                    std::env::remove_var("XDG_STATE_HOME");
+                }
+            }
+            assert!(recovery.is_ok(), "recovery retry failed: {recovery:?}");
+
+            let publication = observed
+                .iter()
+                .position(|point| *point == TestPoint::DestinationPublished)
+                .expect("replay publication must be observable");
+            let parent_sync = observed
+                .iter()
+                .position(|point| *point == TestPoint::DestinationParentSynced)
+                .expect("replay destination-parent sync must be observable");
+            assert!(publication < parent_sync);
+            assert_eq!(
+                std::fs::read(root.join("destination").join("source")).unwrap(),
+                b"payload"
+            );
+            assert!(!root.join("source").exists());
+            std::fs::remove_dir_all(root).unwrap();
+        });
     }
 
     #[cfg(target_os = "linux")]

@@ -8,7 +8,7 @@ Every item must be checked against the exact artifact intended for release. A so
 - [ ] `cargo check --workspace --all-targets`
 - [ ] `cargo test --workspace`
 - [ ] `cargo clippy --workspace --all-targets -- -D warnings`
-- [ ] Linux and Windows CI are green for the release commit.
+- [ ] Linux, Windows, and macOS CI are green for the release commit.
 - [ ] Exact release artifact checksums verify after rebuilding from the current release commit.
 - [ ] Archive inspection confirms the exact rebuilt app, indexer, privileged helper, policy/assets, and user documentation are present.
 - [ ] Both exact rebuilt Windows artifacts contain the checksum-pinned Mesa 26.1.3/DXC graphics compatibility payload (`opengl32.dll`, `libgallium_wgl.dll`, `libEGL.dll`, `libGLESv2.dll`, and `dxil.dll`) plus complete notices; Automatic selection, persisted preference, explicit overrides, and loaded-DLL provenance pass acceptance.
@@ -58,8 +58,8 @@ interactive workflow, polkit-dialog, Windows runtime, UAC, or installer sign-off
 - [ ] AppImage launches on a clean supported desktop.
 - [ ] Portable tarball launches on a clean supported desktop.
 - [ ] Miller/List/Grid navigation, tabs, bookmarks, address navigation, and status messages pass.
-- [ ] Copy, overwrite, rename, multi-select, Trash, permanent delete, and partial-batch warnings pass; Linux same-filesystem Move supports Skip/Rename/Overwrite/Cancel with explicit conflict handling and native rename, while cross-filesystem and Windows Move remain unsupported without mutation.
-- [ ] Tandem View pane-to-pane copy passes, and cross-filesystem/Windows Move continues to report unsupported without mutation.
+- [ ] Copy, overwrite, rename, multi-select, Trash, permanent delete, and partial-batch warnings pass; Linux same-filesystem and cross-filesystem Move support Skip/Rename/Overwrite/Cancel with explicit complete/partial/recovery outcomes.
+- [ ] Tandem View pane-to-pane copy and Move pass, including cross-filesystem directory/symlink handling and `No batch undo` Activity reporting.
 - [ ] Search initial index, restart, watcher update, rebuild, scope changes, content search, and result actions pass.
 - [ ] Quick Inspector passes text, image, rendered multi-page PDF plus page navigation and text/metadata fallback, DOCX, XLSX/XLSM, PPTX, archive, folder, and generic files.
 - [ ] Privileged helper allow, cancel, missing-helper, and misconfigured-policy paths pass.
@@ -73,7 +73,7 @@ implementation scope, and acceptance plan.
 - [ ] Portable zip launches on a real Windows desktop.
 - [ ] Installer performs a clean per-user install, launches Ottrin, appears in Installed Apps, and creates working Start Menu shortcuts.
 - [ ] Uninstall removes the app, shortcuts, scheduled/background integration, generated search data, and preview cache while retaining saved preferences.
-- [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; cross-filesystem/Windows Move remains unsupported without mutation.
+- [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; same-volume and cross-volume Windows Move satisfy the roadmap contract and fail closed for every still-unsupported conflict or entry-kind boundary.
 - [ ] Search indexing, daemon restart, watcher updates, concurrent GUI/CLI attach, and persistent background-service installation/removal pass.
 - [ ] Quick Inspector passes the Windows file-type matrix, including rendered PDF pages plus malformed/encrypted PDF text/metadata fallback paths.
 - [ ] If the graphics compatibility payload is shipped, native-driver and bundled-OpenGL launch paths each pass on their intended physical/virtual or remote adapters, including Automatic detection, the persisted renderer preference, and `--renderer opengl` / `OTTRIN_RENDERER=opengl` diagnostic selection.
@@ -91,3 +91,26 @@ implementation scope, and acceptance plan.
   identity and verified after download. Current rebuilt artifacts are unsigned;
   SmartScreen reputation warnings remain a release blocker and must not be
   bypassed or claimed as trusted.
+- [ ] Linux portable and AppImage artifacts have armored detached signatures;
+  the publish job verifies the exact downloaded files against the approved
+  primary-key fingerprint before creating the release.
+- [ ] The macOS app ZIP and DMG are Developer ID signed, notarized, and stapled;
+  the publish dependency verifies the exact downloaded checksums, team
+  identifier, code signatures, notarization tickets, and Gatekeeper assessment.
+
+The tag workflow fails closed unless these GitHub Actions settings are present:
+
+- secret `LINUX_SIGNING_PRIVATE_KEY` and variable
+  `LINUX_SIGNING_KEY_FINGERPRINT` (the full 40-hex primary-key fingerprint),
+- secrets `WINDOWS_SIGNING_CERTIFICATE_BASE64` and
+  `WINDOWS_SIGNING_CERTIFICATE_PASSWORD`, plus variable
+  `WINDOWS_SIGNING_CERTIFICATE_THUMBPRINT` (the 40-hex certificate thumbprint),
+- secrets `MACOS_SIGNING_CERTIFICATE_BASE64`,
+  `MACOS_SIGNING_CERTIFICATE_PASSWORD`, `MACOS_NOTARIZATION_APPLE_ID`, and
+  `MACOS_NOTARIZATION_PASSWORD`, plus variables `MACOS_SIGNING_IDENTITY`
+  (the complete `Developer ID Application: ...` identity) and `MACOS_TEAM_ID`
+  (the ten-character Apple developer team identifier).
+
+Provisioning and approving those production identities remains an external
+release gate. Private keys and certificate bundles must remain in GitHub
+Actions secrets, never in the repository or release artifacts.

@@ -23,6 +23,20 @@ fn limits() -> VideoThumbnailLimits {
 }
 
 #[test]
+fn user_facing_video_fallback_distinguishes_missing_system_support_from_bad_media() {
+    let missing = VideoThumbnailError::NativeBackendUnavailable.fallback_message();
+    let unsupported = VideoThumbnailError::UnsupportedMedia.fallback_message();
+    let malformed = VideoThumbnailError::DecodeFailed.fallback_message();
+
+    assert!(missing.contains("operating-system video components"));
+    assert!(missing.contains("does not mean the file is invalid"));
+    assert!(unsupported.contains("installed codec"));
+    assert!(unsupported.contains("does not mean the file is invalid"));
+    assert!(malformed.contains("malformed or unsupported"));
+    assert!(!malformed.contains("does not mean the file is invalid"));
+}
+
+#[test]
 fn compressed_video_source_size_is_hard_bounded_at_admission() {
     let limits = VideoThumbnailLimits::for_target(256);
 

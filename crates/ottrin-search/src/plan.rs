@@ -1,10 +1,10 @@
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use ottrin_core::SearchConfig;
+use ottrin_core::{ContentFileGroup, SearchConfig};
 use std::fmt::Write;
 use std::path::{Path, PathBuf};
 
-const FILTER_POLICY_VERSION: u32 = 3;
-const CONTENT_POLICY_VERSION: u32 = 1;
+const FILTER_POLICY_VERSION: u32 = 4;
+const CONTENT_POLICY_VERSION: u32 = 2;
 const FOLLOW_LINKS: bool = false;
 const SAME_FILE_SYSTEM: bool = true;
 
@@ -20,6 +20,8 @@ pub(crate) struct ScanPlan {
     content_indexing_enabled: bool,
     content_include_roots: Vec<PathBuf>,
     content_exclude_roots: Vec<PathBuf>,
+    content_file_groups: Vec<ContentFileGroup>,
+    content_max_file_size_bytes: u64,
 
     include: GlobSet,
     exclude: GlobSet,
@@ -60,6 +62,8 @@ impl ScanPlan {
                 enabled: config.content_indexing_enabled,
                 include_roots: &content_include_roots,
                 exclude_roots: &content_exclude_roots,
+                file_groups: &config.content_file_groups,
+                max_file_size_bytes: config.content_max_file_size_bytes,
             },
             &include_globs,
             &exclude_globs,
@@ -71,6 +75,8 @@ impl ScanPlan {
             content_indexing_enabled: config.content_indexing_enabled,
             content_include_roots,
             content_exclude_roots,
+            content_file_groups: config.content_file_groups.clone(),
+            content_max_file_size_bytes: config.content_max_file_size_bytes,
             include,
             exclude,
             identity,
@@ -108,31 +114,52 @@ impl ScanPlan {
     }
 
     pub(crate) fn includes_path_for_root(&self, path: &Path, root: &Path) -> bool {
+        if !self.passes_base_filters(path, root) {
+            return false;
+        }
+        if marker_backed_generated_root(path, root).is_some() {
+            return false;
+        }
+        if path == root {
+            return true;
+        }
+        let relative = crate::normalized_rel_path(path, root);
+        !self.exclude.is_match(&relative) || self.include.is_match(&relative)
+    }
+
+    /// Normalize an event inside newly generated output to the output boundary,
+    /// allowing the delta path to remove rows indexed before its marker appeared.
+    pub(crate) fn included_event_path_for_root(&self, path: &Path, root: &Path) -> Option<PathBuf> {
+        if !self.passes_base_filters(path, root) {
+            return None;
+        }
+        marker_backed_generated_root(path, root).or_else(|| {
+            self.includes_path_for_root(path, root)
+                .then(|| path.to_path_buf())
+        })
+    }
+
+    fn passes_base_filters(&self, path: &Path, root: &Path) -> bool {
         if self.root_for(path) != Some(root) {
             return false;
         }
         if path == root {
             return true;
         }
-        if self
+        !self
             .excluded_roots
             .iter()
             .any(|excluded| path.starts_with(excluded))
-        {
-            return false;
-        }
-        if !self.include_hidden_system && crate::path_has_hidden_component(path, root) {
-            return false;
-        }
-        if crate::path_has_builtin_excluded_component(path, root) {
-            return false;
-        }
-        let relative = crate::normalized_rel_path(path, root);
-        !self.exclude.is_match(&relative) || self.include.is_match(&relative)
+            && (self.include_hidden_system || !crate::path_has_hidden_component(path, root))
+            && !crate::path_has_builtin_excluded_component(path, root)
     }
 
     pub(crate) fn includes_item_name(&self, name: &str) -> bool {
         self.include_hidden_system || !name.starts_with('.')
+    }
+
+    pub(crate) fn content_max_file_size_bytes(&self) -> u64 {
+        self.content_max_file_size_bytes
     }
 
     pub(crate) fn indexes_content_for(&self, path: &Path) -> bool {
@@ -145,7 +172,35 @@ impl ScanPlan {
                 .content_exclude_roots
                 .iter()
                 .any(|root| path.starts_with(root))
+            && self
+                .content_file_groups
+                .iter()
+                .any(|group| group.supports_path(path))
     }
+}
+
+/// Recognize conventional build-output containers only when a local build-system
+/// marker proves that the directory is generated. Paths outside `out`/`build`
+/// perform no filesystem probes; nested notify paths perform at most two probes
+/// for each container and its immediate child.
+fn marker_backed_generated_root(path: &Path, root: &Path) -> Option<PathBuf> {
+    let Ok(relative) = path.strip_prefix(root) else {
+        return None;
+    };
+    let mut candidate = root.to_path_buf();
+    let mut container_child_pending = false;
+    for component in relative.components() {
+        candidate.push(component.as_os_str());
+        let name = component.as_os_str().to_string_lossy();
+        let is_container = name.eq_ignore_ascii_case("out") || name.eq_ignore_ascii_case("build");
+        if (is_container || container_child_pending)
+            && (candidate.join("build.ninja").is_file() || candidate.join("args.gn").is_file())
+        {
+            return Some(candidate);
+        }
+        container_child_pending = is_container;
+    }
+    None
 }
 
 fn normalized_patterns(patterns: &[String]) -> Vec<String> {
@@ -182,6 +237,8 @@ struct ContentPolicy<'a> {
     enabled: bool,
     include_roots: &'a [PathBuf],
     exclude_roots: &'a [PathBuf],
+    file_groups: &'a [ContentFileGroup],
+    max_file_size_bytes: u64,
 }
 
 fn canonical_identity(
@@ -200,11 +257,15 @@ fn canonical_identity(
     canonical_content_include_roots.sort();
     let mut canonical_content_exclude_roots = content_policy.exclude_roots.to_vec();
     canonical_content_exclude_roots.sort();
+    let mut canonical_content_file_groups = content_policy.file_groups.to_vec();
+    canonical_content_file_groups.sort();
+    canonical_content_file_groups.dedup();
     let mut identity = String::new();
     write!(
         identity,
-        "descriptor=2;filter={FILTER_POLICY_VERSION};content-policy={CONTENT_POLICY_VERSION};encoding={PATH_ENCODING};hidden={include_hidden_system};content={};follow={FOLLOW_LINKS};samefs={SAME_FILE_SYSTEM};",
+        "descriptor=2;filter={FILTER_POLICY_VERSION};content-policy={CONTENT_POLICY_VERSION};encoding={PATH_ENCODING};hidden={include_hidden_system};content={};content-max-bytes={};follow={FOLLOW_LINKS};samefs={SAME_FILE_SYSTEM};",
         content_policy.enabled,
+        content_policy.max_file_size_bytes,
     )
     .expect("writing to String cannot fail");
     append_identity_list(
@@ -234,6 +295,13 @@ fn canonical_identity(
         canonical_content_exclude_roots
             .iter()
             .map(|path| encode_path(path)),
+    );
+    append_identity_list(
+        &mut identity,
+        "content-groups",
+        canonical_content_file_groups
+            .iter()
+            .map(|group| format!("{group:?}")),
     );
     identity
 }
@@ -311,8 +379,9 @@ mod tests {
     #[test]
     fn identity_invalidates_indexes_created_before_content_policy() {
         let identity = ScanPlan::new(&config()).expect("valid plan");
-        assert!(identity.identity().contains("filter=3;"));
-        assert!(identity.identity().contains("content-policy=1;"));
+        assert!(identity.identity().contains("filter=4;"));
+        assert!(identity.identity().contains("content-policy=2;"));
+        assert!(identity.identity().contains("content-groups="));
         assert!(identity.identity().contains("content=false;"));
     }
 
@@ -364,6 +433,10 @@ mod tests {
             },
             SearchConfig {
                 exclude_globs: vec!["*.bak".to_string()],
+                ..cfg.clone()
+            },
+            SearchConfig {
+                content_file_groups: vec![ContentFileGroup::TextDocuments],
                 ..cfg.clone()
             },
         ];

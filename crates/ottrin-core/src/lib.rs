@@ -176,6 +176,46 @@ pub enum SearchSort {
     Size,
 }
 
+pub const DEFAULT_CONTENT_MAX_FILE_SIZE_BYTES: u64 = 512 * 1024;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum ContentFileGroup {
+    TextDocuments,
+    SourceCode,
+}
+
+impl ContentFileGroup {
+    pub const ALL: [Self; 2] = [Self::TextDocuments, Self::SourceCode];
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::TextDocuments => "Text documents",
+            Self::SourceCode => "Source code and structured text",
+        }
+    }
+
+    pub fn extensions(self) -> &'static [&'static str] {
+        match self {
+            Self::TextDocuments => &["txt", "md", "markdown", "rst", "org", "log", "csv", "tsv"],
+            Self::SourceCode => &[
+                "rs", "py", "js", "jsx", "ts", "tsx", "c", "h", "cc", "cpp", "hpp", "java", "kt",
+                "kts", "go", "rb", "php", "swift", "sh", "bash", "zsh", "fish", "ps1", "sql",
+                "html", "htm", "css", "scss", "sass", "less", "xml", "json", "jsonc", "yaml",
+                "yml", "toml", "ini", "cfg", "conf",
+            ],
+        }
+    }
+
+    pub fn supports_path(self, path: &Path) -> bool {
+        let Some(extension) = path.extension().and_then(|value| value.to_str()) else {
+            return false;
+        };
+        self.extensions()
+            .iter()
+            .any(|supported| extension.eq_ignore_ascii_case(supported))
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct SearchConfig {
@@ -194,6 +234,10 @@ pub struct SearchConfig {
     pub content_indexing_enabled: bool,
     pub content_include_roots: Vec<PathBuf>,
     pub content_exclude_roots: Vec<PathBuf>,
+    /// Supported file groups whose bodies may be extracted.
+    pub content_file_groups: Vec<ContentFileGroup>,
+    /// Maximum admitted size for one file body during content extraction.
+    pub content_max_file_size_bytes: u64,
     pub include_globs: Vec<String>,
     pub exclude_globs: Vec<String>,
     pub default_sort: SearchSort,
@@ -218,13 +262,15 @@ impl Default for SearchConfig {
         Self {
             default_scope: SearchScope::Global,
             include_hidden_system: false,
-            include_roots: Vec::new(),
+            include_roots: vec![default_home_dir()],
             indexed_volumes: Vec::new(),
             active_indexed_volume_roots: Vec::new(),
             exclude_roots: default_exclude_roots(),
             content_indexing_enabled: false,
             content_include_roots: Vec::new(),
             content_exclude_roots: Vec::new(),
+            content_file_groups: ContentFileGroup::ALL.to_vec(),
+            content_max_file_size_bytes: DEFAULT_CONTENT_MAX_FILE_SIZE_BYTES,
             include_globs: Vec::new(),
             exclude_globs: vec![
                 // Editor junk — transient files nobody intentionally searches for
@@ -876,6 +922,9 @@ pub struct AppConfig {
     pub bookmarks: Vec<(String, String, PathBuf)>,
     #[serde(default)]
     pub search: SearchConfig,
+    /// Whether the user has reviewed the independent search-layer choices.
+    #[serde(default)]
+    pub search_setup_completed: bool,
     /// Per-folder persisted Column view widths (key = absolute folder path).
     #[serde(default)]
     pub folder_column_widths: BTreeMap<String, f32>,
@@ -890,6 +939,9 @@ pub struct AppConfig {
     /// Maximum thumbnail cache size in MiB. 0 disables disk thumbnail caching.
     #[serde(default = "default_thumbnail_cache_max_mb")]
     pub thumbnail_cache_max_mb: u32,
+    /// Use a compatible LibreOffice installation for Office document previews.
+    #[serde(default = "default_true")]
+    pub installed_office_previews_enabled: bool,
     /// Windows renderer preference; Automatic uses conservative platform evidence.
     #[serde(default)]
     pub graphics_renderer: GraphicsRendererPreference,
@@ -930,11 +982,13 @@ impl Default for AppConfig {
             last_session_dirs: Vec::new(),
             bookmarks: Vec::new(),
             search: SearchConfig::default(),
+            search_setup_completed: false,
             folder_column_widths: BTreeMap::new(),
             miller_column_width_mode: MillerColumnWidthMode::Fixed,
             smart_panel_width: default_smart_panel_width(),
             window_size: None,
             thumbnail_cache_max_mb: default_thumbnail_cache_max_mb(),
+            installed_office_previews_enabled: true,
             graphics_renderer: GraphicsRendererPreference::Automatic,
             graphics_compatibility_notice_seen: false,
         }
@@ -1190,6 +1244,15 @@ pub enum FileCommand {
 pub enum PrivilegedCommand {
     File(FileCommand),
     ListDirectory { path: PathBuf, show_hidden: bool },
+    SystemLocateMaintenance(SystemLocateMaintenance),
+}
+
+/// Fixed administrator operations for the operating system's locate database.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SystemLocateMaintenance {
+    InstallDaily,
+    Remove,
+    UpdateNow,
 }
 
 /// Context passed with privileged requests for auditing / UX messaging.
@@ -1232,10 +1295,27 @@ pub enum PrivilegedPayload {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 pub fn default_home_dir() -> PathBuf {
+    #[cfg(unix)]
+    return default_home_dir_for_unix_user(
+        // SAFETY: geteuid has no preconditions and no side effects.
+        unsafe { libc::geteuid() },
+        std::env::var_os("HOME").as_deref().map(Path::new),
+    );
+    #[cfg(not(unix))]
     std::env::var_os("HOME")
         .or_else(|| std::env::var_os("USERPROFILE"))
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("/"))
+}
+
+#[cfg(unix)]
+fn default_home_dir_for_unix_user(effective_uid: u32, home: Option<&Path>) -> PathBuf {
+    if effective_uid == 0 {
+        PathBuf::from("/root")
+    } else {
+        home.map(Path::to_path_buf)
+            .unwrap_or_else(|| PathBuf::from("/"))
+    }
 }
 
 /// Format a byte count as a human-readable string (best-fit unit).
@@ -2051,5 +2131,75 @@ mod tests {
         let config = AppConfig::default();
         assert_eq!(config.graphics_renderer, reset);
         assert!(!config.graphics_compatibility_notice_seen);
+    }
+
+    #[test]
+    fn search_defaults_index_the_home_directory() {
+        assert_eq!(
+            SearchConfig::default().include_roots,
+            vec![default_home_dir()]
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn administrator_home_ignores_preserved_user_environment() {
+        assert_eq!(
+            default_home_dir_for_unix_user(0, Some(Path::new("/home/alice"))),
+            PathBuf::from("/root")
+        );
+    }
+
+    #[test]
+    fn search_setup_is_pending_by_default_and_completed_choice_round_trips() {
+        let mut config = AppConfig::default();
+        assert!(!config.search_setup_completed);
+
+        config.search_setup_completed = true;
+        let json = serde_json::to_string(&config).expect("serialize app config");
+        let loaded: AppConfig = serde_json::from_str(&json).expect("deserialize app config");
+
+        assert!(loaded.search_setup_completed);
+    }
+
+    #[test]
+    fn fresh_profiles_and_tabs_default_to_miller_view() {
+        let config = AppConfig::default();
+        assert_eq!(config.default_view_mode, ViewMode::Miller);
+
+        let state = AppState::default();
+        assert_eq!(state.active_tab().view_mode, ViewMode::Miller);
+    }
+
+    #[test]
+    fn an_explicit_saved_view_choice_survives_config_round_trip_and_new_tabs() {
+        for selected in [ViewMode::List, ViewMode::Grid, ViewMode::Miller] {
+            let config = AppConfig {
+                default_view_mode: selected,
+                ..AppConfig::default()
+            };
+            let json = serde_json::to_string(&config).expect("serialize app config");
+            let loaded: AppConfig = serde_json::from_str(&json).expect("deserialize app config");
+            assert_eq!(loaded.default_view_mode, selected);
+
+            let mut state = AppState {
+                config: loaded,
+                ..AppState::default()
+            };
+            let new_tab = state.new_tab(default_home_dir());
+            assert_eq!(state.tabs[new_tab].view_mode, selected);
+        }
+    }
+
+    #[test]
+    fn installed_office_previews_default_enabled_and_disabled_choice_round_trips() {
+        let mut config = AppConfig::default();
+        assert!(config.installed_office_previews_enabled);
+
+        config.installed_office_previews_enabled = false;
+        let json = serde_json::to_string(&config).expect("serialize app config");
+        let loaded: AppConfig = serde_json::from_str(&json).expect("deserialize app config");
+
+        assert!(!loaded.installed_office_previews_enabled);
     }
 }

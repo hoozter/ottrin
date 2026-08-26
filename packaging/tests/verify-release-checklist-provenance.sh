@@ -35,10 +35,10 @@ require_line 'Historical local gates and artifact inspection do not establish th
 require_line '- [ ] Exact release artifact checksums verify after rebuilding from the current release commit.'
 require_line '- [ ] Archive inspection confirms the exact rebuilt app, indexer, privileged helper, policy/assets, and user documentation are present.'
 require_line '- A fresh isolated artifact set was rebuilt and reverified on 2026-07-31, including'
-require_line '- [ ] Linux and Windows CI are green for the release commit.'
+require_line '- [ ] Linux, Windows, and macOS CI are green for the release commit.'
 require_line '- [ ] Portable zip launches on a real Windows desktop.'
-require_line '- [ ] Copy, overwrite, rename, multi-select, Trash, permanent delete, and partial-batch warnings pass; Linux same-filesystem Move supports Skip/Rename/Overwrite/Cancel with explicit conflict handling and native rename, while cross-filesystem and Windows Move remain unsupported without mutation.'
-require_line '- [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; cross-filesystem/Windows Move remains unsupported without mutation.'
+require_line '- [ ] Copy, overwrite, rename, multi-select, Trash, permanent delete, and partial-batch warnings pass; Linux same-filesystem and cross-filesystem Move support Skip/Rename/Overwrite/Cancel with explicit complete/partial/recovery outcomes.'
+require_line '- [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; same-volume and cross-volume Windows Move satisfy the roadmap contract and fail closed for every still-unsupported conflict or entry-kind boundary.'
 require_line '- [ ] Privileged helper allow, cancel, missing-helper, and misconfigured-policy paths pass.'
 
 # Historical evidence may retain checked records. Reject checked tasks only
@@ -123,10 +123,9 @@ if ! grep -Fq -- '`docs/RELEASE_NOTES.md`' "$DEVELOPMENT"; then
   exit 1
 fi
 
-# The roadmap must not describe the finished release notes as an unimplemented
-# feature.  What remains is release-owner comparison against the exact
-# artifacts, alongside the other physical acceptance gates.
-if ! grep -Fq -- 'Release-owner review of release notes and known limitations against the exact artifacts.' "$ROADMAP"; then
+# The roadmap must retain release-owner comparison of the finished notes and
+# known limitations inside the exact-candidate gate.
+if ! grep -Fq -- 'David reviews the release notes and any remaining known limitations.' "$ROADMAP"; then
   printf 'docs/ROADMAP.md is missing the exact-artifact release-owner review boundary.\n' >&2
   exit 1
 fi
@@ -138,7 +137,7 @@ fi
 for expected in \
   'bounded multi-page PDF previews with Previous/Next/page selection' \
   'bounded XLSX/XLSM and ODS structured worksheet previews' \
-  'clearly labeled DOCX/PPTX extracted-text fallbacks' \
+  'a bounded native DOCX structure view, and a clearly labeled PPTX extracted-text fallback' \
   'PDF and Office previews retain extracted-text and metadata fallbacks'; do
   if ! grep -Fq -- "$expected" "$README"; then
     printf 'README.md is missing current Quick Inspector release detail: %s\n' \
@@ -154,7 +153,7 @@ done
 for expected in \
   'bounded multi-page PDF visuals with Previous/Next/page selection' \
   'XLSX/XLSM and ODS use bounded structured worksheet previews' \
-  'DOCX and PPTX currently expose clearly labeled, left-aligned extracted-text fallbacks' \
+  'Admitted DOCX packages use a bounded native structure view' \
   'extracted PDF text and metadata'; do
   if ! grep -Fq -- "$expected" "$USER_GUIDE"; then
     printf 'docs/USER_GUIDE.md is missing current Quick Inspector release detail: %s\n' \
@@ -173,7 +172,7 @@ fi
 # gates that are still required; otherwise a reader could mistake this
 # candidate for a signed-off release.
 for expected in \
-  'Linux and Windows CI' \
+  'Linux, Windows, and macOS CI' \
   'real Windows desktop' \
   'packaged Linux polkit' \
   'full packaged-workflow smoke tests'; do
@@ -198,11 +197,11 @@ for expected in \
   fi
 done
 
-# Code signing is explicitly deferred from v1. The shipped release notes must
-# state that limitation just as the detailed user guidance does.
-if ! grep -Fq -- 'Code signing is not included' "$RELEASE_NOTES"; then
-  printf 'release notes are missing the deferred code-signing limitation.\n' >&2
-  exit 1
-fi
+# Signing is a release requirement, not a deferred feature. Public notes must
+# keep native signing acceptance pending, record the completed source
+# integration honestly, and require exact downloaded-artifact verification.
+require_document_line "$RELEASE_NOTES" 'signing acceptance remain pending' 'the pending signing boundary'
+require_document_line "$ROADMAP" 'Linux and Windows code-signing integration is source-complete; production identities and exact downloaded-artifact verification remain release gates.' 'the source-complete signing-integration boundary'
+require_document_line "$ROADMAP" 'Sign the exact Linux and Windows release artifacts with the approved production identities where required and verify the downloaded signatures.' 'the exact-artifact signing gate'
 
 printf 'Verified release checklist evidence provenance.\n'

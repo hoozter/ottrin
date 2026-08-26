@@ -1,19 +1,44 @@
 use crate::{
     Colors, MI_ARROW_BACK, MI_ARROW_FORWARD, MI_CONTENT_COPY, MI_DELETE, MI_DESCRIPTION, MI_EDIT,
-    MI_FOLDER_OPEN, MI_FOLDER_ZIP, MI_MUSIC_NOTE, MI_OPEN_IN_NEW, file_icon_for_path, mix_color,
+    MI_FOLDER_OPEN, MI_FOLDER_ZIP, MI_INFO, MI_MUSIC_NOTE, MI_OPEN_IN_NEW, file_icon_for_path,
+    mix_color,
 };
 use egui::{
     Align, Align2, Color32, FontId, Layout, Rect, RichText, ScrollArea, Sense, Stroke, Vec2,
 };
+use egui_extras::syntax_highlighting::{CodeTheme, highlight};
+use ottrin_core::ContentFileGroup;
 use ottrin_preview::{
+    DocxAlignment, DocxBlock, DocxImageFallback, DocxList, DocxParagraph, DocxParagraphContent,
     PreviewData, PreviewKind, SpreadsheetOmission, SpreadsheetOmissionReason, SpreadsheetPreview,
 };
+use sha2::{Digest, Sha256};
 use std::path::Path;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum GenericPreviewAction {
     Rename,
     Delete,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum PreviewCardAction {
+    OpenExternally,
+}
+
+pub(crate) fn preview_card_action(preview: &PreviewData) -> Option<PreviewCardAction> {
+    preview
+        .open_external
+        .then_some(PreviewCardAction::OpenExternally)
+}
+
+pub(crate) fn specialized_preview_body_action(preview: &PreviewData) -> Option<PreviewCardAction> {
+    matches!(
+        preview.kind,
+        PreviewKind::VideoMetadata | PreviewKind::AudioMetadata
+    )
+    .then(|| preview_card_action(preview))
+    .flatten()
 }
 
 pub(crate) fn shared_preview_body_kind(kind: PreviewKind) -> bool {
@@ -30,6 +55,7 @@ pub(crate) fn shared_preview_body_kind(kind: PreviewKind) -> bool {
 pub(crate) fn render_shared_preview_body(
     ui: &mut egui::Ui,
     c: Colors,
+    path: &Path,
     name: &str,
     preview: &PreviewData,
     selected_sheet: &mut Option<String>,
@@ -37,13 +63,16 @@ pub(crate) fn render_shared_preview_body(
     match preview.kind {
         PreviewKind::Text => render_text_body_preview(ui, c, name, &preview.body),
         PreviewKind::OfficeMetadata => {
-            if !render_spreadsheet_body_preview(ui, c, name, preview, selected_sheet) {
+            if !render_docx_structured_body_preview(ui, c, name, preview)
+                && !render_spreadsheet_body_preview(ui, c, name, preview, selected_sheet)
+            {
                 render_document_body_preview(ui, c, MI_DESCRIPTION, name, &preview.body);
             }
         }
         PreviewKind::ArchiveMetadata => render_archive_body_preview(ui, c, name, &preview.body),
         PreviewKind::AudioMetadata => {
             render_metadata_card_preview(ui, c, MI_MUSIC_NOTE, name, &preview.body);
+            render_preview_card_action(ui, c, path, preview);
         }
         PreviewKind::EpsMetadata => {
             render_document_body_preview(ui, c, MI_OPEN_IN_NEW, name, &preview.body);
@@ -51,6 +80,29 @@ pub(crate) fn render_shared_preview_body(
         _ => return false,
     }
     true
+}
+
+pub(crate) fn render_preview_card_action(
+    ui: &mut egui::Ui,
+    c: Colors,
+    path: &Path,
+    preview: &PreviewData,
+) {
+    if preview_card_action(preview) == Some(PreviewCardAction::OpenExternally)
+        && inspector_action_button(
+            ui,
+            MI_OPEN_IN_NEW,
+            "Open externally",
+            "Open this file with the system default app.",
+            c,
+        )
+        .clicked()
+    {
+        ui.ctx().open_url(egui::OpenUrl {
+            url: format!("file://{}", path.display()),
+            new_tab: false,
+        });
+    }
 }
 
 pub(crate) fn inspector_action_button(
@@ -352,6 +404,7 @@ fn render_scrollable_preview_text(
     ui: &mut egui::Ui,
     text: &str,
     color: Color32,
+    highlighted: Option<egui::text::LayoutJob>,
     minimum_height: f32,
     id: impl std::hash::Hash,
 ) {
@@ -367,23 +420,48 @@ fn render_scrollable_preview_text(
                 .auto_shrink([false, false])
                 .show(ui, |ui| {
                     ui.set_min_width(width);
-                    ui.add(
-                        egui::Label::new(
-                            RichText::new(text)
-                                .font(FontId::monospace(12.0))
-                                .color(color),
-                        )
-                        .wrap()
-                        .selectable(true),
+                    let label = highlighted.map_or_else(
+                        || {
+                            egui::Label::new(
+                                RichText::new(text)
+                                    .font(FontId::monospace(12.0))
+                                    .color(color),
+                            )
+                        },
+                        egui::Label::new,
                     );
+                    ui.add(label.wrap().selectable(true));
                 });
         });
+}
+
+fn source_preview_layout_job(
+    context: &egui::Context,
+    style: &egui::Style,
+    name: &str,
+    source: &str,
+) -> Option<egui::text::LayoutJob> {
+    let path = Path::new(name);
+    if !ContentFileGroup::SourceCode.supports_path(path) {
+        return None;
+    }
+    let language = path.extension()?.to_str()?.to_ascii_lowercase();
+    let theme = CodeTheme::from_style(style);
+    Some(highlight(context, style, &theme, source, &language))
 }
 
 pub(crate) fn render_text_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
     let (metadata, extracted) = split_preview_extracted_text(body);
     let source = extracted.unwrap_or(body).trim();
-    render_scrollable_preview_text(ui, source, c.text, 160.0, ("inspector_text", name));
+    let highlighted = source_preview_layout_job(ui.ctx(), ui.style(), name, source);
+    render_scrollable_preview_text(
+        ui,
+        source,
+        c.text,
+        highlighted,
+        160.0,
+        ("inspector_text", name),
+    );
     render_preview_footer(ui, c, name, metadata);
 }
 
@@ -467,6 +545,244 @@ fn render_extracted_text_fallback_content(ui: &mut egui::Ui, c: Colors, text: &s
             .selectable(true),
         );
     });
+}
+
+fn docx_color(value: Option<&str>, fallback: Color32) -> Color32 {
+    let Some(value) = value.filter(|value| value.len() == 6) else {
+        return fallback;
+    };
+    let Ok(rgb) = u32::from_str_radix(value, 16) else {
+        return fallback;
+    };
+    Color32::from_rgb((rgb >> 16) as u8, (rgb >> 8) as u8, rgb as u8)
+}
+
+fn docx_list_layout(list: &DocxList) -> (&str, f32) {
+    (&list.marker, f32::from(list.level) * 18.0)
+}
+
+fn render_docx_paragraph(ui: &mut egui::Ui, c: Colors, paragraph: &DocxParagraph) {
+    if paragraph.has_page_break {
+        ui.add_space(8.0);
+        ui.separator();
+        ui.label(
+            RichText::new("Page break in source")
+                .color(c.text_dim)
+                .italics()
+                .size(10.0),
+        );
+        ui.add_space(8.0);
+    }
+    if paragraph.content.is_empty() {
+        return;
+    }
+
+    let alignment = match paragraph.alignment {
+        DocxAlignment::Left | DocxAlignment::Justified => Align::Min,
+        DocxAlignment::Center => Align::Center,
+        DocxAlignment::Right => Align::Max,
+    };
+    let heading_style = paragraph.style_name.as_deref().is_some_and(|style| {
+        let style = style.to_ascii_lowercase();
+        style.contains("title") || style.contains("heading")
+    });
+    let render_content = |ui: &mut egui::Ui| {
+        let render_runs = |ui: &mut egui::Ui, runs: &mut Vec<&ottrin_preview::DocxRun>| {
+            if runs.is_empty() {
+                return;
+            }
+            ui.horizontal_wrapped(|ui| {
+                ui.spacing_mut().item_spacing.x = 0.0;
+                for run in runs.drain(..) {
+                    let size = run
+                        .font_size_half_points
+                        .map(|half_points| f32::from(half_points) / 2.0)
+                        .unwrap_or(if heading_style { 16.0 } else { 12.0 })
+                        .clamp(9.0, 28.0);
+                    let mut text = RichText::new(&run.text)
+                        .color(docx_color(run.color.as_deref(), c.text))
+                        .size(size);
+                    if run.bold || heading_style {
+                        text = text.strong();
+                    }
+                    if run.italic {
+                        text = text.italics();
+                    }
+                    ui.add(egui::Label::new(text).selectable(true));
+                }
+            });
+        };
+        let mut runs = Vec::new();
+        for content in &paragraph.content {
+            match content {
+                DocxParagraphContent::Text(run) => runs.push(run),
+                DocxParagraphContent::Image(image) => {
+                    render_runs(ui, &mut runs);
+                    if let Some(png) = image.png.as_ref() {
+                        let hash = format!("{:x}", Sha256::digest(png));
+                        let uri = format!("bytes://docx-inline/{hash}.png");
+                        ui.ctx().include_bytes(uri.clone(), png.clone());
+                        ui.add(
+                            egui::Image::new(uri)
+                                .max_width(ui.available_width().min(720.0))
+                                .max_height(480.0),
+                        );
+                        if let Some(alt_text) = image.alt_text.as_deref() {
+                            ui.label(RichText::new(alt_text).color(c.text_dim).size(10.0));
+                        }
+                    } else {
+                        let reason = match image.fallback {
+                            Some(DocxImageFallback::MissingRelationship) => {
+                                "Inline image is missing from this document package"
+                            }
+                            Some(DocxImageFallback::UnsafeRelationship) => {
+                                "Inline image uses a blocked or unsafe relationship"
+                            }
+                            Some(DocxImageFallback::InvalidImage) => {
+                                "Inline image is not a supported safe raster image"
+                            }
+                            Some(DocxImageFallback::ImageBoundsExceeded) => {
+                                "Inline image exceeds safe preview bounds"
+                            }
+                            None => "Inline image is unavailable",
+                        };
+                        let label = image
+                            .alt_text
+                            .as_deref()
+                            .map(|alt| format!("{reason}: {alt}"))
+                            .unwrap_or_else(|| reason.to_string());
+                        ui.label(RichText::new(label).color(c.text_dim).italics().size(10.5));
+                    }
+                    ui.add_space(5.0);
+                }
+            }
+        }
+        render_runs(ui, &mut runs);
+    };
+    ui.with_layout(Layout::top_down(alignment), |ui| {
+        if let Some(list) = paragraph.list.as_ref() {
+            let (marker, indentation) = docx_list_layout(list);
+            ui.horizontal_top(|ui| {
+                ui.add_space(indentation);
+                ui.add_sized(
+                    [28.0, 18.0],
+                    egui::Label::new(RichText::new(marker).color(c.text).size(12.0)),
+                );
+                ui.vertical(|ui| render_content(ui));
+            });
+        } else {
+            render_content(ui);
+        }
+    });
+    ui.add_space(if heading_style { 8.0 } else { 5.0 });
+}
+
+pub(crate) fn render_docx_structured_body_preview(
+    ui: &mut egui::Ui,
+    c: Colors,
+    name: &str,
+    preview: &PreviewData,
+) -> bool {
+    let Some(document) = preview.document.as_ref() else {
+        return false;
+    };
+
+    ui.horizontal(|ui| {
+        ui.spacing_mut().item_spacing.x = 3.0;
+        ui.label(
+            RichText::new("Ottrin preview")
+                .color(c.text)
+                .size(12.5)
+                .strong(),
+        );
+        let info = ui
+            .add(
+                egui::Button::new(RichText::new(MI_INFO).color(c.text_muted).size(13.0))
+                    .frame(false)
+                    .min_size(Vec2::splat(18.0)),
+            )
+            .on_hover_cursor(egui::CursorIcon::PointingHand);
+        if info.hovered() {
+            egui::Tooltip::for_widget(&info).show(|ui| {
+                ui.label(
+                    "Ottrin renders this document directly from the DOCX file. The preview should closely match the original, but fonts, page breaks, images and complex layouts may sometimes appear differently.",
+                );
+            });
+        }
+    });
+    ui.add_space(6.0);
+
+    let height = scrollable_preview_height(ui.available_height(), 180.0);
+    egui::Frame::new()
+        .fill(Color32::from_rgb(250, 250, 248))
+        .stroke(Stroke::new(1.0, Color32::from_gray(190)))
+        .inner_margin(egui::Margin::same(18))
+        .show(ui, |ui| {
+            ScrollArea::vertical()
+                .id_salt(("inspector_docx_structure", name))
+                .max_height(height)
+                .auto_shrink([false, false])
+                .show(ui, |ui| {
+                    ui.set_min_width(ui.available_width());
+                    let document_colors = Colors {
+                        text: Color32::from_rgb(32, 34, 38),
+                        text_muted: Color32::from_rgb(92, 96, 104),
+                        text_dim: Color32::from_rgb(112, 116, 124),
+                        ..c
+                    };
+                    for (block_index, block) in document.blocks.iter().enumerate() {
+                        match block {
+                            DocxBlock::Paragraph(paragraph) => {
+                                render_docx_paragraph(ui, document_colors, paragraph);
+                            }
+                            DocxBlock::Table(table) => {
+                                let stroke = if table.bordered {
+                                    Stroke::new(1.0, Color32::from_gray(120))
+                                } else {
+                                    Stroke::NONE
+                                };
+                                egui::Grid::new(("docx_table", name, block_index))
+                                    .spacing(Vec2::ZERO)
+                                    .show(ui, |ui| {
+                                        for row in &table.rows {
+                                            for cell in &row.cells {
+                                                egui::Frame::new()
+                                                    .stroke(stroke)
+                                                    .inner_margin(egui::Margin::same(7))
+                                                    .show(ui, |ui| {
+                                                        ui.set_min_width(150.0);
+                                                        for paragraph in &cell.paragraphs {
+                                                            render_docx_paragraph(
+                                                                ui,
+                                                                document_colors,
+                                                                paragraph,
+                                                            );
+                                                        }
+                                                    });
+                                            }
+                                            ui.end_row();
+                                        }
+                                    });
+                                ui.add_space(8.0);
+                            }
+                        }
+                    }
+                });
+        });
+
+    let (metadata, extracted) = split_preview_extracted_text(&preview.body);
+    if let Some(text) = extracted.filter(|text| !text.is_empty()) {
+        egui::CollapsingHeader::new(
+            RichText::new(EXTRACTED_TEXT_FALLBACK_LABEL)
+                .color(c.text_muted)
+                .size(11.0),
+        )
+        .id_salt(("document_extracted_fallback", name))
+        .default_open(false)
+        .show(ui, |ui| render_extracted_text_fallback_content(ui, c, text));
+    }
+    render_preview_footer(ui, c, name, metadata);
+    true
 }
 
 pub(crate) fn render_document_body_preview(
@@ -579,6 +895,13 @@ fn spreadsheet_grid_from_payload(payload: &SpreadsheetPreview) -> SpreadsheetGri
                 omissions: sheet
                     .omissions
                     .iter()
+                    .filter(|omission| {
+                        !spreadsheet_omission_is_rendered(
+                            omission,
+                            &row_coordinates,
+                            &column_coordinates,
+                        )
+                    })
                     .map(spreadsheet_omission_label)
                     .chain(omitted_rows.map(|omitted| {
                         format!("{omitted} populated row(s) omitted at safe render limit")
@@ -646,6 +969,33 @@ fn spreadsheet_axis_labels(coordinates: &[usize], columns: bool) -> Vec<String> 
         previous = Some(coordinate);
     }
     labels
+}
+
+fn spreadsheet_omission_is_rendered(
+    omission: &SpreadsheetOmission,
+    row_coordinates: &[usize],
+    column_coordinates: &[usize],
+) -> bool {
+    match omission.reason {
+        SpreadsheetOmissionReason::SparseRowGap { from, to } => {
+            sparse_gap_is_rendered(from, to, row_coordinates)
+        }
+        SpreadsheetOmissionReason::SparseColumnGap { from, to } => {
+            sparse_gap_is_rendered(from, to, column_coordinates)
+        }
+        _ => false,
+    }
+}
+
+fn sparse_gap_is_rendered(from: usize, to: usize, coordinates: &[usize]) -> bool {
+    let Some(gap_size) = to.checked_sub(from).and_then(|width| width.checked_add(1)) else {
+        return false;
+    };
+    gap_size <= MAX_VISIBLE_BLANK_GAP
+        && (from == 0 || coordinates.binary_search(&(from - 1)).is_ok())
+        && to
+            .checked_add(1)
+            .is_some_and(|after| coordinates.binary_search(&after).is_ok())
 }
 
 fn spreadsheet_omission_label(omission: &SpreadsheetOmission) -> String {
@@ -897,21 +1247,7 @@ pub(crate) fn render_generic_body_preview(
             {
                 ui.ctx().copy_text(path.display().to_string());
             }
-            if preview.open_external
-                && inspector_action_button(
-                    ui,
-                    MI_OPEN_IN_NEW,
-                    "Open",
-                    "Open this file with the system default app.",
-                    c,
-                )
-                .clicked()
-            {
-                ui.ctx().open_url(egui::OpenUrl {
-                    url: format!("file://{}", path.display()),
-                    new_tab: false,
-                });
-            }
+            render_preview_card_action(ui, c, path, preview);
         });
         ui.add_space(6.0);
         ui.horizontal(|ui| {
@@ -1041,6 +1377,77 @@ mod tests {
     use super::*;
 
     #[test]
+    fn rust_source_preview_uses_distinct_syntax_colors() {
+        let context = egui::Context::default();
+        let source = "fn main() { println!(\"hello\"); }\n";
+        let job = source_preview_layout_job(&context, context.style().as_ref(), "main.rs", source)
+            .expect("Rust source should be highlighted");
+
+        assert_eq!(job.text, source);
+        assert!(job.sections.len() > 1);
+        assert!(
+            job.sections
+                .windows(2)
+                .any(|sections| sections[0].format.color != sections[1].format.color),
+            "source tokens should not all use the same color"
+        );
+    }
+
+    #[test]
+    fn ordinary_text_preview_does_not_claim_source_highlighting() {
+        let context = egui::Context::default();
+
+        assert!(
+            source_preview_layout_job(
+                &context,
+                context.style().as_ref(),
+                "notes.txt",
+                "fn is prose here",
+            )
+            .is_none()
+        );
+    }
+
+    #[test]
+    fn wma_metadata_card_exposes_permitted_external_open_action() {
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-actionable-audio-{}.wma",
+            std::process::id()
+        ));
+        std::fs::write(&path, []).expect("write WMA fixture");
+        let preview = ottrin_preview::load_preview(&ottrin_preview::PreviewRequest {
+            path: path.clone(),
+            kind_hint: ottrin_core::EntryKind::File,
+        });
+        let _ = std::fs::remove_file(path);
+
+        assert_eq!(preview.kind, PreviewKind::AudioMetadata);
+        assert_eq!(
+            preview_card_action(&preview),
+            Some(PreviewCardAction::OpenExternally)
+        );
+    }
+
+    #[test]
+    fn specialized_media_bodies_expose_permitted_external_open_action() {
+        for kind in [PreviewKind::VideoMetadata, PreviewKind::AudioMetadata] {
+            let preview = PreviewData {
+                title: "sample.media".to_string(),
+                kind,
+                body: "System media".to_string(),
+                document: None,
+                spreadsheet: None,
+                open_external: true,
+            };
+
+            assert_eq!(
+                specialized_preview_body_action(&preview),
+                Some(PreviewCardAction::OpenExternally)
+            );
+        }
+    }
+
+    #[test]
     fn spreadsheet_grid_keeps_hostile_values_in_one_typed_cell() {
         let preview = ottrin_preview::SpreadsheetPreview {
             sheets: vec![ottrin_preview::SpreadsheetSheet {
@@ -1077,6 +1484,47 @@ mod tests {
                 .iter()
                 .any(|label| label.contains("1–99999"))
         );
+    }
+
+    #[test]
+    fn spreadsheet_grid_does_not_report_a_visible_blank_column_as_omitted() {
+        let preview = ottrin_preview::SpreadsheetPreview {
+            sheets: vec![ottrin_preview::SpreadsheetSheet {
+                id: "first".to_string(),
+                name: "Quarter 1".to_string(),
+                cells: vec![
+                    ottrin_preview::SpreadsheetCell {
+                        row: 0,
+                        column: 0,
+                        text: "Name".to_string(),
+                    },
+                    ottrin_preview::SpreadsheetCell {
+                        row: 0,
+                        column: 2,
+                        text: "Score".to_string(),
+                    },
+                ],
+                omissions: vec![ottrin_preview::SpreadsheetOmission {
+                    reason: ottrin_preview::SpreadsheetOmissionReason::SparseColumnGap {
+                        from: 1,
+                        to: 1,
+                    },
+                }],
+            }],
+            omissions: vec![],
+        };
+
+        let grid = spreadsheet_grid_from_payload(&preview);
+
+        assert_eq!(
+            grid.sheets[0]
+                .columns
+                .iter()
+                .map(|column| column.label.as_str())
+                .collect::<Vec<_>>(),
+            ["A", "B", "C"]
+        );
+        assert!(grid.sheets[0].omissions.is_empty());
     }
 
     #[test]
@@ -1165,6 +1613,100 @@ mod tests {
             ),
             Some("Partial listing: 201 entries omitted after the first 200.")
         );
+    }
+
+    #[test]
+    fn docx_list_layout_uses_resolved_marker_and_level_indentation() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../ottrin-preview/tests/fixtures/docx-lists.docx");
+        let preview = ottrin_preview::load_preview(&ottrin_preview::PreviewRequest {
+            path,
+            kind_hint: ottrin_core::EntryKind::File,
+        });
+        let document = preview.document.expect("typed DOCX list structure");
+        let DocxBlock::Paragraph(paragraph) = &document.blocks[1] else {
+            panic!("second block must be a nested list paragraph");
+        };
+
+        assert_eq!(
+            docx_list_layout(paragraph.list.as_ref().expect("list")),
+            ("◦", 18.0)
+        );
+    }
+
+    #[test]
+    fn docx_baseline_renders_the_native_structured_body() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../ottrin-preview/tests/fixtures/docx-baseline.docx");
+        let preview = ottrin_preview::load_preview(&ottrin_preview::PreviewRequest {
+            path,
+            kind_hint: ottrin_core::EntryKind::File,
+        });
+        let context = egui::Context::default();
+        let mut rendered = false;
+
+        let output = context.run(egui::RawInput::default(), |context| {
+            egui::CentralPanel::default().show(context, |ui| {
+                rendered = render_docx_structured_body_preview(
+                    ui,
+                    Colors::for_config(&ottrin_core::AppConfig::default()),
+                    "docx-baseline.docx",
+                    &preview,
+                );
+            });
+        });
+
+        assert!(rendered);
+        assert!(
+            output.shapes.len() >= 12,
+            "the title, formatted runs, table cells, and alignment cues must produce real UI content"
+        );
+    }
+
+    #[test]
+    fn docx_inline_image_is_admitted_to_the_real_egui_texture_route() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../ottrin-preview/tests/fixtures/docx-inline-images.docx");
+        let preview = ottrin_preview::load_preview(&ottrin_preview::PreviewRequest {
+            path,
+            kind_hint: ottrin_core::EntryKind::File,
+        });
+        let png = preview
+            .document
+            .as_ref()
+            .and_then(|document| document.blocks.first())
+            .and_then(|block| match block {
+                DocxBlock::Paragraph(paragraph) => {
+                    paragraph.content.iter().find_map(|content| match content {
+                        DocxParagraphContent::Image(image) => image.png.as_ref(),
+                        DocxParagraphContent::Text(_) => None,
+                    })
+                }
+                DocxBlock::Table(_) => None,
+            })
+            .expect("fixture image");
+        let uri = format!("bytes://docx-inline/{:x}.png", Sha256::digest(png));
+        let context = egui::Context::default();
+        egui_extras::install_image_loaders(&context);
+
+        let _ = context.run(egui::RawInput::default(), |context| {
+            egui::CentralPanel::default().show(context, |ui| {
+                assert!(render_docx_structured_body_preview(
+                    ui,
+                    Colors::for_config(&ottrin_core::AppConfig::default()),
+                    "docx-inline-images.docx",
+                    &preview,
+                ));
+            });
+        });
+
+        context
+            .try_load_texture(
+                &uri,
+                egui::TextureOptions::default(),
+                egui::load::SizeHint::default(),
+            )
+            .expect("renderer must admit the inline image to egui's texture loaders");
     }
 
     #[test]

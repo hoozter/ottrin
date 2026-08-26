@@ -21,7 +21,7 @@ for source in \
   '"$ROOT/README.md" "$ROOT/LICENSE" "$APPDIR/usr/share/doc/ottrin/"' \
   '"$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md"' \
   '"$ROOT/docs/ROADMAP.md" "$ROOT/docs/RELEASE_NOTES.md"' \
-  '"$ROOT/docs/RELEASE_CHECKLIST.md" "$APPDIR/usr/share/doc/ottrin/"'; do
+  '"$ROOT/docs/RELEASE_CHECKLIST.md"'; do
   require_literal "$PACKAGER" "$source"
 done
 

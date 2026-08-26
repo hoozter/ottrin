@@ -8,12 +8,14 @@ use std::path::Path;
 
 const PNG_SIGNATURE: &[u8; 8] = b"\x89PNG\r\n\x1a\n";
 #[cfg(unix)]
-pub const MAX_AFFINITY_PREVIEW_BYTES: u64 = 64 * 1024 * 1024;
+pub const MAX_AFFINITY_PREVIEW_BYTES: u64 = 512 * 1024 * 1024;
+#[cfg(unix)]
+const MAX_AFFINITY_SCAN_WINDOW_BYTES: u64 = 64 * 1024 * 1024;
 const MAX_CANDIDATES: usize = 128;
 const MAX_CANDIDATE_PNG_BYTES: usize = 8 * 1024 * 1024;
 const MAX_CANDIDATE_IDAT_BYTES: usize = 6 * 1024 * 1024;
 const MAX_AGGREGATE_CANDIDATE_BYTES: usize = 24 * 1024 * 1024;
-const MIN_PREVIEW_SIDE: u32 = 128;
+const MIN_PREVIEW_SIDE: u32 = 64;
 const MAX_PREVIEW_SIDE: u32 = 1024;
 const MAX_PREVIEW_PIXELS: u64 = 1024 * 1024;
 const MAX_DECODED_PNG_BYTES: u64 = 8 * 1024 * 1024;
@@ -182,59 +184,78 @@ fn read_snapshot(path: &Path) -> Result<Snapshot, AffinityVisualError> {
             limit: MAX_AFFINITY_PREVIEW_BYTES,
         });
     }
-    let capacity = usize::try_from(input_size).map_err(|_| AffinityVisualError::InputTooLarge {
-        actual: input_size,
-        limit: MAX_AFFINITY_PREVIEW_BYTES,
-    })?;
-    let mut bytes = Vec::with_capacity(capacity);
     use std::io::{Read, Seek, SeekFrom};
-    file.by_ref()
-        .take(MAX_AFFINITY_PREVIEW_BYTES + 1)
-        .read_to_end(&mut bytes)
-        .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
+    let mut first_hasher = Sha256::new();
+    let mut total_read = 0u64;
+    let mut chunk = [0u8; 64 * 1024];
+    loop {
+        let read = file
+            .read(&mut chunk)
+            .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
+        if read == 0 {
+            break;
+        }
+        total_read = total_read
+            .checked_add(read as u64)
+            .ok_or(AffinityVisualError::InputChanged)?;
+        if total_read > MAX_AFFINITY_PREVIEW_BYTES {
+            return Err(AffinityVisualError::InputTooLarge {
+                actual: total_read,
+                limit: MAX_AFFINITY_PREVIEW_BYTES,
+            });
+        }
+        first_hasher.update(&chunk[..read]);
+    }
     #[cfg(all(test, unix))]
     run_after_first_read_hook();
     let first_pass_metadata = file
         .metadata()
         .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
-    if bytes.len() as u64 > MAX_AFFINITY_PREVIEW_BYTES {
-        return Err(AffinityVisualError::InputTooLarge {
-            actual: bytes.len() as u64,
-            limit: MAX_AFFINITY_PREVIEW_BYTES,
-        });
-    }
-    if bytes.len() as u64 != input_size
-        || !same_source_state(&opened_metadata, &first_pass_metadata)
-    {
+    if total_read != input_size || !same_source_state(&opened_metadata, &first_pass_metadata) {
         return Err(AffinityVisualError::InputChanged);
     }
 
-    // This is a fail-closed stable-read protocol, not an OS file lock.  The
-    // first buffer remains the only admitted input, but it is accepted only
-    // after a bounded second pass on this same non-following Unix handle
-    // proves the source generation did not change while it was read.
+    // Affinity stores its flattened preview near the package tail. Keep only a
+    // bounded suffix in memory even when the source package is much larger.
+    let scan_len = input_size.min(MAX_AFFINITY_SCAN_WINDOW_BYTES);
+    file.seek(SeekFrom::Start(input_size - scan_len))
+        .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
+    let scan_capacity =
+        usize::try_from(scan_len).map_err(|_| AffinityVisualError::InputTooLarge {
+            actual: input_size,
+            limit: MAX_AFFINITY_PREVIEW_BYTES,
+        })?;
+    let mut bytes = Vec::with_capacity(scan_capacity);
+    file.by_ref()
+        .take(scan_len)
+        .read_to_end(&mut bytes)
+        .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
+    if bytes.len() as u64 != scan_len {
+        return Err(AffinityVisualError::InputChanged);
+    }
+
+    // This is a fail-closed stable-read protocol, not an OS file lock. A
+    // second complete streaming hash proves the package did not change while
+    // its bounded preview suffix was captured.
     file.seek(SeekFrom::Start(0))
         .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
-    let mut compared = 0usize;
-    let mut chunk = [0u8; 64 * 1024];
-    while compared < bytes.len() {
-        let expected = (bytes.len() - compared).min(chunk.len());
+    let mut second_hasher = Sha256::new();
+    let mut second_total = 0u64;
+    loop {
         let read = file
-            .read(&mut chunk[..expected])
+            .read(&mut chunk)
             .map_err(|error| AffinityVisualError::Read(error.to_string()))?;
-        if read == 0 || chunk[..read] != bytes[compared..compared + read] {
-            return Err(AffinityVisualError::InputChanged);
+        if read == 0 {
+            break;
         }
-        compared = compared
-            .checked_add(read)
+        second_total = second_total
+            .checked_add(read as u64)
             .ok_or(AffinityVisualError::InputChanged)?;
+        second_hasher.update(&chunk[..read]);
     }
-    let mut extra = [0u8; 1];
-    if file
-        .read(&mut extra)
-        .map_err(|error| AffinityVisualError::Read(error.to_string()))?
-        != 0
-    {
+    let first_generation: [u8; 32] = first_hasher.finalize().into();
+    let second_generation: [u8; 32] = second_hasher.finalize().into();
+    if second_total != input_size || first_generation != second_generation {
         return Err(AffinityVisualError::InputChanged);
     }
     let second_pass_metadata = file
@@ -249,7 +270,7 @@ fn read_snapshot(path: &Path) -> Result<Snapshot, AffinityVisualError> {
         return Err(AffinityVisualError::InputChanged);
     }
     Ok(Snapshot {
-        generation: AffinityPreviewSourceGeneration(Sha256::digest(&bytes).into()),
+        generation: AffinityPreviewSourceGeneration(first_generation),
         bytes,
     })
 }
@@ -670,6 +691,50 @@ mod tests {
         assert_eq!(decoded.get_pixel(0, 0).0, [0, 0, 255, 255]);
         assert!(affinity_preview_is_available(&path));
         assert_eq!(rendered.source_generation.as_bytes().len(), 32);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn wide_affinity_logo_composite_is_admitted() {
+        let path = temp_path("wide-logo.af");
+        std::fs::write(&path, png(512, 107, [21, 43, 65, 255])).expect("write wide logo fixture");
+
+        let rendered = render_affinity_embedded_preview_png(&path, 512)
+            .expect("wide embedded logo should render");
+        assert_eq!(
+            image::load_from_memory(&rendered)
+                .expect("decode wide logo preview")
+                .dimensions(),
+            (512, 107)
+        );
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn large_affinity_source_uses_a_bounded_tail_window_for_its_composite() {
+        use std::io::{Seek, SeekFrom};
+
+        let path = temp_path("large-composite.afphoto");
+        let composite = png(512, 341, [12, 34, 56, 255]);
+        let source_len = MAX_AFFINITY_SCAN_WINDOW_BYTES + 1024 * 1024;
+        let mut file = std::fs::File::create(&path).expect("create sparse Affinity fixture");
+        file.set_len(source_len)
+            .expect("size sparse Affinity fixture");
+        file.seek(SeekFrom::End(-(composite.len() as i64)))
+            .expect("seek to composite position");
+        file.write_all(&composite).expect("write final composite");
+        file.sync_all().expect("persist sparse fixture");
+        drop(file);
+
+        let rendered = render_affinity_embedded_preview_png(&path, 512)
+            .expect("large source tail composite should render");
+        assert_eq!(
+            image::load_from_memory(&rendered)
+                .expect("decode large-source preview")
+                .dimensions(),
+            (512, 341)
+        );
         let _ = std::fs::remove_file(path);
     }
 

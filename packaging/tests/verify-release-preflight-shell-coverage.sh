@@ -17,6 +17,10 @@ require_shell_gate() {
 # preflight syntax pass must cover it alongside every other shell packager.
 require_shell_gate 'packaging/windows/package-installer.sh'
 require_shell_gate 'packaging/linux/bundle-runtime-libs.sh'
+require_shell_gate 'packaging/macos/stage-app-bundle.sh'
+require_shell_gate 'packaging/macos/package-app.sh'
+require_shell_gate 'packaging/tests/verify-macos-app-bundle-contract.sh'
+require_shell_gate 'packaging/tests/verify-macos-package-contract.sh'
 require_shell_gate 'scripts/linux-launch-smoke.sh'
 require_shell_gate 'scripts/windows-gui-subsystem-smoke.sh'
 require_shell_gate 'scripts/windows-runtime-launch-smoke.sh'

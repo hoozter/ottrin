@@ -2,7 +2,7 @@
 
 ## Status
 
-Linux same-filesystem Move is enabled at the source and automation tier through a separate native-rename path; it does not call or depend on this machinery. Cross-filesystem and Windows Move remain fail-closed without mutation. This document preserves a possible durable source-claim/recovery design for future product reconsideration, but `move_recovery.rs` and `move_with_hooks` are dormant/test-only legacy machinery, not a current release prerequisite or enabled recovery feature.
+Linux same-filesystem Move is enabled through the direct native-rename path. Linux cross-filesystem Move uses this recovery machinery for destination-local staging, content verification, guarded source cleanup, and retained restart evidence. Windows same-volume regular-file Overwrite uses paired durable journals, a current-user-private destination-local transaction, atomically retained publication, and identity-topology restart recovery. Windows cross-volume regular-file transaction code covers unoccupied, Rename, and occupied Overwrite targets with a current-user-private destination stage, paired durable journals, SHA-256 copy verification, identity-pinned publication, source identity/content revalidation, and atomic retention of an overwritten destination. The source implementation now addresses the reviewed source-removal, concurrent-recovery, and native API boundaries, but the user-facing cross-volume route remains fail-closed until native crash, ACL, sharing-mode, and packaged acceptance passes; unsupported Windows entry kinds also remain disabled. Move is a required Linux/Windows product capability; no further product decision gates this engineering work.
 
 ## Problem
 
@@ -157,7 +157,7 @@ If a new entry appears at the original name, it is never overwritten during reco
 
 - **Skip:** publish `claimed` to the target with no-replace. If occupied, restore the claim to the original name only when that name is absent and the original parent identity still matches; otherwise retain it for explicit recovery.
 - **Rename:** choose one candidate, persist and flush it as `PendingDestination`, then attempt handle-relative no-replace publication. If it exists, persist the next candidate before the next attempt. A crash can therefore inspect the exact last attempted name and prove publication from identity. No candidate is attempted before its native name is durable.
-- **Overwrite:** persist and flush the pending target name and pinned expected-destination identity before publication. On Linux use atomic exchange so the old destination becomes `claimed` inside the source transaction, then verify the displaced identity before any cleanup. A mismatched displaced entry is retained, never deleted. On Windows, keep Overwrite disabled until an equivalent atomic retain-old/publish-new primitive is implemented for the relevant entry kind.
+- **Overwrite:** persist and flush the pending target name and pinned expected-destination identity before publication. On Linux use atomic exchange so the old destination becomes `claimed` inside the source transaction, then verify the displaced identity before any cleanup. A mismatched displaced entry is retained, never deleted. On Windows regular files, claim the source into the current-user-private destination-local transaction only after both journals persist the source, parent, target, transaction, and retained identities, then use `ReplaceFileW(REPLACEFILE_WRITE_THROUGH)` and classify completion from the observed identities. Other Windows entry kinds remain disabled.
 
 Flush destination parent and source transaction/source parent as applicable, then record `Published`.
 
@@ -251,12 +251,12 @@ The platform crate also needs explicit APIs to:
 
 ## Implementation milestones
 
-These are frozen design boundaries, not the active implementation plan or release claims. Existing substrate and tests do not enable recovery-backed Move:
+These are the active safety boundaries, not release claims:
 
-1. **Journal substrate:** native path encoding, atomic record replacement, central discovery, local/central consistency, corruption handling, and identity types; retained as dormant/test-only legacy machinery.
-2. **Claim and restore:** handle-relative source claim plus startup recovery for every crash point before publication; not enabled in production.
+1. **Journal substrate:** native path encoding, atomic record replacement, central discovery, local/central consistency, corruption handling, and identity types; active for Linux cross-filesystem Skip/Rename.
+2. **Claim and restore:** handle-relative source claim plus retained restart recovery around pending destination publication; active for the Linux cross-filesystem tracer and still expanding boundary by boundary.
 3. **Linux same-filesystem Skip/Rename:** superseded for current product behavior by the accepted native-rename path, which does not use this protocol.
-4. **Cross-filesystem Skip/Rename:** deferred unless a separate product decision accepts source claiming and recovery artifacts; current behavior rejects before mutation.
+4. **Cross-filesystem Skip/Rename:** regular-file source tracer enabled with staged destination publication, SHA-256 content evidence, source-mutation refusal, and restart recovery; remaining entry-kind, batch, Activity, and acceptance gates are pending.
 5. **Overwrite:** atomic displaced-entry retention and explicit retained-data lifecycle. Enable per platform and entry kind only when proven.
 6. **Windows parity:** handle/identity implementation and crash tests on native Windows. Do not enable Windows Move from Linux cross-compilation alone.
 7. **UI recovery:** startup recovery reporting, Activity-panel actions, batch semantics, documentation, and packaged manual QA.

@@ -44,12 +44,15 @@ download_verify_and_package_pdfium() {
 
 cd "$ROOT"
 cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
+cargo build --release -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer
 
 rm -rf "$STAGE"
 mkdir -p "$STAGE/bin" "$STAGE/libexec/ottrin" "$STAGE/assets" "$STAGE/docs" \
   "$STAGE/packaging/linux"
 
 install -m 0755 "$BUILD_DIR/ottrin-app" "$STAGE/libexec/ottrin/ottrin"
+install -m 0755 "$BUILD_DIR/ottrin-media-playback" "$STAGE/libexec/ottrin/ottrin-media-playback"
+install -m 0755 "$BUILD_DIR/ottrin-indexd" "$STAGE/libexec/ottrin/ottrin-indexd"
 install -m 0755 "$BUILD_DIR/ottrin-priv-helper" "$STAGE/bin/ottrin-priv-helper"
 bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$STAGE" "$STAGE/third-party-notices/linux-runtime"
 cat > "$STAGE/bin/ottrin" <<'EOF'
@@ -67,7 +70,8 @@ cp "$ROOT/packaging/linux/org.ottrin.filesystem.policy" \
   "$ROOT/packaging/linux/ottrin-index.service.in" "$STAGE/packaging/linux/"
 cp "$ROOT/README.md" "$ROOT/LICENSE" "$STAGE/" 2>/dev/null || cp "$ROOT/README.md" "$STAGE/"
 cp "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" "$ROOT/docs/ROADMAP.md" \
-  "$ROOT/docs/RELEASE_NOTES.md" "$ROOT/docs/RELEASE_CHECKLIST.md" "$STAGE/docs/"
+  "$ROOT/docs/RELEASE_NOTES.md" "$ROOT/docs/RELEASE_CHECKLIST.md" \
+  "$ROOT/docs/SEARCH_PERFORMANCE.md" "$STAGE/docs/"
 cat > "$STAGE/SOURCE_REVISION.txt" <<EOF
 Ottrin source revision
 Version: $VERSION

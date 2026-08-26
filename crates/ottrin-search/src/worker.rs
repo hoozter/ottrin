@@ -1,6 +1,8 @@
 use crate::db::{SearchStore, SearchStoreDiagnostics};
 use crate::mutation::{ActivationFence, GenerationSnapshot, IndexMutation};
 use crate::plan::ScanPlan;
+#[cfg(not(test))]
+use crate::scanner::{BatchedScanOutcome, scan_batched};
 use crate::scanner::{ScanOutcome, ScanProgress};
 use crate::watch::WatchRegistry;
 use crate::{IndexState, current_unix_secs};
@@ -12,11 +14,15 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, RwLock, mpsc};
 use std::thread::JoinHandle;
 use std::time::{Duration, Instant};
+use walkdir::WalkDir;
 
 const EVENT_DEBOUNCE: Duration = Duration::from_millis(500);
-const WATCH_RETRY_INITIAL: Duration = Duration::from_secs(1);
-const WATCH_RETRY_MAXIMUM: Duration = Duration::from_secs(60);
+const WATCH_RETRY_INITIAL: Duration = Duration::from_secs(60);
+const WATCH_RETRY_MAXIMUM: Duration = Duration::from_secs(3_600);
 const INCREMENTAL_REBUILD_THRESHOLD: usize = 500;
+
+pub(crate) type DeltaPublisher<'a> =
+    dyn FnMut(&[crate::mutation::OwnedItem], &[PathBuf], usize) + 'a;
 
 pub(crate) trait StoreBackend: Send {
     fn load(
@@ -24,6 +30,48 @@ pub(crate) trait StoreBackend: Send {
         plan: &ScanPlan,
         cancelled: &AtomicBool,
     ) -> Result<Option<GenerationSnapshot>, String>;
+
+    #[cfg_attr(test, allow(dead_code))]
+    fn load_count(
+        &mut self,
+        plan: &ScanPlan,
+        cancelled: &AtomicBool,
+    ) -> Result<Option<usize>, String> {
+        self.load(plan, cancelled)
+            .map(|snapshot| snapshot.map(|snapshot| snapshot.items().len()))
+    }
+
+    fn begin_staged_generation(&mut self, _plan: &ScanPlan) -> Result<Option<i64>, String> {
+        Ok(None)
+    }
+
+    fn append_staged_generation(
+        &mut self,
+        _plan: &ScanPlan,
+        _generation: i64,
+        _items: &[crate::mutation::OwnedItem],
+    ) -> Result<(), String> {
+        Err("staged generation storage is unavailable".to_string())
+    }
+
+    fn activate_staged_generation(
+        &mut self,
+        _plan: &ScanPlan,
+        _generation: i64,
+        _expected_count: usize,
+        _fence: &ActivationFence,
+        _expected_epoch: u64,
+        _publish: &mut dyn FnMut(usize),
+    ) -> Result<(), StoreBackendError> {
+        Err(StoreBackendError::Other(
+            "staged generation storage is unavailable".to_string(),
+        ))
+    }
+
+    fn discard_staged_generation(&mut self, _generation: i64) -> Result<(), String> {
+        Ok(())
+    }
+
     fn commit_guarded(
         &mut self,
         plan: &ScanPlan,
@@ -32,6 +80,36 @@ pub(crate) trait StoreBackend: Send {
         expected_epoch: u64,
         publish: &mut dyn FnMut(&GenerationSnapshot),
     ) -> Result<(), StoreBackendError>;
+
+    fn commit_delta_guarded(
+        &mut self,
+        plan: &ScanPlan,
+        upserts: Vec<crate::mutation::OwnedItem>,
+        remove_trees: Vec<PathBuf>,
+        fence: &ActivationFence,
+        expected_epoch: u64,
+        publish: &mut DeltaPublisher<'_>,
+    ) -> Result<(), StoreBackendError> {
+        let published_upserts = upserts.clone();
+        let published_remove_trees = remove_trees.clone();
+        let mut publish_snapshot = |snapshot: &GenerationSnapshot| {
+            publish(
+                &published_upserts,
+                &published_remove_trees,
+                snapshot.items().len(),
+            );
+        };
+        self.commit_guarded(
+            plan,
+            IndexMutation::Delta {
+                upserts,
+                remove_trees,
+            },
+            fence,
+            expected_epoch,
+            &mut publish_snapshot,
+        )
+    }
 
     fn diagnostics(&mut self) -> Option<SearchStoreDiagnostics> {
         None
@@ -54,6 +132,67 @@ impl StoreBackend for SearchStore {
             .map_err(|error| error.to_string())
     }
 
+    fn load_count(
+        &mut self,
+        plan: &ScanPlan,
+        cancelled: &AtomicBool,
+    ) -> Result<Option<usize>, String> {
+        self.load_count_cancellable(plan, cancelled)
+            .map_err(|error| error.to_string())
+    }
+
+    #[cfg(not(test))]
+    fn begin_staged_generation(&mut self, plan: &ScanPlan) -> Result<Option<i64>, String> {
+        SearchStore::begin_staged_generation(self, plan)
+            .map(Some)
+            .map_err(|error| error.to_string())
+    }
+
+    #[cfg(test)]
+    fn begin_staged_generation(&mut self, _plan: &ScanPlan) -> Result<Option<i64>, String> {
+        // Worker tests intentionally retain test-only snapshots for publication assertions.
+        Ok(None)
+    }
+
+    fn append_staged_generation(
+        &mut self,
+        plan: &ScanPlan,
+        generation: i64,
+        items: &[crate::mutation::OwnedItem],
+    ) -> Result<(), String> {
+        SearchStore::append_staged_generation(self, plan, generation, items)
+            .map_err(|error| error.to_string())
+    }
+
+    fn activate_staged_generation(
+        &mut self,
+        plan: &ScanPlan,
+        generation: i64,
+        expected_count: usize,
+        fence: &ActivationFence,
+        expected_epoch: u64,
+        publish: &mut dyn FnMut(usize),
+    ) -> Result<(), StoreBackendError> {
+        SearchStore::activate_staged_generation_then(
+            self,
+            plan,
+            generation,
+            expected_count,
+            fence,
+            expected_epoch,
+            publish,
+        )
+        .map(|_| ())
+        .map_err(|error| match error {
+            crate::db::SearchDbError::ActivationCancelled => StoreBackendError::ActivationCancelled,
+            other => StoreBackendError::Other(other.to_string()),
+        })
+    }
+
+    fn discard_staged_generation(&mut self, generation: i64) -> Result<(), String> {
+        SearchStore::discard_staged_generation(self, generation).map_err(|error| error.to_string())
+    }
+
     fn commit_guarded(
         &mut self,
         plan: &ScanPlan,
@@ -71,6 +210,30 @@ impl StoreBackend for SearchStore {
                 other => StoreBackendError::Other(other.to_string()),
             })
     }
+
+    fn commit_delta_guarded(
+        &mut self,
+        plan: &ScanPlan,
+        upserts: Vec<crate::mutation::OwnedItem>,
+        remove_trees: Vec<PathBuf>,
+        fence: &ActivationFence,
+        expected_epoch: u64,
+        publish: &mut DeltaPublisher<'_>,
+    ) -> Result<(), StoreBackendError> {
+        self.commit_delta_guarded_then(
+            plan,
+            &upserts,
+            &remove_trees,
+            fence,
+            expected_epoch,
+            |count| publish(&upserts, &remove_trees, count),
+        )
+        .map_err(|error| match error {
+            crate::db::SearchDbError::ActivationCancelled => StoreBackendError::ActivationCancelled,
+            other => StoreBackendError::Other(other.to_string()),
+        })
+    }
+
     fn diagnostics(&mut self) -> Option<SearchStoreDiagnostics> {
         SearchStore::diagnostics(self).ok()
     }
@@ -84,6 +247,7 @@ pub(crate) type ScanLauncher = Arc<
 >;
 
 type WatchSetupHook = Arc<dyn Fn() + Send + Sync + 'static>;
+type MemoryReclaimer = Arc<dyn Fn() + Send + Sync + 'static>;
 
 pub(crate) enum Command {
     UpdateConfig(SearchConfig),
@@ -97,6 +261,12 @@ pub(crate) enum Command {
     ScanProgress {
         revision: u64,
         progress: ScanProgress,
+    },
+    #[cfg_attr(test, allow(dead_code))]
+    ScanBatch {
+        revision: u64,
+        items: Vec<crate::mutation::OwnedItem>,
+        persisted: mpsc::SyncSender<Result<(), String>>,
     },
     ScanFinished {
         revision: u64,
@@ -195,6 +365,7 @@ struct ActiveScan {
     join: Option<JoinHandle<()>>,
     completion: Option<mpsc::Sender<Result<(), String>>>,
     mode: ScanMode,
+    staged_generation: Option<i64>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -225,6 +396,7 @@ struct WorkerLoop {
     watch_registry: Option<WatchRegistry>,
     watch_clock_started: Instant,
     before_watch_setup: Option<WatchSetupHook>,
+    memory_reclaimer: MemoryReclaimer,
 }
 
 struct WatchSetupOutcome {
@@ -248,9 +420,72 @@ pub(crate) fn spawn_with_runtime(
         launcher,
         watch_filesystem,
         None,
+        Arc::new(release_full_replacement_memory),
     )
 }
 
+fn release_full_replacement_memory() {
+    #[cfg(all(target_os = "linux", target_env = "gnu"))]
+    // SAFETY: `malloc_trim` is a process-wide glibc allocator maintenance call.
+    unsafe {
+        libc::malloc_trim(0);
+    }
+}
+
+#[cfg(not(test))]
+pub(crate) fn real_launcher() -> ScanLauncher {
+    Arc::new(|plan, cancelled, revision, commands| {
+        Some(std::thread::spawn(move || {
+            let progress_commands = commands.clone();
+            let result = scan_batched(
+                &plan,
+                &cancelled,
+                2_048,
+                |items| send_scan_batch(&commands, revision, items, &cancelled),
+                move |progress| {
+                    let _ = progress_commands.send(Command::ScanProgress { revision, progress });
+                },
+            )
+            .map(|outcome| match outcome {
+                BatchedScanOutcome::Completed { indexed_items } => {
+                    ScanOutcome::Staged { indexed_items }
+                }
+                BatchedScanOutcome::Cancelled => ScanOutcome::Cancelled,
+            });
+            let _ = commands.send(Command::ScanFinished { revision, result });
+        }))
+    })
+}
+
+fn send_scan_batch(
+    commands: &mpsc::Sender<Command>,
+    revision: u64,
+    items: Vec<crate::mutation::OwnedItem>,
+    cancelled: &AtomicBool,
+) -> Result<(), String> {
+    let (ack, persisted) = mpsc::sync_channel(0);
+    commands
+        .send(Command::ScanBatch {
+            revision,
+            items,
+            persisted: ack,
+        })
+        .map_err(|_| "Search worker stopped during staged indexing".to_string())?;
+    loop {
+        match persisted.recv_timeout(Duration::from_millis(100)) {
+            Ok(result) => return result,
+            Err(mpsc::RecvTimeoutError::Timeout) if cancelled.load(Ordering::Acquire) => {
+                return Err("staged indexing was cancelled".to_string());
+            }
+            Err(mpsc::RecvTimeoutError::Timeout) => continue,
+            Err(mpsc::RecvTimeoutError::Disconnected) => {
+                return Err("Search worker stopped during staged indexing".to_string());
+            }
+        }
+    }
+}
+
+#[cfg(test)]
 pub(crate) fn real_launcher() -> ScanLauncher {
     Arc::new(|plan, cancelled, revision, commands| {
         Some(std::thread::spawn(move || {
@@ -270,7 +505,26 @@ fn spawn_with(
     store: Box<dyn StoreBackend>,
     launcher: ScanLauncher,
 ) -> WorkerHandle {
-    spawn_inner(config, index, store, launcher, false, None)
+    spawn_inner(config, index, store, launcher, false, None, Arc::new(|| {}))
+}
+
+#[cfg(test)]
+fn spawn_with_reclaimer(
+    config: SearchConfig,
+    index: Arc<RwLock<IndexState>>,
+    store: Box<dyn StoreBackend>,
+    launcher: ScanLauncher,
+    memory_reclaimer: MemoryReclaimer,
+) -> WorkerHandle {
+    spawn_inner(
+        config,
+        index,
+        store,
+        launcher,
+        false,
+        None,
+        memory_reclaimer,
+    )
 }
 
 #[cfg(test)]
@@ -288,6 +542,7 @@ fn spawn_with_watch_setup_hook(
         launcher,
         false,
         Some(before_watch_setup),
+        Arc::new(|| {}),
     )
 }
 
@@ -298,6 +553,7 @@ fn spawn_inner(
     launcher: ScanLauncher,
     watch_filesystem: bool,
     before_watch_setup: Option<WatchSetupHook>,
+    memory_reclaimer: MemoryReclaimer,
 ) -> WorkerHandle {
     let desired_plan_identity = Arc::new(Mutex::new(
         ScanPlan::new(&config)
@@ -334,6 +590,7 @@ fn spawn_inner(
             watch_registry: None,
             watch_clock_started: Instant::now(),
             before_watch_setup,
+            memory_reclaimer,
         };
         worker.run(receiver, watch_filesystem);
     });
@@ -344,6 +601,72 @@ fn spawn_inner(
         shutdown,
         join: Some(join),
     }
+}
+
+fn watcher_config() -> notify::Config {
+    // ScanPlan treats directory symlinks as leaf entries. Recursive watching
+    // must use the same membership rule or Wine's dosdevices/z: link escapes
+    // a home-root watch into the entire filesystem.
+    notify::Config::default().with_follow_symlinks(false)
+}
+
+fn walk_plan_watch_paths(
+    plan: &ScanPlan,
+    configured_root: &Path,
+    start: &Path,
+    cancelled: &AtomicBool,
+    mut visit: impl FnMut(&Path) -> Result<(), String>,
+) -> Result<(), String> {
+    let walker = WalkDir::new(start)
+        .follow_links(plan.follow_links())
+        .same_file_system(plan.same_file_system())
+        .into_iter()
+        .filter_entry(|entry| {
+            plan.includes_path_for_root(entry.path(), configured_root)
+                && (!entry.file_type().is_symlink() || entry.depth() == 0)
+        });
+    for entry in walker {
+        if cancelled.load(Ordering::Acquire) {
+            return Ok(());
+        }
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(error)
+                if error.depth() > 0
+                    && matches!(
+                        error.io_error().map(std::io::Error::kind),
+                        Some(std::io::ErrorKind::PermissionDenied | std::io::ErrorKind::NotFound)
+                    ) =>
+            {
+                continue;
+            }
+            Err(error) => return Err(error.to_string()),
+        };
+        if entry.depth() == 0 || entry.file_type().is_dir() {
+            visit(entry.path())?;
+        }
+    }
+    Ok(())
+}
+
+fn included_watch_event_paths(plan: &ScanPlan, paths: Vec<PathBuf>) -> Vec<PathBuf> {
+    paths
+        .into_iter()
+        .filter_map(|path| {
+            let root = plan.root_for(&path)?;
+            plan.included_event_path_for_root(&path, root)
+        })
+        .collect()
+}
+
+fn watch_error_requires_recovery(paths: &[PathBuf]) -> bool {
+    paths.is_empty()
+        || paths.iter().any(|path| {
+            !matches!(
+                std::fs::read_dir(path),
+                Err(error) if error.kind() == std::io::ErrorKind::PermissionDenied
+            )
+        })
 }
 
 impl WorkerLoop {
@@ -391,12 +714,55 @@ impl WorkerLoop {
                     self.start_scan_with_mode(Some(completion), ScanMode::Reconcile)
                 }
                 Ok(Command::FilesystemEvent(paths)) => {
-                    self.filesystem_event_revision = self.filesystem_event_revision.wrapping_add(1);
-                    self.pending_paths.extend(paths);
-                    self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
+                    let paths = self
+                        .current_plan
+                        .as_ref()
+                        .map(|plan| included_watch_event_paths(plan, paths))
+                        .unwrap_or_default();
+                    if !paths.is_empty() {
+                        if let (Some(plan), Some(watcher)) =
+                            (self.current_plan.as_ref(), watcher.as_mut())
+                        {
+                            for path in &paths {
+                                let is_directory = std::fs::symlink_metadata(path)
+                                    .map(|metadata| metadata.file_type().is_dir())
+                                    .unwrap_or(false);
+                                if !is_directory {
+                                    continue;
+                                }
+                                let Some(root) = plan.root_for(path) else {
+                                    continue;
+                                };
+                                let watch_result = walk_plan_watch_paths(
+                                    plan,
+                                    root,
+                                    path,
+                                    &self.shutdown,
+                                    |directory| {
+                                        watcher
+                                            .watch(directory, RecursiveMode::NonRecursive)
+                                            .map_err(|error| error.to_string())
+                                    },
+                                );
+                                if let (Err(error), Some(registry)) =
+                                    (watch_result, self.watch_registry.as_mut())
+                                {
+                                    registry
+                                        .mark_paths_uncertain(std::slice::from_ref(path), &error);
+                                }
+                            }
+                        }
+                        self.filesystem_event_revision =
+                            self.filesystem_event_revision.wrapping_add(1);
+                        self.pending_paths.extend(paths);
+                        self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
+                    }
                 }
                 Ok(Command::WatchBackendError { paths, error }) => {
-                    if let Some(registry) = self.watch_registry.as_mut() {
+                    if let (true, Some(registry)) = (
+                        watch_error_requires_recovery(&paths),
+                        self.watch_registry.as_mut(),
+                    ) {
                         registry.mark_paths_uncertain(&paths, &error);
                     }
                     self.update_watcher_diagnostics();
@@ -404,8 +770,32 @@ impl WorkerLoop {
                 Ok(Command::ScanProgress { revision, progress }) => {
                     self.record_progress(revision, progress);
                 }
+                Ok(Command::ScanBatch {
+                    revision,
+                    items,
+                    persisted,
+                }) => {
+                    let result = match (
+                        self.active_scan
+                            .as_ref()
+                            .filter(|active| {
+                                active.revision == revision
+                                    && !active.cancelled.load(Ordering::Acquire)
+                            })
+                            .and_then(|active| active.staged_generation),
+                        self.current_plan.as_ref(),
+                    ) {
+                        (Some(generation), Some(plan)) => self
+                            .store
+                            .append_staged_generation(plan, generation, &items),
+                        _ => Err("staged scan batch is no longer current".to_string()),
+                    };
+                    let _ = persisted.send(result);
+                }
                 Ok(Command::ScanFinished { revision, result }) => {
-                    self.finish_scan(revision, result);
+                    if self.finish_scan(revision, result) {
+                        (self.memory_reclaimer)();
+                    }
                 }
                 #[cfg(test)]
                 Ok(Command::Barrier(done)) => {
@@ -446,7 +836,7 @@ impl WorkerLoop {
                     });
                 }
             },
-            notify::Config::default(),
+            watcher_config(),
         )
         .ok()
     }
@@ -477,33 +867,67 @@ impl WorkerLoop {
             index.loading_saved_snapshot = true;
             index.progress_text = Some("Loading saved search index…".to_string());
         }
-        let load_result = self.store.load(&plan, &self.shutdown);
+        enum LoadedGeneration {
+            #[cfg(test)]
+            Snapshot(GenerationSnapshot),
+            #[cfg(not(test))]
+            Count(usize),
+        }
+        #[cfg(test)]
+        let load_result = self
+            .store
+            .load(&plan, &self.shutdown)
+            .map(|loaded| loaded.map(LoadedGeneration::Snapshot));
+        #[cfg(not(test))]
+        let load_result = self
+            .store
+            .load_count(&plan, &self.shutdown)
+            .map(|loaded| loaded.map(LoadedGeneration::Count));
         self.index
             .write()
             .expect("index write")
             .loading_saved_snapshot = false;
         self.update_storage_diagnostics();
-        match &load_result {
-            Ok(Some(snapshot)) => {
-                self.publish(snapshot.clone());
+        let mut load_error = None;
+        let loaded_snapshot = match load_result {
+            #[cfg(test)]
+            Ok(Some(LoadedGeneration::Snapshot(snapshot))) => {
+                self.publish(snapshot);
                 self.last_full_rebuild_at = Some(Instant::now());
+                true
             }
-            Ok(None) | Err(_) => {
+            #[cfg(not(test))]
+            Ok(Some(LoadedGeneration::Count(count))) => {
+                publish_ready_count(&self.index, count);
+                self.has_snapshot = true;
+                self.last_full_rebuild_at = Some(Instant::now());
+                true
+            }
+            Ok(None) => {
                 let mut index = self.index.write().expect("index write");
                 index.status = SearchIndexStatus::Indexing;
                 index.progress_text = Some("Indexing · preparing filesystem watcher…".to_string());
                 index.active_root = None;
                 index.active_root_index = 0;
                 index.total_roots = plan.roots().len();
+                false
             }
-        }
+            Err(error) => {
+                let mut index = self.index.write().expect("index write");
+                index.status = SearchIndexStatus::Indexing;
+                index.progress_text = Some("Indexing · preparing filesystem watcher…".to_string());
+                index.active_root = None;
+                index.active_root_index = 0;
+                index.total_roots = plan.roots().len();
+                load_error = Some(error);
+                false
+            }
+        };
         if !self.configure_watcher(watcher, watched_roots, &plan, receiver, pending_commands) {
             return false;
         }
-        match load_result {
-            Ok(Some(_)) => {}
-            Ok(None) => self.start_scan(None),
-            Err(error) => {
+        if !loaded_snapshot {
+            if let Some(error) = load_error {
                 let mut index = self.index.write().expect("index write");
                 index.last_error = Some(error);
                 index.status = if self.has_snapshot {
@@ -511,9 +935,8 @@ impl WorkerLoop {
                 } else {
                     SearchIndexStatus::Indexing
                 };
-                drop(index);
-                self.start_scan(None);
             }
+            self.start_scan(None);
         }
         true
     }
@@ -522,14 +945,15 @@ impl WorkerLoop {
         &mut self,
         watcher: &mut Option<RecommendedWatcher>,
         watched_roots: &mut Vec<PathBuf>,
-        plan: &ScanPlan,
+        plan: &Arc<ScanPlan>,
         receiver: &mpsc::Receiver<Command>,
         pending_commands: &mut VecDeque<Command>,
     ) -> bool {
         let mut setup_watcher = watcher.take();
         let mut setup_watched_roots = std::mem::take(watched_roots);
         let roots = plan.roots().to_vec();
-        let now = self.watch_clock_started.elapsed();
+        let setup_plan = Arc::clone(plan);
+        let watch_clock_started = self.watch_clock_started;
         let hook = self.before_watch_setup.clone();
         let cancelled = Arc::new(AtomicBool::new(false));
         let setup_cancelled = Arc::clone(&cancelled);
@@ -554,19 +978,41 @@ impl WorkerLoop {
                     return;
                 }
                 if !root.exists() {
-                    registry.record_watch_failure(root, now, "configured root unavailable");
+                    registry.record_watch_failure(
+                        root,
+                        watch_clock_started.elapsed(),
+                        "configured root unavailable",
+                    );
                     unavailable_roots.push(root.clone());
                     continue;
                 }
                 match setup_watcher.as_mut() {
-                    Some(watcher) => match watcher.watch(root, RecursiveMode::Recursive) {
+                    Some(watcher) => match walk_plan_watch_paths(
+                        &setup_plan,
+                        root,
+                        root,
+                        &setup_cancelled,
+                        |path| {
+                            watcher
+                                .watch(path, RecursiveMode::NonRecursive)
+                                .map_err(|error| error.to_string())
+                        },
+                    ) {
                         Ok(()) => {
                             registry.record_watch_success(root);
                             setup_watched_roots.push(root.clone());
                         }
-                        Err(error) => registry.record_watch_failure(root, now, &error.to_string()),
+                        Err(error) => registry.record_watch_failure(
+                            root,
+                            watch_clock_started.elapsed(),
+                            &error,
+                        ),
                     },
-                    None => registry.record_watch_failure(root, now, "watch backend unavailable"),
+                    None => registry.record_watch_failure(
+                        root,
+                        watch_clock_started.elapsed(),
+                        "watch backend unavailable",
+                    ),
                 }
             }
             if setup_cancelled.load(Ordering::Acquire) {
@@ -661,6 +1107,20 @@ impl WorkerLoop {
             return;
         };
         self.cancel_active();
+        let staged_generation = match self.store.begin_staged_generation(&plan) {
+            Ok(generation) => generation,
+            Err(error) => {
+                if let Some(completion) = completion {
+                    let _ = completion.send(Err(error));
+                }
+                return;
+            }
+        };
+        let mode = if staged_generation.is_some() {
+            ScanMode::Rebuild
+        } else {
+            mode
+        };
         self.revision = self.revision.wrapping_add(1);
         let revision = self.revision;
         let expected_epoch = self.fence.capture();
@@ -673,6 +1133,7 @@ impl WorkerLoop {
             join: None,
             completion,
             mode,
+            staged_generation,
         });
         {
             let mut index = self.index.write().expect("index write");
@@ -706,6 +1167,9 @@ impl WorkerLoop {
             if let Some(join) = active.join.take() {
                 let _ = join.join();
             }
+            if let Some(generation) = active.staged_generation {
+                let _ = self.store.discard_staged_generation(generation);
+            }
             if let Some(completion) = active.completion.take() {
                 let _ = completion.send(Err("Requested rebuild was cancelled".to_string()));
             }
@@ -728,12 +1192,12 @@ impl WorkerLoop {
         index.last_progress_unix_secs = Some(current_unix_secs());
     }
 
-    fn finish_scan(&mut self, revision: u64, result: Result<ScanOutcome, String>) {
+    fn finish_scan(&mut self, revision: u64, result: Result<ScanOutcome, String>) -> bool {
         let Some(active) = self.active_scan.as_ref() else {
-            return;
+            return false;
         };
         if active.revision != revision || active.cancelled.load(Ordering::Acquire) {
-            return;
+            return false;
         }
         let mut active = self.active_scan.take().expect("matching active scan");
         if let Some(join) = active.join.take() {
@@ -747,11 +1211,12 @@ impl WorkerLoop {
         };
         match result {
             Ok(ScanOutcome::Completed(items)) => {
+                self.discard_incomplete_stage(active.staged_generation);
                 let Some(plan) = self.current_plan.as_ref() else {
                     complete(Err(
                         "Search plan became unavailable before commit".to_string()
                     ));
-                    return;
+                    return false;
                 };
                 let expected_epoch = active.expected_epoch;
                 let index = Arc::clone(&self.index);
@@ -802,27 +1267,92 @@ impl WorkerLoop {
                                 Some(Instant::now() + EVENT_DEBOUNCE);
                         }
                     }
+                };
+                false
+            }
+            Ok(ScanOutcome::Staged { indexed_items }) => {
+                let Some(plan) = self.current_plan.as_ref() else {
+                    self.discard_incomplete_stage(active.staged_generation);
+                    complete(Err(
+                        "Search plan became unavailable before staged activation".to_string(),
+                    ));
+                    return false;
+                };
+                let Some(generation) = active.staged_generation else {
+                    complete(Err("staged scan did not reserve a generation".to_string()));
+                    return false;
+                };
+                let index = Arc::clone(&self.index);
+                let mut publish = |count| publish_ready_count(&index, count);
+                match self.store.activate_staged_generation(
+                    plan,
+                    generation,
+                    indexed_items,
+                    &self.fence,
+                    active.expected_epoch,
+                    &mut publish,
+                ) {
+                    Ok(()) => {
+                        self.has_snapshot = true;
+                        self.last_full_rebuild_at = Some(Instant::now());
+                        if active.covered_event_revision == self.filesystem_event_revision {
+                            self.pending_paths.clear();
+                            self.filesystem_rebuild_deadline = None;
+                        } else if !self.pending_paths.is_empty() {
+                            self.filesystem_rebuild_deadline =
+                                Some(Instant::now() + EVENT_DEBOUNCE);
+                        }
+                        complete(Ok(()));
+                        true
+                    }
+                    Err(StoreBackendError::ActivationCancelled) => {
+                        self.discard_incomplete_stage(Some(generation));
+                        complete(Err("Requested rebuild was superseded".to_string()));
+                        false
+                    }
+                    Err(StoreBackendError::Other(error)) => {
+                        self.discard_incomplete_stage(Some(generation));
+                        complete(Err(error.clone()));
+                        self.record_failure(error);
+                        false
+                    }
                 }
             }
             Ok(ScanOutcome::Cancelled) => {
+                self.discard_incomplete_stage(active.staged_generation);
                 complete(Err("Requested rebuild was cancelled".to_string()));
                 if !self.pending_paths.is_empty() {
                     self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
                 }
+                false
             }
             Err(error) => {
+                self.discard_incomplete_stage(active.staged_generation);
                 complete(Err(error.clone()));
                 self.record_failure(error);
                 if !self.pending_paths.is_empty() {
                     self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
                 }
+                false
             }
         }
     }
 
+    #[cfg(test)]
     fn publish(&mut self, snapshot: GenerationSnapshot) {
         publish_snapshot(&self.index, &snapshot);
         self.has_snapshot = true;
+    }
+
+    fn discard_incomplete_stage(&mut self, generation: Option<i64>) {
+        let Some(generation) = generation else {
+            return;
+        };
+        if let Err(error) = self.store.discard_staged_generation(generation) {
+            self.record_failure(format!(
+                "Failed to discard incomplete staged generation {generation}: {error}"
+            ));
+        }
     }
 
     fn record_failure(&mut self, error: String) {
@@ -865,11 +1395,33 @@ impl WorkerLoop {
             return false;
         };
         let index = Arc::clone(&self.index);
-        let mut publish = |snapshot: &GenerationSnapshot| publish_snapshot(&index, snapshot);
-        match self
-            .store
-            .commit_guarded(plan, mutation, &self.fence, expected_epoch, &mut publish)
-        {
+        let result = match mutation {
+            IndexMutation::Delta {
+                upserts,
+                remove_trees,
+            } => {
+                let mut publish = |upserts: &[crate::mutation::OwnedItem],
+                                   remove_trees: &[PathBuf],
+                                   count: usize| {
+                    publish_delta(&index, upserts, remove_trees, count);
+                };
+                self.store.commit_delta_guarded(
+                    plan,
+                    upserts,
+                    remove_trees,
+                    &self.fence,
+                    expected_epoch,
+                    &mut publish,
+                )
+            }
+            mutation => {
+                let mut publish =
+                    |snapshot: &GenerationSnapshot| publish_snapshot(&index, snapshot);
+                self.store
+                    .commit_guarded(plan, mutation, &self.fence, expected_epoch, &mut publish)
+            }
+        };
+        match result {
             Ok(()) => {
                 self.has_snapshot = true;
                 self.update_storage_diagnostics();
@@ -959,7 +1511,7 @@ impl WorkerLoop {
                 },
                 expected_epoch,
             ),
-            Ok(ScanOutcome::Cancelled) => false,
+            Ok(ScanOutcome::Staged { .. }) | Ok(ScanOutcome::Cancelled) => false,
             Err(error) => {
                 self.record_failure(error);
                 false
@@ -1017,14 +1569,16 @@ impl WorkerLoop {
                 }
                 continue;
             }
-            let result = watcher
-                .as_mut()
-                .ok_or_else(|| "watch backend unavailable".to_string())
-                .and_then(|watcher| {
-                    watcher
-                        .watch(&root, RecursiveMode::Recursive)
-                        .map_err(|error| error.to_string())
-                });
+            let result = match (watcher.as_mut(), self.current_plan.as_ref()) {
+                (Some(watcher), Some(plan)) => {
+                    walk_plan_watch_paths(plan, &root, &root, &self.shutdown, |path| {
+                        watcher
+                            .watch(path, RecursiveMode::NonRecursive)
+                            .map_err(|error| error.to_string())
+                    })
+                }
+                _ => Err("watch backend unavailable".to_string()),
+            };
             if let Some(registry) = self.watch_registry.as_mut() {
                 match result {
                     Ok(()) => {
@@ -1033,7 +1587,11 @@ impl WorkerLoop {
                             watched_roots.push(root.clone());
                         }
                     }
-                    Err(error) => registry.record_watch_failure(&root, now, &error),
+                    Err(error) => registry.record_watch_failure(
+                        &root,
+                        self.watch_clock_started.elapsed(),
+                        &error,
+                    ),
                 }
             }
         }
@@ -1092,15 +1650,106 @@ impl WorkerLoop {
     }
 }
 
-pub(crate) fn publish_snapshot(index: &RwLock<IndexState>, snapshot: &GenerationSnapshot) {
-    let items = snapshot
-        .items()
-        .iter()
-        .map(|owned| owned.item().clone())
-        .collect::<Vec<_>>();
-    let count = items.len();
+#[cfg_attr(test, allow(dead_code))]
+pub(crate) fn publish_ready_count(index: &RwLock<IndexState>, count: usize) {
     let mut index = index.write().expect("index write");
-    index.items = Arc::new(items);
+    index.items = Arc::new(Vec::new());
+    index.snapshot_revision = index.snapshot_revision.wrapping_add(1);
+    index.loading_saved_snapshot = false;
+    index.status = SearchIndexStatus::Ready;
+    index.last_error = None;
+    index.progress_text = Some(format!("Ready · {count} indexed"));
+    index.last_completed_indexed_items = Some(count);
+    index.building_indexed_items = 0;
+    index.active_root = None;
+    index.active_root_index = 0;
+    index.last_scan_completed_unix_secs = Some(current_unix_secs());
+    index.last_progress_unix_secs = Some(current_unix_secs());
+}
+
+#[cfg(test)]
+pub(crate) fn compact_query_item(
+    mut item: ottrin_core::SearchResultItem,
+) -> ottrin_core::SearchResultItem {
+    item.parent_path = PathBuf::new();
+    item.name_lower = String::new();
+    item.path_str = String::new();
+    item.path_lower = String::new();
+    item
+}
+
+pub(crate) fn publish_delta(
+    index: &RwLock<IndexState>,
+    upserts: &[crate::mutation::OwnedItem],
+    remove_trees: &[PathBuf],
+    authoritative_count: usize,
+) {
+    let mut index = index.write().expect("index write");
+    #[cfg(not(test))]
+    {
+        let _ = (upserts, remove_trees);
+        index.items = Arc::new(Vec::new());
+    }
+    #[cfg(test)]
+    {
+        let items = Arc::make_mut(&mut index.items);
+        let mut removals = remove_trees.to_vec();
+        removals.sort();
+        removals.dedup();
+        for removed in removals.into_iter().rev() {
+            let start = items.partition_point(|item| item.path < removed);
+            let removed_len =
+                items[start..].partition_point(|item| item.path.starts_with(&removed));
+            items.drain(start..start + removed_len);
+        }
+        let normalized = upserts
+            .iter()
+            .map(|owned| {
+                (
+                    owned.item().path.clone(),
+                    compact_query_item(owned.item().clone()),
+                )
+            })
+            .collect::<std::collections::BTreeMap<_, _>>();
+        for (path, item) in normalized {
+            match items.binary_search_by(|candidate| candidate.path.cmp(&path)) {
+                Ok(position) => items[position] = item,
+                Err(position) => items.insert(position, item),
+            }
+        }
+        debug_assert_eq!(items.len(), authoritative_count);
+    }
+    let count = authoritative_count;
+    index.snapshot_revision = index.snapshot_revision.wrapping_add(1);
+    index.loading_saved_snapshot = false;
+    index.status = SearchIndexStatus::Ready;
+    index.last_error = None;
+    index.progress_text = Some(format!("Ready · {count} indexed"));
+    index.last_completed_indexed_items = Some(count);
+    index.building_indexed_items = 0;
+    index.active_root = None;
+    index.active_root_index = 0;
+    index.last_scan_completed_unix_secs = Some(current_unix_secs());
+    index.last_progress_unix_secs = Some(current_unix_secs());
+}
+
+pub(crate) fn publish_snapshot(index: &RwLock<IndexState>, snapshot: &GenerationSnapshot) {
+    let count = snapshot.items().len();
+    let mut index = index.write().expect("index write");
+    #[cfg(not(test))]
+    {
+        index.items = Arc::new(Vec::new());
+    }
+    #[cfg(test)]
+    {
+        index.items = Arc::new(
+            snapshot
+                .items()
+                .iter()
+                .map(|owned| compact_query_item(owned.item().clone()))
+                .collect(),
+        );
+    }
     index.snapshot_revision = index.snapshot_revision.wrapping_add(1);
     index.loading_saved_snapshot = false;
     index.status = SearchIndexStatus::Ready;
@@ -1136,6 +1785,169 @@ mod tests {
         }
     }
 
+    #[test]
+    fn watcher_membership_does_not_follow_directory_symlinks() {
+        assert!(!watcher_config().follow_symlinks());
+    }
+
+    #[test]
+    fn delta_publication_removes_only_the_component_subtree() {
+        let root = "/tmp/root";
+        let snapshot = GenerationSnapshot::new(
+            1,
+            "plan".to_string(),
+            vec![
+                owned(root, "foo"),
+                owned(root, "foo/child"),
+                owned(root, "foobar"),
+            ],
+        );
+        let index = RwLock::new(IndexState::default());
+        publish_snapshot(&index, &snapshot);
+        index
+            .write()
+            .expect("index write")
+            .last_scan_completed_unix_secs = None;
+
+        publish_delta(&index, &[], &[PathBuf::from(root).join("foo")], 1);
+
+        let index = index.read().expect("index read");
+        assert!(index.last_scan_completed_unix_secs.is_some());
+        assert!(index.items.iter().all(|item| {
+            item.parent_path.as_os_str().is_empty()
+                && item.name_lower.is_empty()
+                && item.path_str.is_empty()
+                && item.path_lower.is_empty()
+        }));
+        assert_eq!(
+            index
+                .items
+                .iter()
+                .map(|item| item.path.clone())
+                .collect::<Vec<_>>(),
+            vec![PathBuf::from(root).join("foobar")]
+        );
+    }
+
+    #[test]
+    fn watch_directory_walk_matches_scan_membership() {
+        let root =
+            std::env::temp_dir().join(format!("ottrin-watch-membership-{}", std::process::id()));
+        let normal = root.join("Documents").join("nested");
+        let hidden = root.join(".cache").join("churn");
+        let generated = root.join("Projects").join("Ottrin").join("target");
+        let ordinary_out = root.join("out").join("notes");
+        let ninja_out = root
+            .join("workspace")
+            .join("chromium")
+            .join("src")
+            .join("out")
+            .join("MinusWayland");
+        std::fs::create_dir_all(&normal).expect("create normal tree");
+        std::fs::create_dir_all(&hidden).expect("create hidden tree");
+        std::fs::create_dir_all(&generated).expect("create generated tree");
+        std::fs::create_dir_all(&ordinary_out).expect("create ordinary out tree");
+        std::fs::create_dir_all(ninja_out.join("obj")).expect("create Ninja output tree");
+        std::fs::write(normal.join("kept.txt"), b"kept").expect("write normal fixture");
+        std::fs::write(ordinary_out.join("kept.txt"), b"kept").expect("write ordinary out fixture");
+        std::fs::write(ninja_out.join("build.ninja"), b"generated").expect("write Ninja marker");
+        std::fs::write(ninja_out.join("args.gn"), b"is_debug = true").expect("write GN marker");
+        std::fs::write(ninja_out.join("obj").join("artifact.o"), b"generated")
+            .expect("write generated fixture");
+        let mut search_config = config(root.to_string_lossy().as_ref());
+        search_config.include_hidden_system = false;
+        let plan = ScanPlan::new(&search_config).expect("plan");
+        let cancelled = AtomicBool::new(false);
+        let mut watched = Vec::new();
+
+        walk_plan_watch_paths(&plan, &root, &root, &cancelled, |path| {
+            watched.push(path.to_path_buf());
+            Ok(())
+        })
+        .expect("walk watch paths");
+        let ScanOutcome::Completed(scanned) =
+            crate::scanner::scan(&plan, &cancelled, |_| {}).expect("scan fixture")
+        else {
+            panic!("scan unexpectedly cancelled");
+        };
+        let scanned = scanned
+            .into_iter()
+            .map(|item| item.item().path.clone())
+            .collect::<BTreeSet<_>>();
+
+        assert!(watched.contains(&root));
+        assert!(watched.contains(&root.join("Documents")));
+        assert!(watched.contains(&normal));
+        assert!(watched.contains(&root.join("out")));
+        assert!(watched.contains(&ordinary_out));
+        assert!(!watched.contains(&root.join(".cache")));
+        assert!(!watched.contains(&hidden));
+        assert!(!watched.contains(&generated));
+        assert!(!watched.contains(&ninja_out));
+        assert!(!watched.contains(&ninja_out.join("obj")));
+        assert!(scanned.contains(&ordinary_out.join("kept.txt")));
+        assert!(!scanned.contains(&ninja_out));
+        assert!(!scanned.contains(&ninja_out.join("build.ninja")));
+        assert!(!scanned.contains(&ninja_out.join("obj").join("artifact.o")));
+        assert_eq!(
+            included_watch_event_paths(
+                &plan,
+                vec![
+                    normal.join("new.txt"),
+                    hidden.join("cache.tmp"),
+                    generated.join("artifact.o"),
+                    ordinary_out.join("new.txt"),
+                    ninja_out.join("obj").join("nested-event.o"),
+                ],
+            ),
+            vec![
+                normal.join("new.txt"),
+                ordinary_out.join("new.txt"),
+                ninja_out,
+            ]
+        );
+        std::fs::remove_dir_all(root).expect("remove watch fixture");
+    }
+
+    #[test]
+    fn watch_retry_backoff_starts_after_attempt_completion() {
+        let root = PathBuf::from("root");
+        let attempt_completed_at = Duration::from_secs(300);
+        let mut registry =
+            WatchRegistry::new(vec![root.clone()], WATCH_RETRY_INITIAL, WATCH_RETRY_MAXIMUM);
+        registry.record_watch_failure(&root, attempt_completed_at, "backend refused");
+
+        assert!(
+            registry
+                .due_retries(attempt_completed_at + WATCH_RETRY_INITIAL - Duration::from_millis(1))
+                .is_empty()
+        );
+        assert_eq!(
+            registry.due_retries(attempt_completed_at + WATCH_RETRY_INITIAL),
+            vec![root]
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn unreadable_watch_descendant_does_not_invalidate_the_accessible_index() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let path = std::env::temp_dir().join(format!(
+            "ottrin-unreadable-watch-path-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&path).expect("create unreadable directory");
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o000))
+            .expect("remove directory permissions");
+
+        assert!(!watch_error_requires_recovery(std::slice::from_ref(&path)));
+
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700))
+            .expect("restore directory permissions");
+        std::fs::remove_dir(path).expect("remove unreadable directory");
+    }
+
     fn owned(root: &str, name: &str) -> OwnedItem {
         let path = PathBuf::from(root).join(name);
         let mut item = SearchResultItem {
@@ -1154,6 +1966,38 @@ mod tests {
         };
         item.prepare();
         OwnedItem::new(PathBuf::from(root), item)
+    }
+
+    #[test]
+    fn scanner_waits_for_batch_persistence_before_finishing() {
+        let (commands, receiver) = mpsc::channel();
+        let (finished, completion) = mpsc::channel();
+        let cancelled = AtomicBool::new(false);
+        let producer = std::thread::spawn(move || {
+            send_scan_batch(&commands, 7, vec![owned("/root", "item.txt")], &cancelled)
+                .expect("worker persists batch");
+            finished.send(()).expect("report scanner completion");
+        });
+
+        let Command::ScanBatch {
+            revision,
+            items,
+            persisted,
+        } = receiver.recv().expect("scan batch")
+        else {
+            panic!("expected scan batch");
+        };
+        assert_eq!(revision, 7);
+        assert_eq!(items.len(), 1);
+        assert!(matches!(
+            completion.try_recv(),
+            Err(mpsc::TryRecvError::Empty)
+        ));
+
+        persisted.send(Ok(())).expect("acknowledge persisted batch");
+
+        completion.recv_timeout(WAIT).expect("scanner finishes");
+        producer.join().expect("producer joins");
     }
 
     #[derive(Default)]
@@ -1203,6 +2047,118 @@ mod tests {
             state.active = Some(snapshot.clone());
             publish(&snapshot);
             Ok(())
+        }
+    }
+
+    struct FailingStagedStore {
+        discarded: Arc<Mutex<Vec<i64>>>,
+    }
+
+    struct SuccessfulStagedStore {
+        lifecycle: Arc<Mutex<Vec<&'static str>>>,
+    }
+
+    impl StoreBackend for SuccessfulStagedStore {
+        fn load(
+            &mut self,
+            _plan: &ScanPlan,
+            _cancelled: &AtomicBool,
+        ) -> Result<Option<GenerationSnapshot>, String> {
+            Ok(None)
+        }
+
+        fn begin_staged_generation(&mut self, _plan: &ScanPlan) -> Result<Option<i64>, String> {
+            Ok(Some(7))
+        }
+
+        fn append_staged_generation(
+            &mut self,
+            _plan: &ScanPlan,
+            _generation: i64,
+            _items: &[OwnedItem],
+        ) -> Result<(), String> {
+            Ok(())
+        }
+
+        fn activate_staged_generation(
+            &mut self,
+            _plan: &ScanPlan,
+            _generation: i64,
+            _expected_count: usize,
+            _fence: &ActivationFence,
+            _expected_epoch: u64,
+            publish: &mut dyn FnMut(usize),
+        ) -> Result<(), StoreBackendError> {
+            self.lifecycle.lock().expect("lifecycle").push("activate");
+            publish(1);
+            Ok(())
+        }
+
+        fn commit_guarded(
+            &mut self,
+            _plan: &ScanPlan,
+            _mutation: IndexMutation,
+            _fence: &ActivationFence,
+            _expected_epoch: u64,
+            _publish: &mut dyn FnMut(&GenerationSnapshot),
+        ) -> Result<(), StoreBackendError> {
+            panic!("staged scan must not use legacy commit")
+        }
+    }
+
+    impl StoreBackend for FailingStagedStore {
+        fn load(
+            &mut self,
+            _plan: &ScanPlan,
+            _cancelled: &AtomicBool,
+        ) -> Result<Option<GenerationSnapshot>, String> {
+            Ok(None)
+        }
+
+        fn begin_staged_generation(&mut self, _plan: &ScanPlan) -> Result<Option<i64>, String> {
+            Ok(Some(7))
+        }
+
+        fn append_staged_generation(
+            &mut self,
+            _plan: &ScanPlan,
+            _generation: i64,
+            _items: &[OwnedItem],
+        ) -> Result<(), String> {
+            Ok(())
+        }
+
+        fn activate_staged_generation(
+            &mut self,
+            _plan: &ScanPlan,
+            _generation: i64,
+            _expected_count: usize,
+            _fence: &ActivationFence,
+            _expected_epoch: u64,
+            _publish: &mut dyn FnMut(usize),
+        ) -> Result<(), StoreBackendError> {
+            Err(StoreBackendError::Other(
+                "injected activation failure".to_string(),
+            ))
+        }
+
+        fn discard_staged_generation(&mut self, generation: i64) -> Result<(), String> {
+            self.discarded
+                .lock()
+                .expect("discarded generations")
+                .push(generation);
+            Ok(())
+        }
+
+        fn commit_guarded(
+            &mut self,
+            _plan: &ScanPlan,
+            _mutation: IndexMutation,
+            _fence: &ActivationFence,
+            _expected_epoch: u64,
+            _publish: &mut dyn FnMut(&GenerationSnapshot),
+        ) -> Result<(), StoreBackendError> {
+            panic!("staged scan must not use legacy commit")
         }
     }
 
@@ -1319,6 +2275,16 @@ mod tests {
             barrier(&self.commands);
         }
 
+        fn staged(self, indexed_items: usize) {
+            self.commands
+                .send(Command::ScanFinished {
+                    revision: self.revision,
+                    result: Ok(ScanOutcome::Staged { indexed_items }),
+                })
+                .expect("send staged scan");
+            barrier(&self.commands);
+        }
+
         fn fail(self, message: &str) {
             self.commands
                 .send(Command::ScanFinished {
@@ -1379,6 +2345,116 @@ mod tests {
             launcher,
         );
         (worker, index, scans)
+    }
+
+    #[test]
+    fn successful_staged_replacement_releases_allocator_after_activation() {
+        let lifecycle = Arc::new(Mutex::new(Vec::new()));
+        let reclaimed_lifecycle = Arc::clone(&lifecycle);
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        let (launcher, scans) = controlled_launcher();
+        let worker = spawn_with_reclaimer(
+            config("/root"),
+            index,
+            Box::new(SuccessfulStagedStore {
+                lifecycle: Arc::clone(&lifecycle),
+            }),
+            launcher,
+            Arc::new(move || {
+                reclaimed_lifecycle
+                    .lock()
+                    .expect("lifecycle")
+                    .push("reclaim");
+            }),
+        );
+        let startup = scans.recv_timeout(WAIT).expect("startup staged scan");
+
+        startup.staged(1);
+
+        assert_eq!(
+            lifecycle.lock().expect("lifecycle").as_slice(),
+            &["activate", "reclaim"]
+        );
+        worker.stop();
+    }
+
+    #[test]
+    fn completed_non_staged_scan_does_not_release_allocator() {
+        let reclaim_count = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let observed_count = Arc::clone(&reclaim_count);
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        let (launcher, scans) = controlled_launcher();
+        let worker = spawn_with_reclaimer(
+            config("/root"),
+            index,
+            Box::new(MemoryStore(Arc::new(Mutex::new(
+                MemoryStoreState::default(),
+            )))),
+            launcher,
+            Arc::new(move || {
+                observed_count.fetch_add(1, Ordering::AcqRel);
+            }),
+        );
+        let startup = scans.recv_timeout(WAIT).expect("startup scan");
+
+        startup.complete(vec![owned("/root", "item.txt")]);
+
+        assert_eq!(reclaim_count.load(Ordering::Acquire), 0);
+        worker.stop();
+    }
+
+    #[test]
+    fn failed_staged_activation_discards_without_releasing_allocator() {
+        let discarded = Arc::new(Mutex::new(Vec::new()));
+        let reclaim_count = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let observed_count = Arc::clone(&reclaim_count);
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        let (launcher, scans) = controlled_launcher();
+        let worker = spawn_with_reclaimer(
+            config("/root"),
+            index,
+            Box::new(FailingStagedStore {
+                discarded: Arc::clone(&discarded),
+            }),
+            launcher,
+            Arc::new(move || {
+                observed_count.fetch_add(1, Ordering::AcqRel);
+            }),
+        );
+        let startup = scans.recv_timeout(WAIT).expect("startup staged scan");
+
+        startup.staged(1);
+
+        assert_eq!(
+            discarded.lock().expect("discarded generations").as_slice(),
+            &[7]
+        );
+        assert_eq!(reclaim_count.load(Ordering::Acquire), 0);
+        worker.stop();
+    }
+
+    #[test]
+    fn failed_staged_scan_discards_the_incomplete_generation() {
+        let discarded = Arc::new(Mutex::new(Vec::new()));
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        let (launcher, scans) = controlled_launcher();
+        let worker = spawn_with(
+            config("/root"),
+            index,
+            Box::new(FailingStagedStore {
+                discarded: Arc::clone(&discarded),
+            }),
+            launcher,
+        );
+        let startup = scans.recv_timeout(WAIT).expect("startup staged scan");
+
+        startup.fail("injected scanner failure");
+
+        assert_eq!(
+            discarded.lock().expect("discarded generations").as_slice(),
+            &[7]
+        );
+        worker.stop();
     }
 
     #[test]
@@ -2263,6 +3339,7 @@ mod tests {
             watch_registry: Some(registry),
             watch_clock_started: Instant::now(),
             before_watch_setup: None,
+            memory_reclaimer: Arc::new(|| {}),
         };
 
         assert!(worker.recover_root(&root));
