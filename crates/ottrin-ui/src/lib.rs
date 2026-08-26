@@ -19259,15 +19259,74 @@ impl OttrinApp {
                                                         .lock_focus(true),
                                                 );
                                             });
+                                        } else if document_editor {
+                                            let editor_id = ui.make_persistent_id((
+                                                "markdown_document_editor",
+                                                &path,
+                                            ));
+                                            let marker = ui
+                                                .horizontal(|ui| {
+                                                    if ui
+                                                        .button(RichText::new("B").strong())
+                                                        .on_hover_text("Bold")
+                                                        .clicked()
+                                                    {
+                                                        Some("**")
+                                                    } else if ui
+                                                        .button(RichText::new("I").italics())
+                                                        .on_hover_text("Italic")
+                                                        .clicked()
+                                                    {
+                                                        Some("_")
+                                                    } else {
+                                                        None
+                                                    }
+                                                })
+                                                .inner;
+                                            if let Some(marker) = marker {
+                                                let mut state =
+                                                    TextEditState::load(ui.ctx(), editor_id)
+                                                        .unwrap_or_default();
+                                                let character_count = editor.buffer.chars().count();
+                                                let selection = state
+                                                    .cursor
+                                                    .char_range()
+                                                    .map(|range| range.as_sorted_char_range())
+                                                    .unwrap_or(character_count..character_count);
+                                                let cursor_range = CCursorRange::two(
+                                                    CCursor::new(selection.start),
+                                                    CCursor::new(selection.end),
+                                                );
+                                                let mut undoer = state.undoer();
+                                                undoer.add_undo(&(
+                                                    cursor_range,
+                                                    editor.buffer.clone(),
+                                                ));
+                                                state.set_undoer(undoer);
+                                                let selection = apply_markdown_inline_format(
+                                                    &mut editor.buffer,
+                                                    selection,
+                                                    marker,
+                                                );
+                                                state.cursor.set_char_range(Some(CCursorRange::two(
+                                                    CCursor::new(selection.start),
+                                                    CCursor::new(selection.end),
+                                                )));
+                                                state.store(ui.ctx(), editor_id);
+                                                ui.memory_mut(|memory| memory.request_focus(editor_id));
+                                            }
+                                            ui.add(
+                                                egui::TextEdit::multiline(&mut editor.buffer)
+                                                    .id(editor_id)
+                                                    .font(FontId::proportional(16.0))
+                                                    .desired_rows(24)
+                                                    .lock_focus(true),
+                                            );
                                         } else {
                                             ui.add(
                                                 egui::TextEdit::multiline(&mut editor.buffer)
-                                                    .font(if document_editor {
-                                                        FontId::proportional(16.0)
-                                                    } else {
-                                                        FontId::monospace(12.0)
-                                                    })
-                                                    .desired_rows(if document_editor { 24 } else { 18 })
+                                                    .font(FontId::monospace(12.0))
+                                                    .desired_rows(18)
                                                     .lock_focus(true),
                                             );
                                         }
@@ -23173,6 +23232,29 @@ fn markdown_quick_inspector_uses_document_editor(path: &Path) -> bool {
     path.extension().is_some_and(|extension| {
         extension.eq_ignore_ascii_case("md") || extension.eq_ignore_ascii_case("markdown")
     })
+}
+
+fn apply_markdown_inline_format(
+    text: &mut String,
+    character_range: std::ops::Range<usize>,
+    marker: &str,
+) -> std::ops::Range<usize> {
+    let character_count = text.chars().count();
+    let start = character_range.start.min(character_count);
+    let end = character_range.end.clamp(start, character_count);
+    let start_byte = text
+        .char_indices()
+        .nth(start)
+        .map_or(text.len(), |(index, _)| index);
+    let end_byte = text
+        .char_indices()
+        .nth(end)
+        .map_or(text.len(), |(index, _)| index);
+
+    text.insert_str(end_byte, marker);
+    text.insert_str(start_byte, marker);
+    let marker_characters = marker.chars().count();
+    start + marker_characters..end + marker_characters
 }
 
 fn source_quick_inspector_uses_code_editor(path: &Path) -> bool {
@@ -31976,6 +32058,26 @@ mod tests {
         assert!(!markdown_quick_inspector_uses_document_editor(Path::new(
             "notes.txt"
         )));
+    }
+
+    #[test]
+    fn markdown_inline_format_wraps_unicode_character_ranges() {
+        let mut text = "one βeta three".to_string();
+
+        let selection = apply_markdown_inline_format(&mut text, 4..8, "**");
+
+        assert_eq!(text, "one **βeta** three");
+        assert_eq!(selection, 6..10);
+    }
+
+    #[test]
+    fn markdown_inline_format_inserts_an_editable_pair_without_a_selection() {
+        let mut text = "before after".to_string();
+
+        let selection = apply_markdown_inline_format(&mut text, 7..7, "_");
+
+        assert_eq!(text, "before __after");
+        assert_eq!(selection, 8..8);
     }
 
     #[test]
