@@ -2,6 +2,7 @@ use egui::emath::Rangef;
 use egui::scroll_area::ScrollBarVisibility;
 use egui::style::ScrollAnimation;
 use egui::text::{CCursor, CCursorRange};
+use egui::text_edit::TextEditState;
 use egui::{
     Align, Align2, Color32, Context, FontId, Frame, Key, Layout, Rect, RichText, ScrollArea, Sense,
     Shadow, Stroke, UiBuilder, Vec2, WidgetInfo, WidgetType,
@@ -1230,6 +1231,8 @@ struct PreviewTextEditor {
     session: TextEditSession,
     buffer: String,
     error: Option<String>,
+    search_query: String,
+    search_next_char: usize,
 }
 
 impl PreviewTextEditor {
@@ -1240,6 +1243,30 @@ impl PreviewTextEditor {
 
 fn text_edit_contents_changed(original: &str, edited: &str) -> bool {
     original != edited
+}
+
+/// Return the next case-sensitive match as character indices, wrapping once at
+/// the end of the buffer. Egui cursor positions are character-based, while
+/// `str::find` returns byte offsets.
+fn next_text_search_match(
+    text: &str,
+    query: &str,
+    start_char: usize,
+) -> Option<std::ops::Range<usize>> {
+    if query.is_empty() {
+        return None;
+    }
+    let char_count = text.chars().count();
+    let start_byte = text
+        .char_indices()
+        .nth(start_char.min(char_count))
+        .map_or(text.len(), |(index, _)| index);
+    let byte_start = text[start_byte..]
+        .find(query)
+        .map(|index| start_byte + index)
+        .or_else(|| text[..start_byte].find(query))?;
+    let match_start = text[..byte_start].chars().count();
+    Some(match_start..match_start + query.chars().count())
 }
 
 #[derive(Debug)]
@@ -9556,6 +9583,8 @@ impl OttrinApp {
                     buffer: session.contents().to_string(),
                     session,
                     error: None,
+                    search_query: String::new(),
+                    search_next_char: 0,
                 });
             }
             Err(error) => {
@@ -19134,6 +19163,57 @@ impl OttrinApp {
                                     .id_salt(("inspector_text_editor", &path))
                                     .show(ui, |ui| {
                                         if code_editor {
+                                            let editor_id = ui.id().with(("source_code_editor", &path));
+                                            let mut find_next = false;
+                                            ui.horizontal(|ui| {
+                                                ui.label(RichText::new("Find").size(11.5));
+                                                let query = ui.add(
+                                                    egui::TextEdit::singleline(&mut editor.search_query)
+                                                        .desired_width(180.0)
+                                                        .hint_text("Text in this file"),
+                                                );
+                                                if query.changed() {
+                                                    editor.search_next_char = 0;
+                                                    editor.error = None;
+                                                }
+                                                find_next = ui
+                                                    .add_enabled(
+                                                        !editor.search_query.is_empty(),
+                                                        egui::Button::new("Next"),
+                                                    )
+                                                    .clicked()
+                                                    || (query.lost_focus()
+                                                        && ui.input(|input| {
+                                                            input.key_pressed(Key::Enter)
+                                                        }));
+                                            });
+                                            if find_next {
+                                                if let Some(range) = next_text_search_match(
+                                                    &editor.buffer,
+                                                    &editor.search_query,
+                                                    editor.search_next_char,
+                                                ) {
+                                                    editor.search_next_char = range.end;
+                                                    editor.error = None;
+                                                    let mut state = TextEditState::load(ui.ctx(), editor_id)
+                                                        .unwrap_or_default();
+                                                    state.cursor.set_char_range(Some(
+                                                        CCursorRange::two(
+                                                            CCursor::new(range.start),
+                                                            CCursor::new(range.end),
+                                                        ),
+                                                    ));
+                                                    state.store(ui.ctx(), editor_id);
+                                                    ui.memory_mut(|memory| {
+                                                        memory.request_focus(editor_id)
+                                                    });
+                                                } else {
+                                                    editor.error = Some(format!(
+                                                        "No matches for \"{}\"",
+                                                        editor.search_query
+                                                    ));
+                                                }
+                                            }
                                             let language = path
                                                 .extension()
                                                 .and_then(|extension| extension.to_str())
@@ -19168,6 +19248,7 @@ impl OttrinApp {
                                                 };
                                                 ui.add(
                                                     egui::TextEdit::multiline(&mut editor.buffer)
+                                                        .id(editor_id)
                                                         .font(FontId::monospace(12.0))
                                                         .desired_rows(18)
                                                         .layouter(&mut layouter)
@@ -27868,6 +27949,8 @@ mod tests {
             session,
             buffer: "unsaved change\n".to_string(),
             error: None,
+            search_query: String::new(),
+            search_next_char: 0,
         });
 
         assert!(app.native_preview_close_is_cancelled());
@@ -27903,6 +27986,8 @@ mod tests {
             session,
             buffer: "unsaved change\n".to_string(),
             error: None,
+            search_query: String::new(),
+            search_next_char: 0,
         });
 
         app.open_preview_entry(FileEntry {
@@ -27951,6 +28036,8 @@ mod tests {
             session,
             buffer: "unsaved edit\n".to_string(),
             error: None,
+            search_query: String::new(),
+            search_next_char: 0,
         });
         std::fs::write(&path, "external edit\n").expect("change source text");
 
@@ -27995,6 +28082,8 @@ mod tests {
             buffer: session.contents().to_string(),
             session,
             error: None,
+            search_query: String::new(),
+            search_next_char: 0,
         });
 
         app.save_preview_text_edit();
@@ -28024,6 +28113,8 @@ mod tests {
             session,
             buffer: "saved edit\n".to_string(),
             error: None,
+            search_query: String::new(),
+            search_next_char: 0,
         });
 
         app.save_preview_text_edit();
@@ -31897,6 +31988,13 @@ mod tests {
         assert!(!source_quick_inspector_uses_code_editor(Path::new(
             "notes.txt"
         )));
+    }
+
+    #[test]
+    fn text_search_returns_character_ranges_and_wraps() {
+        assert_eq!(next_text_search_match("åβå", "å", 1), Some(2..3),);
+        assert_eq!(next_text_search_match("åβå", "å", 3), Some(0..1));
+        assert_eq!(next_text_search_match("åβå", "", 0), None);
     }
 
     #[cfg(target_os = "linux")]
