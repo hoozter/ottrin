@@ -608,6 +608,9 @@ fn render_docx_paragraph(ui: &mut egui::Ui, c: Colors, paragraph: &DocxParagraph
                     if run.italic {
                         text = text.italics();
                     }
+                    if run.underline {
+                        text = text.underline();
+                    }
                     ui.add(egui::Label::new(text).selectable(true));
                 }
             });

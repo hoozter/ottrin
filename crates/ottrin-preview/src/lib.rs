@@ -802,6 +802,8 @@ pub struct DocxRun {
     pub text: String,
     pub bold: bool,
     pub italic: bool,
+    #[serde(default)]
+    pub underline: bool,
     pub color: Option<String>,
     pub font_size_half_points: Option<u16>,
 }
@@ -6244,6 +6246,7 @@ struct DocxStyleDefinition {
     based_on: Option<String>,
     bold: Option<bool>,
     italic: Option<bool>,
+    underline: Option<bool>,
     color: Option<String>,
     font_size_half_points: Option<u16>,
 }
@@ -6253,6 +6256,7 @@ struct ResolvedDocxStyle {
     name: Option<String>,
     bold: bool,
     italic: bool,
+    underline: bool,
     color: Option<String>,
     font_size_half_points: Option<u16>,
 }
@@ -6282,6 +6286,9 @@ fn resolve_docx_style(
         }
         if let Some(value) = style.italic {
             resolved.italic = value;
+        }
+        if let Some(value) = style.underline {
+            resolved.underline = value;
         }
         if let Some(value) = style.color.as_ref() {
             resolved.color = Some(value.clone());
@@ -6364,6 +6371,11 @@ fn extract_docx_styles<R: std::io::Read + std::io::Seek>(
                             style.italic = docx_on_off(&event);
                         }
                     }
+                    b"u" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.underline = docx_on_off(&event);
+                        }
+                    }
                     b"color" => {
                         if let Some((_, style)) = current.as_mut() {
                             style.color = docx_attribute(&event, b"val");
@@ -6398,6 +6410,11 @@ fn extract_docx_styles<R: std::io::Read + std::io::Seek>(
                     b"i" => {
                         if let Some((_, style)) = current.as_mut() {
                             style.italic = docx_on_off(&event);
+                        }
+                    }
+                    b"u" => {
+                        if let Some((_, style)) = current.as_mut() {
+                            style.underline = docx_on_off(&event);
                         }
                     }
                     b"color" => {
@@ -6460,6 +6477,14 @@ fn apply_docx_character_property(
                 run.italic = value;
             } else {
                 paragraph.as_mut()?.style.italic = value;
+            }
+        }
+        b"u" => {
+            let value = docx_on_off(event)?;
+            if let Some(run) = run.as_mut() {
+                run.underline = value;
+            } else {
+                paragraph.as_mut()?.style.underline = value;
             }
         }
         b"color" => {
@@ -7061,6 +7086,7 @@ fn extract_docx_structure<R: std::io::Read + std::io::Seek>(
                             text: String::new(),
                             bold: style.bold,
                             italic: style.italic,
+                            underline: style.underline,
                             color: style.color,
                             font_size_half_points: style.font_size_half_points,
                         });
@@ -7102,7 +7128,7 @@ fn extract_docx_structure<R: std::io::Read + std::io::Seek>(
                             return None;
                         }
                     }
-                    b"b" | b"i" | b"color" | b"sz" => {
+                    b"b" | b"i" | b"u" | b"color" | b"sz" => {
                         apply_docx_character_property(&event, &mut paragraph, &mut run)?;
                     }
                     b"br" => {
@@ -7218,7 +7244,7 @@ fn extract_docx_structure<R: std::io::Read + std::io::Seek>(
                             return None;
                         }
                     }
-                    b"b" | b"i" | b"color" | b"sz" => {
+                    b"b" | b"i" | b"u" | b"color" | b"sz" => {
                         apply_docx_character_property(&event, &mut paragraph, &mut run)?;
                     }
                     b"tab" => run.as_mut()?.text.push('\t'),
@@ -13180,6 +13206,38 @@ mod tests {
             &last.content[0],
             DocxParagraphContent::Text(run) if run.text == "PAGE TWO — right aligned in the source."
         ));
+    }
+
+    #[test]
+    fn docx_structured_preview_preserves_underlined_runs() {
+        let path = temp_path("underlined-run.docx");
+        {
+            let file = std::fs::File::create(&path).expect("create docx");
+            let mut zip = zip::ZipWriter::new(file);
+            zip.start_file(
+                "word/document.xml",
+                zip::write::SimpleFileOptions::default(),
+            )
+            .expect("document");
+            zip.write_all(
+                br#"<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:rPr><w:u w:val="single"/></w:rPr><w:t>Underlined</w:t></w:r><w:r><w:rPr><w:u w:val="none"/></w:rPr><w:t> plain</w:t></w:r></w:p></w:body></w:document>"#,
+            )
+            .expect("write document");
+            zip.finish().expect("finish docx");
+        }
+
+        let preview = preview_office("underlined-run.docx".to_string(), &path);
+        let document = preview.document.expect("typed DOCX structure");
+        let DocxBlock::Paragraph(paragraph) = &document.blocks[0] else {
+            panic!("fixture must produce a paragraph");
+        };
+        assert!(matches!(
+            &paragraph.content[..],
+            [DocxParagraphContent::Text(underlined), DocxParagraphContent::Text(plain)]
+                if underlined.text == "Underlined" && underlined.underline
+                    && plain.text == " plain" && !plain.underline
+        ));
+        let _ = std::fs::remove_file(path);
     }
 
     #[test]
