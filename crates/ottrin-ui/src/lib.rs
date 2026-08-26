@@ -19264,26 +19264,56 @@ impl OttrinApp {
                                                 "markdown_document_editor",
                                                 &path,
                                             ));
-                                            let marker = ui
-                                                .horizontal(|ui| {
+                                            let format = ui
+                                                .horizontal_wrapped(|ui| {
                                                     if ui
                                                         .button(RichText::new("B").strong())
                                                         .on_hover_text("Bold")
                                                         .clicked()
                                                     {
-                                                        Some("**")
+                                                        Some(("**", false))
                                                     } else if ui
                                                         .button(RichText::new("I").italics())
                                                         .on_hover_text("Italic")
                                                         .clicked()
                                                     {
-                                                        Some("_")
+                                                        Some(("_", false))
+                                                    } else if ui
+                                                        .button("<code>")
+                                                        .on_hover_text("Inline code")
+                                                        .clicked()
+                                                    {
+                                                        Some(("`", false))
+                                                    } else if ui
+                                                        .button("H1")
+                                                        .on_hover_text("Heading 1")
+                                                        .clicked()
+                                                    {
+                                                        Some(("# ", true))
+                                                    } else if ui
+                                                        .button("• List")
+                                                        .on_hover_text("Bullet list")
+                                                        .clicked()
+                                                    {
+                                                        Some(("- ", true))
+                                                    } else if ui
+                                                        .button("☐ Task")
+                                                        .on_hover_text("Task list")
+                                                        .clicked()
+                                                    {
+                                                        Some(("- [ ] ", true))
+                                                    } else if ui
+                                                        .button("❯ Quote")
+                                                        .on_hover_text("Block quote")
+                                                        .clicked()
+                                                    {
+                                                        Some(("> ", true))
                                                     } else {
                                                         None
                                                     }
                                                 })
                                                 .inner;
-                                            if let Some(marker) = marker {
+                                            if let Some((marker, line_prefix)) = format {
                                                 let mut state =
                                                     TextEditState::load(ui.ctx(), editor_id)
                                                         .unwrap_or_default();
@@ -19303,11 +19333,19 @@ impl OttrinApp {
                                                     editor.buffer.clone(),
                                                 ));
                                                 state.set_undoer(undoer);
-                                                let selection = apply_markdown_inline_format(
-                                                    &mut editor.buffer,
-                                                    selection,
-                                                    marker,
-                                                );
+                                                let selection = if line_prefix {
+                                                    apply_markdown_line_prefix(
+                                                        &mut editor.buffer,
+                                                        selection,
+                                                        marker,
+                                                    )
+                                                } else {
+                                                    apply_markdown_inline_format(
+                                                        &mut editor.buffer,
+                                                        selection,
+                                                        marker,
+                                                    )
+                                                };
                                                 state.cursor.set_char_range(Some(CCursorRange::two(
                                                     CCursor::new(selection.start),
                                                     CCursor::new(selection.end),
@@ -23255,6 +23293,64 @@ fn apply_markdown_inline_format(
     text.insert_str(start_byte, marker);
     let marker_characters = marker.chars().count();
     start + marker_characters..end + marker_characters
+}
+
+fn apply_markdown_line_prefix(
+    text: &mut String,
+    character_range: std::ops::Range<usize>,
+    prefix: &str,
+) -> std::ops::Range<usize> {
+    let mut characters: Vec<char> = text.chars().collect();
+    let character_count = characters.len();
+    let start = character_range.start.min(character_count);
+    let end = character_range.end.max(start).min(character_count);
+    let last_selected = if end > start { end - 1 } else { start };
+    let first_line_start = characters[..start]
+        .iter()
+        .rposition(|character| *character == '\n')
+        .map_or(0, |newline| newline + 1);
+    let mut line_starts = vec![first_line_start];
+    for (index, character) in characters
+        .iter()
+        .enumerate()
+        .take(last_selected)
+        .skip(first_line_start)
+    {
+        if *character == '\n' {
+            line_starts.push(index + 1);
+        }
+    }
+
+    let prefix_characters: Vec<char> = prefix.chars().collect();
+    let remove_prefix = line_starts.iter().all(|line_start| {
+        characters.get(*line_start..line_start + prefix_characters.len())
+            == Some(prefix_characters.as_slice())
+    });
+    for line_start in line_starts.iter().rev() {
+        if remove_prefix {
+            characters.drain(*line_start..line_start + prefix_characters.len());
+        } else {
+            characters.splice(*line_start..*line_start, prefix_characters.iter().copied());
+        }
+    }
+    *text = characters.into_iter().collect();
+
+    let adjust = |index: usize| {
+        line_starts.iter().fold(index, |adjusted, line_start| {
+            if remove_prefix {
+                if *line_start < adjusted {
+                    adjusted - prefix_characters.len().min(adjusted - *line_start)
+                } else {
+                    adjusted
+                }
+            } else if *line_start <= adjusted {
+                adjusted + prefix_characters.len()
+            } else {
+                adjusted
+            }
+        })
+    };
+    adjust(start)..adjust(end)
 }
 
 fn source_quick_inspector_uses_code_editor(path: &Path) -> bool {
@@ -32078,6 +32174,26 @@ mod tests {
 
         assert_eq!(text, "before __after");
         assert_eq!(selection, 8..8);
+    }
+
+    #[test]
+    fn markdown_line_prefix_formats_each_selected_line_and_preserves_content_selection() {
+        let mut text = "first\nsecond\nthird".to_owned();
+
+        let selection = apply_markdown_line_prefix(&mut text, 0..12, "- ");
+
+        assert_eq!(text, "- first\n- second\nthird");
+        assert_eq!(selection, 2..16);
+    }
+
+    #[test]
+    fn markdown_line_prefix_toggles_existing_format_off() {
+        let mut text = "before\n> quoted\nafter".to_owned();
+
+        let selection = apply_markdown_line_prefix(&mut text, 11..11, "> ");
+
+        assert_eq!(text, "before\nquoted\nafter");
+        assert_eq!(selection, 9..9);
     }
 
     #[test]
