@@ -19123,13 +19123,19 @@ impl OttrinApp {
                                 || !quick_inspector_uses_visual_preview(&path, preview.kind) =>
                         {
                             if let Some(editor) = self.preview.text_editor.as_mut() {
+                                let document_editor =
+                                    markdown_quick_inspector_uses_document_editor(&path);
                                 ScrollArea::vertical()
                                     .id_salt(("inspector_text_editor", &path))
                                     .show(ui, |ui| {
                                         ui.add(
                                             egui::TextEdit::multiline(&mut editor.buffer)
-                                                .font(FontId::monospace(12.0))
-                                                .desired_rows(18)
+                                                .font(if document_editor {
+                                                    FontId::proportional(16.0)
+                                                } else {
+                                                    FontId::monospace(12.0)
+                                                })
+                                                .desired_rows(if document_editor { 24 } else { 18 })
                                                 .lock_focus(true),
                                         );
                                         if let Some(error) = &editor.error {
@@ -23028,6 +23034,12 @@ fn quick_inspector_uses_visual_preview(path: &Path, kind: PreviewKind) -> bool {
         || (kind == PreviewKind::VideoMetadata
             && ottrin_preview::preview_profile(path).visual_renderer()
                 == ottrin_preview::PreviewVisualRenderer::Video)
+}
+
+fn markdown_quick_inspector_uses_document_editor(path: &Path) -> bool {
+    path.extension().is_some_and(|extension| {
+        extension.eq_ignore_ascii_case("md") || extension.eq_ignore_ascii_case("markdown")
+    })
 }
 
 #[cfg(target_os = "linux")]
@@ -31804,6 +31816,19 @@ mod tests {
             Path::new("saved-page.html"),
             PreviewKind::Text,
         ));
+    }
+
+    #[test]
+    fn markdown_quick_inspector_uses_document_editor_for_markdown_files() {
+        assert!(markdown_quick_inspector_uses_document_editor(Path::new(
+            "notes.md"
+        )));
+        assert!(markdown_quick_inspector_uses_document_editor(Path::new(
+            "NOTES.MARKDOWN"
+        )));
+        assert!(!markdown_quick_inspector_uses_document_editor(Path::new(
+            "notes.txt"
+        )));
     }
 
     #[cfg(target_os = "linux")]
