@@ -199,9 +199,9 @@ impl ContentFileGroup {
             Self::TextDocuments => &["txt", "md", "markdown", "rst", "org", "log", "csv", "tsv"],
             Self::SourceCode => &[
                 "rs", "py", "js", "jsx", "ts", "tsx", "c", "h", "cc", "cpp", "hpp", "java", "kt",
-                "kts", "go", "rb", "php", "swift", "sh", "bash", "zsh", "fish", "ps1", "sql",
-                "html", "htm", "css", "scss", "sass", "less", "xml", "json", "jsonc", "yaml",
-                "yml", "toml", "ini", "cfg", "conf",
+                "kts", "go", "rb", "php", "swift", "m", "mm", "sh", "bash", "zsh", "fish", "ps1",
+                "bat", "sql", "html", "htm", "css", "scss", "sass", "less", "xml", "json", "jsonc",
+                "yaml", "yml", "toml", "ini", "cfg", "conf",
             ],
         }
     }
@@ -2020,6 +2020,16 @@ mod tests {
         );
         assert_eq!(yml.category, FileCategory::Config);
         assert_eq!(yml.code_subtype, Some(CodeSubtype::YAML));
+    }
+
+    #[test]
+    fn source_group_includes_every_editable_code_extension() {
+        for path in ["script.bat", "matrix.m", "view.mm"] {
+            assert!(
+                ContentFileGroup::SourceCode.supports_path(Path::new(path)),
+                "{path} should use the source editor"
+            );
+        }
     }
 
     #[test]
