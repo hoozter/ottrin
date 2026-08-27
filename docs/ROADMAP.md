@@ -59,13 +59,11 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 ### 1. Finish previews and editing
 
 - Complete native Windows fixture acceptance for the Job Object Office process boundary before enabling the provider. Verify conversion, timeout/cancellation descendant cleanup, memory/process limits, inherited-handle restriction, private profile/output cleanup and fallback behavior on a supported Windows host.
-- Keep native DOCX useful without an office suite. PPTX may remain a clearly labelled extracted fallback when no accepted layout provider is available.
-- Continue the Notner-informed editor after faithful read-only preview. Add editing format by format with explicit save, conflict and recovery behavior; conversion alone is not editing.
+- Continue the Notner-informed editor after faithful read-only preview. The first accepted format is Markdown: Quick Inspector now provides a document-styled editor with inline and block formatting, Unicode-safe find, explicit save, conflict refusal and retained unsaved-buffer recovery. Supported source files use the code editor with the same save boundary. Selecting the next editable document format is a product decision; it must define native save fidelity, conflict and recovery behavior before implementation. Conversion alone is not editing, and non-Linux platforms remain read-only until their platform-specific publication and crash-safety gates are accepted.
 
 ### 2. Complete file operations and desktop workflows
 
 - Complete native Windows Move acceptance against the same product contract. The source-complete same-volume and cross-volume Skip/Rename/Overwrite implementation described above remains fail-closed pending native Windows crash, ACL, sharing-mode, filesystem, retained-transaction lifecycle, and packaged acceptance. Non-symbolic reparse points remain deliberately rejected. Keep Windows-specific publication and identity primitives isolated and require native evidence before release claims.
-- Apply the Deelab transaction findings proportionally: inspectable effects, item-level receipts, precondition revalidation, evidence-bound Undo, and explicit refusal when reversal cannot be proved. Ordinary same-volume renames must remain direct and fast.
 
 ### 3. Finish packaging source
 
