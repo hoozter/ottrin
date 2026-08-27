@@ -22825,7 +22825,6 @@ impl eframe::App for OttrinApp {
         self.poll_search_results();
         let preview_ready = self.poll_preview_jobs() | self.poll_preview_loads();
         if self.quick_inspector_only {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
             self.render_preview_overlay(ctx);
             if !self.preview.visible {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Close);

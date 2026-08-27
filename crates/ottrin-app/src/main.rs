@@ -64,6 +64,35 @@ fn main_viewport_transparent(is_windows: bool) -> bool {
     !is_windows
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct MainViewportGeometry {
+    visible: bool,
+    inner_size: [f32; 2],
+    min_inner_size: [f32; 2],
+}
+
+fn main_viewport_geometry(
+    standalone_inspector: bool,
+    configured_size: [f32; 2],
+) -> MainViewportGeometry {
+    if standalone_inspector {
+        // Eframe secondary viewports need their root viewport to remain mapped on Linux.
+        // A transparent 1×1 root keeps the Quick Inspector painting without exposing
+        // the otherwise-unused file-manager window.
+        MainViewportGeometry {
+            visible: true,
+            inner_size: [1.0, 1.0],
+            min_inner_size: [1.0, 1.0],
+        }
+    } else {
+        MainViewportGeometry {
+            visible: true,
+            inner_size: configured_size,
+            min_inner_size: [800.0, 500.0],
+        }
+    }
+}
+
 #[cfg(unix)]
 fn application_window_title_for_unix_user(effective_uid: u32) -> String {
     administrator_surface_label("Ottrin", effective_uid == 0)
@@ -228,6 +257,7 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>) -> eframe::Result<()> {
     let window_size = config.window_size.unwrap_or([1024.0, 680.0]);
 
     let standalone_inspector = matches!(gui_target, Some(GuiLaunchTarget::QuickInspector(_)));
+    let main_viewport = main_viewport_geometry(standalone_inspector, window_size);
     let window_title = application_window_title();
     let options = NativeOptions {
         renderer: renderer_for_selection(
@@ -236,11 +266,11 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>) -> eframe::Result<()> {
         ),
         viewport: egui::ViewportBuilder::default()
             .with_title(window_title.clone())
-            .with_visible(!standalone_inspector)
+            .with_visible(main_viewport.visible)
             .with_decorations(false)
             .with_transparent(main_viewport_transparent(graphics_runtime.is_windows))
-            .with_inner_size(window_size)
-            .with_min_inner_size([800.0, 500.0])
+            .with_inner_size(main_viewport.inner_size)
+            .with_min_inner_size(main_viewport.min_inner_size)
             .with_icon(load_window_icon()),
         ..Default::default()
     };
@@ -1197,6 +1227,15 @@ mod tests {
     fn windows_composition_is_opaque_while_other_platforms_keep_transparency() {
         assert!(!main_viewport_transparent(true));
         assert!(main_viewport_transparent(false));
+    }
+
+    #[test]
+    fn standalone_inspector_keeps_a_mapped_root_for_secondary_viewport_painting() {
+        let viewport = main_viewport_geometry(true, [1024.0, 680.0]);
+
+        assert!(viewport.visible);
+        assert_eq!(viewport.inner_size, [1.0, 1.0]);
+        assert_eq!(viewport.min_inner_size, [1.0, 1.0]);
     }
 
     #[test]
