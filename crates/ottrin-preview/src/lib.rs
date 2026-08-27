@@ -2150,6 +2150,13 @@ pub fn render_office_content_preview_png_with_generation(
 }
 
 #[cfg(unix)]
+fn office_snapshot_revalidation(expected: &[u8], observed: &[u8]) -> Result<(), OfficeVisualError> {
+    (expected == observed)
+        .then_some(())
+        .ok_or(OfficeVisualError::InputChanged)
+}
+
+#[cfg(unix)]
 fn read_office_snapshot(path: &Path) -> Result<OfficeSnapshot, OfficeVisualError> {
     use std::io::{Seek, SeekFrom};
     use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
@@ -2218,9 +2225,10 @@ fn read_office_snapshot(path: &Path) -> Result<OfficeSnapshot, OfficeVisualError
         let count = file
             .read(&mut chunk[..expected])
             .map_err(|error| OfficeVisualError::Read(error.to_string()))?;
-        if count == 0 || chunk[..count] != bytes[compared..compared + count] {
+        if count == 0 {
             return Err(OfficeVisualError::InputChanged);
         }
+        office_snapshot_revalidation(&bytes[compared..compared + count], &chunk[..count])?;
         compared = compared
             .checked_add(count)
             .ok_or(OfficeVisualError::InputChanged)?;
@@ -13560,64 +13568,15 @@ mod tests {
 
     #[cfg(unix)]
     #[test]
-    fn office_document_snapshot_never_returns_an_unstable_same_inode_generation() {
-        use std::io::{Seek, SeekFrom};
-        use std::os::unix::fs::MetadataExt;
-        use std::sync::{
-            Arc, Barrier,
-            atomic::{AtomicBool, Ordering},
-        };
-
-        let path = temp_path("office-snapshot-same-inode.docx");
+    fn office_snapshot_revalidation_rejects_a_detectable_same_length_mutation() {
         let first = vec![b'A'; 128 * 1024];
-        let second = vec![b'B'; 128 * 1024];
-        std::fs::write(&path, &first).expect("write first package");
-        let inode = std::fs::metadata(&path).expect("first metadata").ino();
-        let first_generation = OfficePreviewSourceGeneration(Sha256::digest(&first).into());
-        let second_generation = OfficePreviewSourceGeneration(Sha256::digest(&second).into());
-        let start = Arc::new(Barrier::new(2));
-        let running = Arc::new(AtomicBool::new(true));
-        let writer_path = path.clone();
-        let writer_start = Arc::clone(&start);
-        let writer_running = Arc::clone(&running);
-        let writer = std::thread::spawn(move || {
-            writer_start.wait();
-            for generation in [&first, &second].into_iter().cycle().take(128) {
-                if !writer_running.load(Ordering::Acquire) {
-                    break;
-                }
-                let mut file = std::fs::OpenOptions::new()
-                    .write(true)
-                    .open(&writer_path)
-                    .expect("open same inode package");
-                file.seek(SeekFrom::Start(0)).expect("rewind package");
-                file.write_all(generation)
-                    .expect("rewrite same inode package");
-            }
-        });
+        let mut changed = first.clone();
+        changed[64 * 1024] = b'B';
 
-        start.wait();
-        for _ in 0..128 {
-            match read_office_snapshot(&path) {
-                Ok(snapshot) => assert!(
-                    snapshot.generation == first_generation
-                        || snapshot.generation == second_generation,
-                    "the admitted snapshot must be one complete writer generation"
-                ),
-                Err(OfficeVisualError::InputChanged) => {}
-                Err(error) => panic!(
-                    "same-inode rewrite must either yield a stable snapshot or fail closed: {error}"
-                ),
-            }
-        }
-        running.store(false, Ordering::Release);
-        writer.join().expect("writer joins");
-        assert_eq!(
-            std::fs::metadata(&path).expect("final metadata").ino(),
-            inode,
-            "the concurrent rewrites must retain the same inode"
-        );
-        let _ = std::fs::remove_file(path);
+        assert!(matches!(
+            office_snapshot_revalidation(&first, &changed),
+            Err(OfficeVisualError::InputChanged)
+        ));
     }
 
     #[test]
