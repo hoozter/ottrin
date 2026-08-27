@@ -314,6 +314,21 @@ fn render_html_content_preview_png_with_launcher(
     if !html_preview_runtime_available() {
         return Err(HtmlVisualError::RuntimeUnavailable);
     }
+    render_html_content_preview_png_with_launcher_and_browser(
+        path, target_dim, launcher, cancelled, browser,
+    )
+}
+
+fn render_html_content_preview_png_with_launcher_and_browser(
+    path: &Path,
+    target_dim: u32,
+    launcher: &dyn IsolatedProcessLauncher,
+    cancelled: &AtomicBool,
+    browser: &Path,
+) -> Result<Vec<u8>, HtmlVisualError> {
+    if !is_html_path(path) {
+        return Err(HtmlVisualError::UnsupportedFormat);
+    }
     let source = read_bounded_html(path)?;
     let document = inert_offline_document(path, &source)?;
     let render_dir = create_render_directory()?;
@@ -493,11 +508,12 @@ mod tests {
         ));
         std::fs::write(&path, "<script>alert(1)</script><p>Visible text</p>").unwrap();
 
-        let result = render_html_content_preview_png_with_launcher(
+        let result = render_html_content_preview_png_with_launcher_and_browser(
             &path,
             256,
             &RecordingLauncher,
             &std::sync::atomic::AtomicBool::new(false),
+            Path::new("/test/chromium"),
         );
 
         std::fs::remove_file(path).unwrap();
