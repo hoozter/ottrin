@@ -1,18 +1,25 @@
 #![cfg(target_os = "linux")]
 
 use std::io::{Read, Seek, SeekFrom};
-use std::os::unix::fs::{MetadataExt, PermissionsExt, symlink};
+#[cfg(not(feature = "system-gstreamer"))]
+use std::os::unix::fs::PermissionsExt;
+use std::os::unix::fs::{MetadataExt, symlink};
 use std::path::PathBuf;
+#[cfg(not(feature = "system-gstreamer"))]
 use std::sync::Mutex;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+#[cfg(not(feature = "system-gstreamer"))]
+use std::time::Duration;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use ottrin_preview::{
     MAX_MEDIA_PLAYBACK_SOURCE_BYTES, MAX_MEDIA_PLAYBACK_VIDEO_DIMENSION,
-    MediaPlaybackAdmissionError, MediaPlaybackEvent, MediaPlaybackFrameError,
-    MediaPlaybackRuntimeFailure, admit_media_playback_source, start_media_playback,
+    MediaPlaybackAdmissionError, MediaPlaybackFrameError, admit_media_playback_source,
     validate_media_playback_rgba_frame,
 };
+#[cfg(not(feature = "system-gstreamer"))]
+use ottrin_preview::{MediaPlaybackEvent, MediaPlaybackRuntimeFailure, start_media_playback};
 
+#[cfg(not(feature = "system-gstreamer"))]
 static MEDIA_HELPER_ENV_LOCK: Mutex<()> = Mutex::new(());
 
 fn temp_path(name: &str) -> PathBuf {
@@ -117,6 +124,7 @@ fn decoded_video_frame_requires_the_exact_bounded_rgba_payload() {
     ));
 }
 
+#[cfg(not(feature = "system-gstreamer"))]
 #[test]
 fn playback_worker_truthfully_reports_an_unavailable_system_helper() {
     let _environment = MEDIA_HELPER_ENV_LOCK
@@ -141,6 +149,7 @@ fn playback_worker_truthfully_reports_an_unavailable_system_helper() {
     std::fs::remove_file(path).expect("remove fixture");
 }
 
+#[cfg(not(feature = "system-gstreamer"))]
 #[test]
 fn playback_worker_passes_only_the_retained_descriptor_to_the_helper() {
     let _environment = MEDIA_HELPER_ENV_LOCK
