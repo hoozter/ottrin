@@ -4219,8 +4219,8 @@ mod generation_tests {
         assert!(staged_payload_bytes >= 256 * 1_024);
         let before_activation = sqlite_cache_bytes(&store.conn);
         assert!(
-            before_activation >= 256 * 1_024,
-            "fixture must populate a meaningful SQLite page cache, observed {before_activation} bytes"
+            before_activation > 64 * 1_024,
+            "fixture must populate more cache than the post-activation ceiling, observed {before_activation} bytes"
         );
 
         let fence = ActivationFence::new();
