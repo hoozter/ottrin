@@ -88,7 +88,8 @@ pub use office_provider::{
     render_office_pdf, render_office_preview_page,
 };
 pub use pdf_visual::{
-    PdfVisualError, pdfium_runtime_is_available, render_pdf_first_page_png,
+    PdfVisualError, pdfium_runtime_is_available, render_pdf_bytes_page_png,
+    render_pdf_bytes_page_png_with_library, render_pdf_first_page_png,
     render_pdf_first_page_png_with_library, render_pdf_page_png, render_pdf_page_png_with_library,
 };
 pub use ply_visual::{
@@ -116,6 +117,9 @@ pub use video_thumbnail::{
 const EXTRACTED_TEXT_MARKER: &str = "\n\nExtracted text:\n";
 const EXTRACTED_TEXT_LIMIT: usize = 24_000;
 const MAX_OFFICE_PACKAGE_BYTES: u64 = 128 * 1024 * 1024;
+const MAX_LEGACY_DOC_BYTES: u64 = 32 * 1024 * 1024;
+const MAX_RENDERED_OFFICE_PDF_BYTES: u64 = 128 * 1024 * 1024;
+const MAX_NATIVE_OFFICE_PAGES: usize = 1_000;
 const MAX_OFFICE_PARTS: usize = 4_096;
 const MAX_OFFICE_XML_BYTES: u64 = 8 * 1024 * 1024;
 #[cfg(test)]
@@ -493,6 +497,12 @@ pub enum OfficeVisualError {
     InputChanged,
     #[error("could not open Office package: {0}")]
     Package(String),
+    #[error("could not render Office document: {0}")]
+    Render(String),
+    #[error("rendered Office document is too large ({actual} bytes; limit {limit} bytes)")]
+    RenderedOutputTooLarge { actual: u64, limit: u64 },
+    #[error("rendered Office document has too many pages ({actual}; limit {limit})")]
+    PageLimit { actual: usize, limit: usize },
     #[error("Office package has too many parts ({actual}; limit {limit})")]
     TooManyParts { actual: usize, limit: usize },
     #[error("Office document has no safe extractable content")]
@@ -515,6 +525,13 @@ impl OfficePreviewSourceGeneration {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RenderedOfficePreview {
     pub png: Vec<u8>,
+    pub source_generation: OfficePreviewSourceGeneration,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RenderedLegacyDocPdf {
+    pub pdf: Vec<u8>,
+    pub page_count: usize,
     pub source_generation: OfficePreviewSourceGeneration,
 }
 
@@ -2112,8 +2129,210 @@ pub fn is_office_visual_path(path: &Path) -> bool {
             .unwrap_or_default()
             .to_ascii_lowercase()
             .as_str(),
-        "xlsx" | "xlsm" | "ods"
+        "doc" | "xlsx" | "xlsm" | "ods"
     )
+}
+
+pub fn is_native_legacy_doc_visual_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("doc"))
+}
+
+pub fn render_legacy_doc_pdf_with_generation(
+    path: &Path,
+) -> Result<RenderedLegacyDocPdf, OfficeVisualError> {
+    let executable = native_legacy_doc_helper_path()?;
+    #[cfg(target_os = "linux")]
+    let launcher = LinuxBubblewrapIsolation;
+    #[cfg(target_os = "windows")]
+    let launcher = WindowsJobObjectIsolation;
+    #[cfg(not(any(target_os = "linux", target_os = "windows")))]
+    return Err(OfficeVisualError::PreviewDisabledOnPlatform);
+
+    render_legacy_doc_pdf_with_generation_at(path, &executable, &launcher, &AtomicBool::new(false))
+}
+
+struct NativeDocRenderDirectory(PathBuf);
+
+impl Drop for NativeDocRenderDirectory {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
+
+fn native_legacy_doc_helper_path() -> Result<PathBuf, OfficeVisualError> {
+    if let Some(path) = std::env::var_os("OTTRIN_NATIVE_DOC_HELPER") {
+        return Ok(PathBuf::from(path));
+    }
+    let directory = std::env::current_exe()
+        .map_err(|error| OfficeVisualError::Render(error.to_string()))?
+        .parent()
+        .map(Path::to_path_buf)
+        .ok_or_else(|| {
+            OfficeVisualError::Render("native DOC helper directory unavailable".into())
+        })?;
+    let name = if cfg!(windows) {
+        "ottrin-legacy-doc-render.exe"
+    } else {
+        "ottrin-legacy-doc-render"
+    };
+    Ok(directory.join(name))
+}
+
+pub fn render_legacy_doc_pdf_with_generation_at(
+    path: &Path,
+    executable: &Path,
+    launcher: &dyn IsolatedProcessLauncher,
+    cancelled: &AtomicBool,
+) -> Result<RenderedLegacyDocPdf, OfficeVisualError> {
+    if !is_native_legacy_doc_visual_path(path) {
+        return Err(OfficeVisualError::UnsupportedFormat);
+    }
+    let snapshot = read_office_snapshot(path)?;
+    if snapshot.bytes.len() as u64 > MAX_LEGACY_DOC_BYTES {
+        return Err(OfficeVisualError::InputTooLarge {
+            actual: snapshot.bytes.len() as u64,
+            limit: MAX_LEGACY_DOC_BYTES,
+        });
+    }
+    let source_generation = snapshot.generation.clone();
+    drop(snapshot);
+
+    let unique = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|error| OfficeVisualError::Render(error.to_string()))?
+        .as_nanos();
+    let root =
+        std::env::temp_dir().join(format!("ottrin-native-doc-{}-{unique}", std::process::id()));
+    let profile = root.join("profile");
+    let output = root.join("output");
+    std::fs::create_dir(&root).map_err(|error| OfficeVisualError::Render(error.to_string()))?;
+    let _cleanup = NativeDocRenderDirectory(root);
+    std::fs::create_dir(&profile).map_err(|error| OfficeVisualError::Render(error.to_string()))?;
+    std::fs::create_dir(&output).map_err(|error| OfficeVisualError::Render(error.to_string()))?;
+
+    let process = launcher
+        .run(
+            &IsolatedProcessRequest {
+                executable: executable.to_path_buf(),
+                arguments: vec![
+                    "--input".into(),
+                    "/input/document.doc".into(),
+                    "--output".into(),
+                    "/output/rendered.pdf".into(),
+                ],
+                input: Some(IsolatedProcessInput {
+                    host_path: path.to_path_buf(),
+                    sandbox_path: PathBuf::from("/input/document.doc"),
+                }),
+                private_profile_dir: profile,
+                private_output_dir: output.clone(),
+                timeout: Duration::from_secs(10),
+                max_memory_bytes: 512 * 1024 * 1024,
+                // systemd-run owns bubblewrap, which then execs the single renderer;
+                // four tasks leaves room for that fixed boundary without permitting a process tree.
+                max_processes: 4,
+                max_output_bytes: MAX_RENDERED_OFFICE_PDF_BYTES + 1,
+            },
+            cancelled,
+        )
+        .map_err(|failure| OfficeVisualError::Render(format!("native DOC helper {failure:?}")))?;
+
+    let page_count = std::str::from_utf8(&process.stdout)
+        .ok()
+        .and_then(|value| value.trim().parse::<usize>().ok())
+        .ok_or_else(|| {
+            OfficeVisualError::Render("native DOC helper returned invalid page metadata".into())
+        })?;
+    let pdf_path = output.join("rendered.pdf");
+    let metadata = std::fs::symlink_metadata(&pdf_path)
+        .map_err(|error| OfficeVisualError::Render(error.to_string()))?;
+    if !metadata.file_type().is_file() {
+        return Err(OfficeVisualError::Render(
+            "native DOC helper output is not a regular file".into(),
+        ));
+    }
+    let mut pdf = Vec::with_capacity(
+        usize::try_from(metadata.len().min(MAX_RENDERED_OFFICE_PDF_BYTES))
+            .map_err(|error| OfficeVisualError::Render(error.to_string()))?,
+    );
+    std::fs::File::open(&pdf_path)
+        .and_then(|file| {
+            file.take(MAX_RENDERED_OFFICE_PDF_BYTES + 1)
+                .read_to_end(&mut pdf)
+        })
+        .map_err(|error| OfficeVisualError::Render(error.to_string()))?;
+    if pdf.len() as u64 > MAX_RENDERED_OFFICE_PDF_BYTES {
+        return Err(OfficeVisualError::RenderedOutputTooLarge {
+            actual: pdf.len() as u64,
+            limit: MAX_RENDERED_OFFICE_PDF_BYTES,
+        });
+    }
+    if page_count == 0 {
+        return Err(OfficeVisualError::NoContent);
+    }
+    if page_count > MAX_NATIVE_OFFICE_PAGES {
+        return Err(OfficeVisualError::PageLimit {
+            actual: page_count,
+            limit: MAX_NATIVE_OFFICE_PAGES,
+        });
+    }
+    let current_generation = read_office_snapshot(path)?.generation;
+    if current_generation != source_generation {
+        return Err(OfficeVisualError::InputChanged);
+    }
+    Ok(RenderedLegacyDocPdf {
+        pdf,
+        page_count,
+        source_generation,
+    })
+}
+
+/// Entry point for the resource-limited native legacy-DOC helper process.
+pub fn run_legacy_doc_render_helper(
+    input: &Path,
+    output: &Path,
+) -> Result<usize, OfficeVisualError> {
+    if !is_native_legacy_doc_visual_path(input) {
+        return Err(OfficeVisualError::UnsupportedFormat);
+    }
+    let snapshot = read_office_snapshot(input)?;
+    if snapshot.bytes.len() as u64 > MAX_LEGACY_DOC_BYTES {
+        return Err(OfficeVisualError::InputTooLarge {
+            actual: snapshot.bytes.len() as u64,
+            limit: MAX_LEGACY_DOC_BYTES,
+        });
+    }
+    let document = rwml::Document::open(&snapshot.bytes)
+        .map_err(|error| OfficeVisualError::Package(error.to_string()))?;
+    let rendered = document
+        .try_to_pdf_with_report()
+        .map_err(|error| OfficeVisualError::Render(error.to_string()))?;
+    if rendered.pdf.len() as u64 > MAX_RENDERED_OFFICE_PDF_BYTES {
+        return Err(OfficeVisualError::RenderedOutputTooLarge {
+            actual: rendered.pdf.len() as u64,
+            limit: MAX_RENDERED_OFFICE_PDF_BYTES,
+        });
+    }
+    if rendered.report.pages == 0 {
+        return Err(OfficeVisualError::NoContent);
+    }
+    if rendered.report.pages > MAX_NATIVE_OFFICE_PAGES {
+        return Err(OfficeVisualError::PageLimit {
+            actual: rendered.report.pages,
+            limit: MAX_NATIVE_OFFICE_PAGES,
+        });
+    }
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(output)
+        .map_err(|error| OfficeVisualError::Render(error.to_string()))?;
+    std::io::Write::write_all(&mut file, &rendered.pdf)
+        .and_then(|()| file.sync_all())
+        .map_err(|error| OfficeVisualError::Render(error.to_string()))?;
+    Ok(rendered.report.pages)
 }
 
 pub fn render_office_content_preview_png_with_generation(
@@ -13290,6 +13509,29 @@ mod tests {
         assert!(body.contains("Text extracted by installed catdoc; formatting is not preserved."));
         assert!(body.contains(EXTRACTED_TEXT_MARKER));
         assert!(body.ends_with("Hello"));
+    }
+
+    #[test]
+    fn legacy_doc_native_renderer_preserves_page_and_table_structure() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/legacy-doc-nested-tables.doc");
+        let output = temp_path("legacy-doc-native-render.pdf");
+
+        let page_count = run_legacy_doc_render_helper(&path, &output)
+            .expect("rights-cleared legacy DOC fixture should render natively");
+        let pdf = std::fs::read(&output).expect("read rendered DOC PDF");
+
+        assert!(pdf.starts_with(b"%PDF-"));
+        assert_eq!(page_count, 1);
+        assert!(pdf.len() > 1_000);
+        assert!(is_office_visual_path(&path));
+
+        if pdfium_runtime_is_available() {
+            let png = render_pdf_bytes_page_png(&pdf, 0, 768)
+                .expect("packaged PDFium should rasterize native DOC output");
+            assert!(png.starts_with(b"\x89PNG\r\n\x1a\n"));
+        }
+        std::fs::remove_file(output).expect("remove rendered DOC PDF");
     }
 
     #[test]

@@ -13,7 +13,7 @@ BIN="$TMP/bin"
 STAGE="$TMP/stage"
 mkdir -p "$BIN"
 
-for executable in ottrin-app ottrin-indexd ottrin-priv-helper ottrin-media-playback; do
+for executable in ottrin-app ottrin-indexd ottrin-priv-helper ottrin-media-playback ottrin-legacy-doc-render; do
   printf '#!/bin/sh\nexit 0\n' > "$BIN/$executable"
   chmod 0755 "$BIN/$executable"
 done
@@ -23,6 +23,7 @@ OTTRIN_BUILD_DIR="$BIN" OTTRIN_SKIP_BUILD=1 "$STAGER" "$STAGE"
 for executable in \
   usr/bin/ottrin \
   usr/bin/ottrin-indexd \
+  usr/bin/ottrin-legacy-doc-render \
   usr/bin/ottrin-media-playback \
   usr/libexec/ottrin/ottrin-priv-helper; do
   test -x "$STAGE/$executable"

@@ -77,6 +77,7 @@ These outcomes remain available, but they start only when their trigger is met. 
 - **Portable LibreOffice fidelity pack:** start only after installed-provider acceptance shows a concrete need and provenance, update ownership, licence and removal responsibilities are acceptable.
 - **Generic pack manager:** build it only after one pack candidate has passed its product decision. Do not build package infrastructure for hypothetical providers.
 - **Renderer, codec or icon replacement research:** start only for a reproduced product gap that the current accepted path cannot solve.
+- **Live remote folders and cloud locations:** do not implement these before the current roadmap and release acceptance are complete. The deferred architecture in [`REMOTE_ACCESS_AND_CLOUD_LOCATIONS_DESIGN.md`](REMOTE_ACCESS_AND_CLOUD_LOCATIONS_DESIGN.md) keeps live Ottrin-to-Ottrin access, provider-backed cloud locations, and cloud synchronization as three explicit product boundaries.
 - **Advanced image tools:** the repository does not define this outcome. Do not invent features from the label; start only after David chooses a concrete tool and acceptance behavior.
 - **Fanotify helper/service:** the current Linux indexer uses its accepted watcher design and no active document defines a fanotify requirement. Reopen this only for a reproduced coverage gap and an accepted replacement or supplemental design.
 

@@ -1325,7 +1325,7 @@ struct OfficeRenderedPage {
     source_generation: ottrin_preview::OfficePreviewSourceGeneration,
     label: String,
     page_count: usize,
-    cache_identity: ottrin_preview::OfficeRenderCacheIdentity,
+    cache_identity: Option<ottrin_preview::OfficeRenderCacheIdentity>,
 }
 
 /// A UI request is distinct from the immutable cache entry it expects. A file
@@ -2816,6 +2816,8 @@ impl OttrinApp {
                 let obj_candidate = ottrin_preview::is_obj_path(&req.path);
                 let ply_candidate = ottrin_preview::is_ply_path(&req.path);
                 let office_candidate = ottrin_preview::is_office_visual_path(&req.path);
+                let native_legacy_doc_candidate =
+                    ottrin_preview::is_native_legacy_doc_visual_path(&req.path);
                 let office_provider_candidate =
                     req.office_provider.as_ref().is_some_and(|detected| {
                         ottrin_preview::office_format_for_path(&req.path)
@@ -2955,7 +2957,7 @@ impl OttrinApp {
                                         .expect("provider requests require a source generation"),
                                     label: rendered.provider_label,
                                     page_count: rendered.page_count,
-                                    cache_identity: rendered.cache_identity,
+                                    cache_identity: Some(rendered.cache_identity),
                                 });
                                 Some(rendered.png)
                             }
@@ -3171,7 +3173,8 @@ impl OttrinApp {
                         _ => None,
                     }
                 } else if office_candidate {
-                    if req.target_dim != PREVIEW_CACHE_ORIGINAL
+                    if !native_legacy_doc_candidate
+                        && req.target_dim != PREVIEW_CACHE_ORIGINAL
                         && let Some(cached) = load_cached_thumbnail(
                             &req.path,
                             req.target_dim,
@@ -3197,31 +3200,69 @@ impl OttrinApp {
                         });
                         continue;
                     }
-                    match ottrin_preview::render_office_content_preview_png_with_generation(
-                        &req.path,
-                        if req.target_dim == PREVIEW_CACHE_ORIGINAL {
-                            PREVIEW_CACHE_BUCKET_XL
-                        } else {
-                            req.target_dim
-                        },
-                    ) {
-                        Ok(rendered)
-                            if Some(&rendered.source_generation)
-                                == req.office_source_generation.as_ref() =>
-                        {
-                            if req.target_dim != PREVIEW_CACHE_ORIGINAL {
-                                persist_cached_thumbnail(
-                                    &req.path,
-                                    req.target_dim,
+                    let render_dimension = if req.target_dim == PREVIEW_CACHE_ORIGINAL {
+                        PREVIEW_CACHE_BUCKET_XL
+                    } else {
+                        req.target_dim
+                    };
+                    if native_legacy_doc_candidate {
+                        match ottrin_preview::render_legacy_doc_pdf_with_generation(&req.path) {
+                            Ok(rendered)
+                                if Some(&rendered.source_generation)
+                                    == req.office_source_generation.as_ref() =>
+                            {
+                                match ottrin_preview::render_pdf_bytes_page_png(
+                                    &rendered.pdf,
                                     req.page_index,
-                                    &req.cache_key,
-                                    &rendered.png,
-                                    req.cache_max_bytes,
-                                );
+                                    render_dimension,
+                                ) {
+                                    Ok(png) => {
+                                        office_render = Some(OfficeRenderedPage {
+                                            source_path: req.path.clone(),
+                                            source_generation: rendered.source_generation,
+                                            label:
+                                                "Rendered by Ottrin — native legacy Word preview"
+                                                    .to_string(),
+                                            page_count: rendered.page_count,
+                                            cache_identity: None,
+                                        });
+                                        Some(png)
+                                    }
+                                    Err(error) => {
+                                        office_error = Some(error.to_string());
+                                        None
+                                    }
+                                }
                             }
-                            Some(rendered.png)
+                            Ok(_) => None,
+                            Err(error) => {
+                                office_error = Some(error.to_string());
+                                None
+                            }
                         }
-                        _ => None,
+                    } else {
+                        match ottrin_preview::render_office_content_preview_png_with_generation(
+                            &req.path,
+                            render_dimension,
+                        ) {
+                            Ok(rendered)
+                                if Some(&rendered.source_generation)
+                                    == req.office_source_generation.as_ref() =>
+                            {
+                                if req.target_dim != PREVIEW_CACHE_ORIGINAL {
+                                    persist_cached_thumbnail(
+                                        &req.path,
+                                        req.target_dim,
+                                        req.page_index,
+                                        &req.cache_key,
+                                        &rendered.png,
+                                        req.cache_max_bytes,
+                                    );
+                                }
+                                Some(rendered.png)
+                            }
+                            _ => None,
+                        }
                     }
                 } else if html_candidate {
                     #[cfg(target_os = "linux")]
@@ -3851,12 +3892,12 @@ impl OttrinApp {
     }
 
     fn office_rendered_page_for_path(&self, path: &Path) -> Option<&OfficeRenderedPage> {
-        if !self.state.config.installed_office_previews_enabled {
-            return None;
-        }
         let current_generation = ottrin_preview::office_preview_source_generation(path)?;
         self.office_rendered_pages.values().find(|rendered| {
-            rendered.source_path == path && rendered.source_generation == current_generation
+            rendered.source_path == path
+                && rendered.source_generation == current_generation
+                && (rendered.cache_identity.is_none()
+                    || self.state.config.installed_office_previews_enabled)
         })
     }
 
@@ -18748,8 +18789,9 @@ impl OttrinApp {
         #[cfg(target_os = "linux")]
         self.sync_preview_media_playback(ctx, &path, preview.kind);
         let office_render = self.office_rendered_page_for_path(&path).cloned();
-        let uses_office_provider =
-            office_render.is_some() || self.office_provider_for_path(&path).is_some();
+        let uses_office_provider = office_render.is_some()
+            || self.office_provider_for_path(&path).is_some()
+            || ottrin_preview::is_native_legacy_doc_visual_path(&path);
         let name = preview.title.clone();
         let mut close_requested = false;
         let builder = egui::ViewportBuilder::default()
@@ -19532,6 +19574,22 @@ impl OttrinApp {
                                         );
                                         if let Some(image) = image {
                                             ui.add(image);
+                                        } else if let Some(reason) = self
+                                            .cached_visual_preview_unavailable_reason(
+                                                &path, max_w, max_h,
+                                            )
+                                        {
+                                            let (metadata, _) =
+                                                split_preview_extracted_text(&preview.body);
+                                            render_metadata_card_preview(
+                                                ui,
+                                                c,
+                                                MI_DESCRIPTION,
+                                                &name,
+                                                &format!(
+                                                    "{metadata}\n{reason}\nShowing the extracted fallback instead."
+                                                ),
+                                            );
                                         } else {
                                             ui.horizontal(|ui| {
                                                 ui.spinner();
@@ -22757,12 +22815,24 @@ fn preview_response_matches_current_generation(response: &PreviewJobResponse) ->
             return false;
         }
         if let Some(rendered) = response.office_render.as_ref() {
+            if let Some(identity) = rendered.cache_identity.as_ref() {
+                return response.cache_key
+                    == office_provider_preview_cache_key(
+                        response.target_dim,
+                        response.page_index,
+                        Some(&current_generation),
+                        identity,
+                    );
+            }
             return response.cache_key
-                == office_provider_preview_cache_key(
+                == preview_cache_key_for_page_with_generations(
+                    &response.path,
                     response.target_dim,
                     response.page_index,
+                    None,
+                    None,
+                    None,
                     Some(&current_generation),
-                    &rendered.cache_identity,
                 );
         }
         return response.cache_key.starts_with("office-provider-v1-")
@@ -26562,7 +26632,7 @@ mod tests {
                 source_generation: generation,
                 label: "Rendered with LibreOffice 24.2.7.2".to_string(),
                 page_count: 3,
-                cache_identity: identity,
+                cache_identity: Some(identity),
             }),
             request_id,
             bytes: Some(b"provider-png".to_vec()),
@@ -26627,7 +26697,7 @@ mod tests {
                 source_generation: generation,
                 label: "Rendered with LibreOffice 24.2.7.2".to_string(),
                 page_count: 3,
-                cache_identity: identity,
+                cache_identity: Some(identity),
             }),
             request_id,
             bytes: Some(b"provider-png".to_vec()),
@@ -26688,11 +26758,11 @@ mod tests {
                 source_generation: generation,
                 label: "Rendered with LibreOffice 24.2.7.2".to_string(),
                 page_count: 3,
-                cache_identity: ottrin_preview::OfficeRenderCacheIdentity {
+                cache_identity: Some(ottrin_preview::OfficeRenderCacheIdentity {
                     provider: ottrin_preview::OfficeProviderId::InstalledLibreOffice,
                     provider_version: "24.2.7.2".to_string(),
                     policy_version: 1,
-                },
+                }),
             },
         );
         app.state.config.installed_office_previews_enabled = false;
@@ -26700,6 +26770,28 @@ mod tests {
         assert!(app.office_rendered_page_for_path(&path).is_none());
 
         std::fs::remove_file(path).expect("remove Office source");
+    }
+
+    #[test]
+    fn disabling_libreoffice_does_not_hide_an_ottrin_native_doc_page() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../ottrin-preview/tests/fixtures/legacy-doc-nested-tables.doc");
+        let generation = ottrin_preview::office_preview_source_generation(&path)
+            .expect("capture native DOC generation");
+        let mut app = OttrinApp::default();
+        app.state.config.installed_office_previews_enabled = false;
+        app.office_rendered_pages.insert(
+            "native-doc-cache-key".to_string(),
+            OfficeRenderedPage {
+                source_path: path.clone(),
+                source_generation: generation,
+                label: "Rendered by Ottrin — native legacy Word preview".to_string(),
+                page_count: 1,
+                cache_identity: None,
+            },
+        );
+
+        assert!(app.office_rendered_page_for_path(&path).is_some());
     }
 
     #[test]
@@ -30419,7 +30511,7 @@ mod tests {
             source_generation,
             label: "Rendered with LibreOffice 24.2.7.2".to_string(),
             page_count: 7,
-            cache_identity: identity,
+            cache_identity: Some(identity),
         };
 
         assert_eq!(preview_page_count(&office, Some(&rendered)), Some(7));
@@ -30453,11 +30545,11 @@ mod tests {
                 source_generation: first_generation,
                 label: "Rendered with LibreOffice 24.2.7.2".to_string(),
                 page_count: 5,
-                cache_identity: ottrin_preview::OfficeRenderCacheIdentity {
+                cache_identity: Some(ottrin_preview::OfficeRenderCacheIdentity {
                     provider: ottrin_preview::OfficeProviderId::InstalledLibreOffice,
                     provider_version: "24.2.7.2".to_string(),
                     policy_version: 1,
-                },
+                }),
             },
         );
 

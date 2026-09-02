@@ -109,6 +109,7 @@ require_macos_zip_entry() {
 for entry in \
   '/bin/ottrin$' \
   '/bin/ottrin-priv-helper$' \
+  '/libexec/ottrin/ottrin-legacy-doc-render$' \
   '/libexec/ottrin/ottrin-media-playback$' \
   '/bin/pdfium/lib/libpdfium\.so$' \
   '/bin/pdfium/LICENSE$' \
@@ -130,6 +131,7 @@ done
 
 for entry in \
   '/bin/ottrin\.exe$' \
+  '/bin/ottrin-legacy-doc-render\.exe$' \
   '/bin/ottrin-priv-helper\.exe$' \
   '/bin/pdfium/pdfium\.dll$' \
   '/bin/pdfium/LICENSE$' \
@@ -596,6 +598,13 @@ verify_linux_runtime_closure \
   "$PORTABLE_STAGE/lib" \
   "$PORTABLE_STAGE/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
   "$PORTABLE_STAGE/third-party-notices/linux-runtime"
+verify_linux_runtime_closure \
+  'Linux portable native DOC helper' \
+  "$PORTABLE_STAGE" \
+  "$PORTABLE_STAGE/libexec/ottrin/ottrin-legacy-doc-render" \
+  "$PORTABLE_STAGE/lib" \
+  "$PORTABLE_STAGE/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
+  "$PORTABLE_STAGE/third-party-notices/linux-runtime"
 verify_linux_media_runtime_boundary \
   'Linux portable archive' \
   "$PORTABLE_STAGE" \
@@ -608,6 +617,13 @@ verify_linux_runtime_closure \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/lib" \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime"
+verify_linux_runtime_closure \
+  'Linux AppImage native DOC helper' \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root" \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/bin/ottrin-legacy-doc-render" \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/lib" \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime"
 verify_linux_media_runtime_boundary \
   'Linux AppImage' \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root" \
@@ -617,6 +633,7 @@ verify_linux_media_runtime_boundary \
 for entry in \
   'AppRun' \
   'usr/bin/ottrin' \
+  'usr/bin/ottrin-legacy-doc-render' \
   'usr/bin/ottrin-media-playback' \
   'usr/libexec/ottrin/ottrin-priv-helper' \
   'usr/bin/pdfium/lib/libpdfium.so' \

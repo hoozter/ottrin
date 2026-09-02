@@ -123,6 +123,7 @@ EOF
 
 cd "$ROOT"
 cargo build --release --target "$TARGET" -p ottrin-app -p ottrin-platform -p ottrin-search
+cargo build --release --target "$TARGET" -p ottrin-preview --bin ottrin-legacy-doc-render
 "$ROOT/scripts/windows-gui-subsystem-smoke.sh" "$BUILD_DIR/ottrin-app.exe"
 
 mkdir -p "$DIST_DIR"
@@ -130,6 +131,7 @@ rm -rf "$STAGE"
 mkdir -p "$STAGE/bin" "$STAGE/assets" "$STAGE/docs" "$STAGE/third-party-notices"
 
 cp "$BUILD_DIR/ottrin-app.exe" "$STAGE/bin/ottrin.exe"
+cp "$BUILD_DIR/ottrin-legacy-doc-render.exe" "$STAGE/bin/ottrin-legacy-doc-render.exe"
 cp "$BUILD_DIR/ottrin-priv-helper.exe" "$STAGE/bin/ottrin-priv-helper.exe"
 download_verify_and_package_pdfium "$STAGE/bin/pdfium"
 package_graphics_compatibility_runtime "$STAGE/bin" "$STAGE/third-party-notices"

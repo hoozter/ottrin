@@ -1040,6 +1040,62 @@ fn spreadsheet_omission_label(omission: &SpreadsheetOmission) -> String {
     }
 }
 
+#[derive(Clone, Copy)]
+enum SpreadsheetCellKind {
+    Header,
+    Body,
+}
+
+#[derive(Clone, Copy)]
+struct SpreadsheetCellVisual {
+    fill: Color32,
+    text: Color32,
+    border: Color32,
+}
+
+fn spreadsheet_cell_visual(
+    kind: SpreadsheetCellKind,
+    alternate_row: bool,
+) -> SpreadsheetCellVisual {
+    let fill = match kind {
+        SpreadsheetCellKind::Header => Color32::from_rgb(242, 244, 247),
+        SpreadsheetCellKind::Body if alternate_row => Color32::from_rgb(250, 251, 252),
+        SpreadsheetCellKind::Body => Color32::WHITE,
+    };
+    SpreadsheetCellVisual {
+        fill,
+        text: match kind {
+            SpreadsheetCellKind::Header => Color32::from_rgb(62, 68, 76),
+            SpreadsheetCellKind::Body => Color32::from_rgb(30, 34, 40),
+        },
+        border: Color32::from_rgb(205, 210, 218),
+    }
+}
+
+fn render_spreadsheet_cell(
+    ui: &mut egui::Ui,
+    text: &str,
+    kind: SpreadsheetCellKind,
+    alternate_row: bool,
+    width: f32,
+) {
+    let visual = spreadsheet_cell_visual(kind, alternate_row);
+    egui::Frame::new()
+        .fill(visual.fill)
+        .stroke(Stroke::new(0.5, visual.border))
+        .inner_margin(egui::Margin::symmetric(8, 4))
+        .show(ui, |ui| {
+            let mut label = RichText::new(text).color(visual.text);
+            if matches!(kind, SpreadsheetCellKind::Header) {
+                label = label.strong();
+            }
+            ui.add_sized(
+                [width, 22.0],
+                egui::Label::new(label).selectable(matches!(kind, SpreadsheetCellKind::Body)),
+            );
+        });
+}
+
 pub(crate) fn render_spreadsheet_body_preview(
     ui: &mut egui::Ui,
     c: Colors,
@@ -1077,7 +1133,8 @@ pub(crate) fn render_spreadsheet_body_preview(
     let sheet = &grid.sheets[selected_index];
     let height = scrollable_preview_height(ui.available_height(), 180.0);
     egui::Frame::new()
-        .stroke(Stroke::new(1.0, Color32::from_white_alpha(28)))
+        .fill(Color32::WHITE)
+        .stroke(Stroke::new(1.0, Color32::from_rgb(205, 210, 218)))
         .show(ui, |ui| {
             ScrollArea::both()
                 .id_salt(("inspector_spreadsheet", name, &sheet.id))
@@ -1085,20 +1142,41 @@ pub(crate) fn render_spreadsheet_body_preview(
                 .auto_shrink([false, false])
                 .show(ui, |ui| {
                     egui::Grid::new(("spreadsheet_grid", name, &sheet.id))
-                        .striped(true)
-                        .min_col_width(112.0)
+                        .spacing(egui::Vec2::ZERO)
                         .show(ui, |ui| {
-                            ui.label(RichText::new("#").color(c.text_muted).strong());
+                            render_spreadsheet_cell(
+                                ui,
+                                "#",
+                                SpreadsheetCellKind::Header,
+                                false,
+                                46.0,
+                            );
                             for column in &sheet.columns {
-                                ui.label(RichText::new(&column.label).color(c.text_muted).strong());
+                                render_spreadsheet_cell(
+                                    ui,
+                                    &column.label,
+                                    SpreadsheetCellKind::Header,
+                                    false,
+                                    112.0,
+                                );
                             }
                             ui.end_row();
-                            for row in &sheet.rows {
-                                ui.label(RichText::new(&row.label).color(c.text_muted));
+                            for (row_index, row) in sheet.rows.iter().enumerate() {
+                                let alternate = row_index % 2 == 1;
+                                render_spreadsheet_cell(
+                                    ui,
+                                    &row.label,
+                                    SpreadsheetCellKind::Header,
+                                    alternate,
+                                    46.0,
+                                );
                                 for value in &row.cells {
-                                    ui.add(
-                                        egui::Label::new(RichText::new(value).color(c.text))
-                                            .selectable(true),
+                                    render_spreadsheet_cell(
+                                        ui,
+                                        value,
+                                        SpreadsheetCellKind::Body,
+                                        alternate,
+                                        112.0,
                                     );
                                 }
                                 ui.end_row();
@@ -1528,6 +1606,21 @@ mod tests {
             ["A", "B", "C"]
         );
         assert!(grid.sheets[0].omissions.is_empty());
+    }
+
+    #[test]
+    fn spreadsheet_visuals_are_sheet_light_even_in_the_dark_application_theme() {
+        let header = spreadsheet_cell_visual(SpreadsheetCellKind::Header, false);
+        let body = spreadsheet_cell_visual(SpreadsheetCellKind::Body, false);
+        let alternate_body = spreadsheet_cell_visual(SpreadsheetCellKind::Body, true);
+
+        assert_eq!(header.fill, Color32::from_rgb(242, 244, 247));
+        assert_eq!(body.fill, Color32::WHITE);
+        assert_eq!(alternate_body.fill, Color32::from_rgb(250, 251, 252));
+        assert_eq!(header.text, Color32::from_rgb(62, 68, 76));
+        assert_eq!(body.text, Color32::from_rgb(30, 34, 40));
+        assert_eq!(header.border, Color32::from_rgb(205, 210, 218));
+        assert_eq!(body.border, header.border);
     }
 
     #[test]

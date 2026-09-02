@@ -8,7 +8,8 @@ use ottrin_preview::{
     OfficeProviderProbeResult, OfficeProviderUnavailableReason, OfficeRenderFailure,
     OfficeRenderPolicy, OfficeRenderRequest, detect_installed_libreoffice_from_candidates,
     extract_legacy_doc_text_at, installed_libreoffice_candidates, office_format_for_path,
-    probe_installed_libreoffice_at, render_office_pdf, render_office_preview_page,
+    probe_installed_libreoffice_at, render_legacy_doc_pdf_with_generation_at, render_office_pdf,
+    render_office_preview_page,
 };
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -100,7 +101,10 @@ fn production_provider_format_mapping_accepts_only_the_bounded_office_contract()
         office_format_for_path(Path::new("legacy.doc")),
         Some(OfficeFormat::Doc)
     );
-    assert_eq!(office_format_for_path(Path::new("legacy.xls")), None);
+    assert_eq!(
+        office_format_for_path(Path::new("legacy.xls")),
+        Some(OfficeFormat::Xls)
+    );
     assert_eq!(office_format_for_path(Path::new("legacy.ppt")), None);
 }
 
@@ -144,6 +148,7 @@ fn installed_libreoffice_probe_uses_absolute_executable_and_exposes_supported_fo
         vec![
             OfficeFormat::Doc,
             OfficeFormat::Docx,
+            OfficeFormat::Xls,
             OfficeFormat::Xlsx,
             OfficeFormat::Xlsm,
             OfficeFormat::Pptx,
@@ -273,6 +278,96 @@ fn legacy_doc_extraction_is_bounded_isolated_and_sanitized() {
     assert_eq!(request.max_output_bytes, 64 * 1024);
     assert!(!request.private_profile_dir.exists());
     assert!(!request.private_output_dir.exists());
+
+    std::fs::remove_dir_all(root).expect("remove temporary directory");
+}
+
+#[test]
+fn native_legacy_doc_rendering_uses_an_isolated_helper_and_rejects_oversized_pdf_output() {
+    struct RenderLauncher {
+        requests: Mutex<Vec<IsolatedProcessRequest>>,
+        oversized: bool,
+    }
+
+    impl IsolatedProcessLauncher for RenderLauncher {
+        fn run(
+            &self,
+            request: &IsolatedProcessRequest,
+            _cancelled: &AtomicBool,
+        ) -> Result<IsolatedProcessOutput, IsolatedProcessFailure> {
+            self.requests
+                .lock()
+                .expect("requests lock")
+                .push(request.clone());
+            let output = request.private_output_dir.join("rendered.pdf");
+            if self.oversized {
+                let file = std::fs::File::create(&output).expect("create oversized PDF fixture");
+                file.set_len(128 * 1024 * 1024 + 1)
+                    .expect("size oversized PDF fixture");
+            } else {
+                write_one_page_pdf(&output);
+            }
+            Ok(IsolatedProcessOutput {
+                stdout: b"1\n".to_vec(),
+                diagnostics: Vec::new(),
+            })
+        }
+    }
+
+    let root = temp_dir("native-legacy-doc-rendering");
+    let executable = root.join("ottrin-legacy-doc-render");
+    let source = root.join("document.doc");
+    std::fs::write(&executable, b"fixture executable").expect("write executable fixture");
+    std::fs::write(&source, b"fixture document").expect("write source fixture");
+    let launcher = RenderLauncher {
+        requests: Mutex::new(Vec::new()),
+        oversized: false,
+    };
+
+    let rendered = render_legacy_doc_pdf_with_generation_at(
+        &source,
+        &executable,
+        &launcher,
+        &AtomicBool::new(false),
+    )
+    .expect("isolated render should succeed");
+    assert_eq!(rendered.page_count, 1);
+    let requests = launcher.requests.lock().expect("requests lock");
+    assert_eq!(requests.len(), 1);
+    let request = &requests[0];
+    assert_eq!(request.executable, executable);
+    assert_eq!(
+        request.arguments,
+        vec![
+            "--input",
+            "/input/document.doc",
+            "--output",
+            "/output/rendered.pdf"
+        ]
+    );
+    assert_eq!(request.timeout, Duration::from_secs(10));
+    assert_eq!(request.max_memory_bytes, 512 * 1024 * 1024);
+    assert_eq!(request.max_processes, 4);
+    assert_eq!(request.max_output_bytes, 128 * 1024 * 1024 + 1);
+    assert!(!request.private_profile_dir.exists());
+    assert!(!request.private_output_dir.exists());
+    drop(requests);
+
+    let oversized = RenderLauncher {
+        requests: Mutex::new(Vec::new()),
+        oversized: true,
+    };
+    let error = render_legacy_doc_pdf_with_generation_at(
+        &source,
+        &executable,
+        &oversized,
+        &AtomicBool::new(false),
+    )
+    .expect_err("oversized child output must be rejected");
+    assert!(matches!(
+        error,
+        ottrin_preview::OfficeVisualError::RenderedOutputTooLarge { .. }
+    ));
 
     std::fs::remove_dir_all(root).expect("remove temporary directory");
 }

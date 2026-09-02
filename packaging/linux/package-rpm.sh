@@ -50,6 +50,7 @@ cp -a %{_sourcedir}/stage/. %{buildroot}/
 %files
 /usr/bin/ottrin
 /usr/bin/ottrin-indexd
+/usr/bin/ottrin-legacy-doc-render
 /usr/bin/ottrin-media-playback
 /usr/libexec/ottrin/ottrin-priv-helper
 /usr/share/applications/org.ottrin.Ottrin.desktop

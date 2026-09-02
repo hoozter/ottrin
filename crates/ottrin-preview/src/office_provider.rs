@@ -82,6 +82,7 @@ impl OfficeProviderId {
 pub enum OfficeFormat {
     Doc,
     Docx,
+    Xls,
     Xlsx,
     Xlsm,
     Pptx,
@@ -99,6 +100,7 @@ pub fn office_format_for_path(path: &Path) -> Option<OfficeFormat> {
     {
         "doc" => Some(OfficeFormat::Doc),
         "docx" => Some(OfficeFormat::Docx),
+        "xls" => Some(OfficeFormat::Xls),
         "xlsx" => Some(OfficeFormat::Xlsx),
         "xlsm" => Some(OfficeFormat::Xlsm),
         "pptx" => Some(OfficeFormat::Pptx),
@@ -380,6 +382,7 @@ pub fn probe_installed_libreoffice_at(
         formats: vec![
             OfficeFormat::Doc,
             OfficeFormat::Docx,
+            OfficeFormat::Xls,
             OfficeFormat::Xlsx,
             OfficeFormat::Xlsm,
             OfficeFormat::Pptx,
@@ -445,6 +448,7 @@ impl OfficeConverterLauncher for InstalledLibreOfficeConverter<'_> {
         let extension = match request.format {
             OfficeFormat::Doc => "doc",
             OfficeFormat::Docx => "docx",
+            OfficeFormat::Xls => "xls",
             OfficeFormat::Xlsx => "xlsx",
             OfficeFormat::Xlsm => "xlsm",
             OfficeFormat::Pptx => "pptx",

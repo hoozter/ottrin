@@ -45,12 +45,14 @@ download_verify_and_package_pdfium() {
 cd "$ROOT"
 cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
 cargo build --release -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer
+cargo build --release -p ottrin-preview --bin ottrin-legacy-doc-render
 
 rm -rf "$STAGE"
 mkdir -p "$STAGE/bin" "$STAGE/libexec/ottrin" "$STAGE/assets" "$STAGE/docs" \
   "$STAGE/packaging/linux"
 
 install -m 0755 "$BUILD_DIR/ottrin-app" "$STAGE/libexec/ottrin/ottrin"
+install -m 0755 "$BUILD_DIR/ottrin-legacy-doc-render" "$STAGE/libexec/ottrin/ottrin-legacy-doc-render"
 install -m 0755 "$BUILD_DIR/ottrin-media-playback" "$STAGE/libexec/ottrin/ottrin-media-playback"
 install -m 0755 "$BUILD_DIR/ottrin-indexd" "$STAGE/libexec/ottrin/ottrin-indexd"
 install -m 0755 "$BUILD_DIR/ottrin-priv-helper" "$STAGE/bin/ottrin-priv-helper"

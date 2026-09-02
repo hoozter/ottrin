@@ -141,7 +141,7 @@ Do not ask users to understand provider internals during ordinary viewing. Show 
 
 ## Acceptance corpus
 
-Use rights-cleared DOCX/XLSX/PPTX fixtures on Linux and Windows:
+Use rights-cleared DOC/DOCX, XLS/XLSX and PPTX fixtures on Linux and Windows:
 
 - normal paragraphs, styled runs and exact spaces;
 - fonts/fallbacks, CJK and RTL;
@@ -170,7 +170,11 @@ Installed-LibreOffice discovery, probing, conversion command construction, and r
 
 The Linux production preview pipeline now caches one detected capability outside document parsing, schedules the installed provider before native/extracted fallback, hands only its validated PDF to existing PDFium rendering, and binds in-memory pixels plus provider/version/page metadata to the current Office source generation and provider-aware cache identity. Quick Inspector labels the provider, uses its page count for navigation, rejects stale metadata, and suppresses a failed provider only for the affected source generation before returning to the truthful native/extracted fallback. Provider pixels remain memory-only until a metadata-bearing disk-cache record exists.
 
-No provider downloader, installer, pack lifecycle, settings opt-out, native Windows runtime acceptance, real-installed-LibreOffice runtime acceptance, or physical GUI/fidelity acceptance is complete yet. The Windows Job Object boundary is source-complete, but the Windows provider remains unavailable until native fixtures independently verify conversion, descendant cleanup, limits, inherited handles, private-path cleanup, and fallback behavior. Cross-compilation and Linux containment are not Windows acceptance.
+Legacy DOC now has a bounded Ottrin-native visual path through `rwml`: at most 32 MiB of source bytes are admitted, parse/layout/PDF work runs in Ottrin's non-networked isolated process boundary with a 10-second timeout, 512 MiB memory ceiling, fixed process ceiling and private output directory, and rendered PDF output is capped at 128 MiB and 1,000 pages before its bytes enter the existing PDFium page renderer. The renderer is a useful structural preview, not a full-fidelity Word implementation. LibreOffice remains preferred when installed and enabled; native rendering remains available independently; extraction is retained as the last fallback. Native DOC output does not use a LibreOffice cache identity. Legacy XLS is included in the installed-LibreOffice capability map but has no Ottrin-native structured renderer.
+
+Native spreadsheet previews use a light worksheet canvas, dark cell text, visible gridlines and stronger headers even when the application theme is dark. This is presentation of Ottrin's structured workbook model, not a claim of print-layout fidelity.
+
+No provider downloader, installer, pack lifecycle, native Windows runtime acceptance, real-installed-LibreOffice runtime acceptance, or physical GUI/fidelity acceptance is complete yet. The installed-provider opt-out exists and must always reveal the available native or extracted fallback. The Windows Job Object boundary is source-complete, but the Windows provider remains unavailable until native fixtures independently verify conversion, descendant cleanup, limits, inherited handles, private-path cleanup, and fallback behavior. Cross-compilation and Linux containment are not Windows acceptance.
 
 This avoids coupling the future pack manager to conversion semantics and prevents MiniPdf/LibreOffice-specific conditionals from spreading through UI scheduling code.
 

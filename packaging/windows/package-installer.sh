@@ -28,6 +28,7 @@ INSTALLER="$DIST_DIR/Ottrin-$VERSION-windows-x64-setup.exe"
 
 required=(
   bin/ottrin.exe
+  bin/ottrin-legacy-doc-render.exe
   bin/ottrin-priv-helper.exe
   bin/pdfium/pdfium.dll
   bin/pdfium/LICENSE

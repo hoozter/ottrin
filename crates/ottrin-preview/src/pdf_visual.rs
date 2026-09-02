@@ -42,6 +42,16 @@ pub fn render_pdf_page_png(
     render_pdf_page_png_from_dirs(path, page_index, target_dim, library_dirs)
 }
 
+pub fn render_pdf_bytes_page_png(
+    bytes: &[u8],
+    page_index: usize,
+    target_dim: u32,
+) -> Result<Vec<u8>, PdfVisualError> {
+    let library = find_pdfium_library_from(pdfium_runtime_library_dirs())
+        .ok_or(PdfVisualError::RuntimeUnavailable)?;
+    render_pdf_bytes_page_png_with_library(bytes, page_index, target_dim, &library)
+}
+
 fn pdfium_runtime_library_dirs() -> Vec<PathBuf> {
     let env_dir = std::env::var_os(PDFIUM_DIR_ENV).map(PathBuf::from);
     let executable_dir = std::env::current_exe()
@@ -91,20 +101,49 @@ pub fn render_pdf_page_png_with_library(
             limit: MAX_PDF_VISUAL_BYTES,
         });
     }
-    let target_dim = target_dim.clamp(64, 2_048) as i32;
-    let pdfium = match Pdfium::bind_to_library(library) {
-        Ok(bindings) => Pdfium::new(bindings),
-        // pdfium-render promotes the first binding into a process-wide
-        // OnceCell. Every later bind attempt reports this sentinel even
-        // though the existing binding is healthy and intentionally reusable.
-        // Treating it as a render failure made only the first PDF viewed in an
-        // Ottrin process work.
-        Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Pdfium::default(),
-        Err(error) => return Err(PdfVisualError::RuntimeLoad(error.to_string())),
-    };
+    let pdfium = bind_pdfium(library)?;
     let document = pdfium
         .load_pdf_from_file(path, None)
         .map_err(|error| PdfVisualError::DocumentLoad(error.to_string()))?;
+    render_pdf_document_page(document, page_index, target_dim)
+}
+
+pub fn render_pdf_bytes_page_png_with_library(
+    bytes: &[u8],
+    page_index: usize,
+    target_dim: u32,
+    library: &Path,
+) -> Result<Vec<u8>, PdfVisualError> {
+    if bytes.len() as u64 > MAX_PDF_VISUAL_BYTES {
+        return Err(PdfVisualError::InputTooLarge {
+            actual: bytes.len() as u64,
+            limit: MAX_PDF_VISUAL_BYTES,
+        });
+    }
+    let pdfium = bind_pdfium(library)?;
+    let document = pdfium
+        .load_pdf_from_byte_slice(bytes, None)
+        .map_err(|error| PdfVisualError::DocumentLoad(error.to_string()))?;
+    render_pdf_document_page(document, page_index, target_dim)
+}
+
+fn bind_pdfium(library: &Path) -> Result<Pdfium, PdfVisualError> {
+    match Pdfium::bind_to_library(library) {
+        Ok(bindings) => Ok(Pdfium::new(bindings)),
+        // pdfium-render promotes the first binding into a process-wide
+        // OnceCell. Every later bind attempt reports this sentinel even
+        // though the existing binding is healthy and intentionally reusable.
+        Err(PdfiumError::PdfiumLibraryBindingsAlreadyInitialized) => Ok(Pdfium::default()),
+        Err(error) => Err(PdfVisualError::RuntimeLoad(error.to_string())),
+    }
+}
+
+fn render_pdf_document_page(
+    document: PdfDocument<'_>,
+    page_index: usize,
+    target_dim: u32,
+) -> Result<Vec<u8>, PdfVisualError> {
+    let target_dim = target_dim.clamp(64, 2_048) as i32;
     let pages = document.pages();
     let page_count = pages.len() as usize;
     if page_count == 0 {

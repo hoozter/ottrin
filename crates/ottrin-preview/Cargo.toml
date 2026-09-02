@@ -39,6 +39,7 @@ sha2 = "0.10"
 crc32fast = "1"
 base64 = "0.22"
 libc = "0.2"
+rwml = { version = "=0.1.4", default-features = false, features = ["render"] }
 
 # `stl_io` 0.11.x (MIT; https://github.com/hmeyer/stl_io) is a pure-Rust
 # streaming parser. Preview-specific input, triangle, and raster bounds remain local.

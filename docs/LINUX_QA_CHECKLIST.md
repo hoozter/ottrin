@@ -53,7 +53,7 @@ Populate `library` with representative files:
 - [ ] source/code files;
 - [ ] images including animated GIF/WebP if available;
 - [ ] PDF;
-- [ ] DOCX, XLSX, and PPTX;
+- [ ] one legacy DOC and its equivalent DOCX, plus XLS/XLSX and PPTX;
 - [ ] audio and video supported by the host GStreamer installation;
 - [ ] a large file and a directory tree large enough to exercise indexing;
 - [ ] read-only, broken-symlink, and permission-denied cases where safe.
@@ -131,8 +131,22 @@ Open previews with Space and the preview action/shortcut exposed by the UI.
 - [ ] Images render with correct orientation, transparency, zoom, and animation behavior.
 - [ ] PDF opens, pages render, and zoom/navigation remain responsive.
 - [ ] DOCX uses the native structured renderer by default and preserves readable structure.
-- [ ] XLSX and PPTX render their supported structured views without pretending unsupported
-  fidelity is exact.
+- [ ] With LibreOffice absent or disabled, legacy DOC uses Ottrin's native visual renderer
+  rather than an extraction card; compare its structure with the equivalent DOCX and record
+  fidelity differences rather than treating them as automatically equivalent.
+- [ ] With LibreOffice absent or disabled, XLSX uses a readable light worksheet surface under
+  Ottrin's dark application theme: white/light cells, dark text, visible gridlines and stronger
+  row/column headers.
+- [ ] With LibreOffice absent or disabled, legacy XLS falls back truthfully instead of claiming
+  a native visual renderer that Ottrin does not provide.
+- [ ] With installed LibreOffice enabled, DOC/DOCX, XLS/XLSX and PPTX use the installed-provider
+  path where supported, identify that source honestly, and retain page/sheet navigation.
+- [ ] Disabling LibreOffice immediately restores the available Ottrin-native renderer; removing
+  or breaking LibreOffice produces an actionable provider failure and truthful native or
+  text/metadata fallback, never an empty preview.
+- [ ] XLSX and PPTX native views do not pretend unsupported fidelity is exact.
+- [ ] Replacing an Office source while conversion/rendering is in progress never publishes a
+  page from the old generation under the new file.
 - [ ] Markdown renders correctly and transitions into the flagship editor without losing data.
 - [ ] Plain text opens directly as editable text.
 - [ ] Code opens with syntax highlighting, line numbers, and search.

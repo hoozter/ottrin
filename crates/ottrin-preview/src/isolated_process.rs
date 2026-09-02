@@ -50,7 +50,7 @@ mod linux {
     use std::io::Read;
     use std::os::unix::fs::OpenOptionsExt;
     use std::os::unix::process::CommandExt;
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
     use std::process::{Command, Stdio};
     use std::sync::atomic::{AtomicBool, Ordering};
     use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -90,6 +90,22 @@ mod linux {
         let unit = format!("ottrin-render-{}-{unique}", std::process::id());
         let cpu_seconds = request.timeout.as_secs().max(1).saturating_add(1);
         let file_size = request.max_output_bytes.max(MAX_DIAGNOSTIC_BYTES);
+        let executable_is_already_visible = ["/usr", "/bin", "/lib", "/lib64", "/opt"]
+            .iter()
+            .any(|root| request.executable.starts_with(root));
+        let sandbox_executable = if executable_is_already_visible {
+            request.executable.clone()
+        } else {
+            PathBuf::from("/run/ottrin-render-helper")
+        };
+        let bundled_runtime = (!executable_is_already_visible)
+            .then(|| request.executable.parent())
+            .flatten()
+            .and_then(|parent| {
+                [parent.join("../lib"), parent.join("../../lib")]
+                    .into_iter()
+                    .find(|candidate| candidate.is_dir())
+            });
         let mut command = Command::new(SYSTEMD_RUN);
         command
             .args(["--user", "--wait", "--collect", "--pipe", "--quiet"])
@@ -126,7 +142,8 @@ mod linux {
             }
         }
         command.args([
-            "--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp", "--dir", "/input", "--bind",
+            "--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp", "--dir", "/input", "--dir",
+            "/run", "--bind",
         ]);
         command
             .arg(&request.private_profile_dir)
@@ -140,8 +157,21 @@ mod linux {
                 .arg(&input.host_path)
                 .arg(&input.sandbox_path);
         }
+        if !executable_is_already_visible {
+            command
+                .arg("--ro-bind")
+                .arg(&request.executable)
+                .arg(&sandbox_executable);
+        }
+        if let Some(runtime) = &bundled_runtime {
+            command
+                .arg("--ro-bind")
+                .arg(runtime)
+                .arg("/run/ottrin-lib")
+                .args(["--setenv", "LD_LIBRARY_PATH", "/run/ottrin-lib"]);
+        }
         command
-            .arg(&request.executable)
+            .arg(&sandbox_executable)
             .args(&request.arguments)
             .stdin(Stdio::null())
             .stdout(Stdio::from(stdout))

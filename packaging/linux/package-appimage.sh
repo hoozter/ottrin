@@ -46,6 +46,7 @@ download_verify_and_package_pdfium() {
 cd "$ROOT"
 cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
 cargo build --release -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer
+cargo build --release -p ottrin-preview --bin ottrin-legacy-doc-render
 
 rm -rf "$APPDIR"
 mkdir -p "$APPDIR/usr/bin"
@@ -59,6 +60,7 @@ mkdir -p "$APPDIR/usr/share/polkit-1/actions"
 mkdir -p "$APPDIR/usr/share/doc/ottrin"
 
 install -m 0755 "$ROOT/target/release/ottrin-app" "$APPDIR/usr/bin/ottrin"
+install -m 0755 "$ROOT/target/release/ottrin-legacy-doc-render" "$APPDIR/usr/bin/ottrin-legacy-doc-render"
 install -m 0755 "$ROOT/target/release/ottrin-media-playback" "$APPDIR/usr/bin/ottrin-media-playback"
 install -m 0755 "$ROOT/target/release/ottrin-indexd" "$APPDIR/usr/bin/ottrin-indexd"
 install -m 0755 "$ROOT/target/release/ottrin-priv-helper" "$APPDIR/usr/libexec/ottrin/ottrin-priv-helper"
