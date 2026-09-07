@@ -87,7 +87,7 @@ fn metadata_summary(path: &std::path::Path, kind_label: &str, extra: Option<&str
     match std::fs::metadata(path) {
         Ok(meta) => {
             let mut lines = vec![
-                format!("{kind_label}"),
+                kind_label.to_string(),
                 format!("Size: {}", format_size(meta.len())),
             ];
             if let Ok(modified) = meta.modified()

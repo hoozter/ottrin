@@ -1266,7 +1266,7 @@ impl OttrinApp {
         visuals.hyperlink_color = c.accent;
         visuals.panel_fill = c.panel;
         visuals.window_fill = c.panel; // modals/settings use panel color, not bg
-        visuals.window_stroke = Stroke::new(1.0, c.border);
+        visuals.window_stroke = Stroke::new(1.0_f32, c.border);
         visuals.window_corner_radius = egui::CornerRadius::same(c.app_radius);
         visuals.menu_corner_radius = egui::CornerRadius::same(c.border_radius);
         visuals.window_shadow = Shadow::NONE;
@@ -1281,27 +1281,27 @@ impl OttrinApp {
         visuals.widgets.noninteractive.weak_bg_fill = c.panel;
         visuals.widgets.noninteractive.bg_stroke = Stroke::NONE;
         visuals.widgets.noninteractive.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0, c.text_muted);
+        visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0_f32, c.text_muted);
         visuals.widgets.inactive.bg_fill = button_bg;
         visuals.widgets.inactive.weak_bg_fill = button_bg;
         visuals.widgets.inactive.bg_stroke = Stroke::NONE;
         visuals.widgets.inactive.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.inactive.fg_stroke = Stroke::new(1.0, button_text);
+        visuals.widgets.inactive.fg_stroke = Stroke::new(1.0_f32, button_text);
         visuals.widgets.hovered.bg_fill = c.hover;
         visuals.widgets.hovered.weak_bg_fill = c.hover;
         visuals.widgets.hovered.bg_stroke = Stroke::NONE;
         visuals.widgets.hovered.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.hovered.fg_stroke = Stroke::new(1.0, c.text_muted);
+        visuals.widgets.hovered.fg_stroke = Stroke::new(1.0_f32, c.text_muted);
         visuals.widgets.active.bg_fill = c.accent_dim;
         visuals.widgets.active.weak_bg_fill = c.accent_dim;
         visuals.widgets.active.bg_stroke = Stroke::NONE;
         visuals.widgets.active.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.active.fg_stroke = Stroke::new(1.0, c.accent);
+        visuals.widgets.active.fg_stroke = Stroke::new(1.0_f32, c.accent);
         visuals.widgets.open.bg_fill = button_bg;
         visuals.widgets.open.weak_bg_fill = button_bg;
         visuals.widgets.open.bg_stroke = Stroke::NONE;
         visuals.widgets.open.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.open.fg_stroke = Stroke::new(1.0, button_text);
+        visuals.widgets.open.fg_stroke = Stroke::new(1.0_f32, button_text);
         visuals.selection.bg_fill = c.selected_bg;
         visuals.selection.stroke = Stroke::NONE;
         ctx.set_visuals(visuals);
@@ -2497,7 +2497,7 @@ impl OttrinApp {
         ui.add_space(10.0);
         Frame::new()
             .fill(c.panel)
-            .stroke(Stroke::new(1.0, c.border))
+            .stroke(Stroke::new(1.0_f32, c.border))
             .corner_radius(7.0)
             .inner_margin(egui::Margin::symmetric(12, 10))
             .show(ui, |ui| {
@@ -2646,7 +2646,7 @@ impl OttrinApp {
         ui.add_space(10.0);
         Frame::new()
             .fill(c.panel)
-            .stroke(Stroke::new(1.0, c.border))
+            .stroke(Stroke::new(1.0_f32, c.border))
             .corner_radius(6.0)
             .inner_margin(egui::Margin::symmetric(10, 10))
             .show(ui, |ui| {
@@ -2676,9 +2676,9 @@ impl OttrinApp {
                             c.panel_raised
                         };
                         let card_stroke = if is_active {
-                            Stroke::new(1.5, c.accent)
+                            Stroke::new(1.5_f32, c.accent)
                         } else {
-                            Stroke::new(1.0, c.border)
+                            Stroke::new(1.0_f32, c.border)
                         };
                         let resp = Frame::new()
                             .fill(card_fill)
@@ -2875,7 +2875,7 @@ impl OttrinApp {
                                 let y = r.rect.max.y - 1.0;
                                 ui.painter().line_segment(
                                     [egui::Pos2::new(r.rect.min.x + 6.0, y), egui::Pos2::new(r.rect.max.x - 6.0, y)],
-                                    Stroke::new(2.0, c.accent),
+                                    Stroke::new(2.0_f32, c.accent),
                                 );
                             }
                             r
@@ -2908,7 +2908,7 @@ impl OttrinApp {
                         ui.spacing_mut().item_spacing = Vec2::new(12.0, 12.0);
                         let section_fill = mix_color(c.panel_raised, window_fill, 0.26);
                         let card_fill = mix_color(c.panel, c.panel_raised, 0.34);
-                        let card_stroke = Stroke::new(1.0, mix_color(c.border, window_fill, 0.42));
+                        let card_stroke = Stroke::new(1.0_f32, mix_color(c.border, window_fill, 0.42));
                         let section_radius = self.theme_editor.custom.border_radius.clamp(0.0, 14.0) as u8;
                         let section_card = |ui: &mut egui::Ui, title: &str, detail: &str, add_body: &mut dyn FnMut(&mut egui::Ui)| {
                             Frame::new()
@@ -3005,7 +3005,7 @@ impl OttrinApp {
                             } else {
                                 Color32::from_rgba_premultiplied(230, 230, 230, 220)
                             };
-                            ui.painter().circle(handle_center, handle_r, handle_color, Stroke::new(1.5, Color32::from_gray(60)));
+                            ui.painter().circle(handle_center, handle_r, handle_color, Stroke::new(1.5_f32, Color32::from_gray(60)));
 
                             // Value badge to the right of the slider.
                             ui.add_space(8.0);
@@ -3019,7 +3019,7 @@ impl OttrinApp {
                             ui.painter().rect_stroke(
                                 value_rect,
                                 bar_h * 0.5,
-                                Stroke::new(1.0, mix_color(c.border, c.panel, 0.35)),
+                                Stroke::new(1.0_f32, mix_color(c.border, c.panel, 0.35)),
                                 egui::StrokeKind::Middle,
                             );
                             ui.painter().text(
@@ -3043,7 +3043,7 @@ impl OttrinApp {
                         let mut changed = false;
                         Frame::new()
                             .fill(card_fill)
-                            .stroke(Stroke::new(1.0, mix_color(c.border, card_fill, 0.38)))
+                            .stroke(Stroke::new(1.0_f32, mix_color(c.border, card_fill, 0.38)))
                             .corner_radius(section_radius)
                             .inner_margin(egui::Margin::symmetric(10, 8))
                             .show(ui, |ui| {
@@ -3074,7 +3074,7 @@ impl OttrinApp {
                         let mut changed = false;
                         Frame::new()
                             .fill(card_fill)
-                            .stroke(Stroke::new(1.0, mix_color(c.border, card_fill, 0.38)))
+                            .stroke(Stroke::new(1.0_f32, mix_color(c.border, card_fill, 0.38)))
                             .corner_radius(section_radius)
                             .inner_margin(egui::Margin::symmetric(10, 8))
                             .show(ui, |ui| {
@@ -3113,7 +3113,7 @@ impl OttrinApp {
                             .unwrap_or_else(|| format!("#{:02X}{:02X}{:02X}", rgba[0], rgba[1], rgba[2]));
                         Frame::new()
                             .fill(card_fill)
-                            .stroke(Stroke::new(1.0, mix_color(c.border, card_fill, 0.38)))
+                            .stroke(Stroke::new(1.0_f32, mix_color(c.border, card_fill, 0.38)))
                             .corner_radius(section_radius)
                             .inner_margin(egui::Margin::symmetric(10, 8))
                             .show(ui, |ui| {
@@ -3150,7 +3150,7 @@ impl OttrinApp {
                                             egui::Button::new("")
                                                 .min_size(Vec2::new(38.0, 24.0))
                                                 .fill(swatch)
-                                                .stroke(Stroke::new(1.0, mix_color(c.border, swatch, 0.40)))
+                                                .stroke(Stroke::new(1.0_f32, mix_color(c.border, swatch, 0.40)))
                                                 .corner_radius(6.0),
                                         );
                                         if swatch_btn.clicked() {
@@ -3256,7 +3256,7 @@ impl OttrinApp {
                                     ))
                                     .fill(if selected { mix_color(c.accent, c.panel, 0.18) } else { card_fill })
                                     .stroke(Stroke::new(
-                                        1.0,
+                                        1.0_f32,
                                         if selected { c.accent } else { mix_color(c.border, card_fill, 0.36) },
                                     ))
                                     .corner_radius(section_radius);
@@ -3415,7 +3415,7 @@ impl OttrinApp {
                                                         card_fill
                                                     })
                                                     .stroke(Stroke::new(
-                                                        1.0,
+                                                        1.0_f32,
                                                         if selected {
                                                             c.accent
                                                         } else {
@@ -3506,7 +3506,7 @@ impl OttrinApp {
                                         let fs = self.theme_editor.custom.font_scale;
                                         Frame::new()
                                             .fill(preview.bg)
-                                            .stroke(Stroke::new(1.0, preview.border))
+                                            .stroke(Stroke::new(1.0_f32, preview.border))
                                             .corner_radius(preview.border_radius)
                                             .inner_margin(egui::Margin::symmetric(14, 12))
                                             .show(ui, |ui| {
@@ -3547,7 +3547,7 @@ impl OttrinApp {
                                                                 RichText::new(*name).color(col).size(10.5 * fs),
                                                             )
                                                             .fill(mix_color(preview.bg, col, 0.12))
-                                                            .stroke(Stroke::new(1.0, mix_color(preview.border, col, 0.25)))
+                                                            .stroke(Stroke::new(1.0_f32, mix_color(preview.border, col, 0.25)))
                                                             .corner_radius(preview.button_radius),
                                                         );
                                                     }
@@ -3691,7 +3691,7 @@ impl OttrinApp {
                 ui.scope_builder(UiBuilder::new().max_rect(footer_rect), |ui| {
                     Frame::new()
                         .fill(window_title)
-                        .stroke(Stroke::new(1.0, mix_color(c.border, window_fill, 0.45)))
+                        .stroke(Stroke::new(1.0_f32, mix_color(c.border, window_fill, 0.45)))
                         .inner_margin(egui::Margin::symmetric(10, 8))
                         .show(ui, |ui| {
                             ui.horizontal(|ui| {
@@ -3755,7 +3755,7 @@ impl OttrinApp {
                     .frame(
                         Frame::window(&ctx.style())
                             .fill(c.panel)
-                            .stroke(Stroke::new(1.0, mix_color(c.border, c.panel, 0.55)))
+                            .stroke(Stroke::new(1.0_f32, mix_color(c.border, c.panel, 0.55)))
                             .shadow(Shadow {
                                 offset: [0, 8],
                                 blur: 18,
@@ -6536,7 +6536,7 @@ impl OttrinApp {
                             ui.painter().hline(
                                 tab_rect.x_range(),
                                 tab_rect.bottom() - 1.0,
-                                Stroke::new(2.0, c.accent),
+                                Stroke::new(2.0_f32, c.accent),
                             );
                         }
                     }
@@ -6596,7 +6596,7 @@ impl OttrinApp {
         ctx.layer_painter(egui::LayerId::background()).hline(
             panel_resp.response.rect.x_range(),
             panel_resp.response.rect.bottom(),
-            Stroke::new(1.0, mix_color(c.border, titlebar_bg, 0.55)),
+            Stroke::new(1.0_f32, mix_color(c.border, titlebar_bg, 0.55)),
         );
 
         // Drag only from non-interactive tab-row areas so button clicks do not race StartDrag.
@@ -6883,7 +6883,7 @@ impl OttrinApp {
                 ui.painter().hline(
                     ui.max_rect().x_range(),
                     ui.max_rect().bottom(),
-                    Stroke::new(1.0, mix_color(c.border, c.toolbar_bg, 0.5)),
+                    Stroke::new(1.0_f32, mix_color(c.border, c.toolbar_bg, 0.5)),
                 );
                 ui.spacing_mut().item_spacing.x = 3.0;
                 ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
@@ -7140,7 +7140,7 @@ impl OttrinApp {
                 let full = Rect::from_min_size(ui.min_rect().min, panel_rect.size());
                 ui.painter().rect_filled(full, 0.0, c.smart_panel_bg);
                 // Left border — thin line separating panel from file view
-                ui.painter().vline(full.min.x, full.y_range(), Stroke::new(1.0, c.border));
+                ui.painter().vline(full.min.x, full.y_range(), Stroke::new(1.0_f32, c.border));
                 let live_content_w = if is_expanded {
                     (full.width() - strip_w).max(0.0)
                 } else {
@@ -7157,7 +7157,7 @@ impl OttrinApp {
                 );
                 // Strip background — slightly raised, with left border
                 ui.painter().rect_filled(strip_rect, 0.0, mix_color(c.smart_panel_bg, c.panel_raised, 0.3));
-                ui.painter().vline(strip_rect.min.x, strip_rect.y_range(), Stroke::new(1.0, c.border));
+                ui.painter().vline(strip_rect.min.x, strip_rect.y_range(), Stroke::new(1.0_f32, c.border));
 
                 ui.scope_builder(UiBuilder::new().max_rect(strip_rect), |ui| {
                     ui.vertical_centered(|ui| {
@@ -7172,7 +7172,7 @@ impl OttrinApp {
                             );
                             ui.painter().vline(strip_rect.min.x + 1.0,
                                 (ui.cursor().min.y - 2.0)..=(ui.cursor().min.y + 30.0),
-                                Stroke::new(2.0, c.accent));
+                                Stroke::new(2.0_f32, c.accent));
                         }
                         let info_col = if info_active { c.accent } else { c.text_muted };
                         if ui.add(egui::Button::new(
@@ -7193,7 +7193,7 @@ impl OttrinApp {
                             );
                             ui.painter().vline(strip_rect.min.x + 1.0,
                                 (ui.cursor().min.y - 2.0)..=(ui.cursor().min.y + 30.0),
-                                Stroke::new(2.0, c.accent));
+                                Stroke::new(2.0_f32, c.accent));
                         }
                         let target_col = if target_active { c.accent } else if target_set { c.accent_dim } else { c.text_muted };
                         if ui.add(egui::Button::new(
@@ -7211,7 +7211,7 @@ impl OttrinApp {
                             );
                             ui.painter().vline(strip_rect.min.x + 1.0,
                                 (ui.cursor().min.y - 2.0)..=(ui.cursor().min.y + 30.0),
-                                Stroke::new(2.0, c.accent));
+                                Stroke::new(2.0_f32, c.accent));
                         }
                         let search_diag = self.search_service.diagnostics();
                         let search_col = if search_active {
@@ -7253,7 +7253,7 @@ impl OttrinApp {
                 }
 
                 // Single separator between content and strip only.
-                ui.painter().vline(full.max.x - strip_w, full.y_range(), Stroke::new(1.0, mix_color(c.border, c.smart_panel_bg, 0.45)));
+                ui.painter().vline(full.max.x - strip_w, full.y_range(), Stroke::new(1.0_f32, mix_color(c.border, c.smart_panel_bg, 0.45)));
 
                 // ── Content panel (left 220px when expanded) ────────────────
                 let content_pad = 8.0;
@@ -7277,7 +7277,7 @@ impl OttrinApp {
                                 ui.label(RichText::new("Info").color(c.text_dim).size(12.0).strong());
                             });
                             ui.add_space(6.0);
-                            ui.painter().hline(content_rect.x_range(), ui.cursor().min.y, Stroke::new(1.0, c.border));
+                            ui.painter().hline(content_rect.x_range(), ui.cursor().min.y, Stroke::new(1.0_f32, c.border));
                             ui.add_space(8.0);
 
                             let selected = self.active_selected_entry();
@@ -7631,7 +7631,7 @@ impl OttrinApp {
                                 ui.label(RichText::new("Drop Folder").color(c.text_dim).size(12.0).strong());
                             });
                             ui.add_space(6.0);
-                            ui.painter().hline(content_rect.x_range(), ui.cursor().min.y, Stroke::new(1.0, c.border));
+                            ui.painter().hline(content_rect.x_range(), ui.cursor().min.y, Stroke::new(1.0_f32, c.border));
                             ui.add_space(8.0);
 
                             let card_fill = if target_set {
@@ -7641,11 +7641,11 @@ impl OttrinApp {
                             };
                             let card_stroke = if target_set {
                                 Stroke::new(
-                                    1.0,
+                                    1.0_f32,
                                     Color32::from_rgba_unmultiplied(c.accent.r(), c.accent.g(), c.accent.b(), 34),
                                 )
                             } else {
-                                Stroke::new(1.0, mix_color(c.border, c.smart_panel_bg, 0.65))
+                                Stroke::new(1.0_f32, mix_color(c.border, c.smart_panel_bg, 0.65))
                             };
                             Frame::new()
                                 .fill(card_fill)
@@ -7716,7 +7716,7 @@ impl OttrinApp {
                                 );
                                 Frame::new()
                                     .fill(picker_fill)
-                                    .stroke(Stroke::new(1.0, mix_color(c.border, c.smart_panel_bg, 0.7)))
+                                    .stroke(Stroke::new(1.0_f32, mix_color(c.border, c.smart_panel_bg, 0.7)))
                                     .corner_radius(6.0)
                                     .inner_margin(egui::Margin::symmetric(8, 8))
                                     .show(ui, |ui| {
@@ -7959,7 +7959,7 @@ impl OttrinApp {
                 ui.painter().hline(
                     ui.max_rect().x_range(),
                     ui.max_rect().top(),
-                    Stroke::new(1.0, mix_color(c.border, bottom_bar_bg, 0.5)),
+                    Stroke::new(1.0_f32, mix_color(c.border, bottom_bar_bg, 0.5)),
                 );
                 ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                     // Command frame toggle — LEFT side (bar opens at the bottom-left)
@@ -8122,9 +8122,9 @@ impl OttrinApp {
             c.border
         };
         let border_w = if self.search_ui.input_focused {
-            1.5
+            1.5_f32
         } else {
-            1.0
+            1.0_f32
         };
         Frame::new()
             .fill(c.panel_raised)
@@ -8209,7 +8209,7 @@ impl OttrinApp {
                         egui::Button::new(RichText::new("Content").size(12.0).color(txt))
                             .fill(fill)
                             .stroke(Stroke::new(
-                                1.0,
+                                1.0_f32,
                                 if is_content { c.accent } else { c.border },
                             ))
                             .corner_radius(16.0),
@@ -8247,7 +8247,7 @@ impl OttrinApp {
         ui.painter().hline(
             ui.cursor().min.x..=(ui.cursor().min.x + ui.available_width()),
             ui.cursor().min.y,
-            Stroke::new(1.0, c.border),
+            Stroke::new(1.0_f32, c.border),
         );
         ui.add_space(8.0);
 
@@ -8804,7 +8804,7 @@ impl OttrinApp {
                 ui.painter().hline(
                     ui.cursor().min.x..=(ui.cursor().min.x + ui.available_width()),
                     ui.cursor().min.y,
-                    Stroke::new(1.0, c.border),
+                    Stroke::new(1.0_f32, c.border),
                 );
                 ui.add_space(6.0);
 
@@ -8911,7 +8911,7 @@ impl OttrinApp {
             .frame(
                 Frame::new()
                     .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, c.border))
+                    .stroke(Stroke::new(1.0_f32, c.border))
                     .inner_margin(egui::Margin::symmetric(12, 6)),
             )
             .show(ctx, |ui| {
@@ -9343,7 +9343,7 @@ impl OttrinApp {
         ui.painter().hline(
             ui.max_rect().x_range(),
             ui.max_rect().top(),
-            Stroke::new(1.0, mix_color(c.border, bottom_bar_bg, 0.5)),
+            Stroke::new(1.0_f32, mix_color(c.border, bottom_bar_bg, 0.5)),
         );
         ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
             ui.label(RichText::new("Sort").size(11.5).color(bottom_text));
@@ -9674,7 +9674,7 @@ impl OttrinApp {
         ui.painter().rect_stroke(
             side_rect,
             0.0,
-            Stroke::new(1.0, mix_color(c.border, c.bg, 0.8)),
+            Stroke::new(1.0_f32, mix_color(c.border, c.bg, 0.8)),
             egui::StrokeKind::Inside,
         );
 
@@ -9752,7 +9752,7 @@ impl OttrinApp {
                         egui::pos2(divider_rect.center().x, divider_rect.top()),
                         egui::pos2(divider_rect.center().x, divider_rect.bottom()),
                     ],
-                    Stroke::new(1.0, c.border),
+                    Stroke::new(1.0_f32, c.border),
                 );
 
                 let left_max_x = (divider_rect.left() - 4.0).max(avail.left() + 64.0);
@@ -9775,13 +9775,13 @@ impl OttrinApp {
                 ui.painter().rect_stroke(
                     left_rect,
                     0.0,
-                    Stroke::new(1.0, left_border),
+                    Stroke::new(1.0_f32, left_border),
                     egui::StrokeKind::Inside,
                 );
                 ui.painter().rect_stroke(
                     right_rect,
                     0.0,
-                    Stroke::new(1.0, right_border),
+                    Stroke::new(1.0_f32, right_border),
                     egui::StrokeKind::Inside,
                 );
 
@@ -9867,7 +9867,7 @@ impl OttrinApp {
         ui.painter().rect_stroke(
             track_rect,
             9.0,
-            Stroke::new(1.0, mix_color(c.border, track_fill, 0.55)),
+            Stroke::new(1.0_f32, mix_color(c.border, track_fill, 0.55)),
             egui::StrokeKind::Inside,
         );
         let t = ((scale - 0.75) / (1.85 - 0.75)).clamp(0.0, 1.0);
@@ -9878,17 +9878,17 @@ impl OttrinApp {
                 egui::pos2(track_rect.left() + 10.0, track_rect.center().y),
                 egui::pos2(track_rect.right() - 10.0, track_rect.center().y),
             ],
-            Stroke::new(2.0, mix_color(c.text_muted, track_fill, 0.45)),
+            Stroke::new(2.0_f32, mix_color(c.text_muted, track_fill, 0.45)),
         );
         ui.painter()
             .circle_filled(knob_center, 6.0, mix_color(c.text_muted, track_fill, 0.6));
         ui.painter()
-            .circle_stroke(knob_center, 6.0, Stroke::new(1.0, c.bg));
+            .circle_stroke(knob_center, 6.0, Stroke::new(1.0_f32, c.bg));
         for offset in [-2.0_f32, 0.0, 2.0] {
             ui.painter().vline(
                 knob_center.x + offset,
                 (knob_center.y - 2.2)..=(knob_center.y + 2.2),
-                Stroke::new(1.0, c.bg),
+                Stroke::new(1.0_f32, c.bg),
             );
         }
         if track_resp.hovered() || track_resp.dragged() {
@@ -10180,8 +10180,11 @@ impl OttrinApp {
                     // Always show separator after each directory column
                     // (the rightmost fill/preview column always follows).
                     {
-                        ui.painter()
-                            .vline(rect.max.x, rect.y_range(), Stroke::new(1.0, c.border));
+                        ui.painter().vline(
+                            rect.max.x,
+                            rect.y_range(),
+                            Stroke::new(1.0_f32, c.border),
+                        );
                         let sep_rect = Rect::from_min_size(
                             egui::Pos2::new(rect.max.x - 3.0, rect.min.y),
                             Vec2::new(6.0, h),
@@ -10259,7 +10262,7 @@ impl OttrinApp {
                                 ui.painter().vline(
                                     r.max.x,
                                     r.y_range(),
-                                    Stroke::new(1.0, c.border),
+                                    Stroke::new(1.0_f32, c.border),
                                 );
                             }
                         }
@@ -10465,7 +10468,7 @@ impl OttrinApp {
                 ui.painter().hline(
                     info_rect.x_range(),
                     info_rect.min.y,
-                    Stroke::new(1.0, mix_color(c.border, c.bg, 0.5)),
+                    Stroke::new(1.0_f32, mix_color(c.border, c.bg, 0.5)),
                 );
 
                 // Place the info panel at the bottom
@@ -10863,7 +10866,7 @@ impl OttrinApp {
                     ui.painter().vline(
                         sep_rect.center().x,
                         sep_rect.y_range(),
-                        Stroke::new(1.0, c.border),
+                        Stroke::new(1.0_f32, c.border),
                     );
                 }
                 if sep_resp.dragged() {
@@ -11143,7 +11146,7 @@ impl OttrinApp {
                                 ui.painter().rect_stroke(
                                     cell_rect,
                                     8.0,
-                                    Stroke::new(1.0, c.accent),
+                                    Stroke::new(1.0_f32, c.accent),
                                     egui::StrokeKind::Middle,
                                 );
                             }
@@ -11258,7 +11261,7 @@ impl OttrinApp {
             .frame(
                 Frame::window(&ctx.style())
                     .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, c.border))
+                    .stroke(Stroke::new(1.0_f32, c.border))
                     .corner_radius(10.0),
             )
             .show(ctx, |ui| {
@@ -11581,7 +11584,7 @@ impl OttrinApp {
             .frame(
                 Frame::window(&ctx.style())
                     .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, c.border))
+                    .stroke(Stroke::new(1.0_f32, c.border))
                     .corner_radius(10.0),
             )
             .show(ctx, |ui| {
@@ -11718,7 +11721,7 @@ impl OttrinApp {
             .frame(
                 Frame::window(&ctx.style())
                     .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, c.border))
+                    .stroke(Stroke::new(1.0_f32, c.border))
                     .corner_radius(12.0),
             )
             .show(ctx, |ui| {
@@ -11910,7 +11913,7 @@ impl OttrinApp {
                                     }
                                     if r.clicked() { self.settings_tab = *tab; }
                                     if active {
-                                        ui.painter().vline(sidebar_rect.min.x + 2.0, resp.response.rect.y_range(), Stroke::new(2.0, c.accent));
+                                        ui.painter().vline(sidebar_rect.min.x + 2.0, resp.response.rect.y_range(), Stroke::new(2.0_f32, c.accent));
                                     }
                                 }
                                 ui.add_space(6.0);
@@ -11920,7 +11923,7 @@ impl OttrinApp {
 
                 // Separator line between sidebar and content
                 let sep_x = body_rect.min.x + sidebar_w;
-                ui.painter().vline(sep_x, body_rect.y_range(), Stroke::new(1.0, c.border));
+                ui.painter().vline(sep_x, body_rect.y_range(), Stroke::new(1.0_f32, c.border));
 
                 // Right content panel
                 let content_rect = Rect::from_min_max(
@@ -12695,7 +12698,7 @@ impl OttrinApp {
                                                             if ottrin_search::SearchService::updatedb_available()
                                                                 && ui.add(egui::Button::new(
                                                                     RichText::new("Install daily updatedb cron job via pkexec…").size(11.0)
-                                                                ).fill(c.panel_raised).stroke(Stroke::new(1.0, c.border))).clicked() {
+                                                                ).fill(c.panel_raised).stroke(Stroke::new(1.0_f32, c.border))).clicked() {
                                                                     let script = "#!/bin/sh\n/usr/bin/updatedb\n";
                                                                     let cmd = format!(
                                                                         "printf '{}' > /etc/cron.daily/ottrin-updatedb && chmod 755 /etc/cron.daily/ottrin-updatedb",
@@ -12894,7 +12897,7 @@ impl OttrinApp {
                                             ui.horizontal(|ui| {
                                                 if ui.add(egui::Button::new(
                                                     RichText::new("Install daily updatedb cron job via pkexec…").size(12.0)
-                                                ).fill(c.panel_raised).stroke(Stroke::new(1.0, c.border))).on_hover_text(
+                                                ).fill(c.panel_raised).stroke(Stroke::new(1.0_f32, c.border))).on_hover_text(
                                                     "Writes /etc/cron.daily/ottrin-updatedb via pkexec:\n\
                                                      #!/bin/sh\n\
                                                      /usr/bin/updatedb\n\n\
@@ -12962,7 +12965,7 @@ impl OttrinApp {
                                             ui.add_space(8.0);
                                             Frame::new()
                                                 .fill(Color32::from_rgba_unmultiplied(200, 130, 30, 18))
-                                                .stroke(Stroke::new(1.0, Color32::from_rgba_unmultiplied(200, 150, 30, 80)))
+                                                .stroke(Stroke::new(1.0_f32, Color32::from_rgba_unmultiplied(200, 150, 30, 80)))
                                                 .corner_radius(6.0).inner_margin(egui::Margin::symmetric(10, 8))
                                                 .show(ui, |ui| {
                                                     ui.label(RichText::new("Security note").color(c.text).size(11.0).strong());
@@ -12990,7 +12993,7 @@ impl OttrinApp {
                                                 ui.horizontal(|ui| {
                                                     if ui.add(egui::Button::new(
                                                         RichText::new("Grant via polkit…").size(12.0)
-                                                    ).fill(c.panel_raised).stroke(Stroke::new(1.0, c.border))).on_hover_text(
+                                                    ).fill(c.panel_raised).stroke(Stroke::new(1.0_f32, c.border))).on_hover_text(
                                                         "Runs:\n  setcap cap_sys_admin,cap_dac_read_search+ep <ottrin-indexd>\n\
                                                          One-time setup. Revoke:\n  sudo setcap -r <ottrin-indexd>"
                                                     ).clicked() {
@@ -13027,7 +13030,7 @@ impl OttrinApp {
                                         ui.add_space(8.0);
                                         if ui.add(egui::Button::new(
                                             RichText::new("Reset search settings to defaults").size(12.0).color(c.error)
-                                        ).stroke(Stroke::new(1.0, c.error))).clicked() {
+                                        ).stroke(Stroke::new(1.0_f32, c.error))).clicked() {
                                             let defaults = ottrin_core::SearchConfig::default();
                                             self.state.config.search.include_roots = default_search_roots();
                                             self.state.config.search.exclude_roots = defaults.exclude_roots;
@@ -13196,7 +13199,7 @@ impl OttrinApp {
             ui.painter().rect_stroke(
                 row_rect.shrink(1.0),
                 3.0,
-                Stroke::new(1.0, stroke_col),
+                Stroke::new(1.0_f32, stroke_col),
                 egui::StrokeKind::Inside,
             );
         }
@@ -14075,7 +14078,7 @@ fn render_custom_titlebar(
     ui.painter().hline(
         title_bar.response.rect.x_range(),
         ui.cursor().min.y,
-        Stroke::new(1.0, mix_color(colors.border, title_fill, 0.6)),
+        Stroke::new(1.0_f32, mix_color(colors.border, title_fill, 0.6)),
     );
     if allow_drag {
         // Use the full titlebar rect (excluding close button) as the drag area.
@@ -14947,7 +14950,7 @@ fn wm_btn(ui: &mut egui::Ui, kind: WmBtn, c: &Colors) -> egui::Response {
     let col = if resp.hovered() { c.text } else { c.text_muted };
     let p = ui.painter();
     let ctr = rect.center();
-    let sw = 1.2; // stroke width
+    let sw = 1.2_f32; // stroke width
 
     match kind {
         WmBtn::Close => {
@@ -15290,7 +15293,7 @@ fn theme_editor_large_preview(
             egui::pos2(title_tab.left() + 10.0, title_tab.bottom()),
             egui::pos2(title_tab.right() - 10.0, title_tab.bottom()),
         ],
-        Stroke::new(2.4, preview.accent),
+        Stroke::new(2.4_f32, preview.accent),
     );
     p.text(
         egui::pos2(titlebar.right() - 82.0, titlebar.center().y),
@@ -15319,7 +15322,7 @@ fn theme_editor_large_preview(
     p.rect_stroke(
         address,
         preview.border_radius as f32,
-        Stroke::new(1.0, mix_color(preview.border, preview.bg, 0.28)),
+        Stroke::new(1.0_f32, mix_color(preview.border, preview.bg, 0.28)),
         egui::StrokeKind::Inside,
     );
     p.text(
@@ -15387,7 +15390,7 @@ fn theme_editor_large_preview(
                     egui::pos2(col_rect.left() - column_gap * 0.5, col_rect.top() + 8.0),
                     egui::pos2(col_rect.left() - column_gap * 0.5, col_rect.bottom() - 8.0),
                 ],
-                Stroke::new(1.0, preview.border),
+                Stroke::new(1.0_f32, preview.border),
             );
         }
         for row in 0..6 {
@@ -15543,9 +15546,9 @@ fn theme_editor_large_preview(
             preview.accent_dim
         };
         let stroke = if is_selected {
-            Stroke::new(2.0, preview.accent)
+            Stroke::new(2.0_f32, preview.accent)
         } else {
-            Stroke::new(1.0, mix_color(preview.accent, preview.bg, 0.18))
+            Stroke::new(1.0_f32, mix_color(preview.accent, preview.bg, 0.18))
         };
         p.rect_filled(*region_rect, 8.0, fill);
         p.rect_stroke(*region_rect, 8.0, stroke, egui::StrokeKind::Inside);
@@ -15569,7 +15572,7 @@ fn theme_editor_large_preview(
     p.rect_stroke(
         callout,
         preview.border_radius as f32,
-        Stroke::new(1.0, mix_color(preview.border, preview.accent, 0.18)),
+        Stroke::new(1.0_f32, mix_color(preview.border, preview.accent, 0.18)),
         egui::StrokeKind::Inside,
     );
     p.text(
@@ -15611,9 +15614,9 @@ fn theme_preset_card_with_size(
         preview.panel_raised
     };
     let stroke = if selected {
-        Stroke::new(1.5, app_colors.accent)
+        Stroke::new(1.5_f32, app_colors.accent)
     } else {
-        Stroke::new(1.0, app_colors.border)
+        Stroke::new(1.0_f32, app_colors.border)
     };
     p.rect_filled(rect, rounding, card_fill);
     p.rect_stroke(rect, rounding, stroke, egui::StrokeKind::Middle);
@@ -15624,7 +15627,7 @@ fn theme_preset_card_with_size(
     p.rect_stroke(
         thumb,
         preview.app_radius as f32,
-        Stroke::new(1.0, preview.border),
+        Stroke::new(1.0_f32, preview.border),
         egui::StrokeKind::Middle,
     );
 
@@ -15651,7 +15654,7 @@ fn theme_preset_card_with_size(
             egui::pos2(tab.left(), tab.bottom()),
             egui::pos2(tab.right(), tab.bottom()),
         ],
-        Stroke::new(1.6, preview.accent),
+        Stroke::new(1.6_f32, preview.accent),
     );
     p.text(
         egui::pos2(tab.right() + 8.0, tab.center().y),
@@ -15750,7 +15753,7 @@ fn theme_preset_card_with_size(
                     egui::pos2(col_rect.left() - col_gap * 0.5, content.top()),
                     egui::pos2(col_rect.left() - col_gap * 0.5, content.bottom()),
                 ],
-                Stroke::new(1.0, preview.border),
+                Stroke::new(1.0_f32, preview.border),
             );
         }
         for row in 0..4 {
@@ -16117,7 +16120,7 @@ fn theme_preview_strip(ui: &mut egui::Ui, preview: Colors, width: f32, height: f
     ui.painter().rect_stroke(
         rect,
         6.0,
-        Stroke::new(1.0, c.border),
+        Stroke::new(1.0_f32, c.border),
         egui::StrokeKind::Inside,
     );
 }
