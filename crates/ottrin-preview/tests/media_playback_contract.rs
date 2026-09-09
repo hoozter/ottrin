@@ -17,7 +17,7 @@ use ottrin_preview::{
     validate_media_playback_rgba_frame,
 };
 #[cfg(not(feature = "system-gstreamer"))]
-use ottrin_preview::{MediaPlaybackEvent, MediaPlaybackRuntimeFailure, start_media_playback};
+use ottrin_preview::{MediaPlaybackEvent, start_media_playback};
 
 #[cfg(not(feature = "system-gstreamer"))]
 static MEDIA_HELPER_ENV_LOCK: Mutex<()> = Mutex::new(());
@@ -140,10 +140,13 @@ fn playback_worker_truthfully_reports_an_unavailable_system_helper() {
         .recv_timeout(Duration::from_secs(1))
         .expect("worker must report runtime state");
 
-    assert!(matches!(
-        event,
-        MediaPlaybackEvent::Unavailable(MediaPlaybackRuntimeFailure::RuntimeUnavailable)
-    ));
+    assert!(
+        matches!(event, MediaPlaybackEvent::Failed(ref message)
+        if message.contains("ottrin-media-playback")
+            && message.contains("cargo build -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer")
+            && message.contains("No such file")),
+        "{event:?}"
+    );
     session.stop();
     unsafe { std::env::remove_var("OTTRIN_MEDIA_HELPER") };
     std::fs::remove_file(path).expect("remove fixture");
@@ -200,4 +203,30 @@ control.recv(1)
     unsafe { std::env::remove_var("OTTRIN_MEDIA_HELPER") };
     std::fs::remove_file(path).expect("remove media source");
     std::fs::remove_file(helper).expect("remove fake helper");
+}
+
+#[cfg(not(feature = "system-gstreamer"))]
+#[test]
+fn playback_worker_reports_helper_process_failure() {
+    let _environment = MEDIA_HELPER_ENV_LOCK
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let helper = temp_path("failed-helper.sh");
+    std::fs::write(&helper, "#!/bin/sh\nexit 42\n").unwrap();
+    std::fs::set_permissions(&helper, std::fs::Permissions::from_mode(0o700)).unwrap();
+    unsafe { std::env::set_var("OTTRIN_MEDIA_HELPER", &helper) };
+    let path = temp_path("failed-helper-source.mp4");
+    std::fs::write(&path, b"media").unwrap();
+    let mut session = start_media_playback(admit_media_playback_source(&path).unwrap()).unwrap();
+    let event = session
+        .recv_timeout(Duration::from_secs(1))
+        .expect("helper failure must be reported");
+    assert!(
+        matches!(event, MediaPlaybackEvent::Failed(ref message) if message.contains("42")),
+        "{event:?}"
+    );
+    session.stop();
+    unsafe { std::env::remove_var("OTTRIN_MEDIA_HELPER") };
+    std::fs::remove_file(path).unwrap();
+    std::fs::remove_file(helper).unwrap();
 }

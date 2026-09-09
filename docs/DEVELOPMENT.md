@@ -30,8 +30,29 @@ Linux development dependencies on Debian/Ubuntu:
 ```sh
 sudo apt-get install -y \
     libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
-    libxkbcommon-dev libssl-dev libglib2.0-dev
+    libxkbcommon-dev libssl-dev libglib2.0-dev \
+    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 ```
+
+### Linux development playback
+
+`cargo run -p ottrin-app` builds the GUI, but Cargo does not build binaries
+belonging to dependency crates. Build the separate playback helper first:
+
+```sh
+pkg-config --modversion gstreamer-1.0 gstreamer-app-1.0
+cargo build -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer
+cargo run -p ottrin-app
+```
+
+Rebuild the helper after changing playback code. Keep the same `CARGO_TARGET_DIR`
+and profile for both commands (add `--release` to both for release development).
+Do not copy an old release helper into `target/debug`. No build script invokes
+Cargo. If pkg-config fails, install the development packages listed above;
+runtime libraries alone are not enough to compile the helper. Missing helpers
+and unsuccessful helper exits appear in the Inspector, with loader diagnostics
+also available in the launching terminal. `OTTRIN_MEDIA_HELPER` can explicitly
+select a freshly built helper when using a custom layout.
 
 Linux native Open With support requires GIO `>= 2.56`. The Linux portable and
 AppImage builders bundle the required GIO/GLib runtime closure; this development

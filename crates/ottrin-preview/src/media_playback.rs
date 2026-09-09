@@ -178,10 +178,8 @@ fn media_playback_worker(
     commands: Receiver<MediaPlaybackCommand>,
     events: SyncSender<MediaPlaybackEvent>,
 ) {
-    if run_external_media_helper(source, commands, &events).is_err() {
-        let _ = events.try_send(MediaPlaybackEvent::Unavailable(
-            MediaPlaybackRuntimeFailure::RuntimeUnavailable,
-        ));
+    if let Err(error) = run_external_media_helper(source, commands, &events) {
+        let _ = events.try_send(MediaPlaybackEvent::Failed(error.to_string()));
     }
 }
 
@@ -212,7 +210,7 @@ fn run_external_media_helper(
         unsafe { libc::close(source_fd) };
         return Err(io::Error::last_os_error());
     }
-    let mut process = Command::new(helper);
+    let mut process = Command::new(&helper);
     process
         .arg("--inherited-media-session")
         .env_remove("LD_LIBRARY_PATH")
@@ -220,7 +218,7 @@ fn run_external_media_helper(
         .env_remove("LD_AUDIT")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null());
+        .stderr(Stdio::inherit());
     unsafe {
         process.pre_exec(move || {
             if libc::dup2(source_fd, MEDIA_HELPER_SOURCE_FD) < 0
@@ -238,7 +236,12 @@ fn run_external_media_helper(
         libc::close(source_fd);
         libc::close(control_fd);
     }
-    let mut child = child?;
+    let mut child = child.map_err(|error| {
+        io::Error::new(error.kind(), format!(
+            "Could not start media helper {}: {error}. For Linux development, run `cargo build -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer` with the same target directory and profile as ottrin-app (see docs/DEVELOPMENT.md). Installed packages require the system GStreamer runtime.",
+            helper.display()
+        ))
+    })?;
     drop(child_control);
 
     let mut event_stream = control.try_clone()?;
@@ -267,8 +270,15 @@ fn run_external_media_helper(
                 return Ok(());
             }
             Err(RecvTimeoutError::Timeout) => {
-                if child.try_wait()?.is_some() {
-                    return Ok(());
+                if let Some(status) = child.try_wait()? {
+                    return if status.success() {
+                        Ok(())
+                    } else {
+                        Err(io::Error::other(format!(
+                            "Media helper {} exited with {status}. Check its terminal diagnostics and system GStreamer runtime dependencies.",
+                            helper.display()
+                        )))
+                    };
                 }
             }
         }
