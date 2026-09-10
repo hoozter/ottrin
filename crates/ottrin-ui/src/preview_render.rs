@@ -15,6 +15,31 @@ use ottrin_preview::{
 use sha2::{Digest, Sha256};
 use std::path::Path;
 
+pub(crate) const PREVIEW_CONTENT_PADDING: f32 = 16.0;
+
+/// Shared allocation boundary for main Preview and Quick Inspector content.
+pub(crate) fn preview_content_frame<R>(
+    ui: &mut egui::Ui,
+    size: Vec2,
+    contents: impl FnOnce(&mut egui::Ui) -> R,
+) -> egui::InnerResponse<R> {
+    let (outer, response) = ui.allocate_exact_size(size, Sense::hover());
+    let inner_rect = outer.shrink2(Vec2::splat(PREVIEW_CONTENT_PADDING).min(size * 0.5));
+    let mut child = ui.new_child(
+        egui::UiBuilder::new()
+            .max_rect(inner_rect)
+            .layout(Layout::top_down(Align::Min)),
+    );
+    child.set_clip_rect(ui.clip_rect().intersect(inner_rect));
+    child.visuals_mut().clip_rect_margin = 0.0;
+    child.spacing_mut().scroll = egui::style::ScrollStyle::solid();
+    let inner = ScrollArea::both()
+        .auto_shrink([false, false])
+        .show(&mut child, contents)
+        .inner;
+    egui::InnerResponse { inner, response }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum GenericPreviewAction {
     Rename,
@@ -409,17 +434,15 @@ fn render_scrollable_preview_text(
     id: impl std::hash::Hash,
 ) {
     let height = scrollable_preview_height(ui.available_height(), minimum_height);
-    let width = ui.available_width();
     egui::Frame::new()
         .stroke(Stroke::new(1.0, Color32::from_white_alpha(28)))
         .show(ui, |ui| {
-            ui.set_width(width);
             ScrollArea::vertical()
                 .id_salt(id)
                 .max_height(height)
                 .auto_shrink([false, false])
                 .show(ui, |ui| {
-                    ui.set_min_width(width);
+                    ui.set_min_width(ui.available_width());
                     let label = highlighted.map_or_else(
                         || {
                             egui::Label::new(
@@ -1136,6 +1159,12 @@ pub(crate) fn render_spreadsheet_body_preview(
         .fill(Color32::WHITE)
         .stroke(Stroke::new(1.0, Color32::from_rgb(205, 210, 218)))
         .show(ui, |ui| {
+            // egui normally expands scroll clips to accommodate widget shadows.
+            // Cell backgrounds must stop inside this frame, including at the
+            // trailing edge while a solid scrollbar reserves its own space.
+            ui.set_clip_rect(ui.clip_rect().intersect(ui.max_rect()));
+            ui.visuals_mut().clip_rect_margin = 0.0;
+            ui.spacing_mut().scroll = egui::style::ScrollStyle::solid();
             ScrollArea::both()
                 .id_salt(("inspector_spreadsheet", name, &sheet.id))
                 .max_height(height)
@@ -1525,6 +1554,131 @@ mod tests {
                 specialized_preview_body_action(&preview),
                 Some(PreviewCardAction::OpenExternally)
             );
+        }
+    }
+
+    #[test]
+    fn preview_consistency_common_frame_reserves_padding_and_natural_size() {
+        // The frame is independent of format: fit pages, wide tables and small
+        // images all receive the same bounded viewport.
+        for size in [
+            Vec2::new(24.0, 18.0),
+            Vec2::new(600.0, 900.0),
+            Vec2::new(2000.0, 80.0),
+        ] {
+            let ctx = egui::Context::default();
+            let _ = ctx.run(Default::default(), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    let origin = ui.cursor().min;
+                    let outer = Rect::from_min_size(origin, Vec2::new(320.0, 240.0));
+                    let result = preview_content_frame(ui, outer.size(), |ui| {
+                        let clip = ui.clip_rect();
+                        let content = if size.x < 100.0 {
+                            let texture = ui.ctx().load_texture(
+                                "small image fixture",
+                                egui::ColorImage::filled([24, 18], Color32::WHITE),
+                                Default::default(),
+                            );
+                            ui.add(egui::Image::new(&texture)).rect
+                        } else {
+                            ui.allocate_exact_size(size, Sense::hover()).0
+                        };
+                        assert!(
+                            outer.shrink(16.0).contains_rect(clip),
+                            "missing common minimum padding: {clip:?} in {outer:?}"
+                        );
+                        if size.x < 100.0 {
+                            assert_eq!(
+                                content.size(),
+                                size,
+                                "small images keep natural dimensions"
+                            );
+                            assert!(outer.shrink(16.0).contains_rect(content));
+                        }
+                    });
+                    assert_eq!(
+                        result.response.rect, outer,
+                        "overflow must not expand the frame"
+                    );
+                });
+            });
+        }
+    }
+
+    #[test]
+    fn preview_consistency_spreadsheet_paint_stays_inside_frame() {
+        let ctx = egui::Context::default();
+        let preview = PreviewData {
+            title: "wide.xlsx".into(),
+            kind: PreviewKind::OfficeMetadata,
+            body: String::new(),
+            document: None,
+            open_external: true,
+            spreadsheet: Some(SpreadsheetPreview {
+                sheets: vec![ottrin_preview::SpreadsheetSheet {
+                    id: "sheet1".into(),
+                    name: "Wide sheet".into(),
+                    cells: (0..20)
+                        .map(|column| ottrin_preview::SpreadsheetCell {
+                            row: 0,
+                            column,
+                            text: format!("column {column}"),
+                        })
+                        .collect(),
+                    omissions: vec![],
+                }],
+                omissions: vec![],
+            }),
+        };
+        for width in [180.0, 360.0, 720.0] {
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(width, 400.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        render_spreadsheet_body_preview(
+                            ui,
+                            Colors::for_config(&Default::default()),
+                            "wide.xlsx",
+                            &preview,
+                            &mut None,
+                        );
+                    });
+                },
+            );
+            let frame = output
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    egui::epaint::Shape::Rect(rect)
+                        if rect.stroke.width == 1.0 && rect.fill == Color32::WHITE =>
+                    {
+                        Some(rect.rect)
+                    }
+                    _ => None,
+                })
+                .expect("spreadsheet frame");
+            let mut cells = 0;
+            for shape in &output.shapes {
+                if let egui::epaint::Shape::Rect(rect) = &shape.shape
+                    && rect.stroke.width == 0.5
+                {
+                    let painted = rect.rect.intersect(shape.clip_rect);
+                    if painted.is_positive() {
+                        cells += 1;
+                        assert!(
+                            frame.contains_rect(painted),
+                            "cell {painted:?} escaped frame {frame:?}"
+                        );
+                    }
+                }
+            }
+            assert!(cells > 0);
         }
     }
 

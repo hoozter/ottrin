@@ -3891,6 +3891,12 @@ impl OttrinApp {
         ))
     }
 
+    fn uses_office_preview(&self, path: &Path) -> bool {
+        self.office_rendered_page_for_path(path).is_some()
+            || self.office_provider_for_path(path).is_some()
+            || ottrin_preview::is_native_legacy_doc_visual_path(path)
+    }
+
     fn office_rendered_page_for_path(&self, path: &Path) -> Option<&OfficeRenderedPage> {
         let current_generation = ottrin_preview::office_preview_source_generation(path)?;
         self.office_rendered_pages.values().find(|rendered| {
@@ -13297,7 +13303,8 @@ impl OttrinApp {
                                 let mut text_snippet: Option<String> = None;
                                 if matches!(entry.kind, EntryKind::File) {
                                     let preview = self.cached_info_preview(&entry);
-                                    if preview.kind == PreviewKind::Image {
+                                    if preview_uses_visual_preview(&entry.path, preview.kind)
+                                        || self.uses_office_preview(&entry.path) {
                                         let max_w = (ui.available_width() - 28.0).max(96.0);
                                         let max_h = 132.0;
                                         if let Some(img) = self.cached_image_preview_widget(
@@ -13327,9 +13334,9 @@ impl OttrinApp {
                                     .inner_margin(egui::Margin::symmetric(6, 4))
                                     .show(ui, |ui| {
                                         ui.set_width(ui.available_width());
-                                        ui.allocate_ui_with_layout(
+                                        preview_render::preview_content_frame(
+                                            ui,
                                             Vec2::new(ui.available_width(), 118.0),
-                                            Layout::top_down(Align::Center),
                                             |ui| {
                                                 // Clip to allocated rect so overflowing
                                                 // text never pushes metadata rows away.
@@ -15616,15 +15623,9 @@ impl OttrinApp {
                         // Text preview snippet or image indicator
                         if let Some(pv) = preview {
                             match pv.kind {
-                                PreviewKind::Image
-                                | PreviewKind::CameraRawMetadata
-                                | PreviewKind::AffinityMetadata
-                                | PreviewKind::SqliteMetadata
-                                | PreviewKind::StlMetadata
-                                | PreviewKind::ObjMetadata
-                                | PreviewKind::PlyMetadata
-                                | PreviewKind::ThreeMfMetadata
-                                | PreviewKind::Pdf => {
+                                kind if preview_uses_visual_preview(&item.path, kind)
+                                    || self.uses_office_preview(&item.path) =>
+                                {
                                     let avail_w = ui.available_width().max(60.0);
                                     let max_h = preview_panel_h - 70.0;
                                     if let Some(img) = self
@@ -17526,7 +17527,7 @@ impl OttrinApp {
                 let bg = mix_color(c.bg, c.panel, 0.12);
                 ui.painter().rect_filled(ui.max_rect(), 0.0, bg);
 
-                let pad = 16.0;
+                let pad = preview_render::PREVIEW_CONTENT_PADDING;
                 let lc = c.text_muted;
                 let vc = c.text;
 
@@ -17572,7 +17573,7 @@ impl OttrinApp {
                 let mut preview_widget: Option<egui::Image<'static>> = None;
                 let mut text_snippet: Option<String> = None;
                 let mut metadata_icon: Option<&'static str> = None;
-                let max_preview_w = (width - pad * 2.0).max(96.0);
+                let max_preview_w = (width - pad * 2.0).max(1.0);
                 // Preview fills the space above the info panel
                 let preview = self.cached_info_preview(entry);
                 let action_height = if specialized_preview_body_action(&preview).is_some() {
@@ -17581,114 +17582,95 @@ impl OttrinApp {
                     0.0
                 };
                 let max_preview_h = (height - info_total_h - 32.0 - action_height).max(80.0);
-                let use_shared_body_renderer = shared_preview_body_kind(preview.kind);
-                match preview.kind {
-                    PreviewKind::Image
-                    | PreviewKind::CameraRawMetadata
-                    | PreviewKind::AffinityMetadata
-                    | PreviewKind::SqliteMetadata
-                    | PreviewKind::StlMetadata
-                    | PreviewKind::ObjMetadata
-                    | PreviewKind::PlyMetadata
-                    | PreviewKind::ThreeMfMetadata
-                    | PreviewKind::VideoMetadata
-                    | PreviewKind::Pdf => {
-                        if let Some(img) = self.cached_shared_visual_preview_widget(
-                            &entry.path,
-                            preview.kind,
-                            VisualPreviewRenderSpec {
-                                max_size: Vec2::new(max_preview_w, max_preview_h),
-                                corner_radius: 8,
-                                page_index: 0,
-                                fit: true,
-                                zoom: 1.0,
-                            },
-                        ) {
-                            preview_widget = Some(img);
-                        } else {
-                            let snippet = self
-                                .cached_visual_preview_unavailable_reason(
-                                    &entry.path,
-                                    max_preview_w,
-                                    max_preview_h,
-                                )
-                                .unwrap_or_else(|| {
-                                    metadata_preview_snippet(&preview.body, 14, 900)
-                                });
-                            metadata_icon = Some(match preview.kind {
-                                PreviewKind::Pdf => MI_PICTURE_PDF,
-                                PreviewKind::VideoMetadata => MI_MOVIE,
-                                _ => MI_IMAGE,
-                            });
-                            if !snippet.is_empty() {
-                                text_snippet = Some(snippet);
-                            }
+                let use_visual_renderer = preview_uses_visual_preview(&entry.path, preview.kind)
+                    || self.uses_office_preview(&entry.path);
+                let use_shared_body_renderer =
+                    shared_preview_body_kind(preview.kind) && !use_visual_renderer;
+                if use_visual_renderer {
+                    if let Some(img) = self.cached_shared_visual_preview_widget(
+                        &entry.path,
+                        preview.kind,
+                        VisualPreviewRenderSpec {
+                            max_size: Vec2::new(max_preview_w, max_preview_h),
+                            corner_radius: 8,
+                            page_index: 0,
+                            fit: true,
+                            zoom: 1.0,
+                        },
+                    ) {
+                        preview_widget = Some(img);
+                    } else {
+                        let snippet = self
+                            .cached_visual_preview_unavailable_reason(
+                                &entry.path,
+                                max_preview_w,
+                                max_preview_h,
+                            )
+                            .unwrap_or_else(|| metadata_preview_snippet(&preview.body, 14, 900));
+                        metadata_icon = Some(match preview.kind {
+                            PreviewKind::Pdf => MI_PICTURE_PDF,
+                            PreviewKind::VideoMetadata => MI_MOVIE,
+                            _ => MI_IMAGE,
+                        });
+                        if !snippet.is_empty() {
+                            text_snippet = Some(snippet);
                         }
                     }
-                    PreviewKind::Text
-                    | PreviewKind::OfficeMetadata
-                    | PreviewKind::ArchiveMetadata
-                    | PreviewKind::AudioMetadata
-                    | PreviewKind::EpsMetadata => {}
-                    _ => {}
                 }
-
                 // ── Preview area (top, fills remaining space) ──────────
                 let preview_h = (height - info_total_h).max(80.0);
-                ui.allocate_ui_with_layout(
-                    Vec2::new(width, preview_h),
-                    Layout::top_down(Align::Center),
-                    |ui| {
-                        ui.add_space(16.0);
-                        if use_shared_body_renderer {
-                            ui.with_layout(Layout::top_down(Align::Min), |ui| {
-                                let body_width = (width - pad * 2.0).max(120.0);
-                                ui.set_width(body_width);
-                                let sheet_id =
-                                    ui.id().with(("miller_spreadsheet_sheet", &entry.path));
-                                let mut selected_sheet = ui
-                                    .ctx()
-                                    .data_mut(|data| data.get_persisted::<String>(sheet_id));
-                                let _ = render_shared_preview_body(
-                                    ui,
-                                    c,
-                                    &entry.path,
-                                    &entry.name,
-                                    &preview,
-                                    &mut selected_sheet,
-                                );
-                                if let Some(selected_sheet) = selected_sheet {
-                                    ui.ctx().data_mut(|data| {
-                                        data.insert_persisted(sheet_id, selected_sheet)
-                                    });
-                                }
-                            });
-                        } else if let Some(img) = preview_widget {
-                            ui.add(img.max_height(max_preview_h).max_width(max_preview_w));
-                        } else if let Some(mut snippet) = text_snippet {
-                            if let Some(meta_icon) = metadata_icon {
-                                ui.label(RichText::new(meta_icon).size(46.0).color(icon_color));
-                                ui.add_space(8.0);
-                            }
-                            let text_w = (width - pad * 2.0).max(120.0);
-                            let text_h = max_preview_h.min(preview_h * 0.7).max(60.0);
-                            ui.add_sized(
-                                Vec2::new(text_w, text_h),
-                                egui::TextEdit::multiline(&mut snippet)
-                                    .font(FontId::monospace(11.0))
-                                    .desired_rows(12)
-                                    .interactive(false),
+                preview_render::preview_content_frame(ui, Vec2::new(width, preview_h), |ui| {
+                    if use_shared_body_renderer {
+                        ui.with_layout(Layout::top_down(Align::Min), |ui| {
+                            ui.set_width(ui.available_width());
+                            let sheet_id = ui.id().with(("miller_spreadsheet_sheet", &entry.path));
+                            let mut selected_sheet = ui
+                                .ctx()
+                                .data_mut(|data| data.get_persisted::<String>(sheet_id));
+                            let _ = render_shared_preview_body(
+                                ui,
+                                c,
+                                &entry.path,
+                                &entry.name,
+                                &preview,
+                                &mut selected_sheet,
                             );
-                        } else {
-                            ui.add_space((preview_h * 0.3).max(16.0));
-                            ui.label(RichText::new(icon).size(52.0).color(icon_color));
-                        }
-                        if specialized_preview_body_action(&preview).is_some() {
+                            if let Some(selected_sheet) = selected_sheet {
+                                ui.ctx().data_mut(|data| {
+                                    data.insert_persisted(sheet_id, selected_sheet)
+                                });
+                            }
+                        });
+                    } else if let Some(img) = preview_widget {
+                        ui.vertical_centered(|ui| {
+                            ui.add(
+                                img.max_height(max_preview_h)
+                                    .max_width(ui.available_width()),
+                            );
+                        });
+                    } else if let Some(mut snippet) = text_snippet {
+                        if let Some(meta_icon) = metadata_icon {
+                            ui.label(RichText::new(meta_icon).size(46.0).color(icon_color));
                             ui.add_space(8.0);
-                            render_preview_card_action(ui, c, &entry.path, &preview);
                         }
-                    },
-                );
+                        let text_w = (width - pad * 2.0).max(120.0);
+                        let text_h = max_preview_h.min(preview_h * 0.7).max(60.0);
+                        ui.add_sized(
+                            Vec2::new(text_w, text_h),
+                            egui::TextEdit::multiline(&mut snippet)
+                                .font(FontId::monospace(11.0))
+                                .desired_rows(12)
+                                .interactive(false),
+                        );
+                    } else {
+                        ui.add_space((preview_h * 0.3).max(16.0));
+                        ui.label(RichText::new(icon).size(52.0).color(icon_color));
+                    }
+                    if specialized_preview_body_action(&preview).is_some() {
+                        ui.add_space(8.0);
+                        render_preview_card_action(ui, c, &entry.path, &preview);
+                    }
+                });
 
                 // ── Info panel (bottom, framed, collapsible) ──────────
                 let info_bg = mix_color(c.bg, c.panel, 0.25);
@@ -18706,7 +18688,7 @@ impl OttrinApp {
         ui.vertical_centered(|ui| {
             if let Some(texture) = playback.texture.as_ref() {
                 let available = Vec2::new(
-                    (ui.available_width() - 24.0).max(120.0),
+                    ui.available_width().max(1.0),
                     (ui.available_height() - 110.0).max(120.0),
                 );
                 ui.add(egui::Image::new(texture).max_size(available));
@@ -18789,9 +18771,7 @@ impl OttrinApp {
         #[cfg(target_os = "linux")]
         self.sync_preview_media_playback(ctx, &path, preview.kind);
         let office_render = self.office_rendered_page_for_path(&path).cloned();
-        let uses_office_provider = office_render.is_some()
-            || self.office_provider_for_path(&path).is_some()
-            || ottrin_preview::is_native_legacy_doc_visual_path(&path);
+        let uses_office_provider = self.uses_office_preview(&path);
         let name = preview.title.clone();
         let mut close_requested = false;
         let builder = egui::ViewportBuilder::default()
@@ -19095,25 +19075,9 @@ impl OttrinApp {
                                     self.set_preview_page(page_index + 1);
                                 }
                             }
-                            let is_zoomable_document = matches!(
-                                preview.kind,
-                                PreviewKind::Image
-                                    | PreviewKind::CameraRawMetadata
-                                    | PreviewKind::AffinityMetadata
-                                    | PreviewKind::SqliteMetadata
-                                    | PreviewKind::StlMetadata
-                                    | PreviewKind::ObjMetadata
-                                    | PreviewKind::PlyMetadata
-                                    | PreviewKind::ThreeMfMetadata
-                                    | PreviewKind::VideoMetadata
-                                    | PreviewKind::Pdf
-                                    | PreviewKind::EpsMetadata
-                            ) || quick_inspector_uses_rendered_office_page(&path)
+                            let is_zoomable_document = preview_uses_visual_preview(&path, preview.kind)
                                 || uses_office_provider;
-                            let video_visual_available = preview.kind != PreviewKind::VideoMetadata
-                                || ottrin_preview::preview_profile(&path).visual_renderer()
-                                    == ottrin_preview::PreviewVisualRenderer::Video;
-                            if is_zoomable_document && video_visual_available {
+                            if is_zoomable_document {
                                 ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                                 if ui
                                     .small_button("Fit")
@@ -19170,12 +19134,13 @@ impl OttrinApp {
                             (self.preview.visual_zoom * gesture_zoom).clamp(0.1, 8.0);
                     }
 
+                    preview_render::preview_content_frame(ui, ui.available_size(), |ui| {
                     let specialized_body_renderer = (preview.kind == PreviewKind::Text
                         && self.preview.text_editor.is_some())
                         || (preview.kind == PreviewKind::OfficeMetadata
                             && (quick_inspector_uses_rendered_office_page(&path)
                                 || uses_office_provider))
-                        || quick_inspector_uses_visual_preview(&path, preview.kind);
+                        || preview_uses_visual_preview(&path, preview.kind);
                     let use_shared_body_renderer =
                         shared_preview_body_kind(preview.kind) && !specialized_body_renderer;
                     #[cfg(target_os = "linux")]
@@ -19198,7 +19163,7 @@ impl OttrinApp {
                         }
                         PreviewKind::Text
                             if self.preview.text_editor.is_some()
-                                || !quick_inspector_uses_visual_preview(&path, preview.kind) =>
+                                || !preview_uses_visual_preview(&path, preview.kind) =>
                         {
                             if let Some(editor) = self.preview.text_editor.as_mut() {
                                 let document_editor =
@@ -19430,22 +19395,12 @@ impl OttrinApp {
                                 );
                             }
                         }
-                        visual_kind @ (PreviewKind::Text
-                        | PreviewKind::Image
-                        | PreviewKind::CameraRawMetadata
-                        | PreviewKind::AffinityMetadata
-                        | PreviewKind::SqliteMetadata
-                        | PreviewKind::StlMetadata
-                        | PreviewKind::ObjMetadata
-                        | PreviewKind::PlyMetadata
-                        | PreviewKind::ThreeMfMetadata
-                        | PreviewKind::Pdf
-                        | PreviewKind::EpsMetadata)
-                            if quick_inspector_uses_visual_preview(&path, visual_kind) =>
+                        visual_kind if visual_kind != PreviewKind::OfficeMetadata
+                            && preview_uses_visual_preview(&path, visual_kind) =>
                         {
                             ScrollArea::both().show(ui, |ui| {
-                                let max_w = (ui.available_width() - 24.0).max(120.0);
-                                let max_h = (ui.available_height() - 34.0).max(160.0);
+                                let max_w = ui.available_width().max(1.0);
+                                let max_h = (ui.available_height() - 34.0).max(1.0);
                                 ui.vertical_centered(|ui| {
                                     let pdf_page_index = if preview.kind == PreviewKind::Pdf {
                                         self.preview.pdf_page_index
@@ -19557,8 +19512,8 @@ impl OttrinApp {
                         PreviewKind::OfficeMetadata => {
                             if uses_office_provider {
                                 ScrollArea::both().show(ui, |ui| {
-                                    let max_w = (ui.available_width() - 24.0).max(120.0);
-                                    let max_h = (ui.available_height() - 34.0).max(160.0);
+                                    let max_w = ui.available_width().max(1.0);
+                                    let max_h = (ui.available_height() - 34.0).max(1.0);
                                     ui.vertical_centered(|ui| {
                                         let page_index = self.preview.pdf_page_index;
                                         let image = self.cached_shared_visual_preview_widget(
@@ -19762,6 +19717,7 @@ impl OttrinApp {
                         render_preview_card_action(ui, c, &path, &preview);
                     }
                     }
+                    });
                 });
             });
         if self.pending_rename.is_some() {
@@ -23314,25 +23270,17 @@ fn visual_renderer_uses_persistent_thumbnail_cache(
     renderer != ottrin_preview::PreviewVisualRenderer::Html
 }
 
-fn quick_inspector_uses_visual_preview(path: &Path, kind: PreviewKind) -> bool {
-    ottrin_preview::preview_profile(path).visual_renderer()
-        == ottrin_preview::PreviewVisualRenderer::Html
-        || (matches!(
-            kind,
-            PreviewKind::Image
-                | PreviewKind::CameraRawMetadata
-                | PreviewKind::AffinityMetadata
-                | PreviewKind::SqliteMetadata
-                | PreviewKind::StlMetadata
-                | PreviewKind::ObjMetadata
-                | PreviewKind::PlyMetadata
-                | PreviewKind::ThreeMfMetadata
-                | PreviewKind::Pdf
-                | PreviewKind::EpsMetadata
-        ))
-        || (kind == PreviewKind::VideoMetadata
-            && ottrin_preview::preview_profile(path).visual_renderer()
-                == ottrin_preview::PreviewVisualRenderer::Video)
+fn preview_uses_visual_preview(path: &Path, _kind: PreviewKind) -> bool {
+    use ottrin_preview::PreviewVisualRenderer;
+    let profile = ottrin_preview::preview_profile(path);
+    profile.supports_view(ottrin_preview::PreviewView::Visual)
+        && match profile.visual_renderer() {
+            PreviewVisualRenderer::None | PreviewVisualRenderer::TextCard => false,
+            // Generated extracted-content Office thumbnails are not source
+            // layout. Native DOC and admitted installed providers own pages.
+            PreviewVisualRenderer::Office => ottrin_preview::is_native_legacy_doc_visual_path(path),
+            _ => true,
+        }
 }
 
 fn markdown_quick_inspector_uses_document_editor(path: &Path) -> bool {
@@ -32228,7 +32176,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn html_quick_inspector_uses_the_visual_preview_path() {
-        assert!(quick_inspector_uses_visual_preview(
+        assert!(preview_uses_visual_preview(
             Path::new("saved-page.html"),
             PreviewKind::Text,
         ));
@@ -32324,8 +32272,64 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    fn preview_consistency_eps_requests_same_renderer_in_main_and_inspector() {
+        let fixture = tempfile::tempdir().unwrap();
+        let path = fixture.path().join("diagram.eps");
+        std::fs::write(&path, b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 20 20\n0 0 moveto 20 20 lineto stroke\nshowpage\n").unwrap();
+        for inspector in [false, true] {
+            let mut app = OttrinApp::new_with_config_and_graphics_status(
+                AppConfig::default(),
+                GraphicsRuntimeStatus::default(),
+            );
+            // Capture production requests without launching any external renderer.
+            let (tx, rx) = mpsc::channel();
+            app.preview_tx = tx;
+            let preview = PreviewData {
+                title: "diagram.eps".into(),
+                kind: PreviewKind::EpsMetadata,
+                body: "EPS fixture".into(),
+                document: None,
+                spreadsheet: None,
+                open_external: true,
+            };
+            let ctx = Context::default();
+            if inspector {
+                app.preview.visible = true;
+                app.preview.path = Some(path.clone());
+                app.preview.data = Some(preview);
+                render_docx_quick_inspector_frame(&mut app, &ctx);
+            } else {
+                app.info_panel_preview = Some((path.clone(), preview));
+                let entry = FileEntry {
+                    path: path.clone(),
+                    name: "diagram.eps".into(),
+                    kind: EntryKind::File,
+                    is_executable: false,
+                    symlink_target_is_dir: None,
+                    size_bytes: None,
+                    modified_unix_secs: None,
+                };
+                let _ = ctx.run(egui::RawInput::default(), |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        app.render_miller_file_preview(ui, &entry, 360.0, 480.0);
+                    });
+                });
+            }
+            let request = rx
+                .try_recv()
+                .unwrap_or_else(|_| panic!("EPS visual request missing, inspector={inspector}"));
+            assert_eq!(request.path, path);
+            assert_eq!(
+                ottrin_preview::preview_profile(&request.path).visual_renderer(),
+                ottrin_preview::PreviewVisualRenderer::Eps
+            );
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn eps_quick_inspector_uses_the_isolated_visual_preview_path() {
-        assert!(quick_inspector_uses_visual_preview(
+        assert!(preview_uses_visual_preview(
             Path::new("diagram.eps"),
             PreviewKind::EpsMetadata,
         ));
