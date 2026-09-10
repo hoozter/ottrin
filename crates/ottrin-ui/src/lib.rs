@@ -84,7 +84,7 @@ use listing::{
 #[cfg(not(target_os = "linux"))]
 use preview_render::render_document_body_preview;
 use preview_render::{
-    GenericPreviewAction, compact_preview_metadata, inspector_icon_button,
+    GenericPreviewAction, PreviewBodySizing, compact_preview_metadata, inspector_icon_button,
     preview_payload_for_copy, render_docx_page_preview, render_folder_body_preview,
     render_generic_body_preview, render_image_hover_nav, render_metadata_card_preview,
     render_preview_card_action, render_shared_preview_body, shared_preview_body_kind,
@@ -1111,6 +1111,11 @@ struct PreviewOverlay {
     data: Option<PreviewData>,
     visual_fit: bool,
     visual_zoom: f32,
+    /// A fit mode can be either whole-page or width-only; manual zoom is a
+    /// separate state so a resize cannot silently replace the user's choice.
+    visual_fit_width: bool,
+    flow_text_scale: f32,
+    spreadsheet_overview: bool,
     pdf_page_index: usize,
     spreadsheet_sheet_id: Option<String>,
     text_editor: Option<PreviewTextEditor>,
@@ -1460,12 +1465,13 @@ struct VisualPreviewRenderSpec {
     corner_radius: u8,
     page_index: usize,
     fit: bool,
+    fit_width: bool,
     zoom: f32,
 }
 
 impl VisualPreviewRenderSpec {
-    fn fit_bounds(self, kind: PreviewKind) -> Vec2 {
-        if kind == PreviewKind::Pdf {
+    fn fit_bounds(self) -> Vec2 {
+        if self.fit_width {
             Vec2::new(self.max_size.x, f32::INFINITY)
         } else {
             self.max_size
@@ -1473,10 +1479,97 @@ impl VisualPreviewRenderSpec {
     }
 }
 
+/// Render the one sizing control strip shared by Preview and Quick Inspector.
+/// A manual zoom deliberately survives later viewport changes; only a fit mode
+/// derives a size from the current available bounds.
+fn render_visual_sizing_controls(
+    ui: &mut egui::Ui,
+    _kind: PreviewKind,
+    visual_fit: &mut bool,
+    visual_fit_width: &mut bool,
+    visual_zoom: &mut f32,
+    c: Colors,
+) {
+    let fit_label = if *visual_fit_width {
+        "Fit width"
+    } else {
+        "Fit page"
+    };
+    if ui
+        .small_button("Fit page")
+        .on_hover_text("Show the complete page or image in the viewport.")
+        .clicked()
+    {
+        *visual_fit = true;
+        *visual_fit_width = false;
+    }
+    if ui
+        .small_button("Fit width")
+        .on_hover_text("Match the preview width and scroll vertically.")
+        .clicked()
+    {
+        *visual_fit = true;
+        *visual_fit_width = true;
+    }
+    if ui
+        .small_button("100%")
+        .on_hover_text("Show the page or image at its natural size and scroll.")
+        .clicked()
+    {
+        *visual_fit = false;
+        *visual_zoom = 1.0;
+    }
+    if ui.small_button("−").on_hover_text("Zoom out").clicked() {
+        *visual_fit = false;
+        *visual_zoom = (*visual_zoom / 1.2).clamp(0.1, 8.0);
+    }
+    ui.label(
+        RichText::new(if *visual_fit {
+            format!("{fit_label} · {}%", (*visual_zoom * 100.0).round() as u32)
+        } else {
+            format!("{}%", (*visual_zoom * 100.0).round() as u32)
+        })
+        .color(c.text_dim)
+        .size(10.5),
+    );
+    if ui.small_button("+").on_hover_text("Zoom in").clicked() {
+        *visual_fit = false;
+        *visual_zoom = (*visual_zoom * 1.2).clamp(0.1, 8.0);
+    }
+}
+
+fn submit_sized_preview(
+    ui: &mut egui::Ui,
+    image: egui::Image<'static>,
+    fit: bool,
+    zoom: &mut f32,
+) -> egui::Response {
+    let source = image
+        .load_for_size(ui.ctx(), ui.available_size())
+        .ok()
+        .and_then(|poll| poll.size());
+    let response = ui.add(image);
+    if fit
+        && let Some(source) = source
+        && source.x > 0.0
+    {
+        let effective = response.rect.width() / source.x;
+        if (*zoom - effective).abs() > 0.0001 {
+            *zoom = effective;
+            ui.ctx().request_repaint();
+        }
+    }
+    response
+}
+
 fn width_fit_size(source_size: Vec2, bounds: Vec2) -> Option<Vec2> {
     (bounds.y.is_infinite() && source_size.x > 0.0).then(|| {
-        let scale = bounds.x / source_size.x;
-        Vec2::new(bounds.x, source_size.y * scale)
+        let fitted = preview_render::fit_size(
+            source_size,
+            bounds,
+            preview_render::PreviewSizingMode::FitWidth,
+        );
+        Vec2::new(bounds.x, fitted.y)
     })
 }
 
@@ -1486,20 +1579,14 @@ fn preview_image_with_fit_bounds(
     bounds: Vec2,
     corner_radius: u8,
 ) -> egui::Image<'static> {
-    let width_fit = bounds
-        .y
-        .is_infinite()
-        .then(|| {
-            image::load_from_memory(&bytes).ok().and_then(|decoded| {
-                width_fit_size(
-                    Vec2::new(decoded.width() as f32, decoded.height() as f32),
-                    bounds,
-                )
-            })
+    let size = image::load_from_memory(&bytes).ok().map(|decoded| {
+        let source = Vec2::new(decoded.width() as f32, decoded.height() as f32);
+        width_fit_size(source, bounds).unwrap_or_else(|| {
+            preview_render::fit_size(source, bounds, preview_render::PreviewSizingMode::FitPage)
         })
-        .flatten();
+    });
     let image = egui::Image::from_bytes(uri, bytes).corner_radius(corner_radius);
-    if let Some(size) = width_fit {
+    if let Some(size) = size {
         image.fit_to_exact_size(size)
     } else {
         image.max_width(bounds.x).max_height(bounds.y)
@@ -3768,55 +3855,76 @@ impl OttrinApp {
     fn cached_shared_visual_preview_widget(
         &mut self,
         path: &Path,
-        kind: PreviewKind,
+        _kind: PreviewKind,
         spec: VisualPreviewRenderSpec,
     ) -> Option<egui::Image<'static>> {
-        if kind == PreviewKind::Pdf {
-            if spec.fit {
-                let fit_bounds = spec.fit_bounds(kind);
-                return self
-                    .cached_original_image_preview_widget_for_page(
-                        path,
-                        fit_bounds.x,
-                        fit_bounds.y,
-                        spec.corner_radius,
-                        spec.page_index,
-                    )
-                    .or_else(|| {
-                        self.cached_image_preview_widget_for_page(
-                            path,
-                            fit_bounds.x,
-                            fit_bounds.y,
-                            spec.corner_radius,
-                            spec.page_index,
-                        )
-                    });
+        if spec.fit {
+            let bounds = spec.fit_bounds();
+            self.cached_original_image_preview_widget_for_page(
+                path,
+                bounds.x,
+                bounds.y,
+                spec.corner_radius,
+                spec.page_index,
+            )
+        } else {
+            self.cached_original_image_zoom_widget_for_page(
+                path,
+                spec.zoom,
+                spec.corner_radius,
+                spec.page_index,
+            )
+        }
+    }
+
+    fn render_following_pdf_pages(
+        &mut self,
+        ui: &mut egui::Ui,
+        path: &Path,
+        page_count: usize,
+        spec: VisualPreviewRenderSpec,
+        first_size: Vec2,
+    ) {
+        if !spec.fit_width {
+            return;
+        }
+        for page_index in spec.page_index + 1..page_count {
+            ui.add_space(12.0);
+            let size_id = ui.id().with(("pdf_page_aspect", path, page_index));
+            let aspect = ui
+                .ctx()
+                .data(|data| data.get_temp::<f32>(size_id))
+                .unwrap_or(first_size.y / first_size.x.max(1.0));
+            let expected = Vec2::new(first_size.x, first_size.x * aspect);
+            let rect = Rect::from_min_size(ui.cursor().min, expected);
+            // Retain the continuous scroll extent without loading off-screen pages.
+            if !ui.is_rect_visible(rect) {
+                ui.allocate_exact_size(expected, egui::Sense::hover());
+                continue;
             }
-            return self
-                .cached_original_image_zoom_widget_for_page(
-                    path,
-                    spec.zoom,
-                    spec.corner_radius,
-                    spec.page_index,
-                )
-                .or_else(|| {
-                    self.cached_image_preview_widget_for_page(
-                        path,
-                        spec.max_size.x,
-                        spec.max_size.y,
-                        spec.corner_radius,
-                        spec.page_index,
+            if let Some(image) = self.cached_shared_visual_preview_widget(
+                path,
+                PreviewKind::Pdf,
+                VisualPreviewRenderSpec { page_index, ..spec },
+            ) {
+                let response = ui.add(image);
+                ui.ctx().data_mut(|data| {
+                    data.insert_temp(
+                        size_id,
+                        response.rect.height() / response.rect.width().max(1.0),
                     )
                 });
+            } else {
+                let (rect, _) = ui.allocate_exact_size(expected, egui::Sense::hover());
+                ui.painter().text(
+                    rect.center(),
+                    Align2::CENTER_CENTER,
+                    format!("Loading page {}…", page_index + 1),
+                    FontId::proportional(14.0),
+                    self.colors.text_dim,
+                );
+            }
         }
-
-        self.cached_image_preview_widget_for_page(
-            path,
-            spec.max_size.x,
-            spec.max_size.y,
-            spec.corner_radius,
-            spec.page_index,
-        )
     }
 
     fn cached_visual_preview_unavailable_reason(
@@ -4038,15 +4146,6 @@ impl OttrinApp {
         corner_radius: u8,
         page_index: usize,
     ) -> Option<egui::Image<'static>> {
-        if ottrin_preview::is_svg_path(path) {
-            return self.cached_image_preview_widget_for_page(
-                path,
-                max_width,
-                max_height,
-                corner_radius,
-                page_index,
-            );
-        }
         let sqlite_source_generation = ottrin_preview::is_sqlite_preview_candidate(path)
             .then(|| ottrin_preview::sqlite_preview_source_generation(path))
             .flatten();
@@ -4167,18 +4266,6 @@ impl OttrinApp {
         corner_radius: u8,
         page_index: usize,
     ) -> Option<egui::Image<'static>> {
-        if ottrin_preview::is_svg_path(path) {
-            let scale = zoom.clamp(0.1, 8.0);
-            let dim = (PREVIEW_CACHE_BUCKET_XL as f32 * scale)
-                .clamp(64.0, PREVIEW_CACHE_BUCKET_XL as f32);
-            return self.cached_image_preview_widget_for_page(
-                path,
-                dim,
-                dim,
-                corner_radius,
-                page_index,
-            );
-        }
         let sqlite_source_generation = ottrin_preview::is_sqlite_preview_candidate(path)
             .then(|| ottrin_preview::sqlite_preview_source_generation(path))
             .flatten();
@@ -9771,6 +9858,12 @@ impl OttrinApp {
         self.preview.space_close_ready_at = Some(Instant::now() + Duration::from_millis(180));
         self.preview.visual_fit = true;
         self.preview.visual_zoom = 1.0;
+        self.preview.visual_fit_width = matches!(
+            ottrin_preview::preview_profile(&path).kind(),
+            PreviewKind::Pdf | PreviewKind::OfficeMetadata
+        );
+        self.preview.flow_text_scale = 1.0;
+        self.preview.spreadsheet_overview = false;
         self.preview.pdf_page_index = 0;
         self.preview.spreadsheet_sheet_id = None;
         self.preview.text_editor = None;
@@ -9835,6 +9928,12 @@ impl OttrinApp {
         self.preview.path = Some(path.clone());
         self.preview.visual_fit = true;
         self.preview.visual_zoom = 1.0;
+        self.preview.visual_fit_width = matches!(
+            ottrin_preview::preview_profile(&path).kind(),
+            PreviewKind::Pdf | PreviewKind::OfficeMetadata
+        );
+        self.preview.flow_text_scale = 1.0;
+        self.preview.spreadsheet_overview = false;
         self.preview.pdf_page_index = 0;
         self.preview.spreadsheet_sheet_id = None;
         self.preview.text_editor = None;
@@ -17586,16 +17685,55 @@ impl OttrinApp {
                     || self.uses_office_preview(&entry.path);
                 let use_shared_body_renderer =
                     shared_preview_body_kind(preview.kind) && !use_visual_renderer;
+                let sizing_id = ui.id().with(("miller_preview_sizing", &entry.path));
+                let (mut visual_fit, mut visual_fit_width, mut visual_zoom, mut flow_text_scale, mut spreadsheet_overview) = ui.ctx().data_mut(|data| {
+                    data.get_persisted::<(bool, bool, f32, f32, bool)>(sizing_id)
+                        .unwrap_or((true, matches!(preview_render::preview_sizing_for(preview.kind), preview_render::PreviewSizingMode::FitWidth), 1.0, 1.0, false))
+                });
+                let uses_sizing_controls = use_visual_renderer || matches!(preview.kind, PreviewKind::Text | PreviewKind::OfficeMetadata);
+                let toolbar_top = ui.cursor().top();
+                if uses_sizing_controls {
+                    ui.horizontal_wrapped(|ui| {
+                        if use_visual_renderer {
+                            render_visual_sizing_controls(ui, preview.kind, &mut visual_fit, &mut visual_fit_width, &mut visual_zoom, c);
+                        }
+                        if preview.kind == PreviewKind::Text || preview.document.is_some() || preview.spreadsheet.is_some() {
+                            if ui.small_button("− text").clicked() { flow_text_scale = (flow_text_scale / 1.15).clamp(0.7, 2.0); }
+                            ui.label(RichText::new(format!("Text {}%", (flow_text_scale * 100.0).round() as u32)).color(c.text_dim).size(10.5));
+                            if ui.small_button("+ text").clicked() { flow_text_scale = (flow_text_scale * 1.15).clamp(0.7, 2.0); }
+                        }
+                        if preview.spreadsheet.is_some() {
+                            ui.checkbox(&mut spreadsheet_overview, "Overview").on_hover_text("Fit the entire worksheet width; ordinary view keeps readable text and scrolls horizontally when needed.");
+                        }
+                        if ui
+                            .small_button("Expand preview")
+                            .on_hover_text("Open this preview in Quick Inspector.")
+                            .clicked()
+                        {
+                            self.open_preview_entry(entry.clone());
+                        }
+                    });
+                    ui.add_space(4.0);
+                    ui.ctx().data_mut(|data| {
+                        data.insert_persisted(sizing_id, (visual_fit, visual_fit_width, visual_zoom, flow_text_scale, spreadsheet_overview))
+                    });
+                }
+                // ── Preview area (top, fills remaining space) ──────────
+                let preview_h =
+                    (height - info_total_h - (ui.cursor().top() - toolbar_top))
+                        .max(80.0);
+                preview_render::preview_content_frame(ui, Vec2::new(width, preview_h), |ui| {
                 if use_visual_renderer {
                     if let Some(img) = self.cached_shared_visual_preview_widget(
                         &entry.path,
                         preview.kind,
                         VisualPreviewRenderSpec {
-                            max_size: Vec2::new(max_preview_w, max_preview_h),
+                            max_size: ui.available_size(),
                             corner_radius: 8,
                             page_index: 0,
-                            fit: true,
-                            zoom: 1.0,
+                            fit: visual_fit,
+                            fit_width: visual_fit_width,
+                            zoom: visual_zoom,
                         },
                     ) {
                         preview_widget = Some(img);
@@ -17617,9 +17755,6 @@ impl OttrinApp {
                         }
                     }
                 }
-                // ── Preview area (top, fills remaining space) ──────────
-                let preview_h = (height - info_total_h).max(80.0);
-                preview_render::preview_content_frame(ui, Vec2::new(width, preview_h), |ui| {
                     if use_shared_body_renderer {
                         ui.with_layout(Layout::top_down(Align::Min), |ui| {
                             ui.set_width(ui.available_width());
@@ -17634,6 +17769,7 @@ impl OttrinApp {
                                 &entry.name,
                                 &preview,
                                 &mut selected_sheet,
+                                PreviewBodySizing { flow_text_scale, spreadsheet_overview },
                             );
                             if let Some(selected_sheet) = selected_sheet {
                                 ui.ctx().data_mut(|data| {
@@ -17643,10 +17779,11 @@ impl OttrinApp {
                         });
                     } else if let Some(img) = preview_widget {
                         ui.vertical_centered(|ui| {
-                            ui.add(
-                                img.max_height(max_preview_h)
-                                    .max_width(ui.available_width()),
-                            );
+                            let response = submit_sized_preview(ui, img, visual_fit, &mut visual_zoom);
+                            if let Some(count) = preview_page_count(&preview, None) {
+                                self.render_following_pdf_pages(ui, &entry.path, count,
+                                    VisualPreviewRenderSpec { max_size: response.rect.size(), corner_radius: 8, page_index: 0, fit: visual_fit, fit_width: visual_fit_width, zoom: visual_zoom }, response.rect.size());
+                            }
                         });
                     } else if let Some(mut snippet) = text_snippet {
                         if let Some(meta_icon) = metadata_icon {
@@ -17670,6 +17807,10 @@ impl OttrinApp {
                         ui.add_space(8.0);
                         render_preview_card_action(ui, c, &entry.path, &preview);
                     }
+                });
+
+                ui.ctx().data_mut(|data| {
+                    data.insert_persisted(sizing_id, (visual_fit, visual_fit_width, visual_zoom, flow_text_scale, spreadsheet_overview));
                 });
 
                 // ── Info panel (bottom, framed, collapsible) ──────────
@@ -18774,18 +18915,25 @@ impl OttrinApp {
         let uses_office_provider = self.uses_office_preview(&path);
         let name = preview.title.clone();
         let mut close_requested = false;
+        let inspector_size_id = egui::Id::new("ottrin-quick-inspector-size");
+        let remembered_size = ctx
+            .data_mut(|data| data.get_persisted::<Vec2>(inspector_size_id))
+            .unwrap_or(Vec2::new(720.0, 560.0));
         let builder = egui::ViewportBuilder::default()
             .with_title(administrator_surface_label(
                 &format!("Ottrin Quick Inspector — {name}"),
                 administrator_session(),
             ))
-            .with_inner_size([720.0, 560.0])
+            .with_inner_size(remembered_size)
             .with_min_inner_size([420.0, 320.0])
             .with_resizable(true);
         let vp_id = Self::quick_inspector_viewport_id();
 
         ctx.show_viewport_immediate(vp_id, builder, |inspector_ctx, _class| {
         self.apply_theme_to_ctx(inspector_ctx);
+        if let Some(size) = inspector_ctx.input(|input| input.viewport().inner_rect.map(|rect| rect.size())) {
+            ctx.data_mut(|data| data.insert_persisted(inspector_size_id, size));
+        }
         if inspector_ctx.input(|i| i.viewport().close_requested()) {
             if self.native_preview_close_is_cancelled() {
                 inspector_ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
@@ -19075,55 +19223,25 @@ impl OttrinApp {
                                     self.set_preview_page(page_index + 1);
                                 }
                             }
+                        });
+                    });
                             let is_zoomable_document = preview_uses_visual_preview(&path, preview.kind)
                                 || uses_office_provider;
-                            if is_zoomable_document {
-                                ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                                if ui
-                                    .small_button("Fit")
-                                    .on_hover_text(
-                                        "Fit visual previews in the inspector.",
-                                    )
-                                    .clicked()
-                                {
-                                    self.preview.visual_fit = true;
+                            if is_zoomable_document || matches!(preview.kind, PreviewKind::Text | PreviewKind::OfficeMetadata) {
+                                ui.horizontal_wrapped(|ui| {
+                                if is_zoomable_document {
+                                    render_visual_sizing_controls(ui, preview.kind, &mut self.preview.visual_fit, &mut self.preview.visual_fit_width, &mut self.preview.visual_zoom, c);
                                 }
-                                if ui
-                                    .small_button("100%")
-                                    .on_hover_text(
-                                        "Show the page or image at its natural size and scroll.",
-                                    )
-                                    .clicked()
-                                {
-                                    self.preview.visual_fit = false;
-                                    self.preview.visual_zoom = 1.0;
+                                if preview.kind == PreviewKind::Text || preview.document.is_some() || preview.spreadsheet.is_some() {
+                                    if ui.small_button("− text").clicked() { self.preview.flow_text_scale = (self.preview.flow_text_scale.clamp(0.7, 2.0) / 1.15).clamp(0.7, 2.0); }
+                                    ui.label(RichText::new(format!("Text {}%", (self.preview.flow_text_scale.clamp(0.7, 2.0) * 100.0).round() as u32)).color(c.text_dim).size(10.5));
+                                    if ui.small_button("+ text").clicked() { self.preview.flow_text_scale = (self.preview.flow_text_scale.clamp(0.7, 2.0) * 1.15).clamp(0.7, 2.0); }
                                 }
-                                if ui.small_button("−").on_hover_text("Zoom out").clicked() {
-                                    self.preview.visual_fit = false;
-                                    self.preview.visual_zoom =
-                                        (self.preview.visual_zoom / 1.2).clamp(0.1, 8.0);
-                                }
-                                ui.label(
-                                    RichText::new(if self.preview.visual_fit {
-                                        "Fit".to_string()
-                                    } else {
-                                        format!(
-                                            "{}%",
-                                            (self.preview.visual_zoom * 100.0).round() as u32
-                                        )
-                                    })
-                                    .color(c.text_dim)
-                                    .size(10.5),
-                                );
-                                if ui.small_button("+").on_hover_text("Zoom in").clicked() {
-                                    self.preview.visual_fit = false;
-                                    self.preview.visual_zoom =
-                                        (self.preview.visual_zoom * 1.2).clamp(0.1, 8.0);
+                                if preview.spreadsheet.is_some() {
+                                    ui.checkbox(&mut self.preview.spreadsheet_overview, "Overview").on_hover_text("Fit the entire worksheet width; ordinary view retains readable text and horizontal scrolling.");
                                 }
                                 });
                             }
-                        });
-                    });
                     ui.separator();
 
                     let inspector_hovered = ui.rect_contains_pointer(ui.max_rect());
@@ -19154,6 +19272,7 @@ impl OttrinApp {
                             &name,
                             &preview,
                             &mut self.preview.spreadsheet_sheet_id,
+                            PreviewBodySizing { flow_text_scale: self.preview.flow_text_scale.clamp(0.7, 2.0), spreadsheet_overview: self.preview.spreadsheet_overview },
                         );
                     } else {
                         match preview.kind {
@@ -19238,7 +19357,7 @@ impl OttrinApp {
                                                 ui.add(
                                                     egui::Label::new(
                                                         RichText::new(line_numbers)
-                                                            .font(FontId::monospace(12.0))
+                                                            .font(FontId::monospace(preview_render::FLOW_TEXT_SIZE * self.preview.flow_text_scale.clamp(0.7, 2.0)))
                                                             .color(c.text_dim),
                                                     )
                                                     .selectable(false),
@@ -19254,13 +19373,16 @@ impl OttrinApp {
                                                         buffer.as_str(),
                                                         &language,
                                                     );
+                                                    for section in &mut job.sections {
+                                                        section.format.font_id.size = preview_render::FLOW_TEXT_SIZE * self.preview.flow_text_scale.clamp(0.7, 2.0);
+                                                    }
                                                     job.wrap.max_width = wrap_width;
                                                     ui.fonts_mut(|fonts| fonts.layout_job(job))
                                                 };
                                                 ui.add(
                                                     egui::TextEdit::multiline(&mut editor.buffer)
                                                         .id(editor_id)
-                                                        .font(FontId::monospace(12.0))
+                                                        .font(FontId::monospace(preview_render::FLOW_TEXT_SIZE * self.preview.flow_text_scale.clamp(0.7, 2.0)))
                                                         .desired_rows(18)
                                                         .layouter(&mut layouter)
                                                         .lock_focus(true),
@@ -19363,14 +19485,14 @@ impl OttrinApp {
                                             ui.add(
                                                 egui::TextEdit::multiline(&mut editor.buffer)
                                                     .id(editor_id)
-                                                    .font(FontId::proportional(16.0))
+                                                    .font(FontId::proportional(preview_render::FLOW_TEXT_SIZE * self.preview.flow_text_scale.clamp(0.7, 2.0)))
                                                     .desired_rows(24)
                                                     .lock_focus(true),
                                             );
                                         } else {
                                             ui.add(
                                                 egui::TextEdit::multiline(&mut editor.buffer)
-                                                    .font(FontId::monospace(12.0))
+                                                    .font(FontId::monospace(preview_render::FLOW_TEXT_SIZE * self.preview.flow_text_scale.clamp(0.7, 2.0)))
                                                     .desired_rows(18)
                                                     .lock_focus(true),
                                             );
@@ -19392,6 +19514,7 @@ impl OttrinApp {
                                     &name,
                                     &preview,
                                     &mut self.preview.spreadsheet_sheet_id,
+                                    PreviewBodySizing { flow_text_scale: self.preview.flow_text_scale.clamp(0.7, 2.0), spreadsheet_overview: self.preview.spreadsheet_overview },
                                 );
                             }
                         }
@@ -19415,6 +19538,7 @@ impl OttrinApp {
                                             corner_radius: 8,
                                             page_index: pdf_page_index,
                                             fit: self.preview.visual_fit,
+                                            fit_width: self.preview.visual_fit_width,
                                             zoom: self.preview.visual_zoom,
                                         },
                                     );
@@ -19423,7 +19547,11 @@ impl OttrinApp {
                                         .preview_scheduler
                                         .is_inflight_for(&path, pdf_page_index);
                                     if let Some(img) = image {
-                                        let image_resp = ui.add(img);
+                                        let image_resp = submit_sized_preview(ui, img, self.preview.visual_fit, &mut self.preview.visual_zoom);
+                                        if let Some(count) = preview_page_count(&preview, None) {
+                                            self.render_following_pdf_pages(ui, &path, count,
+                                                VisualPreviewRenderSpec { max_size: Vec2::new(max_w, max_h), corner_radius: 8, page_index: pdf_page_index, fit: self.preview.visual_fit, fit_width: self.preview.visual_fit_width, zoom: self.preview.visual_zoom }, image_resp.rect.size());
+                                        }
                                         if let Some(delta) =
                                             render_image_hover_nav(ui, c, image_resp.rect)
                                         {
@@ -19524,11 +19652,12 @@ impl OttrinApp {
                                                 corner_radius: 8,
                                                 page_index,
                                                 fit: self.preview.visual_fit,
+                                                fit_width: self.preview.visual_fit_width,
                                                 zoom: self.preview.visual_zoom,
                                             },
                                         );
                                         if let Some(image) = image {
-                                            ui.add(image);
+                                            submit_sized_preview(ui, image, self.preview.visual_fit, &mut self.preview.visual_zoom);
                                         } else if let Some(reason) = self
                                             .cached_visual_preview_unavailable_reason(
                                                 &path, max_w, max_h,
@@ -19657,6 +19786,7 @@ impl OttrinApp {
                                     &name,
                                     &preview,
                                     &mut self.preview.spreadsheet_sheet_id,
+                                    PreviewBodySizing { flow_text_scale: self.preview.flow_text_scale.clamp(0.7, 2.0), spreadsheet_overview: self.preview.spreadsheet_overview },
                                 );
                             }
                         }
@@ -19668,6 +19798,7 @@ impl OttrinApp {
                                 &name,
                                 &preview,
                                 &mut self.preview.spreadsheet_sheet_id,
+                                PreviewBodySizing { flow_text_scale: self.preview.flow_text_scale.clamp(0.7, 2.0), spreadsheet_overview: self.preview.spreadsheet_overview },
                             );
                         }
                         #[cfg(not(target_os = "linux"))]
@@ -19691,6 +19822,7 @@ impl OttrinApp {
                                         &name,
                                         &preview,
                                         &mut self.preview.spreadsheet_sheet_id,
+                                        PreviewBodySizing { flow_text_scale: self.preview.flow_text_scale.clamp(0.7, 2.0), spreadsheet_overview: self.preview.spreadsheet_overview },
                                     );
                                 }
                                 _ => {
@@ -28035,15 +28167,453 @@ mod tests {
     }
 
     #[test]
+    fn sizing_inspector_controls_do_not_overlap_image_actions_at_narrow_width() {
+        let mut app = OttrinApp::default();
+        app.preview.visible = true;
+        app.preview.path = Some(PathBuf::from("/sizing-toolbar.png"));
+        app.preview.visual_fit = true;
+        app.preview.visual_zoom = 0.28;
+        app.preview.data = Some(PreviewData {
+            title: "sizing-toolbar.png".into(),
+            kind: PreviewKind::Image,
+            body: String::new(),
+            document: None,
+            spreadsheet: None,
+            open_external: false,
+        });
+        let ctx = Context::default();
+        let out = ctx.run(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(500.0, 440.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| app.render_preview_overlay(ctx),
+        );
+        let button_rect = |label: &str| {
+            let point = out
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    egui::Shape::Text(t) if t.galley.job.text == label => {
+                        Some(t.pos + t.galley.size() / 2.0)
+                    }
+                    _ => None,
+                })
+                .expect("button text must paint");
+            out.shapes
+                .iter()
+                .filter_map(|shape| match &shape.shape {
+                    egui::Shape::Rect(rect) if rect.rect.contains(point) => Some(rect.rect),
+                    _ => None,
+                })
+                .min_by(|a, b| a.area().total_cmp(&b.area()))
+                .expect("button background must paint")
+        };
+        let zoom = button_rect("+");
+        let rotate = button_rect(MI_ROTATE_LEFT);
+        assert!(
+            !zoom.intersects(rotate),
+            "zoom and rotate hit surfaces overlap: {zoom:?}, {rotate:?}"
+        );
+    }
+
+    #[test]
+    fn sizing_main_preview_paints_fitted_image_inside_actual_clip_with_visible_controls() {
+        let path = PathBuf::from("/sizing-main.png");
+        let entry = FileEntry {
+            path: path.clone(),
+            name: "sizing-main.png".into(),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: None,
+            modified_unix_secs: None,
+        };
+        let mut app = OttrinApp::default();
+        app.info_panel_preview = Some((
+            path.clone(),
+            PreviewData {
+                title: entry.name.clone(),
+                kind: PreviewKind::Image,
+                body: String::new(),
+                document: None,
+                spreadsheet: None,
+                open_external: false,
+            },
+        ));
+        let key = preview_cache_key_for_page_with_generations(
+            &path,
+            PREVIEW_CACHE_ORIGINAL,
+            0,
+            None,
+            None,
+            None,
+            None,
+        );
+        let bytes = ready_docx_test_raster_with_dimensions(1000, 700, [30, 60, 90, 255]);
+        app.image_preview_cache
+            .insert(key, ImagePreviewCacheEntry::from_response(Some(bytes)));
+        let ctx = Context::default();
+        egui_extras::install_image_loaders(&ctx);
+        for width in [180.0, 360.0, 720.0] {
+            let mut fitted_width = 0.0;
+            let deadline = Instant::now() + Duration::from_secs(2);
+            let mut frames = 0;
+            loop {
+                frames += 1;
+                let out = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(800.0, 700.0),
+                        )),
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            app.render_miller_file_preview(ui, &entry, width, 600.0);
+                        });
+                    },
+                );
+                assert!(out.shapes.iter().any(|s| matches!(&s.shape, egui::Shape::Text(t) if t.galley.job.text == "Expand preview")));
+                for shape in &out.shapes {
+                    if let egui::Shape::Rect(rect) = &shape.shape
+                        && rect.brush.is_some()
+                    {
+                        assert!(
+                            shape.clip_rect.expand(1.0).contains_rect(rect.rect),
+                            "image must fit actual padded viewport at {width}: {:?} {:?}",
+                            rect.rect,
+                            shape.clip_rect
+                        );
+                        fitted_width = rect.rect.width();
+                    }
+                }
+                if fitted_width > 0.0 && frames >= 5 {
+                    break;
+                }
+                assert!(Instant::now() < deadline, "ready main image must paint");
+                std::thread::yield_now();
+            }
+            assert!(fitted_width <= width - 32.0 + 1.0);
+        }
+    }
+
+    #[test]
+    fn sizing_inspector_pdf_paints_continuous_pages() {
+        let mut app = OttrinApp::default();
+        let ctx = Context::default();
+        egui_extras::install_image_loaders(&ctx);
+        // Raster cache fixtures exercise the presentation boundary without PDFium.
+        let path = PathBuf::from("/sizing-pages.png");
+        app.preview.visible = true;
+        app.preview.path = Some(path.clone());
+        app.preview.visual_fit = true;
+        app.preview.visual_fit_width = true;
+        app.preview.visual_zoom = 1.0;
+        app.preview.data = Some(PreviewData {
+            title: "pages.pdf".into(),
+            kind: PreviewKind::Pdf,
+            body: "Pages: 2".into(),
+            document: None,
+            spreadsheet: None,
+            open_external: false,
+        });
+        for page in 0..2 {
+            let key = preview_cache_key_for_page_with_generations(
+                &path,
+                PREVIEW_CACHE_ORIGINAL,
+                page,
+                None,
+                None,
+                None,
+                None,
+            );
+            let bytes = ready_docx_test_raster_with_dimensions(
+                1000,
+                160,
+                [30 + page as u8 * 50, 70, 90, 255],
+            );
+            ctx.include_bytes(format!("bytes://preview/{key}"), bytes.clone());
+            app.image_preview_cache
+                .insert(key, ImagePreviewCacheEntry::from_response(Some(bytes)));
+        }
+        let deadline = Instant::now() + Duration::from_secs(2);
+        loop {
+            let out = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(800.0, 700.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| app.render_preview_overlay(ctx),
+            );
+            let images = out
+                .shapes
+                .iter()
+                .filter(
+                    |shape| matches!(&shape.shape, egui::Shape::Rect(rect) if rect.brush.is_some()),
+                )
+                .count();
+            if images >= 2 {
+                break;
+            }
+            assert!(
+                Instant::now() < deadline,
+                "continuous PDF viewport painted only {images} page images"
+            );
+            std::thread::yield_now();
+        }
+    }
+
+    #[test]
+    fn sizing_controls_step_from_painted_fit_scale_and_keep_manual_on_resize() {
+        for (button, expected) in [("+", 0.48), ("−", 0.4 / 1.2)] {
+            let ctx = Context::default();
+            let texture = ctx.load_texture(
+                "sizing-control",
+                egui::ColorImage::filled([1000, 500], Color32::WHITE),
+                Default::default(),
+            );
+            let mut fit = true;
+            let mut width = false;
+            let mut zoom = 1.0;
+            let mut painted = Vec2::ZERO;
+            let mut frame = |events: Vec<egui::Event>, bounds: Vec2| {
+                ctx.run(
+                    egui::RawInput {
+                        events,
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(800.0, 700.0),
+                        )),
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            ui.horizontal(|ui| {
+                                render_visual_sizing_controls(
+                                    ui,
+                                    PreviewKind::Image,
+                                    &mut fit,
+                                    &mut width,
+                                    &mut zoom,
+                                    Colors::for_config(&Default::default()),
+                                )
+                            });
+                            let source = Vec2::new(1000.0, 500.0);
+                            let size = if fit {
+                                preview_render::fit_size(
+                                    source,
+                                    bounds,
+                                    preview_render::PreviewSizingMode::FitPage,
+                                )
+                            } else {
+                                source * zoom
+                            };
+                            painted = submit_sized_preview(
+                                ui,
+                                egui::Image::from_texture(&texture).fit_to_exact_size(size),
+                                fit,
+                                &mut zoom,
+                            )
+                            .rect
+                            .size();
+                        });
+                    },
+                )
+            };
+            frame(vec![], Vec2::new(400.0, 300.0));
+            let out = frame(vec![], Vec2::new(400.0, 300.0));
+            assert!(out.shapes.iter().any(|shape| matches!(&shape.shape, egui::Shape::Text(t) if t.galley.job.text == "Fit page · 40%")));
+            let point = out
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    egui::Shape::Text(t) if t.galley.job.text == button => {
+                        Some(t.pos + t.galley.size() / 2.0)
+                    }
+                    _ => None,
+                })
+                .unwrap();
+            for pressed in [true, false] {
+                frame(
+                    vec![
+                        egui::Event::PointerMoved(point),
+                        egui::Event::PointerButton {
+                            pos: point,
+                            button: egui::PointerButton::Primary,
+                            pressed,
+                            modifiers: egui::Modifiers::NONE,
+                        },
+                    ],
+                    Vec2::new(400.0, 300.0),
+                );
+            }
+            frame(vec![], Vec2::new(700.0, 600.0));
+            assert!(!fit);
+            assert!((zoom - expected).abs() < 0.001);
+            assert!((painted.x - expected * 1000.0).abs() < 1.0);
+        }
+    }
+
+    #[test]
+    fn sizing_inspector_text_paints_selected_font_scale_without_changing_source() {
+        let fixture = tempfile::tempdir().unwrap();
+        for extension in ["txt", "md", "rs"] {
+            let path = fixture.path().join(format!("sizing.{extension}"));
+            let source = "sizing_unique_text ".repeat(25);
+            std::fs::write(&path, &source).unwrap();
+            let mut app = OttrinApp::default();
+            app.preview.visible = true;
+            app.preview.path = Some(path.clone());
+            app.preview.data = Some(PreviewData {
+                title: "sizing".into(),
+                kind: PreviewKind::Text,
+                body: source.clone(),
+                document: None,
+                spreadsheet: None,
+                open_external: false,
+            });
+            let ctx = Context::default();
+            for scale in [1.0, 1.5, 0.8] {
+                app.preview.flow_text_scale = scale;
+                let out = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(640.0, 480.0),
+                        )),
+                        ..Default::default()
+                    },
+                    |ctx| app.render_preview_overlay(ctx),
+                );
+                let texts: Vec<_> = out
+                    .shapes
+                    .iter()
+                    .filter_map(|shape| match &shape.shape {
+                        egui::Shape::Text(text) if text.galley.job.text == source.trim() => {
+                            Some(text)
+                        }
+                        _ => None,
+                    })
+                    .collect();
+                assert!(!texts.is_empty(), "{extension} must paint its editor");
+                for text in texts {
+                    assert!(
+                        text.galley.job.sections.iter().all(|section| (section
+                            .format
+                            .font_id
+                            .size
+                            - 16.0 * scale)
+                            .abs()
+                            < 0.1),
+                        "{extension}: expected {}px",
+                        16.0 * scale
+                    );
+                    assert!(text.galley.rows.len() > 1, "long text must wrap");
+                }
+                assert_eq!(std::fs::read_to_string(&path).unwrap(), source);
+            }
+        }
+    }
+
+    #[test]
+    fn sizing_renderer_uses_original_scale_for_fit_and_manual_resize() {
+        let mut app = OttrinApp::default();
+        let ctx = Context::default();
+        egui_extras::install_image_loaders(&ctx);
+        let path = Path::new("/preview-sizing-source.png");
+        let key = preview_cache_key_for_page_with_generations(
+            path,
+            PREVIEW_CACHE_ORIGINAL,
+            0,
+            None,
+            None,
+            None,
+            None,
+        );
+        app.image_preview_cache.insert(
+            key,
+            ImagePreviewCacheEntry::from_response(Some(ready_docx_test_raster_with_dimensions(
+                1000,
+                500,
+                [20, 80, 120, 255],
+            ))),
+        );
+        for (bounds, fit, zoom, expected) in [
+            (Vec2::new(400.0, 300.0), true, 1.0, Vec2::new(400.0, 200.0)),
+            (Vec2::new(800.0, 300.0), true, 1.0, Vec2::new(600.0, 300.0)),
+            (
+                Vec2::new(1400.0, 900.0),
+                true,
+                1.0,
+                Vec2::new(1000.0, 500.0),
+            ),
+            (
+                Vec2::new(400.0, 300.0),
+                false,
+                0.48,
+                Vec2::new(480.0, 240.0),
+            ),
+            (
+                Vec2::new(800.0, 600.0),
+                false,
+                0.48,
+                Vec2::new(480.0, 240.0),
+            ),
+        ] {
+            let mut painted = Vec2::ZERO;
+            let _ = ctx.run(egui::RawInput::default(), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    let image = app
+                        .cached_shared_visual_preview_widget(
+                            path,
+                            PreviewKind::Image,
+                            VisualPreviewRenderSpec {
+                                max_size: bounds,
+                                corner_radius: 0,
+                                page_index: 0,
+                                fit,
+                                fit_width: false,
+                                zoom,
+                            },
+                        )
+                        .expect("ready original must serve fit as well as manual");
+                    let deadline = Instant::now() + Duration::from_secs(2);
+                    while !matches!(
+                        image.load_for_size(ctx, bounds),
+                        Ok(egui::load::TexturePoll::Ready { .. })
+                    ) {
+                        assert!(Instant::now() < deadline, "PNG loader did not become ready");
+                        std::thread::yield_now();
+                    }
+                    painted = ui.add(image).rect.size();
+                });
+            });
+            assert!(
+                (painted - expected).length() < 1.0,
+                "{painted:?} != {expected:?}"
+            );
+        }
+    }
+
+    #[test]
     fn pdf_fit_uses_viewport_width_without_a_height_cap() {
         let pdf = VisualPreviewRenderSpec {
             max_size: Vec2::new(640.0, 360.0),
             corner_radius: 8,
             page_index: 0,
             fit: true,
+            fit_width: true,
             zoom: 1.0,
         };
-        let bounds = pdf.fit_bounds(PreviewKind::Pdf);
+        let bounds = pdf.fit_bounds();
         assert_eq!(bounds.x, 640.0);
         assert!(bounds.y.is_infinite());
         let fitted = width_fit_size(Vec2::new(612.0, 792.0), bounds)
@@ -28051,8 +28621,11 @@ mod tests {
         assert_eq!(fitted.x, 640.0);
         assert!((fitted.y - 640.0 * 792.0 / 612.0).abs() < 0.001);
 
-        let image_bounds = pdf.fit_bounds(PreviewKind::Image);
-        assert_eq!(image_bounds, Vec2::new(640.0, 360.0));
+        let page = VisualPreviewRenderSpec {
+            fit_width: false,
+            ..pdf
+        };
+        assert_eq!(page.fit_bounds(), Vec2::new(640.0, 360.0));
     }
 
     #[test]

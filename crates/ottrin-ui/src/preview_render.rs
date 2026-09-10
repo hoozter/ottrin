@@ -16,6 +16,87 @@ use sha2::{Digest, Sha256};
 use std::path::Path;
 
 pub(crate) const PREVIEW_CONTENT_PADDING: f32 = 16.0;
+pub(crate) const FLOW_TEXT_SIZE: f32 = 16.0;
+pub(crate) const SPREADSHEET_MIN_COLUMN_WIDTH: f32 = 96.0;
+const SPREADSHEET_ROW_HEADER_WIDTH: f32 = 46.0;
+const SPREADSHEET_CELL_HORIZONTAL_PADDING: f32 = 16.0;
+
+/// The same sizing vocabulary is used by the Miller preview and Quick Inspector.
+/// Fit modes respond to available space; manual modes intentionally do not.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum PreviewSizingMode {
+    FitPage,
+    FitWidth,
+}
+
+/// Per-body controls shared by the compact preview and Quick Inspector.
+/// These are presentation choices only: they never alter the preview payload.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct PreviewBodySizing {
+    pub flow_text_scale: f32,
+    pub spreadsheet_overview: bool,
+}
+
+impl Default for PreviewBodySizing {
+    fn default() -> Self {
+        Self {
+            flow_text_scale: 1.0,
+            spreadsheet_overview: false,
+        }
+    }
+}
+
+pub(crate) fn preview_sizing_for(kind: PreviewKind) -> PreviewSizingMode {
+    match kind {
+        PreviewKind::Pdf | PreviewKind::OfficeMetadata => PreviewSizingMode::FitWidth,
+        _ => PreviewSizingMode::FitPage,
+    }
+}
+
+pub(crate) fn fit_size(source: Vec2, bounds: Vec2, mode: PreviewSizingMode) -> Vec2 {
+    if source.x <= 0.0 || source.y <= 0.0 {
+        return source;
+    }
+    let scale = match mode {
+        PreviewSizingMode::FitWidth => bounds.x.max(0.0) / source.x,
+        PreviewSizingMode::FitPage => {
+            (bounds.x.max(0.0) / source.x).min(bounds.y.max(0.0) / source.y)
+        }
+    };
+    let scale = if matches!(mode, PreviewSizingMode::FitPage) {
+        scale.min(1.0)
+    } else {
+        scale
+    };
+    source * scale
+}
+
+pub(crate) fn spreadsheet_column_width(available_per_column: f32, overview: bool) -> f32 {
+    if overview {
+        available_per_column.max(1.0)
+    } else {
+        available_per_column.max(SPREADSHEET_MIN_COLUMN_WIDTH)
+    }
+}
+
+/// Width available to cell *content*, accounting for row labels and cell chrome.
+/// This is deliberately separate from `spreadsheet_column_width`: Grid allocates
+/// the content width plus each cell's inner margin.
+pub(crate) fn spreadsheet_content_width(
+    viewport_width: f32,
+    column_count: usize,
+    overview: bool,
+) -> f32 {
+    let columns = column_count.max(1) as f32;
+    let available = ((viewport_width
+        - SPREADSHEET_ROW_HEADER_WIDTH
+        - SPREADSHEET_CELL_HORIZONTAL_PADDING
+        - 2.0)
+        / columns
+        - SPREADSHEET_CELL_HORIZONTAL_PADDING)
+        .max(1.0);
+    spreadsheet_column_width(available, overview)
+}
 
 /// Shared allocation boundary for main Preview and Quick Inspector content.
 pub(crate) fn preview_content_frame<R>(
@@ -84,12 +165,15 @@ pub(crate) fn render_shared_preview_body(
     name: &str,
     preview: &PreviewData,
     selected_sheet: &mut Option<String>,
+    sizing: PreviewBodySizing,
 ) -> bool {
     match preview.kind {
-        PreviewKind::Text => render_text_body_preview(ui, c, name, &preview.body),
+        PreviewKind::Text => {
+            render_text_body_preview_scaled(ui, c, name, &preview.body, sizing.flow_text_scale)
+        }
         PreviewKind::OfficeMetadata => {
-            if !render_docx_structured_body_preview(ui, c, name, preview)
-                && !render_spreadsheet_body_preview(ui, c, name, preview, selected_sheet)
+            if !render_docx_structured_body_preview(ui, c, name, preview, sizing.flow_text_scale)
+                && !render_spreadsheet_body_preview(ui, c, name, preview, selected_sheet, sizing)
             {
                 render_document_body_preview(ui, c, MI_DESCRIPTION, name, &preview.body);
             }
@@ -432,6 +516,7 @@ fn render_scrollable_preview_text(
     highlighted: Option<egui::text::LayoutJob>,
     minimum_height: f32,
     id: impl std::hash::Hash,
+    scale: f32,
 ) {
     let height = scrollable_preview_height(ui.available_height(), minimum_height);
     egui::Frame::new()
@@ -443,11 +528,19 @@ fn render_scrollable_preview_text(
                 .auto_shrink([false, false])
                 .show(ui, |ui| {
                     ui.set_min_width(ui.available_width());
+                    let highlighted = highlighted.map(|mut job| {
+                        for section in &mut job.sections {
+                            section.format.font_id.size = FLOW_TEXT_SIZE * scale.clamp(0.7, 2.0);
+                        }
+                        job
+                    });
                     let label = highlighted.map_or_else(
                         || {
                             egui::Label::new(
                                 RichText::new(text)
-                                    .font(FontId::monospace(12.0))
+                                    .font(FontId::monospace(
+                                        (FLOW_TEXT_SIZE * scale).clamp(10.0, 32.0),
+                                    ))
                                     .color(color),
                             )
                         },
@@ -473,7 +566,13 @@ fn source_preview_layout_job(
     Some(highlight(context, style, &theme, source, &language))
 }
 
-pub(crate) fn render_text_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
+pub(crate) fn render_text_body_preview_scaled(
+    ui: &mut egui::Ui,
+    c: Colors,
+    name: &str,
+    body: &str,
+    scale: f32,
+) {
     let (metadata, extracted) = split_preview_extracted_text(body);
     let source = extracted.unwrap_or(body).trim();
     let highlighted = source_preview_layout_job(ui.ctx(), ui.style(), name, source);
@@ -484,6 +583,7 @@ pub(crate) fn render_text_body_preview(ui: &mut egui::Ui, c: Colors, name: &str,
         highlighted,
         160.0,
         ("inspector_text", name),
+        scale,
     );
     render_preview_footer(ui, c, name, metadata);
 }
@@ -584,7 +684,7 @@ fn docx_list_layout(list: &DocxList) -> (&str, f32) {
     (&list.marker, f32::from(list.level) * 18.0)
 }
 
-fn render_docx_paragraph(ui: &mut egui::Ui, c: Colors, paragraph: &DocxParagraph) {
+fn render_docx_paragraph(ui: &mut egui::Ui, c: Colors, paragraph: &DocxParagraph, scale: f32) {
     if paragraph.has_page_break {
         ui.add_space(8.0);
         ui.separator();
@@ -624,7 +724,7 @@ fn render_docx_paragraph(ui: &mut egui::Ui, c: Colors, paragraph: &DocxParagraph
                         .clamp(9.0, 28.0);
                     let mut text = RichText::new(&run.text)
                         .color(docx_color(run.color.as_deref(), c.text))
-                        .size(size);
+                        .size(size * (4.0 / 3.0) * scale);
                     if run.bold || heading_style {
                         text = text.strong();
                     }
@@ -708,6 +808,7 @@ pub(crate) fn render_docx_structured_body_preview(
     c: Colors,
     name: &str,
     preview: &PreviewData,
+    scale: f32,
 ) -> bool {
     let Some(document) = preview.document.as_ref() else {
         return false;
@@ -759,7 +860,7 @@ pub(crate) fn render_docx_structured_body_preview(
                     for (block_index, block) in document.blocks.iter().enumerate() {
                         match block {
                             DocxBlock::Paragraph(paragraph) => {
-                                render_docx_paragraph(ui, document_colors, paragraph);
+                                render_docx_paragraph(ui, document_colors, paragraph, scale);
                             }
                             DocxBlock::Table(table) => {
                                 let stroke = if table.bordered {
@@ -782,6 +883,7 @@ pub(crate) fn render_docx_structured_body_preview(
                                                                 ui,
                                                                 document_colors,
                                                                 paragraph,
+                                                                scale,
                                                             );
                                                         }
                                                     });
@@ -875,12 +977,29 @@ fn spreadsheet_grid_from_payload(payload: &SpreadsheetPreview) -> SpreadsheetGri
         .sheets
         .iter()
         .map(|sheet| {
-            let mut row_coordinates = sheet.cells.iter().map(|cell| cell.row).collect::<Vec<_>>();
-            let mut column_coordinates = sheet
+            let last_row = sheet
                 .cells
                 .iter()
+                .filter(|cell| !cell.text.is_empty())
+                .map(|cell| cell.row)
+                .max()
+                .unwrap_or(0);
+            let last_column = sheet
+                .cells
+                .iter()
+                .filter(|cell| !cell.text.is_empty())
                 .map(|cell| cell.column)
+                .max()
+                .unwrap_or(0);
+            let relevant_cells = sheet
+                .cells
+                .iter()
+                .filter(|cell| cell.row <= last_row && cell.column <= last_column);
+            let mut row_coordinates = relevant_cells
+                .clone()
+                .map(|cell| cell.row)
                 .collect::<Vec<_>>();
+            let mut column_coordinates = relevant_cells.map(|cell| cell.column).collect::<Vec<_>>();
             row_coordinates.sort_unstable();
             row_coordinates.dedup();
             column_coordinates.sort_unstable();
@@ -1095,28 +1214,52 @@ fn spreadsheet_cell_visual(
     }
 }
 
-fn render_spreadsheet_cell(
+fn render_spreadsheet_row(
     ui: &mut egui::Ui,
-    text: &str,
-    kind: SpreadsheetCellKind,
-    alternate_row: bool,
-    width: f32,
+    cells: &[(&str, SpreadsheetCellKind)],
+    widths: &[f32],
+    alternate: bool,
+    scale: f32,
 ) {
-    let visual = spreadsheet_cell_visual(kind, alternate_row);
-    egui::Frame::new()
-        .fill(visual.fill)
-        .stroke(Stroke::new(0.5, visual.border))
-        .inner_margin(egui::Margin::symmetric(8, 4))
-        .show(ui, |ui| {
-            let mut label = RichText::new(text).color(visual.text);
-            if matches!(kind, SpreadsheetCellKind::Header) {
-                label = label.strong();
-            }
-            ui.add_sized(
-                [width, 22.0],
-                egui::Label::new(label).selectable(matches!(kind, SpreadsheetCellKind::Body)),
-            );
-        });
+    let font = FontId::proportional(14.0 * scale);
+    let padding = Vec2::new(8.0, 4.0) * scale;
+    let height = cells
+        .iter()
+        .zip(widths)
+        .map(|((text, _), width)| {
+            ui.fonts_mut(|fonts| {
+                fonts.layout(
+                    (*text).to_owned(),
+                    font.clone(),
+                    Color32::BLACK,
+                    (*width - 2.0 * padding.x).max(1.0),
+                )
+            })
+            .size()
+            .y
+        })
+        .fold(22.0 * scale, f32::max)
+        + 2.0 * padding.y;
+    let (row, _) = ui.allocate_exact_size(Vec2::new(widths.iter().sum(), height), Sense::hover());
+    let mut left = row.left();
+    for ((text, kind), width) in cells.iter().zip(widths) {
+        let rect = Rect::from_min_size(egui::pos2(left, row.top()), Vec2::new(*width, height));
+        let visual = spreadsheet_cell_visual(*kind, alternate);
+        ui.painter().rect(
+            rect,
+            0.0,
+            visual.fill,
+            Stroke::new(0.5, visual.border),
+            egui::StrokeKind::Inside,
+        );
+        ui.put(
+            rect.shrink2(padding),
+            egui::Label::new(RichText::new(*text).font(font.clone()).color(visual.text))
+                .wrap()
+                .selectable(matches!(kind, SpreadsheetCellKind::Body)),
+        );
+        left += width;
+    }
 }
 
 pub(crate) fn render_spreadsheet_body_preview(
@@ -1125,6 +1268,7 @@ pub(crate) fn render_spreadsheet_body_preview(
     name: &str,
     preview: &PreviewData,
     selected_sheet: &mut Option<String>,
+    sizing: PreviewBodySizing,
 ) -> bool {
     let Some(payload) = preview.spreadsheet.as_ref() else {
         return false;
@@ -1170,47 +1314,43 @@ pub(crate) fn render_spreadsheet_body_preview(
                 .max_height(height)
                 .auto_shrink([false, false])
                 .show(ui, |ui| {
-                    egui::Grid::new(("spreadsheet_grid", name, &sheet.id))
-                        .spacing(egui::Vec2::ZERO)
-                        .show(ui, |ui| {
-                            render_spreadsheet_cell(
-                                ui,
-                                "#",
-                                SpreadsheetCellKind::Header,
-                                false,
-                                46.0,
-                            );
-                            for column in &sheet.columns {
-                                render_spreadsheet_cell(
-                                    ui,
-                                    &column.label,
-                                    SpreadsheetCellKind::Header,
-                                    false,
-                                    112.0,
-                                );
-                            }
-                            ui.end_row();
-                            for (row_index, row) in sheet.rows.iter().enumerate() {
-                                let alternate = row_index % 2 == 1;
-                                render_spreadsheet_cell(
-                                    ui,
-                                    &row.label,
-                                    SpreadsheetCellKind::Header,
-                                    alternate,
-                                    46.0,
-                                );
-                                for value in &row.cells {
-                                    render_spreadsheet_cell(
-                                        ui,
-                                        value,
-                                        SpreadsheetCellKind::Body,
-                                        alternate,
-                                        112.0,
-                                    );
-                                }
-                                ui.end_row();
-                            }
-                        });
+                    let count = sheet.columns.len();
+                    let available = (ui.available_width() - 2.0).max(1.0);
+                    let column = spreadsheet_content_width(available, count, false);
+                    let natural = SPREADSHEET_ROW_HEADER_WIDTH
+                        + SPREADSHEET_CELL_HORIZONTAL_PADDING
+                        + count as f32 * (column + SPREADSHEET_CELL_HORIZONTAL_PADDING);
+                    let scale = if sizing.spreadsheet_overview {
+                        (available / natural).min(1.0)
+                    } else {
+                        sizing.flow_text_scale.clamp(0.7, 2.0)
+                    };
+                    let mut widths = vec![
+                        (SPREADSHEET_ROW_HEADER_WIDTH + SPREADSHEET_CELL_HORIZONTAL_PADDING)
+                            * scale,
+                    ];
+                    widths.extend(std::iter::repeat_n(
+                        (column + SPREADSHEET_CELL_HORIZONTAL_PADDING) * scale,
+                        count,
+                    ));
+                    ui.spacing_mut().item_spacing.y = 0.0;
+                    let mut header = vec![("#", SpreadsheetCellKind::Header)];
+                    header.extend(
+                        sheet
+                            .columns
+                            .iter()
+                            .map(|column| (column.label.as_str(), SpreadsheetCellKind::Header)),
+                    );
+                    render_spreadsheet_row(ui, &header, &widths, false, scale);
+                    for (index, row) in sheet.rows.iter().enumerate() {
+                        let mut cells = vec![(row.label.as_str(), SpreadsheetCellKind::Header)];
+                        cells.extend(
+                            row.cells
+                                .iter()
+                                .map(|value| (value.as_str(), SpreadsheetCellKind::Body)),
+                        );
+                        render_spreadsheet_row(ui, &cells, &widths, index % 2 == 1, scale);
+                    }
                 });
         });
     for omission in sheet.omissions.iter().chain(grid.omissions.iter()) {
@@ -1606,6 +1746,113 @@ mod tests {
     }
 
     #[test]
+    fn sizing_spreadsheet_trims_only_trailing_empty_extents() {
+        let payload = SpreadsheetPreview {
+            sheets: vec![ottrin_preview::SpreadsheetSheet {
+                id: "s".into(),
+                name: "Sheet".into(),
+                cells: [(0, 0, "first"), (3, 4, "last"), (10000, 10000, "")]
+                    .into_iter()
+                    .map(|(row, column, text)| ottrin_preview::SpreadsheetCell {
+                        row,
+                        column,
+                        text: text.into(),
+                    })
+                    .collect(),
+                omissions: vec![],
+            }],
+            omissions: vec![],
+        };
+        let grid = spreadsheet_grid_from_payload(&payload);
+        assert_eq!(grid.sheets[0].columns.len(), 5);
+        assert_eq!(grid.sheets[0].rows.len(), 4);
+        assert_eq!(grid.sheets[0].rows[3].cells[4], "last");
+        assert!(grid.sheets[0].rows[1].cells.iter().all(String::is_empty));
+    }
+
+    #[test]
+    fn sizing_spreadsheet_actual_cells_fit_and_wrapped_rows_align() {
+        for (columns, overview) in [(3, false), (20, true)] {
+            let ctx = egui::Context::default();
+            let preview = PreviewData {
+                title: "sizing.xlsx".into(),
+                kind: PreviewKind::OfficeMetadata,
+                body: String::new(),
+                document: None,
+                open_external: false,
+                spreadsheet: Some(SpreadsheetPreview {
+                    sheets: vec![ottrin_preview::SpreadsheetSheet {
+                        id: "sheet".into(),
+                        name: "Sheet".into(),
+                        cells: (0..columns)
+                            .map(|column| ottrin_preview::SpreadsheetCell {
+                                row: 0,
+                                column,
+                                text: if column == 0 {
+                                    "long wrapped cell content ".repeat(8)
+                                } else {
+                                    "short".into()
+                                },
+                            })
+                            .collect(),
+                        omissions: vec![],
+                    }],
+                    omissions: vec![],
+                }),
+            };
+            for _ in 0..3 {
+                let mut viewport = Rect::NOTHING;
+                let output = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(440.0, 600.0),
+                        )),
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            viewport = ui.max_rect();
+                            render_spreadsheet_body_preview(
+                                ui,
+                                Colors::for_config(&Default::default()),
+                                "sizing.xlsx",
+                                &preview,
+                                &mut None,
+                                PreviewBodySizing {
+                                    spreadsheet_overview: overview,
+                                    ..Default::default()
+                                },
+                            );
+                        });
+                    },
+                );
+                let cells: Vec<_> = output
+                    .shapes
+                    .iter()
+                    .filter_map(|shape| match &shape.shape {
+                        egui::Shape::Rect(rect) if rect.stroke.width == 0.5 => Some(rect.rect),
+                        _ => None,
+                    })
+                    .collect();
+                assert_eq!(cells.len(), (columns + 1) * 2);
+                assert!(
+                    cells
+                        .iter()
+                        .all(|rect| rect.right() <= viewport.right() + 1.0),
+                    "actual cell edges overflow {viewport:?}: {cells:?}"
+                );
+                let row = &cells[columns + 1..];
+                assert!(
+                    row.iter()
+                        .all(|rect| (rect.height() - row[0].height()).abs() < 1.0),
+                    "wrapped row backgrounds must align: {row:?}"
+                );
+            }
+        }
+    }
+
+    #[test]
     fn preview_consistency_spreadsheet_paint_stays_inside_frame() {
         let ctx = egui::Context::default();
         let preview = PreviewData {
@@ -1647,6 +1894,7 @@ mod tests {
                             "wide.xlsx",
                             &preview,
                             &mut None,
+                            PreviewBodySizing::default(),
                         );
                     });
                 },
@@ -1902,6 +2150,7 @@ mod tests {
                     Colors::for_config(&ottrin_core::AppConfig::default()),
                     "docx-baseline.docx",
                     &preview,
+                    1.0,
                 );
             });
         });
@@ -1946,6 +2195,7 @@ mod tests {
                     Colors::for_config(&ottrin_core::AppConfig::default()),
                     "docx-inline-images.docx",
                     &preview,
+                    1.0,
                 ));
             });
         });
@@ -1967,5 +2217,47 @@ mod tests {
 
         assert_eq!(EXTRACTED_TEXT_FALLBACK_LABEL, "Extracted text fallback");
         assert_eq!(extracted, Some("Heading\n\n  indented item\nline  two"));
+    }
+
+    #[test]
+    fn visual_sizing_policy_keeps_images_whole_and_documents_width_fitted() {
+        assert_eq!(
+            preview_sizing_for(PreviewKind::Image),
+            PreviewSizingMode::FitPage
+        );
+        assert_eq!(
+            preview_sizing_for(PreviewKind::Pdf),
+            PreviewSizingMode::FitWidth
+        );
+        assert_eq!(
+            preview_sizing_for(PreviewKind::OfficeMetadata),
+            PreviewSizingMode::FitWidth
+        );
+        assert_eq!(
+            fit_size(
+                Vec2::new(1600.0, 400.0),
+                Vec2::new(500.0, 300.0),
+                PreviewSizingMode::FitPage
+            ),
+            Vec2::new(500.0, 125.0)
+        );
+        assert_eq!(
+            fit_size(
+                Vec2::new(160.0, 40.0),
+                Vec2::new(500.0, 300.0),
+                PreviewSizingMode::FitPage
+            ),
+            Vec2::new(160.0, 40.0)
+        );
+    }
+
+    #[test]
+    fn spreadsheet_columns_have_a_readable_floor_but_can_use_an_explicit_overview() {
+        assert_eq!(
+            spreadsheet_column_width(20.0, false),
+            SPREADSHEET_MIN_COLUMN_WIDTH
+        );
+        assert_eq!(spreadsheet_column_width(20.0, true), 20.0);
+        assert!(spreadsheet_column_width(240.0, false) >= SPREADSHEET_MIN_COLUMN_WIDTH);
     }
 }

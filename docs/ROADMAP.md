@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-08-26
+Last updated: 2026-09-10
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -32,6 +32,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 - Linux system filename maintenance detects and reuses existing distribution timers or cron jobs. Stale databases can be updated through the fixed-operation privileged helper; Ottrin offers its own removable daily job only when no existing maintenance is detected.
 - Native metadata roots and optional content-extraction roots are separate persisted user selections. Content indexing is off by default, reads only explicitly selected content roots, and has independent exclusions.
 - Quick Inspector for text, images, multi-page PDF, spreadsheets, archives, folders and generic metadata.
+- Source-complete shared preview sizing: whole-image fit without automatic upscaling, explicit Fit page/Fit width/100% controls, effective fit percentages and manual zoom preserved on resize; continuous PDF pages in Fit width; adjustable flowing-text/DOCX sizing; readable spreadsheet rows with explicit Overview. Focused source and harness gates pass; [landing evidence and remaining acceptance boundaries](PREVIEW_SIZING_EVIDENCE.md) distinguish inherited packaged Inspector evidence from pending editing, accessibility and platform acceptance.
 - Native structured DOCX preview with headings, runs, alignment, lists, page-break cues, tables and bounded inline raster images. Unsupported documents retain a labelled extracted fallback.
 - Linux installed-LibreOffice provider pipeline in source: bounded discovery, probing, isolation, validated PDF rendering, provider labels, page navigation, stale-response rejection, persisted enable/disable control and native fallback.
 - Windows Job Object Office process boundary in source: atomic job assignment, kill-on-close descendant ownership, aggregate/process memory and active-process limits, explicit standard-I/O handle inheritance, timeout/cancellation cleanup and private profile/output path translation. This is not a filesystem or network sandbox, and the Windows provider remains disabled pending native fixture acceptance.

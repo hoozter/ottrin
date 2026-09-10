@@ -13,10 +13,14 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
+import socket
+import struct
 import subprocess
 import tempfile
 import time
 import zipfile
+import zlib
 
 import pyatspi
 
@@ -720,7 +724,11 @@ def go_to(window_id: str, path: Path):
 
 def screenshot(evidence: Path, name: str):
     target = evidence / f"{name}.png"
-    run("spectacle", "-b", "-n", "-a", "-o", str(target))
+    active = run("xdotool", "getactivewindow", capture=True).stdout.strip()
+    pid = int(run("xdotool", "getwindowpid", active, capture=True).stdout.strip())
+    if pid != target_process_id:
+        raise AssertionError(f"Refusing screenshot of non-Ottrin window {active}, PID {pid}")
+    run("spectacle", "--new-instance", "--background", "--nonotify", "--activewindow", "--output", str(target))
     wait_for(lambda: target.is_file() and target.stat().st_size > 0, f"screenshot {target}")
 
 
@@ -734,11 +742,6 @@ def inspector_content_visible(marker: str) -> bool:
     return any(marker in node for node in visible_a11y_nodes())
 
 
-def docx_raster_ready() -> bool:
-    """Require the inspector's post-display DOCX raster accessibility signal."""
-    return any("DOCX rendered page ready" in node for node in visible_a11y_nodes())
-
-
 def quick_inspector_quiescent(filename: str) -> bool:
     """Reject a transient AT-SPI disappearance while a viewport is closing."""
     if quick_inspector_visible(filename):
@@ -749,7 +752,7 @@ def quick_inspector_quiescent(filename: str) -> bool:
 
 def inspector_requires_zoom_controls(filename: str) -> bool:
     """Rendered pages and images expose the inspector zoom toolbar."""
-    return Path(filename).suffix.lower() in {".png", ".jpg", ".jpeg", ".pdf", ".docx"}
+    return Path(filename).suffix.lower() in {".png", ".jpg", ".jpeg", ".pdf", ".svg"}
 
 
 def close_quick_inspector(
@@ -785,7 +788,7 @@ def close_quick_inspector(
         )
 
 
-def write_pdf_fixture(path: Path, text: str):
+def write_pdf_fixture(path: Path, text: str, pages: int = 1):
     """Write a minimal self-contained PDF so desktop QA has no ignored-file dependency."""
     stream = f"BT /F1 18 Tf 72 720 Td ({text}) Tj ET\n".encode("ascii")
     objects = [
@@ -795,6 +798,13 @@ def write_pdf_fixture(path: Path, text: str):
         f"<< /Length {len(stream)} >>\nstream\n".encode("ascii") + stream + b"endstream",
         b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
     ]
+    if pages == 2:
+        objects[1] = b"<< /Type /Pages /Kids [3 0 R 6 0 R] /Count 2 >>"
+        second = f"BT /F1 18 Tf 72 720 Td ({text} - page 2) Tj ET\n".encode("ascii")
+        objects.extend([
+            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 7 0 R >>",
+            f"<< /Length {len(second)} >>\nstream\n".encode("ascii") + second + b"endstream",
+        ])
     payload = bytearray(b"%PDF-1.4\n")
     offsets = [0]
     for number, obj in enumerate(objects, start=1):
@@ -816,8 +826,7 @@ def write_pdf_fixture(path: Path, text: str):
 
 
 def create_preview_fixtures(project_root: Path, documents: Path):
-    del project_root
-    write_pdf_fixture(documents / "preview.pdf", "Ottrin PDF QA")
+    write_pdf_fixture(documents / "preview.pdf", "Ottrin PDF QA", pages=2)
     write_pdf_fixture(documents / "preview-second.pdf", "Ottrin PDF QA second document")
     (documents / "ottrin-preview.svg").write_text(
         "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"80\">"
@@ -826,12 +835,13 @@ def create_preview_fixtures(project_root: Path, documents: Path):
         "</svg>",
         encoding="utf-8",
     )
-    with zipfile.ZipFile(documents / "letter.docx", "w") as archive:
-        archive.writestr(
-            "word/document.xml",
-            "<w:document><w:body><w:p><w:r><w:t>Ottrin DOCX QA visible document content</w:t>"
-            "</w:r></w:p></w:body></w:document>",
-        )
+    baseline = project_root / "crates/ottrin-preview/tests/fixtures/docx-baseline.docx"
+    with zipfile.ZipFile(baseline) as source, zipfile.ZipFile(documents / "letter.docx", "w") as archive:
+        for part in source.infolist():
+            contents = source.read(part.filename)
+            if part.filename == "word/document.xml":
+                contents = contents.replace(b"DOCX BASELINE", b"Ottrin DOCX QA visible document content")
+            archive.writestr(part.filename, contents)
     workbook_parts = {
         "xl/sharedStrings.xml": "<sst><si><t>Name</t></si><si><t>Ada</t></si></sst>",
         "xl/workbook.xml": (
@@ -853,6 +863,20 @@ def create_preview_fixtures(project_root: Path, documents: Path):
         with zipfile.ZipFile(documents / filename, "w") as archive:
             for part, xml in workbook_parts.items():
                 archive.writestr(part, xml)
+    wide_parts = dict(workbook_parts)
+    wide_parts["xl/worksheets/sheet1.xml"] = '<worksheet><sheetData><row>' + ''.join(
+        f'<c r="{chr(65 + column)}1"><v>Column {column + 1}</v></c>' for column in range(20)
+    ) + '</row><row>' + ''.join(
+        f'<c r="{chr(65 + column)}2"><v>' + ('Long wrapped cell content ' * 8 if column == 0 else '42') + '</v></c>' for column in range(20)
+    ) + '</row></sheetData></worksheet>'
+    with zipfile.ZipFile(documents / "wide.xlsx", "w") as archive:
+        for part, xml in wide_parts.items():
+            archive.writestr(part, xml)
+    # Deterministic source-size raster, large enough to exercise fitted percentages.
+    def png_chunk(kind, data):
+        return struct.pack("!I", len(data)) + kind + data + struct.pack("!I", zlib.crc32(kind + data))
+    raster = b''.join(b'\0' + bytes((30, 110 if row < 450 else 160, 190)) * 1600 for row in range(900))
+    (documents / "image.png").write_bytes(b'\x89PNG\r\n\x1a\n' + png_chunk(b'IHDR', struct.pack('!2I5B', 1600, 900, 8, 2, 0, 0, 0)) + png_chunk(b'IDAT', zlib.compress(raster)) + png_chunk(b'IEND', b''))
     with zipfile.ZipFile(documents / "slides.pptx", "w") as archive:
         archive.writestr(
             "ppt/slides/slide1.xml",
@@ -889,14 +913,16 @@ def open_quick_inspector(
             lambda: inspector_content_visible("Ottrin DOCX QA visible document content"),
             "visible DOCX document content",
         )
-        wait_for(docx_raster_ready, "rendered DOCX page")
+        wait_for(lambda: visible_named_nodes("+ text"), "DOCX text sizing controls")
     if inspector_requires_zoom_controls(filename):
         wait_for(
             lambda: any(
                 node.getRoleName() == "push button"
-                for node in visible_named_nodes("Fit")
+                for node in visible_named_nodes(
+                    "Fit width" if Path(filename).suffix.lower() in {".pdf", ".docx"} else "Fit page"
+                )
             ),
-            f"Fit control for {filename}",
+            f"sizing mode control for {filename}",
         )
         wait_for(
             lambda: any(
@@ -956,6 +982,109 @@ def require_a11y_registry():
         ) from error
 
 
+def stop_disposable_daemon(qa_root: Path):
+    daemon_socket = qa_root / "runtime/ottrin/index-v1.sock"
+    if not daemon_socket.exists():
+        return
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+        try:
+            connection.connect(str(daemon_socket))
+        except ConnectionRefusedError:
+            return
+        pid, uid, _ = struct.unpack("3i", connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12))
+        with Path(f"/proc/{pid}/environ").open("rb") as stream:
+            environment = stream.read().split(b"\0")
+        expected = os.fsencode("XDG_RUNTIME_DIR=" + str(qa_root / "runtime"))
+        if uid != os.getuid() or expected not in environment:
+            raise AssertionError("Disposable daemon ownership mismatch")
+        descriptor = os.pidfd_open(pid)
+        try:
+            signal.pidfd_send_signal(descriptor, signal.SIGTERM)
+        finally:
+            os.close(descriptor)
+
+
+def disposable_environment(qa_root: Path):
+    # The daemon socket belongs to XDG_RUNTIME_DIR, independently of HOME.
+    runtime = qa_root / "runtime"
+    runtime.mkdir(mode=0o700, exist_ok=True)
+    runtime.chmod(0o700)
+    env = os.environ.copy()
+    env.pop("WAYLAND_DISPLAY", None)
+    env.update(
+        {
+            "WINIT_UNIX_BACKEND": "x11",
+            "NO_AT_BRIDGE": "0",
+            "HOME": str(qa_root / "home"),
+            "XDG_RUNTIME_DIR": str(runtime),
+            "XDG_CONFIG_HOME": str(qa_root / "config"),
+            "XDG_CACHE_HOME": str(qa_root / "cache"),
+            "XDG_STATE_HOME": str(qa_root / "state"),
+            "XDG_DATA_HOME": str(qa_root / "data"),
+        }
+    )
+    return env
+
+
+def native_window_capture(window: str, evidence: Path, name: str, expected_size=None):
+    from PIL import Image
+    target = evidence / (name + ".png")
+    def painted():
+        pid = int(run("xdotool", "getwindowpid", window, capture=True).stdout.strip())
+        if pid != target_process_id:
+            raise AssertionError("Refusing native capture of a non-owned window")
+        run("import", "-window", window, str(target))
+        with Image.open(target) as picture:
+            if expected_size is not None and picture.size != expected_size:
+                return False
+            extrema = picture.convert("RGB").getextrema()
+        return any(high - low > 20 for low, high in extrema)
+    wait_for(painted, "nonblank native preview capture", timeout=10.0)
+
+
+def native_preview_matrix(binary: Path, evidence: Path, qa_root: Path, env: dict):
+    """Native-window evidence when the product intentionally disables AT-SPI."""
+    global target_process_id
+    results = []
+    for filename in ("notes.txt", "image.png", "preview.pdf", "letter.docx", "ottrin-preview.svg", "workbook.xlsx", "wide.xlsx"):
+        path = qa_root / "home/Documents" / filename
+        stderr = (evidence / (filename + ".stderr.log")).open("w")
+        process = subprocess.Popen([str(binary), "--select", str(path)], env=env, stderr=stderr, start_new_session=True)
+        target_process_id = process.pid
+        try:
+            def owned_window(title):
+                if process.poll() is not None:
+                    raise RuntimeError(f"Packaged process exited {process.returncode}")
+                result = run("xdotool", "search", "--all", "--onlyvisible", "--pid", str(process.pid), "--name", title, capture=True, check=False)
+                return result.stdout.strip().splitlines()[-1:] or None
+            main = wait_for(lambda: owned_window("^Ottrin$"), "native file manager")[0]
+            run("xdotool", "windowactivate", "--sync", main)
+            native_window_capture(main, evidence, "main-readiness")
+            (evidence / "main-readiness.png").unlink()
+            run("xdotool", "key", "--window", main, "space")
+            window = wait_for(lambda: owned_window("Quick Inspector.*" + filename), "native packaged Quick Inspector")[0]
+            actual_title = run("xdotool", "getwindowname", window, capture=True).stdout.strip()
+            assert "Quick Inspector" in actual_title and filename in actual_title, actual_title
+            run("xdotool", "windowactivate", "--sync", window)
+            for label, width, height in (("narrow", 500, 440), ("wide", 1000, 780)):
+                run("xdotool", "windowsize", "--sync", window, str(width), str(height))
+                native_window_capture(window, evidence, f"native-{filename}-{label}", (width, height))
+            if filename == "preview.pdf":
+                run("xdotool", "mousemove", "--window", window, "400", "350", "click", "--repeat", "12", "--delay", "60", "5")
+                native_window_capture(window, evidence, "native-preview.pdf-scrolled")
+            results.append({"file": filename, "pid": process.pid, "window": window, "title": actual_title, "status": "native window captured; content requires image inspection"})
+        finally:
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            process.wait(timeout=5)
+            stop_disposable_daemon(qa_root)
+            stderr.close()
+    (evidence / "native-report.json").write_text(json.dumps({"binary": str(binary), "qa_root": str(qa_root), "checks": results}, indent=2))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -964,6 +1093,8 @@ def main() -> int:
         default=Path("dist/Ottrin-0.1.0-linux-x86_64/bin/ottrin"),
     )
     parser.add_argument("--evidence", type=Path, required=True)
+    parser.add_argument("--native-previews", action="store_true", help="Capture native preview windows when AT-SPI is intentionally disabled")
+    parser.add_argument("--preview-only", action="store_true", help="Exercise preview fixtures without unrelated file workflows")
     args = parser.parse_args()
 
     binary = args.binary.resolve()
@@ -972,14 +1103,15 @@ def main() -> int:
     for tool in ("busctl", "gdbus", "spectacle", "xdotool"):
         if shutil.which(tool) is None:
             parser.error(f"required tool not found: {tool}")
-    try:
-        require_a11y_registry()
-    except RuntimeError as error:
-        parser.error(str(error))
+    if not args.native_previews:
+        try:
+            require_a11y_registry()
+        except RuntimeError as error:
+            parser.error(str(error))
 
     evidence = args.evidence.resolve()
     evidence.mkdir(parents=True, exist_ok=True)
-    qa_root = Path(tempfile.mkdtemp(prefix="ottrin-desktop-qa-"))
+    qa_root = Path(tempfile.mkdtemp(prefix="pqa-", dir=Path.cwd() / ".hermes"))
     home = qa_root / "home"
     documents = home / "Documents"
     subfolder = documents / "Subfolder"
@@ -995,23 +1127,13 @@ def main() -> int:
     shutil.copy2("assets/icon.png", documents / "image.png")
     create_preview_fixtures(Path.cwd(), documents)
 
+    env = disposable_environment(qa_root)
+    if args.native_previews:
+        return native_preview_matrix(binary, evidence, qa_root, env)
     prior_a11y = a11y_enabled()
     set_a11y(True)
-    env = os.environ.copy()
-    env.pop("WAYLAND_DISPLAY", None)
-    env.update(
-        {
-            "WINIT_UNIX_BACKEND": "x11",
-            "NO_AT_BRIDGE": "0",
-            "HOME": str(home),
-            "XDG_CONFIG_HOME": str(qa_root / "config"),
-            "XDG_CACHE_HOME": str(qa_root / "cache"),
-            "XDG_STATE_HOME": str(qa_root / "state"),
-            "XDG_DATA_HOME": str(qa_root / "data"),
-        }
-    )
     stderr = (evidence / "ottrin.stderr.log").open("w", encoding="utf-8")
-    app_process = subprocess.Popen([str(binary)], env=env, stderr=stderr)
+    app_process = subprocess.Popen([str(binary)], env=env, stderr=stderr, start_new_session=True)
     global target_process_id
     target_process_id = app_process.pid
     results: list[dict[str, str]] = []
@@ -1020,11 +1142,20 @@ def main() -> int:
         results.append({"check": check, "status": "passed", "detail": detail})
 
     try:
-        wait_for(ottrin_app, "Ottrin AT-SPI application")
+        try:
+            wait_for(ottrin_app, "Ottrin AT-SPI application")
+        except AssertionError:
+            desktop = pyatspi.Registry.getDesktop(0)
+            diagnosis = {"pid": app_process.pid, "exit": app_process.poll(),
+                "applications": [{"name": item.name, "pid": item.get_process_id(), "children": item.childCount} for item in desktop if item is not None],
+                "windows": run("xdotool", "search", "--pid", str(app_process.pid), capture=True, check=False).stdout}
+            (evidence / "startup-diagnosis.json").write_text(json.dumps(diagnosis, indent=2))
+            raise
         window_id = wait_for(
             lambda: run(
                 "xdotool",
                 "search",
+                "--all",
                 "--pid",
                 str(app_process.pid),
                 "--name",
@@ -1063,6 +1194,13 @@ def main() -> int:
         assert observed == expected, (observed, expected)
         passed("address-navigation", f"Opened {documents} and exposed all fixture entries.")
         screenshot(evidence, "01-miller-documents")
+
+        if args.preview_only:
+            for filename in ("notes.txt", "image.png", "preview.pdf", "preview-second.pdf", "letter.docx", "ottrin-preview.svg", "workbook.xlsx", "macros.xlsm"):
+                open_quick_inspector(window_id, filename, evidence, "preview-" + filename.replace(".", "-"))
+                passed("preview-" + filename, "Packaged preview content and controls exercised")
+            (evidence / "report.json").write_text(json.dumps({"binary": str(binary), "qa_root": str(qa_root), "checks": results}, indent=2))
+            return 0
 
         # Exercise search while the main file view has a stable keyboard focus;
         # later workflow steps intentionally open menus and dialogs.
@@ -1296,12 +1434,17 @@ def main() -> int:
         write_workflow_failure(evidence, qa_root, error)
         raise
     finally:
-        if app_process.poll() is None:
-            app_process.terminate()
-            try:
-                app_process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                app_process.kill()
+        # The UI and its disposable daemon share this owned process group.
+        try:
+            os.killpg(app_process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        try:
+            app_process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            os.killpg(app_process.pid, signal.SIGKILL)
+            app_process.wait()
+        stop_disposable_daemon(qa_root)
         stderr.close()
         if not prior_a11y:
             set_a11y(False)

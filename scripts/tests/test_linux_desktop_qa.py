@@ -19,6 +19,16 @@ SPEC.loader.exec_module(qa)
 
 
 class A11yRegistryPreflightTests(unittest.TestCase):
+    def test_disposable_environment_never_inherits_daemon_runtime(self):
+        with tempfile.TemporaryDirectory() as root:
+            with patch.dict(qa.os.environ, {"XDG_RUNTIME_DIR": "/run/user/1000", "WAYLAND_DISPLAY": "host"}):
+                env = qa.disposable_environment(Path(root))
+            runtime = Path(env["XDG_RUNTIME_DIR"])
+            self.assertEqual(runtime, Path(root) / "runtime")
+            self.assertEqual(runtime.stat().st_mode & 0o777, 0o700)
+            self.assertNotIn("WAYLAND_DISPLAY", env)
+            self.assertEqual(env["HOME"], str(Path(root) / "home"))
+
     def test_rejects_missing_registry_cache_before_launch(self):
         with patch.object(
             qa.pyatspi.Registry,
@@ -485,51 +495,25 @@ class X11CoordinateTranslationTests(unittest.TestCase):
         ):
             self.assertTrue(qa.destination_breadcrumb_visible("Subfolder"))
 
-    def test_docx_page_preview_requires_the_rendered_page_zoom_toolbar(self):
-        self.assertTrue(qa.inspector_requires_zoom_controls("letter.docx"))
+    def test_native_docx_requires_flow_controls_instead_of_raster_controls(self):
+        self.assertFalse(qa.inspector_requires_zoom_controls("letter.docx"))
         self.assertTrue(qa.inspector_requires_zoom_controls("preview.pdf"))
+        self.assertTrue(qa.inspector_requires_zoom_controls("ottrin-preview.svg"))
 
-    def test_docx_raster_ready_requires_the_final_rendered_page_signal(self):
-        with patch.object(
-            qa,
-            "visible_a11y_nodes",
-            return_value=["label | Ottrin DOCX QA visible document content", "push button | Fit"],
-        ):
-            self.assertFalse(qa.docx_raster_ready())
-        with patch.object(
-            qa,
-            "visible_a11y_nodes",
-            return_value=["label | DOCX rendered page ready"],
-        ):
-            self.assertTrue(qa.docx_raster_ready())
-
-    def test_docx_screenshot_waits_for_the_rendered_page_marker(self):
+    def test_docx_screenshot_waits_for_visible_native_content(self):
         events = []
-
         with (
             patch.object(qa, "invoke_context_action"),
             patch.object(qa, "quick_inspector_visible", return_value=True),
             patch.object(qa, "inspector_content_visible", return_value=True),
-            patch.object(qa, "docx_raster_ready", return_value=True),
             patch.object(qa, "visible_named_nodes", return_value=[]),
-            patch.object(
-                qa,
-                "wait_for",
-                side_effect=lambda _predicate, description: events.append(("wait", description)),
-            ),
-            patch.object(
-                qa,
-                "screenshot",
-                side_effect=lambda *_args: events.append(("screenshot",)),
-            ),
+            patch.object(qa, "wait_for", side_effect=lambda predicate, description: events.append(("wait", description))),
+            patch.object(qa, "screenshot", side_effect=lambda *args: events.append(("screenshot",))),
             patch.object(qa, "close_quick_inspector"),
         ):
             qa.open_quick_inspector("0x123", "letter.docx", Path("/tmp"), "letter")
-
-        self.assertLess(
-            events.index(("wait", "rendered DOCX page")),
-            events.index(("screenshot",)),
-        )
+        self.assertLess(events.index(("wait", "visible DOCX document content")), events.index(("screenshot",)))
+        self.assertNotIn(("wait", "rendered DOCX page"), events)
 
     def test_inspector_content_requires_the_visible_document_marker(self):
         with patch.object(
