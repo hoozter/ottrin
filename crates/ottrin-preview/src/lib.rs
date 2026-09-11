@@ -1,5 +1,7 @@
 use base64::Engine as _;
-use ottrin_core::{EntryKind, format_modified};
+use ottrin_core::{
+    EntryKind, FileCategory, classify_file, format_modified, platform_case_mode_current,
+};
 use rusqlite::config::DbConfig;
 use rusqlite::hooks::{AuthAction, Authorization};
 use rusqlite::limits::Limit;
@@ -1263,6 +1265,9 @@ pub fn load_preview_cancellable(request: &PreviewRequest, cancelled: &AtomicBool
 }
 
 pub fn classify_path(path: &std::path::Path) -> PreviewKind {
+    if core_recognizes_extensionless_text(path) {
+        return PreviewKind::Text;
+    }
     let ext = path
         .extension()
         .and_then(|s| s.to_str())
@@ -1299,6 +1304,25 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         }
         _ => PreviewKind::Unsupported,
     }
+}
+
+/// Preserve the core taxonomy for text-equivalent names without an extension.
+/// These still enter the canonical UTF-8 and source-conflict edit lifecycle.
+fn core_recognizes_extensionless_text(path: &Path) -> bool {
+    if path.extension().is_some() {
+        return false;
+    }
+    matches!(
+        classify_file(
+            path,
+            EntryKind::File,
+            false,
+            None,
+            platform_case_mode_current(),
+        )
+        .category,
+        FileCategory::Document | FileCategory::Config
+    )
 }
 
 fn sqlite_extension(path: &Path) -> Option<String> {
@@ -10311,6 +10335,17 @@ mod tests {
             classify_path(Path::new("backup.TGZ")),
             PreviewKind::ArchiveMetadata
         );
+    }
+
+    #[test]
+    fn core_recognized_extensionless_text_files_use_the_editable_text_preview() {
+        for path in ["README", "LICENSE", "COPYING", "Dockerfile", "Makefile"] {
+            assert_eq!(
+                classify_path(Path::new(path)),
+                PreviewKind::Text,
+                "{path} should share the direct text preview and edit lifecycle"
+            );
+        }
     }
 
     #[test]
