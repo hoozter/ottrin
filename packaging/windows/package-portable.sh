@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$ROOT/packaging/package-lifecycle.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 TARGET="${OTTRIN_TARGET:-x86_64-pc-windows-gnu}"
 BUILD_DIR="$ROOT/target/$TARGET/release"
@@ -24,13 +25,7 @@ DXC_URL="https://github.com/microsoft/DirectXShaderCompiler/releases/download/v1
 DXC_SHA256="cf658aacf070d3045e31b8f1f8a696c2945f37c1095019481ef7c513368db3b4"
 DXC_LICENSE_SHA256="734f72f239fe7b07b4c7203f294c1a7ce27095687278bab7e56d630d7c672963"
 DXIL_SHA256="cbcfe883a09fd0ca1f98abdf3a9553b560895e3283a136da82a8381253a169df"
-SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
 
-if ! git -C "$ROOT" diff --quiet --ignore-submodules -- \
-  || ! git -C "$ROOT" diff --cached --quiet --ignore-submodules --; then
-    printf 'Refusing to package a tracked-dirty checkout; commit or stash tracked changes first.\n' >&2
-    exit 1
-fi
 
 download_verified() {
     local url="$1"
@@ -127,6 +122,7 @@ cargo build --release --target "$TARGET" -p ottrin-preview --bin ottrin-legacy-d
 "$ROOT/scripts/windows-gui-subsystem-smoke.sh" "$BUILD_DIR/ottrin-app.exe"
 
 mkdir -p "$DIST_DIR"
+ottrin_prepare_artifact "$ARCHIVE" "$DIST_DIR/archive"
 rm -rf "$STAGE"
 mkdir -p "$STAGE/bin" "$STAGE/assets" "$STAGE/docs" "$STAGE/third-party-notices"
 
@@ -140,11 +136,7 @@ cp "$ROOT/README.md" "$STAGE/"
 cp "$ROOT/LICENSE" "$STAGE/"
 cp "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" "$ROOT/docs/ROADMAP.md" \
   "$ROOT/docs/RELEASE_NOTES.md" "$ROOT/docs/RELEASE_CHECKLIST.md" "$STAGE/docs/"
-cat > "$STAGE/SOURCE_REVISION.txt" <<EOF
-Ottrin source revision
-Version: $VERSION
-Git revision: $SOURCE_REVISION
-EOF
+ottrin_write_source_revision "$ROOT" "$STAGE/SOURCE_REVISION.txt" "$VERSION"
 
 cat > "$STAGE/RUNNING.md" <<'EOF'
 # Running Ottrin Portable on Windows
@@ -174,7 +166,6 @@ For a user-level recovery override, set `OTTRIN_RENDERER=opengl` before launchin
 Ottrin. The normal default remains WGPU with the system graphics driver.
 EOF
 
-rm -f "$ARCHIVE"
 (cd "$DIST_DIR" && zip -qr "$(basename "$ARCHIVE")" "$(basename "$STAGE")")
 sha256sum "$ARCHIVE" | sed "s|$ARCHIVE|$(basename "$ARCHIVE")|" > "$ARCHIVE.sha256"
 

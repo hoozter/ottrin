@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$ROOT/packaging/linux/bundle-runtime-libs.sh"
+source "$ROOT/packaging/package-lifecycle.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
 BUILD_DIR="$ROOT/target/release"
@@ -12,13 +13,7 @@ APPIMAGETOOL="${APPIMAGETOOL:-$DIST_DIR/appimagetool-x86_64.AppImage}"
 APPIMAGETOOL_SHA256="${APPIMAGETOOL_SHA256:-b90f4a8b18967545fda78a445b27680a1642f1ef9488ced28b65398f2be7add2}"
 PDFIUM_URL="https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7961/pdfium-linux-x64.tgz"
 PDFIUM_SHA256="019665c8877d46fe65f625f80fd714ab07aac68554b0636acf2a2adf9288adb2"
-SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
 
-if ! git -C "$ROOT" diff --quiet --ignore-submodules -- \
-  || ! git -C "$ROOT" diff --cached --quiet --ignore-submodules --; then
-    printf 'Refusing to package a tracked-dirty checkout; commit or stash tracked changes first.\n' >&2
-    exit 1
-fi
 
 download_verify_and_package_pdfium() {
     local target_pdfium_dir="$1"
@@ -44,9 +39,11 @@ download_verify_and_package_pdfium() {
 }
 
 cd "$ROOT"
-cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
-cargo build --release -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer
-cargo build --release -p ottrin-preview --bin ottrin-legacy-doc-render
+if [[ "${OTTRIN_SKIP_BUILD:-0}" != "1" ]]; then
+    cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
+    cargo build --release -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer
+    cargo build --release -p ottrin-preview --bin ottrin-legacy-doc-render
+fi
 
 rm -rf "$APPDIR"
 mkdir -p "$APPDIR/usr/bin"
@@ -76,11 +73,7 @@ install -m 0644 "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" \
   "$ROOT/docs/RELEASE_CHECKLIST.md" "$ROOT/docs/SEARCH_PERFORMANCE.md" \
   "$APPDIR/usr/share/doc/ottrin/"
 bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$APPDIR/usr"
-cat > "$APPDIR/usr/share/doc/ottrin/SOURCE_REVISION.txt" <<EOF
-Ottrin source revision
-Version: $VERSION
-Git revision: $SOURCE_REVISION
-EOF
+ottrin_write_source_revision "$ROOT" "$APPDIR/usr/share/doc/ottrin/SOURCE_REVISION.txt" "$VERSION"
 
 cat > "$APPDIR/org.ottrin.Ottrin.desktop" <<'DESKTOP'
 [Desktop Entry]
@@ -115,7 +108,7 @@ fi
 
 printf '%s  %s\n' "$APPIMAGETOOL_SHA256" "$APPIMAGETOOL" | sha256sum -c -
 
-rm -f "$APPIMAGE"
+ottrin_prepare_artifact "$APPIMAGE" "$DIST_DIR/archive"
 ARCH=x86_64 "$APPIMAGETOOL" "$APPDIR" "$APPIMAGE"
 sha256sum "$APPIMAGE" | sed "s|$APPIMAGE|$(basename "$APPIMAGE")|" > "$APPIMAGE.sha256"
 

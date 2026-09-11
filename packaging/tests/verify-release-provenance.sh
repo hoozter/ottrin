@@ -21,7 +21,8 @@ require_literal() {
 }
 
 for packager in "$BASH_LINUX_PORTABLE" "$BASH_APPIMAGE" "$BASH_WINDOWS_PORTABLE"; do
-  require_literal "$packager" 'SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"'
+  require_literal "$packager" 'source "$ROOT/packaging/package-lifecycle.sh"'
+  require_literal "$packager" 'ottrin_write_source_revision'
   require_literal "$packager" 'SOURCE_REVISION.txt'
 done
 

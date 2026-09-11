@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$ROOT/packaging/linux/bundle-runtime-libs.sh"
+source "$ROOT/packaging/package-lifecycle.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 BUILD_DIR="$ROOT/target/release"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
@@ -11,13 +12,7 @@ ARCHIVE="$DIST_DIR/Ottrin-$VERSION-linux-x86_64-portable.tar.gz"
 
 PDFIUM_URL="https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7961/pdfium-linux-x64.tgz"
 PDFIUM_SHA256="019665c8877d46fe65f625f80fd714ab07aac68554b0636acf2a2adf9288adb2"
-SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
 
-if ! git -C "$ROOT" diff --quiet --ignore-submodules -- \
-  || ! git -C "$ROOT" diff --cached --quiet --ignore-submodules --; then
-    printf 'Refusing to package a tracked-dirty checkout; commit or stash tracked changes first.\n' >&2
-    exit 1
-fi
 
 download_verify_and_package_pdfium() {
     local target_pdfium_dir="$1"
@@ -43,10 +38,13 @@ download_verify_and_package_pdfium() {
 }
 
 cd "$ROOT"
-cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
-cargo build --release -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer
-cargo build --release -p ottrin-preview --bin ottrin-legacy-doc-render
+if [[ "${OTTRIN_SKIP_BUILD:-0}" != "1" ]]; then
+    cargo build --release -p ottrin-app -p ottrin-platform -p ottrin-search
+    cargo build --release -p ottrin-preview --bin ottrin-media-playback --features system-gstreamer
+    cargo build --release -p ottrin-preview --bin ottrin-legacy-doc-render
+fi
 
+ottrin_prepare_artifact "$ARCHIVE" "$DIST_DIR/archive"
 rm -rf "$STAGE"
 mkdir -p "$STAGE/bin" "$STAGE/libexec/ottrin" "$STAGE/assets" "$STAGE/docs" \
   "$STAGE/packaging/linux"
@@ -74,11 +72,7 @@ cp "$ROOT/README.md" "$ROOT/LICENSE" "$STAGE/" 2>/dev/null || cp "$ROOT/README.m
 cp "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" "$ROOT/docs/ROADMAP.md" \
   "$ROOT/docs/RELEASE_NOTES.md" "$ROOT/docs/RELEASE_CHECKLIST.md" \
   "$ROOT/docs/SEARCH_PERFORMANCE.md" "$STAGE/docs/"
-cat > "$STAGE/SOURCE_REVISION.txt" <<EOF
-Ottrin source revision
-Version: $VERSION
-Git revision: $SOURCE_REVISION
-EOF
+ottrin_write_source_revision "$ROOT" "$STAGE/SOURCE_REVISION.txt" "$VERSION"
 
 cat > "$STAGE/RUNNING.md" <<'EOF'
 # Running Ottrin Portable on Linux

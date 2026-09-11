@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$ROOT/packaging/package-lifecycle.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
 ARCH="${OTTRIN_DEB_ARCH:-$(dpkg --print-architecture)}"
@@ -24,7 +25,7 @@ Description: Fast, keyboard-friendly file manager
  Ottrin is a keyboard-first desktop file manager with Miller, List, and Grid views.
 EOF
 
-rm -f -- "$OUTPUT"
+ottrin_prepare_artifact "$OUTPUT" "$DIST_DIR/archive"
 dpkg-deb --root-owner-group --build "$PACKAGE_ROOT" "$OUTPUT"
 sha256sum "$OUTPUT" | sed "s|$OUTPUT|$(basename "$OUTPUT")|" > "$OUTPUT.sha256"
 printf '%s\n' "$OUTPUT"

@@ -2,16 +2,13 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$ROOT/packaging/package-lifecycle.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
 STAGE="${1:-$DIST_DIR/Ottrin-$VERSION-windows-x64}"
 WIX="${WIX:-wix}"
 
-if ! git -C "$ROOT" diff --quiet --ignore-submodules -- \
-  || ! git -C "$ROOT" diff --cached --quiet --ignore-submodules --; then
-  printf 'Refusing to package a tracked-dirty checkout; commit or stash tracked changes first.\n' >&2
-  exit 1
-fi
+
 if [[ ! -d "$STAGE" ]]; then
   printf 'Windows MSI stage does not exist: %s\n' "$STAGE" >&2
   printf 'Build it first with packaging/windows/package-portable.sh\n' >&2
@@ -73,7 +70,7 @@ if ! command -v "$WIX" >/dev/null 2>&1 && [[ ! -x "$WIX" ]]; then
   exit 1
 fi
 
-rm -f "$MSI" "$MSI.sha256"
+ottrin_prepare_artifact "$MSI" "$DIST_DIR/archive"
 "$WIX" build \
   -d "Version=$VERSION" \
   -d "Stage=$STAGE" \

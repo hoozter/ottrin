@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$ROOT/packaging/package-lifecycle.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
 RPM_ARCH="${OTTRIN_RPM_ARCH:-$(uname -m)}"
@@ -66,6 +67,7 @@ rpmbuild --define "_topdir $TOP" -bb "$TOP/SPECS/ottrin.spec"
 RPM="$(find "$TOP/RPMS" -type f -name '*.rpm' -print -quit)"
 test -n "$RPM"
 OUTPUT="$DIST_DIR/$(basename "$RPM")"
+ottrin_prepare_artifact "$OUTPUT" "$DIST_DIR/archive"
 install -m 0644 "$RPM" "$OUTPUT"
 sha256sum "$OUTPUT" | sed "s|$OUTPUT|$(basename "$OUTPUT")|" > "$OUTPUT.sha256"
 printf '%s\n' "$OUTPUT"
