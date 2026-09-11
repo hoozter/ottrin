@@ -54,6 +54,23 @@ and unsuccessful helper exits appear in the Inspector, with loader diagnostics
 also available in the launching terminal. `OTTRIN_MEDIA_HELPER` can explicitly
 select a freshly built helper when using a custom layout.
 
+After building the helper, run the non-interactive native playback smoke:
+
+```sh
+python3 scripts/linux-media-playback-smoke.py target/debug/ottrin-media-playback
+```
+
+This requires Python 3.11+ and `ffmpeg` for generating a tiny silent raw-video
+fixture; neither is an end-user playback dependency. The probe prints the exact
+helper SHA-256 and checks decoded RGBA pixels, pause/resume acknowledgement,
+end-of-stream, Stop, retained-descriptor playback after pathname replacement,
+malformed input, and the missing-plugin fallback using an isolated empty plugin
+search path. It removes its fixtures and temporary GStreamer registries, without
+installing codecs or changing the user's plugin setup. Use a freshly built
+helper: its hash identifies the tested bytes but does not prove source freshness.
+This is not Inspector visual acceptance, audible playback verification, a codec
+coverage claim, or a clean-package test.
+
 Linux native Open With support requires GIO `>= 2.56`. The Linux portable and
 AppImage builders bundle the required GIO/GLib runtime closure; this development
 package is not an end-user package dependency for those artifacts.

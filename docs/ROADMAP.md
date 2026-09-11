@@ -92,7 +92,7 @@ Start this phase after source and packaging outcomes are complete. Keep it as on
 - Run one daily-driver workflow covering navigation, New File/New Folder, file operations, cross-volume Copy, Tandem View, multi-select, search, Quick Inspector, context menus and status messages.
 - Attach, browse, index by explicit choice, detach and reconnect real mounted/removable volumes. Check compact/expanded Locations pointer, keyboard, tooltip, ordering, selection and unavailable states.
 - Exercise installed LibreOffice with representative DOCX, XLSX and PPTX files. Confirm conversion, cancellation, cleanup, provider labels, page navigation and native fallback. Add fixtures only for defects found or features Ottrin claims to support.
-- Exercise system GStreamer playback and truthful fallback without adding codecs.
+- Native helper smoke verified on Linux: generated silent video, RGBA frames, pause/resume acknowledgement, Stop, end-of-stream, retained-descriptor pathname replacement, malformed input and isolated missing-plugin fallback (`scripts/linux-media-playback-smoke.py`). Still exercise Inspector presentation, audible playback, representative user media and clean-package fallback without adding codecs.
 - Check tab drag-and-drop and Grid/List rubber-band selection.
 - Check packaged privileged-helper and polkit allow, cancel, missing-helper and policy-error paths.
 - Recheck native assistive integration once. If the upstream Unix AT-SPI lifecycle remains unusable, record the observed limitation rather than starting replacement infrastructure during QA.
