@@ -54,7 +54,7 @@ and signing still require macOS release-candidate evidence.
 
 ## Search
 
-On first launch after this search model is introduced, Ottrin opens Search Settings with one cohesive setup card for its three independent layers: broad system filenames, rich native metadata, and optional file content. The card shows the active choices and does not enable one layer as a side effect of another. Existing search scopes are preserved; completing the review prevents the setup from reopening automatically.
+Ottrin starts with Settings closed. Open Settings → Search to review the setup card for its three independent layers: broad system filenames, rich native metadata, and optional file content. The card shows the active choices and does not enable one layer as a side effect of another. Existing search scopes are preserved; completing the review hides the setup card.
 
 Ottrin's primary search source is its own SQLite index. Configure indexed locations in Settings -> Search. For most users, the best setup is a focused set of home, project, document, and download folders. Attached drives remain browseable without being indexed: use a drive's Locations context menu to enable or disable indexed search explicitly. Ottrin remembers that choice by volume identity and restores it when the volume returns, while an unavailable volume is left out of the active index.
 

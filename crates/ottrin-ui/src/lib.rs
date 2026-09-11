@@ -2323,14 +2323,6 @@ enum SettingsTab {
     Cache,
 }
 
-fn initial_settings_state(config: &AppConfig) -> (bool, SettingsTab) {
-    if config.search_setup_completed {
-        (false, SettingsTab::General)
-    } else {
-        (true, SettingsTab::Search)
-    }
-}
-
 type SettingsNavItem = (SettingsTab, &'static str, &'static str);
 type SettingsNavGroup = (&'static str, &'static [SettingsNavItem]);
 
@@ -3527,7 +3519,6 @@ impl OttrinApp {
         }
         state.config.folder_column_widths.clear();
         let search_config = state.config.search.clone();
-        let (show_settings, settings_tab) = initial_settings_state(&state.config);
         let (retained_move_activity, retained_move_activity_error) = load_retained_move_activity();
 
         let show_graphics_compatibility_notice = graphics_runtime.is_windows
@@ -3608,8 +3599,8 @@ impl OttrinApp {
             miller_col_count: 3,
             list_col_px: [360.0, 140.0, 120.0, 180.0],
             show_about: false,
-            show_settings,
-            settings_tab,
+            show_settings: false,
+            settings_tab: SettingsTab::General,
             graphics_runtime,
             show_graphics_compatibility_notice,
             theme_status: None,
@@ -3961,7 +3952,9 @@ impl OttrinApp {
         &self,
         path: &Path,
     ) -> Option<ottrin_preview::DetectedInstalledLibreOffice> {
-        if !self.state.config.installed_office_previews_enabled {
+        if !self.state.config.installed_office_previews_enabled
+            || prefers_native_legacy_doc_renderer(path)
+        {
             return None;
         }
         let format = ottrin_preview::office_format_for_path(path)?;
@@ -23396,6 +23389,10 @@ fn quick_inspector_uses_rendered_office_page(_path: &Path) -> bool {
     false
 }
 
+fn prefers_native_legacy_doc_renderer(path: &Path) -> bool {
+    ottrin_preview::is_native_legacy_doc_visual_path(path)
+}
+
 fn visual_renderer_uses_persistent_thumbnail_cache(
     renderer: ottrin_preview::PreviewVisualRenderer,
 ) -> bool {
@@ -25829,18 +25826,22 @@ mod tests {
     }
 
     #[test]
-    fn pending_search_setup_opens_search_settings_until_completed() {
-        let pending = initial_settings_state(&AppConfig::default());
-        assert_eq!(pending, (true, SettingsTab::Search));
-
-        let completed = AppConfig {
-            search_setup_completed: true,
-            ..AppConfig::default()
-        };
-        assert_eq!(
-            initial_settings_state(&completed),
-            (false, SettingsTab::General)
-        );
+    fn ordinary_startup_keeps_settings_closed_for_pending_and_completed_setup() {
+        for search_setup_completed in [false, true] {
+            let config = AppConfig {
+                search_setup_completed,
+                ..AppConfig::default()
+            };
+            let app = OttrinApp::new_with_config_and_graphics_status(
+                config,
+                GraphicsRuntimeStatus::default(),
+            );
+            assert_eq!(
+                (app.show_settings, app.settings_tab),
+                (false, SettingsTab::General),
+                "ordinary startup must not open settings (search_setup_completed={search_setup_completed})"
+            );
+        }
     }
 
     #[test]
@@ -32918,6 +32919,16 @@ mod tests {
             ),
             "Offline HTML preview unavailable: no supported system HTML renderer and sandbox are installed. Open externally to view this file."
         );
+    }
+
+    #[test]
+    fn native_legacy_doc_renderer_precedes_installed_office_provider() {
+        assert!(prefers_native_legacy_doc_renderer(Path::new("report.doc")));
+        assert!(prefers_native_legacy_doc_renderer(Path::new("REPORT.DOC")));
+        assert!(!prefers_native_legacy_doc_renderer(Path::new(
+            "report.docx"
+        )));
+        assert!(!prefers_native_legacy_doc_renderer(Path::new("sheet.xls")));
     }
 
     #[cfg(target_os = "linux")]
