@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Documentation fixtures intentionally retain literal Markdown backticks.
+# shellcheck disable=SC2016
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -23,7 +25,7 @@ require_document_line() {
   local expected="$2"
   local label="$3"
   if ! grep -Fq -- "$expected" "$document"; then
-    printf '%s is missing %s: %s\n' "${document#$ROOT/}" "$label" "$expected" >&2
+    printf '%s is missing %s: %s\n' "${document#"$ROOT"/}" "$label" "$expected" >&2
     exit 1
   fi
 }
@@ -80,7 +82,7 @@ for document in "$README" "$RELEASE_NOTES"; do
   for expected in 'renderer opengl' 'OTTRIN_RENDERER=opengl'; do
     if ! grep -Fq -- "$expected" "$document"; then
       printf '%s is missing the explicit Windows graphics override: %s\n' \
-        "${document#$ROOT/}" "$expected" >&2
+        "${document#"$ROOT"/}" "$expected" >&2
       exit 1
     fi
   done
@@ -110,7 +112,7 @@ fi
 for document in "$README" "$RELEASE_NOTES" "$USER_GUIDE" "$ROADMAP" "$MOVE_RECOVERY_DESIGN"; do
   if grep -Fq -- 'Move remains disabled for any user-facing workflow' "$document"; then
     printf '%s again hides accepted Linux same-filesystem Move.\n' \
-      "${document#$ROOT/}" >&2
+      "${document#"$ROOT"/}" >&2
     exit 1
   fi
 done

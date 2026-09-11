@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Source-contract fixtures intentionally retain literal target-shell variables.
+# shellcheck disable=SC2016
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -10,7 +12,7 @@ require_literal() {
   local expected="$2"
   if ! grep -Fq -- "$expected" "$file"; then
     printf '%s is missing required AppImage documentation contract: %s\n' \
-      "${file#$ROOT/}" "$expected" >&2
+      "${file#"$ROOT"/}" "$expected" >&2
     exit 1
   fi
 }

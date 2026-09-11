@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Source-contract fixtures intentionally retain literal shell and PowerShell variables.
+# shellcheck disable=SC2016
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -26,10 +28,8 @@ for packager in "$BASH_LINUX_PORTABLE" "$BASH_APPIMAGE" "$BASH_WINDOWS_PORTABLE"
   require_literal "$packager" 'SOURCE_REVISION.txt'
 done
 
-for packager in "$POWERSHELL_WINDOWS_PORTABLE"; do
-  require_literal "$packager" '$SourceRevision = (& git -C $Root rev-parse --verify HEAD).Trim()'
-  require_literal "$packager" 'SOURCE_REVISION.txt'
-done
+require_literal "$POWERSHELL_WINDOWS_PORTABLE" '$SourceRevision = (& git -C $Root rev-parse --verify HEAD).Trim()'
+require_literal "$POWERSHELL_WINDOWS_PORTABLE" 'SOURCE_REVISION.txt'
 
 for installer in "$BASH_WINDOWS_INSTALLER" "$POWERSHELL_WINDOWS_INSTALLER"; do
   require_literal "$installer" 'SOURCE_REVISION.txt'

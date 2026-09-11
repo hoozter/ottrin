@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# These source-contract fixtures must retain the target language's literal variables.
+# shellcheck disable=SC2016
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

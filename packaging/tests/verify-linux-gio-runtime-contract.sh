@@ -8,13 +8,16 @@ WORK_DIR="$(mktemp -d)"
 trap 'rm -rf -- "$WORK_DIR"' EXIT
 
 grep -Fq 'verify_linux_runtime_closure' "$HELPER" || { echo 'missing shared strict runtime verifier.' >&2; exit 1; }
+# The fixture checks source text, not this process's ROOT value.
+# shellcheck disable=SC2016
 grep -Fq 'source "$ROOT/packaging/linux/bundle-runtime-libs.sh"' "$FINAL_VERIFIER" || { echo 'final verifier does not source the shared runtime verifier.' >&2; exit 1; }
-grep -Fq 'verify_linux_runtime_closure \' "$FINAL_VERIFIER" || { echo 'final verifier does not invoke the shared runtime verifier.' >&2; exit 1; }
+grep -Fq "verify_linux_runtime_closure \\" "$FINAL_VERIFIER" || { echo 'final verifier does not invoke the shared runtime verifier.' >&2; exit 1; }
 
 command -v gcc >/dev/null 2>&1 || { echo 'gcc is required for the Linux runtime closure behavioral test.' >&2; exit 1; }
 command -v pkg-config >/dev/null 2>&1 || { echo 'pkg-config is required for the Linux runtime closure behavioral test.' >&2; exit 1; }
 pkg-config --exists gio-2.0 || { echo 'gio-2.0 development metadata is required for the Linux runtime closure behavioral test.' >&2; exit 1; }
 
+# shellcheck source=packaging/linux/bundle-runtime-libs.sh
 source "$HELPER"
 
 cat > "$WORK_DIR/gio-smoke.c" <<'EOF'
@@ -27,7 +30,8 @@ int main(void) {
   return 0;
 }
 EOF
-gcc -Werror -o "$WORK_DIR/ottrin-gio-smoke" "$WORK_DIR/gio-smoke.c" $(pkg-config --cflags --libs gio-2.0)
+read -r -a gio_flags <<< "$(pkg-config --cflags --libs gio-2.0)"
+gcc -Werror -o "$WORK_DIR/ottrin-gio-smoke" "$WORK_DIR/gio-smoke.c" "${gio_flags[@]}"
 
 make_stage() {
   local name="$1"
@@ -89,7 +93,7 @@ verify_stage "$STAGE" 'positive disposable GIO closure'
 POSITIVE_STAGE="$STAGE"
 
 gcc -Werror -Wl,-rpath,"$WORK_DIR/safe-rpath" -o "$WORK_DIR/ottrin-gio-rpath-smoke" \
-  "$WORK_DIR/gio-smoke.c" $(pkg-config --cflags --libs gio-2.0)
+  "$WORK_DIR/gio-smoke.c" "${gio_flags[@]}"
 STAGE="$(make_stage rpath "$WORK_DIR/ottrin-gio-rpath-smoke")"
 expect_reject 'an otherwise valid GIO closure whose executable declares RPATH/RUNPATH' \
   'contains an unsupported ELF RPATH/RUNPATH' verify_stage "$STAGE" 'RPATH closure'
@@ -103,6 +107,8 @@ env -i LD_LIBRARY_PATH="$STAGE/lib" XDG_DATA_HOME="$STAGE/empty-xdg" XDG_DATA_DI
 # The final verifier must ignore hostile loader state inherited by its caller.
 # Run the whole probe in a child so the deliberately invalid variables do not
 # make diagnostic helpers noisy; the verifier's own trace is still exercised.
+# Positional parameters expand in the child shell, not in this caller.
+# shellcheck disable=SC2016
 env LD_PRELOAD=/definitely/not/a/runtime-library.so LD_AUDIT=/definitely/not/an/audit-module.so \
   bash -c 'source "$1"; verify_linux_runtime_closure hostile "$2" "$3" "$4" "$5" "$6"' -- \
   "$HELPER" "$POSITIVE_STAGE" "$POSITIVE_STAGE/libexec/ottrin/ottrin" "$POSITIVE_STAGE/lib" \
@@ -261,7 +267,8 @@ expect_reject 'a control character in a Debian package version' \
   'has an invalid runtime manifest package version' verify_stage "$STAGE" 'control-character version'
 
 STAGE="$(make_stage duplicate-manifest)"
-sed -n '2p' "$STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt" >> "$STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt"
+duplicate_row="$(sed -n '2p' "$STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt")"
+printf '%s\n' "$duplicate_row" >> "$STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt"
 expect_reject 'a duplicate manifest SONAME' 'has duplicate runtime manifest SONAME:' verify_stage "$STAGE" 'duplicate manifest'
 
 STAGE="$(make_stage traversal-manifest)"
