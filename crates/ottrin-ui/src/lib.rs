@@ -18810,12 +18810,7 @@ impl OttrinApp {
     }
 
     #[cfg(target_os = "linux")]
-    fn render_preview_media_playback(
-        &mut self,
-        ui: &mut egui::Ui,
-        path: &Path,
-        preview: &PreviewData,
-    ) {
+    fn render_preview_media_playback(&mut self, ui: &mut egui::Ui, preview: &PreviewData) {
         let Some(playback) = self.preview.media_playback.as_mut() else {
             return;
         };
@@ -18872,10 +18867,6 @@ impl OttrinApp {
                     .color(self.colors.text_dim)
                     .size(11.0),
             );
-            if specialized_preview_body_action(preview).is_some() {
-                ui.add_space(8.0);
-                render_preview_card_action(ui, self.colors, path, preview);
-            }
         });
     }
 
@@ -19271,7 +19262,7 @@ impl OttrinApp {
                         match preview.kind {
                         #[cfg(target_os = "linux")]
                         PreviewKind::VideoMetadata | PreviewKind::AudioMetadata => {
-                            self.render_preview_media_playback(ui, &path, &preview);
+                            self.render_preview_media_playback(ui, &preview);
                         }
                         PreviewKind::Text
                             if self.preview.text_editor.is_some()
