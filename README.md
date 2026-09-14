@@ -99,7 +99,7 @@ release gates on macOS.
 | Space | Preview file |
 | Esc | Close preview / command frame |
 | F5 | Refresh current directory |
-| Ctrl+C / Ctrl+X | Copy / Cut (same-filesystem Linux Move is supported with safe conflict dispositions; cross-filesystem and Windows Move reject without mutation) |
+| Ctrl+C / Ctrl+X | Copy / Cut |
 | Ctrl+V | Paste |
 | Delete | Move to trash |
 | Shift+Delete | Permanently delete |
