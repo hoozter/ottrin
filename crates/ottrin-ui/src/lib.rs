@@ -1163,6 +1163,16 @@ enum PreviewMediaPlaybackStatus {
 
 #[cfg(target_os = "linux")]
 impl PreviewMediaPlayback {
+    fn controls_enabled(&self) -> bool {
+        self.session.is_some()
+            && matches!(
+                self.status,
+                PreviewMediaPlaybackStatus::Loading
+                    | PreviewMediaPlaybackStatus::Playing
+                    | PreviewMediaPlaybackStatus::Paused
+            )
+    }
+
     fn start(path: PathBuf) -> Self {
         match ottrin_preview::admit_media_playback_source(&path) {
             Ok(source) => match ottrin_preview::start_media_playback(source) {
@@ -18837,14 +18847,14 @@ impl OttrinApp {
 
             ui.horizontal(|ui| {
                 if ui
-                    .add_enabled(playback.session.is_some(), egui::Button::new("Play"))
+                    .add_enabled(playback.controls_enabled(), egui::Button::new("Play"))
                     .clicked()
                     && let Some(session) = playback.session.as_ref()
                 {
                     session.play();
                 }
                 if ui
-                    .add_enabled(playback.session.is_some(), egui::Button::new("Pause"))
+                    .add_enabled(playback.controls_enabled(), egui::Button::new("Pause"))
                     .clicked()
                     && let Some(session) = playback.session.as_ref()
                 {
@@ -25881,6 +25891,35 @@ mod tests {
         assert!(preview_uses_media_playback(PreviewKind::VideoMetadata));
         assert!(preview_uses_media_playback(PreviewKind::AudioMetadata));
         assert!(!preview_uses_media_playback(PreviewKind::Image));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn media_controls_reject_terminal_sessions() {
+        let source = tempfile::NamedTempFile::new().unwrap();
+        let mut playback = PreviewMediaPlayback::start(source.path().to_path_buf());
+        assert!(playback.session.is_some());
+        // A session handle survives asynchronous worker exit. Its presence does
+        // not make Play/Pause meaningful after a terminal event.
+        for status in [
+            PreviewMediaPlaybackStatus::Loading,
+            PreviewMediaPlaybackStatus::Playing,
+            PreviewMediaPlaybackStatus::Paused,
+        ] {
+            playback.status = status;
+            assert!(playback.controls_enabled());
+        }
+        for status in [
+            PreviewMediaPlaybackStatus::Ended,
+            PreviewMediaPlaybackStatus::Unavailable("Missing plugins".into()),
+            PreviewMediaPlaybackStatus::Failed("Invalid media".into()),
+        ] {
+            playback.status = status;
+            assert!(!playback.controls_enabled(), "{:?}", playback.status);
+        }
+        playback.session = None;
+        playback.status = PreviewMediaPlaybackStatus::Loading;
+        assert!(!playback.controls_enabled());
     }
 
     #[test]
