@@ -1,4 +1,4 @@
-use ottrin_core::{SavedTheme, ThemeCustomization, ThemeMode, ThemePreset};
+use ottrin_core::SavedTheme;
 use std::path::Path;
 
 pub(crate) fn sanitize_theme_file_name(name: &str) -> String {
@@ -31,44 +31,34 @@ pub(crate) fn theme_name_from_path(path: &Path) -> String {
 pub(crate) fn decode_theme_import_json(
     bytes: &[u8],
     fallback_name: &str,
-    default_preset: ThemePreset,
-    default_mode: ThemeMode,
 ) -> Result<SavedTheme, String> {
     let value: serde_json::Value =
         serde_json::from_slice(bytes).map_err(|err| format!("invalid JSON: {}", err))?;
-
-    if let Some(theme_value) = value.get("theme") {
-        let mut saved: SavedTheme = serde_json::from_value(theme_value.clone())
-            .map_err(|err| format!("invalid theme payload: {}", err))?;
-        if saved.name.trim().is_empty() {
-            saved.name = fallback_name.to_string();
-        }
-        saved.customization.enabled = true;
-        return Ok(saved);
+    let envelope = value
+        .as_object()
+        .ok_or_else(|| "expected ottrin-theme v1 export envelope".to_string())?;
+    if envelope.get("format").and_then(serde_json::Value::as_str) != Some("ottrin-theme")
+        || envelope.get("version").and_then(serde_json::Value::as_u64) != Some(1)
+    {
+        return Err("expected ottrin-theme v1 export envelope".to_string());
     }
-
-    if let Ok(mut saved) = serde_json::from_value::<SavedTheme>(value.clone()) {
-        if saved.name.trim().is_empty() {
-            saved.name = fallback_name.to_string();
-        }
-        saved.customization.enabled = true;
-        return Ok(saved);
+    let theme = envelope
+        .get("theme")
+        .cloned()
+        .ok_or_else(|| "expected ottrin-theme v1 export envelope".to_string())?;
+    let mut saved: SavedTheme = serde_json::from_value(theme)
+        .map_err(|err| format!("invalid ottrin-theme v1 payload: {err}"))?;
+    if saved.name.trim().is_empty() {
+        saved.name = fallback_name.to_string();
     }
-
-    let mut custom: ThemeCustomization = serde_json::from_value(value)
-        .map_err(|err| format!("expected Ottrin theme JSON: {}", err))?;
-    custom.enabled = true;
-    Ok(SavedTheme {
-        name: fallback_name.to_string(),
-        theme_mode: default_mode,
-        base_preset: default_preset,
-        customization: custom,
-    })
+    saved.customization.enabled = true;
+    Ok(saved)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ottrin_core::{ThemeCustomization, ThemeMode, ThemePreset};
 
     #[test]
     fn decode_theme_import_accepts_wrapped_payload() {
@@ -83,9 +73,7 @@ mod tests {
             }
         });
         let bytes = serde_json::to_vec(&wrapped).unwrap();
-        let imported =
-            decode_theme_import_json(&bytes, "Fallback", ThemePreset::Ottrin, ThemeMode::System)
-                .unwrap();
+        let imported = decode_theme_import_json(&bytes, "Fallback").unwrap();
         assert_eq!(imported.name, "Wrapped");
         assert_eq!(imported.base_preset, ThemePreset::Nord);
         assert_eq!(imported.theme_mode, ThemeMode::Dark);
@@ -93,7 +81,7 @@ mod tests {
     }
 
     #[test]
-    fn decode_theme_import_accepts_saved_theme_payload() {
+    fn decode_theme_import_rejects_unwrapped_saved_theme_payload() {
         let saved = SavedTheme {
             name: "Saved".to_string(),
             theme_mode: ThemeMode::Light,
@@ -101,33 +89,42 @@ mod tests {
             customization: ThemeCustomization::default(),
         };
         let bytes = serde_json::to_vec(&saved).unwrap();
-        let imported =
-            decode_theme_import_json(&bytes, "Fallback", ThemePreset::Ottrin, ThemeMode::System)
-                .unwrap();
-        assert_eq!(imported.name, "Saved");
-        assert_eq!(imported.base_preset, ThemePreset::Solarized);
-        assert_eq!(imported.theme_mode, ThemeMode::Light);
-        assert!(imported.customization.enabled);
+        let error = decode_theme_import_json(&bytes, "Fallback")
+            .expect_err("unwrapped SavedTheme is not an Ottrin theme export");
+
+        assert!(error.contains("ottrin-theme"), "unexpected error: {error}");
     }
 
     #[test]
-    fn decode_theme_import_accepts_customization_payload() {
+    fn decode_theme_import_rejects_unwrapped_customization_payload() {
         let custom = ThemeCustomization {
             accent: [1, 2, 3, 255],
             ..ThemeCustomization::default()
         };
         let bytes = serde_json::to_vec(&custom).unwrap();
-        let imported = decode_theme_import_json(
-            &bytes,
-            "Fallback Name",
-            ThemePreset::Breeze,
-            ThemeMode::Dark,
-        )
-        .unwrap();
-        assert_eq!(imported.name, "Fallback Name");
-        assert_eq!(imported.base_preset, ThemePreset::Breeze);
-        assert_eq!(imported.theme_mode, ThemeMode::Dark);
-        assert_eq!(imported.customization.accent, [1, 2, 3, 255]);
-        assert!(imported.customization.enabled);
+        let error = decode_theme_import_json(&bytes, "Fallback Name")
+            .expect_err("unwrapped customization is not an Ottrin theme export");
+
+        assert!(error.contains("ottrin-theme"), "unexpected error: {error}");
+    }
+
+    #[test]
+    fn decode_theme_import_rejects_non_v1_envelopes() {
+        let theme = SavedTheme {
+            name: "Strict".to_string(),
+            theme_mode: ThemeMode::Dark,
+            base_preset: ThemePreset::Nord,
+            customization: ThemeCustomization::default(),
+        };
+        for payload in [
+            serde_json::json!({"version": 1, "theme": theme}),
+            serde_json::json!({"format": "other-theme", "version": 1, "theme": theme}),
+            serde_json::json!({"format": "ottrin-theme", "version": 2, "theme": theme}),
+        ] {
+            let bytes = serde_json::to_vec(&payload).unwrap();
+            let error = decode_theme_import_json(&bytes, "Fallback")
+                .expect_err("only versioned Ottrin exports are accepted");
+            assert!(error.contains("ottrin-theme"), "unexpected error: {error}");
+        }
     }
 }

@@ -2693,8 +2693,6 @@ pub struct OttrinApp {
     // Last measured grid column count — set each frame by render_grid,
     // used in handle_keyboard for 2D arrow navigation.
     last_grid_cols: usize,
-    // Legacy setting kept for compatibility; Column view is now auto-scroll.
-    miller_col_count: usize,
     // List view column widths in pixels: Name, Kind, Size, Modified
     list_col_px: [f32; 4],
     // About dialog visible
@@ -3606,7 +3604,6 @@ impl OttrinApp {
             next_request_id: 1,
             sidebar: SidebarSection::None,
             last_grid_cols: 4,
-            miller_col_count: 3,
             list_col_px: [360.0, 140.0, 120.0, 180.0],
             show_about: false,
             show_settings: false,
@@ -5276,12 +5273,7 @@ impl OttrinApp {
         };
 
         let fallback_name = theme_name_from_path(&path);
-        let imported = match decode_theme_import_json(
-            &bytes,
-            fallback_name.as_str(),
-            self.theme_editor.preset,
-            self.theme_editor.mode,
-        ) {
+        let imported = match decode_theme_import_json(&bytes, fallback_name.as_str()) {
             Ok(saved) => saved,
             Err(err) => {
                 self.theme_status = Some((
@@ -7300,7 +7292,7 @@ impl OttrinApp {
             .collect::<Vec<_>>();
         for (tab_id, current_dir, view_mode) in tabs {
             let displays_parent = if matches!(view_mode, ViewMode::Miller) {
-                self.build_miller_model(tab_id, self.miller_col_count)
+                self.build_miller_model(tab_id)
                     .0
                     .iter()
                     .any(|column| column.dir == parent)
@@ -8194,11 +8186,7 @@ impl OttrinApp {
         // up/down navigation within a column never causes horizontal jumping.
     }
 
-    fn build_miller_model(
-        &mut self,
-        tab_id: u64,
-        _pane_count: usize,
-    ) -> (Vec<MillerColumnModel>, usize) {
+    fn build_miller_model(&mut self, tab_id: u64) -> (Vec<MillerColumnModel>, usize) {
         let current_dir = self
             .state
             .tab_by_id(tab_id)
@@ -8943,7 +8931,7 @@ impl OttrinApp {
             .unwrap_or(ViewMode::Miller);
 
         if matches!(view_mode, ViewMode::Miller) {
-            let (cols, current_col) = self.build_miller_model(tab_id, self.miller_col_count);
+            let (cols, current_col) = self.build_miller_model(tab_id);
             for (col_idx, col) in cols.iter().enumerate() {
                 if let Some(current_idx) = col
                     .entries
@@ -9016,7 +9004,7 @@ impl OttrinApp {
     }
 
     fn navigate_miller_right(&mut self, tab_id: u64) -> bool {
-        let (cols, current_col) = self.build_miller_model(tab_id, self.miller_col_count);
+        let (cols, current_col) = self.build_miller_model(tab_id);
         if cols.is_empty() {
             return false;
         }
@@ -9237,8 +9225,7 @@ impl OttrinApp {
             // ── Navigation ──────────────────────────────────────────────────
             if input.key_pressed(Key::ArrowDown) && !self.command_frame.visible {
                 if is_miller {
-                    let (cols, current_col) =
-                        self.build_miller_model(tab_id, self.miller_col_count);
+                    let (cols, current_col) = self.build_miller_model(tab_id);
                     if !cols.is_empty() {
                         let focus_col = self.effective_miller_focus_col(tab_id, &cols, current_col);
                         let col = &cols[focus_col];
@@ -9277,8 +9264,7 @@ impl OttrinApp {
             }
             if input.key_pressed(Key::ArrowUp) && !self.command_frame.visible {
                 if is_miller {
-                    let (cols, current_col) =
-                        self.build_miller_model(tab_id, self.miller_col_count);
+                    let (cols, current_col) = self.build_miller_model(tab_id);
                     if !cols.is_empty() {
                         let focus_col = self.effective_miller_focus_col(tab_id, &cols, current_col);
                         let col = &cols[focus_col];
@@ -9327,8 +9313,7 @@ impl OttrinApp {
             }
             if input.key_pressed(Key::ArrowLeft) && !self.command_frame.visible {
                 if is_miller {
-                    let (cols, current_col) =
-                        self.build_miller_model(tab_id, self.miller_col_count);
+                    let (cols, current_col) = self.build_miller_model(tab_id);
                     if !cols.is_empty() {
                         let focus_col = self.effective_miller_focus_col(tab_id, &cols, current_col);
                         if focus_col > 0 {
@@ -9369,8 +9354,7 @@ impl OttrinApp {
             }
             if input.key_pressed(Key::Enter) && !self.command_frame.visible {
                 if is_miller {
-                    let (cols, current_col) =
-                        self.build_miller_model(tab_id, self.miller_col_count);
+                    let (cols, current_col) = self.build_miller_model(tab_id);
                     if !cols.is_empty() {
                         let focus_col = self.effective_miller_focus_col(tab_id, &cols, current_col);
                         let col = &cols[focus_col];
@@ -10124,7 +10108,7 @@ impl OttrinApp {
             .map(|tab| tab.view_mode)
             .unwrap_or(ViewMode::Miller);
         if matches!(view_mode, ViewMode::Miller) {
-            let (cols, current_col) = self.build_miller_model(tab_id, self.miller_col_count);
+            let (cols, current_col) = self.build_miller_model(tab_id);
             if cols.is_empty() {
                 return None;
             }
@@ -17171,7 +17155,7 @@ impl OttrinApp {
             .tab_ui
             .get(&tab_id)
             .and_then(|ui_state| ui_state.miller_pointer_reveal.clone());
-        let (cols, current_col) = self.build_miller_model(tab_id, self.miller_col_count);
+        let (cols, current_col) = self.build_miller_model(tab_id);
         if cols.is_empty() {
             return;
         }
@@ -22304,7 +22288,7 @@ impl OttrinApp {
                                                                 .stroke(Stroke::new(1.0, c.border)),
                                                         ).on_hover_text(
                                                             if persistent_index_daemon {
-                                                                "Installs or removes a restartable systemd user service for the Ottrin index daemon. Legacy Ottrin index timers and cron entries are removed during installation.".to_string()
+                                                                "Installs or removes the restartable systemd user service for the Ottrin index daemon.".to_string()
                                                             } else {
                                                                 format!(
                                                                     "Installs or removes a user-level {} that updates the index every 4 hours.",
@@ -27163,7 +27147,7 @@ mod tests {
         tab.current_dir = child.clone();
         tab.view_mode = ViewMode::Miller;
 
-        let (columns, _) = app.build_miller_model(tab_id, app.miller_col_count);
+        let (columns, _) = app.build_miller_model(tab_id);
         assert!(columns.iter().any(|column| column.dir == root));
         assert!(
             app.tab_ui
@@ -27176,7 +27160,7 @@ mod tests {
         let ui = app.tab_ui.get(&tab_id).unwrap();
         assert!(!ui.miller_cache.contains_key(&root));
         assert_eq!(ui.selection_memory.get(&root), Some(&after));
-        let (columns, _) = app.build_miller_model(tab_id, app.miller_col_count);
+        let (columns, _) = app.build_miller_model(tab_id);
         assert!(
             columns
                 .iter()
@@ -30158,7 +30142,7 @@ mod tests {
             Some(MillerFocusHint::CurrentDir)
         );
 
-        let (columns, current_col) = app.build_miller_model(tab_id, app.miller_col_count);
+        let (columns, current_col) = app.build_miller_model(tab_id);
         assert_eq!(
             app.effective_miller_focus_col(tab_id, &columns, current_col),
             current_col,
@@ -30207,7 +30191,7 @@ mod tests {
             ui.miller_focus_dir = Some(root);
         }
         assert!(app.navigate_miller_right(tab_id));
-        let _ = app.build_miller_model(tab_id, app.miller_col_count);
+        let _ = app.build_miller_model(tab_id);
         assert!(!app.tab_ui[&tab_id].pending_select_first);
         for _ in 0..100 {
             app.poll_listing_results();
@@ -30255,7 +30239,7 @@ mod tests {
                 .is_some_and(|reveal| reveal.destination() == destination)
                 && ui.miller_scroll_selected
         }));
-        let (columns, current_col) = app.build_miller_model(tab_id, app.miller_col_count);
+        let (columns, current_col) = app.build_miller_model(tab_id);
         assert_eq!(columns[current_col].dir, destination);
         assert!(
             columns[current_col].entries.is_empty(),

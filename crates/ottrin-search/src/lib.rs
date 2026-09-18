@@ -1613,7 +1613,6 @@ enum SqliteSystemdOperation {
     IsActive,
     Restart,
     Stop,
-    DisableNowTimer,
     DisableNowService,
 }
 
@@ -1625,7 +1624,6 @@ impl SqliteSystemdOperation {
             Self::IsActive => &["--user", "is-active", "--quiet", "ottrin-index.service"],
             Self::Restart => &["--user", "restart", "ottrin-index.service"],
             Self::Stop => &["--user", "stop", "ottrin-index.service"],
-            Self::DisableNowTimer => &["--user", "disable", "--now", "ottrin-index.timer"],
             Self::DisableNowService => &["--user", "disable", "--now", "ottrin-index.service"],
         }
     }
@@ -1636,7 +1634,6 @@ impl SqliteSystemdOperation {
             Self::IsActive => "query whether the service is active",
             Self::Restart => "restart the service",
             Self::Stop => "stop the service",
-            Self::DisableNowTimer => "disable and stop the legacy timer",
             Self::DisableNowService => "disable and stop the service",
         }
     }
@@ -1714,15 +1711,6 @@ pub fn sqlite_schedule_status() -> LocateScheduleStatus {
                 source: "systemd user service".to_string(),
                 enabled: false,
                 detail: "Installed but systemctl is unavailable".to_string(),
-            };
-        }
-
-        if unit_dir.join("ottrin-index.timer").exists() {
-            return LocateScheduleStatus {
-                source: "legacy timer".to_string(),
-                enabled: false,
-                detail: "Legacy refresh timer found; reinstall background indexing to migrate"
-                    .to_string(),
             };
         }
     }
@@ -1984,17 +1972,11 @@ pub fn install_sqlite_schedule(config: &SearchConfig) -> Result<String, String> 
 
 #[cfg(target_os = "linux")]
 fn stop_sqlite_systemd_for_removal_with(
-    timer_exists: bool,
     service_exists: bool,
     mut run: impl FnMut(SqliteSystemdOperation) -> Result<bool, String>,
 ) -> Result<(), String> {
-    for operation in [
-        timer_exists.then_some(SqliteSystemdOperation::DisableNowTimer),
-        service_exists.then_some(SqliteSystemdOperation::DisableNowService),
-    ]
-    .into_iter()
-    .flatten()
-    {
+    if service_exists {
+        let operation = SqliteSystemdOperation::DisableNowService;
         if !run(operation)? {
             return Err(format!("systemctl failed to {}", operation.label()));
         }
@@ -2007,22 +1989,16 @@ pub fn uninstall_sqlite_schedule() -> Result<String, String> {
     {
         let unit_dir = systemd_user_unit_dir();
         let service_path = unit_dir.join("ottrin-index.service");
-        let timer_path = unit_dir.join("ottrin-index.timer");
         let mut changed = false;
-        if timer_path.exists() || service_path.exists() {
+        if service_path.is_file() {
             if command_exists("systemctl") {
-                stop_sqlite_systemd_for_removal_with(
-                    timer_path.is_file(),
-                    service_path.is_file(),
-                    run_sqlite_systemd,
-                )?;
+                stop_sqlite_systemd_for_removal_with(true, run_sqlite_systemd)?;
             } else {
                 return Err(
                     "Cannot remove background indexing safely because systemctl is unavailable"
                         .to_string(),
                 );
             }
-            remove_file_if_present(&timer_path)?;
             remove_file_if_present(&service_path)?;
             let status = std::process::Command::new("systemctl")
                 .args(["--user", "daemon-reload"])
@@ -2033,8 +2009,6 @@ pub fn uninstall_sqlite_schedule() -> Result<String, String> {
             }
             changed = true;
         }
-        changed |= remove_crontab_block("# ottrin-index")?;
-        changed |= remove_appimage_index_wrapper()?;
         if changed {
             Ok("Background Ottrin index schedule removed.".to_string())
         } else {
@@ -2050,49 +2024,6 @@ pub fn uninstall_sqlite_schedule() -> Result<String, String> {
     #[cfg(not(any(target_os = "linux", target_os = "windows")))]
     {
         Ok("No background schedule support exists for this platform yet.".to_string())
-    }
-}
-
-#[cfg(target_os = "linux")]
-fn remove_crontab_block(tag: &str) -> Result<bool, String> {
-    let output = std::process::Command::new("crontab")
-        .arg("-l")
-        .output()
-        .map_err(|e| format!("crontab not available: {}", e))?;
-    let existing = String::from_utf8_lossy(&output.stdout);
-    if !existing.contains(tag) {
-        return Ok(false);
-    }
-    let mut skip_next = false;
-    let mut kept = Vec::new();
-    for line in existing.lines() {
-        if skip_next {
-            skip_next = false;
-            continue;
-        }
-        if line.trim() == tag {
-            skip_next = true;
-            continue;
-        }
-        kept.push(line);
-    }
-    let new_crontab = kept.join("\n");
-    let mut child = std::process::Command::new("crontab")
-        .arg("-")
-        .stdin(std::process::Stdio::piped())
-        .spawn()
-        .map_err(|e| format!("crontab not available: {}", e))?;
-    if let Some(stdin) = child.stdin.take() {
-        use std::io::Write;
-        let mut stdin = stdin;
-        let _ = stdin.write_all(new_crontab.as_bytes());
-        let _ = stdin.write_all(b"\n");
-    }
-    let status = child.wait().map_err(|e| e.to_string())?;
-    if status.success() {
-        Ok(true)
-    } else {
-        Err(format!("crontab exited with {}", status))
     }
 }
 
@@ -2167,42 +2098,17 @@ fn create_appimage_index_wrapper() -> Option<PathBuf> {
 }
 
 #[cfg(target_os = "linux")]
-fn remove_appimage_index_wrapper() -> Result<bool, String> {
-    let path = appimage_index_wrapper_path();
-    match std::fs::remove_file(&path) {
-        Ok(()) => Ok(true),
-        Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(false),
-        Err(err) => Err(format!("Failed to remove {}: {}", path.display(), err)),
-    }
-}
-
-#[cfg(target_os = "linux")]
 fn install_sqlite_systemd_user_daemon(indexer: &Path) -> Result<String, String> {
     let unit_dir = systemd_user_unit_dir();
     std::fs::create_dir_all(&unit_dir)
         .map_err(|e| format!("Cannot create systemd unit dir: {}", e))?;
     let service_path = unit_dir.join("ottrin-index.service");
-    let timer_path = unit_dir.join("ottrin-index.timer");
 
     prepare_sqlite_systemd_upgrade_with(
         service_path.is_file(),
         prepare_running_daemon_for_upgrade,
         run_sqlite_systemd,
     )?;
-    stop_sqlite_systemd_for_removal_with(timer_path.is_file(), false, run_sqlite_systemd)?;
-    match std::fs::remove_file(&timer_path) {
-        Ok(()) => {}
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-        Err(error) => {
-            return Err(format!(
-                "Failed to remove legacy timer {}: {error}",
-                timer_path.display()
-            ));
-        }
-    }
-    if command_exists("crontab") {
-        remove_crontab_block("# ottrin-index")?;
-    }
 
     let service = sqlite_daemon_systemd_unit(indexer);
     let temporary_path = unit_dir.join("ottrin-index.service.tmp");
@@ -4326,21 +4232,21 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn sqlite_background_removal_stops_the_service_before_deleting_its_unit() {
-        assert_eq!(
-            SqliteSystemdOperation::DisableNowTimer.args(),
-            ["--user", "disable", "--now", "ottrin-index.timer"]
-        );
-        assert_eq!(
-            SqliteSystemdOperation::DisableNowService.args(),
-            ["--user", "disable", "--now", "ottrin-index.service"]
-        );
+    fn sqlite_background_removal_controls_only_the_current_service() {
+        let mut operations = Vec::new();
+        stop_sqlite_systemd_for_removal_with(true, |operation| {
+            operations.push(operation);
+            Ok(true)
+        })
+        .expect("stop current service");
+
+        assert_eq!(operations, vec![SqliteSystemdOperation::DisableNowService]);
     }
 
     #[cfg(target_os = "linux")]
     #[test]
     fn sqlite_background_removal_reports_stop_failure_before_file_deletion() {
-        let error = stop_sqlite_systemd_for_removal_with(false, true, |operation| {
+        let error = stop_sqlite_systemd_for_removal_with(true, |operation| {
             assert_eq!(operation, SqliteSystemdOperation::DisableNowService);
             Ok(false)
         })
