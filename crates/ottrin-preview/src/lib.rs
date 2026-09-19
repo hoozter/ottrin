@@ -1,6 +1,7 @@
 use base64::Engine as _;
 use ottrin_core::{
-    EntryKind, FileCategory, classify_file, format_modified, platform_case_mode_current,
+    ContentFileGroup, EntryKind, FileCategory, classify_file, format_modified,
+    platform_case_mode_current,
 };
 use rusqlite::config::DbConfig;
 use rusqlite::hooks::{AuthAction, Authorization};
@@ -1265,7 +1266,11 @@ pub fn load_preview_cancellable(request: &PreviewRequest, cancelled: &AtomicBool
 }
 
 pub fn classify_path(path: &std::path::Path) -> PreviewKind {
-    if core_recognizes_extensionless_text(path) {
+    if ContentFileGroup::ALL
+        .iter()
+        .any(|group| group.supports_path(path))
+        || core_recognizes_extensionless_text(path)
+    {
         return PreviewKind::Text;
     }
     let ext = path
@@ -1275,11 +1280,7 @@ pub fn classify_path(path: &std::path::Path) -> PreviewKind {
         .to_ascii_lowercase();
 
     match ext.as_str() {
-        "txt" | "md" | "markdown" | "log" | "csv" | "tsv" | "json" | "toml" | "yaml" | "yml"
-        | "ini" | "cfg" | "conf" | "env" | "xml" | "html" | "htm" | "css" | "scss" | "less"
-        | "rs" | "js" | "ts" | "jsx" | "tsx" | "py" | "rb" | "go" | "java" | "c" | "cpp" | "h"
-        | "hpp" | "m" | "mm" | "sh" | "bash" | "zsh" | "fish" | "ps1" | "bat" | "vcf" | "ics"
-        | "ical" | "ldif" | "sql" | "rtf" => PreviewKind::Text,
+        "env" | "vcf" | "ics" | "ical" | "ldif" | "rtf" => PreviewKind::Text,
         "ttf" | "otf" => PreviewKind::FontMetadata,
         "sqlite" | "sqlite3" => PreviewKind::SqliteMetadata,
         "stl" => PreviewKind::StlMetadata,

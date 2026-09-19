@@ -39,6 +39,8 @@ pub enum TextEditError {
     TooLarge { limit: u64 },
     #[error("only valid UTF-8 text can be edited")]
     InvalidUtf8,
+    #[error("binary control characters cannot be edited as plain text")]
+    BinaryText,
     #[error("the file changed after editing began; your unsaved changes are still in the editor")]
     Conflict,
     #[error(
@@ -89,9 +91,11 @@ impl TextEditSession {
         }
     }
 
-    /// Replaces the original file only when its descriptor-relative identity
-    /// and exact captured generation still match. Any pre-publication mismatch
-    /// is a conflict and leaves the caller's buffer untouched.
+    /// Rechecks the descriptor-relative identity and captured generation after
+    /// staging I/O, then atomically replaces the file. An observed mismatch is
+    /// a conflict and leaves the caller's buffer untouched. Linux does not offer
+    /// a generation-conditional rename: concurrent mutation can still race the
+    /// final check and replacement (see the editable-text roadmap boundary).
     pub fn save(&self, edited_text: &str) -> Result<(), TextEditError> {
         #[cfg(target_os = "linux")]
         {
@@ -214,6 +218,7 @@ mod linux {
             edited_text: &str,
             hook: impl FnOnce(TestPoint) -> Result<(), TextEditError>,
         ) -> Result<(), TextEditError> {
+            validate_editable_text(edited_text)?;
             let current =
                 Snapshot::capture(&self.parent, &self.name).map_err(|_| TextEditError::Conflict)?;
             if !self.source.matches(&current) {
@@ -224,19 +229,7 @@ mod linux {
             }
 
             let stage = Stage::create(&self.parent, edited_text.as_bytes(), &current.metadata)?;
-            let final_current = match Snapshot::capture(&self.parent, &self.name) {
-                Ok(snapshot) => snapshot,
-                Err(_) => {
-                    return Err(stage.retention_required("the source changed before publication"));
-                }
-            };
-            if !self.source.matches(&final_current) {
-                return Err(stage.retention_required("the source changed before publication"));
-            }
-            if let Err(error) = hook(TestPoint::BeforePublication) {
-                return Err(stage.retention_required(&error.to_string()));
-            }
-            stage.publish(&self.parent, &self.name)
+            stage.publish(&self.parent, &self.name, &self.source, hook)
         }
     }
 
@@ -285,7 +278,8 @@ mod linux {
             if initial != final_metadata || !final_metadata.matches_stat(&final_named) {
                 return Err(TextEditError::Conflict);
             }
-            std::str::from_utf8(&bytes).map_err(|_| TextEditError::InvalidUtf8)?;
+            let text = std::str::from_utf8(&bytes).map_err(|_| TextEditError::InvalidUtf8)?;
+            validate_editable_text(text)?;
 
             Ok(Self {
                 metadata: final_metadata,
@@ -514,7 +508,11 @@ mod linux {
         let mut flags: libc::c_long = 0;
         // FS_IOC_GETFLAGS reads the inode flags without changing filesystem state.
         let result = unsafe { libc::ioctl(file.as_raw_fd(), FS_IOC_GETFLAGS, &mut flags) };
-        if result != 0 || flags != 0 {
+        // EXTENTS describes ext4's ordinary storage layout; it is not user
+        // metadata requiring preservation. All behavioral inode flags still
+        // fail closed (immutable, append-only, encryption, compression, etc.).
+        const FS_EXTENT_FL: libc::c_long = 0x0008_0000;
+        if result != 0 || flags & !FS_EXTENT_FL != 0 {
             return Err(TextEditError::UnsupportedMetadata);
         }
         Ok(())
@@ -615,7 +613,13 @@ mod linux {
             ))
         }
 
-        fn publish(self, parent: &OwnedFd, target: &OsStr) -> Result<(), TextEditError> {
+        fn publish(
+            self,
+            parent: &OwnedFd,
+            target: &OsStr,
+            source: &Snapshot,
+            hook: impl FnOnce(TestPoint) -> Result<(), TextEditError>,
+        ) -> Result<(), TextEditError> {
             if let Err(error) = fchmod(&self.file, Mode::from_raw_mode(self.source_mode)) {
                 return Err(self.retention_required(&error.to_string()));
             }
@@ -624,6 +628,16 @@ mod linux {
             }
             if let Err(error) = fsync(&self.directory) {
                 return Err(self.retention_required(&error.to_string()));
+            }
+            if let Err(error) = hook(TestPoint::BeforePublication) {
+                return Err(self.retention_required(&error.to_string()));
+            }
+            // Revalidate after all staging I/O, immediately before publication.
+            // This is not a kernel compare-and-swap: a concurrent pathname or
+            // inode mutation can still race the following rename syscall.
+            let current = Snapshot::capture(parent, target).map_err(|_| TextEditError::Conflict)?;
+            if !source.matches(&current) {
+                return Err(TextEditError::Conflict);
             }
             if let Err(error) = renameat_with(
                 &self.directory,
@@ -643,6 +657,21 @@ mod linux {
                 "{reason}; no automatic cleanup was attempted after private staging"
             ))
         }
+    }
+
+    fn validate_editable_text(text: &str) -> Result<(), TextEditError> {
+        if text.len() as u64 > MAX_EDITABLE_TEXT_BYTES {
+            return Err(TextEditError::TooLarge {
+                limit: MAX_EDITABLE_TEXT_BYTES,
+            });
+        }
+        if text
+            .chars()
+            .any(|ch| ch.is_control() && !matches!(ch, '\n' | '\r' | '\t'))
+        {
+            return Err(TextEditError::BinaryText);
+        }
+        Ok(())
     }
 
     fn random_stage_name() -> Result<OsString, TextEditError> {
@@ -739,6 +768,56 @@ mod tests {
             std::fs::read_to_string(&path).expect("read saved text"),
             "Gr\u{00f6}na\r\nbl\u{00e5}\r\n"
         );
+    }
+
+    #[test]
+    fn source_change_at_publication_is_refused() {
+        let root = TestDir::fiemap_fixture();
+        let path = root.file("notes.txt", "original\n");
+        let session = TextEditSession::open(&path).expect("editable fixture");
+        let result = session.save_with_test_hook("editor buffer\n", |_| {
+            std::fs::write(&path, "external\n").unwrap();
+            Ok(())
+        });
+        assert!(result.is_err(), "late external changes must refuse save");
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "external\n");
+    }
+
+    #[test]
+    fn identical_content_replacement_and_restored_mtime_are_conflicts() {
+        let root = TestDir::fiemap_fixture();
+        let path = root.file("notes.txt", "original\n");
+        let session = TextEditSession::open(&path).expect("editable fixture");
+        let modified = std::fs::metadata(&path).unwrap().modified().unwrap();
+        let replacement = root.file("replacement.txt", "original\n");
+        std::fs::rename(replacement, &path).unwrap();
+        assert_eq!(session.save("my edits\n"), Err(TextEditError::Conflict));
+        let session = TextEditSession::open(&path).expect("new generation");
+        std::fs::write(&path, "external\n").unwrap();
+        std::fs::File::options()
+            .write(true)
+            .open(&path)
+            .unwrap()
+            .set_times(std::fs::FileTimes::new().set_modified(modified))
+            .unwrap();
+        assert_eq!(session.save("my edits\n"), Err(TextEditError::Conflict));
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "external\n");
+    }
+
+    #[test]
+    fn binary_controls_and_oversized_edits_are_not_admitted() {
+        let root = TestDir::fiemap_fixture();
+        let path = root.file("notes.txt", "ordinary\n");
+        let session = TextEditSession::open(&path).expect("editable fixture");
+        assert!(session.save("binary\0data").is_err());
+        assert!(
+            session
+                .save(&"a".repeat(MAX_EDITABLE_TEXT_BYTES as usize + 1))
+                .is_err()
+        );
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "ordinary\n");
+        std::fs::write(&path, "binary\0data").unwrap();
+        assert!(TextEditSession::open(&path).is_err());
     }
 
     #[test]
@@ -914,7 +993,7 @@ mod tests {
     }
 
     #[test]
-    fn failed_rename_retains_source_mode_content_inside_a_private_directory() {
+    fn late_source_replacement_is_a_conflict_and_retains_private_staging() {
         if !text_edit_fixture_supported() {
             eprintln!("skipping text-edit lifecycle fixture: FIEMAP is unavailable");
             return;
@@ -933,10 +1012,7 @@ mod tests {
             Ok(())
         });
 
-        assert!(matches!(
-            result,
-            Err(TextEditError::StageRetentionRequired(_))
-        ));
+        assert!(matches!(result, Err(TextEditError::Conflict)));
         let stage = std::fs::read_dir(&root.0)
             .unwrap()
             .map(Result::unwrap)

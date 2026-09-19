@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-09-14
+Last updated: 2026-09-19
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -36,7 +36,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 - Native structured DOCX preview with headings, runs, alignment, lists, page-break cues, tables and bounded inline raster images. Unsupported documents retain a labelled extracted fallback.
 - Linux installed-LibreOffice provider pipeline in source: bounded discovery, probing, isolation, validated PDF rendering, provider labels, page navigation, stale-response rejection, persisted enable/disable control and native fallback.
 - Windows Job Object Office process boundary in source: atomic job assignment, kill-on-close descendant ownership, aggregate/process memory and active-process limits, explicit standard-I/O handle inheritance, timeout/cancellation cleanup and private profile/output path translation. This is not a filesystem or network sandbox, and the Windows provider remains disabled pending native fixture acceptance.
-- Safe direct UTF-8 text editing on Linux for complete admitted files.
+- Direct UTF-8 editing on Linux for complete admitted plain-text, text-equivalent and code files up to 128 KiB. Ordinary ext4 extent-backed files are admitted; metadata-sensitive and binary inputs remain read-only. Code uses syntax colors, aligned unwrapped source lines with line numbers, and Unicode-safe in-editor search. Save conflicts retain the buffer and provide in-app copy/reload/discard actions. Atomic replacement rechecks source identity, metadata and content after staging I/O; the strict concurrent-publication boundary below remains unresolved.
 - Linux and Windows native Open With discovery. Choices retain opaque native handler identities and are re-queried before launch; unsupported platforms retain the manual picker.
 - Folder thumbnail collages, folder-size metadata and generated text/source cards.
 - Source-complete Windows Media Foundation video thumbnails with truthful metadata fallback.
@@ -60,7 +60,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 ### 1. Finish previews and editing
 
 - Complete native Windows fixture acceptance for the Job Object Office process boundary before enabling the provider. Verify conversion, timeout/cancellation descendant cleanup, memory/process limits, inherited-handle restriction, private profile/output cleanup and fallback behavior on a supported Windows host.
-- Continue the Notner-informed editor after faithful read-only preview. The first accepted format is Markdown: Quick Inspector now provides a document-styled editor with inline and block formatting, Unicode-safe find, explicit save, conflict refusal and retained unsaved-buffer recovery. Supported source files use the code editor with the same save boundary. Selecting the next editable document format is a product decision; it must define native save fidelity, conflict and recovery behavior before implementation. Conversion alone is not editing, and non-Linux platforms remain read-only until their platform-specific publication and crash-safety gates are accepted.
+- Finish the approved editable-text contract: plain text and safely text-equivalent/code files open directly in an editor; code has highlighting, line numbers and search; saving is atomic and detects external source changes before overwrite, with an in-app conflict flow. The direct editor, syntax coverage, source-line alignment, ext4 admission and conflict recovery corrections are implemented. **Remaining safety decision:** Linux has no identity/generation-conditional rename. The final identity/metadata/content check now follows all staging I/O, but a concurrent writer can still change the source between that check and atomic replacement. This does not yet satisfy strict detection of *any* external change before overwrite. Decide whether atomically retaining the displaced file and reporting a recovery conflict is acceptable, or require saving to remain disabled wherever that strict guarantee cannot be proven. No next-format decision blocks this approved text scope; additional document formats are not authorized. Windows and macOS remain read-only until their native publication/crash-safety boundaries are implemented and accepted. Source-built Linux UI evidence and exact commands are recorded in `.hermes/text-editor-worker-report.md`; package and native cross-platform acceptance are not claimed.
 
 ### 2. Complete file operations and desktop workflows
 

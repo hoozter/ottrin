@@ -9,7 +9,7 @@ use egui::{
 };
 use egui_extras::{
     Column, TableBuilder,
-    syntax_highlighting::{CodeTheme, highlight},
+    syntax_highlighting::{CodeTheme, SyntectSettings, highlight_with},
 };
 #[cfg(all(unix, not(test)))]
 use ottrin_core::SearchResponse;
@@ -29,7 +29,7 @@ use ottrin_platform::discover_retained_move_transactions;
 use ottrin_platform::is_windows_reserved_creation_name;
 #[cfg(any(target_os = "windows", test))]
 use ottrin_platform::move_recovery::WindowsMoveTransactionKind;
-use ottrin_platform::text_edit::{TextEditSession, text_editing_supported};
+use ottrin_platform::text_edit::{TextEditError, TextEditSession, text_editing_supported};
 use ottrin_platform::{
     ChmodUndoReceipt, DefaultPlatform, MoveDisposition, OpenWithApplication, PathMoveUndoReceipt,
     PlatformError, PlatformOps, PrivilegedAvailability, StorageLocation, StorageLocationKind,
@@ -1119,7 +1119,7 @@ struct PreviewOverlay {
     pdf_page_index: usize,
     spreadsheet_sheet_id: Option<String>,
     text_editor: Option<PreviewTextEditor>,
-    text_edit_discard_confirmation: bool,
+    text_edit_discard_confirmation: Option<TextEditDiscardAction>,
     #[cfg(target_os = "linux")]
     media_playback: Option<PreviewMediaPlayback>,
     /// The Space press that opens a native child viewport can also be
@@ -1241,13 +1241,20 @@ impl PreviewMediaPlayback {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+enum TextEditDiscardAction {
+    Close,
+    Reload,
+}
+
 #[derive(Debug)]
 struct PreviewTextEditor {
     session: TextEditSession,
     buffer: String,
-    error: Option<String>,
+    error: Option<TextEditError>,
     search_query: String,
     search_next_char: usize,
+    request_focus: bool,
 }
 
 impl PreviewTextEditor {
@@ -7693,7 +7700,19 @@ impl OttrinApp {
                 continue;
             }
             match response.target {
-                PreviewTarget::Overlay => self.preview.data = Some(response.data),
+                PreviewTarget::Overlay => {
+                    self.preview.data = Some(response.data);
+                    if self.preview.text_editor.is_none()
+                        && text_editing_supported()
+                        && self
+                            .preview
+                            .data
+                            .as_ref()
+                            .is_some_and(is_complete_text_preview)
+                    {
+                        self.begin_preview_text_edit(&response.path);
+                    }
+                }
                 PreviewTarget::InfoPanel => {
                     self.info_panel_preview = Some((response.path, response.data));
                 }
@@ -9658,7 +9677,7 @@ impl OttrinApp {
         self.preview.pdf_page_index = 0;
         self.preview.spreadsheet_sheet_id = None;
         self.preview.text_editor = None;
-        self.preview.text_edit_discard_confirmation = false;
+        self.preview.text_edit_discard_confirmation = None;
         self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
         ctx.request_repaint();
     }
@@ -9693,7 +9712,7 @@ impl OttrinApp {
             .as_ref()
             .is_some_and(PreviewTextEditor::is_dirty)
         {
-            self.preview.text_edit_discard_confirmation = true;
+            self.preview.text_edit_discard_confirmation = Some(TextEditDiscardAction::Close);
             false
         } else {
             self.preview.text_editor = None;
@@ -9710,6 +9729,7 @@ impl OttrinApp {
                     error: None,
                     search_query: String::new(),
                     search_next_char: 0,
+                    request_focus: true,
                 });
             }
             Err(error) => {
@@ -9723,8 +9743,7 @@ impl OttrinApp {
             return;
         };
         if !editor.is_dirty() {
-            self.preview.text_editor = None;
-            self.preview.text_edit_discard_confirmation = false;
+            self.preview.text_edit_discard_confirmation = None;
             self.set_status_message("No changes to save", true, 3);
             return;
         }
@@ -9785,7 +9804,7 @@ impl OttrinApp {
                     }
                 }
                 self.preview.text_editor = None;
-                self.preview.text_edit_discard_confirmation = false;
+                self.preview.text_edit_discard_confirmation = None;
                 self.preview.data = None;
                 self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
                 if let Some(path) = path {
@@ -9805,14 +9824,14 @@ impl OttrinApp {
                 );
             }
             Err(error) => {
-                editor.error = Some(error.to_string());
+                editor.error = Some(error);
             }
         }
     }
 
     fn cancel_preview_text_edit(&mut self) {
         self.preview.text_editor = None;
-        self.preview.text_edit_discard_confirmation = false;
+        self.preview.text_edit_discard_confirmation = None;
     }
 
     fn optimistic_preview_data(&self, path: &Path) -> Option<PreviewData> {
@@ -9854,7 +9873,7 @@ impl OttrinApp {
         self.preview.pdf_page_index = 0;
         self.preview.spreadsheet_sheet_id = None;
         self.preview.text_editor = None;
-        self.preview.text_edit_discard_confirmation = false;
+        self.preview.text_edit_discard_confirmation = None;
         self.preview.data = optimistic_data;
         self.preview_load_slots[PreviewTarget::Overlay.index()].invalidate();
         self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
@@ -9924,7 +9943,7 @@ impl OttrinApp {
         self.preview.pdf_page_index = 0;
         self.preview.spreadsheet_sheet_id = None;
         self.preview.text_editor = None;
-        self.preview.text_edit_discard_confirmation = false;
+        self.preview.text_edit_discard_confirmation = None;
         self.preview.data = optimistic_data;
         self.request_preview_load(PreviewTarget::Overlay, path, entry.kind);
     }
@@ -18922,7 +18941,7 @@ impl OttrinApp {
         }
         let inspector_modal_active = self.pending_rename.is_some()
             || self.pending_delete.is_some()
-            || self.preview.text_edit_discard_confirmation;
+            || self.preview.text_edit_discard_confirmation.is_some();
         if inspector_modal_active {
             if self.pending_delete.is_some() {
                 self.handle_delete_confirmation_keyboard(inspector_ctx);
@@ -18956,7 +18975,7 @@ impl OttrinApp {
                 })
             {
                 self.save_preview_text_edit();
-            } else if !inspector_ctx.wants_keyboard_input() {
+            } else if self.preview.text_editor.is_none() && !inspector_ctx.wants_keyboard_input() {
                 let command_text = inspector_ctx.input(|i| {
                     if i.modifiers.any() {
                         return None;
@@ -19107,7 +19126,8 @@ impl OttrinApp {
                                 )
                                 .clicked()
                                 {
-                                    self.cancel_preview_text_edit();
+                                    self.preview.text_edit_discard_confirmation =
+                                        Some(TextEditDiscardAction::Reload);
                                 }
                                 let save_enabled = self
                                     .preview
@@ -19221,6 +19241,23 @@ impl OttrinApp {
                                 });
                             }
                     ui.separator();
+                    if let Some(editor) = self.preview.text_editor.as_ref()
+                        && let Some(error) = &editor.error
+                    {
+                        ui.label(RichText::new("Save needs attention").strong().color(c.error));
+                        ui.label(error.to_string());
+                        ui.horizontal(|ui| {
+                            if ui.button("Copy my edits").clicked() {
+                                ui.ctx().copy_text(editor.buffer.clone());
+                            }
+                            if ui.button("Reload from disk…").clicked() {
+                                self.preview.text_edit_discard_confirmation =
+                                    Some(TextEditDiscardAction::Reload);
+                            }
+                            ui.label("Your edits are still in the editor.");
+                        });
+                        ui.separator();
+                    }
 
                     let inspector_hovered = ui.rect_contains_pointer(ui.max_rect());
                     let gesture_zoom = inspector_ctx.input(|input| input.zoom_delta());
@@ -19265,108 +19302,14 @@ impl OttrinApp {
                             if let Some(editor) = self.preview.text_editor.as_mut() {
                                 let document_editor =
                                     markdown_quick_inspector_uses_document_editor(&path);
-                                let code_editor =
-                                    source_quick_inspector_uses_code_editor(&path);
+                                if let Some(language) = source_code_language(&path) {
+                                    render_source_editor(ui, editor, &path, &language,
+                                        preview_render::FLOW_TEXT_SIZE * self.preview.flow_text_scale.clamp(0.7, 2.0), c);
+                                } else {
                                 ScrollArea::vertical()
                                     .id_salt(("inspector_text_editor", &path))
                                     .show(ui, |ui| {
-                                        if code_editor {
-                                            let editor_id = source_code_editor_id(&path);
-                                            let mut find_next = false;
-                                            ui.horizontal(|ui| {
-                                                ui.label(RichText::new("Find").size(11.5));
-                                                let query = ui.add(
-                                                    egui::TextEdit::singleline(&mut editor.search_query)
-                                                        .desired_width(180.0)
-                                                        .hint_text("Text in this file"),
-                                                );
-                                                if query.changed() {
-                                                    editor.search_next_char = 0;
-                                                    editor.error = None;
-                                                }
-                                                find_next = ui
-                                                    .add_enabled(
-                                                        !editor.search_query.is_empty(),
-                                                        egui::Button::new("Next"),
-                                                    )
-                                                    .clicked()
-                                                    || (query.lost_focus()
-                                                        && ui.input(|input| {
-                                                            input.key_pressed(Key::Enter)
-                                                        }));
-                                            });
-                                            if find_next {
-                                                if let Some(range) = next_text_search_match(
-                                                    &editor.buffer,
-                                                    &editor.search_query,
-                                                    editor.search_next_char,
-                                                ) {
-                                                    editor.search_next_char = range.end;
-                                                    editor.error = None;
-                                                    let mut state = TextEditState::load(ui.ctx(), editor_id)
-                                                        .unwrap_or_default();
-                                                    state.cursor.set_char_range(Some(
-                                                        CCursorRange::two(
-                                                            CCursor::new(range.start),
-                                                            CCursor::new(range.end),
-                                                        ),
-                                                    ));
-                                                    state.store(ui.ctx(), editor_id);
-                                                    ui.memory_mut(|memory| {
-                                                        memory.request_focus(editor_id)
-                                                    });
-                                                } else {
-                                                    editor.error = Some(format!(
-                                                        "No matches for \"{}\"",
-                                                        editor.search_query
-                                                    ));
-                                                }
-                                            }
-                                            let language = path
-                                                .extension()
-                                                .and_then(|extension| extension.to_str())
-                                                .expect("supported source files have a UTF-8 extension")
-                                                .to_ascii_lowercase();
-                                            let line_numbers =
-                                                (1..=editor.buffer.matches('\n').count() + 1)
-                                                .map(|line| format!("{line}\n"))
-                                                .collect::<String>();
-                                            ui.horizontal_top(|ui| {
-                                                ui.add(
-                                                    egui::Label::new(
-                                                        RichText::new(line_numbers)
-                                                            .font(FontId::monospace(preview_render::FLOW_TEXT_SIZE * self.preview.flow_text_scale.clamp(0.7, 2.0)))
-                                                            .color(c.text_dim),
-                                                    )
-                                                    .selectable(false),
-                                                );
-                                                let mut layouter = |ui: &egui::Ui,
-                                                                    buffer: &dyn egui::TextBuffer,
-                                                                    wrap_width: f32| {
-                                                    let theme = CodeTheme::from_style(ui.style());
-                                                    let mut job = highlight(
-                                                        ui.ctx(),
-                                                        ui.style(),
-                                                        &theme,
-                                                        buffer.as_str(),
-                                                        &language,
-                                                    );
-                                                    for section in &mut job.sections {
-                                                        section.format.font_id.size = preview_render::FLOW_TEXT_SIZE * self.preview.flow_text_scale.clamp(0.7, 2.0);
-                                                    }
-                                                    job.wrap.max_width = wrap_width;
-                                                    ui.fonts_mut(|fonts| fonts.layout_job(job))
-                                                };
-                                                ui.add(
-                                                    egui::TextEdit::multiline(&mut editor.buffer)
-                                                        .id(editor_id)
-                                                        .font(FontId::monospace(preview_render::FLOW_TEXT_SIZE * self.preview.flow_text_scale.clamp(0.7, 2.0)))
-                                                        .desired_rows(18)
-                                                        .layouter(&mut layouter)
-                                                        .lock_focus(true),
-                                                );
-                                            });
-                                        } else if document_editor {
+                                        if document_editor {
                                             let editor_id = ui.make_persistent_id((
                                                 "markdown_document_editor",
                                                 &path,
@@ -19460,30 +19403,29 @@ impl OttrinApp {
                                                 state.store(ui.ctx(), editor_id);
                                                 ui.memory_mut(|memory| memory.request_focus(editor_id));
                                             }
-                                            ui.add(
+                                            let response = ui.add(
                                                 egui::TextEdit::multiline(&mut editor.buffer)
                                                     .id(editor_id)
                                                     .font(FontId::proportional(preview_render::FLOW_TEXT_SIZE * self.preview.flow_text_scale.clamp(0.7, 2.0)))
                                                     .desired_rows(24)
                                                     .lock_focus(true),
                                             );
+                                            if std::mem::take(&mut editor.request_focus) {
+                                                response.request_focus();
+                                            }
                                         } else {
-                                            ui.add(
+                                            let response = ui.add(
                                                 egui::TextEdit::multiline(&mut editor.buffer)
                                                     .font(FontId::monospace(preview_render::FLOW_TEXT_SIZE * self.preview.flow_text_scale.clamp(0.7, 2.0)))
                                                     .desired_rows(18)
                                                     .lock_focus(true),
                                             );
-                                        }
-                                        if let Some(error) = &editor.error {
-                                            ui.add_space(8.0);
-                                            ui.label(
-                                                RichText::new(error)
-                                                    .color(c.error)
-                                                    .size(11.5),
-                                            );
+                                            if std::mem::take(&mut editor.request_focus) {
+                                                response.request_focus();
+                                            }
                                         }
                                     });
+                                }
                             } else {
                                 let _ = render_shared_preview_body(
                                     ui,
@@ -19836,30 +19778,35 @@ impl OttrinApp {
         if self.pending_delete.is_some() {
             self.render_delete_confirmation(inspector_ctx);
         }
-        if self.preview.text_edit_discard_confirmation {
-            let mut keep_editing = false;
+        if let Some(action) = self.preview.text_edit_discard_confirmation {
             let mut discard_changes = false;
-            egui::Window::new("Discard unsaved text changes?")
-                .collapsible(false)
-                .resizable(false)
-                .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
+            let response = egui::Modal::new(egui::Id::new("text_edit_discard"))
                 .show(inspector_ctx, |ui| {
-                    ui.label("Closing the Quick Inspector will discard these unsaved edits.");
-                    ui.add_space(10.0);
+                    ui.heading("Discard unsaved text changes?");
+                    ui.label(match action {
+                        TextEditDiscardAction::Close => "Closing the Quick Inspector will discard these unsaved edits.",
+                        TextEditDiscardAction::Reload => "Reloading keeps the file on disk and replaces your unsaved editor buffer. Copy your edits first if you need them.",
+                    });
                     ui.horizontal(|ui| {
                         if ui.button("Keep editing").clicked() {
-                            keep_editing = true;
+                            self.preview.text_edit_discard_confirmation = None;
                         }
                         if ui.button("Discard changes").clicked() {
                             discard_changes = true;
                         }
                     });
                 });
-            if keep_editing {
-                self.preview.text_edit_discard_confirmation = false;
+            if response.should_close() {
+                self.preview.text_edit_discard_confirmation = None;
             } else if discard_changes {
-                self.cancel_preview_text_edit();
-                close_requested = true;
+                self.preview.text_edit_discard_confirmation = None;
+                match action {
+                    TextEditDiscardAction::Close => {
+                        self.cancel_preview_text_edit();
+                        close_requested = true;
+                    }
+                    TextEditDiscardAction::Reload => self.begin_preview_text_edit(&path),
+                }
             }
         }
         });
@@ -23484,8 +23431,136 @@ fn apply_markdown_line_prefix(
     adjust(start)..adjust(end)
 }
 
-fn source_quick_inspector_uses_code_editor(path: &Path) -> bool {
-    ContentFileGroup::SourceCode.supports_path(path)
+fn render_source_editor(
+    ui: &mut egui::Ui,
+    editor: &mut PreviewTextEditor,
+    path: &Path,
+    language: &str,
+    font_size: f32,
+    c: Colors,
+) {
+    let editor_id = source_code_editor_id(path);
+    let mut find_next = false;
+    ui.horizontal(|ui| {
+        ui.label(RichText::new("Find").size(11.5));
+        let query = ui.add(
+            egui::TextEdit::singleline(&mut editor.search_query)
+                .desired_width(180.0)
+                .hint_text("Text in this file"),
+        );
+        if query.changed() {
+            editor.search_next_char = 0;
+        }
+        find_next = ui
+            .add_enabled(!editor.search_query.is_empty(), egui::Button::new("Next"))
+            .clicked()
+            || (query.lost_focus() && ui.input(|input| input.key_pressed(Key::Enter)));
+    });
+    let search_match = if find_next {
+        next_text_search_match(
+            &editor.buffer,
+            &editor.search_query,
+            editor.search_next_char,
+        )
+    } else {
+        None
+    };
+    if let Some(range) = &search_match {
+        editor.search_next_char = range.end;
+        let mut state = TextEditState::load(ui.ctx(), editor_id).unwrap_or_default();
+        state.cursor.set_char_range(Some(CCursorRange::two(
+            CCursor::new(range.start),
+            CCursor::new(range.end),
+        )));
+        state.store(ui.ctx(), editor_id);
+    }
+    if !editor.search_query.is_empty()
+        && next_text_search_match(&editor.buffer, &editor.search_query, 0).is_none()
+    {
+        ui.label("No matches");
+    }
+    let line_numbers = (1..=editor.buffer.matches('\n').count() + 1)
+        .map(|line| format!("{line}\n"))
+        .collect::<String>();
+    ScrollArea::both()
+        .id_salt(("source_editor_scroll", path))
+        .show(ui, |ui| {
+            ui.horizontal_top(|ui| {
+                ui.add(
+                    egui::Label::new(
+                        RichText::new(line_numbers)
+                            .font(FontId::monospace(font_size))
+                            .color(c.text_dim),
+                    )
+                    .selectable(false),
+                );
+                let mut layouter =
+                    |ui: &egui::Ui, buffer: &dyn egui::TextBuffer, _wrap_width: f32| {
+                        let theme = CodeTheme::from_style(ui.style());
+                        let mut job = highlight_with(
+                            ui.ctx(),
+                            ui.style(),
+                            &theme,
+                            buffer.as_str(),
+                            language,
+                            source_syntax_settings(),
+                        );
+                        for section in &mut job.sections {
+                            section.format.font_id.size = font_size;
+                        }
+                        // Keep each gutter number aligned with one source line.
+                        job.wrap.max_width = f32::INFINITY;
+                        ui.fonts_mut(|fonts| fonts.layout_job(job))
+                    };
+                let output = egui::TextEdit::multiline(&mut editor.buffer)
+                    .id(editor_id)
+                    .desired_width(f32::INFINITY)
+                    .margin(egui::Margin::symmetric(4, 0))
+                    .font(FontId::monospace(font_size))
+                    .desired_rows(18)
+                    .layouter(&mut layouter)
+                    .lock_focus(true)
+                    .show(ui);
+                // Transfer focus after TextEdit handles the click on Next;
+                // otherwise its click-outside handling can surrender it again.
+                if std::mem::take(&mut editor.request_focus) || search_match.is_some() {
+                    output.response.request_focus();
+                }
+                if let Some(range) = search_match {
+                    ui.scroll_to_rect(
+                        output
+                            .galley
+                            .pos_from_cursor(CCursor::new(range.end))
+                            .translate(output.galley_pos.to_vec2()),
+                        Some(egui::Align::Center),
+                    );
+                }
+            });
+        });
+}
+
+fn source_syntax_settings() -> &'static SyntectSettings {
+    static SETTINGS: std::sync::OnceLock<SyntectSettings> = std::sync::OnceLock::new();
+    SETTINGS.get_or_init(|| SyntectSettings {
+        ps: two_face::syntax::extra_newlines(),
+        ..SyntectSettings::default()
+    })
+}
+
+fn source_code_language(path: &Path) -> Option<String> {
+    match path.file_name().and_then(|name| name.to_str()) {
+        Some("Makefile" | "makefile" | "GNUmakefile") => return Some("Makefile".into()),
+        Some("Dockerfile") => return Some("Dockerfile".into()),
+        Some(".env") => return Some("sh".into()),
+        _ => {}
+    }
+    if ContentFileGroup::SourceCode.supports_path(path) {
+        path.extension()
+            .and_then(|extension| extension.to_str())
+            .map(str::to_ascii_lowercase)
+    } else {
+        None
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -28741,6 +28816,45 @@ mod tests {
         );
     }
 
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn admitted_text_opens_directly_and_refresh_keeps_unsaved_edits() {
+        let fixture = tempfile::tempdir_in(std::env::current_dir().unwrap()).unwrap();
+        for name in ["notes.txt", "main.rs", "settings.json", "README", "main.kt"] {
+            let path = fixture.path().join(name);
+            std::fs::write(&path, "original\n").unwrap();
+            TextEditSession::open(&path).expect("fixture must support actual editing");
+            let mut app = OttrinApp::default();
+            app.open_preview_entry(FileEntry {
+                name: name.into(),
+                path: path.clone(),
+                kind: EntryKind::File,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: None,
+                modified_unix_secs: None,
+            });
+            for _ in 0..100 {
+                app.poll_preview_loads();
+                if app.preview.data.is_some() {
+                    break;
+                }
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            let editor = app.preview.text_editor.as_mut().expect("direct editor");
+            assert_eq!(editor.buffer, "original\n", "{name}");
+            editor.buffer = "unsaved\n".into();
+            app.request_preview_load(PreviewTarget::Overlay, path, EntryKind::File);
+            for _ in 0..10 {
+                app.poll_preview_loads();
+            }
+            assert_eq!(
+                app.preview.text_editor.as_ref().unwrap().buffer,
+                "unsaved\n"
+            );
+        }
+    }
+
     #[test]
     fn dirty_quick_inspector_native_close_request_is_cancelled() {
         if !text_edit_fixture_supported() {
@@ -28760,10 +28874,11 @@ mod tests {
             error: None,
             search_query: String::new(),
             search_next_char: 0,
+            request_focus: true,
         });
 
         assert!(app.native_preview_close_is_cancelled());
-        assert!(app.preview.text_edit_discard_confirmation);
+        assert!(app.preview.text_edit_discard_confirmation.is_some());
         assert!(app.preview.text_editor.is_some());
     }
 
@@ -28797,6 +28912,7 @@ mod tests {
             error: None,
             search_query: String::new(),
             search_next_char: 0,
+            request_focus: true,
         });
 
         app.open_preview_entry(FileEntry {
@@ -28810,7 +28926,7 @@ mod tests {
         });
         assert_eq!(app.preview.path, Some(original));
         assert!(!app.request_preview_close());
-        assert!(app.preview.text_edit_discard_confirmation);
+        assert!(app.preview.text_edit_discard_confirmation.is_some());
         assert!(app.preview.text_editor.is_some());
 
         app.cancel_preview_text_edit();
@@ -28847,6 +28963,7 @@ mod tests {
             error: None,
             search_query: String::new(),
             search_next_char: 0,
+            request_focus: true,
         });
         std::fs::write(&path, "external edit\n").expect("change source text");
 
@@ -28861,12 +28978,45 @@ mod tests {
         assert!(
             editor
                 .error
-                .as_deref()
-                .is_some_and(|error| error.contains("changed"))
+                .as_ref()
+                .is_some_and(|error| matches!(error, TextEditError::Conflict))
         );
         assert_eq!(std::fs::read_to_string(path).unwrap(), "external edit\n");
 
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn conflict_reload_refreshes_the_session_and_failed_reload_preserves_edits() {
+        let fixture = tempfile::tempdir_in(std::env::current_dir().unwrap()).unwrap();
+        let path = fixture.path().join("notes.txt");
+        std::fs::write(&path, "original\n").unwrap();
+        let mut app = OttrinApp::default();
+        app.preview.path = Some(path.clone());
+        app.begin_preview_text_edit(&path);
+        app.preview.text_editor.as_mut().unwrap().buffer = "my edits\n".into();
+        std::fs::write(&path, "external\n").unwrap();
+        app.save_preview_text_edit();
+        assert!(matches!(
+            app.preview.text_editor.as_ref().unwrap().error,
+            Some(TextEditError::Conflict)
+        ));
+        std::fs::remove_file(&path).unwrap();
+        app.begin_preview_text_edit(&path);
+        assert_eq!(
+            app.preview.text_editor.as_ref().unwrap().buffer,
+            "my edits\n"
+        );
+        std::fs::write(&path, "external\n").unwrap();
+        app.begin_preview_text_edit(&path);
+        let editor = app.preview.text_editor.as_ref().unwrap();
+        assert_eq!(editor.buffer, "external\n");
+        assert!(!editor.is_dirty());
+        assert!(editor.error.is_none());
+        app.preview.text_editor.as_mut().unwrap().buffer = "merged\n".into();
+        app.save_preview_text_edit();
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "merged\n");
     }
 
     #[test]
@@ -28893,11 +29043,12 @@ mod tests {
             error: None,
             search_query: String::new(),
             search_next_char: 0,
+            request_focus: true,
         });
 
         app.save_preview_text_edit();
 
-        assert!(app.preview.text_editor.is_none());
+        assert!(app.preview.text_editor.is_some());
         assert!(
             app.operation_history.is_empty(),
             "saving unchanged text must not create a meaningless Undo operation"
@@ -28924,6 +29075,7 @@ mod tests {
             error: None,
             search_query: String::new(),
             search_next_char: 0,
+            request_focus: true,
         });
 
         app.save_preview_text_edit();
@@ -32825,18 +32977,38 @@ mod tests {
 
     #[test]
     fn source_quick_inspector_uses_code_editor_only_for_supported_source_files() {
-        assert!(source_quick_inspector_uses_code_editor(Path::new(
-            "main.rs"
-        )));
-        assert!(source_quick_inspector_uses_code_editor(Path::new(
-            "settings.YAML"
-        )));
-        assert!(!source_quick_inspector_uses_code_editor(Path::new(
-            "notes.md"
-        )));
-        assert!(!source_quick_inspector_uses_code_editor(Path::new(
-            "notes.txt"
-        )));
+        assert!(source_code_language(Path::new("main.rs")).is_some());
+        assert!(source_code_language(Path::new("settings.YAML")).is_some());
+        assert!(source_code_language(Path::new("notes.md")).is_none());
+        assert!(source_code_language(Path::new("notes.txt")).is_none());
+    }
+
+    #[test]
+    fn code_highlighting_colors_supported_modern_languages() {
+        let ctx = Context::default();
+        let style = ctx.style();
+        let theme = CodeTheme::from_style(&style);
+        for (language, code) in [
+            ("rs", "fn main() { let n = 42; }"),
+            ("ts", "const value: number = 42; // typed value"),
+            ("tsx", "const view = <div title=\"hello\">world</div>;"),
+            ("toml", "[package]\nname = \"ottrin\"\n"),
+        ] {
+            let job = highlight_with(
+                &ctx,
+                &style,
+                &theme,
+                code,
+                language,
+                source_syntax_settings(),
+            );
+            let colors: std::collections::HashSet<_> = job
+                .sections
+                .iter()
+                .map(|section| section.format.color)
+                .collect();
+            assert!(colors.len() > 1, "{language} must have syntax colors");
+        }
     }
 
     #[test]

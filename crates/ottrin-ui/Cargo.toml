@@ -18,6 +18,7 @@ rfd = "0.15"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "tiff", "ico"] }
 sha2 = "0.10"
 same-file = "1"
+two-face = { version = "0.5.2", default-features = false, features = ["syntect-fancy"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
