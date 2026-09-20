@@ -1267,6 +1267,41 @@ fn text_edit_contents_changed(original: &str, edited: &str) -> bool {
     original != edited
 }
 
+fn text_edit_save_is_recovery_conflict(result: &Result<(), TextEditError>) -> bool {
+    matches!(
+        result,
+        Err(TextEditError::RecoveryConflict
+            | TextEditError::RecoveryConflictWithDurabilityUncertain(_))
+    )
+}
+
+fn text_edit_save_undo_is_available(
+    result: &Result<(), TextEditError>,
+    storage_is_available: bool,
+) -> bool {
+    result.is_ok() && storage_is_available
+}
+
+fn text_edit_save_completed_cleanly(result: &Result<(), TextEditError>) -> bool {
+    result.is_ok()
+}
+
+fn text_edit_save_status(
+    result: &Result<(), TextEditError>,
+    undo_available_for_saved_text: bool,
+) -> &'static str {
+    match result {
+        Err(TextEditError::RecoveryConflictWithDurabilityUncertain(_)) => {
+            "Text saved, but an external change was retained for recovery and durability could not be confirmed; reload before editing again"
+        }
+        Err(TextEditError::RecoveryConflict) => {
+            "Text saved, but an external change was retained for recovery; reload before editing again"
+        }
+        _ if undo_available_for_saved_text => "Text saved; Undo is available in Activity",
+        _ => "Text saved; Undo could not be captured safely",
+    }
+}
+
 /// Return the next case-sensitive match as character indices, wrapping once at
 /// the end of the buffer. Egui cursor positions are character-based, while
 /// `str::find` returns byte offsets.
@@ -9749,8 +9784,13 @@ impl OttrinApp {
         }
         let original = editor.session.contents().to_string();
         let mut undo_available_for_saved_text = false;
-        match editor.session.save(&editor.buffer) {
-            Ok(()) => {
+        let save_result = editor.session.save(&editor.buffer);
+        let recovery_conflict = text_edit_save_is_recovery_conflict(&save_result);
+        let save_undo_available = text_edit_save_undo_is_available(&save_result, true);
+        match save_result {
+            Ok(())
+            | Err(TextEditError::RecoveryConflict)
+            | Err(TextEditError::RecoveryConflictWithDurabilityUncertain(_)) => {
                 let path = self.preview.path.clone();
                 if let Some(path) = path.as_ref() {
                     self.reconcile_storage_location_availability(discover_storage_locations());
@@ -9762,7 +9802,8 @@ impl OttrinApp {
                         },
                         &self.known_storage_locations,
                     );
-                    let undo_available = undo_session.is_ok() && !storage_bindings.is_empty();
+                    let undo_available =
+                        save_undo_available && undo_session.is_ok() && !storage_bindings.is_empty();
                     let op_id = self.queue_activity_record_with_recoverability(
                         "Edit text",
                         path.display().to_string(),
@@ -9779,7 +9820,8 @@ impl OttrinApp {
                     {
                         record.status = OperationStatus::Completed;
                         record.finished_at = Some(Instant::now());
-                        if let Ok(session) = undo_session
+                        if save_undo_available
+                            && let Ok(session) = undo_session
                             && !storage_bindings.is_empty()
                         {
                             record.path_move_paths = Some((path.clone(), path.clone()));
@@ -9797,8 +9839,12 @@ impl OttrinApp {
                             undo_available_for_saved_text = true;
                         } else {
                             record.message = Some(
-                                "Text saved; session Undo is unavailable because the saved file or its storage identity could not be captured."
-                                    .to_string(),
+                                if recovery_conflict {
+                                    "Text saved with a retained external change; reload before editing again. Session Undo is unavailable to protect that recovery data."
+                                } else {
+                                    "Text saved; session Undo is unavailable because the saved file or its storage identity could not be captured."
+                                }
+                                .to_string(),
                             );
                         }
                     }
@@ -9812,14 +9858,10 @@ impl OttrinApp {
                 }
                 self.set_status_message(
                     administrator_surface_label(
-                        if undo_available_for_saved_text {
-                            "Text saved; Undo is available in Activity"
-                        } else {
-                            "Text saved; Undo could not be captured safely"
-                        },
+                        text_edit_save_status(&save_result, undo_available_for_saved_text),
                         administrator_session(),
                     ),
-                    true,
+                    text_edit_save_completed_cleanly(&save_result),
                     4,
                 );
             }
@@ -29023,6 +29065,27 @@ mod tests {
     fn text_edit_contents_changed_only_for_different_contents() {
         assert!(!text_edit_contents_changed("unchanged\n", "unchanged\n"));
         assert!(text_edit_contents_changed("before\n", "after\n"));
+    }
+
+    #[test]
+    fn recovery_conflict_save_result_disables_text_undo() {
+        let recovery = Err(TextEditError::RecoveryConflict);
+
+        assert!(text_edit_save_is_recovery_conflict(&recovery));
+        assert!(!text_edit_save_undo_is_available(&recovery, true));
+    }
+
+    #[test]
+    fn recovery_conflict_with_uncertain_durability_names_both_save_risks() {
+        let result = Err(TextEditError::RecoveryConflictWithDurabilityUncertain(
+            "simulated directory sync failure".to_string(),
+        ));
+
+        assert_eq!(
+            text_edit_save_status(&result, false),
+            "Text saved, but an external change was retained for recovery and durability could not be confirmed; reload before editing again"
+        );
+        assert!(!text_edit_save_completed_cleanly(&result));
     }
 
     #[test]

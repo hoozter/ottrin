@@ -44,6 +44,14 @@ pub enum TextEditError {
     #[error("the file changed after editing began; your unsaved changes are still in the editor")]
     Conflict,
     #[error(
+        "the edited text was saved, but a concurrent external change was retained for recovery; reload the file before making further edits"
+    )]
+    RecoveryConflict,
+    #[error(
+        "the edited text was saved, but a concurrent external change was retained for recovery and directory durability could not be confirmed: {0}"
+    )]
+    RecoveryConflictWithDurabilityUncertain(String),
+    #[error(
         "the edited text may be published, but directory durability could not be confirmed: {0}"
     )]
     DurabilityUncertain(String),
@@ -92,10 +100,9 @@ impl TextEditSession {
     }
 
     /// Rechecks the descriptor-relative identity and captured generation after
-    /// staging I/O, then atomically replaces the file. An observed mismatch is
-    /// a conflict and leaves the caller's buffer untouched. Linux does not offer
-    /// a generation-conditional rename: concurrent mutation can still race the
-    /// final check and replacement (see the editable-text roadmap boundary).
+    /// staging I/O, then atomically exchanges the candidate with the source.
+    /// The displaced source is retained in private staging. If it is not the
+    /// captured source, the edit is committed but reported as a recovery conflict.
     pub fn save(&self, edited_text: &str) -> Result<(), TextEditError> {
         #[cfg(target_os = "linux")]
         {
@@ -112,7 +119,7 @@ impl TextEditSession {
     fn save_with_test_hook(
         &self,
         edited_text: &str,
-        hook: impl FnOnce(linux::TestPoint) -> Result<(), TextEditError>,
+        hook: impl FnMut(linux::TestPoint) -> Result<(), TextEditError>,
     ) -> Result<(), TextEditError> {
         self.inner.save_with_test_hook(edited_text, hook)
     }
@@ -171,6 +178,7 @@ mod linux {
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     pub(super) enum TestPoint {
         BeforePublication,
+        AfterSourceVerification,
     }
 
     impl Session {
@@ -208,7 +216,7 @@ mod linux {
         pub(super) fn save_with_test_hook(
             &self,
             edited_text: &str,
-            hook: impl FnOnce(TestPoint) -> Result<(), TextEditError>,
+            hook: impl FnMut(TestPoint) -> Result<(), TextEditError>,
         ) -> Result<(), TextEditError> {
             self.save_with_hook(edited_text, hook)
         }
@@ -216,7 +224,7 @@ mod linux {
         fn save_with_hook(
             &self,
             edited_text: &str,
-            hook: impl FnOnce(TestPoint) -> Result<(), TextEditError>,
+            hook: impl FnMut(TestPoint) -> Result<(), TextEditError>,
         ) -> Result<(), TextEditError> {
             validate_editable_text(edited_text)?;
             let current =
@@ -290,6 +298,12 @@ mod linux {
 
         fn matches(&self, current: &Self) -> bool {
             self.metadata == current.metadata
+                && self.bytes.len() == current.bytes.len()
+                && self.digest == current.digest
+        }
+
+        fn matches_displaced_after_exchange(&self, current: &Self) -> bool {
+            self.metadata.identity == current.metadata.identity
                 && self.bytes.len() == current.bytes.len()
                 && self.digest == current.digest
         }
@@ -618,7 +632,7 @@ mod linux {
             parent: &OwnedFd,
             target: &OsStr,
             source: &Snapshot,
-            hook: impl FnOnce(TestPoint) -> Result<(), TextEditError>,
+            mut hook: impl FnMut(TestPoint) -> Result<(), TextEditError>,
         ) -> Result<(), TextEditError> {
             if let Err(error) = fchmod(&self.file, Mode::from_raw_mode(self.source_mode)) {
                 return Err(self.retention_required(&error.to_string()));
@@ -633,22 +647,29 @@ mod linux {
                 return Err(self.retention_required(&error.to_string()));
             }
             // Revalidate after all staging I/O, immediately before publication.
-            // This is not a kernel compare-and-swap: a concurrent pathname or
-            // inode mutation can still race the following rename syscall.
             let current = Snapshot::capture(parent, target).map_err(|_| TextEditError::Conflict)?;
             if !source.matches(&current) {
                 return Err(TextEditError::Conflict);
+            }
+            if let Err(error) = hook(TestPoint::AfterSourceVerification) {
+                return Err(self.retention_required(&error.to_string()));
             }
             if let Err(error) = renameat_with(
                 &self.directory,
                 STAGED_CANDIDATE,
                 parent,
                 target,
-                RenameFlags::empty(),
+                RenameFlags::EXCHANGE,
             ) {
                 return Err(self.retention_required(&error.to_string()));
             }
-            fsync(parent).map_err(|error| TextEditError::DurabilityUncertain(error.to_string()))
+            let displaced = Snapshot::capture(&self.directory, OsStr::new(STAGED_CANDIDATE));
+            let displaced_matches_source = matches!(
+                displaced.as_ref(),
+                Ok(snapshot) if source.matches_displaced_after_exchange(snapshot)
+            );
+            let durability_error = fsync(parent).err().map(|error| error.to_string());
+            publication_outcome(displaced_matches_source, durability_error.as_deref())
         }
 
         fn retention_required(self, reason: &str) -> TextEditError {
@@ -657,6 +678,24 @@ mod linux {
                 "{reason}; no automatic cleanup was attempted after private staging"
             ))
         }
+    }
+
+    pub(super) fn publication_outcome(
+        displaced_matches_source: bool,
+        durability_error: Option<&str>,
+    ) -> Result<(), TextEditError> {
+        if !displaced_matches_source {
+            if let Some(error) = durability_error {
+                return Err(TextEditError::RecoveryConflictWithDurabilityUncertain(
+                    error.to_string(),
+                ));
+            }
+            return Err(TextEditError::RecoveryConflict);
+        }
+        if let Some(error) = durability_error {
+            return Err(TextEditError::DurabilityUncertain(error.to_string()));
+        }
+        Ok(())
     }
 
     fn validate_editable_text(text: &str) -> Result<(), TextEditError> {
@@ -1035,6 +1074,58 @@ mod tests {
                 & 0o777,
             0o644
         );
+    }
+
+    #[test]
+    fn source_replaced_after_final_check_publishes_with_a_recovery_conflict() {
+        if !text_edit_fixture_supported() {
+            eprintln!("skipping text-edit lifecycle fixture: FIEMAP is unavailable");
+            return;
+        }
+
+        let root = TestDir::new();
+        let path = root.file("notes.txt", "original\n");
+        let session = TextEditSession::open(&path).expect("open editable text");
+
+        let error = session
+            .save_with_test_hook("edited\n", |point| {
+                if matches!(point, super::linux::TestPoint::AfterSourceVerification) {
+                    std::fs::write(&path, "external edit\n")
+                        .expect("replace source after final verification");
+                }
+                Ok(())
+            })
+            .expect_err("the displaced external source must be reported for recovery");
+
+        if !matches!(error, TextEditError::RecoveryConflict) {
+            panic!("expected a committed recovery conflict, got {error:?}");
+        }
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "edited\n");
+        let recovery = std::fs::read_dir(&root.0)
+            .unwrap()
+            .map(Result::unwrap)
+            .map(|entry| entry.path())
+            .find(|path| {
+                path.file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.starts_with(".ottrin-text-edit-"))
+            })
+            .expect("the displaced external source must be retained privately");
+        assert_eq!(
+            std::fs::read_to_string(recovery.join(STAGED_CANDIDATE)).unwrap(),
+            "external edit\n"
+        );
+    }
+
+    #[test]
+    fn recovery_conflict_keeps_post_publication_durability_uncertainty() {
+        let error =
+            super::linux::publication_outcome(false, Some("simulated directory sync failure"))
+                .expect_err("a displaced external source must retain the durability warning");
+        assert!(matches!(
+            error,
+            TextEditError::RecoveryConflictWithDurabilityUncertain(_)
+        ));
     }
 
     #[test]
