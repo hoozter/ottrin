@@ -72,7 +72,9 @@ install -m 0644 "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" \
   "$ROOT/docs/ROADMAP.md" "$ROOT/docs/RELEASE_NOTES.md" \
   "$ROOT/docs/RELEASE_CHECKLIST.md" "$ROOT/docs/SEARCH_PERFORMANCE.md" \
   "$APPDIR/usr/share/doc/ottrin/"
-bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$APPDIR/usr"
+bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$APPDIR/usr" \
+  "$APPDIR/usr/share/doc/ottrin/third-party-notices/linux-runtime" \
+  "$BUILD_DIR/ottrin-legacy-doc-render"
 ottrin_write_source_revision "$ROOT" "$APPDIR/usr/share/doc/ottrin/SOURCE_REVISION.txt" "$VERSION"
 
 cat > "$APPDIR/org.ottrin.Ottrin.desktop" <<'DESKTOP'

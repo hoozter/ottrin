@@ -597,14 +597,16 @@ verify_linux_runtime_closure \
   "$PORTABLE_STAGE/libexec/ottrin/ottrin" \
   "$PORTABLE_STAGE/lib" \
   "$PORTABLE_STAGE/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
-  "$PORTABLE_STAGE/third-party-notices/linux-runtime"
+  "$PORTABLE_STAGE/third-party-notices/linux-runtime" \
+  true
 verify_linux_runtime_closure \
   'Linux portable native DOC helper' \
   "$PORTABLE_STAGE" \
   "$PORTABLE_STAGE/libexec/ottrin/ottrin-legacy-doc-render" \
   "$PORTABLE_STAGE/lib" \
   "$PORTABLE_STAGE/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
-  "$PORTABLE_STAGE/third-party-notices/linux-runtime"
+  "$PORTABLE_STAGE/third-party-notices/linux-runtime" \
+  false
 verify_linux_media_runtime_boundary \
   'Linux portable archive' \
   "$PORTABLE_STAGE" \
@@ -616,14 +618,16 @@ verify_linux_runtime_closure \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/bin/ottrin" \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/lib" \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
-  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime"
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime" \
+  true
 verify_linux_runtime_closure \
   'Linux AppImage native DOC helper' \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root" \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/bin/ottrin-legacy-doc-render" \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/lib" \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime/BUNDLED_RUNTIME_MANIFEST.txt" \
-  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime"
+  "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/third-party-notices/linux-runtime" \
+  false
 verify_linux_media_runtime_boundary \
   'Linux AppImage' \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root" \

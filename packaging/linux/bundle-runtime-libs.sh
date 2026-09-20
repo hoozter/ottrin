@@ -69,6 +69,7 @@ verify_linux_runtime_closure() {
   local lib_dir="$4"
   local manifest="$5"
   local notice_root="$6"
+  local require_gio="$7"
   local canonical_artifact_root canonical_executable canonical_lib_dir canonical_manifest canonical_notice_root
   local -A manifest_sonames=()
   local -A package_notices=()
@@ -78,6 +79,10 @@ verify_linux_runtime_closure() {
 
   command -v readelf >/dev/null 2>&1 || { echo 'readelf is required to verify a Linux runtime closure.' >&2; return 1; }
   command -v dpkg >/dev/null 2>&1 || { echo 'dpkg is required to validate Linux runtime provenance.' >&2; return 1; }
+  [[ "$require_gio" == true || "$require_gio" == false ]] || {
+    printf '%s has an invalid GIO runtime requirement.\n' "$artifact_label" >&2
+    return 1
+  }
   [[ -d "$artifact_root" && ! -L "$artifact_root" && -x "$executable" && -f "$executable" && ! -L "$executable" && -d "$lib_dir" && ! -L "$lib_dir" && -f "$manifest" && ! -L "$manifest" && -d "$notice_root" && ! -L "$notice_root" ]] || {
     printf '%s is missing a trusted artifact root, regular executable, library directory, manifest, or notice root.\n' "$artifact_label" >&2
     return 1
@@ -111,7 +116,7 @@ verify_linux_runtime_closure() {
     [[ "$1" =~ ^[a-z0-9][a-z0-9+.-]*(:[a-z0-9][a-z0-9-]*)?$ ]]
   }
   linux_runtime_reject_search_path "$canonical_executable" || return 1
-  if ! readelf -d "$canonical_executable" | grep -Fq 'Shared library: [libgio-2.0.so.0]'; then
+  if [[ "$require_gio" == true ]] && ! readelf -d "$canonical_executable" | grep -Fq 'Shared library: [libgio-2.0.so.0]'; then
     printf '%s main executable does not declare libgio-2.0.so.0.\n' "$artifact_label" >&2
     return 1
   fi
@@ -210,7 +215,7 @@ verify_linux_runtime_closure() {
     return 1
   }
 
-  [[ -n "${manifest_sonames[libgio-2.0.so.0]+x}" ]] || {
+  [[ "$require_gio" == false || -n "${manifest_sonames[libgio-2.0.so.0]+x}" ]] || {
     printf '%s runtime manifest is missing required libgio-2.0.so.0.\n' "$artifact_label" >&2
     return 1
   }
@@ -255,6 +260,7 @@ bundle_linux_runtime() {
   local artifact_root="$2"
   local lib_dir="$artifact_root/lib"
   local notices_dir="${3:-$artifact_root/share/doc/ottrin/third-party-notices/linux-runtime}"
+  local document_helper="$4"
   local manifest="$notices_dir/BUNDLED_RUNTIME_MANIFEST.txt"
   local -a queue=()
   local -A seen_sonames=()
@@ -265,8 +271,9 @@ bundle_linux_runtime() {
   command -v readelf >/dev/null 2>&1 || { echo 'readelf is required to bundle Linux runtime libraries.' >&2; return 1; }
   command -v ldconfig >/dev/null 2>&1 || { echo 'ldconfig is required to bundle Linux runtime libraries.' >&2; return 1; }
   command -v dpkg-query >/dev/null 2>&1 || { echo 'dpkg-query is required to record Linux runtime provenance.' >&2; return 1; }
-  [[ "$executable" = /* && -f "$executable" && ! -L "$executable" ]] || {
-    printf 'Trusted executable must be an absolute regular non-symlink path: %s\n' "$executable" >&2
+  [[ "$executable" = /* && -f "$executable" && ! -L "$executable" \
+    && "$document_helper" = /* && -f "$document_helper" && ! -L "$document_helper" ]] || {
+    printf 'Trusted executables must be absolute regular non-symlink paths.\n' >&2
     return 1
   }
   executable_class="$(readelf -h "$executable" | awk -F: '/Class:/{ gsub(/^[[:space:]]+/, "", $2); print $2; exit }')"
@@ -301,7 +308,7 @@ bundle_linux_runtime() {
     realpath -e -- "${matches[0]}"
   }
 
-  queue=("$executable")
+  queue=("$executable" "$document_helper")
   while (( ${#queue[@]} )); do
     local current="${queue[0]}"
     queue=("${queue[@]:1}")
@@ -351,9 +358,9 @@ bundle_linux_runtime() {
         printf 'Unable to identify Debian package version for %s\n' "$package" >&2
         return 1
       }
+      local package_base="${package%%:*}"
       if [[ -z "${copied_packages[$package]+x}" ]]; then
         copied_packages[$package]=1
-        local package_base="${package%%:*}"
         local copyright="/usr/share/doc/$package_base/copyright"
         [[ -f "$copyright" && ! -L "$copyright" ]] || {
           printf 'Missing package copyright notice for bundled runtime %s: %s\n' "$package" "$copyright" >&2

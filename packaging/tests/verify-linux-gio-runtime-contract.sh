@@ -33,20 +33,30 @@ EOF
 read -r -a gio_flags <<< "$(pkg-config --cflags --libs gio-2.0)"
 gcc -Werror -o "$WORK_DIR/ottrin-gio-smoke" "$WORK_DIR/gio-smoke.c" "${gio_flags[@]}"
 
+cat > "$WORK_DIR/gmodule-smoke.c" <<'EOF'
+#include <gmodule.h>
+int main(void) {
+  return g_module_supported() ? 0 : 1;
+}
+EOF
+read -r -a gmodule_flags <<< "$(pkg-config --cflags --libs gmodule-2.0)"
+gcc -Werror -o "$WORK_DIR/ottrin-gmodule-smoke" "$WORK_DIR/gmodule-smoke.c" "${gmodule_flags[@]}"
+
 make_stage() {
   local name="$1"
   local executable="${2:-$WORK_DIR/ottrin-gio-smoke}"
+  local document_helper="${3:-$executable}"
   local stage="$WORK_DIR/$name"
   mkdir -p "$stage/libexec/ottrin" "$stage/notices"
   install -m 0755 "$executable" "$stage/libexec/ottrin/ottrin"
-  bundle_linux_runtime "$executable" "$stage" "$stage/notices"
+  bundle_linux_runtime "$executable" "$stage" "$stage/notices" "$document_helper"
   printf '%s\n' "$stage"
 }
 
 verify_stage() {
   local stage="$1"
   verify_linux_runtime_closure "$2" "$stage" "$stage/libexec/ottrin/ottrin" "$stage/lib" \
-    "$stage/notices/BUNDLED_RUNTIME_MANIFEST.txt" "$stage/notices"
+    "$stage/notices/BUNDLED_RUNTIME_MANIFEST.txt" "$stage/notices" true
 }
 
 expect_reject() {
@@ -88,7 +98,7 @@ set_first_manifest_field() {
   mv "$stage/manifest" "$stage/notices/BUNDLED_RUNTIME_MANIFEST.txt"
 }
 
-STAGE="$(make_stage positive)"
+STAGE="$(make_stage positive "$WORK_DIR/ottrin-gio-smoke" "$WORK_DIR/ottrin-gmodule-smoke")"
 verify_stage "$STAGE" 'positive disposable GIO closure'
 POSITIVE_STAGE="$STAGE"
 
@@ -110,9 +120,9 @@ env -i LD_LIBRARY_PATH="$STAGE/lib" XDG_DATA_HOME="$STAGE/empty-xdg" XDG_DATA_DI
 # Positional parameters expand in the child shell, not in this caller.
 # shellcheck disable=SC2016
 env LD_PRELOAD=/definitely/not/a/runtime-library.so LD_AUDIT=/definitely/not/an/audit-module.so \
-  bash -c 'source "$1"; verify_linux_runtime_closure hostile "$2" "$3" "$4" "$5" "$6"' -- \
+  bash -c 'source "$1"; verify_linux_runtime_closure hostile "$2" "$3" "$4" "$5" "$6" "$7"' -- \
   "$HELPER" "$POSITIVE_STAGE" "$POSITIVE_STAGE/libexec/ottrin/ottrin" "$POSITIVE_STAGE/lib" \
-  "$POSITIVE_STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt" "$POSITIVE_STAGE/notices" >/dev/null 2>&1 || {
+  "$POSITIVE_STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt" "$POSITIVE_STAGE/notices" true >/dev/null 2>&1 || {
     echo 'runtime closure verifier inherited hostile loader state.' >&2
     exit 1
   }
@@ -177,8 +187,8 @@ ln -s "$STAGE" "$WORK_DIR/symlinked-artifact-root"
 expect_reject 'a symlinked artifact root' \
   'is missing a trusted artifact root' \
   verify_linux_runtime_closure 'symlinked artifact root' "$WORK_DIR/symlinked-artifact-root" \
-  "$STAGE/libexec/ottrin/ottrin" "$STAGE/lib" \
-  "$STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt" "$STAGE/notices"
+    "$STAGE/libexec/ottrin/ottrin" "$STAGE/lib" \
+    "$STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt" "$STAGE/notices" true
 
 STAGE="$(make_stage symlink-notice-root)"
 mv "$STAGE/notices" "$WORK_DIR/external-notice-root"
@@ -201,7 +211,7 @@ STAGE="$(make_stage executable-outside-root)"
 expect_reject 'an executable path outside the artifact root' \
   'has an unsafe runtime root' \
   verify_linux_runtime_closure 'outside executable' "$STAGE" "$WORK_DIR/ottrin-gio-smoke" \
-  "$STAGE/lib" "$STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt" "$STAGE/notices"
+    "$STAGE/lib" "$STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt" "$STAGE/notices" true
 
 STAGE="$(make_stage wrong-soname)"
 cp "$STAGE/lib/libglib-2.0.so.0" "$STAGE/lib/libgio-2.0.so.0"

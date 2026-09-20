@@ -54,7 +54,8 @@ install -m 0755 "$BUILD_DIR/ottrin-legacy-doc-render" "$STAGE/libexec/ottrin/ott
 install -m 0755 "$BUILD_DIR/ottrin-media-playback" "$STAGE/libexec/ottrin/ottrin-media-playback"
 install -m 0755 "$BUILD_DIR/ottrin-indexd" "$STAGE/libexec/ottrin/ottrin-indexd"
 install -m 0755 "$BUILD_DIR/ottrin-priv-helper" "$STAGE/bin/ottrin-priv-helper"
-bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$STAGE" "$STAGE/third-party-notices/linux-runtime"
+bundle_linux_runtime "$BUILD_DIR/ottrin-app" "$STAGE" "$STAGE/third-party-notices/linux-runtime" \
+  "$BUILD_DIR/ottrin-legacy-doc-render"
 cat > "$STAGE/bin/ottrin" <<'EOF'
 #!/bin/sh
 OTTRIN_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
