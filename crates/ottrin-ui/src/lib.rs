@@ -30653,6 +30653,21 @@ mod tests {
     }
 
     #[test]
+    fn selected_view_is_restored_after_recreating_the_app() {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        for view in [ViewMode::List, ViewMode::Miller, ViewMode::Grid] {
+            app.set_tab_view_mode(tab_id, view);
+            let reopened = OttrinApp::new_with_config_and_graphics_status(
+                load_config(),
+                GraphicsRuntimeStatus::default(),
+            );
+            assert_eq!(reopened.state.active_tab().view_mode, view);
+            assert_eq!(reopened.state.config.default_view_mode, view);
+        }
+    }
+
+    #[test]
     fn leaving_miller_or_closing_a_tab_discards_its_pointer_reveal_state() {
         let mut app = OttrinApp::default();
         let tab_id = app.state.active_tab().id;

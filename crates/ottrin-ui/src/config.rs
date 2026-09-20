@@ -1,8 +1,19 @@
 use ottrin_core::AppConfig;
-#[cfg(not(target_os = "windows"))]
+#[cfg(all(not(target_os = "windows"), not(test)))]
 use ottrin_core::default_home_dir;
 use std::path::{Path, PathBuf};
 
+#[cfg(test)]
+fn config_path() -> Option<PathBuf> {
+    // Exercise real persistence without reading or overwriting the developer's
+    // profile. Each test thread owns its directory and removes it on exit.
+    thread_local! {
+        static PROFILE: tempfile::TempDir = tempfile::tempdir().expect("private test profile");
+    }
+    Some(PROFILE.with(|profile| profile.path().join("ottrin/config.json")))
+}
+
+#[cfg(not(test))]
 fn config_path() -> Option<PathBuf> {
     #[cfg(target_os = "windows")]
     let base = std::env::var_os("APPDATA").map(PathBuf::from)?;
@@ -111,6 +122,47 @@ fn remove_file_counting_bytes(path: &Path) -> Result<u64, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_profiles_are_private_to_each_test_thread() {
+        let here = config_path().expect("test config path");
+        let other = std::thread::spawn(|| config_path().expect("other test config path"))
+            .join()
+            .expect("test thread");
+        assert_ne!(here, other, "tests must not share the user's settings path");
+    }
+
+    #[test]
+    fn saved_view_round_trips_without_crossing_test_profiles() {
+        let mut config = AppConfig {
+            default_view_mode: ottrin_core::ViewMode::Miller,
+            ..AppConfig::default()
+        };
+        save_config(&config);
+        assert_eq!(
+            load_config().default_view_mode,
+            ottrin_core::ViewMode::Miller
+        );
+        let other_path = std::thread::spawn(|| {
+            let config = AppConfig {
+                default_view_mode: ottrin_core::ViewMode::List,
+                ..AppConfig::default()
+            };
+            save_config(&config);
+            assert_eq!(load_config().default_view_mode, ottrin_core::ViewMode::List);
+            config_path().expect("other profile")
+        })
+        .join()
+        .expect("other test thread");
+        assert!(!other_path.exists(), "test profiles are cleaned up on exit");
+        assert_eq!(
+            load_config().default_view_mode,
+            ottrin_core::ViewMode::Miller
+        );
+        config.default_view_mode = ottrin_core::ViewMode::Grid;
+        save_config(&config);
+        assert_eq!(load_config().default_view_mode, ottrin_core::ViewMode::Grid);
+    }
 
     #[cfg(unix)]
     #[test]
