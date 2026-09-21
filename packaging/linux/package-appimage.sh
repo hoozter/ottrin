@@ -113,5 +113,21 @@ printf '%s  %s\n' "$APPIMAGETOOL_SHA256" "$APPIMAGETOOL" | sha256sum -c -
 ottrin_prepare_artifact "$APPIMAGE" "$DIST_DIR/archive"
 ARCH=x86_64 "$APPIMAGETOOL" "$APPDIR" "$APPIMAGE"
 sha256sum "$APPIMAGE" | sed "s|$APPIMAGE|$(basename "$APPIMAGE")|" > "$APPIMAGE.sha256"
+artifact_sha256="$(sha256sum "$APPIMAGE" | awk '{print $1}')"
+revision="$(git -C "$ROOT" rev-parse --verify HEAD)"
+if git -C "$ROOT" diff --quiet --ignore-submodules -- && \
+   git -C "$ROOT" diff --cached --quiet --ignore-submodules --; then
+  clean_source=true
+else
+  clean_source=false
+fi
+cat > "$APPIMAGE.provenance.json" <<EOF
+{
+  "artifact": "$(basename "$APPIMAGE")",
+  "revision": "$revision",
+  "sha256": "$artifact_sha256",
+  "built_from_tracked_clean_source": $clean_source
+}
+EOF
 
 printf '%s\n' "$APPIMAGE"

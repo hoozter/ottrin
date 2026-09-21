@@ -47,7 +47,7 @@ ottrin_prepare_artifact() {
   local artifact="$1" archive_root="$2"
   local stamp name predecessor destination
   stamp="${OTTRIN_ARCHIVE_STAMP:-$(date -u +%Y%m%dT%H%M%SZ)}"
-  for predecessor in "$artifact" "$artifact.sha256"; do
+  for predecessor in "$artifact" "$artifact.sha256" "$artifact.provenance.json"; do
     [[ -e "$predecessor" || -L "$predecessor" ]] || continue
     name="$(basename "$predecessor")"
     destination="$archive_root/$stamp/$name"
@@ -58,4 +58,5 @@ ottrin_prepare_artifact() {
   done
   OTTRIN_ARCHIVE_STAMP="$stamp" ottrin_archive_predecessor "$artifact" "$archive_root"
   OTTRIN_ARCHIVE_STAMP="$stamp" ottrin_archive_predecessor "$artifact.sha256" "$archive_root"
+  OTTRIN_ARCHIVE_STAMP="$stamp" ottrin_archive_predecessor "$artifact.provenance.json" "$archive_root"
 }
