@@ -5,11 +5,12 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$ROOT/packaging/linux/bundle-runtime-libs.sh"
 source "$ROOT/packaging/package-lifecycle.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
-DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
+DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist/packages}"
+ARCHIVE_DIR="${OTTRIN_ARCHIVE_DIR:-$ROOT/dist/archive}"
 BUILD_DIR="$ROOT/target/release"
 APPDIR="$DIST_DIR/AppDir"
 APPIMAGE="$DIST_DIR/Ottrin-$VERSION-x86_64.AppImage"
-APPIMAGETOOL="${APPIMAGETOOL:-$DIST_DIR/appimagetool-x86_64.AppImage}"
+APPIMAGETOOL="${APPIMAGETOOL:-$ROOT/dist/appimagetool-x86_64.AppImage}"
 APPIMAGETOOL_SHA256="${APPIMAGETOOL_SHA256:-b90f4a8b18967545fda78a445b27680a1642f1ef9488ced28b65398f2be7add2}"
 PDFIUM_URL="https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7961/pdfium-linux-x64.tgz"
 PDFIUM_SHA256="019665c8877d46fe65f625f80fd714ab07aac68554b0636acf2a2adf9288adb2"
@@ -110,7 +111,7 @@ fi
 
 printf '%s  %s\n' "$APPIMAGETOOL_SHA256" "$APPIMAGETOOL" | sha256sum -c -
 
-ottrin_prepare_artifact "$APPIMAGE" "$DIST_DIR/archive"
+ottrin_prepare_artifact "$APPIMAGE" "$ARCHIVE_DIR"
 ARCH=x86_64 "$APPIMAGETOOL" "$APPDIR" "$APPIMAGE"
 sha256sum "$APPIMAGE" | sed "s|$APPIMAGE|$(basename "$APPIMAGE")|" > "$APPIMAGE.sha256"
 artifact_sha256="$(sha256sum "$APPIMAGE" | awk '{print $1}')"
