@@ -1258,6 +1258,13 @@ struct PreviewTextEditor {
 }
 
 impl PreviewTextEditor {
+    fn save_requires_reload(&self) -> bool {
+        matches!(
+            self.error,
+            Some(TextEditError::RecoveryConflict { .. } | TextEditError::DurabilityUncertain(_))
+        )
+    }
+
     fn is_dirty(&self) -> bool {
         text_edit_contents_changed(self.session.contents(), &self.buffer)
     }
@@ -1265,14 +1272,6 @@ impl PreviewTextEditor {
 
 fn text_edit_contents_changed(original: &str, edited: &str) -> bool {
     original != edited
-}
-
-fn text_edit_save_is_recovery_conflict(result: &Result<(), TextEditError>) -> bool {
-    matches!(
-        result,
-        Err(TextEditError::RecoveryConflict
-            | TextEditError::RecoveryConflictWithDurabilityUncertain(_))
-    )
 }
 
 fn text_edit_save_undo_is_available(
@@ -1290,15 +1289,12 @@ fn text_edit_save_status(
     result: &Result<(), TextEditError>,
     undo_available_for_saved_text: bool,
 ) -> &'static str {
-    match result {
-        Err(TextEditError::RecoveryConflictWithDurabilityUncertain(_)) => {
-            "Text saved, but an external change was retained for recovery and durability could not be confirmed; reload before editing again"
-        }
-        Err(TextEditError::RecoveryConflict) => {
-            "Text saved, but an external change was retained for recovery; reload before editing again"
-        }
-        _ if undo_available_for_saved_text => "Text saved; Undo is available in Activity",
-        _ => "Text saved; Undo could not be captured safely",
+    if result.is_err() {
+        "Save needs attention; your edits are still in the editor"
+    } else if undo_available_for_saved_text {
+        "Text saved; Undo is available in Activity"
+    } else {
+        "Text saved; Undo could not be captured safely"
     }
 }
 
@@ -9777,20 +9773,27 @@ impl OttrinApp {
         let Some(editor) = self.preview.text_editor.as_mut() else {
             return;
         };
+        if editor.save_requires_reload() {
+            return;
+        }
         if !editor.is_dirty() {
             self.preview.text_edit_discard_confirmation = None;
             self.set_status_message("No changes to save", true, 3);
             return;
         }
+        let save_result = editor.session.save(&editor.buffer);
+        self.finish_preview_text_save(save_result);
+    }
+
+    fn finish_preview_text_save(&mut self, save_result: Result<(), TextEditError>) {
+        let Some(editor) = self.preview.text_editor.as_mut() else {
+            return;
+        };
         let original = editor.session.contents().to_string();
         let mut undo_available_for_saved_text = false;
-        let save_result = editor.session.save(&editor.buffer);
-        let recovery_conflict = text_edit_save_is_recovery_conflict(&save_result);
         let save_undo_available = text_edit_save_undo_is_available(&save_result, true);
         match save_result {
-            Ok(())
-            | Err(TextEditError::RecoveryConflict)
-            | Err(TextEditError::RecoveryConflictWithDurabilityUncertain(_)) => {
+            Ok(()) => {
                 let path = self.preview.path.clone();
                 if let Some(path) = path.as_ref() {
                     self.reconcile_storage_location_availability(discover_storage_locations());
@@ -9839,12 +9842,7 @@ impl OttrinApp {
                             undo_available_for_saved_text = true;
                         } else {
                             record.message = Some(
-                                if recovery_conflict {
-                                    "Text saved with a retained external change; reload before editing again. Session Undo is unavailable to protect that recovery data."
-                                } else {
-                                    "Text saved; session Undo is unavailable because the saved file or its storage identity could not be captured."
-                                }
-                                .to_string(),
+                                "Text saved; session Undo is unavailable because the saved file or its storage identity could not be captured.".to_string(),
                             );
                         }
                     }
@@ -19175,7 +19173,7 @@ impl OttrinApp {
                                     .preview
                                     .text_editor
                                     .as_ref()
-                                    .is_some_and(PreviewTextEditor::is_dirty);
+                                    .is_some_and(|editor| editor.is_dirty() && !editor.save_requires_reload());
                                 let administrator = administrator_session();
                                 let save_label =
                                     administrator_surface_label("Save", administrator);
@@ -19288,6 +19286,11 @@ impl OttrinApp {
                     {
                         ui.label(RichText::new("Save needs attention").strong().color(c.error));
                         ui.label(error.to_string());
+                        if let TextEditError::RecoveryConflict { .. } = error
+                            && ui.button("Copy recovery details").clicked()
+                        {
+                            ui.ctx().copy_text(error.to_string());
+                        }
                         ui.horizontal(|ui| {
                             if ui.button("Copy my edits").clicked() {
                                 ui.ctx().copy_text(editor.buffer.clone());
@@ -29068,24 +29071,41 @@ mod tests {
     }
 
     #[test]
-    fn recovery_conflict_save_result_disables_text_undo() {
-        let recovery = Err(TextEditError::RecoveryConflict);
-
-        assert!(text_edit_save_is_recovery_conflict(&recovery));
-        assert!(!text_edit_save_undo_is_available(&recovery, true));
+    fn recovery_conflict_keeps_editor_buffer_and_persistent_error() {
+        let fixture = tempfile::tempdir_in(std::env::current_dir().unwrap()).unwrap();
+        let path = fixture.path().join("notes.txt");
+        std::fs::write(&path, "original\n").unwrap();
+        let mut app = OttrinApp::default();
+        app.preview.path = Some(path.clone());
+        app.begin_preview_text_edit(&path);
+        app.preview.text_editor.as_mut().unwrap().buffer = "draft\n".into();
+        app.finish_preview_text_save(Err(TextEditError::RecoveryConflict {
+            recovery: "/recovery/example".into(),
+            detail: "external version retained".into(),
+        }));
+        app.save_preview_text_edit();
+        let editor = app
+            .preview
+            .text_editor
+            .as_ref()
+            .expect("recovery must not discard the draft");
+        assert_eq!(editor.buffer, "draft\n");
+        assert!(editor.error.is_some());
+        assert!(
+            app.operation_history.is_empty(),
+            "conflicts are not completed edits or Undo receipts"
+        );
+        assert!(!app.request_preview_close());
     }
 
     #[test]
-    fn recovery_conflict_with_uncertain_durability_names_both_save_risks() {
-        let result = Err(TextEditError::RecoveryConflictWithDurabilityUncertain(
-            "simulated directory sync failure".to_string(),
-        ));
+    fn recovery_conflict_save_result_disables_text_undo() {
+        let recovery = Err(TextEditError::RecoveryConflict {
+            recovery: "/recovery/example".into(),
+            detail: "external version retained".into(),
+        });
 
-        assert_eq!(
-            text_edit_save_status(&result, false),
-            "Text saved, but an external change was retained for recovery and durability could not be confirmed; reload before editing again"
-        );
-        assert!(!text_edit_save_completed_cleanly(&result));
+        assert!(!text_edit_save_undo_is_available(&recovery, true));
     }
 
     #[test]

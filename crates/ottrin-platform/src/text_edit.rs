@@ -44,13 +44,12 @@ pub enum TextEditError {
     #[error("the file changed after editing began; your unsaved changes are still in the editor")]
     Conflict,
     #[error(
-        "the edited text was saved, but a concurrent external change was retained for recovery; reload the file before making further edits"
+        "Recovery conflict: {detail}. Your draft is still in the editor. Recovery directory: {recovery:?} (edits = your draft; candidate = displaced entry). Copy your edits before reloading."
     )]
-    RecoveryConflict,
-    #[error(
-        "the edited text was saved, but a concurrent external change was retained for recovery and directory durability could not be confirmed: {0}"
-    )]
-    RecoveryConflictWithDurabilityUncertain(String),
+    RecoveryConflict {
+        recovery: std::path::PathBuf,
+        detail: String,
+    },
     #[error(
         "the edited text may be published, but directory durability could not be confirmed: {0}"
     )]
@@ -102,7 +101,9 @@ impl TextEditSession {
     /// Rechecks the descriptor-relative identity and captured generation after
     /// staging I/O, then atomically exchanges the candidate with the source.
     /// The displaced source is retained in private staging. If it is not the
-    /// captured source, the edit is committed but reported as a recovery conflict.
+    /// captured source, both entries are retained and a recovery conflict is
+    /// returned. Restoration only fills an absent source name without replacing
+    /// any entry. Successful saves also retain the prior inode for late writers.
     pub fn save(&self, edited_text: &str) -> Result<(), TextEditError> {
         #[cfg(target_os = "linux")]
         {
@@ -131,7 +132,7 @@ mod linux {
     use rustix::fd::OwnedFd;
     use rustix::fs::{
         AtFlags, CWD, FileType, Mode, OFlags, RenameFlags, fchmod, flistxattr, fstat, fsync,
-        mkdirat, openat, renameat_with, statat,
+        linkat, mkdirat, openat, renameat_with, statat,
     };
     use rustix::io::Errno;
     use sha2::{Digest, Sha256};
@@ -179,6 +180,9 @@ mod linux {
     pub(super) enum TestPoint {
         BeforePublication,
         AfterSourceVerification,
+        AfterExchange,
+        BeforeRecovery,
+        BeforeDirectorySync,
     }
 
     impl Session {
@@ -303,7 +307,13 @@ mod linux {
         }
 
         fn matches_displaced_after_exchange(&self, current: &Self) -> bool {
-            self.metadata.identity == current.metadata.identity
+            // Exchange itself changes ctime. Every other admitted metadata field
+            // and the inode/content identity must still match. Never delete this
+            // entry: ctime-only races and later writes through open descriptors
+            // cannot be excluded by a post-exchange observation.
+            let mut expected = self.metadata;
+            expected.changed = current.metadata.changed;
+            expected == current.metadata
                 && self.bytes.len() == current.bytes.len()
                 && self.digest == current.digest
         }
@@ -536,6 +546,7 @@ mod linux {
         directory: OwnedFd,
         file: File,
         source_mode: u32,
+        recovery_path: std::path::PathBuf,
     }
 
     impl Stage {
@@ -585,6 +596,13 @@ mod linux {
                         "the private staging directory could not be verified".to_string(),
                     ));
                 }
+                let recovery_path =
+                    std::fs::read_link(format!("/proc/self/fd/{}", directory.as_raw_fd()))
+                        .map_err(|error| {
+                            TextEditError::StageRetentionRequired(format!(
+                                "cannot resolve private staging directory {name:?}: {error}"
+                            ))
+                        })?;
                 let fd = match openat(
                     &directory,
                     STAGED_CANDIDATE,
@@ -610,16 +628,35 @@ mod linux {
                     {
                         return Err(TextEditError::UnsupportedMetadata);
                     }
+                    // Independent durable draft: publication can immediately be
+                    // followed by another writer replacing or modifying target.
+                    let draft_fd = openat(
+                        &directory,
+                        "edits",
+                        OFlags::WRONLY
+                            | OFlags::CREATE
+                            | OFlags::EXCL
+                            | OFlags::NOFOLLOW
+                            | OFlags::CLOEXEC,
+                        Mode::RUSR | Mode::WUSR,
+                    )
+                    .map_err(write_error)?;
+                    let mut draft = File::from(draft_fd);
+                    draft.write_all(contents).map_err(write_error)?;
+                    draft.sync_all().map_err(write_error)?;
                     fsync(&directory).map_err(write_error)?;
                     fsync(parent).map_err(write_error)
                 })();
                 if let Err(error) = result {
-                    return Err(TextEditError::StageRetentionRequired(error.to_string()));
+                    return Err(TextEditError::StageRetentionRequired(format!(
+                        "{error}; recovery directory: {recovery_path:?}"
+                    )));
                 }
                 return Ok(Self {
                     directory,
                     file,
                     source_mode: source.mode,
+                    recovery_path,
                 });
             }
             Err(TextEditError::Write(
@@ -646,10 +683,16 @@ mod linux {
             if let Err(error) = hook(TestPoint::BeforePublication) {
                 return Err(self.retention_required(&error.to_string()));
             }
+            let candidate = match Snapshot::capture(&self.directory, OsStr::new(STAGED_CANDIDATE)) {
+                Ok(candidate) => candidate,
+                Err(error) => return Err(self.retention_required(&error.to_string())),
+            };
             // Revalidate after all staging I/O, immediately before publication.
-            let current = Snapshot::capture(parent, target).map_err(|_| TextEditError::Conflict)?;
-            if !source.matches(&current) {
-                return Err(TextEditError::Conflict);
+            let current = Snapshot::capture(parent, target);
+            if !matches!(current.as_ref(), Ok(current) if source.matches(current)) {
+                return Err(self.retention_required(
+                    "the source changed before publication; it was not replaced",
+                ));
             }
             if let Err(error) = hook(TestPoint::AfterSourceVerification) {
                 return Err(self.retention_required(&error.to_string()));
@@ -663,39 +706,75 @@ mod linux {
             ) {
                 return Err(self.retention_required(&error.to_string()));
             }
+            let observation_error = hook(TestPoint::AfterExchange).err();
             let displaced = Snapshot::capture(&self.directory, OsStr::new(STAGED_CANDIDATE));
             let displaced_matches_source = matches!(
                 displaced.as_ref(),
                 Ok(snapshot) if source.matches_displaced_after_exchange(snapshot)
             );
-            let durability_error = fsync(parent).err().map(|error| error.to_string());
-            publication_outcome(displaced_matches_source, durability_error.as_deref())
+            let published = Snapshot::capture(parent, target);
+            let publication_matches = matches!(published.as_ref(), Ok(snapshot) if candidate.matches_displaced_after_exchange(snapshot));
+            let mut detail = String::new();
+            if !displaced_matches_source || !publication_matches || observation_error.is_some() {
+                // Linux has no inode-conditional exchange. Exchanging back after
+                // a pathname check could displace a third writer. Only restore
+                // into an absent name, atomically without replacement; keep the
+                // recovery entry even when that restoration succeeds.
+                let restored = hook(TestPoint::BeforeRecovery).and_then(|()| {
+                    linkat(
+                        &self.directory,
+                        STAGED_CANDIDATE,
+                        parent,
+                        target,
+                        AtFlags::empty(),
+                    )
+                    .map_err(write_error)
+                });
+                detail = match restored {
+                    Ok(()) => "an external change was detected; its entry was restored to the vacant source name without replacement".into(),
+                    Err(error) => format!("an external change was detected; automatic restoration could not safely complete ({error}); the source name may contain a newer version"),
+                };
+            }
+            let durability = hook(TestPoint::BeforeDirectorySync).and_then(|()| {
+                fsync(&self.directory).map_err(write_error)?;
+                fsync(parent).map_err(write_error)
+            });
+            if !detail.is_empty() {
+                if let Err(error) = durability {
+                    detail.push_str(&format!(
+                        "; directory durability could not be confirmed: {error}"
+                    ));
+                }
+                return Err(TextEditError::RecoveryConflict {
+                    recovery: self.location(),
+                    detail,
+                });
+            }
+            if let Err(error) = durability {
+                return Err(TextEditError::DurabilityUncertain(format!(
+                    "{error}; recovery directory: {:?}",
+                    self.location()
+                )));
+            }
+            // Retention is intentional even on success: an external writer may
+            // still hold the displaced inode open. Automatic unlink would lose
+            // that writer's subsequent data. No Drop cleanup owns these entries.
+            Ok(())
+        }
+
+        fn location(&self) -> std::path::PathBuf {
+            // Resolve the pinned directory, not the original replaceable parent
+            // pathname. This also reports parent renames that occurred in save.
+            let descriptor = format!("/proc/self/fd/{}", self.directory.as_raw_fd());
+            std::fs::read_link(&descriptor).unwrap_or_else(|_| self.recovery_path.clone())
         }
 
         fn retention_required(self, reason: &str) -> TextEditError {
-            drop(self);
             TextEditError::StageRetentionRequired(format!(
-                "{reason}; no automatic cleanup was attempted after private staging"
+                "{reason}; retained recovery directory: {:?}; no automatic cleanup was attempted",
+                self.location()
             ))
         }
-    }
-
-    pub(super) fn publication_outcome(
-        displaced_matches_source: bool,
-        durability_error: Option<&str>,
-    ) -> Result<(), TextEditError> {
-        if !displaced_matches_source {
-            if let Some(error) = durability_error {
-                return Err(TextEditError::RecoveryConflictWithDurabilityUncertain(
-                    error.to_string(),
-                ));
-            }
-            return Err(TextEditError::RecoveryConflict);
-        }
-        if let Some(error) = durability_error {
-            return Err(TextEditError::DurabilityUncertain(error.to_string()));
-        }
-        Ok(())
     }
 
     fn validate_editable_text(text: &str) -> Result<(), TextEditError> {
@@ -844,6 +923,199 @@ mod tests {
     }
 
     #[test]
+    fn final_window_permission_change_is_retained_and_reported() {
+        use std::os::unix::fs::PermissionsExt;
+        let root = TestDir::fiemap_fixture();
+        let path = root.file("notes.txt", "original\n");
+        let session = TextEditSession::open(&path).unwrap();
+        let error = session
+            .save_with_test_hook("draft\n", |point| {
+                if point == linux::TestPoint::AfterSourceVerification {
+                    std::fs::set_permissions(&path, Permissions::from_mode(0o400)).unwrap();
+                }
+                Ok(())
+            })
+            .expect_err("metadata-only race must not be called a clean save");
+        let recovery = recovery_directory(&root);
+        assert!(error.to_string().contains(recovery.to_str().unwrap()));
+        assert_eq!(
+            std::fs::read_to_string(recovery.join("edits")).unwrap(),
+            "draft\n"
+        );
+        assert_eq!(
+            std::fs::metadata(recovery.join(STAGED_CANDIDATE))
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777,
+            0o400
+        );
+    }
+
+    fn recovery_directory(root: &TestDir) -> PathBuf {
+        std::fs::read_dir(&root.0)
+            .unwrap()
+            .map(Result::unwrap)
+            .map(|entry| entry.path())
+            .find(|path| {
+                path.file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .starts_with(".ottrin-text-edit-")
+            })
+            .unwrap()
+    }
+
+    #[test]
+    fn successful_save_retains_both_versions_for_late_descriptor_writers() {
+        use std::io::{Seek, Write};
+        use std::os::unix::fs::PermissionsExt;
+        let root = TestDir::fiemap_fixture();
+        let path = root.file("notes.txt", "original\n");
+        std::fs::set_permissions(&path, Permissions::from_mode(0o640)).unwrap();
+        let mut external = std::fs::OpenOptions::new().write(true).open(&path).unwrap();
+        let session = TextEditSession::open(&path).unwrap();
+        session.save("draft\n").unwrap();
+        external.rewind().unwrap();
+        external.write_all(b"external\n").unwrap();
+        let recovery = recovery_directory(&root);
+        assert_eq!(
+            std::fs::read_to_string(recovery.join(STAGED_CANDIDATE)).unwrap(),
+            "external\n"
+        );
+        assert_eq!(
+            std::fs::read_to_string(recovery.join("edits")).unwrap(),
+            "draft\n"
+        );
+        assert_eq!(
+            std::fs::metadata(path).unwrap().permissions().mode() & 0o777,
+            0o640
+        );
+    }
+
+    #[test]
+    fn recovery_only_restores_a_vacant_name_and_never_overwrites_a_third_writer() {
+        for (vacant, fail_restore, fail_sync) in [
+            (true, false, false),
+            (true, true, false),
+            (false, false, true),
+        ] {
+            let root = TestDir::fiemap_fixture();
+            let path = root.file("notes.txt", "original\n");
+            let session = TextEditSession::open(&path).unwrap();
+            let error = session
+                .save_with_test_hook("draft\n", |point| {
+                    match point {
+                        linux::TestPoint::AfterSourceVerification => {
+                            std::fs::write(&path, "external\n").unwrap()
+                        }
+                        linux::TestPoint::AfterExchange => {
+                            std::fs::remove_file(&path).unwrap();
+                            if !vacant {
+                                std::fs::write(&path, "third writer\n").unwrap();
+                            }
+                        }
+                        linux::TestPoint::BeforeRecovery if fail_restore => {
+                            return Err(TextEditError::Write(
+                                "injected restoration failure".into(),
+                            ));
+                        }
+                        linux::TestPoint::BeforeDirectorySync if fail_sync => {
+                            return Err(TextEditError::Write("injected sync failure".into()));
+                        }
+                        _ => {}
+                    }
+                    Ok(())
+                })
+                .unwrap_err();
+            assert!(matches!(error, TextEditError::RecoveryConflict { .. }));
+            if fail_sync {
+                assert!(
+                    error
+                        .to_string()
+                        .contains("durability could not be confirmed")
+                );
+            }
+            if vacant && !fail_restore {
+                assert_eq!(std::fs::read_to_string(&path).unwrap(), "external\n");
+            } else if !vacant {
+                assert_eq!(std::fs::read_to_string(&path).unwrap(), "third writer\n");
+            } else {
+                assert!(!path.exists());
+            }
+            let recovery = recovery_directory(&root);
+            assert_eq!(
+                std::fs::read_to_string(recovery.join("edits")).unwrap(),
+                "draft\n"
+            );
+            assert_eq!(
+                std::fs::read_to_string(recovery.join(STAGED_CANDIDATE)).unwrap(),
+                "external\n"
+            );
+        }
+    }
+
+    #[test]
+    fn publication_followed_by_another_writer_is_a_recovery_conflict() {
+        let root = TestDir::fiemap_fixture();
+        let path = root.file("notes.txt", "original\n");
+        let session = TextEditSession::open(&path).unwrap();
+        let error = session
+            .save_with_test_hook("draft\n", |point| {
+                if point == linux::TestPoint::AfterExchange {
+                    std::fs::write(&path, "newer writer\n").unwrap();
+                }
+                Ok(())
+            })
+            .expect_err("a changed publication must not discard the editor");
+        assert!(matches!(error, TextEditError::RecoveryConflict { .. }));
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "newer writer\n");
+        assert_eq!(
+            std::fs::read_to_string(recovery_directory(&root).join("edits")).unwrap(),
+            "draft\n"
+        );
+    }
+
+    #[test]
+    fn final_window_identical_bytes_replacement_preserves_inode_identity_check() {
+        let root = TestDir::fiemap_fixture();
+        let path = root.file("notes.txt", "original\n");
+        let session = TextEditSession::open(&path).unwrap();
+        let error = session
+            .save_with_test_hook("draft\n", |point| {
+                if point == linux::TestPoint::AfterSourceVerification {
+                    let replacement = root.file("replacement", "original\n");
+                    std::fs::rename(replacement, &path).unwrap();
+                }
+                Ok(())
+            })
+            .unwrap_err();
+        assert!(matches!(error, TextEditError::RecoveryConflict { .. }));
+    }
+
+    #[test]
+    fn unsupported_exchange_retains_draft_without_touching_source() {
+        let root = TestDir::fiemap_fixture();
+        let path = root.file("notes.txt", "original\n");
+        let session = TextEditSession::open(&path).unwrap();
+        let result = session.save_with_test_hook("draft\n", |point| {
+            if point == linux::TestPoint::AfterSourceVerification {
+                return Err(TextEditError::Write("operation not supported".into()));
+            }
+            Ok(())
+        });
+        assert!(matches!(
+            result,
+            Err(TextEditError::StageRetentionRequired(_))
+        ));
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "original\n");
+        assert_eq!(
+            std::fs::read_to_string(recovery_directory(&root).join("edits")).unwrap(),
+            "draft\n"
+        );
+    }
+
+    #[test]
     fn binary_controls_and_oversized_edits_are_not_admitted() {
         let root = TestDir::fiemap_fixture();
         let path = root.file("notes.txt", "ordinary\n");
@@ -928,8 +1200,8 @@ mod tests {
         let error = result.expect_err("replaced stage must not be removed");
         assert!(matches!(error, TextEditError::StageRetentionRequired(_)));
         assert!(
-            !error.to_string().contains(".ottrin-text-edit-"),
-            "retention error must not expose a replaceable public staging name"
+            error.to_string().contains(".ottrin-text-edit-"),
+            "retention error must identify the recovery location"
         );
         assert_eq!(unsaved_buffer, "my unsaved edit\n");
         assert_eq!(std::fs::read_to_string(path).unwrap(), "original\n");
@@ -950,7 +1222,10 @@ mod tests {
         let session = TextEditSession::open(&path).expect("open editable text");
 
         session
-            .save_with_test_hook("edited\n", |_| {
+            .save_with_test_hook("edited\n", |point| {
+                if point != linux::TestPoint::BeforePublication {
+                    return Ok(());
+                }
                 std::fs::rename(&parent, &moved_parent).expect("move validated parent");
                 std::fs::create_dir(&parent).expect("replace parent path");
                 std::fs::write(parent.join("notes.txt"), "unrelated\n")
@@ -1051,7 +1326,10 @@ mod tests {
             Ok(())
         });
 
-        assert!(matches!(result, Err(TextEditError::Conflict)));
+        assert!(matches!(
+            result,
+            Err(TextEditError::StageRetentionRequired(_))
+        ));
         let stage = std::fs::read_dir(&root.0)
             .unwrap()
             .map(Result::unwrap)
@@ -1097,7 +1375,7 @@ mod tests {
             })
             .expect_err("the displaced external source must be reported for recovery");
 
-        if !matches!(error, TextEditError::RecoveryConflict) {
+        if !matches!(error, TextEditError::RecoveryConflict { .. }) {
             panic!("expected a committed recovery conflict, got {error:?}");
         }
         assert_eq!(std::fs::read_to_string(&path).unwrap(), "edited\n");
@@ -1115,17 +1393,6 @@ mod tests {
             std::fs::read_to_string(recovery.join(STAGED_CANDIDATE)).unwrap(),
             "external edit\n"
         );
-    }
-
-    #[test]
-    fn recovery_conflict_keeps_post_publication_durability_uncertainty() {
-        let error =
-            super::linux::publication_outcome(false, Some("simulated directory sync failure"))
-                .expect_err("a displaced external source must retain the durability warning");
-        assert!(matches!(
-            error,
-            TextEditError::RecoveryConflictWithDurabilityUncertain(_)
-        ));
     }
 
     #[test]
