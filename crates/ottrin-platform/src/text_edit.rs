@@ -1,13 +1,19 @@
-//! Bounded Linux text-edit snapshots and descriptor-relative publication.
+//! Bounded text-edit snapshots and native, retained publication.
 //!
 //! This module deliberately does not classify file formats. The preview layer
 //! decides whether a file is a supported text preview; this boundary admits
 //! only complete, demonstrably plain, UTF-8 local files. Linux saves retain a
 //! descriptor for the source parent so a later pathname substitution cannot
-//! redirect staging or publication. Other platforms stay read-only.
+//! redirect staging or publication. Windows has a native boundary awaiting
+//! acceptance; its public editor gate remains closed. macOS stays read-only.
 
 use std::path::Path;
 use thiserror::Error;
+
+#[cfg(target_os = "windows")]
+mod windows;
+#[cfg(any(target_os = "windows", test))]
+mod windows_contract;
 
 /// The largest complete text file the first Inspector editor will load.
 ///
@@ -25,7 +31,7 @@ pub const fn text_editing_supported() -> bool {
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum TextEditError {
-    #[error("atomic text editing is not available on this platform")]
+    #[error("native text editing is not available on this platform")]
     NotAvailable,
     #[error("only regular local files can be edited")]
     NotRegularFile,
@@ -68,6 +74,8 @@ pub enum TextEditError {
 pub struct TextEditSession {
     #[cfg(target_os = "linux")]
     inner: linux::Session,
+    #[cfg(target_os = "windows")]
+    inner: windows::Session,
 }
 
 impl TextEditSession {
@@ -79,7 +87,14 @@ impl TextEditSession {
         {
             linux::Session::open(path).map(|inner| Self { inner })
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(target_os = "windows")]
+        {
+            if !text_editing_supported() {
+                return Err(TextEditError::NotAvailable);
+            }
+            windows::Session::open(path).map(|inner| Self { inner })
+        }
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
             let _ = path;
             Err(TextEditError::NotAvailable)
@@ -87,29 +102,28 @@ impl TextEditSession {
     }
 
     pub fn contents(&self) -> &str {
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         {
             self.inner.contents()
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
             let _ = self;
             unreachable!("text-edit sessions cannot be created on this platform")
         }
     }
 
-    /// Rechecks the descriptor-relative identity and captured generation after
-    /// staging I/O, then atomically exchanges the candidate with the source.
-    /// The displaced source is retained in private staging. If it is not the
-    /// captured source, both entries are retained and a recovery conflict is
-    /// returned. Restoration only fills an absent source name without replacing
-    /// any entry. Successful saves also retain the prior inode for late writers.
+    /// Rechecks source identity and generation after staging. Linux exchanges
+    /// the source with the candidate; the gated Windows boundary first retains
+    /// the source by handle, then publishes without replacing an occupied name.
+    /// Conflicts retain both versions. Restoration only fills a vacant name,
+    /// and successful saves also retain the prior file for late writers.
     pub fn save(&self, edited_text: &str) -> Result<(), TextEditError> {
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         {
             self.inner.save(edited_text)
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         {
             let _ = edited_text;
             Err(TextEditError::NotAvailable)
