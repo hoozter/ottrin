@@ -16,11 +16,13 @@ attributes, binary controls and files over 128 KiB are refused. A source handle
 is held during save with write/delete sharing denied; it is not held while the
 user edits. An incompatible existing writer therefore stops saving before staging.
 
-Source identity, content, creation/write/change times, owner/group/DACL and
-mandatory-label security are compared before withdrawal. The publication file is
-created beside the source using the captured security descriptor, so its inherited
-ACL comes from the same parent. Its captured security, creation time and attributes
-must match before the original is moved. No merge-error-ignore mode is used.
+Source identity, content, creation/write/change times, owner/group/DACL,
+mandatory-label security and security resource attributes are compared before
+withdrawal. The publication file is created beside the source using the captured
+security descriptor, so its inherited ACL comes from the same parent. Its captured
+security, creation time and attributes must match before the original is moved. If
+Windows cannot apply resource attributes to the publication, that exact comparison
+fails closed before withdrawal. No merge-error-ignore mode is used.
 
 Each changed save creates an owner-only `.ottrin-text-edit-<random>` directory.
 `edits` is an independent flushed draft. A unique sibling ending in `-publication`
@@ -71,11 +73,14 @@ Cross-compilation and portable tests do not establish native Windows acceptance.
 Before changing the public gate, require native evidence for ordinary and custom
 ACLs, directory flush support, sharing modes, writable mappings, Unicode paths,
 ancestor renames, process termination between each publication step, recovery
-privacy, and exact packaged editor behavior. In particular, audit SACLs, security
-resource attributes, object IDs and other NTFS metadata are **not yet covered by
-the admission/preservation checks**. Extend admission or preservation on evidence;
-do not enable the gate while these metadata gaps remain. Unsupported security
-cloning or directory flushing currently stops the save and retains staging.
+privacy, and exact packaged editor behavior. Security resource attributes are now
+included in the descriptor that is captured, applied and compared, but this
+preservation path still needs a native fixture with an actual resource-attribute
+ACE. Audit SACLs, scoped policy IDs, object IDs and other NTFS metadata are **not
+yet covered by the admission/preservation checks**. Extend admission or
+preservation on evidence; do not enable the gate while these metadata gaps remain.
+Unsupported security cloning or directory flushing currently stops the save and
+retains staging.
 
 The sharing restriction does not exclude writable mappings whose creating handles
 have already closed, changes to permissions, same-user tampering or storage

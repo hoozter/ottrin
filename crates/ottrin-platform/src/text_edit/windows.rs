@@ -21,8 +21,8 @@ use windows_sys::Win32::Security::Authorization::{
     ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1,
 };
 use windows_sys::Win32::Security::{
-    DACL_SECURITY_INFORMATION, GROUP_SECURITY_INFORMATION, GetKernelObjectSecurity,
-    LABEL_SECURITY_INFORMATION, OWNER_SECURITY_INFORMATION,
+    ATTRIBUTE_SECURITY_INFORMATION, DACL_SECURITY_INFORMATION, GROUP_SECURITY_INFORMATION,
+    GetKernelObjectSecurity, LABEL_SECURITY_INFORMATION, OWNER_SECURITY_INFORMATION,
 };
 use windows_sys::Win32::Storage::FileSystem::*;
 use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
@@ -44,6 +44,12 @@ struct Snapshot {
     security: Vec<u8>,
     bytes: Vec<u8>,
 }
+
+const PRESERVED_SECURITY_INFORMATION: u32 = OWNER_SECURITY_INFORMATION
+    | GROUP_SECURITY_INFORMATION
+    | DACL_SECURITY_INFORMATION
+    | LABEL_SECURITY_INFORMATION
+    | ATTRIBUTE_SECURITY_INFORMATION;
 
 impl Session {
     pub(super) fn open(path: &Path) -> Result<Self, TextEditError> {
@@ -403,13 +409,15 @@ fn metadata(file: &File) -> Result<Metadata, TextEditError> {
     if ea.EaSize != 0 {
         return Err(TextEditError::UnsupportedMetadata);
     }
-    let mask = OWNER_SECURITY_INFORMATION
-        | GROUP_SECURITY_INFORMATION
-        | DACL_SECURITY_INFORMATION
-        | LABEL_SECURITY_INFORMATION;
     let mut needed = 0;
     unsafe {
-        GetKernelObjectSecurity(handle(file), mask, ptr::null_mut(), 0, &mut needed);
+        GetKernelObjectSecurity(
+            handle(file),
+            PRESERVED_SECURITY_INFORMATION,
+            ptr::null_mut(),
+            0,
+            &mut needed,
+        );
     }
     if needed == 0 || needed > 65536 {
         return Err(TextEditError::UnsupportedMetadata);
@@ -418,7 +426,7 @@ fn metadata(file: &File) -> Result<Metadata, TextEditError> {
     if unsafe {
         GetKernelObjectSecurity(
             handle(file),
-            mask,
+            PRESERVED_SECURITY_INFORMATION,
             security.as_mut_ptr().cast(),
             needed,
             &mut needed,
@@ -585,6 +593,14 @@ fn link_no_replace(source: &File, parent: &File, name: &OsStr) -> Result<(), Tex
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn windows_security_snapshot_includes_resource_attributes() {
+        assert_ne!(
+            PRESERVED_SECURITY_INFORMATION & ATTRIBUTE_SECURITY_INFORMATION,
+            0
+        );
+    }
 
     struct Fixture(PathBuf);
     impl Fixture {
