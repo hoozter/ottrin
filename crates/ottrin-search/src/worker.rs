@@ -6,7 +6,8 @@ use crate::scanner::{BatchedScanOutcome, scan_batched};
 use crate::scanner::{ScanOutcome, ScanProgress};
 use crate::watch::WatchRegistry;
 use crate::{IndexState, current_unix_secs};
-use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use notify::event::{ModifyKind, RenameMode};
+use notify::{EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use ottrin_core::{SearchConfig, SearchIndexStatus};
 use std::collections::{BTreeSet, VecDeque};
 use std::path::{Path, PathBuf};
@@ -253,7 +254,10 @@ pub(crate) enum Command {
     UpdateConfig(SearchConfig),
     Rebuild(Option<mpsc::Sender<Result<(), String>>>),
     Reconcile(mpsc::Sender<Result<(), String>>),
-    FilesystemEvent(Vec<PathBuf>),
+    FilesystemEvent {
+        kind: EventKind,
+        paths: Vec<PathBuf>,
+    },
     WatchBackendError {
         paths: Vec<PathBuf>,
         error: String,
@@ -338,9 +342,10 @@ impl WorkerHandle {
 
     #[cfg(test)]
     pub(crate) fn filesystem_event(&self) {
-        let _ = self
-            .commands
-            .send(Command::FilesystemEvent(vec![PathBuf::from("/root/event")]));
+        let _ = self.commands.send(Command::FilesystemEvent {
+            kind: EventKind::Modify(ModifyKind::Any),
+            paths: vec![PathBuf::from("/root/event")],
+        });
     }
 
     pub(crate) fn stop(mut self) {
@@ -649,6 +654,40 @@ fn walk_plan_watch_paths(
     Ok(())
 }
 
+fn watch_new_directory_subtrees(
+    plan: &ScanPlan,
+    kind: &EventKind,
+    paths: &[PathBuf],
+    cancelled: &AtomicBool,
+    mut visit: impl FnMut(&Path) -> Result<(), String>,
+) -> Result<(), String> {
+    let candidates: &[PathBuf] = match kind {
+        EventKind::Create(_) => paths,
+        EventKind::Modify(ModifyKind::Name(RenameMode::Both)) if paths.len() >= 2 => {
+            &paths[paths.len() - 1..]
+        }
+        EventKind::Modify(ModifyKind::Name(RenameMode::To | RenameMode::Any)) => paths,
+        _ => return Ok(()),
+    };
+    for path in candidates {
+        let Some(root) = plan.root_for(path) else {
+            continue;
+        };
+        if plan.included_event_path_for_root(path, root).as_deref() != Some(path.as_path()) {
+            continue;
+        }
+        // Do not use metadata(): directory symlinks are indexed as leaves, not watched.
+        if !std::fs::symlink_metadata(path)
+            .map(|metadata| metadata.file_type().is_dir())
+            .unwrap_or(false)
+        {
+            continue;
+        }
+        walk_plan_watch_paths(plan, root, path, cancelled, &mut visit)?;
+    }
+    Ok(())
+}
+
 fn included_watch_event_paths(plan: &ScanPlan, paths: Vec<PathBuf>) -> Vec<PathBuf> {
     paths
         .into_iter()
@@ -713,7 +752,7 @@ impl WorkerLoop {
                 Ok(Command::Reconcile(completion)) => {
                     self.start_scan_with_mode(Some(completion), ScanMode::Reconcile)
                 }
-                Ok(Command::FilesystemEvent(paths)) => {
+                Ok(Command::FilesystemEvent { kind, paths }) => {
                     let paths = self
                         .current_plan
                         .as_ref()
@@ -723,33 +762,21 @@ impl WorkerLoop {
                         if let (Some(plan), Some(watcher)) =
                             (self.current_plan.as_ref(), watcher.as_mut())
                         {
-                            for path in &paths {
-                                let is_directory = std::fs::symlink_metadata(path)
-                                    .map(|metadata| metadata.file_type().is_dir())
-                                    .unwrap_or(false);
-                                if !is_directory {
-                                    continue;
-                                }
-                                let Some(root) = plan.root_for(path) else {
-                                    continue;
-                                };
-                                let watch_result = walk_plan_watch_paths(
-                                    plan,
-                                    root,
-                                    path,
-                                    &self.shutdown,
-                                    |directory| {
-                                        watcher
-                                            .watch(directory, RecursiveMode::NonRecursive)
-                                            .map_err(|error| error.to_string())
-                                    },
-                                );
-                                if let (Err(error), Some(registry)) =
-                                    (watch_result, self.watch_registry.as_mut())
-                                {
-                                    registry
-                                        .mark_paths_uncertain(std::slice::from_ref(path), &error);
-                                }
+                            let watch_result = watch_new_directory_subtrees(
+                                plan,
+                                &kind,
+                                &paths,
+                                &self.shutdown,
+                                |directory| {
+                                    watcher
+                                        .watch(directory, RecursiveMode::NonRecursive)
+                                        .map_err(|error| error.to_string())
+                                },
+                            );
+                            if let (Err(error), Some(registry)) =
+                                (watch_result, self.watch_registry.as_mut())
+                            {
+                                registry.mark_paths_uncertain(&paths, &error);
                             }
                         }
                         self.filesystem_event_revision =
@@ -825,7 +852,10 @@ impl WorkerLoop {
                             | notify::EventKind::Remove(_)
                     ) =>
                 {
-                    let _ = commands.send(Command::FilesystemEvent(event.paths));
+                    let _ = commands.send(Command::FilesystemEvent {
+                        kind: event.kind,
+                        paths: event.paths,
+                    });
                 }
                 Ok(_) => {}
                 Err(error) => {
@@ -1788,6 +1818,86 @@ mod tests {
     #[test]
     fn watcher_membership_does_not_follow_directory_symlinks() {
         assert!(!watcher_config().follow_symlinks());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn event_watch_discovery_only_walks_new_real_directory_subtrees() {
+        use notify::event::{CreateKind, ModifyKind, RemoveKind, RenameMode};
+        use std::os::unix::fs::symlink;
+
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-event-watch-discovery-{}",
+            std::process::id()
+        ));
+        let existing = root.join("existing");
+        let nested = existing.join("nested");
+        let moved = root.join("moved");
+        let linked = root.join("linked");
+        std::fs::create_dir_all(&nested).expect("create nested directory");
+        symlink(&existing, &linked).expect("create directory symlink");
+        let plan = ScanPlan::new(&config(root.to_str().expect("utf8 root"))).expect("plan");
+        let cancelled = AtomicBool::new(false);
+        let discover = |kind, paths: Vec<PathBuf>| {
+            let mut visited = Vec::new();
+            watch_new_directory_subtrees(&plan, &kind, &paths, &cancelled, |path| {
+                visited.push(path.to_path_buf());
+                Ok(())
+            })
+            .expect("discover watches");
+            visited
+        };
+
+        // Directory metadata/content updates and removals must not walk an old tree.
+        assert!(
+            discover(
+                notify::EventKind::Modify(ModifyKind::Any),
+                vec![existing.clone()]
+            )
+            .is_empty()
+        );
+        assert!(
+            discover(
+                notify::EventKind::Remove(RemoveKind::Any),
+                vec![existing.clone()]
+            )
+            .is_empty()
+        );
+
+        // An already populated newly created tree needs watches on every descendant.
+        assert_eq!(
+            discover(
+                notify::EventKind::Create(CreateKind::Folder),
+                vec![existing.clone()]
+            ),
+            vec![existing.clone(), nested.clone()]
+        );
+
+        std::fs::rename(&existing, &moved).expect("rename populated tree");
+        assert_eq!(
+            discover(
+                notify::EventKind::Modify(ModifyKind::Name(RenameMode::Both)),
+                vec![existing, moved.clone()],
+            ),
+            vec![moved.clone(), moved.join("nested")]
+        );
+
+        assert!(
+            discover(
+                notify::EventKind::Create(CreateKind::Any),
+                vec![linked.clone()]
+            )
+            .is_empty()
+        );
+        assert!(
+            discover(
+                notify::EventKind::Modify(ModifyKind::Name(RenameMode::To)),
+                vec![linked],
+            )
+            .is_empty(),
+            "directory symlinks are leaf entries"
+        );
+        std::fs::remove_dir_all(root).expect("remove fixture");
     }
 
     #[test]
@@ -3044,7 +3154,10 @@ mod tests {
         for _ in 0..3 {
             worker
                 .commands
-                .send(Command::FilesystemEvent(vec![root.join("new.txt")]))
+                .send(Command::FilesystemEvent {
+                    kind: EventKind::Create(notify::event::CreateKind::File),
+                    paths: vec![root.join("new.txt")],
+                })
                 .expect("event");
         }
         let deadline = Instant::now() + WAIT;
@@ -3090,7 +3203,10 @@ mod tests {
         std::fs::rename(&old_path, &filtered_path).expect("rename");
         worker
             .commands
-            .send(Command::FilesystemEvent(vec![old_path, filtered_path]))
+            .send(Command::FilesystemEvent {
+                kind: EventKind::Modify(ModifyKind::Name(RenameMode::Both)),
+                paths: vec![old_path, filtered_path],
+            })
             .expect("rename event");
         let deadline = Instant::now() + WAIT;
         while Instant::now() < deadline && store.lock().expect("store").commits.is_empty() {
@@ -3128,7 +3244,10 @@ mod tests {
         barrier(&worker.commands);
         worker
             .commands
-            .send(Command::FilesystemEvent(vec![moved.clone()]))
+            .send(Command::FilesystemEvent {
+                kind: EventKind::Create(notify::event::CreateKind::Folder),
+                paths: vec![moved.clone()],
+            })
             .expect("directory event");
         let deadline = Instant::now() + WAIT;
         while Instant::now() < deadline && store.lock().expect("store").commits.is_empty() {
@@ -3169,7 +3288,10 @@ mod tests {
             .collect();
         worker
             .commands
-            .send(Command::FilesystemEvent(paths))
+            .send(Command::FilesystemEvent {
+                kind: EventKind::Create(notify::event::CreateKind::File),
+                paths,
+            })
             .expect("large burst");
         let scan = scans.recv_timeout(WAIT).expect("full scan");
         assert!(store.lock().expect("store").commits.is_empty());
@@ -3206,7 +3328,10 @@ mod tests {
             .collect();
         worker
             .commands
-            .send(Command::FilesystemEvent(paths))
+            .send(Command::FilesystemEvent {
+                kind: EventKind::Create(notify::event::CreateKind::File),
+                paths,
+            })
             .expect("large burst");
         scans
             .recv_timeout(WAIT)
@@ -3258,7 +3383,10 @@ mod tests {
         barrier(&worker.commands);
         worker
             .commands
-            .send(Command::FilesystemEvent(vec![root.join("new.txt")]))
+            .send(Command::FilesystemEvent {
+                kind: EventKind::Create(notify::event::CreateKind::File),
+                paths: vec![root.join("new.txt")],
+            })
             .expect("event");
         entered_rx.recv_timeout(WAIT).expect("delta commit entered");
 
