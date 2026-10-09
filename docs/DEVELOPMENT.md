@@ -157,10 +157,12 @@ test build gate; the product route stays closed pending native safety acceptance
 $env:OTTRIN_WINDOWS_CROSS_VOLUME_ROOT = "Q:\owned-ottrin-fixtures"
 $env:OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE = "1"
 cargo test -p ottrin-platform windows_native_cross_volume_directory_ -- --ignored --test-threads=1
+cargo test -p ottrin-platform windows_native_cross_volume_conflicts_preserve_published_and_displaced_entries -- --ignored --test-threads=1
 ```
 
 Use a second disposable native volume and an owned fixture directory. The
-fixtures check directory publication, source preservation after mutations at
+fixtures check file/directory/symlink Skip/Rename/Overwrite conflicts with exact
+displaced-entry retention, directory publication, source preservation after mutations at
 rename handoffs, and recovery through ordinary Move after process exit at
 publication and source claim. They do not simulate power loss or certify all
 conflict, filesystem, ACL, retained-lifecycle or packaged cases. Fault hooks exist

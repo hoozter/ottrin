@@ -351,14 +351,6 @@ fn windows_cross_volume_source_kind(
 }
 
 #[cfg(any(target_os = "windows", test))]
-fn windows_cross_volume_source_supports_conflict(
-    _source_kind: WindowsCrossVolumeSourceKind,
-    _conflict: ConflictAction,
-) -> bool {
-    true
-}
-
-#[cfg(any(target_os = "windows", test))]
 fn windows_move_route(source_volume: u64, destination_volume: u64) -> WindowsMoveRoute {
     if source_volume == destination_volume {
         WindowsMoveRoute::SameVolume
@@ -965,13 +957,13 @@ fn classify_windows_cross_volume_overwrite_restart<T: Eq>(
         && retained_displaced.is_none()
     {
         WindowsCrossVolumeRestartAction::PublishStaged
-    } else if source_kind == WindowsCrossVolumeSourceKind::Directory
+    } else if source_kind != WindowsCrossVolumeSourceKind::File
         && source.as_ref() == Some(&expected_source)
         && target.is_none()
         && staged.as_ref() == Some(&expected_staged)
         && retained_displaced.as_ref() == Some(&expected_displaced)
     {
-        // Directory replacement uses two durable no-replace renames rather than ReplaceFileW.
+        // Directory/link replacement uses two durable no-replace renames rather than ReplaceFileW.
         // A restart between retaining the old target and publishing the candidate must finish
         // publication; the pinned identities make this topology unambiguous.
         WindowsCrossVolumeRestartAction::PublishStaged
@@ -1578,11 +1570,12 @@ fn move_windows_cross_volume_preflight(
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
             let source_identity = move_recovery::stable_identity_from_handle(&source_handle)
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
-            let compatible_plain_entries = (source_identity.is_regular_file_without_reparse()
+            let matching_supported_entries = (source_identity.is_regular_file_without_reparse()
                 && destination_identity.is_regular_file_without_reparse())
                 || (source_identity.is_directory_without_reparse()
-                    && destination_identity.is_directory_without_reparse());
-            if !compatible_plain_entries {
+                    && destination_identity.is_directory_without_reparse())
+                || (source_identity.is_symbolic_link() && destination_identity.is_symbolic_link());
+            if !matching_supported_entries {
                 return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
                     source.display().to_string(),
                 ));
@@ -3200,8 +3193,7 @@ fn resume_windows_cross_volume(
     let overwrite_evidence_is_complete = record.conflict == ConflictAction::Overwrite
         && record.destination_identity.is_some()
         && retained_displaced.is_some();
-    if !windows_cross_volume_source_supports_conflict(record.source_kind, record.conflict)
-        || (record.conflict == ConflictAction::Overwrite) != overwrite_evidence_is_complete
+    if (record.conflict == ConflictAction::Overwrite) != overwrite_evidence_is_complete
         || (record.conflict != ConflictAction::Overwrite
             && (record.destination_identity.is_some() || retained_displaced.is_some()))
         || (record.source_kind == WindowsCrossVolumeSourceKind::File
@@ -3739,7 +3731,8 @@ fn resume_windows_cross_volume(
                     let retained = retained_displaced
                         .as_deref()
                         .expect("validated retained Overwrite path");
-                    if record.source_kind != WindowsCrossVolumeSourceKind::File {
+                    let mut published = if record.source_kind != WindowsCrossVolumeSourceKind::File
+                    {
                         let transaction_handle =
                             move_recovery::open_reparse_safe_directory_for_rename(&transaction)
                                 .map_err(|error| PlatformError::ClaimedRecoveryPending {
@@ -3891,6 +3884,9 @@ fn resume_windows_cross_volume(
                                 },
                             )?;
                         }
+                        // Handle-relative rename preserves this exclusive handle.
+                        // Reopening its new pathname would conflict with our own lock.
+                        staged
                     } else {
                         drop(staged);
                         replace_windows_file_retaining_displaced(
@@ -3905,8 +3901,6 @@ fn resume_windows_cross_volume(
                                 .destination_identity
                                 .expect("validated displaced destination identity"),
                         )?;
-                    }
-                    let mut published =
                         move_recovery::open_reparse_safe_cross_volume_candidate(&target).map_err(
                             |error| PlatformError::CommittedCleanupPending {
                                 transaction: transaction.display().to_string(),
@@ -3914,7 +3908,8 @@ fn resume_windows_cross_volume(
                                     "Windows cross-volume Overwrite target could not be locked after publication: {error}"
                                 ),
                             },
-                        )?;
+                        )?
+                    };
                     let published_evidence = match record.source_kind {
                         WindowsCrossVolumeSourceKind::File => hash_windows_file(&mut published)?,
                         WindowsCrossVolumeSourceKind::Directory => {
@@ -3956,7 +3951,7 @@ fn resume_windows_cross_volume(
                             ),
                         }
                     })?;
-                    let retained_handle = move_recovery::open_reparse_safe_cross_volume_source(
+                    let retained_handle = move_recovery::open_reparse_safe_cross_volume_candidate(
                         retained,
                     )
                     .map_err(|error| {
@@ -7769,22 +7764,6 @@ mod windows_source_tests {
     }
 
     #[test]
-    fn windows_symbolic_link_conflicts_include_overwrite() {
-        assert!(super::windows_cross_volume_source_supports_conflict(
-            super::WindowsCrossVolumeSourceKind::SymbolicLink,
-            ConflictAction::Skip,
-        ));
-        assert!(super::windows_cross_volume_source_supports_conflict(
-            super::WindowsCrossVolumeSourceKind::SymbolicLink,
-            ConflictAction::Rename,
-        ));
-        assert!(super::windows_cross_volume_source_supports_conflict(
-            super::WindowsCrossVolumeSourceKind::SymbolicLink,
-            ConflictAction::Overwrite,
-        ));
-    }
-
-    #[test]
     fn windows_directory_manifest_evidence_is_order_independent_and_path_bound() {
         let file = super::WindowsDirectoryManifestEntry {
             relative_path: vec![b'n' as u16, b'e' as u16, b's' as u16, b't' as u16],
@@ -8473,6 +8452,77 @@ mod windows_source_tests {
             .expect("read published nested payload"),
             payload
         );
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_conflicts_preserve_published_and_displaced_entries() {
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        for kind in ["file", "directory", "symlink"] {
+            for conflict in [
+                ConflictAction::Skip,
+                ConflictAction::Rename,
+                ConflictAction::Overwrite,
+            ] {
+                let source_fixture = crate::tests::TestDir::new("cross-conflict-source");
+                let destination_fixture =
+                    crate::tests::TestDir::new_at(&volume, "cross-conflict-destination");
+                let source = source_fixture.path().join("entry");
+                let target = destination_fixture.path().join("entry");
+                let create = |path: &std::path::Path, contents: &str| match kind {
+                    "directory" => {
+                        std::fs::create_dir_all(path.join("nested")).unwrap();
+                        std::fs::write(path.join("nested/payload"), contents).unwrap();
+                    }
+                    "symlink" => std::os::windows::fs::symlink_file(contents, path).unwrap(),
+                    _ => std::fs::write(path, contents).unwrap(),
+                };
+                let read = |path: &std::path::Path| match kind {
+                    "directory" => std::fs::read(path.join("nested/payload")).unwrap(),
+                    "symlink" => std::fs::read_link(path)
+                        .unwrap()
+                        .to_string_lossy()
+                        .as_bytes()
+                        .to_vec(),
+                    _ => std::fs::read(path).unwrap(),
+                };
+                create(&source, "source-data");
+                create(&target, "displaced-data");
+                let displaced_identity = move_recovery::stable_identity_of_entry(&target).unwrap();
+                let result =
+                    super::move_entry_transactional(&source, destination_fixture.path(), conflict)
+                        .unwrap_or_else(|error| {
+                            panic!("kind={kind}, conflict={conflict:?}: {error:?}")
+                        });
+                if conflict == ConflictAction::Skip {
+                    assert_eq!(result.disposition, crate::MoveDisposition::Skipped);
+                    assert_eq!(read(&source), b"source-data");
+                    assert_eq!(read(&target), b"displaced-data");
+                } else {
+                    assert_eq!(result.disposition, crate::MoveDisposition::Moved);
+                    assert!(std::fs::symlink_metadata(&source).is_err());
+                    let published = result.published_path.unwrap();
+                    assert_eq!(read(&published), b"source-data");
+                    if conflict == ConflictAction::Rename {
+                        assert_ne!(published, target);
+                        assert_eq!(read(&target), b"displaced-data");
+                    } else {
+                        assert_eq!(published, target);
+                        let retained = result
+                            .retained_displaced_path
+                            .expect("Overwrite must retain displaced entry");
+                        assert_eq!(
+                            move_recovery::stable_identity_of_entry(&retained).unwrap(),
+                            displaced_identity
+                        );
+                        assert_eq!(read(&retained), b"displaced-data");
+                    }
+                }
+            }
+        }
     }
 
     #[cfg(target_os = "windows")]
@@ -9200,6 +9250,36 @@ mod windows_source_tests {
                 &["report.txt"],
             ),
             None,
+        );
+    }
+
+    #[test]
+    fn windows_cross_volume_link_overwrite_resumes_after_displaced_retention() {
+        assert_eq!(
+            classify_windows_cross_volume_overwrite_restart(
+                super::WindowsCrossVolumeSourceKind::SymbolicLink,
+                Some(1),
+                None,
+                Some(2),
+                Some(3),
+                1,
+                2,
+                3,
+            ),
+            WindowsCrossVolumeRestartAction::PublishStaged,
+        );
+        assert_eq!(
+            classify_windows_cross_volume_overwrite_restart(
+                super::WindowsCrossVolumeSourceKind::SymbolicLink,
+                Some(1),
+                None,
+                Some(2),
+                Some(4),
+                1,
+                2,
+                3,
+            ),
+            WindowsCrossVolumeRestartAction::RetainAmbiguous,
         );
     }
 
