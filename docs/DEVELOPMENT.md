@@ -143,9 +143,10 @@ cargo test -p ottrin-platform windows_native_directory_streams_are_empty_or_reje
 Move enumerates streams and directory children through its owned handles using
 `GetFileInformationByHandleEx`; it does not reopen an exclusively held directory
 by pathname. The snapshot fixture covers multiple buffers, Unicode names and
-continued writer/delete exclusion. Windows refuses a directory rename while descendant files remain open. Move
-closes those handles at the rename boundary while retaining the root handle, then
-revalidates before source removal. For files, directories and links, the published entry is identity/content verified
+continued writer/delete exclusion. Windows refuses a directory rename while
+descendant files remain open. Move closes those handles at the rename boundary
+while retaining the root handle, then revalidates before source removal. For
+files, directories and links, the published entry is identity/content verified
 and remains locked throughout source cleanup; changed content retains the source
 and recovery state.
 
@@ -162,12 +163,13 @@ cargo test -p ottrin-platform windows_native_cross_volume -- --ignored --test-th
 
 Use a second disposable native volume and an owned fixture directory. The
 fixtures check file/directory/symlink Skip/Rename/Overwrite conflicts with exact
-displaced-entry retention, directory publication, source preservation after mutations at
-rename handoffs, published-file/link change refusal, and recovery through ordinary Move after
-process exit at staging, publication, source claim and displaced directory/link
-retention. They do not simulate power loss or certify all
-conflict, filesystem, ACL, retained-lifecycle or packaged cases. Fault hooks exist
-only in test builds.
+displaced-entry retention, nested raw links without traversal, empty directories,
+source preservation after mutations at rename handoffs, published-file/link
+change refusal, and retry after source or published-file writers close. Process
+exit fixtures recover through ordinary Move after staging, publication, source
+claim and displaced directory/link retention. They do not simulate power loss or
+certify all conflict, filesystem, ACL, metadata, retained-lifecycle or packaged
+cases. Fault hooks exist only in test builds.
 
 ## Packaging
 

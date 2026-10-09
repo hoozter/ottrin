@@ -2743,14 +2743,6 @@ fn capture_windows_directory_snapshot(
             .ok_or_else(|| {
                 PlatformError::UnsupportedSafeCrossDeviceMove(path.display().to_string())
             })?;
-            if !windows_stream_set_is_copy_safe(
-                windows_file_streams(&handle)?,
-                kind == WindowsCrossVolumeSourceKind::Directory,
-            ) {
-                return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
-                    path.display().to_string(),
-                ));
-            }
             if entries.iter().any(|entry| entry.identity == identity) {
                 return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
                     path.display().to_string(),
@@ -2768,6 +2760,14 @@ fn capture_windows_directory_snapshot(
                     (size, sha256, target, is_directory)
                 }
             };
+            if !windows_stream_set_is_copy_safe(
+                windows_file_streams(&handle)?,
+                kind == WindowsCrossVolumeSourceKind::Directory || link_is_directory,
+            ) {
+                return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+                    path.display().to_string(),
+                ));
+            }
             let directory_handle = if kind == WindowsCrossVolumeSourceKind::Directory {
                 Some(
                     handle
@@ -7646,6 +7646,16 @@ mod windows_source_tests {
 
     use crate::{ConflictAction, PlatformError, move_recovery};
 
+    #[cfg(target_os = "windows")]
+    struct WindowsMoveHookReset;
+
+    #[cfg(target_os = "windows")]
+    impl Drop for WindowsMoveHookReset {
+        fn drop(&mut self) {
+            super::WINDOWS_CROSS_VOLUME_MOVE_HOOK.with(|hook| *hook.borrow_mut() = None);
+        }
+    }
+
     #[test]
     fn windows_move_route_distinguishes_same_and_cross_volume_paths() {
         assert_eq!(windows_move_route(41, 41), WindowsMoveRoute::SameVolume);
@@ -8462,6 +8472,17 @@ mod windows_source_tests {
             .expect("create cross-volume destination root");
         let payload = b"cross-volume directory verified payload";
         std::fs::write(nested.join("payload.bin"), payload).expect("write nested payload");
+        std::fs::create_dir(source.join("empty")).unwrap();
+        std::fs::write(fixture.source_root.join("outside.txt"), b"outside sentinel").unwrap();
+        std::os::windows::fs::symlink_file("missing-target", nested.join("dangling")).unwrap();
+        std::os::windows::fs::symlink_file("../../outside.txt", nested.join("external")).unwrap();
+        std::os::windows::fs::symlink_dir("..", nested.join("cycle")).unwrap();
+        let original_links = ["dangling", "external", "cycle"].map(|name| {
+            (
+                name,
+                super::read_windows_symbolic_link(&nested.join(name)).unwrap(),
+            )
+        });
 
         let publication = super::move_entry_transactional(
             &source,
@@ -8489,6 +8510,42 @@ mod windows_source_tests {
             )
             .expect("read published nested payload"),
             payload
+        );
+        let published = fixture.destination_root.join("source-tree");
+        assert!(published.join("empty").is_dir());
+        for (name, target, directory) in [
+            ("dangling", "missing-target", false),
+            ("external", "../../outside.txt", false),
+            ("cycle", "..", true),
+        ] {
+            let path = published.join("nested").join(name);
+            assert!(
+                std::fs::symlink_metadata(&path)
+                    .unwrap()
+                    .file_type()
+                    .is_symlink()
+            );
+            assert_eq!(
+                std::fs::read_link(&path).unwrap(),
+                std::path::Path::new(target)
+            );
+            let observed = super::read_windows_symbolic_link(&path).unwrap();
+            let original = &original_links
+                .iter()
+                .find(|(original_name, _)| *original_name == name)
+                .unwrap()
+                .1;
+            assert_eq!(
+                &observed, original,
+                "raw UTF-16 target and link kind must survive the move"
+            );
+            assert_eq!(observed.1, directory);
+        }
+        assert!(!published.join("nested/dangling").exists());
+        assert!(!published.join("nested/external").exists());
+        assert_eq!(
+            std::fs::read(fixture.source_root.join("outside.txt")).unwrap(),
+            b"outside sentinel"
         );
     }
 
@@ -8566,14 +8623,88 @@ mod windows_source_tests {
     #[cfg(target_os = "windows")]
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_sharing_conflicts_preserve_source_and_allow_retry() {
+        use std::{cell::RefCell, os::windows::fs::OpenOptionsExt, rc::Rc};
+        use windows_sys::Win32::Storage::FileSystem::{
+            FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
+        };
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        for lock_source in [true, false] {
+            let source_fixture = crate::tests::TestDir::new("sharing-source");
+            let destination_fixture = crate::tests::TestDir::new_at(&volume, "sharing-destination");
+            let source = source_fixture.path().join("entry");
+            let target = destination_fixture.path().join("entry");
+            std::fs::write(&source, b"source-data").unwrap();
+            let writer = Rc::new(RefCell::new(None));
+            let _reset = WindowsMoveHookReset;
+            if lock_source {
+                *writer.borrow_mut() = Some(
+                    std::fs::OpenOptions::new()
+                        .write(true)
+                        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+                        .open(&source)
+                        .unwrap(),
+                );
+            } else {
+                let callback_writer = writer.clone();
+                super::WINDOWS_CROSS_VOLUME_MOVE_HOOK.with(|hook| {
+                    *hook.borrow_mut() = Some(Box::new(move |boundary, path| {
+                        if boundary == super::WindowsCrossVolumeMoveBoundary::BeforeSourceCleanup {
+                            *callback_writer.borrow_mut() = Some(
+                                std::fs::OpenOptions::new()
+                                    .write(true)
+                                    .share_mode(
+                                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                                    )
+                                    .open(path)
+                                    .unwrap(),
+                            );
+                        }
+                    }));
+                });
+            }
+            let result = super::move_entry_transactional(
+                &source,
+                destination_fixture.path(),
+                ConflictAction::Rename,
+            );
+            assert!(
+                writer.borrow().is_some(),
+                "writer must overlap the tested boundary"
+            );
+            assert!(result.is_err(), "Move must refuse an incompatible writer");
+            assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+            if lock_source {
+                assert!(!target.exists());
+            } else {
+                assert!(matches!(
+                    result,
+                    Err(PlatformError::CommittedCleanupPending { .. })
+                ));
+                assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+            }
+            drop(_reset);
+            drop(writer.borrow_mut().take());
+            let retried = super::move_entry_transactional(
+                &source,
+                destination_fixture.path(),
+                ConflictAction::Rename,
+            )
+            .expect("retry must proceed after the external writer closes");
+            assert_eq!(retried.disposition, crate::MoveDisposition::Moved);
+            assert_eq!(retried.published_path.as_deref(), Some(target.as_path()));
+            assert!(!source.exists());
+            assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_published_file_or_link_change_preserves_source() {
         use std::{cell::Cell, rc::Rc};
-        struct ResetHook;
-        impl Drop for ResetHook {
-            fn drop(&mut self) {
-                super::WINDOWS_CROSS_VOLUME_MOVE_HOOK.with(|hook| *hook.borrow_mut() = None);
-            }
-        }
         assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
@@ -8590,7 +8721,7 @@ mod windows_source_tests {
             }
             let reached = Rc::new(Cell::new(false));
             let callback_reached = reached.clone();
-            let _reset = ResetHook;
+            let _reset = WindowsMoveHookReset;
             super::WINDOWS_CROSS_VOLUME_MOVE_HOOK.with(|hook| {
                 *hook.borrow_mut() = Some(Box::new(move |boundary, path| {
                     if boundary == super::WindowsCrossVolumeMoveBoundary::BeforeSourceCleanup {
@@ -8750,12 +8881,6 @@ mod windows_source_tests {
             cell::{Cell, RefCell},
             rc::Rc,
         };
-        struct ResetHook;
-        impl Drop for ResetHook {
-            fn drop(&mut self) {
-                super::WINDOWS_CROSS_VOLUME_MOVE_HOOK.with(|hook| *hook.borrow_mut() = None);
-            }
-        }
         assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
@@ -8776,7 +8901,7 @@ mod windows_source_tests {
             let callback_reached = reached.clone();
             let callback_claimed = claimed.clone();
             let callback_target = target.clone();
-            let _reset = ResetHook;
+            let _reset = WindowsMoveHookReset;
             super::WINDOWS_CROSS_VOLUME_MOVE_HOOK.with(|hook| {
                 *hook.borrow_mut() = Some(Box::new(move |boundary, path| {
                     if boundary == WindowsCrossVolumeMoveBoundary::SourceClaimed {
