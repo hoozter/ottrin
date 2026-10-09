@@ -372,12 +372,17 @@ fn windows_destination_parent_is_pinned<T: Eq>(opened: T, expected: T) -> bool {
 }
 
 #[cfg(any(target_os = "windows", test))]
-fn windows_stream_set_is_copy_safe<I, S>(streams: I) -> bool
+fn windows_stream_set_is_copy_safe<I, S>(streams: I, is_directory: bool) -> bool
 where
     I: IntoIterator<Item = S>,
     S: AsRef<std::ffi::OsStr>,
 {
     let mut streams = streams.into_iter();
+    // NTFS directories have no unnamed $DATA stream. Named streams on either
+    // entry kind cannot be represented by our verified-copy manifest.
+    if is_directory {
+        return streams.next().is_none();
+    }
     matches!(streams.next(), Some(name) if name.as_ref() == std::ffi::OsStr::new("::$DATA"))
         && streams.next().is_none()
 }
@@ -527,9 +532,12 @@ fn windows_file_streams(path: &Path) -> Result<Vec<std::ffi::OsString>, Platform
         )
     };
     if handle == INVALID_HANDLE_VALUE {
+        let error = std::io::Error::last_os_error();
+        if error.raw_os_error() == Some(ERROR_HANDLE_EOF as i32) {
+            return Ok(Vec::new());
+        }
         return Err(PlatformError::Io(format!(
-            "Windows Move could not enumerate source streams: {}",
-            std::io::Error::last_os_error()
+            "Windows Move could not enumerate source streams: {error}"
         )));
     }
     let handle = FindStreamHandle(handle);
@@ -1702,6 +1710,7 @@ fn drain_windows_claimed_source_directory(
         || !windows_stream_set_is_copy_safe(
             windows_file_streams(claimed_source)
                 .map_err(|error| cleanup_error(error.to_string()))?,
+            true,
         )
     {
         return Err(cleanup_error(
@@ -1972,7 +1981,10 @@ fn discard_incomplete_windows_directory_candidate(
             path.display()
         ))
     })?;
-    if !windows_stream_set_is_copy_safe(windows_file_streams(path)?) {
+    if !windows_stream_set_is_copy_safe(
+        windows_file_streams(path)?,
+        entry_kind == WindowsIncompleteStagingEntryKind::Directory,
+    ) {
         return Err(PlatformError::Io(format!(
             "incomplete Windows staging entry has unsupported named streams: {}",
             path.display()
@@ -2678,7 +2690,10 @@ fn capture_windows_directory_snapshot(
             .ok_or_else(|| {
                 PlatformError::UnsupportedSafeCrossDeviceMove(path.display().to_string())
             })?;
-            if !windows_stream_set_is_copy_safe(windows_file_streams(&path)?) {
+            if !windows_stream_set_is_copy_safe(
+                windows_file_streams(&path)?,
+                kind == WindowsCrossVolumeSourceKind::Directory,
+            ) {
                 return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
                     path.display().to_string(),
                 ));
@@ -2718,6 +2733,11 @@ fn capture_windows_directory_snapshot(
         Ok(())
     }
 
+    if !windows_stream_set_is_copy_safe(windows_file_streams(root)?, true) {
+        return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+            root.display().to_string(),
+        ));
+    }
     let mut entries = Vec::new();
     visit(root, Path::new(""), &mut entries)?;
     let manifest = entries
@@ -2903,7 +2923,7 @@ fn start_windows_cross_volume_move(
     let (source_size, source_sha256, source_manifest, source_link_target, source_link_is_directory) =
         match source_kind {
             WindowsCrossVolumeSourceKind::File => {
-                if !windows_stream_set_is_copy_safe(windows_file_streams(source)?) {
+                if !windows_stream_set_is_copy_safe(windows_file_streams(source)?, false) {
                     return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
                         source.display().to_string(),
                     ));
@@ -4124,7 +4144,7 @@ fn resume_windows_cross_volume(
                                     ),
                                 })?
                                 != record.source_identity
-                                || !windows_stream_set_is_copy_safe(windows_file_streams(&source)?)
+                                || !windows_stream_set_is_copy_safe(windows_file_streams(&source)?, true)
                             {
                                 return Err(PlatformError::CommittedCleanupPending {
                                     transaction: transaction.display().to_string(),
@@ -8400,14 +8420,50 @@ mod windows_source_tests {
         std::fs::remove_dir(&destination_root).expect("remove interruption destination root");
     }
 
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_native_directory_streams_are_empty_or_rejected() {
+        let fixture = crate::tests::TestDir::new("windows-directory-streams");
+        let directory = fixture.path().join("source-tree");
+        std::fs::create_dir(&directory).unwrap();
+        assert!(super::windows_file_streams(&directory).unwrap().is_empty());
+        assert!(super::capture_windows_directory_snapshot(&directory).is_ok());
+
+        let stream = directory.with_file_name("source-tree:retained-metadata");
+        std::fs::write(&stream, b"named directory data").unwrap();
+        let streams = super::windows_file_streams(&directory).unwrap();
+        assert_eq!(
+            streams,
+            vec![std::ffi::OsString::from(":retained-metadata:$DATA")]
+        );
+        assert!(matches!(
+            super::capture_windows_directory_snapshot(&directory),
+            Err(PlatformError::UnsupportedSafeCrossDeviceMove(_))
+        ));
+        assert_eq!(std::fs::read(stream).unwrap(), b"named directory data");
+    }
+
     #[test]
     fn windows_cross_volume_regular_file_rejects_named_data_streams() {
-        assert!(windows_stream_set_is_copy_safe(["::$DATA"]));
-        assert!(!windows_stream_set_is_copy_safe([
-            "::$DATA",
-            ":retained-metadata:$DATA",
-        ]));
-        assert!(!windows_stream_set_is_copy_safe(std::iter::empty::<&str>()));
+        assert!(windows_stream_set_is_copy_safe(["::$DATA"], false));
+        assert!(!windows_stream_set_is_copy_safe(
+            ["::$DATA", ":retained-metadata:$DATA",],
+            false
+        ));
+        assert!(!windows_stream_set_is_copy_safe(
+            std::iter::empty::<&str>(),
+            false
+        ));
+    }
+
+    #[test]
+    fn windows_cross_volume_directories_require_no_data_streams() {
+        assert!(windows_stream_set_is_copy_safe(
+            std::iter::empty::<&str>(),
+            true
+        ));
+        assert!(!windows_stream_set_is_copy_safe(["::$DATA"], true));
+        assert!(!windows_stream_set_is_copy_safe([":metadata:$DATA"], true));
     }
 
     #[test]
