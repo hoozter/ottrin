@@ -94,6 +94,27 @@ claim to bundle GIO modules or schemas. Packaging has an artifact-level
 content-type smoke with empty XDG data, but clean/minimal desktop acceptance is
 a separate release gate.
 
+### Windows Office process boundary
+
+Run the native Job Object fixtures on Windows as the ordinary test user:
+
+```powershell
+cargo test -p ottrin-preview --test windows_job_native native_job_ -- --test-threads=1
+```
+
+The fixtures exercise the actual launcher with disposable child processes and
+private temporary files. The ignored `fixture_root` and `fixture_descendant`
+entries are subprocess entrypoints selected by the tests, not independent tests
+to invoke manually. They cover output and diagnostic cleanup, timeout after the
+parent exits, cancellation, process and memory limits, aggregate descendant
+memory, and restriction of inherited handles. They do not certify an installed
+LibreOffice conversion, its profile cleanup, or provider fallback presentation.
+
+Linux can build the fixture executable with
+`cargo test -p ottrin-preview --target x86_64-pc-windows-gnu --test windows_job_native --no-run`.
+Cross-compilation is not native acceptance. Keep the Windows Office provider
+gated until its remaining installed-provider checks pass.
+
 ## Packaging
 
 End-user packages must run without Cargo.

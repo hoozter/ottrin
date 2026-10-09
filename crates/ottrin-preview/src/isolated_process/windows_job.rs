@@ -55,7 +55,8 @@ pub(super) fn run(
         raw_handle(logs.stderr()),
     ];
     let job = create_job(request)?;
-    let attributes = AttributeList::new(&inherited_handles, job.raw())?;
+    let jobs = [job.raw()];
+    let attributes = AttributeList::new(&inherited_handles, &jobs)?;
     let inheritance = InheritanceGuard::new(&inherited_handles)?;
     let mut startup: STARTUPINFOEXW = unsafe { std::mem::zeroed() };
     startup.StartupInfo.cb = u32::try_from(size_of::<STARTUPINFOEXW>())
@@ -537,13 +538,15 @@ impl Drop for InheritanceGuard {
     }
 }
 
-struct AttributeList {
+struct AttributeList<'a> {
     storage: Vec<usize>,
     raw: LPPROC_THREAD_ATTRIBUTE_LIST,
+    handles: &'a [HANDLE],
+    jobs: &'a [HANDLE],
 }
 
-impl AttributeList {
-    fn new(handles: &[HANDLE], job: HANDLE) -> Result<Self, IsolatedProcessFailure> {
+impl<'a> AttributeList<'a> {
+    fn new(handles: &'a [HANDLE], jobs: &'a [HANDLE]) -> Result<Self, IsolatedProcessFailure> {
         let mut bytes = 0;
         // SAFETY: the documented sizing call writes only the required byte count.
         unsafe {
@@ -559,16 +562,22 @@ impl AttributeList {
         if unsafe { InitializeProcThreadAttributeList(raw, 2, 0, &mut bytes) } == 0 {
             return Err(IsolatedProcessFailure::Unavailable);
         }
-        let list = Self { storage, raw };
-        // SAFETY: `handles` remains live through `CreateProcessW`; the attribute list owns
-        // copies of its handle values, not the handles themselves.
+        let list = Self {
+            storage,
+            raw,
+            handles,
+            jobs,
+        };
+        // SAFETY: UpdateProcThreadAttribute borrows value buffers until the list
+        // is deleted. The references in `list` keep both caller-owned arrays
+        // alive through CreateProcessW and DeleteProcThreadAttributeList.
         if unsafe {
             UpdateProcThreadAttribute(
                 list.raw,
                 0,
                 PROC_THREAD_ATTRIBUTE_HANDLE_LIST as usize,
-                handles.as_ptr().cast(),
-                size_of_val(handles),
+                list.handles.as_ptr().cast(),
+                size_of_val(list.handles),
                 null_mut(),
                 null(),
             )
@@ -576,15 +585,15 @@ impl AttributeList {
         {
             return Err(IsolatedProcessFailure::Unavailable);
         }
-        let jobs = [job];
-        // SAFETY: `jobs` is live for this call and the kernel consumes the handle value.
+        // SAFETY: the Job Object value buffer has the same borrowed lifetime
+        // as the inherited-handle buffer above.
         if unsafe {
             UpdateProcThreadAttribute(
                 list.raw,
                 0,
                 PROC_THREAD_ATTRIBUTE_JOB_LIST as usize,
-                jobs.as_ptr().cast(),
-                size_of_val(&jobs),
+                list.jobs.as_ptr().cast(),
+                size_of_val(list.jobs),
                 null_mut(),
                 null(),
             )
@@ -601,7 +610,7 @@ impl AttributeList {
     }
 }
 
-impl Drop for AttributeList {
+impl Drop for AttributeList<'_> {
     fn drop(&mut self) {
         // SAFETY: the list was initialized exactly once and storage is still live.
         unsafe {
