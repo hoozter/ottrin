@@ -143,14 +143,28 @@ cargo test -p ottrin-platform windows_native_directory_streams_are_empty_or_reje
 Move enumerates streams and directory children through its owned handles using
 `GetFileInformationByHandleEx`; it does not reopen an exclusively held directory
 by pathname. The snapshot fixture covers multiple buffers, Unicode names and
-continued writer/delete exclusion. This does not prove directory publication:
-Windows refuses a directory rename while descendant files remain open, so that
-transaction lifecycle still needs native acceptance.
+continued writer/delete exclusion. Windows refuses a directory rename while descendant files remain open. Move
+closes those handles at the rename boundary while retaining the root handle, then
+revalidates before source removal. The published tree remains locked throughout
+source claim and cleanup; changed content retains the source and recovery state.
 
 Cross-volume fixtures are separately ignored by default. They require a real
 second Windows volume in `OTTRIN_WINDOWS_CROSS_VOLUME_ROOT`, an isolated recovery
 root, and `OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE=1`. That variable opens only the
 test build gate; the product route stays closed pending native safety acceptance.
+
+```powershell
+$env:OTTRIN_WINDOWS_CROSS_VOLUME_ROOT = "Q:\owned-ottrin-fixtures"
+$env:OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE = "1"
+cargo test -p ottrin-platform windows_native_cross_volume_directory_ -- --ignored --test-threads=1
+```
+
+Use a second disposable native volume and an owned fixture directory. The
+fixtures check directory publication, source preservation after mutations at
+rename handoffs, and recovery through ordinary Move after process exit at
+publication and source claim. They do not simulate power loss or certify all
+conflict, filesystem, ACL, retained-lifecycle or packaged cases. Fault hooks exist
+only in test builds.
 
 ## Packaging
 

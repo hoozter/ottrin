@@ -4413,7 +4413,7 @@ mod tests {
             Self::new_at(&std::env::temp_dir(), name)
         }
 
-        fn new_at(parent: &Path, name: &str) -> Self {
+        pub(super) fn new_at(parent: &Path, name: &str) -> Self {
             let id = TEMP_ID.fetch_add(1, Ordering::Relaxed);
             let path = parent.join(format!(
                 "ottrin-platform-{name}-{}-{id}",

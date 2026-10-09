@@ -3018,11 +3018,9 @@ fn start_windows_cross_volume_move(
     let destination_manifest = if source_kind == WindowsCrossVolumeSourceKind::Directory
         && conflict == ConflictAction::Overwrite
     {
-        {
-            let target_handle = move_recovery::open_reparse_safe_cross_volume_source(target)
-                .map_err(|error| PlatformError::Io(error.to_string()))?;
-            capture_windows_directory_snapshot(target, &target_handle)?.journal_entries()?
-        }
+        let target_handle = move_recovery::open_reparse_safe_cross_volume_source(target)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        capture_windows_directory_snapshot(target, &target_handle)?.journal_entries()?
     } else {
         Vec::new()
     };
@@ -3094,6 +3092,41 @@ fn start_windows_cross_volume_move(
         ))
     })?;
     resume_windows_cross_volume(&recovery_root, &mut record, Some(source_handle))
+}
+
+#[cfg(all(target_os = "windows", test))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum WindowsDirectoryMoveBoundary {
+    CandidateUnlocked,
+    CandidatePublished,
+    SourceUnlocked,
+    SourceClaimed,
+}
+
+#[cfg(all(target_os = "windows", test))]
+type WindowsDirectoryMoveHook = Box<dyn FnMut(WindowsDirectoryMoveBoundary, &Path)>;
+
+#[cfg(all(target_os = "windows", test))]
+thread_local! {
+    static WINDOWS_DIRECTORY_MOVE_HOOK: std::cell::RefCell<Option<WindowsDirectoryMoveHook>> = const {
+        std::cell::RefCell::new(None)
+    };
+}
+
+#[cfg(all(target_os = "windows", test))]
+fn windows_directory_move_boundary(boundary: WindowsDirectoryMoveBoundary, path: &Path) {
+    if std::env::var("OTTRIN_TEST_WINDOWS_DIRECTORY_EXIT_BOUNDARY")
+        .ok()
+        .as_deref()
+        == Some(format!("{boundary:?}").as_str())
+    {
+        std::process::exit(87);
+    }
+    WINDOWS_DIRECTORY_MOVE_HOOK.with(|hook| {
+        if let Some(hook) = hook.borrow_mut().as_mut() {
+            hook(boundary, path);
+        }
+    });
 }
 
 #[cfg(target_os = "windows")]
@@ -3691,6 +3724,17 @@ fn resume_windows_cross_volume(
                         message: "Windows cross-volume destination parent changed before publication; source and staged candidate were preserved".into(),
                     });
                 }
+                // Windows refuses a directory rename while descendant files are open.
+                // Keep the root identity pinned, then reverify the published tree before
+                // any source removal; uncertainty preserves the complete source.
+                if record.source_kind == WindowsCrossVolumeSourceKind::Directory {
+                    drop(_retained_candidate_snapshot.take());
+                    #[cfg(test)]
+                    windows_directory_move_boundary(
+                        WindowsDirectoryMoveBoundary::CandidateUnlocked,
+                        &candidate,
+                    );
+                }
                 let publication = if record.conflict == ConflictAction::Overwrite {
                     let retained = retained_displaced
                         .as_deref()
@@ -4010,6 +4054,13 @@ fn resume_windows_cross_volume(
                         ),
                     }
                 })?;
+                #[cfg(test)]
+                if record.source_kind == WindowsCrossVolumeSourceKind::Directory {
+                    windows_directory_move_boundary(
+                        WindowsDirectoryMoveBoundary::CandidatePublished,
+                        &target,
+                    );
+                }
                 drop((_retained_source_snapshot, _retained_candidate_snapshot));
             }
             WindowsCrossVolumeRestartAction::FlushPublished => {
@@ -4203,6 +4254,44 @@ fn resume_windows_cross_volume(
             }
             WindowsCrossVolumeRestartAction::RemoveSource => {
                 if record.source_kind == WindowsCrossVolumeSourceKind::Directory {
+                    let cleanup_error = |message: String| PlatformError::CommittedCleanupPending {
+                        transaction: transaction.display().to_string(),
+                        message,
+                    };
+                    let published = move_recovery::open_reparse_safe_cross_volume_candidate(
+                        &target,
+                    )
+                    .map_err(|error| {
+                        cleanup_error(format!(
+                            "published directory lock failed before source cleanup: {error}"
+                        ))
+                    })?;
+                    if Some(
+                        move_recovery::stable_identity_from_handle(&published)
+                            .map_err(|error| cleanup_error(error.to_string()))?,
+                    ) != record.candidate_identity
+                    {
+                        return Err(cleanup_error(
+                            "published directory identity changed; source was preserved".into(),
+                        ));
+                    }
+                    let published_snapshot = capture_windows_directory_snapshot(
+                        &target, &published,
+                    )
+                    .map_err(|error| {
+                        cleanup_error(format!(
+                            "published directory verification failed before source cleanup: {error}"
+                        ))
+                    })?;
+                    if published_snapshot.evidence
+                        != (record.source_size, record.source_sha256.clone())
+                    {
+                        return Err(cleanup_error(
+                            "published directory contents changed; source was preserved".into(),
+                        ));
+                    }
+                    // Both guards remain in scope through claim or destructive cleanup.
+                    let _published_guards = (published, published_snapshot);
                     let source_now = observe_windows_identity(&source)?;
                     let claimed_now = observe_windows_identity(&claimed_directory_source)?;
                     let topology =
@@ -4291,6 +4380,14 @@ fn resume_windows_cross_volume(
                                             .into(),
                                 });
                             }
+                            // The claimed tree is re-opened and checked against the durable
+                            // identity/content manifest before removing any entry.
+                            drop(source_snapshot);
+                            #[cfg(test)]
+                            windows_directory_move_boundary(
+                                WindowsDirectoryMoveBoundary::SourceUnlocked,
+                                &source,
+                            );
                             rename_windows_handle_no_replace(
                                 retained_source,
                                 &source_parent_handle,
@@ -4316,7 +4413,11 @@ fn resume_windows_cross_volume(
                                     ),
                                 }
                             })?;
-                            drop(source_snapshot);
+                            #[cfg(test)]
+                            windows_directory_move_boundary(
+                                WindowsDirectoryMoveBoundary::SourceClaimed,
+                                &claimed_directory_source,
+                            );
                             continue;
                         }
                         WindowsDirectoryCleanupTopology::DrainClaimedSource => {
@@ -8372,6 +8473,198 @@ mod windows_source_tests {
             .expect("read published nested payload"),
             payload
         );
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_directory_handoff_mutations_preserve_source() {
+        use super::WindowsDirectoryMoveBoundary;
+        use std::{
+            cell::{Cell, RefCell},
+            rc::Rc,
+        };
+        struct ResetHook;
+        impl Drop for ResetHook {
+            fn drop(&mut self) {
+                super::WINDOWS_DIRECTORY_MOVE_HOOK.with(|hook| *hook.borrow_mut() = None);
+            }
+        }
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        for fault in [
+            WindowsDirectoryMoveBoundary::CandidateUnlocked,
+            WindowsDirectoryMoveBoundary::SourceUnlocked,
+            WindowsDirectoryMoveBoundary::SourceClaimed,
+        ] {
+            let source_fixture = crate::tests::TestDir::new("directory-handoff-source");
+            let destination_fixture =
+                crate::tests::TestDir::new_at(&volume, "directory-handoff-destination");
+            let source = source_fixture.path().join("source-tree");
+            let target = destination_fixture.path().join("source-tree");
+            std::fs::create_dir_all(source.join("nested")).unwrap();
+            std::fs::write(source.join("nested/payload"), b"original data").unwrap();
+            let reached = Rc::new(Cell::new(false));
+            let claimed = Rc::new(RefCell::new(None));
+            let callback_reached = reached.clone();
+            let callback_claimed = claimed.clone();
+            let callback_target = target.clone();
+            let _reset = ResetHook;
+            super::WINDOWS_DIRECTORY_MOVE_HOOK.with(|hook| {
+                *hook.borrow_mut() = Some(Box::new(move |boundary, path| {
+                    if boundary == WindowsDirectoryMoveBoundary::SourceClaimed {
+                        *callback_claimed.borrow_mut() = Some(path.to_path_buf());
+                    }
+                    if boundary == fault {
+                        if boundary != WindowsDirectoryMoveBoundary::CandidateUnlocked {
+                            assert!(
+                                std::fs::write(
+                                    callback_target.join("nested/payload"),
+                                    b"destination attack"
+                                )
+                                .is_err(),
+                                "verified destination must stay locked through source mutation"
+                            );
+                        }
+                        std::fs::write(path.join("nested/payload"), b"external change").unwrap();
+                        callback_reached.set(true);
+                    }
+                }));
+            });
+            let result = super::move_entry_transactional(
+                &source,
+                destination_fixture.path(),
+                ConflictAction::Rename,
+            );
+            assert!(
+                reached.get(),
+                "fault boundary {fault:?} was not reached: {:?}",
+                result.as_ref().err()
+            );
+            assert!(
+                matches!(result, Err(PlatformError::CommittedCleanupPending { .. })),
+                "changed content must prevent source cleanup: {:?}",
+                result.as_ref().err()
+            );
+            let retained_source = claimed.borrow().clone().unwrap_or_else(|| source.clone());
+            let expected_source: &[u8] = if fault == WindowsDirectoryMoveBoundary::CandidateUnlocked
+            {
+                b"original data"
+            } else {
+                b"external change"
+            };
+            assert_eq!(
+                std::fs::read(retained_source.join("nested/payload")).unwrap(),
+                expected_source
+            );
+            assert_eq!(
+                std::fs::read(target.join("nested/payload")).unwrap(),
+                if fault == WindowsDirectoryMoveBoundary::CandidateUnlocked {
+                    b"external change" as &[u8]
+                } else {
+                    b"original data" as &[u8]
+                }
+            );
+            drop(_reset);
+            assert!(
+                super::move_entry_transactional(
+                    &source,
+                    destination_fixture.path(),
+                    ConflictAction::Rename
+                )
+                .is_err(),
+                "ordinary recovery must retain the conflict"
+            );
+            assert_eq!(
+                std::fs::read(retained_source.join("nested/payload")).unwrap(),
+                expected_source
+            );
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_directory_process_exit_recovers_without_data_loss() {
+        if std::env::var_os("OTTRIN_TEST_WINDOWS_DIRECTORY_EXIT_CHILD").is_some() {
+            let source = std::path::PathBuf::from(
+                std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE").unwrap(),
+            );
+            let destination = std::path::PathBuf::from(
+                std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION").unwrap(),
+            );
+            let result =
+                super::move_entry_transactional(&source, &destination, ConflictAction::Rename);
+            panic!(
+                "directory child returned instead of exiting: {:?}",
+                result.as_ref().err()
+            );
+        }
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        for boundary in ["CandidatePublished", "SourceClaimed"] {
+            let source_fixture = crate::tests::TestDir::new("directory-exit-source");
+            let destination_fixture =
+                crate::tests::TestDir::new_at(&volume, "directory-exit-destination");
+            let source = source_fixture.path().join("source-tree");
+            let target = destination_fixture.path().join("source-tree");
+            std::fs::create_dir_all(source.join("nested")).unwrap();
+            std::fs::write(source.join("nested/payload"), b"interrupted directory data").unwrap();
+            let status = std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_directory_process_exit_recovers_without_data_loss", "--nocapture"])
+                .env("OTTRIN_TEST_WINDOWS_DIRECTORY_EXIT_CHILD", "1")
+                .env("OTTRIN_TEST_WINDOWS_DIRECTORY_EXIT_BOUNDARY", boundary)
+                .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE", &source)
+                .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION", destination_fixture.path())
+                .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", destination_fixture.path().join("move-state"))
+                .status().unwrap();
+            assert_eq!(status.code(), Some(87), "child must exit at {boundary}");
+            assert_eq!(
+                std::fs::read(target.join("nested/payload")).unwrap(),
+                b"interrupted directory data"
+            );
+            let source_copies = std::fs::read_dir(source_fixture.path())
+                .unwrap()
+                .map(|entry| entry.unwrap().path().join("nested/payload"))
+                .filter(|path| path.exists())
+                .collect::<Vec<_>>();
+            assert_eq!(
+                source_copies.len(),
+                1,
+                "interruption must preserve the original or claimed source"
+            );
+            assert_eq!(
+                std::fs::read(&source_copies[0]).unwrap(),
+                b"interrupted directory data"
+            );
+            let publication = super::move_entry_transactional(
+                &source,
+                destination_fixture.path(),
+                ConflictAction::Rename,
+            )
+            .expect("ordinary Move entry must recover the interrupted directory");
+            assert_eq!(publication.disposition, crate::MoveDisposition::Moved);
+            assert_eq!(
+                publication.published_path.as_deref(),
+                Some(target.as_path())
+            );
+            assert!(!source_copies[0].exists());
+            assert_eq!(
+                std::fs::read(target.join("nested/payload")).unwrap(),
+                b"interrupted directory data"
+            );
+            assert!(
+                !std::fs::read_dir(destination_fixture.path())
+                    .unwrap()
+                    .any(|entry| entry
+                        .unwrap()
+                        .file_name()
+                        .to_string_lossy()
+                        .starts_with(".ottrin-move-"))
+            );
+        }
     }
 
     #[cfg(target_os = "windows")]
