@@ -1,12 +1,20 @@
 # Ottrin roadmap
 
-Last updated: 2026-09-23
+Last updated: 2026-10-09
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
 Linux is the primary implementation and daily-driver platform. Windows follows the same product contract in parallel where that does not materially slow Linux, and both ship in the same release. Further macOS implementation and acceptance are deferred until the Linux and Windows roadmap is complete.
 
 The roadmap names outcomes. Linked design and evidence documents define constraints; they do not create extra work by themselves.
+
+## Current Linux delivery status
+
+The saved-view reset was traced to UI tests writing the operator's settings; test profiles are now private, and the runtime restores the saved view. The remaining indexer CPU defect was reproduced with the packaged daemon and the operator's configured roots using a private database copy: ordinary file-change bursts spent about 94% of one core in subtree cleanup. Cleanup now follows indexed parent links instead of scanning the complete generation for each changed path. A bounded database-work regression protects that behavior.
+
+The October 3 native clipboard-event repair is part of the current source. The September 30 AppImage predates that repair and must not be used to evaluate the corrected source. Local builds now put all deliverables from `build-all.sh` in `dist/packages/`; read each artifact's source revision rather than inferring freshness from its version number. Current package acceptance and remaining limits are recorded in `.hermes/evidence/takeover-20261009/REPORT.md`.
+
+These repairs do not close the full Linux daily-driver or Windows release gates below. Hermes remains paused; the old task board's completion labels are not release acceptance.
 
 ## How to use this roadmap
 
@@ -60,7 +68,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 ### 1. Finish previews and editing
 
 - Complete native Windows fixture acceptance for the Job Object Office process boundary before enabling the provider. Verify conversion, timeout/cancellation descendant cleanup, memory/process limits, inherited-handle restriction, private profile/output cleanup and fallback behavior on a supported Windows host.
-- The approved Linux editable-text publication contract is source-complete for plain text, text-equivalent/code and Markdown files. Saving retains both the independent draft and the actual displaced inode in a private source-local recovery directory. Final-window content, replacement and permission races are detected after exchange; a recovery conflict keeps the buffer and exact recovery location visible and disables further saves until explicit reload. Restoration only fills a vacant name without replacement; an occupied or failed recovery leaves all retained versions intact. Both affected directories are synced, and uncertainty stays visible. Prior inodes are never automatically pruned, including after clean saves, because late descriptor writers cannot be ruled out. Exchange-induced ctime changes, later external edits, same-user tampering and crash/power-loss limits are stated in the user guide; this is a retention guarantee, not generation-conditional overwrite or writer exclusion. Focused tests cover final-window mutation, inode identity, permissions, late descriptor writes, restoration refusal/failure, durability failure, retention and editor recovery. Workspace and source-built Linux acceptance evidence is recorded in `.hermes/text-publication-20260923/`. Native crash/power-loss and package acceptance remain unclaimed. Windows and macOS stay read-only until their native publication boundaries are implemented and accepted. Additional document formats are not authorized.
+- The approved Linux editable-text publication contract is source-complete for plain text, text-equivalent/code and Markdown files. Saving retains both the independent draft and the actual displaced inode in a private source-local recovery directory. Final-window content, replacement and permission races are detected after exchange; a recovery conflict keeps the buffer and exact recovery location visible and disables further saves until explicit reload. Restoration only fills a vacant name without replacement; an occupied or failed recovery leaves all retained versions intact. Both affected directories are synced, and uncertainty stays visible. Prior inodes are never automatically pruned, including after clean saves, because late descriptor writers cannot be ruled out. Exchange-induced ctime changes, later external edits, same-user tampering and crash/power-loss limits are stated in the user guide; this is a retention guarantee, not generation-conditional overwrite or writer exclusion. Focused tests cover final-window mutation, inode identity, permissions, late descriptor writes, restoration refusal/failure, durability failure, retention and editor recovery. Workspace and source-built Linux acceptance evidence is recorded in `.hermes/text-publication-20260923/`. The exact AppImage from `cabfc8e4f0a6e4046581e73224eef5b2f9aac944` has packaged-editor byte identity, documentation and isolated headless-entrypoint evidence there; final-window race injection is test-only and has no packaged control, so packaged interactive recovery acceptance remains pending. Native crash/power-loss and physical/Wayland package acceptance remain unclaimed. Windows and macOS stay read-only until their native publication boundaries are implemented and accepted. Additional document formats are not authorized.
 
 ### 2. Complete file operations and desktop workflows
 
@@ -88,6 +96,7 @@ Start this phase after source and packaging outcomes are complete. Keep it as on
 
 ### Linux
 
+- Bounded packaged QA on 2026-10-03 verified the then-current AppImage in isolated Xvfb: startup, folder navigation, editable-text Inspector save/reopen, external-change refusal with retained draft, and confirmed reload. Embedded tracked-source provenance matched the checkout before this QA note. This does not close final Linux acceptance: automated Copy/Paste did not produce an accepted conflict flow; clean desktop, real removable storage and installed LibreOffice remain unverified or unavailable. Evidence and the first next acceptance are in `.hermes/evidence/t_fb84c0b6/QA_RECEIPT.md`; Windows remains a separate native gate.
 - Launch the AppImage, portable tarball and native packages on a clean supported desktop.
 - Run one daily-driver workflow covering navigation, New File/New Folder, file operations, cross-volume Copy, Tandem View, multi-select, search, Quick Inspector, context menus and status messages.
 - Attach, browse, index by explicit choice, detach and reconnect real mounted/removable volumes. Check compact/expanded Locations pointer, keyboard, tooltip, ordering, selection and unavailable states.

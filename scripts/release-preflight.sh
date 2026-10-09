@@ -89,6 +89,7 @@ shell_scripts=(
   packaging/macos/sign-and-notarize-release.sh
   packaging/macos/verify-release-signatures.sh
   packaging/verify-release-artifacts.sh
+  packaging/tests/verify-linux-privileged-helper-package-path.sh
   packaging/windows/package-installer.sh
   packaging/windows/package-msi.sh
   packaging/windows/package-portable.sh

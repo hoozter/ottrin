@@ -9251,6 +9251,53 @@ impl OttrinApp {
             return;
         }
 
+        // winit emits clipboard events, not C/X/V key presses. Leave text
+        // widgets and the Inspector in charge of their own clipboard input.
+        if !(self.command_frame.visible
+            || self.preview.visible
+            || ctx.wants_keyboard_input()
+            || self.sidebar == SidebarSection::Search && self.search_ui.input_focused)
+        {
+            let (events, shift) = ctx.input_mut(|input| {
+                let mut events = Vec::new();
+                input.events.retain(|event| {
+                    if matches!(
+                        event,
+                        egui::Event::Copy | egui::Event::Cut | egui::Event::Paste(_)
+                    ) {
+                        events.push(event.clone());
+                        false
+                    } else {
+                        true
+                    }
+                });
+                (events, input.modifiers.shift)
+            });
+            for event in events {
+                match event {
+                    egui::Event::Copy | egui::Event::Cut => {
+                        let cut = matches!(event, egui::Event::Cut);
+                        if shift && self.current_tandem_view().is_some() {
+                            if let Some(entry) = self.active_selected_entry() {
+                                let tab_id = self.state.active_tab().id;
+                                let source_dir = self.state.active_tab().current_dir.clone();
+                                let _ = self.queue_transfer_to_tandem(
+                                    tab_id,
+                                    &source_dir,
+                                    entry.path,
+                                    cut,
+                                );
+                            }
+                        } else {
+                            self.copy_selection(ctx, cut);
+                        }
+                    }
+                    egui::Event::Paste(_) => self.paste_clipboard(),
+                    _ => unreachable!(),
+                }
+            }
+        }
+
         ctx.input(|input| {
             let view = self.state.active_tab().view_mode;
             let is_grid = matches!(view, ViewMode::Grid);
@@ -9493,45 +9540,6 @@ impl OttrinApp {
             }
 
             // ── File operations ───────────────────────────────────────────────
-            if !self.command_frame.visible
-                && self.current_tandem_view().is_some()
-                && ctrl
-                && input.modifiers.shift
-                && input.key_pressed(Key::C)
-            {
-                if let Some(entry) = self.active_selected_entry() {
-                    let tab_id = self.state.active_tab().id;
-                    let source_dir = self
-                        .state
-                        .tab_by_id(tab_id)
-                        .map(|tab| tab.current_dir.clone())
-                        .unwrap_or_else(default_home_dir);
-                    let _ = self.queue_transfer_to_tandem(tab_id, &source_dir, entry.path, false);
-                }
-            } else if ctrl && input.key_pressed(Key::C) && !self.command_frame.visible {
-                self.copy_selection(false);
-            }
-            if !self.command_frame.visible
-                && self.current_tandem_view().is_some()
-                && ctrl
-                && input.modifiers.shift
-                && input.key_pressed(Key::X)
-            {
-                if let Some(entry) = self.active_selected_entry() {
-                    let tab_id = self.state.active_tab().id;
-                    let source_dir = self
-                        .state
-                        .tab_by_id(tab_id)
-                        .map(|tab| tab.current_dir.clone())
-                        .unwrap_or_else(default_home_dir);
-                    let _ = self.queue_transfer_to_tandem(tab_id, &source_dir, entry.path, true);
-                }
-            } else if ctrl && input.key_pressed(Key::X) && !self.command_frame.visible {
-                self.copy_selection(true);
-            }
-            if ctrl && input.key_pressed(Key::V) && !self.command_frame.visible {
-                self.paste_clipboard();
-            }
             if ctrl && input.key_pressed(Key::A) && !self.command_frame.visible {
                 self.select_all();
             }
@@ -10009,7 +10017,7 @@ impl OttrinApp {
         true
     }
 
-    fn handle_preview_key_action(&mut self, action: PreviewKeyAction) {
+    fn handle_preview_key_action(&mut self, ctx: &Context, action: PreviewKeyAction) {
         match action {
             PreviewKeyAction::PrevItem => {
                 if !self.select_adjacent_preview_item(-1) {
@@ -10027,20 +10035,20 @@ impl OttrinApp {
                     self.request_delete_paths(tab_id, vec![path], DeleteMode::Trash);
                 }
             }
-            PreviewKeyAction::Copy => self.copy_preview_path(false),
-            PreviewKeyAction::Cut => self.copy_preview_path(true),
+            PreviewKeyAction::Copy => self.copy_preview_path(ctx, false),
+            PreviewKeyAction::Cut => self.copy_preview_path(ctx, true),
             PreviewKeyAction::Rename => self.begin_rename(),
             PreviewKeyAction::CommandFrame => self.open_command_frame_with(""),
         }
     }
 
-    fn copy_preview_path(&mut self, cut: bool) {
+    fn copy_preview_path(&mut self, ctx: &Context, cut: bool) {
         if let Some(path) = self.preview.path.clone() {
-            if self.capture_clipboard(vec![path], cut) {
+            if self.capture_clipboard(ctx, vec![path], cut) {
                 self.set_status_message(if cut { "Cut 1 item" } else { "Copied 1 item" }, true, 3);
             }
         } else {
-            self.copy_selection(cut);
+            self.copy_selection(ctx, cut);
         }
     }
 
@@ -10347,11 +10355,11 @@ impl OttrinApp {
         }
     }
 
-    fn copy_selection(&mut self, cut: bool) {
+    fn copy_selection(&mut self, ctx: &Context, cut: bool) {
         let tab_id = self.state.active_tab().id;
         let sources = self.selected_paths_for_tab(tab_id);
         if !sources.is_empty() {
-            if !self.capture_clipboard(sources, cut) {
+            if !self.capture_clipboard(ctx, sources, cut) {
                 return;
             }
             let count = self
@@ -10447,10 +10455,21 @@ impl OttrinApp {
         }
     }
 
-    fn capture_clipboard(&mut self, sources: Vec<PathBuf>, cut: bool) -> bool {
+    fn capture_clipboard(&mut self, ctx: &Context, sources: Vec<PathBuf>, cut: bool) -> bool {
         self.reconcile_storage_location_availability(discover_storage_locations());
         match Clipboard::capture(sources, cut, &self.known_storage_locations) {
             Ok(clipboard) => {
+                // Nonempty text lets the native backend emit Paste even when
+                // the OS clipboard was previously empty. File operations still
+                // use our captured bindings, never arbitrary pasted text.
+                ctx.copy_text(
+                    clipboard
+                        .sources
+                        .iter()
+                        .map(|path| path.display().to_string())
+                        .collect::<Vec<_>>()
+                        .join("\n"),
+                );
                 self.clipboard = Some(clipboard);
                 true
             }
@@ -12353,7 +12372,7 @@ impl OttrinApp {
                                     )
                                     .clicked()
                                 {
-                                    self.copy_selection(false);
+                                    self.copy_selection(ui.ctx(), false);
                                     egui::Popup::close_id(ui.ctx(), menu_popup_id);
                                 }
                                 if ui
@@ -16115,13 +16134,13 @@ impl OttrinApp {
             }
             if menu_count == 1 {
                 if menu_item(ui, MI_CONTENT_COPY, "Copy Item", &c).clicked() {
-                    if self.capture_clipboard(vec![path.clone()], false) {
+                    if self.capture_clipboard(ui.ctx(), vec![path.clone()], false) {
                         self.set_status_message("Copied 1 item", true, 3);
                     }
                     ui.close();
                 }
                 if menu_item(ui, MI_CONTENT_CUT, "Cut Item", &c).clicked() {
-                    if self.capture_clipboard(vec![path.clone()], true) {
+                    if self.capture_clipboard(ui.ctx(), vec![path.clone()], true) {
                         self.set_status_message("Cut 1 item", true, 3);
                     }
                     ui.close();
@@ -16142,13 +16161,13 @@ impl OttrinApp {
             }
             if menu_count > 1 {
                 if menu_item(ui, MI_CONTENT_COPY, &format!("Copy {menu_target}"), &c).clicked() {
-                    if self.capture_clipboard(menu_sources.clone(), false) {
+                    if self.capture_clipboard(ui.ctx(), menu_sources.clone(), false) {
                         self.set_status_message(format!("Copied {menu_count} items"), true, 3);
                     }
                     ui.close();
                 }
                 if menu_item(ui, MI_CONTENT_CUT, &format!("Cut {menu_target}"), &c).clicked() {
-                    if self.capture_clipboard(menu_sources.clone(), true) {
+                    if self.capture_clipboard(ui.ctx(), menu_sources.clone(), true) {
                         self.set_status_message(format!("Cut {menu_count} items"), true, 3);
                     }
                     ui.close();
@@ -19036,14 +19055,11 @@ impl OttrinApp {
                         Some(PreviewKeyAction::PrevItem)
                     } else if i.consume_key(egui::Modifiers::NONE, Key::Delete) {
                         Some(PreviewKeyAction::Delete)
-                    } else if i.consume_key(egui::Modifiers::CTRL, Key::C)
-                        || i.consume_key(egui::Modifiers::COMMAND, Key::C)
-                    {
-                        Some(PreviewKeyAction::Copy)
-                    } else if i.consume_key(egui::Modifiers::CTRL, Key::X)
-                        || i.consume_key(egui::Modifiers::COMMAND, Key::X)
-                    {
-                        Some(PreviewKeyAction::Cut)
+                    } else if let Some(index) = i.events.iter().position(|event| matches!(event, egui::Event::Copy | egui::Event::Cut)) {
+                        Some(match i.events.remove(index) {
+                            egui::Event::Copy => PreviewKeyAction::Copy,
+                            _ => PreviewKeyAction::Cut,
+                        })
                     } else if i.consume_key(egui::Modifiers::CTRL, Key::L)
                         || i.consume_key(egui::Modifiers::COMMAND, Key::L)
                     {
@@ -19055,7 +19071,7 @@ impl OttrinApp {
                     }
                 });
                 if let Some(action) = key_action {
-                    self.handle_preview_key_action(action);
+                    self.handle_preview_key_action(inspector_ctx, action);
                 } else if let Some(text) = command_text {
                     self.open_command_frame_with(&text);
                 }
@@ -19102,14 +19118,14 @@ impl OttrinApp {
                                         .on_hover_text("Copy this file for pasting in Ottrin.")
                                         .clicked()
                                     {
-                                        self.copy_preview_path(false);
+                                        self.copy_preview_path(ui.ctx(), false);
                                         ui.close();
                                     }
                                     if menu_item(ui, MI_CONTENT_CUT, "Cut", &c)
                                         .on_hover_text("Cut this file for moving in Ottrin.")
                                         .clicked()
                                     {
-                                        self.copy_preview_path(true);
+                                        self.copy_preview_path(ui.ctx(), true);
                                         ui.close();
                                     }
                                     if menu_item(ui, MI_EDIT, "Rename", &c).clicked() {
@@ -26117,6 +26133,225 @@ mod tests {
                         && (points[1].y - CUSTOM_TITLEBAR_HEIGHT).abs() < f32::EPSILON
             )),
             "the stacked header must transition directly from tabs to navigation without a full-width separator band"
+        );
+    }
+
+    fn clipboard_keyboard_fixture() -> (tempfile::TempDir, OttrinApp, PathBuf) {
+        // File transfers require a home or discovered-volume binding. /tmp is
+        // neither, even though it is a valid location for other test fixtures.
+        let root = tempfile::Builder::new()
+            .prefix(".ottrin-clipboard-test-")
+            .tempdir_in(default_home_dir())
+            .unwrap();
+        let source = root.path().join("source.txt");
+        std::fs::write(&source, "clipboard fixture").unwrap();
+        let mut app = OttrinApp::default();
+        app.state.active_tab_mut().current_dir = root.path().to_path_buf();
+        let tab_id = app.state.active_tab().id;
+        let ui = app.tab_ui.entry(tab_id).or_default();
+        ui.main.entries = vec![FileEntry {
+            name: "source.txt".to_string(),
+            path: source.clone(),
+            kind: EntryKind::File,
+            is_executable: false,
+            symlink_target_is_dir: None,
+            size_bytes: Some(17),
+            modified_unix_secs: None,
+        }];
+        ui.main_sel = Some(0);
+        (root, app, source)
+    }
+
+    #[test]
+    fn clipboard_native_copy_and_cut_events_capture_selected_file() {
+        for (event, cut) in [(egui::Event::Copy, false), (egui::Event::Cut, true)] {
+            let (_root, mut app, source) = clipboard_keyboard_fixture();
+            let ctx = Context::default();
+            let output = ctx.run(
+                egui::RawInput {
+                    events: vec![event],
+                    ..Default::default()
+                },
+                |ctx| app.handle_keyboard(ctx),
+            );
+            let clip = app
+                .clipboard
+                .as_ref()
+                .expect("native clipboard event must capture selection");
+            assert_eq!(clip.sources, vec![source.clone()]);
+            assert_eq!(clip.cut, cut);
+            assert!(output.platform_output.commands.iter().any(|command| {
+                matches!(command, egui::OutputCommand::CopyText(text) if text == &source.display().to_string())
+            }), "file capture must seed the OS clipboard so native Paste is emitted");
+        }
+    }
+
+    #[test]
+    fn clipboard_native_paste_event_starts_owned_file_operation() {
+        let (root, mut app, source) = clipboard_keyboard_fixture();
+        assert!(app.capture_clipboard(&Context::default(), vec![source.clone()], false));
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        app.state.active_tab_mut().current_dir = destination.clone();
+        let ctx = Context::default();
+        let _ = ctx.run(
+            egui::RawInput {
+                events: vec![egui::Event::Paste(source.display().to_string())],
+                ..Default::default()
+            },
+            |ctx| app.handle_keyboard(ctx),
+        );
+        assert!(
+            app.clipboard.as_ref().unwrap().in_flight,
+            "native Paste must queue the captured files"
+        );
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while !destination.join("source.txt").exists() && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(10));
+            app.poll_op_results();
+        }
+        assert_eq!(
+            std::fs::read(destination.join("source.txt")).unwrap(),
+            b"clipboard fixture"
+        );
+        assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+    }
+
+    #[test]
+    fn clipboard_native_events_preserve_text_and_inspector_ownership() {
+        for owner in ["address", "search", "command", "text", "inspector"] {
+            let (_root, mut app, _source) = clipboard_keyboard_fixture();
+            let ctx = Context::default();
+            match owner {
+                "address" => {
+                    app.address_bars
+                        .entry(app.state.active_tab().id)
+                        .or_default()
+                        .editing = true;
+                }
+                "search" => {
+                    app.sidebar = SidebarSection::Search;
+                    app.search_ui.input_focused = true;
+                }
+                "command" => app.command_frame.visible = true,
+                "inspector" => app.preview.visible = true,
+                "text" => {
+                    let _ = ctx.run(Default::default(), |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            let mut text = String::new();
+                            ui.text_edit_singleline(&mut text).request_focus();
+                        });
+                    });
+                    assert!(ctx.wants_keyboard_input());
+                }
+                _ => unreachable!(),
+            }
+            let events = vec![
+                egui::Event::Copy,
+                egui::Event::Cut,
+                egui::Event::Paste("text".into()),
+            ];
+            let _ = ctx.run(
+                egui::RawInput {
+                    events: events.clone(),
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.handle_keyboard(ctx);
+                    assert_eq!(
+                        ctx.input(|input| input.events.clone()),
+                        events,
+                        "clipboard events belong to {owner}"
+                    );
+                },
+            );
+            assert!(app.clipboard.is_none(), "{owner} must not capture files");
+        }
+    }
+
+    #[test]
+    fn clipboard_native_menu_capture_publishes_paths_and_paste_renames_copy_conflict() {
+        let (root, mut app, source) = clipboard_keyboard_fixture();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("source.txt"), "keep existing").unwrap();
+        let ctx = Context::default();
+        let output = ctx.run(Default::default(), |ctx| {
+            assert!(app.capture_clipboard(ctx, vec![source.clone()], false));
+        });
+        assert!(output.platform_output.commands.iter().any(|command| {
+            matches!(command, egui::OutputCommand::CopyText(text) if text == &source.display().to_string())
+        }));
+        app.state.active_tab_mut().current_dir = destination.clone();
+        let _ = ctx.run(
+            egui::RawInput {
+                events: vec![egui::Event::Paste(source.display().to_string())],
+                ..Default::default()
+            },
+            |ctx| app.handle_keyboard(ctx),
+        );
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while app.clipboard.as_ref().unwrap().in_flight && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(10));
+            app.poll_op_results();
+        }
+        assert!(!app.clipboard.as_ref().unwrap().in_flight);
+        let paths: Vec<_> = std::fs::read_dir(&destination)
+            .unwrap()
+            .map(|entry| entry.unwrap())
+            .filter(|entry| entry.file_type().unwrap().is_file())
+            .map(|entry| entry.path())
+            .collect();
+        assert_eq!(
+            paths.len(),
+            2,
+            "Copy/Rename conflict must create a second file"
+        );
+        assert_eq!(
+            std::fs::read(destination.join("source.txt")).unwrap(),
+            b"keep existing"
+        );
+        for path in paths
+            .into_iter()
+            .filter(|path| path != &destination.join("source.txt"))
+        {
+            assert_eq!(std::fs::read(path).unwrap(), b"clipboard fixture");
+        }
+        assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+        assert!(
+            app.pending_move_conflict.is_none(),
+            "Copy conflicts use automatic Rename, not the Move dialog"
+        );
+    }
+
+    #[test]
+    fn clipboard_native_cut_paste_conflict_requires_confirmation() {
+        let (root, mut app, source) = clipboard_keyboard_fixture();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(destination.join("source.txt"), "keep existing").unwrap();
+        let ctx = Context::default();
+        let _ = ctx.run(
+            egui::RawInput {
+                events: vec![egui::Event::Cut],
+                ..Default::default()
+            },
+            |ctx| app.handle_keyboard(ctx),
+        );
+        app.state.active_tab_mut().current_dir = destination.clone();
+        let _ = ctx.run(
+            egui::RawInput {
+                events: vec![egui::Event::Paste(source.display().to_string())],
+                ..Default::default()
+            },
+            |ctx| app.handle_keyboard(ctx),
+        );
+        assert!(app.pending_move_conflict.is_some());
+        assert!(!app.clipboard.as_ref().unwrap().in_flight);
+        assert_eq!(std::fs::read(source).unwrap(), b"clipboard fixture");
+        assert_eq!(
+            std::fs::read(destination.join("source.txt")).unwrap(),
+            b"keep existing"
         );
     }
 

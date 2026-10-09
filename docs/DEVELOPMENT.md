@@ -186,7 +186,7 @@ Privileged operations are per action, never a global root/admin mode.
 Linux packaging should install:
 
 ```sh
-sudo install -m 0755 ottrin-priv-helper /usr/libexec/ottrin-priv-helper
+sudo install -D -m 0755 ottrin-priv-helper /usr/libexec/ottrin/ottrin-priv-helper
 sudo install -m 0644 packaging/linux/org.ottrin.filesystem.policy /usr/share/polkit-1/actions/
 ```
 

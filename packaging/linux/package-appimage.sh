@@ -94,7 +94,7 @@ cat > "$APPDIR/AppRun" <<'APPRUN'
 #!/bin/sh
 APPDIR="$(dirname "$(readlink -f "$0")")"
 export LD_LIBRARY_PATH="$APPDIR/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-export OTTRIN_PRIV_HELPER="$APPDIR/usr/libexec/ottrin/ottrin-priv-helper"
+export OTTRIN_PRIV_HELPER=/usr/libexec/ottrin/ottrin-priv-helper
 exec "$APPDIR/usr/bin/ottrin" "$@"
 APPRUN
 chmod +x "$APPDIR/AppRun"

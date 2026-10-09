@@ -5092,7 +5092,7 @@ fn preview_video(title: String, path: &Path) -> PreviewData {
         "Thumbnail: Windows Media Foundation is used when the installed OS codec supports this file."
             .to_string()
     } else if cfg!(target_os = "linux") {
-        "System playback: unavailable in this Ottrin build. This does not mean this file is invalid. On Linux, playback depends on GStreamer components made available by the operating system or user. Ottrin does not install codecs. Open externally to use another application."
+        "System playback: Quick Inspector tries playback with system GStreamer. Availability depends on the components installed on this system. Ottrin does not install codecs. Open externally to use another application."
             .to_string()
     } else {
         "Thumbnail: unavailable on this platform; video remains metadata-only.".to_string()
@@ -10406,8 +10406,8 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn linux_video_fallback_reports_unavailable_system_playback_without_blaming_the_file() {
-        let path = temp_path("system-playback-unavailable.mp4");
+    fn linux_video_metadata_defers_playback_availability_to_the_runtime() {
+        let path = temp_path("system-playback-unprobed.mp4");
         std::fs::write(&path, []).expect("write video fixture");
 
         let preview = load_preview(&PreviewRequest {
@@ -10417,8 +10417,8 @@ mod tests {
 
         assert_eq!(preview.kind, PreviewKind::VideoMetadata);
         assert!(preview.open_external);
-        assert!(preview.body.contains("System playback: unavailable"));
-        assert!(preview.body.contains("does not mean this file is invalid"));
+        assert!(preview.body.contains("Quick Inspector"));
+        assert!(!preview.body.contains("System playback: unavailable"));
         assert!(preview.body.contains("GStreamer"));
         assert!(preview.body.contains("Ottrin does not install codecs"));
 

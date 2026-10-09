@@ -142,9 +142,14 @@ Normal user-owned files do not need elevated setup. If an operation is denied, O
 Linux portable helper setup:
 
 ```sh
-sudo install -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin-priv-helper
+sudo install -D -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin/ottrin-priv-helper
 sudo install -m 0644 ./packaging/linux/org.ottrin.filesystem.policy /usr/share/polkit-1/actions/
 ```
+
+For the AppImage, extract it with `--appimage-extract`, then install
+`squashfs-root/usr/libexec/ottrin/ottrin-priv-helper` and
+`squashfs-root/usr/share/polkit-1/actions/org.ottrin.filesystem.policy` at the
+same system paths shown above. Privileged operations require this system setup.
 
 Windows portable packages bundle `ottrin-priv-helper.exe` beside the app and use the Windows UAC flow when needed.
 

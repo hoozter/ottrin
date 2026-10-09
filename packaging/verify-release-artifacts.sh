@@ -258,7 +258,7 @@ verify_linux_portable_running_instructions() {
   local instructions="$1"
   local expected
   for expected in \
-    'sudo install -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin-priv-helper' \
+    'sudo install -D -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin/ottrin-priv-helper' \
     'Without the helper, normal user-owned file operations still work.'; do
     if ! grep -Fq "$expected" <<<"$instructions"; then
       printf 'Linux portable archive RUNNING.md is missing the runtime instruction: %s\n' \

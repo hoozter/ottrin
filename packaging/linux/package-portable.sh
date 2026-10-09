@@ -61,6 +61,7 @@ cat > "$STAGE/bin/ottrin" <<'EOF'
 OTTRIN_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 OTTRIN_REAL_ELF="$OTTRIN_ROOT/libexec/ottrin/ottrin"
 export LD_LIBRARY_PATH="$OTTRIN_ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export OTTRIN_PRIV_HELPER=/usr/libexec/ottrin/ottrin-priv-helper
 exec "$OTTRIN_REAL_ELF" "$@"
 EOF
 chmod 0755 "$STAGE/bin/ottrin"
@@ -89,7 +90,7 @@ This launcher uses the artifact-local Linux runtime libraries in `./lib/`.
 Optional privileged helper setup:
 
 ```sh
-sudo install -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin-priv-helper
+sudo install -D -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin/ottrin-priv-helper
 sudo install -m 0644 ./packaging/linux/org.ottrin.filesystem.policy /usr/share/polkit-1/actions/
 ```
 

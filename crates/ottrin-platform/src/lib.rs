@@ -930,10 +930,7 @@ fn resolve_helper_name(default_name: &str) -> String {
         return path.display().to_string();
     }
     if let Ok(path) = std::env::var("OTTRIN_PRIV_HELPER") {
-        // Invalid env overrides should not break packaged auto-discovery.
-        if is_executable_available(&path) {
-            return path;
-        }
+        return path;
     }
     if let Some(found) = auto_discover_helper(default_name) {
         return found.display().to_string();

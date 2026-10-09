@@ -31,11 +31,13 @@ chmod +x Ottrin-*.AppImage
 ./Ottrin-*.AppImage
 ```
 
-For system integration (polkit privilege helper):
+For system integration (polkit privilege helper), install the helper and policy
+from the portable archive at the paths below. For the AppImage, extract it with
+`--appimage-extract` and use the corresponding files under `squashfs-root/usr/`.
 
 ```sh
-sudo cp ottrin-priv-helper /usr/libexec/ottrin-priv-helper
-sudo cp packaging/linux/org.ottrin.filesystem.policy \
+sudo install -D -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin/ottrin-priv-helper
+sudo install -m 0644 packaging/linux/org.ottrin.filesystem.policy \
     /usr/share/polkit-1/actions/
 ```
 
@@ -118,7 +120,7 @@ cd ottrin
 cargo run -p ottrin-app
 ```
 
-Build release packages into `dist/`:
+Build local release packages into `dist/packages/`:
 
 ```sh
 ./build-all.sh

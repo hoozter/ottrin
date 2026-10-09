@@ -848,29 +848,32 @@ fn configure_writer_connection(conn: &Connection) -> Result<(), SearchDbError> {
 
 const CONTENT_STATE_POLICY_DISABLED: i64 = 6;
 
+// Start from the requested name, even if its row is already gone, and follow
+// indexed parent links. CROSS JOIN keeps each known parent on the outside of
+// the lookup; reversing that join scans the generation at every tree level.
+const GENERATION_SUBTREE: &str = "WITH RECURSIVE descendants(path) AS (
+             SELECT ?2
+             UNION ALL
+             SELECT child.path FROM descendants parent
+             CROSS JOIN search_generation_items child ON child.parent_path = parent.path
+              WHERE child.generation_id = ?1
+         ) ";
+
 fn delete_generation_subtrees(
     tx: &Transaction<'_>,
     generation: i64,
     remove_trees: &[PathBuf],
 ) -> Result<usize, SearchDbError> {
-    const DESCENDANTS: &str = "WITH RECURSIVE descendants(path) AS (
-             SELECT path FROM search_generation_items
-              WHERE generation_id = ?1 AND (path = ?2 OR parent_path = ?2)
-             UNION ALL
-             SELECT child.path FROM search_generation_items child
-             JOIN descendants parent ON child.parent_path = parent.path
-              WHERE child.generation_id = ?1
-         ) ";
     let delete_content = format!(
-        "{DESCENDANTS}DELETE FROM content_store.search_generation_content
+        "{GENERATION_SUBTREE}DELETE FROM content_store.search_generation_content
          WHERE generation_id = ?1 AND path IN (SELECT path FROM descendants)"
     );
     let delete_content_state = format!(
-        "{DESCENDANTS}DELETE FROM content_store.search_generation_content_state
+        "{GENERATION_SUBTREE}DELETE FROM content_store.search_generation_content_state
          WHERE generation_id = ?1 AND path IN (SELECT path FROM descendants)"
     );
     let delete_items = format!(
-        "{DESCENDANTS}DELETE FROM search_generation_items
+        "{GENERATION_SUBTREE}DELETE FROM search_generation_items
          WHERE generation_id = ?1 AND path IN (SELECT path FROM descendants)"
     );
     let mut deleted_count = 0_usize;
@@ -4607,6 +4610,63 @@ mod generation_tests {
             &[owned(&root, "keep.txt", 3)]
         );
         let _ = std::fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn subtree_lookup_work_is_bounded_by_affected_entries() {
+        let conn = Connection::open_in_memory().expect("private database");
+        conn.execute_batch(GENERATION_SCHEMA).expect("schema");
+        conn.execute(
+            "INSERT INTO search_generations VALUES (1, 'test', 1, 10004)",
+            [],
+        )
+        .expect("generation");
+        let root = Path::new("root");
+        let mut insert = conn
+            .prepare("INSERT INTO search_generation_items VALUES (1, ?1, ?2, ?3, 'item', 0, NULL, NULL, 0, NULL)")
+            .expect("insert");
+        let affected = [
+            "tree",
+            "tree/child.txt",
+            "tree/nested",
+            "tree/nested/grandchild.txt",
+        ];
+        for relative in (0..10_000)
+            .map(|n| format!("treehouse/unrelated-{n}"))
+            .chain(affected.into_iter().map(str::to_owned))
+        {
+            let path = root.join(relative);
+            insert
+                .execute(params![
+                    encode_path(&path),
+                    encode_path(path.parent().unwrap()),
+                    encode_path(root)
+                ])
+                .expect("item");
+        }
+        drop(insert);
+        let mut lookup = conn
+            .prepare(&format!(
+                "{GENERATION_SUBTREE}SELECT DISTINCT path FROM descendants"
+            ))
+            .expect("subtree lookup");
+        let paths = lookup
+            .query_map(params![1, encode_path(&root.join("tree"))], |row| {
+                row.get::<_, Vec<u8>>(0)
+            })
+            .expect("lookup")
+            .collect::<Result<Vec<_>, _>>()
+            .expect("paths");
+        assert_eq!(
+            paths.len(),
+            affected.len(),
+            "component-bound recursive subtree"
+        );
+        let steps = lookup.get_status(rusqlite::StatementStatus::VmStep);
+        assert!(
+            steps < 500,
+            "four affected entries must not scan 10,000 unrelated entries: {steps} VM steps"
+        );
     }
 
     #[test]

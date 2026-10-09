@@ -75,9 +75,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 cd "$ROOT"
-mkdir -p "$ROOT/dist"
+# Keep the local build entry point's deliverables together. Every packager
+# receives the same destination, including standalone platform builds.
+export OTTRIN_DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist/packages}"
+mkdir -p "$OTTRIN_DIST_DIR"
 
 artifacts=()
+linux_helper_artifacts=()
 
 run_packager() {
   local label="$1"
@@ -94,21 +98,29 @@ run_packager() {
 
 if [[ "$build_linux" == true ]]; then
   run_packager "Building Linux portable tarball" "$ROOT/packaging/linux/package-portable.sh"
+  linux_helper_artifacts+=("portable=${artifacts[-1]}")
 fi
 
 if [[ "$build_appimage" == true ]]; then
   run_packager "Building Linux AppImage" "$ROOT/packaging/linux/package-appimage.sh"
+  linux_helper_artifacts+=("appimage=${artifacts[-1]}")
 fi
 
 if [[ "$build_linux" == true ]]; then
   run_packager "Building native Debian package" \
     env OTTRIN_SKIP_BUILD=1 "$ROOT/packaging/linux/package-deb.sh"
+  linux_helper_artifacts+=("deb=${artifacts[-1]}")
   if command -v rpmbuild >/dev/null 2>&1; then
     run_packager "Building native RPM package" \
       env OTTRIN_SKIP_BUILD=1 "$ROOT/packaging/linux/package-rpm.sh"
+    linux_helper_artifacts+=("rpm=${artifacts[-1]}")
   else
     printf '\n==> Skipping native RPM package; rpmbuild is unavailable\n'
   fi
+fi
+
+if (( ${#linux_helper_artifacts[@]} )); then
+  "$ROOT/packaging/tests/verify-linux-privileged-helper-package-path.sh" "${linux_helper_artifacts[@]}"
 fi
 
 if [[ "$build_macos" == true ]]; then

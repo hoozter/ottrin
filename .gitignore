@@ -1,5 +1,7 @@
 /target
 /dist
+/.hermes/
+/crates/*/target/
 .DS_Store
 Thumbs.db
 *.af
