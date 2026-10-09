@@ -9251,13 +9251,14 @@ impl OttrinApp {
             return;
         }
 
-        // winit emits clipboard events, not C/X/V key presses. Leave text
-        // widgets and the Inspector in charge of their own clipboard input.
-        if !(self.command_frame.visible
+        // Text widgets and the Inspector own their input; file actions must
+        // not also operate on the selection underneath them.
+        let file_shortcuts_allowed = !(self.command_frame.visible
             || self.preview.visible
             || ctx.wants_keyboard_input()
-            || self.sidebar == SidebarSection::Search && self.search_ui.input_focused)
-        {
+            || self.sidebar == SidebarSection::Search && self.search_ui.input_focused);
+        // winit emits clipboard events, not C/X/V key presses.
+        if file_shortcuts_allowed {
             let (events, shift) = ctx.input_mut(|input| {
                 let mut events = Vec::new();
                 input.events.retain(|event| {
@@ -9540,17 +9541,19 @@ impl OttrinApp {
             }
 
             // ── File operations ───────────────────────────────────────────────
-            if ctrl && input.key_pressed(Key::A) && !self.command_frame.visible {
-                self.select_all();
-            }
-            if input.key_pressed(Key::F2) && !self.command_frame.visible {
-                self.begin_rename();
-            }
-            if input.key_pressed(Key::Delete) && !self.command_frame.visible {
-                if input.modifiers.shift {
-                    self.request_delete_selection(DeleteMode::Permanent);
-                } else {
-                    self.request_delete_selection(DeleteMode::Trash);
+            if file_shortcuts_allowed {
+                if ctrl && input.key_pressed(Key::A) {
+                    self.select_all();
+                }
+                if input.key_pressed(Key::F2) {
+                    self.begin_rename();
+                }
+                if input.key_pressed(Key::Delete) {
+                    if input.modifiers.shift {
+                        self.request_delete_selection(DeleteMode::Permanent);
+                    } else {
+                        self.request_delete_selection(DeleteMode::Trash);
+                    }
                 }
             }
 
@@ -26154,6 +26157,73 @@ mod tests {
         }];
         ui.main_sel = Some(0);
         (root, app, source)
+    }
+
+    #[test]
+    fn file_shortcuts_respect_input_ownership() {
+        for owner in ["files", "search", "text", "inspector", "command", "address"] {
+            for key in [Key::A, Key::F2, Key::Delete] {
+                let (_root, mut app, source) = clipboard_keyboard_fixture();
+                app.state.active_tab_mut().view_mode = ViewMode::List;
+                let ctx = Context::default();
+                match owner {
+                    "search" => {
+                        app.sidebar = SidebarSection::Search;
+                        app.search_ui.input_focused = true;
+                    }
+                    "text" => {
+                        let _ = ctx.run(Default::default(), |ctx| {
+                            egui::CentralPanel::default().show(ctx, |ui| {
+                                ui.text_edit_singleline(&mut String::new()).request_focus();
+                            });
+                        });
+                        assert!(ctx.wants_keyboard_input());
+                    }
+                    "inspector" => app.preview.visible = true,
+                    "command" => app.command_frame.visible = true,
+                    "address" => {
+                        app.address_bars
+                            .entry(app.state.active_tab().id)
+                            .or_default()
+                            .editing = true;
+                    }
+                    "files" => {}
+                    _ => unreachable!(),
+                }
+                let modifiers = if key == Key::A {
+                    egui::Modifiers::CTRL
+                } else {
+                    egui::Modifiers::NONE
+                };
+                let _ = ctx.run(
+                    egui::RawInput {
+                        modifiers,
+                        events: vec![egui::Event::Key {
+                            key,
+                            physical_key: None,
+                            pressed: true,
+                            repeat: false,
+                            modifiers,
+                        }],
+                        ..Default::default()
+                    },
+                    |ctx| app.handle_keyboard(ctx),
+                );
+                let invoked = match key {
+                    Key::A => app.tab_ui[&app.state.active_tab().id]
+                        .selected_paths
+                        .contains(&source),
+                    Key::F2 => app.pending_rename.is_some(),
+                    Key::Delete => app.pending_delete.is_some(),
+                    _ => unreachable!(),
+                };
+                assert_eq!(invoked, owner == "files", "{key:?} belongs to {owner}");
+                assert!(
+                    source.exists(),
+                    "keyboard handling must not bypass confirmation"
+                );
+            }
+        }
     }
 
     #[test]

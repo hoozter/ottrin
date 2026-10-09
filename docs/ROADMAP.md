@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-09
+Last updated: 2026-10-10
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -12,7 +12,7 @@ The roadmap names outcomes. Linked design and evidence documents define constrai
 
 The saved-view reset was traced to UI tests writing the operator's settings; test profiles are now private, and the runtime restores the saved view. The remaining indexer CPU defect was reproduced with the packaged daemon and the operator's configured roots using a private database copy: ordinary file-change bursts spent about 94% of one core in subtree cleanup. Cleanup now follows indexed parent links instead of scanning the complete generation for each changed path. A bounded database-work regression protects that behavior.
 
-The October 3 native clipboard-event repair is part of the current source. The September 30 AppImage predates that repair and must not be used to evaluate the corrected source. Local builds now put all deliverables from `build-all.sh` in `dist/packages/`; read each artifact's source revision rather than inferring freshness from its version number. Current package acceptance and remaining limits are recorded in `.hermes/evidence/takeover-20261009/REPORT.md`.
+The October 3 native clipboard-event repair is part of the current source. The September 30 AppImage predates that repair and must not be used to evaluate the corrected source. Local builds now put all deliverables from `build-all.sh` in `dist/packages/`; read each artifact's source revision rather than inferring freshness from its version number. Current package acceptance and remaining limits are recorded in `.hermes/coordinator-worker-report.md`, with October 9 baseline evidence in `.hermes/evidence/takeover-20261009/REPORT.md`.
 
 These repairs do not close the full Linux daily-driver or Windows release gates below. Hermes remains paused; the old task board's completion labels are not release acceptance.
 
@@ -102,7 +102,7 @@ Start this phase after source and packaging outcomes are complete. Keep it as on
 - Attach, browse, index by explicit choice, detach and reconnect real mounted/removable volumes. Check compact/expanded Locations pointer, keyboard, tooltip, ordering, selection and unavailable states.
 - Exercise installed LibreOffice with representative DOCX, XLSX and PPTX files. Confirm conversion, cancellation, cleanup, provider labels, page navigation and native fallback. Add fixtures only for defects found or features Ottrin claims to support.
 - Native helper smoke verified on Linux: generated silent video, RGBA frames, pause/resume acknowledgement, Stop, end-of-stream, retained-descriptor pathname replacement, malformed input and isolated missing-plugin fallback (`scripts/linux-media-playback-smoke.py`). Source-built Inspector presentation has also been exercised in isolated Xvfb with generated video: decoded frames, Pause/resume, end-of-stream, missing-helper and missing-plugin fallback. Duplicate external-open actions and enabled controls for terminal sessions were corrected. Audible playback, representative user media and clean-package fallback remain pending; no codecs were added.
-- Check tab drag-and-drop and Grid/List rubber-band selection.
+- Isolated packaged QA on 2026-10-10 verified New File/New Folder, rename, multiselect Copy, Trash, permanent delete, same-filesystem Cut/Paste, Tandem Copy/Move, tab reordering and scoped search with disposable files. List/Grid rubber-band selection from blank space below entries was repaired and verified in the AppImage from `76b50087e0f26a6312976a9def902e0d68409bd3`. Evidence is in `.hermes/evidence/roadmap-20261010/`; these checks do not close physical desktop, removable-volume or full workflow acceptance.
 - Check packaged privileged-helper and polkit allow, cancel, missing-helper and policy-error paths.
 - Recheck native assistive integration once. If the upstream Unix AT-SPI lifecycle remains unusable, record the observed limitation rather than starting replacement infrastructure during QA.
 
