@@ -18397,10 +18397,9 @@ impl OttrinApp {
 
         // Rows
         let mut list_rows = Vec::with_capacity(entries.len());
-        let mut list_content_rect = Rect::NOTHING;
-        let mut list_viewport_rect = Rect::NOTHING;
-        ScrollArea::vertical()
+        let list_viewport_rect = ScrollArea::vertical()
             .id_salt(("list_view", tab_id))
+            .auto_shrink([false, false])
             .show(ui, |ui| {
                 if entries.is_empty() {
                     self.render_empty_folder_state(ui, tab_id, &current_dir, &c, false);
@@ -18583,11 +18582,10 @@ impl OttrinApp {
                         x += w;
                     }
                 }
-                list_content_rect = ui.min_rect();
-                list_viewport_rect = ui.clip_rect();
-            });
+            })
+            .inner_rect;
         if let Some(selection_rect) =
-            self.update_rubber_band_selection(ui, tab_id, &entries, &list_rows, list_content_rect)
+            self.update_rubber_band_selection(ui, tab_id, &entries, &list_rows, list_viewport_rect)
         {
             ui.painter_at(list_viewport_rect).rect_filled(
                 selection_rect,
@@ -18680,10 +18678,7 @@ impl OttrinApp {
         let cols = cols.max(1);
         self.last_grid_cols = cols;
         let mut grid_cells = Vec::with_capacity(entries.len());
-        let mut grid_content_rect = Rect::NOTHING;
-        let mut grid_viewport_rect = Rect::NOTHING;
-
-        ScrollArea::vertical()
+        let grid_viewport_rect = ScrollArea::vertical()
             .id_salt(("grid", tab_id))
             .auto_shrink([false, false])
             .show(ui, |ui| {
@@ -18843,11 +18838,10 @@ impl OttrinApp {
                     i += cols;
                     ui.add_space(padding * 0.25);
                 }
-                grid_content_rect = ui.min_rect();
-                grid_viewport_rect = ui.clip_rect();
-            });
+            })
+            .inner_rect;
         if let Some(selection_rect) =
-            self.update_rubber_band_selection(ui, tab_id, &entries, &grid_cells, grid_content_rect)
+            self.update_rubber_band_selection(ui, tab_id, &entries, &grid_cells, grid_viewport_rect)
         {
             ui.painter_at(grid_viewport_rect).rect_filled(
                 selection_rect,
@@ -31150,6 +31144,77 @@ mod tests {
             (first_id, second_id)
         );
         assert!(app.tab_tandem_selection.is_empty());
+    }
+
+    fn assert_rubber_band_starts_below_entries(view: ViewMode) {
+        let mut app = OttrinApp::default();
+        let tab_id = app.state.active_tab().id;
+        let paths = [PathBuf::from("/alpha"), PathBuf::from("/beta")];
+        let state = app.tab_ui.entry(tab_id).or_default();
+        state.main.loading = false;
+        state.main.entries = paths
+            .iter()
+            .map(|path| FileEntry {
+                name: path.file_name().unwrap().to_string_lossy().into_owned(),
+                path: path.clone(),
+                kind: EntryKind::Directory,
+                is_executable: false,
+                symlink_target_is_dir: None,
+                size_bytes: None,
+                modified_unix_secs: None,
+            })
+            .collect();
+        let ctx = Context::default();
+        let origin = egui::pos2(400.0, 350.0);
+        for events in [
+            vec![],
+            vec![
+                egui::Event::PointerMoved(origin),
+                egui::Event::PointerButton {
+                    pos: origin,
+                    button: egui::PointerButton::Primary,
+                    pressed: true,
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ],
+            vec![egui::Event::PointerMoved(egui::pos2(10.0, 10.0))],
+            vec![egui::Event::PointerButton {
+                pos: egui::pos2(10.0, 10.0),
+                button: egui::PointerButton::Primary,
+                pressed: false,
+                modifiers: egui::Modifiers::NONE,
+            }],
+        ] {
+            let _ = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(640.0, 480.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| match view {
+                        ViewMode::List => app.render_list(ui, tab_id),
+                        ViewMode::Grid => app.render_grid(ui, tab_id),
+                        _ => unreachable!(),
+                    });
+                },
+            );
+        }
+        assert_eq!(app.tab_ui[&tab_id].selected_paths, HashSet::from(paths));
+        assert!(app.tab_ui[&tab_id].rubber_band.is_none());
+    }
+
+    #[test]
+    fn list_rubber_band_starts_in_blank_viewport_below_rows() {
+        assert_rubber_band_starts_below_entries(ViewMode::List);
+    }
+
+    #[test]
+    fn grid_rubber_band_starts_in_blank_viewport_below_cells() {
+        assert_rubber_band_starts_below_entries(ViewMode::Grid);
     }
 
     #[test]
