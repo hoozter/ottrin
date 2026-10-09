@@ -4374,9 +4374,9 @@ mod tests {
 
     static TEMP_ID: AtomicU64 = AtomicU64::new(0);
 
-    struct TestDir {
+    pub(super) struct TestDir {
         path: PathBuf,
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         previous_recovery_root: Option<PathBuf>,
     }
 
@@ -4409,7 +4409,7 @@ mod tests {
     }
 
     impl TestDir {
-        fn new(name: &str) -> Self {
+        pub(super) fn new(name: &str) -> Self {
             Self::new_at(&std::env::temp_dir(), name)
         }
 
@@ -4420,17 +4420,17 @@ mod tests {
                 std::process::id()
             ));
             std::fs::create_dir(&path).expect("create test directory");
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             let previous_recovery_root =
                 move_transaction::replace_test_recovery_root(Some(path.join("move-state")));
             Self {
                 path,
-                #[cfg(target_os = "linux")]
+                #[cfg(any(target_os = "linux", target_os = "windows"))]
                 previous_recovery_root,
             }
         }
 
-        fn path(&self) -> &Path {
+        pub(super) fn path(&self) -> &Path {
             &self.path
         }
     }
@@ -4438,7 +4438,7 @@ mod tests {
     impl Drop for TestDir {
         fn drop(&mut self) {
             let _ = std::fs::remove_dir_all(&self.path);
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "windows"))]
             let _ =
                 move_transaction::replace_test_recovery_root(self.previous_recovery_root.take());
         }
@@ -6416,6 +6416,61 @@ mod tests {
 
     #[cfg(target_os = "windows")]
     #[test]
+    fn windows_same_volume_overwrite_retains_exact_displaced_entries() {
+        for directory in [false, true] {
+            let dir = TestDir::new("move-windows-retained-overwrite");
+            let source = dir.path().join("entry");
+            let destination = dir.path().join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            let target = destination.join("entry");
+            let payload = |path: &Path| {
+                if directory {
+                    path.join("payload")
+                } else {
+                    path.to_path_buf()
+                }
+            };
+            if directory {
+                std::fs::create_dir(&source).unwrap();
+                std::fs::create_dir(&target).unwrap();
+            }
+            std::fs::write(payload(&source), "source bytes").unwrap();
+            std::fs::write(payload(&target), "displaced bytes").unwrap();
+            let source_identity = move_recovery::stable_identity_of_entry(&source).unwrap();
+            let displaced_identity = move_recovery::stable_identity_of_entry(&target).unwrap();
+            let publication = move_transaction::move_entry_transactional(
+                &source,
+                &destination,
+                ConflictAction::Overwrite,
+            )
+            .unwrap_or_else(|error| panic!("directory={directory}: {error:?}"));
+            assert_eq!(publication.disposition, MoveDisposition::Moved);
+            assert_eq!(
+                publication.published_path.as_deref(),
+                Some(target.as_path())
+            );
+            assert!(!source.exists());
+            assert_eq!(
+                move_recovery::stable_identity_of_entry(&target).unwrap(),
+                source_identity
+            );
+            assert_eq!(std::fs::read(payload(&target)).unwrap(), b"source bytes");
+            let retained = publication
+                .retained_displaced_path
+                .expect("Overwrite retains displaced data");
+            assert_eq!(
+                move_recovery::stable_identity_of_entry(&retained).unwrap(),
+                displaced_identity
+            );
+            assert_eq!(
+                std::fs::read(payload(&retained)).unwrap(),
+                b"displaced bytes"
+            );
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
     fn windows_same_volume_file_move_publishes_the_exact_source() {
         let dir = TestDir::new("move-windows-file");
         let source = dir.path().join("source.txt");
@@ -6734,7 +6789,7 @@ mod tests {
 
     #[cfg(target_os = "windows")]
     #[test]
-    fn windows_same_volume_directory_conflicts_move_or_fail_closed_without_loss() {
+    fn windows_same_volume_directory_conflicts_preserve_data() {
         for conflict in [
             ConflictAction::Skip,
             ConflictAction::Overwrite,
@@ -6780,14 +6835,21 @@ mod tests {
                     );
                 }
                 ConflictAction::Overwrite => {
-                    assert!(matches!(result, Err(PlatformError::UnsupportedSafeMove(_))));
-                    assert_eq!(std::fs::read_to_string(&source_file).unwrap(), "nested");
+                    let (_, dispositions) = result.unwrap();
+                    assert_eq!(dispositions, vec![MoveDisposition::Moved]);
+                    assert!(!source.exists());
+                    assert_eq!(
+                        std::fs::read_to_string(destination_conflict.join("inner.txt")).unwrap(),
+                        "nested"
+                    );
                 }
             }
-            assert_eq!(
-                std::fs::read_to_string(destination_conflict.join("retained.txt")).unwrap(),
-                "destination retained"
-            );
+            if conflict != ConflictAction::Overwrite {
+                assert_eq!(
+                    std::fs::read_to_string(destination_conflict.join("retained.txt")).unwrap(),
+                    "destination retained"
+                );
+            }
         }
     }
 

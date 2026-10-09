@@ -72,7 +72,7 @@ These repairs do not close the full Linux daily-driver or Windows release gates 
 
 ### 2. Complete file operations and desktop workflows
 
-- Complete native Windows Move acceptance against the same product contract. The source-complete same-volume and cross-volume Skip/Rename/Overwrite implementation described above remains fail-closed pending native Windows crash, ACL, sharing-mode, filesystem, retained-transaction lifecycle, and packaged acceptance. Non-symbolic reparse points remain deliberately rejected. Keep Windows-specific publication and identity primitives isolated and require native evidence before release claims.
+- Complete native Windows Move acceptance against the same product contract. Ten same-volume fixtures passed on Windows 11 build 26100 as the ordinary desktop user on 2026-10-10: file/directory conflict handling, exact displaced-entry retention, original-source identity handoff, nested contents and dangling symlinks. Native execution exposed incompatible handle lifetimes during Overwrite; selection and publication handles now close after their identity/durability obligations and before incompatible reopens. The disposable guest enabled Developer Mode solely for unprivileged symlink fixture creation. Native crash, ACL, adverse sharing-mode, filesystem, retained-transaction lifecycle and packaged acceptance remain pending; cross-volume Move remains fail-closed. Non-symbolic reparse points remain deliberately rejected. Commands and evidence limits are in [DEVELOPMENT.md](DEVELOPMENT.md#windows-move).
 
 ### 3. Finish packaging source
 

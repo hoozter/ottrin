@@ -115,6 +115,29 @@ Linux can build the fixture executable with
 Cross-compilation is not native acceptance. Keep the Windows Office provider
 gated until its remaining installed-provider checks pass.
 
+### Windows Move
+
+Run same-volume fixtures on a native Windows NTFS volume as the ordinary test
+user. Symlink fixtures require permission to create links; the disposable
+acceptance guest used [Windows Developer Mode](https://learn.microsoft.com/en-us/windows/advanced-settings/developer-mode).
+
+```powershell
+$env:OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT = "$env:TEMP\ottrin-native-move-state"
+cargo test -p ottrin-platform same_volume -- --test-threads=1
+```
+
+Use a fresh, owned recovery-state directory. Shared `TestDir` fixtures isolate
+recovery state per test and restore the previous root on teardown. These tests
+check actual NTFS publication, exact source/displaced identities and bytes,
+source-substitution refusal, conflict handling and dangling links. Their passing
+results do not certify crash/power-loss recovery, adverse ACL/sharing scenarios,
+other filesystems, retained-transaction lifecycle or packaged operation.
+
+Cross-volume fixtures are separately ignored by default. They require a real
+second Windows volume in `OTTRIN_WINDOWS_CROSS_VOLUME_ROOT`, an isolated recovery
+root, and `OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE=1`. That variable opens only the
+test build gate; the product route stays closed pending native safety acceptance.
+
 ## Packaging
 
 End-user packages must run without Cargo.
@@ -219,7 +242,7 @@ Runtime helper discovery checks explicit override, environment variable, app dir
 
 - Navigate Miller/List/Grid, tabs, bookmarks, and address bar.
 - Search first index, restart from DB, rebuild, current-folder search, content search, and result actions.
-- Create, rename, copy, trash delete, and permanent delete; verify Linux same-filesystem and cross-filesystem Move with Skip/Rename/Overwrite/Cancel and explicit dispositions. Cross-filesystem Move must stage and verify the complete destination tree before publication, revalidate before guarded source cleanup, retain explicit recovery evidence on uncertainty, and offer Undo only from identity/content-bound single-entry evidence. On Windows, verify the source-complete handle-relative same-volume Skip/Rename path without treating cross-compilation as native acceptance; occupied Overwrite and cross-volume paths must remain fail-closed until their retained-data and staged-copy slices are proven.
+- Create, rename, copy, trash delete, and permanent delete; verify Linux same-filesystem and cross-filesystem Move with Skip/Rename/Overwrite/Cancel and explicit dispositions. Cross-filesystem Move must stage and verify the complete destination tree before publication, revalidate before guarded source cleanup, retain explicit recovery evidence on uncertainty, and offer Undo only from identity/content-bound single-entry evidence. On Windows, extend the native same-volume Skip/Rename/Overwrite fixture evidence with crash, adverse ACL/sharing, retained-transaction lifecycle and packaged checks. Keep cross-volume Move fail-closed until its staged-copy and native safety gates pass; cross-compilation alone is not acceptance.
 - Tandem activation, pinning, side switching, and pane-to-pane copy.
 - Quick Inspector for text, image, PDF text/metadata, DOCX, XLSX/XLSM, PPTX, archive, folder, and generic fallback files.
 - Privileged helper smoke with helper and policy installed.

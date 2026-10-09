@@ -1848,6 +1848,7 @@ fn move_windows_same_volume(
                         source,
                         destination_dir,
                         &published_path,
+                        source_handle,
                     );
                 }
             },
@@ -2034,6 +2035,10 @@ fn discard_incomplete_windows_directory_candidate(
 
 #[cfg(target_os = "windows")]
 fn windows_recovery_root() -> Result<PathBuf, PlatformError> {
+    #[cfg(test)]
+    if let Some(root) = TEST_RECOVERY_ROOT.with(|root| root.borrow().clone()) {
+        return Ok(root);
+    }
     #[cfg(test)]
     if let Some(root) = std::env::var_os("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT") {
         return Ok(PathBuf::from(root));
@@ -4350,6 +4355,7 @@ fn start_windows_same_volume_overwrite(
     source: &Path,
     destination_dir: &Path,
     target: &Path,
+    source_handle: std::fs::File,
 ) -> Result<MovePublication, PlatformError> {
     let source_parent = source
         .parent()
@@ -4358,7 +4364,7 @@ fn start_windows_same_volume_overwrite(
         .map_err(|error| PlatformError::Io(error.to_string()))?;
     let source_parent_identity = move_recovery::stable_identity_from_handle(&source_parent_handle)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
-    let source_identity = move_recovery::stable_identity_of_entry(source)
+    let source_identity = move_recovery::stable_identity_from_handle(&source_handle)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
     let destination_parent_handle =
         move_recovery::open_reparse_safe_directory_for_rename(destination_dir)
@@ -4449,6 +4455,12 @@ fn start_windows_same_volume_overwrite(
             "durable Windows Overwrite intent failed before source mutation: {error}"
         ))
     })?;
+    // The durable record binds the originally opened source identity. Release
+    // its selection handle before recovery acquires the claim/publication
+    // handles: ReplaceFileW and exclusive retained-rename handles cannot coexist
+    // with that open DELETE handle. Recovery revalidates the recorded identity
+    // before any claim, so this handoff cannot admit a pathname replacement.
+    drop(source_handle);
     resume_windows_overwrite(&recovery_root, record)
 }
 
@@ -4854,6 +4866,9 @@ fn publish_windows_entry_retaining_displaced_by_rename(
         .sync_all()
         .map_err(|error| PlatformError::Io(error.to_string()))?;
 
+    // Publication and namespace flushes are complete. Close our exclusive
+    // writer before reopening the published name for the topology check.
+    drop(replacement_handle);
     if observe_windows_identity(target)? != Some(expected_source)
         || observe_windows_identity(replacement)?.is_some()
         || observe_windows_identity(retained)? != Some(expected_displaced)
@@ -7297,14 +7312,14 @@ fn default_recovery_root() -> Result<std::path::PathBuf, PlatformError> {
     Ok(base.join("ottrin").join("moves"))
 }
 
-#[cfg(all(target_os = "linux", test))]
+#[cfg(all(any(target_os = "linux", target_os = "windows"), test))]
 thread_local! {
     static TEST_RECOVERY_ROOT: std::cell::RefCell<Option<std::path::PathBuf>> = const {
         std::cell::RefCell::new(None)
     };
 }
 
-#[cfg(all(target_os = "linux", test))]
+#[cfg(all(any(target_os = "linux", target_os = "windows"), test))]
 pub(super) fn replace_test_recovery_root(
     root: Option<std::path::PathBuf>,
 ) -> Option<std::path::PathBuf> {
@@ -7953,6 +7968,45 @@ mod windows_source_tests {
     fn windows_cross_volume_native_acceptance_can_open_only_the_test_gate() {
         assert!(windows_cross_volume_test_gate(true));
         assert!(!windows_cross_volume_test_gate(false));
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_native_same_volume_overwrite_rejects_replaced_selection() {
+        let fixture = crate::tests::TestDir::new("windows-overwrite-source-handoff");
+        let source = fixture.path().join("source.txt");
+        let parked_original = fixture.path().join("original.txt");
+        let destination = fixture.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let target = destination.join("source.txt");
+        std::fs::write(&source, b"selected original").unwrap();
+        std::fs::write(&target, b"displaced target").unwrap();
+        let selected = super::move_recovery::open_reparse_safe_entry_for_rename(&source).unwrap();
+        let selected_identity =
+            super::move_recovery::stable_identity_from_handle(&selected).unwrap();
+        std::fs::rename(&source, &parked_original).unwrap();
+        std::fs::write(&source, b"external replacement").unwrap();
+        let _lock = super::acquire_windows_recovery_lock().unwrap();
+        let result =
+            super::start_windows_same_volume_overwrite(&source, &destination, &target, selected);
+        assert!(
+            matches!(
+                &result,
+                Err(super::PlatformError::CommittedCleanupPending { .. })
+            ),
+            "unexpected overwrite result: {:?}",
+            result.as_ref().err()
+        );
+        assert_eq!(std::fs::read(&source).unwrap(), b"external replacement");
+        assert_eq!(
+            std::fs::read(&parked_original).unwrap(),
+            b"selected original"
+        );
+        assert_eq!(std::fs::read(&target).unwrap(), b"displaced target");
+        assert_eq!(
+            super::move_recovery::stable_identity_of_entry(&parked_original).unwrap(),
+            selected_identity
+        );
     }
 
     #[cfg(target_os = "windows")]
