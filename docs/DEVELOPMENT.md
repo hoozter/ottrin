@@ -133,6 +133,20 @@ source-substitution refusal, conflict handling and dangling links. Their passing
 results do not certify crash/power-loss recovery, adverse ACL/sharing scenarios,
 other filesystems, retained-transaction lifecycle or packaged operation.
 
+Locked-directory verification can be checked independently:
+
+```powershell
+cargo test -p ottrin-platform windows_native_locked_directory_snapshot_preserves_exclusion
+cargo test -p ottrin-platform windows_native_directory_streams_are_empty_or_rejected
+```
+
+Move enumerates streams and directory children through its owned handles using
+`GetFileInformationByHandleEx`; it does not reopen an exclusively held directory
+by pathname. The snapshot fixture covers multiple buffers, Unicode names and
+continued writer/delete exclusion. This does not prove directory publication:
+Windows refuses a directory rename while descendant files remain open, so that
+transaction lifecycle still needs native acceptance.
+
 Cross-volume fixtures are separately ignored by default. They require a real
 second Windows volume in `OTTRIN_WINDOWS_CROSS_VOLUME_ROOT`, an isolated recovery
 root, and `OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE=1`. That variable opens only the

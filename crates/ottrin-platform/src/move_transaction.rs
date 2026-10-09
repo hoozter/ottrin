@@ -33,8 +33,8 @@ use windows_sys::Wdk::Storage::FileSystem::{
 };
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::Foundation::{
-    CloseHandle, ERROR_HANDLE_EOF, ERROR_INSUFFICIENT_BUFFER, HANDLE, INVALID_HANDLE_VALUE,
-    LocalFree, RtlNtStatusToDosError, STATUS_OBJECT_NAME_COLLISION,
+    CloseHandle, ERROR_HANDLE_EOF, ERROR_INSUFFICIENT_BUFFER, ERROR_MORE_DATA, ERROR_NO_MORE_FILES,
+    HANDLE, LocalFree, RtlNtStatusToDosError, STATUS_OBJECT_NAME_COLLISION,
 };
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::Security::Authorization::{
@@ -50,9 +50,10 @@ use windows_sys::Win32::Security::{
 use windows_sys::Win32::Storage::FileSystem::{
     FILE_ALL_ACCESS, FILE_BASIC_INFO, FILE_DISPOSITION_FLAG_DELETE,
     FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE, FILE_DISPOSITION_FLAG_POSIX_SEMANTICS,
-    FILE_DISPOSITION_INFO_EX, FileBasicInfo, FileDispositionInfoEx, FindClose, FindFirstStreamW,
-    FindNextStreamW, FindStreamInfoStandard, GetFileInformationByHandleEx,
-    REPLACEFILE_WRITE_THROUGH, ReplaceFileW, SetFileInformationByHandle, WIN32_FIND_STREAM_DATA,
+    FILE_DISPOSITION_INFO_EX, FILE_ID_BOTH_DIR_INFO, FILE_STREAM_INFO, FileBasicInfo,
+    FileDispositionInfoEx, FileIdBothDirectoryInfo, FileIdBothDirectoryRestartInfo, FileStreamInfo,
+    GetFileInformationByHandleEx, REPLACEFILE_WRITE_THROUGH, ReplaceFileW,
+    SetFileInformationByHandle,
 };
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
@@ -511,57 +512,132 @@ fn copy_windows_basic_metadata(
         .map_err(|error| PlatformError::Io(error.to_string()))
 }
 
+// Both Win32 queries below return linked records with counted UTF-16 names.
+// Validate every offset before reading the variable-length part of a record.
 #[cfg(target_os = "windows")]
-fn windows_file_streams(path: &Path) -> Result<Vec<std::ffi::OsString>, PlatformError> {
-    struct FindStreamHandle(HANDLE);
-    impl Drop for FindStreamHandle {
-        fn drop(&mut self) {
-            unsafe { FindClose(self.0) };
-        }
-    }
-
-    let mut path_units: Vec<u16> = path.as_os_str().encode_wide().collect();
-    path_units.push(0);
-    let mut data = WIN32_FIND_STREAM_DATA::default();
-    let handle = unsafe {
-        FindFirstStreamW(
-            path_units.as_ptr(),
-            FindStreamInfoStandard,
-            ptr::from_mut(&mut data).cast(),
-            0,
-        )
+fn windows_record_names(
+    buffer: &[u64],
+    name_offset: usize,
+    length_offset: usize,
+) -> Result<Vec<std::ffi::OsString>, PlatformError> {
+    let bytes = unsafe {
+        std::slice::from_raw_parts(buffer.as_ptr().cast::<u8>(), std::mem::size_of_val(buffer))
     };
-    if handle == INVALID_HANDLE_VALUE {
+    let invalid = || PlatformError::Io("Windows Move received invalid enumeration records".into());
+    let mut names = Vec::new();
+    let mut offset = 0;
+    loop {
+        let record = bytes.get(offset..).ok_or_else(invalid)?;
+        let read_u32 = |at: usize| -> Result<usize, PlatformError> {
+            let value = record.get(at..at + 4).ok_or_else(invalid)?;
+            Ok(u32::from_le_bytes(value.try_into().map_err(|_| invalid())?) as usize)
+        };
+        let next = read_u32(0)?;
+        let length = read_u32(length_offset)?;
+        let end = name_offset.checked_add(length).ok_or_else(invalid)?;
+        if length == 0 || length % 2 != 0 || (next != 0 && (next < end || next % 8 != 0)) {
+            return Err(invalid());
+        }
+        let name = record.get(name_offset..end).ok_or_else(invalid)?;
+        let units = name
+            .chunks_exact(2)
+            .map(|unit| u16::from_le_bytes([unit[0], unit[1]]))
+            .collect::<Vec<_>>();
+        names.push(std::ffi::OsString::from_wide(&units));
+        if next == 0 {
+            return Ok(names);
+        }
+        offset = offset.checked_add(next).ok_or_else(invalid)?;
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn windows_file_streams(handle: &std::fs::File) -> Result<Vec<std::ffi::OsString>, PlatformError> {
+    // u64 storage provides the required eight-byte record alignment. A full
+    // result is required; never accept a truncated stream list as copy-safe.
+    let mut buffer = vec![0_u64; 8192];
+    loop {
+        let succeeded = unsafe {
+            GetFileInformationByHandleEx(
+                handle.as_raw_handle() as HANDLE,
+                FileStreamInfo,
+                buffer.as_mut_ptr().cast(),
+                u32::try_from(std::mem::size_of_val(buffer.as_slice()))
+                    .map_err(|_| PlatformError::Io("Windows stream list is too large".into()))?,
+            )
+        };
+        if succeeded != 0 {
+            return windows_record_names(
+                &buffer,
+                mem::offset_of!(FILE_STREAM_INFO, StreamName),
+                mem::offset_of!(FILE_STREAM_INFO, StreamNameLength),
+            );
+        }
         let error = std::io::Error::last_os_error();
         if error.raw_os_error() == Some(ERROR_HANDLE_EOF as i32) {
             return Ok(Vec::new());
         }
+        if matches!(error.raw_os_error(), Some(code) if code == ERROR_MORE_DATA as i32 || code == ERROR_INSUFFICIENT_BUFFER as i32)
+            && buffer.len() < 131072
+        {
+            buffer.resize(buffer.len() * 2, 0);
+            continue;
+        }
         return Err(PlatformError::Io(format!(
-            "Windows Move could not enumerate source streams: {error}"
+            "Windows Move could not enumerate owned entry streams: {error}"
         )));
     }
-    let handle = FindStreamHandle(handle);
-    let mut streams = Vec::new();
+}
+
+#[cfg(target_os = "windows")]
+fn windows_directory_children(
+    handle: &std::fs::File,
+) -> Result<Vec<std::ffi::OsString>, PlatformError> {
+    let mut buffer = vec![0_u64; 8192];
+    let mut names = Vec::new();
+    let mut class = FileIdBothDirectoryRestartInfo;
     loop {
-        let name_length = data
-            .cStreamName
-            .iter()
-            .position(|unit| *unit == 0)
-            .unwrap_or(data.cStreamName.len());
-        streams.push(std::ffi::OsString::from_wide(
-            &data.cStreamName[..name_length],
-        ));
-        if unsafe { FindNextStreamW(handle.0, ptr::from_mut(&mut data).cast()) } == 0 {
+        let succeeded = unsafe {
+            GetFileInformationByHandleEx(
+                handle.as_raw_handle() as HANDLE,
+                class,
+                buffer.as_mut_ptr().cast(),
+                std::mem::size_of_val(buffer.as_slice()) as u32,
+            )
+        };
+        if succeeded == 0 {
             let error = std::io::Error::last_os_error();
-            if error.raw_os_error() == Some(ERROR_HANDLE_EOF as i32) {
-                break;
+            if error.raw_os_error() == Some(ERROR_NO_MORE_FILES as i32) {
+                names.sort_unstable_by(|left: &std::ffi::OsString, right| {
+                    left.encode_wide().cmp(right.encode_wide())
+                });
+                return Ok(names);
             }
             return Err(PlatformError::Io(format!(
-                "Windows Move source stream enumeration failed: {error}"
+                "Windows Move could not enumerate owned directory entries: {error}"
             )));
         }
+        for name in windows_record_names(
+            &buffer,
+            mem::offset_of!(FILE_ID_BOTH_DIR_INFO, FileName),
+            mem::offset_of!(FILE_ID_BOTH_DIR_INFO, FileNameLength),
+        )? {
+            if name != "." && name != ".." {
+                let path = Path::new(&name);
+                if !matches!(
+                    path.components().next(),
+                    Some(std::path::Component::Normal(_))
+                ) || path.components().count() != 1
+                {
+                    return Err(PlatformError::Io(
+                        "Windows directory enumeration returned a non-child name".into(),
+                    ));
+                }
+                names.push(name);
+            }
+        }
+        class = FileIdBothDirectoryInfo;
     }
-    Ok(streams)
 }
 
 #[cfg(any(target_os = "windows", test))]
@@ -1708,7 +1784,7 @@ fn drain_windows_claimed_source_directory(
             .map_err(|error| cleanup_error(format!("named claimed source probe failed: {error}")))?
             != record.source_identity
         || !windows_stream_set_is_copy_safe(
-            windows_file_streams(claimed_source)
+            windows_file_streams(&claimed_source_handle)
                 .map_err(|error| cleanup_error(error.to_string()))?,
             true,
         )
@@ -1718,7 +1794,7 @@ fn drain_windows_claimed_source_directory(
         ));
     }
 
-    let snapshot = capture_windows_directory_snapshot(claimed_source)
+    let snapshot = capture_windows_directory_snapshot(claimed_source, &claimed_source_handle)
         .map_err(|error| cleanup_error(format!("claimed source scan failed: {error}")))?;
     let observed_journal = snapshot
         .journal_entries()
@@ -1982,7 +2058,7 @@ fn discard_incomplete_windows_directory_candidate(
         ))
     })?;
     if !windows_stream_set_is_copy_safe(
-        windows_file_streams(path)?,
+        windows_file_streams(&handle)?,
         entry_kind == WindowsIncompleteStagingEntryKind::Directory,
     ) {
         return Err(PlatformError::Io(format!(
@@ -1991,12 +2067,8 @@ fn discard_incomplete_windows_directory_candidate(
         )));
     }
     if entry_kind == WindowsIncompleteStagingEntryKind::Directory {
-        let children = std::fs::read_dir(path)
-            .map_err(|error| PlatformError::Io(error.to_string()))?
-            .map(|entry| entry.map(|entry| entry.path()))
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
-        for child in children {
+        for name in windows_directory_children(&handle)? {
+            let child = path.join(name);
             let child_identity = move_recovery::stable_identity_of_entry(&child)
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
             discard_incomplete_windows_directory_candidate(&child, child_identity)?;
@@ -2659,24 +2731,16 @@ fn windows_manifest_path(path: &Path) -> Result<Vec<u16>, PlatformError> {
 #[cfg(target_os = "windows")]
 fn capture_windows_directory_snapshot(
     root: &Path,
+    root_handle: &std::fs::File,
 ) -> Result<WindowsDirectorySnapshot, PlatformError> {
     fn visit(
         root: &Path,
         relative_directory: &Path,
+        directory_handle: &std::fs::File,
         entries: &mut Vec<WindowsDirectorySnapshotEntry>,
     ) -> Result<(), PlatformError> {
-        let directory = root.join(relative_directory);
-        let mut children = std::fs::read_dir(&directory)
-            .map_err(|error| PlatformError::Io(error.to_string()))?
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
-        children.sort_unstable_by(|left, right| {
-            left.file_name()
-                .encode_wide()
-                .cmp(right.file_name().encode_wide())
-        });
-        for child in children {
-            let relative_path = relative_directory.join(child.file_name());
+        for child in windows_directory_children(directory_handle)? {
+            let relative_path = relative_directory.join(child);
             let path = root.join(&relative_path);
             let mut handle = move_recovery::open_reparse_safe_cross_volume_source(&path)
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
@@ -2691,7 +2755,7 @@ fn capture_windows_directory_snapshot(
                 PlatformError::UnsupportedSafeCrossDeviceMove(path.display().to_string())
             })?;
             if !windows_stream_set_is_copy_safe(
-                windows_file_streams(&path)?,
+                windows_file_streams(&handle)?,
                 kind == WindowsCrossVolumeSourceKind::Directory,
             ) {
                 return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
@@ -2715,6 +2779,15 @@ fn capture_windows_directory_snapshot(
                     (size, sha256, target, is_directory)
                 }
             };
+            let directory_handle = if kind == WindowsCrossVolumeSourceKind::Directory {
+                Some(
+                    handle
+                        .try_clone()
+                        .map_err(|error| PlatformError::Io(error.to_string()))?,
+                )
+            } else {
+                None
+            };
             entries.push(WindowsDirectorySnapshotEntry {
                 relative_path: relative_path.clone(),
                 path,
@@ -2726,20 +2799,20 @@ fn capture_windows_directory_snapshot(
                 link_is_directory,
                 handle,
             });
-            if kind == WindowsCrossVolumeSourceKind::Directory {
-                visit(root, &relative_path, entries)?;
+            if let Some(directory_handle) = directory_handle {
+                visit(root, &relative_path, &directory_handle, entries)?;
             }
         }
         Ok(())
     }
 
-    if !windows_stream_set_is_copy_safe(windows_file_streams(root)?, true) {
+    if !windows_stream_set_is_copy_safe(windows_file_streams(root_handle)?, true) {
         return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
             root.display().to_string(),
         ));
     }
     let mut entries = Vec::new();
-    visit(root, Path::new(""), &mut entries)?;
+    visit(root, Path::new(""), root_handle, &mut entries)?;
     let manifest = entries
         .iter()
         .map(|entry| {
@@ -2872,7 +2945,7 @@ fn stage_windows_directory_snapshot(
 
     let staged_root = move_recovery::open_reparse_safe_cross_volume_source(candidate)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
-    let mut staged_snapshot = capture_windows_directory_snapshot(candidate)?;
+    let mut staged_snapshot = capture_windows_directory_snapshot(candidate, &staged_root)?;
     let staged_evidence = current_windows_directory_snapshot_evidence(&mut staged_snapshot)?;
     if staged_evidence != staged_snapshot.evidence
         || current_windows_directory_snapshot_evidence(source_snapshot)? != source_snapshot.evidence
@@ -2923,7 +2996,7 @@ fn start_windows_cross_volume_move(
     let (source_size, source_sha256, source_manifest, source_link_target, source_link_is_directory) =
         match source_kind {
             WindowsCrossVolumeSourceKind::File => {
-                if !windows_stream_set_is_copy_safe(windows_file_streams(source)?, false) {
+                if !windows_stream_set_is_copy_safe(windows_file_streams(&source_handle)?, false) {
                     return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
                         source.display().to_string(),
                     ));
@@ -2932,7 +3005,7 @@ fn start_windows_cross_volume_move(
                 (size, sha256, Vec::new(), None, None)
             }
             WindowsCrossVolumeSourceKind::Directory => {
-                let snapshot = capture_windows_directory_snapshot(source)?;
+                let snapshot = capture_windows_directory_snapshot(source, &source_handle)?;
                 let (size, sha256) = snapshot.evidence.clone();
                 (size, sha256, snapshot.journal_entries()?, None, None)
             }
@@ -2945,7 +3018,11 @@ fn start_windows_cross_volume_move(
     let destination_manifest = if source_kind == WindowsCrossVolumeSourceKind::Directory
         && conflict == ConflictAction::Overwrite
     {
-        capture_windows_directory_snapshot(target)?.journal_entries()?
+        {
+            let target_handle = move_recovery::open_reparse_safe_cross_volume_source(target)
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            capture_windows_directory_snapshot(target, &target_handle)?.journal_entries()?
+        }
     } else {
         Vec::new()
     };
@@ -3238,8 +3315,13 @@ fn resume_windows_cross_volume(
                 .as_deref()
                 .expect("validated retained Overwrite path");
             if observe_windows_identity(retained_path)? == record.destination_identity {
-                let retained_manifest = capture_windows_directory_snapshot(retained_path)
-                    .and_then(|snapshot| snapshot.journal_entries());
+                let retained_manifest =
+                    move_recovery::open_reparse_safe_cross_volume_source(retained_path)
+                        .map_err(|error| PlatformError::Io(error.to_string()))
+                        .and_then(|handle| {
+                            capture_windows_directory_snapshot(retained_path, &handle)
+                        })
+                        .and_then(|snapshot| snapshot.journal_entries());
                 match retained_manifest {
                     Ok(manifest) if manifest == record.destination_manifest => {}
                     Ok(_) | Err(_) if record.phase == WindowsCrossVolumePhase::Published => {
@@ -3397,13 +3479,15 @@ fn resume_windows_cross_volume(
                             },
                         )?;
                         drop(candidate_handle);
-                        let mut source_snapshot = capture_windows_directory_snapshot(&source)
-                            .map_err(|error| PlatformError::ClaimedRecoveryPending {
-                                transaction: transaction.display().to_string(),
-                                message: format!(
-                                    "Windows cross-volume directory snapshot failed: {error}"
-                                ),
-                            })?;
+                        let mut source_snapshot =
+                            capture_windows_directory_snapshot(&source, retained_source).map_err(
+                                |error| PlatformError::ClaimedRecoveryPending {
+                                    transaction: transaction.display().to_string(),
+                                    message: format!(
+                                        "Windows cross-volume directory snapshot failed: {error}"
+                                    ),
+                                },
+                            )?;
                         if source_snapshot.evidence
                             != (record.source_size, record.source_sha256.clone())
                             || source_snapshot.journal_entries()? != record.source_manifest
@@ -3498,7 +3582,12 @@ fn resume_windows_cross_volume(
                 let staged_evidence = match record.source_kind {
                     WindowsCrossVolumeSourceKind::File => hash_windows_file(&mut staged),
                     WindowsCrossVolumeSourceKind::Directory => {
-                        let source_snapshot = capture_windows_directory_snapshot(&source).map_err(
+                        if source_handle.is_none() {
+                            source_handle = Some(move_recovery::open_reparse_safe_cross_volume_source(&source)
+                                .map_err(|error| PlatformError::Io(error.to_string()))?);
+                        }
+                        let source_root_handle = source_handle.as_ref().expect("source handle acquired for verification");
+                        let source_snapshot = capture_windows_directory_snapshot(&source, source_root_handle).map_err(
                             |error| PlatformError::ClaimedRecoveryPending {
                                 transaction: transaction.display().to_string(),
                                 message: format!(
@@ -3534,7 +3623,7 @@ fn resume_windows_cross_volume(
                         }
                         _retained_source_snapshot = Some(source_snapshot);
                         let candidate_snapshot =
-                            capture_windows_directory_snapshot(&candidate)?;
+                            capture_windows_directory_snapshot(&candidate, &staged)?;
                         let evidence = candidate_snapshot.evidence.clone();
                         _retained_candidate_snapshot = Some(candidate_snapshot);
                         Ok(evidence)
@@ -3785,7 +3874,7 @@ fn resume_windows_cross_volume(
                     let published_evidence = match record.source_kind {
                         WindowsCrossVolumeSourceKind::File => hash_windows_file(&mut published)?,
                         WindowsCrossVolumeSourceKind::Directory => {
-                            capture_windows_directory_snapshot(&target)?.evidence
+                            capture_windows_directory_snapshot(&target, &published)?.evidence
                         }
                         WindowsCrossVolumeSourceKind::SymbolicLink => {
                             let expected_target = record
@@ -3938,7 +4027,12 @@ fn resume_windows_cross_volume(
                 let published_evidence = match record.source_kind {
                     WindowsCrossVolumeSourceKind::File => hash_windows_file(&mut published),
                     WindowsCrossVolumeSourceKind::Directory => {
-                        let source_snapshot = capture_windows_directory_snapshot(&source)?;
+                        if source_handle.is_none() {
+                            source_handle = Some(move_recovery::open_reparse_safe_cross_volume_source(&source)
+                                .map_err(|error| PlatformError::Io(error.to_string()))?);
+                        }
+                        let source_root_handle = source_handle.as_ref().expect("source handle acquired for verification");
+                        let source_snapshot = capture_windows_directory_snapshot(&source, source_root_handle)?;
                         let source_manifest = source_snapshot.journal_entries()?;
                         if source_snapshot.evidence
                             != (record.source_size, record.source_sha256.clone())
@@ -3949,7 +4043,7 @@ fn resume_windows_cross_volume(
                                 message: "Windows cross-volume source directory changed before publication durability recovery".into(),
                             });
                         }
-                        let published_snapshot = capture_windows_directory_snapshot(&target)?;
+                        let published_snapshot = capture_windows_directory_snapshot(&target, &published)?;
                         let evidence = published_snapshot.evidence.clone();
                         _retained_recovery_source_snapshot = Some(source_snapshot);
                         _retained_published_snapshot = Some(published_snapshot);
@@ -4144,7 +4238,7 @@ fn resume_windows_cross_volume(
                                     ),
                                 })?
                                 != record.source_identity
-                                || !windows_stream_set_is_copy_safe(windows_file_streams(&source)?, true)
+                                || !windows_stream_set_is_copy_safe(windows_file_streams(retained_source)?, true)
                             {
                                 return Err(PlatformError::CommittedCleanupPending {
                                     transaction: transaction.display().to_string(),
@@ -4152,13 +4246,14 @@ fn resume_windows_cross_volume(
                                         .into(),
                                 });
                             }
-                            let source_snapshot = capture_windows_directory_snapshot(&source)
-                                .map_err(|error| PlatformError::CommittedCleanupPending {
-                                    transaction: transaction.display().to_string(),
-                                    message: format!(
-                                        "Windows directory source claim scan failed: {error}"
-                                    ),
-                                })?;
+                            let source_snapshot =
+                                capture_windows_directory_snapshot(&source, retained_source)
+                                    .map_err(|error| PlatformError::CommittedCleanupPending {
+                                        transaction: transaction.display().to_string(),
+                                        message: format!(
+                                            "Windows directory source claim scan failed: {error}"
+                                        ),
+                                    })?;
                             if source_snapshot.evidence
                                 != (record.source_size, record.source_sha256.clone())
                                 || source_snapshot.journal_entries()? != record.source_manifest
@@ -8422,22 +8517,56 @@ mod windows_source_tests {
 
     #[cfg(target_os = "windows")]
     #[test]
+    fn windows_native_locked_directory_snapshot_preserves_exclusion() {
+        let fixture = crate::tests::TestDir::new("windows-locked-directory-snapshot");
+        let directory = fixture.path().join("candidate");
+        std::fs::create_dir(&directory).unwrap();
+        std::fs::write(directory.join("payload"), b"verified content").unwrap();
+        // More than one native enumeration buffer, including a counted UTF-16 name.
+        for index in 0..600 {
+            std::fs::write(
+                directory.join(format!("child-{index:04}-acceptance.txt")),
+                b"",
+            )
+            .unwrap();
+        }
+        std::fs::write(directory.join("ångström-文件.txt"), b"unicode").unwrap();
+        let locked = move_recovery::open_reparse_safe_cross_volume_candidate(&directory).unwrap();
+        assert!(std::fs::File::open(&directory).is_err());
+        let snapshot = super::capture_windows_directory_snapshot(&directory, &locked)
+            .expect("verify through the owned publication handle");
+        assert_eq!(snapshot.entries.len(), 602);
+        assert!(
+            snapshot
+                .entries
+                .iter()
+                .any(|entry| entry.relative_path == std::path::Path::new("ångström-文件.txt"))
+        );
+        assert!(std::fs::write(directory.join("payload"), b"changed").is_err());
+        assert!(std::fs::remove_file(directory.join("payload")).is_err());
+        assert!(std::fs::File::open(&directory).is_err());
+        drop((snapshot, locked));
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
     fn windows_native_directory_streams_are_empty_or_rejected() {
         let fixture = crate::tests::TestDir::new("windows-directory-streams");
         let directory = fixture.path().join("source-tree");
         std::fs::create_dir(&directory).unwrap();
-        assert!(super::windows_file_streams(&directory).unwrap().is_empty());
-        assert!(super::capture_windows_directory_snapshot(&directory).is_ok());
+        let handle = move_recovery::open_reparse_safe_entry_for_rename(&directory).unwrap();
+        assert!(super::windows_file_streams(&handle).unwrap().is_empty());
+        assert!(super::capture_windows_directory_snapshot(&directory, &handle).is_ok());
 
         let stream = directory.with_file_name("source-tree:retained-metadata");
         std::fs::write(&stream, b"named directory data").unwrap();
-        let streams = super::windows_file_streams(&directory).unwrap();
+        let streams = super::windows_file_streams(&handle).unwrap();
         assert_eq!(
             streams,
             vec![std::ffi::OsString::from(":retained-metadata:$DATA")]
         );
         assert!(matches!(
-            super::capture_windows_directory_snapshot(&directory),
+            super::capture_windows_directory_snapshot(&directory, &handle),
             Err(PlatformError::UnsupportedSafeCrossDeviceMove(_))
         ));
         assert_eq!(std::fs::read(stream).unwrap(), b"named directory data");
