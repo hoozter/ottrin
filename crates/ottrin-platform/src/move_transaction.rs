@@ -381,11 +381,6 @@ where
 }
 
 #[cfg(any(target_os = "windows", test))]
-fn windows_cross_volume_uses_metadata_preserving_copy() -> bool {
-    true
-}
-
-#[cfg(any(target_os = "windows", test))]
 fn publish_windows_cross_volume_candidate_with<R, F, N>(
     rename: R,
     flush_published: F,
@@ -7637,11 +7632,10 @@ mod windows_source_tests {
         publish_windows_cross_volume_directory_overwrite_with, reconcile_windows_rename_candidates,
         require_windows_publication_durability, windows_cross_volume_recovery_enabled,
         windows_cross_volume_runtime_enabled, windows_cross_volume_source_kind,
-        windows_cross_volume_test_gate, windows_cross_volume_uses_metadata_preserving_copy,
-        windows_destination_parent_is_pinned, windows_directory_cleanup_order,
-        windows_incomplete_staging_entry_kind, windows_move_route, windows_recovery_lock_path,
-        windows_same_volume_source_kind, windows_staging_candidate_matches_transaction,
-        windows_stream_set_is_copy_safe,
+        windows_cross_volume_test_gate, windows_destination_parent_is_pinned,
+        windows_directory_cleanup_order, windows_incomplete_staging_entry_kind, windows_move_route,
+        windows_recovery_lock_path, windows_same_volume_source_kind,
+        windows_staging_candidate_matches_transaction, windows_stream_set_is_copy_safe,
     };
 
     use crate::{ConflictAction, PlatformError, move_recovery};
@@ -8623,6 +8617,141 @@ mod windows_source_tests {
     #[cfg(target_os = "windows")]
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_move_preserves_basic_metadata() {
+        use std::os::windows::{fs::MetadataExt, io::AsRawHandle};
+        use windows_sys::Win32::Storage::FileSystem::{
+            FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_DIRECTORY, FILE_ATTRIBUTE_HIDDEN,
+            FILE_BASIC_INFO, FileBasicInfo, SetFileInformationByHandle,
+        };
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        for directory in [false, true] {
+            let source_fixture = crate::tests::TestDir::new("metadata-source");
+            let destination_fixture =
+                crate::tests::TestDir::new_at(&volume, "metadata-destination");
+            let source = source_fixture.path().join("entry");
+            let target = destination_fixture.path().join("entry");
+            if directory {
+                std::fs::create_dir(&source).unwrap();
+                std::fs::write(source.join("payload"), b"source-data").unwrap();
+            } else {
+                std::fs::write(&source, b"source-data").unwrap();
+            }
+            let attributes = FILE_ATTRIBUTE_HIDDEN
+                | if directory {
+                    FILE_ATTRIBUTE_DIRECTORY
+                } else {
+                    FILE_ATTRIBUTE_ARCHIVE
+                };
+            let expected = FILE_BASIC_INFO {
+                CreationTime: 132_000_000_000_000_000,
+                LastAccessTime: 132_000_000_000_000_000,
+                LastWriteTime: 133_000_000_000_000_000,
+                ChangeTime: 0,
+                FileAttributes: attributes,
+            };
+            let handle = move_recovery::open_reparse_safe_cross_volume_candidate(&source).unwrap();
+            assert_ne!(
+                unsafe {
+                    SetFileInformationByHandle(
+                        handle.as_raw_handle(),
+                        FileBasicInfo,
+                        std::ptr::addr_of!(expected).cast(),
+                        std::mem::size_of::<FILE_BASIC_INFO>() as u32,
+                    )
+                },
+                0,
+                "set fixture metadata: {}",
+                std::io::Error::last_os_error()
+            );
+            drop(handle);
+            let before = std::fs::metadata(&source).unwrap();
+            assert_eq!(before.creation_time(), expected.CreationTime as u64);
+            assert_eq!(before.last_write_time(), expected.LastWriteTime as u64);
+            assert_eq!(before.file_attributes(), attributes);
+            let moved = super::move_entry_transactional(
+                &source,
+                destination_fixture.path(),
+                ConflictAction::Rename,
+            )
+            .expect("move entry with basic metadata");
+            assert_eq!(moved.disposition, crate::MoveDisposition::Moved);
+            assert!(!source.exists());
+            let after = std::fs::metadata(&target).unwrap();
+            assert_eq!(after.creation_time(), before.creation_time());
+            assert_eq!(after.last_write_time(), before.last_write_time());
+            assert_eq!(after.file_attributes(), before.file_attributes());
+            assert_eq!(
+                std::fs::read(if directory {
+                    target.join("payload")
+                } else {
+                    target
+                })
+                .unwrap(),
+                b"source-data"
+            );
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_destination_acl_denial_preserves_source_and_allows_retry() {
+        fn acl(path: &std::path::Path, arguments: &[&str]) {
+            let output = std::process::Command::new("icacls.exe")
+                .arg(path)
+                .args(arguments)
+                .output()
+                .unwrap();
+            assert!(output.status.success(), "icacls failed: {output:?}");
+        }
+        struct RestoreAcl(std::path::PathBuf);
+        impl Drop for RestoreAcl {
+            fn drop(&mut self) {
+                acl(&self.0, &["/remove:d", "*S-1-1-0"]);
+            }
+        }
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        let source_fixture = crate::tests::TestDir::new("acl-source");
+        let destination_fixture = crate::tests::TestDir::new_at(&volume, "acl-destination");
+        let source = source_fixture.path().join("entry");
+        let target = destination_fixture.path().join("entry");
+        std::fs::write(&source, b"source-data").unwrap();
+        // Deny file/subdirectory creation only in this owned fixture. Keep
+        // WRITE_DAC available so the ordinary test user can restore its ACL.
+        acl(destination_fixture.path(), &["/deny", "*S-1-1-0:(WD,AD)"]);
+        let restore = RestoreAcl(destination_fixture.path().to_owned());
+        assert!(std::fs::write(destination_fixture.path().join("probe"), b"denied").is_err());
+        let refused = super::move_entry_transactional(
+            &source,
+            destination_fixture.path(),
+            ConflictAction::Rename,
+        );
+        assert!(
+            refused.is_err(),
+            "Move must refuse denied destination access"
+        );
+        assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+        assert!(!target.exists());
+        drop(restore);
+        let retried = super::move_entry_transactional(
+            &source,
+            destination_fixture.path(),
+            ConflictAction::Rename,
+        )
+        .expect("retry must proceed after destination access is restored");
+        assert_eq!(retried.disposition, crate::MoveDisposition::Moved);
+        assert_eq!(retried.published_path.as_deref(), Some(target.as_path()));
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_sharing_conflicts_preserve_source_and_allow_retry() {
         use std::{cell::RefCell, os::windows::fs::OpenOptionsExt, rc::Rc};
         use windows_sys::Win32::Storage::FileSystem::{
@@ -9277,11 +9406,6 @@ mod windows_source_tests {
         ));
         assert!(!windows_stream_set_is_copy_safe(["::$DATA"], true));
         assert!(!windows_stream_set_is_copy_safe([":metadata:$DATA"], true));
-    }
-
-    #[test]
-    fn windows_cross_volume_copy_preserves_windows_file_metadata() {
-        assert!(windows_cross_volume_uses_metadata_preserving_copy());
     }
 
     #[test]

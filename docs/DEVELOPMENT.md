@@ -165,10 +165,14 @@ Use a second disposable native volume and an owned fixture directory. The
 fixtures check file/directory/symlink Skip/Rename/Overwrite conflicts with exact
 displaced-entry retention, nested raw links without traversal, empty directories,
 source preservation after mutations at rename handoffs, published-file/link
-change refusal, and retry after source or published-file writers close. Process
+change refusal, and retry after source or published-file writers close. Native
+fixtures also verify destination ACL denial preserves the source and permits retry
+after access restoration, plus file/directory creation and modification times,
+hidden/archive attributes and payload preservation. The ACL fixture invokes
+`icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or
-certify all conflict, filesystem, ACL, metadata, retained-lifecycle or packaged
+certify all conflict, filesystem, ACL, read-only metadata, retained-lifecycle or packaged
 cases. Fault hooks exist only in test builds.
 
 ## Packaging
