@@ -256,6 +256,17 @@ cleanup and at three terminal boundaries, and journal replacement/truncation ref
 (`teardown-red.log`, `teardown-receipt.log`). This replaces the former mock that
 covered only the first journal-removal failure. It does not prove physical power-loss
 behavior or discovery of an externally relocated private transaction directory.
+Windows storage discovery now canonicalizes available drive roots to the same
+verbatim-path form used by navigation. The native regression reproduces and fixes
+Cut refusing a selected file because `C:\` did not match `\\?\C:\`
+(`storage-root-red.log`, `storage-root-green.log`). A source-built Windows GUI then
+completed Cut/Paste with Replace existing item, rediscovered the same-volume
+retained journal after restart, and completed Recover now. Ordinary-user checks
+confirm exact published and displaced bytes, absent source and unchanged journal
+before/after that idempotent recovery (`move-ui-before-recovery.log`,
+`move-ui-after-recovery.log`). A separate interrupted cross-volume fixture is
+visible without a recovery button while its gate is closed (`move-ui-04.png`).
+These checks do not enable cross-volume Move or certify an exact package.
 The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or

@@ -480,6 +480,9 @@ fn discover_windows_storage_locations() -> Vec<StorageLocation> {
                     .as_ref()
                     .map(|share| format!("windows-share:{share}"))
                     .or_else(|| volume_serial.map(|serial| format!("windows-volume:{serial:08x}")));
+                // Navigation uses canonical Windows paths (including verbatim prefixes).
+                // Keep unavailable drive slots visible, but bind ready roots in that same form.
+                let path = std::fs::canonicalize(&path).unwrap_or(path);
                 Some(StorageLocation {
                     path,
                     identity: stable_identity
@@ -571,6 +574,22 @@ fn windows_storage_display_name(
                 .map(|share| share.trim_start_matches('\\').to_string())
         })
         .unwrap_or_else(|| drive_identity.to_string())
+}
+
+#[cfg(all(test, target_os = "windows"))]
+#[test]
+fn windows_storage_discovery_binds_canonical_entry_paths() {
+    let entry = std::fs::canonicalize(std::env::current_exe().unwrap()).unwrap();
+    let locations = discover_storage_locations();
+    let location = locations
+        .iter()
+        .find(|location| entry.starts_with(&location.path))
+        .expect("canonical application paths must bind to their discovered storage root");
+    assert!(location.stable_identity.is_some());
+    assert_eq!(
+        std::fs::canonicalize(&location.path).unwrap(),
+        location.path
+    );
 }
 
 #[cfg(all(test, target_os = "linux"))]
