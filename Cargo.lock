@@ -3360,6 +3360,7 @@ dependencies = [
  "sha2",
  "tempfile",
  "two-face",
+ "zbus",
  "zip",
 ]
 

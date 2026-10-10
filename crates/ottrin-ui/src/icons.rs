@@ -12,7 +12,6 @@ pub(crate) const MI_APPS: &str = "\u{E5C3}"; // Grid
 pub(crate) const MI_WIDTH_NORMAL: &str = "\u{F8F6}"; // width_normal (fixed columns)
 pub(crate) const MI_WIDTH_FULL: &str = "\u{F8F5}"; // width_full (auto-fit columns)
 pub(crate) const MI_DARK_MODE: &str = "\u{E51C}";
-pub(crate) const MI_LIGHT_MODE: &str = "\u{E518}";
 pub(crate) const MI_FOLDER: &str = "\u{E2C7}";
 pub(crate) const MI_FOLDER_OPEN: &str = "\u{E2C8}";
 pub(crate) const MI_FOLDER_SHARED: &str = "\u{E2C9}";

@@ -1,26 +1,10 @@
 use crate::CUSTOM_TITLEBAR_HEIGHT;
 use crate::icons::MI_CLOSE;
-use crate::theme_colors::{Colors, mix_color};
+use crate::theme_colors::Colors;
 use egui::{
-    Align, Color32, Context, Frame, Layout, Rect, ResizeDirection, RichText, Sense, Shadow, Stroke,
-    Vec2,
+    Align, Color32, Context, Frame, Layout, Rect, ResizeDirection, RichText, Sense, Stroke, Vec2,
 };
 
-pub(crate) fn viewport_window_fill(colors: Colors, focused: bool) -> (Color32, Color32, Shadow) {
-    let window_fill = mix_color(colors.bg, colors.panel, 0.12);
-    let title_fill = if focused {
-        colors.titlebar_bg
-    } else {
-        mix_color(colors.titlebar_bg, colors.bg, 0.48)
-    };
-    let shadow = Shadow {
-        offset: [0, 8],
-        blur: 20,
-        spread: 0,
-        color: Color32::from_black_alpha(if focused { 80 } else { 56 }),
-    };
-    (window_fill, title_fill, shadow)
-}
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn render_custom_titlebar(
     ui: &mut egui::Ui,
@@ -45,7 +29,12 @@ pub(crate) fn render_custom_titlebar(
             ui.set_width(ui.available_width());
             ui.set_height(CUSTOM_TITLEBAR_HEIGHT);
             ui.horizontal(|ui| {
-                ui.label(RichText::new(title).color(colors.text).size(12.5).strong());
+                ui.label(
+                    RichText::new(title)
+                        .color(colors.heading)
+                        .size(12.5 * colors.font_scale)
+                        .strong(),
+                );
                 ui.add_space(18.0);
                 body(ui);
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {

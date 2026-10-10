@@ -27,9 +27,10 @@ pub enum ThemePreset {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct ThemeCustomization {
-    pub enabled: bool,
     pub background: [u8; 4],
     pub panel: [u8; 4],
+    pub panel_raised: [u8; 4],
+    pub statusbar: [u8; 4],
     pub toolbar: [u8; 4],
     pub bookmarks_bar: [u8; 4],
     pub smart_panel: [u8; 4],
@@ -38,9 +39,15 @@ pub struct ThemeCustomization {
     pub window_border: [u8; 4],
     pub window_border_width: f32,
     pub accent: [u8; 4],
+    pub selected_bg: [u8; 4],
+    pub hover: [u8; 4],
+    pub error: [u8; 4],
     pub folder: [u8; 4],
     pub button_bg: [u8; 4],
     pub button_text: [u8; 4],
+    pub text: [u8; 4],
+    pub text_dim: [u8; 4],
+    pub text_muted: [u8; 4],
     pub text_heading: [u8; 4],
     pub text_folder: [u8; 4],
     pub text_file: [u8; 4],
@@ -64,9 +71,10 @@ pub struct ThemeCustomization {
 impl Default for ThemeCustomization {
     fn default() -> Self {
         Self {
-            enabled: false,
             background: [17, 18, 20, 255],
             panel: [23, 24, 27, 255],
+            panel_raised: [30, 32, 35, 255],
+            statusbar: [23, 24, 27, 255],
             toolbar: [23, 24, 27, 255],
             bookmarks_bar: [17, 18, 20, 255],
             smart_panel: [23, 24, 27, 255],
@@ -75,9 +83,15 @@ impl Default for ThemeCustomization {
             window_border: [52, 55, 60, 255],
             window_border_width: 1.0,
             accent: [92, 132, 196, 255],
+            selected_bg: [92, 132, 196, 46],
+            hover: [255, 255, 255, 20],
+            error: [224, 85, 85, 255],
             folder: [92, 132, 196, 255],
             button_bg: [30, 32, 35, 255],
             button_text: [188, 191, 196, 255],
+            text: [232, 232, 232, 255],
+            text_dim: [188, 191, 196, 255],
+            text_muted: [170, 172, 176, 255],
             text_heading: [232, 232, 232, 255],
             text_folder: [224, 226, 230, 255],
             text_file: [170, 172, 176, 255],
@@ -874,11 +888,6 @@ pub struct AppConfig {
     pub theme: ThemeMode,
     #[serde(default)]
     pub theme_preset: ThemePreset,
-    #[serde(default)]
-    pub theme_custom: ThemeCustomization,
-    /// Per-preset custom overrides (key format: "<preset>::<mode>").
-    #[serde(default)]
-    pub theme_custom_by_preset: BTreeMap<String, ThemeCustomization>,
     /// User-saved custom themes shown in Appearance settings.
     #[serde(default)]
     pub custom_themes: Vec<SavedTheme>,
@@ -955,8 +964,6 @@ impl Default for AppConfig {
         Self {
             theme: ThemeMode::System,
             theme_preset: ThemePreset::Ottrin,
-            theme_custom: ThemeCustomization::default(),
-            theme_custom_by_preset: BTreeMap::new(),
             custom_themes: Vec::new(),
             active_custom_theme: None,
             default_view_mode: ViewMode::Miller,

@@ -14,14 +14,13 @@ use egui_extras::{
 #[cfg(all(unix, not(test)))]
 use ottrin_core::SearchResponse;
 use ottrin_core::{
-    AppConfig, AppState, ConflictAction, ContentFileGroup, DeleteMode, EntryKind, FileCategory,
-    FileCommand, FileEntry, GraphicsRendererChoice, GraphicsRendererPreference,
-    GraphicsRendererReason, GraphicsRuntimeStatus, IndexedVolumeLocation, ListColumn,
-    MillerColumnWidthMode, PrivilegedCommand, PrivilegedContext, PrivilegedPayload,
-    PrivilegedRequest, PrivilegedStatus, SavedTheme, SearchConfig, SearchIndexStatus, SearchQuery,
-    SearchResultItem, SearchScope, SearchSort, SortBy, SystemLocateMaintenance, TandemSide,
-    ThemeCustomization, ThemeMode, ThemePreset, ViewMode, default_home_dir, format_modified,
-    format_size, format_size_units,
+    AppConfig, AppState, ConflictAction, ContentFileGroup, DeleteMode, EntryKind, FileCommand,
+    FileEntry, GraphicsRendererChoice, GraphicsRendererPreference, GraphicsRendererReason,
+    GraphicsRuntimeStatus, IndexedVolumeLocation, ListColumn, MillerColumnWidthMode,
+    PrivilegedCommand, PrivilegedContext, PrivilegedPayload, PrivilegedRequest, PrivilegedStatus,
+    SavedTheme, SearchConfig, SearchIndexStatus, SearchQuery, SearchResultItem, SearchScope,
+    SearchSort, SortBy, SystemLocateMaintenance, TandemSide, ThemeCustomization, ThemeMode,
+    ThemePreset, ViewMode, default_home_dir, format_modified, format_size, format_size_units,
 };
 #[cfg(target_os = "windows")]
 use ottrin_platform::discover_retained_move_transactions;
@@ -57,6 +56,7 @@ use std::time::{Duration, Instant};
 #[cfg(any(target_os = "linux", test))]
 const LINUX_SYSTEM_MEDIA_DISCLOSURE: &str = "On Linux, Ottrin uses GStreamer installed on this system. Ottrin does not include, download, install, or select codec implementations. Playback depends on the media plugins made available by the operating system or user.";
 
+mod appearance_editor;
 mod config;
 mod file_details;
 mod icons;
@@ -65,6 +65,9 @@ mod launcher;
 mod listing;
 mod preview_render;
 mod semantic_style;
+mod system_appearance;
+mod widget_style;
+use widget_style::{ThemeButtonExt, ThemeTextEditExt, themed_menu_button};
 mod theme_colors;
 mod theme_import;
 mod thumbnail_cache;
@@ -95,7 +98,7 @@ use semantic_style::{
     EntryVisualState, file_icon_for_path, material_icon, semantic_for_path, semantic_palette,
     style_for_entry, style_for_search_item, style_for_semantic,
 };
-use theme_colors::{Colors, apply_contrast, mix_color, parse_hex_rgb, shift_hsva};
+use theme_colors::{Colors, mix_color, parse_hex_rgb};
 use theme_import::{decode_theme_import_json, sanitize_theme_file_name, theme_name_from_path};
 pub use thumbnail_cache::clear_preview_cache_storage;
 use thumbnail_cache::{
@@ -108,7 +111,7 @@ use thumbnail_cache::{
 };
 use window_chrome::{
     WmBtn, cursor_icon_for_resize_direction, render_custom_titlebar, resize_direction_for_pos,
-    viewport_window_fill, wm_btn,
+    wm_btn,
 };
 
 const STORAGE_LOCATION_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
@@ -133,10 +136,6 @@ fn administrator_session() -> bool {
     {
         false
     }
-}
-
-fn single_file_pane_background(colors: &Colors) -> Color32 {
-    colors.smart_panel_bg
 }
 
 fn creation_modal_input_height() -> f32 {
@@ -1545,7 +1544,7 @@ fn render_visual_sizing_controls(
         "Fit page"
     };
     if ui
-        .small_button("Fit page")
+        .add(egui::Button::new("Fit page").small().themed(&c))
         .on_hover_text("Show the complete page or image in the viewport.")
         .clicked()
     {
@@ -1553,7 +1552,7 @@ fn render_visual_sizing_controls(
         *visual_fit_width = false;
     }
     if ui
-        .small_button("Fit width")
+        .add(egui::Button::new("Fit width").small().themed(&c))
         .on_hover_text("Match the preview width and scroll vertically.")
         .clicked()
     {
@@ -1561,14 +1560,18 @@ fn render_visual_sizing_controls(
         *visual_fit_width = true;
     }
     if ui
-        .small_button("100%")
+        .add(egui::Button::new("100%").small().themed(&c))
         .on_hover_text("Show the page or image at its natural size and scroll.")
         .clicked()
     {
         *visual_fit = false;
         *visual_zoom = 1.0;
     }
-    if ui.small_button("−").on_hover_text("Zoom out").clicked() {
+    if ui
+        .add(egui::Button::new("−").small().themed(&c))
+        .on_hover_text("Zoom out")
+        .clicked()
+    {
         *visual_fit = false;
         *visual_zoom = (*visual_zoom / 1.2).clamp(0.1, 8.0);
     }
@@ -1579,9 +1582,13 @@ fn render_visual_sizing_controls(
             format!("{}%", (*visual_zoom * 100.0).round() as u32)
         })
         .color(c.text_dim)
-        .size(10.5),
+        .size(10.5 * c.font_scale),
     );
-    if ui.small_button("+").on_hover_text("Zoom in").clicked() {
+    if ui
+        .add(egui::Button::new("+").small().themed(&c))
+        .on_hover_text("Zoom in")
+        .clicked()
+    {
         *visual_fit = false;
         *visual_zoom = (*visual_zoom * 1.2).clamp(0.1, 8.0);
     }
@@ -2381,8 +2388,11 @@ type SettingsNavGroup = (&'static str, &'static [SettingsNavItem]);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 enum ThemeEditorTab {
     #[default]
-    MainInterface,
-    TextAndIcons,
+    Colors,
+    Typography,
+    Shape,
+    FileColors,
+    Interaction,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Hash)]
@@ -2404,15 +2414,24 @@ enum ThemePreviewRegion {
 enum ThemeColorField {
     Background,
     Panel,
+    RaisedPanel,
+    Statusbar,
     Toolbar,
+    Bookmarks,
     SmartPanel,
     Titlebar,
     Border,
     WindowBorder,
     Accent,
+    Selection,
+    Hover,
+    Error,
     Folder,
     ButtonBg,
     ButtonText,
+    Text,
+    TextDim,
+    TextMuted,
     TextHeading,
     TextFolder,
     TextFile,
@@ -2428,18 +2447,10 @@ enum ThemeColorField {
     PaletteYellow,
 }
 
-#[derive(Debug, Clone, Copy)]
-struct ThemePresetCardSize {
-    width: f32,
-    card_h: f32,
-    thumb_h: f32,
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct ThemeEditorActionModel {
     allow_scope_changes: bool,
     show_save_as: bool,
-    show_reset: bool,
 }
 
 impl ThemeEditorActionModel {
@@ -2448,7 +2459,6 @@ impl ThemeEditorActionModel {
         Self {
             allow_scope_changes: !editing_saved_theme,
             show_save_as: editing_saved_theme,
-            show_reset: !editing_saved_theme,
         }
     }
 }
@@ -2461,22 +2471,9 @@ struct ThemeEditorState {
     preset: ThemePreset,
     mode: ThemeMode,
     source_saved_idx: Option<usize>,
-    base_custom: ThemeCustomization,
-    original_custom: ThemeCustomization,
     custom: ThemeCustomization,
     save_as_name: String,
-    main_hue_shift: f32,
-    main_saturation: f32,
-    main_brightness: f32,
-    main_contrast: f32,
-    text_hue_shift: f32,
-    text_saturation: f32,
-    text_brightness: f32,
-    text_contrast: f32,
-    color_picker_open: bool,
-    color_picker_field: Option<ThemeColorField>,
     color_hex_inputs: std::collections::BTreeMap<ThemeColorField, String>,
-    color_clipboard_hex: String,
 }
 
 impl Default for ThemeEditorState {
@@ -2484,37 +2481,16 @@ impl Default for ThemeEditorState {
         let custom = ThemeCustomization::default();
         Self {
             open: false,
-            tab: ThemeEditorTab::MainInterface,
+            tab: ThemeEditorTab::Colors,
             selected_region: ThemePreviewRegion::default(),
             preset: ThemePreset::default(),
             mode: ThemeMode::default(),
             source_saved_idx: None,
-            base_custom: custom.clone(),
-            original_custom: custom.clone(),
             custom,
             save_as_name: String::new(),
-            main_hue_shift: 0.0,
-            main_saturation: 1.0,
-            main_brightness: 1.0,
-            main_contrast: 1.0,
-            text_hue_shift: 0.0,
-            text_saturation: 1.0,
-            text_brightness: 1.0,
-            text_contrast: 1.0,
-            color_picker_open: false,
-            color_picker_field: None,
             color_hex_inputs: std::collections::BTreeMap::new(),
-            color_clipboard_hex: String::new(),
         }
     }
-}
-
-// ── Properties popup ──────────────────────────────────────────────────────────
-
-#[derive(Debug, Default)]
-struct PropertiesPopup {
-    visible: bool,
-    path: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -2703,7 +2679,6 @@ pub struct OttrinApp {
     hash_tx: Sender<(PathBuf, Result<String, String>)>,
     hash_rx: Receiver<(PathBuf, Result<String, String>)>,
     target_dropdown: TargetDropdown,
-    properties: PropertiesPopup,
     pending_rename: Option<PendingRename>,
     pending_creation: Option<PendingCreation>,
     pending_delete: Option<PendingDelete>,
@@ -2755,6 +2730,7 @@ pub struct OttrinApp {
     status_message: Option<UiStatusMessage>,
     // Dedicated per-theme editor popup state (KDE-style edit flow).
     theme_editor: ThemeEditorState,
+    system_appearance: system_appearance::SystemAppearance,
     // One-shot in-app coaching after setting a drop folder from the empty-state hint.
     drop_folder_confirm_until: Option<Instant>,
     // Last measured content rect for the file pane, excluding the in-pane bottom toolbar.
@@ -2811,9 +2787,10 @@ impl OttrinApp {
         cc.egui_ctx.set_fonts(fonts);
 
         let config = load_config();
-        let app =
+        let mut app =
             Self::new_with_config_and_graphics_status(config, GraphicsRuntimeStatus::default());
-        app.apply_theme_to_ctx(&cc.egui_ctx);
+        app.system_appearance = system_appearance::SystemAppearance::start(cc.egui_ctx.clone());
+        app.reapply_theme(&cc.egui_ctx);
         app
     }
 
@@ -2837,8 +2814,9 @@ impl OttrinApp {
         cc.egui_ctx.set_fonts(fonts);
 
         let config = load_config();
-        let app = Self::new_with_config_and_graphics_status(config, graphics_runtime);
-        app.apply_theme_to_ctx(&cc.egui_ctx);
+        let mut app = Self::new_with_config_and_graphics_status(config, graphics_runtime);
+        app.system_appearance = system_appearance::SystemAppearance::start(cc.egui_ctx.clone());
+        app.reapply_theme(&cc.egui_ctx);
         app
     }
 
@@ -3562,7 +3540,7 @@ impl OttrinApp {
             }
         });
 
-        let colors = Colors::for_config(&config);
+        let colors = Colors::for_config(&config, None);
 
         let mut state = AppState {
             config,
@@ -3624,7 +3602,6 @@ impl OttrinApp {
             hash_tx,
             hash_rx,
             target_dropdown: TargetDropdown::default(),
-            properties: PropertiesPopup::default(),
             pending_rename: None,
             pending_creation: None,
             pending_delete: None,
@@ -3663,6 +3640,7 @@ impl OttrinApp {
             app_cleanup_confirm: false,
             status_message: None,
             theme_editor: ThemeEditorState::default(),
+            system_appearance: Default::default(),
             drop_folder_confirm_until: None,
             file_pane_rect: None,
             smart_panel_rect: None,
@@ -3670,14 +3648,6 @@ impl OttrinApp {
             tab_tandem_selection: Vec::new(),
             quick_inspector_only: false,
         };
-
-        // Theme editing is per preset+mode scope; always hydrate the active
-        // scope so users can edit immediately without a separate enable step.
-        app.load_or_seed_override_for_scope();
-        app.colors = Colors::for_config(&app.state.config);
-        if show_graphics_compatibility_notice {
-            app.persist_config();
-        }
 
         // Kick off initial listings for the default tab
         app.search_ui.scope = app.state.config.search.default_scope;
@@ -3691,36 +3661,22 @@ impl OttrinApp {
     }
 
     fn apply_theme_to_ctx(&self, ctx: &Context) {
-        let mut visuals = match self.state.config.theme {
-            ThemeMode::Light => egui::Visuals::light(),
-            ThemeMode::Dark | ThemeMode::System => egui::Visuals::dark(),
+        let mut visuals = if self.colors.bg.intensity() < 0.5 {
+            egui::Visuals::dark()
+        } else {
+            egui::Visuals::light()
         };
         let c = &self.colors;
-        let widget_radius = if self.state.config.theme_custom.enabled {
-            self.state
-                .config
-                .theme_custom
-                .button_radius
-                .clamp(0.0, 14.0) as u8
-        } else {
-            c.button_radius
-        };
-        let (button_bg, button_text) = if self.state.config.theme_custom.enabled {
-            (
-                Colors::from_rgba(self.state.config.theme_custom.button_bg),
-                Colors::from_rgba(self.state.config.theme_custom.button_text),
-            )
-        } else {
-            (c.panel_raised, c.text_muted)
-        };
+        let widget_radius = c.border_radius;
+        let (control_bg, control_text) = (c.panel_raised, c.text);
         // Force all major visual slots so no inherited hue survives from
         // egui defaults (which can make dark themes feel warm/purple).
-        visuals.override_text_color = Some(c.text_muted);
+        visuals.override_text_color = None;
         visuals.weak_text_color = Some(c.text_muted);
         visuals.hyperlink_color = c.accent;
         visuals.panel_fill = c.panel;
         visuals.window_fill = c.panel; // modals/settings use panel color, not bg
-        visuals.window_stroke = Stroke::new(1.0, c.border);
+        visuals.window_stroke = Stroke::new(c.window_border_width, c.window_border);
         visuals.window_corner_radius = egui::CornerRadius::same(c.app_radius);
         visuals.menu_corner_radius = egui::CornerRadius::same(c.border_radius);
         visuals.window_shadow = Shadow::NONE;
@@ -3735,28 +3691,28 @@ impl OttrinApp {
         visuals.widgets.noninteractive.weak_bg_fill = c.panel;
         visuals.widgets.noninteractive.bg_stroke = Stroke::NONE;
         visuals.widgets.noninteractive.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0, c.text_muted);
-        visuals.widgets.inactive.bg_fill = button_bg;
-        visuals.widgets.inactive.weak_bg_fill = button_bg;
+        visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0, c.text);
+        visuals.widgets.inactive.bg_fill = control_bg;
+        visuals.widgets.inactive.weak_bg_fill = control_bg;
         visuals.widgets.inactive.bg_stroke = Stroke::NONE;
         visuals.widgets.inactive.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.inactive.fg_stroke = Stroke::new(1.0, button_text);
+        visuals.widgets.inactive.fg_stroke = Stroke::new(1.0, control_text);
         visuals.widgets.hovered.bg_fill = c.hover;
         visuals.widgets.hovered.weak_bg_fill = c.hover;
         visuals.widgets.hovered.bg_stroke = Stroke::NONE;
         visuals.widgets.hovered.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.hovered.fg_stroke = Stroke::new(1.0, c.text_muted);
+        visuals.widgets.hovered.fg_stroke = Stroke::new(1.0, control_text);
         visuals.widgets.active.bg_fill = c.accent_dim;
         visuals.widgets.active.weak_bg_fill = c.accent_dim;
         visuals.widgets.active.bg_stroke = Stroke::NONE;
         visuals.widgets.active.corner_radius = egui::CornerRadius::same(widget_radius);
         visuals.widgets.active.fg_stroke = Stroke::new(1.0, c.accent);
-        visuals.widgets.open.bg_fill = button_bg;
-        visuals.widgets.open.weak_bg_fill = button_bg;
+        visuals.widgets.open.bg_fill = control_bg;
+        visuals.widgets.open.weak_bg_fill = control_bg;
         visuals.widgets.open.bg_stroke = Stroke::NONE;
         visuals.widgets.open.corner_radius = egui::CornerRadius::same(widget_radius);
-        visuals.widgets.open.fg_stroke = Stroke::new(1.0, button_text);
-        visuals.selection.bg_fill = mix_color(c.selected_bg, c.panel, 0.55);
+        visuals.widgets.open.fg_stroke = Stroke::new(1.0, control_text);
+        visuals.selection.bg_fill = c.selected_bg;
         visuals.selection.stroke = Stroke::new(1.0, c.text);
         ctx.set_visuals(visuals);
         ctx.style_mut(|style| {
@@ -3793,8 +3749,138 @@ impl OttrinApp {
                 egui::TextStyle::Monospace,
                 FontId::monospace(13.0 * c.font_scale),
             );
+            style.text_styles.insert(
+                egui::TextStyle::Small,
+                FontId::proportional(11.0 * c.font_scale),
+            );
             style.spacing.button_padding = Vec2::new(10.0, 6.0);
         });
+    }
+
+    fn paint_viewport_frame(&self, ctx: &Context) {
+        // Paint the same rounded border and alpha mask for every Ottrin viewport.
+        // The GL callback runs first to fix the alpha channel, then the
+        // border stroke paints on top so it is never occluded.
+        let vp_rect = ctx.viewport_rect();
+        let border_painter = ctx.layer_painter(egui::LayerId::new(
+            egui::Order::Foreground,
+            egui::Id::new("viewport_border"),
+        ));
+
+        let radius = self.colors.app_radius as f32;
+        if rounded_alpha_callback_enabled(self.graphics_runtime.is_windows) {
+            border_painter.add(egui::Shape::Callback(egui::PaintCallback {
+                rect: vp_rect,
+                callback: std::sync::Arc::new(eframe::egui_glow::CallbackFn::new(
+                    move |info, painter| {
+                        use eframe::glow::HasContext as _;
+                        let gl = painter.gl();
+                        let [scr_w, scr_h] = info.screen_size_px;
+                        let scr_w = scr_w as i32;
+                        let scr_h = scr_h as i32;
+                        let ppp = info.pixels_per_point;
+
+                        unsafe {
+                            let r_f = radius * ppp;
+                            let r_px = r_f.ceil() as i32;
+
+                            // --- alpha pass: only write the A channel --------
+                            gl.color_mask(false, false, false, true);
+
+                            // 1. Clear alpha to 0 everywhere (fully transparent).
+                            gl.clear_color(0.0, 0.0, 0.0, 0.0);
+                            gl.disable(eframe::glow::SCISSOR_TEST);
+                            gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+
+                            // 2. Fill alpha=1.0 only inside the rounded rect.
+                            gl.clear_color(0.0, 0.0, 0.0, 1.0);
+                            gl.enable(eframe::glow::SCISSOR_TEST);
+
+                            if r_px > 0 && scr_h > 2 * r_px {
+                                // Middle band: full width, fully opaque.
+                                gl.scissor(0, r_px, scr_w, scr_h - 2 * r_px);
+                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+
+                                // Corner scanlines: arc-shaped inset.
+                                for row in 0..r_px {
+                                    let dy = r_f - row as f32 - 0.5;
+                                    let inset = if dy <= 0.0 {
+                                        0
+                                    } else if dy >= r_f {
+                                        scr_w // fully outside
+                                    } else {
+                                        let x_inside = (r_f * r_f - dy * dy).sqrt();
+                                        let edge = r_f - x_inside;
+                                        (edge.ceil() as i32).clamp(0, r_px)
+                                    };
+                                    let strip_w = scr_w - 2 * inset;
+                                    if strip_w <= 0 {
+                                        continue;
+                                    }
+                                    // Top row (GL origin is bottom-left).
+                                    gl.scissor(inset, scr_h - 1 - row, strip_w, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                    // Bottom row.
+                                    gl.scissor(inset, row, strip_w, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                }
+                            } else {
+                                // No rounding or window too small — full opaque.
+                                gl.scissor(0, 0, scr_w, scr_h);
+                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                            }
+
+                            // --- RGB pass: zero out RGB in corner boxes so
+                            //     stale content colour doesn't bleed through
+                            //     the border's anti-aliased fringe. ----------
+                            if r_px > 0 {
+                                gl.color_mask(true, true, true, false);
+                                gl.clear_color(0.0, 0.0, 0.0, 0.0);
+                                // Only clear the thin L-shaped strips outside
+                                // the arc, not the whole corner box (to avoid
+                                // destroying content pixels inside the arc).
+                                for row in 0..r_px {
+                                    let dy = r_f - row as f32 - 0.5;
+                                    let inset = if dy <= 0.0 {
+                                        0
+                                    } else if dy >= r_f {
+                                        r_px
+                                    } else {
+                                        let x_inside = (r_f * r_f - dy * dy).sqrt();
+                                        let edge = r_f - x_inside;
+                                        (edge.ceil() as i32).clamp(0, r_px)
+                                    };
+                                    if inset <= 0 {
+                                        continue;
+                                    }
+                                    // Top-left / top-right
+                                    gl.scissor(0, scr_h - 1 - row, inset, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                    gl.scissor(scr_w - inset, scr_h - 1 - row, inset, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                    // Bottom-left / bottom-right
+                                    gl.scissor(0, row, inset, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                    gl.scissor(scr_w - inset, row, inset, 1);
+                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
+                                }
+                            }
+
+                            gl.color_mask(true, true, true, true);
+                            gl.disable(eframe::glow::SCISSOR_TEST);
+                        }
+                    },
+                )),
+            }));
+        }
+
+        // Border stroke renders AFTER the callback so it sits on top.
+        border_painter.rect_stroke(
+            vp_rect,
+            self.colors.app_radius,
+            Stroke::new(self.colors.window_border_width, self.colors.window_border),
+            egui::StrokeKind::Inside,
+        );
     }
 
     fn set_status_message(&mut self, text: impl Into<String>, ok: bool, ttl_secs: u64) {
@@ -3880,12 +3966,29 @@ impl OttrinApp {
     }
 
     fn persist_config(&self) {
+        // Editor previews live in ThemeEditorState, never in the persisted configuration.
         save_config(&self.state.config);
     }
 
+    fn effective_colors(&self, system_theme: Option<egui::Theme>) -> Colors {
+        if self.theme_editor.open {
+            Colors::preset(
+                self.theme_editor.preset,
+                self.theme_editor.mode != ThemeMode::Light,
+            )
+            .customized(&self.theme_editor.custom)
+        } else {
+            Colors::for_config(&self.state.config, system_theme)
+        }
+    }
+
     fn reapply_theme(&mut self, ctx: &Context) {
-        self.colors = Colors::for_config(&self.state.config);
+        self.colors = self.effective_colors(self.system_theme(ctx));
         self.apply_theme_to_ctx(ctx);
+        let viewports = ctx.input(|input| input.raw.viewports.keys().copied().collect::<Vec<_>>());
+        for viewport in viewports {
+            ctx.request_repaint_of(viewport);
+        }
     }
 
     fn cached_image_preview_widget(
@@ -3966,7 +4069,7 @@ impl OttrinApp {
                     rect.center(),
                     Align2::CENTER_CENTER,
                     format!("Loading page {}…", page_index + 1),
-                    FontId::proportional(14.0),
+                    FontId::proportional(14.0 * self.colors.font_scale),
                     self.colors.text_dim,
                 );
             }
@@ -4429,31 +4532,11 @@ impl OttrinApp {
         u64::from(self.state.config.thumbnail_cache_max_mb) * 1024 * 1024
     }
 
-    fn theme_mode_key(mode: ThemeMode) -> &'static str {
-        match mode {
-            ThemeMode::Light => "light",
-            ThemeMode::Dark => "dark",
-            ThemeMode::System => "system",
-        }
-    }
-
     fn theme_mode_label(mode: ThemeMode) -> &'static str {
         match mode {
             ThemeMode::Light => "Light",
             ThemeMode::Dark => "Dark",
             ThemeMode::System => "System",
-        }
-    }
-
-    fn theme_preset_key(preset: ThemePreset) -> &'static str {
-        match preset {
-            ThemePreset::Ottrin => "ottrin",
-            ThemePreset::Breeze => "breeze",
-            ThemePreset::Adwaita => "adwaita",
-            ThemePreset::Windows11 => "windows11",
-            ThemePreset::Solarized => "solarized",
-            ThemePreset::Nord => "nord",
-            ThemePreset::G33k => "g33k",
         }
     }
 
@@ -4469,126 +4552,13 @@ impl OttrinApp {
         }
     }
 
-    fn theme_preset_icon(preset: ThemePreset) -> &'static str {
-        match preset {
-            ThemePreset::Ottrin => MI_SETTINGS,
-            ThemePreset::Breeze => MI_LIGHT_MODE,
-            ThemePreset::Adwaita => MI_HOME,
-            ThemePreset::Windows11 => MI_APPS,
-            ThemePreset::Solarized => MI_DARK_MODE,
-            ThemePreset::Nord => MI_DESCRIPTION,
-            ThemePreset::G33k => MI_TERMINAL,
-        }
-    }
-
-    fn theme_scope_key_for(preset: ThemePreset, mode: ThemeMode) -> String {
-        format!(
-            "{}::{}",
-            Self::theme_preset_key(preset),
-            Self::theme_mode_key(mode)
-        )
-    }
-
-    fn current_theme_scope_key(&self) -> String {
-        Self::theme_scope_key_for(self.state.config.theme_preset, self.state.config.theme)
-    }
-
-    fn semantic_tokens_for_preset(preset: ThemePreset) -> [[u8; 4]; 10] {
-        // folder blue, link blue, steel, soft white, green, orange, purple, pink, red, yellow
-        match preset {
-            ThemePreset::Ottrin => [
-                [81, 154, 186, 255],
-                [111, 168, 195, 255],
-                [109, 128, 134, 255],
-                [232, 236, 235, 255],
-                [141, 193, 73, 255],
-                [227, 121, 51, 255],
-                [160, 116, 196, 255],
-                [245, 83, 133, 255],
-                [204, 62, 68, 255],
-                [203, 203, 65, 255],
-            ],
-            ThemePreset::Breeze => [
-                [61, 174, 233, 255],
-                [64, 196, 208, 255],
-                [130, 142, 155, 255],
-                [252, 252, 252, 255],
-                [96, 176, 120, 255],
-                [218, 144, 86, 255],
-                [143, 136, 214, 255],
-                [218, 88, 105, 255],
-                [218, 88, 105, 255],
-                [193, 157, 88, 255],
-            ],
-            ThemePreset::Adwaita => [
-                [53, 132, 228, 255],
-                [63, 164, 196, 255],
-                [133, 145, 160, 255],
-                [246, 245, 244, 255],
-                [89, 163, 122, 255],
-                [208, 137, 88, 255],
-                [151, 131, 212, 255],
-                [214, 81, 99, 255],
-                [224, 27, 36, 255],
-                [191, 154, 81, 255],
-            ],
-            ThemePreset::Windows11 => [
-                [72, 157, 235, 255],
-                [74, 182, 204, 255],
-                [133, 144, 156, 255],
-                [232, 236, 240, 255],
-                [106, 172, 118, 255],
-                [206, 141, 96, 255],
-                [156, 138, 206, 255],
-                [206, 98, 104, 255],
-                [206, 98, 104, 255],
-                [190, 158, 97, 255],
-            ],
-            ThemePreset::Solarized => [
-                [38, 139, 210, 255],
-                [42, 161, 152, 255],
-                [131, 148, 150, 255],
-                [253, 246, 227, 255],
-                [133, 153, 0, 255],
-                [203, 75, 22, 255],
-                [108, 113, 196, 255],
-                [211, 54, 130, 255],
-                [220, 50, 47, 255],
-                [181, 137, 0, 255],
-            ],
-            ThemePreset::Nord => [
-                [129, 161, 193, 255],
-                [136, 192, 208, 255],
-                [143, 157, 178, 255],
-                [236, 239, 244, 255],
-                [163, 190, 140, 255],
-                [208, 135, 112, 255],
-                [180, 142, 173, 255],
-                [191, 97, 106, 255],
-                [191, 97, 106, 255],
-                [235, 203, 139, 255],
-            ],
-            ThemePreset::G33k => [
-                [96, 214, 255, 255],
-                [84, 199, 196, 255],
-                [118, 154, 132, 255],
-                [131, 255, 147, 255],
-                [131, 225, 122, 255],
-                [212, 150, 93, 255],
-                [168, 144, 215, 255],
-                [246, 114, 114, 255],
-                [246, 114, 114, 255],
-                [201, 171, 97, 255],
-            ],
-        }
-    }
-
-    fn custom_from_colors(colors: Colors, preset: ThemePreset) -> ThemeCustomization {
-        let tokens = Self::semantic_tokens_for_preset(preset);
+    fn custom_from_colors(colors: Colors) -> ThemeCustomization {
+        let tokens = colors.palette.map(Colors::to_rgba);
         ThemeCustomization {
-            enabled: true,
             background: Colors::to_rgba(colors.bg),
             panel: Colors::to_rgba(colors.panel),
+            panel_raised: Colors::to_rgba(colors.panel_raised),
+            statusbar: Colors::to_rgba(colors.statusbar_bg),
             toolbar: Colors::to_rgba(colors.toolbar_bg),
             bookmarks_bar: Colors::to_rgba(colors.bookmarks_bg),
             smart_panel: Colors::to_rgba(colors.smart_panel_bg),
@@ -4597,11 +4567,17 @@ impl OttrinApp {
             window_border: Colors::to_rgba(colors.window_border),
             window_border_width: colors.window_border_width,
             accent: Colors::to_rgba(colors.accent),
+            selected_bg: Colors::to_rgba(colors.selected_bg),
+            hover: Colors::to_rgba(colors.hover),
+            error: Colors::to_rgba(colors.error),
             folder: Colors::to_rgba(colors.folder),
-            button_bg: Colors::to_rgba(colors.panel_raised),
-            button_text: Colors::to_rgba(colors.text_muted),
+            button_bg: Colors::to_rgba(colors.button_bg),
+            button_text: Colors::to_rgba(colors.button_text),
+            text: Colors::to_rgba(colors.text),
+            text_dim: Colors::to_rgba(colors.text_dim),
+            text_muted: Colors::to_rgba(colors.text_muted),
             text_heading: Colors::to_rgba(colors.heading),
-            text_folder: Colors::to_rgba(colors.text_dim),
+            text_folder: Colors::to_rgba(colors.folder_text),
             text_file: Colors::to_rgba(colors.file),
             palette_folder_blue: tokens[0],
             palette_link_blue: tokens[1],
@@ -4620,101 +4596,73 @@ impl OttrinApp {
         }
     }
 
-    fn save_current_override_for_scope(&mut self) {
-        let key = self.current_theme_scope_key();
+    fn active_saved_theme(&self) -> Option<&SavedTheme> {
         self.state
             .config
-            .theme_custom_by_preset
-            .insert(key, self.state.config.theme_custom.clone());
+            .active_custom_theme
+            .as_ref()
+            .and_then(|name| {
+                self.state
+                    .config
+                    .custom_themes
+                    .iter()
+                    .find(|theme| theme.name == *name)
+            })
     }
 
-    fn load_or_seed_override_for_scope(&mut self) {
-        let key = self.current_theme_scope_key();
-        if let Some(saved) = self.state.config.theme_custom_by_preset.get(&key).cloned() {
-            self.state.config.theme_custom = saved;
-            self.state.config.theme_custom.enabled = true;
-            return;
-        }
-        let base = Colors::base_for_config(&self.state.config);
-        let custom = Self::custom_from_colors(base, self.state.config.theme_preset);
-        self.state.config.theme_custom = custom.clone();
-        self.state.config.theme_custom_by_preset.insert(key, custom);
+    fn current_theme_mode(&self) -> ThemeMode {
+        self.active_saved_theme()
+            .map_or(self.state.config.theme, |theme| theme.theme_mode)
+    }
+
+    fn current_theme_preset(&self) -> ThemePreset {
+        self.active_saved_theme()
+            .map_or(self.state.config.theme_preset, |theme| theme.base_preset)
+    }
+
+    fn system_theme(&self, ctx: &Context) -> Option<egui::Theme> {
+        ctx.system_theme().or(self.system_appearance.preferred())
     }
 
     fn apply_theme_preset(&mut self, preset: ThemePreset, ctx: &Context) {
-        // Switching to a built-in preset should give a clean default, not a
-        // stale override that preserved previous font_scale / palette edits.
+        self.state.config.theme = self.current_theme_mode();
         self.state.config.theme_preset = preset;
         self.state.config.active_custom_theme = None;
-        let key = self.current_theme_scope_key();
-        self.state.config.theme_custom_by_preset.remove(&key);
-        self.load_or_seed_override_for_scope();
         self.reapply_theme(ctx);
     }
 
+    fn delete_saved_custom_theme(&mut self, index: usize, ctx: &Context) {
+        let saved = &self.state.config.custom_themes[index];
+        if self.state.config.active_custom_theme.as_deref() == Some(saved.name.as_str()) {
+            // Resolve the visible saved mode before removing its palette record.
+            self.apply_theme_preset(saved.base_preset, ctx);
+        }
+        self.state.config.custom_themes.remove(index);
+    }
+
     fn apply_theme_mode(&mut self, mode: ThemeMode, ctx: &Context) {
-        self.save_current_override_for_scope();
+        self.state.config.theme_preset = self.current_theme_preset();
         self.state.config.theme = mode;
-        self.load_or_seed_override_for_scope();
+        self.state.config.active_custom_theme = None;
         self.reapply_theme(ctx);
     }
 
     fn apply_saved_custom_theme(&mut self, saved: &SavedTheme, ctx: &Context) {
-        self.state.config.theme = saved.theme_mode;
-        self.state.config.theme_preset = saved.base_preset;
-        self.state.config.theme_custom = saved.customization.clone();
-        self.state.config.theme_custom.enabled = true;
         self.state.config.active_custom_theme = Some(saved.name.clone());
-        self.save_current_override_for_scope();
         self.reapply_theme(ctx);
-    }
-
-    fn preview_colors_for_scope(&self, preset: ThemePreset, mode: ThemeMode) -> Colors {
-        let mut cfg = self.state.config.clone();
-        cfg.theme_preset = preset;
-        cfg.theme = mode;
-        let key = Self::theme_scope_key_for(preset, mode);
-        if let Some(saved) = cfg.theme_custom_by_preset.get(&key).cloned() {
-            cfg.theme_custom = saved;
-            cfg.theme_custom.enabled = true;
-        } else {
-            cfg.theme_custom.enabled = false;
-        }
-        Colors::for_config(&cfg)
-    }
-
-    fn theme_scope_custom_or_seed(
-        &self,
-        preset: ThemePreset,
-        mode: ThemeMode,
-    ) -> ThemeCustomization {
-        let key = Self::theme_scope_key_for(preset, mode);
-        if let Some(saved) = self.state.config.theme_custom_by_preset.get(&key).cloned() {
-            let mut scoped = saved;
-            scoped.enabled = true;
-            return scoped;
-        }
-        let dark = matches!(mode, ThemeMode::Dark | ThemeMode::System);
-        let base = Colors::preset(preset, dark);
-        Self::custom_from_colors(base, preset)
-    }
-
-    fn theme_editor_scope_is_active(&self) -> bool {
-        self.theme_editor.preset == self.state.config.theme_preset
-            && self.theme_editor.mode == self.state.config.theme
     }
 
     fn theme_preview_region_label(region: ThemePreviewRegion) -> &'static str {
         match region {
             ThemePreviewRegion::Titlebar => "Title bar",
             ThemePreviewRegion::Navigation => "Navigation bar",
-            ThemePreviewRegion::Bookmarks => "Bookmarks bar",
-            ThemePreviewRegion::ColumnBackground => "Column background",
+            ThemePreviewRegion::Bookmarks => "Locations rail",
+            ThemePreviewRegion::ColumnBackground => "File view",
             ThemePreviewRegion::SelectedRow => "Selected row",
-            ThemePreviewRegion::ColumnText => "Column text",
+            ThemePreviewRegion::ColumnText => "File labels & icons",
             ThemePreviewRegion::Sidebar => "Sidebar",
             ThemePreviewRegion::StatusBar => "Status bar",
-            ThemePreviewRegion::Accent => "Accent details",
+            ThemePreviewRegion::Accent => "Buttons",
             ThemePreviewRegion::Borders => "Borders",
         }
     }
@@ -4723,16 +4671,18 @@ impl OttrinApp {
         match region {
             ThemePreviewRegion::Titlebar => "Window chrome, tab shelf, and top heading contrast.",
             ThemePreviewRegion::Navigation => "Back controls, address field, and toolbar rhythm.",
-            ThemePreviewRegion::Bookmarks => "Quick destination chips sitting under navigation.",
-            ThemePreviewRegion::ColumnBackground => "The main browsing canvas and column surfaces.",
+            ThemePreviewRegion::Bookmarks => {
+                "The left rail containing bookmarked locations and storage devices."
+            }
+            ThemePreviewRegion::ColumnBackground => "Background behind files in every view mode.",
             ThemePreviewRegion::SelectedRow => {
-                "Focused file row, active state, and emphasis balance."
+                "Background of selected file rows. Shared with text selection."
             }
             ThemePreviewRegion::ColumnText => "Neutral folder/file labels and default icon tint.",
             ThemePreviewRegion::Sidebar => "Info/search/target strip and its supporting contrast.",
-            ThemePreviewRegion::StatusBar => "Bottom utility bar and low-emphasis metadata.",
+            ThemePreviewRegion::StatusBar => "Background of the bottom status and utility bar.",
             ThemePreviewRegion::Accent => {
-                "Selection highlight, active underline, and call-to-action color."
+                "Shared action-button labels; backgrounds apply to filled buttons."
             }
             ThemePreviewRegion::Borders => "Dividers, outlines, and window-edge definition.",
         }
@@ -4740,73 +4690,47 @@ impl OttrinApp {
 
     fn theme_preview_region_fields(region: ThemePreviewRegion) -> &'static [ThemeColorField] {
         match region {
-            ThemePreviewRegion::Titlebar => &[
-                ThemeColorField::Titlebar,
-                ThemeColorField::TextHeading,
-                ThemeColorField::Border,
-            ],
-            ThemePreviewRegion::Navigation => &[
-                ThemeColorField::Toolbar,
-                ThemeColorField::Border,
-                ThemeColorField::TextFile,
-            ],
-            ThemePreviewRegion::Bookmarks => &[
-                ThemeColorField::Toolbar,
-                ThemeColorField::Accent,
-                ThemeColorField::TextFolder,
-            ],
-            ThemePreviewRegion::ColumnBackground => &[
-                ThemeColorField::Background,
-                ThemeColorField::Panel,
-                ThemeColorField::Border,
-            ],
-            ThemePreviewRegion::SelectedRow => &[
-                ThemeColorField::Accent,
-                ThemeColorField::TextFolder,
-                ThemeColorField::TextFile,
-            ],
+            ThemePreviewRegion::Titlebar => &[ThemeColorField::Titlebar],
+            ThemePreviewRegion::Navigation => &[ThemeColorField::Toolbar],
+            ThemePreviewRegion::Bookmarks => &[ThemeColorField::Bookmarks],
+            ThemePreviewRegion::ColumnBackground => &[ThemeColorField::Background],
+            ThemePreviewRegion::SelectedRow => &[ThemeColorField::Selection],
             ThemePreviewRegion::ColumnText => &[
-                ThemeColorField::TextHeading,
                 ThemeColorField::TextFolder,
                 ThemeColorField::TextFile,
                 ThemeColorField::Folder,
             ],
-            ThemePreviewRegion::Sidebar => &[
-                ThemeColorField::SmartPanel,
-                ThemeColorField::Accent,
-                ThemeColorField::Border,
-            ],
-            ThemePreviewRegion::StatusBar => &[
-                ThemeColorField::Titlebar,
-                ThemeColorField::TextFile,
-                ThemeColorField::Border,
-            ],
-            ThemePreviewRegion::Accent => &[
-                ThemeColorField::Accent,
-                ThemeColorField::ButtonBg,
-                ThemeColorField::ButtonText,
-            ],
-            ThemePreviewRegion::Borders => &[
-                ThemeColorField::Border,
-                ThemeColorField::WindowBorder,
-                ThemeColorField::Panel,
-            ],
+            ThemePreviewRegion::Sidebar => &[ThemeColorField::SmartPanel],
+            ThemePreviewRegion::StatusBar => &[ThemeColorField::Statusbar],
+            ThemePreviewRegion::Accent => &[ThemeColorField::ButtonBg, ThemeColorField::ButtonText],
+            ThemePreviewRegion::Borders => {
+                &[ThemeColorField::Border, ThemeColorField::WindowBorder]
+            }
         }
     }
 
-    fn theme_color_field_order() -> [ThemeColorField; 24] {
+    fn theme_color_field_order() -> [ThemeColorField; 33] {
         [
             ThemeColorField::Background,
             ThemeColorField::Panel,
+            ThemeColorField::RaisedPanel,
+            ThemeColorField::Statusbar,
             ThemeColorField::Titlebar,
             ThemeColorField::Toolbar,
+            ThemeColorField::Bookmarks,
             ThemeColorField::SmartPanel,
             ThemeColorField::Border,
             ThemeColorField::WindowBorder,
             ThemeColorField::Accent,
+            ThemeColorField::Selection,
+            ThemeColorField::Hover,
+            ThemeColorField::Error,
             ThemeColorField::ButtonBg,
             ThemeColorField::ButtonText,
             ThemeColorField::Folder,
+            ThemeColorField::Text,
+            ThemeColorField::TextDim,
+            ThemeColorField::TextMuted,
             ThemeColorField::TextHeading,
             ThemeColorField::TextFolder,
             ThemeColorField::TextFile,
@@ -4827,86 +4751,85 @@ impl OttrinApp {
         match field {
             ThemeColorField::Background => "Content background",
             ThemeColorField::Panel => "Panels and dialogs",
+            ThemeColorField::RaisedPanel => "Inputs / raised surfaces",
+            ThemeColorField::Statusbar => "Status bar",
             ThemeColorField::Toolbar => "Toolbar + tabs",
-            ThemeColorField::SmartPanel => "Smart panel (info/search/target)",
+            ThemeColorField::Bookmarks => "Locations rail",
+            ThemeColorField::SmartPanel => "Smart panel",
             ThemeColorField::Titlebar => "Title bar",
             ThemeColorField::Border => "Borders and dividers",
             ThemeColorField::WindowBorder => "Window border",
-            ThemeColorField::Accent => "Selection/active accent",
+            ThemeColorField::Accent => "Active & focus accent",
+            ThemeColorField::Selection => "Selection background",
+            ThemeColorField::Hover => "Hover background",
+            ThemeColorField::Error => "Error & danger",
             ThemeColorField::Folder => "Folder icon",
-            ThemeColorField::ButtonBg => "Filled button background",
-            ThemeColorField::ButtonText => "Filled button text",
+            ThemeColorField::ButtonBg => "Button background",
+            ThemeColorField::ButtonText => "Button text",
+            ThemeColorField::Text => "Primary text",
+            ThemeColorField::TextDim => "Secondary text",
+            ThemeColorField::TextMuted => "Muted text",
             ThemeColorField::TextHeading => "Heading text",
             ThemeColorField::TextFolder => "Folder text (neutral)",
             ThemeColorField::TextFile => "File text (neutral)",
-            ThemeColorField::PaletteSoftWhite => "Neutral (semantic base)",
-            ThemeColorField::PaletteFolderBlue => "Folder blue",
-            ThemeColorField::PaletteLinkBlue => "Link blue",
-            ThemeColorField::PaletteSteel => "Steel",
-            ThemeColorField::PaletteGreen => "Green",
-            ThemeColorField::PaletteOrange => "Orange",
-            ThemeColorField::PalettePurple => "Purple",
-            ThemeColorField::PalettePink => "Pink",
-            ThemeColorField::PaletteRed => "Red",
-            ThemeColorField::PaletteYellow => "Yellow",
-        }
-    }
-
-    fn theme_color_field_short_label(field: ThemeColorField) -> &'static str {
-        match field {
-            ThemeColorField::Background => "Content",
-            ThemeColorField::Panel => "Panels",
-            ThemeColorField::Toolbar => "Toolbar/tabs",
-            ThemeColorField::SmartPanel => "Smart panel",
-            ThemeColorField::Titlebar => "Title bar",
-            ThemeColorField::Border => "Borders",
-            ThemeColorField::WindowBorder => "Window",
-            ThemeColorField::Accent => "Accent",
-            ThemeColorField::Folder => "Folder icon",
-            ThemeColorField::ButtonBg => "Button bg",
-            ThemeColorField::ButtonText => "Button text",
-            ThemeColorField::TextHeading => "Heading",
-            ThemeColorField::TextFolder => "Folder text",
-            ThemeColorField::TextFile => "File text",
-            ThemeColorField::PaletteSoftWhite => "Neutral",
-            ThemeColorField::PaletteFolderBlue => "Folder blue",
-            ThemeColorField::PaletteLinkBlue => "Link blue",
-            ThemeColorField::PaletteSteel => "Steel",
-            ThemeColorField::PaletteGreen => "Green",
-            ThemeColorField::PaletteOrange => "Orange",
-            ThemeColorField::PalettePurple => "Purple",
-            ThemeColorField::PalettePink => "Pink",
-            ThemeColorField::PaletteRed => "Red",
-            ThemeColorField::PaletteYellow => "Yellow",
+            ThemeColorField::PaletteSoftWhite => "Documents / other",
+            ThemeColorField::PaletteFolderBlue => "Folders",
+            ThemeColorField::PaletteLinkBlue => "Links / audio",
+            ThemeColorField::PaletteSteel => "Config / disk images",
+            ThemeColorField::PaletteGreen => "Programs / sheets",
+            ThemeColorField::PaletteOrange => "Presentations",
+            ThemeColorField::PalettePurple => "Images",
+            ThemeColorField::PalettePink => "Fonts (blend)",
+            ThemeColorField::PaletteRed => "PDF / video",
+            ThemeColorField::PaletteYellow => "Archives",
         }
     }
 
     fn theme_color_field_hint(field: ThemeColorField) -> &'static str {
         match field {
-            ThemeColorField::Background => "File area and input surfaces",
-            ThemeColorField::Panel => "Cards, dialogs, raised surfaces",
-            ThemeColorField::Toolbar => "Tabs, nav row, bookmarks, address",
+            ThemeColorField::Background => "Background of file views",
+            ThemeColorField::Panel => {
+                "Shared panels and dialogs; inputs have their own surface color"
+            }
+            ThemeColorField::RaisedPanel => "Text fields, cards and the Quick Inspector surface",
+            ThemeColorField::Statusbar => "Bottom status and utility bar",
+            ThemeColorField::Toolbar => "Tabs and navigation row",
+            ThemeColorField::Bookmarks => "Background of the left locations rail",
             ThemeColorField::SmartPanel => "Info/search/target sidebar",
             ThemeColorField::Titlebar => "Top window chrome",
             ThemeColorField::Border => "Thin separators and strokes",
             ThemeColorField::WindowBorder => "Border around application windows",
-            ThemeColorField::Accent => "Selection and highlight color",
-            ThemeColorField::Folder => "Default folder/icon tint",
+            ThemeColorField::Accent => "Active controls, keyboard focus and links",
+            ThemeColorField::Selection => "Selected file rows and text selections",
+            ThemeColorField::Hover => "Hovered file rows and controls",
+            ThemeColorField::Error => "Error messages, error icons and destructive-action labels",
+            ThemeColorField::Folder => "Folder icons when file-type colors are off",
             ThemeColorField::ButtonBg => "Filled button surface",
-            ThemeColorField::ButtonText => "Filled button label",
+            ThemeColorField::ButtonText => {
+                "Normal action-button and menu labels; destructive actions use Error & danger"
+            }
+            ThemeColorField::Text => "Primary labels throughout the interface",
+            ThemeColorField::TextDim => "Supporting interface text",
+            ThemeColorField::TextMuted => "Low-emphasis interface text",
             ThemeColorField::TextHeading => "Titles and strong labels",
-            ThemeColorField::TextFolder => "Base folder labels (semantic off)",
-            ThemeColorField::TextFile => "Base file labels (semantic off)",
-            ThemeColorField::PaletteSoftWhite => "Semantic neutral token",
-            ThemeColorField::PaletteFolderBlue => "Primary directory token",
-            ThemeColorField::PaletteLinkBlue => "Link/symlink token",
-            ThemeColorField::PaletteSteel => "Muted utility token",
-            ThemeColorField::PaletteGreen => "Positive/script token",
-            ThemeColorField::PaletteOrange => "Archive/media token",
+            ThemeColorField::TextFolder => {
+                "Neutral folder labels and the base tone for colored folder labels"
+            }
+            ThemeColorField::TextFile => {
+                "Neutral file labels and icons; the base tone for colored file labels"
+            }
+            ThemeColorField::PaletteSoftWhite => {
+                "Document and unclassified-file icons; neutral labels use the File text role"
+            }
+            ThemeColorField::PaletteFolderBlue => "Folder icons and optional colored folder labels",
+            ThemeColorField::PaletteLinkBlue => "Links, audio and blended script colors",
+            ThemeColorField::PaletteSteel => "Configuration files and disk images",
+            ThemeColorField::PaletteGreen => "Executables, spreadsheets and script mixtures",
+            ThemeColorField::PaletteOrange => "Presentations, packages and code mixtures",
             ThemeColorField::PalettePurple => "Image/design token",
-            ThemeColorField::PalettePink => "Accent semantic token",
-            ThemeColorField::PaletteRed => "Danger/error token",
-            ThemeColorField::PaletteYellow => "Warning/config token",
+            ThemeColorField::PalettePink => "Fonts, blended with the image color",
+            ThemeColorField::PaletteRed => "PDF and video files",
+            ThemeColorField::PaletteYellow => "Archives, packages and code mixtures",
         }
     }
 
@@ -4914,15 +4837,24 @@ impl OttrinApp {
         match field {
             ThemeColorField::Background => custom.background,
             ThemeColorField::Panel => custom.panel,
+            ThemeColorField::RaisedPanel => custom.panel_raised,
+            ThemeColorField::Statusbar => custom.statusbar,
             ThemeColorField::Toolbar => custom.toolbar,
+            ThemeColorField::Bookmarks => custom.bookmarks_bar,
             ThemeColorField::SmartPanel => custom.smart_panel,
             ThemeColorField::Titlebar => custom.titlebar,
             ThemeColorField::Border => custom.border,
             ThemeColorField::WindowBorder => custom.window_border,
             ThemeColorField::Accent => custom.accent,
+            ThemeColorField::Selection => custom.selected_bg,
+            ThemeColorField::Hover => custom.hover,
+            ThemeColorField::Error => custom.error,
             ThemeColorField::Folder => custom.folder,
             ThemeColorField::ButtonBg => custom.button_bg,
             ThemeColorField::ButtonText => custom.button_text,
+            ThemeColorField::Text => custom.text,
+            ThemeColorField::TextDim => custom.text_dim,
+            ThemeColorField::TextMuted => custom.text_muted,
             ThemeColorField::TextHeading => custom.text_heading,
             ThemeColorField::TextFolder => custom.text_folder,
             ThemeColorField::TextFile => custom.text_file,
@@ -4946,15 +4878,24 @@ impl OttrinApp {
         match field {
             ThemeColorField::Background => &mut custom.background,
             ThemeColorField::Panel => &mut custom.panel,
+            ThemeColorField::RaisedPanel => &mut custom.panel_raised,
+            ThemeColorField::Statusbar => &mut custom.statusbar,
             ThemeColorField::Toolbar => &mut custom.toolbar,
+            ThemeColorField::Bookmarks => &mut custom.bookmarks_bar,
             ThemeColorField::SmartPanel => &mut custom.smart_panel,
             ThemeColorField::Titlebar => &mut custom.titlebar,
             ThemeColorField::Border => &mut custom.border,
             ThemeColorField::WindowBorder => &mut custom.window_border,
             ThemeColorField::Accent => &mut custom.accent,
+            ThemeColorField::Selection => &mut custom.selected_bg,
+            ThemeColorField::Hover => &mut custom.hover,
+            ThemeColorField::Error => &mut custom.error,
             ThemeColorField::Folder => &mut custom.folder,
             ThemeColorField::ButtonBg => &mut custom.button_bg,
             ThemeColorField::ButtonText => &mut custom.button_text,
+            ThemeColorField::Text => &mut custom.text,
+            ThemeColorField::TextDim => &mut custom.text_dim,
+            ThemeColorField::TextMuted => &mut custom.text_muted,
             ThemeColorField::TextHeading => &mut custom.text_heading,
             ThemeColorField::TextFolder => &mut custom.text_folder,
             ThemeColorField::TextFile => &mut custom.text_file,
@@ -4982,37 +4923,6 @@ impl OttrinApp {
         }
     }
 
-    fn reset_theme_editor_sliders(&mut self) {
-        self.theme_editor.main_hue_shift = 0.0;
-        self.theme_editor.main_saturation = 1.0;
-        self.theme_editor.main_brightness = 1.0;
-        self.theme_editor.main_contrast = 1.0;
-        self.theme_editor.text_hue_shift = 0.0;
-        self.theme_editor.text_saturation = 1.0;
-        self.theme_editor.text_brightness = 1.0;
-        self.theme_editor.text_contrast = 1.0;
-        self.theme_editor.color_picker_open = false;
-        self.theme_editor.color_picker_field = None;
-        self.sync_theme_editor_hex_inputs();
-    }
-
-    fn reset_theme_editor_quick_sliders_only(&mut self) {
-        self.theme_editor.main_hue_shift = 0.0;
-        self.theme_editor.main_saturation = 1.0;
-        self.theme_editor.main_brightness = 1.0;
-        self.theme_editor.main_contrast = 1.0;
-        self.theme_editor.text_hue_shift = 0.0;
-        self.theme_editor.text_saturation = 1.0;
-        self.theme_editor.text_brightness = 1.0;
-        self.theme_editor.text_contrast = 1.0;
-    }
-
-    fn reanchor_theme_editor_quick_from_current(&mut self) {
-        self.theme_editor.base_custom = self.theme_editor.custom.clone();
-        self.reset_theme_editor_quick_sliders_only();
-        self.sync_theme_editor_hex_inputs();
-    }
-
     fn switch_theme_editor_scope(&mut self, preset: ThemePreset, mode: ThemeMode, ctx: &Context) {
         if self.theme_editor.source_saved_idx.is_some() {
             return;
@@ -5020,61 +4930,54 @@ impl OttrinApp {
         if self.theme_editor.preset == preset && self.theme_editor.mode == mode {
             return;
         }
-        if self.theme_editor_scope_is_active() {
-            self.state.config.theme_custom = self.theme_editor.original_custom.clone();
-            self.state.config.theme_custom.enabled = true;
-            self.reapply_theme(ctx);
-        }
-
-        let custom = self.theme_scope_custom_or_seed(preset, mode);
+        let mode = Colors::resolved_mode(mode, self.system_theme(ctx));
+        let custom = Self::custom_from_colors(Colors::preset(preset, mode != ThemeMode::Light));
         self.theme_editor.preset = preset;
         self.theme_editor.mode = mode;
-        self.theme_editor.base_custom = custom.clone();
-        self.theme_editor.original_custom = custom.clone();
         self.theme_editor.custom = custom;
         self.theme_editor.save_as_name = format!(
             "{} {}",
             Self::theme_preset_label(preset),
             Self::theme_mode_label(mode)
         );
-        self.reset_theme_editor_sliders();
+        self.sync_theme_editor_hex_inputs();
         self.apply_theme_editor_live_preview(ctx);
     }
 
     fn open_theme_editor_for_preset(&mut self, preset: ThemePreset, ctx: &Context) {
-        let mode = self.state.config.theme;
-        let custom = self.theme_scope_custom_or_seed(preset, mode);
+        let mode = self.current_theme_mode();
+        let mode = Colors::resolved_mode(mode, self.system_theme(ctx));
+        let custom = Self::custom_from_colors(Colors::preset(preset, mode != ThemeMode::Light));
         self.theme_editor.open = true;
-        self.theme_editor.tab = ThemeEditorTab::MainInterface;
+        self.theme_editor.tab = ThemeEditorTab::Colors;
         self.theme_editor.selected_region = ThemePreviewRegion::ColumnBackground;
         self.theme_editor.preset = preset;
         self.theme_editor.mode = mode;
         self.theme_editor.source_saved_idx = None;
-        self.theme_editor.base_custom = custom.clone();
-        self.theme_editor.original_custom = custom.clone();
+
         self.theme_editor.custom = custom;
         self.theme_editor.save_as_name = format!(
             "{} {}",
             Self::theme_preset_label(preset),
             Self::theme_mode_label(mode)
         );
-        self.reset_theme_editor_sliders();
+        self.sync_theme_editor_hex_inputs();
         self.apply_theme_editor_live_preview(ctx);
     }
 
     fn open_theme_editor_for_saved(&mut self, index: usize, ctx: &Context) {
         if let Some(saved) = self.state.config.custom_themes.get(index).cloned() {
             self.theme_editor.open = true;
-            self.theme_editor.tab = ThemeEditorTab::MainInterface;
+            self.theme_editor.tab = ThemeEditorTab::Colors;
             self.theme_editor.selected_region = ThemePreviewRegion::ColumnBackground;
             self.theme_editor.preset = saved.base_preset;
-            self.theme_editor.mode = saved.theme_mode;
+            self.theme_editor.mode =
+                Colors::resolved_mode(saved.theme_mode, self.system_theme(ctx));
             self.theme_editor.source_saved_idx = Some(index);
-            self.theme_editor.base_custom = saved.customization.clone();
-            self.theme_editor.original_custom = saved.customization.clone();
+
             self.theme_editor.custom = saved.customization;
             self.theme_editor.save_as_name = saved.name;
-            self.reset_theme_editor_sliders();
+            self.sync_theme_editor_hex_inputs();
             self.apply_theme_editor_live_preview(ctx);
         }
     }
@@ -5083,21 +4986,14 @@ impl OttrinApp {
         if !self.theme_editor.open {
             return;
         }
-        if self.theme_editor_scope_is_active() {
-            self.state.config.theme_custom = self.theme_editor.custom.clone();
-            self.state.config.theme_custom.enabled = true;
-            self.reapply_theme(ctx);
-        }
+        self.reapply_theme(ctx);
         ctx.request_repaint();
     }
 
     fn cancel_theme_editor(&mut self, ctx: &Context) {
-        if self.theme_editor_scope_is_active() {
-            self.state.config.theme_custom = self.theme_editor.original_custom.clone();
-            self.state.config.theme_custom.enabled = true;
-            self.reapply_theme(ctx);
-        }
         self.theme_editor = ThemeEditorState::default();
+        self.reapply_theme(ctx);
+        ctx.request_repaint();
     }
 
     fn is_builtin_theme_name(name: &str) -> bool {
@@ -5119,36 +5015,54 @@ impl OttrinApp {
             .config
             .custom_themes
             .iter()
-            .any(|t| t.name.eq_ignore_ascii_case(&candidate))
+            .any(|theme| theme.name.eq_ignore_ascii_case(&candidate))
         {
             return candidate;
         }
-        for n in 2..=99 {
-            let numbered = format!("{} (edited {})", base.trim(), n);
+        for number in 2.. {
+            let name = format!("{} ({number})", candidate);
             if !self
                 .state
                 .config
                 .custom_themes
                 .iter()
-                .any(|t| t.name.eq_ignore_ascii_case(&numbered))
+                .any(|theme| theme.name.eq_ignore_ascii_case(&name))
             {
-                return numbered;
+                return name;
             }
         }
-        format!("{} (edited)", base.trim())
+        unreachable!("theme name space exhausted")
     }
 
     fn save_theme_editor(&mut self, ctx: &Context) {
         if !self.theme_editor.open {
             return;
         }
-        self.theme_editor.custom.enabled = true;
         if let Some(idx) = self.theme_editor.source_saved_idx {
-            // Editing a user-created theme: overwrite in place.
+            let name = self.theme_editor.save_as_name.trim().to_string();
+            if name.is_empty()
+                || Self::is_builtin_theme_name(&name)
+                || self
+                    .state
+                    .config
+                    .custom_themes
+                    .iter()
+                    .enumerate()
+                    .any(|(other, theme)| other != idx && theme.name.eq_ignore_ascii_case(&name))
+            {
+                self.theme_status = Some((
+                    "Choose a unique custom theme name".into(),
+                    false,
+                    Instant::now() + Duration::from_secs(4),
+                ));
+                return;
+            }
             if let Some(saved) = self.state.config.custom_themes.get_mut(idx) {
+                saved.name = name;
                 saved.theme_mode = self.theme_editor.mode;
                 saved.base_preset = self.theme_editor.preset;
                 saved.customization = self.theme_editor.custom.clone();
+                self.state.config.active_custom_theme = Some(saved.name.clone());
             }
             self.theme_status = Some((
                 "Custom theme updated".to_string(),
@@ -5156,6 +5070,7 @@ impl OttrinApp {
                 Instant::now() + Duration::from_secs(3),
             ));
             self.theme_editor.open = false;
+            self.reapply_theme(ctx);
         } else {
             // Editing a built-in preset: save as a new custom theme instead
             // of overwriting the built-in.
@@ -5176,9 +5091,7 @@ impl OttrinApp {
 
     fn save_theme_editor_as_inner(&mut self, ctx: &Context) {
         self.do_save_theme_as(true);
-        if self.theme_editor.custom.enabled {
-            self.reapply_theme(ctx);
-        }
+        self.reapply_theme(ctx);
     }
 
     fn do_save_theme_as(&mut self, close_and_apply: bool) {
@@ -5191,40 +5104,17 @@ impl OttrinApp {
             ));
             return;
         }
-        if Self::is_builtin_theme_name(&name) {
-            self.theme_editor.save_as_name = self.generate_save_as_name(&name);
-            self.theme_status = Some((
-                format!(
-                    "\"{}\" is a built-in theme — renamed to \"{}\"",
-                    name, self.theme_editor.save_as_name
-                ),
-                false,
-                Instant::now() + Duration::from_secs(4),
-            ));
-            return;
-        }
+        // Creating a theme or a copy never replaces another saved theme.
+        let name = self.generate_save_as_name(&name);
         let saved = SavedTheme {
             name: name.clone(),
             theme_mode: self.theme_editor.mode,
             base_preset: self.theme_editor.preset,
             customization: self.theme_editor.custom.clone(),
         };
-        if let Some(existing) = self
-            .state
-            .config
-            .custom_themes
-            .iter_mut()
-            .find(|t| t.name.eq_ignore_ascii_case(&name))
-        {
-            *existing = saved;
-        } else {
-            self.state.config.custom_themes.push(saved);
-        }
+        self.state.config.custom_themes.push(saved);
         if close_and_apply {
-            self.state.config.theme = self.theme_editor.mode;
-            self.state.config.theme_preset = self.theme_editor.preset;
-            self.state.config.theme_custom = self.theme_editor.custom.clone();
-            self.state.config.theme_custom.enabled = true;
+            self.state.config.active_custom_theme = Some(name.clone());
             self.theme_editor.open = false;
         }
         self.theme_status = Some((
@@ -5238,8 +5128,7 @@ impl OttrinApp {
         if !self.theme_editor.open {
             return;
         }
-        let mut customization = self.theme_editor.custom.clone();
-        customization.enabled = true;
+        let customization = self.theme_editor.custom.clone();
         let save_name = self.theme_editor.save_as_name.trim();
         let fallback_name = format!(
             "{} {}",
@@ -5341,17 +5230,14 @@ impl OttrinApp {
             imported_name = self.generate_save_as_name(&imported_name);
         }
 
-        let mut imported_custom = imported.customization;
-        imported_custom.enabled = true;
+        let imported_custom = imported.customization;
         self.theme_editor.source_saved_idx = None;
         self.theme_editor.preset = imported.base_preset;
         self.theme_editor.mode = imported.theme_mode;
-        self.theme_editor.base_custom = imported_custom.clone();
-        self.theme_editor.original_custom = imported_custom.clone();
         self.theme_editor.custom = imported_custom;
         self.theme_editor.save_as_name = imported_name.clone();
         self.theme_editor.selected_region = ThemePreviewRegion::ColumnBackground;
-        self.reset_theme_editor_sliders();
+        self.sync_theme_editor_hex_inputs();
         self.apply_theme_editor_live_preview(ctx);
         self.theme_status = Some((
             format!("Imported \"{}\"", imported_name),
@@ -5360,453 +5246,12 @@ impl OttrinApp {
         ));
     }
 
-    fn reset_theme_editor_to_default(&mut self, ctx: &Context) {
-        if !self.theme_editor.open || self.theme_editor.source_saved_idx.is_some() {
-            return;
-        }
-        let dark = matches!(self.theme_editor.mode, ThemeMode::Dark | ThemeMode::System);
-        let base = Colors::preset(self.theme_editor.preset, dark);
-        let custom = Self::custom_from_colors(base, self.theme_editor.preset);
-        self.theme_editor.base_custom = custom.clone();
-        self.theme_editor.custom = custom;
-        self.reset_theme_editor_sliders();
-        self.apply_theme_editor_live_preview(ctx);
-    }
-
-    fn apply_theme_editor_main_quick(&mut self, ctx: &Context) {
-        if !self.theme_editor.open {
-            return;
-        }
-        let h = self.theme_editor.main_hue_shift;
-        let s = self.theme_editor.main_saturation.clamp(0.6, 1.6);
-        let v = self.theme_editor.main_brightness.clamp(0.65, 1.35);
-        let contrast = self.theme_editor.main_contrast.clamp(0.75, 1.35);
-        let tune = |rgba: [u8; 4]| -> [u8; 4] {
-            let shifted = shift_hsva(Colors::from_rgba(rgba), h, s, v);
-            Colors::to_rgba(apply_contrast(shifted, contrast))
-        };
-
-        let mut custom = self.theme_editor.base_custom.clone();
-        custom.background = tune(self.theme_editor.base_custom.background);
-        custom.toolbar = tune(self.theme_editor.base_custom.toolbar);
-        custom.panel = tune(self.theme_editor.base_custom.panel);
-        custom.smart_panel = tune(self.theme_editor.base_custom.smart_panel);
-        custom.titlebar = tune(self.theme_editor.base_custom.titlebar);
-        custom.border = tune(self.theme_editor.base_custom.border);
-        custom.window_border = tune(self.theme_editor.base_custom.window_border);
-        custom.accent = tune(self.theme_editor.base_custom.accent);
-        custom.folder = tune(self.theme_editor.base_custom.folder);
-        custom.button_bg = tune(self.theme_editor.base_custom.button_bg);
-        custom.text_heading = tune(self.theme_editor.base_custom.text_heading);
-        custom.text_folder = tune(self.theme_editor.base_custom.text_folder);
-        custom.text_file = tune(self.theme_editor.base_custom.text_file);
-
-        self.theme_editor.custom = custom;
-        self.sync_theme_editor_hex_inputs();
-        self.apply_theme_editor_live_preview(ctx);
-    }
-
-    fn apply_theme_editor_text_quick(&mut self, ctx: &Context) {
-        if !self.theme_editor.open {
-            return;
-        }
-        let h = self.theme_editor.text_hue_shift;
-        let s = self.theme_editor.text_saturation.clamp(0.6, 1.6);
-        let v = self.theme_editor.text_brightness.clamp(0.65, 1.35);
-        let contrast = self.theme_editor.text_contrast.clamp(0.75, 1.35);
-        let tune = |rgba: [u8; 4]| -> [u8; 4] {
-            let shifted = shift_hsva(Colors::from_rgba(rgba), h, s, v);
-            Colors::to_rgba(apply_contrast(shifted, contrast))
-        };
-
-        let mut custom = self.theme_editor.base_custom.clone();
-        custom.text_heading = tune(self.theme_editor.base_custom.text_heading);
-        custom.text_folder = tune(self.theme_editor.base_custom.text_folder);
-        custom.text_file = tune(self.theme_editor.base_custom.text_file);
-        custom.button_text = tune(self.theme_editor.base_custom.button_text);
-        custom.palette_soft_white = tune(self.theme_editor.base_custom.palette_soft_white);
-        custom.palette_folder_blue = tune(self.theme_editor.base_custom.palette_folder_blue);
-        custom.palette_link_blue = tune(self.theme_editor.base_custom.palette_link_blue);
-        custom.palette_steel = tune(self.theme_editor.base_custom.palette_steel);
-        custom.palette_green = tune(self.theme_editor.base_custom.palette_green);
-        custom.palette_orange = tune(self.theme_editor.base_custom.palette_orange);
-        custom.palette_purple = tune(self.theme_editor.base_custom.palette_purple);
-        custom.palette_pink = tune(self.theme_editor.base_custom.palette_pink);
-        custom.palette_red = tune(self.theme_editor.base_custom.palette_red);
-        custom.palette_yellow = tune(self.theme_editor.base_custom.palette_yellow);
-
-        self.theme_editor.custom = custom;
-        self.sync_theme_editor_hex_inputs();
-        self.apply_theme_editor_live_preview(ctx);
-    }
-
     fn theme_editor_preview_colors(&self) -> Colors {
-        let mut cfg = self.state.config.clone();
-        cfg.theme = self.theme_editor.mode;
-        cfg.theme_preset = self.theme_editor.preset;
-        cfg.theme_custom = self.theme_editor.custom.clone();
-        cfg.theme_custom.enabled = true;
-        Colors::for_config(&cfg)
-    }
-
-    fn render_appearance_settings(&mut self, ui: &mut egui::Ui, ctx: &Context, c: Colors) {
-        ui.label(
-            RichText::new("Appearance")
-                .color(c.text)
-                .size(14.0)
-                .strong(),
-        );
-        ui.label(
-            RichText::new("Pick a preset, then edit that theme in a dedicated popup.")
-                .color(c.text_muted)
-                .size(11.0),
-        );
-        ui.add_space(10.0);
-
-        if let Some((_, _, until)) = &self.theme_status
-            && Instant::now() > *until
-        {
-            self.theme_status = None;
-        }
-        if let Some((msg, ok, _)) = &self.theme_status {
-            ui.label(
-                RichText::new(msg)
-                    .color(if *ok { c.accent } else { c.error })
-                    .size(11.0),
-            );
-            ui.add_space(6.0);
-        }
-
-        let compact = ui.available_width() < 640.0;
-        if compact {
-            ui.vertical(|ui| {
-                ui.label(RichText::new("Mode").color(c.text_dim).size(11.5).strong());
-                let mut mode = self.state.config.theme;
-                ui.horizontal(|ui| {
-                    ui.selectable_value(&mut mode, ThemeMode::Dark, "Dark");
-                    ui.selectable_value(&mut mode, ThemeMode::Light, "Light");
-                    ui.selectable_value(&mut mode, ThemeMode::System, "System");
-                });
-                if mode != self.state.config.theme {
-                    self.apply_theme_mode(mode, ctx);
-                }
-                ui.add_space(6.0);
-                let mut colorize = self.state.config.colorize_file_types;
-                if ui.checkbox(&mut colorize, "Semantic file colors").changed() {
-                    self.state.config.colorize_file_types = colorize;
-                }
-                if self.state.config.colorize_file_types {
-                    let mut folders = self.state.config.colorize_folder_labels;
-                    if ui.checkbox(&mut folders, "Include folder labels").changed() {
-                        self.state.config.colorize_folder_labels = folders;
-                    }
-                }
-            });
-        } else {
-            ui.horizontal(|ui| {
-                ui.label(RichText::new("Mode").color(c.text_dim).size(11.5).strong());
-                let mut mode = self.state.config.theme;
-                ui.selectable_value(&mut mode, ThemeMode::Dark, "Dark");
-                ui.selectable_value(&mut mode, ThemeMode::Light, "Light");
-                ui.selectable_value(&mut mode, ThemeMode::System, "System");
-                if mode != self.state.config.theme {
-                    self.apply_theme_mode(mode, ctx);
-                }
-                ui.separator();
-                let mut colorize = self.state.config.colorize_file_types;
-                if ui.checkbox(&mut colorize, "Semantic file colors").changed() {
-                    self.state.config.colorize_file_types = colorize;
-                }
-                if self.state.config.colorize_file_types {
-                    let mut folders = self.state.config.colorize_folder_labels;
-                    if ui.checkbox(&mut folders, "Include folder labels").changed() {
-                        self.state.config.colorize_folder_labels = folders;
-                    }
-                }
-            });
-        }
-
-        ui.add_space(10.0);
-        Frame::new()
-            .fill(c.panel)
-            .stroke(Stroke::new(1.0, c.border))
-            .corner_radius(7.0)
-            .inner_margin(egui::Margin::symmetric(12, 10))
-            .show(ui, |ui| {
-                let preview = self.preview_colors_for_scope(
-                    self.state.config.theme_preset,
-                    self.state.config.theme,
-                );
-                if compact {
-                    theme_preview_strip(ui, preview, 116.0, 34.0, c);
-                    ui.add_space(6.0);
-                    ui.vertical(|ui| {
-                        let active_label = if let Some(name) = &self.state.config.active_custom_theme {
-                            format!("Active theme: {} ({})", name, Self::theme_mode_label(self.state.config.theme))
-                        } else {
-                            format!(
-                                "Active theme: {} ({})",
-                                Self::theme_preset_label(self.state.config.theme_preset),
-                                Self::theme_mode_label(self.state.config.theme)
-                            )
-                        };
-                        ui.label(
-                            RichText::new(active_label)
-                            .color(c.text)
-                            .size(12.0)
-                            .strong(),
-                        );
-                        ui.label(
-                            RichText::new(if self.state.config.colorize_file_types {
-                                "Semantic file colors are on. Theme edits affect both surfaces and file styling."
-                            } else {
-                                "Semantic file colors are off. Folder/file text uses the neutral text roles directly."
-                            })
-                            .color(c.text_muted)
-                            .size(10.8),
-                        );
-                    });
-                } else {
-                    ui.horizontal(|ui| {
-                        theme_preview_strip(ui, preview, 116.0, 34.0, c);
-                        ui.add_space(10.0);
-                        ui.vertical(|ui| {
-                            let active_label = if let Some(name) = &self.state.config.active_custom_theme {
-                                format!("Active theme: {} ({})", name, Self::theme_mode_label(self.state.config.theme))
-                            } else {
-                                format!(
-                                    "Active theme: {} ({})",
-                                    Self::theme_preset_label(self.state.config.theme_preset),
-                                    Self::theme_mode_label(self.state.config.theme)
-                                )
-                            };
-                            ui.label(
-                                RichText::new(active_label)
-                                .color(c.text)
-                                .size(12.0)
-                                .strong(),
-                            );
-                            ui.label(
-                                RichText::new(if self.state.config.colorize_file_types {
-                                    "Semantic file colors are on. Theme edits affect both surfaces and file styling."
-                                } else {
-                                    "Semantic file colors are off. Folder/file text uses the neutral text roles directly."
-                                })
-                                .color(c.text_muted)
-                                .size(10.8),
-                            );
-                        });
-                    });
-                }
-            });
-
-        ui.add_space(10.0);
-        ui.label(
-            RichText::new("Theme presets")
-                .color(c.text_dim)
-                .size(11.0)
-                .strong(),
-        );
-        ui.add_space(6.0);
-
-        let presets = [
-            ThemePreset::Ottrin,
-            ThemePreset::Breeze,
-            ThemePreset::Adwaita,
-            ThemePreset::Windows11,
-            ThemePreset::Solarized,
-            ThemePreset::Nord,
-            ThemePreset::G33k,
-        ];
-        let cols = 2;
-        let gap = 8.0;
-        let card_w = ((ui.available_width() - gap * (cols as f32 - 1.0)) / cols as f32).max(180.0);
-        let card_h = 180.0;
-        let thumb_h = 130.0;
-        let mut edit_preset: Option<ThemePreset> = None;
-        for row in presets.chunks(cols) {
-            ui.horizontal(|ui| {
-                for preset in row {
-                    let preview = self.preview_colors_for_scope(*preset, self.state.config.theme);
-                    let selected = self.state.config.theme_preset == *preset
-                        && self.state.config.active_custom_theme.is_none();
-                    let response = theme_preset_card_with_size(
-                        ui,
-                        c,
-                        preview,
-                        Self::theme_preset_icon(*preset),
-                        Self::theme_preset_label(*preset),
-                        selected,
-                        ThemePresetCardSize {
-                            width: card_w,
-                            card_h,
-                            thumb_h,
-                        },
-                    );
-                    // Paint edit icon in the label area (bottom-right of card).
-                    let inner = response.rect.shrink2(Vec2::new(10.0, 10.0));
-                    let label_y = inner.top() + thumb_h + 28.0;
-                    let icon_size = 22.0;
-                    let icon_rect = Rect::from_min_size(
-                        egui::pos2(inner.right() - icon_size, label_y - icon_size * 0.5),
-                        Vec2::splat(icon_size),
-                    );
-                    let icon_hovered = ui.rect_contains_pointer(icon_rect);
-                    let p = ui.painter();
-                    p.text(
-                        icon_rect.center(),
-                        Align2::CENTER_CENTER,
-                        MI_EDIT,
-                        FontId::proportional(14.0),
-                        if icon_hovered { c.text } else { c.text_muted },
-                    );
-                    if response.clicked() {
-                        if icon_hovered {
-                            edit_preset = Some(*preset);
-                        } else if !selected {
-                            self.apply_theme_preset(*preset, ctx);
-                        }
-                    }
-                }
-            });
-            ui.add_space(6.0);
-        }
-        if let Some(preset) = edit_preset {
-            self.open_theme_editor_for_preset(preset, ctx);
-        }
-
-        ui.add_space(10.0);
-        Frame::new()
-            .fill(c.panel)
-            .stroke(Stroke::new(1.0, c.border))
-            .corner_radius(6.0)
-            .inner_margin(egui::Margin::symmetric(10, 10))
-            .show(ui, |ui| {
-                ui.label(
-                    RichText::new("Saved themes")
-                        .color(c.text)
-                        .size(12.0)
-                        .strong(),
-                );
-                ui.add_space(6.0);
-                if self.state.config.custom_themes.is_empty() {
-                    ui.label(
-                        RichText::new("No saved custom themes yet.")
-                            .color(c.text_muted)
-                            .size(10.5),
-                    );
-                } else {
-                    let mut remove_idx: Option<usize> = None;
-                    let mut apply_theme: Option<SavedTheme> = None;
-                    let mut edit_idx: Option<usize> = None;
-                    let active_name = self.state.config.active_custom_theme.clone();
-                    for (idx, saved) in self.state.config.custom_themes.iter().enumerate() {
-                        let is_active = active_name.as_deref() == Some(saved.name.as_str());
-                        let card_fill = if is_active {
-                            c.panel_raised.gamma_multiply(1.08)
-                        } else {
-                            c.panel_raised
-                        };
-                        let card_stroke = if is_active {
-                            Stroke::new(1.5, c.accent)
-                        } else {
-                            Stroke::new(1.0, c.border)
-                        };
-                        let resp = Frame::new()
-                            .fill(card_fill)
-                            .stroke(card_stroke)
-                            .corner_radius(6.0)
-                            .inner_margin(egui::Margin::symmetric(10, 6))
-                            .show(ui, |ui| {
-                                ui.horizontal(|ui| {
-                                    theme_preview_strip(
-                                        ui,
-                                        self.preview_colors_for_scope(
-                                            saved.base_preset,
-                                            saved.theme_mode,
-                                        ),
-                                        72.0,
-                                        24.0,
-                                        c,
-                                    );
-                                    ui.add_space(6.0);
-                                    ui.vertical(|ui| {
-                                        ui.label(
-                                            RichText::new(format!(
-                                                "{}  {}",
-                                                Self::theme_preset_icon(saved.base_preset),
-                                                saved.name,
-                                            ))
-                                            .color(c.text)
-                                            .size(11.0)
-                                            .strong(),
-                                        );
-                                        ui.label(
-                                            RichText::new(format!(
-                                                "{} · {}",
-                                                Self::theme_preset_label(saved.base_preset),
-                                                Self::theme_mode_label(saved.theme_mode)
-                                            ))
-                                            .color(c.text_muted)
-                                            .size(10.0),
-                                        );
-                                    });
-                                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                        if ui
-                                            .add(
-                                                egui::Button::new(
-                                                    RichText::new(MI_CLEAR)
-                                                        .size(14.0)
-                                                        .color(c.text_muted),
-                                                )
-                                                .frame(false),
-                                            )
-                                            .on_hover_text("Delete theme")
-                                            .clicked()
-                                        {
-                                            remove_idx = Some(idx);
-                                        }
-                                        if ui
-                                            .add(
-                                                egui::Button::new(
-                                                    RichText::new(MI_EDIT)
-                                                        .size(14.0)
-                                                        .color(c.text_muted),
-                                                )
-                                                .frame(false),
-                                            )
-                                            .on_hover_text("Edit theme")
-                                            .clicked()
-                                        {
-                                            edit_idx = Some(idx);
-                                        }
-                                    });
-                                });
-                            });
-                        // Click the card row to apply.
-                        if resp.response.interact(Sense::click()).clicked() && !is_active {
-                            apply_theme = Some(saved.clone());
-                        }
-                        if resp.response.hovered() {
-                            ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-                        }
-                        ui.add_space(2.0);
-                    }
-                    if let Some(idx) = remove_idx {
-                        let removed_name = self.state.config.custom_themes[idx].name.clone();
-                        self.state.config.custom_themes.remove(idx);
-                        if self.state.config.active_custom_theme.as_deref() == Some(&removed_name) {
-                            self.state.config.active_custom_theme = None;
-                        }
-                    }
-                    if let Some(saved) = apply_theme {
-                        self.apply_saved_custom_theme(&saved, ctx);
-                    }
-                    if let Some(idx) = edit_idx {
-                        self.open_theme_editor_for_saved(idx, ctx);
-                    }
-                }
-            });
+        Colors::preset(
+            self.theme_editor.preset,
+            self.theme_editor.mode != ThemeMode::Light,
+        )
+        .customized(&self.theme_editor.custom)
     }
 
     fn render_theme_editor_popup(&mut self, ctx: &Context) {
@@ -5820,6 +5265,7 @@ impl OttrinApp {
             .with_inner_size([1180.0, 780.0])
             .with_min_inner_size([1040.0, 680.0])
             .with_decorations(false)
+            .with_transparent(!self.graphics_runtime.is_windows)
             .with_resizable(true);
         let vp_id = Self::theme_editor_viewport_id();
 
@@ -5835,6 +5281,7 @@ impl OttrinApp {
                 return;
             }
             self.handle_viewport_resize(theme_ctx);
+            self.paint_viewport_frame(theme_ctx);
         });
 
         if close_requested {
@@ -5854,988 +5301,6 @@ impl OttrinApp {
 
     fn theme_editor_viewport_id() -> egui::ViewportId {
         egui::ViewportId::from_hash_of("ottrin-theme-editor")
-    }
-
-    fn render_theme_editor_embedded(&mut self, ctx: &Context) -> bool {
-        let c = self.colors;
-        let action_model = ThemeEditorActionModel::for_source(self.theme_editor.source_saved_idx);
-        let mut close_requested = false;
-        let popup_title = format!(
-            "Theme - {}",
-            Self::theme_preset_label(self.theme_editor.preset)
-        );
-        let active_tab_bg = mix_color(c.toolbar_bg, c.titlebar_bg, 0.28);
-        let viewport_focused = ctx.input(|i| i.viewport().focused.unwrap_or(true));
-        let (window_fill, window_title, shadow) = viewport_window_fill(c, viewport_focused);
-
-        egui::CentralPanel::default()
-            .frame(
-                Frame::new()
-                    .fill(window_fill)
-                    .stroke(Stroke::new(c.window_border_width, c.window_border))
-                    .shadow(shadow)
-                    .inner_margin(egui::Margin::same(c.window_border_width.ceil() as i8)),
-            )
-            .show(ctx, |ui| {
-                render_custom_titlebar(
-                    ui,
-                    ctx,
-                    c,
-                    window_title,
-                    &format!("{} {}", MI_EDIT, popup_title),
-                    true,
-                    &mut close_requested,
-                    |ui| {
-                        let tab_btn = |ui: &mut egui::Ui, selected: bool, label: &str, c: Colors, active_tab_bg: Color32| {
-                            let fill = if selected { active_tab_bg } else { Color32::TRANSPARENT };
-                            let r = ui.add_sized(
-                                [132.0, 24.0],
-                                egui::Button::new(
-                                    RichText::new(label)
-                                        .color(if selected { c.text } else { c.text_dim })
-                                        .size(11.2),
-                                )
-                                .fill(fill)
-                                .stroke(Stroke::NONE)
-                                .corner_radius(egui::CornerRadius {
-                                    nw: 5,
-                                    ne: 5,
-                                    sw: 0,
-                                    se: 0,
-                                }),
-                            );
-                            if selected {
-                                let y = r.rect.max.y - 1.0;
-                                ui.painter().line_segment(
-                                    [egui::Pos2::new(r.rect.min.x + 6.0, y), egui::Pos2::new(r.rect.max.x - 6.0, y)],
-                                    Stroke::new(2.0, c.accent),
-                                );
-                            }
-                            r
-                        };
-                        let main_selected = self.theme_editor.tab == ThemeEditorTab::MainInterface;
-                        if tab_btn(ui, main_selected, "Main interface", c, active_tab_bg).clicked() {
-                            self.theme_editor.tab = ThemeEditorTab::MainInterface;
-                        }
-                        let text_selected = self.theme_editor.tab == ThemeEditorTab::TextAndIcons;
-                        if tab_btn(ui, text_selected, "Text and icons", c, active_tab_bg).clicked() {
-                            self.theme_editor.tab = ThemeEditorTab::TextAndIcons;
-                        }
-                    },
-                );
-
-                ui.add_space(10.0);
-                let body_rect = ui.available_rect_before_wrap();
-                let footer_h = 44.0;
-                let footer_rect = Rect::from_min_max(
-                    egui::pos2(body_rect.min.x, body_rect.max.y - footer_h),
-                    body_rect.max,
-                );
-                let content_rect = Rect::from_min_max(
-                    body_rect.min,
-                    egui::pos2(body_rect.max.x - 8.0, footer_rect.min.y - 8.0),
-                );
-
-                ui.scope_builder(UiBuilder::new().max_rect(content_rect), |ui| {
-                    ScrollArea::vertical().show(ui, |ui| {
-                        ui.spacing_mut().item_spacing = Vec2::new(12.0, 12.0);
-                        let section_fill = mix_color(c.panel_raised, window_fill, 0.26);
-                        let card_fill = mix_color(c.panel, c.panel_raised, 0.34);
-                        let card_stroke = Stroke::new(1.0, mix_color(c.border, window_fill, 0.42));
-                        let section_radius = self.theme_editor.custom.border_radius.clamp(0.0, 14.0) as u8;
-                        let section_card = |ui: &mut egui::Ui, title: &str, detail: &str, add_body: &mut dyn FnMut(&mut egui::Ui)| {
-                            Frame::new()
-                                .fill(section_fill)
-                                .stroke(card_stroke)
-                                .corner_radius(section_radius)
-                                .inner_margin(egui::Margin::symmetric(12, 10))
-                                .show(ui, |ui| {
-                                    ui.label(RichText::new(title).color(c.text).size(12.0).strong());
-                                    if !detail.is_empty() {
-                                        ui.label(RichText::new(detail).color(c.text_muted).size(10.0));
-                                        ui.add_space(6.0);
-                                    } else {
-                                        ui.add_space(4.0);
-                                    }
-                                    add_body(ui);
-                                });
-                        };
-
-                        let section_card_fixed = |ui: &mut egui::Ui,
-                                                  height: f32,
-                                                  title: &str,
-                                                  detail: &str,
-                                                  add_body: &mut dyn FnMut(&mut egui::Ui)| {
-                            let (rect, _) = ui.allocate_exact_size(Vec2::new(ui.available_width(), height), Sense::hover());
-                            ui.scope_builder(UiBuilder::new().max_rect(rect), |ui| {
-                                Frame::new()
-                                    .fill(section_fill)
-                                    .stroke(card_stroke)
-                                    .corner_radius(section_radius)
-                                    .inner_margin(egui::Margin::symmetric(12, 10))
-                                    .show(ui, |ui| {
-                                        ui.label(RichText::new(title).color(c.text).size(12.0).strong());
-                                        if !detail.is_empty() {
-                                            ui.label(RichText::new(detail).color(c.text_muted).size(10.0));
-                                            ui.add_space(6.0);
-                                        } else {
-                                            ui.add_space(4.0);
-                                        }
-                                        add_body(ui);
-                                        let remaining = ui.available_height();
-                                        if remaining > 0.0 {
-                                            ui.add_space(remaining);
-                                        }
-                                    });
-                            });
-                        };
-
-                    let quick_slider = |ui: &mut egui::Ui,
-                                        value: &mut f32,
-                                        range: std::ops::RangeInclusive<f32>,
-                                        title: &str,
-                                        detail: &str,
-                                        tint: Color32|
-                     -> bool {
-                        let mut changed = false;
-                        let label = if detail.is_empty() {
-                            title.to_string()
-                        } else {
-                            format!("{title} - {detail}")
-                        };
-                        ui.label(RichText::new(label).color(c.text).size(11.1).strong());
-                        ui.add_space(3.0);
-                        ui.horizontal(|ui| {
-                            let value_w = 64.0;
-                            let bar_h = 24.0;
-                            let bar_w = (ui.available_width() - value_w - 12.0).max(120.0);
-
-                            // Paint the gradient track behind the slider.
-                            let (track_rect, _) = ui.allocate_exact_size(Vec2::new(bar_w, bar_h), Sense::hover());
-                            paint_theme_tuning_track(ui, track_rect, title, tint, c);
-
-                            // Overlay a custom drag interaction on the track for full-width dragging.
-                            let drag_id = ui.id().with(title).with("track_drag");
-                            let drag_resp = ui.interact(track_rect, drag_id, Sense::click_and_drag());
-                            if (drag_resp.clicked() || drag_resp.dragged())
-                                && let Some(pos) = drag_resp.interact_pointer_pos()
-                            {
-                                let t = ((pos.x - track_rect.left()) / track_rect.width()).clamp(0.0, 1.0);
-                                let new_val = egui::lerp(*range.start()..=*range.end(), t);
-                                if (*value - new_val).abs() > f32::EPSILON {
-                                    *value = new_val;
-                                    changed = true;
-                                }
-                            }
-
-                            // Draw the handle circle at the current value position.
-                            let t = ((*value - *range.start()) / (*range.end() - *range.start())).clamp(0.0, 1.0);
-                            let handle_x = egui::lerp(track_rect.left() + 6.0..=track_rect.right() - 6.0, t);
-                            let handle_center = egui::pos2(handle_x, track_rect.center().y);
-                            let handle_r = 7.0;
-                            let handle_color = if drag_resp.dragged() || drag_resp.hovered() {
-                                Color32::WHITE
-                            } else {
-                                Color32::from_rgba_premultiplied(230, 230, 230, 220)
-                            };
-                            ui.painter().circle(handle_center, handle_r, handle_color, Stroke::new(1.5, Color32::from_gray(60)));
-
-                            // Value badge to the right of the slider.
-                            ui.add_space(8.0);
-                            let val = format!("{:.2}", *value);
-                            let value_rect = Rect::from_min_size(ui.cursor().min, Vec2::new(value_w, bar_h));
-                            ui.painter().rect_filled(
-                                value_rect,
-                                bar_h * 0.5,
-                                mix_color(c.panel, c.panel_raised, 0.65),
-                            );
-                            ui.painter().rect_stroke(
-                                value_rect,
-                                bar_h * 0.5,
-                                Stroke::new(1.0, mix_color(c.border, c.panel, 0.35)),
-                                egui::StrokeKind::Middle,
-                            );
-                            ui.painter().text(
-                                value_rect.center(),
-                                Align2::CENTER_CENTER,
-                                val,
-                                FontId::proportional(11.0 * c.font_scale),
-                                c.text,
-                            );
-                            ui.advance_cursor_after_rect(value_rect);
-                        });
-                        changed
-                    };
-
-                    let radius_row = |ui: &mut egui::Ui,
-                                      value: &mut f32,
-                                      range: std::ops::RangeInclusive<f32>,
-                                      title: &str,
-                                      detail: &str|
-                     -> bool {
-                        let mut changed = false;
-                        Frame::new()
-                            .fill(card_fill)
-                            .stroke(Stroke::new(1.0, mix_color(c.border, card_fill, 0.38)))
-                            .corner_radius(section_radius)
-                            .inner_margin(egui::Margin::symmetric(10, 8))
-                            .show(ui, |ui| {
-                                ui.horizontal(|ui| {
-                                    ui.label(RichText::new(title).color(c.text).size(11.0).strong());
-                                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                        changed |= ui.add_sized(
-                                            [54.0, 22.0],
-                                            egui::DragValue::new(value).speed(0.25).range(*range.start()..=*range.end()),
-                                        ).changed();
-                                    });
-                                });
-                                ui.label(RichText::new(detail).color(c.text_dim).size(9.6));
-                                changed |= ui
-                                    .add_sized(
-                                        [ui.available_width(), 20.0],
-                                        egui::Slider::new(value, range).show_value(false),
-                                    )
-                                    .changed();
-                            });
-                        changed
-                    };
-
-                    let font_scale_row = |ui: &mut egui::Ui,
-                                          value: &mut f32,
-                                          range: std::ops::RangeInclusive<f32>|
-                     -> bool {
-                        let mut changed = false;
-                        Frame::new()
-                            .fill(card_fill)
-                            .stroke(Stroke::new(1.0, mix_color(c.border, card_fill, 0.38)))
-                            .corner_radius(section_radius)
-                            .inner_margin(egui::Margin::symmetric(10, 8))
-                            .show(ui, |ui| {
-                                ui.horizontal(|ui| {
-                                    ui.vertical(|ui| {
-                                        ui.label(RichText::new("Font scale").color(c.text).size(11.0).strong());
-                                        ui.label(RichText::new("Adjust overall text size.").color(c.text_dim).size(9.6));
-                                    });
-                                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                        let pct = (*value * 100.0).round() as i32;
-                                        ui.label(RichText::new(format!("{pct}%")).color(c.text).size(11.0));
-                                        let plus = ui.add_sized([22.0, 22.0], egui::Button::new("+"));
-                                        if plus.clicked() {
-                                            *value = (*value + 0.02).min(*range.end());
-                                            changed = true;
-                                        }
-                                        let minus = ui.add_sized([22.0, 22.0], egui::Button::new("-"));
-                                        if minus.clicked() {
-                                            *value = (*value - 0.02).max(*range.start());
-                                            changed = true;
-                                        }
-                                    });
-                                });
-                            });
-                        changed
-                    };
-
-                    let color_row = |ui: &mut egui::Ui, app: &mut Self, field: ThemeColorField, c: Colors| -> bool {
-                        let mut changed = false;
-                        let rgba = Self::theme_color_field_value(&app.theme_editor.custom, field);
-                        let mut hex_input = app
-                            .theme_editor
-                            .color_hex_inputs
-                            .get(&field)
-                            .cloned()
-                            .unwrap_or_else(|| format!("#{:02X}{:02X}{:02X}", rgba[0], rgba[1], rgba[2]));
-                        Frame::new()
-                            .fill(card_fill)
-                            .stroke(Stroke::new(1.0, mix_color(c.border, card_fill, 0.38)))
-                            .corner_radius(section_radius)
-                            .inner_margin(egui::Margin::symmetric(10, 8))
-                            .show(ui, |ui| {
-                                ui.horizontal(|ui| {
-                                    ui.vertical(|ui| {
-                                        ui.label(
-                                            RichText::new(Self::theme_color_field_short_label(field))
-                                                .color(c.text)
-                                                .size(10.9)
-                                                .strong(),
-                                        );
-                                        ui.label(
-                                            RichText::new(Self::theme_color_field_hint(field))
-                                                .color(c.text_dim)
-                                                .size(9.4),
-                                        );
-                                    });
-                                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                        let resp = ui.add_sized(
-                                            [82.0, 24.0],
-                                            egui::TextEdit::singleline(&mut hex_input).hint_text("#RRGGBB"),
-                                        );
-                                        if resp.changed() {
-                                            app.theme_editor.color_hex_inputs.insert(field, hex_input.clone());
-                                            if let Some(rgb) = parse_hex_rgb(&hex_input) {
-                                                let v = Self::theme_color_field_value_mut(&mut app.theme_editor.custom, field);
-                                                *v = [rgb[0], rgb[1], rgb[2], 255];
-                                                changed = true;
-                                            }
-                                        }
-                                        ui.add_space(6.0);
-                                        let swatch = Colors::from_rgba(rgba);
-                                        let swatch_btn = ui.add(
-                                            egui::Button::new("")
-                                                .min_size(Vec2::new(38.0, 24.0))
-                                                .fill(swatch)
-                                                .stroke(Stroke::new(1.0, mix_color(c.border, swatch, 0.40)))
-                                                .corner_radius(6.0),
-                                        );
-                                        if swatch_btn.clicked() {
-                                            app.theme_editor.color_picker_field = Some(field);
-                                            app.theme_editor.color_picker_open = true;
-                                        }
-                                    });
-                                });
-                            });
-                        if changed {
-                            app.reanchor_theme_editor_quick_from_current();
-                        }
-                        changed
-                    };
-
-                    let presets = [
-                        ThemePreset::Ottrin,
-                        ThemePreset::Breeze,
-                        ThemePreset::Adwaita,
-                        ThemePreset::Windows11,
-                        ThemePreset::Solarized,
-                        ThemePreset::Nord,
-                        ThemePreset::G33k,
-                    ];
-                    let mut requested_scope: Option<(ThemePreset, ThemeMode)> = None;
-                    let mut mode_choice = self.theme_editor.mode;
-
-                    {
-                        let mut body = |ui: &mut egui::Ui| {
-                            ui.horizontal_wrapped(|ui| {
-                                ui.label(RichText::new("Mode").color(c.text_dim).size(10.6).strong());
-                                let dark = ui.add_enabled(
-                                    action_model.allow_scope_changes,
-                                    egui::Button::new("Dark").selected(mode_choice == ThemeMode::Dark),
-                                );
-                                if dark.clicked() {
-                                    mode_choice = ThemeMode::Dark;
-                                }
-                                let light = ui.add_enabled(
-                                    action_model.allow_scope_changes,
-                                    egui::Button::new("Light").selected(mode_choice == ThemeMode::Light),
-                                );
-                                if light.clicked() {
-                                    mode_choice = ThemeMode::Light;
-                                }
-                                let system = ui.add_enabled(
-                                    action_model.allow_scope_changes,
-                                    egui::Button::new("System").selected(mode_choice == ThemeMode::System),
-                                );
-                                if system.clicked() {
-                                    mode_choice = ThemeMode::System;
-                                }
-                            });
-                            ui.add_space(6.0);
-                            ui.label(RichText::new("Preset").color(c.text_dim).size(10.6).strong());
-                            ui.add_space(4.0);
-                            ui.horizontal_wrapped(|ui| {
-                                for preset in presets {
-                                    let selected = self.theme_editor.preset == preset;
-                                    let button = egui::Button::new(format!(
-                                        "{} {}",
-                                        Self::theme_preset_icon(preset),
-                                        Self::theme_preset_label(preset)
-                                    ))
-                                    .fill(if selected { mix_color(c.accent, c.panel, 0.18) } else { card_fill })
-                                    .stroke(Stroke::new(
-                                        1.0,
-                                        if selected { c.accent } else { mix_color(c.border, card_fill, 0.36) },
-                                    ))
-                                    .corner_radius(section_radius);
-                                    let response = ui.add_enabled(action_model.allow_scope_changes, button);
-                                    if response.clicked() {
-                                        requested_scope = Some((preset, mode_choice));
-                                    }
-                                }
-                            });
-                            ui.add_space(6.0);
-                            let scope_explanation = if action_model.allow_scope_changes {
-                                "Built-in preset: choose a base preset and mode. Saving creates a user theme; the built-in remains unchanged."
-                            } else {
-                                "Saved user theme: preset and mode identify its base and stay fixed while editing."
-                            };
-                            ui.label(
-                                RichText::new(scope_explanation)
-                                    .color(c.text_muted)
-                                    .size(9.8),
-                            );
-                        };
-                        section_card(
-                            ui,
-                            "Theme scope",
-                            "Choose the visual base for this editor model.",
-                            &mut body,
-                        );
-                    }
-
-                    if action_model.allow_scope_changes && mode_choice != self.theme_editor.mode {
-                        requested_scope = Some((self.theme_editor.preset, mode_choice));
-                    }
-                    if let Some((preset, mode)) = requested_scope {
-                        self.switch_theme_editor_scope(preset, mode, ctx);
-                    }
-
-                    if self.theme_editor.open {
-                        match self.theme_editor.tab {
-                        ThemeEditorTab::MainInterface => {
-                            let preview = self.theme_editor_preview_colors();
-                            {
-                                let mut body = |ui: &mut egui::Ui| {
-                                    let mut quick_changed = false;
-                                    quick_changed |= quick_slider(
-                                        ui,
-                                        &mut self.theme_editor.main_hue_shift,
-                                        -40.0..=40.0,
-                                        "Hue",
-                                        "Shift the UI color balance.",
-                                        Colors::from_rgba(self.theme_editor.custom.accent),
-                                    );
-                                    ui.add_space(6.0);
-                                    quick_changed |= quick_slider(
-                                        ui,
-                                        &mut self.theme_editor.main_saturation,
-                                        0.65..=1.45,
-                                        "Saturation",
-                                        "Make chrome calmer or richer.",
-                                        Colors::from_rgba(self.theme_editor.custom.folder),
-                                    );
-                                    ui.add_space(6.0);
-                                    quick_changed |= quick_slider(
-                                        ui,
-                                        &mut self.theme_editor.main_brightness,
-                                        0.75..=1.25,
-                                        "Brightness",
-                                        "Lift or darken main surfaces.",
-                                        Colors::from_rgba(self.theme_editor.custom.text_heading),
-                                    );
-                                    ui.add_space(6.0);
-                                    quick_changed |= quick_slider(
-                                        ui,
-                                        &mut self.theme_editor.main_contrast,
-                                        0.80..=1.30,
-                                        "Contrast",
-                                        "Adjust separation between surfaces and borders.",
-                                        Colors::from_rgba(self.theme_editor.custom.border),
-                                    );
-                                    if quick_changed {
-                                        self.apply_theme_editor_main_quick(ctx);
-                                    }
-                                };
-                                section_card(
-                                    ui,
-                                    "Quick tuning",
-                                    "Broad controls stay directly above the preview so you can tune the whole interface before editing single regions.",
-                                    &mut body,
-                                );
-                            }
-
-                            ui.add_space(4.0);
-                            {
-                                let mut clicked_region = None;
-                                let mut body = |ui: &mut egui::Ui| {
-                                    let (_, clicked) =
-                                        theme_editor_large_preview(ui, preview, self.theme_editor.selected_region);
-                                    clicked_region = clicked;
-                                };
-                                section_card(
-                                    ui,
-                                    "Live preview",
-                                    "Hover the preview to inspect regions. Click a region to focus its color controls below.",
-                                    &mut body,
-                                );
-                                if let Some(region) = clicked_region {
-                                    self.theme_editor.selected_region = region;
-                                }
-                            }
-
-                            ui.add_space(4.0);
-                            let mut changed = false;
-                            let selected_region = self.theme_editor.selected_region;
-                            let selected_region_label = Self::theme_preview_region_label(selected_region);
-                            let selected_region_hint = Self::theme_preview_region_hint(selected_region);
-                            let region_fields = Self::theme_preview_region_fields(selected_region).to_vec();
-                            let preview_regions = [
-                                ThemePreviewRegion::Titlebar,
-                                ThemePreviewRegion::Navigation,
-                                ThemePreviewRegion::Bookmarks,
-                                ThemePreviewRegion::ColumnBackground,
-                                ThemePreviewRegion::SelectedRow,
-                                ThemePreviewRegion::ColumnText,
-                                ThemePreviewRegion::Sidebar,
-                                ThemePreviewRegion::StatusBar,
-                                ThemePreviewRegion::Accent,
-                                ThemePreviewRegion::Borders,
-                            ];
-                            ui.columns(2, |cols| {
-                                cols[0].vertical(|ui| {
-                                    let mut body = |ui: &mut egui::Ui| {
-                                        ui.horizontal_wrapped(|ui| {
-                                            for region in preview_regions {
-                                                let selected = self.theme_editor.selected_region == region;
-                                                let chip = egui::Button::new(Self::theme_preview_region_label(region))
-                                                    .fill(if selected {
-                                                        mix_color(c.accent, c.panel, 0.18)
-                                                    } else {
-                                                        card_fill
-                                                    })
-                                                    .stroke(Stroke::new(
-                                                        1.0,
-                                                        if selected {
-                                                            c.accent
-                                                        } else {
-                                                            mix_color(c.border, card_fill, 0.32)
-                                                        },
-                                                    ))
-                                                    .corner_radius(section_radius);
-                                                if ui.add(chip).clicked() {
-                                                    self.theme_editor.selected_region = region;
-                                                }
-                                            }
-                                        });
-                                        ui.add_space(8.0);
-                                        ui.label(
-                                            RichText::new(selected_region_hint)
-                                                .color(c.text_muted)
-                                                .size(9.8),
-                                        );
-                                        ui.add_space(8.0);
-                                        for (idx, field) in region_fields.iter().enumerate() {
-                                            changed |= color_row(ui, self, *field, c);
-                                            if idx + 1 < region_fields.len() {
-                                                ui.add_space(6.0);
-                                            }
-                                        }
-                                    };
-                                    section_card(
-                                        ui,
-                                        selected_region_label,
-                                        "Only the selected preview region's theme fields are shown here.",
-                                        &mut body,
-                                    );
-                                });
-                                cols[1].vertical(|ui| {
-                                    let mut body = |ui: &mut egui::Ui| {
-                                        changed |= radius_row(
-                                            ui,
-                                            &mut self.theme_editor.custom.app_radius,
-                                            0.0..=24.0,
-                                            "Window radius",
-                                            "Outer corners for windows and major surfaces.",
-                                        );
-                                        ui.add_space(6.0);
-                                        changed |= radius_row(
-                                            ui,
-                                            &mut self.theme_editor.custom.border_radius,
-                                            0.0..=14.0,
-                                            "Surface radius",
-                                            "Cards, lists, and raised containers.",
-                                        );
-                                        ui.add_space(6.0);
-                                        changed |= radius_row(
-                                            ui,
-                                            &mut self.theme_editor.custom.button_radius,
-                                            0.0..=14.0,
-                                            "Button radius",
-                                            "Interactive controls and filled actions.",
-                                        );
-                                        ui.add_space(6.0);
-                                        changed |= radius_row(
-                                            ui,
-                                            &mut self.theme_editor.custom.window_border_width,
-                                            0.0..=4.0,
-                                            "Border width",
-                                            "Thickness of the window border outline.",
-                                        );
-                                    };
-                                    section_card(
-                                        ui,
-                                        "Shape",
-                                        "Shape and border controls stay alongside the region-specific palette.",
-                                        &mut body,
-                                    );
-                                });
-                            });
-                            if changed {
-                                self.reanchor_theme_editor_quick_from_current();
-                                self.apply_theme_editor_live_preview(ctx);
-                            }
-                        }
-                        ThemeEditorTab::TextAndIcons => {
-                            let preview = self.theme_editor_preview_colors();
-                            let top_pair_h = 360.0;
-                            ui.columns(2, |cols| {
-                                cols[0].vertical(|ui| {
-                                    let mut body = |ui: &mut egui::Ui| {
-                                        // Text & icons specific preview card
-                                        let fs = self.theme_editor.custom.font_scale;
-                                        Frame::new()
-                                            .fill(preview.bg)
-                                            .stroke(Stroke::new(1.0, preview.border))
-                                            .corner_radius(preview.border_radius)
-                                            .inner_margin(egui::Margin::symmetric(14, 12))
-                                            .show(ui, |ui| {
-                                                ui.label(
-                                                    RichText::new("Heading text")
-                                                        .color(preview.heading)
-                                                        .size(14.0 * fs)
-                                                        .strong(),
-                                                );
-                                                ui.add_space(6.0);
-                                                ui.horizontal(|ui| {
-                                                    ui.label(RichText::new(MI_FOLDER).color(preview.folder).size(14.0));
-                                                    ui.label(RichText::new("Folder label").color(preview.folder).size(12.0 * fs));
-                                                });
-                                                ui.horizontal(|ui| {
-                                                    ui.label(RichText::new(MI_FILE).color(preview.text_dim).size(14.0));
-                                                    ui.label(RichText::new("File label").color(preview.text_dim).size(12.0 * fs));
-                                                    ui.label(RichText::new("secondary").color(preview.text_muted).size(10.5 * fs));
-                                                });
-                                                ui.add_space(8.0);
-                                                ui.label(RichText::new("Semantic palette").color(preview.text_muted).size(10.0));
-                                                ui.add_space(4.0);
-                                                let palette = [
-                                                    ("Folder", self.theme_editor.custom.palette_folder_blue),
-                                                    ("Link", self.theme_editor.custom.palette_link_blue),
-                                                    ("Script", self.theme_editor.custom.palette_green),
-                                                    ("Archive", self.theme_editor.custom.palette_orange),
-                                                    ("Media", self.theme_editor.custom.palette_purple),
-                                                    ("Image", self.theme_editor.custom.palette_pink),
-                                                    ("Alert", self.theme_editor.custom.palette_red),
-                                                    ("Config", self.theme_editor.custom.palette_yellow),
-                                                ];
-                                                ui.horizontal_wrapped(|ui| {
-                                                    for (name, rgba) in &palette {
-                                                        let col = Colors::from_rgba(*rgba);
-                                                        let _ = ui.add(
-                                                            egui::Button::new(
-                                                                RichText::new(*name).color(col).size(10.5 * fs),
-                                                            )
-                                                            .fill(mix_color(preview.bg, col, 0.12))
-                                                            .stroke(Stroke::new(1.0, mix_color(preview.border, col, 0.25)))
-                                                            .corner_radius(preview.button_radius),
-                                                        );
-                                                    }
-                                                });
-                                                ui.add_space(6.0);
-                                                let _ = ui.add(
-                                                    egui::Button::new(RichText::new("Accent tag").color(preview.text))
-                                                        .fill(preview.selected_bg)
-                                                        .stroke(Stroke::NONE)
-                                                        .corner_radius(preview.button_radius),
-                                                );
-                                            });
-                                    };
-                                    section_card_fixed(
-                                        ui,
-                                        top_pair_h,
-                                        "Live preview",
-                                        "Check text, icons, and semantic palette balance.",
-                                        &mut body,
-                                    );
-                                });
-                                cols[1].vertical(|ui| {
-                                    let mut body = |ui: &mut egui::Ui| {
-                                        let mut quick_changed = false;
-                                        quick_changed |= quick_slider(
-                                            ui,
-                                            &mut self.theme_editor.text_hue_shift,
-                                            -40.0..=40.0,
-                                            "Hue",
-                                            "Shift text and icon balance.",
-                                            Colors::from_rgba(self.theme_editor.custom.palette_folder_blue),
-                                        );
-                                        ui.add_space(6.0);
-                                        quick_changed |= quick_slider(
-                                            ui,
-                                            &mut self.theme_editor.text_saturation,
-                                            0.65..=1.45,
-                                            "Saturation",
-                                            "Calm or enrich semantic colors.",
-                                            Colors::from_rgba(self.theme_editor.custom.palette_purple),
-                                        );
-                                        ui.add_space(6.0);
-                                        quick_changed |= quick_slider(
-                                            ui,
-                                            &mut self.theme_editor.text_brightness,
-                                            0.75..=1.25,
-                                            "Brightness",
-                                            "Raise or lower readability.",
-                                            Colors::from_rgba(self.theme_editor.custom.palette_soft_white),
-                                        );
-                                        ui.add_space(6.0);
-                                        quick_changed |= quick_slider(
-                                            ui,
-                                            &mut self.theme_editor.text_contrast,
-                                            0.80..=1.30,
-                                            "Contrast",
-                                            "Increase or soften text separation.",
-                                            Colors::from_rgba(self.theme_editor.custom.palette_green),
-                                        );
-                                        if quick_changed {
-                                            self.apply_theme_editor_text_quick(ctx);
-                                        }
-                                    };
-                                    section_card_fixed(
-                                        ui,
-                                        top_pair_h,
-                                        "Quick tuning",
-                                        "Broad controls for text, icons, and semantic palette balance.",
-                                        &mut body,
-                                    );
-                                });
-                            });
-
-                            ui.add_space(6.0);
-                            let mut changed = false;
-                            ui.columns(2, |cols| {
-                                cols[0].vertical(|ui| {
-                                    let mut body = |ui: &mut egui::Ui| {
-                                        changed |= font_scale_row(
-                                            ui,
-                                            &mut self.theme_editor.custom.font_scale,
-                                            0.85..=1.35,
-                                        );
-                                        ui.add_space(6.0);
-                                        changed |= color_row(ui, self, ThemeColorField::TextHeading, c);
-                                        ui.add_space(6.0);
-                                        changed |= color_row(ui, self, ThemeColorField::TextFolder, c);
-                                        ui.add_space(6.0);
-                                        changed |= color_row(ui, self, ThemeColorField::TextFile, c);
-                                        ui.add_space(6.0);
-                                        changed |= color_row(ui, self, ThemeColorField::Folder, c);
-                                    };
-                                    section_card(
-                                        ui,
-                                        "Base text and icons",
-                                        "Neutral labels and the default folder/icon tint used throughout the app.",
-                                        &mut body,
-                                    );
-                                });
-                                cols[1].vertical(|ui| {
-                                    let mut body = |ui: &mut egui::Ui| {
-                                        ui.label(
-                                            RichText::new("These semantic tokens are used when Semantic file colors is enabled.")
-                                                .color(c.text_muted)
-                                                .size(9.8),
-                                        );
-                                        ui.add_space(6.0);
-                                        for field in [
-                                            ThemeColorField::PaletteSoftWhite,
-                                            ThemeColorField::PaletteFolderBlue,
-                                            ThemeColorField::PaletteLinkBlue,
-                                            ThemeColorField::PaletteSteel,
-                                            ThemeColorField::PaletteGreen,
-                                            ThemeColorField::PaletteOrange,
-                                            ThemeColorField::PalettePurple,
-                                            ThemeColorField::PalettePink,
-                                            ThemeColorField::PaletteRed,
-                                            ThemeColorField::PaletteYellow,
-                                        ] {
-                                            changed |= color_row(ui, self, field, c);
-                                            ui.add_space(6.0);
-                                        }
-                                    };
-                                    section_card(
-                                        ui,
-                                        "Semantic palette",
-                                        "Color tokens used for folders, links, scripts, archives, images, warnings, and status hints.",
-                                        &mut body,
-                                    );
-                                });
-                            });
-                            if changed {
-                                self.reanchor_theme_editor_quick_from_current();
-                                self.apply_theme_editor_live_preview(ctx);
-                            }
-                        }
-                        }
-                    }
-                    });
-                });
-                ui.scope_builder(UiBuilder::new().max_rect(footer_rect), |ui| {
-                    Frame::new()
-                        .fill(window_title)
-                        .stroke(Stroke::new(1.0, mix_color(c.border, window_fill, 0.45)))
-                        .inner_margin(egui::Margin::symmetric(10, 8))
-                        .show(ui, |ui| {
-                            ui.horizontal(|ui| {
-                                if ui.add_sized([84.0, 26.0], egui::Button::new("Cancel")).clicked() {
-                                    self.cancel_theme_editor(ctx);
-                                }
-                                if action_model.show_save_as {
-                                    // User-created theme: "Save" overwrites in place.
-                                    if ui.add_sized([72.0, 26.0], egui::Button::new("Save")).clicked() {
-                                        self.save_theme_editor(ctx);
-                                    }
-                                }
-                                if ui.add_sized([84.0, 26.0], egui::Button::new("Import")).clicked() {
-                                    self.import_theme_editor_json(ctx);
-                                }
-                                if ui.add_sized([84.0, 26.0], egui::Button::new("Export")).clicked() {
-                                    self.export_theme_editor_json();
-                                }
-                                ui.add_space(4.0);
-                                ui.add_sized(
-                                    [220.0, 26.0],
-                                    egui::TextEdit::singleline(&mut self.theme_editor.save_as_name)
-                                        .hint_text("Theme name"),
-                                );
-                                if action_model.show_save_as {
-                                    // "Save As" creates a new copy.
-                                    if ui.add_sized([84.0, 26.0], egui::Button::new("Save As")).clicked() {
-                                        self.save_theme_editor_as();
-                                    }
-                                } else {
-                                    // Built-in preset: only "Save" as new custom theme.
-                                    if ui.add_sized([84.0, 26.0], egui::Button::new("Save")).clicked() {
-                                        self.save_theme_editor(ctx);
-                                    }
-                                }
-                                if action_model.show_reset
-                                    && ui
-                                        .add_sized([136.0, 26.0], egui::Button::new("Reset to default"))
-                                        .clicked()
-                                {
-                                    self.reset_theme_editor_to_default(ctx);
-                                }
-                            });
-                        });
-                });
-            });
-
-        if self.theme_editor.color_picker_open {
-            let mut picker_open = true;
-            let mut close_picker_requested = false;
-            if let Some(field) = self.theme_editor.color_picker_field {
-                egui::Window::new("theme_editor_color_picker_window")
-                    .id(egui::Id::new("theme_editor_color_picker"))
-                    .order(egui::Order::Tooltip)
-                    .title_bar(false)
-                    .collapsible(false)
-                    .resizable(false)
-                    .movable(false)
-                    .default_size(Vec2::new(336.0, 392.0))
-                    .frame(
-                        Frame::window(&ctx.style())
-                            .fill(c.panel)
-                            .stroke(Stroke::new(1.0, mix_color(c.border, c.panel, 0.55)))
-                            .shadow(Shadow {
-                                offset: [0, 8],
-                                blur: 18,
-                                spread: 0,
-                                color: Color32::from_black_alpha(72),
-                            })
-                            .corner_radius(c.app_radius),
-                    )
-                    .open(&mut picker_open)
-                    .show(ctx, |ui| {
-                        render_custom_titlebar(
-                            ui,
-                            ctx,
-                            c,
-                            c.titlebar_bg,
-                            &format!("{} color", Self::theme_color_field_label(field)),
-                            false,
-                            &mut close_picker_requested,
-                            |_ui| {},
-                        );
-                        ui.add_space(8.0);
-                        let mut rgba =
-                            Self::theme_color_field_value(&self.theme_editor.custom, field);
-                        let mut color = Colors::from_rgba(rgba);
-                        if egui::color_picker::color_picker_color32(
-                            ui,
-                            &mut color,
-                            egui::color_picker::Alpha::Opaque,
-                        ) {
-                            rgba = Colors::to_rgba(color);
-                            *Self::theme_color_field_value_mut(
-                                &mut self.theme_editor.custom,
-                                field,
-                            ) = rgba;
-                            self.reanchor_theme_editor_quick_from_current();
-                            self.apply_theme_editor_live_preview(ctx);
-                        }
-                        ui.add_space(6.0);
-                        ui.horizontal(|ui| {
-                            ui.label(RichText::new("Hex").color(c.text_dim).size(11.0));
-                            let mut hex = self
-                                .theme_editor
-                                .color_hex_inputs
-                                .get(&field)
-                                .cloned()
-                                .unwrap_or_else(|| {
-                                    format!("#{:02X}{:02X}{:02X}", rgba[0], rgba[1], rgba[2])
-                                });
-                            if ui
-                                .add_sized([110.0, 24.0], egui::TextEdit::singleline(&mut hex))
-                                .changed()
-                            {
-                                self.theme_editor
-                                    .color_hex_inputs
-                                    .insert(field, hex.clone());
-                                if let Some(rgb) = parse_hex_rgb(&hex) {
-                                    let rgba = [rgb[0], rgb[1], rgb[2], 255];
-                                    *Self::theme_color_field_value_mut(
-                                        &mut self.theme_editor.custom,
-                                        field,
-                                    ) = rgba;
-                                    self.reanchor_theme_editor_quick_from_current();
-                                    self.apply_theme_editor_live_preview(ctx);
-                                }
-                            }
-                            if ui.button("Copy").clicked() {
-                                let hx = format!("#{:02X}{:02X}{:02X}", rgba[0], rgba[1], rgba[2]);
-                                ui.ctx().copy_text(hx.clone());
-                                self.theme_editor.color_clipboard_hex = hx;
-                            }
-                            if ui
-                                .add_enabled(
-                                    !self.theme_editor.color_clipboard_hex.is_empty(),
-                                    egui::Button::new("Paste"),
-                                )
-                                .clicked()
-                            {
-                                let pasted = self.theme_editor.color_clipboard_hex.clone();
-                                if let Some(rgb) = parse_hex_rgb(&pasted) {
-                                    let rgba = [rgb[0], rgb[1], rgb[2], 255];
-                                    *Self::theme_color_field_value_mut(
-                                        &mut self.theme_editor.custom,
-                                        field,
-                                    ) = rgba;
-                                    self.theme_editor.color_hex_inputs.insert(field, pasted);
-                                    self.reanchor_theme_editor_quick_from_current();
-                                    self.apply_theme_editor_live_preview(ctx);
-                                }
-                            }
-                        });
-                    });
-                ctx.move_to_top(egui::LayerId::new(
-                    egui::Order::Foreground,
-                    egui::Id::new("theme_editor_color_picker"),
-                ));
-            }
-            if close_picker_requested {
-                picker_open = false;
-            }
-            if !picker_open {
-                self.theme_editor.color_picker_open = false;
-                self.theme_editor.color_picker_field = None;
-            }
-        }
-        close_requested
     }
 
     fn is_bookmarked(&self, path: &Path) -> bool {
@@ -11389,13 +9854,16 @@ impl OttrinApp {
         context_response.context_menu(|ui| {
             ui.set_min_width(180.0);
             if ui
-                .button(format!("{} New Folder", MI_CREATE_FOLDER))
+                .add(egui::Button::new(format!("{} New Folder", MI_CREATE_FOLDER)).themed(c))
                 .clicked()
             {
                 self.open_creation_dialog(CreationKind::Folder, tab_id, dir.to_path_buf());
                 ui.close();
             }
-            if ui.button(format!("{} New File", MI_FILE)).clicked() {
+            if ui
+                .add(egui::Button::new(format!("{} New File", MI_FILE)).themed(c))
+                .clicked()
+            {
                 self.open_creation_dialog(CreationKind::File, tab_id, dir.to_path_buf());
                 ui.close();
             }
@@ -11414,7 +9882,7 @@ impl OttrinApp {
                     egui::Label::new(
                         RichText::new("This folder is empty")
                             .color(c.text_muted)
-                            .size(12.0),
+                            .size(12.0 * c.font_scale),
                     )
                     .wrap(),
                 );
@@ -11425,7 +9893,7 @@ impl OttrinApp {
                         egui::Label::new(
                             RichText::new("Set this folder as Drop Folder")
                                 .color(c.text_dim)
-                                .size(11.5)
+                                .size(11.5 * c.font_scale)
                                 .strong(),
                         )
                         .wrap(),
@@ -11435,7 +9903,7 @@ impl OttrinApp {
                         egui::Label::new(
                             RichText::new("Move or copy files here from anywhere.")
                                 .color(c.text_muted)
-                                .size(10.5),
+                                .size(10.5 * c.font_scale),
                         )
                         .wrap(),
                     );
@@ -11445,10 +9913,9 @@ impl OttrinApp {
                             Vec2::new(content_width, 28.0),
                             egui::Button::new(
                                 RichText::new(format!("{} Set as Drop Folder", MI_MOVE_TO_INBOX))
-                                    .size(11.5)
-                                    .color(c.text),
+                                    .size(11.5 * c.font_scale),
                             )
-                            .corner_radius(4.0),
+                            .themed(c),
                         )
                         .clicked()
                     {
@@ -11464,13 +9931,13 @@ impl OttrinApp {
                     ui.label(
                         RichText::new("✓ This folder is now your Drop Folder")
                             .color(c.accent)
-                            .size(11.0)
+                            .size(11.0 * c.font_scale)
                             .strong(),
                     );
                     ui.label(
                         RichText::new("Right-click files and choose “Move to Drop Folder”")
                             .color(c.text_muted)
-                            .size(10.5),
+                            .size(10.5 * c.font_scale),
                     );
                 });
                 ui.ctx().request_repaint();
@@ -11746,7 +10213,7 @@ impl OttrinApp {
         let inactive_text = mix_color(c.text_muted, titlebar_bg, 0.32);
 
         let panel_rect = egui::TopBottomPanel::top("tab_row")
-            .exact_height(CUSTOM_TITLEBAR_HEIGHT)
+            .exact_height((CUSTOM_TITLEBAR_HEIGHT * c.font_scale).ceil())
             .show_separator_line(false)
             .frame(
                 Frame::new()
@@ -11801,8 +10268,8 @@ impl OttrinApp {
                             .fill(tab_fill)
                             .stroke(Stroke::NONE)
                             .corner_radius(egui::CornerRadius {
-                                nw: 5,
-                                ne: 5,
+                                nw: c.border_radius,
+                                ne: c.border_radius,
                                 sw: 0,
                                 se: 0,
                             })
@@ -11824,22 +10291,37 @@ impl OttrinApp {
                                     } else {
                                         c.text_muted
                                     };
-                                    ui.label(RichText::new("•").color(dot_color).size(14.0));
+                                    ui.label(
+                                        RichText::new("•")
+                                            .color(dot_color)
+                                            .size(14.0 * c.font_scale),
+                                    );
                                     if link.pinned_tab_id == Some(tab_id) {
                                         ui.add_space(2.0);
-                                        ui.label(RichText::new(MI_LOCK).color(c.accent).size(11.5));
+                                        ui.label(
+                                            RichText::new(MI_LOCK)
+                                                .color(c.accent)
+                                                .size(11.5 * c.font_scale),
+                                        );
                                     }
                                     ui.add_space(4.0);
                                 }
-                                ui.label(RichText::new(&label).color(text_color).size(12.5));
+                                ui.label(
+                                    RichText::new(&label)
+                                        .color(text_color)
+                                        .size(12.5 * c.font_scale),
+                                );
                                 ui.add_space(6.0);
                                 if n_tabs > 1 {
                                     let close_btn = ui.add(
                                         egui::Button::new(
-                                            RichText::new(MI_CLOSE).color(c.text_dim).size(13.0),
+                                            RichText::new(MI_CLOSE)
+                                                .color(c.text_dim)
+                                                .size(13.0 * c.font_scale),
                                         )
                                         .frame(false)
-                                        .min_size(Vec2::new(18.0, 18.0)),
+                                        .min_size(Vec2::new(18.0, 18.0))
+                                        .themed(&c),
                                     );
                                     close_rect = Some(close_btn.rect);
                                     if close_btn.hovered() {
@@ -11906,7 +10388,7 @@ impl OttrinApp {
                             if ui
                                 .add_enabled(
                                     can_open_tandem,
-                                    egui::Button::new("Open selected tabs in Tandem"),
+                                    egui::Button::new("Open selected tabs in Tandem").themed(&c),
                                 )
                                 .clicked()
                             {
@@ -11915,7 +10397,7 @@ impl OttrinApp {
                             }
                             ui.separator();
                             if ui
-                                .add_enabled(n_tabs > 1, egui::Button::new("Close Tab"))
+                                .add_enabled(n_tabs > 1, egui::Button::new("Close Tab").themed(&c))
                                 .clicked()
                             {
                                 close_idx = Some(i);
@@ -11971,8 +10453,13 @@ impl OttrinApp {
                     // New tab +
                     ui.add_space(6.0);
                     let new_tab_btn = ui.add(
-                        egui::Button::new(RichText::new("+").color(c.text_muted).size(16.0))
-                            .frame(false),
+                        egui::Button::new(
+                            RichText::new("+")
+                                .color(c.text_muted)
+                                .size(16.0 * c.font_scale),
+                        )
+                        .frame(false)
+                        .themed(&c),
                     );
                     blocked_drag_rects.push(new_tab_btn.rect);
                     if new_tab_btn.clicked() {
@@ -12025,7 +10512,7 @@ impl OttrinApp {
                                 RichText::new("Administrator")
                                     .color(c.accent)
                                     .strong()
-                                    .size(11.5),
+                                    .size(11.5 * c.font_scale),
                             )
                             .on_hover_text("This Ottrin session is running as Administrator.");
                         }
@@ -12074,7 +10561,11 @@ impl OttrinApp {
         ui.set_min_width(224.0);
         ui.style_mut().spacing.item_spacing.y = 1.0;
         ui.visuals_mut().override_text_color = Some(c.text_muted);
-        ui.label(RichText::new("View Mode").size(11.5).color(c.text_dim));
+        ui.label(
+            RichText::new("View Mode")
+                .size(11.5 * c.font_scale)
+                .color(c.text_dim),
+        );
         for (mode, label, icon) in [
             (ViewMode::Miller, "Column view", MI_VIEW_COLUMN),
             (ViewMode::List, "List view", MI_VIEW_LIST),
@@ -12097,11 +10588,12 @@ impl OttrinApp {
                         RichText::new(format!(
                             "{MI_IMAGE}  Miller preview column handles previews"
                         ))
-                        .size(12.5)
+                        .size(12.5 * c.font_scale)
                         .color(c.text_dim),
                     )
                     .frame(false)
-                    .min_size(Vec2::new(204.0, 26.0)),
+                    .min_size(Vec2::new(204.0, 26.0))
+                    .themed(&c),
                 );
             }
             ViewMode::List => {
@@ -12130,7 +10622,11 @@ impl OttrinApp {
         }
 
         ui.add(egui::Separator::default().horizontal().spacing(4.0));
-        ui.label(RichText::new("Sort").size(11.5).color(c.text_dim));
+        ui.label(
+            RichText::new("Sort")
+                .size(11.5 * c.font_scale)
+                .color(c.text_dim),
+        );
         for (sort_by, label) in [
             (SortBy::Name, "Name"),
             (SortBy::Kind, "Type"),
@@ -12169,7 +10665,11 @@ impl OttrinApp {
 
         if matches!(view_mode, ViewMode::List) {
             ui.add(egui::Separator::default().horizontal().spacing(4.0));
-            ui.label(RichText::new("List Columns").size(11.5).color(c.text_dim));
+            ui.label(
+                RichText::new("List Columns")
+                    .size(11.5 * c.font_scale)
+                    .color(c.text_dim),
+            );
             for (col, label) in [
                 (ListColumn::Kind, "Type"),
                 (ListColumn::Size, "Size"),
@@ -12201,7 +10701,7 @@ impl OttrinApp {
         let active_tab_id = self.state.active_tab().id;
 
         egui::TopBottomPanel::top("nav_row")
-            .exact_height(CUSTOM_TITLEBAR_HEIGHT)
+            .exact_height((CUSTOM_TITLEBAR_HEIGHT * c.font_scale).ceil())
             .frame(
                 Frame::new()
                     .fill(c.toolbar_bg)
@@ -12233,10 +10733,13 @@ impl OttrinApp {
                         .add_enabled(
                             can_back,
                             egui::Button::new(
-                                RichText::new(MI_ARROW_BACK).size(20.0).color(back_col),
+                                RichText::new(MI_ARROW_BACK)
+                                    .size(20.0 * c.font_scale)
+                                    .color(back_col),
                             )
                             .frame(false)
-                            .min_size(Vec2::splat(30.0)),
+                            .min_size(Vec2::splat(30.0))
+                            .themed(&c),
                         )
                         .on_hover_text(if can_back {
                             "Back to previous folder in this tab (Alt+Left)"
@@ -12251,10 +10754,13 @@ impl OttrinApp {
                         .add_enabled(
                             can_fwd,
                             egui::Button::new(
-                                RichText::new(MI_ARROW_FORWARD).size(20.0).color(fwd_col),
+                                RichText::new(MI_ARROW_FORWARD)
+                                    .size(20.0 * c.font_scale)
+                                    .color(fwd_col),
                             )
                             .frame(false)
-                            .min_size(Vec2::splat(30.0)),
+                            .min_size(Vec2::splat(30.0))
+                            .themed(&c),
                         )
                         .on_hover_text(if can_fwd {
                             "Forward to next folder in this tab (Alt+Right)"
@@ -12268,9 +10774,14 @@ impl OttrinApp {
                     if ui
                         .add_enabled(
                             can_up,
-                            egui::Button::new(RichText::new(MI_ARROW_UP).size(20.0).color(up_col))
-                                .frame(false)
-                                .min_size(Vec2::splat(30.0)),
+                            egui::Button::new(
+                                RichText::new(MI_ARROW_UP)
+                                    .size(20.0 * c.font_scale)
+                                    .color(up_col),
+                            )
+                            .frame(false)
+                            .min_size(Vec2::splat(30.0))
+                            .themed(&c),
                         )
                         .on_hover_text("Go to parent folder (Alt+Up)")
                         .clicked()
@@ -12318,10 +10829,11 @@ impl OttrinApp {
                                                 "{} New Folder",
                                                 MI_CREATE_FOLDER
                                             ))
-                                            .size(13.0),
+                                            .size(13.0 * c.font_scale),
                                         )
-                                        .frame(false)
-                                        .min_size(Vec2::new(190.0, 28.0)),
+                                        .frame_when_inactive(false)
+                                        .min_size(Vec2::new(190.0, 28.0))
+                                        .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -12334,10 +10846,11 @@ impl OttrinApp {
                                     .add(
                                         egui::Button::new(
                                             RichText::new(format!("{} New File", MI_FILE))
-                                                .size(13.0),
+                                                .size(13.0 * c.font_scale),
                                         )
-                                        .frame(false)
-                                        .min_size(Vec2::new(190.0, 28.0)),
+                                        .frame_when_inactive(false)
+                                        .min_size(Vec2::new(190.0, 28.0))
+                                        .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -12358,10 +10871,11 @@ impl OttrinApp {
                                                 "{} Open Selection",
                                                 MI_FOLDER_OPEN
                                             ))
-                                            .size(13.0),
+                                            .size(13.0 * c.font_scale),
                                         )
-                                        .frame(false)
-                                        .min_size(Vec2::new(190.0, 28.0)),
+                                        .frame_when_inactive(false)
+                                        .min_size(Vec2::new(190.0, 28.0))
+                                        .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -12378,10 +10892,11 @@ impl OttrinApp {
                                                 "{} Copy Selection",
                                                 MI_CONTENT_COPY
                                             ))
-                                            .size(13.0),
+                                            .size(13.0 * c.font_scale),
                                         )
-                                        .frame(false)
-                                        .min_size(Vec2::new(190.0, 28.0)),
+                                        .frame_when_inactive(false)
+                                        .min_size(Vec2::new(190.0, 28.0))
+                                        .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -12396,10 +10911,11 @@ impl OttrinApp {
                                                 "{} Quick Inspector Selection",
                                                 MI_VISIBILITY
                                             ))
-                                            .size(13.0),
+                                            .size(13.0 * c.font_scale),
                                         )
-                                        .frame(false)
-                                        .min_size(Vec2::new(190.0, 28.0)),
+                                        .frame_when_inactive(false)
+                                        .min_size(Vec2::new(190.0, 28.0))
+                                        .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -12411,10 +10927,11 @@ impl OttrinApp {
                                         can_copy,
                                         egui::Button::new(
                                             RichText::new(format!("{} Rename Selection…", MI_EDIT))
-                                                .size(13.0),
+                                                .size(13.0 * c.font_scale),
                                         )
-                                        .frame(false)
-                                        .min_size(Vec2::new(190.0, 28.0)),
+                                        .frame_when_inactive(false)
+                                        .min_size(Vec2::new(190.0, 28.0))
+                                        .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -12429,10 +10946,11 @@ impl OttrinApp {
                                                 "{} Delete Selection…",
                                                 MI_DELETE
                                             ))
-                                            .size(13.0),
+                                            .size(13.0 * c.font_scale),
                                         )
-                                        .frame(false)
-                                        .min_size(Vec2::new(190.0, 28.0)),
+                                        .frame_when_inactive(false)
+                                        .min_size(Vec2::new(190.0, 28.0))
+                                        .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -12447,10 +10965,11 @@ impl OttrinApp {
                                                 "{} Paste into Current Folder",
                                                 MI_CONTENT_PASTE
                                             ))
-                                            .size(13.0),
+                                            .size(13.0 * c.font_scale),
                                         )
-                                        .frame(false)
-                                        .min_size(Vec2::new(190.0, 28.0)),
+                                        .frame_when_inactive(false)
+                                        .min_size(Vec2::new(190.0, 28.0))
+                                        .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -12465,10 +10984,11 @@ impl OttrinApp {
                                     .add(
                                         egui::Button::new(
                                             RichText::new(format!("{} Settings…", MI_SETTINGS))
-                                                .size(13.0),
+                                                .size(13.0 * c.font_scale),
                                         )
-                                        .frame(false)
-                                        .min_size(Vec2::new(190.0, 28.0)),
+                                        .frame_when_inactive(false)
+                                        .min_size(Vec2::new(190.0, 28.0))
+                                        .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -12483,10 +11003,11 @@ impl OttrinApp {
                                     .add(
                                         egui::Button::new(
                                             RichText::new(format!("{} About Ottrin", MI_INFO))
-                                                .size(13.0),
+                                                .size(13.0 * c.font_scale),
                                         )
-                                        .frame(false)
-                                        .min_size(Vec2::new(190.0, 28.0)),
+                                        .frame_when_inactive(false)
+                                        .min_size(Vec2::new(190.0, 28.0))
+                                        .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -12505,10 +11026,13 @@ impl OttrinApp {
                         let view_btn = ui
                             .add(
                                 egui::Button::new(
-                                    RichText::new(view_icon).size(20.0).color(c.text_muted),
+                                    RichText::new(view_icon)
+                                        .size(20.0 * c.font_scale)
+                                        .color(c.text_muted),
                                 )
                                 .frame(false)
-                                .min_size(Vec2::splat(30.0)),
+                                .min_size(Vec2::splat(30.0))
+                                .themed(&c),
                             )
                             .on_hover_text(view_tip);
                         view_btn.widget_info(|| {
@@ -12532,11 +11056,12 @@ impl OttrinApp {
                             .add(
                                 egui::Button::new(
                                     RichText::new(MI_DASHBOARD_CUSTOMIZE)
-                                        .size(19.0)
+                                        .size(19.0 * c.font_scale)
                                         .color(c.text_muted),
                                 )
                                 .frame(false)
-                                .min_size(Vec2::splat(30.0)),
+                                .min_size(Vec2::splat(30.0))
+                                .themed(&c),
                             )
                             .on_hover_text("View Options");
                         view_options_btn.widget_info(|| {
@@ -12782,7 +11307,7 @@ impl OttrinApp {
             .show_separator_line(false)
             .frame(
                 Frame::new()
-                    .fill(c.smart_panel_bg)
+                    .fill(c.bookmarks_bg)
                     .inner_margin(egui::Margin::symmetric(if expanded { 8 } else { 3 }, 6)),
             )
             .show(ctx, |ui| {
@@ -12793,7 +11318,7 @@ impl OttrinApp {
                 let (toggle_rect, toggle_response) =
                     ui.allocate_exact_size(Vec2::new(tile_w, 30.0), Sense::click());
                 let toggle_fill = if toggle_response.hovered() || toggle_response.has_focus() {
-                    mix_color(c.smart_panel_bg, c.panel_raised, 0.58)
+                    mix_color(c.bookmarks_bg, c.panel_raised, 0.58)
                 } else {
                     Color32::TRANSPARENT
                 };
@@ -12873,7 +11398,7 @@ impl OttrinApp {
                         let fill = if is_here {
                             c.selected_bg.gamma_multiply(0.62)
                         } else if hovered {
-                            mix_color(c.smart_panel_bg, c.panel_raised, 0.52)
+                            mix_color(c.bookmarks_bg, c.panel_raised, 0.52)
                         } else {
                             Color32::TRANSPARENT
                         };
@@ -12923,14 +11448,18 @@ impl OttrinApp {
                         let text_col = if is_here { c.text } else { c.text_muted };
                         ui.add_sized(
                             Vec2::new(tile_w, 36.0),
-                            egui::Button::new(RichText::new(icon).size(21.0).color(text_col))
-                                .fill(if is_here {
-                                    c.selected_bg.gamma_multiply(0.62)
-                                } else {
-                                    mix_color(c.smart_panel_bg, c.panel, 0.22)
-                                })
-                                .stroke(Stroke::NONE)
-                                .corner_radius(c.border_radius as f32),
+                            egui::Button::new(
+                                RichText::new(icon)
+                                    .size(21.0 * c.font_scale)
+                                    .color(text_col),
+                            )
+                            .fill(if is_here {
+                                c.selected_bg.gamma_multiply(0.62)
+                            } else {
+                                mix_color(c.bookmarks_bg, c.panel, 0.22)
+                            })
+                            .stroke(Stroke::NONE)
+                            .themed(&c),
                         )
                     };
                     input_rects.push(resp.rect);
@@ -13008,7 +11537,7 @@ impl OttrinApp {
             rail.response.rect.max,
         );
         ctx.layer_painter(rail.response.layer_id)
-            .rect_filled(rail_boundary, 0.0, c.smart_panel_bg);
+            .rect_filled(rail_boundary, 0.0, c.bookmarks_bg);
 
         if let Some(path) = navigate_to {
             let tab_id = self.state.active_tab().id;
@@ -13074,10 +11603,10 @@ impl OttrinApp {
                 let response = ui.add(
                     egui::TextEdit::singleline(&mut bar.text)
                         .id_source(("address_bar_text", tab_id))
-                        .font(FontId::proportional(14.0))
+                        .font(FontId::proportional(14.0 * c.font_scale))
                         .text_color(c.text_muted)
-                        .frame(true)
-                        .desired_width(ui.available_width()),
+                        .desired_width(ui.available_width())
+                        .themed(&c),
                 );
                 if bar.request_focus {
                     response.request_focus();
@@ -13118,10 +11647,10 @@ impl OttrinApp {
         } else {
             // Breadcrumb display
             let path = self.displayed_path_for(tab_id);
-            let palette = semantic_palette(&self.state.config, &c);
+            let palette = semantic_palette(&c);
             let frame = Frame::new()
                 .fill(c.toolbar_bg)
-                .corner_radius(6.0)
+                .corner_radius(c.border_radius)
                 .inner_margin(egui::Margin::symmetric(10, 3));
             let addr_resp = frame.show(ui, |ui| {
                 ui.set_width(ui.available_width());
@@ -13160,9 +11689,10 @@ impl OttrinApp {
                             egui::Button::new(
                                 RichText::new(format!("{} {}", icon, display))
                                     .color(text_color)
-                                    .size(13.0),
+                                    .size(13.0 * c.font_scale),
                             )
-                            .frame(false),
+                            .frame(false)
+                            .themed(&c),
                         );
                         if resp.clicked() {
                             self.focus_tab(tab_id);
@@ -13172,7 +11702,11 @@ impl OttrinApp {
                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                         }
                         if !is_last {
-                            ui.label(RichText::new("›").color(c.text_muted).size(12.0));
+                            ui.label(
+                                RichText::new("›")
+                                    .color(c.text_muted)
+                                    .size(12.0 * c.font_scale),
+                            );
                         }
                     }
                 });
@@ -13272,13 +11806,13 @@ impl OttrinApp {
                     ui.painter().vline(
                         full.min.x,
                         full.y_range(),
-                        Stroke::new(HAIRLINE, mix_color(c.border, c.smart_panel_bg, 0.45)),
+                        Stroke::new(HAIRLINE, c.border),
                     );
                 }
                 ui.painter().vline(
                     strip_rect.min.x,
                     strip_rect.y_range(),
-                    Stroke::new(HAIRLINE, mix_color(c.border, c.smart_panel_bg, 0.55)),
+                    Stroke::new(HAIRLINE, c.border),
                 );
 
                 ui.scope_builder(UiBuilder::new().max_rect(strip_rect), |ui| {
@@ -13440,7 +11974,7 @@ impl OttrinApp {
                 paint_resize_separator(ui, resize_rect, &resize_resp, &c);
 
                 // Single separator between content and strip only.
-                ui.painter().vline(full.max.x - strip_w, full.y_range(), Stroke::new(1.0, mix_color(c.border, c.smart_panel_bg, 0.45)));
+                ui.painter().vline(full.max.x - strip_w, full.y_range(), Stroke::new(1.0, c.border));
 
                 // ── Content panel (left 220px when expanded) ────────────────
                 let content_pad = 8.0;
@@ -13527,19 +12061,19 @@ impl OttrinApp {
                                                     ui.add_sized(
                                                         preview_size,
                                                         egui::TextEdit::multiline(&mut snippet)
-                                                            .font(FontId::monospace(10.0))
+                                                            .font(FontId::monospace(10.0 * c.font_scale))
                                                             .desired_rows(6)
                                                             .interactive(false),
                                                     );
                                                     ui.add_space(6.0);
                                                 } else {
-                                                    ui.label(RichText::new(icon).size(34.0).color(icon_color));
+                                                    ui.label(RichText::new(icon).size(34.0 * c.font_scale).color(icon_color));
                                                     ui.add_space(4.0);
                                                 }
                                                 ui.label(
                                                     RichText::new(truncate_name(&entry.name, 20))
                                                         .color(c.text)
-                                                        .size(12.0)
+                                                        .size(12.0 * c.font_scale)
                                                         .strong(),
                                                 );
                                             },
@@ -13550,196 +12084,196 @@ impl OttrinApp {
                                 let vc = c.text_dim;
                                 ui.horizontal(|ui| {
                                     ui.add_space(8.0);
-                                    ui.label(RichText::new("Type").color(lc).size(10.5));
+                                    ui.label(RichText::new("Type").color(lc).size(10.5 * c.font_scale));
                                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                         ui.add_space(8.0);
-                                        ui.label(RichText::new(entry_kind_label(entry.kind)).color(vc).size(10.5));
+                                        ui.label(RichText::new(entry_kind_label(entry.kind)).color(vc).size(10.5 * c.font_scale));
                                     });
                                 });
                                 if let (EntryKind::File, Some(size)) = (entry.kind, entry.size_bytes) {
                                     ui.horizontal(|ui| {
                                         ui.add_space(8.0);
-                                        ui.label(RichText::new("Size").color(lc).size(10.5));
+                                        ui.label(RichText::new("Size").color(lc).size(10.5 * c.font_scale));
                                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new(format_size(size)).color(vc).size(10.5));
+                                            ui.label(RichText::new(format_size(size)).color(vc).size(10.5 * c.font_scale));
                                         });
                                     });
                                 }
                                 if let Some(secs) = entry.modified_unix_secs {
                                     ui.horizontal(|ui| {
                                         ui.add_space(8.0);
-                                        ui.label(RichText::new("Modified").color(lc).size(10.5));
+                                        ui.label(RichText::new("Modified").color(lc).size(10.5 * c.font_scale));
                                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new(format_modified(secs)).color(vc).size(10.5));
+                                            ui.label(RichText::new(format_modified(secs)).color(vc).size(10.5 * c.font_scale));
                                         });
                                     });
                                 }
                                 ui.add_space(6.0);
                                 let details = self.cached_info_details(&entry);
                                 egui::CollapsingHeader::new(
-                                    RichText::new("More Details").color(c.text_dim).size(10.5)
+                                    RichText::new("More Details").color(c.text_dim).size(10.5 * c.font_scale)
                                 )
                                 .default_open(false)
                                 .show(ui, |ui| {
                                     ui.horizontal(|ui| {
                                         ui.add_space(8.0);
-                                        ui.label(RichText::new("Read-only").color(lc).size(10.0));
+                                        ui.label(RichText::new("Read-only").color(lc).size(10.0 * c.font_scale));
                                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                             ui.add_space(8.0);
                                             ui.label(RichText::new(if details.readonly { "Yes" } else { "No" })
-                                                .color(vc).size(10.0));
+                                                .color(vc).size(10.0 * c.font_scale));
                                         });
                                     });
                                     if let Some(child_count) = details.child_count {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Items").color(lc).size(10.0));
+                                            ui.label(RichText::new("Items").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(child_count.to_string()).color(vc).size(10.0));
+                                                ui.label(RichText::new(child_count.to_string()).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     if let Some(ext) = details.extension.as_deref() {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Extension").color(lc).size(10.0));
+                                            ui.label(RichText::new("Extension").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(ext).color(vc).size(10.0));
+                                                ui.label(RichText::new(ext).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     if let Some(owner) = details.owner.as_deref() {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Owner").color(lc).size(10.0));
+                                            ui.label(RichText::new("Owner").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(owner).color(vc).size(10.0));
+                                                ui.label(RichText::new(owner).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     if let Some(group) = details.group.as_deref() {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Group").color(lc).size(10.0));
+                                            ui.label(RichText::new("Group").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(group).color(vc).size(10.0));
+                                                ui.label(RichText::new(group).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     if let Some(perms) = details.permissions.as_deref() {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Permissions").color(lc).size(10.0));
+                                            ui.label(RichText::new("Permissions").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(perms).color(vc).size(10.0));
+                                                ui.label(RichText::new(perms).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     if let Some(created) = details.created.as_deref() {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Created").color(lc).size(10.0));
+                                            ui.label(RichText::new("Created").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(created).color(vc).size(10.0));
+                                                ui.label(RichText::new(created).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     if let Some(accessed) = details.accessed.as_deref() {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Accessed").color(lc).size(10.0));
+                                            ui.label(RichText::new("Accessed").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(accessed).color(vc).size(10.0));
+                                                ui.label(RichText::new(accessed).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     if let Some(target) = details.symlink_target.as_deref() {
                                         ui.horizontal_wrapped(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Target").color(lc).size(10.0));
+                                            ui.label(RichText::new("Target").color(lc).size(10.0 * c.font_scale));
                                             ui.add_space(6.0);
-                                            ui.label(RichText::new(target).color(vc).size(10.0));
+                                            ui.label(RichText::new(target).color(vc).size(10.0 * c.font_scale));
                                         });
                                     }
                                 });
                                 egui::CollapsingHeader::new(
-                                    RichText::new("Advanced").color(c.text_dim).size(10.5)
+                                    RichText::new("Advanced").color(c.text_dim).size(10.5 * c.font_scale)
                                 )
                                 .default_open(false)
                                 .show(ui, |ui| {
                                     if let Some(inode) = details.inode {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Inode").color(lc).size(10.0));
+                                            ui.label(RichText::new("Inode").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(inode.to_string()).color(vc).size(10.0));
+                                                ui.label(RichText::new(inode.to_string()).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     if let Some(device) = details.device {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Device").color(lc).size(10.0));
+                                            ui.label(RichText::new("Device").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(device.to_string()).color(vc).size(10.0));
+                                                ui.label(RichText::new(device.to_string()).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     if let Some(links) = details.links {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Hard links").color(lc).size(10.0));
+                                            ui.label(RichText::new("Hard links").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(links.to_string()).color(vc).size(10.0));
+                                                ui.label(RichText::new(links.to_string()).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     if let Some(dimensions) = details.image_dimensions.as_deref() {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Dimensions").color(lc).size(10.0));
+                                            ui.label(RichText::new("Dimensions").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(dimensions).color(vc).size(10.0));
+                                                ui.label(RichText::new(dimensions).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     if let Some(fmt) = details.image_format.as_deref() {
                                         ui.horizontal(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Format").color(lc).size(10.0));
+                                            ui.label(RichText::new("Format").color(lc).size(10.0 * c.font_scale));
                                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                 ui.add_space(8.0);
-                                                ui.label(RichText::new(fmt).color(vc).size(10.0));
+                                                ui.label(RichText::new(fmt).color(vc).size(10.0 * c.font_scale));
                                             });
                                         });
                                     }
                                     ui.horizontal(|ui| {
                                         ui.add_space(8.0);
-                                        ui.label(RichText::new("SHA-256").color(lc).size(10.0));
+                                        ui.label(RichText::new("SHA-256").color(lc).size(10.0 * c.font_scale));
                                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                             ui.add_space(8.0);
                                             let inflight = self.info_panel_hash_inflight.as_ref() == Some(&entry.path);
                                             if let Some(hash) = self.info_panel_hashes.get(&entry.path) {
-                                                if ui.add(egui::Button::new("Copy").min_size(Vec2::new(48.0, 20.0))).clicked() {
+                                                if ui.add(egui::Button::new("Copy").min_size(Vec2::new(48.0, 20.0)).themed(&c)).clicked() {
                                                     ui.ctx().copy_text(hash.clone());
                                                 }
                                             } else if inflight {
-                                                ui.label(RichText::new("Computing…").color(vc).size(10.0));
+                                                ui.label(RichText::new("Computing…").color(vc).size(10.0 * c.font_scale));
                                             } else {
-                                                if ui.add(egui::Button::new("Compute").min_size(Vec2::new(62.0, 20.0))).clicked() {
+                                                if ui.add(egui::Button::new("Compute").min_size(Vec2::new(62.0, 20.0)).themed(&c)).clicked() {
                                                     self.request_info_hash(entry.path.clone());
                                                 }
                                             }
@@ -13748,15 +12282,15 @@ impl OttrinApp {
                                     if let Some(err) = self.info_panel_hash_errors.get(&entry.path) {
                                         ui.horizontal_wrapped(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new("Hash error").color(c.error).size(10.0));
+                                            ui.label(RichText::new("Hash error").color(c.error).size(10.0 * c.font_scale));
                                             ui.add_space(6.0);
-                                            ui.label(RichText::new(err).color(c.text_muted).size(10.0));
+                                            ui.label(RichText::new(err).color(c.text_muted).size(10.0 * c.font_scale));
                                         });
                                     }
                                     if let Some(hash) = self.info_panel_hashes.get(&entry.path) {
                                         ui.horizontal_wrapped(|ui| {
                                             ui.add_space(8.0);
-                                            ui.label(RichText::new(hash).color(vc).size(10.0));
+                                            ui.label(RichText::new(hash).color(vc).size(10.0 * c.font_scale));
                                         });
                                     }
                                 });
@@ -13766,14 +12300,14 @@ impl OttrinApp {
                                 ui.horizontal_wrapped(|ui| {
                                     ui.add_space(8.0);
                                     ui.label(RichText::new(entry.path.display().to_string())
-                                        .color(c.text_muted).size(9.5));
+                                        .color(c.text_muted).size(9.5 * c.font_scale));
                                 });
                             } else {
                                 ui.with_layout(Layout::top_down(Align::Center), |ui| {
                                     ui.add_space(32.0);
-                                    ui.label(RichText::new(MI_DESCRIPTION).size(30.0).color(c.text_muted));
+                                    ui.label(RichText::new(MI_DESCRIPTION).size(30.0 * c.font_scale).color(c.text_muted));
                                     ui.add_space(4.0);
-                                    ui.label(RichText::new("No selection").color(c.text_muted).size(11.0));
+                                    ui.label(RichText::new("No selection").color(c.text_muted).size(11.0 * c.font_scale));
                                 });
                             }
                         }
@@ -13793,12 +12327,12 @@ impl OttrinApp {
                                     Color32::from_rgba_unmultiplied(c.accent.r(), c.accent.g(), c.accent.b(), 34),
                                 )
                             } else {
-                                Stroke::new(1.0, mix_color(c.border, c.smart_panel_bg, 0.65))
+                                Stroke::new(1.0, c.border)
                             };
                             Frame::new()
                                 .fill(card_fill)
                                 .stroke(card_stroke)
-                                .corner_radius(6.0)
+                                .corner_radius(c.border_radius)
                                 .inner_margin(egui::Margin::symmetric(8, 8))
                                 .show(ui, |ui| {
                                     ui.set_width(ui.available_width());
@@ -13809,21 +12343,21 @@ impl OttrinApp {
                                     let folder_name = std::path::Path::new(&path_str)
                                         .file_name().and_then(|n| n.to_str()).unwrap_or(&path_str);
                                     ui.horizontal(|ui| {
-                                        ui.label(RichText::new(MI_MOVE_TO_INBOX).size(24.0).color(if target_set { c.accent } else { c.text_muted }));
+                                        ui.label(RichText::new(MI_MOVE_TO_INBOX).size(24.0 * c.font_scale).color(if target_set { c.accent } else { c.text_muted }));
                                         ui.vertical(|ui| {
                                             ui.add_space(2.0);
                                             ui.label(RichText::new(truncate_name(folder_name, 18))
-                                                .color(if target_set { c.text } else { c.text_muted }).size(12.0).strong());
+                                                .color(if target_set { c.text } else { c.text_muted }).size(12.0 * c.font_scale).strong());
                                             if target_set {
                                                 let parent = std::path::Path::new(&path_str)
                                                     .parent().map(|p| p.display().to_string())
                                                     .unwrap_or_default();
                                                 ui.label(RichText::new(truncate_name(&parent, 21))
-                                                    .color(c.text_muted).size(10.5))
+                                                    .color(c.text_muted).size(10.5 * c.font_scale))
                                                     .on_hover_text(&path_str);
                                             } else {
                                                 ui.label(RichText::new("Choose a folder to quickly move or copy files to.")
-                                                    .color(c.text_muted).size(10.5));
+                                                    .color(c.text_muted).size(10.5 * c.font_scale));
                                             }
                                         });
                                     });
@@ -13834,9 +12368,9 @@ impl OttrinApp {
                                         format!("{} Set Drop Folder…", MI_MOVE_TO_INBOX)
                                     };
                                     if ui.add(
-                                        egui::Button::new(RichText::new(btn_label).size(12.0).color(c.text))
+                                        egui::Button::new(RichText::new(btn_label).size(12.0 * c.font_scale))
                                             .min_size(Vec2::new(ui.available_width(), 28.0))
-                                            .corner_radius(4.0)
+                                            .themed(&c)
                                     ).clicked() {
                                         self.open_target_picker();
                                     }
@@ -13845,9 +12379,9 @@ impl OttrinApp {
                                         if ui.add(
                                             egui::Button::new(RichText::new(
                                                 format!("{} Clear Drop Folder", MI_CLEAR)
-                                            ).size(11.0).color(c.text_dim))
+                                            ).size(11.0 * c.font_scale))
                                             .min_size(Vec2::new(ui.available_width(), 24.0))
-                                            .corner_radius(4.0)
+                                            .themed(&c)
                                         ).clicked() {
                                             self.state.config.target.clear();
                                         }
@@ -13864,35 +12398,35 @@ impl OttrinApp {
                                 );
                                 Frame::new()
                                     .fill(picker_fill)
-                                    .stroke(Stroke::new(1.0, mix_color(c.border, c.smart_panel_bg, 0.7)))
-                                    .corner_radius(6.0)
+                                    .stroke(Stroke::new(1.0, c.border))
+                                    .corner_radius(c.border_radius)
                                     .inner_margin(egui::Margin::symmetric(8, 8))
                                     .show(ui, |ui| {
                                         ui.horizontal(|ui| {
-                                            ui.label(RichText::new(MI_FOLDER_OPEN).size(13.0).color(c.text_dim));
-                                            ui.label(RichText::new("Choose Drop Folder").color(c.text).size(11.5).strong());
+                                            ui.label(RichText::new(MI_FOLDER_OPEN).size(13.0 * c.font_scale).color(c.text_dim));
+                                            ui.label(RichText::new("Choose Drop Folder").color(c.text).size(11.5 * c.font_scale).strong());
                                         });
                                         ui.add_space(4.0);
                                         if let Some(dir) = self.target_dropdown.dir.clone() {
-                                            ui.label(RichText::new(dir.display().to_string()).color(c.text_dim).size(10.5));
+                                            ui.label(RichText::new(dir.display().to_string()).color(c.text_dim).size(10.5 * c.font_scale));
                                         }
                                         ui.add_space(6.0);
                                         ui.horizontal(|ui| {
-                                            if ui.add_sized([66.0, 24.0], egui::Button::new("Up")).clicked()
+                                            if ui.add_sized([66.0, 24.0], egui::Button::new("Up").themed(&c)).clicked()
                                                 && let Some(parent) = self.target_dropdown.dir.clone().and_then(|d| d.parent().map(Path::to_path_buf))
                                             {
                                                 self.enter_target_picker_dir(parent);
                                             }
-                                            if ui.add_sized([84.0, 24.0], egui::Button::new("Cancel")).clicked() {
+                                            if ui.add_sized([84.0, 24.0], egui::Button::new("Cancel").themed(&c)).clicked() {
                                                 self.target_dropdown.open = false;
                                             }
-                                            if ui.add_sized([84.0, 24.0], egui::Button::new("Set")).clicked() {
+                                            if ui.add_sized([84.0, 24.0], egui::Button::new("Set").themed(&c)).clicked() {
                                                 self.confirm_target_picker_current();
                                             }
                                         });
                                         ui.add_space(6.0);
                                         if let Some(err) = &self.target_dropdown.error {
-                                            ui.label(RichText::new(err).color(c.error).size(10.5));
+                                            ui.label(RichText::new(err).color(c.error).size(10.5 * c.font_scale));
                                         } else {
                                             ScrollArea::vertical().max_height(180.0).show(ui, |ui| {
                                                 let dirs = self.target_dropdown.entries.clone();
@@ -13900,11 +12434,11 @@ impl OttrinApp {
                                                     let row = ui.add(
                                                         egui::Button::new(
                                                             RichText::new(format!("{} {}", MI_FOLDER, truncate_name(&ent.name, 22)))
-                                                                .size(11.5)
+                                                                .size(11.5 * c.font_scale)
                                                                 .color(c.text_dim)
                                                         )
                                                         .frame(false)
-                                                        .min_size(Vec2::new(ui.available_width(), 24.0))
+                                                        .min_size(Vec2::new(ui.available_width(), 24.0)).themed(&c)
                                                     );
                                                     if row.hovered() {
                                                         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -13932,10 +12466,10 @@ impl OttrinApp {
                                 Frame::new()
                                     .fill(c.panel_raised)
                                     .stroke(Stroke::NONE)
-                                    .corner_radius(6.0)
+                                    .corner_radius(c.border_radius)
                                     .inner_margin(egui::Margin::symmetric(8, 8))
                                     .show(ui, |ui| {
-                                        ui.label(RichText::new("Pinned Drop Folders").color(c.text_muted).size(11.0).strong());
+                                        ui.label(RichText::new("Pinned Drop Folders").color(c.text_muted).size(11.0 * c.font_scale).strong());
                                         ui.add_space(6.0);
                                         for (idx, path) in pinned_paths.iter().enumerate() {
                                             let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("…");
@@ -13944,7 +12478,7 @@ impl OttrinApp {
                                             Frame::new()
                                                 .fill(row_fill)
                                                 .stroke(Stroke::NONE)
-                                                .corner_radius(4.0)
+                                                .corner_radius(c.border_radius)
                                                 .inner_margin(egui::Margin::symmetric(4, 4))
                                                 .show(ui, |ui| {
                                                     ui.horizontal(|ui| {
@@ -13955,10 +12489,10 @@ impl OttrinApp {
                                                         };
                                                         let resp = ui.add(
                                                             egui::Button::new(
-                                                                RichText::new(label).size(12.0).color(if is_current { c.accent } else { c.text })
+                                                                RichText::new(label).size(12.0 * c.font_scale).color(if is_current { c.accent } else { c.text })
                                                             )
                                                             .frame(false)
-                                                            .min_size(Vec2::new((ui.available_width() - 86.0).max(90.0), 24.0))
+                                                            .min_size(Vec2::new((ui.available_width() - 86.0).max(90.0), 24.0)).themed(&c)
                                                         );
                                                         if resp.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -13968,21 +12502,21 @@ impl OttrinApp {
                                                         }
                                                         resp.on_hover_text(path.display().to_string());
 
-                                                        let up = ui.add_sized([22.0, 22.0], egui::Button::new("↑"));
+                                                        let up = ui.add_sized([22.0, 22.0], egui::Button::new("↑").themed(&c));
                                                         if up.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                                         }
                                                         if up.clicked() {
                                                             move_pin_up = Some(idx);
                                                         }
-                                                        let down = ui.add_sized([22.0, 22.0], egui::Button::new("↓"));
+                                                        let down = ui.add_sized([22.0, 22.0], egui::Button::new("↓").themed(&c));
                                                         if down.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                                         }
                                                         if down.clicked() {
                                                             move_pin_down = Some(idx);
                                                         }
-                                                        let unpin = ui.add_sized([28.0, 22.0], egui::Button::new(MI_CLEAR));
+                                                        let unpin = ui.add_sized([28.0, 22.0], egui::Button::new(MI_CLEAR).themed(&c));
                                                         if unpin.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                                         }
@@ -14005,10 +12539,10 @@ impl OttrinApp {
                                 Frame::new()
                                     .fill(c.panel_raised)
                                     .stroke(Stroke::NONE)
-                                    .corner_radius(6.0)
+                                    .corner_radius(c.border_radius)
                                     .inner_margin(egui::Margin::symmetric(8, 8))
                                     .show(ui, |ui| {
-                                        ui.label(RichText::new("Recent Drop Folders").color(c.text_muted).size(11.0).strong());
+                                        ui.label(RichText::new("Recent Drop Folders").color(c.text_muted).size(11.0 * c.font_scale).strong());
                                         ui.add_space(6.0);
                                         for (idx, path) in recent_paths.iter().enumerate() {
                                             let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("…");
@@ -14017,17 +12551,17 @@ impl OttrinApp {
                                             Frame::new()
                                                 .fill(row_fill)
                                                 .stroke(Stroke::NONE)
-                                                .corner_radius(4.0)
+                                                .corner_radius(c.border_radius)
                                                 .inner_margin(egui::Margin::symmetric(4, 4))
                                                 .show(ui, |ui| {
                                                     ui.horizontal(|ui| {
                                                         let resp = ui.add(
                                                             egui::Button::new(
                                                                 RichText::new(format!("{} {}", if is_current { MI_CHECK } else { MI_FOLDER }, truncate_name(name, 16)))
-                                                                    .size(12.0).color(if is_current { c.accent } else { c.text })
+                                                                    .size(12.0 * c.font_scale).color(if is_current { c.accent } else { c.text })
                                                             )
                                                             .frame(false)
-                                                            .min_size(Vec2::new((ui.available_width() - 34.0).max(90.0), 24.0))
+                                                            .min_size(Vec2::new((ui.available_width() - 34.0).max(90.0), 24.0)).themed(&c)
                                                         );
                                                         if resp.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -14037,7 +12571,7 @@ impl OttrinApp {
                                                         }
                                                         resp.on_hover_text(path.display().to_string());
 
-                                                        let pin = ui.add_sized([28.0, 22.0], egui::Button::new(MI_BOOKMARK));
+                                                        let pin = ui.add_sized([28.0, 22.0], egui::Button::new(MI_BOOKMARK).themed(&c));
                                                         if pin.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                                         }
@@ -14083,7 +12617,7 @@ impl OttrinApp {
 
     fn render_status_bar(&mut self, ctx: &Context) {
         let c = self.colors;
-        let bottom_bar_bg = c.smart_panel_bg;
+        let bottom_bar_bg = c.statusbar_bg;
         let bottom_text = mix_color(c.text_muted, bottom_bar_bg, 0.38);
         let bottom_dim = mix_color(c.text_dim, bottom_bar_bg, 0.48);
         if let Some(st) = &self.privileged_status {
@@ -14102,14 +12636,14 @@ impl OttrinApp {
             self.status_message = None;
         }
         egui::TopBottomPanel::bottom("status_bar")
-            .exact_height(STATUS_BAR_HEIGHT)
+            .exact_height((STATUS_BAR_HEIGHT * c.font_scale).ceil())
             .frame(
                 Frame::new()
                     .fill(bottom_bar_bg)
                     .inner_margin(egui::Margin::symmetric(12, 0)),
             )
             .show(ctx, |ui| {
-                ui.set_height(STATUS_BAR_HEIGHT);
+                ui.set_height((STATUS_BAR_HEIGHT * c.font_scale).ceil());
                 ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                     // Command frame toggle — LEFT side (bar opens at the bottom-left)
                     let cf_color = if self.command_frame.visible {
@@ -14118,9 +12652,14 @@ impl OttrinApp {
                         bottom_text
                     };
                     let cf_resp = ui.add(
-                        egui::Button::new(RichText::new(MI_TERMINAL).size(16.0).color(cf_color))
-                            .frame(false)
-                            .min_size(Vec2::splat(24.0)),
+                        egui::Button::new(
+                            RichText::new(MI_TERMINAL)
+                                .size(16.0 * c.font_scale)
+                                .color(cf_color),
+                        )
+                        .frame(false)
+                        .min_size(Vec2::splat(24.0))
+                        .themed(&c),
                     );
                     if cf_resp.clicked() {
                         self.command_frame.visible = !self.command_frame.visible;
@@ -14149,13 +12688,17 @@ impl OttrinApp {
                     } else {
                         format!("{} items", count)
                     };
-                    ui.label(RichText::new(status).color(bottom_text).size(11.5));
+                    ui.label(
+                        RichText::new(status)
+                            .color(bottom_text)
+                            .size(11.5 * c.font_scale),
+                    );
                     if let Some(msg) = &self.status_message {
                         let col = if msg.ok { c.accent } else { c.error };
                         ui.label(
                             RichText::new(format!("· {}", msg.text))
                                 .color(col)
-                                .size(11.0),
+                                .size(11.0 * c.font_scale),
                         );
                     }
 
@@ -14170,9 +12713,12 @@ impl OttrinApp {
                                     PrivilegedUiKind::Error => (MI_LOCK, c.error),
                                 };
                                 let resp = ui.add(
-                                    egui::Button::new(RichText::new(icon).size(14.0).color(col))
-                                        .frame(false)
-                                        .min_size(Vec2::splat(22.0)),
+                                    egui::Button::new(
+                                        RichText::new(icon).size(14.0 * c.font_scale).color(col),
+                                    )
+                                    .frame(false)
+                                    .min_size(Vec2::splat(22.0))
+                                    .themed(&c),
                                 );
                                 if resp
                                     .on_hover_text(format!(
@@ -14199,9 +12745,12 @@ impl OttrinApp {
                                     }
                                 };
                                 let resp = ui.add(
-                                    egui::Button::new(RichText::new(icon).size(13.0).color(col))
-                                        .frame(false)
-                                        .min_size(Vec2::splat(22.0)),
+                                    egui::Button::new(
+                                        RichText::new(icon).size(13.0 * c.font_scale).color(col),
+                                    )
+                                    .frame(false)
+                                    .min_size(Vec2::splat(22.0))
+                                    .themed(&c),
                                 );
                                 if resp
                                     .on_hover_text(format!("{tip} — click to manage services"))
@@ -14218,9 +12767,14 @@ impl OttrinApp {
                             _ => bottom_text,
                         };
                         let s_resp = ui.add(
-                            egui::Button::new(RichText::new(MI_SEARCH).size(13.0).color(s_col))
-                                .frame(false)
-                                .min_size(Vec2::splat(22.0)),
+                            egui::Button::new(
+                                RichText::new(MI_SEARCH)
+                                    .size(13.0 * c.font_scale)
+                                    .color(s_col),
+                            )
+                            .frame(false)
+                            .min_size(Vec2::splat(22.0))
+                            .themed(&c),
                         );
                         if s_resp
                             .on_hover_text(format!(
@@ -14244,10 +12798,13 @@ impl OttrinApp {
                         };
                         let hid_resp = ui.add(
                             egui::Button::new(
-                                RichText::new(hidden_icon).size(16.0).color(hidden_color),
+                                RichText::new(hidden_icon)
+                                    .size(16.0 * c.font_scale)
+                                    .color(hidden_color),
                             )
                             .frame(false)
-                            .min_size(Vec2::splat(24.0)),
+                            .min_size(Vec2::splat(24.0))
+                            .themed(&c),
                         );
                         if hid_resp.clicked() {
                             self.state.config.show_hidden_files =
@@ -14376,7 +12933,7 @@ impl OttrinApp {
         ui.horizontal(|ui| {
             ui.add_space(10.0);
             if ui
-                .add_sized([86.0, 26.0], egui::Button::new("Refresh"))
+                .add_sized([86.0, 26.0], egui::Button::new("Refresh").themed(&c))
                 .clicked()
             {
                 self.refresh_trash_panel();
@@ -14392,7 +12949,8 @@ impl OttrinApp {
                             "Empty"
                         })
                         .color(c.error),
-                    ),
+                    )
+                    .themed(&c),
                 )
                 .on_hover_text("Permanently delete everything currently in Trash.")
                 .clicked()
@@ -14402,7 +12960,7 @@ impl OttrinApp {
         });
         ui.add_space(8.0);
         if let Some(err) = &self.trash_panel.error {
-            ui.label(RichText::new(err).color(c.error).size(11.0));
+            ui.label(RichText::new(err).color(c.error).size(11.0 * c.font_scale));
             return;
         }
         let count = self.trash_panel.items.len();
@@ -14441,7 +12999,7 @@ impl OttrinApp {
         ui.label(
             RichText::new(format!("{item_count}{size_summary}{loading_suffix}"))
                 .color(c.text_muted)
-                .size(11.0),
+                .size(11.0 * c.font_scale),
         );
         ui.add_space(8.0);
 
@@ -14454,7 +13012,7 @@ impl OttrinApp {
                     ui.label(
                         RichText::new("Loading Trash")
                             .color(c.text_muted)
-                            .size(12.0),
+                            .size(12.0 * c.font_scale),
                     );
                 });
                 return;
@@ -14462,11 +13020,15 @@ impl OttrinApp {
             if self.trash_panel.items.is_empty() {
                 ui.add_space(24.0);
                 ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                    ui.label(RichText::new(MI_DELETE).size(28.0).color(c.text_muted));
+                    ui.label(
+                        RichText::new(MI_DELETE)
+                            .size(28.0 * c.font_scale)
+                            .color(c.text_muted),
+                    );
                     ui.label(
                         RichText::new("Trash is empty")
                             .color(c.text_muted)
-                            .size(12.0),
+                            .size(12.0 * c.font_scale),
                     );
                 });
                 return;
@@ -14487,7 +13049,7 @@ impl OttrinApp {
                     } else {
                         Stroke::NONE
                     })
-                    .corner_radius(5.0)
+                    .corner_radius(c.border_radius)
                     .inner_margin(egui::Margin::symmetric(7, 6))
                     .show(ui, |ui| {
                         let resp = ui
@@ -14497,7 +13059,11 @@ impl OttrinApp {
                                     EntryKind::Symlink => MI_LINK,
                                     _ => MI_FILE,
                                 };
-                                ui.label(RichText::new(icon).size(14.0).color(c.text_muted));
+                                ui.label(
+                                    RichText::new(icon)
+                                        .size(14.0 * c.font_scale)
+                                        .color(c.text_muted),
+                                );
                                 ui.vertical(|ui| {
                                     let width = ui.available_width();
                                     let size_text = item
@@ -14509,7 +13075,7 @@ impl OttrinApp {
                                         ui.label(
                                             RichText::new(truncate_name(&item.name, 34))
                                                 .color(c.text)
-                                                .size(11.5),
+                                                .size(11.5 * c.font_scale),
                                         );
                                         ui.with_layout(
                                             Layout::right_to_left(Align::Center),
@@ -14517,7 +13083,7 @@ impl OttrinApp {
                                                 ui.label(
                                                     RichText::new(size_text)
                                                         .color(c.text_muted)
-                                                        .size(10.0),
+                                                        .size(10.0 * c.font_scale),
                                                 );
                                             },
                                         );
@@ -14530,7 +13096,7 @@ impl OttrinApp {
                                     ui.label(
                                         RichText::new(truncate_name(&meta, 46))
                                             .color(c.text_muted)
-                                            .size(9.8),
+                                            .size(9.8 * c.font_scale),
                                     );
                                 });
                             })
@@ -14555,37 +13121,40 @@ impl OttrinApp {
             Frame::new()
                 .fill(c.panel)
                 .stroke(Stroke::new(1.0, c.border))
-                .corner_radius(6.0)
+                .corner_radius(c.border_radius)
                 .inner_margin(egui::Margin::symmetric(10, 8))
                 .show(ui, |ui| {
                     ui.set_width(ui.available_width());
                     ui.label(
                         RichText::new(truncate_name(&item.name, 42))
                             .color(c.text)
-                            .size(12.0)
+                            .size(12.0 * c.font_scale)
                             .strong(),
                     );
                     ui.label(
                         RichText::new("Original path")
                             .color(c.text_muted)
-                            .size(10.0),
+                            .size(10.0 * c.font_scale),
                     );
                     ui.label(
                         RichText::new(item.original_path.display().to_string())
                             .color(c.text_dim)
-                            .size(10.0),
+                            .size(10.0 * c.font_scale),
                     );
                     if let Some(size) = item.size_bytes {
                         ui.label(
                             RichText::new(format!("Size: {}", format_size(size)))
                                 .color(c.text_muted)
-                                .size(10.0),
+                                .size(10.0 * c.font_scale),
                         );
                     }
                 });
             ui.add_space(8.0);
             if ui
-                .add_sized([ui.available_width(), 28.0], egui::Button::new("Restore"))
+                .add_sized(
+                    [ui.available_width(), 28.0],
+                    egui::Button::new("Restore").themed(&c),
+                )
                 .on_hover_text("Move this item back to its original path.")
                 .clicked()
             {
@@ -14622,7 +13191,8 @@ impl OttrinApp {
             if ui
                 .add_sized(
                     [ui.available_width(), 28.0],
-                    egui::Button::new(RichText::new("Delete Permanently").color(c.error)),
+                    egui::Button::new(RichText::new("Delete Permanently").color(c.error))
+                        .themed(&c),
                 )
                 .on_hover_text("Permanently delete this trashed item.")
                 .clicked()
@@ -14685,12 +13255,16 @@ impl OttrinApp {
             } else {
                 format!("{} recorded", self.operation_history.len())
             };
-            ui.label(RichText::new(summary).color(c.text_muted).size(11.0));
+            ui.label(
+                RichText::new(summary)
+                    .color(c.text_muted)
+                    .size(11.0 * c.font_scale),
+            );
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                 if ui
                     .add_enabled(
                         !self.operation_history.is_empty(),
-                        egui::Button::new("Clear"),
+                        egui::Button::new("Clear").themed(&c),
                     )
                     .on_hover_text("Clear this session's operation history.")
                     .clicked()
@@ -14711,7 +13285,7 @@ impl OttrinApp {
             ui.label(
                 RichText::new(format!("Retained Move status unavailable: {error}"))
                     .color(c.error)
-                    .size(10.0),
+                    .size(10.0 * c.font_scale),
             );
             ui.add_space(8.0);
         }
@@ -14722,18 +13296,22 @@ impl OttrinApp {
             for retained in &self.retained_move_activity {
                 Frame::new()
                     .fill(c.panel)
-                    .stroke(Stroke::new(1.0, mix_color(c.border, c.panel, 0.35)))
-                    .corner_radius(6.0)
+                    .stroke(Stroke::new(1.0, c.border))
+                    .corner_radius(c.border_radius)
                     .inner_margin(egui::Margin::symmetric(9, 8))
                     .show(ui, |ui| {
                         ui.set_width(ui.available_width());
                         ui.horizontal(|ui| {
-                            ui.label(RichText::new(MI_HISTORY).size(14.0).color(c.accent_dim));
+                            ui.label(
+                                RichText::new(MI_HISTORY)
+                                    .size(14.0 * c.font_scale)
+                                    .color(c.accent_dim),
+                            );
                             ui.vertical(|ui| {
                                 ui.label(
                                     RichText::new("Retained Move recovery")
                                         .color(c.text)
-                                        .size(12.0)
+                                        .size(12.0 * c.font_scale)
                                         .strong(),
                                 );
                                 let transaction_id = retained.transaction_id_hex();
@@ -14743,14 +13321,15 @@ impl OttrinApp {
                                         transaction_id, retained.phase
                                     ))
                                     .color(c.text_muted)
-                                    .size(10.0),
+                                    .size(10.0 * c.font_scale),
                                 );
                                 if retained.recovery_available {
                                     if ui
                                         .add_enabled(
                                             true,
                                             egui::Button::new("Recover now")
-                                                .min_size(Vec2::new(90.0, 0.0)),
+                                                .min_size(Vec2::new(90.0, 0.0))
+                                                .themed(&c),
                                         )
                                         .on_hover_text(
                                             "Recover this Move from pending destination state",
@@ -14767,7 +13346,7 @@ impl OttrinApp {
                                     ui.label(
                                         RichText::new("Not in recoverable state")
                                             .color(c.text_muted)
-                                            .size(9.0),
+                                            .size(9.0 * c.font_scale),
                                     );
                                 }
                             });
@@ -14786,11 +13365,15 @@ impl OttrinApp {
         if self.operation_history.is_empty() && self.retained_move_activity.is_empty() {
             ui.add_space(24.0);
             ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                ui.label(RichText::new(MI_HISTORY).size(28.0).color(c.text_muted));
+                ui.label(
+                    RichText::new(MI_HISTORY)
+                        .size(28.0 * c.font_scale)
+                        .color(c.text_muted),
+                );
                 ui.label(
                     RichText::new("No file activity yet")
                         .color(c.text_muted)
-                        .size(12.0),
+                        .size(12.0 * c.font_scale),
                 );
             });
             return;
@@ -14811,33 +13394,33 @@ impl OttrinApp {
                         if record.status == OperationStatus::Failed {
                             c.error
                         } else {
-                            mix_color(c.border, c.panel, 0.35)
+                            c.border
                         },
                     ))
-                    .corner_radius(6.0)
+                    .corner_radius(c.border_radius)
                     .inner_margin(egui::Margin::symmetric(9, 8))
                     .show(ui, |ui| {
                         ui.set_width(ui.available_width());
                         ui.horizontal(|ui| {
-                            ui.label(RichText::new(status_icon).size(14.0).color(status_color));
+                            ui.label(RichText::new(status_icon).size(14.0 * c.font_scale).color(status_color));
                             ui.vertical(|ui| {
                                 ui.label(
                                     RichText::new(&record.title)
                                         .color(c.text)
-                                        .size(12.0)
+                                        .size(12.0 * c.font_scale)
                                         .strong(),
                                 );
                                 ui.label(
-                                    RichText::new(&record.detail).color(c.text_muted).size(10.0),
+                                    RichText::new(&record.detail).color(c.text_muted).size(10.0 * c.font_scale),
                                 );
                             });
                             ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                                ui.label(RichText::new(status_text).color(status_color).size(10.0));
+                                ui.label(RichText::new(status_text).color(status_color).size(10.0 * c.font_scale));
                             });
                         });
                         if let Some(msg) = &record.message {
                             ui.add_space(4.0);
-                            ui.label(RichText::new(msg).color(c.error).size(10.0));
+                            ui.label(RichText::new(msg).color(c.error).size(10.0 * c.font_scale));
                         }
                         if path_move_undo_action_is_available(
                             record.status,
@@ -14887,8 +13470,7 @@ impl OttrinApp {
                                 ),
                             };
                             ui.add_space(4.0);
-                            if ui
-                                .button(button_label)
+                            if ui.add(egui::Button::new(button_label).themed(&c))
                                 .on_hover_text(hover_text)
                                 .clicked()
                             {
@@ -14961,12 +13543,12 @@ impl OttrinApp {
                                     ("Undo unavailable", c.error)
                                 }
                             };
-                            ui.label(RichText::new(label).color(color).size(10.0));
+                            ui.label(RichText::new(label).color(color).size(10.0 * c.font_scale));
                         } else if record.status == OperationStatus::Completed {
                             let (label, color, tip) =
                                 operation_recoverability_label(record.recoverability, c);
                             ui.add_space(4.0);
-                            ui.label(RichText::new(label).color(color).size(10.0))
+                            ui.label(RichText::new(label).color(color).size(10.0 * c.font_scale))
                                 .on_hover_text(tip);
                         }
                         ui.add_space(4.0);
@@ -14977,7 +13559,7 @@ impl OttrinApp {
                         ui.label(
                             RichText::new(format!("{} ago", format_duration_short(elapsed)))
                                 .color(c.text_muted)
-                                .size(9.5),
+                                .size(9.5 * c.font_scale),
                         );
                     });
                 ui.add_space(6.0);
@@ -15034,7 +13616,7 @@ impl OttrinApp {
         Frame::new()
             .fill(c.panel_raised)
             .stroke(Stroke::new(border_w, border_col))
-            .corner_radius(8.0)
+            .corner_radius(c.border_radius)
             .inner_margin(egui::Margin {
                 left: 10,
                 right: 8,
@@ -15048,7 +13630,11 @@ impl OttrinApp {
                     } else {
                         c.text_muted
                     };
-                    ui.label(RichText::new(MI_SEARCH).size(15.0).color(icon_col));
+                    ui.label(
+                        RichText::new(MI_SEARCH)
+                            .size(15.0 * c.font_scale)
+                            .color(icon_col),
+                    );
                     ui.add_space(6.0);
                     let resp = ui.add_sized(
                         [ui.available_width(), 20.0],
@@ -15056,7 +13642,8 @@ impl OttrinApp {
                             .id_source("search_input_field")
                             .frame(false)
                             .hint_text("Search files and folders…")
-                            .font(FontId::proportional(13.0)),
+                            .font(FontId::proportional(13.0 * c.font_scale))
+                            .themed(&c),
                     );
                     if self.search_ui.request_focus {
                         resp.request_focus();
@@ -15096,10 +13683,10 @@ impl OttrinApp {
                 };
                 let txt = if is_active { c.accent } else { c.text_muted };
                 let btn = ui.add(
-                    egui::Button::new(RichText::new(label).size(12.0).color(txt))
+                    egui::Button::new(RichText::new(label).size(12.0 * c.font_scale).color(txt))
                         .fill(fill)
                         .stroke(Stroke::NONE)
-                        .corner_radius(16.0),
+                        .themed(&c),
                 );
                 if btn.hovered() {
                     ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -15122,13 +13709,17 @@ impl OttrinApp {
                 let txt = if is_content { c.accent } else { c.text_muted };
                 let btn = ui
                     .add(
-                        egui::Button::new(RichText::new("Content").size(12.0).color(txt))
-                            .fill(fill)
-                            .stroke(Stroke::new(
-                                1.0,
-                                if is_content { c.accent } else { c.border },
-                            ))
-                            .corner_radius(16.0),
+                        egui::Button::new(
+                            RichText::new("Content")
+                                .size(12.0 * c.font_scale)
+                                .color(txt),
+                        )
+                        .fill(fill)
+                        .stroke(Stroke::new(
+                            1.0,
+                            if is_content { c.accent } else { c.border },
+                        ))
+                        .themed(&c),
                     )
                     .on_hover_text("Search inside file contents using ripgrep");
                 if btn.hovered() {
@@ -15144,8 +13735,12 @@ impl OttrinApp {
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                 ui.add_space(4.0);
                 let gear = ui.add(
-                    egui::Label::new(RichText::new(MI_SETTINGS).size(13.0).color(c.text_muted))
-                        .sense(Sense::click()),
+                    egui::Label::new(
+                        RichText::new(MI_SETTINGS)
+                            .size(13.0 * c.font_scale)
+                            .color(c.text_muted),
+                    )
+                    .sense(Sense::click()),
                 );
                 gear.clone().on_hover_text("Search settings");
                 if gear.hovered() {
@@ -15197,20 +13792,20 @@ impl OttrinApp {
                     ui.label(
                         RichText::new("Start typing to search")
                             .color(c.text)
-                            .size(14.0)
+                            .size(14.0 * c.font_scale)
                             .strong(),
                     );
                     ui.add_space(14.0);
                     ui.label(
                         RichText::new("Search across all indexed locations")
                             .color(c.text_muted)
-                            .size(11.5),
+                            .size(11.5 * c.font_scale),
                     );
                     ui.add_space(4.0);
                     ui.label(
                         RichText::new("Use multiple words to narrow results")
                             .color(c.text_muted)
-                            .size(11.5),
+                            .size(11.5 * c.font_scale),
                     );
                     // Indexing status near the bottom
                     ui.add_space(results_height * 0.16);
@@ -15221,9 +13816,9 @@ impl OttrinApp {
                                 ui.label(
                                     RichText::new("Loading saved index…")
                                         .color(c.text_muted)
-                                        .size(11.0),
+                                        .size(11.0 * c.font_scale),
                                 );
-                                ui.add(egui::Spinner::new().size(12.0).color(c.accent));
+                                ui.add(egui::Spinner::new().size(12.0 * c.font_scale).color(c.accent));
                             });
                         }
                         SearchIndexStatus::Indexing => {
@@ -15243,26 +13838,26 @@ impl OttrinApp {
                                 ui.label(
                                     RichText::new(format!("Indexing files… ({}%)", pct))
                                         .color(c.text_muted)
-                                        .size(11.0),
+                                        .size(11.0 * c.font_scale),
                                 )
                                 .on_hover_text(
                                     "Estimated index progress. Ottrin can search indexed files while the scan continues.",
                                 );
-                                ui.add(egui::Spinner::new().size(12.0).color(c.accent));
+                                ui.add(egui::Spinner::new().size(12.0 * c.font_scale).color(c.accent));
                             });
                         }
                         SearchIndexStatus::Ready => {
                             ui.label(
                                 RichText::new(format!("{} files indexed", diag.indexed_items))
                                     .color(c.text_muted)
-                                    .size(10.5),
+                                    .size(10.5 * c.font_scale),
                             );
                         }
                         SearchIndexStatus::Unavailable => {
                             ui.label(
                                 RichText::new("Search unavailable")
                                     .color(c.error)
-                                    .size(11.0),
+                                    .size(11.0 * c.font_scale),
                             );
                         }
                     }
@@ -15280,7 +13875,7 @@ impl OttrinApp {
                 } else {
                     format!("{n} results")
                 };
-                ui.label(RichText::new(count_label).color(c.text_muted).size(11.0));
+                ui.label(RichText::new(count_label).color(c.text_muted).size(11.0 * c.font_scale));
                 if matches!(diag.status, SearchIndexStatus::Indexing) {
                     ui.ctx().request_repaint();
                     let pct = if diag.total_roots > 1 {
@@ -15293,27 +13888,31 @@ impl OttrinApp {
                     ui.label(
                         RichText::new(format!("· indexing {}%", pct))
                             .color(c.accent)
-                            .size(10.5),
+                            .size(10.5 * c.font_scale),
                     )
                     .on_hover_text(
                         "Estimated index progress. Results may keep expanding until indexing finishes.",
                     );
-                    ui.add(egui::Spinner::new().size(10.0).color(c.accent));
+                    ui.add(egui::Spinner::new().size(10.0 * c.font_scale).color(c.accent));
                 } else if self.search_ui.search_inflight {
                     ui.ctx().request_repaint_after(Duration::from_millis(50));
                     ui.label(
                         RichText::new("· searching")
                             .color(c.text_muted)
-                            .size(10.5),
+                            .size(10.5 * c.font_scale),
                     );
-                    ui.add(egui::Spinner::new().size(10.0).color(c.text_muted));
+                    ui.add(egui::Spinner::new().size(10.0 * c.font_scale).color(c.text_muted));
                 }
             });
             if let Some(err) = &self.search_ui.last_error {
-                ui.label(RichText::new(err).color(c.error).size(10.5));
+                ui.label(RichText::new(err).color(c.error).size(10.5 * c.font_scale));
             }
             if let Some(warning) = &self.search_ui.last_warning {
-                ui.label(RichText::new(warning).color(c.text_muted).size(10.5));
+                ui.label(
+                    RichText::new(warning)
+                        .color(c.text_muted)
+                        .size(10.5 * c.font_scale),
+                );
             }
             ui.add_space(2.0);
         }
@@ -15427,7 +14026,7 @@ impl OttrinApp {
                                 } else {
                                     label.to_string()
                                 };
-                                let rich = RichText::new(text).size(10.5).color(if active {
+                                let rich = RichText::new(text).size(10.5 * c.font_scale).color(if active {
                                     c.text
                                 } else {
                                     c.text_muted
@@ -15511,7 +14110,7 @@ impl OttrinApp {
                                     ui.label(
                                         RichText::new("Visible columns")
                                             .color(c.text)
-                                            .size(11.5)
+                                            .size(11.5 * c.font_scale)
                                             .strong(),
                                     );
                                     ui.add_space(4.0);
@@ -15526,7 +14125,7 @@ impl OttrinApp {
                                             &mut visible,
                                             RichText::new(column_label)
                                                 .color(c.text_muted)
-                                                .size(11.5),
+                                                .size(11.5 * c.font_scale),
                                         );
                                         let resp = ui.add_enabled(idx != 0, checkbox);
                                         if idx == 0 {
@@ -15594,12 +14193,12 @@ impl OttrinApp {
                                     }
                                     ui.horizontal(|ui| {
                                         ui.label(
-                                            RichText::new(icon).size(11.5).color(style.icon_color),
+                                            RichText::new(icon).size(11.5 * c.font_scale).color(style.icon_color),
                                         );
                                         ui.vertical(|ui| {
                                             ui.label(
                                                 RichText::new(truncate_middle(&item.name, name_cap))
-                                                    .size(11.5)
+                                                    .size(11.5 * c.font_scale)
                                                     .color(style.text_color),
                                             )
                                             .on_hover_text(item.name.clone());
@@ -15609,7 +14208,7 @@ impl OttrinApp {
                                                     ((name_w - 16.0) / 5.5).max(10.0) as usize;
                                                 ui.label(
                                                     RichText::new(truncate_name(snip, snip_cap))
-                                                        .size(9.5)
+                                                        .size(9.5 * c.font_scale)
                                                         .color(c.text_muted)
                                                         .italics(),
                                                 )
@@ -15631,7 +14230,7 @@ impl OttrinApp {
                                     let full_path = item.parent_path.display().to_string();
                                     ui.label(
                                         RichText::new(truncate_middle(&full_path, folder_cap))
-                                            .size(10.5)
+                                            .size(10.5 * c.font_scale)
                                             .color(c.text_muted),
                                     )
                                     .on_hover_text(full_path);
@@ -15647,7 +14246,7 @@ impl OttrinApp {
                                         );
                                     }
                                     ui.label(
-                                        RichText::new(modified_text).size(10.5).color(c.text_muted),
+                                        RichText::new(modified_text).size(10.5 * c.font_scale).color(c.text_muted),
                                     );
                                 });
                             }
@@ -15662,7 +14261,7 @@ impl OttrinApp {
                                     }
                                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                         ui.label(
-                                            RichText::new(size_text).size(10.5).color(c.text_muted),
+                                            RichText::new(size_text).size(10.5 * c.font_scale).color(c.text_muted),
                                         );
                                     });
                                 });
@@ -15779,7 +14378,7 @@ impl OttrinApp {
 
                 Frame::new()
                     .fill(c.panel_raised)
-                    .corner_radius(6.0)
+                    .corner_radius(c.border_radius)
                     .inner_margin(egui::Margin::same(8))
                     .show(ui, |ui| {
                         ui.set_min_height(preview_panel_h - 18.0);
@@ -15800,18 +14399,21 @@ impl OttrinApp {
                             );
                             ui.label(
                                 RichText::new(material_icon(style.icon))
-                                    .size(14.0)
+                                    .size(14.0 * c.font_scale)
                                     .color(style.icon_color),
                             );
                             ui.add_space(4.0);
                             ui.vertical(|ui| {
                                 ui.label(
-                                    RichText::new(&item.name).size(12.0).color(c.text).strong(),
+                                    RichText::new(&item.name)
+                                        .size(12.0 * c.font_scale)
+                                        .color(c.text)
+                                        .strong(),
                                 );
                                 if let Some(sz) = item.size_bytes {
                                     ui.label(
                                         RichText::new(format_size(sz))
-                                            .size(10.5)
+                                            .size(10.5 * c.font_scale)
                                             .color(c.text_muted),
                                     );
                                 }
@@ -15847,7 +14449,7 @@ impl OttrinApp {
                                                     ui.spinner();
                                                     ui.label(
                                                         RichText::new("Loading preview…")
-                                                            .size(10.5)
+                                                            .size(10.5 * c.font_scale)
                                                             .color(c.text_muted),
                                                     );
                                                 });
@@ -15855,7 +14457,7 @@ impl OttrinApp {
                                             VisualPreviewFallback::Metadata(metadata) => {
                                                 ui.label(
                                                     RichText::new(metadata)
-                                                        .size(10.5)
+                                                        .size(10.5 * c.font_scale)
                                                         .color(c.text_muted),
                                                 );
                                             }
@@ -15870,9 +14472,11 @@ impl OttrinApp {
                                             .show(ui, |ui| {
                                                 ui.label(
                                                     RichText::new(snippet)
-                                                        .size(10.5)
+                                                        .size(10.5 * c.font_scale)
                                                         .color(c.text_muted)
-                                                        .font(FontId::monospace(10.5)),
+                                                        .font(FontId::monospace(
+                                                            10.5 * c.font_scale,
+                                                        )),
                                                 );
                                             });
                                     }
@@ -15913,15 +14517,16 @@ impl OttrinApp {
             .show(ctx, |ui| {
                 // Error or informational message
                 if let Some(err) = &self.command_frame.error.clone() {
-                    ui.label(RichText::new(err).color(c.error).size(11.5));
+                    ui.label(RichText::new(err).color(c.error).size(11.5 * c.font_scale));
                     if let Some(retry) = self.pending_privileged_retry.clone() {
                         ui.add_space(4.0);
                         if ui
                             .add(
                                 egui::Button::new(
-                                    RichText::new("Retry As Administrator…").size(11.5),
+                                    RichText::new("Retry As Administrator…")
+                                        .size(11.5 * c.font_scale),
                                 )
-                                .corner_radius(5.0),
+                                .themed(&c),
                             )
                             .clicked()
                         {
@@ -15941,7 +14546,7 @@ impl OttrinApp {
                         }
                     }
                 } else if let Some(msg) = &self.command_frame.message.clone() {
-                    ui.label(RichText::new(msg).color(c.accent).size(11.5));
+                    ui.label(RichText::new(msg).color(c.accent).size(11.5 * c.font_scale));
                 }
 
                 // Completions hint (shown after Tab press)
@@ -15957,23 +14562,24 @@ impl OttrinApp {
                     ui.label(
                         RichText::new(format!("Tab>  {}", hint))
                             .color(c.text_muted)
-                            .size(11.0),
+                            .size(11.0 * c.font_scale),
                     );
                 }
 
                 // Input line
                 ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                    ui.label(RichText::new(">").color(c.accent).size(13.0));
+                    ui.label(RichText::new(">").color(c.accent).size(13.0 * c.font_scale));
                     ui.add_space(4.0);
 
                     let resp = ui.add(
                         egui::TextEdit::singleline(&mut self.command_frame.input)
                             .id(cmd_input_id)
-                            .font(FontId::monospace(13.0))
+                            .font(FontId::monospace(13.0 * c.font_scale))
                             .text_color(c.text)
                             .frame(false)
                             .desired_width(ui.available_width())
-                            .hint_text("type a command — or 'help' for a list"),
+                            .hint_text("type a command — or 'help' for a list")
+                            .themed(&c),
                     );
 
                     if self.command_frame.request_focus {
@@ -16145,7 +14751,7 @@ impl OttrinApp {
                 && let Some(destination) =
                     folder_context_creation_target(&path, kind, entry.symlink_target_is_dir)
             {
-                ui.menu_button(format!("{MI_CREATE_FOLDER}  New"), |ui| {
+                themed_menu_button(ui, format!("{MI_CREATE_FOLDER}  New"), c, |ui| {
                     if menu_item(ui, MI_CREATE_FOLDER, "Folder", &c).clicked() {
                         self.open_creation_dialog(
                             CreationKind::Folder,
@@ -16232,7 +14838,7 @@ impl OttrinApp {
             ui.separator();
 
             if !target_missing && !same_as_target_set {
-                ui.menu_button(format!("{MI_MOVE_TO_INBOX}  Drop Folder"), |ui| {
+                themed_menu_button(ui, format!("{MI_MOVE_TO_INBOX}  Drop Folder"), c, |ui| {
                     let copy_target_btn = ui
                         .add_enabled(
                             !target_missing && !same_as_target_set,
@@ -16240,11 +14846,12 @@ impl OttrinApp {
                                 RichText::new(format!(
                                     "{MI_CONTENT_COPY}  Copy {menu_target} to Drop Folder"
                                 ))
-                                .size(12.5)
+                                .size(12.5 * c.font_scale)
                                 .color(c.text_muted),
                             )
                             .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0)),
+                            .min_size(Vec2::new(188.0, 26.0))
+                            .themed(&c),
                         )
                         .on_hover_text(if target_missing {
                             "No drop folder set"
@@ -16271,11 +14878,12 @@ impl OttrinApp {
                                 RichText::new(format!(
                                     "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to Drop Folder"
                                 ))
-                                .size(12.5)
+                                .size(12.5 * c.font_scale)
                                 .color(c.text_muted),
                             )
                             .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0)),
+                            .min_size(Vec2::new(188.0, 26.0))
+                            .themed(&c),
                         )
                         .on_hover_text(if target_missing {
                             "No drop folder set"
@@ -16299,7 +14907,7 @@ impl OttrinApp {
             }
 
             if !same_as_current_set {
-                ui.menu_button(format!("{MI_FOLDER}  Current Folder"), |ui| {
+                themed_menu_button(ui, format!("{MI_FOLDER}  Current Folder"), c, |ui| {
                     let copy_cur_btn = ui
                         .add_enabled(
                             !same_as_current_set,
@@ -16307,11 +14915,12 @@ impl OttrinApp {
                                 RichText::new(format!(
                                     "{MI_CONTENT_COPY}  Copy {menu_target} to Current Folder"
                                 ))
-                                .size(12.5)
+                                .size(12.5 * c.font_scale)
                                 .color(c.text_muted),
                             )
                             .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0)),
+                            .min_size(Vec2::new(188.0, 26.0))
+                            .themed(&c),
                         )
                         .on_hover_text(if same_as_current_set {
                             "Already in destination"
@@ -16333,11 +14942,12 @@ impl OttrinApp {
                                 RichText::new(format!(
                                     "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to Current Folder"
                                 ))
-                                .size(12.5)
+                                .size(12.5 * c.font_scale)
                                 .color(c.text_muted),
                             )
                             .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0)),
+                            .min_size(Vec2::new(188.0, 26.0))
+                            .themed(&c),
                         )
                         .on_hover_text(if same_as_current_set {
                             "Already in destination"
@@ -16356,7 +14966,7 @@ impl OttrinApp {
             }
 
             if tandem_target_dir.is_some() && !same_as_tandem_set {
-                ui.menu_button(format!("{MI_VIEW_COLUMN}  Other Pane"), |ui| {
+                themed_menu_button(ui, format!("{MI_VIEW_COLUMN}  Other Pane"), c, |ui| {
                     let tandem_label = "Other Pane";
                     let copy_tandem_btn = ui
                         .add_enabled(
@@ -16365,11 +14975,12 @@ impl OttrinApp {
                                 RichText::new(format!(
                                     "{MI_CONTENT_COPY}  Copy {menu_target} to {tandem_label}"
                                 ))
-                                .size(12.5)
+                                .size(12.5 * c.font_scale)
                                 .color(c.text_muted),
                             )
                             .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0)),
+                            .min_size(Vec2::new(188.0, 26.0))
+                            .themed(&c),
                         )
                         .on_hover_text(if same_as_tandem_set {
                             "Already in destination"
@@ -16394,11 +15005,12 @@ impl OttrinApp {
                                 RichText::new(format!(
                                     "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to {tandem_label}"
                                 ))
-                                .size(12.5)
+                                .size(12.5 * c.font_scale)
                                 .color(c.text_muted),
                             )
                             .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0)),
+                            .min_size(Vec2::new(188.0, 26.0))
+                            .themed(&c),
                         )
                         .on_hover_text(if same_as_tandem_set {
                             "Already in destination"
@@ -16469,15 +15081,26 @@ impl OttrinApp {
         let target = dialog.target.clone();
         let choices = dialog.choices.clone();
         let mut close = false;
-        egui::Window::new("Open With")
+        egui::Window::new("open_with_dialog")
+            .title_bar(false)
             .collapsible(false)
             .resizable(false)
             .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
             .show(ctx, |ui| {
+                ui.label(
+                    RichText::new("Open With")
+                        .color(self.colors.heading)
+                        .size(18.0 * self.colors.font_scale)
+                        .strong(),
+                );
+                ui.add_space(6.0);
                 ui.label("Choose an application for this file:");
                 ui.add_space(6.0);
                 for choice in &choices {
-                    if ui.button(choice.name()).clicked() {
+                    if ui
+                        .add(egui::Button::new(choice.name()).themed(&self.colors))
+                        .clicked()
+                    {
                         match self
                             .platform
                             .open_with_discovered_application(&target, choice)
@@ -16497,11 +15120,17 @@ impl OttrinApp {
                     }
                 }
                 ui.separator();
-                if ui.button("Choose application…").clicked() {
+                if ui
+                    .add(egui::Button::new("Choose application…").themed(&self.colors))
+                    .clicked()
+                {
                     close = true;
                     self.open_with_manual_application(&target);
                 }
-                if ui.button("Cancel").clicked() {
+                if ui
+                    .add(egui::Button::new("Cancel").themed(&self.colors))
+                    .clicked()
+                {
                     close = true;
                 }
             });
@@ -16615,7 +15244,11 @@ impl OttrinApp {
             .unwrap_or(ViewMode::Miller);
 
         ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-            ui.label(RichText::new("Sort").size(11.5).color(bottom_text));
+            ui.label(
+                RichText::new("Sort")
+                    .size(11.5 * c.font_scale)
+                    .color(bottom_text),
+            );
             ui.add_space(6.0);
 
             let mut sort_by = current_sort.by;
@@ -16628,7 +15261,7 @@ impl OttrinApp {
                         SortBy::Modified => "Modified",
                     })
                     .color(bottom_text)
-                    .size(11.5),
+                    .size(11.5 * c.font_scale),
                 )
                 .width(90.0)
                 .show_ui(ui, |ui| {
@@ -16680,8 +15313,9 @@ impl OttrinApp {
             if ui
                 .add_enabled(
                     sort_supports_direction,
-                    egui::Button::new(RichText::new(direction_label).size(11.5).color(bottom_text))
-                        .min_size(Vec2::new(72.0, 20.0)),
+                    egui::Button::new(RichText::new(direction_label).size(11.5 * c.font_scale))
+                        .min_size(Vec2::new(72.0, 20.0))
+                        .themed(&c),
                 )
                 .on_hover_text(if sort_supports_direction {
                     match sort_by {
@@ -16760,9 +15394,14 @@ impl OttrinApp {
             if ui
                 .add_enabled(
                     can_back,
-                    egui::Button::new(RichText::new(MI_ARROW_BACK).size(20.0).color(back_col))
-                        .frame(false)
-                        .min_size(Vec2::splat(30.0)),
+                    egui::Button::new(
+                        RichText::new(MI_ARROW_BACK)
+                            .size(20.0 * c.font_scale)
+                            .color(back_col),
+                    )
+                    .frame(false)
+                    .min_size(Vec2::splat(30.0))
+                    .themed(&c),
                 )
                 .on_hover_text(if can_back {
                     "Back to previous folder in this pane (Alt+Left when active)"
@@ -16776,9 +15415,14 @@ impl OttrinApp {
             if ui
                 .add_enabled(
                     can_fwd,
-                    egui::Button::new(RichText::new(MI_ARROW_FORWARD).size(20.0).color(fwd_col))
-                        .frame(false)
-                        .min_size(Vec2::splat(30.0)),
+                    egui::Button::new(
+                        RichText::new(MI_ARROW_FORWARD)
+                            .size(20.0 * c.font_scale)
+                            .color(fwd_col),
+                    )
+                    .frame(false)
+                    .min_size(Vec2::splat(30.0))
+                    .themed(&c),
                 )
                 .on_hover_text(if can_fwd {
                     "Forward to next folder in this pane (Alt+Right when active)"
@@ -16792,9 +15436,14 @@ impl OttrinApp {
             if ui
                 .add_enabled(
                     can_up,
-                    egui::Button::new(RichText::new(MI_ARROW_UP).size(20.0).color(up_col))
-                        .frame(false)
-                        .min_size(Vec2::splat(30.0)),
+                    egui::Button::new(
+                        RichText::new(MI_ARROW_UP)
+                            .size(20.0 * c.font_scale)
+                            .color(up_col),
+                    )
+                    .frame(false)
+                    .min_size(Vec2::splat(30.0))
+                    .themed(&c),
                 )
                 .on_hover_text("Go to parent folder (Alt+Up when active)")
                 .clicked()
@@ -16815,9 +15464,14 @@ impl OttrinApp {
             };
             let view_btn = ui
                 .add(
-                    egui::Button::new(RichText::new(view_icon).size(20.0).color(c.text_muted))
-                        .frame(false)
-                        .min_size(Vec2::splat(30.0)),
+                    egui::Button::new(
+                        RichText::new(view_icon)
+                            .size(20.0 * c.font_scale)
+                            .color(c.text_muted),
+                    )
+                    .frame(false)
+                    .min_size(Vec2::splat(30.0))
+                    .themed(&c),
                 )
                 .on_hover_text(view_tip);
             view_btn.widget_info(|| {
@@ -16841,11 +15495,12 @@ impl OttrinApp {
                 .add(
                     egui::Button::new(
                         RichText::new(MI_DASHBOARD_CUSTOMIZE)
-                            .size(18.0)
+                            .size(18.0 * c.font_scale)
                             .color(c.text_muted),
                     )
                     .frame(false)
-                    .min_size(Vec2::splat(30.0)),
+                    .min_size(Vec2::splat(30.0))
+                    .themed(&c),
                 )
                 .on_hover_text("View Options");
             view_options_btn
@@ -16866,13 +15521,14 @@ impl OttrinApp {
                 ui.add_space(2.0);
                 let pin = ui
                     .add(
-                        egui::Button::new(RichText::new(MI_LOCK).size(18.0).color(if pinned {
-                            c.accent
-                        } else {
-                            c.text_muted
-                        }))
+                        egui::Button::new(
+                            RichText::new(MI_LOCK)
+                                .size(18.0 * c.font_scale)
+                                .color(if pinned { c.accent } else { c.text_muted }),
+                        )
                         .frame(false)
-                        .min_size(Vec2::splat(30.0)),
+                        .min_size(Vec2::splat(30.0))
+                        .themed(&c),
                     )
                     .on_hover_text(if pinned {
                         "Unpin this side"
@@ -16897,7 +15553,7 @@ impl OttrinApp {
                 ui.add_space((ui.available_height() * 0.28).max(18.0));
                 ui.label(
                     RichText::new(format!("{MI_CLEAR} Location unavailable"))
-                        .size(22.0)
+                        .size(22.0 * c.font_scale)
                         .color(c.error),
                 );
                 ui.add_space(8.0);
@@ -16909,7 +15565,7 @@ impl OttrinApp {
                     .color(c.text),
                 );
                 ui.add_space(12.0);
-                if ui.button("Go to Home").clicked() {
+                if ui.add(egui::Button::new("Go to Home").themed(&c)).clicked() {
                     self.navigate_tab_to(tab_id, default_home_dir());
                 }
                 ui.label(
@@ -16962,7 +15618,7 @@ impl OttrinApp {
         self.smart_panel_rect = None;
 
         egui::TopBottomPanel::bottom("view_controls_bar")
-            .exact_height(VIEW_CONTROLS_BAR_HEIGHT)
+            .exact_height((VIEW_CONTROLS_BAR_HEIGHT * c.font_scale).ceil())
             .frame(
                 Frame::new()
                     .fill(bottom_bar_bg)
@@ -16974,7 +15630,7 @@ impl OttrinApp {
 
         let mut file_rect: Option<Rect> = None;
         let pane = egui::CentralPanel::default()
-            .frame(Frame::new().fill(single_file_pane_background(&c)))
+            .frame(Frame::new().fill(c.bg))
             .show(ctx, |ui| {
                 let avail = ui.available_rect_before_wrap();
                 if avail.width() <= 48.0 || avail.height() <= 48.0 {
@@ -17000,8 +15656,8 @@ impl OttrinApp {
         bottom_text: Color32,
     ) {
         let c = self.colors;
-        let header_h = TANDEM_PANE_HEADER_HEIGHT;
-        let footer_h = VIEW_CONTROLS_BAR_HEIGHT;
+        let header_h = (TANDEM_PANE_HEADER_HEIGHT * c.font_scale).ceil();
+        let footer_h = (VIEW_CONTROLS_BAR_HEIGHT * c.font_scale).ceil();
         let header_rect =
             Rect::from_min_size(side_rect.min, Vec2::new(side_rect.width(), header_h));
         let footer_rect = Rect::from_min_size(
@@ -17017,7 +15673,7 @@ impl OttrinApp {
         ui.painter().rect_stroke(
             side_rect,
             0.0,
-            Stroke::new(HAIRLINE, mix_color(c.border, c.bg, 0.55)),
+            Stroke::new(HAIRLINE, c.border),
             egui::StrokeKind::Inside,
         );
 
@@ -17162,9 +15818,14 @@ impl OttrinApp {
             };
             let icon_col = if has_custom { c.accent } else { control_text };
             let resp = ui.add(
-                egui::Button::new(RichText::new(icon).size(14.0).color(icon_col))
-                    .frame(false)
-                    .min_size(Vec2::new(20.0, 20.0)),
+                egui::Button::new(
+                    RichText::new(icon)
+                        .size(14.0 * c.font_scale)
+                        .color(icon_col),
+                )
+                .frame(false)
+                .min_size(Vec2::new(20.0, 20.0))
+                .themed(&c),
             );
             if resp.clicked() {
                 self.state.config.miller_column_width_mode = match mode {
@@ -17182,7 +15843,7 @@ impl OttrinApp {
         }
         ui.label(
             RichText::new(format!("{:.0}%", scale * 100.0))
-                .size(11.0)
+                .size(11.0 * c.font_scale)
                 .color(control_text),
         );
         ui.add_space(8.0);
@@ -17190,11 +15851,12 @@ impl OttrinApp {
             .add(
                 egui::Button::new(
                     RichText::new(MI_SETTINGS_BACKUP_RESTORE)
-                        .size(15.0)
+                        .size(15.0 * c.font_scale)
                         .color(control_text),
                 )
                 .frame(false)
-                .min_size(Vec2::new(20.0, 20.0)),
+                .min_size(Vec2::new(20.0, 20.0))
+                .themed(&c),
             )
             .on_hover_text("Reset current view size")
             .clicked()
@@ -17210,7 +15872,7 @@ impl OttrinApp {
         ui.painter().rect_stroke(
             track_rect,
             9.0,
-            Stroke::new(1.0, mix_color(c.border, track_fill, 0.55)),
+            Stroke::new(1.0, c.border),
             egui::StrokeKind::Inside,
         );
         let t = ((scale - 0.75) / (1.85 - 0.75)).clamp(0.0, 1.0);
@@ -17410,7 +16072,7 @@ impl OttrinApp {
                                                 ui.label(
                                                     RichText::new("Empty folder")
                                                         .color(c.text_muted)
-                                                        .size(12.0),
+                                                        .size(12.0 * c.font_scale),
                                                 );
                                             });
                                         }
@@ -17541,7 +16203,9 @@ impl OttrinApp {
                                         );
                                         if i >= 400 {
                                             ui.label(
-                                                RichText::new("…").color(c.text_muted).size(11.0),
+                                                RichText::new("…")
+                                                    .color(c.text_muted)
+                                                    .size(11.0 * c.font_scale),
                                             );
                                             break;
                                         }
@@ -17797,15 +16461,14 @@ impl OttrinApp {
                             render_visual_sizing_controls(ui, preview.kind, &mut visual_fit, &mut visual_fit_width, &mut visual_zoom, c);
                         }
                         if preview.kind == PreviewKind::Text || preview.document.is_some() || preview.spreadsheet.is_some() {
-                            if ui.small_button("− text").clicked() { flow_text_scale = (flow_text_scale / 1.15).clamp(0.7, 2.0); }
-                            ui.label(RichText::new(format!("Text {}%", (flow_text_scale * 100.0).round() as u32)).color(c.text_dim).size(10.5));
-                            if ui.small_button("+ text").clicked() { flow_text_scale = (flow_text_scale * 1.15).clamp(0.7, 2.0); }
+                            if ui.add(egui::Button::new("− text").small().themed(&c)).clicked() { flow_text_scale = (flow_text_scale / 1.15).clamp(0.7, 2.0); }
+                            ui.label(RichText::new(format!("Text {}%", (flow_text_scale * 100.0).round() as u32)).color(c.text_dim).size(10.5 * c.font_scale));
+                            if ui.add(egui::Button::new("+ text").small().themed(&c)).clicked() { flow_text_scale = (flow_text_scale * 1.15).clamp(0.7, 2.0); }
                         }
                         if preview.spreadsheet.is_some() {
                             ui.checkbox(&mut spreadsheet_overview, "Overview").on_hover_text("Fit the entire worksheet width; ordinary view keeps readable text and scrolls horizontally when needed.");
                         }
-                        if ui
-                            .small_button("Expand preview")
+                        if ui.add(egui::Button::new("Expand preview").small().themed(&c))
                             .on_hover_text("Open this preview in Quick Inspector.")
                             .clicked()
                         {
@@ -17886,7 +16549,7 @@ impl OttrinApp {
                         });
                     } else if let Some(mut snippet) = text_snippet {
                         if let Some(meta_icon) = metadata_icon {
-                            ui.label(RichText::new(meta_icon).size(46.0).color(icon_color));
+                            ui.label(RichText::new(meta_icon).size(46.0 * c.font_scale).color(icon_color));
                             ui.add_space(8.0);
                         }
                         let text_w = (width - pad * 2.0).max(120.0);
@@ -17894,13 +16557,13 @@ impl OttrinApp {
                         ui.add_sized(
                             Vec2::new(text_w, text_h),
                             egui::TextEdit::multiline(&mut snippet)
-                                .font(FontId::monospace(11.0))
+                                .font(FontId::monospace(11.0 * c.font_scale))
                                 .desired_rows(12)
                                 .interactive(false),
                         );
                     } else {
                         ui.add_space((preview_h * 0.3).max(16.0));
-                        ui.label(RichText::new(icon).size(52.0).color(icon_color));
+                        ui.label(RichText::new(icon).size(52.0 * c.font_scale).color(icon_color));
                     }
                     if specialized_preview_body_action(&preview).is_some() {
                         ui.add_space(8.0);
@@ -17923,7 +16586,7 @@ impl OttrinApp {
                 ui.painter().hline(
                     info_rect.x_range(),
                     info_rect.min.y,
-                    Stroke::new(1.0, mix_color(c.border, c.bg, 0.5)),
+                    Stroke::new(1.0, c.border),
                 );
 
                 // Place the info panel at the bottom
@@ -17948,7 +16611,7 @@ impl OttrinApp {
                         egui::pos2(header_rect.min.x + 10.0, header_rect.center().y),
                         egui::Align2::LEFT_CENTER,
                         arrow,
-                        FontId::proportional(12.0),
+                        FontId::proportional(12.0 * c.font_scale),
                         c.text_muted,
                     );
                     // Header label
@@ -17956,7 +16619,7 @@ impl OttrinApp {
                         egui::pos2(header_rect.min.x + 26.0, header_rect.center().y),
                         egui::Align2::LEFT_CENTER,
                         &header_text,
-                        FontId::proportional(11.0),
+                        FontId::proportional(11.0 * c.font_scale),
                         c.text,
                     );
 
@@ -17984,16 +16647,16 @@ impl OttrinApp {
                                 ui.set_max_width(info_w);
 
                                 // File type
-                                ui.label(RichText::new(&type_desc).color(lc).size(10.0));
+                                ui.label(RichText::new(&type_desc).color(lc).size(10.0 * c.font_scale));
                                 ui.add_space(6.0);
 
                                 // Metadata rows helper — inline "Label: value"
                                 let meta_row = |ui: &mut egui::Ui, label: &str, value: &str| {
                                     ui.horizontal(|ui| {
                                         ui.label(
-                                            RichText::new(format!("{label}:")).color(lc).size(10.0),
+                                            RichText::new(format!("{label}:")).color(lc).size(10.0 * c.font_scale),
                                         );
-                                        ui.label(RichText::new(value).color(vc).size(10.0));
+                                        ui.label(RichText::new(value).color(vc).size(10.0 * c.font_scale));
                                     });
                                 };
 
@@ -18008,12 +16671,12 @@ impl OttrinApp {
                                         });
                                         let display = &units[idx % units.len()];
                                         ui.horizontal(|ui| {
-                                            ui.label(RichText::new("Size:").color(lc).size(10.0));
+                                            ui.label(RichText::new("Size:").color(lc).size(10.0 * c.font_scale));
                                             let resp = ui.add(
                                                 egui::Label::new(
                                                     RichText::new(display)
                                                         .color(c.accent)
-                                                        .size(10.0)
+                                                        .size(10.0 * c.font_scale)
                                                         .underline(),
                                                 )
                                                 .sense(Sense::click()),
@@ -18052,7 +16715,7 @@ impl OttrinApp {
                                 if ui
                                     .add(
                                         egui::Label::new(
-                                            RichText::new(dtoggle).color(c.accent).size(10.0),
+                                            RichText::new(dtoggle).color(c.accent).size(10.0 * c.font_scale),
                                         )
                                         .sense(Sense::click()),
                                     )
@@ -18260,12 +16923,12 @@ impl OttrinApp {
         }
 
         // Column headers (click to sort)
-        let header_h = (26.0 * scale.clamp(0.92, 1.22)).round();
-        let row_h = (28.0 * scale.clamp(0.92, 1.28)).round();
+        let header_h = (26.0 * scale.clamp(0.92, 1.22) * c.font_scale).round();
+        let row_h = (28.0 * scale.clamp(0.92, 1.28) * c.font_scale).round();
         let icon_size = (16.0 * scale.sqrt()).max(14.0);
-        let name_size = (13.0 * scale.sqrt()).max(11.0);
-        let meta_size = (12.0 * scale.sqrt()).max(10.0);
-        let header_size = (11.5 * scale.sqrt()).max(10.2);
+        let name_size = (13.0 * scale.sqrt()).max(11.0) * c.font_scale;
+        let meta_size = (12.0 * scale.sqrt()).max(10.0) * c.font_scale;
+        let header_size = (11.5 * scale.sqrt()).max(10.2) * c.font_scale;
         let header_rect =
             Rect::from_min_size(ui.cursor().min, Vec2::new(ui.available_width(), header_h));
         let header_resp = ui.allocate_rect(header_rect, Sense::click());
@@ -18274,7 +16937,7 @@ impl OttrinApp {
             ui.set_min_width(180.0);
             ui.label(
                 RichText::new("Visible columns")
-                    .size(12.0)
+                    .size(12.0 * c.font_scale)
                     .color(c.text_dim),
             );
             ui.add(egui::Separator::default().horizontal().spacing(4.0));
@@ -18700,8 +17363,8 @@ impl OttrinApp {
         let scale = self.view_scale_for(ViewMode::Grid);
         // Shared view scale drives grid density too.
         let icon_px = (48.0 * scale).round();
-        let label_sz = (11.0 * scale.sqrt()).max(9.0);
-        let label_chars = ((item_chars_for_scale(scale)) as usize).max(6);
+        let label_sz = (11.0 * scale.sqrt()).max(9.0) * c.font_scale;
+        let label_chars = ((item_chars_for_scale(scale) / c.font_scale) as usize).max(6);
         // Cell width = icon + padding; ensure wide enough for truncated label
         let cell_inner = (icon_px * 1.18).max(84.0);
         let padding = (10.0 * scale).round().max(8.0);
@@ -18937,14 +17600,20 @@ impl OttrinApp {
 
             ui.horizontal(|ui| {
                 if ui
-                    .add_enabled(playback.controls_enabled(), egui::Button::new("Play"))
+                    .add_enabled(
+                        playback.controls_enabled(),
+                        egui::Button::new("Play").themed(&self.colors),
+                    )
                     .clicked()
                     && let Some(session) = playback.session.as_ref()
                 {
                     session.play();
                 }
                 if ui
-                    .add_enabled(playback.controls_enabled(), egui::Button::new("Pause"))
+                    .add_enabled(
+                        playback.controls_enabled(),
+                        egui::Button::new("Pause").themed(&self.colors),
+                    )
                     .clicked()
                     && let Some(session) = playback.session.as_ref()
                 {
@@ -18960,12 +17629,16 @@ impl OttrinApp {
                 PreviewMediaPlaybackStatus::Unavailable(message)
                 | PreviewMediaPlaybackStatus::Failed(message) => message.clone(),
             };
-            ui.label(RichText::new(status).color(self.colors.text_dim).size(11.5));
+            ui.label(
+                RichText::new(status)
+                    .color(self.colors.text_dim)
+                    .size(11.5 * self.colors.font_scale),
+            );
             ui.add_space(8.0);
             ui.label(
                 RichText::new(compact_preview_metadata(&preview.title, &preview.body))
                     .color(self.colors.text_dim)
-                    .size(11.0),
+                    .size(11.0 * self.colors.font_scale),
             );
         });
     }
@@ -19010,6 +17683,8 @@ impl OttrinApp {
             ))
             .with_inner_size(remembered_size)
             .with_min_inner_size([420.0, 320.0])
+            .with_decorations(false)
+            .with_transparent(!self.graphics_runtime.is_windows)
             .with_resizable(true);
         let vp_id = Self::quick_inspector_viewport_id();
 
@@ -19110,15 +17785,17 @@ impl OttrinApp {
             .frame(
                 Frame::new()
                     .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, c.border))
                     .inner_margin(egui::Margin::same(12)),
             )
             .show(inspector_ctx, |ui| {
+                render_custom_titlebar(ui, inspector_ctx, c, c.titlebar_bg,
+                    &format!("Quick Inspector — {name}"), true, &mut close_requested, |_| {});
+
                 ui.with_layout(Layout::top_down(Align::Min), |ui| {
                     ui.horizontal(|ui| {
                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                            ui.menu_button(
-                                RichText::new(MI_MORE_VERT).color(c.text).size(18.0),
+                            themed_menu_button(ui,
+                                RichText::new(MI_MORE_VERT).color(c.text).size(18.0 * c.font_scale), c,
                                 |ui| {
                                     if self.quick_inspector_only
                                         && menu_item(ui, MI_FOLDER_OPEN, "Show in Ottrin", &c)
@@ -19222,7 +17899,7 @@ impl OttrinApp {
                                 let save_label =
                                     administrator_surface_label("Save", administrator);
                                 if ui
-                                    .add_enabled(save_enabled, egui::Button::new(save_label))
+                                    .add_enabled(save_enabled, egui::Button::new(save_label).themed(&c))
                                     .on_hover_text(administrator_surface_label(
                                         "Atomically save the edited text (Ctrl+S).",
                                         administrator,
@@ -19275,7 +17952,7 @@ impl OttrinApp {
                                 if ui
                                     .add_enabled(
                                         page_index > 0,
-                                        egui::Button::new("Previous"),
+                                        egui::Button::new("Previous").themed(&c),
                                     )
                                     .on_hover_text("Show the previous PDF page.")
                                     .clicked()
@@ -19297,7 +17974,7 @@ impl OttrinApp {
                                 if ui
                                     .add_enabled(
                                         page_index + 1 < page_count,
-                                        egui::Button::new("Next"),
+                                        egui::Button::new("Next").themed(&c),
                                     )
                                     .on_hover_text("Show the next PDF page.")
                                     .clicked()
@@ -19315,9 +17992,9 @@ impl OttrinApp {
                                     render_visual_sizing_controls(ui, preview.kind, &mut self.preview.visual_fit, &mut self.preview.visual_fit_width, &mut self.preview.visual_zoom, c);
                                 }
                                 if preview.kind == PreviewKind::Text || preview.document.is_some() || preview.spreadsheet.is_some() {
-                                    if ui.small_button("− text").clicked() { self.preview.flow_text_scale = (self.preview.flow_text_scale.clamp(0.7, 2.0) / 1.15).clamp(0.7, 2.0); }
-                                    ui.label(RichText::new(format!("Text {}%", (self.preview.flow_text_scale.clamp(0.7, 2.0) * 100.0).round() as u32)).color(c.text_dim).size(10.5));
-                                    if ui.small_button("+ text").clicked() { self.preview.flow_text_scale = (self.preview.flow_text_scale.clamp(0.7, 2.0) * 1.15).clamp(0.7, 2.0); }
+                                    if ui.add(egui::Button::new("− text").small().themed(&c)).clicked() { self.preview.flow_text_scale = (self.preview.flow_text_scale.clamp(0.7, 2.0) / 1.15).clamp(0.7, 2.0); }
+                                    ui.label(RichText::new(format!("Text {}%", (self.preview.flow_text_scale.clamp(0.7, 2.0) * 100.0).round() as u32)).color(c.text_dim).size(10.5 * c.font_scale));
+                                    if ui.add(egui::Button::new("+ text").small().themed(&c)).clicked() { self.preview.flow_text_scale = (self.preview.flow_text_scale.clamp(0.7, 2.0) * 1.15).clamp(0.7, 2.0); }
                                 }
                                 if preview.spreadsheet.is_some() {
                                     ui.checkbox(&mut self.preview.spreadsheet_overview, "Overview").on_hover_text("Fit the entire worksheet width; ordinary view retains readable text and horizontal scrolling.");
@@ -19331,15 +18008,15 @@ impl OttrinApp {
                         ui.label(RichText::new("Save needs attention").strong().color(c.error));
                         ui.label(error.to_string());
                         if let TextEditError::RecoveryConflict { .. } = error
-                            && ui.button("Copy recovery details").clicked()
+                            && ui.add(egui::Button::new("Copy recovery details").themed(&c)).clicked()
                         {
                             ui.ctx().copy_text(error.to_string());
                         }
                         ui.horizontal(|ui| {
-                            if ui.button("Copy my edits").clicked() {
+                            if ui.add(egui::Button::new("Copy my edits").themed(&c)).clicked() {
                                 ui.ctx().copy_text(editor.buffer.clone());
                             }
-                            if ui.button("Reload from disk…").clicked() {
+                            if ui.add(egui::Button::new("Reload from disk…").themed(&c)).clicked() {
                                 self.preview.text_edit_discard_confirmation =
                                     Some(TextEditDiscardAction::Reload);
                             }
@@ -19405,44 +18082,37 @@ impl OttrinApp {
                                             ));
                                             let format = ui
                                                 .horizontal_wrapped(|ui| {
-                                                    if ui
-                                                        .button(RichText::new("B").strong())
+                                                    if ui.add(egui::Button::new(RichText::new("B").strong()).themed(&c))
                                                         .on_hover_text("Bold")
                                                         .clicked()
                                                     {
                                                         Some(("**", false))
-                                                    } else if ui
-                                                        .button(RichText::new("I").italics())
+                                                    } else if ui.add(egui::Button::new(RichText::new("I").italics()).themed(&c))
                                                         .on_hover_text("Italic")
                                                         .clicked()
                                                     {
                                                         Some(("_", false))
-                                                    } else if ui
-                                                        .button("<code>")
+                                                    } else if ui.add(egui::Button::new("<code>").themed(&c))
                                                         .on_hover_text("Inline code")
                                                         .clicked()
                                                     {
                                                         Some(("`", false))
-                                                    } else if ui
-                                                        .button("H1")
+                                                    } else if ui.add(egui::Button::new("H1").themed(&c))
                                                         .on_hover_text("Heading 1")
                                                         .clicked()
                                                     {
                                                         Some(("# ", true))
-                                                    } else if ui
-                                                        .button("• List")
+                                                    } else if ui.add(egui::Button::new("• List").themed(&c))
                                                         .on_hover_text("Bullet list")
                                                         .clicked()
                                                     {
                                                         Some(("- ", true))
-                                                    } else if ui
-                                                        .button("☐ Task")
+                                                    } else if ui.add(egui::Button::new("☐ Task").themed(&c))
                                                         .on_hover_text("Task list")
                                                         .clicked()
                                                     {
                                                         Some(("- [ ] ", true))
-                                                    } else if ui
-                                                        .button("❯ Quote")
+                                                    } else if ui.add(egui::Button::new("❯ Quote").themed(&c))
                                                         .on_hover_text("Block quote")
                                                         .clicked()
                                                     {
@@ -19573,7 +18243,7 @@ impl OttrinApp {
                                                 ui.label(
                                                     RichText::new("Loading full resolution…")
                                                         .color(c.text_dim)
-                                                        .size(11.0),
+                                                        .size(11.0 * c.font_scale),
                                                 );
                                             });
                                         }
@@ -19583,7 +18253,7 @@ impl OttrinApp {
                                             ui.label(
                                                 RichText::new("Loading preview…")
                                                     .color(c.text_dim)
-                                                    .size(11.0),
+                                                    .size(11.0 * c.font_scale),
                                             );
                                         });
                                     } else {
@@ -19640,7 +18310,7 @@ impl OttrinApp {
                                                 &preview.body,
                                             ))
                                             .color(c.text_dim)
-                                            .size(11.0),
+                                            .size(11.0 * c.font_scale),
                                         );
                                     }
                                 });
@@ -19689,7 +18359,7 @@ impl OttrinApp {
                                                 ui.label(
                                                     RichText::new("Rendering Office preview…")
                                                         .color(c.text_dim)
-                                                        .size(11.0),
+                                                        .size(11.0 * c.font_scale),
                                                 );
                                             });
                                         }
@@ -19698,7 +18368,7 @@ impl OttrinApp {
                                             ui.label(
                                                 RichText::new(&rendered.label)
                                                     .color(c.text_dim)
-                                                    .size(11.0),
+                                                    .size(11.0 * c.font_scale),
                                             );
                                         }
                                     });
@@ -19871,16 +18541,16 @@ impl OttrinApp {
             let mut discard_changes = false;
             let response = egui::Modal::new(egui::Id::new("text_edit_discard"))
                 .show(inspector_ctx, |ui| {
-                    ui.heading("Discard unsaved text changes?");
+                    ui.heading(RichText::new("Discard unsaved text changes?").color(c.heading));
                     ui.label(match action {
                         TextEditDiscardAction::Close => "Closing the Quick Inspector will discard these unsaved edits.",
                         TextEditDiscardAction::Reload => "Reloading keeps the file on disk and replaces your unsaved editor buffer. Copy your edits first if you need them.",
                     });
                     ui.horizontal(|ui| {
-                        if ui.button("Keep editing").clicked() {
+                        if ui.add(egui::Button::new("Keep editing").themed(&c)).clicked() {
                             self.preview.text_edit_discard_confirmation = None;
                         }
-                        if ui.button("Discard changes").clicked() {
+                        if ui.add(egui::Button::new("Discard changes").themed(&c)).clicked() {
                             discard_changes = true;
                         }
                     });
@@ -19898,6 +18568,8 @@ impl OttrinApp {
                 }
             }
         }
+        self.handle_viewport_resize(inspector_ctx);
+        self.paint_viewport_frame(inspector_ctx);
         });
 
         if close_requested {
@@ -19908,154 +18580,6 @@ impl OttrinApp {
 
     fn quick_inspector_viewport_id() -> egui::ViewportId {
         egui::ViewportId::from_hash_of("ottrin-quick-inspector")
-    }
-
-    fn render_properties_popup(&mut self, ctx: &Context) {
-        if !self.properties.visible {
-            return;
-        }
-        let path = match self.properties.path.clone() {
-            Some(p) => p,
-            None => return,
-        };
-        let c = self.colors;
-        let name = path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("—")
-            .to_string();
-        let is_dir = path.is_dir();
-
-        egui::Window::new("properties_popup")
-            .title_bar(false)
-            .resizable(false)
-            .collapsible(false)
-            .default_width(320.0)
-            .frame(
-                Frame::window(&ctx.style())
-                    .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, c.border))
-                    .corner_radius(10.0),
-            )
-            .show(ctx, |ui| {
-                // Header
-                ui.horizontal(|ui| {
-                    let sem = semantic_for_path(&path);
-                    let style = style_for_semantic(
-                        &sem,
-                        EntryVisualState {
-                            selected: true,
-                            focused: true,
-                            hovered: false,
-                            opened: is_dir,
-                            symlink_dir: matches!(sem.category, FileCategory::Directory)
-                                && path.is_symlink(),
-                        },
-                        &c,
-                        &semantic_palette(&self.state.config, &c),
-                        self.state.config.theme_preset,
-                        self.state.config.colorize_file_types,
-                        self.state.config.colorize_folder_labels,
-                    );
-                    let icon = material_icon(style.icon);
-                    let icon_col = style.icon_color;
-                    ui.label(RichText::new(icon).size(18.0).color(icon_col));
-                    ui.add_space(4.0);
-                    ui.label(
-                        RichText::new("Properties")
-                            .color(c.text)
-                            .size(13.0)
-                            .strong(),
-                    );
-                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                        if ui
-                            .add(
-                                egui::Label::new(
-                                    RichText::new(MI_CLOSE).color(c.text_muted).size(16.0),
-                                )
-                                .sense(Sense::click()),
-                            )
-                            .clicked()
-                        {
-                            self.properties.visible = false;
-                        }
-                    });
-                });
-                ui.add(egui::Separator::default().horizontal().spacing(4.0));
-                ui.add_space(4.0);
-
-                // Metadata table
-                let lc = c.text_muted;
-                let vc = c.text_dim;
-
-                ui.horizontal(|ui| {
-                    ui.label(RichText::new("Name").color(lc).size(11.5));
-                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                        ui.label(RichText::new(&name).color(vc).size(11.5));
-                    });
-                });
-                if let Ok(meta) = std::fs::metadata(&path) {
-                    ui.horizontal(|ui| {
-                        ui.label(RichText::new("Type").color(lc).size(11.5));
-                        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                            ui.label(
-                                RichText::new(if meta.is_dir() { "Folder" } else { "File" })
-                                    .color(vc)
-                                    .size(11.5),
-                            );
-                        });
-                    });
-                    if meta.is_file() {
-                        ui.horizontal(|ui| {
-                            ui.label(RichText::new("Size").color(lc).size(11.5));
-                            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                ui.label(
-                                    RichText::new(format_size(meta.len())).color(vc).size(11.5),
-                                );
-                            });
-                        });
-                    }
-                    if let Ok(modified) = meta.modified() {
-                        use std::time::UNIX_EPOCH;
-                        if let Ok(dur) = modified.duration_since(UNIX_EPOCH) {
-                            ui.horizontal(|ui| {
-                                ui.label(RichText::new("Modified").color(lc).size(11.5));
-                                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                    ui.label(
-                                        RichText::new(format_modified(dur.as_secs()))
-                                            .color(vc)
-                                            .size(11.5),
-                                    );
-                                });
-                            });
-                        }
-                    }
-                    #[cfg(unix)]
-                    {
-                        use std::os::unix::fs::PermissionsExt;
-                        let mode = meta.permissions().mode() & 0o777;
-                        ui.horizontal(|ui| {
-                            ui.label(RichText::new("Permissions").color(lc).size(11.5));
-                            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                ui.label(RichText::new(format!("{:o}", mode)).color(vc).size(11.5));
-                            });
-                        });
-                    }
-                }
-                ui.add_space(4.0);
-                ui.add(egui::Separator::default().horizontal().spacing(4.0));
-                ui.add_space(2.0);
-                // Full path (word-wrapped)
-                ui.label(RichText::new("Path").color(lc).size(10.5));
-                ui.horizontal_wrapped(|ui| {
-                    ui.label(
-                        RichText::new(path.display().to_string())
-                            .color(vc)
-                            .size(10.5),
-                    );
-                });
-                ui.add_space(4.0);
-            });
     }
 
     fn render_creation_modal(&mut self, ctx: &Context) {
@@ -20095,31 +18619,44 @@ impl OttrinApp {
             .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
             .show(ctx, |ui| {
                 Frame::new()
-                    .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, mix_color(c.border, c.text_dim, 0.35)))
+                    .fill(c.panel)
+                    .stroke(Stroke::new(c.window_border_width, c.window_border))
                     .shadow(Shadow {
                         offset: [0, 10],
                         blur: 28,
                         spread: 0,
                         color: Color32::from_rgba_unmultiplied(0, 0, 0, 120),
                     })
-                    .corner_radius(8.0)
+                    .corner_radius(c.app_radius)
                     .inner_margin(egui::Margin::symmetric(18, 16))
                     .show(ui, |ui| {
                         ui.set_width(creation_modal_width(viewport.width()));
                         ui.horizontal(|ui| {
-                            ui.label(RichText::new(icon).size(22.0).color(c.accent));
+                            ui.label(
+                                RichText::new(icon)
+                                    .size(22.0 * c.font_scale)
+                                    .color(c.accent),
+                            );
                             ui.add_space(8.0);
                             ui.vertical(|ui| {
-                                ui.label(RichText::new(title).color(c.text).size(15.0).strong());
-                                ui.label(RichText::new(subtitle).color(c.text_muted).size(10.8));
+                                ui.label(
+                                    RichText::new(title)
+                                        .color(c.heading)
+                                        .size(15.0 * c.font_scale)
+                                        .strong(),
+                                );
+                                ui.label(
+                                    RichText::new(subtitle)
+                                        .color(c.text_muted)
+                                        .size(10.8 * c.font_scale),
+                                );
                             });
                         });
                         ui.add_space(12.0);
                         ui.label(
                             RichText::new(format!("Location: {}", pending.parent.display()))
                                 .color(c.text_dim)
-                                .size(10.5),
+                                .size(10.5 * c.font_scale),
                         );
                         ui.add_space(6.0);
                         let response = ui.add_sized(
@@ -20127,8 +18664,9 @@ impl OttrinApp {
                             egui::TextEdit::singleline(&mut pending.name_input)
                                 .id(egui::Id::new("creation_name_input"))
                                 .desired_width(ui.available_width())
-                                .font(FontId::proportional(13.0))
-                                .text_color(c.text),
+                                .font(FontId::proportional(13.0 * c.font_scale))
+                                .text_color(c.text)
+                                .themed(&c),
                         );
                         if pending.request_focus {
                             response.request_focus();
@@ -20136,11 +18674,15 @@ impl OttrinApp {
                         }
                         if let Some(error) = &pending.error {
                             ui.add_space(6.0);
-                            ui.label(RichText::new(error).color(c.error).size(10.8));
+                            ui.label(
+                                RichText::new(error)
+                                    .color(c.error)
+                                    .size(10.8 * c.font_scale),
+                            );
                         }
                         ui.add_space(14.0);
                         ui.horizontal(|ui| {
-                            if ui.button("Cancel").clicked() {
+                            if ui.add(egui::Button::new("Cancel").themed(&c)).clicked() {
                                 cancel = true;
                             }
                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
@@ -20151,7 +18693,8 @@ impl OttrinApp {
                                             creation_modal_action_size(),
                                             egui::Button::new(creation_action_label(
                                                 action, enabled, &c,
-                                            )),
+                                            ))
+                                            .themed(&c),
                                         )
                                     })
                                     .inner
@@ -20225,27 +18768,36 @@ impl OttrinApp {
             .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
             .show(ctx, |ui| {
                 Frame::new()
-                    .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, mix_color(c.border, c.text_dim, 0.35)))
+                    .fill(c.panel)
+                    .stroke(Stroke::new(c.window_border_width, c.window_border))
                     .shadow(Shadow {
                         offset: [0, 10],
                         blur: 28,
                         spread: 0,
                         color: Color32::from_rgba_unmultiplied(0, 0, 0, 120),
                     })
-                    .corner_radius(8.0)
+                    .corner_radius(c.app_radius)
                     .inner_margin(egui::Margin::symmetric(18, 16))
                     .show(ui, |ui| {
                         ui.set_width(viewport.width().clamp(300.0, 460.0));
                         ui.horizontal(|ui| {
-                            ui.label(RichText::new(MI_EDIT).size(22.0).color(c.accent));
+                            ui.label(
+                                RichText::new(MI_EDIT)
+                                    .size(22.0 * c.font_scale)
+                                    .color(c.accent),
+                            );
                             ui.add_space(8.0);
                             ui.vertical(|ui| {
-                                ui.label(RichText::new("Rename").color(c.text).size(15.0).strong());
+                                ui.label(
+                                    RichText::new("Rename")
+                                        .color(c.heading)
+                                        .size(15.0 * c.font_scale)
+                                        .strong(),
+                                );
                                 ui.label(
                                     RichText::new("Enter a new name for this item")
                                         .color(c.text_muted)
-                                        .size(10.8),
+                                        .size(10.8 * c.font_scale),
                                 );
                             });
                         });
@@ -20255,8 +18807,9 @@ impl OttrinApp {
                             egui::TextEdit::singleline(&mut pending.name_input)
                                 .id(input_id)
                                 .desired_width(ui.available_width())
-                                .font(FontId::proportional(13.0))
-                                .text_color(c.text),
+                                .font(FontId::proportional(13.0 * c.font_scale))
+                                .text_color(c.text)
+                                .themed(&c),
                         );
                         if pending.request_focus {
                             response.request_focus();
@@ -20278,17 +18831,17 @@ impl OttrinApp {
                         }
                         if let Some(err) = &error {
                             ui.add_space(6.0);
-                            ui.label(RichText::new(err).color(c.error).size(10.8));
+                            ui.label(RichText::new(err).color(c.error).size(10.8 * c.font_scale));
                         }
                         ui.add_space(14.0);
                         ui.horizontal(|ui| {
-                            if ui.button("Cancel").clicked() {
+                            if ui.add(egui::Button::new("Cancel").themed(&c)).clicked() {
                                 cancel = true;
                             }
                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                 let enabled = error.is_none() && pending.name_input != original;
                                 if ui
-                                    .add_enabled(enabled, egui::Button::new("Rename"))
+                                    .add_enabled(enabled, egui::Button::new("Rename").themed(&c))
                                     .clicked()
                                 {
                                     submit = true;
@@ -20365,9 +18918,9 @@ impl OttrinApp {
             .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
             .show(ctx, |ui| {
                 Frame::new()
-                    .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, c.border))
-                    .corner_radius(8.0)
+                    .fill(c.panel)
+                    .stroke(Stroke::new(c.window_border_width, c.window_border))
+                    .corner_radius(c.app_radius)
                     .inner_margin(egui::Margin::symmetric(18, 16))
                     .show(ui, |ui| {
                         ui.set_width(420.0);
@@ -20376,19 +18929,24 @@ impl OttrinApp {
                                 ui.allocate_exact_size(Vec2::splat(34.0), Sense::hover()).0;
                             ui.painter().rect_filled(
                                 icon_rect,
-                                6.0,
-                                Color32::from_rgba_unmultiplied(220, 80, 95, 32),
+                                c.border_radius,
+                                c.error.gamma_multiply(0.14),
                             );
                             ui.painter().text(
                                 icon_rect.center(),
                                 Align2::CENTER_CENTER,
                                 MI_DELETE,
-                                FontId::proportional(19.0),
+                                FontId::proportional(19.0 * c.font_scale),
                                 c.error,
                             );
                             ui.add_space(8.0);
                             ui.vertical(|ui| {
-                                ui.label(RichText::new(title).color(c.text).size(15.0).strong());
+                                ui.label(
+                                    RichText::new(title)
+                                        .color(c.heading)
+                                        .size(15.0 * c.font_scale)
+                                        .strong(),
+                                );
                                 ui.label(
                                     RichText::new(if target_count == 1 {
                                         "Choose what to do with this item"
@@ -20396,19 +18954,23 @@ impl OttrinApp {
                                         "Choose what to do with these items"
                                     })
                                     .color(c.text_muted)
-                                    .size(10.8),
+                                    .size(10.8 * c.font_scale),
                                 );
                             });
                         });
                         ui.add_space(12.0);
                         Frame::new()
                             .fill(c.panel)
-                            .stroke(Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.3)))
-                            .corner_radius(6.0)
+                            .stroke(Stroke::new(1.0, c.border))
+                            .corner_radius(c.border_radius)
                             .inner_margin(egui::Margin::symmetric(10, 7))
                             .show(ui, |ui| {
                                 ui.set_width(ui.available_width());
-                                ui.label(RichText::new(target_line).color(c.text).size(12.2));
+                                ui.label(
+                                    RichText::new(target_line)
+                                        .color(c.text)
+                                        .size(12.2 * c.font_scale),
+                                );
                             });
                         ui.add_space(8.0);
                         ui.label(
@@ -20420,7 +18982,7 @@ impl OttrinApp {
                                 },
                             )
                             .color(c.text_muted)
-                            .size(11.0),
+                            .size(11.0 * c.font_scale),
                         );
                         ui.add_space(12.0);
                         for choice in [
@@ -20463,17 +19025,17 @@ impl OttrinApp {
             .backdrop_color(Color32::from_rgba_unmultiplied(0, 0, 0, 82))
             .frame(
                 Frame::new()
-                    .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, c.border))
-                    .corner_radius(8.0)
+                    .fill(c.panel)
+                    .stroke(Stroke::new(c.window_border_width, c.window_border))
+                    .corner_radius(c.app_radius)
                     .inner_margin(egui::Margin::symmetric(18, 16)),
             )
             .show(ctx, |ui| {
                 ui.set_width(420.0);
                 ui.label(
                     RichText::new("A destination item already exists")
-                        .color(c.text)
-                        .size(15.0)
+                        .color(c.heading)
+                        .size(15.0 * c.font_scale)
                         .strong(),
                 );
                 ui.label(
@@ -20483,20 +19045,26 @@ impl OttrinApp {
                         destination.display()
                     ))
                     .color(c.text_muted)
-                    .size(11.0),
+                    .size(11.0 * c.font_scale),
                 );
                 ui.add_space(12.0);
-                if ui.button("Replace existing item").clicked() {
+                if ui
+                    .add(egui::Button::new("Replace existing item").themed(&c))
+                    .clicked()
+                {
                     choice = Some(Some(ConflictAction::Overwrite));
                 }
-                if ui.button("Keep Both").clicked() {
+                if ui.add(egui::Button::new("Keep Both").themed(&c)).clicked() {
                     choice = Some(Some(ConflictAction::Rename));
                 }
-                if ui.button("Skip conflicting item").clicked() {
+                if ui
+                    .add(egui::Button::new("Skip conflicting item").themed(&c))
+                    .clicked()
+                {
                     choice = Some(Some(ConflictAction::Skip));
                 }
                 ui.add_space(4.0);
-                if ui.button("Cancel").clicked() {
+                if ui.add(egui::Button::new("Cancel").themed(&c)).clicked() {
                     choice = Some(None);
                 }
             });
@@ -20533,15 +19101,15 @@ impl OttrinApp {
             .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
             .show(ctx, |ui| {
                 Frame::new()
-                    .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, mix_color(c.border, c.text_dim, 0.35)))
+                    .fill(c.panel)
+                    .stroke(Stroke::new(c.window_border_width, c.window_border))
                     .shadow(Shadow {
                         offset: [0, 10],
                         blur: 28,
                         spread: 0,
                         color: Color32::from_rgba_unmultiplied(0, 0, 0, 120),
                     })
-                    .corner_radius(8.0)
+                    .corner_radius(c.app_radius)
                     .inner_margin(egui::Margin::symmetric(18, 16))
                     .show(ui, |ui| {
                         ui.set_width(viewport.width().clamp(280.0, 420.0));
@@ -20550,36 +19118,36 @@ impl OttrinApp {
                                 ui.allocate_exact_size(Vec2::splat(34.0), Sense::hover()).0;
                             ui.painter().rect_filled(
                                 icon_rect,
-                                6.0,
-                                Color32::from_rgba_unmultiplied(220, 80, 95, 32),
+                                c.border_radius,
+                                c.error.gamma_multiply(0.14),
                             );
                             ui.painter().text(
                                 icon_rect.center(),
                                 Align2::CENTER_CENTER,
                                 MI_DELETE,
-                                FontId::proportional(19.0),
+                                FontId::proportional(19.0 * c.font_scale),
                                 c.error,
                             );
                             ui.add_space(8.0);
                             ui.vertical(|ui| {
                                 ui.label(
                                     RichText::new("Empty Trash?")
-                                        .color(c.text)
-                                        .size(15.0)
+                                        .color(c.heading)
+                                        .size(15.0 * c.font_scale)
                                         .strong(),
                                 );
                                 ui.label(
                                     RichText::new("Permanently delete every item in Trash")
                                         .color(c.text_muted)
-                                        .size(10.8),
+                                        .size(10.8 * c.font_scale),
                                 );
                             });
                         });
                         ui.add_space(12.0);
                         Frame::new()
                             .fill(c.panel)
-                            .stroke(Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.3)))
-                            .corner_radius(6.0)
+                            .stroke(Stroke::new(1.0, c.border))
+                            .corner_radius(c.border_radius)
                             .inner_margin(egui::Margin::symmetric(10, 7))
                             .show(ui, |ui| {
                                 ui.set_width(ui.available_width());
@@ -20588,21 +19156,22 @@ impl OttrinApp {
                                 } else {
                                     format!("{count} trashed items will be permanently deleted")
                                 };
-                                ui.label(RichText::new(label).color(c.text).size(12.2));
+                                ui.label(
+                                    RichText::new(label).color(c.text).size(12.2 * c.font_scale),
+                                );
                             });
                         ui.add_space(8.0);
                         ui.label(
                             RichText::new("This cannot be undone from Trash. Press Esc to cancel.")
                                 .color(c.text_muted)
-                                .size(11.0),
+                                .size(11.0 * c.font_scale),
                         );
                         ui.add_space(12.0);
                         if ui
                             .add_sized(
                                 [ui.available_width(), 36.0],
-                                egui::Button::new(
-                                    RichText::new(format!("{MI_CLOSE}  Cancel")).color(c.text),
-                                ),
+                                egui::Button::new(RichText::new(format!("{MI_CLOSE}  Cancel")))
+                                    .themed(&c),
                             )
                             .clicked()
                         {
@@ -20617,7 +19186,8 @@ impl OttrinApp {
                         if ui
                             .add_sized(
                                 [ui.available_width(), 36.0],
-                                egui::Button::new(RichText::new(empty_label).color(c.error)),
+                                egui::Button::new(RichText::new(empty_label).color(c.error))
+                                    .themed(&c),
                             )
                             .clicked()
                             && !self.trash_panel.emptying
@@ -20648,48 +19218,72 @@ impl OttrinApp {
             .default_width(280.0)
             .frame(
                 Frame::window(&ctx.style())
-                    .fill(c.panel_raised)
-                    .stroke(Stroke::new(1.0, c.border))
-                    .corner_radius(12.0),
+                    .fill(c.panel)
+                    .stroke(Stroke::new(c.window_border_width, c.window_border))
+                    .corner_radius(c.app_radius),
             )
             .show(ctx, |ui| {
                 ui.with_layout(Layout::top_down(Align::Center), |ui| {
                     ui.add_space(20.0);
-                    ui.label(RichText::new(MI_FOLDER).size(44.0).color(c.accent));
+                    ui.label(
+                        RichText::new(MI_FOLDER)
+                            .size(44.0 * c.font_scale)
+                            .color(c.accent),
+                    );
                     ui.add_space(6.0);
-                    ui.label(RichText::new("Ottrin").color(c.text).size(22.0).strong());
-                    ui.label(RichText::new("File Manager").color(c.text_muted).size(12.0));
+                    ui.label(
+                        RichText::new("Ottrin")
+                            .color(c.heading)
+                            .size(22.0 * c.font_scale)
+                            .strong(),
+                    );
+                    ui.label(
+                        RichText::new("File Manager")
+                            .color(c.text_muted)
+                            .size(12.0 * c.font_scale),
+                    );
                     ui.add_space(10.0);
                     ui.label(
                         RichText::new("Version 0.1.0  ·  Pre-release")
                             .color(c.text_dim)
-                            .size(11.5),
+                            .size(11.5 * c.font_scale),
                     );
                     ui.add_space(4.0);
                     ui.label(
                         RichText::new("Built with Rust + egui 0.33")
                             .color(c.text_muted)
-                            .size(10.5),
+                            .size(10.5 * c.font_scale),
                     );
                     ui.add_space(12.0);
                     ui.add(egui::Separator::default().horizontal().spacing(0.0));
                     ui.add_space(10.0);
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new("Author").color(c.text_muted).size(11.5));
+                        ui.label(
+                            RichText::new("Author")
+                                .color(c.text_muted)
+                                .size(11.5 * c.font_scale),
+                        );
                         ui.add_space(4.0);
-                        ui.hyperlink_to(RichText::new("hoozter").size(11.5), "https://hoozter.com");
+                        ui.hyperlink_to(
+                            RichText::new("hoozter").size(11.5 * c.font_scale),
+                            "https://hoozter.com",
+                        );
                     });
                     ui.add_space(4.0);
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new(MI_CODE).size(13.0).color(c.text_muted));
+                        ui.label(
+                            RichText::new(MI_CODE)
+                                .size(13.0 * c.font_scale)
+                                .color(c.text_muted),
+                        );
                         ui.add_space(2.0);
                         ui.hyperlink_to(
-                            RichText::new("github.com/hoozter/ottrin").size(11.0),
+                            RichText::new("github.com/hoozter/ottrin").size(11.0 * c.font_scale),
                             "https://github.com/hoozter/ottrin",
                         );
                     });
                     ui.add_space(16.0);
-                    if ui.button("  Close  ").clicked() {
+                    if ui.add(egui::Button::new("  Close  ").themed(&c)).clicked() {
                         self.show_about = false;
                     }
                     ui.add_space(12.0);
@@ -20751,7 +19345,12 @@ impl OttrinApp {
 
     fn render_services_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
         let ready_color = Color32::from_rgb(80, 185, 110);
-        ui.label(RichText::new("Services").size(15.0).strong().color(c.text));
+        ui.label(
+            RichText::new("Services")
+                .size(15.0 * c.font_scale)
+                .strong()
+                .color(c.text),
+        );
         ui.label("Set up and manage Ottrin's optional system integration.");
         ui.add_space(12.0);
         if let Some(result) = &self.service_action_result {
@@ -20778,7 +19377,7 @@ impl OttrinApp {
             }
             ui.label("Lets Ottrin request administrator permission when a file operation needs it. Setup requires your administrator password.");
             #[cfg(target_os = "linux")]
-            if ui.button(if matches!(self.privileged_availability, PrivilegedAvailability::Ready) { "Update / reinstall helper" } else { "Set up administrator helper" }).clicked() {
+            if ui.add(egui::Button::new(if matches!(self.privileged_availability, PrivilegedAvailability::Ready) { "Update / reinstall helper" } else { "Set up administrator helper" }).themed(&c)).clicked() {
                 self.begin_service_action(ui.ctx(), ottrin_platform::install_privileged_helper);
             }
             ui.add_space(14.0);
@@ -20787,7 +19386,7 @@ impl OttrinApp {
             ui.label(RichText::new("Background index service").strong().color(c.text));
             if is_administrator_session() {
                 ui.label("Manage the Administrator index from Search settings.");
-                if ui.button("Open Search settings").clicked() { self.settings_tab = SettingsTab::Search; }
+                if ui.add(egui::Button::new("Open Search settings").themed(&c)).clicked() { self.settings_tab = SettingsTab::Search; }
                 return;
             }
             let status = cached_sqlite_schedule_status(&mut self.search_ui.sqlite_schedule_status, SearchService::sqlite_schedule_status);
@@ -20820,21 +19419,21 @@ impl OttrinApp {
             ui.label("Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index.");
             ui.add_space(6.0);
             ui.horizontal_wrapped(|ui| {
-                if ui.button(if installed { "Update / reinstall service" } else { "Enable automatic startup" }).clicked() {
+                if ui.add(egui::Button::new(if installed { "Update / reinstall service" } else { "Enable automatic startup" }).themed(&c)).clicked() {
                     let config = self.state.config.search.clone();
                     self.begin_service_action(ui.ctx(), move || SearchService::install_sqlite_schedule(&config));
                 }
-                if ui.button("Start / restart").clicked() {
+                if ui.add(egui::Button::new("Start / restart").themed(&c)).clicked() {
                     self.begin_service_action(ui.ctx(), SearchService::start_sqlite_schedule);
                 }
                 #[cfg(target_os = "linux")]
-                if ui.button("Stop indexing").clicked() {
+                if ui.add(egui::Button::new("Stop indexing").themed(&c)).clicked() {
                     self.begin_service_action(ui.ctx(), SearchService::stop_sqlite_schedule);
                 }
-                if installed && ui.button("Uninstall service").clicked() {
+                if installed && ui.add(egui::Button::new("Uninstall service").themed(&c)).clicked() {
                     self.begin_service_action(ui.ctx(), SearchService::uninstall_sqlite_schedule);
                 }
-                if ui.button("Refresh status").clicked() {
+                if ui.add(egui::Button::new("Refresh status").themed(&c)).clicked() {
                     self.search_ui.sqlite_schedule_status = None;
                     self.privileged_availability = self.platform.privileged_availability();
                 }
@@ -20856,6 +19455,7 @@ impl OttrinApp {
             .with_inner_size([920.0, 640.0])
             .with_min_inner_size([760.0, 520.0])
             .with_decorations(false)
+            .with_transparent(!self.graphics_runtime.is_windows)
             .with_resizable(true);
         let vp_id = Self::settings_viewport_id();
 
@@ -20873,6 +19473,7 @@ impl OttrinApp {
                 return;
             }
             self.handle_viewport_resize(settings_ctx);
+            self.paint_viewport_frame(settings_ctx);
         });
 
         if close_requested {
@@ -20885,23 +19486,26 @@ impl OttrinApp {
         if !self.show_graphics_compatibility_notice {
             return;
         }
-        egui::Window::new("Graphics compatibility enabled")
+        egui::Window::new("graphics_compatibility_notice")
+            .title_bar(false)
             .collapsible(false)
             .resizable(false)
             .anchor(egui::Align2::CENTER_CENTER, Vec2::ZERO)
             .show(ctx, |ui| {
                 ui.set_min_width(390.0);
+                ui.label(RichText::new("Graphics compatibility enabled").color(self.colors.heading).size(18.0 * self.colors.font_scale).strong());
+                ui.add_space(6.0);
                 ui.label("Ottrin detected remote, virtual, or problem graphics and selected its bundled OpenGL compatibility renderer for responsiveness.");
                 ui.add_space(8.0);
-                ui.label(RichText::new("Ottrin did not change your system drivers. You can choose a different renderer for a future launch in Settings.").color(self.colors.text_muted).size(11.0));
+                ui.label(RichText::new("Ottrin did not change your system drivers. You can choose a different renderer for a future launch in Settings.").color(self.colors.text_muted).size(11.0 * self.colors.font_scale));
                 ui.add_space(12.0);
                 ui.horizontal(|ui| {
-                    if ui.button("Open Graphics Settings").clicked() {
+                    if ui.add(egui::Button::new("Open Graphics Settings").themed(&self.colors)).clicked() {
                         self.show_settings = true;
                         self.settings_tab = SettingsTab::General;
                         self.show_graphics_compatibility_notice = false;
                     }
-                    if ui.button("Close").clicked() {
+                    if ui.add(egui::Button::new("Close").themed(&self.colors)).clicked() {
                         self.show_graphics_compatibility_notice = false;
                     }
                 });
@@ -20918,14 +19522,10 @@ impl OttrinApp {
         }
         let c = self.colors;
         let mut close_requested = false;
-        let viewport_focused = ctx.input(|i| i.viewport().focused.unwrap_or(true));
-        let (window_fill, window_title, shadow) = viewport_window_fill(c, viewport_focused);
         egui::CentralPanel::default()
             .frame(
                 Frame::new()
-                    .fill(window_fill)
-                    .stroke(Stroke::new(c.window_border_width, c.window_border))
-                    .shadow(shadow)
+                    .fill(c.panel)
                     .inner_margin(egui::Margin::same(c.window_border_width.ceil() as i8)),
             )
             .show(ctx, |ui| {
@@ -20933,7 +19533,7 @@ impl OttrinApp {
                     ui,
                     ctx,
                     c,
-                    window_title,
+                    c.titlebar_bg,
                     &format!("{} Settings", MI_SETTINGS),
                     true,
                     &mut close_requested,
@@ -20974,7 +19574,7 @@ impl OttrinApp {
 
                             for (group_label, items) in groups {
                                 ui.add_space(2.0);
-                                ui.label(RichText::new(*group_label).size(10.0).color(c.text_muted));
+                                ui.label(RichText::new(*group_label).size(10.0 * c.font_scale).color(c.text_muted));
                                 ui.add_space(4.0);
                                 for (tab, icon, label) in *items {
                                     let active = self.settings_tab == *tab;
@@ -20986,9 +19586,9 @@ impl OttrinApp {
                                         .show(ui, |ui| {
                                             ui.set_min_width(sidebar_w);
                                             ui.horizontal(|ui| {
-                                                ui.label(RichText::new(*icon).size(14.0).color(text_col));
+                                                ui.label(RichText::new(*icon).size(14.0 * c.font_scale).color(text_col));
                                                 ui.add_space(5.0);
-                                                ui.label(RichText::new(*label).size(12.0).color(text_col));
+                                                ui.label(RichText::new(*label).size(12.0 * c.font_scale).color(text_col));
                                                 if *tab == SettingsTab::Search {
                                                     // No index status indicator here — keep all progress in Search page only.
                                                 }
@@ -21020,13 +19620,13 @@ impl OttrinApp {
                 );
                 ui.scope_builder(UiBuilder::new().max_rect(content_rect), |ui| {
                     Frame::new()
-                        .fill(mix_color(c.panel, c.bg, 0.35))
+                        .fill(c.panel)
                         .stroke(Stroke::NONE)
-                        .corner_radius(8.0)
+                        .corner_radius(c.border_radius)
                         .inner_margin(egui::Margin { left: 18, right: 18, top: 14, bottom: 14 })
                         .show(ui, |ui| {
-                            let settings_title = 15.0;
-                            let settings_subtitle = 11.5;
+                            let settings_title = 15.0 * c.font_scale;
+                            let settings_subtitle = 11.5 * c.font_scale;
                             let content_w = ui.available_width().max(0.0);
                             ui.set_width(content_w);
                             ui.set_max_width(content_w);
@@ -21037,11 +19637,11 @@ impl OttrinApp {
                             ui.set_max_width(content_w);
                             match self.settings_tab {
                                 SettingsTab::General => {
-                                    ui.label(RichText::new("General").color(c.text).size(settings_title).strong());
+                                    ui.label(RichText::new("General").color(c.heading).size(settings_title).strong());
                                     ui.label(RichText::new("Default behavior and application preferences.")
                                         .color(c.text_muted).size(settings_subtitle));
                                     ui.add_space(12.0);
-                                    ui.label(RichText::new("Default view").color(c.text_dim).size(12.0));
+                                    ui.label(RichText::new("Default view").color(c.text_dim).size(12.0 * c.font_scale));
                                     ui.add_space(6.0);
                                     let view_opts = [
                                         (ViewMode::Miller, "Column view", MI_VIEW_COLUMN),
@@ -21052,9 +19652,9 @@ impl OttrinApp {
                                         let sel = self.state.config.default_view_mode == *mode;
                                         let check = if sel { MI_CHECK } else { " " };
                                         if ui.add(egui::Button::new(
-                                            RichText::new(format!("{}  {}  {}", check, icon_mi, label)).size(13.0)
+                                            RichText::new(format!("{}  {}  {}", check, icon_mi, label)).size(13.0 * c.font_scale)
                                                 .color(if sel { c.text } else { c.text_dim })
-                                        ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0))).clicked() {
+                                        ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0)).themed(&c)).clicked() {
                                             self.state.config.default_view_mode = *mode;
                                             self.persist_config();
                                         }
@@ -21062,28 +19662,28 @@ impl OttrinApp {
                                     ui.add_space(14.0);
                                     ui.separator();
                                     ui.add_space(10.0);
-                                    ui.label(RichText::new("Default thumbnail behavior").color(c.text).size(13.0).strong());
+                                    ui.label(RichText::new("Default thumbnail behavior").color(c.text).size(13.0 * c.font_scale).strong());
                                     ui.label(
                                         RichText::new("These defaults also change when you toggle thumbnails from View Options.")
                                             .color(c.text_muted)
-                                            .size(11.0),
+                                            .size(11.0 * c.font_scale),
                                     );
                                     ui.add_space(6.0);
                                     let grid_thumbs = self.state.config.grid_show_thumbnails;
                                     let grid_check = if grid_thumbs { MI_CHECK } else { "  " };
                                     if ui.add(egui::Button::new(
-                                        RichText::new(format!("{} Show thumbnails in Grid view", grid_check)).size(13.0)
+                                        RichText::new(format!("{} Show thumbnails in Grid view", grid_check)).size(13.0 * c.font_scale)
                                             .color(if grid_thumbs { c.text } else { c.text_dim })
-                                    ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0))).clicked() {
+                                    ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0)).themed(&c)).clicked() {
                                         self.state.config.grid_show_thumbnails = !grid_thumbs;
                                         self.persist_config();
                                     }
                                     let list_thumbs = self.state.config.list_show_thumbnails;
                                     let list_check = if list_thumbs { MI_CHECK } else { "  " };
                                     if ui.add(egui::Button::new(
-                                        RichText::new(format!("{} Show thumbnails in List view", list_check)).size(13.0)
+                                        RichText::new(format!("{} Show thumbnails in List view", list_check)).size(13.0 * c.font_scale)
                                             .color(if list_thumbs { c.text } else { c.text_dim })
-                                    ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0))).clicked() {
+                                    ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0)).themed(&c)).clicked() {
                                         self.state.config.list_show_thumbnails = !list_thumbs;
                                         self.persist_config();
                                     }
@@ -21092,7 +19692,7 @@ impl OttrinApp {
                                     ui.add_space(10.0);
                                     let platform_capabilities = settings_platform_capabilities(self.graphics_runtime.is_windows);
                                     if graphics_settings_visible(self.graphics_runtime.is_windows) {
-                                        ui.label(RichText::new("Graphics renderer").color(c.text).size(13.0).strong());
+                                        ui.label(RichText::new("Graphics renderer").color(c.text).size(13.0 * c.font_scale).strong());
                                         let effective = match self.graphics_runtime.selection.choice {
                                             GraphicsRendererChoice::Native => "Native graphics",
                                             GraphicsRendererChoice::OpenGlCompatibility => "Bundled OpenGL compatibility",
@@ -21103,12 +19703,12 @@ impl OttrinApp {
                                                 graphics_renderer_reason_label(self.graphics_runtime.selection.reason),
                                             ))
                                             .color(c.text_muted)
-                                            .size(11.0),
+                                            .size(11.0 * c.font_scale),
                                         );
                                         ui.label(
                                             RichText::new("Changes apply the next time Ottrin starts. Command-line diagnostics override this setting for that launch only.")
                                                 .color(c.text_muted)
-                                                .size(10.5),
+                                                .size(10.5 * c.font_scale),
                                         );
                                         ui.add_space(6.0);
                                         for (preference, label) in [
@@ -21119,16 +19719,16 @@ impl OttrinApp {
                                             let selected = self.state.config.graphics_renderer == preference;
                                             let check = if selected { MI_CHECK } else { "  " };
                                             if ui.add(egui::Button::new(
-                                                RichText::new(format!("{check} {label}")).size(12.0)
+                                                RichText::new(format!("{check} {label}")).size(12.0 * c.font_scale)
                                                     .color(if selected { c.text } else { c.text_dim }),
-                                            ).frame(true).min_size(Vec2::new(ui.available_width(), 27.0))).clicked() {
+                                            ).frame(true).min_size(Vec2::new(ui.available_width(), 27.0)).themed(&c)).clicked() {
                                                 self.state.config.graphics_renderer = preference;
                                                 self.persist_config();
                                                 self.set_status_message("Graphics preference saved. Restart Ottrin to apply it.", true, 8);
                                             }
                                         }
                                         if self.state.config.graphics_renderer != GraphicsRendererPreference::Automatic
-                                            && ui.button("Reset to Automatic").clicked()
+                                            && ui.add(egui::Button::new("Reset to Automatic").themed(&c)).clicked()
                                         {
                                             self.state.config.graphics_renderer = GraphicsRendererPreference::Automatic;
                                             self.persist_config();
@@ -21142,15 +19742,15 @@ impl OttrinApp {
                                         ui.add_space(14.0);
                                         ui.separator();
                                         ui.add_space(10.0);
-                                        ui.label(RichText::new("Terminal Launcher").color(c.text).size(13.0).strong());
+                                        ui.label(RichText::new("Terminal Launcher").color(c.text).size(13.0 * c.font_scale).strong());
                                         ui.label(
                                             RichText::new(launcher_status().unwrap_or_else(|| "Unavailable".to_string()))
                                                 .color(c.text_muted)
-                                                .size(11.0),
+                                                .size(11.0 * c.font_scale),
                                         );
                                         ui.add_space(6.0);
                                         ui.horizontal(|ui| {
-                                            if ui.button("Install `ottrin` command").on_hover_text(
+                                            if ui.add(egui::Button::new("Install `ottrin` command").themed(&c)).on_hover_text(
                                                 "Creates ~/.local/bin/ottrin as a symlink to this Ottrin build or AppImage. \
                                                  Use it to launch Ottrin from a terminal and to run `ottrin --uninstall`."
                                             ).clicked() {
@@ -21160,7 +19760,7 @@ impl OttrinApp {
                                                 };
                                                 self.set_status_message(text, ok, 8);
                                             }
-                                            if ui.button("Remove launcher").clicked() {
+                                            if ui.add(egui::Button::new("Remove launcher").themed(&c)).clicked() {
                                                 let (text, ok) = match remove_terminal_launcher() {
                                                     Ok(msg) => (msg, true),
                                                     Err(err) => (err, false),
@@ -21173,13 +19773,13 @@ impl OttrinApp {
                                     ui.add_space(14.0);
                                     ui.separator();
                                     ui.add_space(10.0);
-                                    ui.label(RichText::new("Cleanup").color(c.text).size(13.0).strong());
+                                    ui.label(RichText::new("Cleanup").color(c.text).size(13.0 * c.font_scale).strong());
                                     ui.label(
                                         RichText::new(
                                             "Use this before deleting an AppImage/portable build if you enabled background indexing or want Ottrin's generated data removed."
                                         )
                                         .color(c.text_muted)
-                                        .size(11.0),
+                                        .size(11.0 * c.font_scale),
                                     );
                                     ui.add_space(6.0);
                                     let cleanup_label = if self.app_cleanup_confirm {
@@ -21189,9 +19789,9 @@ impl OttrinApp {
                                     };
                                     if ui.add(egui::Button::new(
                                         RichText::new(cleanup_label)
-                                            .size(12.0)
+                                            .size(12.0 * c.font_scale)
                                             .color(if self.app_cleanup_confirm { c.error } else { c.text }),
-                                    ).stroke(Stroke::new(1.0, if self.app_cleanup_confirm { c.error } else { c.border }))).on_hover_text(
+                                    ).stroke(Stroke::new(1.0, if self.app_cleanup_confirm { c.error } else { c.border })).themed(&c)).on_hover_text(
                                         "Removes Ottrin's background index service, search database, private locate fallback database, thumbnail cache, and terminal launcher. It keeps your preferences unless you use the separate config button."
                                     ).clicked() {
                                         if self.app_cleanup_confirm {
@@ -21226,7 +19826,7 @@ impl OttrinApp {
                                         }
                                     }
                                     ui.add_space(4.0);
-                                    if ui.button("Remove preferences file").on_hover_text(
+                                    if ui.add(egui::Button::new("Remove preferences file").themed(&c)).on_hover_text(
                                         "Deletes Ottrin's saved preferences/config file. This does not remove your files."
                                     ).clicked() {
                                         let (text, ok) = match remove_config_file() {
@@ -21238,7 +19838,7 @@ impl OttrinApp {
                                     if self.app_cleanup_confirm {
                                         ui.label(RichText::new(
                                             "Click Confirm cleanup to remove generated data and background indexing. Your files are not touched."
-                                        ).color(c.text_dim).size(10.5));
+                                        ).color(c.text_dim).size(10.5 * c.font_scale));
                                     }
                                 }
                                 SettingsTab::Services => {
@@ -21248,16 +19848,16 @@ impl OttrinApp {
                                     self.render_appearance_settings(ui, ctx, c);
                                 }
                                 SettingsTab::Files => {
-                                    ui.label(RichText::new("Files").color(c.text).size(settings_title).strong());
+                                    ui.label(RichText::new("Files").color(c.heading).size(settings_title).strong());
                                     ui.label(RichText::new("Defaults for file visibility and document previews.")
                                         .color(c.text_muted).size(settings_subtitle));
                                     ui.add_space(12.0);
                                     let show_hidden = self.state.config.show_hidden_files;
                                     let icon = if show_hidden { MI_CHECK } else { "  " };
                                     if ui.add(egui::Button::new(
-                                        RichText::new(format!("{} Show hidden files", icon)).size(13.0)
+                                        RichText::new(format!("{} Show hidden files", icon)).size(13.0 * c.font_scale)
                                             .color(if show_hidden { c.text } else { c.text_dim })
-                                    ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0))).clicked() {
+                                    ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0)).themed(&c)).clicked() {
                                         self.state.config.show_hidden_files = !show_hidden;
                                         self.refresh_active_tab();
                                     }
@@ -21267,18 +19867,18 @@ impl OttrinApp {
                                         ui.add_space(14.0);
                                         ui.separator();
                                         ui.add_space(10.0);
-                                        ui.label(RichText::new("Media playback").color(c.text).size(13.0).strong());
+                                        ui.label(RichText::new("Media playback").color(c.text).size(13.0 * c.font_scale).strong());
                                         ui.label(
                                             RichText::new(LINUX_SYSTEM_MEDIA_DISCLOSURE)
                                                 .color(c.text_muted)
-                                                .size(10.5),
+                                                .size(10.5 * c.font_scale),
                                         );
                                     }
 
                                     ui.add_space(14.0);
                                     ui.separator();
                                     ui.add_space(10.0);
-                                    ui.label(RichText::new("Office previews").color(c.text).size(13.0).strong());
+                                    ui.label(RichText::new("Office previews").color(c.text).size(13.0 * c.font_scale).strong());
                                     let detected = self
                                         .office_provider
                                         .lock()
@@ -21291,12 +19891,12 @@ impl OttrinApp {
                                                 detected.capability.version
                                             ))
                                             .color(c.text)
-                                            .size(12.0),
+                                            .size(12.0 * c.font_scale),
                                         );
                                         ui.label(
                                             RichText::new(detected.executable.display().to_string())
                                                 .color(c.text_muted)
-                                                .size(10.5)
+                                                .size(10.5 * c.font_scale)
                                                 .monospace(),
                                         );
                                         ui.add_space(6.0);
@@ -21311,11 +19911,11 @@ impl OttrinApp {
                                                     RichText::new(format!(
                                                         "{check} Use installed LibreOffice for Office previews"
                                                     ))
-                                                    .size(12.5)
+                                                    .size(12.5 * c.font_scale)
                                                     .color(if enabled { c.text } else { c.text_dim }),
                                                 )
                                                 .frame(true)
-                                                .min_size(Vec2::new(ui.available_width(), 28.0)),
+                                                .min_size(Vec2::new(ui.available_width(), 28.0)).themed(&c),
                                             )
                                             .clicked()
                                         {
@@ -21328,7 +19928,7 @@ impl OttrinApp {
                                                 "When disabled, Quick Inspector uses Ottrin's native structured or extracted preview.",
                                             )
                                             .color(c.text_muted)
-                                            .size(10.5),
+                                            .size(10.5 * c.font_scale),
                                         );
                                     } else {
                                         ui.label(
@@ -21336,7 +19936,7 @@ impl OttrinApp {
                                                 "No compatible installed LibreOffice provider was detected. Ottrin is using native previews.",
                                             )
                                             .color(c.text_muted)
-                                            .size(11.0),
+                                            .size(11.0 * c.font_scale),
                                         );
                                     }
                                 }
@@ -21344,7 +19944,7 @@ impl OttrinApp {
                                     self.ensure_search_started();
                                     let platform_capabilities = settings_platform_capabilities(self.graphics_runtime.is_windows);
                                     // ── Header ────────────────────────────────
-                                    ui.label(RichText::new("Search").color(c.text).size(settings_title).strong());
+                                    ui.label(RichText::new("Search").color(c.heading).size(settings_title).strong());
                                     ui.label(RichText::new(
                                         "Control where Ottrin looks, what to skip, and how the index stays current."
                                     ).color(c.text_muted).size(settings_subtitle));
@@ -21359,17 +19959,17 @@ impl OttrinApp {
                                         let persistent_installed = persistent_status.source != "none";
                                         Frame::new()
                                             .fill(mix_color(c.panel, c.accent, 0.10))
-                                            .stroke(Stroke::new(1.0, mix_color(c.border, c.accent, 0.35)))
-                                            .corner_radius(7.0)
+                                            .stroke(Stroke::new(1.0, c.accent))
+                                            .corner_radius(c.border_radius)
                                             .inner_margin(egui::Margin::symmetric(14, 12))
                                             .show(ui, |ui| {
                                                 ui.set_width(ui.available_width());
-                                                ui.label(RichText::new("Administrator session").color(c.text).size(13.0).strong());
+                                                ui.label(RichText::new("Administrator session").color(c.text).size(13.0 * c.font_scale).strong());
                                                 ui.label(RichText::new(
                                                     "Browsing and direct file use do not require a root index. Indexing starts only after an explicit choice below."
-                                                ).color(c.text_muted).size(10.8));
+                                                ).color(c.text_muted).size(10.8 * c.font_scale));
                                                 ui.add_space(8.0);
-                                                if ui.button("Continue without a root Ottrin index").clicked() {
+                                                if ui.add(egui::Button::new("Continue without a root Ottrin index").themed(&c)).clicked() {
                                                     self.set_status_message(
                                                         "Administrator session will continue without a root Ottrin index.",
                                                         true,
@@ -21381,7 +19981,7 @@ impl OttrinApp {
                                                     "Administrator session index is active".to_string()
                                                 } else {
                                                     format!("Index {selected} selected location{} for this session", if selected == 1 { "" } else { "s" })
-                                                });
+                                                }).themed(&c);
                                                 if ui.add_enabled(!session_active && !persistent_installed && selected > 0, session_button).clicked() {
                                                     let config = self.state.config.search.clone();
                                                     match self.search_service.start_administrator_session_index(&config) {
@@ -21395,7 +19995,7 @@ impl OttrinApp {
                                                 }
                                                 ui.label(RichText::new(
                                                     "Session indexing uses only the selected locations. Content extraction stays off, and no service is installed."
-                                                ).color(c.text_muted).size(10.5));
+                                                ).color(c.text_muted).size(10.5 * c.font_scale));
                                                 let database_bytes =
                                                     ottrin_search::administrator_index_database_bytes();
                                                 ui.label(
@@ -21404,7 +20004,7 @@ impl OttrinApp {
                                                         persistent_status.detail
                                                     ))
                                                     .color(c.text_muted)
-                                                    .size(10.5),
+                                                    .size(10.5 * c.font_scale),
                                                 );
                                                 if !self.search_ui.administrator_persistent_confirmation {
                                                     let label = if persistent_installed {
@@ -21413,7 +20013,7 @@ impl OttrinApp {
                                                         "Review persistent root index setup (advanced)"
                                                     };
                                                     if ui
-                                                        .add_enabled(selected > 0, egui::Button::new(label))
+                                                        .add_enabled(selected > 0, egui::Button::new(label).themed(&c))
                                                         .clicked()
                                                     {
                                                         self.search_ui
@@ -21423,7 +20023,7 @@ impl OttrinApp {
                                                     Frame::new()
                                                         .fill(c.panel)
                                                         .stroke(Stroke::new(1.0, c.border))
-                                                        .corner_radius(6.0)
+                                                        .corner_radius(c.border_radius)
                                                         .inner_margin(egui::Margin::symmetric(10, 8))
                                                         .show(ui, |ui| {
                                                             ui.label(
@@ -21434,12 +20034,11 @@ impl OttrinApp {
                                                                     ),
                                                                 )
                                                                 .color(c.text_muted)
-                                                                .size(10.5),
+                                                                .size(10.5 * c.font_scale),
                                                             );
                                                             ui.add_space(6.0);
                                                             if persistent_installed {
-                                                                if ui
-                                                                    .button("Apply selected scope and restart")
+                                                                if ui.add(egui::Button::new("Apply selected scope and restart").themed(&c))
                                                                     .clicked()
                                                                 {
                                                                     let result = ottrin_search::install_administrator_index_service(
@@ -21460,7 +20059,7 @@ impl OttrinApp {
                                                                     self.search_ui.sqlite_schedule_status = None;
                                                                     self.search_ui.administrator_persistent_confirmation = false;
                                                                 }
-                                                                if ui.button("Restart persistent index").clicked() {
+                                                                if ui.add(egui::Button::new("Restart persistent index").themed(&c)).clicked() {
                                                                     match ottrin_search::restart_administrator_index_service() {
                                                                         Ok(message) => self.set_status_message(message, true, 10),
                                                                         Err(error) => self.set_status_message(error, false, 12),
@@ -21471,7 +20070,7 @@ impl OttrinApp {
                                                                     &mut self.search_ui.administrator_purge_on_remove,
                                                                     "Also purge protected configuration and index data",
                                                                 );
-                                                                if ui.button("Remove persistent root index").clicked() {
+                                                                if ui.add(egui::Button::new("Remove persistent root index").themed(&c)).clicked() {
                                                                     let purge = self
                                                                         .search_ui
                                                                         .administrator_purge_on_remove;
@@ -21487,8 +20086,7 @@ impl OttrinApp {
                                                                     self.search_ui.administrator_persistent_confirmation = false;
                                                                     self.search_ui.administrator_purge_on_remove = false;
                                                                 }
-                                                            } else if ui
-                                                                .button("Confirm and enable persistent root index")
+                                                            } else if ui.add(egui::Button::new("Confirm and enable persistent root index").themed(&c))
                                                                 .clicked()
                                                             {
                                                                 self.search_service
@@ -21508,7 +20106,7 @@ impl OttrinApp {
                                                                 self.search_ui.sqlite_schedule_status = None;
                                                                 self.search_ui.administrator_persistent_confirmation = false;
                                                             }
-                                                            if ui.button("Cancel").clicked() {
+                                                            if ui.add(egui::Button::new("Cancel").themed(&c)).clicked() {
                                                                 self.search_ui.administrator_persistent_confirmation = false;
                                                                 self.search_ui.administrator_purge_on_remove = false;
                                                             }
@@ -21521,21 +20119,21 @@ impl OttrinApp {
                                     if !self.state.config.search_setup_completed {
                                         Frame::new()
                                             .fill(mix_color(c.panel, c.accent, 0.10))
-                                            .stroke(Stroke::new(1.0, mix_color(c.border, c.accent, 0.35)))
-                                            .corner_radius(7.0)
+                                            .stroke(Stroke::new(1.0, c.accent))
+                                            .corner_radius(c.border_radius)
                                             .inner_margin(egui::Margin::symmetric(14, 12))
                                             .show(ui, |ui| {
                                                 ui.set_width(ui.available_width());
-                                                ui.label(RichText::new("Set up Search").color(c.text).size(13.0).strong());
+                                                ui.label(RichText::new("Set up Search").color(c.text).size(13.0 * c.font_scale).strong());
                                                 ui.label(RichText::new(
                                                     "Ottrin has three independent search layers. Review each choice; enabling one never enables another."
-                                                ).color(c.text_muted).size(10.8));
+                                                ).color(c.text_muted).size(10.8 * c.font_scale));
                                                 ui.add_space(9.0);
 
-                                                ui.label(RichText::new("1  System filenames").color(c.text).size(11.8).strong());
+                                                ui.label(RichText::new("1  System filenames").color(c.text).size(11.8 * c.font_scale).strong());
                                                 ui.label(RichText::new(
                                                     "Broad filename and path results from the operating system locate database. No file contents are read."
-                                                ).color(c.text_muted).size(10.5));
+                                                ).color(c.text_muted).size(10.5 * c.font_scale));
                                                 if platform_capabilities.system_locate_controls_visible {
                                                     let locate_available = ottrin_search::SearchService::system_locate_available();
                                                     let before = self.state.config.search.use_system_locate;
@@ -21550,22 +20148,22 @@ impl OttrinApp {
                                                         self.search_service.update_config(self.state.config.search.clone());
                                                     }
                                                 } else {
-                                                    ui.label(RichText::new("Not available on this platform yet.").color(c.text_muted).italics().size(10.5));
+                                                    ui.label(RichText::new("Not available on this platform yet.").color(c.text_muted).italics().size(10.5 * c.font_scale));
                                                 }
                                                 ui.add_space(8.0);
 
-                                                ui.label(RichText::new("2  Native metadata").color(c.text).size(11.8).strong());
+                                                ui.label(RichText::new("2  Native metadata").color(c.text).size(11.8 * c.font_scale).strong());
                                                 ui.label(RichText::new(format!(
                                                     "Rich, live metadata for {} selected folder{}. Folder bodies are not read by this layer.",
                                                     self.state.config.search.include_roots.len(),
                                                     if self.state.config.search.include_roots.len() == 1 { "" } else { "s" },
-                                                )).color(c.text_muted).size(10.5));
+                                                )).color(c.text_muted).size(10.5 * c.font_scale));
                                                 ui.add_space(8.0);
 
-                                                ui.label(RichText::new("3  Optional content").color(c.text).size(11.8).strong());
+                                                ui.label(RichText::new("3  Optional content").color(c.text).size(11.8 * c.font_scale).strong());
                                                 ui.label(RichText::new(
                                                     "Full-text search only inside explicit content folders, using the file groups and size limit below. Off by default."
-                                                ).color(c.text_muted).size(10.5));
+                                                ).color(c.text_muted).size(10.5 * c.font_scale));
                                                 let before = self.state.config.search.content_indexing_enabled;
                                                 ui.checkbox(
                                                     &mut self.state.config.search.content_indexing_enabled,
@@ -21577,8 +20175,8 @@ impl OttrinApp {
                                                 ui.add_space(10.0);
                                                 ui.label(RichText::new(
                                                     "Review selected folders and detailed privacy controls below before finishing."
-                                                ).color(c.text_muted).size(10.5).italics());
-                                                if ui.button("Finish search setup").clicked() {
+                                                ).color(c.text_muted).size(10.5 * c.font_scale).italics());
+                                                if ui.add(egui::Button::new("Finish search setup").themed(&c)).clicked() {
                                                     self.state.config.search_setup_completed = true;
                                                     self.persist_config();
                                                     self.set_status_message("Search setup saved.", true, 5);
@@ -21649,10 +20247,10 @@ impl OttrinApp {
                                         };
                                         ui.set_width(ui.available_width());
                                         ui.horizontal(|ui| {
-                                            ui.label(RichText::new("Status:").color(c.text_dim).size(11.0));
+                                            ui.label(RichText::new("Status:").color(c.text_dim).size(11.0 * c.font_scale));
                                             ui.add_space(6.0);
                                             if is_indexing || is_loading {
-                                                ui.add(egui::Spinner::new().color(dot_col).size(12.0));
+                                                ui.add(egui::Spinner::new().color(dot_col).size(12.0 * c.font_scale));
                                             } else {
                                                 let (dot_r, _) = ui.allocate_exact_size(Vec2::new(8.0, 8.0), egui::Sense::hover());
                                                 ui.painter().circle_filled(dot_r.center(), 4.0, dot_col);
@@ -21665,10 +20263,10 @@ impl OttrinApp {
                                             } else {
                                                 status_word
                                             };
-                                            ui.label(RichText::new(status_text).color(dot_col).size(11.0).strong());
+                                            ui.label(RichText::new(status_text).color(dot_col).size(11.0 * c.font_scale).strong());
                                             if let Some(pct) = status_pct {
                                                 ui.add_space(6.0);
-                                                ui.label(RichText::new(format!("{pct}%")).color(dot_col).size(11.0).strong())
+                                                ui.label(RichText::new(format!("{pct}%")).color(dot_col).size(11.0 * c.font_scale).strong())
                                                     .on_hover_text(if is_indexing {
                                                         "Estimated scan progress based on indexed files and the last completed index size."
                                                     } else {
@@ -21677,19 +20275,19 @@ impl OttrinApp {
                                             }
                                         });
                                         ui.add_space(6.0);
-                                        ui.label(RichText::new(&count_line).color(c.text).size(13.0).strong());
+                                        ui.label(RichText::new(&count_line).color(c.text).size(13.0 * c.font_scale).strong());
                                         ui.label(
                                             RichText::new(search_storage_detail(
                                                 diag.database_bytes,
                                                 diag.wal_bytes,
                                             ))
                                             .color(c.text_muted)
-                                            .size(10.5),
+                                            .size(10.5 * c.font_scale),
                                         );
                                         ui.add_space(2.0);
                                         let path_full = second_line.unwrap_or_else(|| "—".to_string());
                                         let path_height = 18.0;
-                                        let font_id = FontId::proportional(11.0);
+                                        let font_id = FontId::proportional(11.0 * c.font_scale);
                                         let available_w = ui.available_width();
                                         let path_text = Self::middle_ellipsis(ui, &path_full, available_w, &font_id);
                                         let (path_rect, resp) = ui.allocate_exact_size(
@@ -21708,10 +20306,10 @@ impl OttrinApp {
                                         }
                                         // No horizontal progress bar; keep a single status + percent line.
                                         ui.add_space(10.0);
-                                        let btn = egui::Button::new(RichText::new("Rebuild index").size(12.0))
+                                        let btn = egui::Button::new(RichText::new("Rebuild index").size(12.0 * c.font_scale))
                                             .fill(c.panel_raised)
                                             .stroke(Stroke::NONE)
-                                            .min_size(Vec2::new(ui.available_width(), 28.0));
+                                            .min_size(Vec2::new(ui.available_width(), 28.0)).themed(&c);
                                         if ui.add_enabled(!is_indexing && !is_loading, btn).clicked() {
                                             self.search_service.rebuild_index();
                                         }
@@ -21719,11 +20317,11 @@ impl OttrinApp {
 
                                     ui.add_space(12.0);
                                     settings_section_icon(ui, c, MI_FOLDER, "Sources", "Folders Ottrin scans and what it skips.", |ui| {
-                                        ui.label(RichText::new("Indexed locations").color(c.text).size(12.5).strong());
+                                        ui.label(RichText::new("Indexed locations").color(c.text).size(12.5 * c.font_scale).strong());
                                         ui.add_space(2.0);
                                         ui.label(RichText::new(
                                             "Ottrin keeps a persistent SQLite-backed index of these folders. Subfolders are included automatically."
-                                        ).color(c.text_muted).size(10.5));
+                                        ).color(c.text_muted).size(10.5 * c.font_scale));
                                         ui.add_space(8.0);
 
                                         {
@@ -21732,7 +20330,7 @@ impl OttrinApp {
                                             Frame::new()
                                                 .fill(c.panel)
                                                 .stroke(Stroke::NONE)
-                                                .corner_radius(6.0)
+                                                .corner_radius(c.border_radius)
                                                 .inner_margin(egui::Margin::ZERO)
                                                 .show(ui, |ui| {
                                                     ui.set_width(ui.available_width());
@@ -21740,7 +20338,7 @@ impl OttrinApp {
                                                         Frame::new().inner_margin(egui::Margin::symmetric(12, 10)).show(ui, |ui| {
                                                             ui.label(RichText::new(
                                                                 "No native folders indexed. Enabled system filename search can still find database-visible paths."
-                                                            ).color(c.text_muted).italics().size(11.0));
+                                                            ).color(c.text_muted).italics().size(11.0 * c.font_scale));
                                                         });
                                                     } else {
                                                         for i in 0..n {
@@ -21756,13 +20354,13 @@ impl OttrinApp {
                                                                 .inner_margin(egui::Margin { left: 12, right: 6, top: 7, bottom: 7 })
                                                                 .show(ui, |ui| {
                                                                 ui.horizontal(|ui| {
-                                                                    ui.label(RichText::new(MI_FOLDER).color(c.accent).size(14.0));
+                                                                    ui.label(RichText::new(MI_FOLDER).color(c.accent).size(14.0 * c.font_scale));
                                                                     ui.add_space(6.0);
-                                                                    ui.label(RichText::new(&p).size(11.5).color(c.text));
+                                                                    ui.label(RichText::new(&p).size(11.5 * c.font_scale).color(c.text));
                                                                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                                         if ui.add_sized([26.0, 26.0], egui::Button::new(
-                                                                            RichText::new(MI_CLOSE).size(10.0).color(c.text_muted)
-                                                                        ).frame(false)).clicked() { remove_idx = Some(i); }
+                                                                            RichText::new(MI_CLOSE).size(10.0 * c.font_scale).color(c.text_muted)
+                                                                        ).frame(false).themed(&c)).clicked() { remove_idx = Some(i); }
                                                                     });
                                                                 });
                                                             });
@@ -21776,7 +20374,7 @@ impl OttrinApp {
                                         }
                                         ui.add_space(4.0);
                                         ui.horizontal(|ui| {
-                                            if ui.button(format!("  {}  Add folder…", MI_FOLDER_OPEN)).clicked()
+                                            if ui.add(egui::Button::new(format!("  {}  Add folder…", MI_FOLDER_OPEN)).themed(&c)).clicked()
                                                 && let Some(dir) = rfd::FileDialog::new().pick_folder()
                                             {
                                                 self.state.config.search.include_roots.push(dir);
@@ -21785,10 +20383,10 @@ impl OttrinApp {
                                         });
 
                                         ui.add_space(12.0);
-                                        ui.label(RichText::new("Exclusions").color(c.text_dim).size(11.5).strong());
+                                        ui.label(RichText::new("Exclusions").color(c.text_dim).size(11.5 * c.font_scale).strong());
                                         ui.label(RichText::new(
                                             "Folders and patterns never included in results, even inside indexed locations."
-                                        ).color(c.text_muted).size(10.5));
+                                        ).color(c.text_muted).size(10.5 * c.font_scale));
                                         ui.add_space(6.0);
 
                                         {
@@ -21799,7 +20397,7 @@ impl OttrinApp {
                                             let excl_open = excl_state.is_open();
                                             excl_state.show_header(ui, |ui| {
                                                 ui.horizontal(|ui| {
-                                                    ui.label(RichText::new("Excluded folders").color(c.text).size(12.0));
+                                                    ui.label(RichText::new("Excluded folders").color(c.text).size(12.0 * c.font_scale));
                                                     ui.add_space(6.0);
                                                     if !excl_open {
                                                         let preview: String = self.state.config.search.exclude_roots.iter()
@@ -21808,9 +20406,9 @@ impl OttrinApp {
                                                             .collect::<Vec<_>>()
                                                             .join("   ");
                                                         let suffix = if excl_n > 4 { format!("   +{}", excl_n - 4) } else { String::new() };
-                                                        ui.label(RichText::new(format!("{}{}", preview, suffix)).color(c.text_muted).size(10.5).monospace());
+                                                        ui.label(RichText::new(format!("{}{}", preview, suffix)).color(c.text_muted).size(10.5 * c.font_scale).monospace());
                                                     } else {
-                                                        ui.label(RichText::new(format!("{} folder{}", excl_n, if excl_n == 1 { "" } else { "s" })).color(c.text_muted).size(10.5));
+                                                        ui.label(RichText::new(format!("{} folder{}", excl_n, if excl_n == 1 { "" } else { "s" })).color(c.text_muted).size(10.5 * c.font_scale));
                                                     }
                                                 });
                                             }).body(|ui| {
@@ -21819,12 +20417,12 @@ impl OttrinApp {
                                                 let n = self.state.config.search.exclude_roots.len();
                                             Frame::new()
                                                 .fill(c.panel).stroke(Stroke::NONE)
-                                                .corner_radius(6.0).inner_margin(egui::Margin::ZERO)
+                                                .corner_radius(c.border_radius).inner_margin(egui::Margin::ZERO)
                                                 .show(ui, |ui| {
                                                         ui.set_width(ui.available_width());
                                                         if n == 0 {
                                                             Frame::new().inner_margin(egui::Margin::symmetric(12, 8)).show(ui, |ui| {
-                                                                ui.label(RichText::new("No folders excluded.").color(c.text_muted).italics().size(11.0));
+                                                                ui.label(RichText::new("No folders excluded.").color(c.text_muted).italics().size(11.0 * c.font_scale));
                                                             });
                                                         } else {
                                                             for i in 0..n {
@@ -21840,11 +20438,11 @@ impl OttrinApp {
                                                                 .inner_margin(egui::Margin { left: 12, right: 6, top: 6, bottom: 6 })
                                                                 .show(ui, |ui| {
                                                                 ui.horizontal(|ui| {
-                                                                    ui.label(RichText::new(MI_FOLDER).color(c.text_dim).size(14.0));
+                                                                    ui.label(RichText::new(MI_FOLDER).color(c.text_dim).size(14.0 * c.font_scale));
                                                                     ui.add_space(4.0);
-                                                                    ui.label(RichText::new(&p).size(11.0).color(c.text));
+                                                                    ui.label(RichText::new(&p).size(11.0 * c.font_scale).color(c.text));
                                                                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                                                            if ui.add_sized([26.0, 26.0], egui::Button::new(RichText::new(MI_CLOSE).size(10.0).color(c.text_muted)).frame(false)).clicked() { remove_idx = Some(i); }
+                                                                            if ui.add_sized([26.0, 26.0], egui::Button::new(RichText::new(MI_CLOSE).size(10.0 * c.font_scale).color(c.text_muted)).frame(false).themed(&c)).clicked() { remove_idx = Some(i); }
                                                                         });
                                                                     });
                                                                 });
@@ -21856,7 +20454,7 @@ impl OttrinApp {
                                                     self.search_service.update_config(self.state.config.search.clone());
                                                 }
                                                 ui.add_space(4.0);
-                                                if ui.button(format!("  {}  Add folder…", MI_FOLDER_OPEN)).clicked()
+                                                if ui.add(egui::Button::new(format!("  {}  Add folder…", MI_FOLDER_OPEN)).themed(&c)).clicked()
                                                     && let Some(dir) = rfd::FileDialog::new().pick_folder()
                                                 {
                                                     self.state.config.search.exclude_roots.push(dir);
@@ -21878,40 +20476,40 @@ impl OttrinApp {
                                         let pat_open = pat_state.is_open();
                                         pat_state.show_header(ui, |ui| {
                                             ui.horizontal(|ui| {
-                                                ui.label(RichText::new("File patterns").color(c.text).size(12.0));
+                                                ui.label(RichText::new("File patterns").color(c.text).size(12.0 * c.font_scale));
                                                 ui.add_space(6.0);
                                                 if !pat_open {
                                                     let preview: String = self.state.config.search.exclude_globs.iter()
                                                         .take(4).cloned().collect::<Vec<_>>().join("   ");
                                                     let suffix = if eg > 4 { format!("   +{}", eg - 4) } else { String::new() };
-                                                    ui.label(RichText::new(format!("{}{}", preview, suffix)).color(c.text_muted).size(10.5).monospace());
+                                                    ui.label(RichText::new(format!("{}{}", preview, suffix)).color(c.text_muted).size(10.5 * c.font_scale).monospace());
                                                 } else {
                                                     let mut parts = Vec::new();
                                                     if eg > 0 { parts.push(format!("{} always skip", eg)); }
                                                     if ig > 0 { parts.push(format!("{} only include", ig)); }
                                                     if parts.is_empty() { parts.push("none".to_string()); }
-                                                    ui.label(RichText::new(parts.join(" · ")).color(c.text_muted).size(10.5));
+                                                    ui.label(RichText::new(parts.join(" · ")).color(c.text_muted).size(10.5 * c.font_scale));
                                                 }
                                             });
                                         }).body(|ui| {
                                             ui.add_space(6.0);
 
                                             // Always skip
-                                            ui.label(RichText::new("Always skip").color(c.text_dim).size(11.5).strong());
+                                            ui.label(RichText::new("Always skip").color(c.text_dim).size(11.5 * c.font_scale).strong());
                                             ui.label(RichText::new("Files and folders matching these patterns are never indexed.")
-                                                .color(c.text_muted).size(10.5));
+                                                .color(c.text_muted).size(10.5 * c.font_scale));
                                             ui.add_space(4.0);
                                             {
                                                 let n = self.state.config.search.exclude_globs.len();
                                                 let mut remove_idx = None;
                                                 Frame::new()
                                                     .fill(c.panel_raised).stroke(Stroke::NONE)
-                                                    .corner_radius(6.0).inner_margin(egui::Margin::ZERO)
+                                                    .corner_radius(c.border_radius).inner_margin(egui::Margin::ZERO)
                                                     .show(ui, |ui| {
                                                         ui.set_width(ui.available_width());
                                                         if n == 0 {
                                                             Frame::new().inner_margin(egui::Margin::symmetric(10, 8)).show(ui, |ui| {
-                                                                ui.label(RichText::new("Nothing skipped.").color(c.text_muted).italics().size(11.0));
+                                                                ui.label(RichText::new("Nothing skipped.").color(c.text_muted).italics().size(11.0 * c.font_scale));
                                                             });
                                                         } else {
                                                             for i in 0..n {
@@ -21927,9 +20525,9 @@ impl OttrinApp {
                                                                     .inner_margin(egui::Margin { left: 10, right: 4, top: 5, bottom: 5 })
                                                                     .show(ui, |ui| {
                                                                     ui.horizontal(|ui| {
-                                                                        ui.label(RichText::new(&g).size(11.0).color(c.text).monospace());
+                                                                        ui.label(RichText::new(&g).size(11.0 * c.font_scale).color(c.text).monospace());
                                                                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                                                            if ui.add_sized([24.0, 24.0], egui::Button::new(RichText::new(MI_CLOSE).size(10.0).color(c.text_muted)).frame(false)).clicked() { remove_idx = Some(i); }
+                                                                            if ui.add_sized([24.0, 24.0], egui::Button::new(RichText::new(MI_CLOSE).size(10.0 * c.font_scale).color(c.text_muted)).frame(false).themed(&c)).clicked() { remove_idx = Some(i); }
                                                                         });
                                                                     });
                                                                 });
@@ -21945,9 +20543,9 @@ impl OttrinApp {
                                             if self.search_ui.show_exclude_glob_input {
                                                 ui.horizontal(|ui| {
                                                     let resp = ui.add_sized([ui.available_width() - 54.0, 24.0],
-                                                        egui::TextEdit::singleline(&mut self.search_ui.exclude_glob_input).hint_text("e.g. *.log"));
+                                                        egui::TextEdit::singleline(&mut self.search_ui.exclude_glob_input).hint_text("e.g. *.log").themed(&c));
                                                     let enter = resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
-                                                    if ui.add_sized([44.0, 24.0], egui::Button::new("Add")).clicked() || enter {
+                                                    if ui.add_sized([44.0, 24.0], egui::Button::new("Add").themed(&c)).clicked() || enter {
                                                         let g = self.search_ui.exclude_glob_input.trim().to_string();
                                                         if !g.is_empty() {
                                                             self.state.config.search.exclude_globs.push(g);
@@ -21957,38 +20555,38 @@ impl OttrinApp {
                                                         self.search_ui.show_exclude_glob_input = false;
                                                     }
                                                 });
-                                            } else if ui.button("+ Add pattern").clicked() {
+                                            } else if ui.add(egui::Button::new("+ Add pattern").themed(&c)).clicked() {
                                                 self.search_ui.show_exclude_glob_input = true;
                                             }
 
                                             ui.add_space(14.0);
 
                                             // Only include (optional filter)
-                                            ui.label(RichText::new("Only include").color(c.text_dim).size(11.5).strong());
+                                            ui.label(RichText::new("Only include").color(c.text_dim).size(11.5 * c.font_scale).strong());
                                             ui.label(RichText::new(
                                                 "Restrict results to these file types only. Leave empty to include everything."
-                                            ).color(c.text_muted).size(10.5));
+                                            ).color(c.text_muted).size(10.5 * c.font_scale));
                                             ui.add_space(4.0);
                                             {
                                                 let mut remove_idx = None;
                                                 Frame::new()
                                                     .fill(c.panel_raised).stroke(Stroke::NONE)
-                                                    .corner_radius(6.0).inner_margin(egui::Margin::symmetric(8, 7))
+                                                    .corner_radius(c.border_radius).inner_margin(egui::Margin::symmetric(8, 7))
                                                     .show(ui, |ui| {
                                                         ui.set_min_width(ui.available_width());
                                                         if self.state.config.search.include_globs.is_empty() {
-                                                            ui.label(RichText::new("All file types").color(c.text_muted).italics().size(11.0));
+                                                            ui.label(RichText::new("All file types").color(c.text_muted).italics().size(11.0 * c.font_scale));
                                                         } else {
                                                             ui.horizontal_wrapped(|ui| {
                                                                 for i in 0..self.state.config.search.include_globs.len() {
                                                                     let g = self.state.config.search.include_globs[i].clone();
                                                                     Frame::new()
                                                                         .fill(c.panel).stroke(Stroke::NONE)
-                                                                        .corner_radius(10.0).inner_margin(egui::Margin { left: 8, right: 4, top: 2, bottom: 2 })
+                                                                        .corner_radius(c.border_radius).inner_margin(egui::Margin { left: 8, right: 4, top: 2, bottom: 2 })
                                                                         .show(ui, |ui| {
                                                                             ui.horizontal(|ui| {
-                                                                                ui.label(RichText::new(&g).size(11.0).color(c.text).monospace());
-                                                                                if ui.add_sized([16.0, 16.0], egui::Button::new(RichText::new(MI_CLOSE).size(10.0).color(c.text_muted)).frame(false)).clicked() { remove_idx = Some(i); }
+                                                                                ui.label(RichText::new(&g).size(11.0 * c.font_scale).color(c.text).monospace());
+                                                                                if ui.add_sized([16.0, 16.0], egui::Button::new(RichText::new(MI_CLOSE).size(10.0 * c.font_scale).color(c.text_muted)).frame(false).themed(&c)).clicked() { remove_idx = Some(i); }
                                                                             });
                                                                         });
                                                                 }
@@ -22004,9 +20602,9 @@ impl OttrinApp {
                                             if self.search_ui.show_include_glob_input {
                                                 ui.horizontal(|ui| {
                                                     let resp = ui.add_sized([ui.available_width() - 54.0, 24.0],
-                                                        egui::TextEdit::singleline(&mut self.search_ui.include_glob_input).hint_text("e.g. *.pdf"));
+                                                        egui::TextEdit::singleline(&mut self.search_ui.include_glob_input).hint_text("e.g. *.pdf").themed(&c));
                                                     let enter = resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
-                                                    if ui.add_sized([44.0, 24.0], egui::Button::new("Add")).clicked() || enter {
+                                                    if ui.add_sized([44.0, 24.0], egui::Button::new("Add").themed(&c)).clicked() || enter {
                                                         let g = self.search_ui.include_glob_input.trim().to_string();
                                                         if !g.is_empty() {
                                                             self.state.config.search.include_globs.push(g);
@@ -22016,7 +20614,7 @@ impl OttrinApp {
                                                         self.search_ui.show_include_glob_input = false;
                                                     }
                                                 });
-                                            } else if ui.button("+ Add pattern").clicked() {
+                                            } else if ui.add(egui::Button::new("+ Add pattern").themed(&c)).clicked() {
                                                 self.search_ui.show_include_glob_input = true;
                                             }
                                             ui.add_space(4.0);
@@ -22036,13 +20634,13 @@ impl OttrinApp {
                                         ui.add_space(6.0);
                                         ui.label(RichText::new(
                                             "When enabled, Ottrin can extract file contents for full-text search. Keep this scoped to specific folders you care about."
-                                        ).color(c.text_muted).size(10.5));
+                                        ).color(c.text_muted).size(10.5 * c.font_scale));
                                         ui.add_space(10.0);
 
-                                        ui.label(RichText::new("File types").color(c.text).size(12.0).strong());
+                                        ui.label(RichText::new("File types").color(c.text).size(12.0 * c.font_scale).strong());
                                         ui.label(RichText::new(
                                             "Only selected supported groups have their file bodies read."
-                                        ).color(c.text_muted).size(10.5));
+                                        ).color(c.text_muted).size(10.5 * c.font_scale));
                                         ui.add_space(4.0);
                                         for group in ContentFileGroup::ALL {
                                             let mut selected = self.state.config.search.content_file_groups.contains(&group);
@@ -22059,12 +20657,12 @@ impl OttrinApp {
                                         if self.state.config.search.content_file_groups.is_empty() {
                                             ui.label(RichText::new(
                                                 "No file groups selected — file bodies will not be read."
-                                            ).color(c.text_muted).italics().size(10.5));
+                                            ).color(c.text_muted).italics().size(10.5 * c.font_scale));
                                         }
                                         ui.add_space(10.0);
 
                                         ui.horizontal(|ui| {
-                                            ui.label(RichText::new("Maximum file size").color(c.text).size(11.5).strong());
+                                            ui.label(RichText::new("Maximum file size").color(c.text).size(11.5 * c.font_scale).strong());
                                             let before = self.state.config.search.content_max_file_size_bytes;
                                             egui::ComboBox::from_id_salt("content_max_file_size_bytes")
                                                 .selected_text(format_size(before))
@@ -22089,13 +20687,13 @@ impl OttrinApp {
                                         });
                                         ui.label(RichText::new(
                                             "Larger files are skipped without reading their bodies."
-                                        ).color(c.text_muted).size(10.5));
+                                        ).color(c.text_muted).size(10.5 * c.font_scale));
                                         ui.add_space(10.0);
 
-                                        ui.label(RichText::new("Content sources").color(c.text).size(12.0).strong());
+                                        ui.label(RichText::new("Content sources").color(c.text).size(12.0 * c.font_scale).strong());
                                         ui.label(RichText::new(
                                             "Only these folders are eligible for content indexing."
-                                        ).color(c.text_muted).size(10.5));
+                                        ).color(c.text_muted).size(10.5 * c.font_scale));
                                         ui.add_space(6.0);
 
                                         {
@@ -22104,7 +20702,7 @@ impl OttrinApp {
                                             Frame::new()
                                                 .fill(c.panel)
                                                 .stroke(Stroke::NONE)
-                                                .corner_radius(6.0)
+                                                .corner_radius(c.border_radius)
                                                 .inner_margin(egui::Margin::ZERO)
                                                 .show(ui, |ui| {
                                                     ui.set_width(ui.available_width());
@@ -22112,7 +20710,7 @@ impl OttrinApp {
                                                         Frame::new().inner_margin(egui::Margin::symmetric(12, 10)).show(ui, |ui| {
                                                             ui.label(RichText::new(
                                                                 "No folders selected — content indexing is disabled by default."
-                                                            ).color(c.text_muted).italics().size(11.0));
+                                                            ).color(c.text_muted).italics().size(11.0 * c.font_scale));
                                                         });
                                                     } else {
                                                         for i in 0..n {
@@ -22128,13 +20726,13 @@ impl OttrinApp {
                                                                 .inner_margin(egui::Margin { left: 12, right: 6, top: 7, bottom: 7 })
                                                                 .show(ui, |ui| {
                                                                     ui.horizontal(|ui| {
-                                                                        ui.label(RichText::new(MI_FOLDER).color(c.accent).size(14.0));
+                                                                        ui.label(RichText::new(MI_FOLDER).color(c.accent).size(14.0 * c.font_scale));
                                                                         ui.add_space(6.0);
-                                                                        ui.label(RichText::new(&p).size(11.5).color(c.text));
+                                                                        ui.label(RichText::new(&p).size(11.5 * c.font_scale).color(c.text));
                                                                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                                             if ui.add_sized([26.0, 26.0], egui::Button::new(
-                                                                                RichText::new(MI_CLOSE).size(10.0).color(c.text_muted)
-                                                                            ).frame(false)).clicked() { remove_idx = Some(i); }
+                                                                                RichText::new(MI_CLOSE).size(10.0 * c.font_scale).color(c.text_muted)
+                                                                            ).frame(false).themed(&c)).clicked() { remove_idx = Some(i); }
                                                                         });
                                                                     });
                                                                 });
@@ -22148,23 +20746,23 @@ impl OttrinApp {
                                         }
                                         ui.add_space(4.0);
                                         ui.horizontal(|ui| {
-                                            if ui.button(format!("  {}  Add folder…", MI_FOLDER_OPEN)).clicked()
+                                            if ui.add(egui::Button::new(format!("  {}  Add folder…", MI_FOLDER_OPEN)).themed(&c)).clicked()
                                                 && let Some(dir) = rfd::FileDialog::new().pick_folder()
                                             {
                                                 self.state.config.search.content_include_roots.push(dir);
                                                 self.search_service.update_config(self.state.config.search.clone());
                                             }
-                                            if ui.button("Use indexed locations").clicked() {
+                                            if ui.add(egui::Button::new("Use indexed locations").themed(&c)).clicked() {
                                                 self.state.config.search.content_include_roots = self.state.config.search.include_roots.clone();
                                                 self.search_service.update_config(self.state.config.search.clone());
                                             }
                                         });
 
                                         ui.add_space(10.0);
-                                        ui.label(RichText::new("Content exclusions").color(c.text_dim).size(11.5).strong());
+                                        ui.label(RichText::new("Content exclusions").color(c.text_dim).size(11.5 * c.font_scale).strong());
                                         ui.label(RichText::new(
                                             "These folders are skipped even if they live inside the content sources."
-                                        ).color(c.text_muted).size(10.5));
+                                        ).color(c.text_muted).size(10.5 * c.font_scale));
                                         ui.add_space(6.0);
 
                                         {
@@ -22173,7 +20771,7 @@ impl OttrinApp {
                                             Frame::new()
                                                 .fill(c.panel)
                                                 .stroke(Stroke::NONE)
-                                                .corner_radius(6.0)
+                                                .corner_radius(c.border_radius)
                                                 .inner_margin(egui::Margin::ZERO)
                                                 .show(ui, |ui| {
                                                     ui.set_width(ui.available_width());
@@ -22181,7 +20779,7 @@ impl OttrinApp {
                                                         Frame::new().inner_margin(egui::Margin::symmetric(12, 10)).show(ui, |ui| {
                                                             ui.label(RichText::new(
                                                                 "No exclusions — all folders inside your content sources are eligible."
-                                                            ).color(c.text_muted).italics().size(11.0));
+                                                            ).color(c.text_muted).italics().size(11.0 * c.font_scale));
                                                         });
                                                     } else {
                                                         for i in 0..n {
@@ -22197,13 +20795,13 @@ impl OttrinApp {
                                                                 .inner_margin(egui::Margin { left: 12, right: 6, top: 7, bottom: 7 })
                                                                 .show(ui, |ui| {
                                                                     ui.horizontal(|ui| {
-                                                                        ui.label(RichText::new(MI_FOLDER).color(c.text_dim).size(14.0));
+                                                                        ui.label(RichText::new(MI_FOLDER).color(c.text_dim).size(14.0 * c.font_scale));
                                                                         ui.add_space(6.0);
-                                                                        ui.label(RichText::new(&p).size(11.5).color(c.text));
+                                                                        ui.label(RichText::new(&p).size(11.5 * c.font_scale).color(c.text));
                                                                         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                                                                             if ui.add_sized([26.0, 26.0], egui::Button::new(
-                                                                                RichText::new(MI_CLOSE).size(10.0).color(c.text_muted)
-                                                                            ).frame(false)).clicked() { remove_idx = Some(i); }
+                                                                                RichText::new(MI_CLOSE).size(10.0 * c.font_scale).color(c.text_muted)
+                                                                            ).frame(false).themed(&c)).clicked() { remove_idx = Some(i); }
                                                                         });
                                                                     });
                                                                 });
@@ -22216,7 +20814,7 @@ impl OttrinApp {
                                             }
                                         }
                                         ui.add_space(4.0);
-                                        if ui.button(format!("  {}  Add exclusion…", MI_FOLDER_OPEN)).clicked()
+                                        if ui.add(egui::Button::new(format!("  {}  Add exclusion…", MI_FOLDER_OPEN)).themed(&c)).clicked()
                                             && let Some(dir) = rfd::FileDialog::new().pick_folder()
                                         {
                                             self.state.config.search.content_exclude_roots.push(dir);
@@ -22228,11 +20826,11 @@ impl OttrinApp {
                                     settings_section_icon(ui, c, MI_VISIBILITY, "Search behavior", "Default scope and visibility when you open search.", |ui| {
                                         Frame::new()
                                             .fill(c.panel)
-                                            .corner_radius(6.0)
+                                            .corner_radius(c.border_radius)
                                             .inner_margin(egui::Margin::symmetric(12, 10))
                                             .show(ui, |ui| {
                                                 ui.set_width(ui.available_width());
-                                                ui.label(RichText::new("Default scope").color(c.text_dim).size(11.5));
+                                                ui.label(RichText::new("Default scope").color(c.text_dim).size(11.5 * c.font_scale));
                                                 {
                                                     let mut scope = self.state.config.search.default_scope;
                                                     ui.radio_value(&mut scope, SearchScope::Global, "All indexed locations");
@@ -22272,12 +20870,12 @@ impl OttrinApp {
                                         );
                                         Frame::new()
                                             .fill(mix_color(c.panel, c.accent, 0.08))
-                                            .stroke(Stroke::new(1.0, mix_color(c.border, c.accent, 0.28)))
-                                            .corner_radius(6.0)
+                                            .stroke(Stroke::new(1.0, c.accent))
+                                            .corner_radius(c.border_radius)
                                             .inner_margin(egui::Margin::symmetric(12, 10))
                                             .show(ui, |ui| {
                                                 ui.set_width(ui.available_width());
-                                                ui.label(RichText::new("Search health").color(c.text).size(12.0).strong());
+                                                ui.label(RichText::new("Search health").color(c.text).size(12.0 * c.font_scale).strong());
                                                 ui.add_space(6.0);
                                                 let diag = self.search_service.diagnostics();
                                                 let ok_col = c.accent;
@@ -22290,9 +20888,9 @@ impl OttrinApp {
                                                             Some(false) => (MI_CLEAR, bad_col),
                                                             None => (MI_INFO, warn_col),
                                                         };
-                                                        ui.label(RichText::new(icon).size(13.0).color(color));
-                                                        ui.label(RichText::new(label).color(c.text).size(11.5));
-                                                        ui.label(RichText::new(detail).color(c.text_muted).size(10.5));
+                                                        ui.label(RichText::new(icon).size(13.0 * c.font_scale).color(color));
+                                                        ui.label(RichText::new(label).color(c.text).size(11.5 * c.font_scale));
+                                                        ui.label(RichText::new(detail).color(c.text_muted).size(10.5 * c.font_scale));
                                                     });
                                                 };
                                                 let sqlite_detail = if diag.indexed_items > 0 {
@@ -22380,18 +20978,18 @@ impl OttrinApp {
                                                 }
                                             });
                                         ui.add_space(12.0);
-                                        ui.label(RichText::new("Recommended setup").color(c.text_dim).size(11.5).strong());
+                                        ui.label(RichText::new("Recommended setup").color(c.text_dim).size(11.5 * c.font_scale).strong());
                                         ui.label(RichText::new(if persistent_index_daemon {
                                             "Use Ottrin's SQLite index for rich metadata in selected folders. The per-user daemon keeps it current independently of GUI windows. System filename search can independently cover broader paths."
                                         } else {
                                             "Use Ottrin's SQLite index for rich metadata in selected folders. The watcher keeps it current while Ottrin is open. System filename search can independently cover broader paths."
                                         })
-                                            .color(c.text_muted).size(10.5));
+                                            .color(c.text_muted).size(10.5 * c.font_scale));
                                         ui.add_space(6.0);
 
                                         if !is_administrator_session() {
-                                            ui.label(RichText::new(format!("Background index: {}", sqlite_sched.detail)).color(c.text_muted).size(11.0));
-                                            if ui.button("Manage index service…").clicked() {
+                                            ui.label(RichText::new(format!("Background index: {}", sqlite_sched.detail)).color(c.text_muted).size(11.0 * c.font_scale));
+                                            if ui.add(egui::Button::new("Manage index service…").themed(&c)).clicked() {
                                                 self.open_services_settings();
                                             }
                                         }
@@ -22399,7 +20997,7 @@ impl OttrinApp {
 
                                         if platform_capabilities.system_locate_controls_visible {
                                             Frame::new()
-                                                .fill(c.panel).corner_radius(6.0)
+                                                .fill(c.panel).corner_radius(c.border_radius)
                                                 .inner_margin(egui::Margin::symmetric(12, 10))
                                                 .show(ui, |ui| {
                                                     ui.set_width(ui.available_width());
@@ -22414,25 +21012,25 @@ impl OttrinApp {
                                                     ui.add_space(2.0);
                                                     ui.label(RichText::new(
                                                         "Adds filename and path results from the operating system database, including broad paths such as /usr, /etc, or /var."
-                                                    ).color(c.text_muted).size(10.5));
+                                                    ).color(c.text_muted).size(10.5 * c.font_scale));
                                                     ui.label(RichText::new(
                                                         "This works with no native indexed folders, does not add rich metadata to the SQLite index, and cannot bypass permissions."
-                                                    ).color(c.text_muted).size(10.5));
+                                                    ).color(c.text_muted).size(10.5 * c.font_scale));
                                                     ui.add_space(4.0);
                                                     if locate_ok {
-                                                        ui.label(RichText::new("plocate is installed and available").size(10.5).color(ok_col));
+                                                        ui.label(RichText::new("plocate is installed and available").size(10.5 * c.font_scale).color(ok_col));
                                                         let sys_age = ottrin_search::SearchService::system_locate_db_age_secs();
                                                         let stale = sys_age.map(|s| s > 7 * 86_400).unwrap_or(false);
                                                         let age_label = sys_age
                                                             .map(|s| format!("System locate DB age: {}", format_age_str(s)))
                                                             .unwrap_or_else(|| "System locate DB age: unknown".to_string());
                                                         ui.label(RichText::new(age_label)
-                                                            .size(10.5)
+                                                            .size(10.5 * c.font_scale)
                                                             .color(if stale { warn_col } else { c.text_muted }));
                                                         if self.state.config.search.use_system_locate
                                                             && updatedb_ok
                                                             && (stale || sys_age.is_none())
-                                                            && ui.button("Update system filename database now…").clicked()
+                                                            && ui.add(egui::Button::new("Update system filename database now…").themed(&c)).clicked()
                                                         {
                                                             let (text, ok) = execute_system_locate_maintenance(
                                                                 self.platform.as_ref(),
@@ -22475,29 +21073,29 @@ impl OttrinApp {
                                                         if !self.state.config.search.use_system_locate {
                                                             ui.label(RichText::new(
                                                                 "System updatedb maintenance is not needed while plocate fallback is off."
-                                                            ).size(10.5).color(c.text_muted));
+                                                            ).size(10.5 * c.font_scale).color(c.text_muted));
                                                         } else if sys_sched.needs_setup {
                                                             ui.label(RichText::new(
                                                                 "No updatedb schedule detected. Enable this only if you rely on system path fallback."
-                                                            ).size(10.5).color(warn_col));
+                                                            ).size(10.5 * c.font_scale).color(warn_col));
                                                         } else {
                                                             let detail = match (sys_sched.source.as_deref(), sys_sched.detail.as_deref()) {
                                                                 (Some(src), Some(det)) => format!("System schedule detected: {} ({})", src, det),
                                                                 (Some(src), None) => format!("System schedule detected: {}", src),
                                                                 _ => "System schedule detected".to_string(),
                                                             };
-                                                            ui.label(RichText::new(detail).size(10.5).color(c.text_muted));
+                                                            ui.label(RichText::new(detail).size(10.5 * c.font_scale).color(c.text_muted));
                                                             if !sys_sched.managed_by_ottrin {
                                                                 ui.label(RichText::new("Managed by the OS or distro package.")
-                                                                    .size(10.5).color(c.text_muted));
+                                                                    .size(10.5 * c.font_scale).color(c.text_muted));
                                                             }
                                                             ui.label(RichText::new(system_locate_schedule_guidance(&sys_sched))
-                                                                .size(10.5).color(c.text_muted));
+                                                                .size(10.5 * c.font_scale).color(c.text_muted));
                                                         }
                                                     } else {
-                                                        ui.label(RichText::new("plocate not found — install plocate to enable this").size(10.5).color(c.text_muted).italics());
+                                                        ui.label(RichText::new("plocate not found — install plocate to enable this").size(10.5 * c.font_scale).color(c.text_muted).italics());
                                                         ui.label(RichText::new("Install plocate for path fallback; install updatedb/mlocate only if you want scheduled refreshes.")
-                                                            .size(10.5).color(c.text_muted));
+                                                            .size(10.5 * c.font_scale).color(c.text_muted));
                                                     }
                                                 });
                                         }
@@ -22515,17 +21113,17 @@ impl OttrinApp {
                                             ui.horizontal(|ui| {
                                                 ui.label(RichText::new("Advanced (system-level)")
                                                     .color(if adv_parent_open { c.text } else { c.text_dim })
-                                                    .size(12.0).strong());
+                                                    .size(12.0 * c.font_scale).strong());
                                                 if !adv_parent_open {
                                                     ui.label(RichText::new("fanotify")
-                                                        .color(c.text_muted).size(10.5).italics());
+                                                        .color(c.text_muted).size(10.5 * c.font_scale).italics());
                                                 }
                                             });
                                         }).body(|ui| {
                                             ui.add_space(4.0);
                                             ui.label(RichText::new(
                                             "Most users should leave these alone. These are system maintenance details, not better normal search quality."
-                                            ).color(c.text_muted).size(10.5));
+                                            ).color(c.text_muted).size(10.5 * c.font_scale));
                                             ui.add_space(8.0);
 
                                     // ── Privileged indexing daemon ─────────────
@@ -22537,49 +21135,49 @@ impl OttrinApp {
                                         priv_state.show_header(ui, |ui| {
                                             ui.horizontal(|ui| {
                                                 ui.label(RichText::new("Privileged watcher service (fanotify)")
-                                                    .color(if priv_open { c.text } else { c.text_dim }).size(11.5));
+                                                    .color(if priv_open { c.text } else { c.text_dim }).size(11.5 * c.font_scale));
                                                 ui.label(RichText::new("not required")
-                                                    .color(c.text_muted).size(10.0).italics());
+                                                    .color(c.text_muted).size(10.0 * c.font_scale).italics());
                                             });
                                         }).body(|ui| {
                                             ui.add_space(6.0);
                                             ui.label(RichText::new(
                                                 "Ottrin currently uses the normal user-space watcher. Fanotify is outside the normal v1 search path and is only relevant for unusual systems that hit watcher limits. It does not bypass permissions or make protected files searchable."
-                                            ).color(c.text_muted).size(10.5));
+                                            ).color(c.text_muted).size(10.5 * c.font_scale));
                                             ui.add_space(8.0);
                                             Frame::new()
                                                 .fill(Color32::from_rgba_unmultiplied(200, 130, 30, 18))
                                                 .stroke(Stroke::new(1.0, Color32::from_rgba_unmultiplied(200, 150, 30, 80)))
-                                                .corner_radius(6.0).inner_margin(egui::Margin::symmetric(10, 8))
+                                                .corner_radius(c.border_radius).inner_margin(egui::Margin::symmetric(10, 8))
                                                 .show(ui, |ui| {
-                                                    ui.label(RichText::new("Security note").color(c.text).size(11.0).strong());
+                                                    ui.label(RichText::new("Security note").color(c.text).size(11.0 * c.font_scale).strong());
                                                     ui.label(RichText::new(
                                                         "CAP_SYS_ADMIN and CAP_DAC_READ_SEARCH are powerful Linux capabilities. \
                                                          They should only be granted to a packaged, audited helper binary. \
                                                          They do not replace normal authorization for opening, copying, moving, or deleting files."
-                                                    ).color(c.text_muted).size(10.5));
+                                                    ).color(c.text_muted).size(10.5 * c.font_scale));
                                                 });
                                             ui.add_space(8.0);
                                             let priv_ok = ottrin_search::SearchService::privileged_indexing_available();
                                             if priv_ok {
                                                 ui.horizontal(|ui| {
-                                                    ui.label(RichText::new(MI_SEARCH).color(c.accent).size(14.0));
+                                                    ui.label(RichText::new(MI_SEARCH).color(c.accent).size(14.0 * c.font_scale));
                                                     ui.add_space(4.0);
                                                     ui.label(RichText::new("CAP_SYS_ADMIN detected for this process. No packaged fanotify service is enabled by this setting.")
-                                                        .color(c.text).size(11.5));
+                                                        .color(c.text).size(11.5 * c.font_scale));
                                                 });
                                             } else {
                                                 ui.label(RichText::new("Currently running in user-space mode (inotify).")
-                                                    .color(c.text_dim).size(11.0));
+                                                    .color(c.text_dim).size(11.0 * c.font_scale));
                                                 ui.add_space(8.0);
                                                 ui.horizontal(|ui| {
                                                     ui.add_enabled(false, egui::Button::new(
-                                                        RichText::new("Package helper not available in this build").size(12.0)
-                                                    )).on_hover_text(
+                                                        RichText::new("Package helper not available in this build").size(12.0 * c.font_scale)
+                                                    ).themed(&c)).on_hover_text(
                                                         "Fanotify support needs a packaged ottrin-indexd helper. The current v1 path uses the normal user-space watcher."
                                                     );
                                                     ui.label(RichText::new("Leave off for v1")
-                                                        .color(c.text_muted).size(10.5).italics());
+                                                        .color(c.text_muted).size(10.5 * c.font_scale).italics());
                                                 });
                                             }
                                             ui.add_space(6.0);
@@ -22594,11 +21192,11 @@ impl OttrinApp {
                                     settings_section_icon(ui, c, MI_CLEAR, "Reset", "Restore search settings to defaults.", |ui| {
                                         ui.label(RichText::new(
                                             "Resets all search settings (locations, exclusions, scope, refresh interval) back to defaults. Does not affect the current index."
-                                        ).color(c.text_muted).size(10.5));
+                                        ).color(c.text_muted).size(10.5 * c.font_scale));
                                         ui.add_space(8.0);
                                         if ui.add(egui::Button::new(
-                                            RichText::new("Reset search settings to defaults").size(12.0).color(c.error)
-                                        ).stroke(Stroke::new(1.0, c.error))).clicked() {
+                                            RichText::new("Reset search settings to defaults").size(12.0 * c.font_scale).color(c.error)
+                                        ).stroke(Stroke::new(1.0, c.error)).themed(&c)).clicked() {
                                             reset_search_config(&mut self.state.config.search);
                                             self.search_service.update_config(self.state.config.search.clone());
                                         }
@@ -22606,17 +21204,17 @@ impl OttrinApp {
                                     });
                                 }
                                 SettingsTab::Cache => {
-                                    ui.label(RichText::new("Cache & Thumbnails").color(c.text).size(settings_title).strong());
+                                    ui.label(RichText::new("Cache & Thumbnails").color(c.heading).size(settings_title).strong());
                                     ui.label(RichText::new("Disk usage controls for generated previews and thumbnails.")
                                         .color(c.text_muted).size(settings_subtitle));
                                     ui.add_space(12.0);
                                     Frame::new()
                                         .fill(c.panel_raised)
                                         .stroke(Stroke::NONE)
-                                        .corner_radius(8.0)
+                                        .corner_radius(c.border_radius)
                                         .inner_margin(egui::Margin::symmetric(12, 10))
                                         .show(ui, |ui| {
-                                            ui.label(RichText::new("Thumbnail cache").color(c.text).size(12.0).strong());
+                                            ui.label(RichText::new("Thumbnail cache").color(c.text).size(12.0 * c.font_scale).strong());
                                             let stats = preview_cache_stats();
                                             let dir_label = preview_cache_dir()
                                                 .map(|p| p.display().to_string())
@@ -22624,7 +21222,7 @@ impl OttrinApp {
                                             ui.label(
                                                 RichText::new(format!("Cache path: {}", dir_label))
                                                     .color(c.text_muted)
-                                                    .size(10.6),
+                                                    .size(10.6 * c.font_scale),
                                             );
                                             let (cache_count, cache_bytes) =
                                                 stats.unwrap_or((0, 0));
@@ -22632,13 +21230,13 @@ impl OttrinApp {
                                                 ui.label(
                                                     RichText::new(format!("Cached thumbnails: {} ({}).", cache_count, format_size(cache_bytes)))
                                                         .color(c.text_muted)
-                                                        .size(10.6),
+                                                        .size(10.6 * c.font_scale),
                                                 );
                                             } else {
                                                 ui.label(
                                                     RichText::new("Cached thumbnails: unavailable.")
                                                         .color(c.text_muted)
-                                                        .size(10.6),
+                                                        .size(10.6 * c.font_scale),
                                                 );
                                             }
                                             ui.add_space(6.0);
@@ -22646,7 +21244,7 @@ impl OttrinApp {
                                                 ui.label(
                                                     RichText::new("Maximum size")
                                                         .color(c.text_dim)
-                                                        .size(11.0),
+                                                        .size(11.0 * c.font_scale),
                                                 );
                                                 ui.add_space(8.0);
                                                 let mut mb = self.state.config.thumbnail_cache_max_mb;
@@ -22687,7 +21285,7 @@ impl OttrinApp {
                                                 if ui
                                                     .add_enabled(
                                                         clear_enabled,
-                                                        egui::Button::new(clear_label),
+                                                        egui::Button::new(clear_label).themed(&c),
                                                     )
                                                     .clicked()
                                                 {
@@ -22713,7 +21311,7 @@ impl OttrinApp {
                                                         "Async budget controls for large folders are still pending."
                                                     })
                                                         .color(c.text_dim)
-                                                        .size(10.2),
+                                                        .size(10.2 * c.font_scale),
                                                 );
                                             });
                                         });
@@ -22743,9 +21341,9 @@ impl OttrinApp {
         c: &Colors,
     ) -> egui::Response {
         let scale = self.view_scale_for(ViewMode::Grid);
-        let row_h = (25.0 * scale.clamp(0.9, 1.35)).round();
+        let row_h = (25.0 * scale.clamp(0.9, 1.35) * c.font_scale).round();
         let icon_size = (16.0 * scale.sqrt()).max(14.0);
-        let text_size = (13.0 * scale.sqrt()).max(11.0);
+        let text_size = (13.0 * scale.sqrt()).max(11.0) * c.font_scale;
         let row_rect = Rect::from_min_size(ui.cursor().min, Vec2::new(row_width.max(1.0), row_h));
 
         // Alternating stripe (painted first, underneath everything else)
@@ -23004,6 +21602,11 @@ impl eframe::App for OttrinApp {
     }
 
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+        self.system_appearance.poll();
+        let colors = self.effective_colors(self.system_theme(ctx));
+        if colors != self.colors {
+            self.reapply_theme(ctx);
+        }
         // Track window size for persistence on exit.
         let vp = ctx.viewport_rect();
         if vp.width() > 100.0 && vp.height() > 100.0 {
@@ -23187,7 +21790,6 @@ impl eframe::App for OttrinApp {
         // Floating overlays
         self.sync_preview_to_selection();
         self.render_preview_overlay(ctx);
-        self.render_properties_popup(ctx);
         if !self.preview.visible {
             self.render_creation_modal(ctx);
             self.render_rename_modal(ctx);
@@ -23213,129 +21815,7 @@ impl eframe::App for OttrinApp {
             ctx.request_repaint_after(std::time::Duration::from_millis(50));
         }
 
-        // Paint rounded border with transparent corners on the main viewport.
-        // The GL callback runs first to fix the alpha channel, then the
-        // border stroke paints on top so it is never occluded.
-        let vp_rect = ctx.viewport_rect();
-        let border_painter = ctx.layer_painter(egui::LayerId::new(
-            egui::Order::Foreground,
-            egui::Id::new("main_border"),
-        ));
-
-        let radius = self.colors.app_radius as f32;
-        if rounded_alpha_callback_enabled(self.graphics_runtime.is_windows) {
-            border_painter.add(egui::Shape::Callback(egui::PaintCallback {
-                rect: vp_rect,
-                callback: std::sync::Arc::new(eframe::egui_glow::CallbackFn::new(
-                    move |info, painter| {
-                        use eframe::glow::HasContext as _;
-                        let gl = painter.gl();
-                        let [scr_w, scr_h] = info.screen_size_px;
-                        let scr_w = scr_w as i32;
-                        let scr_h = scr_h as i32;
-                        let ppp = info.pixels_per_point;
-
-                        unsafe {
-                            let r_f = radius * ppp;
-                            let r_px = r_f.ceil() as i32;
-
-                            // --- alpha pass: only write the A channel --------
-                            gl.color_mask(false, false, false, true);
-
-                            // 1. Clear alpha to 0 everywhere (fully transparent).
-                            gl.clear_color(0.0, 0.0, 0.0, 0.0);
-                            gl.disable(eframe::glow::SCISSOR_TEST);
-                            gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-
-                            // 2. Fill alpha=1.0 only inside the rounded rect.
-                            gl.clear_color(0.0, 0.0, 0.0, 1.0);
-                            gl.enable(eframe::glow::SCISSOR_TEST);
-
-                            if r_px > 0 && scr_h > 2 * r_px {
-                                // Middle band: full width, fully opaque.
-                                gl.scissor(0, r_px, scr_w, scr_h - 2 * r_px);
-                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-
-                                // Corner scanlines: arc-shaped inset.
-                                for row in 0..r_px {
-                                    let dy = r_f - row as f32 - 0.5;
-                                    let inset = if dy <= 0.0 {
-                                        0
-                                    } else if dy >= r_f {
-                                        scr_w // fully outside
-                                    } else {
-                                        let x_inside = (r_f * r_f - dy * dy).sqrt();
-                                        let edge = r_f - x_inside;
-                                        (edge.ceil() as i32).clamp(0, r_px)
-                                    };
-                                    let strip_w = scr_w - 2 * inset;
-                                    if strip_w <= 0 {
-                                        continue;
-                                    }
-                                    // Top row (GL origin is bottom-left).
-                                    gl.scissor(inset, scr_h - 1 - row, strip_w, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                    // Bottom row.
-                                    gl.scissor(inset, row, strip_w, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                }
-                            } else {
-                                // No rounding or window too small — full opaque.
-                                gl.scissor(0, 0, scr_w, scr_h);
-                                gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                            }
-
-                            // --- RGB pass: zero out RGB in corner boxes so
-                            //     stale content colour doesn't bleed through
-                            //     the border's anti-aliased fringe. ----------
-                            if r_px > 0 {
-                                gl.color_mask(true, true, true, false);
-                                gl.clear_color(0.0, 0.0, 0.0, 0.0);
-                                // Only clear the thin L-shaped strips outside
-                                // the arc, not the whole corner box (to avoid
-                                // destroying content pixels inside the arc).
-                                for row in 0..r_px {
-                                    let dy = r_f - row as f32 - 0.5;
-                                    let inset = if dy <= 0.0 {
-                                        0
-                                    } else if dy >= r_f {
-                                        r_px
-                                    } else {
-                                        let x_inside = (r_f * r_f - dy * dy).sqrt();
-                                        let edge = r_f - x_inside;
-                                        (edge.ceil() as i32).clamp(0, r_px)
-                                    };
-                                    if inset <= 0 {
-                                        continue;
-                                    }
-                                    // Top-left / top-right
-                                    gl.scissor(0, scr_h - 1 - row, inset, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                    gl.scissor(scr_w - inset, scr_h - 1 - row, inset, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                    // Bottom-left / bottom-right
-                                    gl.scissor(0, row, inset, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                    gl.scissor(scr_w - inset, row, inset, 1);
-                                    gl.clear(eframe::glow::COLOR_BUFFER_BIT);
-                                }
-                            }
-
-                            gl.color_mask(true, true, true, true);
-                            gl.disable(eframe::glow::SCISSOR_TEST);
-                        }
-                    },
-                )),
-            }));
-        }
-
-        // Border stroke renders AFTER the callback so it sits on top.
-        border_painter.rect_stroke(
-            vp_rect,
-            self.colors.app_radius,
-            Stroke::new(self.colors.window_border_width, self.colors.window_border),
-            egui::StrokeKind::Inside,
-        );
+        self.paint_viewport_frame(ctx);
     }
 
     fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
@@ -23345,13 +21825,10 @@ impl eframe::App for OttrinApp {
 
 fn menu_item(ui: &mut egui::Ui, icon: &str, label: &str, c: &Colors) -> egui::Response {
     ui.add(
-        egui::Button::new(
-            RichText::new(format!("{icon}  {label}"))
-                .size(12.5)
-                .color(c.text_muted),
-        )
-        .frame(false)
-        .min_size(Vec2::new(188.0, 26.0)),
+        egui::Button::new(RichText::new(format!("{icon}  {label}")).size(12.5 * c.font_scale))
+            .frame_when_inactive(false)
+            .min_size(Vec2::new(188.0, 26.0))
+            .themed(c),
     )
 }
 
@@ -23559,17 +22036,21 @@ fn render_source_editor(
     let editor_id = source_code_editor_id(path);
     let mut find_next = false;
     ui.horizontal(|ui| {
-        ui.label(RichText::new("Find").size(11.5));
+        ui.label(RichText::new("Find").size(11.5 * c.font_scale));
         let query = ui.add(
             egui::TextEdit::singleline(&mut editor.search_query)
                 .desired_width(180.0)
-                .hint_text("Text in this file"),
+                .hint_text("Text in this file")
+                .themed(&c),
         );
         if query.changed() {
             editor.search_next_char = 0;
         }
         find_next = ui
-            .add_enabled(!editor.search_query.is_empty(), egui::Button::new("Next"))
+            .add_enabled(
+                !editor.search_query.is_empty(),
+                egui::Button::new("Next").themed(&c),
+            )
             .clicked()
             || (query.lost_focus() && ui.input(|input| input.key_pressed(Key::Enter)));
     });
@@ -23871,7 +22352,8 @@ fn smart_panel_icon_button(
                     .color(spec.icon_color),
             )
             .frame(false)
-            .min_size(Vec2::splat(30.0)),
+            .min_size(Vec2::splat(30.0))
+            .themed(c),
         )
         .on_hover_text(spec.tooltip);
     if resp.hovered() {
@@ -23884,9 +22366,18 @@ fn smart_panel_header(ui: &mut egui::Ui, c: &Colors, icon: &str, title: &str) {
     ui.add_space(8.0);
     ui.horizontal(|ui| {
         ui.add_space(8.0);
-        ui.label(RichText::new(icon).size(14.0).color(c.text_dim));
+        ui.label(
+            RichText::new(icon)
+                .size(14.0 * c.font_scale)
+                .color(c.text_dim),
+        );
         ui.add_space(4.0);
-        ui.label(RichText::new(title).color(c.text).size(14.0).strong());
+        ui.label(
+            RichText::new(title)
+                .color(c.heading)
+                .size(14.0 * c.font_scale)
+                .strong(),
+        );
     });
     ui.add_space(8.0);
     ui.painter().hline(
@@ -23908,13 +22399,13 @@ fn delete_choice_row(
             MI_DELETE,
             "Move to Trash",
             "Safest option. You can restore it from the system trash.",
-            c.text,
+            c.button_text,
         ),
         DeleteChoice::Cancel => (
             MI_CLOSE,
             "Cancel",
             "Close this dialog without deleting anything.",
-            c.text_muted,
+            c.button_text,
         ),
         DeleteChoice::DeletePermanently => (
             MI_DELETE,
@@ -23923,55 +22414,65 @@ fn delete_choice_row(
             c.error,
         ),
     };
-    let fill = if selected { c.selected_bg } else { c.panel };
+    let fill = if selected { c.selected_bg } else { c.button_bg };
     let stroke = if selected {
         Stroke::new(1.2, c.accent)
     } else {
-        Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.35))
+        Stroke::new(1.0, c.border)
     };
-    let row_h = if selected { 48.0 } else { 38.0 };
+    let row_h = if selected { 48.0 } else { 38.0 } * c.font_scale;
     let (rect, response) =
         ui.allocate_exact_size(Vec2::new(ui.available_width(), row_h), Sense::click());
     response.widget_info(|| WidgetInfo::selected(WidgetType::Button, true, selected, label));
 
     ui.painter().rect_filled(
         rect,
-        6.0,
+        c.button_radius,
         if response.hovered() && !selected {
-            mix_color(fill, c.hover, 0.35)
+            c.hover
         } else {
             fill
         },
     );
     ui.painter()
-        .rect_stroke(rect, 6.0, stroke, egui::StrokeKind::Inside);
+        .rect_stroke(rect, c.button_radius, stroke, egui::StrokeKind::Inside);
     ui.painter().text(
         egui::pos2(
             rect.left() + 20.0,
-            rect.top() + if selected { 16.0 } else { row_h * 0.5 },
+            rect.top()
+                + if selected {
+                    16.0 * c.font_scale
+                } else {
+                    row_h * 0.5
+                },
         ),
         Align2::CENTER_CENTER,
         icon,
-        FontId::proportional(14.0),
+        FontId::proportional(14.0 * c.font_scale),
         text_col,
     );
     ui.painter().text(
         egui::pos2(
             rect.left() + 42.0,
-            rect.top() + if selected { 15.0 } else { row_h * 0.5 },
+            rect.top()
+                + if selected {
+                    15.0 * c.font_scale
+                } else {
+                    row_h * 0.5
+                },
         ),
         Align2::LEFT_CENTER,
         label,
-        FontId::proportional(12.6),
+        FontId::proportional(12.6 * c.font_scale),
         text_col,
     );
     if selected {
         ui.painter().text(
-            egui::pos2(rect.left() + 42.0, rect.top() + 31.0),
+            egui::pos2(rect.left() + 42.0, rect.top() + 31.0 * c.font_scale),
             Align2::LEFT_CENTER,
             hint,
-            FontId::proportional(10.5),
-            c.text_muted,
+            FontId::proportional(10.5 * c.font_scale),
+            c.button_text,
         );
     }
     if selected {
@@ -24690,30 +23191,30 @@ fn render_listing_error(ui: &mut egui::Ui, c: &Colors, err: &str, allow_retry: b
     ui.add_space(16.0);
     ui.vertical_centered(|ui| {
         if denied {
-            ui.label(RichText::new(MI_LOCK).size(24.0).color(c.text_muted));
+            ui.label(RichText::new(MI_LOCK).size(24.0 * c.font_scale).color(c.text_muted));
             ui.add_space(4.0);
             for line in err.lines() {
-                ui.label(RichText::new(line).color(c.text_dim).size(11.5));
+                ui.label(RichText::new(line).color(c.text_dim).size(11.5 * c.font_scale));
             }
             ui.add_space(4.0);
             ui.label(
                 RichText::new("You can still browse other folders. Restricted actions require admin privileges.")
                     .color(c.text_muted)
-                    .size(10.5),
+                    .size(10.5 * c.font_scale),
             );
             if allow_retry {
                 ui.add_space(8.0);
                 if ui.add(
-                    egui::Button::new(RichText::new("Retry As Administrator…").size(11.5))
-                        .corner_radius(5.0)
-                        .min_size(Vec2::new(190.0, 24.0))
+                    egui::Button::new(RichText::new("Retry As Administrator…").size(11.5 * c.font_scale))
+
+                        .min_size(Vec2::new(190.0, 24.0)).themed(c)
                 ).clicked() {
                     retry_clicked = true;
                 }
             }
         } else {
             for line in err.lines() {
-                ui.label(RichText::new(line).color(c.error).size(11.5));
+                ui.label(RichText::new(line).color(c.error).size(11.5 * c.font_scale));
             }
         }
     });
@@ -24871,6 +23372,7 @@ fn theme_editor_large_preview(
     ui: &mut egui::Ui,
     preview: Colors,
     selected_region: ThemePreviewRegion,
+    active_tab: ThemeEditorTab,
 ) -> (Option<ThemePreviewRegion>, Option<ThemePreviewRegion>) {
     let width = ui.available_width().max(320.0);
     let height = (width * 0.56).clamp(320.0, 460.0);
@@ -24880,26 +23382,25 @@ fn theme_editor_large_preview(
     let frame = rect.shrink(14.0);
     let title_h = (frame.height() * 0.13).clamp(32.0, 44.0);
     let nav_h = (frame.height() * 0.11).clamp(28.0, 38.0);
-    let bookmarks_h = (frame.height() * 0.09).clamp(24.0, 32.0);
     let status_h = (frame.height() * 0.08).clamp(22.0, 28.0);
     let titlebar = Rect::from_min_size(frame.min, Vec2::new(frame.width(), title_h));
     let nav = Rect::from_min_size(
         egui::pos2(frame.left(), titlebar.bottom()),
         Vec2::new(frame.width(), nav_h),
     );
-    let bookmarks = Rect::from_min_size(
-        egui::pos2(frame.left(), nav.bottom()),
-        Vec2::new(frame.width(), bookmarks_h),
-    );
     let status = Rect::from_min_size(
         egui::pos2(frame.left(), frame.bottom() - status_h),
         Vec2::new(frame.width(), status_h),
     );
+    let bookmarks = Rect::from_min_max(
+        egui::pos2(frame.left(), nav.bottom()),
+        egui::pos2(frame.left() + 36.0, status.top()),
+    );
     let content = Rect::from_min_max(
-        egui::pos2(frame.left(), bookmarks.bottom()),
+        egui::pos2(bookmarks.right() + 4.0, nav.bottom()),
         egui::pos2(frame.right(), status.top()),
     );
-    let sidebar_w = (content.width() * 0.14).clamp(44.0, 74.0);
+    let sidebar_w = (content.width() * 0.14).max(64.0 * preview.font_scale);
     let column_gap = 6.0;
     let columns_rect = Rect::from_min_max(
         content.min,
@@ -24936,16 +23437,12 @@ fn theme_editor_large_preview(
     );
     let border_rect = outer.shrink(3.0);
 
-    p.rect_filled(
-        outer,
-        preview.app_radius as f32 + 4.0,
-        mix_color(preview.panel, preview.bg, 0.32),
-    );
+    p.rect_filled(outer, preview.app_radius as f32 + 4.0, preview.panel_raised);
     p.rect_filled(frame, preview.app_radius as f32, preview.panel);
     p.rect_stroke(
         frame,
         preview.app_radius as f32,
-        Stroke::new(preview.window_border_width.max(1.0), preview.window_border),
+        Stroke::new(preview.window_border_width, preview.window_border),
         egui::StrokeKind::Inside,
     );
 
@@ -24987,9 +23484,9 @@ fn theme_editor_large_preview(
         Stroke::new(2.4, preview.accent),
     );
     p.text(
-        egui::pos2(titlebar.right() - 82.0, titlebar.center().y),
-        Align2::LEFT_CENTER,
-        "Ottrin Theme Editor",
+        egui::pos2(titlebar.right() - 8.0, titlebar.center().y),
+        Align2::RIGHT_CENTER,
+        "Ottrin",
         FontId::proportional(10.5 * preview.font_scale),
         preview.text_muted,
     );
@@ -25009,7 +23506,7 @@ fn theme_editor_large_preview(
         egui::pos2(nav.left() + 104.0, nav.top() + 7.0),
         egui::pos2(nav.right() - 92.0, nav.bottom() - 7.0),
     );
-    p.rect_filled(address, preview.border_radius as f32, preview.bg);
+    p.rect_filled(address, preview.border_radius as f32, preview.panel_raised);
     p.rect_stroke(
         address,
         preview.border_radius as f32,
@@ -25027,54 +23524,46 @@ fn theme_editor_large_preview(
         egui::pos2(nav.right() - 72.0, nav.top() + 7.0),
         Vec2::new(54.0, nav.height() - 14.0),
     );
-    p.rect_filled(accent_button, preview.button_radius as f32, preview.accent);
+    p.rect_filled(
+        accent_button,
+        preview.button_radius as f32,
+        preview.button_bg,
+    );
     p.text(
         accent_button.center(),
         Align2::CENTER_CENTER,
         "Sync",
         FontId::proportional(10.0 * preview.font_scale),
-        preview.text,
+        preview.button_text,
     );
 
     p.rect_filled(bookmarks, 0.0, preview.bookmarks_bg);
-    for (idx, name) in ["Home", "Repo", "Archive", "Design"]
+    for (idx, icon) in [MI_HOME, MI_STORAGE, MI_DESCRIPTION, MI_DOWNLOAD]
         .into_iter()
         .enumerate()
     {
-        let chip = Rect::from_min_size(
+        let tile = Rect::from_min_size(
             egui::pos2(
-                bookmarks.left() + 12.0 + idx as f32 * 74.0,
-                bookmarks.top() + 5.0,
+                bookmarks.left() + 3.0,
+                bookmarks.top() + 8.0 + idx as f32 * 32.0,
             ),
-            Vec2::new(64.0, bookmarks.height() - 10.0),
+            Vec2::new(30.0, 28.0),
         );
-        let fill = if idx == 1 {
-            mix_color(preview.accent, preview.bookmarks_bg, 0.18)
-        } else {
-            Color32::TRANSPARENT
-        };
-        p.rect_filled(chip, preview.button_radius as f32, fill);
+        if idx == 0 {
+            p.rect_filled(tile, preview.button_radius, preview.selected_bg);
+        }
         p.text(
-            chip.center(),
+            tile.center(),
             Align2::CENTER_CENTER,
-            name,
-            FontId::proportional(9.5 * preview.font_scale),
-            if idx == 1 {
-                preview.text
-            } else {
-                preview.text_dim
-            },
+            icon,
+            FontId::proportional(17.0 * preview.font_scale),
+            preview.text_dim,
         );
     }
 
     p.rect_filled(columns_rect, 0.0, preview.bg);
     for (idx, col_rect) in [col1, col2, col3].into_iter().enumerate() {
-        let tint = if idx == 1 {
-            mix_color(preview.panel, preview.bg, 0.16)
-        } else {
-            mix_color(preview.panel, preview.bg, 0.08)
-        };
-        p.rect_filled(col_rect, preview.border_radius as f32, tint);
+        p.rect_filled(col_rect, 0.0, preview.bg);
         if idx > 0 {
             p.line_segment(
                 [
@@ -25094,37 +23583,61 @@ fn theme_editor_large_preview(
             );
             let fill = if idx == 1 && row == 1 {
                 preview.selected_bg
+            } else if idx == 0 && row == 3 {
+                preview.hover
             } else if row % 2 == 1 {
                 preview.row_alt
             } else {
                 Color32::TRANSPARENT
             };
             p.rect_filled(row_rect, preview.border_radius as f32, fill);
-            p.circle_filled(
+            let samples = [
+                [
+                    ("Documents", true),
+                    ("Downloads", true),
+                    ("Pictures", true),
+                    ("Music", true),
+                    ("Videos", true),
+                    ("Projects", true),
+                ],
+                [
+                    ("src", true),
+                    ("assets", true),
+                    ("tests", true),
+                    ("Cargo.toml", false),
+                    ("README.md", false),
+                    ("notes.txt", false),
+                ],
+                [
+                    ("main.rs", false),
+                    ("lib.rs", false),
+                    ("theme.rs", false),
+                    ("icons.rs", false),
+                    ("mod.rs", false),
+                    ("tests.rs", false),
+                ],
+            ];
+            let (label, directory) = samples[idx][row];
+            p.text(
                 egui::pos2(row_rect.left() + 8.0, row_rect.center().y),
-                3.6,
-                if row % 3 == 0 {
+                Align2::CENTER_CENTER,
+                if directory { MI_FOLDER } else { MI_DESCRIPTION },
+                FontId::proportional(13.0 * preview.font_scale),
+                if directory {
                     preview.folder
                 } else {
-                    preview.text_muted
+                    preview.file
                 },
             );
-            let label = if idx == 2 && row == 1 {
-                "README.md"
-            } else if row % 2 == 0 {
-                "folder"
-            } else {
-                "selection"
-            };
             p.text(
-                egui::pos2(row_rect.left() + 16.0, row_rect.center().y),
+                egui::pos2(row_rect.left() + 20.0, row_rect.center().y),
                 Align2::LEFT_CENTER,
                 label,
                 FontId::proportional(9.6 * preview.font_scale),
-                if idx == 2 && row == 1 {
-                    preview.file
+                if directory {
+                    preview.folder_text
                 } else {
-                    preview.text_dim
+                    preview.file
                 },
             );
         }
@@ -25154,9 +23667,9 @@ fn theme_editor_large_preview(
             item,
             preview.button_radius as f32,
             if idx == 0 {
-                mix_color(preview.accent, preview.smart_panel_bg, 0.18)
+                preview.accent_dim
             } else {
-                preview.hover
+                preview.button_bg
             },
         );
         p.text(
@@ -25169,29 +23682,38 @@ fn theme_editor_large_preview(
                 _ => "Preview",
             },
             FontId::proportional(9.5 * preview.font_scale),
-            if idx == 0 {
-                preview.text
-            } else {
-                preview.text_dim
-            },
+            preview.button_text,
         );
     }
 
-    p.rect_filled(status, 0.0, preview.titlebar_bg);
+    p.rect_filled(status, 0.0, preview.statusbar_bg);
     p.text(
         egui::pos2(status.left() + 12.0, status.center().y),
         Align2::LEFT_CENTER,
-        "35 items  |  preview ready  |  theme editing",
+        "12 items  |  preview ready",
         FontId::proportional(9.4 * preview.font_scale),
         preview.text_muted,
     );
-    p.rect_filled(accent_badge, preview.button_radius as f32, preview.accent);
+    if active_tab == ThemeEditorTab::Interaction {
+        p.text(
+            status.center(),
+            Align2::CENTER_CENTER,
+            "Example error",
+            FontId::proportional(9.4 * preview.font_scale),
+            preview.error,
+        );
+    }
+    p.rect_filled(
+        accent_badge,
+        preview.button_radius as f32,
+        preview.button_bg,
+    );
     p.text(
         accent_badge.center(),
         Align2::CENTER_CENTER,
-        "Accent focus",
+        "Button",
         FontId::proportional(9.6 * preview.font_scale),
-        preview.text,
+        preview.button_text,
     );
 
     let regions = vec![
@@ -25226,415 +23748,20 @@ fn theme_editor_large_preview(
     };
 
     for (region, region_rect) in &regions {
-        let is_selected = *region == selected_region;
+        let is_selected = active_tab == ThemeEditorTab::Colors && *region == selected_region;
         let is_hovered = Some(*region) == hovered_region;
         if !is_selected && !is_hovered {
             continue;
         }
-        let fill = if is_selected {
-            mix_color(preview.accent, Color32::WHITE, 0.10).linear_multiply(0.26)
-        } else {
-            preview.accent_dim
-        };
         let stroke = if is_selected {
             Stroke::new(2.0, preview.accent)
         } else {
             Stroke::new(1.0, mix_color(preview.accent, preview.bg, 0.18))
         };
-        p.rect_filled(*region_rect, 8.0, fill);
         p.rect_stroke(*region_rect, 8.0, stroke, egui::StrokeKind::Inside);
     }
 
-    let callout_region = hovered_region.unwrap_or(selected_region);
-    let callout = Rect::from_min_size(
-        egui::pos2(frame.right() - 246.0, frame.top() + 12.0),
-        Vec2::new(224.0, 54.0),
-    );
-    p.rect_filled(
-        callout,
-        preview.border_radius as f32,
-        Color32::from_rgba_premultiplied(
-            preview.panel_raised.r(),
-            preview.panel_raised.g(),
-            preview.panel_raised.b(),
-            236,
-        ),
-    );
-    p.rect_stroke(
-        callout,
-        preview.border_radius as f32,
-        Stroke::new(1.0, mix_color(preview.border, preview.accent, 0.18)),
-        egui::StrokeKind::Inside,
-    );
-    p.text(
-        egui::pos2(callout.left() + 10.0, callout.top() + 16.0),
-        Align2::LEFT_CENTER,
-        format!(
-            "{} region",
-            OttrinApp::theme_preview_region_label(callout_region)
-        ),
-        FontId::proportional(10.6 * preview.font_scale),
-        preview.text,
-    );
-    p.text(
-        egui::pos2(callout.left() + 10.0, callout.top() + 34.0),
-        Align2::LEFT_CENTER,
-        OttrinApp::theme_preview_region_hint(callout_region),
-        FontId::proportional(8.8 * preview.font_scale),
-        preview.text_muted,
-    );
-
     (hovered_region, clicked_region)
-}
-
-fn theme_preset_card_with_size(
-    ui: &mut egui::Ui,
-    app_colors: Colors,
-    preview: Colors,
-    icon: &str,
-    label: &str,
-    selected: bool,
-    size: ThemePresetCardSize,
-) -> egui::Response {
-    let (rect, resp) = ui.allocate_exact_size(Vec2::new(size.width, size.card_h), Sense::click());
-    let p = ui.painter();
-    let rounding = preview.border_radius as f32;
-    let card_fill = if selected {
-        preview.panel_raised.gamma_multiply(1.08)
-    } else {
-        preview.panel_raised
-    };
-    let stroke = if selected {
-        Stroke::new(1.5, app_colors.accent)
-    } else {
-        Stroke::new(1.0, app_colors.border)
-    };
-    p.rect_filled(rect, rounding, card_fill);
-    p.rect_stroke(rect, rounding, stroke, egui::StrokeKind::Middle);
-
-    let inner = rect.shrink2(Vec2::new(10.0, 10.0));
-    let thumb = Rect::from_min_size(inner.min, Vec2::new(inner.width(), size.thumb_h));
-    p.rect_filled(thumb, preview.app_radius as f32, preview.panel);
-    p.rect_stroke(
-        thumb,
-        preview.app_radius as f32,
-        Stroke::new(1.0, preview.border),
-        egui::StrokeKind::Middle,
-    );
-
-    let title_h = 18.0;
-    let nav_h = 18.0;
-    let chips_h = 14.0;
-    let bottom_h = 16.0;
-    let titlebar = Rect::from_min_size(thumb.min, Vec2::new(thumb.width(), title_h));
-    p.rect_filled(titlebar, preview.app_radius as f32, preview.titlebar_bg);
-    let tab = Rect::from_min_size(
-        egui::pos2(titlebar.left() + 6.0, titlebar.top() + 2.0),
-        Vec2::new(62.0, 14.0),
-    );
-    p.rect_filled(tab, preview.border_radius as f32, preview.toolbar_bg);
-    p.text(
-        egui::pos2(tab.left() + 8.0, tab.center().y),
-        Align2::LEFT_CENTER,
-        "workspace",
-        FontId::proportional(7.8 * preview.font_scale),
-        preview.text,
-    );
-    p.line_segment(
-        [
-            egui::pos2(tab.left(), tab.bottom()),
-            egui::pos2(tab.right(), tab.bottom()),
-        ],
-        Stroke::new(1.6, preview.accent),
-    );
-    p.text(
-        egui::pos2(tab.right() + 8.0, tab.center().y),
-        Align2::LEFT_CENTER,
-        "+",
-        FontId::proportional(9.5),
-        preview.text_dim,
-    );
-
-    let nav = Rect::from_min_size(
-        egui::pos2(thumb.left(), titlebar.bottom()),
-        Vec2::new(thumb.width(), nav_h),
-    );
-    p.rect_filled(nav, 0.0, preview.toolbar_bg);
-    p.text(
-        egui::pos2(nav.left() + 10.0, nav.center().y),
-        Align2::CENTER_CENTER,
-        "←",
-        FontId::proportional(8.5),
-        preview.text_dim,
-    );
-    p.text(
-        egui::pos2(nav.left() + 24.0, nav.center().y),
-        Align2::CENTER_CENTER,
-        "→",
-        FontId::proportional(8.5),
-        preview.text_dim,
-    );
-    p.text(
-        egui::pos2(nav.left() + 38.0, nav.center().y),
-        Align2::CENTER_CENTER,
-        "↑",
-        FontId::proportional(8.5),
-        preview.text_dim,
-    );
-    let addr = Rect::from_min_size(
-        egui::pos2(nav.left() + 50.0, nav.top() + 3.0),
-        Vec2::new(nav.width() * 0.55, 12.0),
-    );
-    p.rect_filled(addr, preview.border_radius as f32, preview.bg);
-    p.text(
-        egui::pos2(addr.left() + 6.0, addr.center().y),
-        Align2::LEFT_CENTER,
-        "/home/user",
-        FontId::proportional(7.6 * preview.font_scale),
-        preview.text_dim,
-    );
-
-    let chips = Rect::from_min_size(
-        egui::pos2(thumb.left(), nav.bottom()),
-        Vec2::new(thumb.width(), chips_h),
-    );
-    p.rect_filled(chips, 0.0, preview.bookmarks_bg);
-    for (i, name) in ["Home", "Root", "Desktop"].iter().enumerate() {
-        let x = chips.left() + 6.0 + i as f32 * 34.0;
-        let chip = Rect::from_min_size(egui::pos2(x, chips.top() + 2.0), Vec2::new(30.0, 10.0));
-        p.rect_filled(
-            chip,
-            preview.button_radius as f32,
-            if i == 0 {
-                preview.hover
-            } else {
-                Color32::TRANSPARENT
-            },
-        );
-        p.text(
-            chip.center(),
-            Align2::CENTER_CENTER,
-            name,
-            FontId::proportional(6.8 * preview.font_scale),
-            if i == 0 {
-                preview.text
-            } else {
-                preview.text_dim
-            },
-        );
-    }
-
-    let content = Rect::from_min_max(
-        egui::pos2(thumb.left(), chips.bottom()),
-        egui::pos2(thumb.right(), thumb.bottom() - bottom_h),
-    );
-    p.rect_filled(content, 0.0, preview.bg);
-    let col_gap = 4.0;
-    let smart_w = 16.0;
-    let col_w = ((content.width() - smart_w - col_gap * 3.0) / 3.0).max(18.0);
-    for col in 0..3 {
-        let x = content.left() + col as f32 * (col_w + col_gap);
-        let col_rect = Rect::from_min_size(
-            egui::pos2(x, content.top()),
-            Vec2::new(col_w, content.height()),
-        );
-        if col > 0 {
-            p.line_segment(
-                [
-                    egui::pos2(col_rect.left() - col_gap * 0.5, content.top()),
-                    egui::pos2(col_rect.left() - col_gap * 0.5, content.bottom()),
-                ],
-                Stroke::new(1.0, preview.border),
-            );
-        }
-        for row in 0..4 {
-            let row_y = col_rect.top() + 5.0 + row as f32 * 14.0;
-            let row_rect = Rect::from_min_size(
-                egui::pos2(col_rect.left() + 2.0, row_y),
-                Vec2::new(col_rect.width() - 4.0, 10.0),
-            );
-            let fill = if col == 1 && row == 1 {
-                preview.selected_bg
-            } else if row % 2 == 1 {
-                preview.row_alt
-            } else {
-                Color32::TRANSPARENT
-            };
-            p.rect_filled(row_rect, preview.border_radius as f32, fill);
-            p.rect_filled(
-                Rect::from_min_size(
-                    egui::pos2(row_rect.left() + 3.0, row_rect.center().y - 2.0),
-                    Vec2::new(6.0, 4.0),
-                ),
-                2.0,
-                preview.folder,
-            );
-            p.text(
-                egui::pos2(row_rect.left() + 12.0, row_rect.center().y),
-                Align2::LEFT_CENTER,
-                if row == 1 && col == 2 {
-                    "google..."
-                } else {
-                    "folder"
-                },
-                FontId::proportional(6.8 * preview.font_scale),
-                if col == 2 && row == 1 {
-                    preview.file
-                } else {
-                    preview.text_dim
-                },
-            );
-        }
-    }
-    let smart = Rect::from_min_size(
-        egui::pos2(content.right() - smart_w, content.top()),
-        Vec2::new(smart_w, content.height()),
-    );
-    p.rect_filled(smart, 0.0, preview.smart_panel_bg);
-    for i in 0..3 {
-        let icon = Rect::from_min_size(
-            egui::pos2(smart.left() + 3.0, smart.top() + 6.0 + i as f32 * 15.0),
-            Vec2::new(10.0, 10.0),
-        );
-        p.rect_filled(
-            icon,
-            preview.button_radius as f32,
-            if i == 0 {
-                preview.selected_bg
-            } else {
-                preview.hover
-            },
-        );
-    }
-
-    let bottom = Rect::from_min_size(
-        egui::pos2(thumb.left(), thumb.bottom() - bottom_h),
-        Vec2::new(thumb.width(), bottom_h),
-    );
-    p.rect_filled(bottom, 0.0, preview.titlebar_bg);
-    p.text(
-        egui::pos2(bottom.left() + 8.0, bottom.center().y),
-        Align2::LEFT_CENTER,
-        "35 items",
-        FontId::proportional(6.6 * preview.font_scale),
-        preview.text_muted,
-    );
-    let mini_slider = Rect::from_min_size(
-        egui::pos2(bottom.right() - 42.0, bottom.center().y - 2.0),
-        Vec2::new(26.0, 4.0),
-    );
-    p.rect_filled(mini_slider, 2.0, preview.bg);
-    p.rect_filled(
-        Rect::from_min_size(mini_slider.min, Vec2::new(14.0, 4.0)),
-        2.0,
-        preview.accent,
-    );
-
-    let title = format!("{}  {}", icon, label);
-    p.text(
-        egui::pos2(inner.center().x, thumb.max.y + 28.0),
-        Align2::CENTER_CENTER,
-        title,
-        FontId::proportional(12.0),
-        if selected {
-            app_colors.text
-        } else {
-            app_colors.text_dim
-        },
-    );
-
-    if resp.hovered() {
-        ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-    }
-    resp
-}
-
-fn paint_theme_tuning_track(ui: &mut egui::Ui, rect: Rect, title: &str, tint: Color32, c: Colors) {
-    let painter = ui.painter();
-    let track = rect.shrink2(Vec2::new(1.0, 1.0));
-    let steps = 56;
-    if title == "Contrast" {
-        let mid = track.center().y;
-        let top = Rect::from_min_max(track.min, egui::pos2(track.max.x, mid));
-        let bottom = Rect::from_min_max(egui::pos2(track.min.x, mid), track.max);
-        let start = mix_color(c.panel_raised, c.border, 0.65);
-        for i in 0..steps {
-            let t0 = i as f32 / steps as f32;
-            let t1 = (i + 1) as f32 / steps as f32;
-            let x0 = egui::lerp(track.left()..=track.right(), t0);
-            let x1 = egui::lerp(track.left()..=track.right(), t1);
-            let t = (t0 + t1) * 0.5;
-            let top_col = mix_color(start, Color32::BLACK, t);
-            let bottom_col = mix_color(start, Color32::WHITE, t);
-            painter.rect_filled(
-                Rect::from_min_max(
-                    egui::pos2(x0, top.top() + 1.0),
-                    egui::pos2(x1, top.bottom() - 1.0),
-                ),
-                0.0,
-                top_col,
-            );
-            painter.rect_filled(
-                Rect::from_min_max(
-                    egui::pos2(x0, bottom.top() + 1.0),
-                    egui::pos2(x1, bottom.bottom() - 1.0),
-                ),
-                0.0,
-                bottom_col,
-            );
-        }
-        return;
-    }
-
-    let stops: Vec<Color32> = match title {
-        "Hue" => vec![
-            Color32::from_rgb(255, 90, 90),
-            Color32::from_rgb(255, 196, 76),
-            Color32::from_rgb(118, 220, 98),
-            Color32::from_rgb(86, 205, 220),
-            Color32::from_rgb(92, 146, 255),
-            Color32::from_rgb(190, 112, 255),
-            Color32::from_rgb(255, 90, 160),
-        ],
-        "Saturation" => vec![mix_color(c.panel_raised, c.text_muted, 0.35), tint],
-        "Brightness" => vec![
-            Color32::from_rgb(10, 10, 12),
-            tint,
-            mix_color(Color32::WHITE, tint, 0.18),
-        ],
-        _ => vec![
-            mix_color(c.panel_raised, c.border, 0.25),
-            mix_color(c.panel_raised, c.border, 0.85),
-        ],
-    };
-    for i in 0..steps {
-        let t0 = i as f32 / steps as f32;
-        let t1 = (i + 1) as f32 / steps as f32;
-        let color = gradient_stops_color(&stops, (t0 + t1) * 0.5);
-        let x0 = egui::lerp(track.left()..=track.right(), t0);
-        let x1 = egui::lerp(track.left()..=track.right(), t1);
-        painter.rect_filled(
-            Rect::from_min_max(egui::pos2(x0, track.top()), egui::pos2(x1, track.bottom())),
-            0.0,
-            color,
-        );
-    }
-    let _ = stops;
-}
-
-fn gradient_stops_color(stops: &[Color32], t: f32) -> Color32 {
-    if stops.is_empty() {
-        return Color32::WHITE;
-    }
-    if stops.len() == 1 {
-        return stops[0];
-    }
-    let clamped = t.clamp(0.0, 1.0);
-    let scaled = clamped * (stops.len() - 1) as f32;
-    let idx = scaled.floor() as usize;
-    let next = (idx + 1).min(stops.len() - 1);
-    let local_t = scaled - idx as f32;
-    mix_color(stops[idx], stops[next], local_t)
 }
 
 fn settings_section_icon(
@@ -25648,18 +23775,31 @@ fn settings_section_icon(
     Frame::new()
         .fill(c.panel_raised)
         .stroke(Stroke::NONE)
-        .corner_radius(8.0)
+        .corner_radius(c.border_radius)
         .inner_margin(egui::Margin::symmetric(12, 10))
         .show(ui, |ui| {
             ui.set_width(ui.available_width());
             ui.horizontal(|ui| {
-                ui.label(RichText::new(icon).color(c.accent).size(14.0));
+                ui.label(
+                    RichText::new(icon)
+                        .color(c.accent)
+                        .size(14.0 * c.font_scale),
+                );
                 ui.add_space(4.0);
-                ui.label(RichText::new(title).color(c.text).size(13.0).strong());
+                ui.label(
+                    RichText::new(title)
+                        .color(c.heading)
+                        .size(13.0 * c.font_scale)
+                        .strong(),
+                );
             });
             if !subtitle.is_empty() {
                 ui.add_space(2.0);
-                ui.label(RichText::new(subtitle).color(c.text_muted).size(11.0));
+                ui.label(
+                    RichText::new(subtitle)
+                        .color(c.text_muted)
+                        .size(11.0 * c.font_scale),
+                );
             }
             ui.add_space(8.0);
             body(ui);
@@ -25834,12 +23974,10 @@ mod tests {
     fn theme_editor_actions_match_builtin_and_saved_theme_semantics() {
         let builtin = ThemeEditorActionModel::for_source(None);
         assert!(builtin.allow_scope_changes);
-        assert!(builtin.show_reset);
         assert!(!builtin.show_save_as);
 
         let saved = ThemeEditorActionModel::for_source(Some(0));
         assert!(!saved.allow_scope_changes);
-        assert!(!saved.show_reset);
         assert!(saved.show_save_as);
     }
 
@@ -28938,7 +27076,7 @@ mod tests {
                                     &mut fit,
                                     &mut width,
                                     &mut zoom,
-                                    Colors::for_config(&Default::default()),
+                                    Colors::for_config(&Default::default(), None),
                                 )
                             });
                             let source = Vec2::new(1000.0, 500.0);
@@ -32168,12 +30306,6 @@ mod tests {
         );
         assert_eq!(expanded.allocated_rect.width(), 214.0);
         assert_eq!(canvas.min.x, expanded.allocated_rect.max.x);
-    }
-
-    #[test]
-    fn locations_rail_and_single_file_canvas_share_the_smart_panel_surface() {
-        let colors = Colors::for_config(&AppConfig::default());
-        assert_eq!(single_file_pane_background(&colors), colors.smart_panel_bg);
     }
 
     #[test]

@@ -51,7 +51,6 @@ pub(crate) fn decode_theme_import_json(
     if saved.name.trim().is_empty() {
         saved.name = fallback_name.to_string();
     }
-    saved.customization.enabled = true;
     Ok(saved)
 }
 
@@ -77,7 +76,6 @@ mod tests {
         assert_eq!(imported.name, "Wrapped");
         assert_eq!(imported.base_preset, ThemePreset::Nord);
         assert_eq!(imported.theme_mode, ThemeMode::Dark);
-        assert!(imported.customization.enabled);
     }
 
     #[test]

@@ -86,165 +86,57 @@ pub(crate) struct SemanticPalette {
     unknown: Color32,
 }
 
-pub(crate) fn semantic_palette(config: &AppConfig, c: &Colors) -> SemanticPalette {
-    if config.theme_custom.enabled {
-        let blue = Colors::from_rgba(config.theme_custom.palette_folder_blue);
-        let link = Colors::from_rgba(config.theme_custom.palette_link_blue);
-        let steel = Colors::from_rgba(config.theme_custom.palette_steel);
-        let soft_white = Colors::from_rgba(config.theme_custom.palette_soft_white);
-        let green = Colors::from_rgba(config.theme_custom.palette_green);
-        let orange = Colors::from_rgba(config.theme_custom.palette_orange);
-        let purple = Colors::from_rgba(config.theme_custom.palette_purple);
-        let pink = Colors::from_rgba(config.theme_custom.palette_pink);
-        let red = Colors::from_rgba(config.theme_custom.palette_red);
-        let yellow = Colors::from_rgba(config.theme_custom.palette_yellow);
-        return SemanticPalette {
-            directory: blue,
-            symlink: link,
-            executable: green,
-            image: purple,
-            video: red,
-            audio: link,
-            archive: yellow,
-            pdf: red,
-            document: mix_color(soft_white, c.panel, 0.30),
-            spreadsheet: green,
-            presentation: orange,
-            font: mix_color(purple, pink, 0.45),
-            disk_image: steel,
-            package: mix_color(yellow, orange, 0.50),
-            config: steel,
-            code: mix_color(yellow, c.accent, 0.52),
-            code_rust: mix_color(orange, yellow, 0.45),
-            code_js: mix_color(yellow, green, 0.25),
-            code_ts: mix_color(blue, link, 0.40),
-            code_markup: mix_color(purple, blue, 0.38),
-            code_python: mix_color(green, blue, 0.40),
-            code_shell: mix_color(green, link, 0.35),
-            code_toml: mix_color(yellow, steel, 0.30),
-            code_yaml: mix_color(link, steel, 0.28),
-            unknown: mix_color(soft_white, c.panel, 0.42),
-        };
-    }
-
-    let (blue, cyan, green, amber, red, violet, orange, slate) = match config.theme_preset {
-        ThemePreset::Ottrin => (
-            // Seti-inspired muted semantic families (user-calibrated):
-            // blue #519aba, green #8dc149, orange #e37933, pink #f55385,
-            // purple #a074c4, red #cc3e44, steel #6d8086, yellow #cbcb41
-            Color32::from_rgb(81, 154, 186),  // blue
-            Color32::from_rgb(109, 128, 134), // steel/cyan-ish
-            Color32::from_rgb(141, 193, 73),  // green
-            Color32::from_rgb(203, 203, 65),  // yellow
-            Color32::from_rgb(204, 62, 68),   // red
-            Color32::from_rgb(160, 116, 196), // purple
-            Color32::from_rgb(227, 121, 51),  // orange
-            Color32::from_rgb(109, 128, 134), // steel
-        ),
-        ThemePreset::Breeze => (
-            Color32::from_rgb(61, 174, 233),
-            Color32::from_rgb(64, 196, 208),
-            Color32::from_rgb(96, 176, 120),
-            Color32::from_rgb(193, 157, 88),
-            Color32::from_rgb(218, 88, 105),
-            Color32::from_rgb(143, 136, 214),
-            Color32::from_rgb(218, 144, 86),
-            Color32::from_rgb(130, 142, 155),
-        ),
-        ThemePreset::Adwaita => (
-            Color32::from_rgb(53, 132, 228),
-            Color32::from_rgb(63, 164, 196),
-            Color32::from_rgb(89, 163, 122),
-            Color32::from_rgb(191, 154, 81),
-            Color32::from_rgb(214, 81, 99),
-            Color32::from_rgb(151, 131, 212),
-            Color32::from_rgb(208, 137, 88),
-            Color32::from_rgb(133, 145, 160),
-        ),
-        ThemePreset::Windows11 => (
-            Color32::from_rgb(72, 157, 235),
-            Color32::from_rgb(74, 182, 204),
-            Color32::from_rgb(106, 172, 118),
-            Color32::from_rgb(190, 158, 97),
-            Color32::from_rgb(206, 98, 104),
-            Color32::from_rgb(156, 138, 206),
-            Color32::from_rgb(206, 141, 96),
-            Color32::from_rgb(133, 144, 156),
-        ),
-        ThemePreset::Solarized => (
-            Color32::from_rgb(38, 139, 210),
-            Color32::from_rgb(42, 161, 152),
-            Color32::from_rgb(133, 153, 0),
-            Color32::from_rgb(181, 137, 0),
-            Color32::from_rgb(220, 50, 47),
-            Color32::from_rgb(108, 113, 196),
-            Color32::from_rgb(203, 75, 22),
-            Color32::from_rgb(131, 148, 150),
-        ),
-        ThemePreset::Nord => (
-            Color32::from_rgb(129, 161, 193),
-            Color32::from_rgb(136, 192, 208),
-            Color32::from_rgb(163, 190, 140),
-            Color32::from_rgb(235, 203, 139),
-            Color32::from_rgb(191, 97, 106),
-            Color32::from_rgb(180, 142, 173),
-            Color32::from_rgb(208, 135, 112),
-            Color32::from_rgb(143, 157, 178),
-        ),
-        ThemePreset::G33k => (
-            Color32::from_rgb(96, 214, 255),
-            Color32::from_rgb(84, 199, 196),
-            Color32::from_rgb(131, 225, 122),
-            Color32::from_rgb(201, 171, 97),
-            Color32::from_rgb(246, 114, 114),
-            Color32::from_rgb(168, 144, 215),
-            Color32::from_rgb(212, 150, 93),
-            Color32::from_rgb(118, 154, 132),
-        ),
-    };
-
+pub(crate) fn semantic_palette(c: &Colors) -> SemanticPalette {
+    let [
+        blue,
+        link,
+        steel,
+        soft_white,
+        green,
+        orange,
+        purple,
+        pink,
+        red,
+        yellow,
+    ] = c.palette;
     SemanticPalette {
         directory: blue,
-        symlink: cyan,
+        symlink: link,
         executable: green,
-        image: violet,
+        image: purple,
         video: red,
-        audio: cyan,
-        archive: amber,
+        audio: link,
+        archive: yellow,
         pdf: red,
-        // Neutral categories always follow the same muted token so "white files"
-        // never jump out brighter than the rest of the UI.
-        document: c.text_muted,
+        document: soft_white,
         spreadsheet: green,
         presentation: orange,
-        font: mix_color(violet, orange, 0.35),
-        disk_image: slate,
-        package: mix_color(amber, orange, 0.50),
-        config: slate,
-        code: mix_color(amber, c.accent, 0.52),
-        code_rust: mix_color(orange, amber, 0.45),
-        code_js: mix_color(amber, green, 0.25),
-        code_ts: mix_color(blue, cyan, 0.40),
-        code_markup: mix_color(violet, blue, 0.38),
+        font: mix_color(purple, pink, 0.45),
+        disk_image: steel,
+        package: mix_color(yellow, orange, 0.50),
+        config: steel,
+        code: yellow,
+        code_rust: mix_color(orange, yellow, 0.45),
+        code_js: mix_color(yellow, green, 0.25),
+        code_ts: mix_color(blue, link, 0.40),
+        code_markup: mix_color(purple, blue, 0.38),
         code_python: mix_color(green, blue, 0.40),
-        code_shell: mix_color(green, cyan, 0.35),
-        code_toml: mix_color(amber, slate, 0.30),
-        code_yaml: mix_color(cyan, slate, 0.28),
-        unknown: c.text_muted,
+        code_shell: mix_color(green, link, 0.35),
+        code_toml: mix_color(yellow, steel, 0.30),
+        code_yaml: mix_color(link, steel, 0.28),
+        unknown: soft_white,
     }
 }
 
-fn semantic_intensity(preset: ThemePreset) -> (f32, f32) {
-    // (icon_gamma_boost, text_mix_to_neutral)
-    // text_mix_to_neutral is used as mix(cat_color, neutral_text, t):
-    // smaller t = stronger category presence, larger t = softer/washed.
+fn semantic_label_mix(preset: ThemePreset) -> f32 {
+    // Labels blend their category color with the neutral text role.
     match preset {
-        ThemePreset::Solarized => (1.00, 0.36),
-        ThemePreset::Nord => (1.02, 0.22),
-        ThemePreset::Adwaita | ThemePreset::Windows11 => (1.03, 0.19),
-        ThemePreset::Breeze => (1.03, 0.18),
-        ThemePreset::G33k => (1.02, 0.20),
-        ThemePreset::Ottrin => (1.04, 0.14),
+        ThemePreset::Solarized => 0.36,
+        ThemePreset::Nord => 0.22,
+        ThemePreset::Adwaita | ThemePreset::Windows11 => 0.19,
+        ThemePreset::Breeze => 0.18,
+        ThemePreset::G33k => 0.20,
+        ThemePreset::Ottrin => 0.14,
     }
 }
 
@@ -413,13 +305,13 @@ pub(crate) fn style_for_semantic(
     colorize: bool,
     colorize_folder_labels: bool,
 ) -> EntryVisualStyle {
-    let (icon_boost, text_mix) = semantic_intensity(preset);
+    let text_mix = semantic_label_mix(preset);
     let cat_color = semantic_color(semantic, p);
     let is_neutral_category = matches!(
         semantic.category,
         FileCategory::Document | FileCategory::Unknown
     );
-    let folder_text_base = c.text_dim;
+    let folder_text_base = c.folder_text;
     let file_text_base = c.file;
     let category_text_base = if matches!(semantic.category, FileCategory::Directory) {
         folder_text_base
@@ -427,51 +319,27 @@ pub(crate) fn style_for_semantic(
         file_text_base
     };
     let icon_color = if colorize {
-        if state.selected && state.focused {
-            mix_color(cat_color, c.heading, 0.18)
-        } else if state.selected {
-            mix_color(cat_color, c.heading, 0.12)
-        } else {
-            cat_color.gamma_multiply(icon_boost)
-        }
+        cat_color
+    } else if matches!(semantic.category, FileCategory::Directory) {
+        c.folder
     } else {
-        match semantic.category {
-            FileCategory::Directory => c.folder,
-            FileCategory::Symlink => c.accent_dim.gamma_multiply(1.28),
-            _ => c.file.gamma_multiply(0.92),
-        }
+        c.file
     };
-    let mut text_color = if state.selected && state.focused {
-        if colorize {
-            mix_color(cat_color, c.text_muted, 0.24)
+    let neutral_label = is_neutral_category
+        || (matches!(semantic.category, FileCategory::Directory) && !colorize_folder_labels);
+    let mut text_color = if colorize && !neutral_label {
+        // Selection emphasizes the file's own text role, never unrelated UI headings or muted text.
+        let blend = if state.selected {
+            text_mix.max(if state.focused { 0.62 } else { 0.60 })
         } else {
-            c.text_muted
-        }
-    } else if state.selected {
-        if colorize {
-            mix_color(cat_color, c.text_muted, 0.22)
-        } else {
-            c.text_muted
-        }
-    } else if colorize {
-        let is_dir = matches!(semantic.category, FileCategory::Directory);
-        if is_neutral_category || (is_dir && !colorize_folder_labels) {
-            category_text_base
-        } else {
-            // Keep semantic relation to icon color with enough signal:
-            // category leads, but folder/file base tones keep readability and
-            // user text controls meaningful in both semantic and neutral modes.
-            mix_color(cat_color, category_text_base, text_mix)
-        }
+            text_mix
+        };
+        mix_color(cat_color, category_text_base, blend)
     } else {
-        match semantic.category {
-            FileCategory::Directory => folder_text_base,
-            FileCategory::Symlink => c.accent_dim.gamma_multiply(1.4),
-            _ => file_text_base,
-        }
+        category_text_base
     };
     if state.hovered && !state.selected {
-        text_color = mix_color(text_color, c.text_muted, 0.22);
+        text_color = mix_color(text_color, category_text_base, 0.22);
     }
     EntryVisualStyle {
         icon: icon_for_semantic(semantic, state),
@@ -491,8 +359,8 @@ pub(crate) fn style_for_entry(
         &sem,
         state,
         c,
-        &semantic_palette(cfg, c),
-        cfg.theme_preset,
+        &semantic_palette(c),
+        c.preset,
         cfg.colorize_file_types,
         cfg.colorize_folder_labels,
     )
@@ -509,8 +377,8 @@ pub(crate) fn style_for_search_item(
         &sem,
         state,
         c,
-        &semantic_palette(cfg, c),
-        cfg.theme_preset,
+        &semantic_palette(c),
+        c.preset,
         cfg.colorize_file_types,
         cfg.colorize_folder_labels,
     )
@@ -529,9 +397,247 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
+    fn file_row_states_do_not_inherit_unrelated_ui_text_or_focus_colors() {
+        let original = Colors::preset(ThemePreset::Ottrin, true);
+        let mut changed = original;
+        changed.heading = Color32::from_rgb(220, 40, 90);
+        changed.text_muted = Color32::from_rgb(40, 220, 90);
+        changed.accent_dim = Color32::from_rgb(90, 40, 220);
+        for category in [
+            FileCategory::Directory,
+            FileCategory::Symlink,
+            FileCategory::Document,
+            FileCategory::Image,
+        ] {
+            let semantic = FileSemantic {
+                category,
+                code_subtype: None,
+                folder_kind: None,
+                rule_hint: None,
+            };
+            for state in [
+                EntryVisualState::default(),
+                EntryVisualState {
+                    selected: true,
+                    focused: true,
+                    ..Default::default()
+                },
+                EntryVisualState {
+                    hovered: true,
+                    ..Default::default()
+                },
+            ] {
+                for colorize in [false, true] {
+                    let before = style_for_semantic(
+                        &semantic,
+                        state,
+                        &original,
+                        &semantic_palette(&original),
+                        original.preset,
+                        colorize,
+                        true,
+                    );
+                    let after = style_for_semantic(
+                        &semantic,
+                        state,
+                        &changed,
+                        &semantic_palette(&changed),
+                        changed.preset,
+                        colorize,
+                        true,
+                    );
+                    assert_eq!(
+                        (before.icon_color, before.text_color),
+                        (after.icon_color, after.text_color),
+                        "file role leaked unrelated UI colors: {category:?}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn bundled_palettes_keep_interface_and_file_roles_readable() {
+        fn luminance(color: Color32) -> f32 {
+            let rgb = color.to_srgba_unmultiplied();
+            let linear = |channel: u8| {
+                let value = channel as f32 / 255.0;
+                if value <= 0.04045 {
+                    value / 12.92
+                } else {
+                    ((value + 0.055) / 1.055).powf(2.4)
+                }
+            };
+            0.2126 * linear(rgb[0]) + 0.7152 * linear(rgb[1]) + 0.0722 * linear(rgb[2])
+        }
+        fn contrast(a: Color32, b: Color32) -> f32 {
+            let (a, b) = (luminance(a), luminance(b));
+            (a.max(b) + 0.05) / (a.min(b) + 0.05)
+        }
+        fn composite(foreground: Color32, background: Color32) -> Color32 {
+            let fg = foreground.to_srgba_unmultiplied();
+            let bg = background.to_srgba_unmultiplied();
+            let alpha = fg[3] as f32 / 255.0;
+            let channel =
+                |i: usize| (fg[i] as f32 * alpha + bg[i] as f32 * (1.0 - alpha)).round() as u8;
+            Color32::from_rgb(channel(0), channel(1), channel(2))
+        }
+        let mut failures = Vec::new();
+        for preset in [
+            ThemePreset::Ottrin,
+            ThemePreset::Breeze,
+            ThemePreset::Adwaita,
+            ThemePreset::Windows11,
+            ThemePreset::Solarized,
+            ThemePreset::Nord,
+            ThemePreset::G33k,
+        ] {
+            for dark in [false, true] {
+                let c = Colors::preset(preset, dark);
+                for (surface_name, surface) in [
+                    ("canvas", c.bg),
+                    ("panel", c.panel),
+                    ("raised", c.panel_raised),
+                    ("title", c.titlebar_bg),
+                    ("toolbar", c.toolbar_bg),
+                    ("sidebar", c.smart_panel_bg),
+                    ("status", c.statusbar_bg),
+                ] {
+                    for (role, ink) in [
+                        ("primary", c.text),
+                        ("heading", c.heading),
+                        ("secondary", c.text_dim),
+                        ("muted", c.text_muted),
+                        ("error", c.error),
+                        ("link / accent text", c.accent),
+                    ] {
+                        let ratio = contrast(composite(ink, surface), surface);
+                        if ratio < 4.5 {
+                            failures.push(format!(
+                                "{preset:?} dark={dark} {surface_name} {role}: {ratio:.2}"
+                            ));
+                        }
+                    }
+                }
+                let mut semantics: Vec<_> = [
+                    FileCategory::Directory,
+                    FileCategory::Symlink,
+                    FileCategory::Executable,
+                    FileCategory::Image,
+                    FileCategory::Video,
+                    FileCategory::Audio,
+                    FileCategory::Archive,
+                    FileCategory::Pdf,
+                    FileCategory::Document,
+                    FileCategory::Spreadsheet,
+                    FileCategory::Presentation,
+                    FileCategory::Font,
+                    FileCategory::DiskImage,
+                    FileCategory::Package,
+                    FileCategory::Config,
+                    FileCategory::Code,
+                    FileCategory::Unknown,
+                ]
+                .into_iter()
+                .map(|category| FileSemantic {
+                    category,
+                    code_subtype: None,
+                    folder_kind: None,
+                    rule_hint: None,
+                })
+                .collect();
+                semantics.extend(
+                    [
+                        CodeSubtype::Rust,
+                        CodeSubtype::JavaScript,
+                        CodeSubtype::TypeScript,
+                        CodeSubtype::HTML,
+                        CodeSubtype::CSS,
+                        CodeSubtype::JSON,
+                        CodeSubtype::Markdown,
+                        CodeSubtype::Python,
+                        CodeSubtype::Shell,
+                        CodeSubtype::TOML,
+                        CodeSubtype::YAML,
+                        CodeSubtype::Other,
+                    ]
+                    .into_iter()
+                    .map(|code_subtype| FileSemantic {
+                        category: FileCategory::Code,
+                        code_subtype: Some(code_subtype),
+                        folder_kind: None,
+                        rule_hint: None,
+                    }),
+                );
+                for semantic in semantics {
+                    for (name, state, surface) in [
+                        ("normal", EntryVisualState::default(), c.bg),
+                        (
+                            "striped",
+                            EntryVisualState::default(),
+                            composite(c.row_alt, c.bg),
+                        ),
+                        (
+                            "hover",
+                            EntryVisualState {
+                                hovered: true,
+                                ..Default::default()
+                            },
+                            composite(c.hover, c.bg),
+                        ),
+                        (
+                            "selected",
+                            EntryVisualState {
+                                selected: true,
+                                ..Default::default()
+                            },
+                            composite(c.selected_bg, c.bg),
+                        ),
+                        (
+                            "focused selection",
+                            EntryVisualState {
+                                selected: true,
+                                focused: true,
+                                ..Default::default()
+                            },
+                            composite(c.selected_bg, c.bg),
+                        ),
+                    ] {
+                        for colorize in [false, true] {
+                            let style = style_for_semantic(
+                                &semantic,
+                                state,
+                                &c,
+                                &semantic_palette(&c),
+                                preset,
+                                colorize,
+                                true,
+                            );
+                            for (role, color, minimum) in [
+                                ("icon", style.icon_color, 3.0),
+                                ("label", style.text_color, 4.5),
+                            ] {
+                                let ratio = contrast(composite(color, surface), surface);
+                                if ratio < minimum {
+                                    failures.push(format!("{preset:?} dark={dark} {semantic:?} {name} colorize={colorize} {role}: {ratio:.2}"));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert!(
+            failures.is_empty(),
+            "Unreadable bundled interface or file roles:\n{}",
+            failures.join("\n")
+        );
+    }
+
+    #[test]
     fn opened_folder_uses_open_icon_variant() {
         let cfg = AppConfig::default();
-        let c = Colors::for_config(&cfg);
+        let c = Colors::for_config(&cfg, None);
         let entry = FileEntry {
             name: "folder".to_string(),
             path: PathBuf::from("/tmp/folder"),
@@ -569,7 +675,7 @@ mod tests {
             colorize_file_types: false,
             ..AppConfig::default()
         };
-        let c = Colors::for_config(&cfg);
+        let c = Colors::for_config(&cfg, None);
         let entry = FileEntry {
             name: "main.rs".to_string(),
             path: PathBuf::from("/tmp/main.rs"),
@@ -586,8 +692,8 @@ mod tests {
     #[test]
     fn semantic_style_is_deterministic_by_subtype() {
         let cfg = AppConfig::default();
-        let c = Colors::for_config(&cfg);
-        let p = semantic_palette(&cfg, &c);
+        let c = Colors::for_config(&cfg, None);
+        let p = semantic_palette(&c);
         let rust = FileSemantic {
             category: FileCategory::Code,
             code_subtype: Some(CodeSubtype::Rust),

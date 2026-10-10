@@ -20,6 +20,9 @@ sha2 = "0.10"
 same-file = "1"
 two-face = { version = "0.5.2", default-features = false, features = ["syntect-fancy"] }
 
+[target.'cfg(target_os = "linux")'.dependencies]
+zbus = "5.14"
+
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
 

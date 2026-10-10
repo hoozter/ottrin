@@ -1,3 +1,4 @@
+use crate::widget_style::ThemeButtonExt;
 use crate::{
     Colors, MI_ARROW_BACK, MI_ARROW_FORWARD, MI_CONTENT_COPY, MI_DELETE, MI_DESCRIPTION, MI_EDIT,
     MI_FOLDER_OPEN, MI_FOLDER_ZIP, MI_INFO, MI_MUSIC_NOTE, MI_OPEN_IN_NEW, file_icon_for_path,
@@ -222,15 +223,9 @@ pub(crate) fn inspector_action_button(
     c: Colors,
 ) -> egui::Response {
     ui.add(
-        egui::Button::new(
-            RichText::new(format!("{icon}  {label}"))
-                .size(11.5)
-                .color(c.text),
-        )
-        .fill(c.panel)
-        .stroke(Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.35)))
-        .corner_radius(6.0)
-        .min_size(Vec2::new(108.0, 30.0)),
+        egui::Button::new(RichText::new(format!("{icon}  {label}")).size(11.5 * c.font_scale))
+            .min_size(Vec2::new(108.0, 30.0))
+            .themed(&c),
     )
     .on_hover_text(tooltip)
 }
@@ -243,11 +238,9 @@ pub(crate) fn inspector_icon_button(
     c: Colors,
 ) -> egui::Response {
     ui.add(
-        egui::Button::new(RichText::new(icon).size(16.0).color(c.text))
-            .fill(c.panel)
-            .stroke(Stroke::new(1.0, mix_color(c.border, c.panel_raised, 0.35)))
-            .corner_radius(6.0)
-            .min_size(Vec2::new(30.0, 28.0)),
+        egui::Button::new(RichText::new(icon).size(16.0 * c.font_scale))
+            .min_size(Vec2::new(30.0, 28.0))
+            .themed(&c),
     )
     .on_hover_text(format!("{label}\n{tooltip}"))
 }
@@ -442,7 +435,7 @@ fn render_archive_tree_nodes(
             egui::CollapsingHeader::new(
                 RichText::new(format!("{MI_FOLDER_OPEN}  {}", node.name))
                     .color(c.text)
-                    .size(12.0),
+                    .size(12.0 * c.font_scale),
             )
             .id_salt(&node_id)
             .default_open(depth < 2)
@@ -452,13 +445,25 @@ fn render_archive_tree_nodes(
         } else {
             ui.horizontal(|ui| {
                 let icon = file_icon_for_path(Path::new(&node.name));
-                ui.label(RichText::new(icon).color(c.text_dim).size(13.0));
+                ui.label(
+                    RichText::new(icon)
+                        .color(c.text_dim)
+                        .size(13.0 * c.font_scale),
+                );
                 ui.add(
-                    egui::Label::new(RichText::new(&node.name).color(c.text).size(12.0))
-                        .selectable(true),
+                    egui::Label::new(
+                        RichText::new(&node.name)
+                            .color(c.text)
+                            .size(12.0 * c.font_scale),
+                    )
+                    .selectable(true),
                 );
                 if let Some(size) = &node.size {
-                    ui.label(RichText::new(size).color(c.text_muted).size(10.5));
+                    ui.label(
+                        RichText::new(size)
+                            .color(c.text_muted)
+                            .size(10.5 * c.font_scale),
+                    );
                 }
             });
         }
@@ -493,7 +498,7 @@ pub(crate) fn render_preview_footer(ui: &mut egui::Ui, c: Colors, name: &str, bo
         ui.label(
             RichText::new(compact_preview_metadata(name, body))
                 .color(c.text_dim)
-                .size(11.0),
+                .size(11.0 * c.font_scale),
         );
     });
 }
@@ -612,7 +617,7 @@ pub(crate) fn render_archive_body_preview(ui: &mut egui::Ui, c: Colors, name: &s
                     egui::CollapsingHeader::new(
                         RichText::new(format!("{MI_FOLDER_ZIP}  {}", archive_display_name(name)))
                             .color(c.text)
-                            .size(12.5)
+                            .size(12.5 * c.font_scale)
                             .strong(),
                     )
                     .id_salt(("archive_root", name))
@@ -624,7 +629,7 @@ pub(crate) fn render_archive_body_preview(ui: &mut egui::Ui, c: Colors, name: &s
                                 RichText::new(notice)
                                     .color(c.text_muted)
                                     .italics()
-                                    .size(11.0),
+                                    .size(11.0 * c.font_scale),
                             );
                         }
                         if tree.truncated {
@@ -632,7 +637,7 @@ pub(crate) fn render_archive_body_preview(ui: &mut egui::Ui, c: Colors, name: &s
                                 RichText::new("Tree rendering truncated at the safe node limit.")
                                     .color(c.text_muted)
                                     .italics()
-                                    .size(11.0),
+                                    .size(11.0 * c.font_scale),
                             );
                         }
                     });
@@ -648,7 +653,7 @@ fn render_extracted_text_fallback_content(ui: &mut egui::Ui, c: Colors, text: &s
         ui.label(
             RichText::new(EXTRACTED_TEXT_FALLBACK_LABEL)
                 .color(c.text)
-                .size(12.5)
+                .size(12.5 * c.font_scale)
                 .strong(),
         );
         ui.label(
@@ -656,13 +661,13 @@ fn render_extracted_text_fallback_content(ui: &mut egui::Ui, c: Colors, text: &s
                 "Source layout is unavailable. This fallback preserves extracted line breaks and whitespace only.",
             )
             .color(c.text_muted)
-            .size(10.5),
+            .size(10.5 * c.font_scale),
         );
         ui.add_space(6.0);
         ui.add(
             egui::Label::new(
                 RichText::new(text)
-                    .font(FontId::monospace(12.0))
+                    .font(FontId::monospace(12.0 * c.font_scale))
                     .color(c.text),
             )
             .selectable(true),
@@ -819,14 +824,14 @@ pub(crate) fn render_docx_structured_body_preview(
         ui.label(
             RichText::new("Ottrin preview")
                 .color(c.text)
-                .size(12.5)
+                .size(12.5 * c.font_scale)
                 .strong(),
         );
         let info = ui
             .add(
-                egui::Button::new(RichText::new(MI_INFO).color(c.text_muted).size(13.0))
+                egui::Button::new(RichText::new(MI_INFO).color(c.text_muted).size(13.0 * c.font_scale))
                     .frame(false)
-                    .min_size(Vec2::splat(18.0)),
+                    .min_size(Vec2::splat(18.0)).themed(&c),
             )
             .on_hover_cursor(egui::CursorIcon::PointingHand);
         if info.hovered() {
@@ -903,7 +908,7 @@ pub(crate) fn render_docx_structured_body_preview(
         egui::CollapsingHeader::new(
             RichText::new(EXTRACTED_TEXT_FALLBACK_LABEL)
                 .color(c.text_muted)
-                .size(11.0),
+                .size(11.0 * c.font_scale),
         )
         .id_salt(("document_extracted_fallback", name))
         .default_open(false)
@@ -1354,7 +1359,11 @@ pub(crate) fn render_spreadsheet_body_preview(
                 });
         });
     for omission in sheet.omissions.iter().chain(grid.omissions.iter()) {
-        ui.label(RichText::new(omission).color(c.text_dim).size(11.0));
+        ui.label(
+            RichText::new(omission)
+                .color(c.text_dim)
+                .size(11.0 * c.font_scale),
+        );
     }
     render_preview_footer(ui, c, name, &preview.body);
     true
@@ -1396,7 +1405,7 @@ pub(crate) fn render_document_body_preview_in_scroll_content(
         egui::CollapsingHeader::new(
             RichText::new(EXTRACTED_TEXT_FALLBACK_LABEL)
                 .color(c.text_muted)
-                .size(11.0),
+                .size(11.0 * c.font_scale),
         )
         .id_salt(("document_extracted_fallback", name))
         .default_open(false)
@@ -1422,9 +1431,13 @@ pub(crate) fn render_docx_page_preview(
 pub(crate) fn render_folder_body_preview(ui: &mut egui::Ui, c: Colors, name: &str, body: &str) {
     ui.add_space(16.0);
     ui.with_layout(Layout::top_down(Align::Center), |ui| {
-        ui.label(RichText::new(MI_FOLDER_OPEN).size(58.0).color(c.folder));
+        ui.label(
+            RichText::new(MI_FOLDER_OPEN)
+                .size(58.0 * c.font_scale)
+                .color(c.folder),
+        );
         ui.add_space(8.0);
-        ui.label(RichText::new(name).color(c.text).size(14.0));
+        ui.label(RichText::new(name).color(c.text).size(14.0 * c.font_scale));
     });
     ui.add_space(10.0);
     let (metadata, sample) = if let Some((metadata, sample)) = body.split_once("\n\nSample:\n") {
@@ -1438,12 +1451,20 @@ pub(crate) fn render_folder_body_preview(ui: &mut egui::Ui, c: Colors, name: &st
                 ui.label(
                     RichText::new(format!("{key}:"))
                         .color(c.text_muted)
-                        .size(11.5),
+                        .size(11.5 * c.font_scale),
                 );
-                ui.label(RichText::new(val.trim()).color(c.text).size(11.5));
+                ui.label(
+                    RichText::new(val.trim())
+                        .color(c.text)
+                        .size(11.5 * c.font_scale),
+                );
             });
         } else if !line.trim().is_empty() {
-            ui.label(RichText::new(line).color(c.text_dim).size(11.5));
+            ui.label(
+                RichText::new(line)
+                    .color(c.text_dim)
+                    .size(11.5 * c.font_scale),
+            );
         }
     }
     if let Some(sample) = sample {
@@ -1451,13 +1472,13 @@ pub(crate) fn render_folder_body_preview(ui: &mut egui::Ui, c: Colors, name: &st
         ui.label(
             RichText::new("Sample contents")
                 .color(c.text)
-                .size(12.0)
+                .size(12.0 * c.font_scale)
                 .strong(),
         );
         let mut text = sample.to_string();
         ui.add(
             egui::TextEdit::multiline(&mut text)
-                .font(FontId::monospace(11.0))
+                .font(FontId::monospace(11.0 * c.font_scale))
                 .text_color(c.text_dim)
                 .frame(true)
                 .desired_rows(10)
@@ -1477,9 +1498,9 @@ pub(crate) fn render_generic_body_preview(
     ui.add_space(20.0);
     ui.with_layout(Layout::top_down(Align::Center), |ui| {
         let icon = file_icon_for_path(path);
-        ui.label(RichText::new(icon).size(64.0));
+        ui.label(RichText::new(icon).size(64.0 * c.font_scale));
         ui.add_space(8.0);
-        ui.label(RichText::new(name).color(c.text).size(14.0));
+        ui.label(RichText::new(name).color(c.text).size(14.0 * c.font_scale));
         if !preview.body.is_empty() {
             ui.add_space(8.0);
             render_preview_metadata_rows(ui, c, &preview.body);
@@ -1529,9 +1550,13 @@ pub(crate) fn render_metadata_card_preview(
 ) {
     ui.with_layout(Layout::top_down(Align::Center), |ui| {
         ui.add_space((ui.available_height() * 0.18).min(48.0));
-        ui.label(RichText::new(icon).size(58.0).color(c.folder));
+        ui.label(
+            RichText::new(icon)
+                .size(58.0 * c.font_scale)
+                .color(c.folder),
+        );
         ui.add_space(8.0);
-        ui.label(RichText::new(name).color(c.text).size(14.0));
+        ui.label(RichText::new(name).color(c.text).size(14.0 * c.font_scale));
         ui.add_space(10.0);
         render_preview_metadata_rows(ui, c, metadata);
     });
@@ -1548,12 +1573,20 @@ fn render_preview_metadata_rows(ui: &mut egui::Ui, c: Colors, metadata: &str) {
                 ui.label(
                     RichText::new(format!("{key}:"))
                         .color(c.text_muted)
-                        .size(11.5),
+                        .size(11.5 * c.font_scale),
                 );
-                ui.label(RichText::new(val.trim()).color(c.text).size(11.5));
+                ui.label(
+                    RichText::new(val.trim())
+                        .color(c.text)
+                        .size(11.5 * c.font_scale),
+                );
             });
         } else {
-            ui.label(RichText::new(line).color(c.text_dim).size(11.5));
+            ui.label(
+                RichText::new(line)
+                    .color(c.text_dim)
+                    .size(11.5 * c.font_scale),
+            );
         }
     }
 }
@@ -1608,7 +1641,7 @@ pub(crate) fn render_image_hover_nav(
             rect.center(),
             Align2::CENTER_CENTER,
             icon,
-            FontId::proportional(24.0),
+            FontId::proportional(24.0 * c.font_scale),
             c.text,
         );
     }
@@ -1815,7 +1848,7 @@ mod tests {
                             viewport = ui.max_rect();
                             render_spreadsheet_body_preview(
                                 ui,
-                                Colors::for_config(&Default::default()),
+                                Colors::for_config(&Default::default(), None),
                                 "sizing.xlsx",
                                 &preview,
                                 &mut None,
@@ -1890,7 +1923,7 @@ mod tests {
                     egui::CentralPanel::default().show(ctx, |ui| {
                         render_spreadsheet_body_preview(
                             ui,
-                            Colors::for_config(&Default::default()),
+                            Colors::for_config(&Default::default(), None),
                             "wide.xlsx",
                             &preview,
                             &mut None,
@@ -2147,7 +2180,7 @@ mod tests {
             egui::CentralPanel::default().show(context, |ui| {
                 rendered = render_docx_structured_body_preview(
                     ui,
-                    Colors::for_config(&ottrin_core::AppConfig::default()),
+                    Colors::for_config(&ottrin_core::AppConfig::default(), None),
                     "docx-baseline.docx",
                     &preview,
                     1.0,
@@ -2192,7 +2225,7 @@ mod tests {
             egui::CentralPanel::default().show(context, |ui| {
                 assert!(render_docx_structured_body_preview(
                     ui,
-                    Colors::for_config(&ottrin_core::AppConfig::default()),
+                    Colors::for_config(&ottrin_core::AppConfig::default(), None),
                     "docx-inline-images.docx",
                     &preview,
                     1.0,
