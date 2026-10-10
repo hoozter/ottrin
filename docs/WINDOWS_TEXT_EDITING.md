@@ -21,7 +21,8 @@ mandatory-label security and security resource attributes are compared before
 withdrawal. The publication file is created beside the source using the captured
 security descriptor. `NtCreateFile` does not preserve its automatic-inheritance
 control flag; candidate preparation applies the source DACL and protection state
-through handle-based `SetSecurityInfo`. Only that owned publication handle requests
+through handle-based `SetSecurityInfo`, including captured resource attributes.
+An absent resource SACL stays absent. Only that owned publication handle requests
 `WRITE_DAC`. Its captured security, creation time and attributes must still match
 exactly before the original is moved. If
 Windows cannot apply resource attributes to the publication, that exact comparison
@@ -96,10 +97,11 @@ Before changing the public gate, extend the ordinary/custom ACL, directory flush
 and sharing evidence with recovery privacy and exact packaged editor behavior.
 Unicode paths, ancestor-rename refusal, publication-step exits and the tested
 writable-mapping lifecycle have native evidence; other mapping/relocation behavior
-is not implied. Security resource attributes are now
-included in the descriptor that is captured, applied and compared, but this
-preservation path still needs a native fixture with an actual resource-attribute
-ACE. Object IDs are now queried through the pinned handle and refused before
+is not implied. Security resource attributes are included in the descriptor that is captured,
+applied and compared. An actual resource-attribute ACE now survives publication
+with exact descriptor equality for the published and retained original files
+(`text-resource-attribute-final.log`, all 15 native text fixtures pass). The owned
+fixture uses `READ_CONTROL | WRITE_DAC`; no audit privilege is enabled. Object IDs are now queried through the pinned handle and refused before
 staging; native tests cover preexisting IDs and IDs added after opening, preserving
 the exact ID and source bytes (`text-object-id-green.log`, 14 text fixtures pass).
 Audit SACLs, scoped policy IDs and other NTFS metadata are **not
