@@ -3089,6 +3089,7 @@ fn start_windows_cross_volume_move(
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum WindowsMoveBoundary {
     JournalPublished,
+    FileReplaced,
     CandidateWritable,
     CandidateUnlocked,
     DisplacedRetained,
@@ -3211,7 +3212,7 @@ fn reopen_windows_staged_file(
 fn copy_windows_move_source_metadata(
     source: &Path,
     source_handle: &mut Option<std::fs::File>,
-    record: &WindowsCrossVolumeRecord,
+    expected_source: move_recovery::WindowsStableIdentity,
     destination: &std::fs::File,
 ) -> Result<(), PlatformError> {
     if source_handle.is_none() {
@@ -3223,7 +3224,7 @@ fn copy_windows_move_source_metadata(
     let source_handle = source_handle.as_ref().expect("metadata source opened");
     if move_recovery::stable_identity_from_handle(source_handle)
         .map_err(|error| PlatformError::Io(error.to_string()))?
-        != record.source_identity
+        != expected_source
     {
         return Err(PlatformError::Io(
             "source changed before metadata publication".into(),
@@ -3819,11 +3820,18 @@ fn resume_windows_cross_volume(
                     });
                 }
                 if recovered_file && record.conflict != ConflictAction::Overwrite {
-                    copy_windows_move_source_metadata(&source, &mut source_handle, record, &staged)
-                        .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                    copy_windows_move_source_metadata(
+                        &source,
+                        &mut source_handle,
+                        record.source_identity,
+                        &staged,
+                    )
+                    .map_err(|error| {
+                        PlatformError::ClaimedRecoveryPending {
                             transaction: transaction.display().to_string(),
                             message: format!("staged metadata recovery failed: {error}"),
-                        })?;
+                        }
+                    })?;
                 }
                 let destination_handle =
                     move_recovery::open_reparse_safe_directory_for_rename(&destination_parent)
@@ -4047,6 +4055,8 @@ fn resume_windows_cross_volume(
                                 .destination_identity
                                 .expect("validated displaced destination identity"),
                         )?;
+                        #[cfg(test)]
+                        windows_move_boundary(WindowsMoveBoundary::FileReplaced, &target);
                         move_recovery::open_reparse_safe_cross_volume_candidate(&target).map_err(
                             |error| PlatformError::CommittedCleanupPending {
                                 transaction: transaction.display().to_string(),
@@ -4093,7 +4103,7 @@ fn resume_windows_cross_volume(
                         copy_windows_move_source_metadata(
                             &source,
                             &mut source_handle,
-                            record,
+                            record.source_identity,
                             &published,
                         )
                         .map_err(|error| {
@@ -4368,9 +4378,23 @@ fn resume_windows_cross_volume(
                 } else {
                     None
                 };
+                let source_kind = record.source_kind;
+                let expected_source = record.source_identity;
                 flush_windows_cross_volume_recovered_publication_with(
                     || {
-                        published.sync_all().map_err(|error| {
+                        let flushed = if source_kind == WindowsCrossVolumeSourceKind::File {
+                            copy_windows_move_source_metadata(
+                                &source,
+                                &mut source_handle,
+                                expected_source,
+                                &published,
+                            )
+                        } else {
+                            published
+                                .sync_all()
+                                .map_err(|error| PlatformError::Io(error.to_string()))
+                        };
+                        flushed.map_err(|error| {
                             PlatformError::CommittedCleanupPending {
                                 transaction: transaction.display().to_string(),
                                 message: format!(
@@ -8774,6 +8798,88 @@ mod windows_source_tests {
                 }
             }
         }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_read_only_overwrite_publication_exit_recovers() {
+        if std::env::var_os("OTTRIN_TEST_WINDOWS_OVERWRITE_PUBLICATION_EXIT_CHILD").is_some() {
+            let source = std::path::PathBuf::from(
+                std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE").unwrap(),
+            );
+            let destination = std::path::PathBuf::from(
+                std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION").unwrap(),
+            );
+            let result =
+                super::move_entry_transactional(&source, &destination, ConflictAction::Overwrite);
+            panic!(
+                "publication child returned instead of exiting: {:?}",
+                result.as_ref().err()
+            );
+        }
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        let source_fixture = crate::tests::TestDir::new("readonly-publication-source");
+        let destination_fixture =
+            crate::tests::TestDir::new_at(&volume, "readonly-publication-destination");
+        let source = source_fixture.path().join("entry");
+        let target = destination_fixture.path().join("entry");
+        std::fs::write(&source, b"source-data").unwrap();
+        std::fs::write(&target, b"displaced-data").unwrap();
+        let displaced_identity = move_recovery::stable_identity_of_entry(&target).unwrap();
+        let mut permissions = std::fs::metadata(&source).unwrap().permissions();
+        permissions.set_readonly(true);
+        std::fs::set_permissions(&source, permissions).unwrap();
+        let status = std::process::Command::new(std::env::current_exe().unwrap())
+            .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_read_only_overwrite_publication_exit_recovers", "--nocapture"])
+            .env("OTTRIN_TEST_WINDOWS_OVERWRITE_PUBLICATION_EXIT_CHILD", "1")
+            .env("OTTRIN_TEST_WINDOWS_MOVE_EXIT_BOUNDARY", "FileReplaced")
+            .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE", &source)
+            .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION", destination_fixture.path())
+            .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", destination_fixture.path().join("move-state"))
+            .status().unwrap();
+        assert_eq!(status.code(), Some(87));
+        assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+        assert!(std::fs::metadata(&source).unwrap().permissions().readonly());
+        assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+        let transaction = std::fs::read_dir(destination_fixture.path())
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .find(|path| {
+                path.file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .starts_with(".ottrin-move-")
+            })
+            .unwrap();
+        let retained = transaction.join(super::WINDOWS_RETAINED_NAME);
+        assert_eq!(
+            move_recovery::stable_identity_of_entry(&retained).unwrap(),
+            displaced_identity
+        );
+        assert_eq!(std::fs::read(&retained).unwrap(), b"displaced-data");
+        let moved = super::move_entry_transactional(
+            &source,
+            destination_fixture.path(),
+            ConflictAction::Overwrite,
+        )
+        .expect("resume atomic replacement with source metadata");
+        assert_eq!(moved.disposition, crate::MoveDisposition::Moved);
+        assert_eq!(moved.published_path.as_deref(), Some(target.as_path()));
+        assert_eq!(
+            moved.retained_displaced_path.as_deref(),
+            Some(retained.as_path())
+        );
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+        assert!(std::fs::metadata(&target).unwrap().permissions().readonly());
+        assert_eq!(
+            move_recovery::stable_identity_of_entry(&retained).unwrap(),
+            displaced_identity
+        );
+        assert_eq!(std::fs::read(&retained).unwrap(), b"displaced-data");
     }
 
     #[cfg(target_os = "windows")]

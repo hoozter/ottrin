@@ -192,8 +192,10 @@ publication/flush. The source and published entries are not made writable by thi
 step. Cross-volume Overwrite of a writable target with a read-only source also
 passes: the same verified private-candidate preparation allows `ReplaceFileW`,
 then source metadata is restored and flushed through the published handle. The
-exact displaced identity, bytes and attributes are retained. Read-only destination
-and later publication-interruption cases remain pending.
+exact displaced identity, bytes and attributes are retained. A native process exit
+immediately after atomic replacement also recovers source metadata before durability
+confirmation and source cleanup. Read-only destination and remaining publication-
+interruption cases remain pending.
 The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or
