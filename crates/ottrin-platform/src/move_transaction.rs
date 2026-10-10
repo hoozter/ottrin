@@ -3081,6 +3081,7 @@ fn start_windows_cross_volume_move(
 #[cfg(all(target_os = "windows", test))]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum WindowsCrossVolumeMoveBoundary {
+    CandidateWritable,
     CandidateUnlocked,
     DisplacedRetained,
     CandidatePublished,
@@ -3113,6 +3114,77 @@ fn windows_cross_volume_move_boundary(boundary: WindowsCrossVolumeMoveBoundary, 
             hook(boundary, path);
         }
     });
+}
+
+/// A process exit loses the writable handle that predates copied read-only
+/// metadata. Normalize only the identity/content-verified private candidate;
+/// publication restores source metadata after reacquiring and verifying it.
+#[cfg(target_os = "windows")]
+fn reopen_windows_staged_file(
+    candidate: &Path,
+    record: &WindowsCrossVolumeRecord,
+) -> Result<std::fs::File, PlatformError> {
+    use std::os::windows::fs::MetadataExt;
+    use windows_sys::Win32::{
+        Foundation::GENERIC_READ,
+        Storage::FileSystem::{
+            DELETE, FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY, FILE_FLAG_BACKUP_SEMANTICS,
+            FILE_FLAG_OPEN_REPARSE_POINT, FILE_WRITE_ATTRIBUTES,
+        },
+    };
+    let mut staged = OpenOptions::new()
+        .access_mode(GENERIC_READ | FILE_WRITE_ATTRIBUTES | DELETE)
+        .share_mode(move_recovery::WINDOWS_CROSS_VOLUME_CANDIDATE_SHARE_MODE)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+        .open(candidate)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    if Some(
+        move_recovery::stable_identity_from_handle(&staged)
+            .map_err(|error| PlatformError::Io(error.to_string()))?,
+    ) != record.candidate_identity
+        || hash_windows_file(&mut staged)? != (record.source_size, record.source_sha256.clone())
+    {
+        return Err(PlatformError::Io(
+            "private candidate changed before metadata recovery".into(),
+        ));
+    }
+    let attributes = staged
+        .metadata()
+        .map_err(|error| PlatformError::Io(error.to_string()))?
+        .file_attributes();
+    if attributes & FILE_ATTRIBUTE_READONLY != 0 {
+        let writable_attributes = attributes & !FILE_ATTRIBUTE_READONLY;
+        let basic = FILE_BASIC_INFO {
+            FileAttributes: if writable_attributes == 0 {
+                FILE_ATTRIBUTE_NORMAL
+            } else {
+                writable_attributes
+            },
+            ..Default::default()
+        };
+        if unsafe {
+            SetFileInformationByHandle(
+                staged.as_raw_handle(),
+                FileBasicInfo,
+                std::ptr::addr_of!(basic).cast(),
+                std::mem::size_of::<FILE_BASIC_INFO>() as u32,
+            )
+        } == 0
+        {
+            return Err(PlatformError::Io(format!(
+                "private candidate attribute recovery failed: {}",
+                std::io::Error::last_os_error()
+            )));
+        }
+        #[cfg(test)]
+        windows_cross_volume_move_boundary(
+            WindowsCrossVolumeMoveBoundary::CandidateWritable,
+            candidate,
+        );
+    }
+    drop(staged);
+    move_recovery::open_reparse_safe_cross_volume_candidate(candidate)
+        .map_err(|error| PlatformError::Io(error.to_string()))
 }
 
 #[cfg(target_os = "windows")]
@@ -3594,9 +3666,13 @@ fn resume_windows_cross_volume(
                 }
             }
             WindowsCrossVolumeRestartAction::PublishStaged => {
+                let recovered_file = staged_handle.is_none()
+                    && record.source_kind == WindowsCrossVolumeSourceKind::File;
                 let mut staged = match staged_handle.take() {
                     Some(staged) => Ok(staged),
-                    None => move_recovery::open_reparse_safe_cross_volume_candidate(&candidate),
+                    None if recovered_file => reopen_windows_staged_file(&candidate, record),
+                    None => move_recovery::open_reparse_safe_cross_volume_candidate(&candidate)
+                        .map_err(|error| PlatformError::Io(error.to_string())),
                 }
                         .map_err(|error| PlatformError::ClaimedRecoveryPending {
                             transaction: transaction.display().to_string(),
@@ -3696,6 +3772,33 @@ fn resume_windows_cross_volume(
                         message: "Windows cross-volume identities changed before publication"
                             .into(),
                     });
+                }
+                if recovered_file {
+                    let metadata_error = |error: String| PlatformError::ClaimedRecoveryPending {
+                        transaction: transaction.display().to_string(),
+                        message: format!("staged metadata recovery failed: {error}"),
+                    };
+                    if source_handle.is_none() {
+                        source_handle = Some(
+                            move_recovery::open_reparse_safe_cross_volume_source(&source)
+                                .map_err(|error| metadata_error(error.to_string()))?,
+                        );
+                    }
+                    let source_metadata_handle =
+                        source_handle.as_ref().expect("recovery source opened");
+                    if move_recovery::stable_identity_from_handle(source_metadata_handle)
+                        .map_err(|error| metadata_error(error.to_string()))?
+                        != record.source_identity
+                    {
+                        return Err(PlatformError::ClaimedRecoveryPending {
+                            transaction: transaction.display().to_string(),
+                            message: "source changed before staged metadata recovery".into(),
+                        });
+                    }
+                    // Also repairs a process exit after the private read-only bit
+                    // was cleared. Never change the source or a published entry.
+                    copy_windows_basic_metadata(source_metadata_handle, &staged)
+                        .map_err(|error| metadata_error(error.to_string()))?;
                 }
                 let destination_handle =
                     move_recovery::open_reparse_safe_directory_for_rename(&destination_parent)
@@ -9252,6 +9355,11 @@ mod windows_source_tests {
                 std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION")
                     .expect("child destination path"),
             );
+            if std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVER_CHILD").is_some() {
+                super::move_entry_transactional(&source, &destination_root, ConflictAction::Rename)
+                    .expect("child should exit while recovering private metadata");
+                panic!("child returned without exercising metadata recovery exit");
+            }
             let _recovery_lock = super::acquire_windows_recovery_lock()
                 .expect("acquire child Windows Move recovery lock");
             let source_handle = move_recovery::open_reparse_safe_entry_for_rename(&source)
@@ -9270,24 +9378,29 @@ mod windows_source_tests {
             panic!("child returned without exercising the process-exit hook");
         }
 
-        let mut transaction_id = [0_u8; 16];
-        getrandom::fill(&mut transaction_id).expect("native interruption test transaction id");
-        let test_name = format!(
-            "ottrin-native-cross-volume-interrupt-{}",
-            super::encode_transaction_id(transaction_id)
-        );
-        let source_root = std::env::temp_dir().join(&test_name);
-        let destination_root = destination_volume.join(&test_name);
-        let state_root = source_root.join("state");
-        std::fs::create_dir_all(&source_root).expect("create interruption source root");
-        std::fs::create_dir_all(&destination_root).expect("create interruption destination root");
-        std::fs::create_dir_all(&state_root).expect("create interruption state root");
-        let source = source_root.join("payload.bin");
-        let destination = destination_root.join("payload.bin");
-        let payload = b"Ottrin native process-exit recovery payload\0\xff";
-        std::fs::write(&source, payload).expect("write interruption source payload");
+        for read_only in [false, true] {
+            let mut transaction_id = [0_u8; 16];
+            getrandom::fill(&mut transaction_id).expect("native interruption test transaction id");
+            let test_name = format!(
+                "ottrin-native-cross-volume-interrupt-{}",
+                super::encode_transaction_id(transaction_id)
+            );
+            let source_root = std::env::temp_dir().join(&test_name);
+            let destination_root = destination_volume.join(&test_name);
+            let state_root = source_root.join("state");
+            std::fs::create_dir_all(&source_root).expect("create interruption source root");
+            std::fs::create_dir_all(&destination_root)
+                .expect("create interruption destination root");
+            std::fs::create_dir_all(&state_root).expect("create interruption state root");
+            let source = source_root.join("payload.bin");
+            let destination = destination_root.join("payload.bin");
+            let payload = b"Ottrin native process-exit recovery payload\0\xff";
+            std::fs::write(&source, payload).expect("write interruption source payload");
+            let mut permissions = std::fs::metadata(&source).unwrap().permissions();
+            permissions.set_readonly(read_only);
+            std::fs::set_permissions(&source, permissions).unwrap();
 
-        let status = Command::new(std::env::current_exe().expect("native test executable"))
+            let status = Command::new(std::env::current_exe().expect("native test executable"))
             .args([
                 "--ignored",
                 "--exact",
@@ -9306,73 +9419,117 @@ mod windows_source_tests {
             .env("LOCALAPPDATA", &state_root)
             .status()
             .expect("run interruption child");
-        assert_eq!(
-            status.code(),
-            Some(86),
-            "child must exit at staged boundary"
-        );
-        assert!(
-            source.exists(),
-            "interruption before publication must preserve source"
-        );
-        assert!(
-            !destination.exists(),
-            "staged candidate must not yet be published"
-        );
-        let transaction = std::fs::read_dir(&destination_root)
-            .expect("inspect interrupted destination root")
-            .filter_map(Result::ok)
-            .find(|entry| {
-                entry
-                    .file_name()
-                    .to_string_lossy()
-                    .starts_with(".ottrin-move-")
-            })
-            .expect("durable transaction directory must remain")
-            .path();
-        assert_eq!(
-            std::fs::read(transaction.join(super::WINDOWS_CROSS_VOLUME_CANDIDATE_NAME))
-                .expect("read interrupted staged candidate"),
-            payload
-        );
+            assert_eq!(
+                status.code(),
+                Some(86),
+                "child must exit at staged boundary"
+            );
+            assert!(
+                source.exists(),
+                "interruption before publication must preserve source"
+            );
+            assert!(
+                !destination.exists(),
+                "staged candidate must not yet be published"
+            );
+            let transaction = std::fs::read_dir(&destination_root)
+                .expect("inspect interrupted destination root")
+                .filter_map(Result::ok)
+                .find(|entry| {
+                    entry
+                        .file_name()
+                        .to_string_lossy()
+                        .starts_with(".ottrin-move-")
+                })
+                .expect("durable transaction directory must remain")
+                .path();
+            assert_eq!(
+                std::fs::read(transaction.join(super::WINDOWS_CROSS_VOLUME_CANDIDATE_NAME))
+                    .expect("read interrupted staged candidate"),
+                payload
+            );
 
-        let previous_local_app_data = std::env::var_os("LOCALAPPDATA");
-        unsafe {
-            std::env::set_var("LOCALAPPDATA", &state_root);
-            std::env::set_var("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY", "1");
-        }
-        let recovery =
-            super::move_entry_transactional(&source, &destination_root, ConflictAction::Rename);
-        unsafe {
-            std::env::remove_var("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY");
-            if let Some(previous) = previous_local_app_data {
-                std::env::set_var("LOCALAPPDATA", previous);
-            } else {
-                std::env::remove_var("LOCALAPPDATA");
+            if read_only {
+                let status = Command::new(std::env::current_exe().unwrap())
+                    .args([
+                        "--ignored", "--exact",
+                        "move_transaction::windows_source_tests::windows_native_cross_volume_staged_process_exit_recovers_through_move_entry",
+                        "--test-threads=1", "--nocapture",
+                    ])
+                    .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_CHILD", "1")
+                    .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVER_CHILD", "1")
+                    .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY", "1")
+                    .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_BOUNDARY", "CandidateWritable")
+                    .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE", &source)
+                    .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION", &destination_root)
+                    .env("LOCALAPPDATA", &state_root)
+                    .status().expect("run private metadata interruption child");
+                assert_eq!(status.code(), Some(87));
+                assert_eq!(std::fs::read(&source).unwrap(), payload);
+                assert!(std::fs::metadata(&source).unwrap().permissions().readonly());
+                let candidate = transaction.join(super::WINDOWS_CROSS_VOLUME_CANDIDATE_NAME);
+                assert_eq!(std::fs::read(&candidate).unwrap(), payload);
+                assert!(
+                    !std::fs::metadata(&candidate)
+                        .unwrap()
+                        .permissions()
+                        .readonly()
+                );
             }
-        }
-        let publication = recovery.expect("ordinary Move entry should resume staged transaction");
-        assert_eq!(publication.disposition, crate::MoveDisposition::Moved);
-        assert_eq!(
-            publication.published_path.as_deref(),
-            Some(destination.as_path())
-        );
-        assert!(
-            !source.exists(),
-            "recovery removes source only after publication"
-        );
-        assert_eq!(
-            std::fs::read(&destination).expect("read recovered destination"),
-            payload
-        );
-        assert!(
-            !transaction.exists(),
-            "successful recovery cleans transaction data"
-        );
 
-        std::fs::remove_file(&destination).expect("remove recovered destination");
-        std::fs::remove_dir_all(&source_root).expect("remove interruption source root");
-        std::fs::remove_dir(&destination_root).expect("remove interruption destination root");
+            let previous_local_app_data = std::env::var_os("LOCALAPPDATA");
+            unsafe {
+                std::env::set_var("LOCALAPPDATA", &state_root);
+                std::env::set_var("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY", "1");
+            }
+            let recovery =
+                super::move_entry_transactional(&source, &destination_root, ConflictAction::Rename);
+            unsafe {
+                std::env::remove_var("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY");
+                if let Some(previous) = previous_local_app_data {
+                    std::env::set_var("LOCALAPPDATA", previous);
+                } else {
+                    std::env::remove_var("LOCALAPPDATA");
+                }
+            }
+            if recovery.is_err() {
+                assert_eq!(std::fs::read(&source).unwrap(), payload);
+                assert_eq!(
+                    std::fs::metadata(&source).unwrap().permissions().readonly(),
+                    read_only
+                );
+            }
+            let publication =
+                recovery.expect("ordinary Move entry should resume staged transaction");
+            assert_eq!(publication.disposition, crate::MoveDisposition::Moved);
+            assert_eq!(
+                publication.published_path.as_deref(),
+                Some(destination.as_path())
+            );
+            assert!(
+                !source.exists(),
+                "recovery removes source only after publication"
+            );
+            assert_eq!(
+                std::fs::read(&destination).expect("read recovered destination"),
+                payload
+            );
+            assert!(
+                !transaction.exists(),
+                "successful recovery cleans transaction data"
+            );
+
+            assert_eq!(
+                std::fs::metadata(&destination)
+                    .unwrap()
+                    .permissions()
+                    .readonly(),
+                read_only
+            );
+            std::fs::remove_dir_all(&source_root).expect("remove interruption source root");
+            std::fs::remove_dir_all(&destination_root)
+                .expect("remove interruption destination root");
+        }
     }
 
     #[cfg(target_os = "windows")]

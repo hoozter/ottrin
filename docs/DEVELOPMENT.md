@@ -172,9 +172,13 @@ hidden/archive attributes and payload preservation. An uninterrupted unoccupied-
 Move also preserves a read-only file: the original writable staging handle survives
 through publication/flush, followed by exclusive read verification and identity-bound
 source deletion without changing its attributes. Identity-only probes request
-attribute access so they do not conflict with the content lock. Read-only Overwrite
-and interrupted recovery remain separate pending cases. The ACL fixture invokes
-`icacls.exe` only on its owned directory and restores its temporary denial. Process
+attribute access so they do not conflict with the content lock. Staged process-exit
+recovery also covers read-only files, including a second exit while recovering private
+metadata. Recovery verifies the private candidate before making it writable, then
+rechecks it and restores source metadata through the reopened writable handle before
+publication/flush. The source and published entries are not made writable by this
+step. Read-only Overwrite and later publication-interruption cases remain pending.
+The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or
 certify all conflict, filesystem, ACL, read-only metadata, retained-lifecycle or packaged
