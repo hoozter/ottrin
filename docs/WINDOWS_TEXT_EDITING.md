@@ -11,7 +11,7 @@ read-only. No additional document formats are introduced.
 The native candidate admits bounded UTF-8 text through the existing session API.
 It opens a local NTFS parent directory and performs child opens, creation, source
 withdrawal, publication and restoration relative to handles. Source/stage reparse
-points, hard links, alternate streams, extended attributes, unsupported file
+points, hard links, alternate streams, extended attributes, object IDs, unsupported file
 attributes, binary controls and files over 128 KiB are refused. A source handle
 is held during save with write/delete sharing denied; it is not held while the
 user edits. An incompatible existing writer therefore stops saving before staging.
@@ -99,7 +99,10 @@ writable-mapping lifecycle have native evidence; other mapping/relocation behavi
 is not implied. Security resource attributes are now
 included in the descriptor that is captured, applied and compared, but this
 preservation path still needs a native fixture with an actual resource-attribute
-ACE. Audit SACLs, scoped policy IDs, object IDs and other NTFS metadata are **not
+ACE. Object IDs are now queried through the pinned handle and refused before
+staging; native tests cover preexisting IDs and IDs added after opening, preserving
+the exact ID and source bytes (`text-object-id-green.log`, 14 text fixtures pass).
+Audit SACLs, scoped policy IDs and other NTFS metadata are **not
 yet covered by the admission/preservation checks**. Extend admission or
 preservation on evidence; do not enable the gate while these metadata gaps remain.
 Unsupported security cloning or directory flushing currently stops the save and

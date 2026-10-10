@@ -28,7 +28,8 @@ use windows_sys::Win32::Security::{
     SE_DACL_PROTECTED, UNPROTECTED_DACL_SECURITY_INFORMATION,
 };
 use windows_sys::Win32::Storage::FileSystem::*;
-use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
+use windows_sys::Win32::System::IO::{DeviceIoControl, IO_STATUS_BLOCK};
+use windows_sys::Win32::System::Ioctl::{FILE_OBJECTID_BUFFER, FSCTL_GET_OBJECT_ID};
 
 #[derive(Debug)]
 pub(super) struct Session {
@@ -416,6 +417,29 @@ fn metadata(file: &File) -> Result<Metadata, TextEditError> {
     }
     if info.dwFileAttributes & !(FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_NORMAL) != 0 {
         return Err(TextEditError::UnsupportedMetadata);
+    }
+    // Object IDs belong to the original NTFS object and cannot be duplicated
+    // onto a new publication while retaining that original. Refuse before staging.
+    let mut object_id = FILE_OBJECTID_BUFFER::default();
+    let mut returned = 0;
+    if unsafe {
+        DeviceIoControl(
+            handle(file),
+            FSCTL_GET_OBJECT_ID,
+            ptr::null(),
+            0,
+            ptr::from_mut(&mut object_id).cast(),
+            size_of::<FILE_OBJECTID_BUFFER>() as u32,
+            &mut returned,
+            ptr::null_mut(),
+        )
+    } != 0
+    {
+        return Err(TextEditError::UnsupportedMetadata);
+    }
+    let error = std::io::Error::last_os_error();
+    if error.raw_os_error() != Some(windows_sys::Win32::Foundation::ERROR_FILE_NOT_FOUND as i32) {
+        return Err(read_error(error));
     }
     if info.nFileSizeHigh != 0 || u64::from(info.nFileSizeLow) > MAX_EDITABLE_TEXT_BYTES {
         return Err(TextEditError::TooLarge {
@@ -1053,6 +1077,93 @@ mod tests {
             .unwrap();
         assert_eq!(session.save("draft"), Err(TextEditError::Conflict));
         assert_eq!(std::fs::read_dir(&fixture.0).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn windows_native_object_ids_are_refused_without_changing_source() {
+        use windows_sys::Win32::System::IO::DeviceIoControl;
+        use windows_sys::Win32::System::Ioctl::{
+            FILE_OBJECTID_BUFFER, FSCTL_CREATE_OR_GET_OBJECT_ID, FSCTL_GET_OBJECT_ID,
+        };
+        for after_open in [false, true] {
+            let fixture = Fixture::new();
+            let session = after_open.then(|| Session::open(&fixture.source()).unwrap());
+            let file = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .open(fixture.source())
+                .unwrap();
+            let mut object = FILE_OBJECTID_BUFFER::default();
+            let mut returned = 0;
+            assert_eq!(
+                unsafe {
+                    DeviceIoControl(
+                        handle(&file),
+                        FSCTL_GET_OBJECT_ID,
+                        ptr::null(),
+                        0,
+                        ptr::from_mut(&mut object).cast(),
+                        size_of::<FILE_OBJECTID_BUFFER>() as u32,
+                        &mut returned,
+                        ptr::null_mut(),
+                    )
+                },
+                0
+            );
+            assert_eq!(std::io::Error::last_os_error().raw_os_error(), Some(2));
+            assert_ne!(
+                unsafe {
+                    DeviceIoControl(
+                        handle(&file),
+                        FSCTL_CREATE_OR_GET_OBJECT_ID,
+                        ptr::null(),
+                        0,
+                        ptr::from_mut(&mut object).cast(),
+                        size_of::<FILE_OBJECTID_BUFFER>() as u32,
+                        &mut returned,
+                        ptr::null_mut(),
+                    )
+                },
+                0,
+                "create owned fixture object ID: {}",
+                std::io::Error::last_os_error()
+            );
+            let id = object.ObjectId;
+            drop(file);
+            if let Some(session) = session {
+                assert_eq!(
+                    session.save("draft"),
+                    Err(TextEditError::UnsupportedMetadata)
+                );
+            } else {
+                assert!(
+                    matches!(
+                        Session::open(&fixture.source()),
+                        Err(TextEditError::UnsupportedMetadata)
+                    ),
+                    "source object ID must be refused"
+                );
+            }
+            assert_eq!(std::fs::read(fixture.source()).unwrap(), b"original\r\n");
+            assert_eq!(std::fs::read_dir(&fixture.0).unwrap().count(), 1);
+            let file = File::open(fixture.source()).unwrap();
+            assert_ne!(
+                unsafe {
+                    DeviceIoControl(
+                        handle(&file),
+                        FSCTL_GET_OBJECT_ID,
+                        ptr::null(),
+                        0,
+                        ptr::from_mut(&mut object).cast(),
+                        size_of::<FILE_OBJECTID_BUFFER>() as u32,
+                        &mut returned,
+                        ptr::null_mut(),
+                    )
+                },
+                0
+            );
+            assert_eq!(object.ObjectId, id);
+        }
     }
 
     #[test]
