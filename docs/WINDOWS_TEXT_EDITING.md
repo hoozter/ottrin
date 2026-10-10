@@ -16,17 +16,20 @@ attributes, binary controls and files over 128 KiB are refused. A source handle
 is held during save with write/delete sharing denied; it is not held while the
 user edits. An incompatible existing writer therefore stops saving before staging.
 
-Source identity, content, creation/write/change times, owner/group/DACL,
-mandatory-label security and security resource attributes are compared before
-withdrawal. The publication file is created beside the source using the captured
-security descriptor. `NtCreateFile` does not preserve its automatic-inheritance
-control flag; candidate preparation applies the source DACL and protection state
-through handle-based `SetSecurityInfo`, including captured resource attributes.
-An absent resource SACL stays absent. Only that owned publication handle requests
+Source identity, content, creation/write/change times and owner/group/DACL are
+compared before withdrawal. Files with any SACL are refused before staging,
+including audit rules, mandatory labels, resource attributes, scoped policy and
+present-but-empty SACLs. The label-security query preserves the SACL-present flag
+without requiring audit privilege. Its visible ACE subset cannot establish that
+unreadable audit entries are absent, so the candidate never reconstructs a SACL.
+The same refusal applies when metadata changes after opening.
+
+The publication file is created beside the source using the captured security
+descriptor. `NtCreateFile` does not preserve DACL automatic-inheritance state;
+candidate preparation applies the source DACL and protection state through
+handle-based `SetSecurityInfo`. Only that owned publication handle requests
 `WRITE_DAC`. Its captured security, creation time and attributes must still match
-exactly before the original is moved. If
-Windows cannot apply resource attributes to the publication, that exact comparison
-fails closed before withdrawal. No merge-error-ignore mode is used.
+exactly before the original is moved. No merge-error-ignore mode is used.
 
 Each changed save creates an owner-only `.ottrin-text-edit-<random>` directory.
 `edits` is an independent flushed draft. A unique sibling ending in `-publication`
@@ -104,24 +107,28 @@ and sharing evidence with exact packaged editor behavior. Recovery-directory and
 draft ACL privacy have the native restricted-token evidence above.
 Unicode paths, ancestor-rename refusal, publication-step exits and the tested
 writable-mapping lifecycle have native evidence; other mapping/relocation behavior
-is not implied. Security resource attributes are included in the descriptor that is captured,
-applied and compared. An actual resource-attribute ACE now survives publication
-with exact descriptor equality for the published and retained original files
-(`text-resource-attribute-final.log`, all 15 native text fixtures pass). The owned
-fixture uses `READ_CONTROL | WRITE_DAC`; no audit privilege is enabled. Object IDs are now queried through the pinned handle and refused before
+is not implied. Object IDs are queried through the pinned handle and refused before
 staging; native tests cover preexisting IDs and IDs added after opening, preserving
-the exact ID and source bytes (`text-object-id-green.log`, 14 text fixtures pass).
-Scoped-policy metadata is now captured with ordinary `READ_CONTROL` rights and
-unsupported SACL entries are refused during capture and publication preparation.
-A native descriptor fixture proves refusal before security mutation; all 17 native
-text fixtures pass (`text-scope-green.log`). This does not yet prove admission of
-an actual CAP-configured file. The ordinary-user probe can query scope information,
-but audit-SACL queries fail with access denied and opening an audit-capable handle
-fails with privilege-not-held (`security-probe.log`). Audit SACLs and other NTFS
-metadata are **not yet covered by the admission/preservation checks**. Extend admission or
-preservation on evidence; do not enable the gate while these metadata gaps remain.
-Unsupported security cloning or directory flushing currently stops the save and
-retains staging.
+the exact ID and source bytes.
+
+The initial resource-attribute preservation path was unsafe: an ordinary-user save
+of a separately seeded audit-plus-resource SACL retained the resource attribute
+but dropped the audit rule (`audit-mixed-after-save.log`). The partial descriptor
+comparison missed that loss. The replacement refuses every present SACL rather
+than copying its readable subset. `text-sacl-red.log` proves the earlier admission
+bug; `text-sacl-mixed-green.log` and `text-sacl-audit-green.log` prove ordinary-user
+refusal of actual mixed and audit-only fixtures with unchanged bytes, no new stage
+and independent before/after full-SACL inspection. Fixture preparation/inspection
+used the existing disposable guest agent's process-local security privilege; Ottrin
+ran as the ordinary user. No global audit policy or service was changed.
+
+All 17 ordinary native text tests pass, including resource-attribute refusal both
+before and after session opening. The separately seeded audit test is ignored in
+an unprepared suite and was run explicitly for both fixtures. The scoped-policy
+native descriptor test still proves preparation refusal; an actual CAP-configured
+file remains unverified. Other NTFS admission boundaries and exact packaged editor
+acceptance remain pending. Public editing stays disabled. Unsupported security
+cloning or directory flushing stops the save and retains existing staging.
 
 The tested Windows writable mapping retains a sharing conflict after its creating
 file handle closes. That observation does not prove exclusion for every mapping
@@ -131,7 +138,8 @@ continuous external-change monitoring is claimed. Recovery paths are resolved
 from the directory handle when reporting a recovery conflict; if resolution fails,
 the last observed location is retained and may have moved with an ancestor.
 
-API contracts: [NtCreateFile](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntcreatefile),
+API contracts: [security-query SACL presence](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fsa/0a9f223c-b258-4f61-8b59-92f970341400),
+[NtCreateFile](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntcreatefile),
 [FILE_RENAME_INFORMATION](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information),
 [SetSecurityInfo](https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-setsecurityinfo),
 and [GetFileInformationByHandleEx](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyhandleex).

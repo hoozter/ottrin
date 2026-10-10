@@ -22,18 +22,14 @@ use windows_sys::Win32::Security::Authorization::{
     SetSecurityInfo,
 };
 use windows_sys::Win32::Security::{
-    ACE_HEADER, ACL, ATTRIBUTE_SECURITY_INFORMATION, DACL_SECURITY_INFORMATION,
-    GROUP_SECURITY_INFORMATION, GetAce, GetKernelObjectSecurity, GetSecurityDescriptorControl,
-    GetSecurityDescriptorDacl, GetSecurityDescriptorSacl, LABEL_SECURITY_INFORMATION,
-    OWNER_SECURITY_INFORMATION, PROTECTED_DACL_SECURITY_INFORMATION, SCOPE_SECURITY_INFORMATION,
+    DACL_SECURITY_INFORMATION, GROUP_SECURITY_INFORMATION, GetKernelObjectSecurity,
+    GetSecurityDescriptorControl, GetSecurityDescriptorDacl, GetSecurityDescriptorSacl,
+    LABEL_SECURITY_INFORMATION, OWNER_SECURITY_INFORMATION, PROTECTED_DACL_SECURITY_INFORMATION,
     SE_DACL_PROTECTED, UNPROTECTED_DACL_SECURITY_INFORMATION,
 };
 use windows_sys::Win32::Storage::FileSystem::*;
 use windows_sys::Win32::System::IO::{DeviceIoControl, IO_STATUS_BLOCK};
 use windows_sys::Win32::System::Ioctl::{FILE_OBJECTID_BUFFER, FSCTL_GET_OBJECT_ID};
-use windows_sys::Win32::System::SystemServices::{
-    SYSTEM_MANDATORY_LABEL_ACE_TYPE, SYSTEM_RESOURCE_ATTRIBUTE_ACE_TYPE,
-};
 
 #[derive(Debug)]
 pub(super) struct Session {
@@ -56,9 +52,7 @@ struct Snapshot {
 const CAPTURED_SECURITY_INFORMATION: u32 = OWNER_SECURITY_INFORMATION
     | GROUP_SECURITY_INFORMATION
     | DACL_SECURITY_INFORMATION
-    | LABEL_SECURITY_INFORMATION
-    | ATTRIBUTE_SECURITY_INFORMATION
-    | SCOPE_SECURITY_INFORMATION;
+    | LABEL_SECURITY_INFORMATION;
 
 impl Session {
     pub(super) fn open(path: &Path) -> Result<Self, TextEditError> {
@@ -311,7 +305,7 @@ fn relative(
     Ok(unsafe { File::from_raw_handle(raw.cast()) })
 }
 // NtCreateFile preserves the ACL entries but does not retain the automatic
-// inheritance state or resource attributes of a supplied descriptor. Finalize
+// inheritance state of a supplied descriptor. Finalize
 // the new file's security through the filesystem API before exact comparison.
 fn apply_publication_security(file: &File, security: &[u8]) -> Result<(), TextEditError> {
     let descriptor = security.as_ptr().cast_mut().cast();
@@ -329,29 +323,21 @@ fn apply_publication_security(file: &File, security: &[u8]) -> Result<(), TextEd
     if present == 0 {
         return Err(TextEditError::UnsupportedMetadata);
     }
-    let sacl = checked_security_sacl(security)?;
+    require_absent_sacl(security)?;
     let protection = if control & SE_DACL_PROTECTED != 0 {
         PROTECTED_DACL_SECURITY_INFORMATION
     } else {
         UNPROTECTED_DACL_SECURITY_INFORMATION
     };
-    // Setting an absent resource SACL would create an empty SACL and change
-    // the descriptor. Preserve absence; exact comparison still rejects any
-    // unexpected attributes inherited by the new file.
-    let attributes = if sacl.is_some() {
-        ATTRIBUTE_SECURITY_INFORMATION
-    } else {
-        0
-    };
     let error = unsafe {
         SetSecurityInfo(
             handle(file),
             SE_FILE_OBJECT,
-            DACL_SECURITY_INFORMATION | attributes | protection,
+            DACL_SECURITY_INFORMATION | protection,
             ptr::null_mut(),
             ptr::null_mut(),
             dacl,
-            sacl.unwrap_or(ptr::null_mut()),
+            ptr::null(),
         )
     };
     if error != 0 {
@@ -360,9 +346,10 @@ fn apply_publication_security(file: &File, security: &[u8]) -> Result<(), TextEd
     Ok(())
 }
 
-// Capture and reject readable policy metadata before staging. The returned
-// pointer borrows the OS-validated descriptor and is used only while it is alive.
-fn checked_security_sacl(security: &[u8]) -> Result<Option<*mut ACL>, TextEditError> {
+// LABEL_SECURITY_INFORMATION preserves SACL presence while filtering out audit
+// ACEs. A partial SACL cannot prove that publication would retain audit rules.
+// Admit only absence; do not reconstruct security from the visible subset.
+fn require_absent_sacl(security: &[u8]) -> Result<(), TextEditError> {
     let mut present = 0;
     let mut defaulted = 0;
     let mut sacl = ptr::null_mut();
@@ -377,25 +364,10 @@ fn checked_security_sacl(security: &[u8]) -> Result<Option<*mut ACL>, TextEditEr
     {
         return Err(last_error());
     }
-    if present == 0 {
-        return Ok(None);
+    if present != 0 {
+        return Err(TextEditError::UnsupportedMetadata);
     }
-    if !sacl.is_null() {
-        for index in 0..unsafe { (*sacl).AceCount } {
-            let mut ace = ptr::null_mut();
-            if unsafe { GetAce(sacl, u32::from(index), &mut ace) } == 0 {
-                return Err(last_error());
-            }
-            let kind = u32::from(unsafe { (*ace.cast::<ACE_HEADER>()).AceType });
-            if !matches!(
-                kind,
-                SYSTEM_MANDATORY_LABEL_ACE_TYPE | SYSTEM_RESOURCE_ATTRIBUTE_ACE_TYPE
-            ) {
-                return Err(TextEditError::UnsupportedMetadata);
-            }
-        }
-    }
-    Ok(Some(sacl))
+    Ok(())
 }
 
 fn open_source(parent: &File, name: &OsStr) -> Result<File, TextEditError> {
@@ -559,7 +531,7 @@ fn metadata(file: &File) -> Result<Metadata, TextEditError> {
     {
         return Err(last_error());
     }
-    checked_security_sacl(&security)?;
+    require_absent_sacl(&security)?;
     Ok((
         (
             info.dwVolumeSerialNumber,
@@ -718,14 +690,7 @@ fn link_no_replace(source: &File, parent: &File, name: &OsStr) -> Result<(), Tex
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn windows_security_snapshot_includes_resource_attributes() {
-        assert_ne!(
-            CAPTURED_SECURITY_INFORMATION & ATTRIBUTE_SECURITY_INFORMATION,
-            0
-        );
-    }
+    use windows_sys::Win32::Security::ATTRIBUTE_SECURITY_INFORMATION;
 
     struct Fixture(PathBuf);
     impl Fixture {
@@ -1326,77 +1291,95 @@ mod tests {
     }
 
     #[test]
-    fn windows_native_resource_attribute_survives_publication() {
+    #[ignore = "requires an owned audit fixture seeded and inspected by a separate privileged test process"]
+    fn windows_native_preseeded_audit_is_refused_before_staging() {
+        let source = PathBuf::from(
+            std::env::var_os("OTTRIN_TEST_AUDIT_SOURCE").expect("owned audited fixture path"),
+        );
+        let before = std::fs::read(&source).unwrap();
+        let entries = std::fs::read_dir(source.parent().unwrap()).unwrap().count();
+        assert!(matches!(
+            Session::open(&source),
+            Err(TextEditError::UnsupportedMetadata)
+        ));
+        assert_eq!(std::fs::read(&source).unwrap(), before);
+        assert_eq!(
+            std::fs::read_dir(source.parent().unwrap()).unwrap().count(),
+            entries
+        );
+        // The fixture agent must independently verify the full audit SACL before
+        // and after this ordinary-user check; this process cannot read audit ACEs.
+    }
+
+    #[test]
+    fn windows_native_resource_attribute_is_refused_before_staging() {
         use windows_sys::Win32::Security::GetSecurityDescriptorSacl;
-        let fixture = Fixture::new();
-        let plain = Session::open(&fixture.source()).unwrap().source.security;
-        let sddl: Vec<u16> = "S:(RA;;;;;WD;(\"OttrinFixture\",TS,0x0,\"retained\"))\0"
-            .encode_utf16()
-            .collect();
-        let mut descriptor = ptr::null_mut();
-        assert_ne!(
-            unsafe {
-                ConvertStringSecurityDescriptorToSecurityDescriptorW(
-                    sddl.as_ptr(),
-                    SDDL_REVISION_1,
-                    &mut descriptor,
-                    ptr::null_mut(),
-                )
-            },
-            0,
-            "parse resource attribute fixture: {}",
-            std::io::Error::last_os_error()
-        );
-        let descriptor = PrivateSecurity(descriptor);
-        let mut present = 0;
-        let mut defaulted = 0;
-        let mut sacl = ptr::null_mut();
-        assert_ne!(
-            unsafe {
-                GetSecurityDescriptorSacl(descriptor.0, &mut present, &mut sacl, &mut defaulted)
-            },
-            0
-        );
-        assert_ne!(present, 0);
-        assert!(!sacl.is_null());
-        let file = OpenOptions::new()
-            .access_mode(READ_CONTROL | WRITE_DAC)
-            .open(fixture.source())
-            .unwrap();
-        assert_eq!(
-            unsafe {
-                SetSecurityInfo(
-                    handle(&file),
-                    SE_FILE_OBJECT,
-                    ATTRIBUTE_SECURITY_INFORMATION,
-                    ptr::null_mut(),
-                    ptr::null_mut(),
-                    ptr::null(),
-                    sacl,
-                )
-            },
-            0,
-            "apply attribute to owned fixture"
-        );
-        drop(file);
-        let session = Session::open(&fixture.source()).expect("admit resource attribute fixture");
-        assert_ne!(
-            session.source.security, plain,
-            "actual resource attribute must be captured"
-        );
-        session
-            .save("draft")
-            .expect("preserve the resource attribute through publication");
-        let saved = Session::open(&fixture.source()).unwrap();
-        assert_eq!(saved.source.security, session.source.security);
-        assert_eq!(saved.contents(), "draft");
-        let original = Session::open(&fixture.recovery().join("candidate")).unwrap();
-        assert_eq!(original.source.security, session.source.security);
-        assert_eq!(original.contents(), "original\r\n");
-        assert_eq!(
-            std::fs::read(fixture.recovery().join("edits")).unwrap(),
-            b"draft"
-        );
+        for after_open in [false, true] {
+            let fixture = Fixture::new();
+            let session = after_open.then(|| Session::open(&fixture.source()).unwrap());
+            let sddl: Vec<u16> = "S:(RA;;;;;WD;(\"OttrinFixture\",TS,0x0,\"retained\"))\0"
+                .encode_utf16()
+                .collect();
+            let mut descriptor = ptr::null_mut();
+            assert_ne!(
+                unsafe {
+                    ConvertStringSecurityDescriptorToSecurityDescriptorW(
+                        sddl.as_ptr(),
+                        SDDL_REVISION_1,
+                        &mut descriptor,
+                        ptr::null_mut(),
+                    )
+                },
+                0,
+                "parse resource attribute fixture: {}",
+                std::io::Error::last_os_error()
+            );
+            let descriptor = PrivateSecurity(descriptor);
+            let mut present = 0;
+            let mut defaulted = 0;
+            let mut sacl = ptr::null_mut();
+            assert_ne!(
+                unsafe {
+                    GetSecurityDescriptorSacl(descriptor.0, &mut present, &mut sacl, &mut defaulted)
+                },
+                0
+            );
+            assert_ne!(present, 0);
+            assert!(!sacl.is_null());
+            let file = OpenOptions::new()
+                .access_mode(READ_CONTROL | WRITE_DAC)
+                .open(fixture.source())
+                .unwrap();
+            assert_eq!(
+                unsafe {
+                    SetSecurityInfo(
+                        handle(&file),
+                        SE_FILE_OBJECT,
+                        ATTRIBUTE_SECURITY_INFORMATION,
+                        ptr::null_mut(),
+                        ptr::null_mut(),
+                        ptr::null(),
+                        sacl,
+                    )
+                },
+                0,
+                "apply attribute to owned fixture"
+            );
+            drop(file);
+            if let Some(session) = session {
+                assert_eq!(
+                    session.save("draft"),
+                    Err(TextEditError::UnsupportedMetadata)
+                );
+            } else {
+                assert!(matches!(
+                    Session::open(&fixture.source()),
+                    Err(TextEditError::UnsupportedMetadata)
+                ));
+            }
+            assert_eq!(std::fs::read(fixture.source()).unwrap(), b"original\r\n");
+            assert_eq!(std::fs::read_dir(&fixture.0).unwrap().count(), 1);
+        }
     }
 
     #[test]
