@@ -727,6 +727,130 @@ mod tests {
     }
 
     #[test]
+    fn windows_native_unicode_and_ancestor_paths_remain_handle_bound() {
+        let fixture = Fixture::new();
+        let ancestor = fixture.0.join("å-文件-😀");
+        let parent = ancestor.join("parent");
+        std::fs::create_dir_all(&parent).unwrap();
+        let name = OsStr::new("草稿-ä-😀.md");
+        let source = parent.join(name);
+        std::fs::rename(fixture.source(), &source).unwrap();
+        let session = Session::open(&source).unwrap();
+        let renamed = fixture.0.join("renamed-ö");
+        let actual = match std::fs::rename(&ancestor, &renamed) {
+            Ok(()) => {
+                eprintln!("native ancestor rename succeeded; verifying pinned parent publication");
+                std::fs::create_dir_all(&parent).unwrap();
+                std::fs::write(&source, b"replacement ancestor sentinel").unwrap();
+                renamed.join("parent").join(name)
+            }
+            Err(error) => {
+                eprintln!("native ancestor rename refused: {error}");
+                assert!(
+                    matches!(error.raw_os_error(), Some(5 | 32)),
+                    "unexpected ancestor rename failure: {error}"
+                );
+                assert!(!renamed.exists());
+                source.clone()
+            }
+        };
+        session.save("Unicode draft: å文件😀").unwrap();
+        assert_eq!(
+            std::fs::read(&actual).unwrap(),
+            "Unicode draft: å文件😀".as_bytes()
+        );
+        if actual != source {
+            assert_eq!(
+                std::fs::read(&source).unwrap(),
+                b"replacement ancestor sentinel"
+            );
+        }
+        let recovery = std::fs::read_dir(actual.parent().unwrap())
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .find(|path| path.is_dir())
+            .unwrap();
+        assert_eq!(
+            std::fs::read(recovery.join("candidate")).unwrap(),
+            b"original\r\n"
+        );
+        assert_eq!(
+            std::fs::read(recovery.join("edits")).unwrap(),
+            "Unicode draft: å文件😀".as_bytes()
+        );
+    }
+
+    #[test]
+    fn windows_native_process_exit_preserves_original_and_draft_at_every_step() {
+        const CHILD: &str = "OTTRIN_TEST_TEXT_EXIT_STEP";
+        if let Ok(boundary) = std::env::var(CHILD) {
+            let path = PathBuf::from(std::env::var_os("OTTRIN_TEST_TEXT_EXIT_SOURCE").unwrap());
+            let session = Session::open(&path).unwrap();
+            let result = session.save_with_hook("draft", |step| {
+                if format!("{step:?}") == boundary {
+                    std::process::exit(86);
+                }
+                if boundary == "RestoreVacant" && step == Step::Publish {
+                    return Err(TextEditError::Write("fixture requests restoration".into()));
+                }
+                Ok(())
+            });
+            panic!("process did not exit at {boundary}: {result:?}");
+        }
+        for boundary in [
+            Step::VerifySource,
+            Step::RetainSource,
+            Step::VerifyRetained,
+            Step::FlushRetained,
+            Step::Publish,
+            Step::VerifyPublished,
+            Step::FlushPublished,
+            Step::RestoreVacant,
+        ] {
+            let fixture = Fixture::new();
+            let original = Session::open(&fixture.source()).unwrap().source;
+            let status = std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "text_edit::windows::tests::windows_native_process_exit_preserves_original_and_draft_at_every_step", "--nocapture"])
+                .env(CHILD, format!("{boundary:?}"))
+                .env("OTTRIN_TEST_TEXT_EXIT_SOURCE", fixture.source())
+                .status().unwrap();
+            assert_eq!(status.code(), Some(86), "exit at {boundary:?}");
+            let recovery = fixture.recovery();
+            assert_eq!(std::fs::read(recovery.join("edits")).unwrap(), b"draft");
+            let before_withdrawal = matches!(boundary, Step::VerifySource | Step::RetainSource);
+            let published = matches!(boundary, Step::VerifyPublished | Step::FlushPublished);
+            let retained = if before_withdrawal {
+                fixture.source()
+            } else {
+                recovery.join("candidate")
+            };
+            let observed = Session::open(&retained).unwrap().source;
+            assert_eq!(observed.identity, original.identity);
+            assert_eq!(observed.bytes, original.bytes);
+            assert_eq!(observed.security, original.security);
+            if published {
+                assert_eq!(std::fs::read(fixture.source()).unwrap(), b"draft");
+            } else if !before_withdrawal {
+                assert!(!fixture.source().exists());
+            }
+            let publication = std::fs::read_dir(&fixture.0)
+                .unwrap()
+                .map(|entry| entry.unwrap().path())
+                .find(|path| {
+                    path.file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .ends_with("-publication")
+                });
+            if published {
+                assert!(publication.is_none());
+            } else {
+                assert_eq!(std::fs::read(publication.unwrap()).unwrap(), b"draft");
+            }
+        }
+    }
+
+    #[test]
     fn windows_native_external_change_refuses_save_before_staging() {
         let fixture = Fixture::new();
         let session = Session::open(&fixture.source()).unwrap();

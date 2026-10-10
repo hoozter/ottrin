@@ -64,7 +64,13 @@ byte-for-byte descriptor equality, retained original/draft data, directory flush
 collision/failure retention and closed-gate checks pass. Evidence is in
 `.hermes/evidence/windows-20261010/text-dacl-final.log`; the full default native
 platform suite passed 96 tests (17 cross-volume fixtures are separately ignored).
-This is private-session acceptance, not packaged editor or power-loss proof.
+Native Unicode-name saves and eight process-exit boundaries also pass
+(`text-path-exit.log`, 12 text fixtures total). The opened directory blocked an
+ancestor rename with native access-denied; the subsequent save preserved the
+original and draft. Successful ancestor relocation is not claimed on this host.
+Exits before/after withdrawal, publication and restoration leave the exact original
+identity/security and independent draft accessible. This is private-session
+acceptance, not packaged editor or power-loss proof.
 
 Run on a supported Windows host with `%TEMP%` on local NTFS:
 
