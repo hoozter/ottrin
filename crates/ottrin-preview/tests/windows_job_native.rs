@@ -93,6 +93,33 @@ fn fixture_root() {
     );
     assert_ne!(in_job, 0, "the fixture must start inside the Job Object");
     match mode.as_str() {
+        "environment" => {
+            for key in ["OTTRIN_NATIVE_JOB_SECRET", "PYTHONHOME", "HTTP_PROXY"] {
+                if std::env::var_os(key).is_some() {
+                    fs::write(output.join("environment-leak"), key).unwrap();
+                    return;
+                }
+            }
+            let profile = std::env::current_dir().unwrap();
+            for key in [
+                "TEMP",
+                "TMP",
+                "HOME",
+                "USERPROFILE",
+                "APPDATA",
+                "LOCALAPPDATA",
+            ] {
+                assert_eq!(PathBuf::from(std::env::var_os(key).unwrap()), profile);
+            }
+            assert!(
+                !std::env::var_os("PATH")
+                    .unwrap()
+                    .to_string_lossy()
+                    .contains("untrusted-bin")
+            );
+            assert!(PathBuf::from(std::env::var_os("SystemRoot").unwrap()).is_dir());
+            fs::write(output.join("environment-restricted"), b"yes").unwrap();
+        }
         "normal" => {
             println!("native stdout marker");
             eprintln!("native stderr marker");
@@ -375,6 +402,59 @@ fn native_job_restricts_inherited_handles() {
         .unwrap();
     assert_eq!(
         fs::read(f.request.private_output_dir.join("handle-restricted")).unwrap(),
+        b"yes"
+    );
+    f.assert_logs_removed();
+}
+
+#[test]
+fn native_job_does_not_inherit_parent_environment() {
+    let result = Command::new(std::env::current_exe().unwrap())
+        .args([
+            "--exact",
+            "fixture_environment_parent",
+            "--ignored",
+            "--nocapture",
+        ])
+        .env("OTTRIN_NATIVE_JOB_SECRET", "fixture-secret")
+        .env("PYTHONHOME", "fixture-runtime-override")
+        .env("HTTP_PROXY", "http://fixture.invalid")
+        .env("PATH", r"C:\OttrinQA-20261010\untrusted-bin")
+        .output()
+        .unwrap();
+    assert!(
+        result.status.success(),
+        "environment fixture failed: {} {}",
+        String::from_utf8_lossy(&result.stdout),
+        String::from_utf8_lossy(&result.stderr)
+    );
+}
+
+#[test]
+#[ignore = "subprocess fixture with a deliberately contaminated parent environment"]
+fn fixture_environment_parent() {
+    assert_eq!(
+        std::env::var("OTTRIN_NATIVE_JOB_SECRET").unwrap(),
+        "fixture-secret"
+    );
+    let mut f = Fixture::new("environment");
+    let unicode_profile = f.root.join("private profile å");
+    fs::rename(&f.request.private_profile_dir, &unicode_profile).unwrap();
+    f.request.private_profile_dir = unicode_profile;
+    WindowsJobObjectIsolation
+        .run(&f.request, &AtomicBool::new(false))
+        .unwrap();
+    assert!(
+        !f.request
+            .private_output_dir
+            .join("environment-leak")
+            .exists(),
+        "fake parent variable reached the renderer: {}",
+        fs::read_to_string(f.request.private_output_dir.join("environment-leak"))
+            .unwrap_or_default()
+    );
+    assert_eq!(
+        fs::read(f.request.private_output_dir.join("environment-restricted")).unwrap(),
         b"yes"
     );
     f.assert_logs_removed();

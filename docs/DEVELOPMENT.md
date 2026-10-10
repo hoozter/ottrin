@@ -132,12 +132,27 @@ cargo test -p ottrin-preview --test windows_job_native native_job_ -- --test-thr
 ```
 
 The fixtures exercise the actual launcher with disposable child processes and
-private temporary files. The ignored `fixture_root` and `fixture_descendant`
-entries are subprocess entrypoints selected by the tests, not independent tests
+private temporary files. The ignored `fixture_root`, `fixture_descendant` and
+`fixture_environment_parent` entries are subprocess entrypoints selected by the tests, not independent tests
 to invoke manually. They cover output and diagnostic cleanup, timeout after the
 parent exits, cancellation, process and memory limits, aggregate descendant
-memory, and restriction of inherited handles. They do not certify an installed
+memory, restriction of inherited handles, and environment isolation. They do not certify an installed
 LibreOffice conversion, its profile cleanup, or provider fallback presentation.
+
+The environment fixture starts a separate parent containing fake credential,
+proxy and Python-runtime overrides, then verifies these do not reach the
+renderer, its PATH excludes the parent's override, and profile/temp variables
+point to a private Unicode directory. `office-environment-causal-red-results.log`
+reproduces the fake credential leak. `office-environment-native-results.log`
+passes all eight process-boundary cases (6.80s) and all three installed-provider
+fixtures (41.83s), including nine formats and in-flight cancellation.
+
+The launcher builds a sorted, double-NUL-terminated Unicode environment using
+the [CreateProcessW environment contract](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw).
+It obtains the Windows directory from the OS, limits PATH to the executable and
+Windows directories, and maps HOME/USERPROFILE/APPDATA/LOCALAPPDATA/TEMP/TMP to
+the private profile. It does not copy parent variables. This addresses environment
+inheritance; constrained-token/filesystem and network denial remain pending.
 
 Linux can build the fixture executable with
 `cargo test -p ottrin-preview --target x86_64-pc-windows-gnu --test windows_job_native --no-run`.

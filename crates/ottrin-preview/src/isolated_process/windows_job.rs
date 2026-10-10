@@ -21,11 +21,13 @@ use windows_sys::Win32::System::JobObjects::{
     JobObjectExtendedLimitInformation, JobObjectLimitViolationInformation2,
     QueryInformationJobObject, SetInformationJobObject, TerminateJobObject,
 };
+use windows_sys::Win32::System::SystemInformation::GetWindowsDirectoryW;
 use windows_sys::Win32::System::Threading::{
-    CREATE_NO_WINDOW, CreateProcessW, DeleteProcThreadAttributeList, EXTENDED_STARTUPINFO_PRESENT,
-    GetExitCodeProcess, InitializeProcThreadAttributeList, LPPROC_THREAD_ATTRIBUTE_LIST,
-    PROC_THREAD_ATTRIBUTE_HANDLE_LIST, PROC_THREAD_ATTRIBUTE_JOB_LIST, PROCESS_INFORMATION,
-    STARTF_USESTDHANDLES, STARTUPINFOEXW, UpdateProcThreadAttribute, WaitForSingleObject,
+    CREATE_NO_WINDOW, CREATE_UNICODE_ENVIRONMENT, CreateProcessW, DeleteProcThreadAttributeList,
+    EXTENDED_STARTUPINFO_PRESENT, GetExitCodeProcess, InitializeProcThreadAttributeList,
+    LPPROC_THREAD_ATTRIBUTE_LIST, PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+    PROC_THREAD_ATTRIBUTE_JOB_LIST, PROCESS_INFORMATION, STARTF_USESTDHANDLES, STARTUPINFOEXW,
+    UpdateProcThreadAttribute, WaitForSingleObject,
 };
 use windows_sys::Win32::UI::Shell::UrlCreateFromPathW;
 
@@ -70,6 +72,7 @@ pub(super) fn run(
     let executable = nul_terminated(request.executable.as_os_str());
     let current_directory = nul_terminated(request.private_profile_dir.as_os_str());
     let mut command_line = command_line(request.executable.as_os_str(), &arguments);
+    let environment = private_environment(request)?;
     let mut process_info: PROCESS_INFORMATION = unsafe { std::mem::zeroed() };
     // SAFETY: all pointers reference live, NUL-terminated or initialized buffers;
     // the attribute list whitelists standard I/O and assigns the process to `job`
@@ -81,8 +84,8 @@ pub(super) fn run(
             null(),
             null(),
             1,
-            EXTENDED_STARTUPINFO_PRESENT | CREATE_NO_WINDOW,
-            null(),
+            EXTENDED_STARTUPINFO_PRESENT | CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT,
+            environment.as_ptr().cast(),
             current_directory.as_ptr(),
             &startup.StartupInfo,
             &mut process_info,
@@ -112,6 +115,54 @@ pub(super) fn run(
         stdout,
         diagnostics,
     })
+}
+
+fn private_environment(
+    request: &IsolatedProcessRequest,
+) -> Result<Vec<u16>, IsolatedProcessFailure> {
+    let mut directory = vec![0_u16; 32_768];
+    // SAFETY: the buffer is writable for the advertised number of UTF-16 units.
+    let length = unsafe { GetWindowsDirectoryW(directory.as_mut_ptr(), directory.len() as u32) };
+    if length == 0 || length as usize >= directory.len() {
+        return Err(IsolatedProcessFailure::Unavailable);
+    }
+    directory.truncate(length as usize);
+    let system_root = PathBuf::from(OsString::from_wide(&directory));
+    let system_directory = system_root.join("System32");
+    let executable_directory = request
+        .executable
+        .parent()
+        .ok_or(IsolatedProcessFailure::InvalidRequest)?;
+    let path = std::env::join_paths([
+        executable_directory,
+        system_directory.as_path(),
+        system_root.as_path(),
+    ])
+    .map_err(|_| IsolatedProcessFailure::InvalidRequest)?;
+    let profile = request.private_profile_dir.as_os_str();
+    // Explicit, alphabetically sorted bootstrap variables. Never read the
+    // parent's environment: it can contain credentials or loader overrides.
+    let variables = [
+        ("APPDATA", profile.to_owned()),
+        ("COMSPEC", system_directory.join("cmd.exe").into_os_string()),
+        ("HOME", profile.to_owned()),
+        ("LOCALAPPDATA", profile.to_owned()),
+        ("PATH", path),
+        ("SYSTEMROOT", system_root.as_os_str().to_owned()),
+        ("TEMP", profile.to_owned()),
+        ("TMP", profile.to_owned()),
+        ("USERPROFILE", profile.to_owned()),
+        ("WINDIR", system_root.into_os_string()),
+    ];
+    let mut block = Vec::new();
+    for (name, value) in variables {
+        block.extend(name.encode_utf16());
+        block.push(u16::from(b'='));
+        block.extend(value.encode_wide());
+        block.push(0);
+    }
+    block.push(0);
+    Ok(block)
 }
 
 fn validate(request: &IsolatedProcessRequest) -> Result<(), IsolatedProcessFailure> {
