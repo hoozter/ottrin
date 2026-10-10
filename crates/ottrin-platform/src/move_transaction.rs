@@ -1211,6 +1211,7 @@ enum WindowsCrossVolumePhase {
     Staged,
     ReclaimingPublication,
     Published,
+    SourceRemoved,
 }
 
 #[cfg(target_os = "windows")]
@@ -1759,7 +1760,7 @@ fn windows_directory_source_claim_path(
 }
 
 #[cfg(target_os = "windows")]
-fn set_windows_directory_source_delete_disposition(
+fn set_windows_move_cleanup_delete_disposition(
     handle: &std::fs::File,
     path: &Path,
     recovery_transaction: &Path,
@@ -1790,7 +1791,7 @@ fn set_windows_directory_source_delete_disposition(
         return Err(PlatformError::CommittedCleanupPending {
             transaction: recovery_transaction.display().to_string(),
             message: format!(
-                "handle-authoritative directory source removal failed for {}: {}",
+                "handle-authoritative Windows Move cleanup failed for {}: {}",
                 path.display(),
                 std::io::Error::last_os_error()
             ),
@@ -1881,11 +1882,7 @@ fn drain_windows_claimed_source_directory(
                 path.display()
             )));
         }
-        set_windows_directory_source_delete_disposition(
-            &entry.handle,
-            &path,
-            recovery_transaction,
-        )?;
+        set_windows_move_cleanup_delete_disposition(&entry.handle, &path, recovery_transaction)?;
         drop(entry);
         match std::fs::symlink_metadata(&path) {
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
@@ -1910,7 +1907,7 @@ fn drain_windows_claimed_source_directory(
             "claimed source root changed before handle removal".into(),
         ));
     }
-    set_windows_directory_source_delete_disposition(
+    set_windows_move_cleanup_delete_disposition(
         &claimed_source_handle,
         claimed_source,
         recovery_transaction,
@@ -2625,33 +2622,164 @@ fn persist_windows_cross_volume_record(
     )
 }
 
-#[cfg(any(target_os = "windows", test))]
-fn cleanup_windows_cross_volume_transaction_with<RemoveFile, RemoveDir>(
-    transaction: &Path,
-    central_journal: &Path,
-    mut remove_file: RemoveFile,
-    mut remove_dir: RemoveDir,
-) -> Result<(), PlatformError>
-where
-    RemoveFile: FnMut(&Path) -> std::io::Result<()>,
-    RemoveDir: FnMut(&Path) -> std::io::Result<()>,
-{
-    let local_journal = transaction.join(WINDOWS_LOCAL_JOURNAL_NAME);
-    remove_file(&local_journal).map_err(|error| PlatformError::CommittedCleanupPending {
+#[cfg(target_os = "windows")]
+fn finish_windows_cross_volume_teardown(
+    recovery_root: &Path,
+    record: &WindowsCrossVolumeRecord,
+) -> Result<MovePublication, PlatformError> {
+    use windows_sys::Win32::Foundation::GENERIC_READ;
+    use windows_sys::Win32::Storage::FileSystem::{
+        DELETE, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ,
+        FILE_SHARE_WRITE,
+    };
+    let transaction = record.transaction_path()?;
+    let destination = record.destination_parent_path()?;
+    let id = record.transaction_id()?;
+    let cleanup_error = |message: String| PlatformError::CommittedCleanupPending {
         transaction: transaction.display().to_string(),
-        message: format!(
-            "Windows cross-volume local journal cleanup failed; central recovery evidence was retained: {error}"
-        ),
-    })?;
-    remove_file(central_journal).map_err(|error| PlatformError::CommittedCleanupPending {
-        transaction: transaction.display().to_string(),
-        message: format!(
-            "Windows cross-volume central journal cleanup failed; recovery evidence was retained: {error}"
-        ),
-    })?;
-    remove_dir(transaction).map_err(|error| PlatformError::CommittedCleanupPending {
-        transaction: transaction.display().to_string(),
-        message: format!("Windows cross-volume transaction cleanup failed: {error}"),
+        message,
+    };
+    if record.phase != WindowsCrossVolumePhase::SourceRemoved
+        || record.conflict == ConflictAction::Overwrite
+        || record.candidate_identity.is_none()
+        || record.retained_displaced.is_some()
+        || transaction != destination.join(format!(".ottrin-move-{}", encode_transaction_id(id)))
+        || !windows_staging_candidate_matches_transaction(&transaction, &record.candidate_path()?)
+        || record.target_path()?.parent() != Some(destination.as_path())
+    {
+        return Err(cleanup_error(
+            "Windows completed Move evidence is inconsistent".into(),
+        ));
+    }
+    // Keep the verified parent at its recorded name through all teardown flushes.
+    let parent = OpenOptions::new()
+        .access_mode(move_recovery::WINDOWS_DESTINATION_PARENT_ACCESS_MODE)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+        .open(&destination)
+        .map_err(|error| cleanup_error(error.to_string()))?;
+    if move_recovery::stable_identity_from_handle(&parent)
+        .map_err(|error| cleanup_error(error.to_string()))?
+        != record.destination_parent_identity
+    {
+        return Err(cleanup_error(
+            "Windows completed Move destination parent changed".into(),
+        ));
+    }
+    match observe_windows_identity(&transaction)? {
+        Some(identity) if identity == record.transaction_directory_identity => {
+            let directory = move_recovery::open_reparse_safe_cross_volume_candidate(&transaction)
+                .map_err(|error| cleanup_error(error.to_string()))?;
+            if move_recovery::stable_identity_from_handle(&directory)
+                .map_err(|error| cleanup_error(error.to_string()))?
+                != record.transaction_directory_identity
+            {
+                return Err(cleanup_error(
+                    "Windows completed Move transaction changed while opening".into(),
+                ));
+            }
+            let local = transaction.join(WINDOWS_LOCAL_JOURNAL_NAME);
+            match OpenOptions::new()
+                .access_mode(GENERIC_READ | DELETE)
+                .share_mode(0)
+                .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT)
+                .open(&local)
+            {
+                Ok(file) => {
+                    if !move_recovery::stable_identity_from_handle(&file)
+                        .map_err(|error| cleanup_error(error.to_string()))?
+                        .is_regular_file_without_reparse()
+                    {
+                        return Err(cleanup_error(
+                            "Windows completed Move local journal is not a regular file".into(),
+                        ));
+                    }
+                    let local_record: WindowsCrossVolumeRecord = serde_json::from_reader(&file)
+                        .map_err(|error| {
+                            cleanup_error(format!(
+                                "Windows completed Move local journal is invalid: {error}"
+                            ))
+                        })?;
+                    if !record.same_transaction_evidence(&local_record)
+                        || local_record.phase != WindowsCrossVolumePhase::Published
+                        || local_record.candidate_identity != record.candidate_identity
+                        || local_record.target_candidates != record.target_candidates
+                    {
+                        return Err(cleanup_error(
+                            "Windows completed Move journals disagree".into(),
+                        ));
+                    }
+                    #[cfg(test)]
+                    windows_move_boundary(WindowsMoveBoundary::JournalCleanupValidated, &local);
+                    set_windows_move_cleanup_delete_disposition(&file, &local, &transaction)?;
+                    drop(file);
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(cleanup_error(error.to_string())),
+            }
+            directory
+                .sync_all()
+                .map_err(|error| cleanup_error(error.to_string()))?;
+            #[cfg(test)]
+            windows_move_boundary(WindowsMoveBoundary::LocalJournalRemoved, &transaction);
+            // Delete only the verified empty directory, never unknown contents.
+            set_windows_move_cleanup_delete_disposition(&directory, &transaction, &transaction)?;
+            drop(directory);
+            parent
+                .sync_all()
+                .map_err(|error| cleanup_error(error.to_string()))?;
+            #[cfg(test)]
+            windows_move_boundary(
+                WindowsMoveBoundary::TransactionDirectoryRemoved,
+                &transaction,
+            );
+        }
+        None => {
+            // The durable SourceRemoved record survives an interrupted final teardown.
+            parent
+                .sync_all()
+                .map_err(|error| cleanup_error(error.to_string()))?;
+        }
+        Some(_) => {
+            return Err(cleanup_error(
+                "Windows completed Move transaction identity changed".into(),
+            ));
+        }
+    }
+    let central = windows_cross_volume_journal_path(recovery_root, id);
+    let central_file = OpenOptions::new()
+        .access_mode(GENERIC_READ | DELETE)
+        .share_mode(0)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT)
+        .open(&central)
+        .map_err(|error| cleanup_error(error.to_string()))?;
+    if !move_recovery::stable_identity_from_handle(&central_file)
+        .map_err(|error| cleanup_error(error.to_string()))?
+        .is_regular_file_without_reparse()
+    {
+        return Err(cleanup_error(
+            "Windows completed Move central journal is not a regular file".into(),
+        ));
+    }
+    let current: WindowsCrossVolumeRecord =
+        serde_json::from_reader(&central_file).map_err(|error| cleanup_error(error.to_string()))?;
+    if &current != record {
+        return Err(cleanup_error(
+            "Windows completed Move central journal changed".into(),
+        ));
+    }
+    #[cfg(test)]
+    windows_move_boundary(WindowsMoveBoundary::JournalCleanupValidated, &central);
+    set_windows_move_cleanup_delete_disposition(&central_file, &central, &transaction)?;
+    drop(central_file);
+    move_recovery::open_reparse_safe_directory_for_rename(recovery_root)
+        .map_err(|error| cleanup_error(error.to_string()))?
+        .sync_all()
+        .map_err(|error| cleanup_error(error.to_string()))?;
+    Ok(MovePublication {
+        disposition: MoveDisposition::Moved,
+        published_path: Some(record.target_path()?),
+        retained_displaced_path: None,
     })
 }
 
@@ -3170,6 +3298,10 @@ enum WindowsMoveBoundary {
     BeforeSourceCleanup,
     SourceUnlocked,
     SourceClaimed,
+    JournalCleanupValidated,
+    TeardownPrepared,
+    LocalJournalRemoved,
+    TransactionDirectoryRemoved,
 }
 
 #[cfg(all(target_os = "windows", test))]
@@ -3396,6 +3528,9 @@ fn resume_windows_cross_volume(
     record: &mut WindowsCrossVolumeRecord,
     mut source_handle: Option<std::fs::File>,
 ) -> Result<MovePublication, PlatformError> {
+    if record.phase == WindowsCrossVolumePhase::SourceRemoved {
+        return finish_windows_cross_volume_teardown(recovery_root, record);
+    }
     let mut staged_handle = None;
     let transaction = record.transaction_path()?;
     let local_path = transaction.join(WINDOWS_LOCAL_JOURNAL_NAME);
@@ -4988,19 +5123,23 @@ fn resume_windows_cross_volume(
                         retained_displaced_path: retained_displaced,
                     });
                 }
-                let journal =
-                    windows_cross_volume_journal_path(recovery_root, record.transaction_id()?);
-                cleanup_windows_cross_volume_transaction_with(
-                    &transaction,
-                    &journal,
-                    |path| std::fs::remove_file(path),
-                    |path| std::fs::remove_dir(path),
-                )?;
-                return Ok(MovePublication {
-                    disposition: MoveDisposition::Moved,
-                    published_path: Some(target),
-                    retained_displaced_path: None,
-                });
+                record.phase = WindowsCrossVolumePhase::SourceRemoved;
+                // The terminal central receipt survives until teardown is durable.
+                // The local Published evidence stays unchanged until its removal.
+                write_windows_record_file(
+                    &windows_cross_volume_journal_path(recovery_root, record.transaction_id()?),
+                    record,
+                    false,
+                )
+                .map_err(|error| PlatformError::CommittedCleanupPending {
+                    transaction: transaction.display().to_string(),
+                    message: format!(
+                        "Windows completed Move evidence could not be persisted: {error}"
+                    ),
+                })?;
+                #[cfg(test)]
+                windows_move_boundary(WindowsMoveBoundary::TeardownPrepared, &transaction);
+                return finish_windows_cross_volume_teardown(recovery_root, record);
             }
             WindowsCrossVolumeRestartAction::RetainAmbiguous => {
                 return Err(PlatformError::ClaimedRecoveryPending {
@@ -8034,17 +8173,15 @@ pub(super) fn move_entry_transactional_with_test_hook(
 #[cfg(test)]
 mod windows_source_tests {
     use super::{
-        WINDOWS_INCOMPLETE_STAGING_DISPOSITION_FLAGS, WINDOWS_LOCAL_JOURNAL_NAME,
-        WINDOWS_RECOVERY_LOCK_SHARE_MODE, WindowsCrossVolumePreflight,
-        WindowsCrossVolumeRestartAction, WindowsIncompleteStagingEntryKind, WindowsJournalKind,
-        WindowsMoveRoute, WindowsOverwriteRestartAction, WindowsReplaceTopology,
-        WindowsSourceRemovalDecision, classify_windows_cross_volume_overwrite_restart,
-        classify_windows_cross_volume_preflight, classify_windows_cross_volume_restart,
-        classify_windows_directory_cleanup_topology, classify_windows_directory_slice_action,
-        classify_windows_incomplete_directory_candidate, classify_windows_overwrite_restart,
-        classify_windows_replace_topology, classify_windows_source_removal,
-        cleanup_windows_cross_volume_transaction_with,
-        complete_windows_cross_volume_source_removal_with,
+        WINDOWS_INCOMPLETE_STAGING_DISPOSITION_FLAGS, WINDOWS_RECOVERY_LOCK_SHARE_MODE,
+        WindowsCrossVolumePreflight, WindowsCrossVolumeRestartAction,
+        WindowsIncompleteStagingEntryKind, WindowsJournalKind, WindowsMoveRoute,
+        WindowsOverwriteRestartAction, WindowsReplaceTopology, WindowsSourceRemovalDecision,
+        classify_windows_cross_volume_overwrite_restart, classify_windows_cross_volume_preflight,
+        classify_windows_cross_volume_restart, classify_windows_directory_cleanup_topology,
+        classify_windows_directory_slice_action, classify_windows_incomplete_directory_candidate,
+        classify_windows_overwrite_restart, classify_windows_replace_topology,
+        classify_windows_source_removal, complete_windows_cross_volume_source_removal_with,
         flush_windows_cross_volume_recovered_publication_with, next_windows_rename_candidate,
         parse_windows_journal_name, publish_windows_cross_volume_candidate_with,
         publish_windows_cross_volume_directory_overwrite_with, reconcile_windows_rename_candidates,
@@ -9241,6 +9378,154 @@ mod windows_source_tests {
             } else {
                 assert!(!published.exists());
             }
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_teardown_retries_after_central_journal_sharing_failure() {
+        use std::os::windows::fs::OpenOptionsExt;
+        use windows_sys::Win32::Storage::FileSystem::{FILE_SHARE_READ, FILE_SHARE_WRITE};
+        if let Some(source) = std::env::var_os("OTTRIN_TEST_TEARDOWN_SOURCE") {
+            let destination = std::env::var_os("OTTRIN_TEST_TEARDOWN_DESTINATION").unwrap();
+            super::move_entry_transactional(
+                std::path::Path::new(&source),
+                std::path::Path::new(&destination),
+                ConflictAction::Rename,
+            )
+            .unwrap();
+            panic!("child must exit before source cleanup");
+        }
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        for boundary in [
+            "BeforeSourceCleanup",
+            "TeardownPrepared",
+            "LocalJournalRemoved",
+            "TransactionDirectoryRemoved",
+        ] {
+            let source_fixture = crate::tests::TestDir::new("teardown-source");
+            let destination = crate::tests::TestDir::new_at(&volume, "teardown-destination");
+            let source = source_fixture.path().join("entry");
+            let target = destination.path().join("entry");
+            std::fs::write(&source, b"published data must survive").unwrap();
+            let status = std::process::Command::new(std::env::current_exe().unwrap())
+            .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_teardown_retries_after_central_journal_sharing_failure", "--nocapture"])
+            .env("OTTRIN_TEST_TEARDOWN_SOURCE", &source)
+            .env("OTTRIN_TEST_TEARDOWN_DESTINATION", destination.path())
+            .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", destination.path().join("move-state"))
+            .env("OTTRIN_TEST_WINDOWS_MOVE_EXIT_BOUNDARY", boundary)
+            .status().unwrap();
+            assert_eq!(status.code(), Some(87));
+            let transactions = super::discover_retained_windows_move_transactions().unwrap();
+            assert_eq!(transactions.len(), 1);
+            let id = transactions[0].transaction_id;
+            let journal = super::windows_cross_volume_journal_path(
+                &super::windows_recovery_root().unwrap(),
+                id,
+            );
+            let record = super::load_windows_cross_volume_record(&journal).unwrap();
+            let transaction = record.transaction_path().unwrap();
+            let checked = std::rc::Rc::new(std::cell::Cell::new(0));
+            let callback_checked = checked.clone();
+            let reset = WindowsMoveHookReset;
+            super::WINDOWS_MOVE_HOOK.with(|hook| {
+                *hook.borrow_mut() = Some(Box::new(move |boundary, path| {
+                    if boundary == super::WindowsMoveBoundary::JournalCleanupValidated {
+                        let replacement = path.with_extension("replacement");
+                        std::fs::write(&replacement, b"unknown replacement").unwrap();
+                        assert!(std::fs::rename(&replacement, path).is_err());
+                        assert!(
+                            std::fs::OpenOptions::new()
+                                .write(true)
+                                .truncate(true)
+                                .open(path)
+                                .is_err()
+                        );
+                        assert_eq!(std::fs::read(&replacement).unwrap(), b"unknown replacement");
+                        std::fs::remove_file(replacement).unwrap();
+                        callback_checked.set(callback_checked.get() + 1);
+                    }
+                }));
+            });
+            if boundary == "BeforeSourceCleanup" || boundary == "LocalJournalRemoved" {
+                let guard = std::fs::OpenOptions::new()
+                    .read(true)
+                    .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
+                    .open(&journal)
+                    .unwrap();
+                let refused = super::move_entry_transactional(
+                    &source,
+                    destination.path(),
+                    ConflictAction::Rename,
+                );
+                assert!(
+                    refused.is_err(),
+                    "central journal sharing must prevent complete teardown"
+                );
+                assert!(!source.exists(), "exercise teardown after source removal");
+                assert_eq!(
+                    std::fs::read(&target).unwrap(),
+                    b"published data must survive"
+                );
+                assert!(journal.exists(), "keep discoverable completion evidence");
+                if boundary == "LocalJournalRemoved" {
+                    assert!(
+                        !transaction.exists(),
+                        "central journal must be removed last"
+                    );
+                }
+                drop(guard);
+            } else if boundary == "TeardownPrepared" {
+                let local = transaction.join(super::WINDOWS_LOCAL_JOURNAL_NAME);
+                let saved = std::fs::read(&local).unwrap();
+                std::fs::write(&local, b"unexpected journal content").unwrap();
+                assert!(super::recover_retained_windows_move_transaction(id).is_err());
+                assert_eq!(
+                    std::fs::read(&local).unwrap(),
+                    b"unexpected journal content"
+                );
+                assert!(journal.exists());
+                let predecessor: super::WindowsCrossVolumeRecord =
+                    serde_json::from_slice(&saved).unwrap();
+                assert_eq!(predecessor.phase, super::WindowsCrossVolumePhase::Published);
+                std::fs::write(&local, &saved).unwrap();
+                let unknown = transaction.join("unknown");
+                std::fs::write(&unknown, b"retain unknown contents").unwrap();
+                assert!(super::recover_retained_windows_move_transaction(id).is_err());
+                assert_eq!(std::fs::read(&unknown).unwrap(), b"retain unknown contents");
+                assert!(journal.exists());
+                std::fs::remove_file(unknown).unwrap();
+            } else {
+                std::fs::create_dir(&transaction).unwrap();
+                let unknown = transaction.join("replacement");
+                std::fs::write(&unknown, b"preserve replacement directory").unwrap();
+                assert!(super::recover_retained_windows_move_transaction(id).is_err());
+                assert_eq!(
+                    std::fs::read(&unknown).unwrap(),
+                    b"preserve replacement directory"
+                );
+                assert!(journal.exists());
+                std::fs::remove_file(unknown).unwrap();
+                std::fs::remove_dir(&transaction).unwrap();
+            }
+            super::recover_retained_windows_move_transaction(id)
+                .expect("retry teardown after journal sharing is restored");
+            assert_eq!(
+                std::fs::read(&target).unwrap(),
+                b"published data must survive"
+            );
+            assert!(!source.exists());
+            assert!(!transaction.exists());
+            assert!(!journal.exists());
+            assert!(checked.get() > 0, "exercise pinned journal deletion");
+            drop(reset);
+            assert!(
+                super::discover_retained_windows_move_transactions()
+                    .unwrap()
+                    .is_empty()
+            );
         }
     }
 
@@ -10982,35 +11267,6 @@ mod windows_source_tests {
     fn windows_cross_volume_publication_requires_the_recorded_destination_parent() {
         assert!(windows_destination_parent_is_pinned(41_u64, 41));
         assert!(!windows_destination_parent_is_pinned(42_u64, 41));
-    }
-
-    #[test]
-    fn windows_cross_volume_teardown_keeps_central_evidence_when_local_removal_fails() {
-        let transaction = std::path::Path::new("destination/.ottrin-move-01");
-        let central = std::path::Path::new("recovery/01.cross-journal");
-        let removals = std::cell::RefCell::new(Vec::new());
-
-        let result = cleanup_windows_cross_volume_transaction_with(
-            transaction,
-            central,
-            |path| {
-                removals.borrow_mut().push(path.to_path_buf());
-                Err(std::io::Error::new(
-                    std::io::ErrorKind::PermissionDenied,
-                    "injected local journal removal failure",
-                ))
-            },
-            |_| panic!("transaction directory must remain while journal evidence remains"),
-        );
-
-        assert!(matches!(
-            result,
-            Err(PlatformError::CommittedCleanupPending { .. })
-        ));
-        assert_eq!(
-            removals.into_inner(),
-            vec![transaction.join(WINDOWS_LOCAL_JOURNAL_NAME)]
-        );
     }
 
     #[test]

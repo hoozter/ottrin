@@ -237,6 +237,18 @@ attribute/data retention for files, directory roots and nested files, both befor
 Move and after a process exits before source cleanup (`move-ea-red.log`,
 `move-ea-final.log`). This is refusal of unsupported metadata; it does not claim
 extended-attribute copying or arbitrary concurrent metadata-writer exclusion.
+Completed non-Overwrite Moves now persist a central `SourceRemoved` receipt only
+after source namespace durability. That state resumes teardown directly and accepts
+the matching local `Published` evidence or an already removed local journal. Local
+and central journals remain pinned from validation through handle-based deletion;
+the verified empty transaction directory is deleted by handle and its parent is
+flushed before the central receipt is removed and flushed last. Unknown contents,
+mismatched journals and replacement directory identities retain central discovery.
+The native teardown fixture covers sharing refusal/retry, process exits before
+cleanup and at three terminal boundaries, and journal replacement/truncation refusal
+(`teardown-red.log`, `teardown-receipt.log`). This replaces the former mock that
+covered only the first journal-removal failure. It does not prove physical power-loss
+behavior or discovery of an externally relocated private transaction directory.
 The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or
