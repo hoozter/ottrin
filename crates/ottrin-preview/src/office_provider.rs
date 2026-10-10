@@ -525,8 +525,20 @@ impl OfficeConverterLauncher for InstalledLibreOfficeConverter<'_> {
         {
             return Err(OfficeRenderFailure::InvalidOutput);
         }
+        // Windows passes the original host path to LibreOffice; the Linux
+        // sandbox mounts it under the fixed /input/source.<extension> name.
+        #[cfg(target_os = "windows")]
+        let pdf_name = Path::new(
+            request
+                .source_path
+                .file_name()
+                .ok_or(OfficeRenderFailure::InvalidOutput)?,
+        )
+        .with_extension("pdf");
+        #[cfg(not(target_os = "windows"))]
+        let pdf_name = Path::new("source.pdf");
         Ok(OfficeConversionOutput {
-            pdf_path: request.private_output_dir.join("source.pdf"),
+            pdf_path: request.private_output_dir.join(pdf_name),
             diagnostics: String::from_utf8_lossy(&output.diagnostics).into_owned(),
         })
     }

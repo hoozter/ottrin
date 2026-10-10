@@ -399,7 +399,19 @@ fn installed_libreoffice_conversion_uses_disposable_profile_and_private_pdf_outp
                 .lock()
                 .expect("requests lock")
                 .push(request.clone());
-            write_one_page_pdf(&request.private_output_dir.join("source.pdf"));
+            #[cfg(target_os = "windows")]
+            let pdf_name = request
+                .input
+                .as_ref()
+                .unwrap()
+                .host_path
+                .file_name()
+                .unwrap();
+            #[cfg(target_os = "windows")]
+            let pdf_name = Path::new(pdf_name).with_extension("pdf");
+            #[cfg(not(target_os = "windows"))]
+            let pdf_name = Path::new("source.pdf");
+            write_one_page_pdf(&request.private_output_dir.join(pdf_name));
             Ok(IsolatedProcessOutput {
                 stdout: Vec::new(),
                 diagnostics: b"convert /input/source.docx as pdf".to_vec(),
@@ -409,7 +421,7 @@ fn installed_libreoffice_conversion_uses_disposable_profile_and_private_pdf_outp
 
     let root = temp_dir("libreoffice-conversion");
     let executable = root.join("soffice");
-    let source = root.join("source.docx");
+    let source = root.join("project brief.docx");
     let output = root.join("output");
     std::fs::write(&executable, b"fixture executable").expect("write executable fixture");
     std::fs::write(&source, b"fixture document").expect("write source fixture");
@@ -439,7 +451,11 @@ fn installed_libreoffice_conversion_uses_disposable_profile_and_private_pdf_outp
         )
         .expect("conversion should succeed");
 
+    #[cfg(target_os = "windows")]
+    assert_eq!(converted.pdf_path, output.join("project brief.pdf"));
+    #[cfg(not(target_os = "windows"))]
     assert_eq!(converted.pdf_path, output.join("source.pdf"));
+    assert!(converted.pdf_path.is_file());
     assert_eq!(converted.diagnostics, "convert /input/source.docx as pdf");
     let requests = process.requests.lock().expect("requests lock");
     assert_eq!(requests.len(), 1);

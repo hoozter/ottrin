@@ -160,9 +160,35 @@ text content, the provider label, unchanged source bytes, private-profile
 cleanup, and pre-cancellation without additional output. Discovery previously
 returned `NotInstalled` despite the installed provider (`installed-office-red.log`);
 Windows now searches the standard Program Files locations and Windows launch
-names. Six focused provider contracts pass on both Linux and native Windows. This bounded baseline
-does not enable the Windows UI or certify all Office formats, in-flight provider
-cancellation, fallback presentation or installer acceptance. An earlier probe
+names. Six focused provider contracts pass on both Linux and native Windows.
+
+The native filename regression (`office-basename-red.log`) returned `source.pdf`
+for an input named `project brief.docx`. The converter now expects the original
+basename on Windows, matching the admitted host path passed to LibreOffice;
+Linux retains its fixed sandbox basename. The focused contract passes on both
+platforms (`office-formats-green-results.log`, `office-basename-linux.log`).
+
+The nine-format fixture passes for macro-free DOC, DOCX, ODT, XLS, XLSX, XLSM,
+ODS, PPTX and ODP (`office-formats-final-results.log`, 27.95s). It checks actual
+PDFium pixels and expected document text, unchanged source bytes, and private
+profile/log cleanup. Spreadsheet thumbnail ink can be antialiased gray (XLS's
+darkest pixel was 129); this check detects visible ink rather than requiring
+nearly black pixels. Set `OTTRIN_NATIVE_OFFICE_FIXTURES` to the owned fixture
+directory containing the filenames and text markers specified in
+`windows_installed_office_renders_each_advertised_format`.
+
+The in-flight cancellation fixture waits for LibreOffice's actual private-profile
+lock before cancelling, then verifies typed cancellation, unchanged source,
+profile/log cleanup, released source handles, and directory removal
+(`office-formats-green-results.log`). Run the installed-provider fixtures with
+`cargo test -p ottrin-preview --test windows_office_boundary_contract -- --ignored --nocapture --test-threads=1`.
+
+This bounded acceptance does not enable the Windows UI or certify representative
+fidelity, macro security, fallback presentation or installer acceptance. Longer
+private-directory layouts still reproduce a LibreOffice crash, including direct
+conversion outside Ottrin's Job Object (`office-layout-control-results.log`);
+the short-layout run passes. That layout defect remains under investigation.
+An earlier probe
 returned unhealthy; a later unchanged native probe succeeded, so no timeout was
 relaxed. The earlier test's text extractor could not decode the generated PDF's
 Unicode map; the final fixture checks content through the actual PDFium renderer.
