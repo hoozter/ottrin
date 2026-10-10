@@ -125,10 +125,14 @@ ran as the ordinary user. No global audit policy or service was changed.
 All 17 ordinary native text tests pass, including resource-attribute refusal both
 before and after session opening. The separately seeded audit test is ignored in
 an unprepared suite and was run explicitly for both fixtures. The scoped-policy
-native descriptor test still proves preparation refusal; an actual CAP-configured
-file remains unverified. Other NTFS admission boundaries and exact packaged editor
-acceptance remain pending. Public editing stays disabled. Unsupported security
-cloning or directory flushing stops the save and retains existing staging.
+native descriptor test proves preparation refusal. An actual stored scoped-policy
+ACE (`S:AI(SP;;;;;S-1-17-1)`) is also refused by the ordinary-user candidate with
+unchanged bytes, no new stage and unchanged full SACL (`scope-native-seed.log`,
+`text-sacl-scope-green.log`). This is metadata refusal, not domain policy enforcement.
+A separate native extended-attribute fixture passes admission and post-open refusal,
+with exact EA bytes and source content retained (`text-ea.log`). These checks close
+those native admission cases; exact packaged editor acceptance remains pending.
+Public editing stays disabled. Unsupported security cloning or directory flushing stops the save and retains existing staging.
 
 The tested Windows writable mapping retains a sharing conflict after its creating
 file handle closes. That observation does not prove exclusion for every mapping

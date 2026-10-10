@@ -1383,6 +1383,69 @@ mod tests {
     }
 
     #[test]
+    fn windows_native_extended_attributes_are_refused_without_mutation() {
+        fn read_ea(path: &Path) -> Vec<u8> {
+            let file = OpenOptions::new().read(true).open(path).unwrap();
+            let mut buffer = [0u64; 32];
+            let mut io = IO_STATUS_BLOCK::default();
+            nt_result(unsafe {
+                NtQueryEaFile(
+                    handle(&file),
+                    &mut io,
+                    buffer.as_mut_ptr().cast(),
+                    size_of_val(&buffer) as u32,
+                    false,
+                    ptr::null(),
+                    0,
+                    ptr::null(),
+                    true,
+                )
+            })
+            .unwrap();
+            assert!(io.Information <= size_of_val(&buffer));
+            unsafe { std::slice::from_raw_parts(buffer.as_ptr().cast::<u8>(), io.Information) }
+                .to_vec()
+        }
+        for after_open in [false, true] {
+            let fixture = Fixture::new();
+            let session = after_open.then(|| Session::open(&fixture.source()).unwrap());
+            let mut buffer = [0u64; 3];
+            let ea = buffer.as_mut_ptr().cast::<FILE_FULL_EA_INFORMATION>();
+            unsafe {
+                (*ea).EaNameLength = 8;
+                (*ea).EaValueLength = 4;
+                let name = ptr::addr_of_mut!((*ea).EaName).cast::<u8>();
+                ptr::copy_nonoverlapping(b"OTTRINQA\0keep".as_ptr(), name, 13);
+            }
+            let file = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .open(fixture.source())
+                .unwrap();
+            let mut io = IO_STATUS_BLOCK::default();
+            nt_result(unsafe { NtSetEaFile(handle(&file), &mut io, buffer.as_ptr().cast(), 21) })
+                .unwrap();
+            drop(file);
+            let before = read_ea(&fixture.source());
+            assert_eq!(&before[8..], b"OTTRINQA\0keep");
+            if let Some(session) = session {
+                assert_eq!(
+                    session.save("draft"),
+                    Err(TextEditError::UnsupportedMetadata)
+                );
+            } else {
+                assert!(matches!(
+                    Session::open(&fixture.source()),
+                    Err(TextEditError::UnsupportedMetadata)
+                ));
+            }
+            assert_eq!(read_ea(&fixture.source()), before);
+            assert_eq!(std::fs::read(fixture.source()).unwrap(), b"original\r\n");
+            assert_eq!(std::fs::read_dir(&fixture.0).unwrap().count(), 1);
+        }
+    }
+
+    #[test]
     fn windows_native_object_ids_are_refused_without_changing_source() {
         use windows_sys::Win32::System::IO::DeviceIoControl;
         use windows_sys::Win32::System::Ioctl::{
