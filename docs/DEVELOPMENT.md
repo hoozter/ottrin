@@ -237,6 +237,13 @@ attribute/data retention for files, directory roots and nested files, both befor
 Move and after a process exits before source cleanup (`move-ea-red.log`,
 `move-ea-final.log`). This is refusal of unsupported metadata; it does not claim
 extended-attribute copying or arbitrary concurrent metadata-writer exclusion.
+Top-level file and directory symbolic links use the same stream admission and
+cleanup guard as nested links. The native regression creates named data on the
+reparse object using `FILE_FLAG_OPEN_REPARSE_POINT`, verifies the target has no
+named stream, and checks exact link identity, raw target and stream-byte retention.
+It covers admission refusal and cleanup-pending refusal after interrupted
+publication (`link-stream-red.log`, `link-stream-final.log`). Ordinary dangling-link
+Move still passes. This does not claim named-stream copying.
 Completed non-Overwrite Moves now persist a central `SourceRemoved` receipt only
 after source namespace durability. That state resumes teardown directly and accepts
 the matching local `Published` evidence or an already removed local journal. Local

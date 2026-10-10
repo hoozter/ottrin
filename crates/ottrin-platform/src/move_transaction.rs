@@ -1701,12 +1701,19 @@ fn remove_windows_source_by_handle_if_still_named(
                     message: "symbolic-link cleanup evidence is missing its kind".into(),
                 }
             })?;
-            verify_windows_symbolic_link(source, expected_target, expected_is_directory).map_err(
-                |error| PlatformError::CommittedCleanupPending {
+            let streams = windows_file_streams(source_handle).map_err(|error| {
+                PlatformError::CommittedCleanupPending {
                     transaction: recovery_transaction.display().to_string(),
-                    message: format!("source symbolic-link revalidation failed: {error}"),
-                },
-            )? == (record.source_size, record.source_sha256.clone())
+                    message: format!("source symbolic-link stream revalidation failed: {error}"),
+                }
+            })?;
+            windows_stream_set_is_copy_safe(streams, expected_is_directory)
+                && verify_windows_symbolic_link(source, expected_target, expected_is_directory)
+                    .map_err(|error| PlatformError::CommittedCleanupPending {
+                        transaction: recovery_transaction.display().to_string(),
+                        message: format!("source symbolic-link revalidation failed: {error}"),
+                    })?
+                    == (record.source_size, record.source_sha256.clone())
         }
         WindowsCrossVolumeSourceKind::Directory => false,
     };
@@ -3201,6 +3208,14 @@ fn start_windows_cross_volume_move(
             }
             WindowsCrossVolumeSourceKind::SymbolicLink => {
                 let (target, is_directory) = read_windows_symbolic_link(source)?;
+                if !windows_stream_set_is_copy_safe(
+                    windows_file_streams(&source_handle)?,
+                    is_directory,
+                ) {
+                    return Err(PlatformError::UnsupportedSafeCrossDeviceMove(
+                        source.display().to_string(),
+                    ));
+                }
                 let (size, sha256) = windows_symbolic_link_evidence(&target);
                 (size, sha256, Vec::new(), Some(target), Some(is_directory))
             }
@@ -9237,6 +9252,132 @@ mod windows_source_tests {
             .expect("completed recovery is idempotent");
         assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
         assert_eq!(std::fs::read(&retained).unwrap(), b"displaced-data");
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_symbolic_link_streams_are_preserved_by_refusal() {
+        use std::io::{Read, Write};
+        use std::os::windows::fs::{OpenOptionsExt, symlink_dir, symlink_file};
+        use windows_sys::Win32::Storage::FileSystem::{
+            FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT,
+        };
+
+        if let Some(source) = std::env::var_os("OTTRIN_TEST_LINK_STREAM_SOURCE") {
+            let destination = std::env::var_os("OTTRIN_TEST_LINK_STREAM_DESTINATION").unwrap();
+            super::WINDOWS_MOVE_HOOK.with(|hook| {
+                *hook.borrow_mut() = Some(Box::new(|boundary, _| {
+                    if boundary == super::WindowsMoveBoundary::BeforeSourceCleanup {
+                        std::process::exit(87);
+                    }
+                }));
+            });
+            super::move_entry_transactional(
+                std::path::Path::new(&source),
+                std::path::Path::new(&destination),
+                ConflictAction::Rename,
+            )
+            .unwrap();
+            panic!("child must stop after publication");
+        }
+
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        for (is_directory, after_publication) in [false, true]
+            .into_iter()
+            .flat_map(|directory| [false, true].map(|after| (directory, after)))
+        {
+            let source_fixture = crate::tests::TestDir::new("link-stream-source");
+            let destination = crate::tests::TestDir::new_at(&volume, "link-stream-destination");
+            let source = source_fixture.path().join("entry");
+            let target = source_fixture.path().join("target");
+            let raw_target = std::path::Path::new("target");
+            if is_directory {
+                std::fs::create_dir(&target).unwrap();
+                symlink_dir(raw_target, &source).unwrap();
+            } else {
+                std::fs::write(&target, b"target payload").unwrap();
+                symlink_file(raw_target, &source).unwrap();
+            }
+            let source_identity = move_recovery::stable_identity_of_entry(&source).unwrap();
+            if after_publication {
+                let status = std::process::Command::new(std::env::current_exe().unwrap())
+                    .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_symbolic_link_streams_are_preserved_by_refusal", "--nocapture"])
+                    .env("OTTRIN_TEST_LINK_STREAM_SOURCE", &source)
+                    .env("OTTRIN_TEST_LINK_STREAM_DESTINATION", destination.path())
+                    .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", destination.path().join("move-state"))
+                    .status().unwrap();
+                assert_eq!(status.code(), Some(87));
+            }
+            let stream = source.with_file_name("entry:retained-metadata");
+            let flags = FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS;
+            let mut stream_handle = std::fs::OpenOptions::new()
+                .create_new(true)
+                .write(true)
+                .custom_flags(flags)
+                .open(&stream)
+                .unwrap();
+            stream_handle.write_all(b"link-owned stream").unwrap();
+            drop(stream_handle);
+            let link_handle =
+                move_recovery::open_reparse_safe_cross_volume_source(&source).unwrap();
+            assert!(
+                super::windows_file_streams(&link_handle)
+                    .unwrap()
+                    .contains(&std::ffi::OsString::from(":retained-metadata:$DATA"))
+            );
+            let target_handle =
+                move_recovery::open_reparse_safe_cross_volume_source(&target).unwrap();
+            assert!(windows_stream_set_is_copy_safe(
+                super::windows_file_streams(&target_handle).unwrap(),
+                is_directory
+            ));
+            drop((link_handle, target_handle));
+
+            let result = super::move_entry_transactional(
+                &source,
+                destination.path(),
+                ConflictAction::Rename,
+            );
+            if after_publication {
+                assert!(
+                    matches!(result, Err(PlatformError::CommittedCleanupPending { .. })),
+                    "published Move must retain the source link with cleanup pending"
+                );
+            } else {
+                assert!(
+                    matches!(
+                        result,
+                        Err(PlatformError::UnsupportedSafeCrossDeviceMove(_))
+                    ),
+                    "Move must refuse the link before publication"
+                );
+            }
+            assert_eq!(
+                move_recovery::stable_identity_of_entry(&source).unwrap(),
+                source_identity
+            );
+            assert_eq!(std::fs::read_link(&source).unwrap(), raw_target);
+            let mut bytes = Vec::new();
+            std::fs::OpenOptions::new()
+                .read(true)
+                .custom_flags(flags)
+                .open(&stream)
+                .unwrap()
+                .read_to_end(&mut bytes)
+                .unwrap();
+            assert_eq!(bytes, b"link-owned stream");
+            if !is_directory {
+                assert_eq!(std::fs::read(&target).unwrap(), b"target payload");
+            }
+            let published = destination.path().join("entry");
+            if after_publication {
+                assert_eq!(std::fs::read_link(&published).unwrap(), raw_target);
+            } else {
+                assert!(std::fs::symlink_metadata(&published).is_err());
+            }
+        }
     }
 
     #[cfg(target_os = "windows")]
