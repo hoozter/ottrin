@@ -54,6 +54,7 @@ use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+#[cfg(any(target_os = "linux", test))]
 const LINUX_SYSTEM_MEDIA_DISCLOSURE: &str = "On Linux, Ottrin uses GStreamer installed on this system. Ottrin does not include, download, install, or select codec implementations. Playback depends on the media plugins made available by the operating system or user.";
 
 mod config;
@@ -1812,6 +1813,7 @@ fn test_search_store_path() -> PathBuf {
     )
 }
 
+#[cfg(unix)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct AdministratorSessionIndexPaths {
     directory: PathBuf,
@@ -1846,6 +1848,7 @@ fn remove_administrator_session_index_directory(
     }
 }
 
+#[cfg(any(unix, test))]
 fn administrator_session_search_config(config: &SearchConfig) -> Result<SearchConfig, String> {
     if config.include_roots.is_empty() {
         return Err(
@@ -2995,8 +2998,10 @@ impl OttrinApp {
                 let selected_pdf_page = req.page_index > 0
                     && matches!(ottrin_preview::classify_path(&req.path), PreviewKind::Pdf);
                 let mut video_error = None;
-                let mut html_error = None;
-                let mut eps_error: Option<String> = None;
+                #[cfg(target_os = "linux")]
+                let (mut html_error, mut eps_error) = (None, None::<String>);
+                #[cfg(not(target_os = "linux"))]
+                let (html_error, eps_error) = (None::<String>, None::<String>);
                 let mut office_error = None;
                 let mut office_render = None;
                 let bytes = if !generation_is_current
@@ -23383,6 +23388,7 @@ fn prefers_native_legacy_doc_renderer(path: &Path) -> bool {
     ottrin_preview::is_native_legacy_doc_visual_path(path)
 }
 
+#[cfg(any(target_os = "linux", test))]
 fn visual_renderer_uses_persistent_thumbnail_cache(
     renderer: ottrin_preview::PreviewVisualRenderer,
 ) -> bool {
