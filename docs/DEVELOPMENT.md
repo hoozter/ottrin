@@ -184,10 +184,21 @@ profile/log cleanup, released source handles, and directory removal
 `cargo test -p ottrin-preview --test windows_office_boundary_contract -- --ignored --nocapture --test-threads=1`.
 
 This bounded acceptance does not enable the Windows UI or certify representative
-fidelity, macro security, fallback presentation or installer acceptance. Longer
-private-directory layouts still reproduce a LibreOffice crash, including direct
-conversion outside Ottrin's Job Object (`office-layout-control-results.log`);
-the short-layout run passes. That layout defect remains under investigation.
+fidelity, macro security, fallback presentation or installer acceptance.
+
+Longer private-directory layouts reproduced a LibreOffice crash even outside
+Ottrin's Job Object (`office-layout-control-results.log`). Length controls failed
+with a 150-character profile path and succeeded with 138 characters, independently
+of dots in directory names (`office-layout-length-control-results.log`). The
+native production contract reproduced the longer-layout crash
+(`office-profile-red-results.log`). Ottrin now uses a shorter disposable-profile
+name at its authoritative definition, retaining PID/nonce uniqueness. No limits,
+containment or provider executable paths changed. All three installed-provider
+fixtures pass with the longer baseline directory and original nine-format output
+directory names (`office-profile-green-results.log`, 42.20s). Six focused Linux
+provider contracts and strict Windows Clippy pass. This closes the reproduced
+layout regression, not arbitrary-length provider paths.
+
 An earlier probe
 returned unhealthy; a later unchanged native probe succeeded, so no timeout was
 relaxed. The earlier test's text extractor could not decode the generated PDF's

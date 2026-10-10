@@ -478,10 +478,10 @@ impl OfficeConverterLauncher for InstalledLibreOfficeConverter<'_> {
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
             .as_nanos();
-        let profile = request.private_output_dir.join(format!(
-            ".ottrin-libreoffice-profile-{}-{unique}",
-            std::process::id()
-        ));
+        // Leave path-length headroom for the provider's own profile files.
+        let profile = request
+            .private_output_dir
+            .join(format!(".ottrin-{}-{unique}", std::process::id()));
         std::fs::create_dir(&profile).map_err(|_| OfficeRenderFailure::Crash)?;
         let cleanup = ProbeDirectory(profile.clone());
         let process_request = IsolatedProcessRequest {

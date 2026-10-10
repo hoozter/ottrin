@@ -33,7 +33,7 @@ fn windows_installed_office_converts_and_cleans_private_state() {
         .unwrap()
         .as_nanos();
     let root = std::env::temp_dir().join(format!("ottrin-office-native-{unique}"));
-    let output = root.join("output");
+    let output = root.join("output-with-a-long-name");
     std::fs::create_dir_all(&output).unwrap();
     let source = root.join("source.docx");
     let original = include_bytes!("fixtures/docx-baseline.docx");
@@ -136,7 +136,7 @@ fn windows_installed_office_renders_each_advertised_format() {
     let root = std::env::temp_dir().join(format!("ottrin-office-formats-{nonce}"));
     std::fs::create_dir(&root).unwrap();
     let mut failures = Vec::new();
-    for (index, (name, marker)) in [
+    for (name, marker) in [
         ("document.doc", "DOCX BASELINE"),
         ("document.docx", "DOCX BASELINE"),
         ("document.odt", "DOCX BASELINE"),
@@ -146,14 +146,11 @@ fn windows_installed_office_renders_each_advertised_format() {
         ("sheet.ods", "OTTRIN SHEET FORMAT"),
         ("slides.pptx", "OTTRIN SLIDE FORMAT"),
         ("slides.odp", "OTTRIN SLIDE FORMAT"),
-    ]
-    .into_iter()
-    .enumerate()
-    {
+    ] {
         let original = std::fs::read(fixtures.join(name)).unwrap();
         let source = root.join(name);
         std::fs::write(&source, &original).unwrap();
-        let output = root.join(format!("output-{index}"));
+        let output = root.join(format!("output-{name}"));
         std::fs::create_dir(&output).unwrap();
         let request = OfficeRenderRequest {
             source_path: source.clone(),
