@@ -942,6 +942,9 @@ pub fn set_privileged_helper_override(path: Option<PathBuf>) {
     }
 }
 
+#[cfg(target_os = "linux")]
+mod helper_setup;
+
 /// Install the package's helper through the desktop's normal administrator prompt.
 pub fn install_privileged_helper() -> Result<String, String> {
     #[cfg(target_os = "linux")]
@@ -953,21 +956,7 @@ pub fn install_privileged_helper() -> Result<String, String> {
         let helper = [directory.join("../libexec/ottrin/ottrin-priv-helper"), directory.join("ottrin-priv-helper")]
             .into_iter().find(|path| path.is_file())
             .ok_or("This Ottrin package does not contain the administrator helper. Download a complete package.")?;
-        let output = Command::new("pkexec")
-            .arg(helper)
-            .arg("--install")
-            .output()
-            .map_err(|error| format!("Cannot open administrator authentication: {error}"))?;
-        if output.status.success() {
-            Ok("Administrator helper installed and ready.".to_string())
-        } else if matches!(output.status.code(), Some(126 | 127)) {
-            Err("Helper setup was cancelled or administrator permission was denied.".to_string())
-        } else {
-            Err(format!(
-                "Helper setup failed: {}",
-                String::from_utf8_lossy(&output.stderr).trim()
-            ))
-        }
+        helper_setup::install(&helper)
     }
     #[cfg(not(target_os = "linux"))]
     Err("Helper installation is managed by the installer on this platform.".to_string())
