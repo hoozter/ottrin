@@ -66,7 +66,7 @@ Search freshness uses three mechanisms:
 | File watcher | Yes on Linux when the per-user daemon is active | Applies direct changes independently of GUI windows |
 | Periodic reconciliation | Yes | Runs a bounded full refresh (every four hours by default) as a safety net for missed or ambiguous watcher events |
 
-On Linux, **Enable persistent startup** installs the packaged per-user systemd service. Search health distinguishes an enabled running daemon from an enabled but stopped one, and **Restart daemon** performs an explicit service restart. Re-enabling persistent startup during an upgrade first asks the running daemon to finish and release its database, then replaces and restarts the service; failures are reported instead of silently deleting or replacing lifecycle files.
+On Linux, click the index icon in the status bar or open **Settings → Services** to manage background indexing. The page shows whether the index is running and whether a login service is installed. **Install background service** enables it at login; **Update / reinstall service** connects it to the current app version. **Start / restart**, **Stop indexing**, **Uninstall service**, and **Refresh status** control its lifecycle. Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts an index for that session. Service installation first asks an existing session daemon to finish and release its database before starting the managed service; failures are reported.
 
 On Linux, global filename/path search can merge the native live index with an enabled system locate/plocate database. System filename search remains useful when you intentionally remove every native indexed folder; a new or reset configuration still indexes Home by default. Exact duplicate paths appear once with native metadata preferred. A system result may remain path-only when its metadata is inaccessible; discovery does not grant permission to read, preview, copy, or delete protected files. Search settings show the system database age and reuse an existing distribution `updatedb` timer or cron job without duplicating it. When the database is stale, **Update system filename database now** uses Ottrin's fixed-operation privileged helper. If no maintenance exists, **Keep plocate database fresh** can install an Ottrin-owned daily job and can remove that job again; OS/package-owned maintenance is never removed by Ottrin.
 
@@ -141,17 +141,7 @@ capability is claimed. Cross-filesystem and Windows Move reject without mutation
 
 Normal user-owned files do not need elevated setup. If an operation is denied, Ottrin can retry through a privileged helper when that helper is available.
 
-Linux portable helper setup:
-
-```sh
-sudo install -D -m 0755 ./bin/ottrin-priv-helper /usr/libexec/ottrin/ottrin-priv-helper
-sudo install -m 0644 ./packaging/linux/org.ottrin.filesystem.policy /usr/share/polkit-1/actions/
-```
-
-For the AppImage, extract it with `--appimage-extract`, then install
-`squashfs-root/usr/libexec/ottrin/ottrin-priv-helper` and
-`squashfs-root/usr/share/polkit-1/actions/org.ottrin.filesystem.policy` at the
-same system paths shown above. Privileged operations require this system setup.
+On Linux, click the lock in the status bar or open **Settings → Services**, then choose **Set up administrator helper**. Approve the desktop's administrator authentication prompt. Ottrin installs its bundled helper and authentication policy and refreshes the status immediately. **Update / reinstall helper** repairs setup or installs the helper from your current app version. Cancelling authentication leaves setup pending and shows a clear message. This works for AppImage and portable packages without terminal commands.
 
 Windows portable packages bundle `ottrin-priv-helper.exe` beside the app and use the Windows UAC flow when needed.
 

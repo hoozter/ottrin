@@ -942,6 +942,37 @@ pub fn set_privileged_helper_override(path: Option<PathBuf>) {
     }
 }
 
+/// Install the package's helper through the desktop's normal administrator prompt.
+pub fn install_privileged_helper() -> Result<String, String> {
+    #[cfg(target_os = "linux")]
+    {
+        let exe = std::env::current_exe().map_err(|e| e.to_string())?;
+        let directory = exe
+            .parent()
+            .ok_or("Cannot locate this Ottrin installation")?;
+        let helper = [directory.join("../libexec/ottrin/ottrin-priv-helper"), directory.join("ottrin-priv-helper")]
+            .into_iter().find(|path| path.is_file())
+            .ok_or("This Ottrin package does not contain the administrator helper. Download a complete package.")?;
+        let output = Command::new("pkexec")
+            .arg(helper)
+            .arg("--install")
+            .output()
+            .map_err(|error| format!("Cannot open administrator authentication: {error}"))?;
+        if output.status.success() {
+            Ok("Administrator helper installed and ready.".to_string())
+        } else if matches!(output.status.code(), Some(126 | 127)) {
+            Err("Helper setup was cancelled or administrator permission was denied.".to_string())
+        } else {
+            Err(format!(
+                "Helper setup failed: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            ))
+        }
+    }
+    #[cfg(not(target_os = "linux"))]
+    Err("Helper installation is managed by the installer on this platform.".to_string())
+}
+
 fn resolve_helper_name(default_name: &str) -> String {
     if let Ok(p) = helper_override_store().read()
         && let Some(path) = p.as_ref()
@@ -1624,15 +1655,26 @@ impl PlatformOps for DefaultPlatform {
         {
             if !is_executable_available("pkexec") {
                 return PrivilegedAvailability::Misconfigured(
-                    "pkexec not found in PATH".to_string(),
+                    "Administrator authentication is unavailable. Install polkit using your system’s software manager.".to_string(),
                 );
             }
             let helper = resolve_helper_name("ottrin-priv-helper");
             if !is_executable_available(&helper) {
-                return PrivilegedAvailability::Misconfigured(format!(
-                    "Privileged helper '{}' not found (set OTTRIN_PRIV_HELPER or use --helper-path)",
-                    helper
-                ));
+                return PrivilegedAvailability::Misconfigured(
+                    "Administrator helper is not installed. Open Services to set it up."
+                        .to_string(),
+                );
+            }
+            if helper == "/usr/libexec/ottrin/ottrin-priv-helper"
+                && std::fs::read("/usr/share/polkit-1/actions/org.ottrin.filesystem.policy")
+                    .ok()
+                    .as_deref()
+                    != Some(
+                        include_bytes!("../../../packaging/linux/org.ottrin.filesystem.policy")
+                            .as_slice(),
+                    )
+            {
+                return PrivilegedAvailability::Misconfigured("Administrator helper needs its authentication policy. Open Services to repair setup.".to_string());
             }
             PrivilegedAvailability::Ready
         }

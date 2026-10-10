@@ -436,6 +436,55 @@ impl SearchService {
         sqlite_schedule_status()
     }
 
+    /// Start the installed service, or a package-owned session daemon.
+    pub fn start_sqlite_schedule() -> Result<String, String> {
+        #[cfg(target_os = "linux")]
+        {
+            if sqlite_systemd_service_path().is_file() {
+                return restart_sqlite_schedule();
+            }
+            let client = SearchDaemonClient::connect_default()?;
+            if client.ping().is_ok() {
+                return Ok("Session indexing is already running.".to_string());
+            }
+            let executable =
+                find_ottrin_binary().ok_or("Cannot locate this package's index service")?;
+            std::process::Command::new(executable)
+                .arg("--index-daemon")
+                .stdin(std::process::Stdio::null())
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::inherit())
+                .spawn()
+                .map_err(|error| format!("Cannot start the session index: {error}"))?;
+            let deadline = Instant::now() + Duration::from_secs(3);
+            while Instant::now() < deadline {
+                if client.ping().is_ok() {
+                    return Ok("Session indexing started.".to_string());
+                }
+                std::thread::sleep(Duration::from_millis(20));
+            }
+            Err("The session index did not become ready. Its startup diagnostics are available in the application log.".to_string())
+        }
+        #[cfg(not(target_os = "linux"))]
+        restart_sqlite_schedule()
+    }
+
+    /// Stop indexing without deleting the service registration or saved index.
+    pub fn stop_sqlite_schedule() -> Result<String, String> {
+        #[cfg(target_os = "linux")]
+        {
+            if sqlite_systemd_service_path().is_file()
+                && !run_sqlite_systemd(SqliteSystemdOperation::Stop)?
+            {
+                return Err("Could not stop the background index service".to_string());
+            }
+            prepare_running_daemon_for_upgrade()?;
+            Ok("Indexing stopped. Your saved index is kept. Opening Ottrin again starts indexing for that session.".to_string())
+        }
+        #[cfg(not(target_os = "linux"))]
+        Err("Stopping the background index service is not available on this platform.".to_string())
+    }
+
     pub fn restart_sqlite_schedule() -> Result<String, String> {
         restart_sqlite_schedule()
     }
@@ -1899,10 +1948,10 @@ fn prepare_sqlite_systemd_upgrade_with(
     prepare_daemon: impl FnOnce() -> Result<(), String>,
     mut run: impl FnMut(SqliteSystemdOperation) -> Result<bool, String>,
 ) -> Result<(), String> {
+    prepare_daemon()?;
     if !unit_exists {
         return Ok(());
     }
-    prepare_daemon()?;
     if !run(SqliteSystemdOperation::Stop)? {
         return Err(
             "systemctl failed to stop the existing Ottrin index service for upgrade".to_string(),
@@ -4292,6 +4341,22 @@ mod tests {
 
         assert_eq!(operations, vec![SqliteSystemdOperation::Restart]);
         assert!(error.contains("restart"), "unexpected error: {error}");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn first_service_install_prepares_existing_session_daemon() {
+        let prepared = std::cell::Cell::new(false);
+        prepare_sqlite_systemd_upgrade_with(
+            false,
+            || {
+                prepared.set(true);
+                Ok(())
+            },
+            |_| panic!("No existing unit to stop"),
+        )
+        .unwrap();
+        assert!(prepared.get());
     }
 
     #[cfg(target_os = "linux")]

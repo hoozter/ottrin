@@ -15,7 +15,21 @@ enum IoMode {
     },
 }
 
+#[cfg(target_os = "linux")]
+mod setup;
+
 fn main() {
+    #[cfg(target_os = "linux")]
+    if std::env::args().skip(1).eq(["--install"]) {
+        match setup::install() {
+            Ok(()) => println!("Administrator helper installed."),
+            Err(error) => {
+                eprintln!("{error}");
+                std::process::exit(1);
+            }
+        }
+        return;
+    }
     let mode = parse_mode(std::env::args().skip(1).collect());
     let mode = match mode {
         Ok(m) => m,
