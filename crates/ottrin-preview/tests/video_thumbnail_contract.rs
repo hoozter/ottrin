@@ -215,3 +215,80 @@ fn source_dimensions_are_bounded_before_scaling_and_output_allocation() {
         Err(VideoThumbnailError::ResourceLimit)
     );
 }
+
+#[cfg(target_os = "windows")]
+#[test]
+#[ignore = "requires OTTRIN_NATIVE_VIDEO_FIXTURE: a 64x48 red H.264 MP4 and installed OS decoder"]
+fn windows_native_thumbnail_decodes_and_preserves_admitted_source() {
+    use ottrin_preview::{admit_video_thumbnail_source, render_video_thumbnail_png};
+    use std::sync::{Arc, atomic::AtomicBool};
+    let fixture =
+        std::env::var_os("OTTRIN_NATIVE_VIDEO_FIXTURE").expect("native red video fixture");
+    let root = std::env::temp_dir().join(format!(
+        "ottrin-native-video-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    std::fs::create_dir(&root).unwrap();
+    let path = root.join("source.mp4");
+    std::fs::copy(fixture, &path).unwrap();
+    let source = admit_video_thumbnail_source(&path).unwrap();
+    let generation = source.generation().clone();
+    let result = render_video_thumbnail_png(source, 32, Arc::new(AtomicBool::new(false)))
+        .expect("installed Media Foundation decoder must render the ordinary fixture");
+    assert_eq!(result.source_generation, generation);
+    let pixels = image::load_from_memory(&result.png).unwrap().to_rgba8();
+    assert_eq!(pixels.dimensions(), (32, 24));
+    assert!(
+        pixels
+            .pixels()
+            .all(|p| p[0] > 200 && p[1] < 40 && p[2] < 40 && p[3] == 255)
+    );
+
+    assert_eq!(
+        render_video_thumbnail_png(
+            admit_video_thumbnail_source(&path).unwrap(),
+            32,
+            Arc::new(AtomicBool::new(true))
+        )
+        .unwrap_err(),
+        VideoThumbnailError::Cancelled
+    );
+    let source = admit_video_thumbnail_source(&path).unwrap();
+    let retained = root.join("admitted.mp4");
+    std::fs::rename(&path, &retained).unwrap();
+    std::fs::write(&path, b"replacement is not the admitted video").unwrap();
+    match render_video_thumbnail_png(source, 32, Arc::new(AtomicBool::new(false))) {
+        Ok(frame) => {
+            assert_eq!(frame.source_generation, generation);
+            assert_eq!(
+                image::load_from_memory(&frame.png).unwrap().to_rgba8(),
+                pixels
+            );
+        }
+        Err(error) => assert_eq!(error, VideoThumbnailError::SourceChanged),
+    }
+    let malformed = render_video_thumbnail_png(
+        admit_video_thumbnail_source(&path).unwrap(),
+        32,
+        Arc::new(AtomicBool::new(false)),
+    )
+    .unwrap_err();
+    assert!(
+        matches!(
+            malformed,
+            VideoThumbnailError::UnsupportedMedia | VideoThumbnailError::DecodeFailed
+        ),
+        "unexpected malformed-media result: {malformed:?}"
+    );
+    assert_eq!(
+        std::fs::read(&path).unwrap(),
+        b"replacement is not the admitted video"
+    );
+    std::fs::remove_file(path).unwrap();
+    std::fs::remove_file(retained).unwrap();
+    std::fs::remove_dir(root).unwrap();
+}

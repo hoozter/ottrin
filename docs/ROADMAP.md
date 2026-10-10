@@ -116,7 +116,7 @@ Start this phase after source and packaging outcomes are complete. Keep it as on
 - Run the Windows daily-driver workflow: navigation, New File/New Folder, file operations, Recycle Bin, Tandem View, search lifecycle, Quick Inspector, UAC/helper behavior and background integration.
 - Attach and remove secondary fixed, removable and optical storage; connect and disconnect a mapped-network drive; check unavailable states and explicit indexing.
 - Exercise Office previews through the accepted Windows provider boundary and confirm native/extracted fallback.
-- Exercise Media Foundation with representative ordinary, malformed and unsupported media, cancellation, source replacement and the exact package contents.
+- Exercise Media Foundation with representative ordinary, malformed and unsupported media, cancellation, source replacement and the exact package contents. A native ordinary-user fixture now verifies a generated H.264 thumbnail by decoded pixel values, pre-cancellation, malformed-input refusal and admitted-source pathname replacement. Representative format coverage, in-flight cancellation, UI and exact-package checks remain separate.
 - Exercise native WGPU and bundled Mesa OpenGL on adapters that need each path. Confirm Automatic selection, saved preference, diagnostic override, startup log and loaded-DLL provenance.
 - Exercise same-volume and cross-volume Move with Skip/Rename/Overwrite/Cancel handling, interrupted work, edited-output Undo refusal, removable drives, and explicit partial/recovery outcomes.
 

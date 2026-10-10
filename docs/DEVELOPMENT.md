@@ -94,6 +94,23 @@ claim to bundle GIO modules or schemas. Packaging has an artifact-level
 content-type smoke with empty XDG data, but clean/minimal desktop acceptance is
 a separate release gate.
 
+### Windows native video thumbnails
+
+The ignored `windows_native_thumbnail_decodes_and_preserves_admitted_source` test
+in `video_thumbnail_contract` requires `OTTRIN_NATIVE_VIDEO_FIXTURE` pointing to a
+64x48 solid-red H.264 MP4. Generate the fixture with an already available encoder:
+
+```sh
+ffmpeg -f lavfi -i color=c=red:s=64x48:r=5 -t 1 -c:v libx264 -pix_fmt yuv420p native-thumbnail-red.mp4
+```
+
+Run the integration test on Windows with its installed OS decoder. Ordinary-user
+acceptance on Windows 11 build 26100 passed in `native-thumbnail.log`: decoded
+32x24 red pixels and opaque alpha, pre-cancellation, malformed-input refusal, and
+pathname replacement after admission without reading replacement bytes. It does
+not install codecs or prove broad format coverage, in-flight cancellation,
+audible playback or exact-package acceptance.
+
 ### Windows Office process boundary
 
 Run the native Job Object fixtures on Windows as the ordinary test user:
