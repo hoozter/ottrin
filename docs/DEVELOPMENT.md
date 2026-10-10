@@ -168,7 +168,12 @@ source preservation after mutations at rename handoffs, published-file/link
 change refusal, and retry after source or published-file writers close. Native
 fixtures also verify destination ACL denial preserves the source and permits retry
 after access restoration, plus file/directory creation and modification times,
-hidden/archive attributes and payload preservation. The ACL fixture invokes
+hidden/archive attributes and payload preservation. An uninterrupted unoccupied-target
+Move also preserves a read-only file: the original writable staging handle survives
+through publication/flush, followed by exclusive read verification and identity-bound
+source deletion without changing its attributes. Identity-only probes request
+attribute access so they do not conflict with the content lock. Read-only Overwrite
+and interrupted recovery remain separate pending cases. The ACL fixture invokes
 `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or

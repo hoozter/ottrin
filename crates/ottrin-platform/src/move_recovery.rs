@@ -6891,7 +6891,7 @@ fn classify_windows_file_type(metadata: &std::fs::Metadata) -> WindowsFileType {
 #[cfg_attr(not(test), allow(dead_code))]
 fn open_reparse_safe_entry(path: &Path) -> Result<std::fs::File, JournalError> {
     OpenOptions::new()
-        .read(true)
+        .access_mode(FILE_READ_ATTRIBUTES)
         .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
         .open(path)
         .map_err(|error| JournalError::Io(error.to_string()))
@@ -6943,6 +6943,21 @@ pub(crate) fn open_reparse_safe_cross_volume_candidate(
 ) -> Result<std::fs::File, JournalError> {
     OpenOptions::new()
         .access_mode(WINDOWS_CROSS_VOLUME_CANDIDATE_ACCESS_MODE)
+        .share_mode(WINDOWS_CROSS_VOLUME_CANDIDATE_SHARE_MODE)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+        .open(path)
+        .map_err(|error| JournalError::Io(error.to_string()))
+}
+
+/// Locks already-durable published content while source cleanup verifies it.
+/// No writes or flushes occur through this handle; read-only entries remain
+/// verifiable without weakening exclusive sharing.
+#[cfg(target_os = "windows")]
+pub(crate) fn open_reparse_safe_cross_volume_verification(
+    path: &Path,
+) -> Result<std::fs::File, JournalError> {
+    OpenOptions::new()
+        .access_mode(GENERIC_READ | FILE_READ_ATTRIBUTES | DELETE)
         .share_mode(WINDOWS_CROSS_VOLUME_CANDIDATE_SHARE_MODE)
         .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
         .open(path)

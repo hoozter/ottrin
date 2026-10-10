@@ -1677,7 +1677,7 @@ fn remove_windows_source_by_handle_if_still_named(
     }
 
     let disposition = FILE_DISPOSITION_INFO_EX {
-        Flags: FILE_DISPOSITION_FLAG_DELETE,
+        Flags: FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE,
     };
     let disposition_size =
         u32::try_from(mem::size_of::<FILE_DISPOSITION_INFO_EX>()).map_err(|error| {
@@ -3121,6 +3121,7 @@ fn resume_windows_cross_volume(
     record: &mut WindowsCrossVolumeRecord,
     mut source_handle: Option<std::fs::File>,
 ) -> Result<MovePublication, PlatformError> {
+    let mut staged_handle = None;
     let transaction = record.transaction_path()?;
     let local_bytes =
         std::fs::read(transaction.join(WINDOWS_LOCAL_JOURNAL_NAME)).map_err(|error| {
@@ -3437,8 +3438,9 @@ fn resume_windows_cross_volume(
                             .map_err(|error| PlatformError::Io(error.to_string()))?;
                         let mut staged = OpenOptions::new()
                             .create_new(true)
-                            .read(true)
                             .write(true)
+                            .access_mode(move_recovery::WINDOWS_CROSS_VOLUME_CANDIDATE_ACCESS_MODE)
+                            .share_mode(move_recovery::WINDOWS_CROSS_VOLUME_CANDIDATE_SHARE_MODE)
                             .open(&candidate)
                             .map_err(|error| PlatformError::ClaimedRecoveryPending {
                                 transaction: transaction.display().to_string(),
@@ -3580,6 +3582,11 @@ fn resume_windows_cross_volume(
                     }
                 })?;
                 drop(retained_directory_snapshots);
+                if record.source_kind == WindowsCrossVolumeSourceKind::File {
+                    // Metadata may have made the candidate read-only. Keep the
+                    // original writable handle for publication and durability.
+                    staged_handle = Some(staged);
+                }
                 #[cfg(test)]
                 if std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_AFTER_STAGED").is_some()
                 {
@@ -3587,8 +3594,10 @@ fn resume_windows_cross_volume(
                 }
             }
             WindowsCrossVolumeRestartAction::PublishStaged => {
-                let mut staged =
-                    move_recovery::open_reparse_safe_cross_volume_candidate(&candidate)
+                let mut staged = match staged_handle.take() {
+                    Some(staged) => Ok(staged),
+                    None => move_recovery::open_reparse_safe_cross_volume_candidate(&candidate),
+                }
                         .map_err(|error| PlatformError::ClaimedRecoveryPending {
                             transaction: transaction.display().to_string(),
                             message: format!(
@@ -3996,6 +4005,12 @@ fn resume_windows_cross_volume(
                         }
                     })
                 } else {
+                    // Retain this handle if Rename must select another target.
+                    staged_handle = Some(
+                        staged
+                            .try_clone()
+                            .map_err(|error| PlatformError::Io(error.to_string()))?,
+                    );
                     publish_windows_cross_volume_candidate_with(
                         || {
                             rename_windows_handle_no_replace(
@@ -4039,6 +4054,7 @@ fn resume_windows_cross_volume(
                         });
                     }
                 }
+                drop(staged_handle.take());
                 record.phase = WindowsCrossVolumePhase::Published;
                 persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
                     PlatformError::CommittedCleanupPending {
@@ -4256,7 +4272,7 @@ fn resume_windows_cross_volume(
                     transaction: transaction.display().to_string(),
                     message,
                 };
-                let mut published = move_recovery::open_reparse_safe_cross_volume_candidate(
+                let mut published = move_recovery::open_reparse_safe_cross_volume_verification(
                     &target,
                 )
                 .map_err(|error| {
@@ -8612,6 +8628,37 @@ mod windows_source_tests {
                 }
             }
         }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_move_preserves_read_only_file() {
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        let source_fixture = crate::tests::TestDir::new("readonly-source");
+        let destination_fixture = crate::tests::TestDir::new_at(&volume, "readonly-destination");
+        let source = source_fixture.path().join("entry");
+        let target = destination_fixture.path().join("entry");
+        std::fs::write(&source, b"source-data").unwrap();
+        let mut permissions = std::fs::metadata(&source).unwrap().permissions();
+        permissions.set_readonly(true);
+        std::fs::set_permissions(&source, permissions).unwrap();
+        let result = super::move_entry_transactional(
+            &source,
+            destination_fixture.path(),
+            ConflictAction::Rename,
+        );
+        if result.is_err() {
+            assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+            assert!(std::fs::metadata(&source).unwrap().permissions().readonly());
+        }
+        let moved = result.expect("move a read-only file while preserving its attribute");
+        assert_eq!(moved.disposition, crate::MoveDisposition::Moved);
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+        assert!(std::fs::metadata(&target).unwrap().permissions().readonly());
     }
 
     #[cfg(target_os = "windows")]
