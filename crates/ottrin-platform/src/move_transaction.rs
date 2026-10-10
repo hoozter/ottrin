@@ -9056,6 +9056,66 @@ mod windows_source_tests {
 
     #[cfg(target_os = "windows")]
     #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_FAT32_ROOT on an owned native FAT32 volume"]
+    fn windows_native_move_fat32_boundary_preserves_both_entries() {
+        use std::os::windows::io::AsRawHandle;
+        use windows_sys::Win32::Storage::FileSystem::GetVolumeInformationByHandleW;
+
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume = std::path::PathBuf::from(
+            std::env::var_os("OTTRIN_WINDOWS_FAT32_ROOT").expect("owned FAT32 fixture root"),
+        );
+        let fat = crate::tests::TestDir::new_at(&volume, "fat-boundary");
+        // Keep recovery state on the ordinary NTFS fixture, independent of direction.
+        let ntfs = crate::tests::TestDir::new("ntfs-boundary");
+        for (root, expected) in [(fat.path(), "FAT32"), (ntfs.path(), "NTFS")] {
+            let directory = move_recovery::open_reparse_safe_directory_for_rename(root).unwrap();
+            let mut name = [0_u16; 32];
+            assert_ne!(
+                unsafe {
+                    GetVolumeInformationByHandleW(
+                        directory.as_raw_handle(),
+                        std::ptr::null_mut(),
+                        0,
+                        std::ptr::null_mut(),
+                        std::ptr::null_mut(),
+                        std::ptr::null_mut(),
+                        name.as_mut_ptr(),
+                        name.len() as u32,
+                    )
+                },
+                0
+            );
+            let end = name.iter().position(|&unit| unit == 0).unwrap();
+            assert_eq!(String::from_utf16(&name[..end]).unwrap(), expected);
+        }
+        for (source_root, destination_root) in
+            [(ntfs.path(), fat.path()), (fat.path(), ntfs.path())]
+        {
+            for conflict in [ConflictAction::Rename, ConflictAction::Overwrite] {
+                let name = format!("entry-{conflict:?}");
+                let source = source_root.join(&name);
+                let target = destination_root.join(&name);
+                std::fs::write(&source, b"source must survive").unwrap();
+                std::fs::write(&target, b"destination must survive").unwrap();
+                let result = super::move_entry_transactional(&source, destination_root, conflict);
+                assert!(result.is_err(), "unsupported filesystem Move must refuse");
+                eprintln!("{source:?} {conflict:?}: {:?}", result.as_ref().err());
+                assert_eq!(std::fs::read(&source).unwrap(), b"source must survive");
+                assert_eq!(std::fs::read(&target).unwrap(), b"destination must survive");
+                assert!(
+                    !destination_root
+                        .join(format!("entry-{conflict:?} (1)"))
+                        .exists()
+                );
+                std::fs::remove_file(source).unwrap();
+                std::fs::remove_file(target).unwrap();
+            }
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_explicit_recovery_retains_displaced_file() {
         if std::env::var_os("OTTRIN_TEST_WINDOWS_EXPLICIT_RECOVERY_CLOSED").is_some() {

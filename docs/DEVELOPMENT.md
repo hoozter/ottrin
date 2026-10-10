@@ -224,6 +224,12 @@ is in `directory-boundaries.log` (RED), `directory-boundaries-pin.log` (GREEN) a
 `directory-regression.log` (18 cross-volume, ten same-volume and one namespace-flush
 check passing). This is process-death acceptance, not power loss. Filesystem and
 packaged cases stay pending.
+An owned native FAT32 fixture verifies safe refusal in both NTFS/FAT32 directions
+for Rename and Overwrite: the required source/destination identity probe returns
+native error 87 before mutation, and both files retain their exact bytes
+(`filesystem-boundary.log`). The fixture verifies filesystem names through native
+volume handles; this is unsupported-filesystem refusal, not FAT32 Move support or
+physical removable-device acceptance.
 The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or
