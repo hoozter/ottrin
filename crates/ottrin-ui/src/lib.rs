@@ -20785,13 +20785,18 @@ impl OttrinApp {
             let installed = status.source != "none";
             ui.label(format!("At login: {}", if installed { status.detail.as_str() } else { "Not installed" }));
             let diag = self.search_service.diagnostics();
+            #[cfg(unix)]
+            let stopped = ottrin_search::default_daemon_socket_path().is_ok_and(|path| !path.exists());
+            #[cfg(not(unix))]
+            let stopped = false;
             ui.label(format!("Index now: {}", match diag.status {
                 SearchIndexStatus::Ready => "Running — index ready",
                 SearchIndexStatus::Loading => "Running — loading index",
                 SearchIndexStatus::Indexing => "Running — indexing files",
-                SearchIndexStatus::Unavailable => "Stopped or unavailable",
+                SearchIndexStatus::Unavailable if stopped => "Stopped",
+                SearchIndexStatus::Unavailable => "Unavailable",
             }));
-            if let Some(error) = &diag.last_error { ui.label(RichText::new(error).color(c.error)); }
+            if !stopped && let Some(error) = &diag.last_error { ui.label(RichText::new(error).color(c.error)); }
             ui.label(if installed { "The installed service keeps your selected folders indexed after closing Ottrin. Update / reinstall connects it to this app version." } else { "Ottrin started an index for this session. Install the background service to start it automatically when you log in." });
             ui.label("Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index.");
             ui.add_space(6.0);
