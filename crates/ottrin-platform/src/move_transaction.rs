@@ -3116,33 +3116,27 @@ fn windows_cross_volume_move_boundary(boundary: WindowsCrossVolumeMoveBoundary, 
     });
 }
 
-/// A process exit loses the writable handle that predates copied read-only
-/// metadata. Normalize only the identity/content-verified private candidate;
-/// publication restores source metadata after reacquiring and verifying it.
+/// Normalize only the verified private candidate, never a source or published
+/// entry. Both restart reopening and ReplaceFileW need a writable candidate;
+/// source metadata is reapplied through the resulting writable handle.
 #[cfg(target_os = "windows")]
-fn reopen_windows_staged_file(
+fn prepare_windows_private_candidate_for_reopen(
     candidate: &Path,
+    staged: &mut std::fs::File,
     record: &WindowsCrossVolumeRecord,
-) -> Result<std::fs::File, PlatformError> {
+) -> Result<(), PlatformError> {
     use std::os::windows::fs::MetadataExt;
-    use windows_sys::Win32::{
-        Foundation::GENERIC_READ,
-        Storage::FileSystem::{
-            DELETE, FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY, FILE_FLAG_BACKUP_SEMANTICS,
-            FILE_FLAG_OPEN_REPARSE_POINT, FILE_WRITE_ATTRIBUTES,
-        },
-    };
-    let mut staged = OpenOptions::new()
-        .access_mode(GENERIC_READ | FILE_WRITE_ATTRIBUTES | DELETE)
-        .share_mode(move_recovery::WINDOWS_CROSS_VOLUME_CANDIDATE_SHARE_MODE)
-        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
-        .open(candidate)
-        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    use windows_sys::Win32::Storage::FileSystem::{FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY};
+    if candidate != record.candidate_path()? {
+        return Err(PlatformError::Io(
+            "metadata preparation requires the private candidate".into(),
+        ));
+    }
     if Some(
-        move_recovery::stable_identity_from_handle(&staged)
+        move_recovery::stable_identity_from_handle(staged)
             .map_err(|error| PlatformError::Io(error.to_string()))?,
     ) != record.candidate_identity
-        || hash_windows_file(&mut staged)? != (record.source_size, record.source_sha256.clone())
+        || hash_windows_file(staged)? != (record.source_size, record.source_sha256.clone())
     {
         return Err(PlatformError::Io(
             "private candidate changed before metadata recovery".into(),
@@ -3182,9 +3176,55 @@ fn reopen_windows_staged_file(
             candidate,
         );
     }
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn reopen_windows_staged_file(
+    candidate: &Path,
+    record: &WindowsCrossVolumeRecord,
+) -> Result<std::fs::File, PlatformError> {
+    use windows_sys::Win32::{
+        Foundation::GENERIC_READ,
+        Storage::FileSystem::{
+            DELETE, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_WRITE_ATTRIBUTES,
+        },
+    };
+    let mut staged = OpenOptions::new()
+        .access_mode(GENERIC_READ | FILE_WRITE_ATTRIBUTES | DELETE)
+        .share_mode(move_recovery::WINDOWS_CROSS_VOLUME_CANDIDATE_SHARE_MODE)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+        .open(candidate)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    prepare_windows_private_candidate_for_reopen(candidate, &mut staged, record)?;
     drop(staged);
     move_recovery::open_reparse_safe_cross_volume_candidate(candidate)
         .map_err(|error| PlatformError::Io(error.to_string()))
+}
+
+#[cfg(target_os = "windows")]
+fn copy_windows_move_source_metadata(
+    source: &Path,
+    source_handle: &mut Option<std::fs::File>,
+    record: &WindowsCrossVolumeRecord,
+    destination: &std::fs::File,
+) -> Result<(), PlatformError> {
+    if source_handle.is_none() {
+        *source_handle = Some(
+            move_recovery::open_reparse_safe_cross_volume_source(source)
+                .map_err(|error| PlatformError::Io(error.to_string()))?,
+        );
+    }
+    let source_handle = source_handle.as_ref().expect("metadata source opened");
+    if move_recovery::stable_identity_from_handle(source_handle)
+        .map_err(|error| PlatformError::Io(error.to_string()))?
+        != record.source_identity
+    {
+        return Err(PlatformError::Io(
+            "source changed before metadata publication".into(),
+        ));
+    }
+    copy_windows_basic_metadata(source_handle, destination)
 }
 
 #[cfg(target_os = "windows")]
@@ -3773,32 +3813,12 @@ fn resume_windows_cross_volume(
                             .into(),
                     });
                 }
-                if recovered_file {
-                    let metadata_error = |error: String| PlatformError::ClaimedRecoveryPending {
-                        transaction: transaction.display().to_string(),
-                        message: format!("staged metadata recovery failed: {error}"),
-                    };
-                    if source_handle.is_none() {
-                        source_handle = Some(
-                            move_recovery::open_reparse_safe_cross_volume_source(&source)
-                                .map_err(|error| metadata_error(error.to_string()))?,
-                        );
-                    }
-                    let source_metadata_handle =
-                        source_handle.as_ref().expect("recovery source opened");
-                    if move_recovery::stable_identity_from_handle(source_metadata_handle)
-                        .map_err(|error| metadata_error(error.to_string()))?
-                        != record.source_identity
-                    {
-                        return Err(PlatformError::ClaimedRecoveryPending {
+                if recovered_file && record.conflict != ConflictAction::Overwrite {
+                    copy_windows_move_source_metadata(&source, &mut source_handle, record, &staged)
+                        .map_err(|error| PlatformError::ClaimedRecoveryPending {
                             transaction: transaction.display().to_string(),
-                            message: "source changed before staged metadata recovery".into(),
-                        });
-                    }
-                    // Also repairs a process exit after the private read-only bit
-                    // was cleared. Never change the source or a published entry.
-                    copy_windows_basic_metadata(source_metadata_handle, &staged)
-                        .map_err(|error| metadata_error(error.to_string()))?;
+                            message: format!("staged metadata recovery failed: {error}"),
+                        })?;
                 }
                 let destination_handle =
                     move_recovery::open_reparse_safe_directory_for_rename(&destination_parent)
@@ -3999,6 +4019,19 @@ fn resume_windows_cross_volume(
                         // Reopening its new pathname would conflict with our own lock.
                         staged
                     } else {
+                        prepare_windows_private_candidate_for_reopen(
+                            &candidate,
+                            &mut staged,
+                            record,
+                        )
+                        .map_err(|error| {
+                            PlatformError::ClaimedRecoveryPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Overwrite candidate metadata preparation failed: {error}"
+                                ),
+                            }
+                        })?;
                         drop(staged);
                         replace_windows_file_retaining_displaced(
                             &target,
@@ -4054,14 +4087,31 @@ fn resume_windows_cross_volume(
                                 .into(),
                         });
                     }
-                    published.sync_all().map_err(|error| {
-                        PlatformError::CommittedCleanupPending {
-                            transaction: transaction.display().to_string(),
-                            message: format!(
-                                "Windows cross-volume Overwrite publication flush failed: {error}"
-                            ),
-                        }
-                    })?;
+                    if record.source_kind == WindowsCrossVolumeSourceKind::File {
+                        copy_windows_move_source_metadata(
+                            &source,
+                            &mut source_handle,
+                            record,
+                            &published,
+                        )
+                        .map_err(|error| {
+                            PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Overwrite source metadata publication failed: {error}"
+                                ),
+                            }
+                        })?;
+                    } else {
+                        published.sync_all().map_err(|error| {
+                            PlatformError::CommittedCleanupPending {
+                                transaction: transaction.display().to_string(),
+                                message: format!(
+                                    "Windows cross-volume Overwrite publication flush failed: {error}"
+                                ),
+                            }
+                        })?;
+                    }
                     let retained_handle = move_recovery::open_reparse_safe_cross_volume_candidate(
                         retained,
                     )
@@ -8731,6 +8781,55 @@ mod windows_source_tests {
                 }
             }
         }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_read_only_overwrite_retains_displaced_file() {
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        let source_fixture = crate::tests::TestDir::new("readonly-overwrite-source");
+        let destination_fixture =
+            crate::tests::TestDir::new_at(&volume, "readonly-overwrite-destination");
+        let source = source_fixture.path().join("entry");
+        let target = destination_fixture.path().join("entry");
+        std::fs::write(&source, b"source-data").unwrap();
+        std::fs::write(&target, b"displaced-data").unwrap();
+        let displaced_identity = move_recovery::stable_identity_of_entry(&target).unwrap();
+        let mut permissions = std::fs::metadata(&source).unwrap().permissions();
+        permissions.set_readonly(true);
+        std::fs::set_permissions(&source, permissions).unwrap();
+        let result = super::move_entry_transactional(
+            &source,
+            destination_fixture.path(),
+            ConflictAction::Overwrite,
+        );
+        if result.is_err() {
+            assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+            assert!(std::fs::metadata(&source).unwrap().permissions().readonly());
+        }
+        let moved = result.expect("Overwrite with a read-only source");
+        assert_eq!(moved.disposition, crate::MoveDisposition::Moved);
+        assert_eq!(moved.published_path.as_deref(), Some(target.as_path()));
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+        assert!(std::fs::metadata(&target).unwrap().permissions().readonly());
+        let retained = moved
+            .retained_displaced_path
+            .expect("retain exact displaced file");
+        assert_eq!(
+            move_recovery::stable_identity_of_entry(&retained).unwrap(),
+            displaced_identity
+        );
+        assert_eq!(std::fs::read(&retained).unwrap(), b"displaced-data");
+        assert!(
+            !std::fs::metadata(&retained)
+                .unwrap()
+                .permissions()
+                .readonly()
+        );
     }
 
     #[cfg(target_os = "windows")]
