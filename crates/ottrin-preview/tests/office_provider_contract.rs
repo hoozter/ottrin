@@ -195,9 +195,12 @@ fn installed_libreoffice_detection_skips_missing_candidates_and_returns_canonica
         std::fs::set_permissions(&executable, std::fs::Permissions::from_mode(0o700))
             .expect("mark executable fixture executable");
     }
+    #[cfg(unix)]
     let alias = root.join("soffice");
     #[cfg(unix)]
     std::os::unix::fs::symlink(&executable, &alias).expect("create executable symlink");
+    #[cfg(not(unix))]
+    let alias = root.join("program/../program/soffice.bin");
 
     let detected = detect_installed_libreoffice_from_candidates(
         &[root.join("missing"), alias],
@@ -213,15 +216,23 @@ fn installed_libreoffice_detection_skips_missing_candidates_and_returns_canonica
 
 #[test]
 fn installed_libreoffice_candidates_include_both_launch_names_from_each_search_directory() {
-    let search_path = std::env::join_paths(["/custom/office/bin", "/secondary/bin"])
-        .expect("construct search path");
+    let root = temp_dir("libreoffice-search-path");
+    let primary = root.join("primary");
+    let secondary = root.join("secondary");
+    let search_path = std::env::join_paths([&primary, &secondary]).expect("construct search path");
 
     let candidates = installed_libreoffice_candidates(Some(&search_path));
 
-    assert!(candidates.contains(&PathBuf::from("/custom/office/bin/libreoffice")));
-    assert!(candidates.contains(&PathBuf::from("/custom/office/bin/soffice")));
-    assert!(candidates.contains(&PathBuf::from("/secondary/bin/libreoffice")));
-    assert!(candidates.contains(&PathBuf::from("/secondary/bin/soffice")));
+    #[cfg(target_os = "windows")]
+    let names = ["soffice.com", "soffice.exe"];
+    #[cfg(not(target_os = "windows"))]
+    let names = ["libreoffice", "soffice"];
+    for directory in [&primary, &secondary] {
+        for name in names {
+            assert!(candidates.contains(&directory.join(name)));
+        }
+    }
+    std::fs::remove_dir_all(root).expect("remove temporary directory");
 }
 
 #[test]

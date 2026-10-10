@@ -241,6 +241,7 @@ pub struct DetectedInstalledLibreOffice {
 }
 
 pub fn installed_libreoffice_candidates(search_path: Option<&std::ffi::OsStr>) -> Vec<PathBuf> {
+    #[cfg(not(target_os = "windows"))]
     let mut candidates = vec![
         PathBuf::from("/usr/bin/libreoffice"),
         PathBuf::from("/usr/bin/soffice"),
@@ -248,11 +249,27 @@ pub fn installed_libreoffice_candidates(search_path: Option<&std::ffi::OsStr>) -
         PathBuf::from("/usr/local/bin/soffice"),
         PathBuf::from("/opt/libreoffice/program/soffice"),
     ];
+    #[cfg(target_os = "windows")]
+    let mut candidates = Vec::new();
+    let launch_names = if cfg!(target_os = "windows") {
+        ["soffice.com", "soffice.exe"]
+    } else {
+        ["libreoffice", "soffice"]
+    };
+    #[cfg(target_os = "windows")]
+    for directory in ["ProgramFiles", "ProgramFiles(x86)"]
+        .into_iter()
+        .filter_map(std::env::var_os)
+        .map(PathBuf::from)
+        .filter(|directory| directory.is_absolute())
+    {
+        let program = directory.join("LibreOffice").join("program");
+        candidates.extend(launch_names.map(|name| program.join(name)));
+    }
     if let Some(search_path) = search_path {
         for directory in std::env::split_paths(search_path) {
             if directory.is_absolute() {
-                candidates.push(directory.join("libreoffice"));
-                candidates.push(directory.join("soffice"));
+                candidates.extend(launch_names.map(|name| directory.join(name)));
             }
         }
     }

@@ -144,6 +144,29 @@ Linux can build the fixture executable with
 Cross-compilation is not native acceptance. Keep the Windows Office provider
 gated until its remaining installed-provider checks pass.
 
+The ignored `windows_installed_office_converts_and_cleans_private_state` fixture
+in `windows_office_boundary_contract` requires a standard Windows LibreOffice
+installation and the packaged PDFium runtime:
+
+```powershell
+$env:OTTRIN_PDFIUM_DIR = "C:\path\to\Ottrin\bin\pdfium"
+cargo test -p ottrin-preview --test windows_office_boundary_contract windows_installed_office_converts_and_cleans_private_state -- --ignored --exact --nocapture
+```
+
+Ordinary-user acceptance with LibreOffice 26.8.1.1 on Windows 11 build 26100
+passed on 2026-10-10 (`installed-office-pdfium.log`). It exercises production
+discovery, DOCX conversion through the Job Object, PDFium page rendering and
+text content, the provider label, unchanged source bytes, private-profile
+cleanup, and pre-cancellation without additional output. Discovery previously
+returned `NotInstalled` despite the installed provider (`installed-office-red.log`);
+Windows now searches the standard Program Files locations and Windows launch
+names. Six focused provider contracts pass on both Linux and native Windows. This bounded baseline
+does not enable the Windows UI or certify all Office formats, in-flight provider
+cancellation, fallback presentation or installer acceptance. An earlier probe
+returned unhealthy; a later unchanged native probe succeeded, so no timeout was
+relaxed. The earlier test's text extractor could not decode the generated PDF's
+Unicode map; the final fixture checks content through the actual PDFium renderer.
+
 ### Windows Move
 
 Run same-volume fixtures on a native Windows NTFS volume as the ordinary test
