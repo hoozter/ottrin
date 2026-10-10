@@ -927,10 +927,10 @@ fn classify_windows_cross_volume_restart<T: Eq>(
 #[cfg(any(target_os = "windows", test))]
 #[allow(
     clippy::too_many_arguments,
-    reason = "the classifier compares four observed identities with three expected identities and the source kind; grouping them would only hide the recovery topology"
+    reason = "the classifier compares four observed identities with three expected identities and the retained-publication policy; grouping them would only hide the recovery topology"
 )]
 fn classify_windows_cross_volume_overwrite_restart<T: Eq>(
-    source_kind: WindowsCrossVolumeSourceKind,
+    retained_publication_allowed: bool,
     source: Option<T>,
     target: Option<T>,
     staged: Option<T>,
@@ -951,15 +951,14 @@ fn classify_windows_cross_volume_overwrite_restart<T: Eq>(
         && retained_displaced.is_none()
     {
         WindowsCrossVolumeRestartAction::PublishStaged
-    } else if source_kind != WindowsCrossVolumeSourceKind::File
+    } else if retained_publication_allowed
         && source.as_ref() == Some(&expected_source)
         && target.is_none()
         && staged.as_ref() == Some(&expected_staged)
         && retained_displaced.as_ref() == Some(&expected_displaced)
     {
-        // Directory/link replacement uses two durable no-replace renames rather than ReplaceFileW.
-        // A restart between retaining the old target and publishing the candidate must finish
-        // publication; the pinned identities make this topology unambiguous.
+        // A directory/link retention gap, or a journaled file-publication
+        // reclaim, can finish without replacing any newly occupied target.
         WindowsCrossVolumeRestartAction::PublishStaged
     } else if source.as_ref() == Some(&expected_source)
         && target.as_ref() == Some(&expected_staged)
@@ -1177,6 +1176,7 @@ impl WindowsOverwriteRecord {
 enum WindowsCrossVolumePhase {
     Prepared,
     Staged,
+    ReclaimingPublication,
     Published,
 }
 
@@ -3090,6 +3090,8 @@ fn start_windows_cross_volume_move(
 enum WindowsMoveBoundary {
     JournalPublished,
     FileReplaced,
+    FilePublicationFlushed,
+    PublicationReclaimed,
     CandidateWritable,
     CandidateUnlocked,
     DisplacedRetained,
@@ -3231,6 +3233,90 @@ fn copy_windows_move_source_metadata(
         ));
     }
     copy_windows_basic_metadata(source_handle, destination)
+}
+
+/// Reclaim only a verified publication while the complete original source is
+/// pinned. Durable intent distinguishes this from an unexplained replacement gap.
+#[cfg(target_os = "windows")]
+fn reclaim_windows_readonly_publication(
+    recovery_root: &Path,
+    record: &mut WindowsCrossVolumeRecord,
+    source_handle: &mut Option<std::fs::File>,
+    target: &Path,
+) -> Result<(), PlatformError> {
+    let source = record.source_path()?;
+    if source_handle.is_none() {
+        *source_handle = Some(
+            move_recovery::open_reparse_safe_cross_volume_source(&source)
+                .map_err(|error| PlatformError::Io(error.to_string()))?,
+        );
+    }
+    let verify = |path: &Path, handle: &mut std::fs::File, expected| -> Result<(), PlatformError> {
+        if move_recovery::stable_identity_from_handle(handle)
+            .map_err(|error| PlatformError::Io(error.to_string()))?
+            != expected
+            || observe_windows_identity(path)? != Some(expected)
+            || !windows_stream_set_is_copy_safe(windows_file_streams(handle)?, false)
+            || hash_windows_file(handle)? != (record.source_size, record.source_sha256.clone())
+        {
+            return Err(PlatformError::Io(format!(
+                "read-only publication recovery lost file certainty: {}",
+                path.display()
+            )));
+        }
+        Ok(())
+    };
+    verify(
+        &source,
+        source_handle.as_mut().expect("recovery source pinned"),
+        record.source_identity,
+    )?;
+    let mut published = move_recovery::open_reparse_safe_cross_volume_verification(target)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    verify(
+        target,
+        &mut published,
+        record
+            .candidate_identity
+            .ok_or_else(|| PlatformError::Io("published candidate identity is missing".into()))?,
+    )?;
+    let transaction = record.transaction_path()?;
+    let destination = record.destination_parent_path()?;
+    let transaction_handle = move_recovery::open_reparse_safe_directory_for_rename(&transaction)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    let destination_handle = move_recovery::open_reparse_safe_directory_for_rename(&destination)
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    for (handle, expected) in [
+        (&transaction_handle, record.transaction_directory_identity),
+        (&destination_handle, record.destination_parent_identity),
+    ] {
+        if move_recovery::stable_identity_from_handle(handle)
+            .map_err(|error| PlatformError::Io(error.to_string()))?
+            != expected
+        {
+            return Err(PlatformError::Io(
+                "publication recovery parent identity changed".into(),
+            ));
+        }
+    }
+    record.phase = WindowsCrossVolumePhase::ReclaimingPublication;
+    persist_windows_cross_volume_record(recovery_root, record)?;
+    rename_windows_handle_no_replace(
+        &published,
+        &transaction_handle,
+        std::ffi::OsStr::new(WINDOWS_CROSS_VOLUME_CANDIDATE_NAME),
+    )?;
+    drop(published);
+    transaction_handle
+        .sync_all()
+        .and_then(|()| destination_handle.sync_all())
+        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    #[cfg(test)]
+    windows_move_boundary(
+        WindowsMoveBoundary::PublicationReclaimed,
+        &record.candidate_path()?,
+    );
+    Ok(())
 }
 
 #[cfg(target_os = "windows")]
@@ -3407,7 +3493,8 @@ fn resume_windows_cross_volume(
             match (record.candidate_identity, record.destination_identity) {
                 (Some(expected_staged), Some(expected_displaced)) => {
                     classify_windows_cross_volume_overwrite_restart(
-                        record.source_kind,
+                        record.source_kind != WindowsCrossVolumeSourceKind::File
+                            || record.phase == WindowsCrossVolumePhase::ReclaimingPublication,
                         source_observed,
                         target_observed,
                         candidate_observed,
@@ -3464,14 +3551,14 @@ fn resume_windows_cross_volume(
                     Ok(_) | Err(_) if record.phase == WindowsCrossVolumePhase::Published => {
                         return Err(PlatformError::CommittedCleanupPending {
                             transaction: transaction.display().to_string(),
-                            message: "Windows cross-volume retained directory contents changed after publication"
+                            message: "Windows cross-volume retained entry contents changed after publication"
                                 .into(),
                         });
                     }
                     Ok(_) | Err(_) => {
                         return Err(PlatformError::ClaimedRecoveryPending {
                             transaction: transaction.display().to_string(),
-                            message: "Windows cross-volume retained directory contents changed before publication"
+                            message: "Windows cross-volume retained entry contents changed before publication"
                                 .into(),
                         });
                     }
@@ -3867,6 +3954,7 @@ fn resume_windows_cross_volume(
                         .as_deref()
                         .expect("validated retained Overwrite path");
                     let mut published = if record.source_kind != WindowsCrossVolumeSourceKind::File
+                        || target_observed.is_none()
                     {
                         let transaction_handle =
                             move_recovery::open_reparse_safe_directory_for_rename(&transaction)
@@ -3908,7 +3996,7 @@ fn resume_windows_cross_volume(
                                 || {
                                     displaced.sync_all().map_err(|error| {
                                         PlatformError::Io(format!(
-                                            "Windows cross-volume retained directory flush failed: {error}"
+                                            "Windows cross-volume retained entry flush failed: {error}"
                                         ))
                                     })?;
                                     destination_handle.sync_all().map_err(|error| {
@@ -3965,14 +4053,14 @@ fn resume_windows_cross_volume(
                                     .map_err(|error| PlatformError::ClaimedRecoveryPending {
                                         transaction: transaction.display().to_string(),
                                         message: format!(
-                                            "Windows cross-volume retained directory could not be locked before recovered publication: {error}"
+                                            "Windows cross-volume retained entry could not be locked before recovered publication: {error}"
                                         ),
                                     })?;
                             retained_handle.sync_all().map_err(|error| {
                                 PlatformError::ClaimedRecoveryPending {
                                     transaction: transaction.display().to_string(),
                                     message: format!(
-                                        "Windows cross-volume retained directory was not durable before recovered publication: {error}"
+                                        "Windows cross-volume retained entry was not durable before recovered publication: {error}"
                                     ),
                                 }
                             })?;
@@ -4007,7 +4095,7 @@ fn resume_windows_cross_volume(
                                 || {
                                     staged.sync_all().map_err(|error| {
                                         PlatformError::Io(format!(
-                                            "Windows cross-volume recovered directory publication flush failed: {error}"
+                                            "Windows cross-volume recovered entry publication flush failed: {error}"
                                         ))
                                     })
                                 },
@@ -4114,6 +4202,8 @@ fn resume_windows_cross_volume(
                                 ),
                             }
                         })?;
+                        #[cfg(test)]
+                        windows_move_boundary(WindowsMoveBoundary::FilePublicationFlushed, &target);
                     } else {
                         published.sync_all().map_err(|error| {
                             PlatformError::CommittedCleanupPending {
@@ -4236,6 +4326,26 @@ fn resume_windows_cross_volume(
                 drop((_retained_source_snapshot, _retained_candidate_snapshot));
             }
             WindowsCrossVolumeRestartAction::FlushPublished => {
+                if record.source_kind == WindowsCrossVolumeSourceKind::File
+                    && std::fs::symlink_metadata(&target)
+                        .map_err(|error| PlatformError::Io(error.to_string()))?
+                        .permissions()
+                        .readonly()
+                {
+                    reclaim_windows_readonly_publication(
+                        recovery_root,
+                        record,
+                        &mut source_handle,
+                        &target,
+                    )
+                    .map_err(|error| {
+                        PlatformError::CommittedCleanupPending {
+                            transaction: transaction.display().to_string(),
+                            message: format!("read-only publication reclaim failed: {error}"),
+                        }
+                    })?;
+                    continue;
+                }
                 let mut published =
                     move_recovery::open_reparse_safe_cross_volume_candidate(&target).map_err(
                         |error| PlatformError::CommittedCleanupPending {
@@ -8821,65 +8931,145 @@ mod windows_source_tests {
         assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
-        let source_fixture = crate::tests::TestDir::new("readonly-publication-source");
-        let destination_fixture =
-            crate::tests::TestDir::new_at(&volume, "readonly-publication-destination");
-        let source = source_fixture.path().join("entry");
-        let target = destination_fixture.path().join("entry");
-        std::fs::write(&source, b"source-data").unwrap();
-        std::fs::write(&target, b"displaced-data").unwrap();
-        let displaced_identity = move_recovery::stable_identity_of_entry(&target).unwrap();
-        let mut permissions = std::fs::metadata(&source).unwrap().permissions();
-        permissions.set_readonly(true);
-        std::fs::set_permissions(&source, permissions).unwrap();
-        let status = std::process::Command::new(std::env::current_exe().unwrap())
+        for boundary in ["FileReplaced", "FilePublicationFlushed"] {
+            let source_fixture = crate::tests::TestDir::new("readonly-publication-source");
+            let destination_fixture =
+                crate::tests::TestDir::new_at(&volume, "readonly-publication-destination");
+            let source = source_fixture.path().join("entry");
+            let target = destination_fixture.path().join("entry");
+            std::fs::write(&source, b"source-data").unwrap();
+            std::fs::write(&target, b"displaced-data").unwrap();
+            let displaced_identity = move_recovery::stable_identity_of_entry(&target).unwrap();
+            let mut permissions = std::fs::metadata(&source).unwrap().permissions();
+            permissions.set_readonly(true);
+            std::fs::set_permissions(&source, permissions).unwrap();
+            let status = std::process::Command::new(std::env::current_exe().unwrap())
             .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_read_only_overwrite_publication_exit_recovers", "--nocapture"])
             .env("OTTRIN_TEST_WINDOWS_OVERWRITE_PUBLICATION_EXIT_CHILD", "1")
-            .env("OTTRIN_TEST_WINDOWS_MOVE_EXIT_BOUNDARY", "FileReplaced")
+            .env("OTTRIN_TEST_WINDOWS_MOVE_EXIT_BOUNDARY", boundary)
             .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE", &source)
             .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION", destination_fixture.path())
             .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", destination_fixture.path().join("move-state"))
             .status().unwrap();
-        assert_eq!(status.code(), Some(87));
-        assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
-        assert!(std::fs::metadata(&source).unwrap().permissions().readonly());
-        assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
-        let transaction = std::fs::read_dir(destination_fixture.path())
-            .unwrap()
-            .map(|entry| entry.unwrap().path())
-            .find(|path| {
-                path.file_name()
+            assert_eq!(status.code(), Some(87));
+            assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+            assert!(std::fs::metadata(&source).unwrap().permissions().readonly());
+            assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+            let transaction = std::fs::read_dir(destination_fixture.path())
+                .unwrap()
+                .map(|entry| entry.unwrap().path())
+                .find(|path| {
+                    path.file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .starts_with(".ottrin-move-")
+                })
+                .unwrap();
+            let retained = transaction.join(super::WINDOWS_RETAINED_NAME);
+            assert_eq!(
+                move_recovery::stable_identity_of_entry(&retained).unwrap(),
+                displaced_identity
+            );
+            assert_eq!(std::fs::read(&retained).unwrap(), b"displaced-data");
+            assert_eq!(
+                std::fs::metadata(&target).unwrap().permissions().readonly(),
+                boundary == "FilePublicationFlushed"
+            );
+            if boundary == "FilePublicationFlushed" {
+                let published_modified = std::fs::metadata(&target).unwrap().modified().unwrap();
+                assert!(
+                    std::process::Command::new("attrib.exe")
+                        .arg("-R")
+                        .arg(&source)
+                        .status()
+                        .unwrap()
+                        .success()
+                );
+                std::fs::write(&source, b"changed-source").unwrap();
+                std::fs::OpenOptions::new()
+                    .write(true)
+                    .open(&source)
                     .unwrap()
-                    .to_string_lossy()
-                    .starts_with(".ottrin-move-")
-            })
-            .unwrap();
-        let retained = transaction.join(super::WINDOWS_RETAINED_NAME);
-        assert_eq!(
-            move_recovery::stable_identity_of_entry(&retained).unwrap(),
-            displaced_identity
-        );
-        assert_eq!(std::fs::read(&retained).unwrap(), b"displaced-data");
-        let moved = super::move_entry_transactional(
-            &source,
-            destination_fixture.path(),
-            ConflictAction::Overwrite,
-        )
-        .expect("resume atomic replacement with source metadata");
-        assert_eq!(moved.disposition, crate::MoveDisposition::Moved);
-        assert_eq!(moved.published_path.as_deref(), Some(target.as_path()));
-        assert_eq!(
-            moved.retained_displaced_path.as_deref(),
-            Some(retained.as_path())
-        );
-        assert!(!source.exists());
-        assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
-        assert!(std::fs::metadata(&target).unwrap().permissions().readonly());
-        assert_eq!(
-            move_recovery::stable_identity_of_entry(&retained).unwrap(),
-            displaced_identity
-        );
-        assert_eq!(std::fs::read(&retained).unwrap(), b"displaced-data");
+                    .set_modified(
+                        std::time::UNIX_EPOCH + std::time::Duration::from_secs(1_600_000_000),
+                    )
+                    .unwrap();
+                let mut permissions = std::fs::metadata(&source).unwrap().permissions();
+                permissions.set_readonly(true);
+                std::fs::set_permissions(&source, permissions).unwrap();
+                assert!(
+                    super::move_entry_transactional(
+                        &source,
+                        destination_fixture.path(),
+                        ConflictAction::Overwrite
+                    )
+                    .is_err()
+                );
+                assert_eq!(std::fs::read(&source).unwrap(), b"changed-source");
+                assert_eq!(
+                    std::fs::metadata(&target).unwrap().modified().unwrap(),
+                    published_modified
+                );
+                assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+                // Restore only this owned fixture before exercising restart.
+                assert!(
+                    std::process::Command::new("attrib.exe")
+                        .arg("-R")
+                        .arg(&source)
+                        .status()
+                        .unwrap()
+                        .success()
+                );
+                std::fs::write(&source, b"source-data").unwrap();
+                let mut permissions = std::fs::metadata(&source).unwrap().permissions();
+                permissions.set_readonly(true);
+                std::fs::set_permissions(&source, permissions).unwrap();
+                let status = std::process::Command::new(std::env::current_exe().unwrap())
+                    .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_read_only_overwrite_publication_exit_recovers", "--nocapture"])
+                    .env("OTTRIN_TEST_WINDOWS_OVERWRITE_PUBLICATION_EXIT_CHILD", "1")
+                    .env("OTTRIN_TEST_WINDOWS_MOVE_EXIT_BOUNDARY", "PublicationReclaimed")
+                    .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE", &source)
+                    .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION", destination_fixture.path())
+                    .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", destination_fixture.path().join("move-state"))
+                    .status().unwrap();
+                assert_eq!(status.code(), Some(87));
+                assert!(!target.exists());
+                let candidate = transaction.join(super::WINDOWS_CROSS_VOLUME_CANDIDATE_NAME);
+                assert_eq!(std::fs::read(&candidate).unwrap(), b"source-data");
+                assert!(
+                    std::fs::metadata(&candidate)
+                        .unwrap()
+                        .permissions()
+                        .readonly()
+                );
+                assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+                assert!(std::fs::metadata(&source).unwrap().permissions().readonly());
+            }
+            let result = super::move_entry_transactional(
+                &source,
+                destination_fixture.path(),
+                ConflictAction::Overwrite,
+            );
+            if result.is_err() {
+                assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+                assert!(std::fs::metadata(&source).unwrap().permissions().readonly());
+            }
+            let moved = result.expect("resume atomic replacement with source metadata");
+            assert_eq!(moved.disposition, crate::MoveDisposition::Moved);
+            assert_eq!(moved.published_path.as_deref(), Some(target.as_path()));
+            assert_eq!(
+                moved.retained_displaced_path.as_deref(),
+                Some(retained.as_path())
+            );
+            assert!(!source.exists());
+            assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+            assert!(std::fs::metadata(&target).unwrap().permissions().readonly());
+            assert_eq!(
+                move_recovery::stable_identity_of_entry(&retained).unwrap(),
+                displaced_identity
+            );
+            assert_eq!(std::fs::read(&retained).unwrap(), b"displaced-data");
+        }
     }
 
     #[cfg(target_os = "windows")]
@@ -10180,7 +10370,7 @@ mod windows_source_tests {
     fn windows_cross_volume_link_overwrite_resumes_after_displaced_retention() {
         assert_eq!(
             classify_windows_cross_volume_overwrite_restart(
-                super::WindowsCrossVolumeSourceKind::SymbolicLink,
+                true,
                 Some(1),
                 None,
                 Some(2),
@@ -10193,7 +10383,7 @@ mod windows_source_tests {
         );
         assert_eq!(
             classify_windows_cross_volume_overwrite_restart(
-                super::WindowsCrossVolumeSourceKind::SymbolicLink,
+                true,
                 Some(1),
                 None,
                 Some(2),
@@ -10213,7 +10403,7 @@ mod windows_source_tests {
         let displaced = 33_u64;
         assert_eq!(
             classify_windows_cross_volume_overwrite_restart(
-                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
                 Some(source),
                 Some(displaced),
                 None,
@@ -10226,7 +10416,7 @@ mod windows_source_tests {
         );
         assert_eq!(
             classify_windows_cross_volume_overwrite_restart(
-                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
                 Some(source),
                 Some(displaced),
                 Some(staged),
@@ -10239,7 +10429,7 @@ mod windows_source_tests {
         );
         assert_eq!(
             classify_windows_cross_volume_overwrite_restart(
-                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
                 Some(source),
                 Some(staged),
                 None,
@@ -10252,7 +10442,7 @@ mod windows_source_tests {
         );
         assert_eq!(
             classify_windows_cross_volume_overwrite_restart(
-                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
                 Some(source),
                 None,
                 Some(staged),
@@ -10266,7 +10456,7 @@ mod windows_source_tests {
         );
         assert_eq!(
             classify_windows_cross_volume_overwrite_restart(
-                super::WindowsCrossVolumeSourceKind::File,
+                false,
                 Some(source),
                 None,
                 Some(staged),
@@ -10276,11 +10466,11 @@ mod windows_source_tests {
                 displaced,
             ),
             WindowsCrossVolumeRestartAction::RetainAmbiguous,
-            "the directory-only intermediate topology must not weaken file replacement recovery",
+            "file replacement without a journaled reclaim must retain ambiguous gaps",
         );
         assert_eq!(
             classify_windows_cross_volume_overwrite_restart(
-                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
                 None,
                 Some(staged),
                 None,
@@ -10293,7 +10483,7 @@ mod windows_source_tests {
         );
         for ambiguous in [
             classify_windows_cross_volume_overwrite_restart(
-                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
                 Some(source),
                 Some(staged),
                 None,
@@ -10303,7 +10493,7 @@ mod windows_source_tests {
                 displaced,
             ),
             classify_windows_cross_volume_overwrite_restart(
-                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
                 Some(source),
                 Some(displaced),
                 Some(displaced),
@@ -10313,7 +10503,7 @@ mod windows_source_tests {
                 displaced,
             ),
             classify_windows_cross_volume_overwrite_restart(
-                super::WindowsCrossVolumeSourceKind::Directory,
+                true,
                 Some(source),
                 Some(staged),
                 Some(staged),

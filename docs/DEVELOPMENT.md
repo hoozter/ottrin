@@ -194,8 +194,12 @@ passes: the same verified private-candidate preparation allows `ReplaceFileW`,
 then source metadata is restored and flushed through the published handle. The
 exact displaced identity, bytes and attributes are retained. A native process exit
 immediately after atomic replacement also recovers source metadata before durability
-confirmation and source cleanup. Read-only destination and remaining publication-
-interruption cases remain pending.
+confirmation and source cleanup. Recovery after the published file becomes read-only
+verifies and pins both copies, journals reclaim intent, and moves the publication back
+to private staging before restoring metadata through a writable handle. A second
+process exit after reclaim also recovers; changed source data refuses recovery without
+altering the published copy. Unexplained replacement gaps remain blocked. Read-only
+destination and remaining interruption cases remain pending.
 The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or
