@@ -7,17 +7,21 @@ source "$ROOT/packaging/package-lifecycle.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 BUILD_DIR="$ROOT/target/release"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
-STAGE="$DIST_DIR/Ottrin-$VERSION-linux-x86_64"
+mkdir -p "$DIST_DIR"
+WORK="$(mktemp -d "$DIST_DIR/.portable.XXXXXX")"
+trap 'rm -rf "$WORK"' EXIT
+STAGE="$WORK/Ottrin-$VERSION-linux-x86_64"
 ARCHIVE="$DIST_DIR/Ottrin-$VERSION-linux-x86_64-portable.tar.gz"
 
 PDFIUM_URL="https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7961/pdfium-linux-x64.tgz"
 PDFIUM_SHA256="019665c8877d46fe65f625f80fd714ab07aac68554b0636acf2a2adf9288adb2"
 
 
-download_verify_and_package_pdfium() {
+download_verify_and_package_pdfium() (
     local target_pdfium_dir="$1"
     local tmp_dir
     tmp_dir="$(mktemp -d)"
+    trap 'rm -rf "$tmp_dir"' EXIT
     local archive="$tmp_dir/pdfium.tgz"
     local extract_dir="$tmp_dir/extract"
     mkdir -p "$extract_dir"
@@ -34,8 +38,7 @@ download_verify_and_package_pdfium() {
     mkdir -p "$target_pdfium_dir/lib"
     cp -a "$extract_dir/lib/." "$target_pdfium_dir/lib/"
     cp -a "$extract_dir/LICENSE" "$extract_dir/licenses" "$target_pdfium_dir/"
-    rm -rf "$tmp_dir"
-}
+)
 
 cd "$ROOT"
 if [[ "${OTTRIN_SKIP_BUILD:-0}" != "1" ]]; then
@@ -44,7 +47,6 @@ if [[ "${OTTRIN_SKIP_BUILD:-0}" != "1" ]]; then
     cargo build --release -p ottrin-preview --bin ottrin-legacy-doc-render
 fi
 
-ottrin_prepare_artifact "$ARCHIVE" "$DIST_DIR/archive"
 rm -rf "$STAGE"
 mkdir -p "$STAGE/bin" "$STAGE/libexec/ottrin" "$STAGE/assets" "$STAGE/docs" \
   "$STAGE/packaging/linux"
@@ -104,7 +106,8 @@ periodic timer or cron job.
 
 EOF
 
-tar -C "$DIST_DIR" -czf "$ARCHIVE" "$(basename "$STAGE")"
+tar -C "$WORK" -czf "$WORK/$(basename "$ARCHIVE")" "$(basename "$STAGE")"
+ottrin_publish_artifact "$WORK/$(basename "$ARCHIVE")" "$ARCHIVE"
 sha256sum "$ARCHIVE" | sed "s|$ARCHIVE|$(basename "$ARCHIVE")|" > "$ARCHIVE.sha256"
 
 printf '%s\n' "$ARCHIVE"

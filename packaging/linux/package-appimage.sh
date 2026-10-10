@@ -6,9 +6,11 @@ source "$ROOT/packaging/linux/bundle-runtime-libs.sh"
 source "$ROOT/packaging/package-lifecycle.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist/packages}"
-ARCHIVE_DIR="${OTTRIN_ARCHIVE_DIR:-$ROOT/dist/archive}"
 BUILD_DIR="$ROOT/target/release"
-APPDIR="$DIST_DIR/AppDir"
+mkdir -p "$DIST_DIR"
+WORK="$(mktemp -d "$DIST_DIR/.appimage.XXXXXX")"
+trap 'rm -rf "$WORK"' EXIT
+APPDIR="$WORK/AppDir"
 APPIMAGE="$DIST_DIR/Ottrin-$VERSION-x86_64.AppImage"
 APPIMAGETOOL="${APPIMAGETOOL:-$ROOT/dist/appimagetool-x86_64.AppImage}"
 APPIMAGETOOL_SHA256="${APPIMAGETOOL_SHA256:-b90f4a8b18967545fda78a445b27680a1642f1ef9488ced28b65398f2be7add2}"
@@ -16,10 +18,11 @@ PDFIUM_URL="https://github.com/bblanchon/pdfium-binaries/releases/download/chrom
 PDFIUM_SHA256="019665c8877d46fe65f625f80fd714ab07aac68554b0636acf2a2adf9288adb2"
 
 
-download_verify_and_package_pdfium() {
+download_verify_and_package_pdfium() (
     local target_pdfium_dir="$1"
     local tmp_dir
     tmp_dir="$(mktemp -d)"
+    trap 'rm -rf "$tmp_dir"' EXIT
     local archive="$tmp_dir/pdfium.tgz"
     local extract_dir="$tmp_dir/extract"
     mkdir -p "$extract_dir"
@@ -36,8 +39,7 @@ download_verify_and_package_pdfium() {
     mkdir -p "$target_pdfium_dir/lib"
     cp -a "$extract_dir/lib/." "$target_pdfium_dir/lib/"
     cp -a "$extract_dir/LICENSE" "$extract_dir/licenses" "$target_pdfium_dir/"
-    rm -rf "$tmp_dir"
-}
+)
 
 cd "$ROOT"
 if [[ "${OTTRIN_SKIP_BUILD:-0}" != "1" ]]; then
@@ -111,8 +113,8 @@ fi
 
 printf '%s  %s\n' "$APPIMAGETOOL_SHA256" "$APPIMAGETOOL" | sha256sum -c -
 
-ottrin_prepare_artifact "$APPIMAGE" "$ARCHIVE_DIR"
-ARCH=x86_64 "$APPIMAGETOOL" "$APPDIR" "$APPIMAGE"
+ARCH=x86_64 "$APPIMAGETOOL" "$APPDIR" "$WORK/$(basename "$APPIMAGE")"
+ottrin_publish_artifact "$WORK/$(basename "$APPIMAGE")" "$APPIMAGE"
 sha256sum "$APPIMAGE" | sed "s|$APPIMAGE|$(basename "$APPIMAGE")|" > "$APPIMAGE.sha256"
 artifact_sha256="$(sha256sum "$APPIMAGE" | awk '{print $1}')"
 revision="$(git -C "$ROOT" rev-parse --verify HEAD)"

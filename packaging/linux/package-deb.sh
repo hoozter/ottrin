@@ -7,7 +7,8 @@ VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
 ARCH="${OTTRIN_DEB_ARCH:-$(dpkg --print-architecture)}"
 OUTPUT="$DIST_DIR/ottrin_${VERSION}_${ARCH}.deb"
-TMP="$(mktemp -d)"
+mkdir -p "$DIST_DIR"
+TMP="$(mktemp -d "$DIST_DIR/.deb.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 PACKAGE_ROOT="$TMP/package"
 
@@ -25,7 +26,7 @@ Description: Fast, keyboard-friendly file manager
  Ottrin is a keyboard-first desktop file manager with Miller, List, and Grid views.
 EOF
 
-ottrin_prepare_artifact "$OUTPUT" "$DIST_DIR/archive"
-dpkg-deb --root-owner-group --build "$PACKAGE_ROOT" "$OUTPUT"
+dpkg-deb --root-owner-group --build "$PACKAGE_ROOT" "$TMP/$(basename "$OUTPUT")"
+ottrin_publish_artifact "$TMP/$(basename "$OUTPUT")" "$OUTPUT"
 sha256sum "$OUTPUT" | sed "s|$OUTPUT|$(basename "$OUTPUT")|" > "$OUTPUT.sha256"
 printf '%s\n' "$OUTPUT"

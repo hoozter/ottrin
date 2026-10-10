@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$ROOT/packaging/package-lifecycle.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
-STAGE="${1:-$DIST_DIR/Ottrin-$VERSION-windows-x64}"
+STAGE="${1:-$DIST_DIR/windows-payload/Ottrin-$VERSION-windows-x64}"
 MAKENSIS="${MAKENSIS:-}"
 
 
@@ -100,16 +100,18 @@ if [[ -z "$MAKENSIS" ]]; then
   fi
 fi
 
-ottrin_prepare_artifact "$INSTALLER" "$DIST_DIR/archive"
+WORK="$(mktemp -d "$DIST_DIR/.windows-installer.XXXXXX")"
+trap 'rm -rf "$WORK"' EXIT
 "$MAKENSIS" \
   "-DVERSION=$VERSION" \
   "-DSTAGE=$STAGE" \
-  "-DOUTPUT=$INSTALLER" \
+  "-DOUTPUT=$WORK/$(basename "$INSTALLER")" \
   "$ROOT/packaging/windows/installer.nsi"
 
-if [[ ! -f "$INSTALLER" ]]; then
+if [[ ! -f "$WORK/$(basename "$INSTALLER")" ]]; then
   printf 'NSIS did not produce the expected installer: %s\n' "$INSTALLER" >&2
   exit 1
 fi
+ottrin_publish_artifact "$WORK/$(basename "$INSTALLER")" "$INSTALLER"
 sha256sum "$INSTALLER" | sed "s|$INSTALLER|$(basename "$INSTALLER")|" > "$INSTALLER.sha256"
 printf '%s\n' "$INSTALLER"

@@ -7,7 +7,8 @@ $Version = if ($env:OTTRIN_VERSION) { $env:OTTRIN_VERSION } else { ($VersionLine
 $Target = if ($env:OTTRIN_TARGET) { $env:OTTRIN_TARGET } else { "x86_64-pc-windows-gnu" }
 $BuildDir = Join-Path $Root "target\$Target\release"
 $DistDir = if ($env:OTTRIN_DIST_DIR) { $env:OTTRIN_DIST_DIR } else { Join-Path $Root "dist" }
-$Stage = Join-Path $DistDir "Ottrin-$Version-windows-x64"
+$StageRoot = Join-Path $DistDir "windows-payload"
+$Stage = Join-Path $StageRoot "Ottrin-$Version-windows-x64"
 $Archive = Join-Path $DistDir "Ottrin-$Version-windows-x64-portable.zip"
 $PdfiumUrl = "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7961/pdfium-win-x64.tgz"
 $PdfiumSha256 = "88276459349b291c41f10422dad0210f007c04d919c8fa56472b6b7c6406adf4"
@@ -152,7 +153,7 @@ Set-Location $Root
 cargo build --release --target $Target -p ottrin-app -p ottrin-platform -p ottrin-search
 
 New-Item -ItemType Directory -Force -Path $DistDir | Out-Null
-Remove-Item -Recurse -Force $Stage -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force $StageRoot -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path "$Stage\bin", "$Stage\assets", "$Stage\docs", "$Stage\third-party-notices" | Out-Null
 
 Copy-Item "$BuildDir\ottrin-app.exe" "$Stage\bin\ottrin.exe"

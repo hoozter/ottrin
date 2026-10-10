@@ -7,7 +7,8 @@ VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 
 TARGET="${OTTRIN_TARGET:-x86_64-pc-windows-gnu}"
 BUILD_DIR="$ROOT/target/$TARGET/release"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
-STAGE="$DIST_DIR/Ottrin-$VERSION-windows-x64"
+STAGE_ROOT="$DIST_DIR/windows-payload"
+STAGE="$STAGE_ROOT/Ottrin-$VERSION-windows-x64"
 ARCHIVE="$DIST_DIR/Ottrin-$VERSION-windows-x64-portable.zip"
 PDFIUM_URL="https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7961/pdfium-win-x64.tgz"
 PDFIUM_SHA256="88276459349b291c41f10422dad0210f007c04d919c8fa56472b6b7c6406adf4"
@@ -122,8 +123,10 @@ cargo build --release --target "$TARGET" -p ottrin-preview --bin ottrin-legacy-d
 "$ROOT/scripts/windows-gui-subsystem-smoke.sh" "$BUILD_DIR/ottrin-app.exe"
 
 mkdir -p "$DIST_DIR"
-ottrin_prepare_artifact "$ARCHIVE" "$DIST_DIR/archive"
-rm -rf "$STAGE"
+WORK="$(mktemp -d "$DIST_DIR/.windows-portable.XXXXXX")"
+WORK="$(cd "$WORK" && pwd)"
+trap 'rm -rf "$WORK"' EXIT
+rm -rf "$STAGE_ROOT"
 mkdir -p "$STAGE/bin" "$STAGE/assets" "$STAGE/docs" "$STAGE/third-party-notices"
 
 cp "$BUILD_DIR/ottrin-app.exe" "$STAGE/bin/ottrin.exe"
@@ -166,7 +169,8 @@ For a user-level recovery override, set `OTTRIN_RENDERER=opengl` before launchin
 Ottrin. The normal default remains WGPU with the system graphics driver.
 EOF
 
-(cd "$DIST_DIR" && zip -qr "$(basename "$ARCHIVE")" "$(basename "$STAGE")")
+(cd "$STAGE_ROOT" && zip -qr "$WORK/$(basename "$ARCHIVE")" "$(basename "$STAGE")")
+ottrin_publish_artifact "$WORK/$(basename "$ARCHIVE")" "$ARCHIVE"
 sha256sum "$ARCHIVE" | sed "s|$ARCHIVE|$(basename "$ARCHIVE")|" > "$ARCHIVE.sha256"
 
 printf '%s\n' "$ARCHIVE"

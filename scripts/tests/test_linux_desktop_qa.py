@@ -18,6 +18,26 @@ qa = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(qa)
 
 
+class DisposableProfileTests(unittest.TestCase):
+    def test_profile_is_removed_on_success_and_failure(self):
+        for fail in (False, True):
+            profiles = []
+            def run(profile):
+                profiles.append(profile)
+                (profile / "fixture").write_bytes(b"disposable")
+                if fail:
+                    raise RuntimeError("fixture failed")
+                return 0
+            with patch.object(qa, "run_qa", side_effect=run):
+                if fail:
+                    with self.assertRaisesRegex(RuntimeError, "fixture failed"):
+                        qa.main()
+                else:
+                    self.assertEqual(qa.main(), 0)
+            self.assertEqual(len(profiles), 1)
+            self.assertFalse(profiles[0].exists())
+
+
 class A11yRegistryPreflightTests(unittest.TestCase):
     def test_disposable_environment_never_inherits_daemon_runtime(self):
         with tempfile.TemporaryDirectory() as root:

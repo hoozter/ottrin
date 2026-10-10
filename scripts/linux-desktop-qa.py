@@ -1078,14 +1078,18 @@ def native_preview_matrix(binary: Path, evidence: Path, qa_root: Path, env: dict
                 os.killpg(process.pid, signal.SIGTERM)
             except ProcessLookupError:
                 pass
-            process.wait(timeout=5)
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid, signal.SIGKILL)
+                process.wait()
             stop_disposable_daemon(qa_root)
             stderr.close()
     (evidence / "native-report.json").write_text(json.dumps({"binary": str(binary), "qa_root": str(qa_root), "checks": results}, indent=2))
     return 0
 
 
-def main() -> int:
+def run_qa(qa_root: Path) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--binary",
@@ -1111,7 +1115,6 @@ def main() -> int:
 
     evidence = args.evidence.resolve()
     evidence.mkdir(parents=True, exist_ok=True)
-    qa_root = Path(tempfile.mkdtemp(prefix="pqa-", dir=Path.cwd() / ".hermes"))
     home = qa_root / "home"
     documents = home / "Documents"
     subfolder = documents / "Subfolder"
@@ -1448,6 +1451,11 @@ def main() -> int:
         stderr.close()
         if not prior_a11y:
             set_a11y(False)
+
+
+def main() -> int:
+    with tempfile.TemporaryDirectory(prefix="pqa-", dir=Path.cwd() / ".hermes") as temporary:
+        return run_qa(Path(temporary))
 
 
 if __name__ == "__main__":

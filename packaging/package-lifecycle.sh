@@ -27,36 +27,14 @@ ottrin_write_source_revision() {
   } > "$destination"
 }
 
-ottrin_archive_predecessor() {
-  local artifact="$1" archive_root="$2"
-  [[ -e "$artifact" || -L "$artifact" ]] || return 0
-  local stamp destination name
-  stamp="${OTTRIN_ARCHIVE_STAMP:-$(date -u +%Y%m%dT%H%M%SZ)}"
-  name="$(basename "$artifact")"
-  destination="$archive_root/$stamp/$name"
-  mkdir -p "$(dirname "$destination")"
-  if [[ -e "$destination" || -L "$destination" ]]; then
-    printf 'Archive destination already exists: %s\n' "$destination" >&2
+# Build candidates beside their destination so replacement is one filesystem rename.
+# A failed build leaves the previous usable artifact and receipts in place.
+ottrin_publish_artifact() {
+  local candidate="$1" artifact="$2"
+  [[ -f "$candidate" && ! -L "$candidate" ]] || {
+    printf 'Package candidate is missing or not a regular file: %s\n' "$candidate" >&2
     return 1
-  fi
-  mv -- "$artifact" "$destination"
-  printf 'Archived predecessor: %s\n' "$destination" >&2
-}
-
-ottrin_prepare_artifact() {
-  local artifact="$1" archive_root="$2"
-  local stamp name predecessor destination
-  stamp="${OTTRIN_ARCHIVE_STAMP:-$(date -u +%Y%m%dT%H%M%SZ)}"
-  for predecessor in "$artifact" "$artifact.sha256" "$artifact.provenance.json"; do
-    [[ -e "$predecessor" || -L "$predecessor" ]] || continue
-    name="$(basename "$predecessor")"
-    destination="$archive_root/$stamp/$name"
-    if [[ -e "$destination" || -L "$destination" ]]; then
-      printf 'Archive destination already exists: %s\n' "$destination" >&2
-      return 1
-    fi
-  done
-  OTTRIN_ARCHIVE_STAMP="$stamp" ottrin_archive_predecessor "$artifact" "$archive_root"
-  OTTRIN_ARCHIVE_STAMP="$stamp" ottrin_archive_predecessor "$artifact.sha256" "$archive_root"
-  OTTRIN_ARCHIVE_STAMP="$stamp" ottrin_archive_predecessor "$artifact.provenance.json" "$archive_root"
+  }
+  mv -f -- "$candidate" "$artifact"
+  rm -f -- "$artifact.sha256" "$artifact.provenance.json"
 }

@@ -12,7 +12,8 @@ command -v rpmbuild >/dev/null 2>&1 || {
   exit 1
 }
 
-TMP="$(mktemp -d)"
+mkdir -p "$DIST_DIR"
+TMP="$(mktemp -d "$DIST_DIR/.rpm.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 TOP="$TMP/rpmbuild"
 STAGE="$TOP/SOURCES/stage"
@@ -67,7 +68,7 @@ rpmbuild --define "_topdir $TOP" -bb "$TOP/SPECS/ottrin.spec"
 RPM="$(find "$TOP/RPMS" -type f -name '*.rpm' -print -quit)"
 test -n "$RPM"
 OUTPUT="$DIST_DIR/$(basename "$RPM")"
-ottrin_prepare_artifact "$OUTPUT" "$DIST_DIR/archive"
-install -m 0644 "$RPM" "$OUTPUT"
+ottrin_publish_artifact "$RPM" "$OUTPUT"
+chmod 0644 "$OUTPUT"
 sha256sum "$OUTPUT" | sed "s|$OUTPUT|$(basename "$OUTPUT")|" > "$OUTPUT.sha256"
 printf '%s\n' "$OUTPUT"

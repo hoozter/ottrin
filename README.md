@@ -24,6 +24,15 @@ Windows portable zip, per-user installer and per-user MSI, plus an unsigned
 macOS app-bundle archive. The Windows MSI and macOS package sources are
 complete, but both remain pending native platform construction and acceptance.
 
+The latest locally verified Linux build is kept at
+`dist/packages/Ottrin-0.1.0-x86_64.AppImage`, with its checksum and source
+provenance beside it. Bash packaging replaces the previous output only after
+building its replacement successfully; it does not retain release archives.
+Packaging stages and desktop QA profiles are disposable and removed when their
+owning operation ends. Windows portable staging uses one managed
+`windows-payload/` folder, replacing its previous contents. Installer and MSI packagers consume it; the full build
+entry point removes it after both finish.
+
 ### Linux
 
 ```sh

@@ -80,6 +80,9 @@ cd "$ROOT"
 export OTTRIN_DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist/packages}"
 mkdir -p "$OTTRIN_DIST_DIR"
 
+WORK="$(mktemp -d)"
+trap 'rm -rf "$WORK"' EXIT
+
 artifacts=()
 linux_helper_artifacts=()
 
@@ -87,7 +90,7 @@ run_packager() {
   local label="$1"
   shift
   local output_file
-  output_file="$(mktemp)"
+  output_file="$(mktemp "$WORK/packager.XXXXXX")"
   printf '\n==> %s\n' "$label"
   "$@" | tee "$output_file"
   local artifact
@@ -144,8 +147,10 @@ if [[ "$build_windows" == true || ( "$build_windows" == auto && "$windows_target
   fi
   run_packager "Building Windows portable zip" "$ROOT/packaging/windows/package-portable.sh"
   if [[ "$build_windows" == true ]]; then
+    windows_stage="$(dirname "${artifacts[-1]}")/windows-payload"
     run_packager "Building Windows NSIS installer" "$ROOT/packaging/windows/package-installer.sh"
     run_packager "Building Windows MSI" "$ROOT/packaging/windows/package-msi.sh"
+    rm -rf "$windows_stage"
   fi
 elif [[ "$build_windows" == auto ]]; then
   printf '\n==> Skipping Windows portable zip; target not installed (%s)\n' "$WINDOWS_TARGET"

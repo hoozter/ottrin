@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$ROOT/packaging/package-lifecycle.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 DIST_DIR="${OTTRIN_DIST_DIR:-$ROOT/dist}"
-STAGE="${1:-$DIST_DIR/Ottrin-$VERSION-windows-x64}"
+STAGE="${1:-$DIST_DIR/windows-payload/Ottrin-$VERSION-windows-x64}"
 WIX="${WIX:-wix}"
 
 
@@ -70,12 +70,14 @@ if ! command -v "$WIX" >/dev/null 2>&1 && [[ ! -x "$WIX" ]]; then
   exit 1
 fi
 
-ottrin_prepare_artifact "$MSI" "$DIST_DIR/archive"
+WORK="$(mktemp -d "$DIST_DIR/.windows-installer.XXXXXX")"
+trap 'rm -rf "$WORK"' EXIT
 "$WIX" build \
   -d "Version=$VERSION" \
   -d "Stage=$STAGE" \
-  -o "$MSI" \
+  -o "$WORK/$(basename "$MSI")" \
   "$ROOT/packaging/windows/installer.wxs"
-[[ -f "$MSI" ]] || { printf 'WiX did not produce the expected MSI: %s\n' "$MSI" >&2; exit 1; }
+[[ -f "$WORK/$(basename "$MSI")" ]] || { printf 'WiX did not produce the expected MSI: %s\n' "$MSI" >&2; exit 1; }
+ottrin_publish_artifact "$WORK/$(basename "$MSI")" "$MSI"
 sha256sum "$MSI" | sed "s|$MSI|$(basename "$MSI")|" > "$MSI.sha256"
 printf '%s\n' "$MSI"

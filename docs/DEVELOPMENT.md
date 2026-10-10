@@ -445,13 +445,13 @@ Windows portable from PowerShell:
 Windows installer from an extracted portable payload (requires NSIS):
 
 ```powershell
-.\packaging\windows\package-installer.ps1 -Stage .\dist\Ottrin-0.1.0-windows-x64
+.\packaging\windows\package-installer.ps1 -Stage .\dist\windows-payload\Ottrin-0.1.0-windows-x64
 ```
 
 Windows MSI from the same extracted portable payload (requires WiX Toolset 5):
 
 ```sh
-./packaging/windows/package-msi.sh ./dist/Ottrin-0.1.0-windows-x64
+./packaging/windows/package-msi.sh ./dist/windows-payload/Ottrin-0.1.0-windows-x64
 ```
 
 Linux portable, AppImage, `.deb`, and `.rpm` package sources are available. Windows has portable zip, NSIS per-user installer, and per-user MSI package sources. macOS has an unsigned app-bundle ZIP package source. Native Windows MSI and macOS archive construction plus install/launch/platform acceptance remain pending on their target systems. Exact native package installation and desktop acceptance remain part of the final Linux candidate pass.
