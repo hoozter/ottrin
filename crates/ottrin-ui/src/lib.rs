@@ -942,7 +942,7 @@ fn windows_retained_move_activity(
         transaction_id: transaction.transaction_id,
         phase: match transaction.kind {
             WindowsMoveTransactionKind::SameVolumeOverwrite => "same-volume overwrite",
-            WindowsMoveTransactionKind::CrossVolume => "cross-volume recovery disabled",
+            WindowsMoveTransactionKind::CrossVolume => "cross-volume",
         },
         recovery_available: transaction.recovery_available,
     }
@@ -25829,7 +25829,16 @@ mod tests {
         assert!(same_volume.recovery_available);
         assert_eq!(same_volume.phase, "same-volume overwrite");
         assert!(!cross_volume.recovery_available);
-        assert_eq!(cross_volume.phase, "cross-volume recovery disabled");
+        assert_eq!(cross_volume.phase, "cross-volume");
+        let available_cross_volume = windows_retained_move_activity(
+            ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction {
+                transaction_id: [0x33; 16],
+                kind: WindowsMoveTransactionKind::CrossVolume,
+                recovery_available: true,
+            },
+        );
+        assert!(available_cross_volume.recovery_available);
+        assert_eq!(available_cross_volume.phase, "cross-volume");
     }
 
     #[test]
