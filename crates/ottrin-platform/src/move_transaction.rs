@@ -2338,12 +2338,13 @@ fn restrict_windows_transaction_directory(path: &Path) -> Result<(), PlatformErr
 fn write_windows_record_file<T: serde::Serialize>(
     path: &Path,
     record: &T,
+    create_only: bool,
 ) -> Result<(), PlatformError> {
     let bytes = serde_json::to_vec(record).map_err(|error| PlatformError::Io(error.to_string()))?;
     let parent = path
         .parent()
         .ok_or_else(|| PlatformError::Io("journal has no parent".to_string()))?;
-    if !path.exists() {
+    if create_only || !path.exists() {
         let mut file = OpenOptions::new()
             .create_new(true)
             .write(true)
@@ -2404,8 +2405,12 @@ fn persist_windows_overwrite_record(
 ) -> Result<(), PlatformError> {
     let transaction_id = record.transaction_id()?;
     let local = record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME);
-    write_windows_record_file(&local, record)?;
-    write_windows_record_file(&windows_journal_path(recovery_root, transaction_id), record)
+    write_windows_record_file(&local, record, false)?;
+    write_windows_record_file(
+        &windows_journal_path(recovery_root, transaction_id),
+        record,
+        false,
+    )
 }
 
 #[cfg(target_os = "windows")]
@@ -2566,10 +2571,12 @@ fn persist_windows_cross_volume_record(
     write_windows_record_file(
         &windows_cross_volume_journal_path(recovery_root, transaction_id),
         record,
+        false,
     )?;
     write_windows_record_file(
         &record.transaction_path()?.join(WINDOWS_LOCAL_JOURNAL_NAME),
         record,
+        false,
     )
 }
 
@@ -3343,50 +3350,62 @@ fn resume_windows_cross_volume(
 ) -> Result<MovePublication, PlatformError> {
     let mut staged_handle = None;
     let transaction = record.transaction_path()?;
-    let local_bytes =
-        std::fs::read(transaction.join(WINDOWS_LOCAL_JOURNAL_NAME)).map_err(|error| {
-            PlatformError::ClaimedRecoveryPending {
+    let local_path = transaction.join(WINDOWS_LOCAL_JOURNAL_NAME);
+    let local = match std::fs::read(&local_path) {
+        Ok(bytes) => Some(
+            serde_json::from_slice::<WindowsCrossVolumeRecord>(&bytes).map_err(|error| {
+                PlatformError::ClaimedRecoveryPending {
+                    transaction: transaction.display().to_string(),
+                    message: format!("Windows cross-volume local journal is invalid: {error}"),
+                }
+            })?,
+        ),
+        Err(error)
+            if error.kind() == std::io::ErrorKind::NotFound
+                && record.phase == WindowsCrossVolumePhase::Prepared
+                && record.candidate_identity.is_none() =>
+        {
+            None
+        }
+        Err(error) => {
+            return Err(PlatformError::ClaimedRecoveryPending {
                 transaction: transaction.display().to_string(),
                 message: format!("Windows cross-volume local journal read failed: {error}"),
-            }
-        })?;
-    let local: WindowsCrossVolumeRecord =
-        serde_json::from_slice(&local_bytes).map_err(|error| {
-            PlatformError::ClaimedRecoveryPending {
+            });
+        }
+    };
+    if let Some(local) = &local {
+        if !record.same_transaction_evidence(local) {
+            return Err(PlatformError::ClaimedRecoveryPending {
                 transaction: transaction.display().to_string(),
-                message: format!("Windows cross-volume local journal is invalid: {error}"),
-            }
-        })?;
-    if !record.same_transaction_evidence(&local) {
-        return Err(PlatformError::ClaimedRecoveryPending {
+                message: "Windows cross-volume durable journals disagree".into(),
+            });
+        }
+        let reconciled_targets = reconcile_windows_rename_candidates(
+            record.conflict,
+            &record.target_candidates,
+            &local.target_candidates,
+        )
+        .ok_or_else(|| PlatformError::ClaimedRecoveryPending {
             transaction: transaction.display().to_string(),
-            message: "Windows cross-volume durable journals disagree".into(),
-        });
-    }
-    let reconciled_targets = reconcile_windows_rename_candidates(
-        record.conflict,
-        &record.target_candidates,
-        &local.target_candidates,
-    )
-    .ok_or_else(|| PlatformError::ClaimedRecoveryPending {
-        transaction: transaction.display().to_string(),
-        message: "Windows cross-volume target candidate journals disagree".into(),
-    })?;
-    let journals_need_convergence = record.target_candidates != reconciled_targets
-        || local.target_candidates != reconciled_targets;
-    record.target_candidates = reconciled_targets;
-    if record.candidate_identity.is_none() {
-        record.candidate_identity = local.candidate_identity;
-    }
-    if journals_need_convergence {
-        persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
-            PlatformError::ClaimedRecoveryPending {
-                transaction: transaction.display().to_string(),
-                message: format!(
-                    "Windows cross-volume candidate journal convergence failed: {error}"
-                ),
-            }
+            message: "Windows cross-volume target candidate journals disagree".into(),
         })?;
+        let journals_need_convergence = record.target_candidates != reconciled_targets
+            || local.target_candidates != reconciled_targets;
+        record.target_candidates = reconciled_targets;
+        if record.candidate_identity.is_none() {
+            record.candidate_identity = local.candidate_identity;
+        }
+        if journals_need_convergence {
+            persist_windows_cross_volume_record(recovery_root, record).map_err(|error| {
+                PlatformError::ClaimedRecoveryPending {
+                    transaction: transaction.display().to_string(),
+                    message: format!(
+                        "Windows cross-volume candidate journal convergence failed: {error}"
+                    ),
+                }
+            })?;
+        }
     }
     let source = record.source_path()?;
     let source_parent = source
@@ -3442,6 +3461,45 @@ fn resume_windows_cross_volume(
                 ),
             });
         }
+    }
+
+    if local.is_none() {
+        // The central Prepared intent is written first. A process can stop before
+        // the local counterpart exists, but no payload work is then authorized.
+        // Complete only that empty, identity-bound transaction, never a later
+        // missing journal or an occupied name.
+        use windows_sys::Win32::Foundation::{GENERIC_READ, GENERIC_WRITE};
+        use windows_sys::Win32::Storage::FileSystem::{
+            DELETE, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ,
+            FILE_SHARE_WRITE,
+        };
+        let directory = OpenOptions::new()
+            .access_mode(GENERIC_READ | GENERIC_WRITE | DELETE)
+            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
+            .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
+            .open(&transaction)
+            .map_err(|error| PlatformError::ClaimedRecoveryPending {
+                transaction: transaction.display().to_string(),
+                message: format!(
+                    "Windows initial journal repair could not pin its directory: {error}"
+                ),
+            })?;
+        if move_recovery::stable_identity_from_handle(&directory)
+            .map_err(|error| PlatformError::Io(error.to_string()))?
+            != record.transaction_directory_identity
+            || !windows_directory_children(&directory)?.is_empty()
+            || observe_windows_identity(&source)? != Some(record.source_identity)
+            || observe_windows_identity(&target)? != record.destination_identity
+            || (record.source_kind == WindowsCrossVolumeSourceKind::Directory
+                && observe_windows_identity(&claimed_directory_source)?.is_some())
+        {
+            return Err(PlatformError::ClaimedRecoveryPending {
+                transaction: transaction.display().to_string(),
+                message: "Windows incomplete initial journal pair has changed or staged entries"
+                    .into(),
+            });
+        }
+        write_windows_record_file(&local_path, record, true)?;
     }
 
     loop {
@@ -9982,7 +10040,14 @@ mod windows_source_tests {
         assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
-        for boundary in ["CandidatePublished", "SourceClaimed"] {
+        for boundary in [
+            "JournalPublished",
+            "CandidateUnlocked",
+            "CandidatePublished",
+            "BeforeSourceCleanup",
+            "SourceUnlocked",
+            "SourceClaimed",
+        ] {
             let source_fixture = crate::tests::TestDir::new("directory-exit-source");
             let destination_fixture =
                 crate::tests::TestDir::new_at(&volume, "directory-exit-destination");
@@ -9999,10 +10064,14 @@ mod windows_source_tests {
                 .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", destination_fixture.path().join("move-state"))
                 .status().unwrap();
             assert_eq!(status.code(), Some(87), "child must exit at {boundary}");
-            assert_eq!(
-                std::fs::read(target.join("nested/payload")).unwrap(),
-                b"interrupted directory data"
-            );
+            if matches!(boundary, "JournalPublished" | "CandidateUnlocked") {
+                assert!(!target.exists(), "{boundary} must precede publication");
+            } else {
+                assert_eq!(
+                    std::fs::read(target.join("nested/payload")).unwrap(),
+                    b"interrupted directory data"
+                );
+            }
             let source_copies = std::fs::read_dir(source_fixture.path())
                 .unwrap()
                 .map(|entry| entry.unwrap().path().join("nested/payload"))
@@ -10017,6 +10086,72 @@ mod windows_source_tests {
                 std::fs::read(&source_copies[0]).unwrap(),
                 b"interrupted directory data"
             );
+            if matches!(boundary, "JournalPublished" | "CandidatePublished") {
+                let transaction = std::fs::read_dir(destination_fixture.path())
+                    .unwrap()
+                    .map(|entry| entry.unwrap().path())
+                    .find(|path| {
+                        path.file_name()
+                            .unwrap()
+                            .to_string_lossy()
+                            .starts_with(".ottrin-move-")
+                    })
+                    .unwrap();
+                let local = transaction.join(super::WINDOWS_LOCAL_JOURNAL_NAME);
+                if boundary == "JournalPublished" {
+                    assert!(!local.exists());
+                    let unexpected = transaction.join("unexpected");
+                    std::fs::write(&unexpected, b"keep unknown data").unwrap();
+                    let refused = super::move_entry_transactional(
+                        &source,
+                        destination_fixture.path(),
+                        ConflictAction::Rename,
+                    );
+                    assert!(
+                        matches!(
+                            &refused,
+                            Err(super::PlatformError::ClaimedRecoveryPending { .. })
+                        ),
+                        "unexpected refusal at {boundary}: {:?}",
+                        refused.as_ref().err()
+                    );
+                    assert!(
+                        !local.exists(),
+                        "occupied initial transaction must not be repaired"
+                    );
+                    assert_eq!(std::fs::read(&unexpected).unwrap(), b"keep unknown data");
+                    std::fs::remove_file(unexpected).unwrap();
+                } else {
+                    let local_bytes = std::fs::read(&local).unwrap();
+                    std::fs::remove_file(&local).unwrap();
+                    let refused = super::move_entry_transactional(
+                        &source,
+                        destination_fixture.path(),
+                        ConflictAction::Rename,
+                    );
+                    assert!(
+                        matches!(
+                            &refused,
+                            Err(super::PlatformError::ClaimedRecoveryPending { .. })
+                        ),
+                        "unexpected refusal at {boundary}: {:?}",
+                        refused.as_ref().err()
+                    );
+                    assert!(
+                        !local.exists(),
+                        "a later missing journal must not be recreated"
+                    );
+                    assert_eq!(
+                        std::fs::read(target.join("nested/payload")).unwrap(),
+                        b"interrupted directory data"
+                    );
+                    std::fs::write(local, local_bytes).unwrap();
+                }
+                assert_eq!(
+                    std::fs::read(&source_copies[0]).unwrap(),
+                    b"interrupted directory data"
+                );
+            }
             let publication = super::move_entry_transactional(
                 &source,
                 destination_fixture.path(),
@@ -10252,7 +10387,7 @@ mod windows_source_tests {
             let fixture = crate::tests::TestDir::new("journal-namespace");
             let journal = fixture.path().join("journal");
             if replace {
-                super::write_windows_record_file(&journal, &1_u32).unwrap();
+                super::write_windows_record_file(&journal, &1_u32, false).unwrap();
             }
             let guard = Rc::new(RefCell::new(None));
             let callback_guard = guard.clone();
@@ -10281,7 +10416,7 @@ mod windows_source_tests {
                     }
                 }));
             });
-            let result = super::write_windows_record_file(&journal, &2_u32);
+            let result = super::write_windows_record_file(&journal, &2_u32, false);
             assert!(
                 guard.borrow().is_some(),
                 "exercise journal publication boundary"
@@ -10292,7 +10427,7 @@ mod windows_source_tests {
             }
             drop(reset);
             drop(guard.borrow_mut().take());
-            super::write_windows_record_file(&journal, &3_u32)
+            super::write_windows_record_file(&journal, &3_u32, false)
                 .expect("retry after directory sharing is restored");
             assert_eq!(std::fs::read(&journal).unwrap(), b"3");
         }

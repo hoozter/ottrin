@@ -214,8 +214,16 @@ retry both refuse without changing journal/source/target bytes. Killing that own
 releases the Windows share reservation; recovery then completes with exact displaced
 identity/data retention and remains idempotent (`recovery-owner.log`). The fixture
 uses readiness signaling and bounded polling, and kills only its own child process.
-This is process-death acceptance, not power loss. Remaining interruption, filesystem
-and packaged cases stay pending.
+Directory recovery also passes process exits at initial journal publication, candidate
+unlock/publication, before source cleanup, source unlock and source claim. The initial
+journal case exposed a central intent with no local counterpart. Recovery now completes
+only an empty, identity-bound `Prepared` transaction with no candidate; it pins the
+transaction directory and creates the local journal without replacing a name. Unexpected
+staged data and a local journal missing after publication remain refused. Native evidence
+is in `directory-boundaries.log` (RED), `directory-boundaries-pin.log` (GREEN) and
+`directory-regression.log` (18 cross-volume, ten same-volume and one namespace-flush
+check passing). This is process-death acceptance, not power loss. Filesystem and
+packaged cases stay pending.
 The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or
