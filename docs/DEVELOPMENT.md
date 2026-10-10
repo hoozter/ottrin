@@ -133,6 +133,18 @@ source-substitution refusal, conflict handling and dangling links. Their passing
 results do not certify crash/power-loss recovery, adverse ACL/sharing scenarios,
 other filesystems, retained-transaction lifecycle or packaged operation.
 
+Journal creation and replacement flush both file contents and the parent namespace
+before reporting persistence. `ReplaceFileW` has no supported write-through flag;
+see [its native API contract](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew).
+A native fixture blocks the directory flush after journal publication and verifies
+failure propagation and retry after sharing is restored:
+
+```powershell
+cargo test -p ottrin-platform windows_native_move_journal_requires_namespace_flush
+```
+
+This verifies issued flushes and error handling, not physical power-loss survival.
+
 Locked-directory verification can be checked independently:
 
 ```powershell

@@ -52,8 +52,7 @@ use windows_sys::Win32::Storage::FileSystem::{
     FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE, FILE_DISPOSITION_FLAG_POSIX_SEMANTICS,
     FILE_DISPOSITION_INFO_EX, FILE_ID_BOTH_DIR_INFO, FILE_STREAM_INFO, FileBasicInfo,
     FileDispositionInfoEx, FileIdBothDirectoryInfo, FileIdBothDirectoryRestartInfo, FileStreamInfo,
-    GetFileInformationByHandleEx, REPLACEFILE_WRITE_THROUGH, ReplaceFileW,
-    SetFileInformationByHandle,
+    GetFileInformationByHandleEx, ReplaceFileW, SetFileInformationByHandle,
 };
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
@@ -1066,8 +1065,6 @@ const WINDOWS_REPLACEMENT_NAME: &str = "replacement";
 const WINDOWS_RETAINED_NAME: &str = "retained-displaced";
 #[cfg(any(target_os = "windows", test))]
 const WINDOWS_LOCAL_JOURNAL_NAME: &str = "journal";
-#[cfg(any(target_os = "windows", test))]
-const WINDOWS_OVERWRITE_REPLACE_FLAGS: u32 = 0x0000_0001;
 #[cfg(any(target_os = "windows", test))]
 const WINDOWS_CROSS_VOLUME_CANDIDATE_NAME: &str = "candidate";
 #[cfg(target_os = "windows")]
@@ -2336,6 +2333,9 @@ fn write_windows_record_file<T: serde::Serialize>(
     record: &T,
 ) -> Result<(), PlatformError> {
     let bytes = serde_json::to_vec(record).map_err(|error| PlatformError::Io(error.to_string()))?;
+    let parent = path
+        .parent()
+        .ok_or_else(|| PlatformError::Io("journal has no parent".to_string()))?;
     if !path.exists() {
         let mut file = OpenOptions::new()
             .create_new(true)
@@ -2345,42 +2345,49 @@ fn write_windows_record_file<T: serde::Serialize>(
         file.write_all(&bytes)
             .and_then(|()| file.sync_all())
             .map_err(|error| PlatformError::Io(error.to_string()))?;
-        return Ok(());
+    } else {
+        let mut temp_id = [0_u8; 16];
+        getrandom::fill(&mut temp_id).map_err(|error| PlatformError::Io(error.to_string()))?;
+        let temporary = parent.join(format!("journal.next-{}", encode_transaction_id(temp_id)));
+        let mut file = OpenOptions::new()
+            .create_new(true)
+            .write(true)
+            .open(&temporary)
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        file.write_all(&bytes)
+            .and_then(|()| file.sync_all())
+            .map_err(|error| PlatformError::Io(error.to_string()))?;
+        drop(file);
+        let path_wide = windows_wide_path(path)?;
+        let temporary_wide = windows_wide_path(&temporary)?;
+        if unsafe {
+            ReplaceFileW(
+                path_wide.as_ptr(),
+                temporary_wide.as_ptr(),
+                ptr::null(),
+                0,
+                ptr::null(),
+                ptr::null(),
+            )
+        } == 0
+        {
+            return Err(PlatformError::Io(format!(
+                "durable journal replacement failed: {}",
+                std::io::Error::last_os_error()
+            )));
+        }
     }
-    let parent = path
-        .parent()
-        .ok_or_else(|| PlatformError::Io("journal has no parent".to_string()))?;
-    let mut temp_id = [0_u8; 16];
-    getrandom::fill(&mut temp_id).map_err(|error| PlatformError::Io(error.to_string()))?;
-    let temporary = parent.join(format!("journal.next-{}", encode_transaction_id(temp_id)));
-    let mut file = OpenOptions::new()
-        .create_new(true)
-        .write(true)
-        .open(&temporary)
-        .map_err(|error| PlatformError::Io(error.to_string()))?;
-    file.write_all(&bytes)
-        .and_then(|()| file.sync_all())
-        .map_err(|error| PlatformError::Io(error.to_string()))?;
-    drop(file);
-    let path_wide = windows_wide_path(path)?;
-    let temporary_wide = windows_wide_path(&temporary)?;
-    if unsafe {
-        ReplaceFileW(
-            path_wide.as_ptr(),
-            temporary_wide.as_ptr(),
-            ptr::null(),
-            REPLACEFILE_WRITE_THROUGH,
-            ptr::null(),
-            ptr::null(),
-        )
-    } == 0
-    {
-        return Err(PlatformError::Io(format!(
-            "durable journal replacement failed: {}",
-            std::io::Error::last_os_error()
-        )));
-    }
-    Ok(())
+    #[cfg(test)]
+    windows_move_boundary(WindowsMoveBoundary::JournalPublished, path);
+    // ReplaceFileW's REPLACEFILE_WRITE_THROUGH flag is unsupported. Both new
+    // journal names and replacement names require an explicit namespace flush.
+    let directory =
+        move_recovery::open_reparse_safe_directory_for_rename(parent).map_err(|error| {
+            PlatformError::Io(format!("journal namespace flush open failed: {error}"))
+        })?;
+    directory
+        .sync_all()
+        .map_err(|error| PlatformError::Io(format!("journal namespace flush failed: {error}")))
 }
 
 #[cfg(target_os = "windows")]
@@ -3080,7 +3087,8 @@ fn start_windows_cross_volume_move(
 
 #[cfg(all(target_os = "windows", test))]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum WindowsCrossVolumeMoveBoundary {
+enum WindowsMoveBoundary {
+    JournalPublished,
     CandidateWritable,
     CandidateUnlocked,
     DisplacedRetained,
@@ -3091,25 +3099,25 @@ enum WindowsCrossVolumeMoveBoundary {
 }
 
 #[cfg(all(target_os = "windows", test))]
-type WindowsCrossVolumeMoveHook = Box<dyn FnMut(WindowsCrossVolumeMoveBoundary, &Path)>;
+type WindowsMoveHook = Box<dyn FnMut(WindowsMoveBoundary, &Path)>;
 
 #[cfg(all(target_os = "windows", test))]
 thread_local! {
-    static WINDOWS_CROSS_VOLUME_MOVE_HOOK: std::cell::RefCell<Option<WindowsCrossVolumeMoveHook>> = const {
+    static WINDOWS_MOVE_HOOK: std::cell::RefCell<Option<WindowsMoveHook>> = const {
         std::cell::RefCell::new(None)
     };
 }
 
 #[cfg(all(target_os = "windows", test))]
-fn windows_cross_volume_move_boundary(boundary: WindowsCrossVolumeMoveBoundary, path: &Path) {
-    if std::env::var("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_BOUNDARY")
+fn windows_move_boundary(boundary: WindowsMoveBoundary, path: &Path) {
+    if std::env::var("OTTRIN_TEST_WINDOWS_MOVE_EXIT_BOUNDARY")
         .ok()
         .as_deref()
         == Some(format!("{boundary:?}").as_str())
     {
         std::process::exit(87);
     }
-    WINDOWS_CROSS_VOLUME_MOVE_HOOK.with(|hook| {
+    WINDOWS_MOVE_HOOK.with(|hook| {
         if let Some(hook) = hook.borrow_mut().as_mut() {
             hook(boundary, path);
         }
@@ -3171,10 +3179,7 @@ fn prepare_windows_private_candidate_for_reopen(
             )));
         }
         #[cfg(test)]
-        windows_cross_volume_move_boundary(
-            WindowsCrossVolumeMoveBoundary::CandidateWritable,
-            candidate,
-        );
+        windows_move_boundary(WindowsMoveBoundary::CandidateWritable, candidate);
     }
     Ok(())
 }
@@ -3847,10 +3852,7 @@ fn resume_windows_cross_volume(
                 if record.source_kind == WindowsCrossVolumeSourceKind::Directory {
                     drop(_retained_candidate_snapshot.take());
                     #[cfg(test)]
-                    windows_cross_volume_move_boundary(
-                        WindowsCrossVolumeMoveBoundary::CandidateUnlocked,
-                        &candidate,
-                    );
+                    windows_move_boundary(WindowsMoveBoundary::CandidateUnlocked, &candidate);
                 }
                 let publication = if record.conflict == ConflictAction::Overwrite {
                     let retained = retained_displaced
@@ -3912,8 +3914,8 @@ fn resume_windows_cross_volume(
                                         ))
                                     })?;
                                     #[cfg(test)]
-                                    windows_cross_volume_move_boundary(
-                                        WindowsCrossVolumeMoveBoundary::DisplacedRetained,
+                                    windows_move_boundary(
+                                        WindowsMoveBoundary::DisplacedRetained,
                                         retained,
                                     );
                                     Ok(())
@@ -4219,10 +4221,7 @@ fn resume_windows_cross_volume(
                 })?;
                 #[cfg(test)]
                 if record.source_kind == WindowsCrossVolumeSourceKind::Directory {
-                    windows_cross_volume_move_boundary(
-                        WindowsCrossVolumeMoveBoundary::CandidatePublished,
-                        &target,
-                    );
+                    windows_move_boundary(WindowsMoveBoundary::CandidatePublished, &target);
                 }
                 drop((_retained_source_snapshot, _retained_candidate_snapshot));
             }
@@ -4417,10 +4416,7 @@ fn resume_windows_cross_volume(
             }
             WindowsCrossVolumeRestartAction::RemoveSource => {
                 #[cfg(test)]
-                windows_cross_volume_move_boundary(
-                    WindowsCrossVolumeMoveBoundary::BeforeSourceCleanup,
-                    &target,
-                );
+                windows_move_boundary(WindowsMoveBoundary::BeforeSourceCleanup, &target);
                 let cleanup_error = |message: String| PlatformError::CommittedCleanupPending {
                     transaction: transaction.display().to_string(),
                     message,
@@ -4586,10 +4582,7 @@ fn resume_windows_cross_volume(
                             // identity/content manifest before removing any entry.
                             drop(source_snapshot);
                             #[cfg(test)]
-                            windows_cross_volume_move_boundary(
-                                WindowsCrossVolumeMoveBoundary::SourceUnlocked,
-                                &source,
-                            );
+                            windows_move_boundary(WindowsMoveBoundary::SourceUnlocked, &source);
                             rename_windows_handle_no_replace(
                                 retained_source,
                                 &source_parent_handle,
@@ -4616,8 +4609,8 @@ fn resume_windows_cross_volume(
                                 }
                             })?;
                             #[cfg(test)]
-                            windows_cross_volume_move_boundary(
-                                WindowsCrossVolumeMoveBoundary::SourceClaimed,
+                            windows_move_boundary(
+                                WindowsMoveBoundary::SourceClaimed,
                                 &claimed_directory_source,
                             );
                             continue;
@@ -5135,7 +5128,7 @@ fn replace_windows_file_retaining_displaced(
             target_wide.as_ptr(),
             replacement_wide.as_ptr(),
             retained_wide.as_ptr(),
-            WINDOWS_OVERWRITE_REPLACE_FLAGS,
+            0,
             ptr::null(),
             ptr::null(),
         )
@@ -7786,15 +7779,15 @@ pub(super) fn move_entry_transactional_with_test_hook(
 mod windows_source_tests {
     use super::{
         WINDOWS_INCOMPLETE_STAGING_DISPOSITION_FLAGS, WINDOWS_LOCAL_JOURNAL_NAME,
-        WINDOWS_OVERWRITE_REPLACE_FLAGS, WINDOWS_RECOVERY_LOCK_SHARE_MODE,
-        WindowsCrossVolumePreflight, WindowsCrossVolumeRestartAction,
-        WindowsIncompleteStagingEntryKind, WindowsJournalKind, WindowsMoveRoute,
-        WindowsOverwriteRestartAction, WindowsReplaceTopology, WindowsSourceRemovalDecision,
-        classify_windows_cross_volume_overwrite_restart, classify_windows_cross_volume_preflight,
-        classify_windows_cross_volume_restart, classify_windows_directory_cleanup_topology,
-        classify_windows_directory_slice_action, classify_windows_incomplete_directory_candidate,
-        classify_windows_overwrite_restart, classify_windows_replace_topology,
-        classify_windows_source_removal, cleanup_windows_cross_volume_transaction_with,
+        WINDOWS_RECOVERY_LOCK_SHARE_MODE, WindowsCrossVolumePreflight,
+        WindowsCrossVolumeRestartAction, WindowsIncompleteStagingEntryKind, WindowsJournalKind,
+        WindowsMoveRoute, WindowsOverwriteRestartAction, WindowsReplaceTopology,
+        WindowsSourceRemovalDecision, classify_windows_cross_volume_overwrite_restart,
+        classify_windows_cross_volume_preflight, classify_windows_cross_volume_restart,
+        classify_windows_directory_cleanup_topology, classify_windows_directory_slice_action,
+        classify_windows_incomplete_directory_candidate, classify_windows_overwrite_restart,
+        classify_windows_replace_topology, classify_windows_source_removal,
+        cleanup_windows_cross_volume_transaction_with,
         complete_windows_cross_volume_source_removal_with,
         flush_windows_cross_volume_recovered_publication_with, next_windows_rename_candidate,
         parse_windows_journal_name, publish_windows_cross_volume_candidate_with,
@@ -7815,7 +7808,7 @@ mod windows_source_tests {
     #[cfg(target_os = "windows")]
     impl Drop for WindowsMoveHookReset {
         fn drop(&mut self) {
-            super::WINDOWS_CROSS_VOLUME_MOVE_HOOK.with(|hook| *hook.borrow_mut() = None);
+            super::WINDOWS_MOVE_HOOK.with(|hook| *hook.borrow_mut() = None);
         }
     }
 
@@ -9027,9 +9020,9 @@ mod windows_source_tests {
                 );
             } else {
                 let callback_writer = writer.clone();
-                super::WINDOWS_CROSS_VOLUME_MOVE_HOOK.with(|hook| {
+                super::WINDOWS_MOVE_HOOK.with(|hook| {
                     *hook.borrow_mut() = Some(Box::new(move |boundary, path| {
-                        if boundary == super::WindowsCrossVolumeMoveBoundary::BeforeSourceCleanup {
+                        if boundary == super::WindowsMoveBoundary::BeforeSourceCleanup {
                             *callback_writer.borrow_mut() = Some(
                                 std::fs::OpenOptions::new()
                                     .write(true)
@@ -9100,9 +9093,9 @@ mod windows_source_tests {
             let reached = Rc::new(Cell::new(false));
             let callback_reached = reached.clone();
             let _reset = WindowsMoveHookReset;
-            super::WINDOWS_CROSS_VOLUME_MOVE_HOOK.with(|hook| {
+            super::WINDOWS_MOVE_HOOK.with(|hook| {
                 *hook.borrow_mut() = Some(Box::new(move |boundary, path| {
-                    if boundary == super::WindowsCrossVolumeMoveBoundary::BeforeSourceCleanup {
+                    if boundary == super::WindowsMoveBoundary::BeforeSourceCleanup {
                         if link {
                             std::fs::remove_file(path).unwrap();
                             std::os::windows::fs::symlink_file("external-change", path).unwrap();
@@ -9197,7 +9190,7 @@ mod windows_source_tests {
             let status = std::process::Command::new(std::env::current_exe().unwrap())
                 .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_overwrite_retention_process_exit_recovers", "--nocapture"])
                 .env("OTTRIN_TEST_WINDOWS_RETAINED_EXIT_CHILD", "1")
-                .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_BOUNDARY", "DisplacedRetained")
+                .env("OTTRIN_TEST_WINDOWS_MOVE_EXIT_BOUNDARY", "DisplacedRetained")
                 .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE", &source)
                 .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION", destination_fixture.path())
                 .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", destination_fixture.path().join("move-state"))
@@ -9254,7 +9247,7 @@ mod windows_source_tests {
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_directory_handoff_mutations_preserve_source() {
-        use super::WindowsCrossVolumeMoveBoundary;
+        use super::WindowsMoveBoundary;
         use std::{
             cell::{Cell, RefCell},
             rc::Rc,
@@ -9263,9 +9256,9 @@ mod windows_source_tests {
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         for fault in [
-            WindowsCrossVolumeMoveBoundary::CandidateUnlocked,
-            WindowsCrossVolumeMoveBoundary::SourceUnlocked,
-            WindowsCrossVolumeMoveBoundary::SourceClaimed,
+            WindowsMoveBoundary::CandidateUnlocked,
+            WindowsMoveBoundary::SourceUnlocked,
+            WindowsMoveBoundary::SourceClaimed,
         ] {
             let source_fixture = crate::tests::TestDir::new("directory-handoff-source");
             let destination_fixture =
@@ -9280,13 +9273,13 @@ mod windows_source_tests {
             let callback_claimed = claimed.clone();
             let callback_target = target.clone();
             let _reset = WindowsMoveHookReset;
-            super::WINDOWS_CROSS_VOLUME_MOVE_HOOK.with(|hook| {
+            super::WINDOWS_MOVE_HOOK.with(|hook| {
                 *hook.borrow_mut() = Some(Box::new(move |boundary, path| {
-                    if boundary == WindowsCrossVolumeMoveBoundary::SourceClaimed {
+                    if boundary == WindowsMoveBoundary::SourceClaimed {
                         *callback_claimed.borrow_mut() = Some(path.to_path_buf());
                     }
                     if boundary == fault {
-                        if boundary != WindowsCrossVolumeMoveBoundary::CandidateUnlocked {
+                        if boundary != WindowsMoveBoundary::CandidateUnlocked {
                             assert!(
                                 std::fs::write(
                                     callback_target.join("nested/payload"),
@@ -9317,19 +9310,18 @@ mod windows_source_tests {
                 result.as_ref().err()
             );
             let retained_source = claimed.borrow().clone().unwrap_or_else(|| source.clone());
-            let expected_source: &[u8] =
-                if fault == WindowsCrossVolumeMoveBoundary::CandidateUnlocked {
-                    b"original data"
-                } else {
-                    b"external change"
-                };
+            let expected_source: &[u8] = if fault == WindowsMoveBoundary::CandidateUnlocked {
+                b"original data"
+            } else {
+                b"external change"
+            };
             assert_eq!(
                 std::fs::read(retained_source.join("nested/payload")).unwrap(),
                 expected_source
             );
             assert_eq!(
                 std::fs::read(target.join("nested/payload")).unwrap(),
-                if fault == WindowsCrossVolumeMoveBoundary::CandidateUnlocked {
+                if fault == WindowsMoveBoundary::CandidateUnlocked {
                     b"external change" as &[u8]
                 } else {
                     b"original data" as &[u8]
@@ -9384,7 +9376,7 @@ mod windows_source_tests {
             let status = std::process::Command::new(std::env::current_exe().unwrap())
                 .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_directory_process_exit_recovers_without_data_loss", "--nocapture"])
                 .env("OTTRIN_TEST_WINDOWS_DIRECTORY_EXIT_CHILD", "1")
-                .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_BOUNDARY", boundary)
+                .env("OTTRIN_TEST_WINDOWS_MOVE_EXIT_BOUNDARY", boundary)
                 .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE", &source)
                 .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION", destination_fixture.path())
                 .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", destination_fixture.path().join("move-state"))
@@ -9558,7 +9550,7 @@ mod windows_source_tests {
                     .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_CHILD", "1")
                     .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVER_CHILD", "1")
                     .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY", "1")
-                    .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_BOUNDARY", "CandidateWritable")
+                    .env("OTTRIN_TEST_WINDOWS_MOVE_EXIT_BOUNDARY", "CandidateWritable")
                     .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE", &source)
                     .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION", &destination_root)
                     .env("LOCALAPPDATA", &state_root)
@@ -9629,6 +9621,68 @@ mod windows_source_tests {
             std::fs::remove_dir_all(&destination_root)
                 .expect("remove interruption destination root");
         }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_native_move_journal_requires_namespace_flush() {
+        use std::{cell::RefCell, os::windows::fs::OpenOptionsExt, rc::Rc};
+        use windows_sys::Win32::Storage::FileSystem::{
+            FILE_FLAG_BACKUP_SEMANTICS, FILE_SHARE_DELETE, FILE_SHARE_READ,
+        };
+        let mut missing_failures = Vec::new();
+        for replace in [false, true] {
+            let fixture = crate::tests::TestDir::new("journal-namespace");
+            let journal = fixture.path().join("journal");
+            if replace {
+                super::write_windows_record_file(&journal, &1_u32).unwrap();
+            }
+            let guard = Rc::new(RefCell::new(None));
+            let callback_guard = guard.clone();
+            let expected_journal = journal.clone();
+            let reset = WindowsMoveHookReset;
+            super::WINDOWS_MOVE_HOOK.with(|hook| {
+                *hook.borrow_mut() = Some(Box::new(move |boundary, path| {
+                    if boundary == super::WindowsMoveBoundary::JournalPublished
+                        && path == expected_journal
+                    {
+                        let parent = path.parent().unwrap();
+                        // Acquire after publication: an earlier lock can prevent
+                        // ReplaceFileW itself, missing the durability boundary.
+                        *callback_guard.borrow_mut() = Some(
+                            std::fs::OpenOptions::new()
+                                .read(true)
+                                .share_mode(FILE_SHARE_READ | FILE_SHARE_DELETE)
+                                .custom_flags(FILE_FLAG_BACKUP_SEMANTICS)
+                                .open(parent)
+                                .unwrap(),
+                        );
+                        assert!(
+                            move_recovery::open_reparse_safe_directory_for_rename(parent).is_err(),
+                            "fixture must deny the namespace flush handle"
+                        );
+                    }
+                }));
+            });
+            let result = super::write_windows_record_file(&journal, &2_u32);
+            assert!(
+                guard.borrow().is_some(),
+                "exercise journal publication boundary"
+            );
+            assert_eq!(std::fs::read(&journal).unwrap(), b"2");
+            if result.is_ok() {
+                missing_failures.push(replace);
+            }
+            drop(reset);
+            drop(guard.borrow_mut().take());
+            super::write_windows_record_file(&journal, &3_u32)
+                .expect("retry after directory sharing is restored");
+            assert_eq!(std::fs::read(&journal).unwrap(), b"3");
+        }
+        assert!(
+            missing_failures.is_empty(),
+            "journal persistence reported success without namespace durability: replace={missing_failures:?}"
+        );
     }
 
     #[cfg(target_os = "windows")]
@@ -9709,11 +9763,6 @@ mod windows_source_tests {
         ));
         assert!(!windows_stream_set_is_copy_safe(["::$DATA"], true));
         assert!(!windows_stream_set_is_copy_safe([":metadata:$DATA"], true));
-    }
-
-    #[test]
-    fn windows_cross_volume_overwrite_requests_write_through_publication() {
-        assert_eq!(WINDOWS_OVERWRITE_REPLACE_FLAGS, 0x0000_0001);
     }
 
     #[test]
