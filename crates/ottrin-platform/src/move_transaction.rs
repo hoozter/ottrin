@@ -633,9 +633,9 @@ fn windows_cross_volume_test_gate(requested: bool) -> bool {
 
 #[cfg(any(target_os = "windows", test))]
 fn windows_cross_volume_runtime_enabled() -> bool {
-    // The transaction code remains compiled for source review, but native process-death,
-    // concurrent-recovery, ACL, and sharing-mode acceptance has not established that source
-    // cleanup is safe. Keep the user-facing route closed until those release gates pass.
+    // Native fixtures cover retained recovery, owner death, ACL and sharing refusal.
+    // Keep the user-facing route closed while remaining interruption, filesystem
+    // and packaged acceptance is incomplete.
     #[cfg(all(test, target_os = "windows"))]
     let test_override = std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE").as_deref()
         == Some(std::ffi::OsStr::new("1"));
@@ -8884,6 +8884,116 @@ mod windows_source_tests {
                 }
             }
         }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_recovery_excludes_another_process_until_owner_death() {
+        if let Some(ready) = std::env::var_os("OTTRIN_TEST_WINDOWS_RECOVERY_LOCK_READY") {
+            let _held = super::acquire_windows_recovery_lock().unwrap();
+            std::fs::write(ready, b"locked").unwrap();
+            loop {
+                std::thread::park();
+            }
+        }
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        let source_fixture = crate::tests::TestDir::new("recovery-owner-source");
+        let destination_fixture =
+            crate::tests::TestDir::new_at(&volume, "recovery-owner-destination");
+        let source = source_fixture.path().join("entry");
+        let target = destination_fixture.path().join("entry");
+        std::fs::write(&source, b"source-data").unwrap();
+        std::fs::write(&target, b"displaced-data").unwrap();
+        let displaced_identity = move_recovery::stable_identity_of_entry(&target).unwrap();
+        let mut permissions = std::fs::metadata(&target).unwrap().permissions();
+        permissions.set_readonly(true);
+        std::fs::set_permissions(&target, permissions).unwrap();
+        assert!(
+            super::move_entry_transactional(
+                &source,
+                destination_fixture.path(),
+                ConflictAction::Overwrite
+            )
+            .is_err()
+        );
+        let transactions = super::discover_retained_windows_move_transactions().unwrap();
+        assert_eq!(transactions.len(), 1);
+        let id = transactions[0].transaction_id;
+        assert!(
+            std::process::Command::new("attrib.exe")
+                .arg("-R")
+                .arg(&target)
+                .status()
+                .unwrap()
+                .success()
+        );
+        let root = super::windows_recovery_root().unwrap();
+        let journal = super::windows_cross_volume_journal_path(&root, id);
+        let before = std::fs::read(&journal).unwrap();
+        let ready = source_fixture.path().join("lock-ready");
+        struct Owner(std::process::Child);
+        impl Drop for Owner {
+            fn drop(&mut self) {
+                let _ = self.0.kill();
+                let _ = self.0.wait();
+            }
+        }
+        let mut owner = Owner(std::process::Command::new(std::env::current_exe().unwrap())
+            .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_recovery_excludes_another_process_until_owner_death", "--nocapture"])
+            .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", &root)
+            .env("OTTRIN_TEST_WINDOWS_RECOVERY_LOCK_READY", &ready)
+            .spawn().unwrap());
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+        while !ready.exists() {
+            assert!(
+                owner.0.try_wait().unwrap().is_none(),
+                "lock owner exited before readiness"
+            );
+            assert!(
+                std::time::Instant::now() < deadline,
+                "lock owner did not become ready"
+            );
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+        assert_eq!(std::fs::read(&ready).unwrap(), b"locked");
+        assert!(matches!(
+            super::recover_retained_windows_move_transaction(id),
+            Err(super::PlatformError::ClaimedRecoveryPending { .. })
+        ));
+        assert!(matches!(
+            super::move_entry_transactional(
+                &source,
+                destination_fixture.path(),
+                ConflictAction::Overwrite
+            ),
+            Err(super::PlatformError::ClaimedRecoveryPending { .. })
+        ));
+        assert_eq!(std::fs::read(&journal).unwrap(), before);
+        assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+        assert_eq!(std::fs::read(&target).unwrap(), b"displaced-data");
+        assert_eq!(
+            move_recovery::stable_identity_of_entry(&target).unwrap(),
+            displaced_identity
+        );
+        owner.0.kill().unwrap();
+        assert!(!owner.0.wait().unwrap().success());
+        super::recover_retained_windows_move_transaction(id).expect("recovery after owner death");
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+        let record = super::load_windows_cross_volume_record(&journal).unwrap();
+        let retained = record.retained_path().unwrap().unwrap();
+        assert_eq!(std::fs::read(&retained).unwrap(), b"displaced-data");
+        assert_eq!(
+            move_recovery::stable_identity_of_entry(&retained).unwrap(),
+            displaced_identity
+        );
+        super::recover_retained_windows_move_transaction(id)
+            .expect("completed recovery is idempotent");
+        assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+        assert_eq!(std::fs::read(&retained).unwrap(), b"displaced-data");
     }
 
     #[cfg(target_os = "windows")]

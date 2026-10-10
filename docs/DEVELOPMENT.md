@@ -208,7 +208,14 @@ Explicit cross-volume recovery and discovery use the same safety gate as ordinar
 Move retry. Native lifecycle evidence covers safe refusal, recovery after protection
 removal, repeated completed recovery preserving retained originals and later user
 edits, malformed/misnamed journal refusal, and a separate process with the normal
-gate closed. Remaining interruption, filesystem and packaged cases stay pending.
+gate closed. Native cross-process exclusion also passes: an independently running
+owner holds the actual recovery lock while explicit recovery and ordinary Move
+retry both refuse without changing journal/source/target bytes. Killing that owner
+releases the Windows share reservation; recovery then completes with exact displaced
+identity/data retention and remains idempotent (`recovery-owner.log`). The fixture
+uses readiness signaling and bounded polling, and kills only its own child process.
+This is process-death acceptance, not power loss. Remaining interruption, filesystem
+and packaged cases stay pending.
 The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or
