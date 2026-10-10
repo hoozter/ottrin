@@ -94,6 +94,18 @@ claim to bundle GIO modules or schemas. Packaging has an artifact-level
 content-type smoke with empty XDG data, but clean/minimal desktop acceptance is
 a separate release gate.
 
+### Windows background indexing
+
+Ordinary-user source-binary acceptance on Windows 11 build 26100 exercised
+`index service-install`, `service-status`, an interval upgrade, `service-restart`,
+and `service-remove` through the real Task Scheduler. The task changed from four
+to five hours, ran the actual `ottrin.exe index update` action with result zero,
+and published both files from two isolated configured roots. CLI search returned
+those exact paths. Removal left no task; restart then correctly failed. Existing
+profile directories were preserved by rename and restored, with generated state
+kept only in the disposable fixture (`index-lifecycle-final.log`). This verifies
+the per-user source lifecycle, not MSI/NSIS installation or uninstall integration.
+
 ### Windows native video thumbnails
 
 The ignored `windows_native_thumbnail_decodes_and_preserves_admitted_source` test
