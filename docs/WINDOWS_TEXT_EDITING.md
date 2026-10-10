@@ -36,6 +36,12 @@ before source withdrawal. A no-replace handle rename moves the original to
 second no-replace handle rename publish the edited file. Content/identity/security
 are checked again and publication/directory flush failures stay visible.
 
+Native ACL evaluation also verifies that the actual recovery directory and draft
+deny read access to a restricted token, while a positive-control ACL permits that
+same token and the owning user can read the draft (`text-privacy.log`). This does
+not claim protection from the owner or privileged accounts. The retained original
+keeps its original security descriptor.
+
 This is **not an atomic exchange**: the source name is temporarily vacant. If
 another process occupies it, publication and restoration refuse replacement.
 Recovery attempts a no-replace hard link from the retained original to the vacant
@@ -94,7 +100,8 @@ cargo test -p ottrin-ui recovery_conflict
 
 Cross-compilation and portable tests do not establish native Windows acceptance.
 Before changing the public gate, extend the ordinary/custom ACL, directory flush
-and sharing evidence with recovery privacy and exact packaged editor behavior.
+and sharing evidence with exact packaged editor behavior. Recovery-directory and
+draft ACL privacy have the native restricted-token evidence above.
 Unicode paths, ancestor-rename refusal, publication-step exits and the tested
 writable-mapping lifecycle have native evidence; other mapping/relocation behavior
 is not implied. Security resource attributes are included in the descriptor that is captured,

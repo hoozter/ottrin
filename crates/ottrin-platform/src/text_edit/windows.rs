@@ -1102,6 +1102,159 @@ mod tests {
     }
 
     #[test]
+    fn windows_native_recovery_dacl_denies_restricted_reader() {
+        use std::os::windows::io::{FromRawHandle, OwnedHandle};
+        use windows_sys::Win32::Security::Authorization::GetSecurityInfo;
+        use windows_sys::Win32::Security::{
+            AccessCheck, CreateRestrictedToken, CreateWellKnownSid, DISABLE_MAX_PRIVILEGE,
+            DuplicateToken, GENERIC_MAPPING, PRIVILEGE_SET, SID_AND_ATTRIBUTES,
+            SecurityImpersonation, TOKEN_DUPLICATE, TOKEN_QUERY, WinRestrictedCodeSid,
+        };
+        use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
+        let fixture = Fixture::new();
+        Session::open(&fixture.source())
+            .unwrap()
+            .save("private draft")
+            .unwrap();
+        let mut raw = ptr::null_mut();
+        assert_ne!(
+            unsafe {
+                OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE | TOKEN_QUERY, &mut raw)
+            },
+            0
+        );
+        let process = unsafe { OwnedHandle::from_raw_handle(raw.cast()) };
+        let mut sid = [0u64; 9];
+        let mut size = size_of_val(&sid) as u32;
+        assert_ne!(
+            unsafe {
+                CreateWellKnownSid(
+                    WinRestrictedCodeSid,
+                    ptr::null_mut(),
+                    sid.as_mut_ptr().cast(),
+                    &mut size,
+                )
+            },
+            0
+        );
+        let restricting = SID_AND_ATTRIBUTES {
+            Sid: sid.as_mut_ptr().cast(),
+            Attributes: 0,
+        };
+        assert_ne!(
+            unsafe {
+                CreateRestrictedToken(
+                    process.as_raw_handle().cast(),
+                    DISABLE_MAX_PRIVILEGE,
+                    0,
+                    ptr::null(),
+                    0,
+                    ptr::null(),
+                    1,
+                    &restricting,
+                    &mut raw,
+                )
+            },
+            0
+        );
+        let restricted = unsafe { OwnedHandle::from_raw_handle(raw.cast()) };
+        assert_ne!(
+            unsafe {
+                DuplicateToken(
+                    restricted.as_raw_handle().cast(),
+                    SecurityImpersonation,
+                    &mut raw,
+                )
+            },
+            0
+        );
+        let token = unsafe { OwnedHandle::from_raw_handle(raw.cast()) };
+        let can_read = |descriptor| {
+            let mapping = GENERIC_MAPPING {
+                GenericRead: FILE_GENERIC_READ,
+                GenericWrite: FILE_GENERIC_WRITE,
+                GenericExecute: FILE_GENERIC_EXECUTE,
+                GenericAll: FILE_ALL_ACCESS,
+            };
+            let mut privileges = PRIVILEGE_SET::default();
+            let mut size = size_of::<PRIVILEGE_SET>() as u32;
+            let mut granted = 0;
+            let mut allowed = 0;
+            assert_ne!(
+                unsafe {
+                    AccessCheck(
+                        descriptor,
+                        token.as_raw_handle().cast(),
+                        FILE_GENERIC_READ,
+                        &mapping,
+                        &mut privileges,
+                        &mut size,
+                        &mut granted,
+                        &mut allowed,
+                    )
+                },
+                0,
+                "native access check: {}",
+                std::io::Error::last_os_error()
+            );
+            allowed != 0
+        };
+        // A positive control proves the restricted token can be granted read access.
+        let public: Vec<u16> = "O:SYG:SYD:(A;;FR;;;WD)(A;;FR;;;RC)\0"
+            .encode_utf16()
+            .collect();
+        let mut descriptor = ptr::null_mut();
+        assert_ne!(
+            unsafe {
+                ConvertStringSecurityDescriptorToSecurityDescriptorW(
+                    public.as_ptr(),
+                    SDDL_REVISION_1,
+                    &mut descriptor,
+                    ptr::null_mut(),
+                )
+            },
+            0
+        );
+        let control = PrivateSecurity(descriptor);
+        assert!(can_read(control.0));
+        let recovery = fixture.recovery();
+        for path in [&recovery, &recovery.join("edits")] {
+            let file = OpenOptions::new()
+                .read(true)
+                .custom_flags(FILE_FLAG_BACKUP_SEMANTICS)
+                .open(path)
+                .unwrap();
+            let mut descriptor = ptr::null_mut();
+            assert_eq!(
+                unsafe {
+                    GetSecurityInfo(
+                        handle(&file),
+                        SE_FILE_OBJECT,
+                        OWNER_SECURITY_INFORMATION
+                            | GROUP_SECURITY_INFORMATION
+                            | DACL_SECURITY_INFORMATION,
+                        ptr::null_mut(),
+                        ptr::null_mut(),
+                        ptr::null_mut(),
+                        ptr::null_mut(),
+                        &mut descriptor,
+                    )
+                },
+                0
+            );
+            let security = PrivateSecurity(descriptor);
+            assert!(
+                !can_read(security.0),
+                "private recovery ACL allowed a restricted reader"
+            );
+        }
+        assert_eq!(
+            std::fs::read(recovery.join("edits")).unwrap(),
+            b"private draft"
+        );
+    }
+
+    #[test]
     fn windows_native_resource_attribute_survives_publication() {
         use windows_sys::Win32::Security::GetSecurityDescriptorSacl;
         let fixture = Fixture::new();
