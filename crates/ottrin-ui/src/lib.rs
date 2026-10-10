@@ -20741,13 +20741,22 @@ impl OttrinApp {
         }
     }
 
+    fn render_service_status(ui: &mut egui::Ui, text: &str, color: Color32) {
+        ui.horizontal(|ui| {
+            let (dot, _) = ui.allocate_exact_size(egui::vec2(10.0, 10.0), egui::Sense::hover());
+            ui.painter().circle_filled(dot.center(), 4.0, color);
+            ui.label(RichText::new(text).color(color));
+        });
+    }
+
     fn render_services_settings(&mut self, ui: &mut egui::Ui, c: Colors) {
+        let ready_color = Color32::from_rgb(80, 185, 110);
         ui.label(RichText::new("Services").size(15.0).strong().color(c.text));
         ui.label("Set up and manage Ottrin's optional system integration.");
         ui.add_space(12.0);
         if let Some(result) = &self.service_action_result {
             let (text, color) = match result {
-                Ok(text) => (text, c.accent),
+                Ok(text) => (text, ready_color),
                 Err(text) => (text, c.error),
             };
             ui.label(RichText::new(text).color(color));
@@ -20763,9 +20772,9 @@ impl OttrinApp {
         ui.add_enabled_ui(!busy, |ui| {
             ui.label(RichText::new("Administrator helper").strong().color(c.text));
             match &self.privileged_availability {
-                PrivilegedAvailability::Ready => { ui.label(RichText::new("Installed and ready").color(c.accent)); }
-                PrivilegedAvailability::Misconfigured(_) => { ui.label(RichText::new("Setup needed").color(c.error)); }
-                PrivilegedAvailability::Unsupported(message) => { ui.label(message); }
+                PrivilegedAvailability::Ready => Self::render_service_status(ui, "Installed and ready", ready_color),
+                PrivilegedAvailability::Misconfigured(_) => Self::render_service_status(ui, "Setup needed", c.error),
+                PrivilegedAvailability::Unsupported(message) => Self::render_service_status(ui, message, c.text_muted),
             }
             ui.label("Lets Ottrin request administrator permission when a file operation needs it. Setup requires your administrator password.");
             #[cfg(target_os = "linux")]
@@ -20783,25 +20792,35 @@ impl OttrinApp {
             }
             let status = cached_sqlite_schedule_status(&mut self.search_ui.sqlite_schedule_status, SearchService::sqlite_schedule_status);
             let installed = status.source != "none";
-            ui.label(format!("At login: {}", if installed { status.detail.as_str() } else { "Not installed" }));
             let diag = self.search_service.diagnostics();
             #[cfg(unix)]
             let stopped = ottrin_search::default_daemon_socket_path().is_ok_and(|path| !path.exists());
             #[cfg(not(unix))]
             let stopped = false;
-            ui.label(format!("Index now: {}", match diag.status {
+            let index_status = match diag.status {
                 SearchIndexStatus::Ready => "Running — index ready",
                 SearchIndexStatus::Loading => "Running — loading index",
                 SearchIndexStatus::Indexing => "Running — indexing files",
                 SearchIndexStatus::Unavailable if stopped => "Stopped",
-                SearchIndexStatus::Unavailable => "Unavailable",
-            }));
+                SearchIndexStatus::Unavailable => "Needs attention",
+            };
+            let index_color = match diag.status {
+                SearchIndexStatus::Ready | SearchIndexStatus::Loading | SearchIndexStatus::Indexing => ready_color,
+                SearchIndexStatus::Unavailable if stopped => c.text_muted,
+                SearchIndexStatus::Unavailable => c.error,
+            };
+            Self::render_service_status(ui, index_status, index_color);
+            ui.label(if installed {
+                format!("Automatic startup at sign-in: {}", status.detail)
+            } else {
+                "Automatic startup at sign-in: Off".to_string()
+            });
             if !stopped && let Some(error) = &diag.last_error { ui.label(RichText::new(error).color(c.error)); }
-            ui.label(if installed { "The installed service keeps your selected folders indexed after closing Ottrin. Update / reinstall connects it to this app version." } else { "Ottrin started an index for this session. Install the background service to start it automatically when you log in." });
+            ui.label(if installed { "The installed service keeps your selected folders indexed after closing Ottrin. Update / reinstall connects it to this app version." } else { "Indexing starts when you open Ottrin. Enable automatic startup to keep indexing after closing Ottrin and start it when you sign in." });
             ui.label("Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index.");
             ui.add_space(6.0);
             ui.horizontal_wrapped(|ui| {
-                if ui.button(if installed { "Update / reinstall service" } else { "Install background service" }).clicked() {
+                if ui.button(if installed { "Update / reinstall service" } else { "Enable automatic startup" }).clicked() {
                     let config = self.state.config.search.clone();
                     self.begin_service_action(ui.ctx(), move || SearchService::install_sqlite_schedule(&config));
                 }
