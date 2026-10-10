@@ -450,6 +450,38 @@ where
 }
 
 #[cfg(target_os = "windows")]
+fn require_windows_move_without_extended_attributes(
+    file: &std::fs::File,
+) -> Result<(), PlatformError> {
+    use windows_sys::Wdk::Storage::FileSystem::{
+        FILE_EA_INFORMATION, FileEaInformation, NtQueryInformationFile,
+    };
+    let mut ea = FILE_EA_INFORMATION::default();
+    let mut io = IO_STATUS_BLOCK::default();
+    let status = unsafe {
+        NtQueryInformationFile(
+            file.as_raw_handle(),
+            &mut io,
+            ptr::from_mut(&mut ea).cast(),
+            mem::size_of::<FILE_EA_INFORMATION>() as u32,
+            FileEaInformation,
+        )
+    };
+    if status < 0 {
+        return Err(PlatformError::Io(format!(
+            "Windows Move extended-attribute query failed: {}",
+            std::io::Error::from_raw_os_error(unsafe { RtlNtStatusToDosError(status) } as i32),
+        )));
+    }
+    if ea.EaSize != 0 {
+        return Err(PlatformError::Io(
+            "Windows cross-volume Move cannot preserve extended attributes; source retained".into(),
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
 fn copy_windows_file_and_metadata(
     source: &mut std::fs::File,
     staged: &mut std::fs::File,
@@ -464,6 +496,7 @@ fn copy_windows_basic_metadata(
     source: &std::fs::File,
     staged: &std::fs::File,
 ) -> Result<(), PlatformError> {
+    require_windows_move_without_extended_attributes(source)?;
     let mut basic = FILE_BASIC_INFO::default();
     if unsafe {
         GetFileInformationByHandleEx(
@@ -1610,6 +1643,12 @@ fn remove_windows_source_by_handle_if_still_named(
     record: &WindowsCrossVolumeRecord,
     recovery_transaction: &Path,
 ) -> Result<(), PlatformError> {
+    require_windows_move_without_extended_attributes(source_handle).map_err(|error| {
+        PlatformError::CommittedCleanupPending {
+            transaction: recovery_transaction.display().to_string(),
+            message: error.to_string(),
+        }
+    })?;
     let opened_matches =
         move_recovery::stable_identity_from_handle(source_handle).map_err(|error| {
             PlatformError::CommittedCleanupPending {
@@ -1725,6 +1764,12 @@ fn set_windows_directory_source_delete_disposition(
     path: &Path,
     recovery_transaction: &Path,
 ) -> Result<(), PlatformError> {
+    require_windows_move_without_extended_attributes(handle).map_err(|error| {
+        PlatformError::CommittedCleanupPending {
+            transaction: recovery_transaction.display().to_string(),
+            message: error.to_string(),
+        }
+    })?;
     let disposition = FILE_DISPOSITION_INFO_EX {
         Flags: WINDOWS_INCOMPLETE_STAGING_DISPOSITION_FLAGS,
     };
@@ -2747,6 +2792,7 @@ fn capture_windows_directory_snapshot(
     root: &Path,
     root_handle: &std::fs::File,
 ) -> Result<WindowsDirectorySnapshot, PlatformError> {
+    require_windows_move_without_extended_attributes(root_handle)?;
     fn visit(
         root: &Path,
         relative_directory: &Path,
@@ -2758,6 +2804,7 @@ fn capture_windows_directory_snapshot(
             let path = root.join(&relative_path);
             let mut handle = move_recovery::open_reparse_safe_cross_volume_source(&path)
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
+            require_windows_move_without_extended_attributes(&handle)?;
             let identity = move_recovery::stable_identity_from_handle(&handle)
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
             let kind = windows_cross_volume_source_kind(
@@ -2981,6 +3028,7 @@ fn start_windows_cross_volume_move(
     destination_handle: std::fs::File,
     destination_identity: Option<move_recovery::WindowsStableIdentity>,
 ) -> Result<MovePublication, PlatformError> {
+    require_windows_move_without_extended_attributes(&source_handle)?;
     let source_identity = move_recovery::stable_identity_from_handle(&source_handle)
         .map_err(|error| PlatformError::Io(error.to_string()))?;
     let destination_parent_identity =
@@ -9052,6 +9100,148 @@ mod windows_source_tests {
             .expect("completed recovery is idempotent");
         assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
         assert_eq!(std::fs::read(&retained).unwrap(), b"displaced-data");
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_extended_attributes_are_preserved_by_refusal() {
+        use std::os::windows::{fs::OpenOptionsExt, io::AsRawHandle};
+        use windows_sys::Wdk::Storage::FileSystem::{
+            FILE_FULL_EA_INFORMATION, NtQueryEaFile, NtSetEaFile,
+        };
+        use windows_sys::Win32::Storage::FileSystem::FILE_FLAG_BACKUP_SEMANTICS;
+        use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
+
+        if let Some(source) = std::env::var_os("OTTRIN_TEST_MOVE_EA_SOURCE") {
+            let destination = std::env::var_os("OTTRIN_TEST_MOVE_EA_DESTINATION").unwrap();
+            super::WINDOWS_MOVE_HOOK.with(|hook| {
+                *hook.borrow_mut() = Some(Box::new(|boundary, _| {
+                    if boundary == super::WindowsMoveBoundary::BeforeSourceCleanup {
+                        std::process::exit(87);
+                    }
+                }));
+            });
+            super::move_entry_transactional(
+                std::path::Path::new(&source),
+                std::path::Path::new(&destination),
+                ConflictAction::Rename,
+            )
+            .unwrap();
+            panic!("child must stop after publication");
+        }
+
+        fn read_ea(path: &std::path::Path) -> Vec<u8> {
+            let file = std::fs::OpenOptions::new()
+                .read(true)
+                .custom_flags(FILE_FLAG_BACKUP_SEMANTICS)
+                .open(path)
+                .unwrap();
+            let mut bytes = [0_u64; 32];
+            let mut io = IO_STATUS_BLOCK::default();
+            assert!(
+                unsafe {
+                    NtQueryEaFile(
+                        file.as_raw_handle(),
+                        &mut io,
+                        bytes.as_mut_ptr().cast(),
+                        std::mem::size_of_val(&bytes) as u32,
+                        false,
+                        std::ptr::null(),
+                        0,
+                        std::ptr::null(),
+                        true,
+                    )
+                } >= 0
+            );
+            assert!(io.Information <= std::mem::size_of_val(&bytes));
+            unsafe { std::slice::from_raw_parts(bytes.as_ptr().cast::<u8>(), io.Information) }
+                .to_vec()
+        }
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        for (kind, after_publication) in ["file", "directory", "child"]
+            .into_iter()
+            .flat_map(|kind| [false, true].map(|after| (kind, after)))
+        {
+            let source_fixture = crate::tests::TestDir::new("move-ea-source");
+            let destination = crate::tests::TestDir::new_at(&volume, "move-ea-destination");
+            let source = source_fixture.path().join("entry");
+            let payload = if kind == "file" {
+                source.clone()
+            } else {
+                std::fs::create_dir(&source).unwrap();
+                source.join("payload")
+            };
+            std::fs::write(&payload, b"keep payload and metadata").unwrap();
+            if after_publication {
+                let status = std::process::Command::new(std::env::current_exe().unwrap())
+                    .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_extended_attributes_are_preserved_by_refusal", "--nocapture"])
+                    .env("OTTRIN_TEST_MOVE_EA_SOURCE", &source)
+                    .env("OTTRIN_TEST_MOVE_EA_DESTINATION", destination.path())
+                    .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", destination.path().join("move-state"))
+                    .status().unwrap();
+                assert_eq!(status.code(), Some(87));
+            }
+            let decorated = if kind == "directory" {
+                &source
+            } else {
+                &payload
+            };
+            let file = std::fs::OpenOptions::new()
+                .read(true)
+                .write(true)
+                .custom_flags(FILE_FLAG_BACKUP_SEMANTICS)
+                .open(decorated)
+                .unwrap();
+            let mut bytes = [0_u64; 3];
+            let ea = bytes.as_mut_ptr().cast::<FILE_FULL_EA_INFORMATION>();
+            unsafe {
+                (*ea).EaNameLength = 8;
+                (*ea).EaValueLength = 4;
+                std::ptr::copy_nonoverlapping(
+                    b"OTTRINQA\0keep".as_ptr(),
+                    std::ptr::addr_of_mut!((*ea).EaName).cast::<u8>(),
+                    13,
+                );
+            }
+            let mut io = IO_STATUS_BLOCK::default();
+            assert!(
+                unsafe { NtSetEaFile(file.as_raw_handle(), &mut io, bytes.as_ptr().cast(), 21) }
+                    >= 0
+            );
+            drop(file);
+            let before = read_ea(decorated);
+            assert_eq!(&before[8..], b"OTTRINQA\0keep");
+            let result = super::move_entry_transactional(
+                &source,
+                destination.path(),
+                ConflictAction::Rename,
+            );
+            assert!(
+                result.is_err(),
+                "Move must preserve unsupported {kind} metadata by refusing"
+            );
+            assert_eq!(
+                std::fs::read(&payload).unwrap(),
+                b"keep payload and metadata"
+            );
+            assert_eq!(read_ea(decorated), before);
+            let published = destination.path().join("entry");
+            if after_publication {
+                let published_payload = if kind == "file" {
+                    published
+                } else {
+                    published.join("payload")
+                };
+                assert_eq!(
+                    std::fs::read(published_payload).unwrap(),
+                    b"keep payload and metadata"
+                );
+            } else {
+                assert!(!published.exists());
+            }
+        }
     }
 
     #[cfg(target_os = "windows")]

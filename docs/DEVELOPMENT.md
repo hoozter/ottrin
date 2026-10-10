@@ -230,6 +230,13 @@ native error 87 before mutation, and both files retain their exact bytes
 (`filesystem-boundary.log`). The fixture verifies filesystem names through native
 volume handles; this is unsupported-filesystem refusal, not FAT32 Move support or
 physical removable-device acceptance.
+Extended attributes are refused through a shared handle-based query at admission,
+metadata copying, tree snapshots and source cleanup. The native regression exposed
+an accepted file whose extended attributes were not copied. It now verifies exact
+attribute/data retention for files, directory roots and nested files, both before
+Move and after a process exits before source cleanup (`move-ea-red.log`,
+`move-ea-final.log`). This is refusal of unsupported metadata; it does not claim
+extended-attribute copying or arbitrary concurrent metadata-writer exclusion.
 The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or
