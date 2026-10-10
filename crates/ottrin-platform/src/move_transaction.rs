@@ -8920,6 +8920,81 @@ mod windows_source_tests {
     #[cfg(target_os = "windows")]
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_read_only_destination_preserves_entries_and_allows_retry() {
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        for conflict in [
+            ConflictAction::Skip,
+            ConflictAction::Rename,
+            ConflictAction::Overwrite,
+        ] {
+            let source_fixture = crate::tests::TestDir::new("readonly-target-source");
+            let destination_fixture =
+                crate::tests::TestDir::new_at(&volume, "readonly-target-destination");
+            let source = source_fixture.path().join("entry");
+            let target = destination_fixture.path().join("entry");
+            std::fs::write(&source, b"source-data").unwrap();
+            std::fs::write(&target, b"protected-data").unwrap();
+            let identity = move_recovery::stable_identity_of_entry(&target).unwrap();
+            let mut permissions = std::fs::metadata(&target).unwrap().permissions();
+            permissions.set_readonly(true);
+            std::fs::set_permissions(&target, permissions).unwrap();
+            let result =
+                super::move_entry_transactional(&source, destination_fixture.path(), conflict);
+            if conflict == ConflictAction::Overwrite {
+                assert!(
+                    result.is_err(),
+                    "Overwrite must respect the destination read-only attribute"
+                );
+                assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+            } else {
+                let result = result.expect("Skip and Rename leave the protected target intact");
+                if conflict == ConflictAction::Skip {
+                    assert_eq!(result.disposition, crate::MoveDisposition::Skipped);
+                    assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+                } else {
+                    assert_eq!(result.disposition, crate::MoveDisposition::Moved);
+                    let published = result.published_path.unwrap();
+                    assert_ne!(published, target);
+                    assert_eq!(std::fs::read(published).unwrap(), b"source-data");
+                    assert!(!source.exists());
+                }
+            }
+            assert_eq!(
+                move_recovery::stable_identity_of_entry(&target).unwrap(),
+                identity
+            );
+            assert_eq!(std::fs::read(&target).unwrap(), b"protected-data");
+            assert!(std::fs::metadata(&target).unwrap().permissions().readonly());
+            if conflict == ConflictAction::Overwrite {
+                assert!(
+                    std::process::Command::new("attrib.exe")
+                        .arg("-R")
+                        .arg(&target)
+                        .status()
+                        .unwrap()
+                        .success()
+                );
+                let result =
+                    super::move_entry_transactional(&source, destination_fixture.path(), conflict)
+                        .expect("retry after the owned destination protection is removed");
+                assert_eq!(result.disposition, crate::MoveDisposition::Moved);
+                assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+                assert!(!source.exists());
+                let retained = result.retained_displaced_path.unwrap();
+                assert_eq!(
+                    move_recovery::stable_identity_of_entry(&retained).unwrap(),
+                    identity
+                );
+                assert_eq!(std::fs::read(retained).unwrap(), b"protected-data");
+            }
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_read_only_overwrite_publication_exit_recovers() {
         if std::env::var_os("OTTRIN_TEST_WINDOWS_OVERWRITE_PUBLICATION_EXIT_CHILD").is_some() {
             let source = std::path::PathBuf::from(

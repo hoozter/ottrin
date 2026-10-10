@@ -201,8 +201,10 @@ process exit after reclaim also recovers; changed source data refuses recovery w
 altering the published copy. A source named stream added after interruption also
 refuses cleanup: the pinned source stream set is rechecked before deletion, and
 ordinary retry succeeds after removal of that added fixture stream. Unexplained
-replacement gaps remain blocked. Read-only
-destination and remaining interruption cases remain pending.
+replacement gaps remain blocked. Read-only destination files remain intact under
+Skip and Rename; Overwrite refuses without changing either copy, then succeeds
+with exact displaced retention after the fixture removes destination protection.
+Remaining interruption and retained-transaction lifecycle cases remain pending.
 The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or
