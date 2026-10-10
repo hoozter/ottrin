@@ -22,14 +22,18 @@ use windows_sys::Win32::Security::Authorization::{
     SetSecurityInfo,
 };
 use windows_sys::Win32::Security::{
-    ATTRIBUTE_SECURITY_INFORMATION, DACL_SECURITY_INFORMATION, GROUP_SECURITY_INFORMATION,
-    GetKernelObjectSecurity, GetSecurityDescriptorControl, GetSecurityDescriptorDacl,
-    GetSecurityDescriptorSacl, LABEL_SECURITY_INFORMATION, OWNER_SECURITY_INFORMATION,
-    PROTECTED_DACL_SECURITY_INFORMATION, SE_DACL_PROTECTED, UNPROTECTED_DACL_SECURITY_INFORMATION,
+    ACE_HEADER, ACL, ATTRIBUTE_SECURITY_INFORMATION, DACL_SECURITY_INFORMATION,
+    GROUP_SECURITY_INFORMATION, GetAce, GetKernelObjectSecurity, GetSecurityDescriptorControl,
+    GetSecurityDescriptorDacl, GetSecurityDescriptorSacl, LABEL_SECURITY_INFORMATION,
+    OWNER_SECURITY_INFORMATION, PROTECTED_DACL_SECURITY_INFORMATION, SCOPE_SECURITY_INFORMATION,
+    SE_DACL_PROTECTED, UNPROTECTED_DACL_SECURITY_INFORMATION,
 };
 use windows_sys::Win32::Storage::FileSystem::*;
 use windows_sys::Win32::System::IO::{DeviceIoControl, IO_STATUS_BLOCK};
 use windows_sys::Win32::System::Ioctl::{FILE_OBJECTID_BUFFER, FSCTL_GET_OBJECT_ID};
+use windows_sys::Win32::System::SystemServices::{
+    SYSTEM_MANDATORY_LABEL_ACE_TYPE, SYSTEM_RESOURCE_ATTRIBUTE_ACE_TYPE,
+};
 
 #[derive(Debug)]
 pub(super) struct Session {
@@ -49,11 +53,12 @@ struct Snapshot {
     bytes: Vec<u8>,
 }
 
-const PRESERVED_SECURITY_INFORMATION: u32 = OWNER_SECURITY_INFORMATION
+const CAPTURED_SECURITY_INFORMATION: u32 = OWNER_SECURITY_INFORMATION
     | GROUP_SECURITY_INFORMATION
     | DACL_SECURITY_INFORMATION
     | LABEL_SECURITY_INFORMATION
-    | ATTRIBUTE_SECURITY_INFORMATION;
+    | ATTRIBUTE_SECURITY_INFORMATION
+    | SCOPE_SECURITY_INFORMATION;
 
 impl Session {
     pub(super) fn open(path: &Path) -> Result<Self, TextEditError> {
@@ -324,20 +329,7 @@ fn apply_publication_security(file: &File, security: &[u8]) -> Result<(), TextEd
     if present == 0 {
         return Err(TextEditError::UnsupportedMetadata);
     }
-    let mut sacl_present = 0;
-    let mut sacl_defaulted = 0;
-    let mut sacl = ptr::null_mut();
-    if unsafe {
-        GetSecurityDescriptorSacl(
-            descriptor,
-            &mut sacl_present,
-            &mut sacl,
-            &mut sacl_defaulted,
-        )
-    } == 0
-    {
-        return Err(last_error());
-    }
+    let sacl = checked_security_sacl(security)?;
     let protection = if control & SE_DACL_PROTECTED != 0 {
         PROTECTED_DACL_SECURITY_INFORMATION
     } else {
@@ -346,7 +338,7 @@ fn apply_publication_security(file: &File, security: &[u8]) -> Result<(), TextEd
     // Setting an absent resource SACL would create an empty SACL and change
     // the descriptor. Preserve absence; exact comparison still rejects any
     // unexpected attributes inherited by the new file.
-    let attributes = if sacl_present != 0 {
+    let attributes = if sacl.is_some() {
         ATTRIBUTE_SECURITY_INFORMATION
     } else {
         0
@@ -359,13 +351,51 @@ fn apply_publication_security(file: &File, security: &[u8]) -> Result<(), TextEd
             ptr::null_mut(),
             ptr::null_mut(),
             dacl,
-            if sacl_present != 0 { sacl } else { ptr::null() },
+            sacl.unwrap_or(ptr::null_mut()),
         )
     };
     if error != 0 {
         return Err(write_error(std::io::Error::from_raw_os_error(error as i32)));
     }
     Ok(())
+}
+
+// Capture and reject readable policy metadata before staging. The returned
+// pointer borrows the OS-validated descriptor and is used only while it is alive.
+fn checked_security_sacl(security: &[u8]) -> Result<Option<*mut ACL>, TextEditError> {
+    let mut present = 0;
+    let mut defaulted = 0;
+    let mut sacl = ptr::null_mut();
+    if unsafe {
+        GetSecurityDescriptorSacl(
+            security.as_ptr().cast_mut().cast(),
+            &mut present,
+            &mut sacl,
+            &mut defaulted,
+        )
+    } == 0
+    {
+        return Err(last_error());
+    }
+    if present == 0 {
+        return Ok(None);
+    }
+    if !sacl.is_null() {
+        for index in 0..unsafe { (*sacl).AceCount } {
+            let mut ace = ptr::null_mut();
+            if unsafe { GetAce(sacl, u32::from(index), &mut ace) } == 0 {
+                return Err(last_error());
+            }
+            let kind = u32::from(unsafe { (*ace.cast::<ACE_HEADER>()).AceType });
+            if !matches!(
+                kind,
+                SYSTEM_MANDATORY_LABEL_ACE_TYPE | SYSTEM_RESOURCE_ATTRIBUTE_ACE_TYPE
+            ) {
+                return Err(TextEditError::UnsupportedMetadata);
+            }
+        }
+    }
+    Ok(Some(sacl))
 }
 
 fn open_source(parent: &File, name: &OsStr) -> Result<File, TextEditError> {
@@ -507,7 +537,7 @@ fn metadata(file: &File) -> Result<Metadata, TextEditError> {
     unsafe {
         GetKernelObjectSecurity(
             handle(file),
-            PRESERVED_SECURITY_INFORMATION,
+            CAPTURED_SECURITY_INFORMATION,
             ptr::null_mut(),
             0,
             &mut needed,
@@ -520,7 +550,7 @@ fn metadata(file: &File) -> Result<Metadata, TextEditError> {
     if unsafe {
         GetKernelObjectSecurity(
             handle(file),
-            PRESERVED_SECURITY_INFORMATION,
+            CAPTURED_SECURITY_INFORMATION,
             security.as_mut_ptr().cast(),
             needed,
             &mut needed,
@@ -529,6 +559,7 @@ fn metadata(file: &File) -> Result<Metadata, TextEditError> {
     {
         return Err(last_error());
     }
+    checked_security_sacl(&security)?;
     Ok((
         (
             info.dwVolumeSerialNumber,
@@ -691,7 +722,7 @@ mod tests {
     #[test]
     fn windows_security_snapshot_includes_resource_attributes() {
         assert_ne!(
-            PRESERVED_SECURITY_INFORMATION & ATTRIBUTE_SECURITY_INFORMATION,
+            CAPTURED_SECURITY_INFORMATION & ATTRIBUTE_SECURITY_INFORMATION,
             0
         );
     }
@@ -1252,6 +1283,46 @@ mod tests {
             std::fs::read(recovery.join("edits")).unwrap(),
             b"private draft"
         );
+    }
+
+    #[test]
+    fn windows_native_scoped_policy_refuses_security_preparation_without_mutation() {
+        let fixture = Fixture::new();
+        let original = Session::open(&fixture.source()).unwrap().source.security;
+        let sddl: Vec<u16> = "O:SYG:SYD:(A;;FA;;;WD)S:(SP;;;;;S-1-17-1)\0"
+            .encode_utf16()
+            .collect();
+        let mut descriptor = ptr::null_mut();
+        assert_ne!(
+            unsafe {
+                ConvertStringSecurityDescriptorToSecurityDescriptorW(
+                    sddl.as_ptr(),
+                    SDDL_REVISION_1,
+                    &mut descriptor,
+                    ptr::null_mut(),
+                )
+            },
+            0
+        );
+        let descriptor = PrivateSecurity(descriptor);
+        let size =
+            unsafe { windows_sys::Win32::Security::GetSecurityDescriptorLength(descriptor.0) };
+        assert!(size > 0);
+        let security =
+            unsafe { std::slice::from_raw_parts(descriptor.0.cast::<u8>(), size as usize) };
+        let file = OpenOptions::new()
+            .access_mode(READ_CONTROL | WRITE_DAC)
+            .open(fixture.source())
+            .unwrap();
+        assert_eq!(
+            apply_publication_security(&file, security),
+            Err(TextEditError::UnsupportedMetadata)
+        );
+        drop(file);
+        let unchanged = Session::open(&fixture.source()).unwrap();
+        assert_eq!(unchanged.source.security, original);
+        assert_eq!(unchanged.contents(), "original\r\n");
+        assert_eq!(std::fs::read_dir(&fixture.0).unwrap().count(), 1);
     }
 
     #[test]

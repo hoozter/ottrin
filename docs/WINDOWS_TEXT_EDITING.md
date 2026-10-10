@@ -111,8 +111,14 @@ with exact descriptor equality for the published and retained original files
 fixture uses `READ_CONTROL | WRITE_DAC`; no audit privilege is enabled. Object IDs are now queried through the pinned handle and refused before
 staging; native tests cover preexisting IDs and IDs added after opening, preserving
 the exact ID and source bytes (`text-object-id-green.log`, 14 text fixtures pass).
-Audit SACLs, scoped policy IDs and other NTFS metadata are **not
-yet covered by the admission/preservation checks**. Extend admission or
+Scoped-policy metadata is now captured with ordinary `READ_CONTROL` rights and
+unsupported SACL entries are refused during capture and publication preparation.
+A native descriptor fixture proves refusal before security mutation; all 17 native
+text fixtures pass (`text-scope-green.log`). This does not yet prove admission of
+an actual CAP-configured file. The ordinary-user probe can query scope information,
+but audit-SACL queries fail with access denied and opening an audit-capable handle
+fails with privilege-not-held (`security-probe.log`). Audit SACLs and other NTFS
+metadata are **not yet covered by the admission/preservation checks**. Extend admission or
 preservation on evidence; do not enable the gate while these metadata gaps remain.
 Unsupported security cloning or directory flushing currently stops the save and
 retains staging.
