@@ -204,7 +204,11 @@ ordinary retry succeeds after removal of that added fixture stream. Unexplained
 replacement gaps remain blocked. Read-only destination files remain intact under
 Skip and Rename; Overwrite refuses without changing either copy, then succeeds
 with exact displaced retention after the fixture removes destination protection.
-Remaining interruption and retained-transaction lifecycle cases remain pending.
+Explicit cross-volume recovery and discovery use the same safety gate as ordinary
+Move retry. Native lifecycle evidence covers safe refusal, recovery after protection
+removal, repeated completed recovery preserving retained originals and later user
+edits, malformed/misnamed journal refusal, and a separate process with the normal
+gate closed. Remaining interruption, filesystem and packaged cases stay pending.
 The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source
 claim and displaced directory/link retention. They do not simulate power loss or

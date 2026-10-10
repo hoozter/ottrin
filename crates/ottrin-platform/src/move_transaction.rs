@@ -2206,7 +2206,7 @@ pub(super) fn discover_retained_windows_move_transactions_at(
             ),
             WindowsJournalKind::CrossVolume => (
                 move_recovery::WindowsMoveTransactionKind::CrossVolume,
-                false,
+                windows_cross_volume_recovery_enabled(),
             ),
         };
         discovered.push(move_recovery::WindowsDiscoveredMoveTransaction {
@@ -2526,11 +2526,20 @@ pub(super) fn recover_retained_windows_move_transaction(
         });
     }
     if cross_volume_exists {
-        return Err(PlatformError::ClaimedRecoveryPending {
-            transaction: cross_volume_journal.display().to_string(),
-            message: "Windows cross-volume Move recovery remains disabled until source-cleanup acceptance passes"
-                .to_string(),
-        });
+        if !windows_cross_volume_recovery_enabled() {
+            return Err(PlatformError::ClaimedRecoveryPending {
+                transaction: cross_volume_journal.display().to_string(),
+                message: "Windows cross-volume Move recovery remains disabled until source-cleanup acceptance passes"
+                    .to_string(),
+            });
+        }
+        let mut record = load_windows_cross_volume_record(&cross_volume_journal)?;
+        if record.transaction_id()? != transaction_id {
+            return Err(PlatformError::Io(
+                "Windows Move journal filename does not match its transaction ID".to_string(),
+            ));
+        }
+        return resume_windows_cross_volume(&recovery_root, &mut record, None).map(|_| ());
     }
     if !same_volume_exists {
         return Err(PlatformError::Io(format!(
@@ -7987,57 +7996,17 @@ mod windows_source_tests {
     }
 
     #[test]
-    fn windows_retained_move_discovery_reads_real_journal_entries_without_initializing_state() {
+    fn windows_retained_move_discovery_does_not_initialize_missing_state() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-windows-retained-move-discovery-{}",
             getrandom::u64().unwrap()
         ));
-        let same_volume_id = [0x11; 16];
-        let cross_volume_id = [0x22; 16];
-
         assert!(
             super::discover_retained_windows_move_transactions_at(&root)
                 .unwrap()
                 .is_empty()
         );
         assert!(!root.exists());
-
-        std::fs::create_dir(&root).unwrap();
-        std::fs::write(
-            root.join(format!(
-                "{}.journal",
-                super::encode_transaction_id(same_volume_id)
-            )),
-            b"same-volume journal",
-        )
-        .unwrap();
-        std::fs::write(
-            root.join(format!(
-                "{}.cross-journal",
-                super::encode_transaction_id(cross_volume_id)
-            )),
-            b"cross-volume journal",
-        )
-        .unwrap();
-        std::fs::write(root.join("move-recovery.lock"), b"").unwrap();
-
-        assert_eq!(
-            super::discover_retained_windows_move_transactions_at(&root).unwrap(),
-            vec![
-                move_recovery::WindowsDiscoveredMoveTransaction {
-                    transaction_id: same_volume_id,
-                    kind: move_recovery::WindowsMoveTransactionKind::SameVolumeOverwrite,
-                    recovery_available: true,
-                },
-                move_recovery::WindowsDiscoveredMoveTransaction {
-                    transaction_id: cross_volume_id,
-                    kind: move_recovery::WindowsMoveTransactionKind::CrossVolume,
-                    recovery_available: false,
-                },
-            ]
-        );
-
-        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]
@@ -8915,6 +8884,125 @@ mod windows_source_tests {
                 }
             }
         }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_explicit_recovery_retains_displaced_file() {
+        if std::env::var_os("OTTRIN_TEST_WINDOWS_EXPLICIT_RECOVERY_CLOSED").is_some() {
+            assert!(!windows_cross_volume_recovery_enabled());
+            let transactions = super::discover_retained_windows_move_transactions().unwrap();
+            assert_eq!(transactions.len(), 1);
+            assert!(!transactions[0].recovery_available);
+            assert!(
+                super::recover_retained_windows_move_transaction(transactions[0].transaction_id)
+                    .is_err()
+            );
+            return;
+        }
+        assert!(windows_cross_volume_runtime_enabled());
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        let source_fixture = crate::tests::TestDir::new("explicit-recovery-source");
+        let destination_fixture =
+            crate::tests::TestDir::new_at(&volume, "explicit-recovery-destination");
+        let source = source_fixture.path().join("entry");
+        let target = destination_fixture.path().join("entry");
+        std::fs::write(&source, b"source-data").unwrap();
+        std::fs::write(&target, b"protected-data").unwrap();
+        let identity = move_recovery::stable_identity_of_entry(&target).unwrap();
+        let mut permissions = std::fs::metadata(&target).unwrap().permissions();
+        permissions.set_readonly(true);
+        std::fs::set_permissions(&target, permissions).unwrap();
+        assert!(
+            super::move_entry_transactional(
+                &source,
+                destination_fixture.path(),
+                ConflictAction::Overwrite
+            )
+            .is_err()
+        );
+        let transactions = super::discover_retained_windows_move_transactions().unwrap();
+        assert_eq!(transactions.len(), 1);
+        let id = transactions[0].transaction_id;
+        let closed = std::process::Command::new(std::env::current_exe().unwrap())
+            .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_explicit_recovery_retains_displaced_file", "--nocapture"])
+            .env("OTTRIN_TEST_WINDOWS_EXPLICIT_RECOVERY_CLOSED", "1")
+            .env_remove("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE")
+            .env_remove("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY")
+            .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", super::windows_recovery_root().unwrap())
+            .status().unwrap();
+        assert!(
+            closed.success(),
+            "product gate must still block explicit recovery"
+        );
+        assert!(
+            transactions[0].recovery_available,
+            "explicit recovery must use the same enabled acceptance gate as ordinary retry"
+        );
+        assert!(super::recover_retained_windows_move_transaction(id).is_err());
+        assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+        assert_eq!(std::fs::read(&target).unwrap(), b"protected-data");
+        assert!(
+            std::process::Command::new("attrib.exe")
+                .arg("-R")
+                .arg(&target)
+                .status()
+                .unwrap()
+                .success()
+        );
+        super::recover_retained_windows_move_transaction(id)
+            .expect("explicit recovery after removing fixture protection");
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+        let record = super::load_windows_cross_volume_record(
+            &super::windows_cross_volume_journal_path(&super::windows_recovery_root().unwrap(), id),
+        )
+        .unwrap();
+        let retained = record.retained_path().unwrap().unwrap();
+        assert_eq!(
+            move_recovery::stable_identity_of_entry(&retained).unwrap(),
+            identity
+        );
+        assert_eq!(std::fs::read(&retained).unwrap(), b"protected-data");
+        for _ in 0..2 {
+            super::recover_retained_windows_move_transaction(id)
+                .expect("completed retained recovery is idempotent");
+            assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+            assert_eq!(std::fs::read(&retained).unwrap(), b"protected-data");
+            assert_eq!(
+                super::discover_retained_windows_move_transactions()
+                    .unwrap()
+                    .len(),
+                1
+            );
+        }
+        std::fs::write(&target, b"later-user-edit").unwrap();
+        // A completed Move has no source left to delete. Repeated recovery must
+        // preserve subsequent edits rather than replay publication.
+        super::recover_retained_windows_move_transaction(id)
+            .expect("completed recovery preserves later user edits");
+        assert_eq!(std::fs::read(&target).unwrap(), b"later-user-edit");
+        assert_eq!(std::fs::read(&retained).unwrap(), b"protected-data");
+        let root = super::windows_recovery_root().unwrap();
+        let journal = super::windows_cross_volume_journal_path(&root, id);
+        let mut mismatched_id = id;
+        mismatched_id[0] ^= 1;
+        let mismatched_journal = super::windows_cross_volume_journal_path(&root, mismatched_id);
+        std::fs::copy(&journal, &mismatched_journal).unwrap();
+        assert!(super::discover_retained_windows_move_transactions().is_err());
+        assert!(super::recover_retained_windows_move_transaction(mismatched_id).is_err());
+        std::fs::remove_file(mismatched_journal).unwrap();
+        std::fs::write(&journal, b"malformed journal").unwrap();
+        assert!(super::discover_retained_windows_move_transactions().is_err());
+        assert!(super::recover_retained_windows_move_transaction(id).is_err());
+        assert_eq!(std::fs::read(&target).unwrap(), b"later-user-edit");
+        assert_eq!(
+            move_recovery::stable_identity_of_entry(&retained).unwrap(),
+            identity
+        );
+        assert_eq!(std::fs::read(&retained).unwrap(), b"protected-data");
     }
 
     #[cfg(target_os = "windows")]
