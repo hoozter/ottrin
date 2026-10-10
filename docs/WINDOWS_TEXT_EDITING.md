@@ -19,8 +19,11 @@ user edits. An incompatible existing writer therefore stops saving before stagin
 Source identity, content, creation/write/change times, owner/group/DACL,
 mandatory-label security and security resource attributes are compared before
 withdrawal. The publication file is created beside the source using the captured
-security descriptor, so its inherited ACL comes from the same parent. Its captured
-security, creation time and attributes must match before the original is moved. If
+security descriptor. `NtCreateFile` does not preserve its automatic-inheritance
+control flag; candidate preparation applies the source DACL and protection state
+through handle-based `SetSecurityInfo`. Only that owned publication handle requests
+`WRITE_DAC`. Its captured security, creation time and attributes must still match
+exactly before the original is moved. If
 Windows cannot apply resource attributes to the publication, that exact comparison
 fails closed before withdrawal. No merge-error-ignore mode is used.
 
@@ -53,6 +56,16 @@ occupied names, post-publication flush failure, hard links, alternate streams,
 invalid/oversized text and public-gate enforcement. These fixtures call the private
 native session; they do not enable editing in an application build.
 
+Native ordinary-user execution on Windows 11 build 26100 passed all ten text-save
+fixtures on 2026-10-10, including inherited, protected and explicit DACLs. The
+original run refused publication because candidate/source security descriptors
+differed in the automatic-inheritance flag. After fixing candidate ACL preparation,
+byte-for-byte descriptor equality, retained original/draft data, directory flushes,
+collision/failure retention and closed-gate checks pass. Evidence is in
+`.hermes/evidence/windows-20261010/text-dacl-final.log`; the full default native
+platform suite passed 96 tests (17 cross-volume fixtures are separately ignored).
+This is private-session acceptance, not packaged editor or power-loss proof.
+
 Run on a supported Windows host with `%TEMP%` on local NTFS:
 
 ```powershell
@@ -70,8 +83,8 @@ cargo test -p ottrin-ui recovery_conflict
 ```
 
 Cross-compilation and portable tests do not establish native Windows acceptance.
-Before changing the public gate, require native evidence for ordinary and custom
-ACLs, directory flush support, sharing modes, writable mappings, Unicode paths,
+Before changing the public gate, extend the ordinary/custom ACL, directory flush
+and sharing evidence with writable mappings, Unicode paths,
 ancestor renames, process termination between each publication step, recovery
 privacy, and exact packaged editor behavior. Security resource attributes are now
 included in the descriptor that is captured, applied and compared, but this
@@ -92,4 +105,5 @@ the last observed location is retained and may have moved with an ancestor.
 
 API contracts: [NtCreateFile](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntcreatefile),
 [FILE_RENAME_INFORMATION](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information),
+[SetSecurityInfo](https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-setsecurityinfo),
 and [GetFileInformationByHandleEx](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyhandleex).

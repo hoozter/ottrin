@@ -18,11 +18,14 @@ use windows_sys::Wdk::Foundation::OBJECT_ATTRIBUTES;
 use windows_sys::Wdk::Storage::FileSystem::*;
 use windows_sys::Win32::Foundation::{HANDLE, LocalFree, RtlNtStatusToDosError, UNICODE_STRING};
 use windows_sys::Win32::Security::Authorization::{
-    ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1,
+    ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1, SE_FILE_OBJECT,
+    SetSecurityInfo,
 };
 use windows_sys::Win32::Security::{
     ATTRIBUTE_SECURITY_INFORMATION, DACL_SECURITY_INFORMATION, GROUP_SECURITY_INFORMATION,
-    GetKernelObjectSecurity, LABEL_SECURITY_INFORMATION, OWNER_SECURITY_INFORMATION,
+    GetKernelObjectSecurity, GetSecurityDescriptorControl, GetSecurityDescriptorDacl,
+    LABEL_SECURITY_INFORMATION, OWNER_SECURITY_INFORMATION, PROTECTED_DACL_SECURITY_INFORMATION,
+    SE_DACL_PROTECTED, UNPROTECTED_DACL_SECURITY_INFORMATION,
 };
 use windows_sys::Win32::Storage::FileSystem::*;
 use windows_sys::Win32::System::IO::IO_STATUS_BLOCK;
@@ -127,6 +130,7 @@ impl Session {
             self.source.security.as_ptr().cast(),
         )
         .map_err(retained)?;
+        apply_publication_dacl(&publication, &self.source.security).map_err(retained)?;
         publication
             .write_all(text.as_bytes())
             .map_err(write_error)
@@ -264,7 +268,10 @@ fn relative(
     let access = if directory {
         FILE_GENERIC_READ | FILE_GENERIC_WRITE
     } else if create {
-        FILE_GENERIC_READ | FILE_GENERIC_WRITE | DELETE
+        FILE_GENERIC_READ
+            | FILE_GENERIC_WRITE
+            | DELETE
+            | if security.is_null() { 0 } else { WRITE_DAC }
     } else {
         FILE_GENERIC_READ | DELETE
     };
@@ -297,6 +304,47 @@ fn relative(
     })?;
     Ok(unsafe { File::from_raw_handle(raw.cast()) })
 }
+// NtCreateFile preserves the ACL entries but does not retain the automatic
+// inheritance state of a supplied descriptor. Finalize the new file's DACL
+// through the filesystem API before the exact metadata comparison.
+fn apply_publication_dacl(file: &File, security: &[u8]) -> Result<(), TextEditError> {
+    let descriptor = security.as_ptr().cast_mut().cast();
+    let mut control = 0;
+    let mut revision = 0;
+    let mut present = 0;
+    let mut defaulted = 0;
+    let mut dacl = ptr::null_mut();
+    if unsafe { GetSecurityDescriptorControl(descriptor, &mut control, &mut revision) } == 0
+        || unsafe { GetSecurityDescriptorDacl(descriptor, &mut present, &mut dacl, &mut defaulted) }
+            == 0
+    {
+        return Err(last_error());
+    }
+    if present == 0 {
+        return Err(TextEditError::UnsupportedMetadata);
+    }
+    let protection = if control & SE_DACL_PROTECTED != 0 {
+        PROTECTED_DACL_SECURITY_INFORMATION
+    } else {
+        UNPROTECTED_DACL_SECURITY_INFORMATION
+    };
+    let error = unsafe {
+        SetSecurityInfo(
+            handle(file),
+            SE_FILE_OBJECT,
+            DACL_SECURITY_INFORMATION | protection,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            dacl,
+            ptr::null(),
+        )
+    };
+    if error != 0 {
+        return Err(write_error(std::io::Error::from_raw_os_error(error as i32)));
+    }
+    Ok(())
+}
+
 fn open_source(parent: &File, name: &OsStr) -> Result<File, TextEditError> {
     relative(parent, name, false, false, ptr::null())
 }
@@ -638,27 +686,44 @@ mod tests {
 
     #[test]
     fn windows_native_save_retains_original_and_independent_draft() {
-        let fixture = Fixture::new();
-        let session = Session::open(&fixture.source()).expect("native NTFS admission");
-        session
-            .save("\u{feff}edited\r\n")
-            .expect("native publication and directory flush");
-        assert_eq!(
-            std::fs::read(fixture.source()).unwrap(),
-            "\u{feff}edited\r\n".as_bytes()
-        );
-        let recovery = fixture.recovery();
-        assert_eq!(
-            std::fs::read(recovery.join("candidate")).unwrap(),
-            b"original\r\n"
-        );
-        assert_eq!(
-            std::fs::read(recovery.join("edits")).unwrap(),
-            "\u{feff}edited\r\n".as_bytes()
-        );
-        let saved = Session::open(&fixture.source()).unwrap();
-        assert_eq!(saved.source.security, session.source.security);
-        assert_eq!(session.contents(), "original\r\n");
+        for acl in ["inherited", "protected", "explicit"] {
+            let fixture = Fixture::new();
+            if acl != "inherited" {
+                let mut command = std::process::Command::new("icacls.exe");
+                command.arg(fixture.source());
+                if acl == "protected" {
+                    command.arg("/inheritance:d");
+                } else {
+                    command.args(["/grant:r", "*S-1-5-32-545:R"]);
+                }
+                let output = command.output().unwrap();
+                assert!(
+                    output.status.success(),
+                    "owned fixture ACL: {}",
+                    String::from_utf8_lossy(&output.stderr)
+                );
+            }
+            let session = Session::open(&fixture.source()).expect("native NTFS admission");
+            session
+                .save("\u{feff}edited\r\n")
+                .expect("native publication and directory flush");
+            assert_eq!(
+                std::fs::read(fixture.source()).unwrap(),
+                "\u{feff}edited\r\n".as_bytes()
+            );
+            let recovery = fixture.recovery();
+            assert_eq!(
+                std::fs::read(recovery.join("candidate")).unwrap(),
+                b"original\r\n"
+            );
+            assert_eq!(
+                std::fs::read(recovery.join("edits")).unwrap(),
+                "\u{feff}edited\r\n".as_bytes()
+            );
+            let saved = Session::open(&fixture.source()).unwrap();
+            assert_eq!(saved.source.security, session.source.security);
+            assert_eq!(session.contents(), "original\r\n");
+        }
     }
 
     #[test]
