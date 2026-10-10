@@ -69,7 +69,10 @@ Native Unicode-name saves and eight process-exit boundaries also pass
 ancestor rename with native access-denied; the subsequent save preserved the
 original and draft. Successful ancestor relocation is not claimed on this host.
 Exits before/after withdrawal, publication and restoration leave the exact original
-identity/security and independent draft accessible. This is private-session
+identity/security and independent draft accessible. A native writable-mapping
+fixture closes its creating file handle, then confirms sharing-violation refusal
+before staging. Unmapping allows ordinary retry if unchanged; mapped edits require
+reload and remain in the retained original after saving (`text-mapping-final.log`). This is private-session
 acceptance, not packaged editor or power-loss proof.
 
 Run on a supported Windows host with `%TEMP%` on local NTFS:
@@ -90,9 +93,10 @@ cargo test -p ottrin-ui recovery_conflict
 
 Cross-compilation and portable tests do not establish native Windows acceptance.
 Before changing the public gate, extend the ordinary/custom ACL, directory flush
-and sharing evidence with writable mappings, Unicode paths,
-ancestor renames, process termination between each publication step, recovery
-privacy, and exact packaged editor behavior. Security resource attributes are now
+and sharing evidence with recovery privacy and exact packaged editor behavior.
+Unicode paths, ancestor-rename refusal, publication-step exits and the tested
+writable-mapping lifecycle have native evidence; other mapping/relocation behavior
+is not implied. Security resource attributes are now
 included in the descriptor that is captured, applied and compared, but this
 preservation path still needs a native fixture with an actual resource-attribute
 ACE. Audit SACLs, scoped policy IDs, object IDs and other NTFS metadata are **not
@@ -101,9 +105,9 @@ preservation on evidence; do not enable the gate while these metadata gaps remai
 Unsupported security cloning or directory flushing currently stops the save and
 retains staging.
 
-The sharing restriction does not exclude writable mappings whose creating handles
-have already closed, changes to permissions, same-user tampering or storage
-failure. Rename itself changes ChangeTime; post-rename comparison excludes that
+The tested Windows writable mapping retains a sharing conflict after its creating
+file handle closes. That observation does not prove exclusion for every mapping
+variant, permission change, same-user tampering or storage failure. Rename itself changes ChangeTime; post-rename comparison excludes that
 field and keeps the original indefinitely. No crash/power-loss durability or
 continuous external-change monitoring is claimed. Recovery paths are resolved
 from the directory handle when reporting a recovery conflict; if resolution fails,

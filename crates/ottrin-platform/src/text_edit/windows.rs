@@ -946,6 +946,104 @@ mod tests {
     }
 
     #[test]
+    fn windows_native_closed_handle_writable_mapping_blocks_save_until_unmapped() {
+        use windows_sys::Win32::Foundation::CloseHandle;
+        use windows_sys::Win32::System::Memory::{
+            CreateFileMappingW, FILE_MAP_WRITE, FlushViewOfFile, MEMORY_MAPPED_VIEW_ADDRESS,
+            MapViewOfFile, PAGE_READWRITE, UnmapViewOfFile,
+        };
+        struct Mapping {
+            object: HANDLE,
+            view: MEMORY_MAPPED_VIEW_ADDRESS,
+        }
+        impl Mapping {
+            fn change(&self) {
+                // The view spans the unchanged ten-byte fixture file.
+                unsafe {
+                    ptr::copy_nonoverlapping(
+                        b"late-edit\n".as_ptr(),
+                        self.view.Value.cast::<u8>(),
+                        10,
+                    );
+                }
+                assert_ne!(unsafe { FlushViewOfFile(self.view.Value, 10) }, 0);
+            }
+        }
+        impl Drop for Mapping {
+            fn drop(&mut self) {
+                unsafe {
+                    UnmapViewOfFile(self.view);
+                    CloseHandle(self.object);
+                }
+            }
+        }
+        for mutate in [false, true] {
+            let fixture = Fixture::new();
+            let session = Session::open(&fixture.source()).unwrap();
+            let file = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+                .open(fixture.source())
+                .unwrap();
+            let object = unsafe {
+                CreateFileMappingW(
+                    handle(&file),
+                    ptr::null(),
+                    PAGE_READWRITE,
+                    0,
+                    0,
+                    ptr::null(),
+                )
+            };
+            assert!(
+                !object.is_null(),
+                "create mapping: {}",
+                std::io::Error::last_os_error()
+            );
+            let view = unsafe { MapViewOfFile(object, FILE_MAP_WRITE, 0, 0, 10) };
+            let mapping = Mapping { object, view };
+            assert!(
+                !mapping.view.Value.is_null(),
+                "map view: {}",
+                std::io::Error::last_os_error()
+            );
+            drop(file);
+            assert_eq!(session.save("draft"), Err(TextEditError::Conflict));
+            assert_eq!(std::fs::read(fixture.source()).unwrap(), b"original\r\n");
+            assert_eq!(std::fs::read_dir(&fixture.0).unwrap().count(), 1);
+            if mutate {
+                mapping.change();
+                assert_eq!(session.save("draft"), Err(TextEditError::Conflict));
+                assert_eq!(std::fs::read(fixture.source()).unwrap(), b"late-edit\n");
+                assert_eq!(std::fs::read_dir(&fixture.0).unwrap().count(), 1);
+            }
+            drop(mapping);
+            let expected = if mutate {
+                b"late-edit\n"
+            } else {
+                b"original\r\n"
+            };
+            if mutate {
+                assert_eq!(session.save("draft"), Err(TextEditError::Conflict));
+                let reloaded = Session::open(&fixture.source()).unwrap();
+                assert_eq!(reloaded.contents().as_bytes(), expected);
+                reloaded
+                    .save("draft")
+                    .expect("save after explicit reload of mapped edits");
+            } else {
+                session
+                    .save("draft")
+                    .expect("retry after unmapping without source edits");
+            }
+            assert_eq!(std::fs::read(fixture.source()).unwrap(), b"draft");
+            let recovery = fixture.recovery();
+            assert_eq!(std::fs::read(recovery.join("candidate")).unwrap(), expected);
+            assert_eq!(std::fs::read(recovery.join("edits")).unwrap(), b"draft");
+        }
+    }
+
+    #[test]
     fn windows_native_open_writer_blocks_save_without_touching_source() {
         let fixture = Fixture::new();
         let session = Session::open(&fixture.source()).unwrap();
