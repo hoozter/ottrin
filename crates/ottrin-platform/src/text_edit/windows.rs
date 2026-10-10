@@ -718,12 +718,26 @@ mod tests {
     }
 
     #[test]
-    fn windows_native_public_session_cannot_bypass_acceptance_gate() {
+    fn windows_native_public_session_saves_and_preserves_external_edits() {
+        assert!(super::super::text_editing_supported());
         let fixture = Fixture::new();
-        assert!(matches!(
-            super::super::TextEditSession::open(&fixture.source()),
-            Err(TextEditError::NotAvailable)
-        ));
+        let session = super::super::TextEditSession::open(&fixture.source()).unwrap();
+        assert_eq!(session.contents(), "original\r\n");
+        session.save("public draft").unwrap();
+        assert_eq!(std::fs::read(fixture.source()).unwrap(), b"public draft");
+        assert_eq!(
+            std::fs::read(fixture.recovery().join("candidate")).unwrap(),
+            b"original\r\n"
+        );
+        assert_eq!(
+            std::fs::read(fixture.recovery().join("edits")).unwrap(),
+            b"public draft"
+        );
+        let reopened = super::super::TextEditSession::open(&fixture.source()).unwrap();
+        std::fs::write(fixture.source(), "external edit").unwrap();
+        assert_eq!(reopened.save("second draft"), Err(TextEditError::Conflict));
+        assert_eq!(std::fs::read(fixture.source()).unwrap(), b"external edit");
+        assert_eq!(std::fs::read_dir(&fixture.0).unwrap().count(), 2);
     }
 
     #[test]

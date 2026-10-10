@@ -134,14 +134,6 @@ mod tests {
     }
 
     #[test]
-    fn windows_public_editor_remains_gated_until_native_acceptance() {
-        assert_eq!(
-            super::super::text_editing_supported(),
-            cfg!(target_os = "linux")
-        );
-    }
-
-    #[test]
     fn windows_collision_keeps_external_target_and_retained_original() {
         // Model namespace entries separately from file identities: withdrawing
         // the original must not authorize overwriting a later target occupant.

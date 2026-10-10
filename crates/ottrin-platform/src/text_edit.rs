@@ -4,8 +4,8 @@
 //! decides whether a file is a supported text preview; this boundary admits
 //! only complete, demonstrably plain, UTF-8 local files. Linux saves retain a
 //! descriptor for the source parent so a later pathname substitution cannot
-//! redirect staging or publication. Windows has a native boundary awaiting
-//! acceptance; its public editor gate remains closed. macOS stays read-only.
+//! redirect staging or publication. Windows retains the original and independent
+//! draft through handle-relative publication. macOS stays read-only.
 
 use std::path::Path;
 use thiserror::Error;
@@ -21,12 +21,10 @@ mod windows_contract;
 /// read-only rather than presenting a truncated buffer as editable content.
 pub const MAX_EDITABLE_TEXT_BYTES: u64 = 128 * 1024;
 
-/// Atomic replacement is enabled only on Linux, where the implementation pins
-/// the source parent and uses descriptor-relative primitives throughout save.
-/// Other platforms stay read-only until their native replacement boundary is
-/// proven.
+/// Platforms with native retained text publication. Each session still admits
+/// only files whose filesystem, sharing and metadata requirements are satisfied.
 pub const fn text_editing_supported() -> bool {
-    cfg!(target_os = "linux")
+    cfg!(any(target_os = "linux", target_os = "windows"))
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -89,9 +87,6 @@ impl TextEditSession {
         }
         #[cfg(target_os = "windows")]
         {
-            if !text_editing_supported() {
-                return Err(TextEditError::NotAvailable);
-            }
             windows::Session::open(path).map(|inner| Self { inner })
         }
         #[cfg(not(any(target_os = "linux", target_os = "windows")))]

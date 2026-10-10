@@ -1,10 +1,10 @@
 # Windows text-save boundary
 
 The Windows save implementation in `crates/ottrin-platform/src/text_edit/windows.rs`
-is an acceptance candidate. `text_editing_supported()` and public session creation
-still refuse Windows editing. There is no environment override. Linux publication
-and the editor's conflict/reload/Undo behavior are unchanged. macOS remains
-read-only. No additional document formats are introduced.
+is enabled for admitted local NTFS files. Native public-session and desktop editor
+checks pass; exact portable-package acceptance remains pending. There is no
+environment override. Linux publication and the editor's conflict/reload/Undo
+behavior are unchanged. macOS remains read-only. No additional document formats are introduced.
 
 ## Current implementation
 
@@ -59,12 +59,12 @@ recovery files or unpublished siblings, including after successful saves.
 ## Evidence and native acceptance boundary
 
 Portable tests in `windows_contract.rs` exercise publication order, failure at
-every boundary, successful/failed restoration, collision retention and the closed
-public gate. Windows-only fixtures exercise retained originals/drafts, byte and
+every boundary, successful/failed restoration and collision retention. Windows-only fixtures exercise retained originals/drafts, byte and
 security preservation, unchanged saves, external edits, sharing refusal,
 occupied names, post-publication flush failure, hard links, alternate streams,
-invalid/oversized text and public-gate enforcement. These fixtures call the private
-native session; they do not enable editing in an application build.
+invalid/oversized text and public-session saving/conflict refusal. Most fixtures
+call the private native session to exercise failure hooks; the public-session
+fixture and desktop checks exercise the ordinary entry point.
 
 Native ordinary-user execution on Windows 11 build 26100 passed all ten text-save
 fixtures on 2026-10-10, including inherited, protected and explicit DACLs. The
@@ -102,8 +102,8 @@ cargo test -p ottrin-ui recovery_conflict
 ```
 
 Cross-compilation and portable tests do not establish native Windows acceptance.
-Before changing the public gate, extend the ordinary/custom ACL, directory flush
-and sharing evidence with exact packaged editor behavior. Recovery-directory and
+Extend the ordinary/custom ACL, directory flush and sharing evidence with exact
+packaged editor behavior before claiming package acceptance. Recovery-directory and
 draft ACL privacy have the native restricted-token evidence above.
 Unicode paths, ancestor-rename refusal, publication-step exits and the tested
 writable-mapping lifecycle have native evidence; other mapping/relocation behavior
@@ -132,7 +132,28 @@ unchanged bytes, no new stage and unchanged full SACL (`scope-native-seed.log`,
 A separate native extended-attribute fixture passes admission and post-open refusal,
 with exact EA bytes and source content retained (`text-ea.log`). These checks close
 those native admission cases; exact packaged editor acceptance remains pending.
-Public editing stays disabled. Unsupported security cloning or directory flushing stops the save and retains existing staging.
+Unsupported security cloning or directory flushing stops the save and retains existing staging.
+
+## Public editor acceptance
+
+The public-session regression failed with `NotAvailable` before enablement
+(`text-public-red.log`). The authoritative platform capability now includes
+Windows; the obsolete public refusal branch and closed-gate assertion are removed.
+All 22 native text checks pass, with the separately prepared SACL fixture ignored
+in that suite (`text-public-green.log`). Strict Windows platform Clippy passes.
+
+The source-built Windows executable `ottrin-app-editor.exe` (SHA-256
+`a5f3107f03cad8a0fabfc316d1d343a0e8a061618df281e7bacb32d2b2c5aeb3`)
+ran as the ordinary user in the owned Windows 11 guest with separate application
+settings and the native renderer. Quick Inspector saved Markdown to exact bytes,
+retained the original and independent draft, refused an external change while
+keeping the buffer, supported Keep editing, and loaded the external version only
+after explicit discard confirmation. An ordinary-user filesystem check verified
+all three retained/current versions (`app-editor-retention.log`). Screenshots and
+logs under `.hermes/evidence/windows-20261010/app-editor-*` record these checks.
+The application closed after the clean reload. No codec, renderer or service was
+installed. This is source-built desktop acceptance, not exact portable-package,
+installer or power-loss acceptance.
 
 The tested Windows writable mapping retains a sharing conflict after its creating
 file handle closes. That observation does not prove exclusion for every mapping
