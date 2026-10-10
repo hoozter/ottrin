@@ -198,7 +198,10 @@ confirmation and source cleanup. Recovery after the published file becomes read-
 verifies and pins both copies, journals reclaim intent, and moves the publication back
 to private staging before restoring metadata through a writable handle. A second
 process exit after reclaim also recovers; changed source data refuses recovery without
-altering the published copy. Unexplained replacement gaps remain blocked. Read-only
+altering the published copy. A source named stream added after interruption also
+refuses cleanup: the pinned source stream set is rechecked before deletion, and
+ordinary retry succeeds after removal of that added fixture stream. Unexplained
+replacement gaps remain blocked. Read-only
 destination and remaining interruption cases remain pending.
 The ACL fixture invokes `icacls.exe` only on its owned directory and restores its temporary denial. Process
 exit fixtures recover through ordinary Move after staging, publication, source

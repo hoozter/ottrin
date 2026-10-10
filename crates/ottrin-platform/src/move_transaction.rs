@@ -1634,12 +1634,19 @@ fn remove_windows_source_by_handle_if_still_named(
                     message: format!("source content revalidation handle clone failed: {error}"),
                 }
             })?;
-            hash_windows_file(&mut content_handle).map_err(|error| {
+            let streams = windows_file_streams(&content_handle).map_err(|error| {
                 PlatformError::CommittedCleanupPending {
                     transaction: recovery_transaction.display().to_string(),
-                    message: format!("source content revalidation failed: {error}"),
+                    message: format!("source stream revalidation failed: {error}"),
                 }
-            })? == (record.source_size, record.source_sha256.clone())
+            })?;
+            windows_stream_set_is_copy_safe(streams, false)
+                && hash_windows_file(&mut content_handle).map_err(|error| {
+                    PlatformError::CommittedCleanupPending {
+                        transaction: recovery_transaction.display().to_string(),
+                        message: format!("source content revalidation failed: {error}"),
+                    }
+                })? == (record.source_size, record.source_sha256.clone())
         }
         WindowsCrossVolumeSourceKind::SymbolicLink => {
             let expected_target = record.source_link_target.as_deref().ok_or_else(|| {
@@ -8975,6 +8982,47 @@ mod windows_source_tests {
                 std::fs::metadata(&target).unwrap().permissions().readonly(),
                 boundary == "FilePublicationFlushed"
             );
+            if boundary == "FileReplaced" {
+                assert!(
+                    std::process::Command::new("attrib.exe")
+                        .arg("-R")
+                        .arg(&source)
+                        .status()
+                        .unwrap()
+                        .success()
+                );
+                let stream = std::path::PathBuf::from(format!("{}:late-data", source.display()));
+                std::fs::write(&stream, b"added-after-interruption").unwrap();
+                let mut permissions = std::fs::metadata(&source).unwrap().permissions();
+                permissions.set_readonly(true);
+                std::fs::set_permissions(&source, permissions).unwrap();
+                let result = super::move_entry_transactional(
+                    &source,
+                    destination_fixture.path(),
+                    ConflictAction::Overwrite,
+                );
+                assert!(
+                    result.is_err(),
+                    "source with a new named stream must survive"
+                );
+                assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
+                assert_eq!(std::fs::read(&stream).unwrap(), b"added-after-interruption");
+                assert!(std::fs::metadata(&source).unwrap().permissions().readonly());
+                assert_eq!(std::fs::read(&target).unwrap(), b"source-data");
+                // Remove only the added stream from this owned fixture for retry.
+                assert!(
+                    std::process::Command::new("attrib.exe")
+                        .arg("-R")
+                        .arg(&source)
+                        .status()
+                        .unwrap()
+                        .success()
+                );
+                std::fs::remove_file(&stream).unwrap();
+                let mut permissions = std::fs::metadata(&source).unwrap().permissions();
+                permissions.set_readonly(true);
+                std::fs::set_permissions(&source, permissions).unwrap();
+            }
             if boundary == "FilePublicationFlushed" {
                 let published_modified = std::fs::metadata(&target).unwrap().modified().unwrap();
                 assert!(
