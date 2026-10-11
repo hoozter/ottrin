@@ -20,23 +20,67 @@ The personal configuration contained zero saved custom themes at assessment. Rep
 
 Verify all 14 workflows from the brief: built-in apply; pencil without activation; cancel without creation; create/activate; immutable original; accurate custom preview; edit/save; changed preview; Save as new; rename/delete and valid active reference; three global modes; independent variants; cancel restoration; all controls accessible. Also verify dirty close/continue and exit handling, reset scopes, import/export, identical previews across ownership, small desktop layout, 100%/150% scaling, Light/Dark rendering, alignment, clipping, focus, and independent inspector scrolling. Bind final packaged GUI evidence to the exact stable AppImage revision and checksum. Preserve unrelated preview/Windows work and personal settings/index data; remove owned test processes, profiles, staging, and obsolete generated output.
 
-Implementation and acceptance are in progress; no completion is claimed by this document.
+Implementation and Linux AppImage acceptance are complete. The evidence below binds the final deliverable to its exact source revision and checksum.
 
 ## Independent variant rendering
 
 Custom colors and geometry now resolve from the selected stored variant without consulting the source preset. File-label neutral blend strength was previously a preset-name lookup; it is now stored and editable per variant, preserving the source theme’s label coloring while removing that last rendering dependency. The 38 existing fields remain available, with this one additional value in File labels & icons. Source preset metadata describes where a theme was created.
 
-## Development verification
+## Verified delivery — 2026-10-11
 
-Focused interaction tests verify independent card body/pencil hit targets, variant switching without changing the global preference, paired persistence, cancellation, and retaining a dirty session when its window closes. Native development screenshots identified an unsupported pencil glyph and a clipped reset button at 800 × 600; fixes use the bundled Material edit icon and budget the actual widths of color inputs and reset targets. These observations are development evidence; the final artifact has not yet been rebuilt or accepted for this redesign.
+The stable deliverable is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
+It was built from clean tracked revision `a3a76ac1d26a88c3cde026faaf74d934e25faad5`;
+SHA-256: `2aca0c0376dd6f99e235fbb386e79982b856c15fbe2ba58d99cb062d070ae8ac`.
+The adjacent provenance file identifies this source and artifact. Later documentation-only commits do not change the packaged code.
 
+Source verification passed **331 UI tests**, **32 core tests**, **18 focused appearance tests**, strict UI/core Clippy, formatting, and diff validation. Tests exercise card click-target separation, paired persistence, save/cancel/rename/copy/delete, imported-draft ownership, all inspector controls and reset alignment at 800 × 600 with text scales 1.0 and 1.35, semantic component isolation, dialog styling, complete preset palette equality for seven presets in both modes, dynamic miniature button/accent rendering, and filename elision.
 
-The current development source passes 330 UI tests, 32 core tests, strict UI/core Clippy, formatting, and diff validation. The preset-copy regression compares the entire rendered Colors value for all seven presets in both modes. The minimum-layout regression paints all 11 inspector contexts at 800 × 600 with text scales 1.0 and 1.35 and checks aligned, visible reset targets.
+Native verification ran the final AppImage on private Linux X11 displays and private profiles, at 100% and 150% desktop scaling. Every one of the **33 color and 6 numeric controls** was edited through the interface, reset, edited again, saved, and checked after restarting the same artifact. All 39 property resets restored the preview pixel-for-pixel. Complete Light/Dark values and the independent global preference were preserved. Changes were inspected in the preview and real file-manager UI; heading text was additionally checked in the editor heading, and audio/font category colors in real sample files. The original 38 settings remain accessible; neutral file-label blend is the additional control.
 
-Native Linux testing covered built-in apply/customize/cancel/create, independent variants, existing edit/save, thumbnail updates, Save as new, rename/delete with active fallback, global modes, dirty close/continue, and explicit app-exit choices. Additional native checks verified individual-property reset, theme-default reset preserving a button-radius edit, whole-theme reset restoring both original palettes, and v2 export/import preserving the complete paired configuration and global preference. Numeric serialization is compared at native f32 precision.
+### Full brief audit
 
-At 150% desktop scaling, the 800 × 600 logical editor remains functional in both modes. Increasing the Dark variant's text size to 1.35 preserves aligned color/numeric/reset columns, wraps long labels, keeps the preview visible during independent inspector scrolling, and retains accessible color/opacity controls. Native GUI evidence is in `.hermes/evidence/appearance-redesign/`; it is development evidence until exact AppImage verification is recorded.
+| Brief section | Delivered behavior and authoritative evidence |
+|---|---|
+| 1. General design | Shared themed controls and semantic roles; compact header/footer, flat contextual groups, consistent input/reset columns. Native 100% and 150% Light/Dark screenshots; rendered alignment and component-isolation tests. |
+| 2. Appearance library | Equal-size dynamic cards, independent subtle pencil targets and ownership tooltips, selected/focus indicators, connected mutually exclusive Light/Dark/System control and effective-mode label, concise active theme and contextual Continue editing. Native apply/pencil/retained-draft and keyboard System activation; card-target regression. |
+| 3. Ownership and variants | Immutable built-ins; explicit Create only; complete independent paired custom palettes; automatic Customize/Edit titles/actions; in-place Save, rename, Save as new, duplicate-name handling, custom-only delete and valid fallback. Native management snapshots and source lifecycle tests. |
+| 4. Preview architecture | One lightweight painter-based miniature for both ownership types, fed by effective palette; no PNG dependency or preset-name styling lookup. Actual backgrounds, surfaces, selection, text, borders, accent, button fill/text/corners. Native updated-thumbnail and immutable-original captures; complete Colors equality and miniature regressions. |
+| 5. Editor workspace | Approximately 58% persistent clickable preview / 42% contextual inspector; one synchronized component selector for all 11 contexts; Defaults separate from component colors/geometry/categories; independent inspector scrolling; header naming and ownership, secondary variant control, unsaved state, stable action footer. Native minimum-size, selection, scroll and control sweep; rendered layout/isolation tests. |
+| 6. Lifecycle and resets | Live draft without persistence, explicit Save/Create/Cancel, dirty close retains a resumable draft, conflicting library actions disabled, exit Save/Discard/Keep choices. Reset property/context/current variant versus both starting palettes. Native exact-record comparisons, close/continue and all exit choices. |
+| 7. Visual consistency | Shared theme buttons, fields, segmented controls, typography and surface/window roles; both modes verified. Reuses existing tokens and icon font. Native rendered screens and dialog/semantic role tests. |
+| 8. Preserved capabilities | All seven built-ins, all existing fields plus blend, global modes independent of paired editor variants, typography/geometry/category/state editing, persistence and v2 paired export/import. No obsolete v1 or single-palette compatibility path. Control sweep, full-palette tests and native import/export records. |
+| 9–10. Delivery and integrated design | Pre-implementation assessment retained above; implementation committed, source checks passed, actual final-package GUI inspected, guide updated, compact acceptance receipts published, task-owned processes/profiles/staging removed. |
 
-The v2 import/export envelope stores `format: ottrin-theme`, `version: 2`, and one named theme with complete `light` and `dark` palettes. Built-in provenance is descriptive only. There is no single-variant v1 compatibility path. Color overlays and semantic label blending derive from the stored palette, so changing the descriptive source preset cannot change a saved theme.
+The architecture stores complete values rather than inheritance/override flags. Theme defaults are shared tokens, and component contexts expose their own relevant stored fields. Reset tooltips explicitly restore the values captured when the editor opened; component reset affects only that context in the current variant. More → Reset theme to starting values restores both palettes. No duplicate inheritance state was introduced.
 
-The shared thumbnail also represents button fill, label color, scaled corners, and accent outline. A rendered-shape regression verifies that button and accent edits affect this miniature.
+### Required native workflows
+
+| # | Workflow | Final-package evidence in `.hermes/evidence/appearance-redesign/` |
+|---:|---|---|
+| 1 | Apply built-in | `final-workflow-builtin-applied.json` and screenshot |
+| 2 | Pencil without activation | `final-workflow-pencil-without-activation.json` exactly equals applied state |
+| 3 | Cancel without creation | `final-workflow-cancel-no-create.json` exactly equals applied state |
+| 4 | Create and activate | `final-workflow-created.json` |
+| 5 | Immutable original | `final-workflow-immutable-nord.png`; original thumbnail pixel-identical |
+| 6 | Correct custom thumbnail | `final-workflow-custom-applied.png` |
+| 7 | Edit existing and save | `final-workflow-edited.json` |
+| 8 | Updated preview | `final-workflow-updated-thumbnail.png` |
+| 9 | Save as new | `final-workflow-duplicated.json`; copy has identical independent paired palettes |
+| 10 | Rename/delete and valid active reference | `final-workflow-renamed.json`, `final-workflow-deleted-active.json` |
+| 11 | Light/Dark/System selection and previews | `final-workflow-mode-*.json/png`, `final-keyboard-system-selected.json/png` |
+| 12 | Independent variants | Created Dark panel `#203040`, Light panel `#DCE6F0`; `final-workflow-independent-variants.png` |
+| 13 | Cancel restores prior appearance | `final-workflow-cancel-restored.json` and native cancel captures |
+| 14 | Every supported control accessible and effective | `FINAL_CONTROL_ACCEPTANCE.json`, saved/restarted complete records and representative control captures |
+
+Additional exact-package receipts:
+
+- `FINAL_PICKER_IMPORT_ACCEPTANCE.json`: hue/saturation/brightness, numeric RGB/opacity, heading edit/reset, keyboard mode activation and native v2 export/import. RGB/opacity persisted `[80,120,160,89]`; import remained unsaved until Create.
+- `FINAL_SCALE_EXIT_ACCEPTANCE.json`: 800 × 600 logical editor at 150%, text 1.35×, both modes, independent scroll, long-label wrapping/reset alignment, filename ellipsis, compact picker, Keep editing, Save and close, exact restart persistence.
+- `FINAL_RESET_EXIT_ACCEPTANCE.json`: context reset preserves other context/variant, whole reset restores both palettes exactly, Discard and close preserves the saved paired record and global preference across restart.
+- `ACCEPTANCE.json` and `dist/packages/APPEARANCE_ACCEPTANCE.json`: compact final delivery inventory and artifact binding.
+
+### Model and boundaries
+
+The v2 export envelope stores `format: ottrin-theme`, `version: 2`, and one named theme with complete `light` and `dark` palettes. Source preset metadata is descriptive only. Color overlays and semantic label blending derive from the stored palette; changing descriptive provenance cannot change a saved theme.
+
+These are Linux X11 native-package results. OS-owned portal file choosers follow the desktop theme, and physical Windows compositor behavior is not certified by this Linux run. Private QA disabled the unavailable private accessibility bridge; this is not screen-reader acceptance. Keyboard operation and focus behavior were tested directly. Personal settings and index data were preserved, unrelated Windows preview work remains untouched, and the installed index service was verified separately against the same package.

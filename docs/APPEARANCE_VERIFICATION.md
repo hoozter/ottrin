@@ -1,5 +1,8 @@
 # Appearance verification inventory
 
+This document records the earlier 38-control overhaul. The current paired-theme redesign and final AppImage acceptance are documented in [APPEARANCE_REDESIGN.md](APPEARANCE_REDESIGN.md).
+
+
 This is the historical verification receipt for the first appearance overhaul.
 The current paired-variant editor and library redesign is documented in
 [Appearance redesign](APPEARANCE_REDESIGN.md); its package acceptance is separate.
