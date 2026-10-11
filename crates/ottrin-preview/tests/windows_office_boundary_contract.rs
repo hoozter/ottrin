@@ -2,6 +2,14 @@
 
 use ottrin_preview::{IsolatedProcessLauncher, WindowsJobObjectIsolation};
 
+struct PrivateDirectory(std::path::PathBuf);
+
+impl Drop for PrivateDirectory {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
+
 #[test]
 fn windows_office_boundary_is_an_explicit_launcher_capability() {
     fn assert_launcher<T: IsolatedProcessLauncher + Copy + Default>() {}
@@ -33,6 +41,7 @@ fn windows_installed_office_converts_and_cleans_private_state() {
         .unwrap()
         .as_nanos();
     let root = std::env::temp_dir().join(format!("ottrin-office-native-{unique}"));
+    let _cleanup = PrivateDirectory(root.clone());
     let output = root.join("output-with-a-long-name");
     std::fs::create_dir_all(&output).unwrap();
     let source = root.join("source.docx");
@@ -134,6 +143,7 @@ fn windows_installed_office_renders_each_advertised_format() {
         .unwrap()
         .as_nanos();
     let root = std::env::temp_dir().join(format!("ottrin-office-formats-{nonce}"));
+    let _cleanup = PrivateDirectory(root.clone());
     std::fs::create_dir(&root).unwrap();
     let mut failures = Vec::new();
     for (name, marker) in [
@@ -276,6 +286,7 @@ fn windows_installed_office_cancels_after_provider_start_and_releases_files() {
         .unwrap()
         .as_nanos();
     let root = std::env::temp_dir().join(format!("ottrin-office-cancel-{nonce}"));
+    let _cleanup = PrivateDirectory(root.clone());
     let output = root.join("output");
     std::fs::create_dir_all(&output).unwrap();
     let source = root.join("source.docx");

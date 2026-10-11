@@ -26,8 +26,9 @@ use windows_sys::Win32::System::Threading::{
     CREATE_NO_WINDOW, CREATE_UNICODE_ENVIRONMENT, CreateProcessW, DeleteProcThreadAttributeList,
     EXTENDED_STARTUPINFO_PRESENT, GetExitCodeProcess, InitializeProcThreadAttributeList,
     LPPROC_THREAD_ATTRIBUTE_LIST, PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
-    PROC_THREAD_ATTRIBUTE_JOB_LIST, PROCESS_INFORMATION, STARTF_USESTDHANDLES, STARTUPINFOEXW,
-    UpdateProcThreadAttribute, WaitForSingleObject,
+    PROC_THREAD_ATTRIBUTE_JOB_LIST, PROC_THREAD_ATTRIBUTE_SECURITY_CAPABILITIES,
+    PROCESS_INFORMATION, STARTF_USESTDHANDLES, STARTUPINFOEXW, UpdateProcThreadAttribute,
+    WaitForSingleObject,
 };
 use windows_sys::Win32::UI::Shell::UrlCreateFromPathW;
 
@@ -45,7 +46,18 @@ pub(super) fn run(
         return Err(IsolatedProcessFailure::Cancelled);
     }
 
-    let arguments = translated_arguments(request)?;
+    let sandbox = super::windows_sandbox::Sandbox::new(request)?;
+    let result = run_process(request, cancelled, &sandbox);
+    sandbox.finish()?;
+    result
+}
+
+fn run_process(
+    request: &IsolatedProcessRequest,
+    cancelled: &AtomicBool,
+    sandbox: &super::windows_sandbox::Sandbox,
+) -> Result<IsolatedProcessOutput, IsolatedProcessFailure> {
+    let arguments = translated_arguments(request, sandbox.input_path.as_deref())?;
     let mut logs = LogFiles::open(request)?;
     let stdin_file = OpenOptions::new()
         .read(true)
@@ -58,7 +70,7 @@ pub(super) fn run(
     ];
     let job = create_job(request)?;
     let jobs = [job.raw()];
-    let attributes = AttributeList::new(&inherited_handles, &jobs)?;
+    let attributes = AttributeList::new(&inherited_handles, &jobs, &sandbox.capabilities)?;
     let inheritance = InheritanceGuard::new(&inherited_handles)?;
     let mut startup: STARTUPINFOEXW = unsafe { std::mem::zeroed() };
     startup.StartupInfo.cb = u32::try_from(size_of::<STARTUPINFOEXW>())
@@ -100,7 +112,19 @@ pub(super) fn run(
     let thread = OwnedHandle::new(process_info.hThread)?;
     drop(thread);
 
-    let exit_code = wait_for_job(&job, &process, request.timeout, cancelled)?;
+    let exit_code = match wait_for_job(&job, &process, request.timeout, cancelled) {
+        Ok(code) => code,
+        Err(error) => {
+            logs.close_writers();
+            if let Ok(diagnostic) = read_bounded(&logs.stderr_path) {
+                eprintln!(
+                    "Office child failed {error:?}: {}",
+                    String::from_utf8_lossy(&diagnostic)
+                );
+            }
+            return Err(error);
+        }
+    };
     logs.close_writers();
     let stdout = read_bounded(&logs.stdout_path)?;
     let diagnostics = read_bounded(&logs.stderr_path)?;
@@ -108,6 +132,10 @@ pub(super) fn run(
         return Err(IsolatedProcessFailure::LimitExceeded);
     }
     if exit_code != 0 {
+        eprintln!(
+            "Office child exited {exit_code}: {}",
+            String::from_utf8_lossy(&diagnostics)
+        );
         return Err(IsolatedProcessFailure::Crash);
     }
     validate_output_budget(&request.private_output_dir, request.max_output_bytes)?;
@@ -188,6 +216,7 @@ fn validate(request: &IsolatedProcessRequest) -> Result<(), IsolatedProcessFailu
 
 fn translated_arguments(
     request: &IsolatedProcessRequest,
+    input_path: Option<&Path>,
 ) -> Result<Vec<OsString>, IsolatedProcessFailure> {
     let mut saw_input = request.input.is_none();
     let profile_argument = profile_argument(&request.private_profile_dir)?;
@@ -200,7 +229,12 @@ fn translated_arguments(
         } else if let Some(input) = &request.input
             && argument == input.sandbox_path.as_os_str()
         {
-            translated.push(input.host_path.as_os_str().to_owned());
+            translated.push(
+                input_path
+                    .ok_or(IsolatedProcessFailure::InvalidRequest)?
+                    .as_os_str()
+                    .to_owned(),
+            );
             saw_input = true;
         } else {
             translated.push(argument.clone());
@@ -594,14 +628,19 @@ struct AttributeList<'a> {
     raw: LPPROC_THREAD_ATTRIBUTE_LIST,
     handles: &'a [HANDLE],
     jobs: &'a [HANDLE],
+    capabilities: &'a windows_sys::Win32::Security::SECURITY_CAPABILITIES,
 }
 
 impl<'a> AttributeList<'a> {
-    fn new(handles: &'a [HANDLE], jobs: &'a [HANDLE]) -> Result<Self, IsolatedProcessFailure> {
+    fn new(
+        handles: &'a [HANDLE],
+        jobs: &'a [HANDLE],
+        capabilities: &'a windows_sys::Win32::Security::SECURITY_CAPABILITIES,
+    ) -> Result<Self, IsolatedProcessFailure> {
         let mut bytes = 0;
         // SAFETY: the documented sizing call writes only the required byte count.
         unsafe {
-            let _ = InitializeProcThreadAttributeList(null_mut(), 2, 0, &mut bytes);
+            let _ = InitializeProcThreadAttributeList(null_mut(), 3, 0, &mut bytes);
         }
         if bytes == 0 {
             return Err(IsolatedProcessFailure::Unavailable);
@@ -610,7 +649,7 @@ impl<'a> AttributeList<'a> {
         let mut storage = vec![0_usize; words];
         let raw = storage.as_mut_ptr().cast::<c_void>();
         // SAFETY: `storage` is aligned and sized from the API's sizing call.
-        if unsafe { InitializeProcThreadAttributeList(raw, 2, 0, &mut bytes) } == 0 {
+        if unsafe { InitializeProcThreadAttributeList(raw, 3, 0, &mut bytes) } == 0 {
             return Err(IsolatedProcessFailure::Unavailable);
         }
         let list = Self {
@@ -618,6 +657,7 @@ impl<'a> AttributeList<'a> {
             raw,
             handles,
             jobs,
+            capabilities,
         };
         // SAFETY: UpdateProcThreadAttribute borrows value buffers until the list
         // is deleted. The references in `list` keep both caller-owned arrays
@@ -645,6 +685,23 @@ impl<'a> AttributeList<'a> {
                 PROC_THREAD_ATTRIBUTE_JOB_LIST as usize,
                 list.jobs.as_ptr().cast(),
                 size_of_val(list.jobs),
+                null_mut(),
+                null(),
+            )
+        } == 0
+        {
+            return Err(IsolatedProcessFailure::Unavailable);
+        }
+        // SAFETY: the caller-owned capabilities and SID remain live through
+        // process creation and attribute-list destruction.
+        if unsafe {
+            UpdateProcThreadAttribute(
+                list.raw,
+                0,
+                PROC_THREAD_ATTRIBUTE_SECURITY_CAPABILITIES as usize,
+                (list.capabilities as *const windows_sys::Win32::Security::SECURITY_CAPABILITIES)
+                    .cast(),
+                size_of_val(list.capabilities),
                 null_mut(),
                 null(),
             )
@@ -713,7 +770,7 @@ mod tests {
         };
 
         assert_eq!(
-            translated_arguments(&request),
+            translated_arguments(&request, Some(Path::new(r"C:\profile\input\source.docx"))),
             Err(IsolatedProcessFailure::InvalidRequest)
         );
     }

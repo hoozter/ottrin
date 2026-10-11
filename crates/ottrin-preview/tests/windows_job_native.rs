@@ -13,10 +13,14 @@ use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use windows_sys::Win32::Foundation::{
-    CloseHandle, GetHandleInformation, HANDLE, HANDLE_FLAG_INHERIT, SetHandleInformation,
-    WAIT_OBJECT_0, WAIT_TIMEOUT,
+    CloseHandle, GetHandleInformation, GetLastError, HANDLE, HANDLE_FLAG_INHERIT,
+    INVALID_HANDLE_VALUE, SetHandleInformation, WAIT_OBJECT_0, WAIT_TIMEOUT,
 };
+use windows_sys::Win32::Storage::FileSystem::{FILE_FLAG_OVERLAPPED, PIPE_ACCESS_DUPLEX};
 use windows_sys::Win32::System::JobObjects::IsProcessInJob;
+use windows_sys::Win32::System::Pipes::{
+    CreateNamedPipeW, PIPE_READMODE_MESSAGE, PIPE_TYPE_MESSAGE, PIPE_UNLIMITED_INSTANCES,
+};
 use windows_sys::Win32::System::Threading::{
     GetCurrentProcess, OpenProcess, PROCESS_SYNCHRONIZE, WaitForSingleObject,
 };
@@ -102,6 +106,23 @@ fn fixture_root() {
     );
     assert_ne!(in_job, 0, "the fixture must start inside the Job Object");
     match mode.as_str() {
+        "ipc" => {
+            let errors = [pipe_creation_error(""), pipe_creation_error("LOCAL\\")];
+            fs::write(output.join("ipc-errors"), format!("{errors:?}")).unwrap();
+        }
+        "containment" => {
+            let outside = PathBuf::from(fs::read_to_string("outside-file").unwrap());
+            let input = PathBuf::from(std::env::args().next_back().unwrap());
+            let address: std::net::SocketAddr =
+                fs::read_to_string("listener").unwrap().parse().unwrap();
+            let flags = [
+                fs::read(&outside).is_ok(),
+                fs::OpenOptions::new().write(true).open(&input).is_ok(),
+                std::net::TcpStream::connect_timeout(&address, Duration::from_secs(1)).is_ok(),
+            ];
+            fs::write(output.join("access-results"), flags.map(u8::from)).unwrap();
+            assert_eq!(fs::read(&input).unwrap(), b"admitted fixture");
+        }
         "environment" => {
             for key in ["OTTRIN_NATIVE_JOB_SECRET", "PYTHONHOME", "HTTP_PROXY"] {
                 if std::env::var_os(key).is_some() {
@@ -118,7 +139,12 @@ fn fixture_root() {
                 "APPDATA",
                 "LOCALAPPDATA",
             ] {
-                assert_eq!(PathBuf::from(std::env::var_os(key).unwrap()), profile);
+                let path = PathBuf::from(std::env::var_os(key).unwrap());
+                assert!(path.starts_with(&profile), "{key} escaped private profile");
+                assert!(path.is_dir(), "{key} does not name a usable directory");
+                let probe = path.join(format!("environment-write-{key}"));
+                fs::write(&probe, b"private environment fixture").unwrap();
+                fs::remove_file(probe).unwrap();
             }
             assert!(
                 !std::env::var_os("PATH")
@@ -449,6 +475,7 @@ fn fixture_environment_parent() {
     let mut f = Fixture::new("environment");
     let unicode_profile = f.root.join("private profile å");
     fs::rename(&f.request.private_profile_dir, &unicode_profile).unwrap();
+    f.request.executable = unicode_profile.join("fixture.exe");
     f.request.private_profile_dir = unicode_profile;
     WindowsJobObjectIsolation
         .run(&f.request, &AtomicBool::new(false))
@@ -465,6 +492,93 @@ fn fixture_environment_parent() {
     assert_eq!(
         fs::read(f.request.private_output_dir.join("environment-restricted")).unwrap(),
         b"yes"
+    );
+    f.assert_logs_removed();
+}
+
+#[test]
+fn native_job_denies_private_files_source_writes_and_network() {
+    let mut f = Fixture::new("containment");
+    let outside = f.root.join("private-sibling");
+    let input = f.root.join("source.docx");
+    fs::write(&outside, b"private fixture").unwrap();
+    fs::write(&input, b"admitted fixture").unwrap();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    fs::write(
+        f.request.private_profile_dir.join("outside-file"),
+        outside.to_str().unwrap(),
+    )
+    .unwrap();
+    fs::write(
+        f.request.private_profile_dir.join("listener"),
+        listener.local_addr().unwrap().to_string(),
+    )
+    .unwrap();
+    let mapped = PathBuf::from("/input/source.docx");
+    f.request.arguments.push(mapped.clone().into_os_string());
+    f.request.input = Some(ottrin_preview::IsolatedProcessInput {
+        host_path: input.clone(),
+        sandbox_path: mapped,
+    });
+    WindowsJobObjectIsolation
+        .run(&f.request, &AtomicBool::new(false))
+        .unwrap();
+    assert_eq!(
+        fs::read(f.request.private_output_dir.join("access-results")).unwrap(),
+        [0, 0, 0],
+        "read-private / write-input / network must all be denied"
+    );
+    assert_eq!(fs::read(&input).unwrap(), b"admitted fixture");
+    assert_eq!(fs::read(&outside).unwrap(), b"private fixture");
+    f.assert_logs_removed();
+}
+
+fn pipe_creation_error(namespace: &str) -> u32 {
+    let name: Vec<u16> = format!(
+        r"\\.\pipe\{namespace}Ottrin-Office-fixture-{}",
+        std::process::id()
+    )
+    .encode_utf16()
+    .chain(Some(0))
+    .collect();
+    // SAFETY: the unique pipe name is live and NUL-terminated; no client connects.
+    let handle = unsafe {
+        CreateNamedPipeW(
+            name.as_ptr(),
+            PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+            PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE,
+            PIPE_UNLIMITED_INSTANCES,
+            4096,
+            4096,
+            0,
+            std::ptr::null(),
+        )
+    };
+    if handle == INVALID_HANDLE_VALUE {
+        unsafe { GetLastError() }
+    } else {
+        unsafe {
+            CloseHandle(handle);
+        }
+        0
+    }
+}
+
+#[test]
+fn native_job_isolates_ipc_pipe_namespace() {
+    assert_eq!(
+        pipe_creation_error(""),
+        0,
+        "ordinary-user control must create its owned pipe"
+    );
+    let f = Fixture::new("ipc");
+    WindowsJobObjectIsolation
+        .run(&f.request, &AtomicBool::new(false))
+        .unwrap();
+    let results = fs::read_to_string(f.request.private_output_dir.join("ipc-errors")).unwrap();
+    assert_eq!(
+        results, "[5, 0]",
+        "global pipe must be denied; private LOCAL pipe must work"
     );
     f.assert_logs_removed();
 }

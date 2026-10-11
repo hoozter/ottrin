@@ -20,6 +20,8 @@ pub struct WindowsJobObjectIsolation;
 
 #[cfg(target_os = "windows")]
 mod windows_job;
+#[cfg(target_os = "windows")]
+mod windows_sandbox;
 
 #[cfg(target_os = "windows")]
 impl IsolatedProcessLauncher for WindowsJobObjectIsolation {

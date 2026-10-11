@@ -333,6 +333,29 @@ fn is_executable_file(path: &Path) -> bool {
     path.is_file()
 }
 
+#[cfg(target_os = "windows")]
+fn installed_office_helper(profile: &Path) -> Option<PathBuf> {
+    let path = std::env::var_os("OTTRIN_OFFICE_HELPER")
+        .map(PathBuf::from)
+        .or_else(|| {
+            std::env::current_exe()
+                .ok()?
+                .parent()
+                .map(|directory| directory.join("ottrin-office-render.exe"))
+        })?;
+    if !path.is_absolute() || !path.is_file() {
+        return None;
+    }
+    // A portable installation may not grant AppContainer executable access.
+    // Copy bytes into our private profile so its existing sandbox ACL admits
+    // only this helper; do not modify the installed binary's permissions.
+    let staged = profile.join("office-render.exe");
+    let mut input = std::fs::File::open(path).ok()?;
+    let mut output = std::fs::File::create(&staged).ok()?;
+    std::io::copy(&mut input, &mut output).ok()?;
+    Some(staged)
+}
+
 pub fn probe_installed_libreoffice_at(
     executable: &Path,
     launcher: &dyn IsolatedProcessLauncher,
@@ -368,9 +391,22 @@ pub fn probe_installed_libreoffice_at(
         return unavailable();
     }
     let _cleanup = ProbeDirectory(root);
+    #[cfg(target_os = "windows")]
+    let Some(process_executable) = installed_office_helper(&profile) else {
+        return unavailable();
+    };
+    #[cfg(not(target_os = "windows"))]
+    let process_executable = executable.to_path_buf();
+    #[cfg(target_os = "windows")]
+    let arguments = vec![
+        OsString::from("--version"),
+        executable.as_os_str().to_owned(),
+    ];
+    #[cfg(not(target_os = "windows"))]
+    let arguments = vec![OsString::from("--version")];
     let request = IsolatedProcessRequest {
-        executable: executable.to_path_buf(),
-        arguments: vec![OsString::from("--version")],
+        executable: process_executable,
+        arguments,
         input: None,
         private_profile_dir: profile,
         private_output_dir: output,
@@ -484,21 +520,39 @@ impl OfficeConverterLauncher for InstalledLibreOfficeConverter<'_> {
             .join(format!(".ottrin-{}-{unique}", std::process::id()));
         std::fs::create_dir(&profile).map_err(|_| OfficeRenderFailure::Crash)?;
         let cleanup = ProbeDirectory(profile.clone());
+        #[cfg(target_os = "windows")]
+        let process_executable =
+            installed_office_helper(&profile).ok_or(OfficeRenderFailure::Unsupported)?;
+        #[cfg(not(target_os = "windows"))]
+        let process_executable = self.executable.clone();
+        #[cfg(target_os = "windows")]
+        let arguments = vec![
+            self.executable
+                .parent()
+                .ok_or(OfficeRenderFailure::Unsupported)?
+                .as_os_str()
+                .to_owned(),
+            OsString::from("-env:UserInstallation=file:///profile"),
+            sandbox_input.clone().into_os_string(),
+            OsString::from("/output"),
+        ];
+        #[cfg(not(target_os = "windows"))]
+        let arguments = vec![
+            OsString::from("--headless"),
+            OsString::from("--nologo"),
+            OsString::from("--nodefault"),
+            OsString::from("--nolockcheck"),
+            OsString::from("--norestore"),
+            OsString::from("-env:UserInstallation=file:///profile"),
+            OsString::from("--convert-to"),
+            OsString::from("pdf"),
+            OsString::from("--outdir"),
+            OsString::from("/output"),
+            sandbox_input.clone().into_os_string(),
+        ];
         let process_request = IsolatedProcessRequest {
-            executable: self.executable.clone(),
-            arguments: vec![
-                OsString::from("--headless"),
-                OsString::from("--nologo"),
-                OsString::from("--nodefault"),
-                OsString::from("--nolockcheck"),
-                OsString::from("--norestore"),
-                OsString::from("-env:UserInstallation=file:///profile"),
-                OsString::from("--convert-to"),
-                OsString::from("pdf"),
-                OsString::from("--outdir"),
-                OsString::from("/output"),
-                sandbox_input.clone().into_os_string(),
-            ],
+            executable: process_executable,
+            arguments,
             input: Some(IsolatedProcessInput {
                 host_path: request.source_path.clone(),
                 sandbox_path: sandbox_input,
@@ -525,20 +579,8 @@ impl OfficeConverterLauncher for InstalledLibreOfficeConverter<'_> {
         {
             return Err(OfficeRenderFailure::InvalidOutput);
         }
-        // Windows passes the original host path to LibreOffice; the Linux
-        // sandbox mounts it under the fixed /input/source.<extension> name.
-        #[cfg(target_os = "windows")]
-        let pdf_name = Path::new(
-            request
-                .source_path
-                .file_name()
-                .ok_or(OfficeRenderFailure::InvalidOutput)?,
-        )
-        .with_extension("pdf");
-        #[cfg(not(target_os = "windows"))]
-        let pdf_name = Path::new("source.pdf");
         Ok(OfficeConversionOutput {
-            pdf_path: request.private_output_dir.join(pdf_name),
+            pdf_path: request.private_output_dir.join("source.pdf"),
             diagnostics: String::from_utf8_lossy(&output.diagnostics).into_owned(),
         })
     }

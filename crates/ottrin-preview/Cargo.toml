@@ -8,6 +8,12 @@ authors.workspace = true
 [features]
 default = []
 system-gstreamer = ["dep:gstreamer", "dep:gstreamer-app"]
+windows-office = []
+
+[[bin]]
+name = "ottrin-office-render"
+path = "src/bin/ottrin-office-render.rs"
+required-features = ["windows-office"]
 
 [[bin]]
 name = "ottrin-media-playback"
@@ -58,4 +64,4 @@ gstreamer-app = { version = "=0.24.4", optional = true }
 [target.'cfg(target_os = "windows")'.dependencies]
 windows = { version = "0.58", features = ["implement", "Win32_Foundation", "Win32_Media_MediaFoundation", "Win32_Storage_FileSystem", "Win32_System_Com"] }
 windows-core = "0.58"
-windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_SystemInformation", "Win32_UI_Shell"] }
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Isolation", "Win32_Security_Authorization", "Win32_Storage_FileSystem", "Win32_System_JobObjects", "Win32_System_LibraryLoader", "Win32_System_Pipes", "Win32_System_Threading", "Win32_System_SystemInformation", "Win32_UI_Shell"] }

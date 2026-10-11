@@ -164,7 +164,10 @@ the [CreateProcessW environment contract](https://learn.microsoft.com/en-us/wind
 It obtains the Windows directory from the OS, limits PATH to the executable and
 Windows directories, and maps HOME/USERPROFILE/APPDATA/LOCALAPPDATA/TEMP/TMP to
 the private profile. It does not copy parent variables. This addresses environment
-inheritance; constrained-token/filesystem and network denial remain pending.
+inheritance. The current AppContainer admits a guarded read-only input snapshot,
+private writable profile/output and no capabilities. Native fixtures verify
+private sibling-file denial, input-write denial, network denial and global pipe
+denial; installed-provider corpus and fallback acceptance remain separate.
 
 Linux can build the fixture executable with
 `cargo test -p ottrin-preview --target x86_64-pc-windows-gnu --test windows_job_native --no-run`.
@@ -189,11 +192,17 @@ returned `NotInstalled` despite the installed provider (`installed-office-red.lo
 Windows now searches the standard Program Files locations and Windows launch
 names. Six focused provider contracts pass on both Linux and native Windows.
 
-The native filename regression (`office-basename-red.log`) returned `source.pdf`
-for an input named `project brief.docx`. The converter now expects the original
-basename on Windows, matching the admitted host path passed to LibreOffice;
-Linux retains its fixed sandbox basename. The focused contract passes on both
-platforms (`office-formats-green-results.log`, `office-basename-linux.log`).
+The Windows converter uses the packaged `ottrin-office-render.exe` helper with
+installed LibreOfficeKit rather than the CLI, whose global named pipe is denied
+by AppContainer. The helper reads provider version metadata without starting
+LibreOffice; conversion uses the stable C ABI, a disposable profile, batch mode
+and explicitly disabled macros. It exports `source.pdf` on both platforms.
+Each invocation stages helper bytes inside the private sandbox ACL, so portable
+builds need no permanent permission changes. Development/native test builds use
+`--features windows-office --bin ottrin-office-render` and set
+`OTTRIN_OFFICE_HELPER` to that absolute helper path. Packaged builds discover the
+helper beside Ottrin. The Windows UI provider remains gated: the earlier CLI
+acceptance below predates the AppContainer work and does not accept this path.
 
 The nine-format fixture passes for macro-free DOC, DOCX, ODT, XLS, XLSX, XLSM,
 ODS, PPTX and ODP (`office-formats-final-results.log`, 27.95s). It checks actual
