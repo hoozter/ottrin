@@ -58,6 +58,41 @@ It allows 30 seconds for large watch sets and persisted work to be released,
 instead of reporting failure after five seconds while shutdown is still
 finishing. The application and service installer use that same implementation.
 
+### Final installed-package acceptance
+
+The final AppImage was built from clean tracked revision `c82d3b65956c2f4ad0f540d74d669d2f3cee5837`.
+Its stable path is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256
+`fc000ef6cf723e7f5f04f58a9e559b394cb33d188f2fe4899ecc6fc19f8afad1`. The installed `ottrin-indexd` executable hash matched
+the bundled release binary. Service update succeeded, the saved index loaded
+on restart, and the service remains enabled and active.
+
+| Live measurement | One core CPU | Whole machine CPU |
+|---|---:|---:|
+| Before controlled burst, 30 seconds | 2.967% | 0.1854% |
+| After burst, 30 seconds | 4.467% | 0.2792% |
+| Later sustained sample, 30 seconds | 2.367% | 0.1479% |
+
+These are live background-activity measurements on the same 16-thread machine,
+with other applications continuing to write to the configured home tree;
+they are not claims of idle CPU use. All three samples are substantially below
+the sustained 69.5% one-core / 4.34% whole-machine failure measured earlier.
+
+The exact installed package passed creation of 1,200 files (1.886 seconds),
+modification, rename, deletion, repeated directory metadata changes preserving
+indexed children, and creation/removal of 2,000 short-lived directories. The
+normal full rebuild replaced the previous 3.7 GiB derived database with roughly
+157 MiB; the subsequent controlled burst grew that derived store by only
+0.00 MiB. Personal settings retained their exact checksum.
+
+Validation passed 213 search tests, 22 application tests, one daemon test, and
+strict Clippy. Two existing storage benchmark fixtures remained ignored.
+Current raw acceptance is `.hermes/evidence/index-service/WATCH_RACE_ACCEPTANCE.json`
+and `dist/packages/INDEX_ACCEPTANCE.json`. The earlier partial package was
+rejected after the longer sample exposed directory metadata subtree work;
+its compact diagnostic receipt is retained as `WATCH_RACE_PARTIAL.json`.
+Task-owned profiles, fixtures, extraction copies, diagnostic processes, and
+packaging worktrees were removed.
+
 ## Historical acceptance result
 
 Measured on 2026-08-15 with the dedicated `ottrin-indexd` process and a configured home-directory root containing **1,185,806 indexed items**.
