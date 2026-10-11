@@ -1,5 +1,9 @@
 # Appearance verification inventory
 
+This is the historical verification receipt for the first appearance overhaul.
+The current paired-variant editor and library redesign is documented in
+[Appearance redesign](APPEARANCE_REDESIGN.md); its package acceptance is separate.
+
 Accepted Linux AppImage source: `1b5602cca90fc5e6da215edd84190abf86f5ccf5`.
 Stable deliverable: `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
 SHA-256: `1ce4c4249d7232af20ff3935cc74310067fb13d21a5bea7e8cd8f9eae31bce7c`.

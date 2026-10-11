@@ -52,6 +52,36 @@ and signing still require macOS release-candidate evidence.
 | F2 | Rename |
 | F5 | Refresh current folder |
 
+## Appearance and themes
+
+Open **Settings → Appearance** to choose a built-in theme or one of **Your themes**.
+The connected **Light / Dark / System** control sets the application-wide preference.
+System also shows the effective desktop mode. Every theme has a preview generated
+from its own colors and styling.
+
+Click a card to apply it. Click its pencil to customize it without changing the saved
+selection. A built-in preset opens as **Customize …**; **Create theme** saves an
+independent custom theme with both Light and Dark variants and activates it. Built-in
+presets stay unchanged. A custom theme opens as **Edit …**; **Save changes** updates
+it, and **Save as new** creates a separate copy. Change its name in the editor header
+to rename it. The custom card's delete action removes it; deleting the active theme
+returns to its source preset while keeping the global mode preference.
+
+In the editor, click the live preview or choose a component from the inspector.
+**Theme defaults** contains shared colors, text size, and window/surface geometry;
+other contexts show that component's properties. The inspector scrolls independently.
+The editor's Light/Dark selector edits the two variants separately and does not change
+the global appearance preference.
+
+Each row's reset restores its opening value. **Reset component** restores that context
+in the current variant; **More → Reset theme to starting values** restores both variants.
+**More** also imports and exports the complete paired theme in the v2 JSON format.
+Save or discard an existing changed draft before importing another theme.
+
+**Cancel** discards the preview and restores the saved appearance. Closing a changed
+editor keeps its draft available through **Continue editing** on the Appearance page.
+Closing Ottrin with unsaved edits offers explicit save, discard, or keep-editing choices.
+
 ## Search
 
 Ottrin starts with Settings closed. Open Settings → Search to review the setup card for its three independent layers: broad system filenames, rich native metadata, and optional file content. The card shows the active choices and does not enable one layer as a side effect of another. Existing search scopes are preserved; completing the review hides the setup card.

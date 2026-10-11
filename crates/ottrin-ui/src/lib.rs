@@ -4604,7 +4604,7 @@ impl OttrinApp {
     fn delete_saved_custom_theme(&mut self, index: usize, ctx: &Context) {
         let saved = &self.state.config.custom_themes[index];
         if self.state.config.active_custom_theme.as_deref() == Some(saved.name.as_str()) {
-            // Resolve the visible saved mode before removing its palette record.
+            // Fall back to the source preset without changing the global mode.
             self.apply_theme_preset(saved.base_preset, ctx);
         }
         self.state.config.custom_themes.remove(index);
