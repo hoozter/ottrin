@@ -110,6 +110,125 @@ impl Widget for ThemeTextEdit<'_> {
     }
 }
 
+/// Menu actions and repeated choice rows share separate indicator/icon slots.
+/// Native Button still owns hit testing, focus, enabled state and label semantics.
+pub(crate) struct AlignedMenuButton {
+    indicator: String,
+    icon: String,
+    label: String,
+    colors: Colors,
+    framed: bool,
+    min_size: egui::Vec2,
+    submenu: bool,
+    width: Option<f32>,
+}
+
+pub(crate) fn aligned_menu_button(
+    indicator: &str,
+    icon: &str,
+    label: &str,
+    colors: &Colors,
+) -> AlignedMenuButton {
+    AlignedMenuButton {
+        indicator: indicator.to_owned(),
+        icon: icon.to_owned(),
+        label: label.to_owned(),
+        colors: *colors,
+        framed: false,
+        min_size: egui::Vec2::new(188.0 * colors.font_scale, 28.0 * colors.font_scale),
+        submenu: false,
+        width: None,
+    }
+}
+
+impl AlignedMenuButton {
+    pub(crate) fn frame_when_inactive(mut self, framed: bool) -> Self {
+        self.framed = framed;
+        self
+    }
+    pub(crate) fn min_size(mut self, size: egui::Vec2) -> Self {
+        self.min_size = size;
+        self
+    }
+    pub(crate) fn width(mut self, width: f32) -> Self {
+        self.width = Some(width);
+        self.min_size.x = width;
+        self
+    }
+    pub(crate) fn themed(mut self, colors: &Colors) -> Self {
+        self.colors = *colors;
+        self
+    }
+}
+
+impl Widget for AlignedMenuButton {
+    fn ui(self, ui: &mut Ui) -> Response {
+        use egui::{Align2, Atom, AtomExt, FontId, RichText, Vec2};
+        ui.scope(|ui| {
+            apply_button_style(ui, self.colors);
+            if let Some(width) = self.width {
+                ui.set_width(width);
+            }
+            let scale = self.colors.font_scale;
+            ui.spacing_mut().icon_spacing = 4.0 * scale;
+            ui.spacing_mut().button_padding = egui::Vec2::new(6.0 * scale, 4.0 * scale);
+            let indicator_id = ui.next_auto_id().with("indicator");
+            let icon_id = ui.next_auto_id().with("icon");
+            let mut button = Button::new((
+                Atom::custom(indicator_id, Vec2::new(18.0 * scale, 20.0 * scale)),
+                Atom::custom(icon_id, Vec2::new(18.0 * scale, 20.0 * scale)),
+                RichText::new(self.label)
+                    .size(12.5 * scale)
+                    .atom_shrink(true),
+                Atom::grow(),
+            ))
+            .frame(true)
+            .frame_when_inactive(self.framed)
+            .min_size(self.min_size);
+            if self.width.is_some() {
+                button = button.wrap_mode(egui::TextWrapMode::Truncate);
+            }
+            if self.submenu {
+                button = button.right_text(egui::containers::menu::SubMenuButton::RIGHT_ARROW);
+            }
+            let output = button.atom_ui(ui);
+            let color = ui.style().interact(&output.response).text_color();
+            for (id, glyph) in [(indicator_id, self.indicator), (icon_id, self.icon)] {
+                if !glyph.is_empty()
+                    && let Some(rect) = output.rect(id)
+                {
+                    ui.painter().text(
+                        rect.center(),
+                        Align2::CENTER_CENTER,
+                        glyph,
+                        FontId::proportional(14.0 * scale),
+                        color,
+                    );
+                }
+            }
+            output.response
+        })
+        .inner
+    }
+}
+
+pub(crate) fn aligned_submenu<R>(
+    ui: &mut Ui,
+    icon: &str,
+    label: &str,
+    colors: Colors,
+    contents: impl FnOnce(&mut Ui) -> R,
+) -> egui::InnerResponse<Option<R>> {
+    let mut button = aligned_menu_button("", icon, label, &colors);
+    button.submenu = true;
+    let response = ui.add(button);
+    let inner = egui::containers::menu::SubMenu::default().show(ui, &response, contents);
+    egui::InnerResponse {
+        response,
+        inner: inner.map(|inner| inner.inner),
+    }
+}
+
 /// Style the menu trigger as a button, then restore ordinary roles inside it.
 pub(crate) fn themed_menu_button<'a, R>(
     ui: &mut Ui,
@@ -133,6 +252,100 @@ mod tests {
     use super::*;
     use crate::{OttrinApp, ThemePreset};
     use egui::{Color32, Context, Rect, Vec2, epaint::Shape};
+
+    #[test]
+    fn menu_rows_align_labels_and_icons_across_states_themes_and_text_scales() {
+        for dark in [true, false] {
+            for scale in [1.0, 1.35] {
+                let ctx = Context::default();
+                let mut app = OttrinApp::default();
+                app.colors = Colors::preset(ThemePreset::Ottrin, dark);
+                app.colors.font_scale = scale;
+                app.apply_theme_to_ctx(&ctx);
+                let c = app.colors;
+                let mut rows = Vec::new();
+                let output = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(700.0, 450.0),
+                        )),
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            ui.set_width(420.0 * scale);
+                            for (indicator, icon, label, enabled) in [
+                                (
+                                    crate::icons::MI_CHECK,
+                                    crate::icons::MI_VIEW_COLUMN,
+                                    "Column view",
+                                    true,
+                                ),
+                                ("", crate::icons::MI_VIEW_LIST, "List view", true),
+                                ("", "", "Show hidden files", true),
+                                ("", crate::icons::MI_IMAGE, "Preview unavailable", false),
+                                (crate::icons::MI_CHECK, "", "Name", true),
+                            ] {
+                                rows.push(
+                                    ui.add_enabled(
+                                        enabled,
+                                        aligned_menu_button(indicator, icon, label, &c).themed(&c),
+                                    )
+                                    .rect,
+                                );
+                            }
+                        });
+                    },
+                );
+                let labels = [
+                    "Column view",
+                    "List view",
+                    "Show hidden files",
+                    "Preview unavailable",
+                    "Name",
+                ];
+                let mut left = None;
+                for (idx, label) in labels.into_iter().enumerate() {
+                    let text = output
+                        .shapes
+                        .iter()
+                        .find_map(|shape| match &shape.shape {
+                            Shape::Text(text) if text.galley.job.text == label => Some(text),
+                            _ => None,
+                        })
+                        .expect("each label must render independently from its icon");
+                    let rect = Rect::from_min_size(text.pos, text.galley.size());
+                    assert!(
+                        rows[idx].contains_rect(rect),
+                        "label {label} outside row at scale {scale}"
+                    );
+                    assert!((rect.center().y - rows[idx].center().y).abs() < 1.0);
+                    assert!(
+                        (text.pos.x - *left.get_or_insert(text.pos.x)).abs() < 0.1,
+                        "checked, unchecked, iconless and disabled labels must start together"
+                    );
+                }
+                for (idx, icon) in [
+                    (0, crate::icons::MI_VIEW_COLUMN),
+                    (1, crate::icons::MI_VIEW_LIST),
+                    (3, crate::icons::MI_IMAGE),
+                ] {
+                    let text = output
+                        .shapes
+                        .iter()
+                        .find_map(|shape| match &shape.shape {
+                            Shape::Text(text) if text.galley.job.text == icon => Some(text),
+                            _ => None,
+                        })
+                        .expect("icon must render in its own slot");
+                    let rect = Rect::from_min_size(text.pos, text.galley.size());
+                    assert!(rows[idx].contains_rect(rect));
+                    assert!((rect.center().y - rows[idx].center().y).abs() < 1.0);
+                }
+            }
+        }
+    }
 
     #[test]
     fn button_theme_changes_do_not_recolor_or_round_inputs_and_body_labels() {

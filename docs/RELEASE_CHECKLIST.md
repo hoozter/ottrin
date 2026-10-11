@@ -2,6 +2,10 @@
 
 Every item must be checked against the exact artifact intended for release. A source-tree test does not count as packaged desktop validation.
 
+## UI coherence gate
+
+- [ ] Shared theme roles and text/icon alignment meet [UI consistency requirements](DEVELOPMENT.md#ui-consistency-requirements) across main window, menus/submenus, Settings, theme editor, Inspector, and dialogs; checked, unchecked, iconless, and disabled rows retain common columns in Light/Dark at 100%/150% scaling and enlarged text.
+
 ## Automated Gates
 
 - [ ] `cargo fmt --all --check`

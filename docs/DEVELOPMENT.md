@@ -15,6 +15,14 @@ Ottrin is a Rust workspace using egui/eframe.
 
 The supported Rust toolchain is pinned in `rust-toolchain.toml`.
 
+## UI consistency requirements
+
+Every UI change must preserve shared theme roles and consistent text/icon alignment across the main window, Settings, theme editor, Inspector, menus, and dialogs. Reuse the authoritative themed widgets; previews must use production controls where they represent those controls.
+
+Repeated rows must share label starts, icon centers, padding, and vertical centers. Reserve separate fixed columns for selection indicators and icons, including empty columns on unchecked, iconless, or disabled rows. Never position icons or checkmarks with whitespace inside text labels. Keep submenu arrows and secondary actions in their own trailing columns. Scale row height and column spacing with text size; avoid clipping or shifting labels when state changes.
+
+Before delivery, inspect affected surfaces in Light and Dark at 100% and 150% desktop scaling and enlarged text. Exercise checked/unchecked, enabled/disabled, hover/focus, and submenu states. Add rendered geometry regressions for shared alignment fixes and verify the exact packaged app. A compilation check alone does not satisfy visual acceptance.
+
 ## Build And Verify
 
 ```sh

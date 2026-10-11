@@ -70,7 +70,9 @@ mod preview_render;
 mod semantic_style;
 mod system_appearance;
 mod widget_style;
-use widget_style::{ThemeButtonExt, ThemeTextEditExt, themed_menu_button};
+use widget_style::{
+    ThemeButtonExt, ThemeTextEditExt, aligned_menu_button, aligned_submenu, themed_menu_button,
+};
 mod theme_colors;
 mod theme_import;
 mod thumbnail_cache;
@@ -9918,17 +9920,11 @@ impl OttrinApp {
         );
         context_response.context_menu(|ui| {
             ui.set_min_width(180.0);
-            if ui
-                .add(egui::Button::new(format!("{} New Folder", MI_CREATE_FOLDER)).themed(c))
-                .clicked()
-            {
+            if menu_item(ui, MI_CREATE_FOLDER, "New Folder", c).clicked() {
                 self.open_creation_dialog(CreationKind::Folder, tab_id, dir.to_path_buf());
                 ui.close();
             }
-            if ui
-                .add(egui::Button::new(format!("{} New File", MI_FILE)).themed(c))
-                .clicked()
-            {
+            if menu_item(ui, MI_FILE, "New File", c).clicked() {
                 self.open_creation_dialog(CreationKind::File, tab_id, dir.to_path_buf());
                 ui.close();
             }
@@ -10448,7 +10444,13 @@ impl OttrinApp {
                             if ui
                                 .add_enabled(
                                     can_open_tandem,
-                                    egui::Button::new("Open selected tabs in Tandem").themed(&c),
+                                    aligned_menu_button(
+                                        "",
+                                        MI_VIEW_COLUMN,
+                                        "Open selected tabs in Tandem",
+                                        &c,
+                                    )
+                                    .themed(&c),
                                 )
                                 .clicked()
                             {
@@ -10457,7 +10459,10 @@ impl OttrinApp {
                             }
                             ui.separator();
                             if ui
-                                .add_enabled(n_tabs > 1, egui::Button::new("Close Tab").themed(&c))
+                                .add_enabled(
+                                    n_tabs > 1,
+                                    aligned_menu_button("", MI_CLOSE, "Close Tab", &c).themed(&c),
+                                )
                                 .clicked()
                             {
                                 close_idx = Some(i);
@@ -10633,7 +10638,10 @@ impl OttrinApp {
         ] {
             let selected = view_mode == mode;
             let check = if selected { MI_CHECK } else { " " };
-            if menu_item(ui, check, &format!("{icon}  {label}"), &c).clicked() {
+            if ui
+                .add(aligned_menu_button(check.trim(), icon, label, &c).themed(&c))
+                .clicked()
+            {
                 self.set_tab_view_mode(tab_id, mode);
                 egui::Popup::close_id(ui.ctx(), popup_id);
             }
@@ -10644,16 +10652,8 @@ impl OttrinApp {
             ViewMode::Miller => {
                 ui.add_enabled(
                     false,
-                    egui::Button::new(
-                        RichText::new(format!(
-                            "{MI_IMAGE}  Miller preview column handles previews"
-                        ))
-                        .size(12.5 * c.font_scale)
-                        .color(c.text_dim),
-                    )
-                    .frame(false)
-                    .min_size(Vec2::new(204.0, 26.0))
-                    .themed(&c),
+                    aligned_menu_button("", MI_IMAGE, "Miller preview column handles previews", &c)
+                        .themed(&c),
                 );
             }
             ViewMode::List => {
@@ -10884,16 +10884,8 @@ impl OttrinApp {
                                 // ── Create ─────────────────────────────────────
                                 if ui
                                     .add(
-                                        egui::Button::new(
-                                            RichText::new(format!(
-                                                "{} New Folder",
-                                                MI_CREATE_FOLDER
-                                            ))
-                                            .size(13.0 * c.font_scale),
-                                        )
-                                        .frame_when_inactive(false)
-                                        .min_size(Vec2::new(190.0, 28.0))
-                                        .themed(&c),
+                                        aligned_menu_button("", MI_CREATE_FOLDER, "New Folder", &c)
+                                            .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -10904,13 +10896,7 @@ impl OttrinApp {
                                 }
                                 if ui
                                     .add(
-                                        egui::Button::new(
-                                            RichText::new(format!("{} New File", MI_FILE))
-                                                .size(13.0 * c.font_scale),
-                                        )
-                                        .frame_when_inactive(false)
-                                        .min_size(Vec2::new(190.0, 28.0))
-                                        .themed(&c),
+                                        aligned_menu_button("", MI_FILE, "New File", &c).themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -10926,15 +10912,12 @@ impl OttrinApp {
                                 if ui
                                     .add_enabled(
                                         can_copy,
-                                        egui::Button::new(
-                                            RichText::new(format!(
-                                                "{} Open Selection",
-                                                MI_FOLDER_OPEN
-                                            ))
-                                            .size(13.0 * c.font_scale),
+                                        aligned_menu_button(
+                                            "",
+                                            MI_FOLDER_OPEN,
+                                            "Open Selection",
+                                            &c,
                                         )
-                                        .frame_when_inactive(false)
-                                        .min_size(Vec2::new(190.0, 28.0))
                                         .themed(&c),
                                     )
                                     .clicked()
@@ -10947,15 +10930,12 @@ impl OttrinApp {
                                 if ui
                                     .add_enabled(
                                         can_copy,
-                                        egui::Button::new(
-                                            RichText::new(format!(
-                                                "{} Copy Selection",
-                                                MI_CONTENT_COPY
-                                            ))
-                                            .size(13.0 * c.font_scale),
+                                        aligned_menu_button(
+                                            "",
+                                            MI_CONTENT_COPY,
+                                            "Copy Selection",
+                                            &c,
                                         )
-                                        .frame_when_inactive(false)
-                                        .min_size(Vec2::new(190.0, 28.0))
                                         .themed(&c),
                                     )
                                     .clicked()
@@ -10966,15 +10946,12 @@ impl OttrinApp {
                                 if ui
                                     .add_enabled(
                                         can_copy,
-                                        egui::Button::new(
-                                            RichText::new(format!(
-                                                "{} Quick Inspector Selection",
-                                                MI_VISIBILITY
-                                            ))
-                                            .size(13.0 * c.font_scale),
+                                        aligned_menu_button(
+                                            "",
+                                            MI_VISIBILITY,
+                                            "Quick Inspector Selection",
+                                            &c,
                                         )
-                                        .frame_when_inactive(false)
-                                        .min_size(Vec2::new(190.0, 28.0))
                                         .themed(&c),
                                     )
                                     .clicked()
@@ -10985,13 +10962,8 @@ impl OttrinApp {
                                 if ui
                                     .add_enabled(
                                         can_copy,
-                                        egui::Button::new(
-                                            RichText::new(format!("{} Rename Selection…", MI_EDIT))
-                                                .size(13.0 * c.font_scale),
-                                        )
-                                        .frame_when_inactive(false)
-                                        .min_size(Vec2::new(190.0, 28.0))
-                                        .themed(&c),
+                                        aligned_menu_button("", MI_EDIT, "Rename Selection…", &c)
+                                            .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -11001,16 +10973,8 @@ impl OttrinApp {
                                 if ui
                                     .add_enabled(
                                         can_copy,
-                                        egui::Button::new(
-                                            RichText::new(format!(
-                                                "{} Delete Selection…",
-                                                MI_DELETE
-                                            ))
-                                            .size(13.0 * c.font_scale),
-                                        )
-                                        .frame_when_inactive(false)
-                                        .min_size(Vec2::new(190.0, 28.0))
-                                        .themed(&c),
+                                        aligned_menu_button("", MI_DELETE, "Delete Selection…", &c)
+                                            .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -11020,15 +10984,12 @@ impl OttrinApp {
                                 if ui
                                     .add_enabled(
                                         self.clipboard.is_some(),
-                                        egui::Button::new(
-                                            RichText::new(format!(
-                                                "{} Paste into Current Folder",
-                                                MI_CONTENT_PASTE
-                                            ))
-                                            .size(13.0 * c.font_scale),
+                                        aligned_menu_button(
+                                            "",
+                                            MI_CONTENT_PASTE,
+                                            "Paste into Current Folder",
+                                            &c,
                                         )
-                                        .frame_when_inactive(false)
-                                        .min_size(Vec2::new(190.0, 28.0))
                                         .themed(&c),
                                     )
                                     .clicked()
@@ -11042,13 +11003,8 @@ impl OttrinApp {
                                 // ── Settings ───────────────────────────────────
                                 if ui
                                     .add(
-                                        egui::Button::new(
-                                            RichText::new(format!("{} Settings…", MI_SETTINGS))
-                                                .size(13.0 * c.font_scale),
-                                        )
-                                        .frame_when_inactive(false)
-                                        .min_size(Vec2::new(190.0, 28.0))
-                                        .themed(&c),
+                                        aligned_menu_button("", MI_SETTINGS, "Settings…", &c)
+                                            .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -11061,13 +11017,8 @@ impl OttrinApp {
                                 // ── About ──────────────────────────────────────
                                 if ui
                                     .add(
-                                        egui::Button::new(
-                                            RichText::new(format!("{} About Ottrin", MI_INFO))
-                                                .size(13.0 * c.font_scale),
-                                        )
-                                        .frame_when_inactive(false)
-                                        .min_size(Vec2::new(190.0, 28.0))
-                                        .themed(&c),
+                                        aligned_menu_button("", MI_INFO, "About Ottrin", &c)
+                                            .themed(&c),
                                     )
                                     .clicked()
                                 {
@@ -12312,13 +12263,13 @@ impl OttrinApp {
                                         });
                                     });
                                     ui.add_space(8.0);
-                                    let btn_label = if target_set {
-                                        format!("{} Change Drop Folder…", MI_FOLDER_OPEN)
+                                    let (btn_icon, btn_label) = if target_set {
+                                        (MI_FOLDER_OPEN, "Change Drop Folder…")
                                     } else {
-                                        format!("{} Set Drop Folder…", MI_MOVE_TO_INBOX)
+                                        (MI_MOVE_TO_INBOX, "Set Drop Folder…")
                                     };
                                     if ui.add(
-                                        egui::Button::new(RichText::new(btn_label).size(12.0 * c.font_scale))
+                                        aligned_menu_button("", btn_icon, btn_label, &c).frame_when_inactive(true)
                                             .min_size(Vec2::new(ui.available_width(), 28.0))
                                             .themed(&c)
                                     ).clicked() {
@@ -12327,9 +12278,7 @@ impl OttrinApp {
                                     if target_set {
                                         ui.add_space(4.0);
                                         if ui.add(
-                                            egui::Button::new(RichText::new(
-                                                format!("{} Clear Drop Folder", MI_CLEAR)
-                                            ).size(11.0 * c.font_scale))
+                                            aligned_menu_button("", MI_CLEAR, "Clear Drop Folder", &c).frame_when_inactive(true)
                                             .min_size(Vec2::new(ui.available_width(), 24.0))
                                             .themed(&c)
                                         ).clicked() {
@@ -12382,13 +12331,9 @@ impl OttrinApp {
                                                 let dirs = self.target_dropdown.entries.clone();
                                                 for ent in dirs {
                                                     let row = ui.add(
-                                                        egui::Button::new(
-                                                            RichText::new(format!("{} {}", MI_FOLDER, truncate_name(&ent.name, 22)))
-                                                                .size(11.5 * c.font_scale)
-                                                                .color(c.text_dim)
-                                                        )
-                                                        .frame(false)
-                                                        .min_size(Vec2::new(ui.available_width(), 24.0)).themed(&c)
+                                                        aligned_menu_button("", MI_FOLDER, &truncate_name(&ent.name, 22), &c)
+
+                                                        .min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)
                                                     );
                                                     if row.hovered() {
                                                         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -12432,17 +12377,9 @@ impl OttrinApp {
                                                 .inner_margin(egui::Margin::symmetric(4, 4))
                                                 .show(ui, |ui| {
                                                     ui.horizontal(|ui| {
-                                                        let label = if is_current {
-                                                            format!("{} {}", MI_CHECK, truncate_name(name, 14))
-                                                        } else {
-                                                            format!("{} {}", MI_BOOKMARK, truncate_name(name, 14))
-                                                        };
                                                         let resp = ui.add(
-                                                            egui::Button::new(
-                                                                RichText::new(label).size(12.0 * c.font_scale).color(if is_current { c.accent } else { c.text })
-                                                            )
-                                                            .frame(false)
-                                                            .min_size(Vec2::new((ui.available_width() - 86.0).max(90.0), 24.0)).themed(&c)
+                                                            aligned_menu_button(if is_current { MI_CHECK } else { "" }, MI_BOOKMARK, &truncate_name(name, 14), &c)
+                                                                .width((ui.available_width() - 94.0 * c.font_scale).max(40.0)).themed(&c)
                                                         );
                                                         if resp.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -12506,12 +12443,9 @@ impl OttrinApp {
                                                 .show(ui, |ui| {
                                                     ui.horizontal(|ui| {
                                                         let resp = ui.add(
-                                                            egui::Button::new(
-                                                                RichText::new(format!("{} {}", if is_current { MI_CHECK } else { MI_FOLDER }, truncate_name(name, 16)))
-                                                                    .size(12.0 * c.font_scale).color(if is_current { c.accent } else { c.text })
-                                                            )
-                                                            .frame(false)
-                                                            .min_size(Vec2::new((ui.available_width() - 34.0).max(90.0), 24.0)).themed(&c)
+                                                            aligned_menu_button(if is_current { MI_CHECK } else { "" }, MI_FOLDER, &truncate_name(name, 16), &c)
+
+                                                            .width((ui.available_width() - 34.0 * c.font_scale).max(40.0)).themed(&c)
                                                         );
                                                         if resp.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -14701,7 +14635,7 @@ impl OttrinApp {
                 && let Some(destination) =
                     folder_context_creation_target(&path, kind, entry.symlink_target_is_dir)
             {
-                themed_menu_button(ui, format!("{MI_CREATE_FOLDER}  New"), c, |ui| {
+                aligned_submenu(ui, MI_CREATE_FOLDER, "New", c, |ui| {
                     if menu_item(ui, MI_CREATE_FOLDER, "Folder", &c).clicked() {
                         self.open_creation_dialog(
                             CreationKind::Folder,
@@ -14788,19 +14722,16 @@ impl OttrinApp {
             ui.separator();
 
             if !target_missing && !same_as_target_set {
-                themed_menu_button(ui, format!("{MI_MOVE_TO_INBOX}  Drop Folder"), c, |ui| {
+                aligned_submenu(ui, MI_MOVE_TO_INBOX, "Drop Folder", c, |ui| {
                     let copy_target_btn = ui
                         .add_enabled(
                             !target_missing && !same_as_target_set,
-                            egui::Button::new(
-                                RichText::new(format!(
-                                    "{MI_CONTENT_COPY}  Copy {menu_target} to Drop Folder"
-                                ))
-                                .size(12.5 * c.font_scale)
-                                .color(c.text_muted),
+                            aligned_menu_button(
+                                "",
+                                MI_CONTENT_COPY,
+                                &format!("Copy {menu_target} to Drop Folder"),
+                                &c,
                             )
-                            .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0))
                             .themed(&c),
                         )
                         .on_hover_text(if target_missing {
@@ -14824,15 +14755,12 @@ impl OttrinApp {
                     let move_target_btn = ui
                         .add_enabled(
                             !target_missing && !same_as_target_set,
-                            egui::Button::new(
-                                RichText::new(format!(
-                                    "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to Drop Folder"
-                                ))
-                                .size(12.5 * c.font_scale)
-                                .color(c.text_muted),
+                            aligned_menu_button(
+                                "",
+                                MI_DRIVE_FILE_MOVE,
+                                &format!("Move {menu_target} to Drop Folder"),
+                                &c,
                             )
-                            .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0))
                             .themed(&c),
                         )
                         .on_hover_text(if target_missing {
@@ -14857,19 +14785,16 @@ impl OttrinApp {
             }
 
             if !same_as_current_set {
-                themed_menu_button(ui, format!("{MI_FOLDER}  Current Folder"), c, |ui| {
+                aligned_submenu(ui, MI_FOLDER, "Current Folder", c, |ui| {
                     let copy_cur_btn = ui
                         .add_enabled(
                             !same_as_current_set,
-                            egui::Button::new(
-                                RichText::new(format!(
-                                    "{MI_CONTENT_COPY}  Copy {menu_target} to Current Folder"
-                                ))
-                                .size(12.5 * c.font_scale)
-                                .color(c.text_muted),
+                            aligned_menu_button(
+                                "",
+                                MI_CONTENT_COPY,
+                                &format!("Copy {menu_target} to Current Folder"),
+                                &c,
                             )
-                            .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0))
                             .themed(&c),
                         )
                         .on_hover_text(if same_as_current_set {
@@ -14888,15 +14813,12 @@ impl OttrinApp {
                     let move_cur_btn = ui
                         .add_enabled(
                             !same_as_current_set,
-                            egui::Button::new(
-                                RichText::new(format!(
-                                    "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to Current Folder"
-                                ))
-                                .size(12.5 * c.font_scale)
-                                .color(c.text_muted),
+                            aligned_menu_button(
+                                "",
+                                MI_DRIVE_FILE_MOVE,
+                                &format!("Move {menu_target} to Current Folder"),
+                                &c,
                             )
-                            .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0))
                             .themed(&c),
                         )
                         .on_hover_text(if same_as_current_set {
@@ -14916,20 +14838,17 @@ impl OttrinApp {
             }
 
             if tandem_target_dir.is_some() && !same_as_tandem_set {
-                themed_menu_button(ui, format!("{MI_VIEW_COLUMN}  Other Pane"), c, |ui| {
+                aligned_submenu(ui, MI_VIEW_COLUMN, "Other Pane", c, |ui| {
                     let tandem_label = "Other Pane";
                     let copy_tandem_btn = ui
                         .add_enabled(
                             !same_as_tandem_set,
-                            egui::Button::new(
-                                RichText::new(format!(
-                                    "{MI_CONTENT_COPY}  Copy {menu_target} to {tandem_label}"
-                                ))
-                                .size(12.5 * c.font_scale)
-                                .color(c.text_muted),
+                            aligned_menu_button(
+                                "",
+                                MI_CONTENT_COPY,
+                                &format!("Copy {menu_target} to {tandem_label}"),
+                                &c,
                             )
-                            .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0))
                             .themed(&c),
                         )
                         .on_hover_text(if same_as_tandem_set {
@@ -14951,15 +14870,12 @@ impl OttrinApp {
                     let move_tandem_btn = ui
                         .add_enabled(
                             !same_as_tandem_set,
-                            egui::Button::new(
-                                RichText::new(format!(
-                                    "{MI_DRIVE_FILE_MOVE}  Move {menu_target} to {tandem_label}"
-                                ))
-                                .size(12.5 * c.font_scale)
-                                .color(c.text_muted),
+                            aligned_menu_button(
+                                "",
+                                MI_DRIVE_FILE_MOVE,
+                                &format!("Move {menu_target} to {tandem_label}"),
+                                &c,
                             )
-                            .frame(false)
-                            .min_size(Vec2::new(188.0, 26.0))
                             .themed(&c),
                         )
                         .on_hover_text(if same_as_tandem_set {
@@ -19577,10 +19493,7 @@ impl OttrinApp {
                                     for (mode, label, icon_mi) in &view_opts {
                                         let sel = self.state.config.default_view_mode == *mode;
                                         let check = if sel { MI_CHECK } else { " " };
-                                        if ui.add(egui::Button::new(
-                                            RichText::new(format!("{}  {}  {}", check, icon_mi, label)).size(13.0 * c.font_scale)
-                                                .color(if sel { c.text } else { c.text_dim })
-                                        ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0)).themed(&c)).clicked() {
+                                        if ui.add(aligned_menu_button(check.trim(), icon_mi, label, &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
                                             self.state.config.default_view_mode = *mode;
                                             self.persist_config();
                                         }
@@ -19597,19 +19510,13 @@ impl OttrinApp {
                                     ui.add_space(6.0);
                                     let grid_thumbs = self.state.config.grid_show_thumbnails;
                                     let grid_check = if grid_thumbs { MI_CHECK } else { "  " };
-                                    if ui.add(egui::Button::new(
-                                        RichText::new(format!("{} Show thumbnails in Grid view", grid_check)).size(13.0 * c.font_scale)
-                                            .color(if grid_thumbs { c.text } else { c.text_dim })
-                                    ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0)).themed(&c)).clicked() {
+                                    if ui.add(aligned_menu_button(grid_check.trim(), "", "Show thumbnails in Grid view", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
                                         self.state.config.grid_show_thumbnails = !grid_thumbs;
                                         self.persist_config();
                                     }
                                     let list_thumbs = self.state.config.list_show_thumbnails;
                                     let list_check = if list_thumbs { MI_CHECK } else { "  " };
-                                    if ui.add(egui::Button::new(
-                                        RichText::new(format!("{} Show thumbnails in List view", list_check)).size(13.0 * c.font_scale)
-                                            .color(if list_thumbs { c.text } else { c.text_dim })
-                                    ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0)).themed(&c)).clicked() {
+                                    if ui.add(aligned_menu_button(list_check.trim(), "", "Show thumbnails in List view", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
                                         self.state.config.list_show_thumbnails = !list_thumbs;
                                         self.persist_config();
                                     }
@@ -19644,10 +19551,7 @@ impl OttrinApp {
                                         ] {
                                             let selected = self.state.config.graphics_renderer == preference;
                                             let check = if selected { MI_CHECK } else { "  " };
-                                            if ui.add(egui::Button::new(
-                                                RichText::new(format!("{check} {label}")).size(12.0 * c.font_scale)
-                                                    .color(if selected { c.text } else { c.text_dim }),
-                                            ).frame(true).min_size(Vec2::new(ui.available_width(), 27.0)).themed(&c)).clicked() {
+                                            if ui.add(aligned_menu_button(check.trim(), "", label, &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
                                                 self.state.config.graphics_renderer = preference;
                                                 self.persist_config();
                                                 self.set_status_message("Graphics preference saved. Restart Ottrin to apply it.", true, 8);
@@ -19780,10 +19684,7 @@ impl OttrinApp {
                                     ui.add_space(12.0);
                                     let show_hidden = self.state.config.show_hidden_files;
                                     let icon = if show_hidden { MI_CHECK } else { "  " };
-                                    if ui.add(egui::Button::new(
-                                        RichText::new(format!("{} Show hidden files", icon)).size(13.0 * c.font_scale)
-                                            .color(if show_hidden { c.text } else { c.text_dim })
-                                    ).frame(true).min_size(Vec2::new(ui.available_width(), 28.0)).themed(&c)).clicked() {
+                                    if ui.add(aligned_menu_button(icon.trim(), "", "Show hidden files", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
                                         self.state.config.show_hidden_files = !show_hidden;
                                         self.refresh_active_tab();
                                     }
@@ -19833,15 +19734,7 @@ impl OttrinApp {
                                         let check = if enabled { MI_CHECK } else { "  " };
                                         if ui
                                             .add(
-                                                egui::Button::new(
-                                                    RichText::new(format!(
-                                                        "{check} Use installed LibreOffice for Office previews"
-                                                    ))
-                                                    .size(12.5 * c.font_scale)
-                                                    .color(if enabled { c.text } else { c.text_dim }),
-                                                )
-                                                .frame(true)
-                                                .min_size(Vec2::new(ui.available_width(), 28.0)).themed(&c),
+                                                aligned_menu_button(check.trim(), "", "Use installed LibreOffice for Office previews", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c),
                                             )
                                             .clicked()
                                         {
@@ -21758,12 +21651,12 @@ impl eframe::App for OttrinApp {
 }
 
 fn menu_item(ui: &mut egui::Ui, icon: &str, label: &str, c: &Colors) -> egui::Response {
-    ui.add(
-        egui::Button::new(RichText::new(format!("{icon}  {label}")).size(12.5 * c.font_scale))
-            .frame_when_inactive(false)
-            .min_size(Vec2::new(188.0, 26.0))
-            .themed(c),
-    )
+    let (indicator, icon) = if icon == MI_CHECK {
+        (icon, "")
+    } else {
+        ("", icon.trim())
+    };
+    ui.add(aligned_menu_button(indicator, icon, label, c).themed(c))
 }
 
 fn display_app_name(path: &Path) -> String {
