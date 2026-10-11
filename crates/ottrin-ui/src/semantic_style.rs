@@ -4,7 +4,7 @@ use crate::theme_colors::{Colors, mix_color};
 use egui::Color32;
 use ottrin_core::{
     AppConfig, CodeSubtype, EntryKind, FileCategory, FileEntry, FileSemantic, FolderKind,
-    SearchResultItem, ThemePreset, classify_file, platform_case_mode_current,
+    SearchResultItem, classify_file, platform_case_mode_current,
 };
 use std::path::Path;
 
@@ -125,18 +125,6 @@ pub(crate) fn semantic_palette(c: &Colors) -> SemanticPalette {
         code_toml: mix_color(yellow, steel, 0.30),
         code_yaml: mix_color(link, steel, 0.28),
         unknown: soft_white,
-    }
-}
-
-fn semantic_label_mix(preset: ThemePreset) -> f32 {
-    // Labels blend their category color with the neutral text role.
-    match preset {
-        ThemePreset::Solarized => 0.36,
-        ThemePreset::Nord => 0.22,
-        ThemePreset::Adwaita | ThemePreset::Windows11 => 0.19,
-        ThemePreset::Breeze => 0.18,
-        ThemePreset::G33k => 0.20,
-        ThemePreset::Ottrin => 0.14,
     }
 }
 
@@ -301,11 +289,10 @@ pub(crate) fn style_for_semantic(
     state: EntryVisualState,
     c: &Colors,
     p: &SemanticPalette,
-    preset: ThemePreset,
     colorize: bool,
     colorize_folder_labels: bool,
 ) -> EntryVisualStyle {
-    let text_mix = semantic_label_mix(preset);
+    let text_mix = c.file_label_blend;
     let cat_color = semantic_color(semantic, p);
     let is_neutral_category = matches!(
         semantic.category,
@@ -360,7 +347,6 @@ pub(crate) fn style_for_entry(
         state,
         c,
         &semantic_palette(c),
-        c.preset,
         cfg.colorize_file_types,
         cfg.colorize_folder_labels,
     )
@@ -378,7 +364,6 @@ pub(crate) fn style_for_search_item(
         state,
         c,
         &semantic_palette(c),
-        c.preset,
         cfg.colorize_file_types,
         cfg.colorize_folder_labels,
     )
@@ -393,6 +378,7 @@ pub(crate) fn file_icon_for_path(path: &Path) -> &'static str {
 mod tests {
     use super::*;
     use crate::theme_colors::Colors;
+    use ottrin_core::ThemePreset;
     use ottrin_core::{AppConfig, CodeSubtype, EntryKind, FileCategory, FileEntry, FileSemantic};
     use std::path::PathBuf;
 
@@ -433,7 +419,6 @@ mod tests {
                         state,
                         &original,
                         &semantic_palette(&original),
-                        original.preset,
                         colorize,
                         true,
                     );
@@ -442,7 +427,6 @@ mod tests {
                         state,
                         &changed,
                         &semantic_palette(&changed),
-                        changed.preset,
                         colorize,
                         true,
                     );
@@ -609,7 +593,6 @@ mod tests {
                                 state,
                                 &c,
                                 &semantic_palette(&c),
-                                preset,
                                 colorize,
                                 true,
                             );
@@ -706,24 +689,9 @@ mod tests {
             folder_kind: None,
             rule_hint: None,
         };
-        let rust_style = style_for_semantic(
-            &rust,
-            EntryVisualState::default(),
-            &c,
-            &p,
-            ThemePreset::Ottrin,
-            true,
-            false,
-        );
-        let ts_style = style_for_semantic(
-            &ts,
-            EntryVisualState::default(),
-            &c,
-            &p,
-            ThemePreset::Ottrin,
-            true,
-            false,
-        );
+        let rust_style =
+            style_for_semantic(&rust, EntryVisualState::default(), &c, &p, true, false);
+        let ts_style = style_for_semantic(&ts, EntryVisualState::default(), &c, &p, true, false);
         assert_ne!(rust_style.icon_color, ts_style.icon_color);
         assert!(matches!(rust_style.icon, IconKey::Code));
     }

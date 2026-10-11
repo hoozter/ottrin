@@ -2385,22 +2385,13 @@ enum SettingsTab {
 type SettingsNavItem = (SettingsTab, &'static str, &'static str);
 type SettingsNavGroup = (&'static str, &'static [SettingsNavItem]);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-enum ThemeEditorTab {
-    #[default]
-    Colors,
-    Typography,
-    Shape,
-    FileColors,
-    Interaction,
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Hash)]
 enum ThemePreviewRegion {
+    #[default]
+    Defaults,
     Titlebar,
     Navigation,
     Bookmarks,
-    #[default]
     ColumnBackground,
     SelectedRow,
     ColumnText,
@@ -2447,31 +2438,28 @@ enum ThemeColorField {
     PaletteYellow,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct ThemeEditorActionModel {
-    allow_scope_changes: bool,
-    show_save_as: bool,
-}
-
-impl ThemeEditorActionModel {
-    fn for_source(source_saved_idx: Option<usize>) -> Self {
-        let editing_saved_theme = source_saved_idx.is_some();
-        Self {
-            allow_scope_changes: !editing_saved_theme,
-            show_save_as: editing_saved_theme,
-        }
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+enum ThemeEditorSource {
+    #[default]
+    Preset,
+    Saved(usize),
+    Imported,
 }
 
 #[derive(Debug, Clone)]
 struct ThemeEditorState {
     open: bool,
-    tab: ThemeEditorTab,
+    visible: bool,
+    pending_exit: bool,
     selected_region: ThemePreviewRegion,
     preset: ThemePreset,
     mode: ThemeMode,
-    source_saved_idx: Option<usize>,
+    source: ThemeEditorSource,
     custom: ThemeCustomization,
+    other_variant: ThemeCustomization,
+    initial_custom: ThemeCustomization,
+    initial_other_variant: ThemeCustomization,
+    initial_name: String,
     save_as_name: String,
     color_hex_inputs: std::collections::BTreeMap<ThemeColorField, String>,
 }
@@ -2481,11 +2469,16 @@ impl Default for ThemeEditorState {
         let custom = ThemeCustomization::default();
         Self {
             open: false,
-            tab: ThemeEditorTab::Colors,
+            visible: false,
+            pending_exit: false,
             selected_region: ThemePreviewRegion::default(),
             preset: ThemePreset::default(),
             mode: ThemeMode::default(),
-            source_saved_idx: None,
+            source: ThemeEditorSource::Preset,
+            other_variant: custom.clone(),
+            initial_custom: custom.clone(),
+            initial_other_variant: custom.clone(),
+            initial_name: String::new(),
             custom,
             save_as_name: String::new(),
             color_hex_inputs: std::collections::BTreeMap::new(),
@@ -3972,11 +3965,7 @@ impl OttrinApp {
 
     fn effective_colors(&self, system_theme: Option<egui::Theme>) -> Colors {
         if self.theme_editor.open {
-            Colors::preset(
-                self.theme_editor.preset,
-                self.theme_editor.mode != ThemeMode::Light,
-            )
-            .customized(&self.theme_editor.custom)
+            self.theme_editor_preview_colors()
         } else {
             Colors::for_config(&self.state.config, system_theme)
         }
@@ -4593,31 +4582,12 @@ impl OttrinApp {
             border_radius: colors.border_radius as f32,
             button_radius: colors.button_radius as f32,
             font_scale: colors.font_scale,
+            file_label_blend: colors.file_label_blend,
         }
     }
 
-    fn active_saved_theme(&self) -> Option<&SavedTheme> {
-        self.state
-            .config
-            .active_custom_theme
-            .as_ref()
-            .and_then(|name| {
-                self.state
-                    .config
-                    .custom_themes
-                    .iter()
-                    .find(|theme| theme.name == *name)
-            })
-    }
-
     fn current_theme_mode(&self) -> ThemeMode {
-        self.active_saved_theme()
-            .map_or(self.state.config.theme, |theme| theme.theme_mode)
-    }
-
-    fn current_theme_preset(&self) -> ThemePreset {
-        self.active_saved_theme()
-            .map_or(self.state.config.theme_preset, |theme| theme.base_preset)
+        self.state.config.theme
     }
 
     fn system_theme(&self, ctx: &Context) -> Option<egui::Theme> {
@@ -4641,9 +4611,7 @@ impl OttrinApp {
     }
 
     fn apply_theme_mode(&mut self, mode: ThemeMode, ctx: &Context) {
-        self.state.config.theme_preset = self.current_theme_preset();
         self.state.config.theme = mode;
-        self.state.config.active_custom_theme = None;
         self.reapply_theme(ctx);
     }
 
@@ -4654,6 +4622,7 @@ impl OttrinApp {
 
     fn theme_preview_region_label(region: ThemePreviewRegion) -> &'static str {
         match region {
+            ThemePreviewRegion::Defaults => "Theme defaults",
             ThemePreviewRegion::Titlebar => "Title bar",
             ThemePreviewRegion::Navigation => "Navigation bar",
             ThemePreviewRegion::Bookmarks => "Locations rail",
@@ -4669,6 +4638,7 @@ impl OttrinApp {
 
     fn theme_preview_region_hint(region: ThemePreviewRegion) -> &'static str {
         match region {
+            ThemePreviewRegion::Defaults => "Shared colors, text, and geometry across Ottrin.",
             ThemePreviewRegion::Titlebar => "Window chrome, tab shelf, and top heading contrast.",
             ThemePreviewRegion::Navigation => "Back controls, address field, and toolbar rhythm.",
             ThemePreviewRegion::Bookmarks => {
@@ -4678,7 +4648,9 @@ impl OttrinApp {
             ThemePreviewRegion::SelectedRow => {
                 "Background of selected file rows. Shared with text selection."
             }
-            ThemePreviewRegion::ColumnText => "Neutral folder/file labels and default icon tint.",
+            ThemePreviewRegion::ColumnText => {
+                "Neutral and category-colored samples show the theme’s file and folder styling."
+            }
             ThemePreviewRegion::Sidebar => "Info/search/target strip and its supporting contrast.",
             ThemePreviewRegion::StatusBar => "Background of the bottom status and utility bar.",
             ThemePreviewRegion::Accent => {
@@ -4690,6 +4662,17 @@ impl OttrinApp {
 
     fn theme_preview_region_fields(region: ThemePreviewRegion) -> &'static [ThemeColorField] {
         match region {
+            ThemePreviewRegion::Defaults => &[
+                ThemeColorField::Panel,
+                ThemeColorField::RaisedPanel,
+                ThemeColorField::Accent,
+                ThemeColorField::Text,
+                ThemeColorField::TextDim,
+                ThemeColorField::TextMuted,
+                ThemeColorField::TextHeading,
+                ThemeColorField::Hover,
+                ThemeColorField::Error,
+            ],
             ThemePreviewRegion::Titlebar => &[ThemeColorField::Titlebar],
             ThemePreviewRegion::Navigation => &[ThemeColorField::Toolbar],
             ThemePreviewRegion::Bookmarks => &[ThemeColorField::Bookmarks],
@@ -4923,43 +4906,79 @@ impl OttrinApp {
         }
     }
 
-    fn switch_theme_editor_scope(&mut self, preset: ThemePreset, mode: ThemeMode, ctx: &Context) {
-        if self.theme_editor.source_saved_idx.is_some() {
-            return;
-        }
-        if self.theme_editor.preset == preset && self.theme_editor.mode == mode {
-            return;
-        }
+    fn switch_theme_editor_variant(&mut self, mode: ThemeMode, ctx: &Context) {
         let mode = Colors::resolved_mode(mode, self.system_theme(ctx));
-        let custom = Self::custom_from_colors(Colors::preset(preset, mode != ThemeMode::Light));
-        self.theme_editor.preset = preset;
-        self.theme_editor.mode = mode;
-        self.theme_editor.custom = custom;
-        self.theme_editor.save_as_name = format!(
-            "{} {}",
-            Self::theme_preset_label(preset),
-            Self::theme_mode_label(mode)
+        if self.theme_editor.mode == mode {
+            return;
+        }
+        std::mem::swap(
+            &mut self.theme_editor.custom,
+            &mut self.theme_editor.other_variant,
         );
+        std::mem::swap(
+            &mut self.theme_editor.initial_custom,
+            &mut self.theme_editor.initial_other_variant,
+        );
+        self.theme_editor.mode = mode;
         self.sync_theme_editor_hex_inputs();
         self.apply_theme_editor_live_preview(ctx);
+    }
+
+    fn theme_editor_is_dirty(&self) -> bool {
+        matches!(self.theme_editor.source, ThemeEditorSource::Imported)
+            || self.theme_editor.custom != self.theme_editor.initial_custom
+            || self.theme_editor.other_variant != self.theme_editor.initial_other_variant
+            || self.theme_editor.save_as_name != self.theme_editor.initial_name
+    }
+
+    fn theme_editor_draft(&self, name: String) -> SavedTheme {
+        let (light, dark) = if self.theme_editor.mode == ThemeMode::Light {
+            (
+                self.theme_editor.custom.clone(),
+                self.theme_editor.other_variant.clone(),
+            )
+        } else {
+            (
+                self.theme_editor.other_variant.clone(),
+                self.theme_editor.custom.clone(),
+            )
+        };
+        SavedTheme {
+            name,
+            base_preset: self.theme_editor.preset,
+            light,
+            dark,
+        }
+    }
+
+    fn set_theme_editor_palettes(&mut self, light: ThemeCustomization, dark: ThemeCustomization) {
+        let (current, other) = if self.theme_editor.mode == ThemeMode::Light {
+            (light, dark)
+        } else {
+            (dark, light)
+        };
+        self.theme_editor.custom = current.clone();
+        self.theme_editor.other_variant = other.clone();
+        self.theme_editor.initial_custom = current;
+        self.theme_editor.initial_other_variant = other;
+        self.theme_editor.initial_name = self.theme_editor.save_as_name.clone();
     }
 
     fn open_theme_editor_for_preset(&mut self, preset: ThemePreset, ctx: &Context) {
         let mode = self.current_theme_mode();
         let mode = Colors::resolved_mode(mode, self.system_theme(ctx));
-        let custom = Self::custom_from_colors(Colors::preset(preset, mode != ThemeMode::Light));
         self.theme_editor.open = true;
-        self.theme_editor.tab = ThemeEditorTab::Colors;
-        self.theme_editor.selected_region = ThemePreviewRegion::ColumnBackground;
+        self.theme_editor.visible = true;
+        self.theme_editor.selected_region = ThemePreviewRegion::Defaults;
         self.theme_editor.preset = preset;
         self.theme_editor.mode = mode;
-        self.theme_editor.source_saved_idx = None;
+        self.theme_editor.source = ThemeEditorSource::Preset;
 
-        self.theme_editor.custom = custom;
-        self.theme_editor.save_as_name = format!(
-            "{} {}",
-            Self::theme_preset_label(preset),
-            Self::theme_mode_label(mode)
+        self.theme_editor.save_as_name =
+            self.generate_save_as_name(&format!("{} Custom", Self::theme_preset_label(preset)));
+        self.set_theme_editor_palettes(
+            Self::custom_from_colors(Colors::preset(preset, false)),
+            Self::custom_from_colors(Colors::preset(preset, true)),
         );
         self.sync_theme_editor_hex_inputs();
         self.apply_theme_editor_live_preview(ctx);
@@ -4968,15 +4987,15 @@ impl OttrinApp {
     fn open_theme_editor_for_saved(&mut self, index: usize, ctx: &Context) {
         if let Some(saved) = self.state.config.custom_themes.get(index).cloned() {
             self.theme_editor.open = true;
-            self.theme_editor.tab = ThemeEditorTab::Colors;
-            self.theme_editor.selected_region = ThemePreviewRegion::ColumnBackground;
+            self.theme_editor.visible = true;
+            self.theme_editor.selected_region = ThemePreviewRegion::Defaults;
             self.theme_editor.preset = saved.base_preset;
             self.theme_editor.mode =
-                Colors::resolved_mode(saved.theme_mode, self.system_theme(ctx));
-            self.theme_editor.source_saved_idx = Some(index);
+                Colors::resolved_mode(self.current_theme_mode(), self.system_theme(ctx));
+            self.theme_editor.source = ThemeEditorSource::Saved(index);
 
-            self.theme_editor.custom = saved.customization;
             self.theme_editor.save_as_name = saved.name;
+            self.set_theme_editor_palettes(saved.light, saved.dark);
             self.sync_theme_editor_hex_inputs();
             self.apply_theme_editor_live_preview(ctx);
         }
@@ -5038,7 +5057,7 @@ impl OttrinApp {
         if !self.theme_editor.open {
             return;
         }
-        if let Some(idx) = self.theme_editor.source_saved_idx {
+        if let ThemeEditorSource::Saved(idx) = self.theme_editor.source {
             let name = self.theme_editor.save_as_name.trim().to_string();
             if name.is_empty()
                 || Self::is_builtin_theme_name(&name)
@@ -5057,12 +5076,10 @@ impl OttrinApp {
                 ));
                 return;
             }
+            let draft = self.theme_editor_draft(name.clone());
             if let Some(saved) = self.state.config.custom_themes.get_mut(idx) {
-                saved.name = name;
-                saved.theme_mode = self.theme_editor.mode;
-                saved.base_preset = self.theme_editor.preset;
-                saved.customization = self.theme_editor.custom.clone();
-                self.state.config.active_custom_theme = Some(saved.name.clone());
+                *saved = draft;
+                self.state.config.active_custom_theme = Some(name);
             }
             self.theme_status = Some((
                 "Custom theme updated".to_string(),
@@ -5082,19 +5099,12 @@ impl OttrinApp {
         }
     }
 
-    fn save_theme_editor_as(&mut self) {
-        if !self.theme_editor.open {
-            return;
-        }
-        self.do_save_theme_as(false);
-    }
-
     fn save_theme_editor_as_inner(&mut self, ctx: &Context) {
-        self.do_save_theme_as(true);
+        self.do_save_theme_as();
         self.reapply_theme(ctx);
     }
 
-    fn do_save_theme_as(&mut self, close_and_apply: bool) {
+    fn do_save_theme_as(&mut self) {
         let name = self.theme_editor.save_as_name.trim().to_string();
         if name.is_empty() {
             self.theme_status = Some((
@@ -5106,17 +5116,10 @@ impl OttrinApp {
         }
         // Creating a theme or a copy never replaces another saved theme.
         let name = self.generate_save_as_name(&name);
-        let saved = SavedTheme {
-            name: name.clone(),
-            theme_mode: self.theme_editor.mode,
-            base_preset: self.theme_editor.preset,
-            customization: self.theme_editor.custom.clone(),
-        };
+        let saved = self.theme_editor_draft(name.clone());
         self.state.config.custom_themes.push(saved);
-        if close_and_apply {
-            self.state.config.active_custom_theme = Some(name.clone());
-            self.theme_editor.open = false;
-        }
+        self.state.config.active_custom_theme = Some(name.clone());
+        self.theme_editor.open = false;
         self.theme_status = Some((
             format!("Saved \"{}\"", name),
             true,
@@ -5128,7 +5131,6 @@ impl OttrinApp {
         if !self.theme_editor.open {
             return;
         }
-        let customization = self.theme_editor.custom.clone();
         let save_name = self.theme_editor.save_as_name.trim();
         let fallback_name = format!(
             "{} {}",
@@ -5140,12 +5142,7 @@ impl OttrinApp {
         } else {
             save_name.to_string()
         };
-        let export_theme = SavedTheme {
-            name: theme_name.clone(),
-            theme_mode: self.theme_editor.mode,
-            base_preset: self.theme_editor.preset,
-            customization,
-        };
+        let export_theme = self.theme_editor_draft(theme_name.clone());
         let default_file_name = sanitize_theme_file_name(&format!("{}.json", theme_name));
         let dialog = rfd::FileDialog::new()
             .add_filter("Ottrin Theme JSON", &["json"])
@@ -5156,7 +5153,7 @@ impl OttrinApp {
 
         let payload = serde_json::json!({
             "format": "ottrin-theme",
-            "version": 1,
+            "version": 2,
             "theme": export_theme,
         });
         let json = match serde_json::to_string_pretty(&payload) {
@@ -5230,13 +5227,11 @@ impl OttrinApp {
             imported_name = self.generate_save_as_name(&imported_name);
         }
 
-        let imported_custom = imported.customization;
-        self.theme_editor.source_saved_idx = None;
+        self.theme_editor.source = ThemeEditorSource::Imported;
         self.theme_editor.preset = imported.base_preset;
-        self.theme_editor.mode = imported.theme_mode;
-        self.theme_editor.custom = imported_custom;
         self.theme_editor.save_as_name = imported_name.clone();
-        self.theme_editor.selected_region = ThemePreviewRegion::ColumnBackground;
+        self.set_theme_editor_palettes(imported.light, imported.dark);
+        self.theme_editor.selected_region = ThemePreviewRegion::Defaults;
         self.sync_theme_editor_hex_inputs();
         self.apply_theme_editor_live_preview(ctx);
         self.theme_status = Some((
@@ -5247,15 +5242,11 @@ impl OttrinApp {
     }
 
     fn theme_editor_preview_colors(&self) -> Colors {
-        Colors::preset(
-            self.theme_editor.preset,
-            self.theme_editor.mode != ThemeMode::Light,
-        )
-        .customized(&self.theme_editor.custom)
+        Colors::from_custom(&self.theme_editor.custom)
     }
 
     fn render_theme_editor_popup(&mut self, ctx: &Context) {
-        if !self.theme_editor.open {
+        if !self.theme_editor.open || !self.theme_editor.visible {
             return;
         }
 
@@ -5263,7 +5254,7 @@ impl OttrinApp {
         let builder = egui::ViewportBuilder::default()
             .with_title("Ottrin Theme Editor")
             .with_inner_size([1180.0, 780.0])
-            .with_min_inner_size([1040.0, 680.0])
+            .with_min_inner_size([800.0, 600.0])
             .with_decorations(false)
             .with_transparent(!self.graphics_runtime.is_windows)
             .with_resizable(true);
@@ -5285,17 +5276,37 @@ impl OttrinApp {
         });
 
         if close_requested {
-            self.cancel_theme_editor(ctx);
-            ctx.send_viewport_cmd_to(
-                Self::theme_editor_viewport_id(),
-                egui::ViewportCommand::Close,
-            );
+            self.close_theme_editor_window(ctx);
+            ctx.request_repaint();
         } else if !self.theme_editor.open {
             self.theme_editor = ThemeEditorState::default();
             ctx.send_viewport_cmd_to(
                 Self::theme_editor_viewport_id(),
                 egui::ViewportCommand::Close,
             );
+        }
+    }
+
+    fn resume_theme_editor(&mut self, ctx: &Context) {
+        self.theme_editor.visible = true;
+        self.theme_editor.pending_exit = false;
+        ctx.send_viewport_cmd_to(
+            Self::theme_editor_viewport_id(),
+            egui::ViewportCommand::Focus,
+        );
+    }
+
+    fn close_theme_editor_window(&mut self, ctx: &Context) {
+        if self.theme_editor_is_dirty() {
+            self.theme_editor.visible = false;
+            self.theme_status = Some((
+                "Editing session kept. Continue editing or discard the preview in Appearance."
+                    .into(),
+                true,
+                Instant::now() + Duration::from_secs(5),
+            ));
+        } else {
+            self.cancel_theme_editor(ctx);
         }
     }
 
@@ -11679,7 +11690,6 @@ impl OttrinApp {
                                 EntryVisualState::default(),
                                 &c,
                                 &palette,
-                                self.state.config.theme_preset,
                                 self.state.config.colorize_file_types,
                                 self.state.config.colorize_folder_labels,
                             );
@@ -21602,6 +21612,13 @@ impl eframe::App for OttrinApp {
     }
 
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+        if ctx.input(|i| i.viewport().close_requested())
+            && self.theme_editor.open
+            && self.theme_editor_is_dirty()
+        {
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            self.theme_editor.pending_exit = true;
+        }
         self.system_appearance.poll();
         let colors = self.effective_colors(self.system_theme(ctx));
         if colors != self.colors {
@@ -21790,6 +21807,7 @@ impl eframe::App for OttrinApp {
         // Floating overlays
         self.sync_preview_to_selection();
         self.render_preview_overlay(ctx);
+        self.render_theme_exit_confirmation(ctx);
         if !self.preview.visible {
             self.render_creation_modal(ctx);
             self.render_rename_modal(ctx);
@@ -23372,10 +23390,9 @@ fn theme_editor_large_preview(
     ui: &mut egui::Ui,
     preview: Colors,
     selected_region: ThemePreviewRegion,
-    active_tab: ThemeEditorTab,
 ) -> (Option<ThemePreviewRegion>, Option<ThemePreviewRegion>) {
     let width = ui.available_width().max(320.0);
-    let height = (width * 0.56).clamp(320.0, 460.0);
+    let height = ui.available_height().max(320.0);
     let (rect, response) = ui.allocate_exact_size(Vec2::new(width, height), Sense::click());
     let p = ui.painter();
     let outer = rect;
@@ -23428,8 +23445,11 @@ fn theme_editor_large_preview(
         Vec2::new(col2.width() - 16.0, 22.0),
     );
     let text_band = Rect::from_min_max(
-        egui::pos2(col2.left() + 18.0, col1.top() + 18.0),
-        egui::pos2(col3.right() - 10.0, col3.bottom() - 18.0),
+        egui::pos2(col1.left() + 8.0, col1.top() + 8.0),
+        egui::pos2(
+            col3.right() - 8.0,
+            (col1.top() + 180.0).min(col3.bottom() - 8.0),
+        ),
     );
     let accent_badge = Rect::from_min_size(
         egui::pos2(status.right() - 124.0, status.center().y - 11.0),
@@ -23447,25 +23467,8 @@ fn theme_editor_large_preview(
     );
 
     p.rect_filled(titlebar, preview.app_radius as f32, preview.titlebar_bg);
-    for (idx, dot) in [
-        Color32::from_rgb(255, 95, 87),
-        Color32::from_rgb(255, 189, 46),
-        Color32::from_rgb(39, 201, 63),
-    ]
-    .into_iter()
-    .enumerate()
-    {
-        p.circle_filled(
-            egui::pos2(
-                titlebar.left() + 18.0 + idx as f32 * 14.0,
-                titlebar.center().y,
-            ),
-            4.0,
-            dot,
-        );
-    }
     let title_tab = Rect::from_min_size(
-        egui::pos2(titlebar.left() + 72.0, titlebar.top() + 7.0),
+        egui::pos2(titlebar.left() + 12.0, titlebar.top() + 7.0),
         Vec2::new(150.0, titlebar.height() - 12.0),
     );
     p.rect_filled(title_tab, preview.border_radius as f32, preview.toolbar_bg);
@@ -23483,12 +23486,28 @@ fn theme_editor_large_preview(
         ],
         Stroke::new(2.4, preview.accent),
     );
+    let control_stroke = Stroke::new(1.0, preview.text_dim);
+    let control_y = titlebar.center().y;
+    let min_x = titlebar.right() - 54.0;
+    p.line_segment(
+        [
+            egui::pos2(min_x - 4.0, control_y),
+            egui::pos2(min_x + 4.0, control_y),
+        ],
+        control_stroke,
+    );
+    p.rect_stroke(
+        Rect::from_center_size(egui::pos2(min_x + 20.0, control_y), Vec2::splat(8.0)),
+        0.0,
+        control_stroke,
+        egui::StrokeKind::Inside,
+    );
     p.text(
-        egui::pos2(titlebar.right() - 8.0, titlebar.center().y),
-        Align2::RIGHT_CENTER,
-        "Ottrin",
-        FontId::proportional(10.5 * preview.font_scale),
-        preview.text_muted,
+        egui::pos2(min_x + 40.0, control_y),
+        Align2::CENTER_CENTER,
+        MI_CLOSE,
+        FontId::proportional(12.0 * preview.font_scale),
+        preview.text_dim,
     );
 
     p.rect_filled(nav, 0.0, preview.toolbar_bg);
@@ -23513,7 +23532,7 @@ fn theme_editor_large_preview(
         Stroke::new(1.0, mix_color(preview.border, preview.bg, 0.28)),
         egui::StrokeKind::Inside,
     );
-    p.text(
+    p.with_clip_rect(address.shrink(4.0)).text(
         egui::pos2(address.left() + 10.0, address.center().y),
         Align2::LEFT_CENTER,
         "/home/user/projects/ottrin",
@@ -23609,36 +23628,49 @@ fn theme_editor_large_preview(
                     ("notes.txt", false),
                 ],
                 [
-                    ("main.rs", false),
-                    ("lib.rs", false),
-                    ("theme.rs", false),
-                    ("icons.rs", false),
-                    ("mod.rs", false),
-                    ("tests.rs", false),
+                    ("photo.png", false),
+                    ("movie.mp4", false),
+                    ("archive.zip", false),
+                    ("budget.xlsx", false),
+                    ("slides.pptx", false),
+                    ("settings.ini", false),
                 ],
             ];
             let (label, directory) = samples[idx][row];
-            p.text(
+            let semantic = ottrin_core::classify_file(
+                Path::new(label),
+                if directory {
+                    EntryKind::Directory
+                } else {
+                    EntryKind::File
+                },
+                false,
+                None,
+                ottrin_core::platform_case_mode_current(),
+            );
+            let palette = semantic_style::semantic_palette(&preview);
+            let style = semantic_style::style_for_semantic(
+                &semantic,
+                semantic_style::EntryVisualState::default(),
+                &preview,
+                &palette,
+                idx > 0,
+                idx > 0,
+            );
+            let row_painter = p.with_clip_rect(col_rect.intersect(rect));
+            row_painter.text(
                 egui::pos2(row_rect.left() + 8.0, row_rect.center().y),
                 Align2::CENTER_CENTER,
-                if directory { MI_FOLDER } else { MI_DESCRIPTION },
+                semantic_style::material_icon(style.icon),
                 FontId::proportional(13.0 * preview.font_scale),
-                if directory {
-                    preview.folder
-                } else {
-                    preview.file
-                },
+                style.icon_color,
             );
-            p.text(
+            row_painter.text(
                 egui::pos2(row_rect.left() + 20.0, row_rect.center().y),
                 Align2::LEFT_CENTER,
                 label,
                 FontId::proportional(9.6 * preview.font_scale),
-                if directory {
-                    preview.folder_text
-                } else {
-                    preview.file
-                },
+                style.text_color,
             );
         }
     }
@@ -23655,6 +23687,7 @@ fn theme_editor_large_preview(
         FontId::proportional(9.4 * preview.font_scale),
         preview.text_muted,
     );
+    let mut sidebar_buttons = Vec::new();
     for idx in 0..4 {
         let item = Rect::from_min_size(
             egui::pos2(
@@ -23663,6 +23696,7 @@ fn theme_editor_large_preview(
             ),
             Vec2::new(sidebar.width() - 20.0, 24.0),
         );
+        sidebar_buttons.push((ThemePreviewRegion::Accent, item));
         p.rect_filled(
             item,
             preview.button_radius as f32,
@@ -23694,15 +23728,13 @@ fn theme_editor_large_preview(
         FontId::proportional(9.4 * preview.font_scale),
         preview.text_muted,
     );
-    if active_tab == ThemeEditorTab::Interaction {
-        p.text(
-            status.center(),
-            Align2::CENTER_CENTER,
-            "Example error",
-            FontId::proportional(9.4 * preview.font_scale),
-            preview.error,
-        );
-    }
+    p.text(
+        status.center(),
+        Align2::CENTER_CENTER,
+        "Example error",
+        FontId::proportional(9.4 * preview.font_scale),
+        preview.error,
+    );
     p.rect_filled(
         accent_badge,
         preview.button_radius as f32,
@@ -23716,7 +23748,8 @@ fn theme_editor_large_preview(
         preview.button_text,
     );
 
-    let regions = vec![
+    let mut regions = vec![
+        (ThemePreviewRegion::Accent, accent_button),
         (
             ThemePreviewRegion::SelectedRow,
             selected_row.expand2(Vec2::new(2.0, 3.0)),
@@ -23731,9 +23764,10 @@ fn theme_editor_large_preview(
         (ThemePreviewRegion::Bookmarks, bookmarks),
         (ThemePreviewRegion::Sidebar, sidebar),
         (ThemePreviewRegion::StatusBar, status),
-        (ThemePreviewRegion::Borders, border_rect),
         (ThemePreviewRegion::ColumnBackground, columns_rect),
+        (ThemePreviewRegion::Borders, border_rect),
     ];
+    regions.splice(0..0, sidebar_buttons);
 
     let hovered_region = response
         .hover_pos()
@@ -23747,8 +23781,16 @@ fn theme_editor_large_preview(
         None
     };
 
+    if selected_region == ThemePreviewRegion::Defaults {
+        p.rect_stroke(
+            frame,
+            preview.app_radius,
+            Stroke::new(1.0, preview.accent),
+            egui::StrokeKind::Inside,
+        );
+    }
     for (region, region_rect) in &regions {
-        let is_selected = active_tab == ThemeEditorTab::Colors && *region == selected_region;
+        let is_selected = *region == selected_region;
         let is_hovered = Some(*region) == hovered_region;
         if !is_selected && !is_hovered {
             continue;
@@ -23937,49 +23979,9 @@ fn format_search_duration(duration_ms: u64) -> String {
     }
 }
 
-fn theme_preview_strip(ui: &mut egui::Ui, preview: Colors, width: f32, height: f32, c: Colors) {
-    let (rect, _) = ui.allocate_exact_size(Vec2::new(width, height), Sense::hover());
-    let swatches = [
-        preview.bg,
-        preview.panel,
-        preview.panel_raised,
-        preview.accent,
-        preview.folder,
-    ];
-    let swatch_w = rect.width() / swatches.len() as f32;
-    for (idx, swatch) in swatches.into_iter().enumerate() {
-        let x0 = rect.left() + swatch_w * idx as f32;
-        let x1 = if idx + 1 == swatches.len() {
-            rect.right()
-        } else {
-            rect.left() + swatch_w * (idx as f32 + 1.0)
-        };
-        let swatch_rect =
-            Rect::from_min_max(egui::pos2(x0, rect.top()), egui::pos2(x1, rect.bottom()));
-        ui.painter().rect_filled(swatch_rect, 0.0, swatch);
-    }
-    ui.painter().rect_stroke(
-        rect,
-        6.0,
-        Stroke::new(1.0, c.border),
-        egui::StrokeKind::Inside,
-    );
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn theme_editor_actions_match_builtin_and_saved_theme_semantics() {
-        let builtin = ThemeEditorActionModel::for_source(None);
-        assert!(builtin.allow_scope_changes);
-        assert!(!builtin.show_save_as);
-
-        let saved = ThemeEditorActionModel::for_source(Some(0));
-        assert!(!saved.allow_scope_changes);
-        assert!(saved.show_save_as);
-    }
 
     #[test]
     fn image_rotation_reports_that_undo_is_unavailable() {

@@ -149,9 +149,9 @@ mod tests {
             .custom_themes
             .push(ottrin_core::SavedTheme {
                 name: "Fixture".into(),
-                theme_mode: ottrin_core::ThemeMode::Dark,
                 base_preset: ThemePreset::Ottrin,
-                customization: custom,
+                dark: (custom).clone(),
+                light: custom,
             });
         app.reapply_theme(&ctx);
         let c = app.colors;

@@ -36,18 +36,18 @@ pub(crate) fn decode_theme_import_json(
         serde_json::from_slice(bytes).map_err(|err| format!("invalid JSON: {}", err))?;
     let envelope = value
         .as_object()
-        .ok_or_else(|| "expected ottrin-theme v1 export envelope".to_string())?;
+        .ok_or_else(|| "expected ottrin-theme v2 export envelope".to_string())?;
     if envelope.get("format").and_then(serde_json::Value::as_str) != Some("ottrin-theme")
-        || envelope.get("version").and_then(serde_json::Value::as_u64) != Some(1)
+        || envelope.get("version").and_then(serde_json::Value::as_u64) != Some(2)
     {
-        return Err("expected ottrin-theme v1 export envelope".to_string());
+        return Err("expected ottrin-theme v2 export envelope".to_string());
     }
     let theme = envelope
         .get("theme")
         .cloned()
-        .ok_or_else(|| "expected ottrin-theme v1 export envelope".to_string())?;
+        .ok_or_else(|| "expected ottrin-theme v2 export envelope".to_string())?;
     let mut saved: SavedTheme = serde_json::from_value(theme)
-        .map_err(|err| format!("invalid ottrin-theme v1 payload: {err}"))?;
+        .map_err(|err| format!("invalid ottrin-theme v2 payload: {err}"))?;
     if saved.name.trim().is_empty() {
         saved.name = fallback_name.to_string();
     }
@@ -57,34 +57,34 @@ pub(crate) fn decode_theme_import_json(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ottrin_core::{ThemeCustomization, ThemeMode, ThemePreset};
+    use ottrin_core::{ThemeCustomization, ThemePreset};
 
     #[test]
     fn decode_theme_import_accepts_wrapped_payload() {
         let wrapped = serde_json::json!({
             "format": "ottrin-theme",
-            "version": 1,
+            "version": 2,
             "theme": {
                 "name": "Wrapped",
-                "theme_mode": "Dark",
                 "base_preset": "Nord",
-                "customization": ThemeCustomization::default(),
+                "light": ThemeCustomization::default(),
+                "dark": ThemeCustomization::default(),
             }
         });
         let bytes = serde_json::to_vec(&wrapped).unwrap();
         let imported = decode_theme_import_json(&bytes, "Fallback").unwrap();
         assert_eq!(imported.name, "Wrapped");
         assert_eq!(imported.base_preset, ThemePreset::Nord);
-        assert_eq!(imported.theme_mode, ThemeMode::Dark);
+        assert_eq!(imported.dark, ThemeCustomization::default());
     }
 
     #[test]
     fn decode_theme_import_rejects_unwrapped_saved_theme_payload() {
         let saved = SavedTheme {
             name: "Saved".to_string(),
-            theme_mode: ThemeMode::Light,
             base_preset: ThemePreset::Solarized,
-            customization: ThemeCustomization::default(),
+            dark: (ThemeCustomization::default()).clone(),
+            light: ThemeCustomization::default(),
         };
         let bytes = serde_json::to_vec(&saved).unwrap();
         let error = decode_theme_import_json(&bytes, "Fallback")
@@ -107,17 +107,17 @@ mod tests {
     }
 
     #[test]
-    fn decode_theme_import_rejects_non_v1_envelopes() {
+    fn decode_theme_import_rejects_non_v2_envelopes() {
         let theme = SavedTheme {
             name: "Strict".to_string(),
-            theme_mode: ThemeMode::Dark,
             base_preset: ThemePreset::Nord,
-            customization: ThemeCustomization::default(),
+            dark: (ThemeCustomization::default()).clone(),
+            light: ThemeCustomization::default(),
         };
         for payload in [
-            serde_json::json!({"version": 1, "theme": theme}),
-            serde_json::json!({"format": "other-theme", "version": 1, "theme": theme}),
-            serde_json::json!({"format": "ottrin-theme", "version": 2, "theme": theme}),
+            serde_json::json!({"version": 2, "theme": theme}),
+            serde_json::json!({"format": "other-theme", "version": 2, "theme": theme}),
+            serde_json::json!({"format": "ottrin-theme", "version": 1, "theme": theme}),
         ] {
             let bytes = serde_json::to_vec(&payload).unwrap();
             let error = decode_theme_import_json(&bytes, "Fallback")

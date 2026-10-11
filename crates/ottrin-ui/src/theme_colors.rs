@@ -33,7 +33,7 @@ pub(crate) struct Colors {
     pub(crate) button_bg: Color32,
     pub(crate) button_text: Color32,
     pub(crate) font_scale: f32,
-    pub(crate) preset: ThemePreset,
+    pub(crate) file_label_blend: f32,
     pub(crate) palette: [Color32; 10],
 }
 
@@ -75,7 +75,7 @@ impl Colors {
             button_bg: Color32::from_rgb(40, 43, 50),
             button_text: Color32::from_rgb(188, 191, 196),
             font_scale: 1.0,
-            preset: ThemePreset::Ottrin,
+            file_label_blend: 0.14,
             palette: [Color32::TRANSPARENT; 10],
         }
     }
@@ -112,7 +112,7 @@ impl Colors {
             button_bg: Color32::from_rgb(235, 235, 235),
             button_text: Color32::from_rgb(80, 80, 80),
             font_scale: 1.0,
-            preset: ThemePreset::Ottrin,
+            file_label_blend: 0.14,
             palette: [Color32::TRANSPARENT; 10],
         }
     }
@@ -398,18 +398,19 @@ impl Colors {
             colors.accent.b(),
             if dark { 36 } else { 28 },
         );
-        colors.accent_dim = colors.selected_bg;
         colors.hover = if dark {
             Color32::from_rgba_unmultiplied(255, 255, 255, 8)
         } else {
             Color32::from_rgba_unmultiplied(0, 0, 0, 12)
         };
-        colors.row_alt = if dark {
-            Color32::from_rgba_unmultiplied(255, 255, 255, 5)
-        } else {
-            Color32::from_rgba_unmultiplied(0, 0, 0, 5)
+        colors.file_label_blend = match preset {
+            ThemePreset::Solarized => 0.36,
+            ThemePreset::Nord => 0.22,
+            ThemePreset::Adwaita | ThemePreset::Windows11 => 0.19,
+            ThemePreset::Breeze => 0.18,
+            ThemePreset::G33k => 0.20,
+            ThemePreset::Ottrin => 0.14,
         };
-        colors.preset = preset;
         colors.palette = Self::semantic_palette_for_preset(preset, dark, colors.file);
         colors.folder_text = colors.file;
         colors.text_dim = colors.file;
@@ -417,7 +418,27 @@ impl Colors {
         colors.button_bg = colors.panel_raised;
         colors.button_text = colors.text;
         colors.statusbar_bg = colors.smart_panel_bg;
+        colors.derive_overlays();
         colors
+    }
+
+    fn derive_overlays(&mut self) {
+        // Overlays follow the stored palette, so an unedited custom copy renders
+        // identically to its preset without consulting that preset at runtime.
+        let bg = Self::to_rgba(self.bg);
+        let dark = (0.2126 * bg[0] as f32 + 0.7152 * bg[1] as f32 + 0.0722 * bg[2] as f32) < 128.0;
+        let accent = Self::to_rgba(self.accent);
+        self.accent_dim = Self::from_rgba([
+            accent[0],
+            accent[1],
+            accent[2],
+            ((u16::from(accent[3]) * if dark { 36 } else { 28 }) / 255) as u8,
+        ]);
+        self.row_alt = if dark {
+            Color32::from_rgba_unmultiplied(255, 255, 255, 5)
+        } else {
+            Color32::from_rgba_unmultiplied(0, 0, 0, 5)
+        };
     }
 
     pub(crate) fn for_config(config: &AppConfig, system_theme: Option<egui::Theme>) -> Self {
@@ -427,7 +448,7 @@ impl Colors {
                 .iter()
                 .find(|theme| theme.name == *name)
         }) {
-            Self::for_saved(saved, system_theme)
+            Self::for_saved(saved, config.theme, system_theme)
         } else {
             Self::base_for_config(config, system_theme)
         }
@@ -435,13 +456,16 @@ impl Colors {
 
     pub(crate) fn for_saved(
         saved: &ottrin_core::SavedTheme,
+        mode: ThemeMode,
         system_theme: Option<egui::Theme>,
     ) -> Self {
-        Self::preset(
-            saved.base_preset,
-            Self::resolved_mode(saved.theme_mode, system_theme) != ThemeMode::Light,
-        )
-        .customized(&saved.customization)
+        let dark = Self::resolved_mode(mode, system_theme) != ThemeMode::Light;
+        // Complete stored variants own their visuals. The preset is provenance only.
+        Self::from_custom(if dark { &saved.dark } else { &saved.light })
+    }
+
+    pub(crate) fn from_custom(custom: &ottrin_core::ThemeCustomization) -> Self {
+        Self::dark().customized(custom)
     }
 
     pub(crate) fn customized(mut self, custom: &ottrin_core::ThemeCustomization) -> Self {
@@ -475,12 +499,7 @@ impl Colors {
         base.window_border = Self::from_rgba(custom.window_border);
         // Round to nearest 0.5px to avoid sub-pixel rendering artifacts.
         base.window_border_width = (custom.window_border_width.clamp(0.0, 4.0) * 2.0).round() / 2.0;
-        let accent = Self::from_rgba(custom.accent);
-        if accent != base.accent {
-            base.accent_dim =
-                Self::from_rgba([custom.accent[0], custom.accent[1], custom.accent[2], 56]);
-        }
-        base.accent = accent;
+        base.accent = Self::from_rgba(custom.accent);
         base.selected_bg = Self::from_rgba(custom.selected_bg);
         base.hover = Self::from_rgba(custom.hover);
         base.error = Self::from_rgba(custom.error);
@@ -497,6 +516,8 @@ impl Colors {
         base.border_radius = custom.border_radius.clamp(0.0, 14.0) as u8;
         base.button_radius = custom.button_radius.clamp(0.0, 14.0) as u8;
         base.font_scale = custom.font_scale.clamp(0.85, 1.35);
+        base.file_label_blend = custom.file_label_blend.clamp(0.0, 1.0);
+        base.derive_overlays();
         self
     }
 
@@ -718,12 +739,13 @@ mod theme_resolution_tests {
 
     #[test]
     fn saved_theme_is_the_only_palette_source_and_survives_config_roundtrip() {
-        let expected = Colors::preset(ThemePreset::Nord, false);
+        let light = crate::OttrinApp::custom_from_colors(Colors::preset(ThemePreset::Nord, false));
+        let dark = crate::OttrinApp::custom_from_colors(Colors::preset(ThemePreset::Nord, true));
         let saved = ottrin_core::SavedTheme {
             name: "Fixed palette".into(),
-            theme_mode: ThemeMode::Light,
             base_preset: ThemePreset::Nord,
-            customization: crate::OttrinApp::custom_from_colors(expected),
+            dark: dark.clone(),
+            light: light.clone(),
         };
         let mut config = AppConfig {
             theme: ThemeMode::System,
@@ -736,11 +758,18 @@ mod theme_resolution_tests {
         assert!(serialized.get("theme_custom").is_none());
         assert!(serialized.get("theme_custom_by_preset").is_none());
         config = serde_json::from_value(serialized).unwrap();
-        assert_eq!(
-            Colors::for_config(&config, Some(egui::Theme::Dark)),
-            expected
-        );
-        config.custom_themes[0].customization.button_radius = 13.0;
+        for (mode, expected) in [(egui::Theme::Light, &light), (egui::Theme::Dark, &dark)] {
+            assert_eq!(
+                crate::OttrinApp::custom_from_colors(Colors::for_config(&config, Some(mode))),
+                *expected
+            );
+        }
+        let owned = Colors::for_config(&config, Some(egui::Theme::Dark));
+        config.theme_preset = ThemePreset::Solarized;
+        config.custom_themes[0].base_preset = ThemePreset::G33k;
+        assert_eq!(Colors::for_config(&config, Some(egui::Theme::Dark)), owned);
+        config.theme_preset = ThemePreset::G33k;
+        config.custom_themes[0].dark.button_radius = 13.0;
         assert_eq!(Colors::for_config(&config, None).button_radius, 13);
         config.active_custom_theme = None;
         assert_eq!(

@@ -66,6 +66,7 @@ pub struct ThemeCustomization {
     pub border_radius: f32,
     pub button_radius: f32,
     pub font_scale: f32,
+    pub file_label_blend: f32,
 }
 
 impl Default for ThemeCustomization {
@@ -109,6 +110,7 @@ impl Default for ThemeCustomization {
             border_radius: 5.0,
             button_radius: 5.0,
             font_scale: 1.0,
+            file_label_blend: 0.14,
         }
     }
 }
@@ -120,9 +122,9 @@ fn default_true() -> bool {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SavedTheme {
     pub name: String,
-    pub theme_mode: ThemeMode,
     pub base_preset: ThemePreset,
-    pub customization: ThemeCustomization,
+    pub light: ThemeCustomization,
+    pub dark: ThemeCustomization,
 }
 
 // ── View mode (per-tab) ───────────────────────────────────────────────────────

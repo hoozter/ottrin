@@ -1,6 +1,7 @@
 use super::*;
 
-const REGIONS: [ThemePreviewRegion; 10] = [
+const REGIONS: [ThemePreviewRegion; 11] = [
+    ThemePreviewRegion::Defaults,
     ThemePreviewRegion::Titlebar,
     ThemePreviewRegion::Navigation,
     ThemePreviewRegion::Bookmarks,
@@ -22,140 +23,120 @@ impl OttrinApp {
     ) {
         let mut preferences_changed = false;
         ui.heading(RichText::new("Appearance").color(c.heading));
-        ui.label(RichText::new("Choose a theme, then make it yours.").color(c.text_dim));
-        ui.add_space(14.0);
-        Frame::new()
-            .fill(c.panel_raised)
-            .corner_radius(c.border_radius)
-            .inner_margin(12)
-            .show(ui, |ui| {
-                ui.set_width(ui.available_width());
-                let name = if self.theme_editor.open { self.theme_editor.save_as_name.clone() } else { self
-                    .state
-                    .config
-                    .active_custom_theme
-                    .clone()
-                    .unwrap_or_else(|| {
-                        Self::theme_preset_label(self.state.config.theme_preset).into()
-                    }) };
-                ui.horizontal(|ui| {
-                    theme_preview_strip(ui, c, 90.0, 30.0, c);
-                    ui.vertical(|ui| {
-                        ui.label(RichText::new(&name).strong().color(c.heading));
-                        ui.label(RichText::new(if self.theme_editor.open { "Unsaved preview" } else { "Active theme" }).small().color(c.text_dim));
-                    });
-                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                        if ui
-                            .add(egui::Button::new(if self.theme_editor.open { "Return to theme editor" } else { "Edit active theme" }).themed(&c))
-                            .clicked()
-                        {
-                            if self.theme_editor.open {
-                                ctx.send_viewport_cmd_to(Self::theme_editor_viewport_id(), egui::ViewportCommand::Focus);
-                            } else {
-                            let saved_index =
-                                self.state.config.custom_themes.iter().position(|theme| {
-                                    Some(theme.name.as_str())
-                                        == self.state.config.active_custom_theme.as_deref()
-                                });
-                            if let Some(index) = saved_index {
-                                self.open_theme_editor_for_saved(index, ctx);
-                            } else {
-                                self.open_theme_editor_for_preset(
-                                    self.state.config.theme_preset,
-                                    ctx,
-                                );
-                            }
-                            }
-                        }
-                    });
-                });
-                ui.add_space(8.0);
-                ui.horizontal(|ui| {
-                    ui.label("Color mode");
-                    let mut mode = if self.theme_editor.open { self.theme_editor.mode } else { self.current_theme_mode() };
-                    ui.add_enabled_ui(!self.theme_editor.open && self.active_saved_theme().is_none(), |ui| {
-                    for (value, label) in [
-                        (ThemeMode::Light, "Light"),
-                        (ThemeMode::Dark, "Dark"),
-                        (ThemeMode::System, "System"),
-                    ] {
-                        ui.selectable_value(&mut mode, value, label);
-                    }
-                    });
-                    if !self.theme_editor.open && mode != self.current_theme_mode() { self.apply_theme_mode(mode, ctx); preferences_changed = true; }
-                });
-                if self.active_saved_theme().is_some() {
-                    ui.label(RichText::new("Saved palettes keep their colors. Choose a built-in theme to change color mode.").small().color(c.text_dim));
-                } else if self.state.config.theme == ThemeMode::System {
-                    let preference = self.system_theme(ctx);
-                    ui.label(RichText::new(if preference.is_some() {
-                        format!("Follows the desktop · {}", Self::theme_mode_label(Colors::resolved_mode(ThemeMode::System, preference)))
-                    } else { "Desktop preference unavailable · using Dark".into() }).small().color(c.text_dim));
-                }
+        ui.add_space(12.0);
+        ui.horizontal(|ui| {
+            ui.label(RichText::new("Appearance mode").color(c.text_dim));
+            let mut mode = self.current_theme_mode();
+            ui.add_enabled_ui(!self.theme_editor.open, |ui| {
+                appearance_mode_control(ui, &mut mode, true, c);
             });
-        if self.theme_editor.open {
+            if mode != self.current_theme_mode() {
+                self.apply_theme_mode(mode, ctx);
+                preferences_changed = true;
+            }
+        });
+        ui.horizontal(|ui| {
+            let active_name = self
+                .state
+                .config
+                .active_custom_theme
+                .as_deref()
+                .unwrap_or(Self::theme_preset_label(self.state.config.theme_preset));
             ui.label(
-                RichText::new("Finish the preview in the editor before switching themes.")
+                RichText::new(format!("Active · {active_name}"))
                     .small()
                     .color(c.text_dim),
             );
+            if self.current_theme_mode() == ThemeMode::System {
+                ui.label(
+                    RichText::new(format!(
+                        "Effective · {}",
+                        Self::theme_mode_label(Colors::resolved_mode(
+                            ThemeMode::System,
+                            self.system_theme(ctx)
+                        ))
+                    ))
+                    .small()
+                    .color(c.text_dim),
+                );
+            }
+        });
+        if self.theme_editor.open {
+            ui.add_space(8.0);
+            ui.horizontal_wrapped(|ui| {
+                ui.label(RichText::new("Theme preview in progress").color(c.accent));
+                if ui
+                    .add(egui::Button::new("Continue editing").themed(&c))
+                    .clicked()
+                {
+                    self.resume_theme_editor(ctx);
+                }
+                if ui
+                    .add(egui::Button::new("Discard preview").themed(&c))
+                    .clicked()
+                {
+                    self.cancel_theme_editor(ctx);
+                }
+            });
         }
-        ui.add_space(16.0);
+        let presets = [
+            ThemePreset::Ottrin,
+            ThemePreset::Breeze,
+            ThemePreset::Adwaita,
+            ThemePreset::Windows11,
+            ThemePreset::Solarized,
+            ThemePreset::Nord,
+            ThemePreset::G33k,
+        ];
+        let columns = ((ui.available_width() / 190.0).floor() as usize).clamp(1, 4);
+        let gap = 12.0;
+        let width = (ui.available_width() - gap * (columns - 1) as f32) / columns as f32;
+        let dark = Colors::resolved_mode(self.current_theme_mode(), self.system_theme(ctx))
+            != ThemeMode::Light;
+        ui.add_space(20.0);
         ui.label(RichText::new("Built-in themes").strong().color(c.heading));
-        ui.label(
-            RichText::new("Select a theme to apply its defaults. Your saved themes stay below.")
-                .small()
-                .color(c.text_dim),
-        );
         ui.add_space(8.0);
+        let mut apply_preset = None;
+        let mut edit_preset = None;
         ui.add_enabled_ui(!self.theme_editor.open, |ui| {
-            let presets = [
-                ThemePreset::Ottrin,
-                ThemePreset::Breeze,
-                ThemePreset::Adwaita,
-                ThemePreset::Windows11,
-                ThemePreset::Solarized,
-                ThemePreset::Nord,
-                ThemePreset::G33k,
-            ];
-            let columns = ((ui.available_width() / 180.0).floor() as usize).clamp(1, 4);
-            let gap = ui.spacing().item_spacing.x;
-            let width = (ui.available_width() - gap * (columns - 1) as f32) / columns as f32;
             for row in presets.chunks(columns) {
                 ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = gap;
                     for &preset in row {
                         let selected = self.state.config.theme_preset == preset
                             && self.state.config.active_custom_theme.is_none();
-                        let preview = Colors::preset(
-                            preset,
-                            Colors::resolved_mode(
-                                self.current_theme_mode(),
-                                self.system_theme(ctx),
-                            ) != ThemeMode::Light,
-                        );
-                        if appearance_theme_card(
+                        let action = appearance_theme_card(
                             ui,
                             c,
-                            preview,
+                            Colors::preset(preset, dark),
                             Self::theme_preset_label(preset),
                             selected,
                             width,
-                        )
-                        .clicked()
-                        {
-                            self.apply_theme_preset(preset, ctx);
-                            preferences_changed = true;
+                            false,
+                        );
+                        if action.edit {
+                            edit_preset = Some(preset);
+                        } else if action.apply {
+                            apply_preset = Some(preset);
                         }
                     }
                 });
-                ui.add_space(6.0);
+                ui.add_space(gap);
             }
         });
-        ui.add_space(10.0);
+        if let Some(preset) = apply_preset {
+            self.apply_theme_preset(preset, ctx);
+            preferences_changed = true;
+        }
+        if let Some(preset) = edit_preset {
+            self.open_theme_editor_for_preset(preset, ctx);
+        }
+        ui.add_space(8.0);
         ui.label(RichText::new("Your themes").strong().color(c.heading));
+        ui.add_space(8.0);
         if self.state.config.custom_themes.is_empty() {
             ui.label(
-                RichText::new("Save a theme in the editor to keep your changes here.")
+                RichText::new("Use a theme’s pencil to create your own.")
                     .small()
                     .color(c.text_dim),
             );
@@ -164,70 +145,50 @@ impl OttrinApp {
         let mut edit = None;
         let mut remove = None;
         ui.add_enabled_ui(!self.theme_editor.open, |ui| {
-            for (index, saved) in self.state.config.custom_themes.iter().enumerate() {
-                ui.push_id(("saved_theme", index), |ui| {
-                    let preview = Colors::for_saved(saved, self.system_theme(ctx));
-                    let selected = self.state.config.active_custom_theme.as_deref()
-                        == Some(saved.name.as_str());
-                    Frame::new()
-                        .fill(c.panel_raised)
-                        .corner_radius(c.border_radius)
-                        .inner_margin(10)
-                        .show(ui, |ui| {
-                            ui.set_width(ui.available_width());
-                            ui.horizontal(|ui| {
-                                theme_preview_strip(ui, preview, 64.0, 24.0, c);
-                                ui.vertical(|ui| {
-                                    ui.label(RichText::new(&saved.name).strong().color(c.heading));
-                                    ui.label(
-                                        RichText::new(format!(
-                                            "{} · {}",
-                                            Self::theme_preset_label(saved.base_preset),
-                                            Self::theme_mode_label(saved.theme_mode)
-                                        ))
-                                        .small()
-                                        .color(c.text_dim),
-                                    );
-                                });
-                                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                    if ui.add(egui::Button::new("Delete").themed(&c)).clicked() {
-                                        remove = Some(index);
-                                    }
-                                    if ui.add(egui::Button::new("Edit").themed(&c)).clicked() {
-                                        edit = Some(index);
-                                    }
-                                    if ui
-                                        .add_enabled(
-                                            !selected,
-                                            egui::Button::new(if selected {
-                                                "Active"
-                                            } else {
-                                                "Apply"
-                                            })
-                                            .themed(&c),
-                                        )
-                                        .clicked()
-                                    {
-                                        apply = Some(index);
-                                    }
-                                });
-                            });
+            for (row_index, row) in self.state.config.custom_themes.chunks(columns).enumerate() {
+                ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = gap;
+                    for (column, saved) in row.iter().enumerate() {
+                        let index = row_index * columns + column;
+                        ui.push_id(("saved_theme", index), |ui| {
+                            let selected = self.state.config.active_custom_theme.as_deref()
+                                == Some(saved.name.as_str());
+                            let action = appearance_theme_card(
+                                ui,
+                                c,
+                                Colors::for_saved(
+                                    saved,
+                                    self.current_theme_mode(),
+                                    self.system_theme(ctx),
+                                ),
+                                &saved.name,
+                                selected,
+                                width,
+                                true,
+                            );
+                            if action.edit {
+                                edit = Some(index);
+                            } else if action.remove {
+                                remove = Some(index);
+                            } else if action.apply {
+                                apply = Some(index);
+                            }
                         });
+                    }
                 });
-                ui.add_space(4.0);
+                ui.add_space(gap);
             }
         });
         if let Some(index) = apply {
-            let saved = self.state.config.custom_themes[index].clone();
-            self.apply_saved_custom_theme(&saved, ctx);
+            self.apply_saved_custom_theme(&self.state.config.custom_themes[index].clone(), ctx);
             preferences_changed = true;
         }
         if let Some(index) = edit {
             self.open_theme_editor_for_saved(index, ctx);
         }
         if let Some(index) = remove {
-            preferences_changed = true;
             self.delete_saved_custom_theme(index, ctx);
+            preferences_changed = true;
         }
         ui.add_space(16.0);
         ui.separator();
@@ -275,227 +236,182 @@ impl OttrinApp {
         let c = self.colors;
         let mut close_requested = false;
         let mut changed = false;
-        let seed = Self::custom_from_colors(Colors::preset(
-            self.theme_editor.preset,
-            self.theme_editor.mode != ThemeMode::Light,
-        ));
-        let action_model = ThemeEditorActionModel::for_source(self.theme_editor.source_saved_idx);
-        egui::CentralPanel::default()
-            .frame(Frame::new().fill(c.panel).inner_margin(12))
-            .show(ctx, |ui| {
-                render_custom_titlebar(ui, ctx, c, c.titlebar_bg, "Appearance · Theme editor", true,
-                    &mut close_requested, |_| {});
-                ui.add_space(8.0);
-                ui.horizontal(|ui| {
-                    ui.label(RichText::new("Editing").strong().color(c.heading));
-                    let identity = if self.theme_editor.source_saved_idx.is_some() {
-                        format!("{} · {}", self.theme_editor.save_as_name, Self::theme_mode_label(self.theme_editor.mode))
-                    } else {
-                        format!("{} · {}", Self::theme_preset_label(self.theme_editor.preset), Self::theme_mode_label(self.theme_editor.mode))
-                    };
-                    ui.label(identity);
-                    if action_model.allow_scope_changes {
-                        let mut preset = self.theme_editor.preset;
-                        egui::ComboBox::from_id_salt("editor_base")
-                            .selected_text(Self::theme_preset_label(preset))
-                            .show_ui(ui, |ui| {
-                                for p in [ThemePreset::Ottrin, ThemePreset::Breeze, ThemePreset::Adwaita,
-                                    ThemePreset::Windows11, ThemePreset::Solarized, ThemePreset::Nord, ThemePreset::G33k] {
-                                    ui.selectable_value(&mut preset, p, Self::theme_preset_label(p));
-                                }
-                            });
-                        let mut mode = self.theme_editor.mode;
-                        egui::ComboBox::from_id_salt("editor_mode")
-                            .selected_text(Self::theme_mode_label(mode))
-                            .show_ui(ui, |ui| {
-                                for m in [ThemeMode::Dark, ThemeMode::Light] {
-                                    ui.selectable_value(&mut mode, m, Self::theme_mode_label(m));
-                                }
-                            });
-                        if preset != self.theme_editor.preset || mode != self.theme_editor.mode {
-                            self.switch_theme_editor_scope(preset, mode, ctx);
-                        }
-                    }
-                });
-                ui.label(RichText::new("Changes preview live. Save to keep them; Cancel restores the saved appearance.")
-                    .small().color(c.text_dim));
-                ui.add_space(10.0);
-
-                // Keep the preview and navigation visible while properties scroll independently.
-                let available = ui.available_rect_before_wrap();
-                let footer = Rect::from_min_max(egui::pos2(available.min.x, available.max.y - 76.0), available.max);
-                let content = Rect::from_min_max(available.min, egui::pos2(available.max.x, footer.min.y - 12.0));
-                ui.scope_builder(UiBuilder::new().max_rect(content), |ui| {
-                    ui.columns(2, |columns| {
-                        columns[0].set_height(content.height());
-                        columns[0].label(RichText::new("Live preview").strong().color(c.heading));
-                        columns[0].label(RichText::new(if self.theme_editor.tab == ThemeEditorTab::FileColors {
-                            "Real file icons and labels with file colors enabled."
-                        } else if self.theme_editor.tab == ThemeEditorTab::Typography { "Preview of shared text roles." }
-                        else if self.theme_editor.tab == ThemeEditorTab::Shape { "Preview of shared corners and borders." }
-                        else if self.theme_editor.tab == ThemeEditorTab::Interaction { "Examples of selection, hover, focus, and errors." }
-                        else { "Choose an element below or click it in the preview." }).small().color(c.text_dim));
-                        let preview = self.theme_editor_preview_colors();
-                        let clicked = if self.theme_editor.tab == ThemeEditorTab::FileColors {
-                            appearance_file_color_preview(&mut columns[0], preview);
-                            None
-                        } else {
-                            theme_editor_large_preview(&mut columns[0], preview, self.theme_editor.selected_region, self.theme_editor.tab).1
-                        };
-                        if let Some(region) = clicked {
-                            self.theme_editor.selected_region = region;
-                            self.theme_editor.tab = ThemeEditorTab::Colors;
-                        }
-                        if self.theme_editor.tab == ThemeEditorTab::FileColors {
-                            columns[0].add_space(8.0);
-                            columns[0].label(RichText::new(format!("Current file views: colors {}, colored folder labels {}.",
-                                if self.state.config.colorize_file_types { "on" } else { "off" },
-                                if self.state.config.colorize_file_types && self.state.config.colorize_folder_labels { "on" } else { "off" }))
-                                .small().color(c.text_dim));
-                        } else if self.theme_editor.tab == ThemeEditorTab::Colors {
-                        let navigation_height = (content.max.y - columns[0].cursor().min.y).max(60.0);
-                        ScrollArea::vertical().id_salt("appearance_elements").max_height(navigation_height)
-                            .show(&mut columns[0], |ui| {
-                        ui.add_space(8.0);
-                        ui.horizontal_wrapped(|ui| {
-                            for region in REGIONS {
-                                if ui.selectable_label(self.theme_editor.selected_region == region,
-                                    Self::theme_preview_region_label(region)).clicked() {
-                                    self.theme_editor.selected_region = region;
-                                    self.theme_editor.tab = ThemeEditorTab::Colors;
-                                }
-                            }
-                        });
-                        ui.add_space(12.0);
-                        ui.label(RichText::new("Scope").strong().color(c.heading));
-                        ui.label(RichText::new(Self::theme_preview_region_hint(self.theme_editor.selected_region))
-                            .small().color(c.text_dim));
-
-                            });
-                        } else {
-                            columns[0].add_space(12.0);
-                            columns[0].label(RichText::new("Scope · Across Ottrin").strong().color(c.heading));
-                            columns[0].label(RichText::new(match self.theme_editor.tab {
-                                ThemeEditorTab::Typography => "Shared interface text. Folder and file labels have their own roles in Colors.",
-                                ThemeEditorTab::Shape => "Window frames, surfaces, and buttons across the interface.",
-                                ThemeEditorTab::Interaction => "Shared hover, selection, focus, and error feedback in file views and controls.",
-                                _ => unreachable!(),
-                            }).small().color(c.text_dim));
-                        }
-
-                        columns[1].set_height(content.height());
-                        columns[1].horizontal_wrapped(|ui| {
-                            for (tab, title) in [(ThemeEditorTab::Colors, "Colors"),
-                                (ThemeEditorTab::Typography, "Typography"),
-                                (ThemeEditorTab::Shape, "Shape"), (ThemeEditorTab::FileColors, "File colors"), (ThemeEditorTab::Interaction, "States")] {
-                                ui.selectable_value(&mut self.theme_editor.tab, tab, title);
-                            }
-                        });
-                        columns[1].separator();
-                        let scroll_height = (content.height() - 44.0).max(100.0);
-                        ScrollArea::vertical().id_salt("appearance_properties")
-                            .max_height(scroll_height).show(&mut columns[1], |ui| {
-                                ui.set_width(ui.available_width());
-                                ui.spacing_mut().item_spacing.y = 10.0;
-                                match self.theme_editor.tab {
-                                    ThemeEditorTab::Colors => {
-                                        let region = self.theme_editor.selected_region;
-                                        ui.label(RichText::new(Self::theme_preview_region_label(region)).size(18.0 * c.font_scale).strong().color(c.heading));
-                                        let fields = Self::theme_preview_region_fields(region);
-                                        for &field in fields {
-                                            changed |= self.appearance_color_row(ui, field, &seed);
-                                        }
-                                        if ui.horizontal(|ui| ui.add(egui::Button::new("Reset element colors").themed(&c))).inner.clicked() {
-                                            for &field in fields {
-                                                *Self::theme_color_field_value_mut(&mut self.theme_editor.custom, field) =
-                                                    Self::theme_color_field_value(&seed, field);
-                                                let color = Self::theme_color_field_value(&seed, field);
-                                                self.theme_editor.color_hex_inputs.insert(field, format!("#{:02X}{:02X}{:02X}", color[0], color[1], color[2]));
-                                            }
-                                            changed = true;
-                                        }
-                                        ui.add_space(8.0);
-                                        ui.separator();
-                                        ui.label(RichText::new("Shared defaults").strong().color(c.heading));
-                                        ui.label(RichText::new("These colors are shared across the application.").small().color(c.text_dim));
-                                        for field in [ThemeColorField::Panel, ThemeColorField::RaisedPanel, ThemeColorField::Accent,
-                                            ThemeColorField::Border, ThemeColorField::WindowBorder] {
-                                            if fields.contains(&field) { continue; }
-                                            changed |= self.appearance_color_row(ui, field, &seed);
-                                        }
-                                    }
-                                    ThemeEditorTab::Typography => {
-                                        ui.label(RichText::new("Application typography").size(18.0 * c.font_scale).strong().color(c.heading));
-                                        ui.label(RichText::new("Shared text roles across windows and file views.").small().color(c.text_dim));
-                                        changed |= number_row(ui, "Text size", &mut self.theme_editor.custom.font_scale,
-                                            0.85..=1.35, seed.font_scale, 0.01, c);
-                                        for field in [ThemeColorField::Text, ThemeColorField::TextDim, ThemeColorField::TextMuted, ThemeColorField::TextHeading] {
-                                            changed |= self.appearance_color_row(ui, field, &seed);
-                                        }
-                                    }
-                                    ThemeEditorTab::Shape => {
-                                        ui.label(RichText::new("Application shape").size(18.0 * c.font_scale).strong().color(c.heading));
-                                        ui.label(RichText::new("Shared corner and border dimensions, in pixels.").small().color(c.text_dim));
-                                        changed |= number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius,
-                                            0.0..=24.0, seed.app_radius, 1.0, c);
-                                        changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius,
-                                            0.0..=14.0, seed.border_radius, 1.0, c);
-                                        changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius,
-                                            0.0..=14.0, seed.button_radius, 1.0, c);
-                                        changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width,
-                                            0.0..=4.0, seed.window_border_width, 0.5, c);
-                                    }
-                                    ThemeEditorTab::Interaction => {
-                                        ui.label(RichText::new("Interaction states").size(18.0 * c.font_scale).strong().color(c.heading));
-                                        ui.label(RichText::new("Shared feedback colors for selections, hover, focus, errors and destructive actions.").small().color(c.text_dim));
-                                        for field in [ThemeColorField::Selection, ThemeColorField::Hover, ThemeColorField::Accent, ThemeColorField::Error] {
-                                            changed |= self.appearance_color_row(ui, field, &seed);
-                                        }
-                                    }
-                                    ThemeEditorTab::FileColors => {
-                                        ui.label(RichText::new("File type palette").size(18.0 * c.font_scale).strong().color(c.heading));
-                                        ui.label(RichText::new("Used when “Color files by type” is on in Appearance. The preview shows that mode, including colored folder labels.").small().color(c.text_dim));
-                                        ui.label(RichText::new("Shared colors serve the listed types. Fonts, packages and code use blends; colored labels blend with neutral text.").small().color(c.text_dim));
-                                        for field in [ThemeColorField::PaletteSoftWhite, ThemeColorField::PaletteFolderBlue,
-                                            ThemeColorField::PaletteLinkBlue, ThemeColorField::PaletteSteel,
-                                            ThemeColorField::PaletteGreen, ThemeColorField::PaletteOrange,
-                                            ThemeColorField::PalettePurple, ThemeColorField::PalettePink,
-                                            ThemeColorField::PaletteRed, ThemeColorField::PaletteYellow] {
-                                            changed |= self.appearance_color_row(ui, field, &seed);
-                                        }
-                                    }
-                                }
-                            });
-                    });
-                });
-                ui.scope_builder(UiBuilder::new().max_rect(footer), |ui| {
-                    ui.separator();
-                    ui.horizontal(|ui| {
-                        ui.label("Theme name");
-                        ui.add(egui::TextEdit::singleline(&mut self.theme_editor.save_as_name).desired_width(220.0).themed(&self.colors));
-                        if ui.add(egui::Button::new("Save and apply").themed(&c)).clicked() {
-                            self.save_theme_editor(ctx);
-                            self.persist_config();
-                        }
-                        if ui.add(egui::Button::new("Cancel").themed(&c)).clicked() { close_requested = true; }
-                        themed_menu_button(ui, "More", c, |ui| {
-                            if ui.add(egui::Button::new("Import theme…").themed(&c)).clicked() { self.import_theme_editor_json(ctx); ui.close(); }
-                            if ui.add(egui::Button::new("Export theme…").themed(&c)).clicked() { self.export_theme_editor_json(); ui.close(); }
-                            if action_model.show_save_as && ui.add(egui::Button::new("Save a copy").themed(&c)).clicked() { self.save_theme_editor_as(); self.persist_config(); ui.close(); }
-                            if ui.add(egui::Button::new("Reset entire theme to base").themed(&c)).clicked() {
-                                self.theme_editor.custom = seed.clone(); self.sync_theme_editor_hex_inputs(); changed = true; ui.close();
-                            }
-                        });
-                    });
-                    if let Some((message, ok, _)) = &self.theme_status {
-                        ui.label(RichText::new(message).small().color(if *ok { c.accent } else { c.error }));
+        let seed = self.theme_editor.initial_custom.clone();
+        let creating = !matches!(self.theme_editor.source, ThemeEditorSource::Saved(_));
+        let title = match self.theme_editor.source {
+            ThemeEditorSource::Preset => format!(
+                "Customize {}",
+                Self::theme_preset_label(self.theme_editor.preset)
+            ),
+            ThemeEditorSource::Saved(_) => format!("Edit {}", self.theme_editor.initial_name),
+            ThemeEditorSource::Imported => format!("Import {}", self.theme_editor.initial_name),
+        };
+        egui::CentralPanel::default().frame(Frame::new().fill(c.panel).inner_margin(16)).show(ctx, |ui| {
+            render_custom_titlebar(ui, ctx, c, c.titlebar_bg, &title, true, &mut close_requested, |_| {});
+            ui.add_space(10.0);
+            ui.horizontal(|ui| {
+                ui.label(if creating { "Theme name" } else { "Name" });
+                ui.add(egui::TextEdit::singleline(&mut self.theme_editor.save_as_name).desired_width(220.0).themed(&c));
+                if self.theme_editor_is_dirty() {
+                    ui.label(RichText::new("Unsaved changes").small().color(c.accent));
+                }
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    let mut mode = self.theme_editor.mode;
+                    appearance_mode_control(ui, &mut mode, false, c);
+                    ui.label(RichText::new(if ctx.content_rect().width() < 950.0 { "Variant" } else { "Editing variant" }).small().color(c.text_dim)).on_hover_text("Edit this theme’s Light or Dark palette. The application-wide appearance preference stays unchanged.");
+                    if mode != self.theme_editor.mode {
+                        self.switch_theme_editor_variant(mode, ctx);
                     }
                 });
             });
+            ui.add_space(12.0);
+            let available = ui.available_rect_before_wrap();
+            let footer = Rect::from_min_max(egui::pos2(available.min.x, available.max.y - 56.0), available.max);
+            let content = Rect::from_min_max(available.min, egui::pos2(available.max.x, footer.min.y - 12.0));
+            let split = content.left() + content.width() * 0.58;
+            let preview_rect = Rect::from_min_max(content.min, egui::pos2(split - 10.0, content.bottom()));
+            let inspector_rect = Rect::from_min_max(egui::pos2(split + 10.0, content.top()), content.max);
+            ui.scope_builder(UiBuilder::new().max_rect(preview_rect), |ui| {
+                ui.set_min_size(preview_rect.size());
+                let preview = self.theme_editor_preview_colors();
+                if let Some(region) = theme_editor_large_preview(ui, preview,
+                    self.theme_editor.selected_region).1 {
+                    self.theme_editor.selected_region = region;
+                }
+            });
+            ui.scope_builder(UiBuilder::new().max_rect(inspector_rect), |ui| {
+                ui.set_width(inspector_rect.width());
+                let mut region = self.theme_editor.selected_region;
+                egui::ComboBox::from_id_salt("appearance_component").width(inspector_rect.width())
+                    .selected_text(Self::theme_preview_region_label(region)).show_ui(ui, |ui| {
+                        ui.selectable_value(&mut region, ThemePreviewRegion::Defaults, "Theme defaults");
+                        ui.separator();
+                        for component in REGIONS.into_iter().filter(|r| *r != ThemePreviewRegion::Defaults) {
+                            ui.selectable_value(&mut region, component, Self::theme_preview_region_label(component));
+                        }
+                    }).response.on_hover_text(Self::theme_preview_region_hint(region));
+                self.theme_editor.selected_region = region;
+                ui.add_space(8.0);
+                ScrollArea::vertical().id_salt("appearance_properties").max_height((inspector_rect.height()-44.0).max(100.0)).show(ui, |ui| {
+                    ui.set_width(ui.available_width());
+                    ui.spacing_mut().item_spacing.y = 10.0;
+                    ui.label(RichText::new("Colors").strong().color(c.heading));
+                    let fields = Self::theme_preview_region_fields(region);
+                    for &field in fields { changed |= self.appearance_color_row(ui, field, &seed); }
+                    if region == ThemePreviewRegion::Defaults {
+                        ui.add_space(10.0);
+                        ui.label(RichText::new("Typography").strong().color(c.heading));
+                        changed |= number_row(ui, "Text size", &mut self.theme_editor.custom.font_scale, 0.85..=1.35, seed.font_scale, 0.01, c);
+                        ui.add_space(10.0);
+                        ui.label(RichText::new("Geometry").strong().color(c.heading));
+                        changed |= number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
+                        changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
+                    }
+                    if region == ThemePreviewRegion::Accent {
+                        ui.add_space(10.0);
+                        ui.label(RichText::new("Geometry").strong().color(c.heading));
+                        changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
+                    }
+                    if region == ThemePreviewRegion::Borders {
+                        ui.add_space(10.0);
+                        ui.label(RichText::new("Geometry").strong().color(c.heading));
+                        changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width, 0.0..=4.0, seed.window_border_width, 0.5, c);
+                    }
+                    if region == ThemePreviewRegion::ColumnText {
+                        ui.add_space(10.0);
+                        ui.label(RichText::new("Category colors").strong().color(c.heading));
+                        changed |= number_row(ui, "Neutral text blend", &mut self.theme_editor.custom.file_label_blend, 0.0..=1.0, seed.file_label_blend, 0.01, c);
+                        for field in [ThemeColorField::PaletteSoftWhite, ThemeColorField::PaletteFolderBlue, ThemeColorField::PaletteLinkBlue, ThemeColorField::PaletteSteel,
+                            ThemeColorField::PaletteGreen, ThemeColorField::PaletteOrange, ThemeColorField::PalettePurple, ThemeColorField::PalettePink, ThemeColorField::PaletteRed, ThemeColorField::PaletteYellow] {
+                            changed |= self.appearance_color_row(ui, field, &seed);
+                        }
+                    }
+                    ui.add_space(10.0);
+                    if ui.add(egui::Button::new(if region == ThemePreviewRegion::Defaults { "Reset theme defaults" } else { "Reset component" }).themed(&c))
+                        .on_hover_text("Restore this context’s properties to their values when the editor opened. Other components and the other variant are unchanged.").clicked() {
+                        for &field in fields { *Self::theme_color_field_value_mut(&mut self.theme_editor.custom, field) = Self::theme_color_field_value(&seed, field); }
+                        match region {
+                            ThemePreviewRegion::Defaults => { self.theme_editor.custom.font_scale=seed.font_scale; self.theme_editor.custom.app_radius=seed.app_radius; self.theme_editor.custom.border_radius=seed.border_radius; }
+                            ThemePreviewRegion::Accent => self.theme_editor.custom.button_radius=seed.button_radius,
+                            ThemePreviewRegion::Borders => self.theme_editor.custom.window_border_width=seed.window_border_width,
+                            ThemePreviewRegion::ColumnText => { self.theme_editor.custom.file_label_blend=seed.file_label_blend; for field in Self::theme_color_field_order().into_iter().filter(|f| matches!(f, ThemeColorField::PaletteSoftWhite|ThemeColorField::PaletteFolderBlue|ThemeColorField::PaletteLinkBlue|ThemeColorField::PaletteSteel|ThemeColorField::PaletteGreen|ThemeColorField::PaletteOrange|ThemeColorField::PalettePurple|ThemeColorField::PalettePink|ThemeColorField::PaletteRed|ThemeColorField::PaletteYellow)) { *Self::theme_color_field_value_mut(&mut self.theme_editor.custom, field)=Self::theme_color_field_value(&seed, field); } },
+                            _ => {}
+                        }
+                        self.sync_theme_editor_hex_inputs(); changed=true;
+                    }
+                });
+            });
+            ui.scope_builder(UiBuilder::new().max_rect(footer), |ui| {
+                ui.separator();
+                ui.horizontal(|ui| {
+                    themed_menu_button(ui, "More", c, |ui| {
+                        if ui.add_enabled(!self.theme_editor_is_dirty(), egui::Button::new("Import theme…").themed(&c)).on_hover_text("Import into an unchanged draft. Save or discard your changes first.").clicked() { self.import_theme_editor_json(ctx); ui.close(); }
+                        if ui.add(egui::Button::new("Export theme…").themed(&c)).clicked() { self.export_theme_editor_json(); ui.close(); }
+                        if ui.add(egui::Button::new("Reset theme to starting values").themed(&c)).on_hover_text("Restore all properties in both Light and Dark variants to their values when this editing session opened.").clicked() {
+                            self.theme_editor.custom=seed.clone(); self.theme_editor.other_variant=self.theme_editor.initial_other_variant.clone(); self.sync_theme_editor_hex_inputs(); changed=true; ui.close();
+                        }
+                    });
+                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                        if ui.add(egui::Button::new(RichText::new(if creating { "Create theme" } else { "Save changes" }).strong()).stroke(Stroke::new(1.0, c.accent)).themed(&c)) .clicked() {
+                            self.save_theme_editor(ctx); self.persist_config();
+                        }
+                        if !creating && ui.add(egui::Button::new("Save as new").themed(&c)).clicked() {
+                            self.save_theme_editor_as_inner(ctx); self.persist_config();
+                        }
+                        if ui.add(egui::Button::new("Cancel").themed(&c)).on_hover_text("Discard this session and restore the previously active theme.").clicked() { self.cancel_theme_editor(ctx); }
+                    });
+                });
+                if let Some((message, ok, _)) = &self.theme_status {
+                    ui.label(RichText::new(message).small().color(if *ok { c.accent } else { c.error }));
+                }
+            });
+        });
         if changed {
             self.apply_theme_editor_live_preview(ctx);
         }
         close_requested
+    }
+
+    pub(super) fn render_theme_exit_confirmation(&mut self, ctx: &Context) {
+        if self.theme_editor.pending_exit {
+            egui::Window::new("Unsaved theme changes")
+                .collapsible(false)
+                .resizable(false)
+                .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
+                .show(ctx, |ui| {
+                    ui.label("Save the theme before closing Ottrin?");
+                    if let Some((message, false, expiry)) = &self.theme_status
+                        && Instant::now() < *expiry
+                    {
+                        ui.colored_label(self.colors.error, message);
+                    }
+                    ui.horizontal(|ui| {
+                        if ui
+                            .add(egui::Button::new("Save and close").themed(&self.colors))
+                            .clicked()
+                        {
+                            self.save_theme_editor(ctx);
+                            if !self.theme_editor.open {
+                                self.persist_config();
+                                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                            }
+                        }
+                        if ui
+                            .add(egui::Button::new("Discard and close").themed(&self.colors))
+                            .clicked()
+                        {
+                            self.cancel_theme_editor(ctx);
+                            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                        }
+                        if ui
+                            .add(egui::Button::new("Keep editing").themed(&self.colors))
+                            .clicked()
+                        {
+                            self.resume_theme_editor(ctx);
+                        }
+                    });
+                });
+        }
     }
 
     fn appearance_color_row(
@@ -514,12 +430,13 @@ impl OttrinApp {
                 .cloned()
                 .unwrap_or_else(|| format!("#{:02X}{:02X}{:02X}", rgba[0], rgba[1], rgba[2]));
             ui.horizontal(|ui| {
+                let label_width = (ui.available_width() - (28.0 * self.colors.font_scale + 88.0 + 28.0 + ui.spacing().item_spacing.x * 3.0)).clamp(60.0, 200.0);
                 ui.allocate_ui_with_layout(
-                    Vec2::new(180.0 * self.colors.font_scale, 26.0),
+                    Vec2::new(label_width, 28.0),
                     Layout::left_to_right(Align::Center),
                     |ui| {
-                        ui.set_min_width(180.0 * self.colors.font_scale);
-                        ui.label(Self::theme_color_field_label(field))
+                        ui.set_width(label_width);
+                        ui.add(egui::Label::new(Self::theme_color_field_label(field)).wrap())
                             .on_hover_text(Self::theme_color_field_hint(field));
                     },
                 );
@@ -535,10 +452,10 @@ impl OttrinApp {
                 }
                 let valid_hex = parse_hex_rgb(&hex).is_some();
                 if ui
-                    .add(
+                    .add_sized([88.0, 28.0],
                         egui::TextEdit::singleline(&mut hex)
                             .id(egui::Id::new(("appearance_hex", field)))
-                            .desired_width(80.0 * self.colors.font_scale)
+                            .desired_width(88.0)
                             .text_color(if valid_hex { self.colors.text } else { self.colors.error }).themed(&self.colors),
                     )
                     .on_hover_text(if valid_hex {
@@ -557,9 +474,8 @@ impl OttrinApp {
                         changed = true;
                     }
                 }
-                if ui
-                    .add(egui::Button::new("↺").small().themed(&self.colors))
-                    .on_hover_text("Reset this color to the base theme")
+                if appearance_icon_button(ui, MI_SETTINGS_BACKUP_RESTORE, self.colors)
+                    .on_hover_text("Restore this color to its value when the editor opened")
                     .clicked()
                 {
                     *Self::theme_color_field_value_mut(&mut self.theme_editor.custom, field) =
@@ -571,12 +487,7 @@ impl OttrinApp {
                     );
                     changed = true;
                 }
-                let alpha = Self::theme_color_field_value(&self.theme_editor.custom, field)[3];
-                if alpha < 255 {
-                    ui.label(RichText::new(format!("{:.0}%", alpha as f32 * 100.0 / 255.0))
-                        .small().color(self.colors.text_dim))
-                        .on_hover_text("Opacity. This color blends with the surface behind it; change opacity in the color picker.");
-                }
+
             });
         });
         changed
@@ -589,7 +500,8 @@ fn compact_color_picker(ui: &mut egui::Ui, rgba: &mut [u8; 4], c: Colors) -> egu
     use egui::ecolor::{Hsva, HsvaGamma};
     let popup_id = ui.make_persistent_id("appearance_color_picker");
     let hue_id = popup_id.with("gray_hue");
-    let (swatch, response) = ui.allocate_exact_size(ui.spacing().interact_size, Sense::click());
+    let (swatch, response) =
+        ui.allocate_exact_size(Vec2::new(28.0 * c.font_scale, 22.0), Sense::click());
     response.widget_info(|| egui::WidgetInfo::new(egui::WidgetType::ColorButton));
     egui::widgets::color_picker::show_color_at(
         ui.painter(),
@@ -602,7 +514,10 @@ fn compact_color_picker(ui: &mut egui::Ui, rgba: &mut [u8; 4], c: Colors) -> egu
         Stroke::new(1.0, c.border),
         egui::StrokeKind::Inside,
     );
-    let mut response = response.on_hover_text("Choose color and opacity");
+    let mut response = response.on_hover_text(format!(
+        "Choose color · opacity {:.0}%",
+        f32::from(rgba[3]) * 100.0 / 255.0
+    ));
     egui::Popup::menu(&response)
         .id(popup_id)
         .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
@@ -749,15 +664,42 @@ fn number_row(
 ) -> bool {
     let mut changed = false;
     ui.push_id(title, |ui| {
-        ui.label(title);
         ui.horizontal(|ui| {
-            ui.spacing_mut().slider_width = 150.0;
+            let value_width = 28.0 * c.font_scale + ui.spacing().item_spacing.x + 88.0;
+            let label_width = (ui.available_width()
+                - (value_width + 28.0 + ui.spacing().item_spacing.x * 2.0))
+                .clamp(60.0, 200.0);
+            ui.allocate_ui_with_layout(
+                Vec2::new(label_width, 28.0),
+                Layout::left_to_right(Align::Center),
+                |ui| {
+                    ui.set_width(label_width);
+                    ui.add(egui::Label::new(title).wrap());
+                },
+            );
             changed |= ui
-                .add(egui::Slider::new(value, range).step_by(step))
+                .add_sized(
+                    [value_width, 28.0],
+                    egui::DragValue::new(value)
+                        .range(range)
+                        .speed(step)
+                        .max_decimals(if step < 0.1 {
+                            2
+                        } else if step < 1.0 {
+                            1
+                        } else {
+                            0
+                        })
+                        .suffix(match title {
+                            "Text size" => "×",
+                            "Neutral text blend" => "",
+                            _ => " px",
+                        }),
+                )
+                .on_hover_text(if title == "Neutral text blend" { "Blend category-colored labels toward neutral text: 0 is the category color, 1 is neutral file/folder text. Neutral labels are unchanged." } else { "Drag or type a value" })
                 .changed();
-            if ui
-                .add(egui::Button::new("↺").small().themed(&c))
-                .on_hover_text("Reset this dimension to the base theme")
+            if appearance_icon_button(ui, MI_SETTINGS_BACKUP_RESTORE, c)
+                .on_hover_text("Restore this value to its value when the editor opened")
                 .clicked()
             {
                 *value = default;
@@ -768,92 +710,28 @@ fn number_row(
     changed
 }
 
-fn appearance_file_color_preview(ui: &mut egui::Ui, c: Colors) {
-    let width = ui.available_width().max(320.0);
-    let height = (width * 0.56).clamp(320.0, 460.0);
-    let (rect, _) = ui.allocate_exact_size(Vec2::new(width, height), Sense::hover());
-    let painter = ui.painter();
-    painter.rect_filled(rect.shrink(8.0), c.border_radius, c.bg);
-    let palette = semantic_style::semantic_palette(&c);
-    let samples = [
-        ("Documents", EntryKind::Directory, false),
-        ("shortcut", EntryKind::Symlink, false),
-        ("program", EntryKind::File, true),
-        ("photo.png", EntryKind::File, false),
-        ("movie.mp4", EntryKind::File, false),
-        ("music.mp3", EntryKind::File, false),
-        ("archive.zip", EntryKind::File, false),
-        ("report.pdf", EntryKind::File, false),
-        ("notes.txt", EntryKind::File, false),
-        ("budget.xlsx", EntryKind::File, false),
-        ("slides.pptx", EntryKind::File, false),
-        ("typeface.ttf", EntryKind::File, false),
-        ("disk.iso", EntryKind::File, false),
-        ("package.deb", EntryKind::File, false),
-        ("settings.ini", EntryKind::File, false),
-        ("source.rs", EntryKind::File, false),
-    ];
-    let row_height = (height - 40.0) / 8.0;
-    for (index, (name, kind, executable)) in samples.into_iter().enumerate() {
-        let semantic = ottrin_core::classify_file(
-            Path::new(name),
-            kind,
-            executable,
-            None,
-            ottrin_core::platform_case_mode_current(),
-        );
-        let style = semantic_style::style_for_semantic(
-            &semantic,
-            semantic_style::EntryVisualState::default(),
-            &c,
-            &palette,
-            c.preset,
-            true,
-            true,
-        );
-        let origin = rect.min
-            + Vec2::new(
-                24.0 + (index / 8) as f32 * (width / 2.0),
-                26.0 + (index % 8) as f32 * row_height,
-            );
-        painter.text(
-            origin,
-            Align2::LEFT_CENTER,
-            semantic_style::material_icon(style.icon),
-            FontId::proportional(16.0 * c.font_scale),
-            style.icon_color,
-        );
-        painter.text(
-            origin + Vec2::new(25.0, 0.0),
-            Align2::LEFT_CENTER,
-            name,
-            FontId::proportional(12.0 * c.font_scale),
-            style.text_color,
-        );
-    }
+fn appearance_icon_button(ui: &mut egui::Ui, icon: &str, c: Colors) -> egui::Response {
+    ui.scope(|ui| {
+        ui.spacing_mut().button_padding = Vec2::splat(4.0);
+        ui.add_sized(
+            [28.0, 28.0],
+            egui::Button::new(icon)
+                .frame_when_inactive(false)
+                .themed(&c),
+        )
+    })
+    .inner
 }
 
-fn appearance_theme_card(
-    ui: &mut egui::Ui,
-    c: Colors,
-    preview: Colors,
-    name: &str,
-    selected: bool,
-    width: f32,
-) -> egui::Response {
-    let (rect, response) = ui.allocate_exact_size(Vec2::new(width, 104.0), Sense::click());
+#[derive(Default)]
+struct ThemeCardAction {
+    apply: bool,
+    edit: bool,
+    remove: bool,
+}
+
+fn theme_miniature(ui: &egui::Ui, thumb: Rect, preview: Colors) {
     let p = ui.painter();
-    p.rect_filled(rect, c.border_radius, c.panel_raised);
-    p.rect_stroke(
-        rect,
-        c.border_radius,
-        Stroke::new(
-            if selected { 2.0 } else { 1.0 },
-            if selected { c.accent } else { c.border },
-        ),
-        egui::StrokeKind::Inside,
-    );
-    let thumb = Rect::from_min_max(rect.min + Vec2::splat(8.0), rect.max - Vec2::new(8.0, 30.0));
     p.rect_filled(thumb, preview.app_radius, preview.bg);
     let title = Rect::from_min_size(thumb.min, Vec2::new(thumb.width(), 10.0));
     p.rect_filled(title, preview.app_radius, preview.titlebar_bg);
@@ -884,7 +762,7 @@ fn appearance_theme_card(
         }
         p.rect_filled(
             Rect::from_min_size(row_rect.min + Vec2::new(3.0, 2.0), Vec2::new(5.0, 4.0)),
-            1.0,
+            preview.border_radius.min(2),
             preview.folder,
         );
         p.line_segment(
@@ -892,7 +770,7 @@ fn appearance_theme_card(
                 row_rect.min + Vec2::new(12.0, 4.0),
                 row_rect.min + Vec2::new(body.width() * 0.65, 4.0),
             ],
-            Stroke::new(1.0, preview.folder_text),
+            Stroke::new(preview.font_scale, preview.folder_text),
         );
     }
     p.rect_filled(
@@ -900,26 +778,432 @@ fn appearance_theme_card(
         0.0,
         preview.statusbar_bg,
     );
-    p.text(
-        egui::pos2(rect.left() + 10.0, rect.bottom() - 15.0),
-        Align2::LEFT_CENTER,
-        name,
+    p.rect_stroke(
+        thumb,
+        preview.app_radius,
+        Stroke::new(preview.window_border_width, preview.window_border),
+        egui::StrokeKind::Inside,
+    );
+}
+
+fn appearance_theme_card(
+    ui: &mut egui::Ui,
+    c: Colors,
+    preview: Colors,
+    name: &str,
+    selected: bool,
+    width: f32,
+    custom: bool,
+) -> ThemeCardAction {
+    let (rect, response) = ui.allocate_exact_size(Vec2::new(width, 138.0), Sense::click());
+    let response = response
+        .on_hover_text(name)
+        .on_hover_cursor(egui::CursorIcon::PointingHand);
+    response.widget_info(|| {
+        egui::WidgetInfo::selected(
+            egui::WidgetType::RadioButton,
+            ui.is_enabled(),
+            selected,
+            name,
+        )
+    });
+    let p = ui.painter();
+    p.rect_filled(
+        rect,
+        c.border_radius,
+        if response.hovered() {
+            c.panel_raised
+        } else {
+            c.panel
+        },
+    );
+    p.rect_stroke(
+        rect,
+        c.border_radius,
+        Stroke::new(
+            if selected || response.has_focus() {
+                2.0
+            } else {
+                1.0
+            },
+            if selected || response.has_focus() {
+                c.accent
+            } else {
+                c.border
+            },
+        ),
+        egui::StrokeKind::Inside,
+    );
+    let thumb = Rect::from_min_max(rect.min + Vec2::splat(8.0), rect.max - Vec2::new(8.0, 42.0));
+    theme_miniature(ui, thumb, preview);
+    let label_width = (width - if custom { 86.0 } else { 58.0 }).max(50.0);
+    let mut label_job = egui::text::LayoutJob::simple_singleline(
+        name.to_owned(),
         FontId::proportional(12.0 * c.font_scale),
         c.text,
     );
+    label_job.wrap.max_width = label_width;
+    label_job.wrap.max_rows = 1;
+    let label = p.layout_job(label_job);
+    let label_y = rect.bottom() - 21.0 - label.size().y / 2.0;
+    p.galley(egui::pos2(rect.left() + 10.0, label_y), label, c.text);
     if selected {
-        p.circle_filled(
-            egui::pos2(rect.right() - 14.0, rect.bottom() - 15.0),
-            3.0,
-            c.accent,
-        );
+        p.circle_filled(thumb.right_top() + Vec2::new(-9.0, 9.0), 4.0, c.accent);
     }
-    response.on_hover_cursor(egui::CursorIcon::PointingHand)
+    let edit_rect = Rect::from_min_size(
+        egui::pos2(
+            rect.right() - if custom { 66.0 } else { 36.0 },
+            rect.bottom() - 35.0,
+        ),
+        Vec2::splat(28.0),
+    );
+    let edit_response = ui
+        .scope_builder(UiBuilder::new().max_rect(edit_rect), |ui| {
+            appearance_icon_button(ui, MI_EDIT, c)
+        })
+        .inner
+        .on_hover_text(if custom {
+            "Edit theme"
+        } else {
+            "Customize theme"
+        });
+    edit_response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            format!("{} {name}", if custom { "Edit" } else { "Customize" }),
+        )
+    });
+    let edit = edit_response.clicked();
+    let remove = custom
+        && ui
+            .put(
+                Rect::from_min_size(
+                    egui::pos2(rect.right() - 34.0, rect.bottom() - 35.0),
+                    Vec2::splat(28.0),
+                ),
+                egui::Button::new("×").themed(&c),
+            )
+            .on_hover_text("Delete custom theme")
+            .clicked();
+    ThemeCardAction {
+        apply: response.clicked() && !edit && !remove,
+        edit,
+        remove,
+    }
+}
+
+fn appearance_mode_control(
+    ui: &mut egui::Ui,
+    mode: &mut ThemeMode,
+    include_system: bool,
+    c: Colors,
+) {
+    let options = [
+        (ThemeMode::Light, "Light"),
+        (ThemeMode::Dark, "Dark"),
+        (ThemeMode::System, "System"),
+    ];
+    Frame::new()
+        .fill(c.panel_raised)
+        .corner_radius(c.button_radius)
+        .inner_margin(3)
+        .show(ui, |ui| {
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = 0.0;
+                for (value, label) in options {
+                    if value == ThemeMode::System && !include_system {
+                        continue;
+                    }
+                    let selected = *mode == value;
+                    let response = ui.add_sized(
+                        [66.0 * c.font_scale, 28.0],
+                        egui::Button::new(RichText::new(label).color(if selected {
+                            c.button_text
+                        } else {
+                            c.text_dim
+                        }))
+                        .fill(if selected {
+                            c.button_bg
+                        } else {
+                            Color32::TRANSPARENT
+                        })
+                        .stroke(Stroke::NONE)
+                        .corner_radius(c.button_radius),
+                    );
+                    response.widget_info(|| {
+                        egui::WidgetInfo::selected(
+                            egui::WidgetType::RadioButton,
+                            ui.is_enabled(),
+                            selected,
+                            label,
+                        )
+                    });
+                    if selected || response.has_focus() {
+                        ui.painter().line_segment(
+                            [
+                                response.rect.left_bottom() + Vec2::new(8.0, -2.0),
+                                response.rect.right_bottom() + Vec2::new(-8.0, -2.0),
+                            ],
+                            Stroke::new(2.0, c.accent),
+                        );
+                    }
+                    if response.clicked() {
+                        *mode = value;
+                    }
+                }
+            });
+        });
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn appearance_component_selection_does_not_change_preview_ink() {
+        let c = Colors::preset(ThemePreset::Nord, true);
+        let mut previous = None;
+        for region in [
+            ThemePreviewRegion::Defaults,
+            ThemePreviewRegion::ColumnText,
+            ThemePreviewRegion::ColumnBackground,
+        ] {
+            let ctx = Context::default();
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(700.0, 650.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        theme_editor_large_preview(ui, c, region);
+                    });
+                },
+            );
+            let ink: Vec<_> = output
+                .shapes
+                .into_iter()
+                .filter_map(|s| {
+                    if let egui::epaint::Shape::Text(t) = s.shape {
+                        Some((t.galley.job.text.clone(), t.fallback_color))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+            if let Some(expected) = previous {
+                assert_eq!(
+                    ink, expected,
+                    "Selecting a component must only change its highlight and inspector"
+                );
+            }
+            previous = Some(ink);
+        }
+    }
+
+    #[test]
+    fn appearance_imported_draft_remains_unsaved_until_create_or_cancel() {
+        let ctx = Context::default();
+        let mut app = OttrinApp::default();
+        app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
+        let saved_count = app.state.config.custom_themes.len();
+        app.theme_editor.source = ThemeEditorSource::Imported;
+        app.close_theme_editor_window(&ctx);
+        assert!(app.theme_editor.open && !app.theme_editor.visible);
+        assert!(app.theme_editor_is_dirty());
+        assert_eq!(app.state.config.custom_themes.len(), saved_count);
+        app.cancel_theme_editor(&ctx);
+        assert!(!app.theme_editor.open);
+        assert_eq!(app.state.config.custom_themes.len(), saved_count);
+    }
+
+    #[test]
+    fn appearance_inspector_exposes_all_properties_and_keeps_rows_aligned() {
+        let ctx = Context::default();
+        let mut app = OttrinApp::default();
+        app.open_theme_editor_for_preset(ThemePreset::Nord, &ctx);
+        let mut labels = std::collections::BTreeSet::new();
+        for region in REGIONS {
+            app.theme_editor.selected_region = region;
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1180.0, 1100.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.render_theme_editor_embedded(ctx);
+                },
+            );
+            for shape in output.shapes {
+                if let egui::epaint::Shape::Text(text) = shape.shape {
+                    labels.insert(text.galley.job.text.clone());
+                }
+            }
+        }
+        for field in OttrinApp::theme_color_field_order() {
+            assert!(
+                labels.contains(OttrinApp::theme_color_field_label(field)),
+                "Missing color control {field:?}"
+            );
+        }
+        for title in [
+            "Text size",
+            "Window corners",
+            "Surface corners",
+            "Button corners",
+            "Window border thickness",
+            "Neutral text blend",
+        ] {
+            assert!(labels.contains(title), "Missing numeric control {title}");
+        }
+        for region in REGIONS {
+            app.theme_editor.selected_region = region;
+            for scale in [1.0, 1.35] {
+                app.theme_editor.custom.font_scale = scale;
+                app.apply_theme_editor_live_preview(&ctx);
+                let output = ctx.run(
+                    egui::RawInput {
+                        screen_rect: Some(Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            Vec2::new(800.0, 600.0),
+                        )),
+                        ..Default::default()
+                    },
+                    |ctx| {
+                        app.render_theme_editor_embedded(ctx);
+                    },
+                );
+                let resets: Vec<_> = output
+                    .shapes
+                    .iter()
+                    .filter_map(|s| {
+                        if let egui::epaint::Shape::Text(t) = &s.shape {
+                            (t.galley.job.text == MI_SETTINGS_BACKUP_RESTORE).then_some((
+                                t.pos.x,
+                                t.pos.y,
+                                t.pos.x + t.galley.size().x,
+                            ))
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+                assert!(
+                    !resets.is_empty(),
+                    "Inspector must show usable rows at the minimum size: {region:?}"
+                );
+                let x = resets[0].0;
+                for (left, _, right) in resets {
+                    assert!(
+                        (left - x).abs() < 1.0,
+                        "Reset column drifts at font scale {scale}"
+                    );
+                    assert!(right < 784.0, "Reset target clips at font scale {scale}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn appearance_variants_are_independent_and_global_preference_survives() {
+        let ctx = Context::default();
+        let mut app = OttrinApp::default();
+        app.state.config.theme = ThemeMode::Light;
+        app.open_theme_editor_for_preset(ThemePreset::Nord, &ctx);
+        let original_dark = app.theme_editor.other_variant.clone();
+        app.theme_editor.custom.button_radius = 11.0;
+        app.switch_theme_editor_variant(ThemeMode::Dark, &ctx);
+        assert_eq!(app.theme_editor.custom, original_dark);
+        app.theme_editor.custom.background = [13, 17, 23, 255];
+        app.switch_theme_editor_variant(ThemeMode::Light, &ctx);
+        assert_eq!(app.theme_editor.custom.button_radius, 11.0);
+        assert_eq!(app.state.config.theme, ThemeMode::Light);
+        app.save_theme_editor(&ctx);
+        let saved = app.state.config.custom_themes.last().unwrap();
+        assert_eq!(saved.light.button_radius, 11.0);
+        assert_eq!(saved.dark.background, [13, 17, 23, 255]);
+        let owned = saved.clone();
+        app.open_theme_editor_for_saved(app.state.config.custom_themes.len() - 1, &ctx);
+        app.theme_editor.custom.background = [255, 0, 100, 255];
+        app.apply_theme_editor_live_preview(&ctx);
+        app.close_theme_editor_window(&ctx);
+        assert!(app.theme_editor.open && !app.theme_editor.visible);
+        assert_eq!(app.state.config.custom_themes.last().unwrap(), &owned);
+        assert_eq!(app.colors.bg, Colors::from_rgba([255, 0, 100, 255]));
+        app.theme_editor.pending_exit = true;
+        app.resume_theme_editor(&ctx);
+        assert!(app.theme_editor.visible && !app.theme_editor.pending_exit);
+        assert_eq!(app.theme_editor.custom.background, [255, 0, 100, 255]);
+        app.cancel_theme_editor(&ctx);
+        assert_eq!(
+            app.colors,
+            Colors::for_saved(&owned, ThemeMode::Light, None)
+        );
+        assert!(!app.theme_editor.open);
+    }
+
+    #[test]
+    fn appearance_card_pencil_and_body_are_independent_click_targets() {
+        for custom in [false, true] {
+            for edit in [false, true] {
+                let ctx = Context::default();
+                let c = Colors::preset(ThemePreset::Ottrin, true);
+                let pos = if edit {
+                    egui::pos2(if custom { 188.0 } else { 218.0 }, 117.0)
+                } else {
+                    egui::pos2(40.0, 40.0)
+                };
+                let mut action = ThemeCardAction::default();
+                let mut frame = |events| {
+                    let _ = ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(400.0, 250.0),
+                            )),
+                            events,
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            egui::CentralPanel::default()
+                                .frame(Frame::new())
+                                .show(ctx, |ui| {
+                                    action = appearance_theme_card(
+                                        ui, c, c, "Fixture", false, 240.0, custom,
+                                    );
+                                });
+                        },
+                    );
+                };
+                frame(vec![]);
+                frame(vec![
+                    egui::Event::PointerMoved(pos),
+                    egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed: true,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ]);
+                frame(vec![egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed: false,
+                    modifiers: egui::Modifiers::NONE,
+                }]);
+                assert_eq!(action.edit, edit);
+                assert_eq!(action.apply, !edit);
+                assert!(!action.remove);
+            }
+        }
+    }
 
     #[test]
     fn invalid_hex_entry_is_safe_visible_and_keeps_the_applied_color() {
@@ -967,6 +1251,7 @@ mod tests {
         let mut app = OttrinApp::default();
         app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
         let field = ThemeColorField::Background;
+        app.theme_editor.selected_region = ThemePreviewRegion::ColumnBackground;
         app.theme_editor
             .color_hex_inputs
             .insert(field, String::new());
@@ -1061,9 +1346,7 @@ mod tests {
         app.persist_config();
         assert_eq!(Colors::for_config(&load_config(), None).button_radius, 3);
         assert_eq!(
-            app.state.config.custom_themes[index]
-                .customization
-                .button_radius,
+            app.state.config.custom_themes[index].dark.button_radius,
             3.0
         );
     }
@@ -1079,35 +1362,29 @@ mod tests {
         let original = app.state.config.custom_themes[0].clone();
         app.open_theme_editor_for_saved(0, &ctx);
         app.theme_editor.custom.button_radius = 13.0;
-        app.save_theme_editor_as();
+        app.save_theme_editor_as_inner(&ctx);
         assert_eq!(app.state.config.custom_themes.len(), 2);
         assert_eq!(
-            app.state.config.custom_themes[0]
-                .customization
-                .button_radius,
-            original.customization.button_radius
+            app.state.config.custom_themes[0].dark.button_radius,
+            original.dark.button_radius
         );
         assert_eq!(app.state.config.custom_themes[1].name, "My theme (2)");
-        assert_eq!(
-            app.state.config.custom_themes[1]
-                .customization
-                .button_radius,
-            13.0
-        );
-        assert_eq!(app.theme_editor.source_saved_idx, Some(0));
+        assert_eq!(app.state.config.custom_themes[1].dark.button_radius, 13.0);
+        assert_eq!(app.theme_editor.source, ThemeEditorSource::Saved(0));
         app.persist_config();
         let reopened = load_config();
         assert_eq!(reopened.custom_themes.len(), 2);
         assert_eq!(
-            reopened.custom_themes[0].customization.button_radius,
-            original.customization.button_radius
+            reopened.custom_themes[0].dark.button_radius,
+            original.dark.button_radius
         );
-        assert_eq!(reopened.custom_themes[1].customization.button_radius, 13.0);
-        assert_eq!(reopened.active_custom_theme.as_deref(), Some("My theme"));
+        assert_eq!(reopened.custom_themes[1].dark.button_radius, 13.0);
         assert_eq!(
-            Colors::for_config(&reopened, None).button_radius,
-            original.customization.button_radius.round() as u8
+            reopened.active_custom_theme.as_deref(),
+            Some("My theme (2)")
         );
+        assert_eq!(Colors::for_config(&reopened, None).button_radius, 13);
+        app.open_theme_editor_for_saved(0, &ctx);
         app.theme_editor.save_as_name = "My theme (2)".into();
         app.save_theme_editor(&ctx);
         assert!(
@@ -1253,9 +1530,13 @@ mod tests {
             app.state.config.active_custom_theme = Some("Palette to delete".into());
             app.state.config.custom_themes = vec![SavedTheme {
                 name: "Palette to delete".into(),
-                theme_mode: saved_mode,
                 base_preset: ThemePreset::Solarized,
-                customization: OttrinApp::custom_from_colors(Colors::preset(
+                dark: (OttrinApp::custom_from_colors(Colors::preset(
+                    ThemePreset::Solarized,
+                    saved_mode == ThemeMode::Dark,
+                )))
+                .clone(),
+                light: OttrinApp::custom_from_colors(Colors::preset(
                     ThemePreset::Solarized,
                     saved_mode == ThemeMode::Dark,
                 )),
@@ -1263,10 +1544,10 @@ mod tests {
             app.delete_saved_custom_theme(0, &ctx);
             assert!(app.state.config.custom_themes.is_empty());
             assert!(app.state.config.active_custom_theme.is_none());
-            assert_eq!(app.state.config.theme, saved_mode);
+            assert_eq!(app.state.config.theme, prior_mode);
             assert_eq!(
                 app.colors,
-                Colors::preset(ThemePreset::Solarized, saved_mode == ThemeMode::Dark)
+                Colors::preset(ThemePreset::Solarized, prior_mode == ThemeMode::Dark)
             );
         }
     }
@@ -1379,9 +1660,9 @@ mod tests {
         config.active_custom_theme = Some("Fixture".into());
         config.custom_themes.push(SavedTheme {
             name: "Fixture".into(),
-            theme_mode: ThemeMode::Dark,
             base_preset: ThemePreset::Ottrin,
-            customization: custom.clone(),
+            dark: custom.clone(),
+            light: custom.clone(),
         });
         let changed = Colors::for_config(&config, None);
         assert_eq!(
@@ -1395,6 +1676,8 @@ mod tests {
         assert_eq!(changed.smart_panel_bg, original.smart_panel_bg);
         assert_eq!(changed.panel, original.panel);
         assert_eq!(changed.accent, original.accent);
+        assert_eq!(changed.accent_dim, original.accent_dim);
+        assert_eq!(changed.row_alt, original.row_alt);
     }
 
     #[test]
@@ -1421,32 +1704,14 @@ mod tests {
                     active_custom_theme: Some("Fixture".into()),
                     custom_themes: vec![SavedTheme {
                         name: "Fixture".into(),
-                        theme_mode: if dark {
-                            ThemeMode::Dark
-                        } else {
-                            ThemeMode::Light
-                        },
                         base_preset: preset,
-                        customization: custom,
+                        dark: (custom).clone(),
+                        light: custom,
                     }],
                     ..Default::default()
                 };
                 let seeded = Colors::for_config(&config, None);
-                for (expected, actual) in [
-                    (original.bg, seeded.bg),
-                    (original.panel, seeded.panel),
-                    (original.panel_raised, seeded.panel_raised),
-                    (original.bookmarks_bg, seeded.bookmarks_bg),
-                    (original.titlebar_bg, seeded.titlebar_bg),
-                    (original.toolbar_bg, seeded.toolbar_bg),
-                    (original.statusbar_bg, seeded.statusbar_bg),
-                    (original.selected_bg, seeded.selected_bg),
-                    (original.heading, seeded.heading),
-                    (original.hover, seeded.hover),
-                    (original.error, seeded.error),
-                ] {
-                    assert_eq!(expected, actual, "{preset:?}, dark={dark}");
-                }
+                assert_eq!(original, seeded, "{preset:?}, dark={dark}");
             }
         }
     }
