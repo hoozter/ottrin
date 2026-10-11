@@ -1,3 +1,6 @@
+/// Desktop identity shared by all Ottrin windows and the packaged desktop entry.
+pub const DESKTOP_APPLICATION_ID: &str = "org.ottrin.Ottrin";
+
 use egui::emath::Rangef;
 use egui::scroll_area::ScrollBarVisibility;
 use egui::style::ScrollAnimation;
@@ -5288,6 +5291,7 @@ impl OttrinApp {
 
         let mut close_requested = false;
         let builder = egui::ViewportBuilder::default()
+            .with_app_id(DESKTOP_APPLICATION_ID)
             .with_title("Ottrin Theme Editor")
             .with_inner_size([1180.0, 780.0])
             .with_min_inner_size([800.0, 600.0])
@@ -17718,6 +17722,7 @@ impl OttrinApp {
             .data_mut(|data| data.get_persisted::<Vec2>(inspector_size_id))
             .unwrap_or(Vec2::new(720.0, 560.0));
         let builder = egui::ViewportBuilder::default()
+            .with_app_id(DESKTOP_APPLICATION_ID)
             .with_title(administrator_surface_label(
                 &format!("Ottrin Quick Inspector — {name}"),
                 administrator_session(),
@@ -19492,6 +19497,7 @@ impl OttrinApp {
 
         let mut close_requested = false;
         let builder = egui::ViewportBuilder::default()
+            .with_app_id(DESKTOP_APPLICATION_ID)
             .with_title("Ottrin Settings")
             .with_inner_size([920.0, 640.0])
             .with_min_inner_size([760.0, 520.0])

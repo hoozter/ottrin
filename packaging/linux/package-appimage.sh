@@ -86,6 +86,7 @@ Name=Ottrin
 Comment=Keyboard-first file manager
 Exec=ottrin
 Icon=ottrin
+StartupWMClass=ottrin
 Type=Application
 Categories=System;FileTools;FileManager;
 Keywords=files;manager;miller;

@@ -258,6 +258,7 @@ fn run_gui(gui_target: Option<GuiLaunchTarget>) -> eframe::Result<()> {
             graphics_runtime.selection.choice,
         ),
         viewport: egui::ViewportBuilder::default()
+            .with_app_id(ottrin_ui::DESKTOP_APPLICATION_ID)
             .with_title(window_title.clone())
             .with_visible(main_viewport.visible)
             .with_decorations(false)
