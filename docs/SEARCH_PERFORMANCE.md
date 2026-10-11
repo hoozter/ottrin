@@ -93,6 +93,25 @@ its compact diagnostic receipt is retained as `WATCH_RACE_PARTIAL.json`.
 Task-owned profiles, fixtures, extraction copies, diagnostic processes, and
 packaging worktrees were removed.
 
+## Current appearance-package integration on 2026-10-11
+
+The installed service was upgraded again to the current AppImage, built from
+clean tracked revision `d37576ea8508f5fbc9f1726630531d97fd1d87cd`, SHA-256
+`770f06209d8cd2fef822c70bf27bd77fd79df8a1b6bc30e7ee04817d7eddeafa`.
+The process is `ottrin-indexd`; its executable checksum matches the bundled
+release daemon. The existing saved index loaded successfully, filesystem
+watches are ready, and the service is enabled and active without reported errors.
+
+Two consecutive 30-second live samples measured 1.467% and 0.567% of one core,
+or 0.0917% and 0.0354% of this 16-thread machine. These include concurrent
+home-directory activity. Personal settings retained their exact checksum.
+An actual disposable file became searchable in 1.051 seconds and disappeared
+from search in 0.882 seconds after deletion; the fixture was removed.
+The integration receipt is
+`.hermes/evidence/index-service/CURRENT_PACKAGE_INTEGRATION.json`.
+The earlier controlled-burst receipt above remains evidence for the index
+fixes; these fresh measurements verify their integration into the newer package.
+
 ## Historical acceptance result
 
 Measured on 2026-08-15 with the dedicated `ottrin-indexd` process and a configured home-directory root containing **1,185,806 indexed items**.
