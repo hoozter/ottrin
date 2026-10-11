@@ -77,6 +77,7 @@ implementation scope, and acceptance plan.
 - [ ] Portable zip launches on a real Windows desktop.
 - [ ] Installer performs a clean per-user install, launches Ottrin, appears in Installed Apps, and creates working Start Menu shortcuts.
 - [ ] Uninstall removes the app, shortcuts, scheduled/background integration, generated search data, and preview cache while retaining saved preferences.
+- [ ] Installer rollback is verified after the installation script and background setup actually execute, including version upgrade and uninstall failures: prior payload, product/component registration, preferences, generated data and complete index-task configuration (including disabled state) are restored. A failure injected before execution does not satisfy this gate.
 - [ ] Navigation, file operations, Recycle Bin, multi-select, Tandem View, and status messages pass; same-volume and cross-volume Windows Move satisfy the roadmap contract and fail closed for every still-unsupported conflict or entry-kind boundary.
 - [ ] Search indexing, GUI watcher updates, concurrent GUI/CLI access to the saved index, and Task Scheduler installation, upgrade, restart and removal pass.
 - [ ] Quick Inspector passes the Windows file-type matrix, including rendered PDF pages plus malformed/encrypted PDF text/metadata fallback paths.
