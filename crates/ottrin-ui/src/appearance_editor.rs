@@ -464,7 +464,7 @@ impl OttrinApp {
                 .cloned()
                 .unwrap_or_else(|| format!("#{:02X}{:02X}{:02X}", rgba[0], rgba[1], rgba[2]));
             ui.horizontal(|ui| {
-                let label_width = (ui.available_width() - (28.0 * self.colors.font_scale + 88.0 + 28.0 + ui.spacing().item_spacing.x * 3.0)).clamp(60.0, 200.0);
+                let label_width = (ui.available_width() - (28.0 * self.colors.font_scale + 88.0 * self.colors.font_scale + 28.0 + ui.spacing().item_spacing.x * 3.0)).clamp(60.0, 200.0);
                 ui.allocate_ui_with_layout(
                     Vec2::new(label_width, 28.0),
                     Layout::left_to_right(Align::Center),
@@ -486,10 +486,10 @@ impl OttrinApp {
                 }
                 let valid_hex = parse_hex_rgb(&hex).is_some();
                 if ui
-                    .add_sized([88.0, 28.0],
+                    .add_sized([88.0 * self.colors.font_scale, 28.0],
                         egui::TextEdit::singleline(&mut hex)
                             .id(egui::Id::new(("appearance_hex", field)))
-                            .desired_width(88.0)
+                            .desired_width(88.0 * self.colors.font_scale)
                             .text_color(if valid_hex { self.colors.text } else { self.colors.error }).themed(&self.colors),
                     )
                     .on_hover_text(if valid_hex {
