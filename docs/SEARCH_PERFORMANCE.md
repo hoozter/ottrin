@@ -8,6 +8,25 @@ Filesystem bursts are applied in transactions of at most 500 changed paths. A la
 
 Linux AppImage daemon launches use the bundled `ottrin-indexd`, including the installed background service and session indexing. The index process is distinct from the `ottrin` UI process.
 
+## AppImage verification on 2026-10-11
+
+The installed service was consuming 89.3% of one CPU core (about 5.58% of this 16-thread machine). A diagnostic run reproduced the full-root fallback after a burst of 961 changed paths. The appearance overhaul had not changed the search worker.
+
+The repaired package was built from clean tracked revision `13e9e93eadcf89be20bdb29a41b6fa563416ad4d`. The stable artifact is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`, SHA-256 `1c16bbf07666438ca04901ff823585d21c122f87a8a89e0997aece44e1bcd92d`.
+
+| Measurement | One core CPU | Whole machine CPU |
+|---|---:|---:|
+| Original installed daemon, 10 seconds | 89.3% | 5.58% |
+| Exact package, isolated quiet index, 20 seconds | 0.60% | 0.038% |
+| Repaired installed service, ongoing home-directory activity, 30 seconds | 7.43% | 0.465% |
+| Repaired installed service after the test burst, ongoing activity, 30 seconds | 5.37% | 0.335% |
+
+The quiet measurement used a private 10,000-file index. The live measurements used the existing personal home-directory index, with approximately 154,000 items and other applications still changing files; they are background-activity measurements, not idle claims. CPU percentages use 100% for one logical core, then divide by 16 for the whole-machine column.
+
+Both the private exact-package test and installed service test passed creation of 1,200 files, modification, rename, and deletion. Create propagation took 1.79 seconds in isolation and 2.27 seconds on the live index. The active SQLite generation stayed unchanged across both bursts: no full rebuild was triggered. The private daemon also restarted successfully from its saved index. The live service remained enabled and running as `ottrin-indexd`, with ready filesystem watches and no reported error. Its executable SHA-256 matched the tested package daemon. Personal settings retained their exact pre-test checksum, and the existing index was reused.
+
+Source validation passed 210 search tests, 22 application tests, one daemon test, strict search Clippy, formatting, and the Linux daemon packaging contract. Two existing FTS storage measurement fixtures remained ignored; they do not exercise the changed scheduling behavior. Raw acceptance is retained in `.hermes/evidence/index-service/ACCEPTANCE.json` and copied to `dist/packages/INDEX_ACCEPTANCE.json`. Test profiles, test files, diagnostic processes, and packaging staging were removed after verification.
+
 ## Historical acceptance result
 
 Measured on 2026-08-15 with the dedicated `ottrin-indexd` process and a configured home-directory root containing **1,185,806 indexed items**.
