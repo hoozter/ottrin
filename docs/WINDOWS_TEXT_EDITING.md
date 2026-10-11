@@ -2,7 +2,7 @@
 
 The Windows save implementation in `crates/ottrin-platform/src/text_edit/windows.rs`
 is enabled for admitted local NTFS files. Native public-session and desktop editor
-checks pass; exact portable-package acceptance remains pending. There is no
+checks pass; focused exact portable-package save/conflict/reload acceptance is recorded below. There is no
 environment override. Linux publication and the editor's conflict/reload/Undo
 behavior are unchanged. macOS remains read-only. No additional document formats are introduced.
 
@@ -131,7 +131,7 @@ unchanged bytes, no new stage and unchanged full SACL (`scope-native-seed.log`,
 `text-sacl-scope-green.log`). This is metadata refusal, not domain policy enforcement.
 A separate native extended-attribute fixture passes admission and post-open refusal,
 with exact EA bytes and source content retained (`text-ea.log`). These checks close
-those native admission cases; exact packaged editor acceptance remains pending.
+those native admission cases; the focused packaged editor workflow is recorded below.
 Unsupported security cloning or directory flushing stops the save and retains existing staging.
 
 ## Public editor acceptance
@@ -168,3 +168,40 @@ API contracts: [security-query SACL presence](https://learn.microsoft.com/en-us/
 [FILE_RENAME_INFORMATION](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/ns-ntifs-_file_rename_information),
 [SetSecurityInfo](https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-setsecurityinfo),
 and [GetFileInformationByHandleEx](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyhandleex).
+
+## Exact portable editor workflow — 2026-10-12
+
+The current portable archive from clean tracked revision
+`c3bba32532b0a5a3a0c96c52e047b88eec1f3a58` has SHA-256
+`2864bd4522e67f0b6758789f8705b0471818e3aa4fbc7201a389ed111f35e7cb`.
+Its application SHA-256 is
+`7f63fc4d030b73355555d356fb60be73a428ccce122293cccb2890a2795eda57`.
+It ran with a private profile in the network-isolated Windows 11 build 26100
+QA guest as the medium-integrity interactive user (Administrators deny-only),
+with the diagnostic OpenGL override.
+
+Quick Inspector opened the selected Markdown file through Space, saved exact
+edited bytes and retained the Unicode original plus an independent saved draft.
+After an external write, Save refused replacement and kept the dirty buffer.
+Keep editing preserved it; Copy my edits returned its exact text. Reload prompted
+before discarding, then displayed the external version with a clean save state.
+Independent filesystem checks verified current, original and saved-draft bytes
+throughout. The Inspector and main window closed normally; the application process
+was absent and the launch worker completed. The PowerShell Start-Process wrapper
+did not capture a usable GUI exit code, so no application exit-code claim is made.
+
+An initial fixture created by the SYSTEM orchestration account had an
+Administrators owner. Saving safely refused an owner assignment the limited token
+could not perform, preserved source bytes and kept the editor buffer with the
+staged recovery path visible. The normal save fixture was then recreated by the
+interactive user; its owner remained that user. This does not establish editing
+arbitrary owners or bypass Windows permission requirements.
+
+Evidence: `.hermes/evidence/windows-20261011/WINDOWS_TEXT_PACKAGE_ACCEPTANCE.json`,
+`text-package-*.png`, the filesystem verifier and compact application logs.
+This closes the focused exact-package Markdown save/conflict/reload workflow;
+it does not repeat native security fault injection, cover all formats, prove
+power-loss behavior or accept native WGPU/hardware/full daily-driver workflows.
+The run also shows a partially visible Miller inline preview beside a long ancestor
+chain at the private 1100 × 690 window size. This is a horizontally scrolled column,
+not the overlay Smart Panel; initial selection/reveal behavior needs separate QA.
