@@ -740,6 +740,25 @@ fn theme_miniature(ui: &egui::Ui, thumb: Rect, preview: Colors) {
         Vec2::new(thumb.width(), 9.0),
     );
     p.rect_filled(nav, 0.0, preview.toolbar_bg);
+    let action = Rect::from_min_max(
+        nav.right_top() + Vec2::new(-22.0, 1.0),
+        nav.right_bottom() + Vec2::new(-3.0, -1.0),
+    );
+    let action_radius = (preview.button_radius as f32 * action.height() / 28.0).round() as u8;
+    p.rect_filled(action, action_radius, preview.button_bg);
+    p.rect_stroke(
+        action,
+        action_radius,
+        Stroke::new(1.0, preview.accent),
+        egui::StrokeKind::Inside,
+    );
+    p.line_segment(
+        [
+            action.center() - Vec2::new(4.0, 0.0),
+            action.center() + Vec2::new(4.0, 0.0),
+        ],
+        Stroke::new(preview.font_scale, preview.button_text),
+    );
     let content = Rect::from_min_max(
         egui::pos2(thumb.left(), nav.bottom()),
         thumb.max - Vec2::new(0.0, 7.0),
@@ -959,6 +978,36 @@ fn appearance_mode_control(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn appearance_miniature_reflects_button_and_accent_edits() {
+        let ctx = Context::default();
+        for radius in [0, 14] {
+            let mut colors = Colors::preset(ThemePreset::Nord, true);
+            colors.button_bg = Color32::from_rgb(173, 23, 89);
+            colors.accent = Color32::from_rgb(11, 211, 137);
+            colors.button_radius = radius;
+            let output = ctx.run(Default::default(), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    theme_miniature(
+                        ui,
+                        Rect::from_min_size(egui::pos2(20.0, 20.0), Vec2::new(180.0, 88.0)),
+                        colors,
+                    );
+                });
+            });
+            let action = output
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    egui::epaint::Shape::Rect(rect) if rect.fill == colors.button_bg => Some(rect),
+                    _ => None,
+                })
+                .expect("The library thumbnail must represent button styling");
+            assert_eq!(action.corner_radius.nw, if radius == 0 { 0 } else { 4 });
+            assert!(output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Rect(rect) if rect.stroke.color == colors.accent)));
+        }
+    }
 
     #[test]
     fn appearance_component_selection_does_not_change_preview_ink() {
