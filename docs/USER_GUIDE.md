@@ -69,12 +69,23 @@ returns to its source preset while keeping the global mode preference.
 
 In the editor, click the live preview or choose a component from the inspector.
 **Theme defaults** contains shared colors, text size, and window/surface geometry;
-other contexts show that component's properties. The inspector scrolls independently.
+other contexts show that component's properties. **Shared styling** also exposes relevant
+existing theme defaults from the selected component; changing them updates every component
+that uses them. There are no separate override copies. The inspector scrolls independently.
+
+Click the preview tab or navigation bar to select **Navigation & tabs** together.
+Their toolbar color is shared; active tabs blend it with the title-bar background,
+use muted text and the accent underline, and share **Surface corners** with inputs
+and cards. **Window corners** affects application windows, including Settings,
+the editor and Inspector. **Button corners** affects buttons and location controls.
+The file canvas and row fills are square and have no independent radius setting;
+component outlines identify editing targets and do not add a frame to the real view.
 The editor's Light/Dark selector edits the two variants separately and does not change
 the global appearance preference.
 
-Each row's reset restores its opening value. **Reset component** restores that context
-in the current variant; **More → Reset theme to starting values** restores both variants.
+Each row's reset restores its opening value. **Reset component** restores the
+component-specific controls above it, leaving **Shared styling** unchanged, in the
+current variant; **More → Reset theme to starting values** restores both variants.
 **More** also imports and exports the complete paired theme in the v2 JSON format.
 Save or discard an existing changed draft before importing another theme.
 

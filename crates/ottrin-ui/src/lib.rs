@@ -4624,7 +4624,7 @@ impl OttrinApp {
         match region {
             ThemePreviewRegion::Defaults => "Theme defaults",
             ThemePreviewRegion::Titlebar => "Title bar",
-            ThemePreviewRegion::Navigation => "Navigation bar",
+            ThemePreviewRegion::Navigation => "Navigation & tabs",
             ThemePreviewRegion::Bookmarks => "Locations rail",
             ThemePreviewRegion::ColumnBackground => "File view",
             ThemePreviewRegion::SelectedRow => "Selected row",
@@ -4638,15 +4638,23 @@ impl OttrinApp {
 
     fn theme_preview_region_hint(region: ThemePreviewRegion) -> &'static str {
         match region {
-            ThemePreviewRegion::Defaults => "Shared colors, text, and geometry across Ottrin.",
-            ThemePreviewRegion::Titlebar => "Window chrome, tab shelf, and top heading contrast.",
-            ThemePreviewRegion::Navigation => "Back controls, address field, and toolbar rhythm.",
+            ThemePreviewRegion::Defaults => {
+                "Shared panels, inputs, text, focus and hover colors. Window corners affect application windows; surface corners affect tabs, inputs and cards. Button corners are separate."
+            }
+            ThemePreviewRegion::Titlebar => {
+                "Title-bar background and window controls. Select a tab to edit Navigation & tabs; its colors blend with this background."
+            }
+            ThemePreviewRegion::Navigation => {
+                "Navigation and tabs share the toolbar color. Active tabs blend it with the title-bar background and use muted text, accent and surface corners."
+            }
             ThemePreviewRegion::Bookmarks => {
                 "The left rail containing bookmarked locations and storage devices."
             }
-            ThemePreviewRegion::ColumnBackground => "Background behind files in every view mode.",
+            ThemePreviewRegion::ColumnBackground => {
+                "Background behind files in every view mode. The file canvas and row fills are square; the outline here only identifies the editing target."
+            }
             ThemePreviewRegion::SelectedRow => {
-                "Background of selected file rows. Shared with text selection."
+                "Selected file-row background, also used for text selection. Row fills are square; the focus outline uses the shared accent."
             }
             ThemePreviewRegion::ColumnText => {
                 "Neutral and category-colored samples show the theme’s file and folder styling."
@@ -4689,6 +4697,34 @@ impl OttrinApp {
             ThemePreviewRegion::Borders => {
                 &[ThemeColorField::Border, ThemeColorField::WindowBorder]
             }
+        }
+    }
+
+    // Existing shared tokens, not overrides: every context edits one palette.
+    fn theme_preview_region_shared_fields(
+        region: ThemePreviewRegion,
+    ) -> &'static [ThemeColorField] {
+        match region {
+            ThemePreviewRegion::Defaults | ThemePreviewRegion::ColumnText => &[],
+            ThemePreviewRegion::Titlebar => &[ThemeColorField::TextDim],
+            ThemePreviewRegion::Navigation => &[
+                ThemeColorField::Titlebar,
+                ThemeColorField::RaisedPanel,
+                ThemeColorField::TextMuted,
+                ThemeColorField::TextDim,
+                ThemeColorField::Accent,
+            ],
+            ThemePreviewRegion::Bookmarks => {
+                &[ThemeColorField::Selection, ThemeColorField::TextDim]
+            }
+            ThemePreviewRegion::ColumnBackground => {
+                &[ThemeColorField::Border, ThemeColorField::Hover]
+            }
+            ThemePreviewRegion::SelectedRow => &[ThemeColorField::Accent],
+            ThemePreviewRegion::Sidebar => &[ThemeColorField::TextMuted],
+            ThemePreviewRegion::StatusBar => &[ThemeColorField::TextMuted, ThemeColorField::Error],
+            ThemePreviewRegion::Accent => &[ThemeColorField::Hover, ThemeColorField::Accent],
+            ThemePreviewRegion::Borders => &[],
         }
     }
 
@@ -10220,7 +10256,7 @@ impl OttrinApp {
         let c = self.colors;
         let mut blocked_drag_rects: Vec<Rect> = Vec::new();
         let titlebar_bg = c.titlebar_bg;
-        let active_tab_bg = mix_color(c.toolbar_bg, titlebar_bg, 0.28);
+        let active_tab_bg = theme_tab_fill(c);
         let inactive_text = mix_color(c.text_muted, titlebar_bg, 0.32);
 
         let panel_rect = egui::TopBottomPanel::top("tab_row")
@@ -10278,12 +10314,7 @@ impl OttrinApp {
                         let frame = Frame::new()
                             .fill(tab_fill)
                             .stroke(Stroke::NONE)
-                            .corner_radius(egui::CornerRadius {
-                                nw: c.border_radius,
-                                ne: c.border_radius,
-                                sw: 0,
-                                se: 0,
-                            })
+                            .corner_radius(theme_tab_corners(c))
                             .inner_margin(egui::Margin {
                                 left: 14,
                                 right: 6,
@@ -23386,6 +23417,26 @@ fn theme_editor_region_at_pos(
     None
 }
 
+fn theme_tab_fill(c: Colors) -> Color32 {
+    mix_color(c.toolbar_bg, c.titlebar_bg, 0.28)
+}
+
+fn theme_tab_corners(c: Colors) -> egui::CornerRadius {
+    egui::CornerRadius {
+        nw: c.border_radius,
+        ne: c.border_radius,
+        sw: 0,
+        se: 0,
+    }
+}
+
+fn theme_preview_row_rect(column: Rect, row: usize) -> Rect {
+    Rect::from_min_size(
+        egui::pos2(column.left() + 8.0, column.top() + 16.0 + row as f32 * 28.0),
+        Vec2::new(column.width() - 16.0, 20.0),
+    )
+}
+
 fn theme_editor_large_preview(
     ui: &mut egui::Ui,
     preview: Colors,
@@ -23440,10 +23491,7 @@ fn theme_editor_large_preview(
         egui::pos2(col2.right() + column_gap, columns_rect.top()),
         columns_rect.max,
     );
-    let selected_row = Rect::from_min_size(
-        egui::pos2(col2.left() + 8.0, col2.top() + 54.0),
-        Vec2::new(col2.width() - 16.0, 22.0),
-    );
+    let selected_row = theme_preview_row_rect(col2, 1);
     let text_band = Rect::from_min_max(
         egui::pos2(col1.left() + 8.0, col1.top() + 8.0),
         egui::pos2(
@@ -23455,7 +23503,7 @@ fn theme_editor_large_preview(
         egui::pos2(status.right() - 124.0, status.center().y - 11.0),
         Vec2::new(96.0, 22.0),
     );
-    let border_rect = outer.shrink(3.0);
+    let border_rect = frame;
 
     p.rect_filled(outer, preview.app_radius as f32 + 4.0, preview.panel_raised);
     p.rect_filled(frame, preview.app_radius as f32, preview.panel);
@@ -23466,18 +23514,31 @@ fn theme_editor_large_preview(
         egui::StrokeKind::Inside,
     );
 
-    p.rect_filled(titlebar, preview.app_radius as f32, preview.titlebar_bg);
+    p.rect_filled(
+        titlebar,
+        egui::CornerRadius {
+            nw: preview.app_radius,
+            ne: preview.app_radius,
+            sw: 0,
+            se: 0,
+        },
+        preview.titlebar_bg,
+    );
     let title_tab = Rect::from_min_size(
         egui::pos2(titlebar.left() + 12.0, titlebar.top() + 7.0),
         Vec2::new(150.0, titlebar.height() - 12.0),
     );
-    p.rect_filled(title_tab, preview.border_radius as f32, preview.toolbar_bg);
+    p.rect_filled(
+        title_tab,
+        theme_tab_corners(preview),
+        theme_tab_fill(preview),
+    );
     p.text(
         egui::pos2(title_tab.left() + 12.0, title_tab.center().y),
         Align2::LEFT_CENTER,
         "workspace",
         FontId::proportional(11.0 * preview.font_scale),
-        preview.text,
+        preview.text_muted,
     );
     p.line_segment(
         [
@@ -23593,13 +23654,7 @@ fn theme_editor_large_preview(
             );
         }
         for row in 0..6 {
-            let row_rect = Rect::from_min_size(
-                egui::pos2(
-                    col_rect.left() + 8.0,
-                    col_rect.top() + 16.0 + row as f32 * 28.0,
-                ),
-                Vec2::new(col_rect.width() - 16.0, 20.0),
-            );
+            let row_rect = theme_preview_row_rect(col_rect, row);
             let fill = if idx == 1 && row == 1 {
                 preview.selected_bg
             } else if idx == 0 && row == 3 {
@@ -23609,7 +23664,15 @@ fn theme_editor_large_preview(
             } else {
                 Color32::TRANSPARENT
             };
-            p.rect_filled(row_rect, preview.border_radius as f32, fill);
+            p.rect_filled(row_rect, 0.0, fill);
+            if idx == 1 && row == 1 {
+                p.rect_stroke(
+                    row_rect.shrink(1.0),
+                    3.0,
+                    Stroke::new(1.0, preview.accent),
+                    egui::StrokeKind::Inside,
+                );
+            }
             let samples = [
                 [
                     ("Documents", true),
@@ -23684,11 +23747,7 @@ fn theme_editor_large_preview(
         }
     }
 
-    p.rect_filled(
-        sidebar,
-        preview.border_radius as f32,
-        preview.smart_panel_bg,
-    );
+    p.rect_filled(sidebar, 0.0, preview.smart_panel_bg);
     p.text(
         egui::pos2(sidebar.left() + 10.0, sidebar.top() + 14.0),
         Align2::LEFT_CENTER,
@@ -23759,15 +23818,13 @@ fn theme_editor_large_preview(
 
     let mut regions = vec![
         (ThemePreviewRegion::Accent, accent_button),
-        (
-            ThemePreviewRegion::SelectedRow,
-            selected_row.expand2(Vec2::new(2.0, 3.0)),
-        ),
+        (ThemePreviewRegion::SelectedRow, selected_row),
         (
             ThemePreviewRegion::Accent,
             accent_badge.expand2(Vec2::new(4.0, 4.0)),
         ),
         (ThemePreviewRegion::ColumnText, text_band),
+        (ThemePreviewRegion::Navigation, title_tab),
         (ThemePreviewRegion::Titlebar, titlebar),
         (ThemePreviewRegion::Navigation, nav),
         (ThemePreviewRegion::Bookmarks, bookmarks),
@@ -23809,7 +23866,23 @@ fn theme_editor_large_preview(
         } else {
             Stroke::new(1.0, mix_color(preview.accent, preview.bg, 0.18))
         };
-        p.rect_stroke(*region_rect, 8.0, stroke, egui::StrokeKind::Inside);
+        let corners = if *region_rect == title_tab {
+            theme_tab_corners(preview)
+        } else if *region == ThemePreviewRegion::Borders {
+            egui::CornerRadius::same(preview.app_radius)
+        } else if *region == ThemePreviewRegion::Titlebar {
+            egui::CornerRadius {
+                nw: preview.app_radius,
+                ne: preview.app_radius,
+                sw: 0,
+                se: 0,
+            }
+        } else if *region == ThemePreviewRegion::Accent {
+            egui::CornerRadius::same(preview.button_radius)
+        } else {
+            egui::CornerRadius::ZERO
+        };
+        p.rect_stroke(*region_rect, corners, stroke, egui::StrokeKind::Inside);
     }
 
     (hovered_region, clicked_region)

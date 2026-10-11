@@ -295,6 +295,8 @@ impl OttrinApp {
                 ScrollArea::vertical().id_salt("appearance_properties").max_height((inspector_rect.height()-44.0).max(100.0)).show(ui, |ui| {
                     ui.set_width(ui.available_width());
                     ui.spacing_mut().item_spacing.y = 10.0;
+                    ui.label(RichText::new(Self::theme_preview_region_hint(region)).small().color(c.text_dim));
+                    ui.add_space(4.0);
                     ui.label(RichText::new("Colors").strong().color(c.heading));
                     let fields = Self::theme_preview_region_fields(region);
                     for &field in fields { changed |= self.appearance_color_row(ui, field, &seed); }
@@ -328,7 +330,7 @@ impl OttrinApp {
                     }
                     ui.add_space(10.0);
                     if ui.add(egui::Button::new(if region == ThemePreviewRegion::Defaults { "Reset theme defaults" } else { "Reset component" }).themed(&c))
-                        .on_hover_text("Restore this context’s properties to their values when the editor opened. Other components and the other variant are unchanged.").clicked() {
+                        .on_hover_text(if region == ThemePreviewRegion::Defaults { "Restore the shared defaults shown above. Components using them update together; component-specific colors and the other variant are unchanged." } else { "Restore the component-specific values above. Shared styling below and the other variant are unchanged." }).clicked() {
                         for &field in fields { *Self::theme_color_field_value_mut(&mut self.theme_editor.custom, field) = Self::theme_color_field_value(&seed, field); }
                         match region {
                             ThemePreviewRegion::Defaults => { self.theme_editor.custom.font_scale=seed.font_scale; self.theme_editor.custom.app_radius=seed.app_radius; self.theme_editor.custom.border_radius=seed.border_radius; }
@@ -338,6 +340,36 @@ impl OttrinApp {
                             _ => {}
                         }
                         self.sync_theme_editor_hex_inputs(); changed=true;
+                    }
+                    if region != ThemePreviewRegion::Defaults {
+                        ui.add_space(14.0);
+                        ui.separator();
+                        ui.label(RichText::new("Shared styling").strong().color(c.heading));
+                        ui.label(RichText::new("Also affects other components. Reset component leaves these values unchanged.").small().color(c.text_dim));
+                        for &field in Self::theme_preview_region_shared_fields(region) {
+                            changed |= self.appearance_color_row(ui, field, &seed);
+                        }
+                        ui.add_space(6.0);
+                        ui.label(RichText::new("Typography").strong().color(c.heading));
+                        changed |= number_row(ui, "Text size", &mut self.theme_editor.custom.font_scale, 0.85..=1.35, seed.font_scale, 0.01, c);
+                        if matches!(region, ThemePreviewRegion::Navigation | ThemePreviewRegion::Titlebar | ThemePreviewRegion::Borders | ThemePreviewRegion::Bookmarks) {
+                            ui.add_space(6.0);
+                            ui.label(RichText::new("Geometry").strong().color(c.heading));
+                            match region {
+                                ThemePreviewRegion::Navigation => {
+                                    ui.label(RichText::new("Surface corners: tabs, text inputs and cards.").small().color(c.text_dim));
+                                    changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
+                                }
+                                ThemePreviewRegion::Bookmarks => {
+                                    ui.label(RichText::new("Button corners: location buttons and other buttons.").small().color(c.text_dim));
+                                    changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
+                                }
+                                _ => {
+                                    ui.label(RichText::new("Window corners: main window, Settings, editor and Inspector.").small().color(c.text_dim));
+                                    changed |= number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
+                                }
+                            }
+                        }
                     }
                 });
             });
@@ -978,6 +1010,176 @@ fn appearance_mode_control(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn appearance_preview_selection_matches_painted_row_and_square_canvas() {
+        let ctx = Context::default();
+        let colors = Colors::preset(ThemePreset::Ottrin, true);
+        let render = |region, events: Vec<egui::Event>| {
+            let mut clicked = None;
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1000.0, 700.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        clicked = theme_editor_large_preview(ui, colors, region).1;
+                    });
+                },
+            );
+            (output, clicked)
+        };
+        let (output, _) = render(ThemePreviewRegion::SelectedRow, vec![]);
+        let painted = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::epaint::Shape::Rect(r)
+                    if r.fill == colors.selected_bg && r.rect.width() > 100.0 =>
+                {
+                    Some(r)
+                }
+                _ => None,
+            })
+            .expect("A selected file row is painted");
+        let outline = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::epaint::Shape::Rect(r)
+                    if r.stroke.color == colors.accent && r.stroke.width == 2.0 =>
+                {
+                    Some(r)
+                }
+                _ => None,
+            })
+            .expect("Selected-row editor outline");
+        assert_eq!(
+            outline.rect, painted.rect,
+            "Editor target must exactly follow the painted row"
+        );
+        assert_eq!(painted.corner_radius, egui::CornerRadius::ZERO);
+        assert_eq!(outline.corner_radius, painted.corner_radius);
+        let click = |pos| {
+            render(
+                ThemePreviewRegion::SelectedRow,
+                vec![
+                    egui::Event::PointerMoved(pos),
+                    egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed: true,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ],
+            );
+            render(
+                ThemePreviewRegion::SelectedRow,
+                vec![egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed: false,
+                    modifiers: egui::Modifiers::NONE,
+                }],
+            )
+            .1
+        };
+        assert_eq!(
+            click(painted.rect.center()),
+            Some(ThemePreviewRegion::SelectedRow)
+        );
+        assert_ne!(
+            click(painted.rect.center_bottom() + Vec2::new(0.0, 3.0)),
+            Some(ThemePreviewRegion::SelectedRow),
+            "Gap below the row must not pick Selected row"
+        );
+        let (output, _) = render(ThemePreviewRegion::ColumnBackground, vec![]);
+        let outline = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::epaint::Shape::Rect(r)
+                    if r.stroke.color == colors.accent && r.stroke.width == 2.0 =>
+                {
+                    Some(r)
+                }
+                _ => None,
+            })
+            .unwrap();
+        assert_eq!(
+            outline.corner_radius,
+            egui::CornerRadius::ZERO,
+            "The file canvas has no radius setting"
+        );
+    }
+
+    #[test]
+    fn appearance_tabs_share_actual_fill_geometry_and_inspector_values() {
+        let ctx = Context::default();
+        let mut colors = Colors::preset(ThemePreset::Ottrin, true);
+        colors.toolbar_bg = Color32::from_rgb(191, 28, 73);
+        colors.titlebar_bg = Color32::from_rgb(13, 33, 51);
+        colors.border_radius = 14;
+        colors.text_muted = Color32::from_rgb(111, 232, 149);
+        let output = ctx.run(Default::default(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                theme_editor_large_preview(ui, colors, ThemePreviewRegion::Navigation);
+            });
+        });
+        let tab = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::epaint::Shape::Rect(r) if r.fill == theme_tab_fill(colors) => Some(r),
+                _ => None,
+            })
+            .expect("Preview represents actual tab fill");
+        assert_eq!(tab.corner_radius, theme_tab_corners(colors));
+        assert_eq!(tab.corner_radius.sw, 0);
+        assert_eq!(tab.corner_radius.se, 0);
+        assert!(output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == "workspace" && t.fallback_color == colors.text_muted)));
+        assert!(output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Rect(r) if r.rect == tab.rect && r.stroke.width == 2.0 && r.stroke.color == colors.accent)), "Choosing Navigation & tabs also outlines the tab");
+        let fields = OttrinApp::theme_preview_region_shared_fields(ThemePreviewRegion::Navigation);
+        for field in [
+            ThemeColorField::Titlebar,
+            ThemeColorField::RaisedPanel,
+            ThemeColorField::TextMuted,
+            ThemeColorField::TextDim,
+            ThemeColorField::Accent,
+        ] {
+            assert!(fields.contains(&field));
+        }
+        let mut app = OttrinApp::default();
+        app.open_theme_editor_for_preset(ThemePreset::Ottrin, &ctx);
+        app.theme_editor.selected_region = ThemePreviewRegion::Navigation;
+        let output = ctx.run(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(1180.0, 1300.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| {
+                app.render_theme_editor_embedded(ctx);
+            },
+        );
+        for label in [
+            "Shared styling",
+            "Surface corners",
+            "Text size",
+            "Muted text",
+            "Title bar",
+            "Active & focus accent",
+        ] {
+            assert!(output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == label)), "Missing contextual shared control {label}");
+        }
+    }
 
     #[test]
     fn appearance_miniature_reflects_button_and_accent_edits() {
