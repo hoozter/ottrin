@@ -8,7 +8,7 @@ Filesystem bursts are applied in transactions of at most 500 changed paths. A la
 
 Linux AppImage daemon launches use the bundled `ottrin-indexd`, including the installed background service and session indexing. The index process is distinct from the `ottrin` UI process.
 
-## AppImage verification on 2026-10-11
+## Initial AppImage verification on 2026-10-11
 
 The installed service was consuming 89.3% of one CPU core (about 5.58% of this 16-thread machine). A diagnostic run reproduced the full-root fallback after a burst of 961 changed paths. The appearance overhaul had not changed the search worker.
 
@@ -26,6 +26,24 @@ The quiet measurement used a private 10,000-file index. The live measurements us
 Both the private exact-package test and installed service test passed creation of 1,200 files, modification, rename, and deletion. Create propagation took 1.79 seconds in isolation and 2.27 seconds on the live index. The active SQLite generation stayed unchanged across both bursts: no full rebuild was triggered. The private daemon also restarted successfully from its saved index. The live service remained enabled and running as `ottrin-indexd`, with ready filesystem watches and no reported error. Its executable SHA-256 matched the tested package daemon. Personal settings retained their exact pre-test checksum, and the existing index was reused.
 
 Source validation passed 210 search tests, 22 application tests, one daemon test, strict search Clippy, formatting, and the Linux daemon packaging contract. Two existing FTS storage measurement fixtures remained ignored; they do not exercise the changed scheduling behavior. Raw acceptance is retained in `.hermes/evidence/index-service/ACCEPTANCE.json` and copied to `dist/packages/INDEX_ACCEPTANCE.json`. Test profiles, test files, diagnostic processes, and packaging staging were removed after verification.
+
+## Sustained-activity follow-up on 2026-10-11
+
+The initial short samples above missed a second failure. A later 20-second live
+sample measured **69.5% of one core (4.34% of this 16-thread machine)** even
+though the daemon reported Ready. A controlled burst of 2,000 short-lived
+folders reproduced failed watch registration on already removed descendants,
+followed by recovery of the entire configured home root. That recovery also
+rewrote the index; an unchanged active SQLite generation alone therefore does
+not prove absence of whole-root work.
+
+Watch discovery now tolerates descendants removed between enumeration and
+registration, including a queued creation whose directory is already gone.
+Path-specific backend errors for absent or inaccessible directories do not
+invalidate the accessible root. Failures on existing directories, configured
+root watch failures, and pathless backend errors such as event queue overflow
+retain recovery behavior. Regression tests cover the disappearance race and
+preservation of real watch registration failures.
 
 ## Historical acceptance result
 

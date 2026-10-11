@@ -638,7 +638,7 @@ fn walk_plan_watch_paths(
         let entry = match entry {
             Ok(entry) => entry,
             Err(error)
-                if error.depth() > 0
+                if (error.depth() > 0 || start != configured_root)
                     && matches!(
                         error.io_error().map(std::io::Error::kind),
                         Some(std::io::ErrorKind::PermissionDenied | std::io::ErrorKind::NotFound)
@@ -648,8 +648,15 @@ fn walk_plan_watch_paths(
             }
             Err(error) => return Err(error.to_string()),
         };
-        if entry.depth() == 0 || entry.file_type().is_dir() {
-            visit(entry.path())?;
+        if (entry.depth() == 0 || entry.file_type().is_dir())
+            && let Err(error) = visit(entry.path())
+        {
+            // A descendant may disappear between enumeration and inotify watch
+            // registration. Its parent still reports the removal; this is not
+            // lost coverage of the whole configured root.
+            if entry.path() == configured_root || !watch_path_unavailable(entry.path()) {
+                return Err(error);
+            }
         }
     }
     Ok(())
@@ -699,14 +706,19 @@ fn included_watch_event_paths(plan: &ScanPlan, paths: Vec<PathBuf>) -> Vec<PathB
         .collect()
 }
 
+fn watch_path_unavailable(path: &Path) -> bool {
+    matches!(
+        std::fs::read_dir(path),
+        Err(error) if matches!(
+            error.kind(),
+            std::io::ErrorKind::NotFound | std::io::ErrorKind::PermissionDenied
+        )
+    )
+}
+
 fn watch_error_requires_recovery(paths: &[PathBuf]) -> bool {
-    paths.is_empty()
-        || paths.iter().any(|path| {
-            !matches!(
-                std::fs::read_dir(path),
-                Err(error) if error.kind() == std::io::ErrorKind::PermissionDenied
-            )
-        })
+    // Pathless backend failures (including queue overflow) still require recovery.
+    paths.is_empty() || paths.iter().any(|path| !watch_path_unavailable(path))
 }
 
 impl WorkerLoop {
@@ -2067,6 +2079,70 @@ mod tests {
         std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700))
             .expect("restore directory permissions");
         std::fs::remove_dir(path).expect("remove unreadable directory");
+    }
+
+    struct WatchTestRoot(PathBuf);
+
+    impl Drop for WatchTestRoot {
+        fn drop(&mut self) {
+            if let Err(error) = std::fs::remove_dir_all(&self.0) {
+                eprintln!("watch test fixture cleanup failed: {error}");
+                assert!(
+                    std::thread::panicking(),
+                    "watch test fixture cleanup failed"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn disappearing_watch_descendant_does_not_trigger_root_recovery() {
+        let root =
+            std::env::temp_dir().join(format!("ottrin-disappearing-watch-{}", std::process::id()));
+        let child = root.join("short-lived");
+        std::fs::create_dir_all(&child).expect("create descendant");
+        let _cleanup = WatchTestRoot(root.clone());
+        let plan = ScanPlan::new(&config(root.to_str().expect("utf8 root"))).expect("plan");
+        let cancelled = AtomicBool::new(false);
+        walk_plan_watch_paths(&plan, &root, &root, &cancelled, |path| {
+            if path == child {
+                std::fs::remove_dir(&child).expect("remove between discovery and registration");
+                return Err("No path was found".to_string());
+            }
+            Ok(())
+        })
+        .expect("disappearing descendant must not invalidate root coverage");
+        assert!(!watch_error_requires_recovery(std::slice::from_ref(&child)));
+        assert!(watch_error_requires_recovery(std::slice::from_ref(&root)));
+        assert!(watch_error_requires_recovery(&[]));
+        // A queued creation may already have been removed before discovery starts.
+        walk_plan_watch_paths(&plan, &root, &child, &cancelled, |_| {
+            panic!("removed path must not be watched")
+        })
+        .expect("removed discovery start is harmless");
+    }
+
+    #[test]
+    fn watch_registration_failure_on_existing_directory_is_preserved() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-existing-watch-failure-{}",
+            std::process::id()
+        ));
+        let child = root.join("child");
+        std::fs::create_dir_all(&child).expect("create fixture");
+        let _cleanup = WatchTestRoot(root.clone());
+        let plan = ScanPlan::new(&config(root.to_str().expect("utf8 root"))).expect("plan");
+        let cancelled = AtomicBool::new(false);
+        assert_eq!(
+            walk_plan_watch_paths(&plan, &root, &root, &cancelled, |path| {
+                if path == child {
+                    Err("watch limit reached".to_string())
+                } else {
+                    Ok(())
+                }
+            }),
+            Err("watch limit reached".to_string())
+        );
     }
 
     fn owned(root: &str, name: &str) -> OwnedItem {
