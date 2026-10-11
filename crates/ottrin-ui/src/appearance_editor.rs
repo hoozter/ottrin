@@ -1039,7 +1039,7 @@ fn appearance_mode_control(
 
 pub(super) fn settings_surface(c: Colors) -> Frame {
     Frame::new()
-        .fill(c.panel_raised)
+        .fill(c.panel)
         .stroke(Stroke::new(1.0, c.border))
         .corner_radius(c.border_radius)
         .inner_margin(12)
