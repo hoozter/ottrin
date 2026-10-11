@@ -8833,6 +8833,20 @@ mod windows_source_tests {
         assert!(windows_cross_volume_runtime_enabled());
         let mode = std::env::var("OTTRIN_NATIVE_MOVE_POWER_CUT_MODE").unwrap();
         assert!(matches!(mode.as_str(), "prepare" | "recover"));
+        let boundary = std::env::var("OTTRIN_NATIVE_MOVE_POWER_CUT_BOUNDARY").unwrap();
+        let (pause_at, directory) = match boundary.as_str() {
+            "BeforeSourceCleanup" => (super::WindowsMoveBoundary::BeforeSourceCleanup, false),
+            "SourceClaimed" => (super::WindowsMoveBoundary::SourceClaimed, true),
+            _ => panic!("unsupported power-cut boundary"),
+        };
+        let read = |entry: &std::path::Path| {
+            if directory {
+                assert!(entry.join("empty").is_dir());
+                std::fs::read(entry.join("nested/payload")).unwrap()
+            } else {
+                std::fs::read(entry).unwrap()
+            }
+        };
         let root = std::path::PathBuf::from(
             std::env::var_os("OTTRIN_NATIVE_MOVE_POWER_CUT_ROOT").unwrap(),
         );
@@ -8850,8 +8864,29 @@ mod windows_source_tests {
         if mode == "prepare" {
             std::fs::create_dir(&root).expect("fresh owned power-cut root");
             std::fs::create_dir(&destination).expect("fresh owned destination root");
-            std::fs::write(&source, b"power-cut source bytes").unwrap();
-            std::fs::write(&target, b"power-cut displaced bytes").unwrap();
+            let create = |entry: &std::path::Path, bytes: &[u8]| {
+                let payload = if directory {
+                    std::fs::create_dir(entry).unwrap();
+                    std::fs::create_dir(entry.join("nested")).unwrap();
+                    std::fs::create_dir(entry.join("empty")).unwrap();
+                    entry.join("nested/payload")
+                } else {
+                    entry.to_path_buf()
+                };
+                let mut file = std::fs::File::create(&payload).unwrap();
+                file.write_all(bytes).unwrap();
+                file.sync_all().unwrap();
+                if directory {
+                    for path in [entry.join("nested"), entry.to_path_buf()] {
+                        move_recovery::open_reparse_safe_directory_for_rename(&path)
+                            .unwrap()
+                            .sync_all()
+                            .unwrap();
+                    }
+                }
+            };
+            create(&source, b"power-cut source bytes");
+            create(&target, b"power-cut displaced bytes");
             let identity = move_recovery::stable_identity_of_entry(&target).unwrap();
             let mut manifest = std::fs::File::create(root.join("displaced-identity.json")).unwrap();
             manifest
@@ -8866,9 +8901,9 @@ mod windows_source_tests {
             let reset = WindowsMoveHookReset;
             super::WINDOWS_MOVE_HOOK.with(|hook| {
                 *hook.borrow_mut() = Some(Box::new(move |boundary, _| {
-                    if boundary == super::WindowsMoveBoundary::BeforeSourceCleanup {
+                    if boundary == pause_at {
                         let mut file = std::fs::File::create(&ready).unwrap();
-                        file.write_all(b"published-before-source-cleanup").unwrap();
+                        file.write_all(format!("{pause_at:?}").as_bytes()).unwrap();
                         file.sync_all().unwrap();
                         move_recovery::open_reparse_safe_directory_for_rename(
                             ready.parent().unwrap(),
@@ -8889,7 +8924,7 @@ mod windows_source_tests {
         }
         assert_eq!(
             std::fs::read(root.join("ready")).unwrap(),
-            b"published-before-source-cleanup"
+            boundary.as_bytes()
         );
         let expected: move_recovery::WindowsStableIdentity =
             serde_json::from_slice(&std::fs::read(root.join("displaced-identity.json")).unwrap())
@@ -8900,34 +8935,41 @@ mod windows_source_tests {
         let journal = super::windows_cross_volume_journal_path(&recovery, id);
         let record = super::load_windows_cross_volume_record(&journal).unwrap();
         let retained = record.retained_path().unwrap().unwrap();
-        assert_eq!(std::fs::read(&source).unwrap(), b"power-cut source bytes");
-        assert_eq!(std::fs::read(&target).unwrap(), b"power-cut source bytes");
-        assert_eq!(
-            std::fs::read(&retained).unwrap(),
-            b"power-cut displaced bytes"
-        );
-        assert_eq!(
-            move_recovery::stable_identity_of_entry(&retained).unwrap(),
-            expected
-        );
-        super::recover_retained_windows_move_transaction(id).unwrap();
-        assert!(!source.exists());
-        assert_eq!(std::fs::read(&target).unwrap(), b"power-cut source bytes");
-        assert_eq!(
-            std::fs::read(&retained).unwrap(),
-            b"power-cut displaced bytes"
-        );
+        let claimed = super::windows_directory_source_claim_path(&root, &record).unwrap();
+        if directory {
+            assert!(!source.exists());
+            assert_eq!(read(&claimed), b"power-cut source bytes");
+            assert_eq!(
+                move_recovery::stable_identity_of_entry(&claimed).unwrap(),
+                record.source_identity
+            );
+        } else {
+            assert_eq!(read(&source), b"power-cut source bytes");
+        }
+        assert_eq!(read(&target), b"power-cut source bytes");
+        assert_eq!(read(&retained), b"power-cut displaced bytes");
         assert_eq!(
             move_recovery::stable_identity_of_entry(&retained).unwrap(),
             expected
         );
         super::recover_retained_windows_move_transaction(id).unwrap();
         assert!(!source.exists());
-        assert_eq!(std::fs::read(&target).unwrap(), b"power-cut source bytes");
+        if directory {
+            assert!(!claimed.exists());
+        }
+        assert_eq!(read(&target), b"power-cut source bytes");
+        assert_eq!(read(&retained), b"power-cut displaced bytes");
         assert_eq!(
-            std::fs::read(&retained).unwrap(),
-            b"power-cut displaced bytes"
+            move_recovery::stable_identity_of_entry(&retained).unwrap(),
+            expected
         );
+        super::recover_retained_windows_move_transaction(id).unwrap();
+        assert!(!source.exists());
+        if directory {
+            assert!(!claimed.exists());
+        }
+        assert_eq!(read(&target), b"power-cut source bytes");
+        assert_eq!(read(&retained), b"power-cut displaced bytes");
         assert_eq!(
             move_recovery::stable_identity_of_entry(&retained).unwrap(),
             expected

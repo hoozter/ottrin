@@ -319,7 +319,10 @@ Run its exact name as the limited interactive user in an owned disposable guest,
 with `OTTRIN_NATIVE_MOVE_POWER_CUT_MODE=prepare`,
 `OTTRIN_NATIVE_MOVE_POWER_CUT_ROOT` naming a fresh owned NTFS directory, and
 `OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT` set to that directory's `move-state`
-child. The ordinary test gate and second-volume variable above are also required.
+child. Set `OTTRIN_NATIVE_MOVE_POWER_CUT_BOUNDARY` to `BeforeSourceCleanup`
+(regular-file Overwrite) or `SourceClaimed` (directory Overwrite, nested payload
+and empty directory). Use the same value for recovery. The ordinary test gate
+and second-volume variable above are also required.
 
 Wait for the root's durable `ready` marker **and** verify that the prepare task
 and test process are still running. Hard-stop only the owned guest at that point;
@@ -332,7 +335,7 @@ idempotent repeat. This is virtual guest power-cut evidence, not physical-device
 power-loss acceptance. It does not open the product gate or accept a package.
 
 The orchestrator owns teardown across both invocations: stop/remove its tasks
-and processes, retain compact diagnostic logs, remove both fixture roots even
+and processes, retain compact diagnostic logs, remove both fixture roots as their ordinary-user owner even
 on failure or cancellation, detach its volume, and stop the guest. Preparation
 intentionally retains those roots across the destroyed process so recovery can
 inspect actual journal and file state. Never use user data or the user's VM for
