@@ -57,6 +57,7 @@ for packager in "$DEB" "$RPM"; do
   grep -Fq 'sha256sum "$OUTPUT"' "$packager"
 done
 grep -Fq 'libglib2.0-0' "$DEB"
+grep -Fq 'libfontconfig1' "$DEB"
 for soname in \
   'libc.so.6()(64bit)' \
   'libgcc_s.so.1()(64bit)' \
