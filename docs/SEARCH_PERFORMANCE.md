@@ -45,6 +45,19 @@ root watch failures, and pathless backend errors such as event queue overflow
 retain recovery behavior. Regression tests cover the disappearance race and
 preservation of real watch registration failures.
 
+A second live trace found that a metadata notification for a busy application
+data directory classified **73,952 descendants** as changed. The pending event
+queue now retains whether work concerns one entry or a subtree. Metadata/data
+updates refresh only the entry and preserve indexed children; creation, moves,
+and removals retain subtree handling. Coalescing preserves subtree discovery
+when a later metadata event arrives for the same path. Ordinary file updates
+also avoid deleting and re-inserting unchanged path-FTS postings.
+
+Daemon replacement now shares one graceful shutdown wait in the daemon client.
+It allows 30 seconds for large watch sets and persisted work to be released,
+instead of reporting failure after five seconds while shutdown is still
+finishing. The application and service installer use that same implementation.
+
 ## Historical acceptance result
 
 Measured on 2026-08-15 with the dedicated `ottrin-indexd` process and a configured home-directory root containing **1,185,806 indexed items**.

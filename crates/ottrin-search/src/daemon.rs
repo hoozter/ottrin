@@ -171,6 +171,23 @@ impl SearchDaemonClient {
         self.expect_complete(DaemonRequest::PrepareUpgrade)
     }
 
+    /// Wait for persisted index work and filesystem watches to be released before
+    /// replacing the daemon. Large watched trees can exceed the request timeout.
+    pub fn prepare_upgrade_and_wait(&self) -> Result<(), String> {
+        self.prepare_upgrade()?;
+        let deadline = Instant::now() + Duration::from_secs(30);
+        while self.socket_path.exists() && Instant::now() < deadline {
+            thread::sleep(Duration::from_millis(10));
+        }
+        if self.socket_path.exists() {
+            return Err(
+                "Ottrin index daemon did not finish preparing for upgrade within 30 seconds"
+                    .to_string(),
+            );
+        }
+        Ok(())
+    }
+
     fn run_operation(&self, rebuild: bool) -> Result<(), String> {
         let operation_id = NEXT_OPERATION_ID.fetch_add(1, Ordering::Relaxed);
         let request = if rebuild {

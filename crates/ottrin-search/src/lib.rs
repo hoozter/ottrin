@@ -1970,17 +1970,7 @@ fn prepare_running_daemon_for_upgrade() -> Result<(), String> {
     if client.ping().is_err() {
         return Ok(());
     }
-    client.prepare_upgrade()?;
-    let deadline = Instant::now() + Duration::from_secs(5);
-    while socket.exists() && Instant::now() < deadline {
-        std::thread::sleep(Duration::from_millis(10));
-    }
-    if socket.exists() {
-        return Err(
-            "Ottrin index daemon did not finish preparing for upgrade within 5 seconds".to_string(),
-        );
-    }
-    Ok(())
+    client.prepare_upgrade_and_wait()
 }
 
 pub fn install_sqlite_schedule(config: &SearchConfig) -> Result<String, String> {

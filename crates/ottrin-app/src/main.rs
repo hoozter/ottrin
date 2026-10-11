@@ -627,17 +627,7 @@ fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
         if daemon_uses_executable(&client, &executable)? {
             return Ok(client);
         }
-        client.prepare_upgrade()?;
-        let socket = ottrin_search::default_daemon_socket_path()?;
-        let deadline = Instant::now() + Duration::from_secs(5);
-        while socket.exists() && Instant::now() < deadline {
-            thread::sleep(Duration::from_millis(10));
-        }
-        if socket.exists() {
-            return Err(
-                "Ottrin index daemon did not finish upgrading within 5 seconds".to_string(),
-            );
-        }
+        client.prepare_upgrade_and_wait()?;
     }
 
     let unit_path = ottrin_search::sqlite_systemd_service_path();

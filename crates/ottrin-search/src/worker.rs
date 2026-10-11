@@ -9,7 +9,7 @@ use crate::{IndexState, current_unix_secs};
 use notify::event::{ModifyKind, RenameMode};
 use notify::{EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use ottrin_core::{SearchConfig, SearchIndexStatus};
-use std::collections::{BTreeSet, VecDeque};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, RwLock, mpsc};
@@ -380,6 +380,21 @@ enum ScanMode {
     Reconcile,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum PendingChange {
+    Entry,
+    Subtree,
+}
+
+impl PendingChange {
+    fn for_event(kind: &EventKind) -> Self {
+        match kind {
+            EventKind::Modify(kind) if !matches!(kind, ModifyKind::Name(_)) => Self::Entry,
+            _ => Self::Subtree,
+        }
+    }
+}
+
 struct WorkerLoop {
     config: SearchConfig,
     index: Arc<RwLock<IndexState>>,
@@ -398,7 +413,7 @@ struct WorkerLoop {
     locate_db_initialized: bool,
     filesystem_rebuild_deadline: Option<Instant>,
     filesystem_event_revision: u64,
-    pending_paths: BTreeSet<PathBuf>,
+    pending_paths: BTreeMap<PathBuf, PendingChange>,
     watch_registry: Option<WatchRegistry>,
     watch_clock_started: Instant,
     before_watch_setup: Option<WatchSetupHook>,
@@ -592,7 +607,7 @@ fn spawn_inner(
             locate_db_initialized: false,
             filesystem_rebuild_deadline: None,
             filesystem_event_revision: 0,
-            pending_paths: BTreeSet::new(),
+            pending_paths: BTreeMap::new(),
             watch_registry: None,
             watch_clock_started: Instant::now(),
             before_watch_setup,
@@ -794,7 +809,21 @@ impl WorkerLoop {
                         }
                         self.filesystem_event_revision =
                             self.filesystem_event_revision.wrapping_add(1);
-                        self.pending_paths.extend(paths);
+                        for path in paths {
+                            let change = if self.current_plan.as_ref().is_some_and(|plan| {
+                                plan.root_for(&path)
+                                    .is_some_and(|root| !plan.includes_path_for_root(&path, root))
+                            }) {
+                                // Generated-output boundaries remove previously indexed trees.
+                                PendingChange::Subtree
+                            } else {
+                                PendingChange::for_event(&kind)
+                            };
+                            self.pending_paths
+                                .entry(path)
+                                .and_modify(|pending| *pending = (*pending).max(change))
+                                .or_insert(change);
+                        }
                         // Coalesce a burst without postponing it indefinitely when
                         // another application writes continuously.
                         self.filesystem_rebuild_deadline
@@ -1105,7 +1134,7 @@ impl WorkerLoop {
             return true;
         }
         for root in outcome.unavailable_roots {
-            self.pending_paths.insert(root);
+            self.pending_paths.insert(root, PendingChange::Subtree);
             self.filesystem_event_revision = self.filesystem_event_revision.wrapping_add(1);
             self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
         }
@@ -1498,19 +1527,28 @@ impl WorkerLoop {
             .pending_paths
             .iter()
             .take(MAX_INCREMENTAL_PATHS_PER_BATCH)
-            .cloned()
+            .map(|(path, change)| (path.clone(), *change))
             .collect::<Vec<_>>();
         let mut upserts = Vec::new();
         let mut remove_trees = Vec::new();
         let mut classified = BTreeSet::new();
-        for path in paths {
+        for (path, change) in paths {
             if plan.root_for(&path).is_none() {
                 classified.insert(path);
                 continue;
             }
-            match crate::scanner::candidates_for_path(plan, &path) {
+            let candidates = match change {
+                PendingChange::Subtree => crate::scanner::candidates_for_path(plan, &path),
+                PendingChange::Entry => crate::scanner::candidate_for_path(plan, &path)
+                    .map(|item| item.into_iter().collect()),
+            };
+            match candidates {
                 Ok(items) => {
-                    remove_trees.push(path.clone());
+                    // Metadata changes update only this entry. Replacing its tree
+                    // would rescan and rewrite every descendant of a busy directory.
+                    if change == PendingChange::Subtree || items.is_empty() {
+                        remove_trees.push(path.clone());
+                    }
                     upserts.extend(items);
                     classified.insert(path);
                 }
@@ -1606,7 +1644,7 @@ impl WorkerLoop {
             if let Some(registry) = self.watch_registry.as_mut() {
                 registry.record_watch_failure(&root, now, "configured root disappeared");
             }
-            self.pending_paths.insert(root);
+            self.pending_paths.insert(root, PendingChange::Subtree);
             self.filesystem_event_revision = self.filesystem_event_revision.wrapping_add(1);
             self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
         }
@@ -3215,6 +3253,92 @@ mod tests {
         worker.stop();
     }
 
+    struct TestWorker(Option<WorkerHandle>);
+
+    impl std::ops::Deref for TestWorker {
+        type Target = WorkerHandle;
+        fn deref(&self) -> &WorkerHandle {
+            self.0.as_ref().expect("test worker")
+        }
+    }
+
+    impl Drop for TestWorker {
+        fn drop(&mut self) {
+            if let Some(worker) = self.0.take() {
+                worker.stop();
+            }
+        }
+    }
+
+    #[test]
+    fn directory_metadata_changes_preserve_children_without_scanning_them() {
+        let root =
+            std::env::temp_dir().join(format!("ottrin-directory-metadata-{}", std::process::id()));
+        let directory = root.join("busy");
+        std::fs::create_dir_all(&directory).expect("create fixture");
+        let _cleanup = WatchTestRoot(root.clone());
+        std::fs::write(directory.join("known.txt"), "known").expect("known child");
+        let cfg = config(&root.to_string_lossy());
+        let plan = ScanPlan::new(&cfg).expect("plan");
+        let initial = crate::scanner::candidates_for_path(&plan, &directory).expect("initial tree");
+        let store = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                1,
+                plan.identity().to_string(),
+                initial,
+            )),
+            commits: Vec::new(),
+            next_generation: 1,
+        }));
+        let (worker, index, scans) = start_controlled(cfg, Arc::clone(&store));
+        let worker = TestWorker(Some(worker));
+        barrier(&worker.commands);
+        let unseen = directory.join("unseen.txt");
+        std::fs::write(&unseen, "unseen").expect("unreported child");
+        worker
+            .commands
+            .send(Command::FilesystemEvent {
+                kind: EventKind::Modify(ModifyKind::Metadata(notify::event::MetadataKind::Any)),
+                paths: vec![directory.clone()],
+            })
+            .expect("metadata event");
+        let deadline = Instant::now() + WAIT;
+        while Instant::now() < deadline && store.lock().expect("store").commits.is_empty() {
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        assert_eq!(store.lock().expect("store").commits.len(), 1);
+        assert_eq!(
+            snapshot_items(&index),
+            vec![directory.clone(), directory.join("known.txt")]
+        );
+        // Creation/move discovery must still include populated descendants, and
+        // a later metadata event must not downgrade that queued subtree work.
+        worker
+            .commands
+            .send(Command::FilesystemEvent {
+                kind: EventKind::Create(notify::event::CreateKind::Folder),
+                paths: vec![directory.clone()],
+            })
+            .expect("subtree event");
+        worker
+            .commands
+            .send(Command::FilesystemEvent {
+                kind: EventKind::Modify(ModifyKind::Any),
+                paths: vec![directory.clone()],
+            })
+            .expect("coalesced metadata event");
+        let deadline = Instant::now() + WAIT;
+        while Instant::now() < deadline && store.lock().expect("store").commits.len() < 2 {
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        assert!(snapshot_items(&index).contains(&unseen));
+        assert!(
+            scans.try_recv().is_err(),
+            "event must not launch a full scan"
+        );
+        drop(worker);
+    }
+
     #[test]
     fn notify_burst_commits_one_transactional_delta_generation() {
         let root = std::env::temp_dir().join(format!(
@@ -3659,7 +3783,10 @@ mod tests {
             locate_db_initialized: false,
             filesystem_rebuild_deadline: None,
             filesystem_event_revision: 0,
-            pending_paths: BTreeSet::from([root.join("queued-delete.txt")]),
+            pending_paths: BTreeMap::from([(
+                root.join("queued-delete.txt"),
+                PendingChange::Subtree,
+            )]),
             watch_registry: Some(registry),
             watch_clock_started: Instant::now(),
             before_watch_setup: None,
