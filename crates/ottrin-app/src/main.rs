@@ -183,19 +183,12 @@ fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
     #[cfg(unix)]
     if args.as_slice() == ["--index-daemon"] {
-        let socket = ottrin_search::default_daemon_socket_path().unwrap_or_else(|error| {
-            eprintln!("ottrin index daemon: {error}");
-            std::process::exit(1);
-        });
-        if let Err(error) = ottrin_search::run_search_daemon(
-            configured_search_config(),
-            ottrin_search::SearchService::search_db_path(),
-            socket,
-        ) {
-            eprintln!("ottrin index daemon: {error}");
-            std::process::exit(1);
-        }
-        return;
+        use std::os::unix::process::CommandExt;
+        let error = index_daemon_executable()
+            .map(|executable| Command::new(executable).args(&args).exec())
+            .unwrap_or_else(|error| error);
+        eprintln!("ottrin index daemon: {error}");
+        std::process::exit(1);
     }
     let gui_target = match cli_headless_action(&args) {
         Some(HeadlessAction::Preview(path)) => match resolve_preview_path(&path) {
@@ -585,15 +578,16 @@ fn connected_index_daemon() -> Option<ottrin_search::SearchDaemonClient> {
 #[cfg(unix)]
 fn index_daemon_executable() -> std::io::Result<PathBuf> {
     let current = std::env::current_exe()?;
-    if std::env::var_os("APPIMAGE").is_none()
-        && let Some(directory) = current.parent()
-    {
+    if let Some(directory) = current.parent() {
         let dedicated = directory.join("ottrin-indexd");
         if dedicated.is_file() {
             return Ok(dedicated);
         }
     }
-    Ok(current)
+    Err(std::io::Error::new(
+        std::io::ErrorKind::NotFound,
+        "ottrin-indexd is missing from this installation",
+    ))
 }
 
 #[cfg(unix)]

@@ -20,7 +20,8 @@ use walkdir::WalkDir;
 const EVENT_DEBOUNCE: Duration = Duration::from_millis(500);
 const WATCH_RETRY_INITIAL: Duration = Duration::from_secs(60);
 const WATCH_RETRY_MAXIMUM: Duration = Duration::from_secs(3_600);
-const INCREMENTAL_REBUILD_THRESHOLD: usize = 500;
+const MAX_INCREMENTAL_PATHS_PER_BATCH: usize = 500;
+const MAINTENANCE_INTERVAL: Duration = Duration::from_millis(100);
 
 pub(crate) type DeltaPublisher<'a> =
     dyn FnMut(&[crate::mutation::OwnedItem], &[PathBuf], usize) + 'a;
@@ -722,11 +723,11 @@ impl WorkerLoop {
             return;
         }
 
+        let mut next_maintenance = Instant::now() + MAINTENANCE_INTERVAL;
         loop {
-            let command = pending_commands
-                .pop_front()
-                .map(Ok)
-                .unwrap_or_else(|| receiver.recv_timeout(Duration::from_millis(100)));
+            let command = pending_commands.pop_front().map(Ok).unwrap_or_else(|| {
+                receiver.recv_timeout(next_maintenance.saturating_duration_since(Instant::now()))
+            });
             match command {
                 Ok(Command::UpdateConfig(config)) => {
                     let identity_changed = ScanPlan::new(&config)
@@ -782,7 +783,10 @@ impl WorkerLoop {
                         self.filesystem_event_revision =
                             self.filesystem_event_revision.wrapping_add(1);
                         self.pending_paths.extend(paths);
-                        self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
+                        // Coalesce a burst without postponing it indefinitely when
+                        // another application writes continuously.
+                        self.filesystem_rebuild_deadline
+                            .get_or_insert_with(|| Instant::now() + EVENT_DEBOUNCE);
                     }
                 }
                 Ok(Command::WatchBackendError { paths, error }) => {
@@ -833,9 +837,12 @@ impl WorkerLoop {
                     self.record_stopped();
                     break;
                 }
-                Err(mpsc::RecvTimeoutError::Timeout) => {
-                    self.run_schedules(&mut watcher, &mut watched_roots);
-                }
+                Err(mpsc::RecvTimeoutError::Timeout) => {}
+            }
+            // Maintenance must also run while filesystem events keep arriving.
+            if Instant::now() >= next_maintenance {
+                self.run_schedules(&mut watcher, &mut watched_roots);
+                next_maintenance = Instant::now() + MAINTENANCE_INTERVAL;
             }
         }
     }
@@ -1469,15 +1476,18 @@ impl WorkerLoop {
         if self.pending_paths.is_empty() || self.active_scan.is_some() {
             return;
         }
-        if self.pending_paths.len() > INCREMENTAL_REBUILD_THRESHOLD {
-            self.start_scan(None);
-            return;
-        }
         let Some(plan) = self.current_plan.as_ref() else {
             return;
         };
         let expected_epoch = self.fence.capture();
-        let paths = self.pending_paths.iter().cloned().collect::<Vec<_>>();
+        // A busy directory must not turn a change burst into a full-root rebuild.
+        // Keep each transaction bounded and leave the remainder queued.
+        let paths = self
+            .pending_paths
+            .iter()
+            .take(MAX_INCREMENTAL_PATHS_PER_BATCH)
+            .cloned()
+            .collect::<Vec<_>>();
         let mut upserts = Vec::new();
         let mut remove_trees = Vec::new();
         let mut classified = BTreeSet::new();
@@ -1514,7 +1524,8 @@ impl WorkerLoop {
             for path in classified {
                 self.pending_paths.remove(&path);
             }
-        } else {
+        }
+        if !self.pending_paths.is_empty() {
             self.filesystem_rebuild_deadline = Some(Instant::now() + EVENT_DEBOUNCE);
         }
         self.update_watcher_diagnostics();
@@ -3176,6 +3187,107 @@ mod tests {
     }
 
     #[test]
+    fn large_notify_burst_drains_without_a_full_scan_or_lost_changes() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-worker-large-burst-{}-{:?}",
+            std::process::id(),
+            std::time::SystemTime::now()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        let count = MAX_INCREMENTAL_PATHS_PER_BATCH * 2 + 1;
+        let paths = (0..count)
+            .map(|number| root.join(format!("new-{number:04}.txt")))
+            .collect::<Vec<_>>();
+        for path in &paths {
+            std::fs::write(path, b"new").expect("write event path");
+        }
+        let cfg = config(&root.to_string_lossy());
+        let plan = ScanPlan::new(&cfg).expect("plan");
+        let store = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                1,
+                plan.identity().to_string(),
+                vec![
+                    owned(&root.to_string_lossy(), "unchanged.txt"),
+                    owned(&root.to_string_lossy(), "deleted.txt"),
+                ],
+            )),
+            commits: Vec::new(),
+            next_generation: 1,
+        }));
+        let (worker, index, scans) = start_controlled(cfg, Arc::clone(&store));
+        barrier(&worker.commands);
+        let mut changed = paths.clone();
+        changed.push(root.join("deleted.txt"));
+        worker
+            .commands
+            .send(Command::FilesystemEvent {
+                kind: EventKind::Modify(ModifyKind::Any),
+                paths: changed,
+            })
+            .expect("burst");
+
+        let deadline = Instant::now() + Duration::from_secs(4);
+        while Instant::now() < deadline && snapshot_items(&index).len() != count + 1 {
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        let items = snapshot_items(&index);
+        let transactions = store.lock().expect("store").commits.len();
+        let full_scan = scans.try_recv().is_ok();
+        worker.stop();
+        std::fs::remove_dir_all(&root).expect("remove fixture");
+
+        assert!(!full_scan, "ordinary changes launched a full-root scan");
+        assert_eq!(transactions, 3, "burst must drain in bounded batches");
+        assert_eq!(items.len(), count + 1);
+        assert!(items.contains(&root.join("unchanged.txt")));
+        assert!(!items.contains(&root.join("deleted.txt")));
+        assert!(paths.iter().all(|path| items.contains(path)));
+    }
+
+    #[test]
+    fn continuous_events_do_not_starve_incremental_updates() {
+        let root = std::env::temp_dir().join(format!(
+            "ottrin-worker-continuous-events-{}-{:?}",
+            std::process::id(),
+            std::time::SystemTime::now()
+        ));
+        std::fs::create_dir_all(&root).expect("create root");
+        let path = root.join("busy.txt");
+        std::fs::write(&path, b"busy").expect("write event path");
+        let cfg = config(&root.to_string_lossy());
+        let plan = ScanPlan::new(&cfg).expect("plan");
+        let store = Arc::new(Mutex::new(MemoryStoreState {
+            active: Some(GenerationSnapshot::new(
+                1,
+                plan.identity().to_string(),
+                vec![],
+            )),
+            commits: Vec::new(),
+            next_generation: 1,
+        }));
+        let (worker, index, scans) = start_controlled(cfg, Arc::clone(&store));
+        barrier(&worker.commands);
+        let deadline = Instant::now() + WAIT;
+        while Instant::now() < deadline && snapshot_items(&index).is_empty() {
+            worker
+                .commands
+                .send(Command::FilesystemEvent {
+                    kind: EventKind::Modify(ModifyKind::Any),
+                    paths: vec![path.clone()],
+                })
+                .expect("continuous event");
+            std::thread::sleep(Duration::from_millis(2));
+        }
+        let items = snapshot_items(&index);
+        let full_scan = scans.try_recv().is_ok();
+        worker.stop();
+        std::fs::remove_dir_all(root).expect("remove fixture");
+        assert_eq!(items, vec![path], "updates waited for an idle event queue");
+        assert!(!full_scan);
+    }
+
+    #[test]
     fn filtered_rename_event_removes_previously_indexed_path() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-worker-filtered-rename-{}-{:?}",
@@ -3262,48 +3374,40 @@ mod tests {
         let _ = std::fs::remove_dir_all(root);
     }
 
-    #[test]
-    fn large_burst_uses_one_full_transactional_generation_commit() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-worker-large-burst-{}-{:?}",
-            std::process::id(),
-            std::time::SystemTime::now()
-        ));
-        std::fs::create_dir_all(&root).expect("create root");
-        let cfg = config(&root.to_string_lossy());
-        let plan = ScanPlan::new(&cfg).expect("plan");
-        let store = Arc::new(Mutex::new(MemoryStoreState {
-            active: Some(GenerationSnapshot::new(
-                1,
-                plan.identity().to_string(),
-                vec![owned(&root.to_string_lossy(), "old.txt")],
-            )),
-            commits: Vec::new(),
-            next_generation: 1,
-        }));
-        let (worker, _index, scans) = start_controlled(cfg, Arc::clone(&store));
-        barrier(&worker.commands);
-        let paths = (0..=INCREMENTAL_REBUILD_THRESHOLD)
-            .map(|index| root.join(format!("event-{index}")))
-            .collect();
-        worker
-            .commands
-            .send(Command::FilesystemEvent {
-                kind: EventKind::Create(notify::event::CreateKind::File),
-                paths,
-            })
-            .expect("large burst");
-        let scan = scans.recv_timeout(WAIT).expect("full scan");
-        assert!(store.lock().expect("store").commits.is_empty());
-        scan.complete(vec![owned(&root.to_string_lossy(), "fresh.txt")]);
+    struct FailOnceStore {
+        inner: MemoryStore,
+        fail_next: bool,
+    }
 
-        assert_eq!(store.lock().expect("store").commits.len(), 1);
-        worker.stop();
-        let _ = std::fs::remove_dir_all(root);
+    impl StoreBackend for FailOnceStore {
+        fn load(
+            &mut self,
+            plan: &ScanPlan,
+            cancelled: &AtomicBool,
+        ) -> Result<Option<GenerationSnapshot>, String> {
+            self.inner.load(plan, cancelled)
+        }
+
+        fn commit_guarded(
+            &mut self,
+            plan: &ScanPlan,
+            mutation: IndexMutation,
+            fence: &ActivationFence,
+            expected_epoch: u64,
+            publish: &mut dyn FnMut(&GenerationSnapshot),
+        ) -> Result<(), StoreBackendError> {
+            if std::mem::take(&mut self.fail_next) {
+                return Err(StoreBackendError::Other(
+                    "injected delta commit failure".to_string(),
+                ));
+            }
+            self.inner
+                .commit_guarded(plan, mutation, fence, expected_epoch, publish)
+        }
     }
 
     #[test]
-    fn failed_large_burst_rebuild_retains_dirty_trigger_until_success() {
+    fn failed_large_burst_delta_keeps_changes_queued_until_commit_succeeds() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-worker-large-burst-retry-{}-{:?}",
             std::process::id(),
@@ -3312,6 +3416,13 @@ mod tests {
         std::fs::create_dir_all(&root).expect("create root");
         let cfg = config(&root.to_string_lossy());
         let plan = ScanPlan::new(&cfg).expect("plan");
+        let count = MAX_INCREMENTAL_PATHS_PER_BATCH + 1;
+        let paths = (0..count)
+            .map(|number| root.join(format!("event-{number:04}.txt")))
+            .collect::<Vec<_>>();
+        for path in &paths {
+            std::fs::write(path, b"new").expect("write event file");
+        }
         let store = Arc::new(Mutex::new(MemoryStoreState {
             active: Some(GenerationSnapshot::new(
                 1,
@@ -3321,28 +3432,37 @@ mod tests {
             commits: Vec::new(),
             next_generation: 1,
         }));
-        let (worker, _index, scans) = start_controlled(cfg, Arc::clone(&store));
+        let index = Arc::new(RwLock::new(IndexState::default()));
+        let (launcher, scans) = controlled_launcher();
+        let worker = spawn_with(
+            cfg,
+            Arc::clone(&index),
+            Box::new(FailOnceStore {
+                inner: MemoryStore(Arc::clone(&store)),
+                fail_next: true,
+            }),
+            launcher,
+        );
         barrier(&worker.commands);
-        let paths = (0..=INCREMENTAL_REBUILD_THRESHOLD)
-            .map(|index| root.join(format!("event-{index}")))
-            .collect();
         worker
             .commands
             .send(Command::FilesystemEvent {
                 kind: EventKind::Create(notify::event::CreateKind::File),
-                paths,
+                paths: paths.clone(),
             })
             .expect("large burst");
-        scans
-            .recv_timeout(WAIT)
-            .expect("first scan")
-            .fail("scan failed");
-
-        let retry = scans.recv_timeout(WAIT).expect("retry scan");
-        retry.complete(vec![owned(&root.to_string_lossy(), "fresh.txt")]);
-        assert_eq!(store.lock().expect("store").commits.len(), 1);
+        let deadline = Instant::now() + Duration::from_secs(4);
+        while Instant::now() < deadline && snapshot_items(&index).len() != count {
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        let items = snapshot_items(&index);
+        let commits = store.lock().expect("store").commits.len();
+        let full_scan = scans.try_recv().is_ok();
         worker.stop();
-        let _ = std::fs::remove_dir_all(root);
+        std::fs::remove_dir_all(root).expect("remove fixture");
+        assert_eq!(items, paths);
+        assert_eq!(commits, 2);
+        assert!(!full_scan);
     }
 
     #[test]

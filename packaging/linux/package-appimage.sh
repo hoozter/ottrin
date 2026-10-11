@@ -97,6 +97,11 @@ cat > "$APPDIR/AppRun" <<'APPRUN'
 APPDIR="$(dirname "$(readlink -f "$0")")"
 export LD_LIBRARY_PATH="$APPDIR/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export OTTRIN_PRIV_HELPER=/usr/libexec/ottrin/ottrin-priv-helper
+case "${1:-}" in
+  --index-daemon|--administrator-index-daemon)
+    exec "$APPDIR/usr/bin/ottrin-indexd" "$@"
+    ;;
+esac
 exec "$APPDIR/usr/bin/ottrin" "$@"
 APPRUN
 chmod +x "$APPDIR/AppRun"

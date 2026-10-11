@@ -2,7 +2,13 @@
 
 This document records measured behavior of Ottrin's persistent search service. It is not a universal hardware claim or a comparison against another product.
 
-## Current acceptance result
+## Incremental update behavior
+
+Filesystem bursts are applied in transactions of at most 500 changed paths. A larger burst stays queued for subsequent transactions instead of triggering a full-root rebuild. The 500 ms coalescing window starts with the first pending event; continuous writes do not postpone updates indefinitely. Maintenance runs on a clock even while events arrive. Failed transactions retain their pending paths for retry. Directory creation and moves still index their included descendants.
+
+Linux AppImage daemon launches use the bundled `ottrin-indexd`, including the installed background service and session indexing. The index process is distinct from the `ottrin` UI process.
+
+## Historical acceptance result
 
 Measured on 2026-08-15 with the dedicated `ottrin-indexd` process and a configured home-directory root containing **1,185,806 indexed items**.
 
