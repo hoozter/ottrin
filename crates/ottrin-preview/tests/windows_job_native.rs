@@ -37,26 +37,35 @@ impl Fixture {
         fs::create_dir(&root).unwrap();
         let profile = root.join("profile with spaces");
         let output = root.join("output with spaces");
-        fs::create_dir(&profile).unwrap();
-        fs::create_dir(&output).unwrap();
-        fs::write(profile.join("mode"), mode).unwrap();
-        fs::write(profile.join("output-dir"), output.to_str().unwrap()).unwrap();
-        Self {
+        // Own the root before fallible setup so unwinding removes partial fixtures.
+        let fixture = Self {
             root,
             request: IsolatedProcessRequest {
-                executable: std::env::current_exe().unwrap(),
+                executable: profile.join("fixture.exe"),
                 arguments: ["--exact", "fixture_root", "--ignored", "--nocapture"]
                     .map(Into::into)
                     .to_vec(),
                 input: None,
-                private_profile_dir: profile,
-                private_output_dir: output,
+                private_profile_dir: profile.clone(),
+                private_output_dir: output.clone(),
                 timeout: Duration::from_secs(10),
                 max_memory_bytes: 64 * 1024 * 1024,
                 max_processes: 4,
                 max_output_bytes: 1024,
             },
-        }
+        };
+        fs::create_dir(&profile).unwrap();
+        fs::create_dir(&output).unwrap();
+        // Descendants need an executable inside the same private access policy.
+        // Copy bytes into a new file without inheriting the build artifact's ACL.
+        std::io::copy(
+            &mut fs::File::open(std::env::current_exe().unwrap()).unwrap(),
+            &mut fs::File::create(&fixture.request.executable).unwrap(),
+        )
+        .unwrap();
+        fs::write(profile.join("mode"), mode).unwrap();
+        fs::write(profile.join("output-dir"), output.to_str().unwrap()).unwrap();
+        fixture
     }
 
     fn assert_logs_removed(&self) {
