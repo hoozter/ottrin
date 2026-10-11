@@ -76,8 +76,8 @@ that uses them. There are no separate override copies. The inspector scrolls ind
 Click the preview tab or navigation bar to select **Navigation & tabs** together.
 Their toolbar color is shared; active tabs blend it with the title-bar background,
 use muted text and the accent underline, and share **Surface corners** with inputs
-and cards. **Window corners** affects application windows, including Settings,
-the editor and Inspector. **Button corners** affects buttons and location controls.
+and expanded location cards. **Window corners** affects application windows, including Settings,
+the editor and Inspector. **Button corners** affects buttons and collapsed location icons.
 The file canvas and row fills are square and have no independent radius setting;
 component outlines identify editing targets and do not add a frame to the real view.
 The editor's Light/Dark selector edits the two variants separately and does not change

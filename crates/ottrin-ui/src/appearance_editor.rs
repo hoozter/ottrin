@@ -361,7 +361,9 @@ impl OttrinApp {
                                     changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
                                 }
                                 ThemePreviewRegion::Bookmarks => {
-                                    ui.label(RichText::new("Button corners: location buttons and other buttons.").small().color(c.text_dim));
+                                    ui.label(RichText::new("Surface corners: expanded location cards, tabs and inputs.").small().color(c.text_dim));
+                                    changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
+                                    ui.label(RichText::new("Button corners: collapsed location icons and other buttons.").small().color(c.text_dim));
                                     changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
                                 }
                                 _ => {
