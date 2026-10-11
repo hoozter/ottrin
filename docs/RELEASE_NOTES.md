@@ -4,6 +4,8 @@ Ottrin 0.1.0 is the first daily-driver release candidate of the keyboard-first f
 
 ## Highlights
 
+- Linux windows now identify as `org.ottrin.Ottrin`, matching the packaged desktop entry so Wayland desktops can resolve the Ottrin icon. All auxiliary windows share this identity; X11 desktop integration declares `StartupWMClass=ottrin`. Exact packaged verification is recorded in `dist/packages/DESKTOP_ICON_ACCEPTANCE.json`.
+
 - Linux AppImage startup reuses an identical running index daemon across separate mounts. A changed daemon uses the orderly service upgrade path, avoiding a shutdown/start race. Cold startup allows 30 seconds for readiness. The enabled background service remains running after the window closes. Verified repeated and cold launches for packaged revision `756ee9405a906c444d7a54a0e1268a81f89d3946` (`022d0ee3b31215ac23362d65af76295d9835e196fb6edda1b4c4e05e5d438baa`); current receipt: `dist/packages/INDEX_ACCEPTANCE.json`.
 
 - Miller, List, and Grid browsing with tabs, bookmarks, history, and Tandem View.
