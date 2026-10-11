@@ -254,6 +254,87 @@ mod tests {
     use egui::{Color32, Context, Rect, Vec2, epaint::Shape};
 
     #[test]
+    fn narrow_destination_row_keeps_trailing_actions_inside_the_row() {
+        use egui::RichText;
+        for scale in [1.0, 1.35] {
+            let ctx = Context::default();
+            let mut app = OttrinApp::default();
+            app.colors.font_scale = scale;
+            app.apply_theme_to_ctx(&ctx);
+            let c = app.colors;
+            let mut bounds = Rect::NOTHING;
+            let mut controls = Vec::new();
+            let _ = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(600.0, 150.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        ui.scope_builder(
+                            egui::UiBuilder::new().max_rect(Rect::from_min_size(
+                                ui.cursor().min,
+                                Vec2::new(260.0 * scale, 90.0),
+                            )),
+                            |ui| {
+                                bounds = ui.available_rect_before_wrap();
+                                ui.horizontal(|ui| {
+                                    ui.spacing_mut().button_padding =
+                                        Vec2::new(3.0 * scale, 4.0 * scale);
+                                    controls.push(
+                                        ui.add(
+                                            aligned_menu_button(
+                                                crate::icons::MI_CHECK,
+                                                crate::icons::MI_BOOKMARK,
+                                                "A long destination folder name",
+                                                &c,
+                                            )
+                                            .width(
+                                                (ui.available_width()
+                                                    - 3.0
+                                                        * (24.0 * scale
+                                                            + ui.spacing().item_spacing.x))
+                                                    .max(40.0),
+                                            ),
+                                        )
+                                        .rect,
+                                    );
+                                    for icon in [
+                                        crate::icons::MI_ARROW_UP,
+                                        crate::icons::MI_ARROW_DOWN,
+                                        crate::icons::MI_CLEAR,
+                                    ] {
+                                        controls.push(
+                                            ui.add_sized(
+                                                [24.0 * scale, 28.0 * scale],
+                                                Button::new(RichText::new(icon).size(14.0 * scale))
+                                                    .themed(&c),
+                                            )
+                                            .rect,
+                                        );
+                                    }
+                                });
+                            },
+                        );
+                    });
+                },
+            );
+            for rect in &controls {
+                assert!(
+                    bounds.expand(0.5).contains_rect(*rect),
+                    "control {rect:?} outside {bounds:?} at {scale}"
+                );
+            }
+            for pair in controls.windows(2) {
+                assert!(pair[0].right() <= pair[1].left());
+            }
+        }
+    }
+
+    #[test]
     fn menu_rows_align_labels_and_icons_across_states_themes_and_text_scales() {
         for dark in [true, false] {
             for scale in [1.0, 1.35] {

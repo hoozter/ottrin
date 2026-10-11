@@ -11325,6 +11325,8 @@ impl OttrinApp {
                 ui.spacing_mut().item_spacing.y = 4.0;
                 let tile_w = ui.available_width();
                 ui.spacing_mut().interact_size.x = tile_w;
+                // Text-button padding otherwise makes icon-only tiles overflow the narrow rail.
+                ui.spacing_mut().button_padding = Vec2::new(2.0 * c.font_scale, 4.0 * c.font_scale);
 
                 let (toggle_rect, toggle_response) =
                     ui.allocate_exact_size(Vec2::new(tile_w, 30.0), Sense::click());
@@ -12377,9 +12379,10 @@ impl OttrinApp {
                                                 .inner_margin(egui::Margin::symmetric(4, 4))
                                                 .show(ui, |ui| {
                                                     ui.horizontal(|ui| {
+                                                        ui.spacing_mut().button_padding = Vec2::new(3.0 * c.font_scale, 4.0 * c.font_scale);
                                                         let resp = ui.add(
                                                             aligned_menu_button(if is_current { MI_CHECK } else { "" }, MI_BOOKMARK, &truncate_name(name, 14), &c)
-                                                                .width((ui.available_width() - 94.0 * c.font_scale).max(40.0)).themed(&c)
+                                                                .width((ui.available_width() - 3.0 * (24.0 * c.font_scale + ui.spacing().item_spacing.x)).max(40.0)).themed(&c)
                                                         );
                                                         if resp.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -12389,21 +12392,21 @@ impl OttrinApp {
                                                         }
                                                         resp.on_hover_text(path.display().to_string());
 
-                                                        let up = ui.add_sized([22.0, 22.0], egui::Button::new("↑").themed(&c));
+                                                        let up = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_ARROW_UP).size(14.0 * c.font_scale)).themed(&c));
                                                         if up.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                                         }
                                                         if up.clicked() {
                                                             move_pin_up = Some(idx);
                                                         }
-                                                        let down = ui.add_sized([22.0, 22.0], egui::Button::new("↓").themed(&c));
+                                                        let down = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_ARROW_DOWN).size(14.0 * c.font_scale)).themed(&c));
                                                         if down.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                                         }
                                                         if down.clicked() {
                                                             move_pin_down = Some(idx);
                                                         }
-                                                        let unpin = ui.add_sized([28.0, 22.0], egui::Button::new(MI_CLEAR).themed(&c));
+                                                        let unpin = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_CLEAR).size(14.0 * c.font_scale)).themed(&c));
                                                         if unpin.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                                         }
@@ -12442,10 +12445,11 @@ impl OttrinApp {
                                                 .inner_margin(egui::Margin::symmetric(4, 4))
                                                 .show(ui, |ui| {
                                                     ui.horizontal(|ui| {
+                                                        ui.spacing_mut().button_padding = Vec2::new(3.0 * c.font_scale, 4.0 * c.font_scale);
                                                         let resp = ui.add(
                                                             aligned_menu_button(if is_current { MI_CHECK } else { "" }, MI_FOLDER, &truncate_name(name, 16), &c)
 
-                                                            .width((ui.available_width() - 34.0 * c.font_scale).max(40.0)).themed(&c)
+                                                            .width((ui.available_width() - (24.0 * c.font_scale + ui.spacing().item_spacing.x)).max(40.0)).themed(&c)
                                                         );
                                                         if resp.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -12455,7 +12459,7 @@ impl OttrinApp {
                                                         }
                                                         resp.on_hover_text(path.display().to_string());
 
-                                                        let pin = ui.add_sized([28.0, 22.0], egui::Button::new(MI_BOOKMARK).themed(&c));
+                                                        let pin = ui.add_sized([24.0 * c.font_scale, 28.0 * c.font_scale], egui::Button::new(RichText::new(MI_BOOKMARK).size(14.0 * c.font_scale)).themed(&c));
                                                         if pin.hovered() {
                                                             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                                                         }

@@ -5,6 +5,7 @@ pub(crate) const MI_ARROW_FORWARD: &str = "\u{E5C8}";
 pub(crate) const MI_LEFT_PANEL_OPEN: &str = "\u{F716}";
 pub(crate) const MI_LEFT_PANEL_CLOSE: &str = "\u{F717}";
 pub(crate) const MI_ARROW_UP: &str = "\u{E5D8}";
+pub(crate) const MI_ARROW_DOWN: &str = "\u{E5DB}";
 pub(crate) const MI_CLOSE: &str = "\u{E5CD}";
 pub(crate) const MI_VIEW_COLUMN: &str = "\u{E8EC}"; // Miller columns
 pub(crate) const MI_VIEW_LIST: &str = "\u{E8EF}"; // List
