@@ -1010,6 +1010,43 @@ mod tests {
     }
 
     #[test]
+    fn appearance_preview_elides_long_names_at_enlarged_text_size() {
+        let ctx = Context::default();
+        let mut colors = Colors::preset(ThemePreset::Nord, true);
+        colors.font_scale = 1.35;
+        let output = ctx.run(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(440.0, 520.0),
+                )),
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    theme_editor_large_preview(ui, colors, ThemePreviewRegion::ColumnText);
+                });
+            },
+        );
+        let label = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::epaint::Shape::Text(text) if text.galley.job.text == "Documents" => {
+                    Some(text)
+                }
+                _ => None,
+            })
+            .expect("Preview contains a representative long folder name");
+        assert!(
+            label.galley.elided,
+            "Long names must show an ellipsis instead of being clipped"
+        );
+        assert_eq!(label.galley.rows.len(), 1, "File rows remain single-line");
+        assert!(label.galley.size().x <= label.galley.job.wrap.max_width + 1.0);
+    }
+
+    #[test]
     fn appearance_component_selection_does_not_change_preview_ink() {
         let c = Colors::preset(ThemePreset::Nord, true);
         let mut previous = None;

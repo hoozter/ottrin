@@ -23665,11 +23665,20 @@ fn theme_editor_large_preview(
                 FontId::proportional(13.0 * preview.font_scale),
                 style.icon_color,
             );
-            row_painter.text(
-                egui::pos2(row_rect.left() + 20.0, row_rect.center().y),
-                Align2::LEFT_CENTER,
-                label,
+            let mut label_job = egui::text::LayoutJob::simple_singleline(
+                label.to_owned(),
                 FontId::proportional(9.6 * preview.font_scale),
+                style.text_color,
+            );
+            label_job.wrap.max_width = (row_rect.width() - 24.0).max(1.0);
+            label_job.wrap.max_rows = 1;
+            let galley = row_painter.layout_job(label_job);
+            row_painter.galley(
+                egui::pos2(
+                    row_rect.left() + 20.0,
+                    row_rect.center().y - galley.size().y / 2.0,
+                ),
+                galley,
                 style.text_color,
             );
         }
