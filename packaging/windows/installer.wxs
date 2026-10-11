@@ -7,7 +7,9 @@
       UpgradeCode="04304CE2-990E-4053-9EDA-AF3E69548C9D"
       Scope="perUser">
     <SummaryInformation Description="Ottrin file manager" />
-    <MajorUpgrade DowngradeErrorMessage="A newer version of Ottrin is already installed." />
+    <!-- Retain the installed product until the replacement payload executes.
+         Stable component identities let Windows Installer retain shared files. -->
+    <MajorUpgrade Schedule="afterInstallExecute" DowngradeErrorMessage="A newer version of Ottrin is already installed." />
     <MediaTemplate EmbedCab="yes" />
 
     <StandardDirectory Id="LocalAppDataFolder">

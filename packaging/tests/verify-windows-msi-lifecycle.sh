@@ -25,6 +25,7 @@ require_literal() {
 # Cleanup runs before RemoveFiles and a nonzero cleanup result aborts uninstall,
 # preserving the installed payload and registration for a retry.
 require_literal "$SOURCE" 'Scope="perUser"'
+require_literal "$SOURCE" 'Schedule="afterInstallExecute"'
 require_literal "$SOURCE" 'ExeCommand="index service-install"'
 require_literal "$SOURCE" 'ExeCommand="--uninstall"'
 require_literal "$SOURCE" 'Before="RemoveFiles"'
@@ -37,8 +38,10 @@ require_literal "$SOURCE" 'Condition="REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGP
 require_literal "$PACKAGER" 'SOURCE_REVISION.txt'
 require_literal "$PACKAGER" 'Git revision: $source_revision'
 require_literal "$PACKAGER" '"$WIX" build'
+require_literal "$PACKAGER" '-arch x64'
 require_literal "$PACKAGER" 'sha256sum'
 require_literal "$POWERSHELL_PACKAGER" '& $WixPath build'
+require_literal "$POWERSHELL_PACKAGER" '"-arch" "x64"'
 require_literal "$POWERSHELL_PACKAGER" 'Get-FileHash -Algorithm SHA256'
 
 printf 'Verified Windows MSI lifecycle and provenance contract.\n'

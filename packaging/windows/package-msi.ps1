@@ -80,7 +80,7 @@ $WixPath = $WixCommand.Source
 New-Item -ItemType Directory -Force -Path $DistDir | Out-Null
 $Msi = Join-Path $DistDir "Ottrin-$Version-windows-x64.msi"
 Remove-Item -Force $Msi, "$Msi.sha256" -ErrorAction SilentlyContinue
-& $WixPath build "-d" "Version=$Version" "-d" "Stage=$Stage" "-o" $Msi (Join-Path $PSScriptRoot "installer.wxs")
+& $WixPath build "-arch" "x64" "-d" "Version=$Version" "-d" "Stage=$Stage" "-o" $Msi (Join-Path $PSScriptRoot "installer.wxs")
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path $Msi -PathType Leaf)) {
     throw "WiX did not produce the expected MSI."
 }

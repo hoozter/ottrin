@@ -74,6 +74,7 @@ fi
 WORK="$(mktemp -d "$DIST_DIR/.windows-installer.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 "$WIX" build \
+  -arch x64 \
   -d "Version=$VERSION" \
   -d "Stage=$STAGE" \
   -o "$WORK/$(basename "$MSI")" \
