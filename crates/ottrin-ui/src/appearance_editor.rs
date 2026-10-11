@@ -1055,14 +1055,18 @@ fn property_group(
     settings_surface(c)
         .show(ui, |ui| {
             ui.set_width(ui.available_width());
+            ui.spacing_mut().item_spacing.y = 6.0;
             ui.label(
                 RichText::new(title)
                     .strong()
-                    .size(14.0 * c.font_scale)
+                    .size(16.0 * c.font_scale)
                     .color(c.heading),
             );
-            ui.add_space(4.0);
-            ui.separator();
+            ui.painter().hline(
+                ui.available_rect_before_wrap().x_range(),
+                ui.cursor().min.y,
+                Stroke::new(1.0, c.border),
+            );
             ui.add_space(6.0);
             body(ui)
         })

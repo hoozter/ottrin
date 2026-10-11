@@ -4632,7 +4632,7 @@ impl OttrinApp {
             ThemePreviewRegion::ColumnBackground => "File view",
             ThemePreviewRegion::SelectedRow => "Selected row",
             ThemePreviewRegion::ColumnText => "File labels & icons",
-            ThemePreviewRegion::Sidebar => "Sidebar",
+            ThemePreviewRegion::Sidebar => "Smart Panel",
             ThemePreviewRegion::StatusBar => "Status bar",
             ThemePreviewRegion::Accent => "Buttons",
             ThemePreviewRegion::Borders => "Borders",
@@ -4662,7 +4662,9 @@ impl OttrinApp {
             ThemePreviewRegion::ColumnText => {
                 "Neutral and category-colored samples show the theme’s file and folder styling."
             }
-            ThemePreviewRegion::Sidebar => "Info/search/target strip and its supporting contrast.",
+            ThemePreviewRegion::Sidebar => {
+                "Info, Drop Folder, Search, Activity and Trash controls, panel background and shared contrast."
+            }
             ThemePreviewRegion::StatusBar => "Background of the bottom status and utility bar.",
             ThemePreviewRegion::Accent => {
                 "Shared action-button labels; backgrounds apply to filled buttons."
