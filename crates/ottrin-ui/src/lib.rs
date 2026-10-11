@@ -22497,13 +22497,48 @@ fn format_duration_short(duration: Duration) -> String {
     }
 }
 
+/// Compare lexical storage roots without resolving links or changing the operation path.
+/// Windows uses both ordinary and verbatim drive/UNC prefixes for the same root.
+fn storage_path_starts_with(path: &Path, root: &Path) -> bool {
+    #[cfg(not(target_os = "windows"))]
+    return path.starts_with(root);
+    #[cfg(target_os = "windows")]
+    {
+        use std::path::{Component, Prefix};
+        let mut path = path.components();
+        root.components().all(|root_component| {
+            let Some(path_component) = path.next() else {
+                return false;
+            };
+            match (path_component, root_component) {
+                (Component::Prefix(path), Component::Prefix(root)) => {
+                    match (path.kind(), root.kind()) {
+                        (
+                            Prefix::Disk(path) | Prefix::VerbatimDisk(path),
+                            Prefix::Disk(root) | Prefix::VerbatimDisk(root),
+                        ) => path.eq_ignore_ascii_case(&root),
+                        (
+                            Prefix::UNC(path_server, path_share)
+                            | Prefix::VerbatimUNC(path_server, path_share),
+                            Prefix::UNC(root_server, root_share)
+                            | Prefix::VerbatimUNC(root_server, root_share),
+                        ) => path_server == root_server && path_share == root_share,
+                        (path, root) => path == root,
+                    }
+                }
+                (path, root) => path == root,
+            }
+        })
+    }
+}
+
 fn longest_storage_root_for_path<'a>(
     locations: &'a [StorageLocation],
     path: &Path,
 ) -> Option<&'a StorageLocation> {
     locations
         .iter()
-        .filter(|location| path.starts_with(&location.path))
+        .filter(|location| storage_path_starts_with(path, &location.path))
         .max_by_key(|location| location.path.components().count())
 }
 
@@ -30609,6 +30644,53 @@ mod tests {
                 .iter()
                 .any(|lost| lost.root == root)
         );
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_storage_bindings_accept_drive_prefix_spellings_without_retargeting() {
+        let location = StorageLocation {
+            path: PathBuf::from(r"\\?\Q:\"),
+            identity: "qa-slot".to_string(),
+            stable_identity: Some("qa-volume".to_string()),
+            kind: StorageLocationKind::Internal,
+            display_name: None,
+        };
+        for path in [
+            r"Q:\folder\payload.txt",
+            r"q:\folder\payload.txt",
+            r"\\?\Q:\folder\payload.txt",
+        ] {
+            let bindings = capture_required_storage_bindings(
+                &[PathBuf::from(path)],
+                std::slice::from_ref(&location),
+            )
+            .unwrap();
+            assert_eq!(bindings.len(), 1);
+            assert_eq!(bindings[0].root, location.path);
+            assert_eq!(bindings[0].stable_identity, location.stable_identity);
+            assert!(validate_operation_storage_bindings(&bindings, &[]).is_err());
+            let replacement = StorageLocation {
+                stable_identity: Some("different-volume".to_string()),
+                ..location.clone()
+            };
+            assert!(validate_operation_storage_bindings(&bindings, &[replacement]).is_err());
+        }
+        assert!(
+            capture_required_storage_bindings(
+                &[PathBuf::from(r"R:\folder\payload.txt")],
+                &[location]
+            )
+            .is_err()
+        );
+        assert!(storage_path_starts_with(
+            Path::new(r"\\server\share\file"),
+            Path::new(r"\\?\UNC\server\share\")
+        ));
+        assert!(!storage_path_starts_with(
+            Path::new(r"Q:\folder-other\file"),
+            Path::new(r"\\?\Q:\folder")
+        ));
     }
 
     #[test]
