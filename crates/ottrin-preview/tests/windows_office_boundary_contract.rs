@@ -357,3 +357,83 @@ fn windows_installed_office_cancels_after_provider_start_and_releases_files() {
     std::fs::rename(&source, root.join("released.docx")).unwrap();
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+#[ignore = "requires the verified macro-positive-control fixture and installed LibreOffice/PDFium"]
+fn windows_installed_office_suppresses_document_macros() {
+    use ottrin_preview::{
+        InstalledLibreOfficeConverter, OfficeFormat, OfficeRenderPolicy, OfficeRenderRequest,
+        detect_installed_libreoffice, render_office_pdf,
+    };
+    use std::sync::atomic::AtomicBool;
+    use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+    // The companion ordinary-user Kit positive control must export the text
+    // marker before this negative assertion establishes macro suppression.
+    let fixture = std::path::PathBuf::from(
+        std::env::var_os("OTTRIN_NATIVE_OFFICE_MACRO_FIXTURE").expect("verified macro fixture"),
+    );
+    let original = std::fs::read(fixture).unwrap();
+    assert!(ottrin_preview::pdfium_runtime_is_available());
+    let pdfium = pdfium_render::prelude::Pdfium::default();
+    let control_path = std::path::PathBuf::from(
+        std::env::var_os("OTTRIN_NATIVE_OFFICE_MACRO_CONTROL_PDF")
+            .expect("macro positive control PDF"),
+    );
+    let control = pdfium.load_pdf_from_file(&control_path, None).unwrap();
+    let control_text = control
+        .pages()
+        .iter()
+        .map(|page| page.text().unwrap().all())
+        .collect::<String>();
+    assert!(
+        control_text.contains("OTTRIN MACRO EXECUTED"),
+        "positive control macro did not run: {control_text:?}"
+    );
+    drop(control);
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let root = std::env::temp_dir().join(format!("ottrin-office-macro-{nonce}"));
+    let _cleanup = PrivateDirectory(root.clone());
+    let output = root.join("output");
+    std::fs::create_dir_all(&output).unwrap();
+    let source = root.join("macro.odt");
+    std::fs::write(&source, &original).unwrap();
+    let cancelled = AtomicBool::new(false);
+    let launcher = WindowsJobObjectIsolation;
+    let detected = detect_installed_libreoffice(&launcher, &cancelled).unwrap();
+    let converter = InstalledLibreOfficeConverter::new(detected.executable, &launcher);
+    let request = OfficeRenderRequest {
+        source_path: source.clone(),
+        format: OfficeFormat::Odt,
+        private_output_dir: output.clone(),
+        policy: OfficeRenderPolicy {
+            version: 1,
+            max_input_bytes: 1024 * 1024,
+            max_output_bytes: 8 * 1024 * 1024,
+            max_pages: 8,
+            timeout: Duration::from_secs(30),
+        },
+    };
+    let rendered =
+        render_office_pdf(&[detected.capability], &request, &converter, &cancelled).unwrap();
+    let pdf = pdfium.load_pdf_from_file(&rendered.pdf_path, None).unwrap();
+    let text = pdf
+        .pages()
+        .iter()
+        .map(|page| page.text().unwrap().all())
+        .collect::<String>();
+    assert!(
+        text.contains("DOCX BASELINE"),
+        "document must actually load: {text:?}"
+    );
+    assert!(
+        !text.contains("OTTRIN MACRO EXECUTED"),
+        "document macro ran: {text:?}"
+    );
+    drop(pdf);
+    assert_eq!(std::fs::read(&source).unwrap(), original);
+    assert_eq!(std::fs::read_dir(&output).unwrap().count(), 1);
+}

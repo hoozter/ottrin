@@ -192,6 +192,16 @@ returned `NotInstalled` despite the installed provider (`installed-office-red.lo
 Windows now searches the standard Program Files locations and Windows launch
 names. Six focused provider contracts pass on both Linux and native Windows.
 
+Macro suppression requires a working positive control, not merely a macro-free
+PDF. The ignored `windows_installed_office_suppresses_document_macros` native
+fixture takes `OTTRIN_NATIVE_OFFICE_MACRO_FIXTURE` (the owned ODT) and
+`OTTRIN_NATIVE_OFFICE_MACRO_CONTROL_PDF` (the PDF exported from that exact ODT
+with macros enabled in an ordinary-user control). It requires the control's
+`OTTRIN MACRO EXECUTED` marker before checking the production PDF for unchanged
+baseline content, absent marker, preserved source and cleaned private state.
+The current control has not executed its load event; the test correctly refuses
+acceptance. Do not weaken that prerequisite or treat an ignored test as passed.
+
 The Windows converter uses the packaged `ottrin-office-render.exe` helper with
 installed LibreOfficeKit rather than the CLI, whose global named pipe is denied
 by AppContainer. The helper reads provider version metadata without starting
