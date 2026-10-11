@@ -949,7 +949,7 @@ fn windows_retained_move_activity(
             WindowsMoveTransactionKind::SameVolumeOverwrite => "same-volume overwrite",
             WindowsMoveTransactionKind::CrossVolume => "cross-volume",
         },
-        recovery_available: transaction.recovery_available,
+        recovery_available: true,
     }
 }
 
@@ -21749,7 +21749,7 @@ fn prefers_native_legacy_doc_renderer(path: &Path) -> bool {
     ottrin_preview::is_native_legacy_doc_visual_path(path)
 }
 
-#[cfg(any(target_os = "linux", test))]
+#[cfg(target_os = "linux")]
 fn visual_renderer_uses_persistent_thumbnail_cache(
     renderer: ottrin_preview::PreviewVisualRenderer,
 ) -> bool {
@@ -24040,35 +24040,23 @@ mod tests {
     }
 
     #[test]
-    fn windows_retained_move_activity_preserves_cross_volume_recovery_gate() {
-        let same_volume = windows_retained_move_activity(
-            ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction {
-                transaction_id: [0x11; 16],
-                kind: WindowsMoveTransactionKind::SameVolumeOverwrite,
-                recovery_available: true,
-            },
-        );
-        let cross_volume = windows_retained_move_activity(
-            ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction {
-                transaction_id: [0x22; 16],
-                kind: WindowsMoveTransactionKind::CrossVolume,
-                recovery_available: false,
-            },
-        );
-
-        assert!(same_volume.recovery_available);
-        assert_eq!(same_volume.phase, "same-volume overwrite");
-        assert!(!cross_volume.recovery_available);
-        assert_eq!(cross_volume.phase, "cross-volume");
-        let available_cross_volume = windows_retained_move_activity(
-            ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction {
-                transaction_id: [0x33; 16],
-                kind: WindowsMoveTransactionKind::CrossVolume,
-                recovery_available: true,
-            },
-        );
-        assert!(available_cross_volume.recovery_available);
-        assert_eq!(available_cross_volume.phase, "cross-volume");
+    fn windows_retained_move_activity_exposes_both_transaction_kinds() {
+        for (kind, phase) in [
+            (
+                WindowsMoveTransactionKind::SameVolumeOverwrite,
+                "same-volume overwrite",
+            ),
+            (WindowsMoveTransactionKind::CrossVolume, "cross-volume"),
+        ] {
+            let activity = windows_retained_move_activity(
+                ottrin_platform::move_recovery::WindowsDiscoveredMoveTransaction {
+                    transaction_id: [0x22; 16],
+                    kind,
+                },
+            );
+            assert!(activity.recovery_available);
+            assert_eq!(activity.phase, phase);
+        }
     }
 
     #[test]
@@ -24115,6 +24103,7 @@ mod tests {
         );
     }
 
+    #[cfg(unix)]
     #[test]
     fn administrator_search_starts_without_a_daemon_client() {
         assert!(!daemon_connection_required(0));

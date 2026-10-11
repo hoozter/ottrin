@@ -1604,15 +1604,11 @@ pub enum WindowsMoveTransactionKind {
 }
 
 /// Read-only Windows Move status discovered from the central journal namespace.
-///
-/// Cross-volume entries remain visible while `recovery_available` is false. This explicit
-/// boundary prevents callers from treating source cleanup as accepted before native Windows
-/// crash, ACL, sharing-mode, and second-volume evidence exists.
+/// Recovery revalidates journal topology, identities and content before mutation.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct WindowsDiscoveredMoveTransaction {
     pub transaction_id: [u8; 16],
     pub kind: WindowsMoveTransactionKind,
-    pub recovery_available: bool,
 }
 
 #[cfg(target_os = "linux")]

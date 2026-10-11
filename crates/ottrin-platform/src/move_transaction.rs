@@ -660,37 +660,6 @@ fn windows_directory_children(
 }
 
 #[cfg(any(target_os = "windows", test))]
-fn windows_cross_volume_test_gate(requested: bool) -> bool {
-    cfg!(test) && requested
-}
-
-#[cfg(any(target_os = "windows", test))]
-fn windows_cross_volume_runtime_enabled() -> bool {
-    // Native fixtures cover retained recovery, owner death, ACL and sharing refusal.
-    // Keep the user-facing route closed while remaining interruption, filesystem
-    // and packaged acceptance is incomplete.
-    #[cfg(all(test, target_os = "windows"))]
-    let test_override = std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE").as_deref()
-        == Some(std::ffi::OsStr::new("1"));
-    #[cfg(not(all(test, target_os = "windows")))]
-    let test_override = false;
-    windows_cross_volume_test_gate(test_override)
-}
-
-#[cfg(any(target_os = "windows", test))]
-fn windows_cross_volume_recovery_enabled() -> bool {
-    // Resuming a durable cross-volume record can reach source cleanup, so it must stay behind
-    // the same acceptance gate as starting a new cross-volume Move.
-    #[cfg(all(test, target_os = "windows"))]
-    if std::env::var_os("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY").as_deref()
-        == Some(std::ffi::OsStr::new("1"))
-    {
-        return true;
-    }
-    windows_cross_volume_runtime_enabled()
-}
-
-#[cfg(any(target_os = "windows", test))]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum WindowsCrossVolumePreflight {
     Skip,
@@ -1475,18 +1444,13 @@ pub(super) fn move_entry_transactional(
                 destination_handle,
             )
         }
-        WindowsMoveRoute::CrossVolume if windows_cross_volume_runtime_enabled() => {
-            move_windows_cross_volume_preflight(
-                source,
-                destination_dir,
-                conflict,
-                source_handle,
-                destination_handle,
-            )
-        }
-        WindowsMoveRoute::CrossVolume => Err(PlatformError::UnsupportedSafeCrossDeviceMove(
-            source.display().to_string(),
-        )),
+        WindowsMoveRoute::CrossVolume => move_windows_cross_volume_preflight(
+            source,
+            destination_dir,
+            conflict,
+            source_handle,
+            destination_handle,
+        ),
     }
 }
 
@@ -2248,20 +2212,17 @@ pub(super) fn discover_retained_windows_move_transactions_at(
                 )));
             }
         }
-        let (kind, recovery_available) = match kind {
-            WindowsJournalKind::SameVolumeOverwrite => (
-                move_recovery::WindowsMoveTransactionKind::SameVolumeOverwrite,
-                true,
-            ),
-            WindowsJournalKind::CrossVolume => (
-                move_recovery::WindowsMoveTransactionKind::CrossVolume,
-                windows_cross_volume_recovery_enabled(),
-            ),
+        let kind = match kind {
+            WindowsJournalKind::SameVolumeOverwrite => {
+                move_recovery::WindowsMoveTransactionKind::SameVolumeOverwrite
+            }
+            WindowsJournalKind::CrossVolume => {
+                move_recovery::WindowsMoveTransactionKind::CrossVolume
+            }
         };
         discovered.push(move_recovery::WindowsDiscoveredMoveTransaction {
             transaction_id,
             kind,
-            recovery_available,
         });
     }
     discovered.sort_by_key(|transaction| (transaction.transaction_id, transaction.kind));
@@ -2511,31 +2472,24 @@ fn recover_windows_overwrites_before_move(
     for entry in entries {
         let entry = entry.map_err(|error| PlatformError::Io(error.to_string()))?;
         let path = entry.path();
-        let (is_matching, publication) = if path.extension()
-            == Some(std::ffi::OsStr::new("journal"))
-        {
-            let record = load_windows_overwrite_record(&path)?;
-            let is_matching = record.source_path()? == source
-                && record.destination_parent_path()? == destination_dir;
-            (
-                is_matching,
-                resume_windows_overwrite(&recovery_root, record)?,
-            )
-        } else if path.extension() == Some(std::ffi::OsStr::new("cross-journal")) {
-            if !windows_cross_volume_recovery_enabled() {
-                return Err(PlatformError::ClaimedRecoveryPending {
-                        transaction: path.display().to_string(),
-                        message: "Windows cross-volume Move recovery remains disabled until source-cleanup acceptance passes".to_string(),
-                    });
-            }
-            let mut record = load_windows_cross_volume_record(&path)?;
-            let is_matching = record.source_path()? == source
-                && record.destination_parent_path()? == destination_dir;
-            let publication = resume_windows_cross_volume(&recovery_root, &mut record, None)?;
-            (is_matching, publication)
-        } else {
-            continue;
-        };
+        let (is_matching, publication) =
+            if path.extension() == Some(std::ffi::OsStr::new("journal")) {
+                let record = load_windows_overwrite_record(&path)?;
+                let is_matching = record.source_path()? == source
+                    && record.destination_parent_path()? == destination_dir;
+                (
+                    is_matching,
+                    resume_windows_overwrite(&recovery_root, record)?,
+                )
+            } else if path.extension() == Some(std::ffi::OsStr::new("cross-journal")) {
+                let mut record = load_windows_cross_volume_record(&path)?;
+                let is_matching = record.source_path()? == source
+                    && record.destination_parent_path()? == destination_dir;
+                let publication = resume_windows_cross_volume(&recovery_root, &mut record, None)?;
+                (is_matching, publication)
+            } else {
+                continue;
+            };
         if is_matching {
             if matching.is_some() {
                 return Err(PlatformError::ClaimedRecoveryPending {
@@ -2580,13 +2534,6 @@ pub(super) fn recover_retained_windows_move_transaction(
         });
     }
     if cross_volume_exists {
-        if !windows_cross_volume_recovery_enabled() {
-            return Err(PlatformError::ClaimedRecoveryPending {
-                transaction: cross_volume_journal.display().to_string(),
-                message: "Windows cross-volume Move recovery remains disabled until source-cleanup acceptance passes"
-                    .to_string(),
-            });
-        }
         let mut record = load_windows_cross_volume_record(&cross_volume_journal)?;
         if record.transaction_id()? != transaction_id {
             return Err(PlatformError::Io(
@@ -8200,12 +8147,11 @@ mod windows_source_tests {
         flush_windows_cross_volume_recovered_publication_with, next_windows_rename_candidate,
         parse_windows_journal_name, publish_windows_cross_volume_candidate_with,
         publish_windows_cross_volume_directory_overwrite_with, reconcile_windows_rename_candidates,
-        require_windows_publication_durability, windows_cross_volume_recovery_enabled,
-        windows_cross_volume_runtime_enabled, windows_cross_volume_source_kind,
-        windows_cross_volume_test_gate, windows_destination_parent_is_pinned,
-        windows_directory_cleanup_order, windows_incomplete_staging_entry_kind, windows_move_route,
-        windows_recovery_lock_path, windows_same_volume_source_kind,
-        windows_staging_candidate_matches_transaction, windows_stream_set_is_copy_safe,
+        require_windows_publication_durability, windows_cross_volume_source_kind,
+        windows_destination_parent_is_pinned, windows_directory_cleanup_order,
+        windows_incomplete_staging_entry_kind, windows_move_route, windows_recovery_lock_path,
+        windows_same_volume_source_kind, windows_staging_candidate_matches_transaction,
+        windows_stream_set_is_copy_safe,
     };
 
     use crate::{ConflictAction, PlatformError, move_recovery};
@@ -8726,17 +8672,6 @@ mod windows_source_tests {
         );
     }
 
-    #[test]
-    fn windows_cross_volume_move_remains_fail_closed_until_native_safety_gates_pass() {
-        assert!(!windows_cross_volume_runtime_enabled());
-    }
-
-    #[test]
-    fn windows_cross_volume_native_acceptance_can_open_only_the_test_gate() {
-        assert!(windows_cross_volume_test_gate(true));
-        assert!(!windows_cross_volume_test_gate(false));
-    }
-
     #[cfg(target_os = "windows")]
     #[test]
     fn windows_native_same_volume_overwrite_rejects_replaced_selection() {
@@ -8830,7 +8765,6 @@ mod windows_source_tests {
     #[ignore = "requires an owned guest power cut and prepare/recover fixture orchestration"]
     fn windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite() {
         use std::io::Write;
-        assert!(windows_cross_volume_runtime_enabled());
         let mode = std::env::var("OTTRIN_NATIVE_MOVE_POWER_CUT_MODE").unwrap();
         assert!(matches!(mode.as_str(), "prepare" | "recover"));
         let boundary = std::env::var("OTTRIN_NATIVE_MOVE_POWER_CUT_BOUNDARY").unwrap();
@@ -8980,10 +8914,7 @@ mod windows_source_tests {
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_regular_file_move_preserves_verified_bytes() {
-        assert!(
-            windows_cross_volume_runtime_enabled(),
-            "set OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE=1 for native acceptance"
-        );
+        use crate::PlatformOps;
         assert!(
             std::env::var_os("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT").is_some(),
             "set OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT to an isolated empty fixture root"
@@ -8991,16 +8922,11 @@ mod windows_source_tests {
         let destination_volume = std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT")
             .map(std::path::PathBuf::from)
             .expect("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT must name a second Windows volume");
-        let mut transaction_id = [0_u8; 16];
-        getrandom::fill(&mut transaction_id).expect("native test transaction id");
-        let test_name = format!(
-            "ottrin-native-cross-volume-{}",
-            super::encode_transaction_id(transaction_id)
-        );
-        let source_root = std::env::temp_dir().join(&test_name);
-        let destination_root = destination_volume.join(&test_name);
-        std::fs::create_dir(&source_root).expect("create source test directory");
-        std::fs::create_dir(&destination_root).expect("create destination test directory");
+        let source_fixture = crate::tests::TestDir::new("cross-volume-public-source");
+        let destination_fixture =
+            crate::tests::TestDir::new_at(&destination_volume, "cross-volume-public-destination");
+        let source_root = source_fixture.path();
+        let destination_root = destination_fixture.path();
         let source = source_root.join("payload.bin");
         let destination = destination_root.join("payload.bin");
         let payload = b"Ottrin native cross-volume verified payload\0\xff";
@@ -9009,7 +8935,7 @@ mod windows_source_tests {
         let source_handle = move_recovery::open_reparse_safe_entry_for_rename(&source)
             .expect("open source identity handle");
         let destination_handle =
-            move_recovery::open_reparse_safe_directory_for_rename(&destination_root)
+            move_recovery::open_reparse_safe_directory_for_rename(destination_root)
                 .expect("open destination directory handle");
         let source_identity = move_recovery::stable_identity_from_handle(&source_handle)
             .expect("read source identity");
@@ -9023,13 +8949,13 @@ mod windows_source_tests {
         drop(source_handle);
         drop(destination_handle);
 
-        let publication =
-            super::move_entry_transactional(&source, &destination_root, ConflictAction::Rename)
-                .expect("cross-volume transaction should complete");
-        assert_eq!(publication.disposition, crate::MoveDisposition::Moved);
-        assert_eq!(
-            publication.published_path.as_deref(),
-            Some(destination.as_path())
+        let (disposition, receipt) = crate::DefaultPlatform
+            .execute_move_with_undo_receipt(&source, destination_root, ConflictAction::Rename)
+            .expect("public cross-volume Move should complete");
+        assert_eq!(disposition, crate::MoveDisposition::Moved);
+        assert!(
+            receipt.is_none(),
+            "Windows must not advertise unsupported Move undo"
         );
         assert!(
             !source.exists(),
@@ -9040,9 +8966,21 @@ mod windows_source_tests {
             payload
         );
 
-        std::fs::remove_file(&destination).expect("remove native test destination");
-        std::fs::remove_dir(&source_root).expect("remove native test source directory");
-        std::fs::remove_dir(&destination_root).expect("remove native test destination directory");
+        let batch_source = source_root.join("batch.bin");
+        std::fs::write(&batch_source, payload).unwrap();
+        let (_, dispositions) = crate::DefaultPlatform
+            .execute_command_with_move_dispositions(&ottrin_core::FileCommand::Move {
+                sources: vec![batch_source.clone()],
+                destination: destination_root.to_path_buf(),
+                conflict: ConflictAction::Rename,
+            })
+            .expect("public batch cross-volume Move should complete");
+        assert_eq!(dispositions, vec![crate::MoveDisposition::Moved]);
+        assert!(!batch_source.exists());
+        assert_eq!(
+            std::fs::read(destination_root.join("batch.bin")).unwrap(),
+            payload
+        );
     }
 
     #[cfg(target_os = "windows")]
@@ -9051,10 +8989,6 @@ mod windows_source_tests {
     fn windows_native_cross_volume_symbolic_link_preserves_raw_target_without_dereferencing() {
         use std::os::windows::fs::symlink_file;
 
-        assert!(
-            windows_cross_volume_runtime_enabled(),
-            "set OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE=1 for native acceptance"
-        );
         assert!(
             std::env::var_os("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT").is_some(),
             "set OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT to an isolated empty fixture root"
@@ -9121,10 +9055,6 @@ mod windows_source_tests {
             }
         }
 
-        assert!(
-            windows_cross_volume_runtime_enabled(),
-            "set OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE=1 for native acceptance"
-        );
         let recovery_root = std::env::var_os("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT")
             .map(std::path::PathBuf::from)
             .expect("set OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT to an isolated empty fixture root");
@@ -9230,7 +9160,6 @@ mod windows_source_tests {
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_conflicts_preserve_published_and_displaced_entries() {
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         for kind in ["file", "directory", "symlink"] {
@@ -9308,7 +9237,6 @@ mod windows_source_tests {
                 std::thread::park();
             }
         }
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         let source_fixture = crate::tests::TestDir::new("recovery-owner-source");
@@ -9830,7 +9758,6 @@ mod windows_source_tests {
         use std::os::windows::io::AsRawHandle;
         use windows_sys::Win32::Storage::FileSystem::GetVolumeInformationByHandleW;
 
-        assert!(windows_cross_volume_runtime_enabled());
         let volume = std::path::PathBuf::from(
             std::env::var_os("OTTRIN_WINDOWS_FAT32_ROOT").expect("owned FAT32 fixture root"),
         );
@@ -9887,18 +9814,6 @@ mod windows_source_tests {
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_explicit_recovery_retains_displaced_file() {
-        if std::env::var_os("OTTRIN_TEST_WINDOWS_EXPLICIT_RECOVERY_CLOSED").is_some() {
-            assert!(!windows_cross_volume_recovery_enabled());
-            let transactions = super::discover_retained_windows_move_transactions().unwrap();
-            assert_eq!(transactions.len(), 1);
-            assert!(!transactions[0].recovery_available);
-            assert!(
-                super::recover_retained_windows_move_transaction(transactions[0].transaction_id)
-                    .is_err()
-            );
-            return;
-        }
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         let source_fixture = crate::tests::TestDir::new("explicit-recovery-source");
@@ -9923,21 +9838,6 @@ mod windows_source_tests {
         let transactions = super::discover_retained_windows_move_transactions().unwrap();
         assert_eq!(transactions.len(), 1);
         let id = transactions[0].transaction_id;
-        let closed = std::process::Command::new(std::env::current_exe().unwrap())
-            .args(["--ignored", "--exact", "move_transaction::windows_source_tests::windows_native_cross_volume_explicit_recovery_retains_displaced_file", "--nocapture"])
-            .env("OTTRIN_TEST_WINDOWS_EXPLICIT_RECOVERY_CLOSED", "1")
-            .env_remove("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE")
-            .env_remove("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY")
-            .env("OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT", super::windows_recovery_root().unwrap())
-            .status().unwrap();
-        assert!(
-            closed.success(),
-            "product gate must still block explicit recovery"
-        );
-        assert!(
-            transactions[0].recovery_available,
-            "explicit recovery must use the same enabled acceptance gate as ordinary retry"
-        );
         assert!(super::recover_retained_windows_move_transaction(id).is_err());
         assert_eq!(std::fs::read(&source).unwrap(), b"source-data");
         assert_eq!(std::fs::read(&target).unwrap(), b"protected-data");
@@ -10006,7 +9906,6 @@ mod windows_source_tests {
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_read_only_destination_preserves_entries_and_allows_retry() {
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         for conflict in [
@@ -10095,7 +9994,6 @@ mod windows_source_tests {
                 result.as_ref().err()
             );
         }
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         for boundary in ["FileReplaced", "FilePublicationFlushed"] {
@@ -10284,7 +10182,6 @@ mod windows_source_tests {
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_read_only_overwrite_retains_displaced_file() {
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         let source_fixture = crate::tests::TestDir::new("readonly-overwrite-source");
@@ -10333,7 +10230,6 @@ mod windows_source_tests {
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_move_preserves_read_only_file() {
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         let source_fixture = crate::tests::TestDir::new("readonly-source");
@@ -10369,7 +10265,6 @@ mod windows_source_tests {
             FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_DIRECTORY, FILE_ATTRIBUTE_HIDDEN,
             FILE_BASIC_INFO, FileBasicInfo, SetFileInformationByHandle,
         };
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         for directory in [false, true] {
@@ -10458,7 +10353,6 @@ mod windows_source_tests {
                 acl(&self.0, &["/remove:d", "*S-1-1-0"]);
             }
         }
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         let source_fixture = crate::tests::TestDir::new("acl-source");
@@ -10503,7 +10397,6 @@ mod windows_source_tests {
         use windows_sys::Win32::Storage::FileSystem::{
             FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
         };
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         for lock_source in [true, false] {
@@ -10580,7 +10473,6 @@ mod windows_source_tests {
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_published_file_or_link_change_preserves_source() {
         use std::{cell::Cell, rc::Rc};
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         for link in [false, true] {
@@ -10660,7 +10552,6 @@ mod windows_source_tests {
                 result.as_ref().err()
             );
         }
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         for directory in [true, false] {
@@ -10756,7 +10647,6 @@ mod windows_source_tests {
             cell::{Cell, RefCell},
             rc::Rc,
         };
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         for fault in [
@@ -10866,7 +10756,6 @@ mod windows_source_tests {
                 result.as_ref().err()
             );
         }
-        assert!(windows_cross_volume_runtime_enabled());
         let volume =
             std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
         for boundary in [
@@ -11130,7 +11019,6 @@ mod windows_source_tests {
                     ])
                     .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_EXIT_CHILD", "1")
                     .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVER_CHILD", "1")
-                    .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY", "1")
                     .env("OTTRIN_TEST_WINDOWS_MOVE_EXIT_BOUNDARY", "CandidateWritable")
                     .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_SOURCE", &source)
                     .env("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_DESTINATION", &destination_root)
@@ -11152,12 +11040,10 @@ mod windows_source_tests {
             let previous_local_app_data = std::env::var_os("LOCALAPPDATA");
             unsafe {
                 std::env::set_var("LOCALAPPDATA", &state_root);
-                std::env::set_var("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY", "1");
             }
             let recovery =
                 super::move_entry_transactional(&source, &destination_root, ConflictAction::Rename);
             unsafe {
-                std::env::remove_var("OTTRIN_TEST_WINDOWS_CROSS_VOLUME_RECOVERY");
                 if let Some(previous) = previous_local_app_data {
                     std::env::set_var("LOCALAPPDATA", previous);
                 } else {
@@ -11490,11 +11376,6 @@ mod windows_source_tests {
             ),
             WindowsCrossVolumeRestartAction::RemoveSource,
         );
-    }
-
-    #[test]
-    fn windows_cross_volume_recovery_remains_fail_closed_until_native_safety_gates_pass() {
-        assert!(!windows_cross_volume_recovery_enabled());
     }
 
     #[test]

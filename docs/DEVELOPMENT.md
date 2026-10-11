@@ -302,14 +302,15 @@ files, directories and links, the published entry is identity/content verified
 and remains locked throughout source cleanup; changed content retains the source
 and recovery state.
 
+The temporary acceptance gate was removed after native safety and guest power-cut checks. A fresh no-override native run passed all 21 cross-volume fixtures, FAT32 refusal in both directions and 99 standard platform tests. The final native public-command fixture also passed (0.69s): both `execute_move_with_undo_receipt` and batch `FileCommand::Move` moved exact bytes across independent NTFS volumes, removed the source and returned explicit dispositions without claiming Windows undo. Strict Windows platform/UI all-target Clippy passes. `.hermes/evidence/windows-20261011/PUBLIC_MOVE_ACCEPTANCE.json` binds the separate suite and final public-API binaries. Public GUI and exact-package acceptance remain pending.
+
 Cross-volume fixtures are separately ignored by default. They require a real
-second Windows volume in `OTTRIN_WINDOWS_CROSS_VOLUME_ROOT`, an isolated recovery
-root, and `OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE=1`. That variable opens only the
-test build gate; the product route stays closed pending native safety acceptance.
+second Windows volume in `OTTRIN_WINDOWS_CROSS_VOLUME_ROOT` and an isolated
+recovery root. They exercise the same transaction route as the public Windows
+Move commands; the temporary acceptance gate and its overrides are removed.
 
 ```powershell
 $env:OTTRIN_WINDOWS_CROSS_VOLUME_ROOT = "Q:\owned-ottrin-fixtures"
-$env:OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE = "1"
 cargo test -p ottrin-platform windows_native_cross_volume -- --ignored --test-threads=1
 ```
 
@@ -321,8 +322,7 @@ with `OTTRIN_NATIVE_MOVE_POWER_CUT_MODE=prepare`,
 `OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT` set to that directory's `move-state`
 child. Set `OTTRIN_NATIVE_MOVE_POWER_CUT_BOUNDARY` to `BeforeSourceCleanup`
 (regular-file Overwrite) or `SourceClaimed` (directory Overwrite, nested payload
-and empty directory). Use the same value for recovery. The ordinary test gate
-and second-volume variable above are also required.
+and empty directory). Use the same value for recovery. The second-volume variable above is also required.
 
 Wait for the root's durable `ready` marker **and** verify that the prepare task
 and test process are still running. Hard-stop only the owned guest at that point;
@@ -332,7 +332,7 @@ reattach the same owned second volume with the same letter/path and run the
 exact fixture again with mode `recover`. It verifies original source bytes,
 published bytes, displaced bytes and identity, then explicit recovery and its
 idempotent repeat. This is virtual guest power-cut evidence, not physical-device
-power-loss acceptance. It does not open the product gate or accept a package.
+power-loss acceptance. It does not establish physical-device or exact-package acceptance.
 
 The orchestrator owns teardown across both invocations: stop/remove its tasks
 and processes, retain compact diagnostic logs, remove both fixture roots as their ordinary-user owner even
@@ -372,11 +372,10 @@ ordinary retry succeeds after removal of that added fixture stream. Unexplained
 replacement gaps remain blocked. Read-only destination files remain intact under
 Skip and Rename; Overwrite refuses without changing either copy, then succeeds
 with exact displaced retention after the fixture removes destination protection.
-Explicit cross-volume recovery and discovery use the same safety gate as ordinary
-Move retry. Native lifecycle evidence covers safe refusal, recovery after protection
+Explicit cross-volume recovery and discovery expose the same verified transaction
+route as ordinary Move retry. Native lifecycle evidence covers safe refusal, recovery after protection
 removal, repeated completed recovery preserving retained originals and later user
-edits, malformed/misnamed journal refusal, and a separate process with the normal
-gate closed. Native cross-process exclusion also passes: an independently running
+edits and malformed/misnamed journal refusal. Native cross-process exclusion also passes: an independently running
 owner holds the actual recovery lock while explicit recovery and ordinary Move
 retry both refuse without changing journal/source/target bytes. Killing that owner
 releases the Windows share reservation; recovery then completes with exact displaced
@@ -545,7 +544,7 @@ Runtime helper discovery checks explicit override, environment variable, app dir
 
 - Navigate Miller/List/Grid, tabs, bookmarks, and address bar.
 - Search first index, restart from DB, rebuild, current-folder search, content search, and result actions.
-- Create, rename, copy, trash delete, and permanent delete; verify Linux same-filesystem and cross-filesystem Move with Skip/Rename/Overwrite/Cancel and explicit dispositions. Cross-filesystem Move must stage and verify the complete destination tree before publication, revalidate before guarded source cleanup, retain explicit recovery evidence on uncertainty, and offer Undo only from identity/content-bound single-entry evidence. On Windows, extend the native same-volume Skip/Rename/Overwrite fixture evidence with crash, adverse ACL/sharing, retained-transaction lifecycle and packaged checks. Keep cross-volume Move fail-closed until its staged-copy and native safety gates pass; cross-compilation alone is not acceptance.
+- Create, rename, copy, trash delete, and permanent delete; verify Linux same-filesystem and cross-filesystem Move with Skip/Rename/Overwrite/Cancel and explicit dispositions. Cross-filesystem Move must stage and verify the complete destination tree before publication, revalidate before guarded source cleanup, retain explicit recovery evidence on uncertainty, and offer Undo only from identity/content-bound single-entry evidence. On Windows, extend the native same-volume Skip/Rename/Overwrite fixture evidence with crash, adverse ACL/sharing, retained-transaction lifecycle and packaged checks. Windows cross-volume Move uses the verified staged-copy route; unsupported filesystems and unsafe metadata remain refused. Accept its public workflow and exact package separately; cross-compilation alone is not acceptance.
 - Tandem activation, pinning, side switching, and pane-to-pane copy.
 - Quick Inspector for text, image, PDF text/metadata, DOCX, XLSX/XLSM, PPTX, archive, folder, and generic fallback files.
 - Privileged helper smoke with helper and policy installed.
