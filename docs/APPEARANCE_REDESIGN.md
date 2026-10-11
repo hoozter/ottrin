@@ -88,7 +88,7 @@ These are Linux X11 native-package results. OS-owned portal file choosers follow
 
 ## Target and shared-style corrections — 2026-10-11
 
-The latest stable AppImage replaces the original package above. It is built from clean tracked revision `30a3084966832587198cfcfa9a5d3283c2502ca5`, with SHA-256 `765958cca21391d2ab01e8c962f6ea4ebb69b930f8cc9cf89a4ff55d3446804d`. Its adjacent provenance and `APPEARANCE_ACCEPTANCE.json` bind the exact deliverable to these checks.
+The accepted appearance correction replaced the original package above. It is built from clean tracked revision `30a3084966832587198cfcfa9a5d3283c2502ca5`, with SHA-256 `765958cca21391d2ab01e8c962f6ea4ebb69b930f8cc9cf89a4ff55d3446804d`. Its adjacent provenance and `APPEARANCE_ACCEPTANCE.json` bind the exact deliverable to these checks.
 
 Selected-row painting, hit testing and editing outlines now use one rectangle, eliminating the ten-pixel offset. File-canvas and row-fill outlines remain square. Tabs and navigation are one selectable context; both are highlighted, and actual tabs and the preview share their fill blend, muted text and top-corner geometry. Relevant shared colors, typography and geometry are available beside each component, with visible ownership and reset explanations. Window corners affect application windows, surface corners affect tabs/inputs/expanded location cards, and button corners affect buttons/collapsed location icons. Hex fields scale with text size.
 
