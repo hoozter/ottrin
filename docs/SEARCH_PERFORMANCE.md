@@ -96,17 +96,19 @@ packaging worktrees were removed.
 ## Current appearance-package integration on 2026-10-11
 
 The installed service was upgraded again to the current AppImage, built from
-clean tracked revision `d37576ea8508f5fbc9f1726630531d97fd1d87cd`, SHA-256
-`770f06209d8cd2fef822c70bf27bd77fd79df8a1b6bc30e7ee04817d7eddeafa`.
+clean tracked revision `a3a76ac1d26a88c3cde026faaf74d934e25faad5`, SHA-256
+`2aca0c0376dd6f99e235fbb386e79982b856c15fbe2ba58d99cb062d070ae8ac`.
 The process is `ottrin-indexd`; its executable checksum matches the bundled
 release daemon. The existing saved index loaded successfully, filesystem
 watches are ready, and the service is enabled and active without reported errors.
 
-Two consecutive 30-second live samples measured 1.467% and 0.567% of one core,
-or 0.0917% and 0.0354% of this 16-thread machine. These include concurrent
-home-directory activity. Personal settings retained their exact checksum.
-An actual disposable file became searchable in 1.051 seconds and disappeared
-from search in 0.882 seconds after deletion; the fixture was removed.
+Two consecutive 30-second live samples after replacement measured 7.933% and
+1.167% of one core, or 0.4958% and 0.0729% of this 16-thread machine. The first
+includes recent startup and test cleanup; the second is the later settled
+sample. Both include concurrent home-directory activity rather than a
+controlled idle workload. Personal settings retained their exact checksum.
+An actual disposable file became searchable in 0.921 seconds and disappeared
+from search in 0.499 seconds after deletion; the fixture was removed.
 The integration receipt is
 `.hermes/evidence/index-service/CURRENT_PACKAGE_INTEGRATION.json`.
 The earlier controlled-burst receipt above remains evidence for the index
