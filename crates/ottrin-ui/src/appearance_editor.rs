@@ -246,8 +246,9 @@ impl OttrinApp {
             ThemeEditorSource::Saved(_) => format!("Edit {}", self.theme_editor.initial_name),
             ThemeEditorSource::Imported => format!("Import {}", self.theme_editor.initial_name),
         };
-        egui::CentralPanel::default().frame(Frame::new().fill(c.panel).inner_margin(16)).show(ctx, |ui| {
+        egui::CentralPanel::default().frame(Frame::new().fill(c.panel).inner_margin(egui::Margin::same(c.window_border_width.ceil() as i8))).show(ctx, |ui| {
             render_custom_titlebar(ui, ctx, c, c.titlebar_bg, &title, true, &mut close_requested, |_| {});
+            Frame::new().inner_margin(16).show(ui, |ui| {
             ui.add_space(10.0);
             ui.horizontal(|ui| {
                 ui.label(if creating { "Theme name" } else { "Name" });
@@ -297,36 +298,51 @@ impl OttrinApp {
                     ui.spacing_mut().item_spacing.y = 10.0;
                     ui.label(RichText::new(Self::theme_preview_region_hint(region)).small().color(c.text_dim));
                     ui.add_space(4.0);
-                    ui.label(RichText::new("Colors").strong().color(c.heading));
                     let fields = Self::theme_preview_region_fields(region);
-                    for &field in fields { changed |= self.appearance_color_row(ui, field, &seed); }
+                    changed |= property_group(ui, "Component colors", c, |ui| {
+                        let mut changed = false;
+                        for &field in fields { changed |= self.appearance_color_row(ui, field, &seed); }
+                        changed
+                    });
                     if region == ThemePreviewRegion::Defaults {
                         ui.add_space(10.0);
-                        ui.label(RichText::new("Typography").strong().color(c.heading));
-                        changed |= number_row(ui, "Text size", &mut self.theme_editor.custom.font_scale, 0.85..=1.35, seed.font_scale, 0.01, c);
+                        changed |= property_group(ui, "Typography", c, |ui| {
+                            number_row(ui, "Text size", &mut self.theme_editor.custom.font_scale, 0.85..=1.35, seed.font_scale, 0.01, c)
+                        });
                         ui.add_space(10.0);
-                        ui.label(RichText::new("Geometry").strong().color(c.heading));
-                        changed |= number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
-                        changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
+                        changed |= property_group(ui, "Geometry", c, |ui| {
+                            let mut changed = number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
+                            changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
+                            changed
+                        });
                     }
                     if region == ThemePreviewRegion::Accent {
                         ui.add_space(10.0);
-                        ui.label(RichText::new("Geometry").strong().color(c.heading));
-                        changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
+                        changed |= property_group(ui, "Geometry", c, |ui| {
+                            let mut group_changed = false;
+                        group_changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
+                            group_changed
+                        });
                     }
                     if region == ThemePreviewRegion::Borders {
                         ui.add_space(10.0);
-                        ui.label(RichText::new("Geometry").strong().color(c.heading));
-                        changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width, 0.0..=4.0, seed.window_border_width, 0.5, c);
+                        changed |= property_group(ui, "Geometry", c, |ui| {
+                            let mut group_changed = false;
+                        group_changed |= number_row(ui, "Window border thickness", &mut self.theme_editor.custom.window_border_width, 0.0..=4.0, seed.window_border_width, 0.5, c);
+                            group_changed
+                        });
                     }
                     if region == ThemePreviewRegion::ColumnText {
                         ui.add_space(10.0);
-                        ui.label(RichText::new("Category colors").strong().color(c.heading));
-                        changed |= number_row(ui, "Neutral text blend", &mut self.theme_editor.custom.file_label_blend, 0.0..=1.0, seed.file_label_blend, 0.01, c);
+                        changed |= property_group(ui, "Category colors", c, |ui| {
+                            let mut group_changed = false;
+                        group_changed |= number_row(ui, "Neutral text blend", &mut self.theme_editor.custom.file_label_blend, 0.0..=1.0, seed.file_label_blend, 0.01, c);
                         for field in [ThemeColorField::PaletteSoftWhite, ThemeColorField::PaletteFolderBlue, ThemeColorField::PaletteLinkBlue, ThemeColorField::PaletteSteel,
                             ThemeColorField::PaletteGreen, ThemeColorField::PaletteOrange, ThemeColorField::PalettePurple, ThemeColorField::PalettePink, ThemeColorField::PaletteRed, ThemeColorField::PaletteYellow] {
-                            changed |= self.appearance_color_row(ui, field, &seed);
+                            group_changed |= self.appearance_color_row(ui, field, &seed);
                         }
+                            group_changed
+                        });
                     }
                     ui.add_space(10.0);
                     if ui.add(egui::Button::new(if region == ThemePreviewRegion::Defaults { "Reset theme defaults" } else { "Reset component" }).themed(&c))
@@ -343,34 +359,45 @@ impl OttrinApp {
                     }
                     if region != ThemePreviewRegion::Defaults {
                         ui.add_space(14.0);
-                        ui.separator();
-                        ui.label(RichText::new("Shared styling").strong().color(c.heading));
-                        ui.label(RichText::new("Also affects other components. Reset component leaves these values unchanged.").small().color(c.text_dim));
-                        for &field in Self::theme_preview_region_shared_fields(region) {
-                            changed |= self.appearance_color_row(ui, field, &seed);
-                        }
+                        changed |= property_group(ui, "Shared colors", c, |ui| {
+                            ui.label(RichText::new("These values also affect other components. Reset component leaves them unchanged.").small().color(c.text_dim));
+                            let mut changed = false;
+                            for &field in Self::theme_preview_region_shared_fields(region) {
+                                changed |= self.appearance_color_row(ui, field, &seed);
+                            }
+                            changed
+                        });
                         ui.add_space(6.0);
-                        ui.label(RichText::new("Typography").strong().color(c.heading));
-                        changed |= number_row(ui, "Text size", &mut self.theme_editor.custom.font_scale, 0.85..=1.35, seed.font_scale, 0.01, c);
-                        if matches!(region, ThemePreviewRegion::Navigation | ThemePreviewRegion::Titlebar | ThemePreviewRegion::Borders | ThemePreviewRegion::Bookmarks) {
+                        changed |= property_group(ui, "Shared typography", c, |ui| {
+                            let mut group_changed = false;
+                        group_changed |= number_row(ui, "Text size", &mut self.theme_editor.custom.font_scale, 0.85..=1.35, seed.font_scale, 0.01, c);
+                            group_changed
+                        });
+                        if matches!(region, ThemePreviewRegion::Navigation | ThemePreviewRegion::Titlebar | ThemePreviewRegion::Borders | ThemePreviewRegion::Bookmarks | ThemePreviewRegion::Sidebar) {
                             ui.add_space(6.0);
-                            ui.label(RichText::new("Geometry").strong().color(c.heading));
+                            changed |= property_group(ui, "Shared geometry", c, |ui| {
+                            let mut group_changed = false;
                             match region {
+                                ThemePreviewRegion::Sidebar => {
+                                    group_changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
+                                }
                                 ThemePreviewRegion::Navigation => {
                                     ui.label(RichText::new("Surface corners: tabs, text inputs and cards.").small().color(c.text_dim));
-                                    changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
+                                    group_changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
                                 }
                                 ThemePreviewRegion::Bookmarks => {
                                     ui.label(RichText::new("Surface corners: expanded location cards, tabs and inputs.").small().color(c.text_dim));
-                                    changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
+                                    group_changed |= number_row(ui, "Surface corners", &mut self.theme_editor.custom.border_radius, 0.0..=14.0, seed.border_radius, 1.0, c);
                                     ui.label(RichText::new("Button corners: collapsed location icons and other buttons.").small().color(c.text_dim));
-                                    changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
+                                    group_changed |= number_row(ui, "Button corners", &mut self.theme_editor.custom.button_radius, 0.0..=14.0, seed.button_radius, 1.0, c);
                                 }
                                 _ => {
                                     ui.label(RichText::new("Window corners: main window, Settings, editor and Inspector.").small().color(c.text_dim));
-                                    changed |= number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
+                                    group_changed |= number_row(ui, "Window corners", &mut self.theme_editor.custom.app_radius, 0.0..=24.0, seed.app_radius, 1.0, c);
                                 }
                             }
+                            group_changed
+                        });
                         }
                     }
                 });
@@ -398,6 +425,7 @@ impl OttrinApp {
                 if let Some((message, ok, _)) = &self.theme_status {
                     ui.label(RichText::new(message).small().color(if *ok { c.accent } else { c.error }));
                 }
+            });
             });
         });
         if changed {
@@ -1009,9 +1037,141 @@ fn appearance_mode_control(
         });
 }
 
+pub(super) fn settings_surface(c: Colors) -> Frame {
+    Frame::new()
+        .fill(c.panel_raised)
+        .stroke(Stroke::new(1.0, c.border))
+        .corner_radius(c.border_radius)
+        .inner_margin(12)
+}
+
+/// One consistent property surface for component colors, geometry and shared values.
+fn property_group(
+    ui: &mut egui::Ui,
+    title: &str,
+    c: Colors,
+    body: impl FnOnce(&mut egui::Ui) -> bool,
+) -> bool {
+    settings_surface(c)
+        .show(ui, |ui| {
+            ui.set_width(ui.available_width());
+            ui.label(
+                RichText::new(title)
+                    .strong()
+                    .size(14.0 * c.font_scale)
+                    .color(c.heading),
+            );
+            ui.add_space(4.0);
+            ui.separator();
+            ui.add_space(6.0);
+            body(ui)
+        })
+        .inner
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn preview_uses_real_smart_panel_icons_and_toggle_behavior() {
+        let ctx = Context::default();
+        let c = Colors::preset(ThemePreset::Nord, true);
+        let render = |events| {
+            let mut picked = None;
+            let output = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1000.0, 700.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        picked = theme_editor_large_preview(ui, c, ThemePreviewRegion::Sidebar).1;
+                    });
+                },
+            );
+            (output, picked)
+        };
+        let (output, _) = render(vec![]);
+        for icon in [
+            MI_DESCRIPTION,
+            MI_MOVE_TO_INBOX,
+            MI_SEARCH,
+            MI_HISTORY,
+            MI_DELETE,
+        ] {
+            assert!(output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == icon)), "Missing real Smart Panel icon {icon}");
+        }
+        assert!(!output.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if ["Details", "Target", "Preview"].contains(&t.galley.job.text.as_str()))));
+        let pos = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::epaint::Shape::Text(t) if t.galley.job.text == MI_SEARCH => {
+                    Some(t.pos + t.galley.size() / 2.0)
+                }
+                _ => None,
+            })
+            .unwrap();
+        let click = || {
+            vec![
+                egui::Event::PointerMoved(pos),
+                egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed: true,
+                    modifiers: egui::Modifiers::NONE,
+                },
+                egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed: false,
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ]
+        };
+        assert_eq!(render(click()).1, Some(ThemePreviewRegion::Sidebar));
+        let (expanded, _) = render(vec![]);
+        assert!(expanded.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == "Search")), "The real header appears when Search opens");
+        assert!(expanded.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Rect(r) if r.fill == c.selected_bg && r.rect.width() == SMART_PANEL_STRIP_WIDTH && r.corner_radius.nw == c.button_radius)));
+        render(click());
+        let (collapsed, _) = render(vec![]);
+        assert!(!collapsed.shapes.iter().any(|shape| matches!(&shape.shape, egui::epaint::Shape::Text(t) if t.galley.job.text == "Search")), "Clicking the active icon collapses its panel");
+    }
+
+    #[test]
+    fn settings_navigation_rows_keep_icon_and_text_centred_inside_their_surface() {
+        for scale in [1.0, 1.35] {
+            let ctx = Context::default();
+            let mut c = Colors::preset(ThemePreset::Ottrin, true);
+            c.font_scale = scale;
+            let mut bounds = None;
+            let output = ctx.run(Default::default(), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    ui.set_width(164.0 * scale - 38.0);
+                    bounds = Some(
+                        settings_navigation_row(ui, MI_DARK_MODE, "Appearance", true, &c).rect,
+                    );
+                });
+            });
+            let bounds = bounds.unwrap();
+            for text in output.shapes.iter().filter_map(|shape| match &shape.shape {
+                egui::epaint::Shape::Text(t) => Some(t),
+                _ => None,
+            }) {
+                let rect = Rect::from_min_size(text.pos, text.galley.size());
+                assert!((rect.center().y - bounds.center().y).abs() < 1.0);
+                assert!(
+                    bounds.contains_rect(rect),
+                    "Navigation text must stay within its row at scale {scale}"
+                );
+            }
+        }
+    }
 
     #[test]
     fn appearance_preview_selection_matches_painted_row_and_square_canvas() {
@@ -1172,7 +1332,7 @@ mod tests {
             },
         );
         for label in [
-            "Shared styling",
+            "Shared colors",
             "Surface corners",
             "Text size",
             "Muted text",

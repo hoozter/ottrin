@@ -4709,7 +4709,11 @@ impl OttrinApp {
     ) -> &'static [ThemeColorField] {
         match region {
             ThemePreviewRegion::Defaults | ThemePreviewRegion::ColumnText => &[],
-            ThemePreviewRegion::Titlebar => &[ThemeColorField::TextDim],
+            ThemePreviewRegion::Titlebar => &[
+                ThemeColorField::TextHeading,
+                ThemeColorField::TextMuted,
+                ThemeColorField::TextDim,
+            ],
             ThemePreviewRegion::Navigation => &[
                 ThemeColorField::Titlebar,
                 ThemeColorField::RaisedPanel,
@@ -4724,7 +4728,15 @@ impl OttrinApp {
                 &[ThemeColorField::Border, ThemeColorField::Hover]
             }
             ThemePreviewRegion::SelectedRow => &[ThemeColorField::Accent],
-            ThemePreviewRegion::Sidebar => &[ThemeColorField::TextMuted],
+            ThemePreviewRegion::Sidebar => &[
+                ThemeColorField::TextMuted,
+                ThemeColorField::TextHeading,
+                ThemeColorField::Accent,
+                ThemeColorField::Selection,
+                ThemeColorField::RaisedPanel,
+                ThemeColorField::Border,
+                ThemeColorField::Hover,
+            ],
             ThemePreviewRegion::StatusBar => &[ThemeColorField::TextMuted, ThemeColorField::Error],
             ThemePreviewRegion::Accent => &[ThemeColorField::Hover, ThemeColorField::Accent],
             ThemePreviewRegion::Borders => &[],
@@ -11860,137 +11872,28 @@ impl OttrinApp {
                     Stroke::new(HAIRLINE, c.border),
                 );
 
-                ui.scope_builder(UiBuilder::new().max_rect(strip_rect), |ui| {
-                    ui.vertical_centered(|ui| {
-                        ui.add_space(12.0);
-
-                        let info_active = self.sidebar == SidebarSection::Info;
-                        let info_col = if info_active { c.accent } else { c.text_muted };
-                        if smart_panel_icon_button(
-                            ui,
-                            strip_rect,
-                            SmartPanelIconButton {
-                                icon: MI_DESCRIPTION,
-                                icon_size: 18.0,
-                                icon_color: info_col,
-                                active: info_active,
-                                tooltip: if info_active { "Hide info panel" } else { "Show info panel" },
-                            },
-                            &c,
-                        )
-                        .clicked() {
-                            self.sidebar = if info_active { SidebarSection::None } else { SidebarSection::Info };
-                        }
-
-                        ui.add_space(8.0);
-
-                        let target_active = self.sidebar == SidebarSection::Target;
-                        let target_col = if target_active { c.accent } else if target_set { c.accent_dim } else { c.text_muted };
-                        if smart_panel_icon_button(
-                            ui,
-                            strip_rect,
-                            SmartPanelIconButton {
-                                icon: MI_MOVE_TO_INBOX,
-                                icon_size: 22.0,
-                                icon_color: target_col,
-                                active: target_active,
-                                tooltip: if target_set { "Show drop-folder panel" } else { "Set or view drop folder" },
-                            },
-                            &c,
-                        )
-                        .clicked() {
-                            self.sidebar = if target_active { SidebarSection::None } else { SidebarSection::Target };
-                        }
-                        ui.add_space(8.0);
-                        let search_active = self.sidebar == SidebarSection::Search;
-                        let search_diag = self.search_service.diagnostics();
-                        let search_col = if search_active {
-                            c.accent
-                        } else {
-                            c.text_muted
-                        };
-                        let search_tip = search_diagnostics_tooltip(
-                            &search_diag,
-                            self.search_ui.scope,
-                            &self.state.active_tab().current_dir,
-                        );
-                        let btn = smart_panel_icon_button(
-                            ui,
-                            strip_rect,
-                            SmartPanelIconButton {
-                                icon: MI_SEARCH,
-                                icon_size: 20.0,
-                                icon_color: search_col,
-                                active: search_active,
-                                tooltip: &search_tip,
-                            },
-                            &c,
-                        );
-                        btn.widget_info(|| {
-                            WidgetInfo::labeled(
-                                WidgetType::Button,
-                                true,
-                                SEARCH_TOGGLE_ACCESSIBILITY_LABEL,
-                            )
-                        });
-                        if btn.clicked() {
-                            self.sidebar = if search_active { SidebarSection::None } else { SidebarSection::Search };
-                            if self.sidebar == SidebarSection::Search {
-                                self.search_ui.request_focus = true;
-                                self.command_frame.visible = false;
-                                self.command_frame.error = None;
-                                self.command_frame.message = None;
-                                self.run_search_query();
-                            }
-                        }
-                        let remaining = (strip_rect.bottom() - ui.cursor().min.y - 82.0).max(0.0);
-                        ui.add_space(remaining);
-                        let activity_active = self.sidebar == SidebarSection::Activity;
-                        let activity_col = if activity_active {
-                            c.accent
-                        } else if self.operation_history.iter().any(|op| op.status == OperationStatus::Queued) {
-                            c.accent_dim
-                        } else {
-                            c.text_muted
-                        };
-                        if smart_panel_icon_button(
-                            ui,
-                            strip_rect,
-                            SmartPanelIconButton {
-                                icon: MI_HISTORY,
-                                icon_size: 20.0,
-                                icon_color: activity_col,
-                                active: activity_active,
-                                tooltip: if activity_active { "Hide Activity panel" } else { "Show Activity" },
-                            },
-                            &c,
-                        )
-                        .clicked() {
-                            self.sidebar = if activity_active { SidebarSection::None } else { SidebarSection::Activity };
-                        }
-                        ui.add_space(8.0);
-                        let trash_active = self.sidebar == SidebarSection::Trash;
-                        let trash_col = if trash_active { c.accent } else { c.text_muted };
-                        if smart_panel_icon_button(
-                            ui,
-                            strip_rect,
-                            SmartPanelIconButton {
-                                icon: MI_DELETE,
-                                icon_size: 20.0,
-                                icon_color: trash_col,
-                                active: trash_active,
-                                tooltip: if trash_active { "Hide Trash panel" } else { "Show Trash" },
-                            },
-                            &c,
-                        )
-                        .clicked() {
-                            self.sidebar = if trash_active { SidebarSection::None } else { SidebarSection::Trash };
-                            if self.sidebar == SidebarSection::Trash {
-                                self.refresh_trash_panel();
-                            }
-                        }
-                    });
-                });
+                let search_tip = search_diagnostics_tooltip(
+                    &self.search_service.diagnostics(), self.search_ui.scope,
+                    &self.state.active_tab().current_dir,
+                );
+                if let Some(section) = render_smart_panel_strip(
+                    ui, strip_rect, &c, SmartPanelStripState {
+                        selected: self.sidebar, target_set,
+                        activity_pending: self.operation_history.iter().any(|op| op.status == OperationStatus::Queued),
+                        search_tip: &search_tip,
+                    },
+                ) {
+                    self.sidebar = section;
+                    if section == SidebarSection::Search {
+                        self.search_ui.request_focus = true;
+                        self.command_frame.visible = false;
+                        self.command_frame.error = None;
+                        self.command_frame.message = None;
+                        self.run_search_query();
+                    } else if section == SidebarSection::Trash {
+                        self.refresh_trash_panel();
+                    }
+                }
 
                 if !is_expanded { return; }
 
@@ -19596,62 +19499,36 @@ impl OttrinApp {
                     egui::pos2(full_rect.min.x, full_rect.min.y + summary_h + 6.0),
                     full_rect.max,
                 );
-                let sidebar_w = 132.0;
+                let sidebar_w = 164.0 * c.font_scale;
 
-                // Left sidebar
+                // The entire navigation surface uses the same framed panel styling as the editor.
                 let sidebar_rect = Rect::from_min_size(body_rect.min, Vec2::new(sidebar_w, body_rect.height()));
                 ui.scope_builder(UiBuilder::new().max_rect(sidebar_rect), |ui| {
-                    Frame::new()
-                        .fill(mix_color(c.panel_raised, c.panel, 0.45))
-                        .inner_margin(egui::Margin { left: 0, right: 0, top: 8, bottom: 8 })
+                    ui.painter().rect_filled(sidebar_rect, 0.0, c.panel);
+                    appearance_editor::settings_surface(c).inner_margin(10).outer_margin(8)
                         .show(ui, |ui| {
+                            ui.set_width((sidebar_w - 38.0).max(1.0));
                             let groups: &[SettingsNavGroup] = &[
                                 ("Preferences", &[
-                                    (SettingsTab::General,    MI_TUNE,        "General"),
-                                    (SettingsTab::Appearance, MI_DARK_MODE,   "Appearance"),
-                                    (SettingsTab::Files,      MI_FOLDER,      "Files"),
-                                    (SettingsTab::Services,   MI_LOCK,        "Services"),
+                                    (SettingsTab::General, MI_TUNE, "General"),
+                                    (SettingsTab::Appearance, MI_DARK_MODE, "Appearance"),
+                                    (SettingsTab::Files, MI_FOLDER, "Files"),
+                                    (SettingsTab::Services, MI_LOCK, "Services"),
                                 ]),
                                 ("Search", &[
-                                    (SettingsTab::Search,     MI_SEARCH,      "Search"),
-                                    (SettingsTab::Cache,      MI_DESCRIPTION, "Cache"),
+                                    (SettingsTab::Search, MI_SEARCH, "Search"),
+                                    (SettingsTab::Cache, MI_DESCRIPTION, "Cache"),
                                 ]),
                             ];
-                            let _diag = self.search_service.diagnostics();
-
-                            for (group_label, items) in groups {
-                                ui.add_space(2.0);
-                                ui.label(RichText::new(*group_label).size(10.0 * c.font_scale).color(c.text_muted));
-                                ui.add_space(4.0);
+                            for (index, (title, items)) in groups.iter().enumerate() {
+                                if index > 0 { ui.add_space(12.0); ui.separator(); ui.add_space(6.0); }
+                                ui.label(RichText::new(*title).strong().size(11.0 * c.font_scale).color(c.heading));
+                                ui.add_space(6.0);
                                 for (tab, icon, label) in *items {
-                                    let active = self.settings_tab == *tab;
-                                    let bg = if active { c.selected_bg } else { Color32::TRANSPARENT };
-                                    let text_col = if active { c.text } else { c.text_dim };
-                                    let resp = Frame::new()
-                                        .fill(bg)
-                                        .inner_margin(egui::Margin { left: 12, right: 8, top: 0, bottom: 0 })
-                                        .show(ui, |ui| {
-                                            ui.set_min_width(sidebar_w);
-                                            ui.horizontal(|ui| {
-                                                ui.label(RichText::new(*icon).size(14.0 * c.font_scale).color(text_col));
-                                                ui.add_space(5.0);
-                                                ui.label(RichText::new(*label).size(12.0 * c.font_scale).color(text_col));
-                                                if *tab == SettingsTab::Search {
-                                                    // No index status indicator here — keep all progress in Search page only.
-                                                }
-                                            });
-                                            ui.add_space(1.0);
-                                        });
-                                    let r = ui.interact(resp.response.rect, ui.id().with(label), Sense::click());
-                                    if r.hovered() {
-                                        ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-                                    }
-                                    if r.clicked() { self.settings_tab = *tab; }
-                                    if active {
-                                        ui.painter().vline(sidebar_rect.min.x + 2.0, resp.response.rect.y_range(), Stroke::new(2.0, c.accent));
+                                    if settings_navigation_row(ui, icon, label, self.settings_tab == *tab, &c).clicked() {
+                                        self.settings_tab = *tab;
                                     }
                                 }
-                                ui.add_space(6.0);
                             }
                         });
                 });
@@ -22377,6 +22254,148 @@ struct SmartPanelIconButton<'a> {
     tooltip: &'a str,
 }
 
+struct SmartPanelStripState<'a> {
+    selected: SidebarSection,
+    target_set: bool,
+    activity_pending: bool,
+    search_tip: &'a str,
+}
+
+fn render_smart_panel_strip(
+    ui: &mut egui::Ui,
+    strip: Rect,
+    c: &Colors,
+    state: SmartPanelStripState<'_>,
+) -> Option<SidebarSection> {
+    let SmartPanelStripState {
+        selected,
+        target_set,
+        activity_pending,
+        search_tip,
+    } = state;
+    let mut action = None;
+    ui.scope_builder(UiBuilder::new().max_rect(strip), |ui| {
+        ui.set_clip_rect(strip.intersect(ui.clip_rect()));
+        ui.vertical_centered(|ui| {
+            ui.add_space(12.0);
+            for (idx, (section, icon, size, tip)) in [
+                (
+                    SidebarSection::Info,
+                    MI_DESCRIPTION,
+                    18.0,
+                    "Show or hide info panel",
+                ),
+                (
+                    SidebarSection::Target,
+                    MI_MOVE_TO_INBOX,
+                    22.0,
+                    "Show or hide drop-folder panel",
+                ),
+                (SidebarSection::Search, MI_SEARCH, 20.0, search_tip),
+                (
+                    SidebarSection::Activity,
+                    MI_HISTORY,
+                    20.0,
+                    "Show or hide Activity",
+                ),
+                (SidebarSection::Trash, MI_DELETE, 20.0, "Show or hide Trash"),
+            ]
+            .into_iter()
+            .enumerate()
+            {
+                if idx == 3 {
+                    ui.add_space((strip.bottom() - ui.cursor().min.y - 82.0).max(0.0));
+                } else if idx > 0 {
+                    ui.add_space(8.0);
+                }
+                let active = selected == section;
+                let pending = (section == SidebarSection::Target && target_set)
+                    || (section == SidebarSection::Activity && activity_pending);
+                let response = smart_panel_icon_button(
+                    ui,
+                    strip,
+                    SmartPanelIconButton {
+                        icon,
+                        icon_size: size,
+                        icon_color: if active {
+                            c.accent
+                        } else if pending {
+                            c.accent_dim
+                        } else {
+                            c.text_muted
+                        },
+                        active,
+                        tooltip: tip,
+                    },
+                    c,
+                );
+                if section == SidebarSection::Search {
+                    response.widget_info(|| {
+                        WidgetInfo::labeled(
+                            WidgetType::Button,
+                            true,
+                            SEARCH_TOGGLE_ACCESSIBILITY_LABEL,
+                        )
+                    });
+                }
+                if response.clicked() {
+                    action = Some(if active {
+                        SidebarSection::None
+                    } else {
+                        section
+                    });
+                }
+            }
+        });
+    });
+    action
+}
+
+fn settings_navigation_row(
+    ui: &mut egui::Ui,
+    icon: &str,
+    label: &str,
+    active: bool,
+    c: &Colors,
+) -> egui::Response {
+    let (rect, response) = ui.allocate_exact_size(
+        Vec2::new(ui.available_width(), 30.0 * c.font_scale),
+        Sense::click(),
+    );
+    let fill = if active {
+        c.selected_bg
+    } else if response.hovered() {
+        c.hover
+    } else {
+        Color32::TRANSPARENT
+    };
+    ui.painter().rect_filled(rect, c.button_radius, fill);
+    let color = if active { c.text } else { c.text_dim };
+    let x = rect.left() + 12.0;
+    ui.painter().text(
+        egui::pos2(x + 8.0, rect.center().y),
+        Align2::CENTER_CENTER,
+        icon,
+        FontId::proportional(16.0 * c.font_scale),
+        color,
+    );
+    ui.painter().text(
+        egui::pos2(x + 26.0, rect.center().y),
+        Align2::LEFT_CENTER,
+        label,
+        FontId::proportional(12.0 * c.font_scale),
+        color,
+    );
+    if active {
+        ui.painter().vline(
+            rect.left() + 2.0,
+            (rect.top() + 6.0)..=(rect.bottom() - 6.0),
+            Stroke::new(2.0, c.accent),
+        );
+    }
+    response.on_hover_cursor(egui::CursorIcon::PointingHand)
+}
+
 fn smart_panel_icon_button(
     ui: &mut egui::Ui,
     strip_rect: Rect,
@@ -22390,7 +22409,7 @@ fn smart_panel_icon_button(
                 egui::Pos2::new(strip_rect.min.x, y),
                 Vec2::new(strip_rect.width(), 32.0),
             ),
-            4.0,
+            c.button_radius,
             c.selected_bg,
         );
         ui.painter().vline(
@@ -23451,7 +23470,7 @@ fn theme_editor_large_preview(
     let width = ui.available_width().max(320.0);
     let height = ui.available_height().max(320.0);
     let (rect, response) = ui.allocate_exact_size(Vec2::new(width, height), Sense::click());
-    let p = ui.painter();
+    let p = ui.painter().clone();
     let outer = rect;
     let frame = rect.shrink(14.0);
     let title_h = (frame.height() * 0.13).clamp(32.0, 44.0);
@@ -23474,7 +23493,19 @@ fn theme_editor_large_preview(
         egui::pos2(bookmarks.right() + 4.0, nav.bottom()),
         egui::pos2(frame.right(), status.top()),
     );
-    let sidebar_w = (content.width() * 0.14).max(64.0 * preview.font_scale);
+    let preview_state_id = ui.id().with("preview_smart_panel_state");
+    let selected = ui
+        .ctx()
+        .data_mut(|data| data.get_temp::<SidebarSection>(preview_state_id))
+        .unwrap_or_default();
+    // This fixture is a Miller view: Info stays inline, as in the main window.
+    let expanded = !matches!(selected, SidebarSection::None | SidebarSection::Info);
+    let sidebar_w = SMART_PANEL_STRIP_WIDTH
+        + if expanded {
+            (content.width() * 0.30).min(220.0)
+        } else {
+            0.0
+        };
     let column_gap = 6.0;
     let columns_rect = Rect::from_min_max(
         content.min,
@@ -23754,44 +23785,51 @@ fn theme_editor_large_preview(
     }
 
     p.rect_filled(sidebar, 0.0, preview.smart_panel_bg);
-    p.text(
-        egui::pos2(sidebar.left() + 10.0, sidebar.top() + 14.0),
-        Align2::LEFT_CENTER,
-        "Smart panel",
-        FontId::proportional(9.4 * preview.font_scale),
-        preview.text_muted,
+    let strip = Rect::from_min_max(
+        egui::pos2(sidebar.right() - SMART_PANEL_STRIP_WIDTH, sidebar.top()),
+        sidebar.max,
     );
-    let mut sidebar_buttons = Vec::new();
-    for idx in 0..4 {
-        let item = Rect::from_min_size(
-            egui::pos2(
-                sidebar.left() + 10.0,
-                sidebar.top() + 28.0 + idx as f32 * 34.0,
-            ),
-            Vec2::new(sidebar.width() - 20.0, 24.0),
+    p.rect_filled(
+        strip,
+        0.0,
+        mix_color(preview.smart_panel_bg, preview.panel_raised, 0.3),
+    );
+    p.vline(
+        strip.left(),
+        strip.y_range(),
+        Stroke::new(HAIRLINE, preview.border),
+    );
+    if expanded {
+        let panel = Rect::from_min_max(sidebar.min, egui::pos2(strip.left(), sidebar.bottom()));
+        p.vline(
+            panel.left(),
+            panel.y_range(),
+            Stroke::new(HAIRLINE, preview.border),
         );
-        sidebar_buttons.push((ThemePreviewRegion::Accent, item));
-        p.rect_filled(
-            item,
-            preview.button_radius as f32,
-            if idx == 0 {
-                preview.accent_dim
-            } else {
-                preview.button_bg
-            },
-        );
-        p.text(
-            egui::pos2(item.left() + 10.0, item.center().y),
-            Align2::LEFT_CENTER,
-            match idx {
-                0 => "Search",
-                1 => "Details",
-                2 => "Target",
-                _ => "Preview",
-            },
-            FontId::proportional(9.5 * preview.font_scale),
-            preview.button_text,
-        );
+        let mut panel_ui = ui.new_child(UiBuilder::new().max_rect(panel));
+        panel_ui.set_clip_rect(panel.intersect(ui.clip_rect()));
+        let (icon, title) = match selected {
+            SidebarSection::Target => (MI_MOVE_TO_INBOX, "Drop Folder"),
+            SidebarSection::Search => (MI_SEARCH, "Search"),
+            SidebarSection::Activity => (MI_HISTORY, "Activity"),
+            _ => (MI_DELETE, "Trash"),
+        };
+        smart_panel_header(&mut panel_ui, &preview, icon, title);
+    }
+    let mut strip_ui = ui.new_child(UiBuilder::new().max_rect(strip));
+    if let Some(section) = render_smart_panel_strip(
+        &mut strip_ui,
+        strip,
+        &preview,
+        SmartPanelStripState {
+            selected,
+            target_set: false,
+            activity_pending: false,
+            search_tip: "Show or hide Search",
+        },
+    ) {
+        ui.ctx()
+            .data_mut(|data| data.insert_temp(preview_state_id, section));
     }
 
     p.rect_filled(status, 0.0, preview.statusbar_bg);
@@ -23822,7 +23860,7 @@ fn theme_editor_large_preview(
         preview.button_text,
     );
 
-    let mut regions = vec![
+    let regions = vec![
         (ThemePreviewRegion::Accent, accent_button),
         (ThemePreviewRegion::SelectedRow, selected_row),
         (
@@ -23839,7 +23877,6 @@ fn theme_editor_large_preview(
         (ThemePreviewRegion::ColumnBackground, columns_rect),
         (ThemePreviewRegion::Borders, border_rect),
     ];
-    regions.splice(0..0, sidebar_buttons);
 
     let hovered_region = response
         .hover_pos()
@@ -23847,7 +23884,14 @@ fn theme_editor_large_preview(
     if hovered_region.is_some() {
         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
     }
-    let clicked_region = if response.clicked() {
+    let clicked_region = if ui.ctx().input(|i| {
+        i.pointer.primary_clicked()
+            && i.pointer
+                .interact_pos()
+                .is_some_and(|pos| sidebar.contains(pos))
+    }) {
+        Some(ThemePreviewRegion::Sidebar)
+    } else if response.clicked() {
         hovered_region
     } else {
         None

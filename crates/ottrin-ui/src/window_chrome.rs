@@ -1,5 +1,4 @@
 use crate::CUSTOM_TITLEBAR_HEIGHT;
-use crate::icons::MI_CLOSE;
 use crate::theme_colors::Colors;
 use egui::{
     Align, Color32, Context, Frame, Layout, Rect, ResizeDirection, RichText, Sense, Stroke, Vec2,
@@ -38,13 +37,7 @@ pub(crate) fn render_custom_titlebar(
                 ui.add_space(18.0);
                 body(ui);
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                    let close_btn = ui.add(
-                        egui::Button::new(
-                            RichText::new(MI_CLOSE).size(16.0).color(colors.text_muted),
-                        )
-                        .frame(false)
-                        .min_size(Vec2::new(24.0, 24.0)),
-                    );
+                    let close_btn = wm_btn(ui, WmBtn::Close, &colors);
                     close_btn_rect = Some(close_btn.rect);
                     if close_btn.hovered() {
                         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
