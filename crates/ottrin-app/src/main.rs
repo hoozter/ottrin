@@ -590,9 +590,37 @@ fn index_daemon_executable() -> std::io::Result<PathBuf> {
     ))
 }
 
-#[cfg(unix)]
-fn same_executable_identity(left: (u64, u64), right: (u64, u64)) -> bool {
-    left == right
+#[cfg(target_os = "linux")]
+fn same_executable_content(
+    left: &std::path::Path,
+    right: &std::path::Path,
+) -> std::io::Result<bool> {
+    use std::io::Read;
+    let mut left = std::fs::File::open(left)?;
+    let mut right = std::fs::File::open(right)?;
+    let lm = left.metadata()?;
+    let rm = right.metadata()?;
+    if (lm.dev(), lm.ino()) == (rm.dev(), rm.ino()) {
+        return Ok(true);
+    }
+    if lm.len() != rm.len() {
+        return Ok(false);
+    }
+    // Separate AppImage mounts have different device identities. Compare their
+    // actual daemon bytes so opening another window does not trigger an upgrade.
+    let mut lbuf = [0u8; 65536];
+    let mut rbuf = [0u8; 65536];
+    let mut remaining = lm.len();
+    while remaining != 0 {
+        let length = remaining.min(lbuf.len() as u64) as usize;
+        left.read_exact(&mut lbuf[..length])?;
+        right.read_exact(&mut rbuf[..length])?;
+        if lbuf[..length] != rbuf[..length] {
+            return Ok(false);
+        }
+        remaining -= length as u64;
+    }
+    Ok(true)
 }
 
 #[cfg(target_os = "linux")]
@@ -601,14 +629,11 @@ fn daemon_uses_executable(
     expected: &std::path::Path,
 ) -> Result<bool, String> {
     let pid = client.server_pid()?;
-    let running = std::fs::metadata(format!("/proc/{pid}/exe"))
-        .map_err(|error| format!("could not inspect the running index daemon: {error}"))?;
-    let expected = std::fs::metadata(expected)
-        .map_err(|error| format!("could not inspect the current index daemon: {error}"))?;
-    Ok(same_executable_identity(
-        (running.dev(), running.ino()),
-        (expected.dev(), expected.ino()),
-    ))
+    same_executable_content(std::path::Path::new(&format!("/proc/{pid}/exe")), expected).map_err(
+        |error| {
+            format!("could not compare the running index daemon with this installation: {error}")
+        },
+    )
 }
 
 #[cfg(all(unix, not(target_os = "linux")))]
@@ -621,16 +646,22 @@ fn daemon_uses_executable(
 
 #[cfg(unix)]
 fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
+    let unit_path = ottrin_search::sqlite_systemd_service_path();
     if let Some(client) = connected_index_daemon() {
         let executable = index_daemon_executable()
             .map_err(|error| format!("could not locate the Ottrin index daemon: {error}"))?;
         if daemon_uses_executable(&client, &executable)? {
             return Ok(client);
         }
-        client.prepare_upgrade_and_wait()?;
+        if unit_path.is_file() {
+            // Use the existing installer to prepare, stop and update the service
+            // before starting it. A plain start can race an exiting active unit.
+            ottrin_search::SearchService::install_sqlite_schedule(&configured_search_config())?;
+        } else {
+            client.prepare_upgrade_and_wait()?;
+        }
     }
 
-    let unit_path = ottrin_search::sqlite_systemd_service_path();
     if unit_path.is_file() {
         let status = Command::new("systemctl")
             .args(["--user", "start", "ottrin-index.service"])
@@ -656,14 +687,14 @@ fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
             .map_err(|error| format!("could not start the session index daemon: {error}"))?;
     }
 
-    let deadline = Instant::now() + Duration::from_secs(3);
+    let deadline = Instant::now() + Duration::from_secs(30);
     while Instant::now() < deadline {
         if let Some(client) = connected_index_daemon() {
             return Ok(client);
         }
         thread::sleep(Duration::from_millis(25));
     }
-    Err("Ottrin index daemon did not become ready within 3 seconds".to_string())
+    Err("Ottrin index daemon did not become ready within 30 seconds".to_string())
 }
 
 fn resolve_direct_open_path(path: &std::path::Path) -> Result<GuiLaunchTarget, String> {
@@ -1153,14 +1184,6 @@ fn cargo_helper_artifact_from_messages(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[cfg(unix)]
-    #[test]
-    fn executable_identity_distinguishes_replaced_daemon_binary() {
-        assert!(same_executable_identity((7, 11), (7, 11)));
-        assert!(!same_executable_identity((7, 11), (7, 12)));
-        assert!(!same_executable_identity((7, 11), (8, 11)));
-    }
 
     #[cfg(unix)]
     #[test]

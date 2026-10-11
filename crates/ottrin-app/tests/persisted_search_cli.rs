@@ -155,6 +155,17 @@ fn persisted_no_match_cli_query_does_not_scan_fuzzy_candidates() {
 #[cfg(target_os = "linux")]
 #[test]
 fn stale_on_demand_daemon_is_replaced_before_a_rebuild() {
+    check_daemon_reuse(true);
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn identical_daemon_on_another_mount_is_reused_across_launches() {
+    check_daemon_reuse(false);
+}
+
+#[cfg(target_os = "linux")]
+fn check_daemon_reuse(changed_binary: bool) {
     let unique = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("clock")
@@ -192,7 +203,16 @@ fn stale_on_demand_daemon_is_replaced_before_a_rebuild() {
 
     let current_daemon = Path::new(env!("CARGO_BIN_EXE_ottrin-indexd"));
     let stale_daemon = root.join("stale-ottrin-indexd");
-    fs::copy(current_daemon, &stale_daemon).expect("copy stale daemon fixture");
+    fs::copy(current_daemon, &stale_daemon).expect("copy daemon fixture");
+    if changed_binary {
+        use std::io::Write;
+        fs::OpenOptions::new()
+            .append(true)
+            .open(&stale_daemon)
+            .unwrap()
+            .write_all(b"different daemon build")
+            .unwrap();
+    }
     fs::set_permissions(&stale_daemon, fs::Permissions::from_mode(0o700))
         .expect("make stale daemon executable");
     let daemon = Command::new(&stale_daemon)
@@ -240,6 +260,26 @@ fn stale_on_demand_daemon_is_replaced_before_a_rebuild() {
     );
     let client = SearchDaemonClient::new(socket);
     let replacement_pid = client.server_pid().expect("read replacement daemon pid");
+    if !changed_binary {
+        assert_eq!(
+            replacement_pid, stale_pid,
+            "identical daemon was needlessly replaced"
+        );
+        let second = run_app(
+            &config_home,
+            &cache_home,
+            &runtime_dir,
+            &["index", "rebuild", "--json"],
+        );
+        assert!(
+            second.status.success(),
+            "second launch failed: {}",
+            String::from_utf8_lossy(&second.stderr)
+        );
+        assert_eq!(client.server_pid().unwrap(), stale_pid);
+        client.shutdown().expect("stop reused daemon");
+        return;
+    }
     assert_ne!(replacement_pid, stale_pid, "stale daemon remained active");
     assert!(
         stale_daemon
