@@ -24,6 +24,10 @@
       <File Id="MainExecutable" Source="$(var.Stage)/bin/ottrin.exe" KeyPath="yes" />
     </Component>
 
+    <Component Id="IndexTransactionComponent" Directory="BinFolder" Guid="*">
+      <File Id="IndexTransactionScript" Source="$(sys.SOURCEFILEDIR)index-task-transaction.ps1" KeyPath="yes" />
+    </Component>
+
     <ComponentGroup Id="PortablePayload" Directory="INSTALLFOLDER">
       <Files Include="$(var.Stage)/**/*">
         <Exclude Files="$(var.Stage)/bin/ottrin.exe" />
@@ -32,8 +36,19 @@
 
     <Feature Id="MainFeature" Title="Ottrin" Level="1">
       <ComponentRef Id="MainExecutableComponent" />
+      <ComponentRef Id="IndexTransactionComponent" />
       <ComponentGroupRef Id="PortablePayload" />
     </Feature>
+
+    <CustomAction Id="RollbackBackgroundIndex" Directory="System64Folder"
+        ExeCommand="&quot;[System64Folder]WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;[#IndexTransactionScript]&quot; -Phase Rollback -Snapshot &quot;[TempFolder]OttrinIndexRollback-[ProductCode].json&quot;"
+        Execute="rollback" Impersonate="yes" Return="check" />
+    <CustomAction Id="SnapshotBackgroundIndex" Directory="System64Folder"
+        ExeCommand="&quot;[System64Folder]WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;[#IndexTransactionScript]&quot; -Phase Snapshot -Snapshot &quot;[TempFolder]OttrinIndexRollback-[ProductCode].json&quot;"
+        Execute="deferred" Impersonate="yes" Return="check" />
+    <CustomAction Id="CommitBackgroundIndex" Directory="System64Folder"
+        ExeCommand="&quot;[System64Folder]WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;[#IndexTransactionScript]&quot; -Phase Commit -Snapshot &quot;[TempFolder]OttrinIndexRollback-[ProductCode].json&quot;"
+        Execute="commit" Impersonate="yes" Return="check" />
 
     <CustomAction
         Id="InstallBackgroundIndex"
@@ -51,7 +66,10 @@
         Return="check" />
 
     <InstallExecuteSequence>
-      <Custom Action="InstallBackgroundIndex" After="InstallFiles" Condition="NOT REMOVE" />
+      <Custom Action="RollbackBackgroundIndex" After="InstallFiles" Condition="NOT REMOVE" />
+      <Custom Action="SnapshotBackgroundIndex" After="RollbackBackgroundIndex" Condition="NOT REMOVE" />
+      <Custom Action="InstallBackgroundIndex" After="SnapshotBackgroundIndex" Condition="NOT REMOVE" />
+      <Custom Action="CommitBackgroundIndex" After="InstallBackgroundIndex" Condition="NOT REMOVE" />
       <Custom Action="CleanupBeforeUninstall" Before="RemoveFiles" Condition="REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
     </InstallExecuteSequence>
   </Package>
