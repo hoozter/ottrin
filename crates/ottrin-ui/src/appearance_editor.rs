@@ -406,9 +406,9 @@ impl OttrinApp {
                 ui.separator();
                 ui.horizontal(|ui| {
                     themed_menu_button(ui, "More", c, |ui| {
-                        if ui.add_enabled(!self.theme_editor_is_dirty(), egui::Button::new("Import theme…").themed(&c)).on_hover_text("Import into an unchanged draft. Save or discard your changes first.").clicked() { self.import_theme_editor_json(ctx); ui.close(); }
-                        if ui.add(egui::Button::new("Export theme…").themed(&c)).clicked() { self.export_theme_editor_json(); ui.close(); }
-                        if ui.add(egui::Button::new("Reset theme to starting values").themed(&c)).on_hover_text("Restore all properties in both Light and Dark variants to their values when this editing session opened.").clicked() {
+                        if ui.add_enabled(!self.theme_editor_is_dirty(), aligned_menu_button("", "", "Import theme…", &c).themed(&c)).on_hover_text("Import into an unchanged draft. Save or discard your changes first.").clicked() { self.import_theme_editor_json(ctx); ui.close(); }
+                        if menu_item(ui, "", "Export theme…", &c).clicked() { self.export_theme_editor_json(); ui.close(); }
+                        if menu_item(ui, "", "Reset theme to starting values", &c).on_hover_text("Restore all properties in both Light and Dark variants to their values when this editing session opened.").clicked() {
                             self.theme_editor.custom=seed.clone(); self.theme_editor.other_variant=self.theme_editor.initial_other_variant.clone(); self.sync_theme_editor_hex_inputs(); changed=true; ui.close();
                         }
                     });
