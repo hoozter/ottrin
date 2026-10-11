@@ -1546,7 +1546,7 @@ impl WorkerLoop {
                 Ok(items) => {
                     // Metadata changes update only this entry. Replacing its tree
                     // would rescan and rewrite every descendant of a busy directory.
-                    if change == PendingChange::Subtree || items.is_empty() {
+                    if change == PendingChange::Subtree || (items.is_empty() && !path.exists()) {
                         remove_trees.push(path.clone());
                     }
                     upserts.extend(items);
@@ -3302,6 +3302,13 @@ mod tests {
                 paths: vec![directory.clone()],
             })
             .expect("metadata event");
+        worker
+            .commands
+            .send(Command::FilesystemEvent {
+                kind: EventKind::Modify(ModifyKind::Metadata(notify::event::MetadataKind::Any)),
+                paths: vec![root.clone()],
+            })
+            .expect("configured root metadata event");
         let deadline = Instant::now() + WAIT;
         while Instant::now() < deadline && store.lock().expect("store").commits.is_empty() {
             std::thread::sleep(Duration::from_millis(20));
