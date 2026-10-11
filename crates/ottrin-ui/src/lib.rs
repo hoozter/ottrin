@@ -984,14 +984,14 @@ struct ColumnState {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct MillerPointerReveal {
+struct MillerReveal {
     /// One production Miller render of this exact destination should make its
     /// focus column visible. Listing generations deliberately do not take part:
     /// the renderer can synchronously build the column before an async result.
     destination: PathBuf,
 }
 
-impl MillerPointerReveal {
+impl MillerReveal {
     fn destination(&self) -> &Path {
         &self.destination
     }
@@ -1033,8 +1033,8 @@ struct TabUiState {
     miller_focus_hint: Option<MillerFocusHint>,
     // One-shot: ensure active row is scrolled into view after keyboard move.
     miller_scroll_selected: bool,
-    // One-shot pointer reveal, scoped only to this tab and destination.
-    miller_pointer_reveal: Option<MillerPointerReveal>,
+    // One-shot explicit navigation/startup reveal, scoped to this tab and destination.
+    miller_reveal: Option<MillerReveal>,
     // How many preview columns past current_dir are allowed.
     // Up/Down → 1, Left → increment, Right → decrement (min 1).
     miller_preview_depth: usize,
@@ -2832,6 +2832,7 @@ impl OttrinApp {
         let tab_id = self.state.active_tab().id;
         self.tab_ui.entry(tab_id).or_default().pending_select_path = Some(path);
         self.navigate_tab_to(tab_id, parent);
+        self.request_miller_reveal(tab_id);
     }
 
     /// Enter standalone Quick Inspector mode while retaining the production preview loader,
@@ -5462,7 +5463,7 @@ impl OttrinApp {
     fn refresh_tab(&mut self, tab_id: u64, dir: PathBuf) {
         // A refresh replaces the destination model, so it must not later
         // consume an earlier pointer navigation's one-shot reveal.
-        self.cancel_miller_pointer_reveal(tab_id);
+        self.cancel_miller_reveal(tab_id);
 
         // Capture an ordinary same-directory pointer selection before this
         // refresh clears the old model. Navigation supplies pending_select_path
@@ -6514,14 +6515,11 @@ impl OttrinApp {
         primary_clicked
     }
 
-    fn miller_should_reveal_focus_column(
-        keyboard_navigation: bool,
-        pointer_navigation: bool,
-    ) -> bool {
-        keyboard_navigation || pointer_navigation
+    fn miller_should_reveal_focus_column(keyboard_navigation: bool, explicit_reveal: bool) -> bool {
+        keyboard_navigation || explicit_reveal
     }
 
-    fn request_miller_pointer_reveal(&mut self, tab_id: u64) {
+    fn request_miller_reveal(&mut self, tab_id: u64) {
         let destination = self
             .state
             .tab_by_id(tab_id)
@@ -6529,20 +6527,20 @@ impl OttrinApp {
             .map(|tab| tab.current_dir.clone());
         if let Some(destination) = destination {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
-            ui_state.miller_pointer_reveal = Some(MillerPointerReveal { destination });
+            ui_state.miller_reveal = Some(MillerReveal { destination });
             ui_state.miller_scroll_selected = true;
         }
     }
 
-    fn cancel_miller_pointer_reveal(&mut self, tab_id: u64) {
+    fn cancel_miller_reveal(&mut self, tab_id: u64) {
         if let Some(ui_state) = self.tab_ui.get_mut(&tab_id) {
-            ui_state.miller_pointer_reveal = None;
+            ui_state.miller_reveal = None;
         }
     }
 
     fn navigate_miller_pointer_folder(&mut self, tab_id: u64, destination: PathBuf) {
         self.navigate_tab_to(tab_id, destination);
-        self.request_miller_pointer_reveal(tab_id);
+        self.request_miller_reveal(tab_id);
     }
 
     fn selected_paths_for_tab(&mut self, tab_id: u64) -> Vec<PathBuf> {
@@ -7062,7 +7060,7 @@ impl OttrinApp {
     }
 
     fn navigate_tab_to(&mut self, tab_id: u64, dir: PathBuf) {
-        self.cancel_miller_pointer_reveal(tab_id);
+        self.cancel_miller_reveal(tab_id);
         if self.navigation_target_is_isolated(tab_id, &dir) {
             self.set_status_message(
                 "Location is unavailable; choose Home or another location",
@@ -7289,7 +7287,7 @@ impl OttrinApp {
     }
 
     fn navigate_tab_back(&mut self, tab_id: u64) -> bool {
-        self.cancel_miller_pointer_reveal(tab_id);
+        self.cancel_miller_reveal(tab_id);
         self.focus_tab(tab_id);
         if self
             .state
@@ -7326,7 +7324,7 @@ impl OttrinApp {
     }
 
     fn navigate_tab_forward(&mut self, tab_id: u64) -> bool {
-        self.cancel_miller_pointer_reveal(tab_id);
+        self.cancel_miller_reveal(tab_id);
         self.focus_tab(tab_id);
         if self
             .state
@@ -7363,7 +7361,7 @@ impl OttrinApp {
     }
 
     fn navigate_tab_up(&mut self, tab_id: u64) -> bool {
-        self.cancel_miller_pointer_reveal(tab_id);
+        self.cancel_miller_reveal(tab_id);
         self.focus_tab(tab_id);
         let before = self
             .state
@@ -7401,7 +7399,7 @@ impl OttrinApp {
             PointerNavigation::Up => self.navigate_tab_up(tab_id),
         };
         if moved {
-            self.request_miller_pointer_reveal(tab_id);
+            self.request_miller_reveal(tab_id);
         }
         moved
     }
@@ -15045,7 +15043,7 @@ impl OttrinApp {
             tab.view_mode = view_mode;
         }
         if matches!(previous, ViewMode::Miller) && !matches!(view_mode, ViewMode::Miller) {
-            self.cancel_miller_pointer_reveal(tab_id);
+            self.cancel_miller_reveal(tab_id);
             if matches!(self.sidebar, SidebarSection::Info) {
                 self.sidebar = SidebarSection::None;
             }
@@ -15795,10 +15793,10 @@ impl OttrinApp {
         let mut open_tandem_now: Option<PathBuf> = None;
         let mut add_bookmark: Option<PathBuf> = None;
         let mut remove_bookmark: Option<PathBuf> = None;
-        let pointer_reveal = self
+        let reveal = self
             .tab_ui
             .get(&tab_id)
-            .and_then(|ui_state| ui_state.miller_pointer_reveal.clone());
+            .and_then(|ui_state| ui_state.miller_reveal.clone());
         let (cols, current_col) = self.build_miller_model(tab_id);
         if cols.is_empty() {
             return;
@@ -15829,11 +15827,11 @@ impl OttrinApp {
             let ui_state = self.tab_ui.entry(tab_id).or_default();
             std::mem::take(&mut ui_state.miller_scroll_selected)
         };
-        let pointer_reveal_col = pointer_reveal.as_ref().and_then(|reveal| {
+        let reveal_col = reveal.as_ref().and_then(|reveal| {
             cols.iter()
                 .position(|column| column.dir == reveal.destination())
         });
-        let mut pointer_reveal_completed = false;
+        let mut reveal_completed = false;
 
         // File preview is based on the FOCUS column's selection.
         // Only show file preview when focus has a file selected;
@@ -15973,7 +15971,7 @@ impl OttrinApp {
                                             &c,
                                         );
                                         if (scroll_selected && col_idx == focus_col
-                                            || pointer_reveal_col == Some(col_idx))
+                                            || reveal_col == Some(col_idx))
                                             && selected
                                         {
                                             let row_smooth = ScrollAnimation {
@@ -16085,7 +16083,7 @@ impl OttrinApp {
                     );
                     let rect = inner.response.rect;
 
-                    if col_idx == focus_col || pointer_reveal_col == Some(col_idx) {
+                    if col_idx == focus_col || reveal_col == Some(col_idx) {
                         let clip = ui.clip_rect();
                         let smooth = ScrollAnimation {
                             points_per_second: 600.0,
@@ -16100,7 +16098,7 @@ impl OttrinApp {
                         // visible column.
                         if Self::miller_should_reveal_focus_column(
                             col_idx == focus_col && scroll_right_nav,
-                            pointer_reveal_col == Some(col_idx),
+                            reveal_col == Some(col_idx),
                         ) {
                             let col_w =
                                 (MILLER_FIXED_WIDTH * scale.clamp(0.92, 1.22)).clamp(96.0, 620.0);
@@ -16117,8 +16115,8 @@ impl OttrinApp {
                                 );
                             }
                         }
-                        if pointer_reveal_col == Some(col_idx) {
-                            pointer_reveal_completed = true;
+                        if reveal_col == Some(col_idx) {
+                            reveal_completed = true;
                         }
                     }
                     // A soft rail is real layout space, not an overlay, so
@@ -16215,8 +16213,8 @@ impl OttrinApp {
         } else {
             self.tab_ui.entry(tab_id).or_default().miller_h_offset = sa_output.state.offset.x;
         }
-        if pointer_reveal_completed {
-            self.tab_ui.entry(tab_id).or_default().miller_pointer_reveal = None;
+        if reveal_completed {
+            self.tab_ui.entry(tab_id).or_default().miller_reveal = None;
         }
 
         if let Some(cmd) = pending_op {
@@ -28915,6 +28913,85 @@ mod tests {
     }
 
     #[test]
+    fn startup_file_selection_reveals_preview_and_keeps_vertical_navigation_horizontal_position() {
+        let root = tempfile::tempdir().expect("Miller startup fixture");
+        let directory = root.path().join("one/two/three/four/five");
+        std::fs::create_dir_all(&directory).expect("deep directory");
+        let path = directory.join("selected.txt");
+        std::fs::write(&path, "selected preview").expect("selected file");
+        std::fs::write(directory.join("other.txt"), "other preview").expect("sibling file");
+        let mut app = OttrinApp::default();
+        app.state.active_tab_mut().view_mode = ViewMode::Miller;
+        app.state.config.miller_column_width_mode = MillerColumnWidthMode::Fixed;
+        app.state.config.folder_column_widths.clear();
+        app.state.config.miller_view_scale = 1.0;
+        app.select_file_at_startup(path.clone());
+        let tab_id = app.state.active_tab().id;
+        let ctx = Context::default();
+        for frame in 0..60 {
+            app.poll_listing_results();
+            let _ = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(800.0, 600.0),
+                    )),
+                    time: Some(frame as f64 / 60.0),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+                },
+            );
+        }
+        let (columns, current) = app.build_miller_model(tab_id);
+        assert_eq!(
+            columns[current].entries[columns[current].selected.expect("selected row")].path,
+            path
+        );
+        // The current column and one full preview column must fit to the right
+        // of the scroll origin; a row-only reveal leaves the preview off-screen.
+        let needed_right = (current + 1) as f32
+            * (MILLER_FIXED_WIDTH + MILLER_COLUMN_DIVIDER_WIDTH)
+            + MILLER_FIXED_WIDTH;
+        let offset = app.tab_ui[&tab_id].miller_h_offset;
+        assert!(
+            needed_right - offset <= 800.0,
+            "preview not revealed: right {needed_right}, offset {offset}"
+        );
+        let _ = ctx.run(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    Vec2::new(800.0, 600.0),
+                )),
+                time: Some(1.1),
+                events: vec![egui::Event::Key {
+                    key: Key::ArrowUp,
+                    physical_key: None,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                }],
+                ..Default::default()
+            },
+            |ctx| {
+                app.handle_keyboard(ctx);
+                egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+            },
+        );
+        let (columns, current) = app.build_miller_model(tab_id);
+        assert_eq!(
+            columns[current].entries[columns[current].selected.expect("moved row")].path,
+            directory.join("other.txt")
+        );
+        assert_eq!(
+            app.tab_ui[&tab_id].miller_h_offset, offset,
+            "Up/Down must preserve horizontal position"
+        );
+    }
+
+    #[test]
     fn pointer_folder_selection_requests_horizontal_reveal_without_a_keyboard_event() {
         assert!(OttrinApp::miller_should_reveal_focus_column(false, true));
         assert!(OttrinApp::miller_should_reveal_focus_column(true, false));
@@ -28926,10 +29003,10 @@ mod tests {
         let mut app = OttrinApp::default();
         let tab_id = app.state.active_tab().id;
 
-        app.request_miller_pointer_reveal(tab_id);
+        app.request_miller_reveal(tab_id);
 
         let ui_state = app.tab_ui.get(&tab_id).expect("active tab UI state");
-        assert!(ui_state.miller_pointer_reveal.is_some());
+        assert!(ui_state.miller_reveal.is_some());
         assert!(ui_state.miller_scroll_selected);
     }
 
@@ -29064,7 +29141,7 @@ mod tests {
             "a primary Miller folder click must make the clicked folder active"
         );
         assert!(app.tab_ui.get(&tab_id).is_some_and(|ui| {
-            ui.miller_pointer_reveal
+            ui.miller_reveal
                 .as_ref()
                 .is_some_and(|reveal| reveal.destination() == destination)
                 && ui.miller_scroll_selected
@@ -29124,7 +29201,7 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&tab_id)
-                .is_some_and(|ui| ui.miller_pointer_reveal.is_none()),
+                .is_some_and(|ui| ui.miller_reveal.is_none()),
             "a nonempty destination with no restored selection must consume its reveal on its first production render"
         );
 
@@ -29173,7 +29250,7 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&tab_id)
-                .is_some_and(|ui| ui.miller_pointer_reveal.is_none()),
+                .is_some_and(|ui| ui.miller_reveal.is_none()),
             "an error column is still the destination's first eligible production render"
         );
 
@@ -29219,7 +29296,7 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&tab_id)
-                .is_some_and(|ui| ui.miller_pointer_reveal.is_none()),
+                .is_some_and(|ui| ui.miller_reveal.is_none()),
             "an empty destination is still eligible for the first focus-column reveal"
         );
 
@@ -29253,14 +29330,14 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&tab_id)
-                .is_some_and(|ui| ui.miller_pointer_reveal.is_some())
+                .is_some_and(|ui| ui.miller_reveal.is_some())
         );
 
         app.refresh_tab(tab_id, destination);
         assert!(
             app.tab_ui
                 .get(&tab_id)
-                .is_none_or(|ui| ui.miller_pointer_reveal.is_none()),
+                .is_none_or(|ui| ui.miller_reveal.is_none()),
             "same-path refresh must supersede the prior pointer reveal"
         );
 
@@ -29291,22 +29368,19 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&tab_id)
-                .is_some_and(|ui| ui.miller_pointer_reveal.is_some())
+                .is_some_and(|ui| ui.miller_reveal.is_some())
         );
 
         app.set_tab_view_mode(tab_id, ViewMode::List);
         assert!(
             app.tab_ui
                 .get(&tab_id)
-                .is_none_or(|ui| ui.miller_pointer_reveal.is_none())
+                .is_none_or(|ui| ui.miller_reveal.is_none())
         );
 
         let closing_idx = app.state.new_tab(default_home_dir());
         let closing_id = app.state.tabs[closing_idx].id;
-        app.tab_ui
-            .entry(closing_id)
-            .or_default()
-            .miller_pointer_reveal = Some(MillerPointerReveal {
+        app.tab_ui.entry(closing_id).or_default().miller_reveal = Some(MillerReveal {
             destination: default_home_dir(),
         });
         app.address_bars.entry(closing_id).or_default().editing = true;
@@ -29348,16 +29422,16 @@ mod tests {
 
         assert!(app.pointer_navigate(left_id, PointerNavigation::Back));
         let left_ui = app.tab_ui.get(&left_id).expect("left tab UI state");
-        assert!(left_ui.miller_pointer_reveal.is_some());
+        assert!(left_ui.miller_reveal.is_some());
         assert!(left_ui.miller_scroll_selected);
         assert!(
             app.tab_ui
                 .get(&right_id)
-                .is_none_or(|ui| ui.miller_pointer_reveal.is_none() && !ui.miller_scroll_selected),
+                .is_none_or(|ui| ui.miller_reveal.is_none() && !ui.miller_scroll_selected),
             "a Tandem navigation action must not leak reveal state into the opposite pane"
         );
 
-        app.tab_ui.entry(left_id).or_default().miller_pointer_reveal = None;
+        app.tab_ui.entry(left_id).or_default().miller_reveal = None;
         app.tab_ui
             .entry(left_id)
             .or_default()
@@ -29366,10 +29440,10 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&left_id)
-                .is_some_and(|ui| ui.miller_pointer_reveal.is_some() && ui.miller_scroll_selected)
+                .is_some_and(|ui| ui.miller_reveal.is_some() && ui.miller_scroll_selected)
         );
 
-        app.tab_ui.entry(left_id).or_default().miller_pointer_reveal = None;
+        app.tab_ui.entry(left_id).or_default().miller_reveal = None;
         app.tab_ui
             .entry(left_id)
             .or_default()
@@ -29378,10 +29452,10 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&left_id)
-                .is_some_and(|ui| ui.miller_pointer_reveal.is_some() && ui.miller_scroll_selected)
+                .is_some_and(|ui| ui.miller_reveal.is_some() && ui.miller_scroll_selected)
         );
 
-        app.tab_ui.entry(left_id).or_default().miller_pointer_reveal = None;
+        app.tab_ui.entry(left_id).or_default().miller_reveal = None;
         app.tab_ui
             .entry(left_id)
             .or_default()
@@ -29390,7 +29464,7 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&left_id)
-                .is_some_and(|ui| ui.miller_pointer_reveal.is_none() && !ui.miller_scroll_selected),
+                .is_some_and(|ui| ui.miller_reveal.is_none() && !ui.miller_scroll_selected),
             "failed history navigation must not leave a stale pointer-reveal request"
         );
     }
@@ -29407,17 +29481,16 @@ mod tests {
             PointerNavigation::Forward,
             PointerNavigation::Up,
         ] {
-            app.tab_ui.entry(tab_id).or_default().miller_pointer_reveal =
-                Some(MillerPointerReveal {
-                    destination: PathBuf::from("/stale-pointer-destination"),
-                });
+            app.tab_ui.entry(tab_id).or_default().miller_reveal = Some(MillerReveal {
+                destination: PathBuf::from("/stale-pointer-destination"),
+            });
             app.tab_ui.entry(tab_id).or_default().miller_scroll_selected = false;
 
             assert!(!app.pointer_navigate(tab_id, navigation));
             assert!(
-                app.tab_ui.get(&tab_id).is_some_and(
-                    |ui| ui.miller_pointer_reveal.is_none() && !ui.miller_scroll_selected
-                ),
+                app.tab_ui
+                    .get(&tab_id)
+                    .is_some_and(|ui| ui.miller_reveal.is_none() && !ui.miller_scroll_selected),
                 "a failed pointer navigation must cancel, not preserve, an older destination reveal"
             );
         }
@@ -29433,7 +29506,7 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&tab_id)
-                .is_some_and(|ui| ui.miller_pointer_reveal.is_some() && ui.miller_scroll_selected)
+                .is_some_and(|ui| ui.miller_reveal.is_some() && ui.miller_scroll_selected)
         );
 
         let ctx = Context::default();
@@ -29450,20 +29523,20 @@ mod tests {
         assert!(
             app.tab_ui
                 .get(&tab_id)
-                .is_some_and(|ui| ui.miller_pointer_reveal.is_none()),
+                .is_some_and(|ui| ui.miller_reveal.is_none()),
             "the parent listing with its restored child row must consume the first reveal"
         );
 
         for mode in [ViewMode::List, ViewMode::Grid] {
             app.state.active_tab_mut().view_mode = mode;
             app.state.active_tab_mut().current_dir = default_home_dir();
-            app.tab_ui.entry(tab_id).or_default().miller_pointer_reveal = None;
+            app.tab_ui.entry(tab_id).or_default().miller_reveal = None;
             app.tab_ui.entry(tab_id).or_default().miller_scroll_selected = false;
             assert!(app.pointer_navigate(tab_id, PointerNavigation::Up));
             assert!(
-                app.tab_ui.get(&tab_id).is_none_or(
-                    |ui| ui.miller_pointer_reveal.is_none() && !ui.miller_scroll_selected
-                ),
+                app.tab_ui
+                    .get(&tab_id)
+                    .is_none_or(|ui| ui.miller_reveal.is_none() && !ui.miller_scroll_selected),
                 "{mode:?} pointer navigation must not schedule a Miller reveal"
             );
         }
