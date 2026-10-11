@@ -214,8 +214,13 @@ builds need no permanent permission changes. Development/native test builds use
 helper beside Ottrin. The Windows UI provider remains gated: the earlier CLI
 acceptance below predates the AppContainer work and does not accept this path.
 
-The nine-format fixture passes for macro-free DOC, DOCX, ODT, XLS, XLSX, XLSM,
-ODS, PPTX and ODP (`office-formats-final-results.log`, 27.95s). It checks actual
+The historical pre-AppContainer CLI fixture passed macro-free DOC, DOCX, ODT,
+XLS, XLSX, XLSM, ODS, PPTX and ODP (`office-formats-final-results.log`, 27.95s).
+The current contained Kit sweep passes DOC/DOCX/ODT and times out on the other
+six formats at 30 seconds each (`windows-20261011/helper-formats.log`). An
+uncontained Calc control also times out; worker/message-pump and SDK runLoop
+controls do not convert it. Production threading remains unchanged. The
+historical fixture checks actual
 PDFium pixels and expected document text, unchanged source bytes, and private
 profile/log cleanup. Spreadsheet thumbnail ink can be antialiased gray (XLS's
 darkest pixel was 129); this check detects visible ink rather than requiring
