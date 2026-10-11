@@ -8823,6 +8823,117 @@ mod windows_source_tests {
         );
     }
 
+    /// Two invocations separated by an orchestrator-owned guest hard power cut.
+    /// The paused prepare invocation must never be allowed to return normally.
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires an owned guest power cut and prepare/recover fixture orchestration"]
+    fn windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite() {
+        use std::io::Write;
+        assert!(windows_cross_volume_runtime_enabled());
+        let mode = std::env::var("OTTRIN_NATIVE_MOVE_POWER_CUT_MODE").unwrap();
+        assert!(matches!(mode.as_str(), "prepare" | "recover"));
+        let root = std::path::PathBuf::from(
+            std::env::var_os("OTTRIN_NATIVE_MOVE_POWER_CUT_ROOT").unwrap(),
+        );
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        assert!(root.is_absolute() && volume.is_absolute());
+        let destination = volume.join("ottrin-power-cut-overwrite");
+        let source = root.join("entry");
+        let target = destination.join("entry");
+        let recovery = root.join("move-state");
+        assert_eq!(super::windows_recovery_root().unwrap(), recovery);
+        // Only roots created by prepare are removed by the external orchestrator.
+        // They intentionally survive the killed process and failed recovery for
+        // byte/journal diagnosis; orchestration must clean them on every outcome.
+        if mode == "prepare" {
+            std::fs::create_dir(&root).expect("fresh owned power-cut root");
+            std::fs::create_dir(&destination).expect("fresh owned destination root");
+            std::fs::write(&source, b"power-cut source bytes").unwrap();
+            std::fs::write(&target, b"power-cut displaced bytes").unwrap();
+            let identity = move_recovery::stable_identity_of_entry(&target).unwrap();
+            let mut manifest = std::fs::File::create(root.join("displaced-identity.json")).unwrap();
+            manifest
+                .write_all(&serde_json::to_vec(&identity).unwrap())
+                .unwrap();
+            manifest.sync_all().unwrap();
+            move_recovery::open_reparse_safe_directory_for_rename(&root)
+                .unwrap()
+                .sync_all()
+                .unwrap();
+            let ready = root.join("ready");
+            let reset = WindowsMoveHookReset;
+            super::WINDOWS_MOVE_HOOK.with(|hook| {
+                *hook.borrow_mut() = Some(Box::new(move |boundary, _| {
+                    if boundary == super::WindowsMoveBoundary::BeforeSourceCleanup {
+                        let mut file = std::fs::File::create(&ready).unwrap();
+                        file.write_all(b"published-before-source-cleanup").unwrap();
+                        file.sync_all().unwrap();
+                        move_recovery::open_reparse_safe_directory_for_rename(
+                            ready.parent().unwrap(),
+                        )
+                        .unwrap()
+                        .sync_all()
+                        .unwrap();
+                        // Bounded even if orchestration fails to cut the guest.
+                        std::thread::sleep(std::time::Duration::from_secs(90));
+                        panic!("orchestrator did not cut the guest at the ready boundary");
+                    }
+                }));
+            });
+            let result =
+                super::move_entry_transactional(&source, &destination, ConflictAction::Overwrite);
+            drop(reset);
+            panic!("prepare unexpectedly returned: {:?}", result.as_ref().err());
+        }
+        assert_eq!(
+            std::fs::read(root.join("ready")).unwrap(),
+            b"published-before-source-cleanup"
+        );
+        let expected: move_recovery::WindowsStableIdentity =
+            serde_json::from_slice(&std::fs::read(root.join("displaced-identity.json")).unwrap())
+                .unwrap();
+        let transactions = super::discover_retained_windows_move_transactions().unwrap();
+        assert_eq!(transactions.len(), 1);
+        let id = transactions[0].transaction_id;
+        let journal = super::windows_cross_volume_journal_path(&recovery, id);
+        let record = super::load_windows_cross_volume_record(&journal).unwrap();
+        let retained = record.retained_path().unwrap().unwrap();
+        assert_eq!(std::fs::read(&source).unwrap(), b"power-cut source bytes");
+        assert_eq!(std::fs::read(&target).unwrap(), b"power-cut source bytes");
+        assert_eq!(
+            std::fs::read(&retained).unwrap(),
+            b"power-cut displaced bytes"
+        );
+        assert_eq!(
+            move_recovery::stable_identity_of_entry(&retained).unwrap(),
+            expected
+        );
+        super::recover_retained_windows_move_transaction(id).unwrap();
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&target).unwrap(), b"power-cut source bytes");
+        assert_eq!(
+            std::fs::read(&retained).unwrap(),
+            b"power-cut displaced bytes"
+        );
+        assert_eq!(
+            move_recovery::stable_identity_of_entry(&retained).unwrap(),
+            expected
+        );
+        super::recover_retained_windows_move_transaction(id).unwrap();
+        assert!(!source.exists());
+        assert_eq!(std::fs::read(&target).unwrap(), b"power-cut source bytes");
+        assert_eq!(
+            std::fs::read(&retained).unwrap(),
+            b"power-cut displaced bytes"
+        );
+        assert_eq!(
+            move_recovery::stable_identity_of_entry(&retained).unwrap(),
+            expected
+        );
+    }
+
     #[cfg(target_os = "windows")]
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]

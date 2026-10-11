@@ -313,6 +313,31 @@ $env:OTTRIN_TEST_WINDOWS_CROSS_VOLUME_MOVE = "1"
 cargo test -p ottrin-platform windows_native_cross_volume -- --ignored --test-threads=1
 ```
 
+Guest hard-power-cut recovery has a separate ignored fixture,
+`windows_native_guest_power_cut_recovers_cross_volume_retained_overwrite`.
+Run its exact name as the limited interactive user in an owned disposable guest,
+with `OTTRIN_NATIVE_MOVE_POWER_CUT_MODE=prepare`,
+`OTTRIN_NATIVE_MOVE_POWER_CUT_ROOT` naming a fresh owned NTFS directory, and
+`OTTRIN_TEST_WINDOWS_MOVE_RECOVERY_ROOT` set to that directory's `move-state`
+child. The ordinary test gate and second-volume variable above are also required.
+
+Wait for the root's durable `ready` marker **and** verify that the prepare task
+and test process are still running. Hard-stop only the owned guest at that point;
+do not kill just the process or shut Windows down normally. Preparation has a
+90-second deadline and fails if the orchestrator never cuts power. After boot,
+reattach the same owned second volume with the same letter/path and run the
+exact fixture again with mode `recover`. It verifies original source bytes,
+published bytes, displaced bytes and identity, then explicit recovery and its
+idempotent repeat. This is virtual guest power-cut evidence, not physical-device
+power-loss acceptance. It does not open the product gate or accept a package.
+
+The orchestrator owns teardown across both invocations: stop/remove its tasks
+and processes, retain compact diagnostic logs, remove both fixture roots even
+on failure or cancellation, detach its volume, and stop the guest. Preparation
+intentionally retains those roots across the destroyed process so recovery can
+inspect actual journal and file state. Never use user data or the user's VM for
+this destructive fixture.
+
 Use a second disposable native volume and an owned fixture directory. The
 fixtures check file/directory/symlink Skip/Rename/Overwrite conflicts with exact
 displaced-entry retention, nested raw links without traversal, empty directories,
