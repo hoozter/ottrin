@@ -8986,6 +8986,42 @@ mod windows_source_tests {
     #[cfg(target_os = "windows")]
     #[test]
     #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_move_into_modify_only_destination() {
+        use crate::PlatformOps;
+        let volume =
+            std::path::PathBuf::from(std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT").unwrap());
+        let source_fixture = crate::tests::TestDir::new("modify-only-source");
+        let destination_fixture = crate::tests::TestDir::new_at(&volume, "modify-only-destination");
+        // Application recovery state lives in the user's private profile, not the shared destination.
+        let _ = super::replace_test_recovery_root(Some(source_fixture.path().join("move-state")));
+        let source = source_fixture.path().join("payload.txt");
+        std::fs::write(&source, b"move with Modify destination access").unwrap();
+        let user = std::env::var("USERNAME").unwrap();
+        let acl = std::process::Command::new("icacls.exe")
+            .arg(destination_fixture.path())
+            .args(["/inheritance:r", "/grant:r", &format!("{user}:(OI)(CI)M")])
+            .output()
+            .unwrap();
+        assert!(acl.status.success(), "Modify ACL setup failed: {acl:?}");
+        let (disposition, receipt) = crate::DefaultPlatform
+            .execute_move_with_undo_receipt(
+                &source,
+                destination_fixture.path(),
+                ConflictAction::Rename,
+            )
+            .expect("Move into a Modify-only destination");
+        assert_eq!(disposition, crate::MoveDisposition::Moved);
+        assert!(receipt.is_none());
+        assert!(!source.exists());
+        assert_eq!(
+            std::fs::read(destination_fixture.path().join("payload.txt")).unwrap(),
+            b"move with Modify destination access"
+        );
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
     fn windows_native_cross_volume_symbolic_link_preserves_raw_target_without_dereferencing() {
         use std::os::windows::fs::symlink_file;
 

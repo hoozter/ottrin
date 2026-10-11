@@ -302,12 +302,12 @@ files, directories and links, the published entry is identity/content verified
 and remains locked throughout source cleanup; changed content retains the source
 and recovery state.
 
-The temporary acceptance gate was removed after native safety and guest power-cut checks. A fresh no-override native run passed all 21 cross-volume fixtures, FAT32 refusal in both directions and 99 standard platform tests. The final native public-command fixture also passed (0.69s): both `execute_move_with_undo_receipt` and batch `FileCommand::Move` moved exact bytes across independent NTFS volumes, removed the source and returned explicit dispositions without claiming Windows undo. Strict Windows platform/UI all-target Clippy passes. `.hermes/evidence/windows-20261011/PUBLIC_MOVE_ACCEPTANCE.json` binds the separate suite and final public-API binaries. Public GUI and exact-package acceptance remain pending.
+The temporary acceptance gate was removed after native safety and guest power-cut checks. A fresh no-override native run passed all 21 cross-volume fixtures, FAT32 refusal in both directions and 99 standard platform tests. The final native public-command fixture also passed (0.69s): both `execute_move_with_undo_receipt` and batch `FileCommand::Move` moved exact bytes across independent NTFS volumes, removed the source and returned explicit dispositions without claiming Windows undo. Strict Windows platform/UI all-target Clippy passes. `.hermes/evidence/windows-20261011/PUBLIC_MOVE_ACCEPTANCE.json` binds the separate suite and final public-API binaries. The clean `56f0d4e` portable package also passes limited-user Cut/Paste/Replace from C: to a typed Q: destination: source removal, exact published/displaced bytes, retained file identity, agreeing journal pair, and bundled Mesa/OpenGL/DXC module paths are verified in `PREFIX_PACKAGE_ACCEPTANCE.json`. A fresh native rerun adds Modify-only destination coverage: 22 cross-volume cases and 99 default tests pass; strict Windows platform all-target Clippy passes (`MODIFY_DESTINATION_ACCEPTANCE.json`). Broader public GUI acceptance remains pending.
 
 Cross-volume fixtures are separately ignored by default. They require a real
 second Windows volume in `OTTRIN_WINDOWS_CROSS_VOLUME_ROOT` and an isolated
 recovery root. They exercise the same transaction route as the public Windows
-Move commands; the temporary acceptance gate and its overrides are removed.
+Move commands; the temporary acceptance gate and its overrides are removed. If using an attached VHDX, grant the test user Full Control on the backing image before attachment. The virtual-disk attachment filter can otherwise deny WRITE_DAC/WRITE_OWNER and replacement even when the inner NTFS ACL grants Full Control. Keep restricted-destination scenarios inside the volume; do not restrict the backing image itself.
 
 ```powershell
 $env:OTTRIN_WINDOWS_CROSS_VOLUME_ROOT = "Q:\owned-ottrin-fixtures"
