@@ -140,7 +140,11 @@ cargo test -p ottrin-preview --test windows_job_native native_job_ -- --test-thr
 ```
 
 The fixtures exercise the actual launcher with disposable child processes and
-private temporary files. The ignored `fixture_root`, `fixture_descendant` and
+private temporary files. Each fixture owns a byte-copy of the test executable inside
+its private access policy so contained descendants can relaunch it without
+changing the build artifact's permissions. Fixture setup owns its temporary root
+before fallible operations; its existing cleanup removes partial setup and the
+executable copy. The ignored `fixture_root`, `fixture_descendant` and
 `fixture_environment_parent` entries are subprocess entrypoints selected by the tests, not independent tests
 to invoke manually. They cover output and diagnostic cleanup, timeout after the
 parent exits, cancellation, process and memory limits, aggregate descendant
