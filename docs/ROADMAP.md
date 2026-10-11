@@ -91,6 +91,8 @@ This snapshot reconciles the roadmap with local source, package provenance and r
 
 - Finish native Windows acceptance of the MSI and installer/uninstaller cleanup integration.
 
+The clean `0d1ea18` NSIS candidate is built at `dist/Ottrin-0.1.0-windows-x64-setup.exe` (SHA-256 `faa29a8506060ab2d7541f2764ea57d909bde5f70e03c9e73ef85120f4715970`). Silent install and same-version reinstall pass under a fresh non-administrator Windows user: all 49 payload files match, the limited-user periodic index task targets the installed executable, and saved preferences are unchanged. Silent uninstall removes application files, task, shortcuts and registry entries while preserving those preferences. `NSIS_ACCEPTANCE.json` records the exact scope. The current portable is rebuilt from the same revision (SHA-256 `41b3ba6a8e00a2138688352b9c9b211740824808bfb7dca9090fe3d2749eef65`); the MSI remains older. True version upgrade/rollback, populated-data cleanup, interactive installer and full installed-app workflows remain open.
+
 ### 4. Required Ottrin picker and folder integration — deferred
 
 Approved on 2026-10-11 as a must-have, not optional research. Start only after the previously committed implementation, packaging and Linux/Windows platform-acceptance work is complete. Do not divert current repair work to this milestone or start it merely because another acceptance needs a device. After this milestone, run its focused platform acceptance and the final release-candidate gate against the resulting artifacts.

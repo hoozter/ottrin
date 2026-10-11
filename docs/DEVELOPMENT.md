@@ -511,6 +511,8 @@ Windows installer from an extracted portable payload (requires NSIS):
 .\packaging\windows\package-installer.ps1 -Stage .\dist\windows-payload\Ottrin-0.1.0-windows-x64
 ```
 
+The clean `0d1ea18` NSIS candidate has native standard-user evidence for silent installation, same-version reinstall, exact 49-file payload identity, Task Scheduler registration, and uninstall of files/task/shortcuts/registry with saved preferences preserved. `.hermes/evidence/windows-20261011/NSIS_ACCEPTANCE.json` binds the installer checksum and fresh-account token evidence. This does not accept a true version upgrade, rollback, interactive installer, populated-data cleanup or MSI lifecycle.
+
 Windows MSI from the same extracted portable payload (requires WiX Toolset 5):
 
 ```sh
