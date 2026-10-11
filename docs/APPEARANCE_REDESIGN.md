@@ -26,12 +26,12 @@ Implementation and Linux AppImage acceptance are complete. The evidence below bi
 
 Custom colors and geometry now resolve from the selected stored variant without consulting the source preset. File-label neutral blend strength was previously a preset-name lookup; it is now stored and editable per variant, preserving the source theme’s label coloring while removing that last rendering dependency. The 38 existing fields remain available, with this one additional value in File labels & icons. Source preset metadata describes where a theme was created.
 
-## Verified delivery — 2026-10-11
+## Original redesign delivery — 2026-10-11
 
-The stable deliverable is `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
+The original accepted redesign used `dist/packages/Ottrin-0.1.0-x86_64.AppImage`.
 It was built from clean tracked revision `a3a76ac1d26a88c3cde026faaf74d934e25faad5`;
 SHA-256: `2aca0c0376dd6f99e235fbb386e79982b856c15fbe2ba58d99cb062d070ae8ac`.
-The adjacent provenance file identifies this source and artifact. Later documentation-only commits do not change the packaged code.
+The original acceptance receipt is retained in `.hermes/evidence/appearance-redesign/`. The current package and its provenance are described in the corrections section below.
 
 Source verification passed **331 UI tests**, **32 core tests**, **18 focused appearance tests**, strict UI/core Clippy, formatting, and diff validation. Tests exercise card click-target separation, paired persistence, save/cancel/rename/copy/delete, imported-draft ownership, all inspector controls and reset alignment at 800 × 600 with text scales 1.0 and 1.35, semantic component isolation, dialog styling, complete preset palette equality for seven presets in both modes, dynamic miniature button/accent rendering, and filename elision.
 
@@ -84,3 +84,14 @@ Additional exact-package receipts:
 The v2 export envelope stores `format: ottrin-theme`, `version: 2`, and one named theme with complete `light` and `dark` palettes. Source preset metadata is descriptive only. Color overlays and semantic label blending derive from the stored palette; changing descriptive provenance cannot change a saved theme.
 
 These are Linux X11 native-package results. OS-owned portal file choosers follow the desktop theme, and physical Windows compositor behavior is not certified by this Linux run. Private QA disabled the unavailable private accessibility bridge; this is not screen-reader acceptance. Keyboard operation and focus behavior were tested directly. Personal settings and index data were preserved, unrelated Windows preview work remains untouched, and the installed index service was verified separately against the same package.
+
+
+## Target and shared-style corrections — 2026-10-11
+
+The latest stable AppImage replaces the original package above. It is built from clean tracked revision `30a3084966832587198cfcfa9a5d3283c2502ca5`, with SHA-256 `765958cca21391d2ab01e8c962f6ea4ebb69b930f8cc9cf89a4ff55d3446804d`. Its adjacent provenance and `APPEARANCE_ACCEPTANCE.json` bind the exact deliverable to these checks.
+
+Selected-row painting, hit testing and editing outlines now use one rectangle, eliminating the ten-pixel offset. File-canvas and row-fill outlines remain square. Tabs and navigation are one selectable context; both are highlighted, and actual tabs and the preview share their fill blend, muted text and top-corner geometry. Relevant shared colors, typography and geometry are available beside each component, with visible ownership and reset explanations. Window corners affect application windows, surface corners affect tabs/inputs/expanded location cards, and button corners affect buttons/collapsed location icons. Hex fields scale with text size.
+
+Current source verification: **333 UI tests**, including **20 focused appearance tests**, strict UI Clippy, formatting and diff checks. Focused native verification ran this exact AppImage at 100% and 150%, including an 800 × 600 logical editor and 1.35 text scale. It checked aligned row and square canvas targets, tab selection, real tab/toolbar color and radius changes, shared-reset isolation, saved paired values, Light/Dark controls and readable hex fields. Evidence is in `.hermes/evidence/theme-targets/`. The original exhaustive 39-control/lifecycle sweep above remains historical evidence for the original redesign package; it was not repeated in full for this correction.
+
+The unchanged media helper was reused only after its checksum matched the prior accepted package; rebuilding it was blocked by unavailable host GStreamer development files. Personal configuration checksum is unchanged, personal index data and unrelated Windows preview work were preserved. Owned private QA processes, profiles and packaging worktree were removed. Later documentation-only commits do not change the packaged code.
