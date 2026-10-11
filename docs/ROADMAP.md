@@ -1,6 +1,6 @@
 # Ottrin roadmap
 
-Last updated: 2026-10-10
+Last updated: 2026-10-11
 
 Ottrin will complete this roadmap before release. Sequencing may change, but product outcomes are not removed to make an earlier release.
 
@@ -15,6 +15,16 @@ The saved-view reset was traced to UI tests writing the operator's settings; tes
 The October 3 native clipboard-event repair is part of the current source. The September 30 AppImage predates that repair and must not be used to evaluate the corrected source. Local builds now put all deliverables from `build-all.sh` in `dist/packages/`; read each artifact's source revision rather than inferring freshness from its version number. Current package acceptance and remaining limits are recorded in `.hermes/coordinator-worker-report.md`, with October 9 baseline evidence in `.hermes/evidence/takeover-20261009/REPORT.md`.
 
 These repairs do not close the full Linux daily-driver or Windows release gates below. Hermes remains paused; the old task board's completion labels are not release acceptance.
+
+## Audited platform status — 2026-10-11
+
+This snapshot reconciles the roadmap with local source, package provenance and retained acceptance receipts. It is not a fresh full-platform test run. `.hermes/coordinator-worker-report.md` is historical: its HEAD and Linux artifact inventory predate the changes below, and its `active` label does not establish a running worker or goal.
+
+- **Linux:** the core browser, file operations, search and Inspector are implemented. Recent delivered changes cover saved-view preservation, indexer performance/service management, theme editing and target alignment, repeated/cold AppImage startup, and native window desktop identity. The current stable AppImage is built from clean tracked revision `52c92b6e6d64afbcdf95066478b47d4718f792fb`, SHA-256 `66e4e2e61a53f48d7b1cbb1bd982ed8a60c43e9f574d3e98b0b1a042e389a7bd`. `dist/packages/` currently contains that AppImage and its receipts; current portable/deb/rpm deliverables are absent. Earlier receipt results apply to their recorded artifacts, not automatically to the newest package. The desktop-identity receipt verifies private KWin Wayland protocol, not a visual host-taskbar acceptance.
+- **Linux remaining before the new deferred outcome:** clean-desktop package installation/launch; the consolidated daily-driver workflow including cross-volume conflicts, interruption/recovery and editor recovery; real removable-volume lifecycle; supported installed-LibreOffice conversion/fallback; audible representative media; the packaged helper/polkit permission matrix; and an explicit assistive-integration decision. Existing Xvfb and focused native checks narrow these tasks but do not close them. Accessibility is currently disabled after an upstream lifecycle defect.
+- **Windows:** native ordinary-user evidence exists for text saving, many Move/recovery cases, per-user scheduled indexing, Office conversion before the unfinished containment changes, and a generated video thumbnail. This is substantial implementation progress, not accepted current Windows packages. Cross-volume Move and the Office UI provider remain gated. Uncommitted AppContainer work is preserved: the private-TEMP environment fixture and ten process/isolation fixtures pass, but the real DOCX conversion still times out; later LibreOfficeKit diagnostics also fail. See `.hermes/evidence/windows-20261010/office-appcontainer-private-temp-env-results.log`, `office-appcontainer-kit-budget-results.log`, `office-appcontainer-private-temp-docx-results.log` and `office-appcontainer-kit-stack-results.log`.
+- **Windows remaining before the new deferred outcome:** repair and accept Office containment/conversion/fallback; complete and enable cross-volume Move through the public workflow; construct current portable/MSI/installer candidates and accept editing, Move, installation/upgrade/rollback/uninstall; validate native/Mesa graphics, representative media, UAC, storage attachment/network-drive states and the consolidated daily-driver workflow.
+- **Both platforms:** the final exact-candidate workspace/CI, package-integrity, production-signing and downloaded-artifact checks remain open. The required picker/folder integration below adds a deliberate later milestone. No percentage or calendar estimate is claimed: the open outcomes vary greatly in size and several need native/device acceptance. macOS remains deferred.
 
 ## How to use this roadmap
 
@@ -81,6 +91,16 @@ These repairs do not close the full Linux daily-driver or Windows release gates 
 
 - Finish native Windows acceptance of the MSI and installer/uninstaller cleanup integration.
 
+### 4. Required Ottrin picker and folder integration — deferred
+
+Approved on 2026-10-11 as a must-have, not optional research. Start only after the previously committed implementation, packaging and Linux/Windows platform-acceptance work is complete. Do not divert current repair work to this milestone or start it merely because another acceptance needs a device. After this milestone, run its focused platform acceptance and the final release-candidate gate against the resulting artifacts.
+
+- Build a reusable Ottrin Open/Save/folder picker using the authoritative theme and shared UI components. Use familiar places/bookmarks, breadcrumbs/editable path, search, file views, optional preview and a clear filename/type/action footer. Support caller-specified locations, filters, multiple selection, cancellation, overwrite confirmation and parent-window behavior. Preserve useful picker preferences without overriding the caller's request. Verify theme changes on the actual picker, including fonts, colors, borders and corner geometry.
+- Use the picker within Ottrin on Linux and Windows. On Linux, provide a desktop-portal FileChooser backend for compatible applications, with an explicit enable/disable control that preserves other portal providers and restores the prior chooser selection. Windows external integration is limited to cooperating applications; do not claim or offer a universal replacement for other programs' native dialogs.
+- Offer optional folder/file-reveal integration: Linux directory handling and the standard FileManager1 interface; Windows Open in Ottrin integration and a clearly scoped, reversible folder-opening preference where supported. Display coverage honestly, preserve previous associations and restore owned changes on disable/uninstall.
+- Keep picker launch independent of index readiness. Browse directories directly; use the existing index asynchronously for search when available. Do not add indexing responsibilities or an always-running full GUI to the picker. Start the picker on demand; consider bounded warm retention only if measured cold startup justifies it.
+- Accept cold/repeated launch latency, idle CPU, retained memory, cancellation/cleanup, concurrent requests, operation with indexing stopped, theme persistence, and enable/disable restoration on both supported platforms. Record measured results rather than promising unverified speed or universal application coverage.
+
 ## Triggered work, not background work
 
 These outcomes remain available, but they start only when their trigger is met. Workers must not choose them merely because another lane is waiting for physical QA.
@@ -95,7 +115,7 @@ These outcomes remain available, but they start only when their trigger is met. 
 
 ## Final physical and platform QA
 
-Start this phase after source and packaging outcomes are complete. Keep it as one concentrated acceptance pass against exact candidate artifacts. Fix reproducible defects at their source, then rerun only the affected acceptance path until the candidate is ready for the final gate.
+Start this phase after outcomes 1–3 are complete, before starting deferred outcome 4. Keep it as one concentrated acceptance pass against exact candidate artifacts. Fix reproducible defects at their source, then rerun only the affected acceptance path. After outcome 4, accept its integration and recheck any affected existing workflows before the final gate.
 
 ### Linux
 
@@ -136,6 +156,7 @@ Run this gate once the implementation outcomes above are source-complete and exa
 - Windows portable and installer launch and pass the Windows workflow.
 - The Windows packages contain the pinned Mesa 26.1.3/DXC payload and notices; Automatic, native and OpenGL paths report the correct loaded DLLs.
 - New File/New Folder, Locations, cross-volume Copy and Move, and privileged-helper behavior pass on their target platforms.
+- The themed Ottrin picker, supported external integrations, resource/startup checks and reversible preference controls pass outcome 4 acceptance on Linux and Windows.
 - Same-volume and cross-volume Move preserve source data on uncertainty and report complete, partial, blocked, and recovery-required outcomes truthfully.
 - Known limitations match observed behavior.
 - `README.md`, `USER_GUIDE.md`, `ROADMAP.md` and `RELEASE_NOTES.md` agree with the exact artifacts.
