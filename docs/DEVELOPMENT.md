@@ -595,3 +595,35 @@ Theme presets are derived from upstream palettes where possible:
 - G33k: custom terminal-inspired palette.
 
 When updating a theme preset, keep the mapping deterministic and document any intentional deviation in code comments near the preset definition.
+
+## Linux local-path operation provenance
+
+Navigation discovery and operation admission have different scopes. Local Linux
+clipboard and queued operations use the same fallible capture/validation path.
+Every path captures its actual `statx` unique mount identity, including Home and
+paths under discovered volumes; discovered stable identities are checked as well.
+Missing identities never become empty, unprotected operation bindings. Sources
+identify the final symlink entry; directory destinations follow the final link.
+For new pathnames the nearest existing ancestor is probed again at validation;
+dangling followed links and permission failures are refused. This requires Linux
+6.8+ (`STATX_MNT_ID_UNIQUE`); no reused-ID fallback is used. Bindings are in-memory
+only and never interpreted as persistent volume/index identities.
+
+The mount-replacement fixture must run in an owned private user/mount namespace:
+
+```bash
+OTTRIN_QA_PARENT_MOUNT_NAMESPACE="$(readlink /proc/self/ns/mnt)" \
+  unshare --user --map-root-user --mount cargo test -p ottrin-ui --lib \
+  tests::local_storage_binding_rejects_real_mount_replacement_under_discovered_parent \
+  -- --ignored --exact --nocapture
+```
+
+Root mapping grants mount capability only within this child namespace; host user
+permissions are unchanged. The fixture checks its namespace differs from the
+provided parent before attaching anything. It creates and tears down only its
+private tmpfs mounts, then checks that replacement is refused despite unchanged
+discovered-parent identity. Ordinary-user tests separately exercise the actual
+clipboard/paste worker, source-link and destination-link semantics, dangling-link
+refusal, changed ancestors and unavailable-volume tombstones. As with existing
+volume checks, pathname mutation after the last worker check remains an OS race;
+transaction-level source/publication identity checks still apply.

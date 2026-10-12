@@ -35,6 +35,9 @@ entry point removes it after both finish.
 
 ### Linux
 
+File-operation provenance requires Linux 6.8 or newer. Ottrin uses unique mount
+identities to reject a filesystem that changes between selection and execution.
+
 ```sh
 chmod +x Ottrin-*.AppImage
 ./Ottrin-*.AppImage

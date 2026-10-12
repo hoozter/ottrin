@@ -4,6 +4,13 @@
 
 ### Linux AppImage
 
+Linux file operations require kernel 6.8 or newer. Local files may be copied or
+moved outside Home, including across temporary filesystems. Ottrin records the
+actual filesystem reached by each path and refuses queued work if it changes.
+Copying a symbolic link keeps the link itself; a destination directory link is
+checked against the filesystem it reaches. Unidentified or unavailable discovered
+volumes remain refused rather than silently targeting another disk.
+
 ```sh
 chmod +x Ottrin-*-x86_64.AppImage
 ./Ottrin-*-x86_64.AppImage

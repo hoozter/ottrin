@@ -1064,7 +1064,7 @@ fn classify_windows_overwrite_restart<T: Eq>(
 const WINDOWS_REPLACEMENT_NAME: &str = "replacement";
 #[cfg(target_os = "windows")]
 const WINDOWS_RETAINED_NAME: &str = "retained-displaced";
-#[cfg(any(target_os = "windows", test))]
+#[cfg(target_os = "windows")]
 const WINDOWS_LOCAL_JOURNAL_NAME: &str = "journal";
 #[cfg(any(target_os = "windows", test))]
 const WINDOWS_CROSS_VOLUME_CANDIDATE_NAME: &str = "candidate";
@@ -2136,7 +2136,7 @@ fn windows_recovery_root() -> Result<PathBuf, PlatformError> {
         .join("moves"))
 }
 
-#[cfg(any(target_os = "windows", test))]
+#[cfg(target_os = "windows")]
 fn encode_transaction_id(id: [u8; 16]) -> String {
     id.iter().map(|byte| format!("{byte:02x}")).collect()
 }

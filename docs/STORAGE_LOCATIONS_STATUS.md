@@ -55,3 +55,20 @@ Receipt: `.hermes/evidence/linux-cross-volume-20261012/RESULT.json`. The app exi
 cleanly; its private display, bus, index daemon, extraction/profile and both
 filesystem fixtures were removed, as recorded in `exit.json` and `cleanup.json`
 beside that receipt. Native removable-volume acceptance remains separate.
+
+### Source repair — 2026-10-12
+
+Clipboard and queued commands now use one fallible admission path. Every Linux
+source/destination captures its unique current mount ID; discovered volume
+identity remains an additional check, including for nested mounts. Home no
+longer bypasses actual mount validation. Sources bind a final symlink's own
+filesystem and directory destinations bind its target filesystem; missing paths
+re-probe the nearest existing ancestor, and dangling followed links are refused.
+New clipboard capture also preserves unavailable-volume tombstones.
+
+Source verification passes 341 UI tests, three focused platform tests, and strict
+Linux/Windows UI/platform all-target Clippy. The explicit private-namespace native
+fixture passes actual tmpfs detach/replacement with unchanged parent identity and
+no copied replacement bytes. Unique mount IDs require Linux 6.8+ and are never
+persisted as index/reconnect identities. Exact rebuilt-package acceptance is
+pending; the earlier refusal receipt remains the historical reproduction.

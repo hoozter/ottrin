@@ -703,7 +703,7 @@ struct UnavailableLocation {
     root: PathBuf,
 }
 
-/// Root identity captured for an operation immediately before it is queued.
+/// Volume and actual-path mount identity captured immediately before queueing.
 /// Validation occurs again in the worker immediately before the platform call;
 /// OS pathname mutation remains inherently racy after that final validation.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -718,7 +718,13 @@ enum StorageOperationBindingKind {
     Discovered,
     /// The app's home root is deliberately treated as a narrow safe domain;
     /// it is not an interchangeable removable-volume mount point.
+    #[cfg(not(target_os = "linux"))]
     Home,
+    #[cfg(target_os = "linux")]
+    Local {
+        mount_id: u64,
+        follow_symlink: bool,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -2306,7 +2312,10 @@ impl Clipboard {
         cut: bool,
         locations: &[StorageLocation],
     ) -> Result<Self, String> {
-        let source_bindings = capture_required_storage_bindings(&sources, locations)?;
+        let source_bindings = capture_required_storage_bindings(
+            sources.iter().map(|p| (p.as_path(), false)),
+            locations,
+        )?;
         Ok(Self {
             generation: NEXT_CLIPBOARD_GENERATION.fetch_add(1, Ordering::Relaxed),
             sources,
@@ -8356,8 +8365,12 @@ impl OttrinApp {
                         },
                         &self.known_storage_locations,
                     );
-                    let undo_available =
-                        save_undo_available && undo_session.is_ok() && !storage_bindings.is_empty();
+                    let storage_error = storage_bindings.as_ref().err().cloned();
+                    let undo_available = save_undo_available
+                        && undo_session.is_ok()
+                        && storage_bindings
+                            .as_ref()
+                            .is_ok_and(|bindings| !bindings.is_empty());
                     let op_id = self.queue_activity_record_with_recoverability(
                         "Edit text",
                         path.display().to_string(),
@@ -8376,6 +8389,7 @@ impl OttrinApp {
                         record.finished_at = Some(Instant::now());
                         if save_undo_available
                             && let Ok(session) = undo_session
+                            && let Ok(storage_bindings) = storage_bindings
                             && !storage_bindings.is_empty()
                         {
                             record.path_move_paths = Some((path.clone(), path.clone()));
@@ -8392,9 +8406,10 @@ impl OttrinApp {
                             });
                             undo_available_for_saved_text = true;
                         } else {
-                            record.message = Some(
-                                "Text saved; session Undo is unavailable because the saved file or its storage identity could not be captured.".to_string(),
-                            );
+                            record.message = Some(format!(
+                                "Text saved; session Undo is unavailable because the saved file or its storage identity could not be captured. {}",
+                                storage_error.unwrap_or_default()
+                            ));
                         }
                     }
                 }
@@ -9000,6 +9015,22 @@ impl OttrinApp {
 
     fn capture_clipboard(&mut self, ctx: &Context, sources: Vec<PathBuf>, cut: bool) -> bool {
         self.reconcile_storage_location_availability(discover_storage_locations());
+        if let Some(location) = self.unavailable_root_tombstones.iter().find(|location| {
+            sources
+                .iter()
+                .any(|path| storage_path_starts_with(path, &location.root))
+        }) {
+            self.clipboard = None;
+            self.set_status_message(
+                format!(
+                    "Copy was not started: {} is unavailable",
+                    location.root.display()
+                ),
+                false,
+                6,
+            );
+            return false;
+        }
         match Clipboard::capture(sources, cut, &self.known_storage_locations) {
             Ok(clipboard) => {
                 // Nonempty text lets the native backend emit Paste even when
@@ -9240,8 +9271,19 @@ impl OttrinApp {
             self.reject_unavailable_location_operation(&cmd, &location);
             return false;
         }
-        let bindings = authoritative_bindings
-            .unwrap_or_else(|| operation_storage_bindings(&cmd, &self.known_storage_locations));
+        let bindings = match authoritative_bindings
+            .map(Ok)
+            .unwrap_or_else(|| operation_storage_bindings(&cmd, &self.known_storage_locations))
+        {
+            Ok(bindings) => bindings,
+            Err(message) => {
+                self.command_frame.error = Some(message.clone());
+                self.command_frame.message = None;
+                self.command_frame.visible = true;
+                self.set_status_message(message, false, 6);
+                return false;
+            }
+        };
         if let Err(message) =
             validate_operation_storage_bindings(&bindings, &self.known_storage_locations)
         {
@@ -22551,15 +22593,17 @@ fn same_storage_root(current: &StorageLocation, previous: &StorageLocation) -> b
         }
 }
 
-fn file_command_paths(cmd: &FileCommand) -> Vec<&Path> {
+fn file_command_paths(cmd: &FileCommand) -> Vec<(&Path, bool)> {
     match cmd {
         FileCommand::CreateFile { parent, .. } | FileCommand::CreateFolder { parent, .. } => {
-            vec![parent]
+            vec![(parent, true)]
         }
         FileCommand::Rename { source, .. }
         | FileCommand::ShowProperties { target: source }
-        | FileCommand::Chmod { target: source, .. } => vec![source],
-        FileCommand::Delete { targets, .. } => targets.iter().map(PathBuf::as_path).collect(),
+        | FileCommand::Chmod { target: source, .. } => vec![(source, false)],
+        FileCommand::Delete { targets, .. } => {
+            targets.iter().map(|p| (p.as_path(), false)).collect()
+        }
         FileCommand::Copy {
             sources,
             destination,
@@ -22571,10 +22615,10 @@ fn file_command_paths(cmd: &FileCommand) -> Vec<&Path> {
             ..
         } => sources
             .iter()
-            .map(PathBuf::as_path)
-            .chain(std::iter::once(destination.as_path()))
+            .map(|p| (p.as_path(), false))
+            .chain(std::iter::once((destination.as_path(), true)))
             .collect(),
-        FileCommand::Symlink { link_path, target } => vec![link_path, target],
+        FileCommand::Symlink { link_path, .. } => vec![(link_path, false)],
         FileCommand::RecoverRetainedMove { .. } => Vec::new(),
     }
 }
@@ -22582,33 +22626,8 @@ fn file_command_paths(cmd: &FileCommand) -> Vec<&Path> {
 fn operation_storage_bindings(
     cmd: &FileCommand,
     locations: &[StorageLocation],
-) -> Vec<StorageOperationBinding> {
-    let mut bindings = Vec::new();
-    for path in file_command_paths(cmd) {
-        if let Some(location) = longest_storage_root_for_path(locations, path) {
-            let binding = StorageOperationBinding {
-                root: location.path.clone(),
-                stable_identity: location.stable_identity.clone(),
-                kind: StorageOperationBindingKind::Discovered,
-            };
-            if !bindings.contains(&binding) {
-                bindings.push(binding);
-            }
-        } else {
-            let home = default_home_dir();
-            if path.starts_with(&home) {
-                let binding = StorageOperationBinding {
-                    root: home,
-                    stable_identity: None,
-                    kind: StorageOperationBindingKind::Home,
-                };
-                if !bindings.contains(&binding) {
-                    bindings.push(binding);
-                }
-            }
-        }
-    }
-    bindings
+) -> Result<Vec<StorageOperationBinding>, String> {
+    capture_required_storage_bindings(file_command_paths(cmd), locations)
 }
 
 fn validate_operation_storage_bindings(
@@ -22616,11 +22635,36 @@ fn validate_operation_storage_bindings(
     locations: &[StorageLocation],
 ) -> Result<(), String> {
     for binding in bindings {
+        #[cfg(not(target_os = "linux"))]
         if binding.kind == StorageOperationBindingKind::Home {
             if binding.root == default_home_dir() {
                 continue;
             }
             return Err("operation was not started: the captured home root changed".to_string());
+        }
+        #[cfg(target_os = "linux")]
+        if let StorageOperationBindingKind::Local {
+            mount_id,
+            follow_symlink,
+        } = binding.kind
+        {
+            let current = ottrin_platform::local_storage::local_path_mount_identity(
+                &binding.root,
+                follow_symlink,
+            )
+            .map_err(|error| {
+                format!(
+                    "operation was not started: cannot identify storage for {}: {error}",
+                    binding.root.display()
+                )
+            })?;
+            if current != mount_id {
+                return Err(format!(
+                    "operation was not started: the filesystem for {} changed or is unavailable",
+                    binding.root.display()
+                ));
+            }
+            continue;
         }
         let Some(expected_identity) = binding.stable_identity.as_ref() else {
             return Err(format!(
@@ -22641,39 +22685,70 @@ fn validate_operation_storage_bindings(
     Ok(())
 }
 
-fn capture_required_storage_bindings(
-    paths: &[PathBuf],
+fn capture_required_storage_bindings<'a>(
+    paths: impl IntoIterator<Item = (&'a Path, bool)>,
     locations: &[StorageLocation],
 ) -> Result<Vec<StorageOperationBinding>, String> {
     let mut bindings = Vec::new();
+    #[cfg(not(target_os = "linux"))]
     let home = default_home_dir();
-    for path in paths {
-        let binding = if let Some(location) = longest_storage_root_for_path(locations, path) {
+    for (path, follow_symlink) in paths {
+        if let Some(location) = longest_storage_root_for_path(locations, path) {
             let Some(stable_identity) = location.stable_identity.clone() else {
                 return Err(format!(
                     "{} has no stable volume identity",
                     location.path.display()
                 ));
             };
-            StorageOperationBinding {
+            let binding = StorageOperationBinding {
                 root: location.path.clone(),
                 stable_identity: Some(stable_identity),
                 kind: StorageOperationBindingKind::Discovered,
+            };
+            if !bindings.contains(&binding) {
+                bindings.push(binding);
             }
-        } else if path.starts_with(&home) {
-            StorageOperationBinding {
+        }
+        #[cfg(target_os = "linux")]
+        {
+            // Volume discovery proves reconnect identity. The actual path's
+            // mount also needs proof: an undiscovered nested mount may differ
+            // from its discovered parent or from the Home filesystem.
+            let root = std::path::absolute(path).map_err(|error| error.to_string())?;
+            let mount_id =
+                ottrin_platform::local_storage::local_path_mount_identity(&root, follow_symlink)
+                    .map_err(|error| {
+                        format!("cannot identify storage for {}: {error}", path.display())
+                    })?;
+            let binding = StorageOperationBinding {
+                root,
+                stable_identity: None,
+                kind: StorageOperationBindingKind::Local {
+                    mount_id,
+                    follow_symlink,
+                },
+            };
+            if !bindings.contains(&binding) {
+                bindings.push(binding);
+            }
+        }
+        #[cfg(not(target_os = "linux"))]
+        if longest_storage_root_for_path(locations, path).is_none() {
+            let _ = follow_symlink;
+            if !path.starts_with(&home) {
+                return Err(format!(
+                    "the storage identity for {} cannot be proven",
+                    path.display()
+                ));
+            }
+            let binding = StorageOperationBinding {
                 root: home.clone(),
                 stable_identity: None,
                 kind: StorageOperationBindingKind::Home,
+            };
+            if !bindings.contains(&binding) {
+                bindings.push(binding);
             }
-        } else {
-            return Err(format!(
-                "the storage identity for {} cannot be proven",
-                path.display()
-            ));
-        };
-        if !bindings.contains(&binding) {
-            bindings.push(binding);
         }
     }
     Ok(bindings)
@@ -22686,8 +22761,10 @@ fn prepare_clipboard_paste(
 ) -> Result<(FileCommand, Vec<StorageOperationBinding>), String> {
     validate_operation_storage_bindings(&clipboard.source_bindings, locations)?;
     let mut bindings = clipboard.source_bindings.clone();
-    for binding in capture_required_storage_bindings(std::slice::from_ref(&destination), locations)?
-    {
+    for binding in capture_required_storage_bindings(
+        std::iter::once((destination.as_path(), true)),
+        locations,
+    )? {
         if !bindings.contains(&binding) {
             bindings.push(binding);
         }
@@ -30735,7 +30812,7 @@ mod tests {
             r"\\?\Q:\folder\payload.txt",
         ] {
             let bindings = capture_required_storage_bindings(
-                &[PathBuf::from(path)],
+                [(Path::new(path), false)],
                 std::slice::from_ref(&location),
             )
             .unwrap();
@@ -30751,7 +30828,7 @@ mod tests {
         }
         assert!(
             capture_required_storage_bindings(
-                &[PathBuf::from(r"R:\folder\payload.txt")],
+                [(Path::new(r"R:\folder\payload.txt"), false)],
                 &[location]
             )
             .is_err()
@@ -30764,6 +30841,161 @@ mod tests {
             Path::new(r"Q:\folder-other\file"),
             Path::new(r"\\?\Q:\folder")
         ));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn local_clipboard_copy_outside_home_crosses_filesystems_through_the_worker() {
+        let source = tempfile::tempdir().unwrap();
+        let destination = tempfile::tempdir_in("/dev/shm").unwrap();
+        let file = source.path().join("payload.txt");
+        std::fs::write(&file, b"cross-filesystem clipboard bytes").unwrap();
+        assert!(!file.starts_with(default_home_dir()));
+        let clipboard = Clipboard::capture(vec![file.clone()], false, &[]).unwrap();
+        let mut app = OttrinApp::default();
+        app.state.active_tab_mut().current_dir = destination.path().to_path_buf();
+        app.clipboard = Some(clipboard);
+        app.paste_clipboard();
+        assert!(app.clipboard.as_ref().unwrap().in_flight);
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while app.clipboard.as_ref().unwrap().in_flight && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(10));
+            app.poll_op_results();
+        }
+        assert!(!app.clipboard.as_ref().unwrap().in_flight);
+        assert_eq!(
+            std::fs::read(destination.path().join("payload.txt")).unwrap(),
+            b"cross-filesystem clipboard bytes"
+        );
+        assert_eq!(
+            std::fs::read(&file).unwrap(),
+            b"cross-filesystem clipboard bytes"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn local_path_bindings_reject_a_retargeted_destination_link() {
+        use std::os::unix::fs::symlink;
+        let source = tempfile::tempdir().unwrap();
+        let first = source.path().join("first");
+        std::fs::create_dir(&first).unwrap();
+        let second = tempfile::tempdir_in("/dev/shm").unwrap();
+        let link = source.path().join("destination");
+        symlink(&first, &link).unwrap();
+        let cmd = FileCommand::CreateFile {
+            parent: link.clone(),
+            name: "new.txt".into(),
+        };
+        let bindings = operation_storage_bindings(&cmd, &[]).unwrap();
+        std::fs::remove_file(&link).unwrap();
+        symlink(second.path(), &link).unwrap();
+        assert!(validate_operation_storage_bindings(&bindings, &[]).is_err());
+        assert!(!first.join("new.txt").exists());
+        assert!(!second.path().join("new.txt").exists());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    #[ignore = "requires an explicitly owned private user/mount namespace"]
+    fn local_storage_binding_rejects_real_mount_replacement_under_discovered_parent() {
+        use std::os::unix::ffi::OsStrExt;
+        assert_ne!(
+            std::fs::read_link("/proc/self/ns/mnt").unwrap(),
+            PathBuf::from(
+                std::env::var_os("OTTRIN_QA_PARENT_MOUNT_NAMESPACE")
+                    .expect("pass the parent namespace identity before unshare")
+            ),
+            "run this fixture with unshare --user --map-root-user --mount"
+        );
+        let root = tempfile::tempdir().unwrap();
+        let mount = root.path().join("volume");
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&mount).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        struct OwnedMount(std::ffi::CString);
+        impl Drop for OwnedMount {
+            fn drop(&mut self) {
+                // SAFETY: this pathname names only our namespace-owned fixture.
+                if unsafe { libc::umount2(self.0.as_ptr(), libc::MNT_DETACH) } != 0 {
+                    eprintln!(
+                        "fixture unmount failed: {}",
+                        std::io::Error::last_os_error()
+                    );
+                }
+            }
+        }
+        fn attach(path: &Path) -> OwnedMount {
+            let name = std::ffi::CString::new(path.as_os_str().as_bytes()).unwrap();
+            // SAFETY: strings are NUL-terminated; the empty tmpfs is confined to
+            // our verified private namespace and disposable pathname.
+            let result = unsafe {
+                libc::mount(
+                    c"tmpfs".as_ptr(),
+                    name.as_ptr(),
+                    c"tmpfs".as_ptr(),
+                    libc::MS_NODEV | libc::MS_NOSUID,
+                    c"size=1M".as_ptr().cast(),
+                )
+            };
+            assert_eq!(
+                result,
+                0,
+                "fixture mount failed: {}",
+                std::io::Error::last_os_error()
+            );
+            OwnedMount(name)
+        }
+        let first = attach(&mount);
+        let file = mount.join("payload.txt");
+        std::fs::write(&file, b"original mount").unwrap();
+        let parent = StorageLocation {
+            path: root.path().to_path_buf(),
+            identity: "parent".into(),
+            stable_identity: Some("parent-stable".into()),
+            kind: StorageLocationKind::Internal,
+            display_name: None,
+        };
+        let clipboard =
+            Clipboard::capture(vec![file.clone()], false, std::slice::from_ref(&parent)).unwrap();
+        drop(first);
+        let second = attach(&mount);
+        std::fs::write(&file, b"replacement mount").unwrap();
+        assert!(
+            prepare_clipboard_paste(
+                &clipboard,
+                destination.clone(),
+                std::slice::from_ref(&parent)
+            )
+            .is_err(),
+            "unchanged parent identity must not authorise the replacement nested mount"
+        );
+        assert_eq!(std::fs::read(&file).unwrap(), b"replacement mount");
+        assert!(!destination.join("payload.txt").exists());
+        drop(second);
+        assert_eq!(
+            ottrin_platform::local_storage::local_path_mount_identity(&mount, true).unwrap(),
+            ottrin_platform::local_storage::local_path_mount_identity(root.path(), true).unwrap()
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn local_clipboard_capture_preserves_unavailable_volume_tombstones() {
+        let root = tempfile::tempdir().unwrap();
+        let file = root.path().join("payload.txt");
+        std::fs::write(&file, b"retained").unwrap();
+        let mut app = OttrinApp::default();
+        app.unavailable_root_tombstones.push(UnavailableLocation {
+            root: root.path().to_path_buf(),
+            stable_identity: Some("lost-volume".into()),
+        });
+        let ctx = Context::default();
+        let _ = ctx.run(Default::default(), |ctx| {
+            assert!(!app.capture_clipboard(ctx, vec![file.clone()], false));
+        });
+        assert!(app.clipboard.is_none());
+        assert_eq!(std::fs::read(file).unwrap(), b"retained");
     }
 
     #[test]
@@ -30819,7 +31051,8 @@ mod tests {
             parent: original.path.clone(),
             name: "new".to_string(),
         };
-        let bindings = operation_storage_bindings(&command, std::slice::from_ref(&original));
+        let bindings =
+            operation_storage_bindings(&command, std::slice::from_ref(&original)).unwrap();
         let replacement = StorageLocation {
             stable_identity: Some("volume-b".to_string()),
             ..original
@@ -31526,7 +31759,7 @@ mod tests {
             targets: vec![root.join("report.txt")],
             mode: DeleteMode::Permanent,
         };
-        let bindings = operation_storage_bindings(&command, &[original]);
+        let bindings = operation_storage_bindings(&command, &[original]).unwrap();
         let retry = PendingPrivilegedRetry::capture(command, Some(1), &bindings);
 
         assert!(validate_privileged_retry(&retry, &[replacement]).is_err());
@@ -31616,10 +31849,12 @@ mod tests {
                     mode: DeleteMode::Permanent,
                 },
                 std::slice::from_ref(&location),
-            ),
+            )
+            .unwrap(),
             in_flight: false,
         });
-        let retry_bindings = operation_storage_bindings(&command, std::slice::from_ref(&location));
+        let retry_bindings =
+            operation_storage_bindings(&command, std::slice::from_ref(&location)).unwrap();
         app.pending_privileged_retry = Some(PendingPrivilegedRetry::capture(
             command.clone(),
             Some(tab_id),
