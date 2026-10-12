@@ -70,5 +70,25 @@ Source verification passes 341 UI tests, three focused platform tests, and stric
 Linux/Windows UI/platform all-target Clippy. The explicit private-namespace native
 fixture passes actual tmpfs detach/replacement with unchanged parent identity and
 no copied replacement bytes. Unique mount IDs require Linux 6.8+ and are never
-persisted as index/reconnect identities. Exact rebuilt-package acceptance is
-pending; the earlier refusal receipt remains the historical reproduction.
+persisted as index/reconnect identities. The exact rebuilt-package acceptance
+below follows this source verification; the earlier refusal receipt remains
+the historical reproduction.
+
+### Exact AppImage acceptance — 2026-10-12
+
+Clean source `898e42c0fb7a5cb166408de04a3e008f6df1b8d5` produced AppImage
+SHA-256 `e2cc574af6eeaa4a6c57b89d40079354236ae210bf3bf22585bcf451ec9f1dc1`.
+Private Xvfb/DBus GUI checks on two distinct tmpfs instances outside Home pass
+Copy, conflict auto-renaming, two-file reverse Copy, Move, cancellation and
+overwrite Move. Overwrite retains the exact displaced destination bytes; its
+Activity Undo restores both source and displaced destination bytes. The app
+exits normally with code zero; all owned profiles, fixtures and processes are removed.
+Receipt: `dist/packages/LOCAL_PATH_ADMISSION_ACCEPTANCE.json`. This is not
+physical removable-volume or full daily-driver acceptance.
+
+The same run exposes two remaining issues: fast Ctrl+L can miss a modifier
+released before the frame boundary, and successful batch Copy retains private
+transaction stages with a cleanup warning and no batch Undo. Path navigation
+used the real pointer address control for the recorded file-operation checks.
+An earlier interactive run reached its own QA deadline before final overwrite
+verification; the bounded rerun above supplies that verification.

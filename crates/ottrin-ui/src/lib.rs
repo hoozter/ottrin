@@ -8053,7 +8053,11 @@ impl OttrinApp {
             }
 
             // ── Address bar ───────────────────────────────────────────────────
-            if ctrl && input.key_pressed(Key::L) {
+            if input.events.iter().any(|event| {
+                matches!(event, egui::Event::Key {
+                    key: Key::L, pressed: true, modifiers, ..
+                } if modifiers.ctrl || modifiers.command)
+            }) {
                 let path = self.displayed_path().display().to_string();
                 let bar = self.address_bar_state_mut(tab_id);
                 bar.text = path;
@@ -11653,18 +11657,18 @@ impl OttrinApp {
             let mut close = false;
             {
                 let bar = self.address_bar_state_mut(tab_id);
+                let editor_id = ui.make_persistent_id(("address_bar_text", tab_id));
+                if std::mem::take(&mut bar.request_focus) {
+                    ui.memory_mut(|memory| memory.request_focus(editor_id));
+                }
                 let response = ui.add(
                     egui::TextEdit::singleline(&mut bar.text)
-                        .id_source(("address_bar_text", tab_id))
+                        .id(editor_id)
                         .font(FontId::proportional(14.0 * c.font_scale))
                         .text_color(c.text_muted)
                         .desired_width(ui.available_width())
                         .themed(&c),
                 );
-                if bar.request_focus {
-                    response.request_focus();
-                    bar.request_focus = false;
-                }
                 if response.lost_focus() {
                     if ui.input(|i| i.key_pressed(Key::Enter)) {
                         let raw = bar.text.trim().to_string();
@@ -24528,6 +24532,53 @@ mod tests {
         }];
         ui.main_sel = Some(0);
         (root, app, source)
+    }
+
+    #[test]
+    fn address_shortcut_uses_key_event_modifiers_and_focuses_before_same_frame_typing() {
+        for modifiers in [egui::Modifiers::CTRL, egui::Modifiers::COMMAND] {
+            let (_root, mut app, _source) = clipboard_keyboard_fixture();
+            let ctx = Context::default();
+            let tab_id = app.state.active_tab().id;
+            let _ = ctx.run(
+                egui::RawInput {
+                    // Ctrl/Command has already been released by the frame boundary.
+                    modifiers: egui::Modifiers::NONE,
+                    events: vec![
+                        egui::Event::Key {
+                            key: Key::L,
+                            physical_key: None,
+                            pressed: true,
+                            repeat: false,
+                            modifiers,
+                        },
+                        egui::Event::Key {
+                            key: Key::L,
+                            physical_key: None,
+                            pressed: false,
+                            repeat: false,
+                            modifiers: egui::Modifiers::NONE,
+                        },
+                        egui::Event::Text("-same-frame".to_owned()),
+                    ],
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.handle_keyboard(ctx);
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        app.render_address_bar(ui, tab_id);
+                    });
+                },
+            );
+            let bar = app.address_bar_state(tab_id).unwrap();
+            assert!(bar.editing);
+            assert!(
+                bar.text.contains("-same-frame"),
+                "first-frame typing must reach the address field"
+            );
+            assert!(!app.command_frame.visible);
+            assert!(ctx.wants_keyboard_input());
+        }
     }
 
     #[test]
