@@ -92,3 +92,23 @@ transaction stages with a cleanup warning and no batch Undo. Path navigation
 used the real pointer address control for the recorded file-operation checks.
 An earlier interactive run reached its own QA deadline before final overwrite
 verification; the bounded rerun above supplies that verification.
+
+### Rapid command shortcuts and refreshed package — 2026-10-12
+
+The first shortcut candidate (`114abcd`, SHA-256
+`431970b6024d0adf51e78f38455fd8b7f42b14888caa22498a0eee30273d00ed`)
+passed rapid path entry but exposed the same frame-boundary modifier miss in
+Select All. That failed workflow and its completed cleanup remain in
+`.hermes/evidence/address-shortcut-20261012/first-attempt/RESULT.json`.
+
+Main command shortcuts now read modifiers from the key press event. Address
+fields request focus before rendering, so typing in the opening frame reaches
+the field. Both regressions, all 343 ordinary UI tests and strict Linux/Windows
+UI all-target Clippy pass. Clean `de83a2e` AppImage SHA-256
+`b596304dfe6e8f9451792c411ffaffd4e6daa66a42adaf12e9f116182dd6ea68`
+passes repeated rapid Ctrl+L/Ctrl+A/path typing without an inserted focus wait,
+two-file selection and the complete Copy/Move/Cancel/Overwrite/Undo byte checks
+recorded above, with normal exit and full owned fixture/process cleanup.
+`dist/packages/LOCAL_PATH_ADMISSION_ACCEPTANCE.json` now binds this exact artifact.
+Batch Copy transaction retention/Activity handling and physical removable-volume
+acceptance remain open; Windows packages still need the current UI repair.
