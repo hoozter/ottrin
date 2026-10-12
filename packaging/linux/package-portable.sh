@@ -67,7 +67,7 @@ export OTTRIN_PRIV_HELPER=/usr/libexec/ottrin/ottrin-priv-helper
 exec "$OTTRIN_REAL_ELF" "$@"
 EOF
 chmod 0755 "$STAGE/bin/ottrin"
-download_verify_and_package_pdfium "$STAGE/bin/pdfium"
+download_verify_and_package_pdfium "$STAGE/libexec/ottrin/pdfium"
 cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/logo.svg" "$STAGE/assets/"
 cp "$ROOT/packaging/linux/org.ottrin.filesystem.policy" \
   "$ROOT/packaging/linux/ottrin.appdata.xml" \
@@ -99,8 +99,8 @@ sudo install -m 0644 ./packaging/linux/org.ottrin.filesystem.policy /usr/share/p
 Without the helper, normal user-owned file operations still work.
 
 Ottrin starts its per-user index daemon when the app launches. To keep the
-daemon enabled across login sessions, open Settings → Search and enable
-background indexing. Ottrin installs the included systemd user-service
+daemon enabled across login sessions, open Settings → Services and install the
+background index service. Ottrin installs the included systemd user-service
 template with this package's absolute launcher path; it does not install a
 periodic timer or cron job.
 
