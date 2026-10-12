@@ -112,3 +112,26 @@ recorded above, with normal exit and full owned fixture/process cleanup.
 `dist/packages/LOCAL_PATH_ADMISSION_ACCEPTANCE.json` now binds this exact artifact.
 Batch Copy transaction retention/Activity handling and physical removable-volume
 acceptance remain open; Windows packages still need the current UI repair.
+
+### Batch Copy receipt and Undo acceptance — 2026-10-12
+
+Clean source `771eae8dc2bcd1268403bedc3dedf7f24778e611` produced AppImage
+SHA-256 `312eb7a0907e3895aee45ef5c087be315c5a6d94f6f70d44f3a3cff7b237a7c7`.
+Its private GUI run passes two-file cross-filesystem Copy and batch Undo: both
+copied destination entries disappear and both original sources retain exact
+bytes. Activity offers “Undo copied items” without the prior cleanup warning.
+The rapid path-entry, Copy conflict rename, Move, Cancel, overwrite retention
+and overwrite Undo checks pass again; normal exit and complete owned teardown
+pass. Receipt: `dist/packages/BATCH_COPY_ACCEPTANCE.json`.
+
+All 329 platform and 343 regular UI tests, plus strict Linux/Windows UI/platform
+all-target Clippy, pass. Source-built worker coverage also proves overwrite
+restoration, pathname-replacement refusal and retry without repeating a completed
+Undo. The shared batch loop retains completed-prefix receipts and recovery paths
+on a later Copy failure. GUI partial-failure acceptance and native Windows Copy
+acceptance remain separate.
+
+Retained Copy transaction data now has an Activity owner; safe expiry/reclamation
+is still open. The native screenshot also reveals the existing Activity renderer
+uses error ink for a successful Undo message; that UI consistency defect remains
+recorded in the roadmap.
