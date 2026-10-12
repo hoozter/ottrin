@@ -77,8 +77,12 @@ impl SourceTreeSnapshotEntry {
 #[cfg(target_os = "linux")]
 impl SourceTreeSnapshot {
     pub(super) fn root_matches_path_identity(&self, identity: &super::PathMoveIdentity) -> bool {
-        self.entries.first().is_some_and(|entry| {
-            entry.identity.device == identity.device && entry.identity.inode == identity.inode
+        self.root_path_identity().as_ref() == Some(identity)
+    }
+    pub(super) fn root_path_identity(&self) -> Option<super::PathMoveIdentity> {
+        self.entries.first().map(|entry| super::PathMoveIdentity {
+            device: entry.identity.device,
+            inode: entry.identity.inode,
         })
     }
     pub(super) fn relative_paths(&self) -> Result<Vec<PathBuf>, JournalError> {
@@ -2213,9 +2217,7 @@ impl LinuxJournalDirectory {
                 continue;
             };
             let id = String::from_utf8_lossy(stem).into_owned();
-            let record = if stem.len() != 32
-                || !stem.iter().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
-            {
+            let record = if !super::copy_recovery::valid_transaction_id(&id) {
                 Err(super::PlatformError::Io(
                     "invalid Copy registry filename".into(),
                 ))

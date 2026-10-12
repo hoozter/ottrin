@@ -37,6 +37,38 @@ impl Eq for RetainedCopyTransaction {}
 
 #[cfg(target_os = "linux")]
 impl RetainedCopyTransaction {
+    pub(super) fn from_opened(
+        parent: &std::fs::File,
+        stage: &std::fs::File,
+        path: &Path,
+        durable_copy: bool,
+    ) -> std::io::Result<Self> {
+        use std::os::fd::AsRawFd;
+        use std::os::unix::fs::MetadataExt;
+        let parent_info = parent.metadata()?;
+        let stage_info = stage.metadata()?;
+        let directories = RetainedCopyDirectories {
+            parent_mount: super::local_storage::local_path_mount_identity(
+                &PathBuf::from(format!("/proc/self/fd/{}", parent.as_raw_fd())),
+                true,
+            )?,
+            stage_mount: super::local_storage::local_path_mount_identity(
+                &PathBuf::from(format!("/proc/self/fd/{}", stage.as_raw_fd())),
+                true,
+            )?,
+            parent_identity: (parent_info.dev(), parent_info.ino()),
+            stage_identity: (stage_info.dev(), stage_info.ino()),
+            parent_path: path
+                .parent()
+                .ok_or_else(|| std::io::Error::other("transaction has no parent"))?
+                .to_path_buf(),
+            stage_path: path.to_path_buf(),
+            parent_watch: super::directory_watch::DirectoryWatch::new(parent)?,
+            stage_watch: super::directory_watch::DirectoryWatch::new(stage)?,
+            durable_copy,
+        };
+        Ok(Self(std::sync::Arc::new(directories)))
+    }
     pub(super) fn undo_durable_copy(
         &self,
         receipt: &super::PathMoveUndoReceipt,
@@ -497,32 +529,10 @@ mod linux {
             self,
             durable_copy: bool,
         ) -> Result<(PathBuf, RetainedCopyTransaction), PlatformError> {
-            use std::os::unix::fs::MetadataExt;
             let path = self.recovery_path();
-            let result = (|| {
-                let parent = std::fs::File::from(self.parent);
-                let stage = std::fs::File::from(self.stage);
-                let parent_info = parent.metadata()?;
-                let stage_info = stage.metadata()?;
-                let directories = RetainedCopyDirectories {
-                    parent_mount: super::super::local_storage::local_path_mount_identity(
-                        &PathBuf::from(format!("/proc/self/fd/{}", parent.as_raw_fd())),
-                        true,
-                    )?,
-                    stage_mount: super::super::local_storage::local_path_mount_identity(
-                        &PathBuf::from(format!("/proc/self/fd/{}", stage.as_raw_fd())),
-                        true,
-                    )?,
-                    parent_identity: (parent_info.dev(), parent_info.ino()),
-                    stage_identity: (stage_info.dev(), stage_info.ino()),
-                    parent_path: path.parent().expect("transaction parent").to_path_buf(),
-                    stage_path: path.clone(),
-                    parent_watch: super::super::directory_watch::DirectoryWatch::new(&parent)?,
-                    stage_watch: super::super::directory_watch::DirectoryWatch::new(&stage)?,
-                    durable_copy,
-                };
-                Ok::<_, std::io::Error>(RetainedCopyTransaction(std::sync::Arc::new(directories)))
-            })();
+            let parent = std::fs::File::from(self.parent);
+            let stage = std::fs::File::from(self.stage);
+            let result = RetainedCopyTransaction::from_opened(&parent, &stage, &path, durable_copy);
             result.map(|guard| (path.clone(), guard)).map_err(|error| PlatformError::CommittedCleanupPending {
                 transaction: path.display().to_string(),
                 message: format!("publication completed but directory identity watches could not be established: {error}"),

@@ -31,6 +31,15 @@ pub fn discover_retained_copy_transactions_at(
 pub fn discover_retained_copy_transactions() -> Result<Vec<RetainedCopyStatus>, PlatformError> {
     copy_recovery::discover_at(&copy_recovery::configured_root()?)
 }
+
+/// Restores a guarded receipt from the configured Copy registry without changing
+/// data or journals. Undo revalidates evidence and acquires its transaction lock.
+#[cfg(target_os = "linux")]
+pub fn restore_retained_copy_undo_receipt(
+    transaction_id: &str,
+) -> Result<PathMoveUndoReceipt, PlatformError> {
+    copy_recovery::restore_receipt(transaction_id)
+}
 mod copy_transaction;
 #[cfg(target_os = "linux")]
 mod directory_watch;

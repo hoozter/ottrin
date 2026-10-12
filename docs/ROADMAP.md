@@ -578,3 +578,36 @@ the crash fixtures establish recognition, not new-process mutation authority.
 Journal-pair mismatch reconciliation, automatic safe reclamation, cross-boot
 ownership and filesystem object-evidence support beyond the tested scope remain
 open. No startup Undo or automatic deletion has been enabled.
+
+### Copy receipt restoration in a new process — source verification
+
+The platform now exposes `restore_retained_copy_undo_receipt(transaction_id)` for
+the configured registry. Restoration rejects invalid IDs, mismatched record pairs,
+changed directory/object/content evidence, unsafe staging and competing recovery
+owners. It opens parent and stage through verified bindings, takes the transaction
+lock and establishes fresh watches before validating the data. Normal publication
+and restoration share the same watch/guard constructor; discovery, restoration and
+Undo share opened-directory validation. Receipt identities are derived from the
+authoritative snapshots rather than stored again.
+
+Restoration does not write journals or change the namespace. The returned receipt
+can run the durable inverse or finish a matching interrupted inverse; every Undo
+revalidates under the lock. PublicationIntent records still need reconciliation,
+and completed inverses do not issue another receipt. Boot/mount bindings and
+complete filesystem object evidence remain required.
+
+All sixteen SIGKILL cases now exercise new-process admission: twelve pending
+cases restore and complete without repeating withdrawal, while the four completed
+cases reject a new receipt. Six normal-exit cases cover file, directory and symlink
+Copy, with and without overwrite. Restoration preserves journal bytes and retains
+no parent/stage directory descriptors. Edited data before or after restoration,
+replaced staging, mismatched pairs, invalid/missing IDs and lock contention are
+refused while preserving data and records.
+
+All 354 regular platform and 351 regular UI tests pass (one ignored in each), with
+strict Linux/Windows-target UI Clippy and formatting checks. Evidence:
+`.hermes/evidence/copy-receipt-restart/`. This is source-only; current packages
+remain unchanged. Startup Activity ownership and grouped operation history are not
+connected yet. Publication-intent reconciliation, pair-mismatch reconciliation,
+safe reclamation, cross-boot ownership and broader filesystem acceptance remain
+open. No automatic startup inverse or retained-data deletion has been enabled.

@@ -178,6 +178,51 @@ pub(super) struct CopyRecord {
 pub(super) type CopyRegistryEntry = (String, Result<CopyRecord, PlatformError>);
 
 impl CopyRecord {
+    fn validate_opened_directory(
+        &self,
+        fd: &impl rustix::fd::AsFd,
+        parent: bool,
+    ) -> Result<(), PlatformError> {
+        use rustix::fd::AsRawFd;
+        let (identity, mount, handle) = if parent {
+            (
+                &self.parent_identity,
+                self.parent_mount,
+                &self.parent_handle,
+            )
+        } else {
+            (
+                &self.transaction_identity,
+                self.transaction_mount,
+                &self.transaction_handle,
+            )
+        };
+        let metadata = rustix::fs::fstat(fd).map_err(journal_error)?;
+        let opened_mount = super::local_storage::local_path_mount_identity(
+            &PathBuf::from(format!("/proc/self/fd/{}", fd.as_fd().as_raw_fd())),
+            true,
+        )
+        .map_err(journal_error)?;
+        if rustix::fs::FileType::from_raw_mode(metadata.st_mode) != rustix::fs::FileType::Directory
+            || (metadata.st_dev, metadata.st_ino) != (identity.device, identity.inode)
+            || opened_mount != mount
+            || (!parent
+                && (metadata.st_uid != rustix::process::geteuid().as_raw()
+                    || metadata.st_mode & 0o777 != 0o700))
+        {
+            return Err(PlatformError::Io(
+                "opened Copy directory does not match its journal".into(),
+            ));
+        }
+        if let Some(expected) = handle
+            && ObjectHandle::capture(fd).map_err(journal_error)?.as_ref() != Some(expected)
+        {
+            return Err(PlatformError::Io(
+                "opened Copy directory object generation changed".into(),
+            ));
+        }
+        Ok(())
+    }
     pub(super) fn publication_intent(
         source: &Path,
         publication: &Path,
@@ -279,12 +324,7 @@ impl CopyRecord {
             .file_name()
             .and_then(|name| name.to_str())
             .and_then(|name| name.strip_prefix(".ottrin-txn-"))
-            .filter(|name| {
-                name.len() == 32
-                    && name
-                        .bytes()
-                        .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
-            })
+            .filter(|name| valid_transaction_id(name))
             .ok_or_else(|| PlatformError::Io("invalid Copy transaction name".into()))?;
         Ok(name.to_owned())
     }
@@ -342,6 +382,108 @@ impl CopyRecord {
 
 fn journal_error(error: impl std::fmt::Display) -> PlatformError {
     PlatformError::Io(error.to_string())
+}
+
+pub(super) fn valid_transaction_id(id: &str) -> bool {
+    id.len() == 32 && id.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+}
+
+pub(super) fn restore_receipt(id: &str) -> Result<super::PathMoveUndoReceipt, PlatformError> {
+    use super::move_recovery::LinuxJournalDirectory;
+    use rustix::fs::{Mode, OFlags};
+    if !valid_transaction_id(id) {
+        return Err(PlatformError::InvalidPathMoveUndoReceipt(
+            "invalid Copy transaction ID".into(),
+        ));
+    }
+    let central = LinuxJournalDirectory::open_copy_registry(&configured_root()?, false)
+        .map_err(journal_error)?;
+    let record = central.read_copy_record(&format!("{id}.journal"))?;
+    if record.transaction_id()? != id {
+        return Err(PlatformError::InvalidPathMoveUndoReceipt(
+            "Copy registry filename does not match transaction".into(),
+        ));
+    }
+    record.require_object_evidence()?;
+    record.validate_namespace()?;
+    let transaction = record.transaction.decode().map_err(journal_error)?;
+    let publication = record.publication.decode().map_err(journal_error)?;
+    let parent_path = transaction.parent().expect("validated transaction parent");
+    let flags = OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC;
+    let parent = std::fs::File::from(
+        rustix::fs::open(parent_path, flags, Mode::empty()).map_err(journal_error)?,
+    );
+    let stage = std::fs::File::from(
+        rustix::fs::openat(
+            &parent,
+            transaction.file_name().expect("validated stage name"),
+            flags,
+            Mode::empty(),
+        )
+        .map_err(journal_error)?,
+    );
+    record.validate_opened_directory(&parent, true)?;
+    record.validate_opened_directory(&stage, false)?;
+    let local = LinuxJournalDirectory::for_copy_stage(&stage).map_err(journal_error)?;
+    let _lock = local.try_lock_recovery().map_err(journal_error)?;
+    if local.read_copy_record("copy-journal")? != record
+        || central.read_copy_record(&format!("{id}.journal"))? != record
+    {
+        return Err(PlatformError::Io(
+            "central and destination-local Copy journals differ or changed during restoration"
+                .into(),
+        ));
+    }
+    let guard = super::RetainedCopyTransaction::from_opened(&parent, &stage, &transaction, true)
+        .map_err(journal_error)?;
+    match record.phase {
+        CopyPhase::Published => record.validate_published_data(&stage)?,
+        CopyPhase::UndoIntent => {
+            record.undo_topology(&stage)?;
+        }
+        CopyPhase::PublicationIntent => {
+            return Err(PlatformError::NotAvailable(
+                "Copy publication needs reconciliation before Undo",
+            ));
+        }
+        CopyPhase::Undone => {
+            return Err(PlatformError::NotAvailable("Copy Undo is already complete"));
+        }
+    }
+    record.validate_namespace()?;
+    record.validate_opened_directory(&parent, true)?;
+    record.validate_opened_directory(&stage, false)?;
+    guard.validate_path(&transaction)?;
+    guard.validate_publication_parent(&publication)?;
+    let identity = record
+        .publication_content
+        .root_path_identity()
+        .ok_or_else(|| {
+            PlatformError::InvalidPathMoveUndoReceipt("Copy snapshot has no root identity".into())
+        })?;
+    let displaced_identity = record
+        .displaced_content
+        .as_ref()
+        .map(|content| {
+            content.root_path_identity().ok_or_else(|| {
+                PlatformError::InvalidPathMoveUndoReceipt(
+                    "Copy backup snapshot has no root identity".into(),
+                )
+            })
+        })
+        .transpose()?;
+    Ok(super::PathMoveUndoReceipt {
+        before_path: transaction.join(super::copy_transaction::CANDIDATE),
+        after_path: publication,
+        identity,
+        displaced_identity,
+        retained_displaced_path: None,
+        requirement: super::PathMoveUndoRequirement::None,
+        published_content: Some(record.publication_content),
+        retained_displaced_content: record.displaced_content,
+        cross_filesystem_state: Default::default(),
+        retained_copy_directory: Some(guard),
+    })
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -426,37 +568,8 @@ fn undo_with_journals_with_hook(
         ));
     }
     record.validate_namespace()?;
-    for (fd, identity, mount, handle) in [
-        (
-            parent,
-            &record.parent_identity,
-            record.parent_mount,
-            &record.parent_handle,
-        ),
-        (
-            stage,
-            &record.transaction_identity,
-            record.transaction_mount,
-            &record.transaction_handle,
-        ),
-    ] {
-        use std::os::fd::AsRawFd;
-        use std::os::unix::fs::MetadataExt;
-        let metadata = fd.metadata().map_err(journal_error)?;
-        if (metadata.dev(), metadata.ino()) != (identity.device, identity.inode)
-            || super::local_storage::local_path_mount_identity(
-                &PathBuf::from(format!("/proc/self/fd/{}", fd.as_raw_fd())),
-                true,
-            )
-            .map_err(journal_error)?
-                != mount
-            || ObjectHandle::capture(fd).map_err(journal_error)?.as_ref() != handle.as_ref()
-        {
-            return Err(PlatformError::StalePathMoveUndo(
-                transaction.display().to_string(),
-            ));
-        }
-    }
+    record.validate_opened_directory(parent, true)?;
+    record.validate_opened_directory(stage, false)?;
     let topology = match record.phase {
         CopyPhase::PublicationIntent => {
             return Err(PlatformError::InvalidPathMoveUndoReceipt(
@@ -608,33 +721,7 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
                     rustix::fs::Mode::empty(),
                 )
                 .map_err(journal_error)?;
-                let metadata = rustix::fs::fstat(&fd).map_err(journal_error)?;
-                use rustix::fd::AsRawFd;
-                let mount = super::local_storage::local_path_mount_identity(
-                    &PathBuf::from(format!("/proc/self/fd/{}", fd.as_raw_fd())),
-                    true,
-                )
-                .map_err(journal_error)?;
-                if (metadata.st_dev, metadata.st_ino)
-                    != (
-                        record.transaction_identity.device,
-                        record.transaction_identity.inode,
-                    )
-                    || metadata.st_uid != rustix::process::geteuid().as_raw()
-                    || metadata.st_mode & 0o777 != 0o700
-                    || mount != record.transaction_mount
-                {
-                    return Err(PlatformError::Io(
-                        "opened Copy transaction directory does not match its journal".into(),
-                    ));
-                }
-                if let Some(expected) = &record.transaction_handle
-                    && ObjectHandle::capture(&fd).map_err(journal_error)?.as_ref() != Some(expected)
-                {
-                    return Err(PlatformError::Io(
-                        "opened Copy transaction object generation changed".into(),
-                    ));
-                }
+                record.validate_opened_directory(&fd, false)?;
                 let local = super::move_recovery::LinuxJournalDirectory::for_copy_stage(&fd)
                     .map_err(journal_error)?;
                 let local = local.read_copy_record("copy-journal")?;
@@ -906,6 +993,158 @@ mod tests {
             .unwrap()
     }
 
+    fn wait_owned_child(child: std::process::Child) -> std::process::ExitStatus {
+        struct OwnedChild(std::process::Child);
+        impl Drop for OwnedChild {
+            fn drop(&mut self) {
+                if self.0.try_wait().ok().flatten().is_none() {
+                    let _ = self.0.kill();
+                    let _ = self.0.wait();
+                }
+            }
+        }
+        let mut child = OwnedChild(child);
+        let started = std::time::Instant::now();
+        loop {
+            if let Some(status) = child.0.try_wait().unwrap() {
+                return status;
+            }
+            assert!(
+                started.elapsed() < std::time::Duration::from_secs(20),
+                "owned recovery fixture timed out"
+            );
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+    }
+
+    #[test]
+    fn published_copy_receipts_restore_after_process_exit_for_files_directories_and_symlinks() {
+        const ROOT: &str = "OTTRIN_COPY_RECEIPT_RESTART_ROOT";
+        if let Some(root) = std::env::var_os(ROOT) {
+            let root = PathBuf::from(root);
+            let _private = PrivateRoot::new(&root);
+            let kind = std::env::var("OTTRIN_COPY_RECEIPT_RESTART_KIND").unwrap();
+            let overwrite =
+                std::env::var("OTTRIN_COPY_RECEIPT_RESTART_OVERWRITE").unwrap() == "true";
+            if kind == "symlink" {
+                let destination = root.join("destination");
+                std::fs::create_dir(&destination).unwrap();
+                std::fs::write(root.join("new-target"), "new-target-data").unwrap();
+                std::fs::write(root.join("old-target"), "old-target-data").unwrap();
+                std::os::unix::fs::symlink(root.join("new-target"), root.join("item")).unwrap();
+                if overwrite {
+                    std::os::unix::fs::symlink(root.join("old-target"), destination.join("item"))
+                        .unwrap();
+                }
+                DefaultPlatform
+                    .execute_copy_with_undo_receipt(
+                        &root.join("item"),
+                        &destination,
+                        super::super::ConflictAction::Overwrite,
+                    )
+                    .unwrap();
+            } else {
+                copy_fixture(&root, overwrite, kind == "directory");
+            }
+            return;
+        }
+        for kind in ["file", "directory", "symlink"] {
+            for overwrite in [false, true] {
+                let root = tempfile::tempdir().unwrap();
+                let _private = PrivateRoot::new(root.path());
+                let child = std::process::Command::new(std::env::current_exe().unwrap())
+                    .args(["--exact", "copy_recovery::tests::published_copy_receipts_restore_after_process_exit_for_files_directories_and_symlinks", "--nocapture"])
+                    .env(ROOT, root.path()).env("OTTRIN_COPY_RECEIPT_RESTART_KIND", kind)
+                    .env("OTTRIN_COPY_RECEIPT_RESTART_OVERWRITE", overwrite.to_string()).spawn().unwrap();
+                assert!(wait_owned_child(child).success());
+                let status = discover_at(&root.path().join("copies")).unwrap().remove(0);
+                let transaction = status.transaction.unwrap();
+                let central = root
+                    .path()
+                    .join("copies")
+                    .join(format!("{}.journal", status.transaction_id));
+                let local = transaction.join("copy-journal");
+                let journals = (
+                    std::fs::read(&central).unwrap(),
+                    std::fs::read(&local).unwrap(),
+                );
+                let receipt =
+                    crate::restore_retained_copy_undo_receipt(&status.transaction_id).unwrap();
+                assert_eq!(std::fs::read(&central).unwrap(), journals.0);
+                assert_eq!(std::fs::read(&local).unwrap(), journals.1);
+                let parent = root.path().join("destination");
+                for entry in std::fs::read_dir("/proc/self/fd").unwrap() {
+                    if let Ok(path) = std::fs::read_link(entry.unwrap().path()) {
+                        assert_ne!(
+                            path, parent,
+                            "restored receipt retained a mount-pinning parent descriptor"
+                        );
+                        assert_ne!(
+                            path, transaction,
+                            "restored receipt retained a mount-pinning stage descriptor"
+                        );
+                    }
+                }
+                DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+                assert_eq!(
+                    discover_at(&root.path().join("copies")).unwrap()[0].evidence,
+                    CopyRecoveryEvidence::UndoneObjectsAndContentsMatch
+                );
+                if kind == "symlink" {
+                    assert_eq!(
+                        std::fs::read_link(receipt.before_path()).unwrap(),
+                        root.path().join("new-target")
+                    );
+                    assert_eq!(
+                        std::fs::read_link(root.path().join("item")).unwrap(),
+                        root.path().join("new-target")
+                    );
+                    if overwrite {
+                        assert_eq!(
+                            std::fs::read_link(receipt.after_path()).unwrap(),
+                            root.path().join("old-target")
+                        );
+                    }
+                    assert_eq!(
+                        std::fs::read_to_string(root.path().join("new-target")).unwrap(),
+                        "new-target-data"
+                    );
+                    assert_eq!(
+                        std::fs::read_to_string(root.path().join("old-target")).unwrap(),
+                        "old-target-data"
+                    );
+                } else {
+                    let data_path = |path: PathBuf| {
+                        if kind == "directory" {
+                            path.join("leaf")
+                        } else {
+                            path
+                        }
+                    };
+                    assert_eq!(
+                        std::fs::read_to_string(data_path(receipt.before_path().to_path_buf()))
+                            .unwrap(),
+                        "new-data"
+                    );
+                    assert_eq!(
+                        std::fs::read_to_string(data_path(root.path().join("item"))).unwrap(),
+                        "new-data"
+                    );
+                    if overwrite {
+                        assert_eq!(
+                            std::fs::read_to_string(data_path(receipt.after_path().to_path_buf()))
+                                .unwrap(),
+                            "old-data"
+                        );
+                    }
+                }
+                if !overwrite {
+                    assert!(std::fs::symlink_metadata(receipt.after_path()).is_err());
+                }
+            }
+        }
+    }
+
     #[test]
     fn copy_undo_retries_durable_boundaries_without_repeating_the_withdrawal() {
         for point in [
@@ -1040,7 +1279,106 @@ mod tests {
     }
 
     #[test]
-    fn sigkill_copy_undo_boundaries_leave_recognizable_paired_evidence() {
+    fn restore_copy_receipt_is_read_only_and_revalidates_changes_before_undo() {
+        for damage in [
+            "none",
+            "edit-before",
+            "edit-after",
+            "journal-mismatch",
+            "stage-replaced",
+            "locked",
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            let _private = PrivateRoot::new(root.path());
+            let original = copy_fixture(root.path(), true, false);
+            let stage_path = original.before_path.parent().unwrap().to_path_buf();
+            let publication = original.after_path.clone();
+            let id = discover_at(&root.path().join("copies")).unwrap()[0]
+                .transaction_id
+                .clone();
+            drop(original);
+            let central = root.path().join("copies").join(format!("{id}.journal"));
+            let local_path = stage_path.join("copy-journal");
+            let stage = std::fs::File::open(&stage_path).unwrap();
+            let local =
+                super::super::move_recovery::LinuxJournalDirectory::for_copy_stage(&stage).unwrap();
+            let mut held = None;
+            match damage {
+                "edit-before" => std::fs::write(&publication, "user-edit").unwrap(),
+                "journal-mismatch" => {
+                    let mut value: serde_json::Value =
+                        serde_json::from_slice(&std::fs::read(&central).unwrap()).unwrap();
+                    value["phase"] = "undo-intent".into();
+                    std::fs::write(&central, serde_json::to_vec(&value).unwrap()).unwrap();
+                }
+                "stage-replaced" => {
+                    use std::os::unix::fs::PermissionsExt;
+                    std::fs::rename(&stage_path, root.path().join("retained-original")).unwrap();
+                    std::fs::create_dir(&stage_path).unwrap();
+                    std::fs::set_permissions(&stage_path, std::fs::Permissions::from_mode(0o700))
+                        .unwrap();
+                    std::fs::copy(
+                        root.path().join("retained-original/copy-journal"),
+                        &local_path,
+                    )
+                    .unwrap();
+                }
+                "locked" => held = Some(local.try_lock_recovery().unwrap()),
+                _ => {}
+            }
+            let journals = (
+                std::fs::read(&central).unwrap(),
+                std::fs::read(&local_path).unwrap(),
+            );
+            let bytes = std::fs::read(&publication).unwrap();
+            let result = crate::restore_retained_copy_undo_receipt(&id);
+            assert_eq!(std::fs::read(&central).unwrap(), journals.0);
+            assert_eq!(std::fs::read(&local_path).unwrap(), journals.1);
+            assert_eq!(std::fs::read(&publication).unwrap(), bytes);
+            if matches!(damage, "none" | "edit-after") {
+                let restored = result.unwrap();
+                if damage == "edit-after" {
+                    std::fs::write(&publication, "user-edit").unwrap();
+                    assert!(matches!(
+                        DefaultPlatform.undo_copy_with_receipt(&restored),
+                        Err(PlatformError::UndoContentChanged(_))
+                    ));
+                    assert_eq!(std::fs::read_to_string(&publication).unwrap(), "user-edit");
+                    assert_eq!(std::fs::read(&central).unwrap(), journals.0);
+                    assert_eq!(std::fs::read(&local_path).unwrap(), journals.1);
+                } else {
+                    DefaultPlatform.undo_copy_with_receipt(&restored).unwrap();
+                    assert_eq!(std::fs::read_to_string(&publication).unwrap(), "old-data");
+                }
+            } else {
+                assert!(result.is_err(), "{damage}");
+            }
+            drop(held);
+            assert_eq!(
+                std::fs::read_to_string(root.path().join("item")).unwrap(),
+                "new-data"
+            );
+        }
+    }
+
+    #[test]
+    fn restore_copy_receipt_rejects_invalid_ids_without_creating_registry_state() {
+        let root = tempfile::tempdir().unwrap();
+        let _private = PrivateRoot::new(root.path());
+        for id in [
+            "",
+            "../copy-journal",
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "bad",
+            "00000000000000000000000000000000",
+        ] {
+            assert!(crate::restore_retained_copy_undo_receipt(id).is_err());
+            assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 0);
+        }
+    }
+
+    #[test]
+    fn sigkill_copy_undo_boundaries_recover_in_a_new_process() {
         const ROOT: &str = "OTTRIN_UNDO_CRASH_ROOT";
         const POINT: &str = "OTTRIN_UNDO_CRASH_POINT";
         if let (Some(root), Ok(point)) = (std::env::var_os(ROOT), std::env::var(POINT)) {
@@ -1073,23 +1411,12 @@ mod tests {
                 for directory in [false, true] {
                     let root = tempfile::tempdir().unwrap();
                     let _private = PrivateRoot::new(root.path());
-                    let mut child = std::process::Command::new(std::env::current_exe().unwrap())
-                        .args(["--exact", "copy_recovery::tests::sigkill_copy_undo_boundaries_leave_recognizable_paired_evidence", "--nocapture"])
+                    let child = std::process::Command::new(std::env::current_exe().unwrap())
+                        .args(["--exact", "copy_recovery::tests::sigkill_copy_undo_boundaries_recover_in_a_new_process", "--nocapture"])
                         .env(ROOT, root.path()).env(POINT, format!("{point:?}"))
                         .env("OTTRIN_UNDO_CRASH_OVERWRITE", overwrite.to_string())
                         .env("OTTRIN_UNDO_CRASH_DIRECTORY", directory.to_string()).spawn().unwrap();
-                    let started = std::time::Instant::now();
-                    let status = loop {
-                        if let Some(status) = child.try_wait().unwrap() {
-                            break status;
-                        }
-                        if started.elapsed() > std::time::Duration::from_secs(20) {
-                            child.kill().unwrap();
-                            child.wait().unwrap();
-                            panic!("crash fixture timed out");
-                        }
-                        std::thread::sleep(std::time::Duration::from_millis(10));
-                    };
+                    let status = wait_owned_child(child);
                     use std::os::unix::process::ExitStatusExt;
                     assert_eq!(status.signal(), Some(9));
                     let statuses = discover_at(&root.path().join("copies")).unwrap();
@@ -1126,7 +1453,7 @@ mod tests {
                     );
                     if point == UndoPoint::IntentDurable {
                         assert_eq!(
-                            std::fs::read_to_string(data_path(publication)).unwrap(),
+                            std::fs::read_to_string(data_path(publication.clone())).unwrap(),
                             "new-data"
                         );
                         if overwrite {
@@ -1148,13 +1475,54 @@ mod tests {
                         );
                         if overwrite {
                             assert_eq!(
-                                std::fs::read_to_string(data_path(publication)).unwrap(),
+                                std::fs::read_to_string(data_path(publication.clone())).unwrap(),
                                 "old-data"
                             );
                         } else {
                             assert!(!publication.exists());
                         }
                     }
+                    let local_path = transaction.join("copy-journal");
+                    let central_path = root
+                        .path()
+                        .join("copies")
+                        .join(format!("{}.journal", statuses[0].transaction_id));
+                    let local_before = std::fs::read(&local_path).unwrap();
+                    let central_before = std::fs::read(&central_path).unwrap();
+                    let restored =
+                        crate::restore_retained_copy_undo_receipt(&statuses[0].transaction_id);
+                    assert_eq!(std::fs::read(&local_path).unwrap(), local_before);
+                    assert_eq!(std::fs::read(&central_path).unwrap(), central_before);
+                    if point == UndoPoint::CompletedDurable {
+                        assert!(matches!(restored, Err(PlatformError::NotAvailable(_))));
+                    } else {
+                        let restored = restored.unwrap();
+                        DefaultPlatform.undo_copy_with_receipt(&restored).unwrap();
+                        DefaultPlatform.undo_copy_with_receipt(&restored).unwrap();
+                    }
+                    assert_eq!(
+                        discover_at(&root.path().join("copies")).unwrap()[0].evidence,
+                        CopyRecoveryEvidence::UndoneObjectsAndContentsMatch
+                    );
+                    assert_eq!(
+                        std::fs::read_to_string(data_path(
+                            transaction.join(super::super::copy_transaction::CANDIDATE)
+                        ))
+                        .unwrap(),
+                        "new-data"
+                    );
+                    if overwrite {
+                        assert_eq!(
+                            std::fs::read_to_string(data_path(publication.clone())).unwrap(),
+                            "old-data"
+                        );
+                    } else {
+                        assert!(!publication.exists());
+                    }
+                    assert_eq!(
+                        std::fs::read_to_string(data_path(root.path().join("item"))).unwrap(),
+                        "new-data"
+                    );
                 }
             }
         }
