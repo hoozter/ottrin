@@ -303,3 +303,24 @@ outside Trash, and exact-byte ordinary Trash retention in Dark 100% / Light 150%
 Normal exits and owned teardown pass. Receipt:
 `dist/packages/DELETE_SHORTCUT_ACCEPTANCE.json`. Windows package/native shortcut
 acceptance remains open.
+
+### Windows current payload and shortcut check — 2026-10-12
+
+Portable, NSIS and MSI were refreshed from clean tracked revision `f428627`
+with Activity retention and Delete press-modifier fixes. All 50 portable/NSIS
+files and 51 MSI payload members match staging and the index transaction script.
+Exact hashes and the failed native check are recorded in
+`dist/WINDOWS_SHORTCUT_ACCEPTANCE.json`; current pointers are updated in
+`dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. Previous UI/lifecycle receipts remain
+tied to their previous artifact hashes.
+
+The ordinary interactive Windows account's Dark 100% check exposed a separate
+input-adapter defect: Windows Shift+Delete becomes `Event::Cut` in egui-winit
+0.33.3 before a pressed Delete event reaches Ottrin. The screenshot shows Cut,
+and confirmed permanent deletion did not occur. Windows permanent-delete
+acceptance remains **failed/open**; Light was not reached. Fix the adapter
+contract while preserving text-widget clipboard ownership, then rerun native
+confirmation, cancellation and destination checks. No current Activity or
+installer lifecycle acceptance is claimed. Owned processes, task, payload,
+compiler and fixtures were removed; the pre-existing installation's uninstaller
+checksum was unchanged. The owned guest was restored to its initial shutoff state.
