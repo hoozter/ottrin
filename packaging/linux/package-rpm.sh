@@ -20,6 +20,8 @@ STAGE="$TOP/SOURCES/stage"
 mkdir -p "$TOP/BUILD" "$TOP/BUILDROOT" "$TOP/RPMS" "$TOP/SOURCES" "$TOP/SPECS" "$TOP/SRPMS" "$DIST_DIR"
 "$ROOT/packaging/linux/stage-native-package.sh" "$STAGE"
 
+GLIBC_MIN="$(ottrin_native_glibc_requirement "$STAGE")"
+
 cat > "$TOP/SPECS/ottrin.spec" <<EOF
 Name: ottrin
 Version: $VERSION
@@ -32,6 +34,7 @@ AutoReqProv: yes
 Requires: polkit
 Requires: /usr/bin/pkexec
 Requires: libc.so.6()(64bit)
+Requires: libc.so.6(GLIBC_$GLIBC_MIN)(64bit)
 Requires: libgcc_s.so.1()(64bit)
 Requires: libgio-2.0.so.0()(64bit)
 Requires: libgobject-2.0.so.0()(64bit)

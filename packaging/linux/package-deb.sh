@@ -13,22 +13,7 @@ trap 'rm -rf "$TMP"' EXIT
 PACKAGE_ROOT="$TMP/package"
 
 "$ROOT/packaging/linux/stage-native-package.sh" "$PACKAGE_ROOT"
-# Native packages must reject systems older than the actual executable ABI.
-# Inspect every executable: a helper can require a newer libc than the GUI.
-GLIBC_MIN="$(
-  objdump -T \
-    "$PACKAGE_ROOT/usr/bin/ottrin" \
-    "$PACKAGE_ROOT/usr/bin/ottrin-indexd" \
-    "$PACKAGE_ROOT/usr/bin/ottrin-legacy-doc-render" \
-    "$PACKAGE_ROOT/usr/bin/ottrin-media-playback" \
-    "$PACKAGE_ROOT/usr/libexec/ottrin/ottrin-priv-helper" \
-    | sed -nE '/\*UND\*/s/.*\(GLIBC_([0-9]+(\.[0-9]+)+)\).*/\1/p' \
-    | sort -Vu | tail -n 1
-)"
-test -n "$GLIBC_MIN" || {
-  printf 'Could not determine the native payload libc requirement.\n' >&2
-  exit 1
-}
+GLIBC_MIN="$(ottrin_native_glibc_requirement "$PACKAGE_ROOT")"
 mkdir -p "$PACKAGE_ROOT/DEBIAN" "$DIST_DIR"
 cat > "$PACKAGE_ROOT/DEBIAN/control" <<EOF
 Package: ottrin
