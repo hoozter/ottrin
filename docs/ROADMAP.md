@@ -389,3 +389,19 @@ and safe reclamation are still unfinished. Windows Copy Undo remains
 unsupported in the platform implementation; Windows compilation alone does
 not close that separate capability gap. No automatic retained-data deletion
 has been enabled.
+
+### Copy backup ownership — pre-exchange content evidence
+
+Linux overwrite Copy now captures the original destination's content snapshot
+before exchanging it into the retained backup. Undo checks both publication
+and backup content after validating the directory bindings. A real descriptor
+opened on the original before Copy then writes into the retained file after
+the exchange; the file and directory-child regressions verify Undo refusal
+without changing the source, replacement or edited backup.
+
+All 337 regular platform tests pass (one ignored); strict Linux/Windows-target
+UI Clippy passes. Source receipt:
+`.hermes/evidence/copy-content-evidence/backup/SOURCE_ACCEPTANCE.json`. Linux
+package/GUI acceptance is pending. Durable journal ownership before publication,
+restart discovery, interrupted Undo replay and safe reclamation remain open;
+no automatic retained-data deletion has been enabled.

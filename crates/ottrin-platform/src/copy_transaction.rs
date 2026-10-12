@@ -182,6 +182,8 @@ pub(super) enum CopyPublication {
         published_identity: PathMoveIdentity,
         #[cfg(target_os = "linux")]
         published_content: Option<super::move_recovery::SourceTreeSnapshot>,
+        #[cfg(target_os = "linux")]
+        displaced_content: Option<super::move_recovery::SourceTreeSnapshot>,
         displaced_identity: Option<PathMoveIdentity>,
     },
     Skipped {
@@ -624,6 +626,7 @@ mod linux {
             published_path: target,
             published_identity,
             published_content: None,
+            displaced_content: None,
             displaced_identity: None,
         })
     }
@@ -711,6 +714,7 @@ mod linux {
             }
         };
         let mut retained_displaced_identity = None;
+        let mut retained_displaced_content = None;
         loop {
             match renameat_with(
                 &transaction.stage,
@@ -733,6 +737,16 @@ mod linux {
                             .to_os_string();
                     }
                     ConflictAction::Overwrite => {
+                        // Capture the original before it is displaced. Open writers
+                        // can still edit that inode after the exchange; those edits
+                        // must invalidate Undo/reclamation rather than be discarded.
+                        let displaced_content =
+                            match super::super::move_transaction::source_tree_snapshot_for_path(
+                                &transaction.parent_path(&target_name),
+                            ) {
+                                Ok(content) => content,
+                                Err(error) => return Err(transaction.abandon(error)),
+                            };
                         if let Err(message) = hook(TestPoint::BeforeExchange) {
                             return Err(transaction.abandon(PlatformError::Io(message.into())));
                         }
@@ -762,6 +776,7 @@ mod linux {
                                 );
                                 match displaced_identity {
                                     Ok(true) => {
+                                        retained_displaced_content = Some(displaced_content);
                                         retained_displaced_identity = Some(
                                             rename_identity(&transaction.candidate_path()).map_err(
                                                 |error| PlatformError::CommittedCleanupPending {
@@ -838,6 +853,7 @@ mod linux {
             published_path,
             published_identity,
             published_content: Some(published_content),
+            displaced_content: retained_displaced_content,
             displaced_identity: retained_displaced_identity,
         })
     }

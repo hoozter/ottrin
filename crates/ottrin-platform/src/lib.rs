@@ -263,6 +263,8 @@ pub struct PathMoveUndoReceipt {
     #[cfg(target_os = "linux")]
     published_content: Option<move_recovery::SourceTreeSnapshot>,
     #[cfg(target_os = "linux")]
+    retained_displaced_content: Option<move_recovery::SourceTreeSnapshot>,
+    #[cfg(target_os = "linux")]
     cross_filesystem_state: std::sync::Arc<std::sync::OnceLock<CrossFilesystemUndoState>>,
     #[cfg(target_os = "linux")]
     retained_copy_directory: Option<RetainedCopyTransaction>,
@@ -1258,6 +1260,7 @@ impl PlatformOps for DefaultPlatform {
                     retained_displaced_path: None,
                     requirement: PathMoveUndoRequirement::None,
                     published_content: None,
+                    retained_displaced_content: None,
                     cross_filesystem_state: Default::default(),
                     retained_copy_directory: None,
                 }))
@@ -1520,6 +1523,7 @@ impl PlatformOps for DefaultPlatform {
                 after_path,
                 published_identity,
                 published_content,
+                displaced_content,
                 displaced_identity,
                 retained_directory,
             ) = match publication {
@@ -1529,12 +1533,14 @@ impl PlatformOps for DefaultPlatform {
                     published_path,
                     published_identity,
                     published_content,
+                    displaced_content,
                     displaced_identity,
                 } => (
                     retained_transaction,
                     published_path,
                     published_identity,
                     published_content,
+                    displaced_content,
                     displaced_identity,
                     retained_directory,
                 ),
@@ -1561,6 +1567,7 @@ impl PlatformOps for DefaultPlatform {
             )
             .map(|mut receipt| {
                 receipt.published_content = published_content;
+                receipt.retained_displaced_content = displaced_content;
                 Some(receipt)
             })
         }
@@ -1610,7 +1617,12 @@ impl PlatformOps for DefaultPlatform {
                     "Copy receipt has no published content evidence".into(),
                 ));
             }
-            validate_receipt_published_content(receipt)?;
+            if receipt.displaced_identity.is_some() && receipt.retained_displaced_content.is_none()
+            {
+                return Err(PlatformError::InvalidPathMoveUndoReceipt(
+                    "Copy receipt has no displaced content evidence".into(),
+                ));
+            }
             undo_path_move_linux(receipt)
         }
         #[cfg(not(target_os = "linux"))]
@@ -1676,6 +1688,7 @@ impl PlatformOps for DefaultPlatform {
                         retained_displaced_path: publication.retained_displaced_path.clone(),
                         requirement: PathMoveUndoRequirement::None,
                         published_content,
+                        retained_displaced_content: None,
                         cross_filesystem_state: Default::default(),
                         retained_copy_directory: None,
                     })
@@ -2434,6 +2447,7 @@ fn undo_receipt_for_published_identity(
         retained_displaced_path: None,
         requirement,
         published_content: None,
+        retained_displaced_content: None,
         cross_filesystem_state: Default::default(),
         retained_copy_directory,
     })
@@ -2441,16 +2455,21 @@ fn undo_receipt_for_published_identity(
 
 #[cfg(target_os = "linux")]
 fn validate_receipt_published_content(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
-    if let Some(expected_content) = receipt.published_content.as_ref() {
-        let observed_content = move_transaction::source_tree_snapshot_for_path(&receipt.after_path)
-            .map_err(|_| {
-                PlatformError::StalePathMoveUndo(receipt.after_path.display().to_string())
-            })?;
-        if !expected_content.has_same_paths_and_content(&observed_content) {
-            return Err(PlatformError::StalePathMoveUndo(
-                receipt.after_path.display().to_string(),
-            ));
-        }
+    if let Some(expected) = receipt.published_content.as_ref() {
+        validate_receipt_content(&receipt.after_path, expected)?;
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn validate_receipt_content(
+    path: &Path,
+    expected: &move_recovery::SourceTreeSnapshot,
+) -> Result<(), PlatformError> {
+    let observed = move_transaction::source_tree_snapshot_for_path(path)
+        .map_err(|_| PlatformError::StalePathMoveUndo(path.display().to_string()))?;
+    if !expected.has_same_paths_and_content(&observed) {
+        return Err(PlatformError::StalePathMoveUndo(path.display().to_string()));
     }
     Ok(())
 }
@@ -2464,6 +2483,11 @@ fn undo_path_move_linux(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformErr
             )
         })?)?;
         directory.validate_publication_parent(&receipt.after_path)?;
+        // Validate namespace ownership before reading either content snapshot.
+        validate_receipt_published_content(receipt)?;
+        if let Some(expected) = receipt.retained_displaced_content.as_ref() {
+            validate_receipt_content(&receipt.before_path, expected)?;
+        }
     }
 
     if receipt.before_path == receipt.after_path
@@ -4910,6 +4934,74 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    fn copy_undo_preserves_backup_edits_from_an_original_open_writer() {
+        use std::os::unix::fs::FileExt;
+        for directory in [false, true] {
+            let root = TestDir::new("copy-backup-open-writer");
+            let source_dir = root.path().join("source");
+            let destination_dir = root.path().join("destination");
+            std::fs::create_dir(&source_dir).unwrap();
+            std::fs::create_dir(&destination_dir).unwrap();
+            let source = source_dir.join("item");
+            let destination = destination_dir.join("item");
+            let data_path = |entry: &Path| {
+                if directory {
+                    entry.join("child.txt")
+                } else {
+                    entry.to_path_buf()
+                }
+            };
+            if directory {
+                std::fs::create_dir(&source).unwrap();
+                std::fs::create_dir(&destination).unwrap();
+            }
+            std::fs::write(data_path(&source), "replacement bytes").unwrap();
+            std::fs::write(data_path(&destination), "original bytes").unwrap();
+            let writer = std::fs::OpenOptions::new()
+                .write(true)
+                .open(data_path(&destination))
+                .unwrap();
+            let original_identity = rename_identity(&destination).unwrap();
+            let receipt = DefaultPlatform
+                .execute_copy_with_undo_receipt(
+                    &source,
+                    &destination_dir,
+                    ConflictAction::Overwrite,
+                )
+                .unwrap()
+                .unwrap();
+            assert_eq!(
+                rename_identity(&receipt.before_path).unwrap(),
+                original_identity
+            );
+            writer.set_len(0).unwrap();
+            writer.write_all_at(b"later editor bytes", 0).unwrap();
+            writer.sync_all().unwrap();
+            assert_eq!(
+                rename_identity(&receipt.before_path).unwrap(),
+                original_identity
+            );
+            assert!(matches!(
+                DefaultPlatform.undo_copy_with_receipt(&receipt),
+                Err(PlatformError::StalePathMoveUndo(_))
+            ));
+            assert_eq!(
+                std::fs::read_to_string(data_path(&source)).unwrap(),
+                "replacement bytes"
+            );
+            assert_eq!(
+                std::fs::read_to_string(data_path(&destination)).unwrap(),
+                "replacement bytes"
+            );
+            assert_eq!(
+                std::fs::read_to_string(data_path(&receipt.before_path)).unwrap(),
+                "later editor bytes"
+            );
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn conflict_renamed_copy_undo_removes_the_exact_published_entry() {
         let dir = TestDir::new("copy-rename-undo");
         let source_dir = dir.path().join("source");
@@ -6880,6 +6972,7 @@ mod tests {
                     retained_displaced_path: None,
                     requirement: PathMoveUndoRequirement::None,
                     published_content: None,
+                    retained_displaced_content: None,
                     cross_filesystem_state: Default::default(),
                     retained_copy_directory: None,
                 }))
