@@ -270,6 +270,89 @@ mod tests {
     use egui::{Color32, Context, Rect, Vec2, epaint::Shape};
 
     #[test]
+    fn page_navigation_keeps_reading_order_and_wraps_without_clipping() {
+        for dark in [true, false] {
+            for scale in [1.0, 1.35] {
+                for width in [180.0, 320.0, 600.0] {
+                    let ctx = Context::default();
+                    let mut app = OttrinApp::default();
+                    app.colors = Colors::preset(ThemePreset::Ottrin, dark);
+                    app.colors.font_scale = scale;
+                    app.apply_theme_to_ctx(&ctx);
+                    let mut bounds = Rect::NOTHING;
+                    let output = ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(800.0, 500.0),
+                            )),
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            egui::CentralPanel::default().show(ctx, |ui| {
+                                ui.scope_builder(
+                                    egui::UiBuilder::new()
+                                        .max_rect(Rect::from_min_size(
+                                            ui.cursor().min,
+                                            Vec2::new(width, 350.0),
+                                        ))
+                                        .layout(egui::Layout::right_to_left(egui::Align::Center)),
+                                    |ui| {
+                                        bounds = ui.max_rect();
+                                        assert_eq!(
+                                            crate::render_page_navigation(ui, 1, 12, app.colors),
+                                            None
+                                        );
+                                    },
+                                );
+                            });
+                        },
+                    );
+                    let texts: Vec<_> = ["Previous", "Page 2 of 12", "Next"]
+                        .into_iter()
+                        .map(|label| {
+                            let text = output
+                                .shapes
+                                .iter()
+                                .find_map(|shape| match &shape.shape {
+                                    Shape::Text(text) if text.galley.job.text == label => {
+                                        Some(text)
+                                    }
+                                    _ => None,
+                                })
+                                .unwrap_or_else(|| {
+                                    panic!(
+                                        "missing {label}; rendered: {:?}",
+                                        output
+                                            .shapes
+                                            .iter()
+                                            .filter_map(|shape| match &shape.shape {
+                                                Shape::Text(text) => Some(&text.galley.job.text),
+                                                _ => None,
+                                            })
+                                            .collect::<Vec<_>>()
+                                    )
+                                });
+                            let rect = Rect::from_min_size(text.pos, text.galley.size());
+                            assert!(
+                                bounds.contains_rect(rect),
+                                "navigation text clips at width {width}, scale {scale}"
+                            );
+                            rect
+                        })
+                        .collect();
+                    for pair in texts.windows(2) {
+                        assert!(
+                            pair[1].top() > pair[0].top() + 1.0 || pair[1].left() > pair[0].right(),
+                            "page controls appear in reverse order"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn preview_toolbar_controls_wrap_inside_narrow_panes() {
         for dark in [true, false] {
             for scale in [1.0, 1.35] {
@@ -427,7 +510,7 @@ mod tests {
     #[test]
     fn action_menu_omits_unused_check_column_and_keeps_icons_near_edge() {
         let ctx = Context::default();
-        let mut app = OttrinApp::default();
+        let app = OttrinApp::default();
         app.apply_theme_to_ctx(&ctx);
         let c = app.colors;
         let mut rows = Vec::new();

@@ -18052,45 +18052,13 @@ impl OttrinApp {
                                     self.rotate_inspector_image(&path, false);
                                 }
                             }
-                            if let Some(page_count) =
-                                preview_page_count(&preview, office_render.as_ref())
-                            {
-                                let page_index = self.preview.pdf_page_index.min(page_count - 1);
-                                if ui
-                                    .add_enabled(
-                                        page_index > 0,
-                                        egui::Button::new("Previous").themed(&c),
-                                    )
-                                    .on_hover_text("Show the previous PDF page.")
-                                    .clicked()
-                                {
-                                    self.set_preview_page(page_index - 1);
-                                }
-                                let mut selected_page = page_index + 1;
-                                if ui
-                                    .add(
-                                        egui::DragValue::new(&mut selected_page)
-                                            .range(1..=page_count)
-                                            .prefix("Page "),
-                                    )
-                                    .changed()
-                                {
-                                    self.set_preview_page(selected_page - 1);
-                                }
-                                ui.label(RichText::new(format!("of {page_count}")).color(c.text_dim));
-                                if ui
-                                    .add_enabled(
-                                        page_index + 1 < page_count,
-                                        egui::Button::new("Next").themed(&c),
-                                    )
-                                    .on_hover_text("Show the next PDF page.")
-                                    .clicked()
-                                {
-                                    self.set_preview_page(page_index + 1);
-                                }
-                            }
                         });
                     });
+                    if let Some(page_count) = preview_page_count(&preview, office_render.as_ref())
+                        && let Some(page) = render_page_navigation(ui, self.preview.pdf_page_index, page_count, c)
+                    {
+                        self.set_preview_page(page);
+                    }
                             let is_zoomable_document = preview_uses_visual_preview(&path, preview.kind)
                                 || uses_office_provider;
                             if is_zoomable_document || matches!(preview.kind, PreviewKind::Text | PreviewKind::OfficeMetadata) {
@@ -22090,6 +22058,57 @@ fn apply_markdown_line_prefix(
         })
     };
     adjust(start)..adjust(end)
+}
+
+/// Page navigation owns its reading direction and wraps complete controls.
+/// It must not inherit the action toolbar's right-to-left packing direction.
+fn render_page_navigation(
+    ui: &mut egui::Ui,
+    page_index: usize,
+    page_count: usize,
+    c: Colors,
+) -> Option<usize> {
+    if page_count == 0 {
+        return None;
+    }
+    let page_index = page_index.min(page_count - 1);
+    let mut changed = None;
+    ui.allocate_ui_with_layout(
+        Vec2::new(ui.available_width(), ui.spacing().interact_size.y),
+        Layout::left_to_right(Align::Center).with_main_wrap(true),
+        |ui| {
+            if ui
+                .add_enabled(page_index > 0, egui::Button::new("Previous").themed(&c))
+                .on_hover_text("Show the previous document page.")
+                .clicked()
+            {
+                changed = Some(page_index - 1);
+            }
+            let mut page = page_index + 1;
+            if ui
+                .add(
+                    egui::DragValue::new(&mut page)
+                        .range(1..=page_count)
+                        .prefix("Page ")
+                        .suffix(format!(" of {page_count}")),
+                )
+                .changed()
+            {
+                changed = Some(page - 1);
+            }
+            if ui
+                .add_enabled(
+                    page_index + 1 < page_count,
+                    egui::Button::new("Next").themed(&c),
+                )
+                .on_hover_text("Show the next document page.")
+                .clicked()
+            {
+                changed = Some(page_index + 1);
+            }
+        },
+    );
+    changed
 }
 
 fn render_source_editor(
