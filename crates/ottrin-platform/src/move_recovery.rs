@@ -76,6 +76,12 @@ impl SourceTreeSnapshotEntry {
 
 #[cfg(target_os = "linux")]
 impl SourceTreeSnapshot {
+    pub(super) fn relative_paths(&self) -> Result<Vec<PathBuf>, JournalError> {
+        self.entries
+            .iter()
+            .map(|entry| entry.path.decode())
+            .collect()
+    }
     pub fn from_entries(entries: Vec<(PathBuf, LinuxStableIdentity)>) -> Self {
         Self {
             entries: entries

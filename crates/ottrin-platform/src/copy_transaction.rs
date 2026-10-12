@@ -734,14 +734,21 @@ mod linux {
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
             // Capture the bytes we staged before publication, including tree paths
             // and symlink targets. An inode alone cannot identify later edits.
-            let content = super::super::move_transaction::source_tree_snapshot_for_path(
-                &transaction.candidate_path(),
-            )?;
+            let evidence = if matches!(journal_owner, JournalOwner::Copy) {
+                super::super::copy_recovery::tree_evidence(&transaction.candidate_path())?
+            } else {
+                (
+                    super::super::move_transaction::source_tree_snapshot_for_path(
+                        &transaction.candidate_path(),
+                    )?,
+                    Vec::new(),
+                )
+            };
             hook(TestPoint::AfterStaged).map_err(|message| PlatformError::Io(message.into()))?;
-            Ok(content)
+            Ok(evidence)
         })();
-        let published_content = match stage_result {
-            Ok(content) => content,
+        let (published_content, published_objects) = match stage_result {
+            Ok(evidence) => evidence,
             Err(error) => return Err(transaction.abandon(error)),
         };
 
@@ -765,8 +772,7 @@ mod linux {
                     source,
                     &publication_parent.join(&target_name),
                     &transaction_path,
-                    published_identity.clone(),
-                    published_content.clone(),
+                    (published_content.clone(), published_objects),
                     [&transaction.parent, &transaction.stage],
                 ) {
                     Ok(record) => record,
@@ -835,24 +841,22 @@ mod linux {
                         // Capture the original before it is displaced. Open writers
                         // can still edit that inode after the exchange; those edits
                         // must invalidate Undo/reclamation rather than be discarded.
-                        let displaced_content =
-                            match super::super::move_transaction::source_tree_snapshot_for_path(
+                        let displaced_evidence = if matches!(journal_owner, JournalOwner::Copy) {
+                            super::super::copy_recovery::tree_evidence(
                                 &transaction.parent_path(&target_name),
-                            ) {
-                                Ok(content) => content,
-                                Err(error) => return Err(transaction.abandon(error)),
-                            };
-                        let displaced_identity =
-                            match rename_identity(&transaction.parent_path(&target_name)) {
-                                Ok(identity) => identity,
-                                Err(error) => {
-                                    return Err(
-                                        transaction.abandon(PlatformError::Io(error.to_string()))
-                                    );
-                                }
-                            };
+                            )
+                        } else {
+                            super::super::move_transaction::source_tree_snapshot_for_path(
+                                &transaction.parent_path(&target_name),
+                            )
+                            .map(|content| (content, Vec::new()))
+                        };
+                        let (displaced_content, displaced_objects) = match displaced_evidence {
+                            Ok(evidence) => evidence,
+                            Err(error) => return Err(transaction.abandon(error)),
+                        };
                         if let Some(record) = record.as_mut() {
-                            record.set_displaced(displaced_identity, displaced_content.clone());
+                            record.set_displaced((displaced_content.clone(), displaced_objects));
                             if let Err(error) = registration
                                 .as_mut()
                                 .expect("Copy record owns transaction lock")
@@ -1548,7 +1552,10 @@ mod tests {
             let entries = discover_retained_copy_transactions_at(Path::new(&registry)).unwrap();
             assert_eq!(entries.len(), 1);
             assert_eq!(entries[0].phase, Some(CopyPhase::Published));
-            assert_eq!(entries[0].evidence, CopyRecoveryEvidence::MatchingJournals);
+            assert_eq!(
+                entries[0].evidence,
+                CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
+            );
             return;
         }
         let root = TestDir::new("registry-fresh-process");
@@ -1735,6 +1742,149 @@ mod tests {
     }
 
     #[test]
+    fn copy_restart_data_validation_preserves_changed_publications_and_backups() {
+        use super::super::{CopyRecoveryEvidence, discover_retained_copy_transactions_at};
+        for damage in [
+            "file-edit",
+            "file-replace",
+            "child-edit",
+            "child-replace",
+            "extra-child",
+            "missing-child",
+            "link-retarget",
+            "backup-edit",
+            "backup-child-edit",
+            "unexpected-candidate",
+            "fifo",
+        ] {
+            let root = TestDir::new("restart-data-review");
+            let source = root.0.join("item");
+            let destination = root.0.join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            let directory = matches!(
+                damage,
+                "child-edit"
+                    | "child-replace"
+                    | "extra-child"
+                    | "missing-child"
+                    | "link-retarget"
+                    | "backup-child-edit"
+            );
+            let overwrite = matches!(damage, "backup-edit" | "backup-child-edit");
+            let published = destination.join("item");
+            if directory {
+                std::fs::create_dir_all(source.join("nested")).unwrap();
+                std::fs::write(source.join("nested/leaf"), "new-complete").unwrap();
+                std::os::unix::fs::symlink("nested/leaf", source.join("link")).unwrap();
+                if overwrite {
+                    std::fs::create_dir_all(published.join("nested")).unwrap();
+                    std::fs::write(published.join("nested/leaf"), "old-complete").unwrap();
+                }
+            } else {
+                std::fs::write(&source, "new-complete").unwrap();
+                if overwrite {
+                    std::fs::write(&published, "old-complete").unwrap();
+                }
+            }
+            let stage = retained_transaction(super::copy_entry_transactional(
+                &source,
+                &destination,
+                ConflictAction::Overwrite,
+            ));
+            let registry = root.0.join("copies");
+            let entries = discover_retained_copy_transactions_at(&registry).unwrap();
+            assert_eq!(
+                entries[0].evidence,
+                CopyRecoveryEvidence::PublishedObjectsAndContentsMatch,
+                "{damage}"
+            );
+            let local = stage.join("copy-journal");
+            let central = registry.join(format!("{}.journal", entries[0].transaction_id));
+            let local_before = std::fs::read(&local).unwrap();
+            let central_before = std::fs::read(&central).unwrap();
+            let outside = root.0.join("unrelated");
+            std::fs::write(&outside, "unrelated-data").unwrap();
+            match damage {
+                "file-edit" => std::fs::write(&published, "user-edited").unwrap(),
+                "file-replace" => {
+                    std::fs::rename(&published, root.0.join("original-publication")).unwrap();
+                    std::fs::write(&published, "new-complete").unwrap();
+                }
+                "child-edit" => {
+                    std::fs::write(published.join("nested/leaf"), "user-edited").unwrap()
+                }
+                "child-replace" => {
+                    std::fs::rename(published.join("nested/leaf"), root.0.join("original-child"))
+                        .unwrap();
+                    std::fs::write(published.join("nested/leaf"), "new-complete").unwrap();
+                }
+                "extra-child" => std::fs::write(published.join("extra"), "user-added").unwrap(),
+                "missing-child" => std::fs::remove_file(published.join("nested/leaf")).unwrap(),
+                "link-retarget" => {
+                    std::fs::remove_file(published.join("link")).unwrap();
+                    std::os::unix::fs::symlink(&outside, published.join("link")).unwrap();
+                }
+                "backup-edit" => std::fs::write(stage.join(CANDIDATE), "edited-backup").unwrap(),
+                "backup-child-edit" => {
+                    std::fs::write(stage.join(CANDIDATE).join("nested/leaf"), "edited-backup")
+                        .unwrap()
+                }
+                "unexpected-candidate" => {
+                    std::fs::write(stage.join(CANDIDATE), "user-added").unwrap()
+                }
+                "fifo" => {
+                    std::fs::remove_file(&published).unwrap();
+                    rustix::fs::mknodat(
+                        rustix::fs::CWD,
+                        &published,
+                        rustix::fs::FileType::Fifo,
+                        rustix::fs::Mode::RUSR | rustix::fs::Mode::WUSR,
+                        0,
+                    )
+                    .unwrap();
+                }
+                _ => unreachable!(),
+            }
+            let after = discover_retained_copy_transactions_at(&registry).unwrap();
+            let CopyRecoveryEvidence::NeedsReview { reason } = &after[0].evidence else {
+                panic!("{damage}: {:?}", after[0].evidence)
+            };
+            if matches!(
+                damage,
+                "file-edit" | "child-edit" | "backup-edit" | "backup-child-edit"
+            ) {
+                assert!(reason.contains("contents changed"), "{damage}: {reason}");
+            }
+            assert_eq!(std::fs::read(&local).unwrap(), local_before);
+            assert_eq!(std::fs::read(&central).unwrap(), central_before);
+            assert_eq!(std::fs::read_to_string(&outside).unwrap(), "unrelated-data");
+            if damage == "file-edit" {
+                assert_eq!(std::fs::read_to_string(&published).unwrap(), "user-edited");
+            }
+            if damage == "backup-edit" {
+                assert_eq!(
+                    std::fs::read_to_string(stage.join(CANDIDATE)).unwrap(),
+                    "edited-backup"
+                );
+            }
+            if damage == "backup-child-edit" {
+                assert_eq!(
+                    std::fs::read_to_string(stage.join(CANDIDATE).join("nested/leaf")).unwrap(),
+                    "edited-backup"
+                );
+            }
+            if directory {
+                assert_eq!(
+                    std::fs::read_to_string(source.join("nested/leaf")).unwrap(),
+                    "new-complete"
+                );
+            } else {
+                assert_eq!(std::fs::read_to_string(&source).unwrap(), "new-complete");
+            }
+        }
+    }
+
+    #[test]
     fn completed_copy_journal_binds_publication_and_overwrite_backup() {
         use super::super::move_recovery::{NativePath, SourceTreeSnapshot};
         for overwrite in [false, true] {
@@ -1753,7 +1903,7 @@ mod tests {
             ));
             let encoded = std::fs::read(stage.join("copy-journal")).unwrap();
             let record: serde_json::Value = serde_json::from_slice(&encoded).unwrap();
-            assert_eq!(record["schema"], 2);
+            assert_eq!(record["schema"], 3);
             assert_eq!(record["phase"], "published");
             let target: NativePath = serde_json::from_value(record["publication"].clone()).unwrap();
             assert_eq!(target.decode().unwrap(), destination.join("item"));
@@ -1763,13 +1913,7 @@ mod tests {
                 &destination.join("item"),
             )
             .unwrap();
-            assert!(content.has_same_paths_and_content(&observed));
-            let identity: PathMoveIdentity =
-                serde_json::from_value(record["publication_identity"].clone()).unwrap();
-            assert_eq!(
-                identity,
-                rename_identity(&destination.join("item")).unwrap()
-            );
+            assert_eq!(content, observed);
             if overwrite {
                 let backup: SourceTreeSnapshot =
                     serde_json::from_value(record["displaced_content"].clone()).unwrap();
@@ -1777,12 +1921,9 @@ mod tests {
                     &stage.join(CANDIDATE),
                 )
                 .unwrap();
-                assert!(backup.has_same_paths_and_content(&observed));
-                let identity: PathMoveIdentity =
-                    serde_json::from_value(record["displaced_identity"].clone()).unwrap();
-                assert_eq!(identity, rename_identity(&stage.join(CANDIDATE)).unwrap());
+                assert_eq!(backup, observed);
             } else {
-                assert!(record["displaced_identity"].is_null());
+                assert!(record["displaced_objects"].is_null());
                 assert!(record["displaced_content"].is_null());
             }
             assert_eq!(std::fs::read_to_string(&source).unwrap(), "new-complete");
@@ -1866,7 +2007,7 @@ mod tests {
                 serde_json::from_slice(&std::fs::read(stage.join("copy-journal")).unwrap())
                     .unwrap();
             assert_eq!(record["phase"], "publication-intent");
-            assert!(!record["displaced_identity"].is_null());
+            assert!(!record["displaced_objects"].is_null());
             let backup: super::super::move_recovery::SourceTreeSnapshot =
                 serde_json::from_value(record["displaced_content"].clone()).unwrap();
             let original = if point == "before" {

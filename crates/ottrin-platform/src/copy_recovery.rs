@@ -12,11 +12,79 @@ use std::path::{Component, Path, PathBuf};
 /// Identity-only filesystem evidence, scoped by the record's boot and unique
 /// mount IDs. Its filesystem-defined identifier can distinguish reused inode
 /// numbers. No descriptor is retained between sessions.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ObjectHandle {
     kind: i32,
     bytes: Vec<u8>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(super) struct TreeObject {
+    path: NativePath,
+    mount: u64,
+    handle: Option<ObjectHandle>,
+}
+
+pub(super) fn tree_evidence(
+    path: &Path,
+) -> Result<(SourceTreeSnapshot, Vec<TreeObject>), PlatformError> {
+    sample_tree(path, None)
+}
+
+fn sample_tree(
+    path: &Path,
+    expected: Option<&[TreeObject]>,
+) -> Result<(SourceTreeSnapshot, Vec<TreeObject>), PlatformError> {
+    use rustix::fd::AsRawFd;
+    let expected = expected
+        .map(|objects| {
+            objects
+                .iter()
+                .map(|object| Ok((object.path.decode().map_err(journal_error)?, object)))
+                .collect::<Result<std::collections::BTreeMap<_, _>, PlatformError>>()
+        })
+        .transpose()?;
+    let mut objects = Vec::new();
+    let content =
+        super::move_transaction::source_tree_snapshot_with_observer(path, &mut |relative, fd| {
+            let object = TreeObject {
+                path: NativePath::encode(relative),
+                mount: super::local_storage::local_path_mount_identity(
+                    &PathBuf::from(format!("/proc/self/fd/{}", fd.as_raw_fd())),
+                    true,
+                )
+                .map_err(journal_error)?,
+                handle: ObjectHandle::capture(fd).map_err(journal_error)?,
+            };
+            if let Some(expected) = &expected
+                && expected.get(relative).copied() != Some(&object)
+            {
+                return Err(PlatformError::Io(
+                    "Copy tree objects or mount bindings changed".into(),
+                ));
+            }
+            objects.push((relative.to_path_buf(), object));
+            Ok(())
+        })?;
+    objects.sort_by(|(left, _), (right, _)| left.cmp(right));
+    Ok((
+        content,
+        objects.into_iter().map(|(_, object)| object).collect(),
+    ))
+}
+
+fn valid_objects(content: &SourceTreeSnapshot, objects: &[TreeObject]) -> bool {
+    let Ok(paths) = content.relative_paths() else {
+        return false;
+    };
+    paths.len() == objects.len()
+        && paths.into_iter().zip(objects).all(|(path, object)| {
+            object.path.decode().ok().as_ref() == Some(&path)
+                && object.mount != 0
+                && object.handle.as_ref().is_none_or(ObjectHandle::valid)
+        })
 }
 
 impl ObjectHandle {
@@ -99,10 +167,10 @@ pub(super) struct CopyRecord {
     parent_handle: Option<ObjectHandle>,
     transaction_handle: Option<ObjectHandle>,
     boot_id: String,
-    publication_identity: PathMoveIdentity,
     publication_content: SourceTreeSnapshot,
-    displaced_identity: Option<PathMoveIdentity>,
+    publication_objects: Vec<TreeObject>,
     displaced_content: Option<SourceTreeSnapshot>,
+    displaced_objects: Option<Vec<TreeObject>>,
 }
 
 pub(super) type CopyRegistryEntry = (String, Result<CopyRecord, PlatformError>);
@@ -112,8 +180,7 @@ impl CopyRecord {
         source: &Path,
         publication: &Path,
         transaction: &Path,
-        publication_identity: PathMoveIdentity,
-        publication_content: SourceTreeSnapshot,
+        publication_evidence: (SourceTreeSnapshot, Vec<TreeObject>),
         directories: [&rustix::fd::OwnedFd; 2],
     ) -> Result<Self, PlatformError> {
         let parent = transaction
@@ -162,7 +229,7 @@ impl CopyRecord {
                     .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?,
             );
         Ok(Self {
-            schema: 2,
+            schema: 3,
             phase: CopyPhase::PublicationIntent,
             source: NativePath::encode(&source),
             publication: NativePath::encode(publication),
@@ -177,10 +244,10 @@ impl CopyRecord {
                 .map_err(|error| PlatformError::Io(error.to_string()))?
                 .trim()
                 .to_owned(),
-            publication_identity,
-            publication_content,
-            displaced_identity: None,
+            publication_content: publication_evidence.0,
+            publication_objects: publication_evidence.1,
             displaced_content: None,
+            displaced_objects: None,
         })
     }
 
@@ -188,18 +255,14 @@ impl CopyRecord {
         self.publication = NativePath::encode(target);
     }
 
-    pub(super) fn set_displaced(
-        &mut self,
-        identity: PathMoveIdentity,
-        content: SourceTreeSnapshot,
-    ) {
-        self.displaced_identity = Some(identity);
-        self.displaced_content = Some(content);
+    pub(super) fn set_displaced(&mut self, evidence: (SourceTreeSnapshot, Vec<TreeObject>)) {
+        self.displaced_content = Some(evidence.0);
+        self.displaced_objects = Some(evidence.1);
     }
 
     pub(super) fn clear_displaced(&mut self) {
-        self.displaced_identity = None;
         self.displaced_content = None;
+        self.displaced_objects = None;
     }
 
     pub(super) fn mark_published(&mut self) {
@@ -234,7 +297,14 @@ impl CopyRecord {
         let source = self.source.decode().map_err(journal_error)?;
         let publication = self.publication.decode().map_err(journal_error)?;
         let transaction = self.transaction.decode().map_err(journal_error)?;
-        if self.schema != 2
+        if self.schema != 3
+            || !valid_objects(&self.publication_content, &self.publication_objects)
+            || self.displaced_content.is_some() != self.displaced_objects.is_some()
+            || self
+                .displaced_content
+                .as_ref()
+                .zip(self.displaced_objects.as_ref())
+                .is_some_and(|(content, objects)| !valid_objects(content, objects))
             || [&self.parent_handle, &self.transaction_handle]
                 .into_iter()
                 .flatten()
@@ -252,7 +322,6 @@ impl CopyRecord {
             })
             || publication.parent() != transaction.parent()
             || publication == transaction
-            || self.displaced_identity.is_some() != self.displaced_content.is_some()
             || self.boot_id.is_empty()
             || !self.publication_content.has_complete_content_evidence()
             || self
@@ -293,11 +362,15 @@ pub(super) fn open_registry() -> Result<super::move_recovery::LinuxJournalDirect
 #[derive(Debug, PartialEq, Eq)]
 pub enum CopyRecoveryEvidence {
     MatchingJournals,
-    NeedsReview { reason: String },
+    /// Point-in-time read-only validation; no Undo or deletion authority.
+    PublishedObjectsAndContentsMatch,
+    NeedsReview {
+        reason: String,
+    },
 }
 
 /// Read-only retained Copy status. Matching journals do not grant Undo authority;
-/// publication/backup contents and interrupted inverse state still need validation.
+/// object/content matches do not grant Undo or deletion authority either.
 #[derive(Debug)]
 pub struct RetainedCopyStatus {
     pub transaction_id: String,
@@ -388,10 +461,17 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
                     ));
                 }
                 record.validate_namespace()?;
-                Ok(())
+                let evidence = if record.phase == CopyPhase::Published {
+                    record.validate_published_data(&fd)?;
+                    CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
+                } else {
+                    CopyRecoveryEvidence::MatchingJournals
+                };
+                record.validate_namespace()?;
+                Ok(evidence)
             })();
             status.evidence = match result {
-                Ok(()) => CopyRecoveryEvidence::MatchingJournals,
+                Ok(evidence) => evidence,
                 Err(error) => CopyRecoveryEvidence::NeedsReview {
                     reason: error.to_string(),
                 },
@@ -402,6 +482,74 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
 }
 
 impl CopyRecord {
+    fn validate_published_data(&self, stage: &rustix::fd::OwnedFd) -> Result<(), PlatformError> {
+        if self.parent_handle.is_none()
+            || self.transaction_handle.is_none()
+            || self
+                .publication_objects
+                .iter()
+                .chain(self.displaced_objects.iter().flatten())
+                .any(|object| object.handle.is_none())
+        {
+            return Err(PlatformError::Io(
+                "Copy filesystem object evidence is unavailable; review is required".into(),
+            ));
+        }
+        let publication = self.publication.decode().map_err(journal_error)?;
+        self.validate_tree(
+            &publication,
+            &self.publication_content,
+            &self.publication_objects,
+        )?;
+        let transaction = self.transaction.decode().map_err(journal_error)?;
+        if let Some((content, objects)) = self
+            .displaced_content
+            .as_ref()
+            .zip(self.displaced_objects.as_ref())
+        {
+            self.validate_tree(
+                &transaction.join(super::copy_transaction::CANDIDATE),
+                content,
+                objects,
+            )?;
+        } else {
+            match rustix::fs::statat(
+                stage,
+                super::copy_transaction::CANDIDATE,
+                rustix::fs::AtFlags::SYMLINK_NOFOLLOW,
+            ) {
+                Err(rustix::io::Errno::NOENT) => {}
+                Ok(_) => {
+                    return Err(PlatformError::Io(
+                        "unexpected entry in published Copy staging directory".into(),
+                    ));
+                }
+                Err(error) => return Err(journal_error(error)),
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_tree(
+        &self,
+        path: &Path,
+        content: &SourceTreeSnapshot,
+        objects: &[TreeObject],
+    ) -> Result<(), PlatformError> {
+        let (observed_content, observed_objects) = sample_tree(path, Some(objects))?;
+        if observed_objects != objects {
+            return Err(PlatformError::Io(
+                "Copy tree objects or mount bindings changed".into(),
+            ));
+        }
+        if observed_content != *content {
+            return Err(PlatformError::UndoContentChanged(
+                path.display().to_string(),
+            ));
+        }
+        Ok(())
+    }
+
     fn validate_namespace(&self) -> Result<(), PlatformError> {
         let transaction = self.transaction.decode().map_err(journal_error)?;
         let parent = transaction.parent().expect("validated transaction parent");
@@ -480,6 +628,74 @@ mod tests {
             rustix::fs::Mode::empty(),
         )?;
         ObjectHandle::capture(&fd)
+    }
+
+    #[test]
+    fn content_sampling_refuses_a_file_binding_swapped_to_fifo_after_open() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("item");
+        let retained = root.path().join("original");
+        std::fs::write(&path, "original-data").unwrap();
+        let result = super::super::move_transaction::source_tree_snapshot_with_observer(
+            &path,
+            &mut |relative, _| {
+                assert!(relative.as_os_str().is_empty());
+                std::fs::rename(&path, &retained).unwrap();
+                rustix::fs::mknodat(
+                    rustix::fs::CWD,
+                    &path,
+                    rustix::fs::FileType::Fifo,
+                    rustix::fs::Mode::RUSR | rustix::fs::Mode::WUSR,
+                    0,
+                )
+                .unwrap();
+                Ok(())
+            },
+        );
+        assert!(result.unwrap_err().to_string().contains("binding changed"));
+        assert_eq!(std::fs::read_to_string(retained).unwrap(), "original-data");
+        use std::os::unix::fs::FileTypeExt;
+        assert!(
+            std::fs::symlink_metadata(path)
+                .unwrap()
+                .file_type()
+                .is_fifo()
+        );
+    }
+
+    #[test]
+    fn content_sampling_never_traverses_a_directory_redirected_to_an_outside_symlink() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("item");
+        let outside = root.path().join("outside");
+        std::fs::create_dir(&path).unwrap();
+        std::fs::create_dir(&outside).unwrap();
+        std::fs::write(path.join("inside"), "original-data").unwrap();
+        std::fs::write(outside.join("outside-only"), "unrelated-data").unwrap();
+        let retained = root.path().join("original");
+        let mut visited = Vec::new();
+        let result = super::super::move_transaction::source_tree_snapshot_with_observer(
+            &path,
+            &mut |relative, _| {
+                visited.push(relative.to_path_buf());
+                if relative.as_os_str().is_empty() {
+                    std::fs::rename(&path, &retained).unwrap();
+                    std::os::unix::fs::symlink(&outside, &path).unwrap();
+                }
+                Ok(())
+            },
+        );
+        assert!(result.is_err());
+        assert!(visited.contains(&PathBuf::from("inside")));
+        assert!(!visited.contains(&PathBuf::from("outside-only")));
+        assert_eq!(
+            std::fs::read_to_string(retained.join("inside")).unwrap(),
+            "original-data"
+        );
+        assert_eq!(
+            std::fs::read_to_string(outside.join("outside-only")).unwrap(),
+            "unrelated-data"
+        );
     }
 
     #[test]

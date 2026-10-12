@@ -7912,8 +7912,48 @@ fn stable_identity_from_metadata(
 pub(super) fn source_tree_snapshot_for_path(
     source_path: &Path,
 ) -> Result<move_recovery::SourceTreeSnapshot, PlatformError> {
+    source_tree_snapshot_with_observer(source_path, &mut |_, _| Ok(()))
+}
+
+/// The observer sees the same opened objects whose contents are sampled. Copy
+/// uses it for filesystem object evidence; Move retains its ordinary snapshot.
+#[cfg(target_os = "linux")]
+pub(super) fn source_tree_snapshot_with_observer(
+    source_path: &Path,
+    observer: &mut impl FnMut(&Path, &rustix::fd::OwnedFd) -> Result<(), PlatformError>,
+) -> Result<move_recovery::SourceTreeSnapshot, PlatformError> {
+    use rustix::fs::{Mode, OFlags};
+    let opened = rustix::fs::open(
+        source_path,
+        OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+        Mode::empty(),
+    )
+    .map_err(|error| PlatformError::Io(error.to_string()))?;
     let mut entries = Vec::new();
-    collect_source_tree_snapshot(source_path, source_path, &mut entries)?;
+    collect_source_tree_snapshot(&opened, Path::new(""), &mut entries, observer)?;
+    let opened_metadata = std::fs::File::from(
+        rustix::io::dup(&opened).map_err(|e| PlatformError::Io(e.to_string()))?,
+    )
+    .metadata()
+    .map_err(|e| PlatformError::Io(e.to_string()))?;
+    let named_metadata =
+        std::fs::symlink_metadata(source_path).map_err(|e| PlatformError::Io(e.to_string()))?;
+    use rustix::fd::AsRawFd;
+    let opened_mount = super::local_storage::local_path_mount_identity(
+        &PathBuf::from(format!("/proc/self/fd/{}", opened.as_raw_fd())),
+        true,
+    )
+    .map_err(|e| PlatformError::Io(e.to_string()))?;
+    let named_mount = super::local_storage::local_path_mount_identity(source_path, false)
+        .map_err(|e| PlatformError::Io(e.to_string()))?;
+    if stable_identity_from_metadata(&opened_metadata)
+        != stable_identity_from_metadata(&named_metadata)
+        || opened_mount != named_mount
+    {
+        return Err(PlatformError::Io(
+            "source binding changed while content evidence was read".into(),
+        ));
+    }
     entries.sort_by(|(left, _, _), (right, _, _)| left.cmp(right));
     Ok(move_recovery::SourceTreeSnapshot::from_evidenced_entries(
         entries,
@@ -7922,62 +7962,61 @@ pub(super) fn source_tree_snapshot_for_path(
 
 #[cfg(target_os = "linux")]
 fn collect_source_tree_snapshot(
-    source_path: &Path,
-    root: &Path,
+    opened: &rustix::fd::OwnedFd,
+    relative: &Path,
     entries: &mut Vec<(
-        std::path::PathBuf,
+        PathBuf,
         move_recovery::LinuxStableIdentity,
         move_recovery::SourceContentEvidence,
     )>,
+    observer: &mut impl FnMut(&Path, &rustix::fd::OwnedFd) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
+    use rustix::fd::AsRawFd;
+    use rustix::fs::{Dir, Mode, OFlags, openat};
     use sha2::{Digest, Sha256};
     use std::io::Read;
-
-    let metadata = std::fs::symlink_metadata(source_path)
-        .map_err(|error| PlatformError::Io(error.to_string()))?;
-    let relative = source_path
-        .strip_prefix(root)
-        .map_err(|error| PlatformError::Io(error.to_string()))?;
+    use std::os::unix::ffi::OsStringExt;
+    use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+    let io_error = |error: std::io::Error| PlatformError::Io(error.to_string());
+    let metadata =
+        std::fs::File::from(rustix::io::dup(opened).map_err(|e| PlatformError::Io(e.to_string()))?)
+            .metadata()
+            .map_err(io_error)?;
+    let identity = stable_identity_from_metadata(&metadata);
+    observer(relative, opened)?;
     let content = if metadata.is_file() {
-        use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
-
+        // The kernel FD link addresses the already opened regular object, even
+        // if its former pathname is replaced. Never open a substituted FIFO.
         let mut file = std::fs::OpenOptions::new()
             .read(true)
-            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
-            .open(source_path)
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
-        let before_read = file
-            .metadata()
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
-        if stable_identity_from_metadata(&before_read) != stable_identity_from_metadata(&metadata) {
+            .custom_flags(libc::O_NONBLOCK | libc::O_CLOEXEC)
+            .open(format!("/proc/self/fd/{}", opened.as_raw_fd()))
+            .map_err(io_error)?;
+        let before_read = file.metadata().map_err(io_error)?;
+        if stable_identity_from_metadata(&before_read) != identity {
             return Err(PlatformError::Io(
-                "source changed while content evidence was opened".to_string(),
+                "source changed while content evidence was opened".into(),
             ));
         }
         let mut hasher = Sha256::new();
         let mut buffer = [0_u8; 64 * 1024];
         loop {
-            let read = file
-                .read(&mut buffer)
-                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            let read = file.read(&mut buffer).map_err(io_error)?;
             if read == 0 {
                 break;
             }
             hasher.update(&buffer[..read]);
         }
-        let after_read = file
-            .metadata()
-            .map_err(|error| PlatformError::Io(error.to_string()))?;
-        let stable_during_read = stable_identity_from_metadata(&after_read)
-            == stable_identity_from_metadata(&before_read)
-            && after_read.len() == before_read.len()
-            && after_read.mtime() == before_read.mtime()
-            && after_read.mtime_nsec() == before_read.mtime_nsec()
-            && after_read.ctime() == before_read.ctime()
-            && after_read.ctime_nsec() == before_read.ctime_nsec();
-        if !stable_during_read {
+        let after_read = file.metadata().map_err(io_error)?;
+        if stable_identity_from_metadata(&after_read) != identity
+            || after_read.len() != before_read.len()
+            || after_read.mtime() != before_read.mtime()
+            || after_read.mtime_nsec() != before_read.mtime_nsec()
+            || after_read.ctime() != before_read.ctime()
+            || after_read.ctime_nsec() != before_read.ctime_nsec()
+        {
             return Err(PlatformError::Io(
-                "source changed while content evidence was read".to_string(),
+                "source changed while content evidence was read".into(),
             ));
         }
         move_recovery::SourceContentEvidence::Regular {
@@ -7987,29 +8026,53 @@ fn collect_source_tree_snapshot(
     } else if metadata.is_dir() {
         move_recovery::SourceContentEvidence::Directory
     } else if metadata.file_type().is_symlink() {
+        let target = rustix::fs::readlinkat(opened, "", Vec::new())
+            .map_err(|e| PlatformError::Io(e.to_string()))?;
         move_recovery::SourceContentEvidence::Symlink {
-            target: move_recovery::NativePath::encode(
-                &std::fs::read_link(source_path)
-                    .map_err(|error| PlatformError::Io(error.to_string()))?,
-            ),
+            target: move_recovery::NativePath::encode(Path::new(&std::ffi::OsString::from_vec(
+                target.into_bytes(),
+            ))),
         }
     } else {
-        return Err(PlatformError::InvalidSource(
-            source_path.display().to_string(),
-        ));
+        return Err(PlatformError::InvalidSource(relative.display().to_string()));
     };
-    entries.push((
-        relative.to_path_buf(),
-        stable_identity_from_metadata(&metadata),
-        content,
-    ));
-
+    entries.push((relative.to_path_buf(), identity, content));
     if metadata.is_dir() {
-        for child in
-            std::fs::read_dir(source_path).map_err(|error| PlatformError::Io(error.to_string()))?
+        let directory = openat(
+            opened,
+            ".",
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )
+        .map_err(|e| PlatformError::Io(e.to_string()))?;
+        let mut read = Dir::read_from(&directory).map_err(|e| PlatformError::Io(e.to_string()))?;
+        while let Some(entry) = read.read() {
+            let entry = entry.map_err(|e| PlatformError::Io(e.to_string()))?;
+            let bytes = entry.file_name().to_bytes();
+            if matches!(bytes, b"." | b"..") {
+                continue;
+            }
+            let name = std::ffi::OsString::from_vec(bytes.to_vec());
+            let child = openat(
+                &directory,
+                &name,
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .map_err(|e| PlatformError::Io(e.to_string()))?;
+            collect_source_tree_snapshot(&child, &relative.join(name), entries, observer)?;
+        }
+        let after = std::fs::File::from(directory)
+            .metadata()
+            .map_err(io_error)?;
+        if after.mtime() != metadata.mtime()
+            || after.mtime_nsec() != metadata.mtime_nsec()
+            || after.ctime() != metadata.ctime()
+            || after.ctime_nsec() != metadata.ctime_nsec()
         {
-            let child = child.map_err(|error| PlatformError::Io(error.to_string()))?;
-            collect_source_tree_snapshot(&child.path(), root, entries)?;
+            return Err(PlatformError::Io(
+                "source directory changed while content evidence was read".into(),
+            ));
         }
     }
     Ok(())

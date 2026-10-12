@@ -429,8 +429,9 @@ reason. Normal exits and owned cleanup pass. Production native payload and
 portable-path checks pass; installer lifecycle was not rerun. Receipt:
 `dist/packages/UNDO_STATUS_ACCEPTANCE.json`. Successful Undo message deduplication
 has source-state tests, without a new GUI success-flow claim. Windows packages remain the separate
-accepted `083fb3f` artifacts. Durable Copy journal ownership/discovery across
-restart, interrupted inverse replay and safe reclamation remain unfinished.
+accepted `083fb3f` artifacts. Copy now has durable paired journals and read-only published-tree validation after
+restart. Restoring Undo/Activity ownership, interrupted inverse replay and safe
+reclamation remain unfinished.
 No automatic retained-data deletion has been enabled, and these focused checks
 do not close installer lifecycle or full daily-driver acceptance.
 
@@ -510,3 +511,37 @@ the accepted `76f441f` build. Directory evidence is one part of restart authorit
 published/backup tree object evidence, current-content validation, fresh session
 guards, Activity ownership, interrupted inverse replay and safe reclamation remain
 unfinished. Matching journals still do not grant restart Undo or deletion authority.
+
+### Copy published-tree validation after restart — source verification
+
+Copy journal schema 3 records per-entry filesystem object handles and unique mount
+IDs for the staged publication and, before overwrite exchange, the displaced tree.
+Native relative paths correspond exactly to the existing content snapshot. Root
+device/inode/type evidence remains authoritative in that snapshot; duplicated root
+identity fields have been removed. Earlier schemas are preserved as needing review.
+
+Copy and Move share one content sampler. It traverses opened objects, enumerates
+directories relative to those handles, reads symlink targets without following
+them, and hashes the already opened regular object. File timestamps, directory
+timestamps and the final root path/mount binding are checked for concurrent changes.
+Copy's observer captures object evidence in that same traversal; recovery compares
+each expected object before reading its contents. A substituted FIFO cannot block
+the sampler, and a redirected directory cannot take it into an unrelated tree.
+
+Within the recorded boot and mount bindings, read-only discovery now distinguishes
+matching publication-intent journals from
+Published objects and contents that match their complete evidence. Published data
+with missing object evidence, edited/replaced entries, changed descendants or
+symlinks, altered overwrite backups, or unexpected candidate staging needs review.
+Discovery neither repairs journals nor changes source, publication or backup data.
+This is point-in-time validation, not mutation authority.
+
+All 348 regular platform and 351 regular UI tests pass (one ignored in each), with
+strict Linux/Windows-target UI Clippy and formatting checks. Fresh-process discovery,
+eleven changed-data cases, a file-to-FIFO race and a directory-to-outside-symlink race
+pass. Verification owns a private state-home and temporary directory and tears them
+down. Evidence: `.hermes/evidence/copy-tree-restart/`. This is source-only; current
+Linux packages remain the accepted `76f441f` build. Fresh session guards, restoration
+of Undo/Activity ownership, interrupted publication/inverse reconciliation and safe
+reclamation remain unfinished. Ownership across an OS reboot is not established.
+No restart Undo or automatic deletion is enabled.
