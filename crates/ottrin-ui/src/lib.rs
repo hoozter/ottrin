@@ -16480,6 +16480,9 @@ impl OttrinApp {
         let c = self.colors;
         let scale = self.view_scale_for(ViewMode::Miller);
         let full = ui.available_rect_before_wrap();
+        // Child UIs inherit the window clip, not their max_rect. Keep nested
+        // scrolling and empty-state layout inside this file viewport.
+        ui.set_clip_rect(ui.clip_rect().intersect(full));
         let h = full.height();
         let current_dir = self
             .state
@@ -31270,6 +31273,71 @@ mod tests {
                 "{mode:?} pointer navigation must not schedule a Miller reveal"
             );
         }
+    }
+
+    #[test]
+    fn miller_empty_caption_stays_inside_the_file_viewport_beside_a_panel() {
+        let fixture = tempfile::tempdir().unwrap();
+        let destination = fixture.path().join("home/destination");
+        std::fs::create_dir_all(&destination).unwrap();
+        let ctx = Context::default();
+        let mut app = OttrinApp::default();
+        app.state.active_tab_mut().current_dir = destination;
+        app.state.config.miller_column_width_mode = MillerColumnWidthMode::Fixed;
+        let tab_id = app.state.active_tab().id;
+        let (columns, current) = app.build_miller_model(tab_id);
+        let before: f32 = columns[..current]
+            .iter()
+            .map(|col| {
+                app.miller_column_width(&col.dir, &col.entries) + MILLER_COLUMN_DIVIDER_WIDTH
+            })
+            .sum();
+        let viewport = Rect::from_min_size(egui::pos2(20.0, 20.0), Vec2::new(600.0, 400.0));
+        app.apply_theme_to_ctx(&ctx);
+        let mut output = None;
+        for _ in 0..3 {
+            output = Some(ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::pos2(0.0, 0.0),
+                        Vec2::new(1100.0, 690.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        ui.scope_builder(UiBuilder::new().max_rect(viewport), |ui| {
+                            let id = ui.make_persistent_id(egui::Id::new(("miller_h", tab_id)));
+                            let mut state =
+                                egui::scroll_area::State::load(ctx, id).unwrap_or_default();
+                            state.offset.x = (before - 480.0).max(0.0);
+                            state.store(ctx, id);
+                            app.render_miller(ui, tab_id);
+                        });
+                    });
+                },
+            ));
+        }
+        let output = output.unwrap();
+        let text = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) if text.galley.job.text == "This folder is empty" => {
+                    Some(text)
+                }
+                _ => None,
+            })
+            .expect("current empty column caption");
+        let bounds = text.galley.rect.translate(text.pos.to_vec2());
+        assert!(
+            viewport.expand(1.0).contains_rect(bounds),
+            "empty caption {bounds:?} escapes the file viewport {viewport:?}"
+        );
+        assert!(
+            text.galley.rows.len() > 1,
+            "partly visible column caption must wrap"
+        );
     }
 
     #[test]

@@ -46,6 +46,8 @@ A configured native probe also exposed a missing `/bin` sandbox mount: `/usr/lib
 
 ## Build And Verify
 
+Run filesystem and UI tests with private XDG state, configuration, cache and data directories, and remove that test profile after all test processes exit. Copy recovery journals must never be written into the operator's state directory.
+
 ```sh
 cargo fmt --check
 cargo check --workspace --all-targets
