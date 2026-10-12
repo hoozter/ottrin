@@ -75,6 +75,7 @@ run_gate "Strict Clippy" \
   cargo clippy --workspace --all-targets --all-features -- -D warnings
 
 shell_scripts=(
+  packaging/package-lifecycle.sh
   build-all.sh
   packaging/linux/package-appimage.sh
   packaging/linux/package-portable.sh

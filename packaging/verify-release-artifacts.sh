@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT/packaging/linux/bundle-runtime-libs.sh"
+source "$ROOT/packaging/package-lifecycle.sh"
 DIST_DIR="${1:-dist}"
 VERSION="$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')"
 EXPECTED_SOURCE_REVISION="$(git -C "$ROOT" rev-parse --verify HEAD)"
@@ -40,6 +41,8 @@ LINUX_APPIMAGE="$(find_one "Ottrin-$VERSION-x86_64.AppImage" 'Linux AppImage')"
 WINDOWS_ARCHIVE="$(find_one "Ottrin-$VERSION-windows-x64-portable.zip" 'Windows portable archive')"
 WINDOWS_INSTALLER="$(find_one "Ottrin-$VERSION-windows-x64-setup.exe" 'Windows installer')"
 WINDOWS_MSI="$(find_one "Ottrin-$VERSION-windows-x64.msi" 'Windows MSI')"
+LINUX_DEB="$(find_one "ottrin_${VERSION}_amd64.deb" 'Linux DEB')"
+LINUX_RPM="$(find_one "ottrin-$VERSION-*.x86_64.rpm" 'Linux RPM')"
 MACOS_ARCHIVE="$(find_one "Ottrin-$VERSION-macos-*.zip" 'macOS app archive')"
 
 expect_artifact_name() {
@@ -58,7 +61,7 @@ expect_artifact_name "$WINDOWS_ARCHIVE" "Ottrin-$VERSION-windows-x64-portable.zi
 expect_artifact_name "$WINDOWS_INSTALLER" "Ottrin-$VERSION-windows-x64-setup.exe"
 expect_artifact_name "$WINDOWS_MSI" "Ottrin-$VERSION-windows-x64.msi"
 
-for artifact in "$LINUX_ARCHIVE" "$LINUX_APPIMAGE" "$WINDOWS_ARCHIVE" "$WINDOWS_INSTALLER" "$WINDOWS_MSI" "$MACOS_ARCHIVE"; do
+for artifact in "$LINUX_ARCHIVE" "$LINUX_APPIMAGE" "$WINDOWS_ARCHIVE" "$WINDOWS_INSTALLER" "$WINDOWS_MSI" "$MACOS_ARCHIVE" "$LINUX_DEB" "$LINUX_RPM"; do
   checksum="$artifact.sha256"
   if [[ ! -s "$checksum" ]]; then
     printf 'release artifact checksum is missing: %s\n' "$checksum" >&2
@@ -111,9 +114,9 @@ for entry in \
   '/bin/ottrin-priv-helper$' \
   '/libexec/ottrin/ottrin-legacy-doc-render$' \
   '/libexec/ottrin/ottrin-media-playback$' \
-  '/bin/pdfium/lib/libpdfium\.so$' \
-  '/bin/pdfium/LICENSE$' \
-  '/bin/pdfium/licenses/pdfium\.txt$' \
+  '/libexec/ottrin/pdfium/lib/libpdfium\.so$' \
+  '/libexec/ottrin/pdfium/LICENSE$' \
+  '/libexec/ottrin/pdfium/licenses/pdfium\.txt$' \
   '/assets/icon\.svg$' \
   '/packaging/linux/org\.ottrin\.filesystem\.policy$' \
   '/LICENSE$' \
@@ -686,6 +689,68 @@ verify_linux_privileged_helper_policy_bytes \
   'Linux AppImage' \
   "$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/polkit-1/actions/org.ottrin.filesystem.policy"
 
+# Native packages are release deliverables too. Inspect actual payloads and
+# generated dependencies; checksums alone do not establish usable installation.
+for tool in dpkg-deb rpm rpm2cpio cpio objdump objcopy; do
+  command -v "$tool" >/dev/null || {
+    printf '%s is required to inspect native Linux packages.\n' "$tool" >&2
+    exit 1
+  }
+done
+DEB_STAGE="$APPIMAGE_EXTRACT_DIR/deb"
+RPM_STAGE="$APPIMAGE_EXTRACT_DIR/rpm"
+mkdir -p "$DEB_STAGE" "$RPM_STAGE"
+dpkg-deb -x "$LINUX_DEB" "$DEB_STAGE"
+rpm2cpio "$LINUX_RPM" | (cd "$RPM_STAGE"; cpio -idm --quiet)
+for stage in "$DEB_STAGE" "$RPM_STAGE"; do
+  for executable in usr/bin/ottrin usr/bin/ottrin-indexd \
+    usr/bin/ottrin-media-playback usr/bin/ottrin-legacy-doc-render \
+    usr/libexec/ottrin/ottrin-priv-helper; do
+    test -x "$stage/$executable" || {
+      printf 'Native package is missing executable: %s\n' "$executable" >&2
+      exit 1
+    }
+  done
+  # DEB preserves executable bytes; RPM performs standard symbol stripping.
+  # Compare actual release code as well as the separately staged source note.
+  for executable in usr/bin/ottrin usr/bin/ottrin-indexd \
+    usr/bin/ottrin-media-playback usr/bin/ottrin-legacy-doc-render \
+    usr/libexec/ottrin/ottrin-priv-helper; do
+    expected="$APPIMAGE_EXTRACT_DIR/squashfs-root/$executable"
+    if [[ "$stage" == "$DEB_STAGE" ]]; then
+      cmp "$stage/$executable" "$expected"
+    else
+      for section in .text .rodata; do
+        objcopy --dump-section "$section=$APPIMAGE_EXTRACT_DIR/native-section" \
+          "$stage/$executable" "$APPIMAGE_EXTRACT_DIR/native-dump"
+        objcopy --dump-section "$section=$APPIMAGE_EXTRACT_DIR/appimage-section" \
+          "$expected" "$APPIMAGE_EXTRACT_DIR/appimage-dump"
+        cmp "$APPIMAGE_EXTRACT_DIR/native-section" "$APPIMAGE_EXTRACT_DIR/appimage-section"
+      done
+    fi
+  done
+  verify_source_revision 'Linux native package' \
+    "$(<"$stage/usr/share/doc/ottrin/SOURCE_REVISION.txt")"
+  verify_linux_privileged_helper_policy_bytes 'Linux native package' \
+    "$stage/usr/share/polkit-1/actions/org.ottrin.filesystem.policy"
+done
+DEB_LIBC_MIN="$(ottrin_native_glibc_requirement "$DEB_STAGE")"
+DEB_DEPENDS="$(dpkg-deb -f "$LINUX_DEB" Depends)"
+for dependency in "libc6 (>= $DEB_LIBC_MIN)" pkexec polkitd; do
+  if [[ ", $DEB_DEPENDS," != *", $dependency,"* ]]; then
+    printf 'Linux DEB is missing runtime dependency: %s\n' "$dependency" >&2
+    exit 1
+  fi
+done
+RPM_LIBC_MIN="$(ottrin_native_glibc_requirement "$RPM_STAGE")"
+RPM_DEPENDS="$(rpm -qp --queryformat '[%{REQUIRENAME}\n]' "$LINUX_RPM")"
+for dependency in "libc.so.6(GLIBC_$RPM_LIBC_MIN)(64bit)" polkit /usr/bin/pkexec; do
+  if ! grep -Fxq "$dependency" <<<"$RPM_DEPENDS"; then
+    printf 'Linux RPM is missing runtime dependency: %s\n' "$dependency" >&2
+    exit 1
+  fi
+done
+
 verify_source_revision \
   'Linux AppImage' \
   "$(<"$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/share/doc/ottrin/SOURCE_REVISION.txt")"
@@ -717,11 +782,6 @@ verify_appimage_release_file_bytes 'DEVELOPMENT.md'
 verify_appimage_release_file_bytes 'ROADMAP.md'
 verify_appimage_release_file_bytes 'RELEASE_NOTES.md'
 verify_appimage_release_file_bytes 'RELEASE_CHECKLIST.md'
-
-if [[ "$(tar -tzf "$LINUX_ARCHIVE" | grep -c '/bin/pdfium/lib/libpdfium.so$')" -lt 1 ]]; then
-  printf 'Linux portable archive missing PDFium runtime library.\n' >&2
-  exit 1
-fi
 
 require_zip_entry '/bin/pdfium/pdfium\.dll$'
 

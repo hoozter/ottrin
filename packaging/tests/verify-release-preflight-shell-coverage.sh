@@ -15,6 +15,7 @@ require_shell_gate() {
 # The installer is a release artifact producer, not merely a helper around the
 # portable stage. It carries the graphics-runtime and UAC-facing payload, so a
 # preflight syntax pass must cover it alongside every other shell packager.
+require_shell_gate 'packaging/package-lifecycle.sh'
 require_shell_gate 'packaging/windows/package-installer.sh'
 require_shell_gate 'packaging/linux/bundle-runtime-libs.sh'
 require_shell_gate 'packaging/macos/stage-app-bundle.sh'
