@@ -545,3 +545,36 @@ Linux packages remain the accepted `76f441f` build. Fresh session guards, restor
 of Undo/Activity ownership, interrupted publication/inverse reconciliation and safe
 reclamation remain unfinished. Ownership across an OS reboot is not established.
 No restart Undo or automatic deletion is enabled.
+
+### Durable Copy Undo intent and completion — source verification
+
+Session Copy Undo now uses its paired central/local journals. Under the private
+transaction's exclusive recovery lock it validates the receipt against the record,
+directory identities/mounts/handles, staging ownership/permissions and complete
+published/backup data. It persists UndoIntent before withdrawing the publication,
+syncs both directories, validates the resulting objects and contents, then persists
+Undone. Copy/create inverses share one physical withdrawal implementation; create
+and Move-restoration staging retain their existing ownership protocols.
+
+A matching UndoIntent is classified by its data topology: publication still in
+place, or withdrawal already complete. An active receipt retry performs at most
+the remaining work, without exchanging entries a second time. A matching Undone
+receipt can acknowledge completion again. Changed data, mismatched journal pairs,
+invalid staging permissions or a competing lock owner are refused without repair.
+Copy records continue to retain the withdrawn publication rather than delete it.
+
+Read-only discovery now reports pending-before-withdrawal, pending-after-withdrawal
+and matching completed inverses. Actual SIGKILL fixtures exercise four boundaries
+for files and directories, with and without overwrite: durable intent, withdrawal,
+directory sync and durable completion. All sixteen cases preserve original source
+and both applicable versions and leave matching journal pairs with recognized
+topologies. Active-receipt retries at all four boundaries and the refusal cases pass.
+
+All 351 regular platform and 351 regular UI tests pass (one ignored in each), with
+strict Linux/Windows-target UI Clippy and formatting checks. Evidence:
+`.hermes/evidence/copy-undo-journal/`. This is source-only; packages remain unchanged.
+New-process guard/receipt restoration and Activity integration remain unfinished;
+the crash fixtures establish recognition, not new-process mutation authority.
+Journal-pair mismatch reconciliation, automatic safe reclamation, cross-boot
+ownership and filesystem object-evidence support beyond the tested scope remain
+open. No startup Undo or automatic deletion has been enabled.

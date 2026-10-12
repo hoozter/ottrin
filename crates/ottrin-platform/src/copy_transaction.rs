@@ -23,6 +23,7 @@ struct RetainedCopyDirectories {
     stage_path: PathBuf,
     parent_watch: super::directory_watch::DirectoryWatch,
     stage_watch: super::directory_watch::DirectoryWatch,
+    durable_copy: bool,
 }
 
 #[cfg(target_os = "linux")]
@@ -36,6 +37,22 @@ impl Eq for RetainedCopyTransaction {}
 
 #[cfg(target_os = "linux")]
 impl RetainedCopyTransaction {
+    pub(super) fn undo_durable_copy(
+        &self,
+        receipt: &super::PathMoveUndoReceipt,
+    ) -> Result<bool, PlatformError> {
+        if !self.0.durable_copy {
+            return Ok(false);
+        }
+        self.validate_path(receipt.before_path.parent().ok_or_else(|| {
+            PlatformError::InvalidPathMoveUndoReceipt("transaction has no parent".into())
+        })?)?;
+        self.validate_publication_parent(&receipt.after_path)?;
+        let (parent, stage) = self.open_directories()?;
+        super::copy_recovery::undo_with_journals(&parent, &stage, receipt)?;
+        self.validate_watches()?;
+        Ok(true)
+    }
     fn validate_watches(&self) -> Result<(), PlatformError> {
         self.0
             .parent_watch
@@ -149,23 +166,34 @@ impl RetainedCopyTransaction {
         retained: &Path,
         exchange: bool,
     ) -> Result<(), PlatformError> {
-        let name = published.file_name().ok_or_else(|| {
-            PlatformError::InvalidPathMoveUndoReceipt("publication has no entry name".into())
-        })?;
-        let flags = if exchange {
-            rustix::fs::RenameFlags::EXCHANGE
-        } else {
-            rustix::fs::RenameFlags::NOREPLACE
-        };
         let (parent, stage) = self.open_directories()?;
-        rustix::fs::renameat_with(&parent, name, &stage, CANDIDATE, flags).map_err(|error| {
-            if error == rustix::io::Errno::EXIST {
-                PlatformError::DestinationExists(retained.display().to_string())
-            } else {
-                PlatformError::Io(error.to_string())
-            }
-        })
+        withdraw_opened(&parent, &stage, published, retained, exchange)
     }
+}
+
+#[cfg(target_os = "linux")]
+pub(super) fn withdraw_opened(
+    parent: &std::fs::File,
+    stage: &std::fs::File,
+    published: &Path,
+    retained: &Path,
+    exchange: bool,
+) -> Result<(), PlatformError> {
+    let name = published.file_name().ok_or_else(|| {
+        PlatformError::InvalidPathMoveUndoReceipt("publication has no entry name".into())
+    })?;
+    let flags = if exchange {
+        rustix::fs::RenameFlags::EXCHANGE
+    } else {
+        rustix::fs::RenameFlags::NOREPLACE
+    };
+    rustix::fs::renameat_with(parent, name, stage, CANDIDATE, flags).map_err(|error| {
+        if error == rustix::io::Errno::EXIST {
+            PlatformError::DestinationExists(retained.display().to_string())
+        } else {
+            PlatformError::Io(error.to_string())
+        }
+    })
 }
 
 #[cfg(target_os = "linux")]
@@ -465,7 +493,10 @@ mod linux {
             self.recovery_path()
         }
 
-        fn retain_for_undo(self) -> Result<(PathBuf, RetainedCopyTransaction), PlatformError> {
+        fn retain_for_undo(
+            self,
+            durable_copy: bool,
+        ) -> Result<(PathBuf, RetainedCopyTransaction), PlatformError> {
             use std::os::unix::fs::MetadataExt;
             let path = self.recovery_path();
             let result = (|| {
@@ -488,6 +519,7 @@ mod linux {
                     stage_path: path.clone(),
                     parent_watch: super::super::directory_watch::DirectoryWatch::new(&parent)?,
                     stage_watch: super::super::directory_watch::DirectoryWatch::new(&stage)?,
+                    durable_copy,
                 };
                 Ok::<_, std::io::Error>(RetainedCopyTransaction(std::sync::Arc::new(directories)))
             })();
@@ -637,7 +669,7 @@ mod linux {
                 message: format!("created {entry_kind} parent flush failed: {error}"),
             }
         })?;
-        let (retained_transaction, retained_directory) = transaction.retain_for_undo()?;
+        let (retained_transaction, retained_directory) = transaction.retain_for_undo(false)?;
         Ok(CopyPublication::Published {
             retained_transaction,
             retained_directory,
@@ -988,7 +1020,8 @@ mod linux {
                 })?;
         }
         let published_path = destination_dir.join(&target_name);
-        let (retained_transaction, retained_directory) = transaction.retain_for_undo()?;
+        let (retained_transaction, retained_directory) =
+            transaction.retain_for_undo(matches!(journal_owner, JournalOwner::Copy))?;
         Ok(CopyPublication::Published {
             retained_transaction,
             retained_directory,

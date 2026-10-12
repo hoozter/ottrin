@@ -1644,6 +1644,11 @@ impl PlatformOps for DefaultPlatform {
                     "Copy receipt has no displaced content evidence".into(),
                 ));
             }
+            if let Some(directory) = &receipt.retained_copy_directory
+                && directory.undo_durable_copy(receipt)?
+            {
+                return Ok(());
+            }
             undo_path_move_linux(receipt)
         }
         #[cfg(not(target_os = "linux"))]

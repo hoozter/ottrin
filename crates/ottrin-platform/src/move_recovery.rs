@@ -76,6 +76,11 @@ impl SourceTreeSnapshotEntry {
 
 #[cfg(target_os = "linux")]
 impl SourceTreeSnapshot {
+    pub(super) fn root_matches_path_identity(&self, identity: &super::PathMoveIdentity) -> bool {
+        self.entries.first().is_some_and(|entry| {
+            entry.identity.device == identity.device && entry.identity.inode == identity.inode
+        })
+    }
     pub(super) fn relative_paths(&self) -> Result<Vec<PathBuf>, JournalError> {
         self.entries
             .iter()
@@ -2172,7 +2177,7 @@ impl LinuxRetainedSourceTransaction {
 #[cfg(target_os = "linux")]
 impl LinuxJournalDirectory {
     /// Use the existing journal writer with an already verified private Copy stage.
-    pub(super) fn for_copy_stage(directory: &OwnedFd) -> Result<Self, JournalError> {
+    pub(super) fn for_copy_stage(directory: &impl rustix::fd::AsFd) -> Result<Self, JournalError> {
         let directory = rustix::io::fcntl_dupfd_cloexec(directory, 0)
             .map_err(|error| JournalError::Io(error.to_string()))?;
         Ok(Self { directory })
