@@ -138,6 +138,12 @@ sed -i '/^libgio-2\.0\.so\.0\t/d' "$STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt"
 expect_reject 'the reviewer reproduced missing-GIO plus pruned-manifest bypass' \
   'runtime manifest is missing required libgio-2.0.so.0' verify_stage "$STAGE" 'pruned GIO manifest'
 
+STAGE="$(make_stage pruned-x11-keyboard-manifest)"
+rm "$STAGE/lib/libxkbcommon-x11.so.0"
+sed -i '/^libxkbcommon-x11\.so\.0\t/d' "$STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt"
+expect_reject 'a missing dlopen-only X11 keyboard library plus its manifest row' \
+  'missing a runtime manifest row for required libxkbcommon-x11.so.0' verify_stage "$STAGE" 'pruned X11 keyboard manifest'
+
 STAGE="$(make_stage pruned-gobject-manifest)"
 rm "$STAGE/lib/libgobject-2.0.so.0"
 sed -i '/^libgobject-2\.0\.so\.0\t/d' "$STAGE/notices/BUNDLED_RUNTIME_MANIFEST.txt"

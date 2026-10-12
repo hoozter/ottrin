@@ -6,6 +6,12 @@ linux_runtime_needed() {
   readelf -d "$1" | awk '/Shared library: \[/{ sub(/^.*\[/, ""); sub(/\].*$/, ""); print }'
 }
 
+# Winit loads these required X11 libraries dynamically, so DT_NEEDED cannot
+# discover them. Keep GUI requirements shared by bundling and verification.
+linux_runtime_gui_dlopen_needed() {
+  printf '%s\n' libxkbcommon-x11.so.0 libX11.so.6 libXcursor.so.1 libX11-xcb.so.1 libXi.so.6
+}
+
 # These SONAMEs are supplied by the supported host ABI: the system dynamic
 # loader, glibc (including its split components), and the base C++ runtime.
 # Keep this single classifier shared by the bundler and final-artifact verifier.
@@ -237,7 +243,12 @@ verify_linux_runtime_closure() {
         return 1
       }
       elf_queue+=("$canonical_lib_dir/$needed_soname")
-    done < <(linux_runtime_needed "$current_elf")
+    done < <(
+      linux_runtime_needed "$current_elf"
+      if [[ "$require_gio" == true && "$current_elf" == "$canonical_executable" ]]; then
+        linux_runtime_gui_dlopen_needed
+      fi
+    )
   done
 
   local trace resolved canonical_resolved
@@ -245,8 +256,27 @@ verify_linux_runtime_closure() {
     printf '%s hermetic loader trace failed.\n' "$artifact_label" >&2
     return 1
   }
+  local -A dlopen_roots=()
+  if [[ "$require_gio" == true ]]; then
+    local loader dlopen_soname dlopen_trace
+    loader="$(readelf -l "$canonical_executable" | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
+    [[ -x "$loader" ]] || { printf '%s has no usable host dynamic loader.\n' "$artifact_label" >&2; return 1; }
+    while IFS= read -r dlopen_soname; do
+      dlopen_trace="$(env -i LD_LIBRARY_PATH="$canonical_lib_dir" "$loader" --list "$canonical_lib_dir/$dlopen_soname" 2>&1)" || {
+        printf '%s loader trace failed for dynamically loaded %s.\n' "$artifact_label" "$dlopen_soname" >&2
+        return 1
+      }
+      trace+=$'\n'"$dlopen_trace"
+      dlopen_roots[$dlopen_soname]=1
+    done < <(linux_runtime_gui_dlopen_needed)
+  fi
   for soname in "${!required_sonames[@]}"; do
     resolved="$(awk -v soname="$soname" '$1 == soname && $2 == "=>" { print $3; exit }' <<<"$trace")"
+    # --list reports a shared library's dependencies, not the root object
+    # explicitly supplied to the loader. Its exact file was validated above.
+    if [[ -z "$resolved" && -n "${dlopen_roots[$soname]+x}" ]]; then
+      resolved="$canonical_lib_dir/$soname"
+    fi
     canonical_resolved="$(realpath -e -- "$resolved" 2>/dev/null)" || canonical_resolved=''
     [[ "$canonical_resolved" == "$canonical_lib_dir/"* ]] || {
       printf '%s resolves bundled %s outside its artifact: %s\n' "$artifact_label" "$soname" "${resolved:-missing}" >&2
@@ -372,7 +402,12 @@ bundle_linux_runtime() {
       printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
         "$soname" "$(sha256sum "$destination" | awk '{print $1}')" "$package" "$version" \
         "$notice_relative" "$(sha256sum "$notices_dir/$notice_relative" | awk '{print $1}')" >> "$manifest"
-    done < <(linux_runtime_needed "$current")
+    done < <(
+      linux_runtime_needed "$current"
+      if [[ "$current" == "$executable" ]]; then
+        linux_runtime_gui_dlopen_needed
+      fi
+    )
   done
 
   [[ -n "${copied_sonames[libgio-2.0.so.0]+x}" ]] || {

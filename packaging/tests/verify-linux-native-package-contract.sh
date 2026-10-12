@@ -91,6 +91,13 @@ depends="$(dpkg-deb -f "$TMP/dist/ottrin_0.1.0_amd64.deb" Depends)"
 [[ "$depends" == "libc6 (>= $expected_libc),"* ]]
 [[ ", $depends," == *", pkexec,"* ]]
 [[ ", $depends," == *", polkitd,"* ]]
+[[ ", $depends," == *", libxkbcommon-x11-0,"* ]]
+for dependency in libxkbcommon-x11-0 libx11-6 libx11-xcb1 libxcursor1 libxi6; do
+  [[ ", $depends," == *", $dependency,"* ]]
+done
+for soname in libxkbcommon-x11.so.0 libX11.so.6 libX11-xcb.so.1 libXcursor.so.1 libXi.so.6; do
+  grep -Fxq "Requires: $soname()(64bit)" "$RPM"
+done
 grep -Fxq 'Requires: polkit' "$RPM"
 grep -Fxq 'Requires: /usr/bin/pkexec' "$RPM"
 # Reject a malformed helper even when the main binary is valid; keep the

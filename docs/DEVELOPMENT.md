@@ -25,6 +25,8 @@ Repeated rows must share label starts, icon centers, padding, and vertical cente
 
 Before delivery, inspect affected surfaces in Light and Dark at 100% and 150% desktop scaling and enlarged text. Exercise checked/unchecked, enabled/disabled, hover/focus, and submenu states. Add rendered geometry regressions for shared alignment fixes and verify the exact packaged app. A compilation check alone does not satisfy visual acceptance.
 
+Portable runtime closure includes the window backend libraries loaded with `dlopen`, not only ELF `DT_NEEDED` entries. Keep the shared GUI runtime declaration in `packaging/linux/bundle-runtime-libs.sh` synchronized with window-backend dependency changes, and update native-package dependencies. The verifier must trace those library roots and their transitive dependencies. Verify launch against a fresh supported system; a working development desktop can hide missing dependencies.
+
 ## Linux installed Office acceptance
 
 The shared `native_office_boundary_contract` uses the production Linux Bubblewrap launcher and Windows Job Object launcher. On Linux, run the ignored conversion, nine-format corpus and in-flight cancellation checks as an ordinary user with installed LibreOffice, Bubblewrap, a working systemd user manager, and the pinned PDFium runtime:
