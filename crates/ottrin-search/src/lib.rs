@@ -2602,51 +2602,45 @@ fn systemd_exec_quote(path: &Path) -> String {
 
 #[cfg(target_os = "windows")]
 fn install_sqlite_windows_task(config: &SearchConfig, ottrin: &Path) -> Result<String, String> {
-    let args = sqlite_windows_task_create_args(config, ottrin)?;
-    let status = internal_command("schtasks")
-        .args(args)
-        .status()
-        .map_err(|e| format!("Failed to run schtasks: {}", e))?;
-    if status.success() {
-        Ok(format!(
-            "Background Ottrin index refresh enabled every {}h with Windows Task Scheduler.",
-            config.refresh_interval_hours
-        ))
-    } else {
-        Err(format!("schtasks exited with {}", status))
+    let interval = sqlite_windows_task_interval(config)?;
+    let output = internal_command("powershell.exe")
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            include_str!("windows_index_task.ps1"),
+        ])
+        .env("OTTRIN_TASK_INTERVAL_HOURS", interval.to_string())
+        .env("OTTRIN_TASK_EXECUTABLE", ottrin)
+        .output()
+        .map_err(|error| format!("Failed to configure the index task: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "Index task setup failed ({}): {}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
     }
+    let message = String::from_utf8_lossy(&output.stdout).trim().to_owned();
+    if message.is_empty() {
+        return Err("Index task setup returned no result".to_string());
+    }
+    Ok(message)
 }
 
 #[cfg(any(target_os = "windows", test))]
-fn sqlite_windows_task_create_args(
-    config: &SearchConfig,
-    ottrin: &Path,
-) -> Result<Vec<std::ffi::OsString>, String> {
-    let interval_hours = config.refresh_interval_hours;
-    if interval_hours == 0 {
+fn sqlite_windows_task_interval(config: &SearchConfig) -> Result<u32, String> {
+    let interval = config.refresh_interval_hours;
+    if interval == 0 {
         return Err("Periodic search refresh is disabled in Search settings".to_string());
     }
-    if interval_hours > 999 {
+    if interval > 744 {
         return Err(
-            "Windows Task Scheduler supports hourly refresh intervals only up to 999 hours"
+            "Windows Task Scheduler repetition intervals cannot exceed 31 days (744 hours)"
                 .to_string(),
         );
     }
-    let mut action = std::ffi::OsString::from("\"");
-    action.push(ottrin);
-    action.push("\" index update");
-    Ok(vec![
-        "/Create".into(),
-        "/F".into(),
-        "/SC".into(),
-        "HOURLY".into(),
-        "/MO".into(),
-        interval_hours.to_string().into(),
-        "/TN".into(),
-        "Ottrin Index".into(),
-        "/TR".into(),
-        action,
-    ])
+    Ok(interval)
 }
 
 #[cfg(target_os = "linux")]
@@ -4433,56 +4427,21 @@ mod tests {
     }
 
     #[test]
-    fn windows_background_install_replaces_the_task_with_configured_interval_and_quoted_path() {
-        let config = SearchConfig {
-            refresh_interval_hours: 6,
-            ..SearchConfig::default()
-        };
-        let args = sqlite_windows_task_create_args(
-            &config,
-            Path::new(r"C:\Program Files\Ottrin\bin\ottrin.exe"),
-        )
-        .expect("valid task definition");
-
-        assert_eq!(
-            args,
-            [
-                "/Create",
-                "/F",
-                "/SC",
-                "HOURLY",
-                "/MO",
-                "6",
-                "/TN",
-                "Ottrin Index",
-                "/TR",
-                r#""C:\Program Files\Ottrin\bin\ottrin.exe" index update"#,
-            ]
-        );
-    }
-
-    #[test]
-    fn windows_background_install_rejects_a_disabled_refresh_interval() {
-        let config = SearchConfig {
-            refresh_interval_hours: 0,
-            ..SearchConfig::default()
-        };
-        let error = sqlite_windows_task_create_args(&config, Path::new(r"C:\Ottrin\ottrin.exe"))
-            .expect_err("zero means periodic refresh is disabled");
-
-        assert!(error.contains("disabled"), "unexpected error: {error}");
-    }
-
-    #[test]
-    fn windows_background_install_rejects_an_interval_task_scheduler_cannot_represent() {
-        let config = SearchConfig {
-            refresh_interval_hours: 1_000,
-            ..SearchConfig::default()
-        };
-        let error = sqlite_windows_task_create_args(&config, Path::new(r"C:\Ottrin\ottrin.exe"))
-            .expect_err("Task Scheduler hourly modifiers stop at 999");
-
-        assert!(error.contains("999"), "unexpected error: {error}");
+    fn windows_background_install_accepts_the_task_scheduler_repetition_range() {
+        for interval in [1, 6, 24, 168, 744] {
+            let config = SearchConfig {
+                refresh_interval_hours: interval,
+                ..SearchConfig::default()
+            };
+            assert_eq!(sqlite_windows_task_interval(&config).unwrap(), interval);
+        }
+        for interval in [0, 745, u32::MAX] {
+            let config = SearchConfig {
+                refresh_interval_hours: interval,
+                ..SearchConfig::default()
+            };
+            assert!(sqlite_windows_task_interval(&config).is_err());
+        }
     }
 
     #[test]
