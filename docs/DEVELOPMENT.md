@@ -25,6 +25,23 @@ Repeated rows must share label starts, icon centers, padding, and vertical cente
 
 Before delivery, inspect affected surfaces in Light and Dark at 100% and 150% desktop scaling and enlarged text. Exercise checked/unchecked, enabled/disabled, hover/focus, and submenu states. Add rendered geometry regressions for shared alignment fixes and verify the exact packaged app. A compilation check alone does not satisfy visual acceptance.
 
+## Linux installed Office acceptance
+
+The shared `native_office_boundary_contract` uses the production Linux Bubblewrap launcher and Windows Job Object launcher. On Linux, run the ignored conversion, nine-format corpus and in-flight cancellation checks as an ordinary user with installed LibreOffice, Bubblewrap, a working systemd user manager, and the pinned PDFium runtime:
+
+```sh
+OTTRIN_PDFIUM_DIR=/absolute/path/to/pdfium/lib \
+LD_LIBRARY_PATH=/absolute/path/to/pdfium/lib \
+OTTRIN_NATIVE_OFFICE_FIXTURES=/absolute/path/to/owned/corpus \
+cargo test --release -p ottrin-preview --test native_office_boundary_contract -- --ignored --nocapture --test-threads=1
+```
+
+The corpus test defines the required filenames and independent rendered-text markers. Macro positive-control acceptance remains Windows-specific and requires its explicit fixture. These native tests prove their provider scope; they do not substitute for Inspector interaction or exact-package acceptance.
+
+Ubuntu 24.04 can deny Bubblewrap namespace setup under its default AppArmor policy. The fresh cloud guest reproduced `net_admin` denial before provider startup. Its configured-provider acceptance uses the distribution's `apparmor-profiles` package and restrictive `bwrap-userns-restrict` extra profile, loaded by the guest administrator; the user-namespace restriction remains enabled. This setup is not installed by Ottrin and must not be mistaken for default-install acceptance. Follow [Ubuntu's documented Bubblewrap policy guidance](https://discourse.ubuntu.com/t/understanding-apparmor-user-namespace-restriction/58007), preserving administrator-owned policy. Do not disable AppArmor or global user-namespace restrictions to make a test pass.
+
+A configured native probe also exposed a missing `/bin` sandbox mount: `/usr/lib/libreoffice/program/soffice` exists but its `/bin/sh` interpreter cannot execute. The launcher now exposes `/bin` read-only alongside `/usr`, with the existing network, filesystem and resource boundaries intact.
+
 ## Build And Verify
 
 ```sh
@@ -176,13 +193,13 @@ Linux can build the fixture executable with
 Cross-compilation is not native acceptance. Keep the Windows Office provider
 gated until its remaining installed-provider checks pass.
 
-The ignored `windows_installed_office_converts_and_cleans_private_state` fixture
-in `windows_office_boundary_contract` requires a standard Windows LibreOffice
+The ignored `native_installed_office_converts_and_cleans_private_state` fixture
+in `native_office_boundary_contract` requires a standard Windows LibreOffice
 installation and the packaged PDFium runtime:
 
 ```powershell
 $env:OTTRIN_PDFIUM_DIR = "C:\path\to\Ottrin\bin\pdfium"
-cargo test -p ottrin-preview --test windows_office_boundary_contract windows_installed_office_converts_and_cleans_private_state -- --ignored --exact --nocapture
+cargo test -p ottrin-preview --test native_office_boundary_contract native_installed_office_converts_and_cleans_private_state -- --ignored --exact --nocapture
 ```
 
 Ordinary-user acceptance with LibreOffice 26.8.1.1 on Windows 11 build 26100
@@ -195,7 +212,7 @@ Windows now searches the standard Program Files locations and Windows launch
 names. Six focused provider contracts pass on both Linux and native Windows.
 
 Macro suppression requires a working positive control, not merely a macro-free
-PDF. The ignored `windows_installed_office_suppresses_document_macros` native
+PDF. The ignored `native_installed_office_suppresses_document_macros` native
 fixture takes `OTTRIN_NATIVE_OFFICE_MACRO_FIXTURE` (the owned ODT) and
 `OTTRIN_NATIVE_OFFICE_MACRO_CONTROL_PDF` (the PDF exported from that exact ODT
 with macros enabled in an ordinary-user control). It requires the control's
@@ -228,13 +245,13 @@ profile/log cleanup. Spreadsheet thumbnail ink can be antialiased gray (XLS's
 darkest pixel was 129); this check detects visible ink rather than requiring
 nearly black pixels. Set `OTTRIN_NATIVE_OFFICE_FIXTURES` to the owned fixture
 directory containing the filenames and text markers specified in
-`windows_installed_office_renders_each_advertised_format`.
+`native_installed_office_renders_each_advertised_format`.
 
 The in-flight cancellation fixture waits for LibreOffice's actual private-profile
 lock before cancelling, then verifies typed cancellation, unchanged source,
 profile/log cleanup, released source handles, and directory removal
 (`office-formats-green-results.log`). Run the installed-provider fixtures with
-`cargo test -p ottrin-preview --test windows_office_boundary_contract -- --ignored --nocapture --test-threads=1`.
+`cargo test -p ottrin-preview --test native_office_boundary_contract -- --ignored --nocapture --test-threads=1`.
 
 This bounded acceptance does not enable the Windows UI or certify representative
 fidelity, macro security, fallback presentation or installer acceptance.

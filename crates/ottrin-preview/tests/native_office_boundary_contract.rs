@@ -1,6 +1,10 @@
-#![cfg(target_os = "windows")]
+#![cfg(any(target_os = "linux", target_os = "windows"))]
 
-use ottrin_preview::{IsolatedProcessLauncher, WindowsJobObjectIsolation};
+use ottrin_preview::IsolatedProcessLauncher;
+#[cfg(target_os = "linux")]
+use ottrin_preview::LinuxBubblewrapIsolation as NativeOfficeIsolation;
+#[cfg(target_os = "windows")]
+use ottrin_preview::WindowsJobObjectIsolation as NativeOfficeIsolation;
 
 struct PrivateDirectory(std::path::PathBuf);
 
@@ -11,15 +15,15 @@ impl Drop for PrivateDirectory {
 }
 
 #[test]
-fn windows_office_boundary_is_an_explicit_launcher_capability() {
+fn native_office_boundary_is_an_explicit_launcher_capability() {
     fn assert_launcher<T: IsolatedProcessLauncher + Copy + Default>() {}
 
-    assert_launcher::<WindowsJobObjectIsolation>();
+    assert_launcher::<NativeOfficeIsolation>();
 }
 
 #[test]
-#[ignore = "requires installed Windows LibreOffice and a packaged PDFium runtime"]
-fn windows_installed_office_converts_and_cleans_private_state() {
+#[ignore = "requires installed LibreOffice and a packaged PDFium runtime"]
+fn native_installed_office_converts_and_cleans_private_state() {
     use ottrin_preview::{
         InstalledLibreOfficeConverter, OfficeFormat, OfficeProviderId, OfficeRenderError,
         OfficeRenderPolicy, OfficeRenderRequest, detect_installed_libreoffice, render_office_pdf,
@@ -28,7 +32,7 @@ fn windows_installed_office_converts_and_cleans_private_state() {
     use std::sync::atomic::AtomicBool;
     use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-    let launcher = WindowsJobObjectIsolation;
+    let launcher = NativeOfficeIsolation;
     let cancelled = AtomicBool::new(false);
     let detected = detect_installed_libreoffice(&launcher, &cancelled)
         .expect("detect the installed provider through the production search path");
@@ -122,7 +126,7 @@ fn windows_installed_office_converts_and_cleans_private_state() {
 
 #[test]
 #[ignore = "requires OTTRIN_NATIVE_OFFICE_FIXTURES and installed LibreOffice/PDFium"]
-fn windows_installed_office_renders_each_advertised_format() {
+fn native_installed_office_renders_each_advertised_format() {
     use ottrin_preview::{
         InstalledLibreOfficeConverter, OfficeRenderPolicy, OfficeRenderRequest,
         detect_installed_libreoffice, office_format_for_path, render_office_preview_page,
@@ -133,7 +137,7 @@ fn windows_installed_office_renders_each_advertised_format() {
     let fixtures = std::path::PathBuf::from(
         std::env::var_os("OTTRIN_NATIVE_OFFICE_FIXTURES").expect("owned native fixtures"),
     );
-    let launcher = WindowsJobObjectIsolation;
+    let launcher = NativeOfficeIsolation;
     let cancelled = AtomicBool::new(false);
     let detected = detect_installed_libreoffice(&launcher, &cancelled).unwrap();
     let converter = InstalledLibreOfficeConverter::new(detected.executable, &launcher);
@@ -244,8 +248,8 @@ fn windows_installed_office_renders_each_advertised_format() {
 }
 
 #[test]
-#[ignore = "requires installed Windows LibreOffice"]
-fn windows_installed_office_cancels_after_provider_start_and_releases_files() {
+#[ignore = "requires installed LibreOffice"]
+fn native_installed_office_cancels_after_provider_start_and_releases_files() {
     use ottrin_preview::{
         InstalledLibreOfficeConverter, IsolatedProcessFailure, IsolatedProcessOutput,
         IsolatedProcessRequest, OfficeFormat, OfficeRenderError, OfficeRenderPolicy,
@@ -265,7 +269,7 @@ fn windows_installed_office_cancels_after_provider_start_and_releases_files() {
             cancelled: &AtomicBool,
         ) -> Result<IsolatedProcessOutput, IsolatedProcessFailure> {
             std::thread::scope(|scope| {
-                let worker = scope.spawn(|| WindowsJobObjectIsolation.run(request, cancelled));
+                let worker = scope.spawn(|| NativeOfficeIsolation.run(request, cancelled));
                 let marker = request.private_profile_dir.join(".lock");
                 let deadline = Instant::now() + Duration::from_secs(10);
                 while !marker.exists() && !worker.is_finished() && Instant::now() < deadline {
@@ -280,7 +284,7 @@ fn windows_installed_office_cancels_after_provider_start_and_releases_files() {
     }
 
     let detected =
-        detect_installed_libreoffice(&WindowsJobObjectIsolation, &AtomicBool::new(false)).unwrap();
+        detect_installed_libreoffice(&NativeOfficeIsolation, &AtomicBool::new(false)).unwrap();
     let nonce = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -358,9 +362,10 @@ fn windows_installed_office_cancels_after_provider_start_and_releases_files() {
     std::fs::remove_dir_all(root).unwrap();
 }
 
+#[cfg(target_os = "windows")]
 #[test]
 #[ignore = "requires the verified macro-positive-control fixture and installed LibreOffice/PDFium"]
-fn windows_installed_office_suppresses_document_macros() {
+fn native_installed_office_suppresses_document_macros() {
     use ottrin_preview::{
         InstalledLibreOfficeConverter, OfficeFormat, OfficeRenderPolicy, OfficeRenderRequest,
         detect_installed_libreoffice, render_office_pdf,
@@ -402,7 +407,7 @@ fn windows_installed_office_suppresses_document_macros() {
     let source = root.join("macro.odt");
     std::fs::write(&source, &original).unwrap();
     let cancelled = AtomicBool::new(false);
-    let launcher = WindowsJobObjectIsolation;
+    let launcher = NativeOfficeIsolation;
     let detected = detect_installed_libreoffice(&launcher, &cancelled).unwrap();
     let converter = InstalledLibreOfficeConverter::new(detected.executable, &launcher);
     let request = OfficeRenderRequest {

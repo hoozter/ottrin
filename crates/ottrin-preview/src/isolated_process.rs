@@ -138,7 +138,9 @@ mod linux {
                 "/etc",
                 "/etc",
             ]);
-        for system_path in ["/lib", "/lib64", "/opt"] {
+        // Distribution launchers such as LibreOffice use a /bin/sh shebang.
+        // /usr alone does not expose /bin in a fresh sandbox, even on merged-usr hosts.
+        for system_path in ["/bin", "/lib", "/lib64", "/opt"] {
             if Path::new(system_path).exists() {
                 command.args(["--ro-bind", system_path, system_path]);
             }
