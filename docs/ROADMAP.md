@@ -611,3 +611,26 @@ remain unchanged. Startup Activity ownership and grouped operation history are n
 connected yet. Publication-intent reconciliation, pair-mismatch reconciliation,
 safe reclamation, cross-boot ownership and broader filesystem acceptance remain
 open. No automatic startup inverse or retained-data deletion has been enabled.
+
+### Retained Activity discovery worker — source verification
+
+Retained Move discovery now runs in one background worker instead of blocking
+application construction or operation-result handling. A refresh during an active
+scan invalidates that response and coalesces further requests into one replacement
+scan. Activity shows checking status, disables recovery actions until the current
+scan completes, and reports a stopped worker rather than waiting indefinitely.
+The worker exits when its owning app disconnects; the UI polls only while work is
+pending, without adding an idle refresh loop.
+
+Controlled worker tests block discovery and prove responsive UI polling, execution
+on a different thread, stale-result rejection, refresh coalescing, worker exit and
+explicit channel-failure handling. Startup and operation-warning tests wait for
+and verify the actual asynchronous discovery snapshot. All 354 regular platform
+and 353 regular UI tests pass (one ignored in each); strict Linux/Windows-target
+UI Clippy and formatting checks are recorded in
+`.hermes/evidence/activity-discovery-worker/`.
+
+This prerequisite is source-only; packages remain unchanged. Copy startup Activity
+ownership, grouped batch history, interrupted-publication/pair reconciliation,
+reclamation and broader filesystem/platform acceptance remain open. No startup
+inverse or retained-data deletion is enabled by this change.

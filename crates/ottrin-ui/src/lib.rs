@@ -1008,6 +1008,76 @@ fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) 
     (Vec::new(), None)
 }
 
+type RetainedMoveSnapshot = (Vec<RetainedMoveActivity>, Option<String>);
+
+/// One background scan at a time. A refresh during a scan invalidates its result
+/// and requests one replacement scan, regardless of how many refreshes arrive.
+struct RetainedMoveActivityLoader {
+    request_tx: mpsc::SyncSender<()>,
+    result_rx: Receiver<RetainedMoveSnapshot>,
+    pending: bool,
+    refresh_again: bool,
+}
+
+impl RetainedMoveActivityLoader {
+    fn spawn_with(mut load: impl FnMut() -> RetainedMoveSnapshot + Send + 'static) -> Self {
+        let (request_tx, request_rx) = mpsc::sync_channel(1);
+        let (result_tx, result_rx) = mpsc::sync_channel(1);
+        std::thread::spawn(move || {
+            while request_rx.recv().is_ok() {
+                if result_tx.send(load()).is_err() {
+                    break;
+                }
+            }
+        });
+        Self {
+            request_tx,
+            result_rx,
+            pending: false,
+            refresh_again: false,
+        }
+    }
+
+    fn request(&mut self) -> Result<(), &'static str> {
+        if self.pending {
+            self.refresh_again = true;
+            return Ok(());
+        }
+        self.request_tx
+            .try_send(())
+            .map_err(|_| "Retained Move status worker is unavailable")?;
+        self.pending = true;
+        Ok(())
+    }
+
+    fn poll(&mut self) -> Option<RetainedMoveSnapshot> {
+        if !self.pending {
+            return None;
+        }
+        let result = match self.result_rx.try_recv() {
+            Ok(result) => result,
+            Err(mpsc::TryRecvError::Empty) => return None,
+            Err(mpsc::TryRecvError::Disconnected) => {
+                self.pending = false;
+                self.refresh_again = false;
+                return Some((
+                    Vec::new(),
+                    Some("Retained Move status worker stopped".into()),
+                ));
+            }
+        };
+        self.pending = false;
+        if std::mem::take(&mut self.refresh_again) {
+            // Never expose evidence from a scan superseded by an operation.
+            return self
+                .request()
+                .err()
+                .map(|error| (Vec::new(), Some(error.into())));
+        }
+        Some(result)
+    }
+}
+
 // ── Per-tab listing state ─────────────────────────────────────────────────────
 
 #[derive(Debug, Default)]
@@ -2744,6 +2814,7 @@ pub struct OttrinApp {
     search_ui: SearchUiState,
     trash_panel: TrashPanelState,
     operation_history: VecDeque<OperationRecord>,
+    retained_move_activity_loader: RetainedMoveActivityLoader,
     retained_move_activity: Vec<RetainedMoveActivity>,
     retained_move_activity_error: Option<String>,
     /// Last discovery snapshot. Roots are deliberately independent even when a
@@ -3602,7 +3673,12 @@ impl OttrinApp {
         }
         state.config.folder_column_widths.clear();
         let search_config = state.config.search.clone();
-        let (retained_move_activity, retained_move_activity_error) = load_retained_move_activity();
+        let mut retained_move_activity_loader =
+            RetainedMoveActivityLoader::spawn_with(load_retained_move_activity);
+        let retained_move_activity_error = retained_move_activity_loader
+            .request()
+            .err()
+            .map(str::to_owned);
 
         let show_graphics_compatibility_notice = graphics_runtime.is_windows
             && state.config.graphics_renderer == GraphicsRendererPreference::Automatic
@@ -3670,7 +3746,8 @@ impl OttrinApp {
             search_ui: SearchUiState::default(),
             trash_panel: TrashPanelState::default(),
             operation_history: VecDeque::new(),
-            retained_move_activity,
+            retained_move_activity_loader,
+            retained_move_activity: Vec::new(),
             retained_move_activity_error,
             known_storage_locations: Vec::new(),
             unavailable_locations: HashMap::new(),
@@ -5507,9 +5584,16 @@ impl OttrinApp {
     }
 
     fn refresh_retained_move_activity(&mut self) {
-        let (retained_move_activity, retained_move_activity_error) = load_retained_move_activity();
-        self.retained_move_activity = retained_move_activity;
-        self.retained_move_activity_error = retained_move_activity_error;
+        if let Err(error) = self.retained_move_activity_loader.request() {
+            self.retained_move_activity_error = Some(error.into());
+        }
+    }
+
+    fn poll_retained_move_activity(&mut self) {
+        if let Some((activity, error)) = self.retained_move_activity_loader.poll() {
+            self.retained_move_activity = activity;
+            self.retained_move_activity_error = error;
+        }
     }
 
     fn refresh_tab(&mut self, tab_id: u64, dir: PathBuf) {
@@ -13353,7 +13437,9 @@ impl OttrinApp {
                 .iter()
                 .filter(|op| op.status == OperationStatus::Failed)
                 .count();
-            let summary = if !self.retained_move_activity.is_empty() {
+            let summary = if self.retained_move_activity_loader.pending {
+                "Checking retained Move history…".to_owned()
+            } else if !self.retained_move_activity.is_empty() {
                 format!(
                     "{} retained Move journal{}",
                     self.retained_move_activity.len(),
@@ -13441,7 +13527,7 @@ impl OttrinApp {
                                 if retained.recovery_available {
                                     if ui
                                         .add_enabled(
-                                            true,
+                                            !self.retained_move_activity_loader.pending,
                                             egui::Button::new("Recover now")
                                                 .min_size(Vec2::new(90.0, 0.0))
                                                 .themed(&c),
@@ -13475,6 +13561,14 @@ impl OttrinApp {
                 }
                 self.run_file_op(cmd, None);
             }
+        }
+
+        if self.operation_history.is_empty()
+            && self.retained_move_activity.is_empty()
+            && self.retained_move_activity_loader.pending
+        {
+            ui.label(RichText::new("Checking retained Move history…").color(c.text_muted));
+            return;
         }
 
         if self.operation_history.is_empty() && self.retained_move_activity.is_empty() {
@@ -21698,6 +21792,7 @@ impl eframe::App for OttrinApp {
         self.poll_listing_results();
         self.poll_op_results();
         self.poll_path_move_undo_results();
+        self.poll_retained_move_activity();
         self.poll_trash_results();
 
         self.poll_hash_results();
@@ -21726,6 +21821,7 @@ impl eframe::App for OttrinApp {
             );
         let transient_status = self.privileged_status.is_some();
         if search_indexing
+            || self.retained_move_activity_loader.pending
             || transient_status
             || self.trash_panel.loading
             || self.trash_panel.emptying
@@ -28689,8 +28785,117 @@ mod tests {
     }
 
     #[test]
+    fn retained_move_scan_is_off_thread_and_coalesces_refreshes_without_stale_results() {
+        let ui_thread = std::thread::current().id();
+        let (entered_tx, entered_rx) = mpsc::channel();
+        let (release_tx, release_rx) = mpsc::channel();
+        let (exited_tx, exited_rx) = mpsc::channel();
+        struct OnExit(Sender<()>);
+        impl Drop for OnExit {
+            fn drop(&mut self) {
+                let _ = self.0.send(());
+            }
+        }
+        let on_exit = OnExit(exited_tx);
+        let mut scans = 0;
+        let mut loader = RetainedMoveActivityLoader::spawn_with(move || {
+            let _keep_until_worker_exits = &on_exit;
+            scans += 1;
+            entered_tx
+                .send((std::thread::current().id(), scans))
+                .unwrap();
+            release_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+            (
+                vec![RetainedMoveActivity {
+                    transaction_id: [scans; 16],
+                    phase: "published",
+                    recovery_available: false,
+                }],
+                None,
+            )
+        });
+        loader.request().unwrap();
+        let (thread, scan) = entered_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        assert_ne!(thread, ui_thread);
+        assert_eq!(scan, 1);
+        assert!(loader.poll().is_none()); // A blocked scan cannot block the UI.
+        for _ in 0..100 {
+            loader.request().unwrap();
+        }
+        release_tx.send(()).unwrap();
+        let deadline = Instant::now() + Duration::from_secs(5);
+        loop {
+            assert!(
+                loader.poll().is_none(),
+                "superseded evidence reached the UI"
+            );
+            if let Ok((_, scan)) = entered_rx.try_recv() {
+                assert_eq!(scan, 2);
+                break;
+            }
+            assert!(Instant::now() < deadline);
+            std::thread::yield_now();
+        }
+        release_tx.send(()).unwrap();
+        let result = loop {
+            if let Some(result) = loader.poll() {
+                break result;
+            }
+            assert!(Instant::now() < deadline);
+            std::thread::yield_now();
+        };
+        assert_eq!(result.0[0].transaction_id, [2; 16]);
+        assert!(result.1.is_none());
+        assert!(!loader.pending);
+        assert!(entered_rx.try_recv().is_err()); // Only one replacement scan.
+        drop(loader);
+        exited_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+    }
+
+    #[test]
+    fn retained_move_loader_reports_worker_disconnect_instead_of_waiting_forever() {
+        let (request_tx, request_rx) = mpsc::sync_channel(1);
+        let (result_tx, result_rx) = mpsc::sync_channel(1);
+        let mut loader = RetainedMoveActivityLoader {
+            request_tx,
+            result_rx,
+            pending: false,
+            refresh_again: false,
+        };
+        loader.request().unwrap();
+        drop(result_tx);
+        let (activity, error) = loader.poll().unwrap();
+        assert!(activity.is_empty());
+        assert_eq!(
+            error.as_deref(),
+            Some("Retained Move status worker stopped")
+        );
+        assert!(!loader.pending);
+        assert!(loader.poll().is_none());
+        drop(request_rx);
+        assert_eq!(
+            loader.request(),
+            Err("Retained Move status worker is unavailable")
+        );
+        assert!(!loader.pending);
+    }
+
+    fn wait_for_retained_move_activity(app: &mut OttrinApp) {
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while app.retained_move_activity_loader.pending {
+            assert!(
+                Instant::now() < deadline,
+                "retained Move scan did not finish"
+            );
+            app.poll_retained_move_activity();
+            std::thread::sleep(Duration::from_millis(1));
+        }
+    }
+
+    #[test]
     fn startup_loads_retained_move_activity_from_discovery() {
-        let app = OttrinApp::default();
+        let mut app = OttrinApp::default();
+        wait_for_retained_move_activity(&mut app);
         let (discovered_activity, discovered_error) = load_retained_move_activity();
 
         assert_eq!(app.retained_move_activity, discovered_activity);
@@ -28736,6 +28941,7 @@ mod tests {
         });
 
         app.poll_op_results();
+        wait_for_retained_move_activity(&mut app);
 
         let (refreshed_activity, refreshed_error) = load_retained_move_activity();
         assert_eq!(app.retained_move_activity, refreshed_activity);
@@ -28781,6 +28987,7 @@ mod tests {
         });
 
         app.poll_op_results();
+        wait_for_retained_move_activity(&mut app);
 
         let (refreshed_activity, refreshed_error) = load_retained_move_activity();
         assert_eq!(app.retained_move_activity, refreshed_activity);
