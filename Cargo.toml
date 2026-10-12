@@ -37,3 +37,7 @@ opt-level = 1
 codegen-units = 1
 lto = "thin"
 panic = "abort"
+
+# Keep Windows Shift+Delete distinguishable from Ctrl+X without changing text Cut.
+[patch.crates-io]
+egui-winit = { path = "vendor/egui-winit" }

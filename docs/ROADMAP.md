@@ -324,3 +324,21 @@ confirmation, cancellation and destination checks. No current Activity or
 installer lifecycle acceptance is claimed. Owned processes, task, payload,
 compiler and fixtures were removed; the pre-existing installation's uninstaller
 checksum was unchanged. The owned guest was restored to its initial shutoff state.
+
+### Windows Shift+Delete adapter correction — source verification
+
+The pinned egui-winit 0.33.3 adapter now retains the original Windows
+Shift+Delete press event immediately after Cut, with event-time modifiers.
+Ottrin's file view consumes that paired Cut and requests permanent deletion;
+text fields and the Inspector retain clipboard ownership. Ctrl+X is unchanged.
+The dependency is patched once via `vendor/egui-winit`, with original licenses
+and a documented narrow change; all other dependencies remain registry packages.
+
+The full UI suite passes 350 regular tests with one existing ignored test.
+An additional rendered Windows text-field regression then passes alongside the
+file regression: selected text alone is cut, rapid release preserves the press
+modifiers, file Cut state is not created, and confirmation remains required.
+Strict Linux and Windows-target UI Clippy pass. Logs:
+`.hermes/evidence/windows-delete-adapter/`. Native exact-package Windows
+confirmation/cancellation/destination acceptance and refreshed package delivery
+remain open until the corrected build is tested.

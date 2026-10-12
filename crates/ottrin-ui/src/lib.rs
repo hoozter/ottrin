@@ -7898,8 +7898,28 @@ impl OttrinApp {
         if file_shortcuts_allowed {
             let (events, shift) = ctx.input_mut(|input| {
                 let mut events = Vec::new();
+                // The native Windows adapter preserves Shift+Delete as a Cut/Key
+                // pair. Only the file view ignores that Cut; text widgets and the
+                // Inspector retain their clipboard ownership.
+                let deletion_cuts: Vec<_> = input
+                    .events
+                    .windows(2)
+                    .enumerate()
+                    .filter_map(|(index, pair)| {
+                        matches!((&pair[0], &pair[1]), (
+                        egui::Event::Cut,
+                        egui::Event::Key { key: Key::Delete, pressed: true, modifiers, .. }
+                    ) if modifiers.shift)
+                        .then_some(index)
+                    })
+                    .collect();
+                let mut index = 0;
                 input.events.retain(|event| {
-                    if matches!(
+                    let deletion_cut = deletion_cuts.contains(&index);
+                    index += 1;
+                    if deletion_cut {
+                        false
+                    } else if matches!(
                         event,
                         egui::Event::Copy | egui::Event::Cut | egui::Event::Paste(_)
                     ) {
@@ -24957,6 +24977,118 @@ mod tests {
     }
 
     #[test]
+    fn native_shift_delete_pair_requests_confirmation_without_cutting_files() {
+        for released in [false, true] {
+            let (_root, mut app, source) = clipboard_keyboard_fixture();
+            let ctx = Context::default();
+            let mut events = vec![
+                egui::Event::Cut,
+                egui::Event::Key {
+                    key: Key::Delete,
+                    physical_key: Some(Key::Delete),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::SHIFT,
+                },
+            ];
+            if released {
+                events.push(egui::Event::Key {
+                    key: Key::Delete,
+                    physical_key: Some(Key::Delete),
+                    pressed: false,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                });
+            }
+            let _ = ctx.run(
+                egui::RawInput {
+                    events,
+                    modifiers: if released {
+                        egui::Modifiers::NONE
+                    } else {
+                        egui::Modifiers::SHIFT
+                    },
+                    ..Default::default()
+                },
+                |ctx| app.handle_keyboard(ctx),
+            );
+            assert!(
+                app.clipboard.is_none(),
+                "Shift+Delete must not capture Cut files"
+            );
+            assert_eq!(
+                app.pending_delete.as_ref().unwrap().requested_mode,
+                DeleteMode::Permanent
+            );
+            assert!(
+                source.exists(),
+                "permanent deletion still requires confirmation"
+            );
+        }
+    }
+
+    #[test]
+    fn native_shift_delete_pair_cuts_only_selected_text_in_windows_text_field() {
+        let (_root, mut app, source) = clipboard_keyboard_fixture();
+        let ctx = Context::default();
+        ctx.set_os(egui::os::OperatingSystem::Windows);
+        let mut text = String::from("abcDEFGhij");
+        let _ = ctx.run(Default::default(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                let mut output = egui::TextEdit::singleline(&mut text)
+                    .id_salt("cut-field")
+                    .show(ui);
+                output.response.request_focus();
+                output
+                    .state
+                    .cursor
+                    .set_char_range(Some(egui::text::CCursorRange::two(
+                        egui::text::CCursor::new(3),
+                        egui::text::CCursor::new(7),
+                    )));
+                output.state.store(ctx, output.response.id);
+            });
+        });
+        let output = ctx.run(
+            egui::RawInput {
+                events: vec![
+                    egui::Event::Cut,
+                    egui::Event::Key {
+                        key: Key::Delete,
+                        physical_key: Some(Key::Delete),
+                        pressed: true,
+                        repeat: false,
+                        modifiers: egui::Modifiers::SHIFT,
+                    },
+                ],
+                // Shift has already been released at the frame boundary.
+                ..Default::default()
+            },
+            |ctx| {
+                app.handle_keyboard(ctx);
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    egui::TextEdit::singleline(&mut text)
+                        .id_salt("cut-field")
+                        .show(ui);
+                });
+            },
+        );
+        assert_eq!(text, "abchij", "Cut must not delete an extra character");
+        assert!(
+            output
+                .platform_output
+                .commands
+                .iter()
+                .any(|command| matches!(
+                    command, egui::OutputCommand::CopyText(text) if text == "DEFG"
+                ))
+        );
+        assert!(app.clipboard.is_none());
+        assert!(app.pending_delete.is_none());
+        assert!(source.exists());
+    }
+
+    #[test]
     fn clipboard_native_copy_and_cut_events_capture_selected_file() {
         for (event, cut) in [(egui::Event::Copy, false), (egui::Event::Cut, true)] {
             let (_root, mut app, source) = clipboard_keyboard_fixture();
@@ -25044,6 +25176,14 @@ mod tests {
                 egui::Event::Copy,
                 egui::Event::Cut,
                 egui::Event::Paste("text".into()),
+                egui::Event::Cut,
+                egui::Event::Key {
+                    key: Key::Delete,
+                    physical_key: Some(Key::Delete),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::SHIFT,
+                },
             ];
             let _ = ctx.run(
                 egui::RawInput {
