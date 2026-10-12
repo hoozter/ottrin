@@ -747,6 +747,7 @@ enum OperationStatus {
     Queued,
     Completed,
     Failed,
+    NeedsReview,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -771,13 +772,29 @@ struct OperationRecord {
     path_move_paths: Option<(PathBuf, PathBuf)>,
     path_move_undo: Option<PathMoveUndoState>,
     path_move_undo_token: Option<PathMoveUndoToken>,
+    retained_copy: Option<RetainedCopyOwnership>,
 }
 
 impl OperationRecord {
+    fn undo_kind(&self) -> PathMoveUndoKind {
+        self.path_move_undo_token
+            .as_ref()
+            .map(|token| token.kind)
+            .unwrap_or_else(|| {
+                if self.retained_copy.is_some() {
+                    PathMoveUndoKind::Copy
+                } else {
+                    PathMoveUndoKind::Rename
+                }
+            })
+    }
+
     fn can_clear_history(&self) -> bool {
         // Running work must still receive its result. Undo receipts also own
         // retained transaction data, including completed/failed Undo attempts.
-        self.status != OperationStatus::Queued && self.path_move_undo_token.is_none()
+        self.status != OperationStatus::Queued
+            && self.path_move_undo_token.is_none()
+            && self.retained_copy.is_none()
     }
 }
 
@@ -814,6 +831,17 @@ enum OperationUndoReceipt {
 }
 
 impl OperationUndoReceipt {
+    fn path_pairs(&self) -> Vec<(&Path, &Path)> {
+        match self {
+            Self::CopyBatch(batch) => batch
+                .receipts
+                .iter()
+                .map(|receipt| (receipt.before_path(), receipt.after_path()))
+                .collect(),
+            _ => vec![(self.before_path(), self.after_path())],
+        }
+    }
+
     fn before_path(&self) -> &Path {
         match self {
             Self::PathMove(receipt) => receipt.before_path(),
@@ -1008,19 +1036,161 @@ fn load_retained_move_activity() -> (Vec<RetainedMoveActivity>, Option<String>) 
     (Vec::new(), None)
 }
 
+#[derive(Debug, Clone)]
+struct RetainedCopyOwnership {
+    key: String,
+    transactions: Vec<String>,
+    restored: bool,
+}
+
+#[derive(Debug, Clone)]
+struct RestoredCopyActivity {
+    ownership: RetainedCopyOwnership,
+    detail: String,
+    undo: PathMoveUndoState,
+    receipts: Vec<PathMoveUndoReceipt>,
+}
+
+type RetainedCopySnapshot = (Vec<RestoredCopyActivity>, Option<String>);
+
+#[cfg(target_os = "linux")]
+fn load_retained_copy_activity() -> RetainedCopySnapshot {
+    match ottrin_platform::discover_retained_copy_transactions() {
+        Ok(entries) => (group_retained_copy_activity(entries), None),
+        Err(error) => (Vec::new(), Some(error.to_string())),
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn load_retained_copy_activity() -> RetainedCopySnapshot {
+    (Vec::new(), None)
+}
+
+#[cfg(target_os = "linux")]
+fn group_retained_copy_activity(
+    entries: Vec<ottrin_platform::RetainedCopyStatus>,
+) -> Vec<RestoredCopyActivity> {
+    use ottrin_platform::CopyRecoveryEvidence;
+    let mut groups = std::collections::BTreeMap::<String, Vec<_>>::new();
+    for entry in entries {
+        let key = entry
+            .operation
+            .as_ref()
+            .map(|operation| format!("operation:{}", operation.id))
+            .unwrap_or_else(|| format!("transaction:{}", entry.transaction_id));
+        groups.entry(key).or_default().push(entry);
+    }
+    groups.into_iter().map(|(key, mut entries)| {
+        entries.sort_by_key(|entry| entry.operation.as_ref().map(|operation| operation.item_index));
+        let expected = entries[0].operation.as_ref().map(|operation| operation.item_count);
+        let mut positions = HashSet::new();
+        let mut reason = None;
+        let mut receipts = Vec::new();
+        let mut undone = 0;
+        for entry in &entries {
+            match &entry.operation {
+                Some(operation) if Some(operation.item_count) == expected
+                    && positions.insert(operation.item_index) => {},
+                _ => { reason = Some("Copy operation metadata is missing, duplicated or inconsistent".to_owned()); },
+            }
+            match &entry.evidence {
+                CopyRecoveryEvidence::UndoneObjectsAndContentsMatch => undone += 1,
+                CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
+                | CopyRecoveryEvidence::UndoReadyToWithdraw
+                | CopyRecoveryEvidence::UndoWithdrawalMatches => {
+                    match ottrin_platform::restore_retained_copy_undo_receipt(&entry.transaction_id) {
+                        Ok(receipt) => receipts.push(receipt),
+                        Err(error) => reason = Some(error.to_string()),
+                    }
+                },
+                CopyRecoveryEvidence::NeedsReview { reason: error } => reason = Some(error.clone()),
+                CopyRecoveryEvidence::MatchingJournals => reason = Some("Copy publication was interrupted and needs reconciliation".into()),
+            }
+        }
+        let detail = match expected {
+            Some(count) if count == entries.len() => format!("Restored Copy · {} retained item(s) · {undone} already undone", entries.len()),
+            Some(count) => format!("Restored Copy · {} retained of {count} requested · {undone} already undone · other item outcomes unknown", entries.len()),
+            None => "Retained Copy needs review".into(),
+        };
+        let undo = if let Some(reason) = reason {
+            receipts.clear();
+            PathMoveUndoState::Unavailable { reason }
+        } else if receipts.is_empty() {
+            PathMoveUndoState::Undone
+        } else {
+            PathMoveUndoState::Available
+        };
+        RestoredCopyActivity {
+            ownership: RetainedCopyOwnership { key, transactions: entries.into_iter().map(|entry| entry.transaction_id).collect(), restored: true },
+            detail,
+            undo,
+            receipts,
+        }
+    }).collect()
+}
+
+fn restored_copy_status(undo: &PathMoveUndoState) -> OperationStatus {
+    if matches!(undo, PathMoveUndoState::Unavailable { .. }) {
+        OperationStatus::NeedsReview
+    } else {
+        OperationStatus::Completed
+    }
+}
+
+fn restored_copy_token(receipts: Vec<PathMoveUndoReceipt>) -> Option<PathMoveUndoToken> {
+    if receipts.is_empty() {
+        return None;
+    }
+    Some(PathMoveUndoToken {
+        kind: PathMoveUndoKind::Copy,
+        storage_bindings: Vec::new(),
+        origin_tab_id: None,
+        receipt: OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt {
+            remaining: receipts.len(),
+            receipts,
+        }),
+    })
+}
+
+fn copy_receipt_transaction_ids(record: &OperationRecord) -> Vec<String> {
+    let Some(token) = &record.path_move_undo_token else {
+        return Vec::new();
+    };
+    if token.kind != PathMoveUndoKind::Copy {
+        return Vec::new();
+    }
+    let receipts: &[PathMoveUndoReceipt] = match &token.receipt {
+        OperationUndoReceipt::PathMove(receipt) => std::slice::from_ref(receipt),
+        OperationUndoReceipt::CopyBatch(batch) => &batch.receipts,
+        _ => return Vec::new(),
+    };
+    receipts
+        .iter()
+        .filter_map(|receipt| {
+            receipt
+                .before_path()
+                .parent()?
+                .file_name()?
+                .to_str()?
+                .strip_prefix(".ottrin-txn-")
+                .map(str::to_owned)
+        })
+        .collect()
+}
+
 type RetainedMoveSnapshot = (Vec<RetainedMoveActivity>, Option<String>);
 
 /// One background scan at a time. A refresh during a scan invalidates its result
 /// and requests one replacement scan, regardless of how many refreshes arrive.
-struct RetainedMoveActivityLoader {
+struct RetainedActivityLoader<T> {
     request_tx: mpsc::SyncSender<()>,
-    result_rx: Receiver<RetainedMoveSnapshot>,
+    result_rx: Receiver<T>,
     pending: bool,
     refresh_again: bool,
 }
 
-impl RetainedMoveActivityLoader {
-    fn spawn_with(mut load: impl FnMut() -> RetainedMoveSnapshot + Send + 'static) -> Self {
+impl<T: Send + 'static> RetainedActivityLoader<T> {
+    fn spawn_with(mut load: impl FnMut() -> T + Send + 'static) -> Self {
         let (request_tx, request_rx) = mpsc::sync_channel(1);
         let (result_tx, result_rx) = mpsc::sync_channel(1);
         std::thread::spawn(move || {
@@ -1045,12 +1215,12 @@ impl RetainedMoveActivityLoader {
         }
         self.request_tx
             .try_send(())
-            .map_err(|_| "Retained Move status worker is unavailable")?;
+            .map_err(|_| "Retained Activity worker is unavailable")?;
         self.pending = true;
         Ok(())
     }
 
-    fn poll(&mut self) -> Option<RetainedMoveSnapshot> {
+    fn poll(&mut self) -> Option<Result<T, &'static str>> {
         if !self.pending {
             return None;
         }
@@ -1060,21 +1230,15 @@ impl RetainedMoveActivityLoader {
             Err(mpsc::TryRecvError::Disconnected) => {
                 self.pending = false;
                 self.refresh_again = false;
-                return Some((
-                    Vec::new(),
-                    Some("Retained Move status worker stopped".into()),
-                ));
+                return Some(Err("Retained Activity worker stopped"));
             }
         };
         self.pending = false;
         if std::mem::take(&mut self.refresh_again) {
             // Never expose evidence from a scan superseded by an operation.
-            return self
-                .request()
-                .err()
-                .map(|error| (Vec::new(), Some(error.into())));
+            return self.request().err().map(Err);
         }
-        Some(result)
+        Some(Ok(result))
     }
 }
 
@@ -2814,9 +2978,12 @@ pub struct OttrinApp {
     search_ui: SearchUiState,
     trash_panel: TrashPanelState,
     operation_history: VecDeque<OperationRecord>,
-    retained_move_activity_loader: RetainedMoveActivityLoader,
+    retained_move_activity_loader: RetainedActivityLoader<RetainedMoveSnapshot>,
     retained_move_activity: Vec<RetainedMoveActivity>,
     retained_move_activity_error: Option<String>,
+    retained_copy_activity_loader: RetainedActivityLoader<RetainedCopySnapshot>,
+    retained_copy_activity_error: Option<String>,
+    pending_retained_copy_activity: Option<Vec<RestoredCopyActivity>>,
     /// Last discovery snapshot. Roots are deliberately independent even when a
     /// backend reports the same identity at multiple mount points.
     known_storage_locations: Vec<StorageLocation>,
@@ -3674,8 +3841,15 @@ impl OttrinApp {
         state.config.folder_column_widths.clear();
         let search_config = state.config.search.clone();
         let mut retained_move_activity_loader =
-            RetainedMoveActivityLoader::spawn_with(load_retained_move_activity);
+            RetainedActivityLoader::spawn_with(load_retained_move_activity);
         let retained_move_activity_error = retained_move_activity_loader
+            .request()
+            .err()
+            .map(str::to_owned);
+
+        let mut retained_copy_activity_loader =
+            RetainedActivityLoader::spawn_with(load_retained_copy_activity);
+        let retained_copy_activity_error = retained_copy_activity_loader
             .request()
             .err()
             .map(str::to_owned);
@@ -3749,6 +3923,9 @@ impl OttrinApp {
             retained_move_activity_loader,
             retained_move_activity: Vec::new(),
             retained_move_activity_error,
+            retained_copy_activity_loader,
+            retained_copy_activity_error,
+            pending_retained_copy_activity: None,
             known_storage_locations: Vec::new(),
             unavailable_locations: HashMap::new(),
             unavailable_root_tombstones: Vec::new(),
@@ -5590,9 +5767,111 @@ impl OttrinApp {
     }
 
     fn poll_retained_move_activity(&mut self) {
-        if let Some((activity, error)) = self.retained_move_activity_loader.poll() {
+        if let Some(result) = self.retained_move_activity_loader.poll() {
+            let (activity, error) = result.unwrap_or_else(|error| (Vec::new(), Some(error.into())));
             self.retained_move_activity = activity;
             self.retained_move_activity_error = error;
+        }
+    }
+
+    fn refresh_retained_copy_activity(&mut self) {
+        self.pending_retained_copy_activity = None;
+        if let Err(error) = self.retained_copy_activity_loader.request() {
+            self.retained_copy_activity_error = Some(error.into());
+        }
+    }
+
+    fn poll_retained_copy_activity(&mut self) {
+        if let Some(result) = self.retained_copy_activity_loader.poll() {
+            let (activity, error) = result.unwrap_or_else(|error| (Vec::new(), Some(error.into())));
+            self.retained_copy_activity_error = error;
+            self.pending_retained_copy_activity = Some(activity);
+        }
+        if self.operation_history.iter().any(|record| {
+            record.status == OperationStatus::Queued
+                || matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued))
+        }) {
+            return;
+        }
+        if let Some(activity) = self.pending_retained_copy_activity.take() {
+            self.merge_retained_copy_activity(activity);
+        }
+    }
+
+    fn merge_retained_copy_activity(&mut self, activity: Vec<RestoredCopyActivity>) {
+        let keys: HashSet<_> = activity
+            .iter()
+            .map(|group| group.ownership.key.clone())
+            .collect();
+        for record in &mut self.operation_history {
+            if record
+                .retained_copy
+                .as_ref()
+                .is_some_and(|owner| owner.restored && !keys.contains(&owner.key))
+            {
+                record.message = None;
+                record.status = OperationStatus::NeedsReview;
+                record.path_move_undo = Some(PathMoveUndoState::Unavailable { reason: "Retained Copy evidence is no longer available; data remains owned for review".into() });
+            }
+        }
+        for group in activity {
+            let existing = self.operation_history.iter().position(|record| {
+                record.retained_copy.as_ref().is_some_and(|owner| {
+                    owner.key == group.ownership.key
+                        || owner
+                            .transactions
+                            .iter()
+                            .any(|id| group.ownership.transactions.contains(id))
+                }) || copy_receipt_transaction_ids(record)
+                    .iter()
+                    .any(|id| group.ownership.transactions.contains(id))
+            });
+            if let Some(index) = existing {
+                let record = &mut self.operation_history[index];
+                if record
+                    .retained_copy
+                    .as_ref()
+                    .is_none_or(|owner| !owner.restored)
+                {
+                    let mut ownership = group.ownership;
+                    ownership.restored = false;
+                    record.retained_copy = Some(ownership);
+                    continue; // Preserve current-session operation/Undo state.
+                }
+                if record.retained_copy.as_ref().is_some_and(|owner| {
+                    owner
+                        .transactions
+                        .iter()
+                        .any(|id| !group.ownership.transactions.contains(id))
+                }) {
+                    record.message = None;
+                    record.status = OperationStatus::NeedsReview;
+                    record.path_move_undo = Some(PathMoveUndoState::Unavailable { reason: "A previously owned Copy item is missing from discovery; data remains owned for review".into() });
+                    continue;
+                }
+                record.message = None;
+                record.detail = group.detail;
+                record.status = restored_copy_status(&group.undo);
+                record.path_move_undo = Some(group.undo);
+                record.path_move_undo_token = restored_copy_token(group.receipts);
+                record.retained_copy = Some(group.ownership);
+            } else {
+                let id = self.next_id();
+                self.operation_history.push_back(OperationRecord {
+                    id,
+                    title: "Copy from previous session".into(),
+                    detail: group.detail,
+                    status: restored_copy_status(&group.undo),
+                    recoverability: OperationRecoverability::SessionTracked,
+                    queued_at: Instant::now(),
+                    finished_at: Some(Instant::now()),
+                    message: None,
+                    path_move_paths: None,
+                    path_move_undo: Some(group.undo),
+                    path_move_undo_token: restored_copy_token(group.receipts),
+                    retained_copy: Some(group.ownership),
+                });
+            }
         }
     }
 
@@ -5818,6 +6097,14 @@ impl OttrinApp {
     fn poll_op_results(&mut self) {
         while let Ok(res) = self.op_rx.try_recv() {
             let completed_cmd = res.cmd.clone();
+            if matches!(&completed_cmd, FileCommand::Copy { .. })
+                && (res.error.is_some()
+                    || res.warning.is_some()
+                    || self.retained_copy_activity_loader.pending
+                    || self.pending_retained_copy_activity.is_some())
+            {
+                self.refresh_retained_copy_activity();
+            }
             let path_move_receipt = res.path_move_receipt.clone();
             let path_move_bindings = res.path_move_bindings.clone();
             self.apply_clipboard_operation_result(
@@ -6036,21 +6323,33 @@ impl OttrinApp {
     }
 
     fn path_move_undo_conflicts(&self, op_id: u64, receipt: &OperationUndoReceipt) -> bool {
+        let requested = receipt.path_pairs();
         self.operation_history.iter().any(|record| {
-            record.id != op_id
-                && (record.status == OperationStatus::Queued
-                    || matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued)))
-                && record
+            if record.id == op_id {
+                return false;
+            }
+            let running_undo = matches!(record.path_move_undo, Some(PathMoveUndoState::UndoQueued));
+            if record.status != OperationStatus::Queued && !running_undo {
+                return false;
+            }
+            let paths = if running_undo {
+                record
+                    .path_move_undo_token
+                    .as_ref()
+                    .map(|token| token.receipt.path_pairs())
+                    .unwrap_or_default()
+            } else {
+                record
                     .path_move_paths
                     .as_ref()
-                    .is_some_and(|(before, after)| {
-                        path_move_paths_overlap(
-                            before,
-                            after,
-                            receipt.before_path(),
-                            receipt.after_path(),
-                        )
-                    })
+                    .map(|(before, after)| vec![(before.as_path(), after.as_path())])
+                    .unwrap_or_default()
+            };
+            paths.iter().any(|(before, after)| {
+                requested.iter().any(|(other_before, other_after)| {
+                    path_move_paths_overlap(before, after, other_before, other_after)
+                })
+            })
         })
     }
 
@@ -6183,7 +6482,21 @@ impl OttrinApp {
             {
                 token.receipt = OperationUndoReceipt::CopyBatch(progress);
             }
+            let copy_undo = self
+                .operation_history
+                .iter()
+                .find(|record| record.id == result.op_id)
+                .and_then(|record| record.path_move_undo_token.as_ref())
+                .is_some_and(|token| token.kind == PathMoveUndoKind::Copy);
+            let undo_failed = result.result.is_err();
             self.finish_path_move_undo(result.op_id, result.result, result.retryable);
+            if copy_undo
+                && (undo_failed
+                    || self.retained_copy_activity_loader.pending
+                    || self.pending_retained_copy_activity.is_some())
+            {
+                self.refresh_retained_copy_activity();
+            }
             if stopped_copy
                 && let Some(record) = self
                     .operation_history
@@ -6214,6 +6527,9 @@ impl OttrinApp {
                     Ok(()) => {
                         record.path_move_undo = Some(PathMoveUndoState::Undone);
                         record.message = None;
+                        if let Some(owner) = &record.retained_copy && owner.restored {
+                            record.detail = format!("Restored Copy · Undo complete for {} retained item(s) · transaction data preserved", owner.transactions.len());
+                        }
                         let completed = (
                             token.receipt.before_path().to_path_buf(),
                             token.receipt.after_path().to_path_buf(),
@@ -9820,6 +10136,7 @@ impl OttrinApp {
             path_move_paths: None,
             path_move_undo: None,
             path_move_undo_token: None,
+            retained_copy: None,
         });
         while self.operation_history.len() > 100 {
             let Some(index) = self
@@ -13482,6 +13799,15 @@ impl OttrinApp {
         );
         ui.add_space(8.0);
 
+        if self.retained_copy_activity_loader.pending {
+            ui.label(RichText::new("Checking retained Copy history…").color(c.text_muted));
+        }
+        if let Some(error) = &self.retained_copy_activity_error {
+            ui.label(
+                RichText::new(format!("Retained Copy status unavailable: {error}")).color(c.error),
+            );
+        }
+
         if let Some(error) = &self.retained_move_activity_error {
             ui.label(
                 RichText::new(format!("Retained Move status unavailable: {error}"))
@@ -13595,6 +13921,7 @@ impl OttrinApp {
                     OperationStatus::Queued => ("Queued", c.accent_dim, MI_HISTORY),
                     OperationStatus::Completed => ("Done", c.accent, MI_CHECK),
                     OperationStatus::Failed => ("Failed", c.error, MI_CLEAR),
+                    OperationStatus::NeedsReview => ("Needs review", c.error, MI_HISTORY),
                 };
                 Frame::new()
                     .fill(c.panel)
@@ -13636,11 +13963,7 @@ impl OttrinApp {
                             record.status,
                             record.path_move_undo.as_ref(),
                         ) {
-                            let kind = record
-                                .path_move_undo_token
-                                .as_ref()
-                                .map(|token| token.kind)
-                                .unwrap_or(PathMoveUndoKind::Rename);
+                            let kind = record.undo_kind();
                             let (button_label, hover_text) = match kind {
                                 PathMoveUndoKind::CreateFile => (
                                     "Undo create file",
@@ -13684,7 +14007,9 @@ impl OttrinApp {
                                 ),
                             };
                             ui.add_space(4.0);
-                            if ui.add(egui::Button::new(button_label).themed(&c))
+                            let checking = record.retained_copy.as_ref().is_some_and(|owner| owner.restored)
+                                && self.retained_copy_activity_loader.pending;
+                            if ui.add_enabled(!checking, egui::Button::new(button_label).themed(&c))
                                 .on_hover_text(hover_text)
                                 .clicked()
                             {
@@ -13692,11 +14017,7 @@ impl OttrinApp {
                             }
                         } else if let Some(path_move_undo) = &record.path_move_undo {
                             ui.add_space(4.0);
-                            let kind = record
-                                .path_move_undo_token
-                                .as_ref()
-                                .map(|token| token.kind)
-                                .unwrap_or(PathMoveUndoKind::Rename);
+                            let kind = record.undo_kind();
                             let (label, color) = match (path_move_undo, kind) {
                                 (PathMoveUndoState::Available, _) => ("Undo available", c.accent),
                                 (PathMoveUndoState::UndoQueued, PathMoveUndoKind::CreateFile) => {
@@ -13776,7 +14097,11 @@ impl OttrinApp {
                             .unwrap_or_else(Instant::now)
                             .saturating_duration_since(record.queued_at);
                         ui.label(
-                            RichText::new(format!("{} ago", format_duration_short(elapsed)))
+                            RichText::new(if record.retained_copy.as_ref().is_some_and(|owner| owner.restored) {
+                                "Restored history · original time unavailable".to_owned()
+                            } else {
+                                format!("{} ago", format_duration_short(elapsed))
+                            })
                                 .color(c.text_muted)
                                 .size(9.5 * c.font_scale),
                         );
@@ -21793,6 +22118,7 @@ impl eframe::App for OttrinApp {
         self.poll_op_results();
         self.poll_path_move_undo_results();
         self.poll_retained_move_activity();
+        self.poll_retained_copy_activity();
         self.poll_trash_results();
 
         self.poll_hash_results();
@@ -21822,6 +22148,8 @@ impl eframe::App for OttrinApp {
         let transient_status = self.privileged_status.is_some();
         if search_indexing
             || self.retained_move_activity_loader.pending
+            || self.retained_copy_activity_loader.pending
+            || self.pending_retained_copy_activity.is_some()
             || transient_status
             || self.trash_panel.loading
             || self.trash_panel.emptying
@@ -28798,22 +29126,23 @@ mod tests {
         }
         let on_exit = OnExit(exited_tx);
         let mut scans = 0;
-        let mut loader = RetainedMoveActivityLoader::spawn_with(move || {
-            let _keep_until_worker_exits = &on_exit;
-            scans += 1;
-            entered_tx
-                .send((std::thread::current().id(), scans))
-                .unwrap();
-            release_rx.recv_timeout(Duration::from_secs(5)).unwrap();
-            (
-                vec![RetainedMoveActivity {
-                    transaction_id: [scans; 16],
-                    phase: "published",
-                    recovery_available: false,
-                }],
-                None,
-            )
-        });
+        let mut loader: RetainedActivityLoader<RetainedMoveSnapshot> =
+            RetainedActivityLoader::spawn_with(move || {
+                let _keep_until_worker_exits = &on_exit;
+                scans += 1;
+                entered_tx
+                    .send((std::thread::current().id(), scans))
+                    .unwrap();
+                release_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+                (
+                    vec![RetainedMoveActivity {
+                        transaction_id: [scans; 16],
+                        phase: "published",
+                        recovery_available: false,
+                    }],
+                    None,
+                )
+            });
         loader.request().unwrap();
         let (thread, scan) = entered_rx.recv_timeout(Duration::from_secs(5)).unwrap();
         assert_ne!(thread, ui_thread);
@@ -28844,6 +29173,7 @@ mod tests {
             assert!(Instant::now() < deadline);
             std::thread::yield_now();
         };
+        let result = result.unwrap();
         assert_eq!(result.0[0].transaction_id, [2; 16]);
         assert!(result.1.is_none());
         assert!(!loader.pending);
@@ -28856,7 +29186,7 @@ mod tests {
     fn retained_move_loader_reports_worker_disconnect_instead_of_waiting_forever() {
         let (request_tx, request_rx) = mpsc::sync_channel(1);
         let (result_tx, result_rx) = mpsc::sync_channel(1);
-        let mut loader = RetainedMoveActivityLoader {
+        let mut loader: RetainedActivityLoader<RetainedMoveSnapshot> = RetainedActivityLoader {
             request_tx,
             result_rx,
             pending: false,
@@ -28864,20 +29194,251 @@ mod tests {
         };
         loader.request().unwrap();
         drop(result_tx);
-        let (activity, error) = loader.poll().unwrap();
-        assert!(activity.is_empty());
-        assert_eq!(
-            error.as_deref(),
-            Some("Retained Move status worker stopped")
-        );
+        assert_eq!(loader.poll(), Some(Err("Retained Activity worker stopped")));
         assert!(!loader.pending);
         assert!(loader.poll().is_none());
         drop(request_rx);
         assert_eq!(
             loader.request(),
-            Err("Retained Move status worker is unavailable")
+            Err("Retained Activity worker is unavailable")
         );
         assert!(!loader.pending);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn restored_copy_activity_groups_undo_and_retains_completed_and_review_owners() {
+        use ottrin_platform::CopyRecoveryEvidence;
+        let root = tempfile::tempdir().unwrap();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let sources: Vec<_> = ["first", "last"]
+            .into_iter()
+            .map(|name| {
+                let source = root.path().join(name);
+                std::fs::write(&source, name).unwrap();
+                source
+            })
+            .collect();
+        let batch = DefaultPlatform.execute_copy_batch_with_undo_receipts(
+            &sources,
+            &destination,
+            ConflictAction::Skip,
+        );
+        assert!(batch.error.is_none(), "{:?}", batch.error);
+        let ids: Vec<_> = batch
+            .undo_receipts
+            .iter()
+            .map(|receipt| {
+                receipt
+                    .before_path()
+                    .parent()
+                    .unwrap()
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .strip_prefix(".ottrin-txn-")
+                    .unwrap()
+                    .to_owned()
+            })
+            .collect();
+        let discover = || {
+            ottrin_platform::discover_retained_copy_transactions()
+                .unwrap()
+                .into_iter()
+                .filter(|entry| ids.contains(&entry.transaction_id))
+                .collect::<Vec<_>>()
+        };
+        let groups = group_retained_copy_activity(discover());
+        assert_eq!(groups.len(), 1);
+        assert_eq!(groups[0].undo, PathMoveUndoState::Available);
+        assert_eq!(groups[0].receipts.len(), 2);
+        let mut conflict = OttrinApp::default();
+        conflict.queue_operation_record(FileCommand::Rename {
+            source: destination.join("last"),
+            new_name: "other".into(),
+        });
+        let token = restored_copy_token(groups[0].receipts.clone()).unwrap();
+        assert!(conflict.path_move_undo_conflicts(u64::MAX, &token.receipt));
+        let mut duplicate = discover();
+        duplicate[1].operation.as_mut().unwrap().item_index =
+            duplicate[0].operation.as_ref().unwrap().item_index;
+        let rejected = group_retained_copy_activity(duplicate);
+        assert!(matches!(
+            rejected[0].undo,
+            PathMoveUndoState::Unavailable { .. }
+        ));
+        assert!(rejected[0].receipts.is_empty());
+        let mut inconsistent = discover();
+        inconsistent[1].operation.as_mut().unwrap().item_count += 1;
+        assert!(matches!(
+            group_retained_copy_activity(inconsistent)[0].undo,
+            PathMoveUndoState::Unavailable { .. }
+        ));
+        // Simulate an inverse interrupted after the final item completed.
+        DefaultPlatform
+            .undo_copy_with_receipt(batch.undo_receipts.last().unwrap())
+            .unwrap();
+        let groups = group_retained_copy_activity(discover());
+        assert_eq!(groups[0].receipts.len(), 1);
+        assert_eq!(groups[0].undo, PathMoveUndoState::Available);
+        let mut app = OttrinApp::default();
+        let filter_ids = ids.clone();
+        app.retained_copy_activity_loader = RetainedActivityLoader::spawn_with(move || {
+            let (groups, error) = load_retained_copy_activity();
+            (
+                groups
+                    .into_iter()
+                    .filter(|group| {
+                        group
+                            .ownership
+                            .transactions
+                            .iter()
+                            .any(|id| filter_ids.contains(id))
+                    })
+                    .collect(),
+                error,
+            )
+        });
+        app.refresh_retained_copy_activity();
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while app.retained_copy_activity_loader.pending {
+            app.poll_retained_copy_activity();
+            assert!(Instant::now() < deadline);
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert!(app.retained_copy_activity_error.is_none());
+        app.merge_retained_copy_activity(groups);
+        assert_eq!(app.operation_history.len(), 1);
+        let record = &app.operation_history[0];
+        assert!(!record.can_clear_history());
+        let id = record.id;
+        // Exercise the same asynchronous inverse path used by the Activity button.
+        app.run_path_move_undo(id);
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while matches!(
+            app.operation_history[0].path_move_undo,
+            Some(PathMoveUndoState::UndoQueued)
+        ) {
+            app.poll_path_move_undo_results();
+            assert!(Instant::now() < deadline);
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert_eq!(
+            app.operation_history[0].path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        );
+        assert!(
+            !app.retained_copy_activity_loader.pending,
+            "successful Undo must not rescan all retained data"
+        );
+        assert!(app.operation_history[0].detail.contains("Undo complete"));
+        for name in ["first", "last"] {
+            assert!(!destination.join(name).exists());
+            assert_eq!(
+                std::fs::read_to_string(root.path().join(name)).unwrap(),
+                name
+            );
+        }
+        let completed = discover();
+        assert!(
+            completed
+                .iter()
+                .all(|entry| entry.evidence == CopyRecoveryEvidence::UndoneObjectsAndContentsMatch)
+        );
+        let mut fresh = OttrinApp::default();
+        fresh.merge_retained_copy_activity(group_retained_copy_activity(completed));
+        assert_eq!(
+            fresh.operation_history[0].path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        );
+        assert!(fresh.operation_history[0].path_move_undo_token.is_none());
+        assert_eq!(
+            fresh.operation_history[0].undo_kind(),
+            PathMoveUndoKind::Copy
+        );
+        fresh.clear_finished_activity();
+        assert_eq!(fresh.operation_history.len(), 1);
+        let mut incomplete = group_retained_copy_activity(discover());
+        incomplete[0].ownership.transactions.pop();
+        app.operation_history[0].message = Some("old failure".into());
+        app.merge_retained_copy_activity(incomplete);
+        assert!(app.operation_history[0].message.is_none());
+        assert_eq!(
+            app.operation_history[0]
+                .retained_copy
+                .as_ref()
+                .unwrap()
+                .transactions
+                .len(),
+            2
+        );
+        assert_eq!(
+            app.operation_history[0].status,
+            OperationStatus::NeedsReview
+        );
+        // Loss of discovery evidence must disable Undo without losing its owner.
+        app.merge_retained_copy_activity(Vec::new());
+        assert!(matches!(
+            app.operation_history[0].path_move_undo,
+            Some(PathMoveUndoState::Unavailable { .. })
+        ));
+        app.clear_finished_activity();
+        assert_eq!(app.operation_history.len(), 1);
+    }
+
+    #[test]
+    fn copy_activity_merge_preserves_session_state_and_defers_while_work_is_running() {
+        let mut app = OttrinApp::default();
+        let id = app.queue_activity_record_with_recoverability(
+            "Copy",
+            "session",
+            OperationRecoverability::SessionTracked,
+        );
+        let group = RestoredCopyActivity {
+            ownership: RetainedCopyOwnership {
+                key: "operation:test".into(),
+                transactions: vec!["test".into()],
+                restored: true,
+            },
+            detail: "restored".into(),
+            undo: PathMoveUndoState::Undone,
+            receipts: Vec::new(),
+        };
+        app.operation_history[0].retained_copy = Some(RetainedCopyOwnership {
+            restored: false,
+            ..group.ownership.clone()
+        });
+        app.pending_retained_copy_activity = Some(vec![group.clone()]);
+        // Stop the real scan from overwriting this controlled queued result.
+        app.retained_copy_activity_loader.pending = false;
+        app.poll_retained_copy_activity();
+        assert!(app.pending_retained_copy_activity.is_some());
+        assert_eq!(app.operation_history[0].detail, "session");
+        app.finish_operation_record(id, OperationStatus::Completed, None);
+        app.poll_retained_copy_activity();
+        assert!(app.pending_retained_copy_activity.is_none());
+        assert_eq!(app.operation_history.len(), 1);
+        assert_eq!(app.operation_history[0].detail, "session");
+        assert!(app.operation_history[0].path_move_undo.is_none());
+        assert!(!app.operation_history[0].can_clear_history());
+        let mut restored = OttrinApp::default();
+        restored.merge_retained_copy_activity(vec![group]);
+        for _ in 0..120 {
+            let id = restored.queue_activity_record_with_recoverability(
+                "Information",
+                "temporary",
+                OperationRecoverability::Informational,
+            );
+            restored.finish_operation_record(id, OperationStatus::Completed, None);
+        }
+        restored.clear_finished_activity();
+        assert_eq!(restored.operation_history.len(), 1);
+        assert_eq!(
+            restored.operation_history[0].title,
+            "Copy from previous session"
+        );
     }
 
     fn wait_for_retained_move_activity(app: &mut OttrinApp) {

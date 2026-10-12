@@ -666,3 +666,39 @@ to merge these operation groups, validate duplicate/conflicting group metadata a
 own their guarded receipts. Interrupted-publication/pair reconciliation, safe
 reclamation, cross-boot ownership and broader filesystem/platform acceptance
 remain open. No automatic startup inverse or retained-data deletion is enabled.
+
+### Copy startup Activity ownership — source verification
+
+Startup now discovers Copy groups and restores guarded receipts on a background
+worker. Move and Copy scans share one bounded worker implementation: one active
+scan per loader, coalesced refresh requests, stale-result rejection and explicit
+worker failure. Copy groups merge into normal Activity records. Receipt transaction
+IDs and durable ownership prevent duplicate current-session/restored entries; scans
+are deferred while operations or inverses are running. Successful session Copy and
+Undo do not repeatedly hash all retained history. Uncertain outcomes and superseded
+startup snapshots request a fresh scan.
+
+Activity retains completed inverses and review-only groups independently of Undo
+receipt availability, protecting them from history trimming and Clear. Missing
+previously owned items remain owned and become Needs review. Duplicate item
+positions, inconsistent counts, publication-intent records, invalid evidence and
+receipt-admission failures offer no inverse. Missing request slots are described as
+unknown outcomes. Available groups use the existing batch inverse worker in reverse
+original order; already completed inverses are excluded. Conflict checks cover every
+batch receipt, including a running restored inverse.
+
+Controlled integration tests run real discovery/restoration off-thread, merge a
+partial inverse, execute its remaining Undo through Activity, verify unchanged
+sources and completed journals, and preserve ownership after restart, clearing,
+trimming and lost evidence. Tests also cover duplicate/inconsistent metadata,
+current-session state preservation, deferred merge and later-item conflicts.
+All 357 regular platform and 355 regular UI tests pass (one ignored in each),
+with strict Linux/Windows-target UI Clippy and formatting checks. Evidence:
+`.hermes/evidence/copy-startup-activity/`.
+
+This is source-only; stable packages remain unchanged. Exact-package restart UI
+acceptance is required next. Overlapping batch publications need chain validation
+before restart Undo can be admitted; current discovery refuses those mismatching
+individual snapshots. Publication-intent/pair reconciliation, safe reclamation,
+cross-boot ownership and broader filesystem/platform acceptance remain open. No
+automatic startup inverse or retained-data deletion has been enabled.
