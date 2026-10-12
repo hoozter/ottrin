@@ -16,3 +16,5 @@ Portable PDFium placement and exact archive PDF preview are accepted. Native pac
 ## Native libc admission
 
 DEB packaging derives `libc6 (>= VERSION)` from the highest versioned GLIBC import across all five staged executables. Invalid ELF payloads or an unavailable ABI requirement fail before replacing the current artifact. RPM retains its native automatic versioned ELF dependency generation. This prevents package managers admitting a build whose executable loader requires a newer libc than the installed system; it does not broaden supported-distribution acceptance.
+
+Native package installation must also provide administrator authentication: DEB requires `pkexec` and `polkitd`; RPM requires `polkit` and the `/usr/bin/pkexec` provider. The desktop session supplies its authentication agent. Shipping only the helper and action policy is insufficient on a clean system. Authentication prompt/cancel/error behavior remains a separate acceptance gate.

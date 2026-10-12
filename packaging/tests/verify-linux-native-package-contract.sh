@@ -89,6 +89,10 @@ test -n "$expected_libc"
 OTTRIN_BUILD_DIR="$BIN" OTTRIN_SKIP_BUILD=1 OTTRIN_DIST_DIR="$TMP/dist" "$DEB"
 depends="$(dpkg-deb -f "$TMP/dist/ottrin_0.1.0_amd64.deb" Depends)"
 [[ "$depends" == "libc6 (>= $expected_libc),"* ]]
+[[ ", $depends," == *", pkexec,"* ]]
+[[ ", $depends," == *", polkitd,"* ]]
+grep -Fxq 'Requires: polkit' "$RPM"
+grep -Fxq 'Requires: /usr/bin/pkexec' "$RPM"
 # Reject a malformed helper even when the main binary is valid; keep the
 # previously published package intact on packaging failure.
 before="$(sha256sum "$TMP/dist/ottrin_0.1.0_amd64.deb")"

@@ -29,6 +29,8 @@ License: MIT
 URL: https://github.com/hoozter/ottrin
 BuildArch: $RPM_ARCH
 AutoReqProv: yes
+Requires: polkit
+Requires: /usr/bin/pkexec
 Requires: libc.so.6()(64bit)
 Requires: libgcc_s.so.1()(64bit)
 Requires: libgio-2.0.so.0()(64bit)

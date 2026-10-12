@@ -37,7 +37,7 @@ Section: utils
 Priority: optional
 Architecture: $ARCH
 Maintainer: Ottrin <hello@hoozter.com>
-Depends: libc6 (>= $GLIBC_MIN), libgcc-s1, libfontconfig1, libglib2.0-0, libdbus-1-3, libegl1, libgl1, libudev1, libwayland-client0, libx11-6, libxcb1, libxkbcommon0, libgstreamer1.0-0, libgstreamer-plugins-base1.0-0
+Depends: libc6 (>= $GLIBC_MIN), pkexec, polkitd, libgcc-s1, libfontconfig1, libglib2.0-0, libdbus-1-3, libegl1, libgl1, libudev1, libwayland-client0, libx11-6, libxcb1, libxkbcommon0, libgstreamer1.0-0, libgstreamer-plugins-base1.0-0
 Description: Fast, keyboard-friendly file manager
  Ottrin is a keyboard-first desktop file manager with Miller, List, and Grid views.
 EOF
