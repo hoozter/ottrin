@@ -6129,17 +6129,7 @@ impl OttrinApp {
                 match result {
                     Ok(()) => {
                         record.path_move_undo = Some(PathMoveUndoState::Undone);
-                        record.message = Some(match token.kind {
-                            PathMoveUndoKind::CreateFile => "Create file undone".to_string(),
-                            PathMoveUndoKind::CreateFolder => "Create folder undone".to_string(),
-                            PathMoveUndoKind::Symlink => "Symlink undone".to_string(),
-                            PathMoveUndoKind::Chmod => "Permission change undone".to_string(),
-                            PathMoveUndoKind::Trash => "Trash move undone".to_string(),
-                            PathMoveUndoKind::TextEdit => "Text edit undone".to_string(),
-                            PathMoveUndoKind::Rename => "Rename undone".to_string(),
-                            PathMoveUndoKind::Copy => "Copy undone".to_string(),
-                            PathMoveUndoKind::Move => "Move undone".to_string(),
-                        });
+                        record.message = None;
                         let completed = (
                             token.receipt.before_path().to_path_buf(),
                             token.receipt.after_path().to_path_buf(),
@@ -6168,7 +6158,7 @@ impl OttrinApp {
                         record.path_move_undo = Some(PathMoveUndoState::Unavailable {
                             reason: reason.clone(),
                         });
-                        record.message = Some(format!("Undo unavailable: {reason}"));
+                        record.message = None;
                         if kind == PathMoveUndoKind::TextEdit {
                             record.path_move_undo_token = None;
                         }
@@ -13672,6 +13662,11 @@ impl OttrinApp {
                                 (PathMoveUndoState::Unavailable { .. }, _) => {
                                     ("Undo unavailable", c.error)
                                 }
+                            };
+                            let label = if let PathMoveUndoState::Unavailable { reason } = path_move_undo {
+                                format!("Undo unavailable: {reason}")
+                            } else {
+                                label.to_string()
                             };
                             ui.label(RichText::new(label).color(color).size(10.0 * c.font_scale));
                         } else if record.status == OperationStatus::Completed {
@@ -26720,7 +26715,7 @@ mod tests {
         );
         assert_eq!(
             app.operation_history.front().unwrap().message.as_deref(),
-            Some("Move undone")
+            None
         );
         std::fs::remove_dir_all(root).unwrap();
     }
@@ -26773,7 +26768,7 @@ mod tests {
         assert_eq!(std::fs::read_to_string(&source).unwrap(), "original bytes");
         assert_eq!(
             app.operation_history.front().unwrap().message.as_deref(),
-            Some("Copy undone")
+            None
         );
         std::fs::remove_dir_all(root).unwrap();
     }
@@ -27063,7 +27058,7 @@ mod tests {
         assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
         assert_eq!(
             app.operation_history.front().unwrap().message.as_deref(),
-            Some("Copy undone")
+            None
         );
         std::fs::remove_dir_all(root).unwrap();
     }
@@ -27110,10 +27105,11 @@ mod tests {
         app.finish_path_move_undo(result.op_id, result.result, result.retryable);
 
         assert!(!created.exists());
-        assert_eq!(
-            app.operation_history.front().unwrap().message.as_deref(),
-            Some("Create file undone")
-        );
+        assert!(matches!(
+            app.operation_history.front().unwrap().path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        ));
+        assert!(app.operation_history.front().unwrap().message.is_none());
         std::fs::remove_dir_all(root).unwrap();
     }
 
@@ -27159,10 +27155,11 @@ mod tests {
         app.finish_path_move_undo(result.op_id, result.result, result.retryable);
 
         assert!(!created.exists());
-        assert_eq!(
-            app.operation_history.front().unwrap().message.as_deref(),
-            Some("Create folder undone")
-        );
+        assert!(matches!(
+            app.operation_history.front().unwrap().path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        ));
+        assert!(app.operation_history.front().unwrap().message.is_none());
         std::fs::remove_dir_all(root).unwrap();
     }
 
@@ -27209,10 +27206,11 @@ mod tests {
         app.finish_path_move_undo(result.op_id, result.result, result.retryable);
 
         assert!(std::fs::symlink_metadata(&link).is_err());
-        assert_eq!(
-            app.operation_history.front().unwrap().message.as_deref(),
-            Some("Symlink undone")
-        );
+        assert!(matches!(
+            app.operation_history.front().unwrap().path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        ));
+        assert!(app.operation_history.front().unwrap().message.is_none());
         std::fs::remove_dir_all(root).unwrap();
     }
 
@@ -27260,10 +27258,11 @@ mod tests {
             app.finish_path_move_undo(result.op_id, result.result, result.retryable);
 
             assert_eq!(std::fs::read(&target).unwrap(), b"session report");
-            assert_eq!(
-                app.operation_history.front().unwrap().message.as_deref(),
-                Some("Trash move undone")
-            );
+            assert!(matches!(
+                app.operation_history.front().unwrap().path_move_undo,
+                Some(PathMoveUndoState::Undone)
+            ));
+            assert!(app.operation_history.front().unwrap().message.is_none());
             return;
         }
 
@@ -27348,10 +27347,11 @@ mod tests {
                 & 0o7777,
             0o640
         );
-        assert_eq!(
-            app.operation_history.front().unwrap().message.as_deref(),
-            Some("Permission change undone")
-        );
+        assert!(matches!(
+            app.operation_history.front().unwrap().path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        ));
+        assert!(app.operation_history.front().unwrap().message.is_none());
         std::fs::remove_dir_all(root).unwrap();
     }
 
@@ -27603,12 +27603,7 @@ mod tests {
             record.path_move_undo,
             Some(PathMoveUndoState::Unavailable { .. })
         ));
-        assert!(
-            record
-                .message
-                .as_deref()
-                .is_some_and(|message| message.contains("Undo unavailable"))
-        );
+        assert!(record.message.is_none(), "Undo state owns its reason");
         assert_eq!(
             std::fs::read_to_string(&before).unwrap(),
             "replacement bytes"

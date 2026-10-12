@@ -417,9 +417,13 @@ polkit, GLIBC and source-provenance checks pass. Receipt:
 `dist/packages/COPY_CONTENT_ACCEPTANCE.json`. Backup open-writer evidence remains
 the real filesystem platform test scope; GUI overwrite acceptance was not run.
 
-The generic refusal wording currently says the entry is missing or changed,
-without distinguishing content edits from identity changes; refine that message
-and remove duplicated Undo status text. Windows packages remain the separate
+Undo now distinguishes changed contents from missing/replaced entries. Copy
+content checks follow the corresponding entry identity checks, and Activity
+renders its Undo state/reason once rather than duplicating it in the operation
+message. All 337 regular platform and 351 regular UI tests pass (one ignored in
+each suite), with strict Linux/Windows-target UI Clippy and formatting checks.
+This correction is source-verified; package refresh and rendered acceptance
+are pending. Evidence: `.hermes/evidence/undo-reason/`. Windows packages remain the separate
 accepted `083fb3f` artifacts. Durable Copy journal ownership/discovery across
 restart, interrupted inverse replay and safe reclamation remain unfinished.
 No automatic retained-data deletion has been enabled, and these focused checks

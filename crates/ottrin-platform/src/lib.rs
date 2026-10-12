@@ -127,6 +127,8 @@ pub enum PlatformError {
     InvalidPathMoveUndoReceipt(String),
     #[error("undo target is missing or no longer the same entry: {0}")]
     StalePathMoveUndo(String),
+    #[error("contents changed since this operation: {0}")]
+    UndoContentChanged(String),
     #[error("undo completed but recovery cleanup is pending at {transaction}: {message}")]
     CommittedUndoCleanupPending {
         transaction: String,
@@ -2469,7 +2471,9 @@ fn validate_receipt_content(
     let observed = move_transaction::source_tree_snapshot_for_path(path)
         .map_err(|_| PlatformError::StalePathMoveUndo(path.display().to_string()))?;
     if !expected.has_same_paths_and_content(&observed) {
-        return Err(PlatformError::StalePathMoveUndo(path.display().to_string()));
+        return Err(PlatformError::UndoContentChanged(
+            path.display().to_string(),
+        ));
     }
     Ok(())
 }
@@ -2483,11 +2487,6 @@ fn undo_path_move_linux(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformErr
             )
         })?)?;
         directory.validate_publication_parent(&receipt.after_path)?;
-        // Validate namespace ownership before reading either content snapshot.
-        validate_receipt_published_content(receipt)?;
-        if let Some(expected) = receipt.retained_displaced_content.as_ref() {
-            validate_receipt_content(&receipt.before_path, expected)?;
-        }
     }
 
     if receipt.before_path == receipt.after_path
@@ -2531,6 +2530,10 @@ fn undo_path_move_linux(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformErr
             receipt.after_path.display().to_string(),
         ));
     }
+    // Read content only after confirming ownership of the publication entry.
+    if receipt.retained_copy_directory.is_some() {
+        validate_receipt_published_content(receipt)?;
+    }
     match receipt.requirement {
         PathMoveUndoRequirement::None => {}
         PathMoveUndoRequirement::EmptyFile => {
@@ -2566,6 +2569,9 @@ fn undo_path_move_linux(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformErr
             return Err(PlatformError::StalePathMoveUndo(
                 displaced_path.display().to_string(),
             ));
+        }
+        if let Some(expected) = receipt.retained_displaced_content.as_ref() {
+            validate_receipt_content(displaced_path, expected)?;
         }
         if receipt.retained_displaced_path.is_some() {
             match std::fs::symlink_metadata(&receipt.before_path) {
@@ -4910,7 +4916,7 @@ mod tests {
                 assert_eq!(rename_identity(&destination).unwrap(), published_identity);
                 assert!(matches!(
                     DefaultPlatform.undo_copy_with_receipt(&receipt),
-                    Err(PlatformError::StalePathMoveUndo(_))
+                    Err(PlatformError::UndoContentChanged(_))
                 ));
                 assert_eq!(
                     std::fs::read_to_string(data_path(&destination)).unwrap(),
@@ -4983,7 +4989,7 @@ mod tests {
             );
             assert!(matches!(
                 DefaultPlatform.undo_copy_with_receipt(&receipt),
-                Err(PlatformError::StalePathMoveUndo(_))
+                Err(PlatformError::UndoContentChanged(_))
             ));
             assert_eq!(
                 std::fs::read_to_string(data_path(&source)).unwrap(),
@@ -5894,7 +5900,7 @@ mod tests {
             .undo_move_with_receipt(&receipt)
             .expect_err("edited published content must refuse Undo");
 
-        assert!(matches!(error, PlatformError::StalePathMoveUndo(_)));
+        assert!(matches!(error, PlatformError::UndoContentChanged(_)));
         assert!(
             !source.exists(),
             "refused Undo must not recreate the source"
