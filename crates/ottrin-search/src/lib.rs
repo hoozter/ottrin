@@ -1532,7 +1532,16 @@ fn parse_sqlite_windows_task_xml(output: &[u8]) -> Result<SqliteWindowsTaskRegis
     if !xml.contains("<Task") {
         return Err("Task Scheduler returned malformed task XML".to_string());
     }
-    let enabled = match xml.split_once("<Enabled>") {
+    // Trigger enablement and task enablement are independent. Task Scheduler
+    // emits trigger flags before Settings, so never read the first global flag.
+    let settings = match xml.split_once("<Settings>") {
+        Some((_, rest)) => rest
+            .split_once("</Settings>")
+            .map(|(settings, _)| settings)
+            .ok_or_else(|| "Task Scheduler XML has unterminated Settings".to_string())?,
+        None => "", // The schema defaults task enablement to true.
+    };
+    let enabled = match settings.split_once("<Enabled>") {
         None => true,
         Some((_, rest)) => {
             let (value, _) = rest.split_once("</Enabled>").ok_or_else(|| {
@@ -4488,6 +4497,35 @@ mod tests {
         let registration = parse_sqlite_windows_task_xml(&output).expect("parse task XML");
 
         assert!(!registration.enabled);
+    }
+
+    #[test]
+    fn windows_task_status_uses_task_settings_instead_of_trigger_enablement() {
+        for (trigger, task, expected) in [("true", "false", false), ("false", "true", true)] {
+            let xml = format!(
+                "<Task><Triggers><CalendarTrigger><Enabled>{trigger}</Enabled></CalendarTrigger></Triggers><Settings><Enabled>{task}</Enabled></Settings></Task>"
+            );
+            let registration =
+                parse_sqlite_windows_task_xml(xml.as_bytes()).expect("valid task XML");
+            let status = sqlite_windows_task_status_with(|| Ok(Some(registration)));
+            assert_eq!(status.enabled, expected);
+            assert_eq!(
+                status.detail,
+                if expected {
+                    "Ready for scheduled refresh"
+                } else {
+                    "Installed but disabled"
+                }
+            );
+        }
+    }
+
+    #[test]
+    fn windows_task_xml_rejects_unterminated_settings() {
+        assert!(
+            parse_sqlite_windows_task_xml(b"<Task><Settings><Enabled>true</Enabled></Task>")
+                .is_err()
+        );
     }
 
     #[test]
