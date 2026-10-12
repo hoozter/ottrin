@@ -7855,8 +7855,17 @@ impl OttrinApp {
             let tab_id = self.state.active_tab().id;
             let ctrl = input.modifiers.ctrl || input.modifiers.command;
             let extend_selection = input.modifiers.shift;
+            // A complete chord can be pressed and released between frames.
+            // Use the modifiers attached to the key event, not the final state.
+            let command_pressed = |key| {
+                input.events.iter().any(|event| {
+                    matches!(event, egui::Event::Key {
+                        key: event_key, pressed: true, modifiers, ..
+                    } if *event_key == key && (modifiers.ctrl || modifiers.command))
+                })
+            };
 
-            if ctrl && input.key_pressed(Key::F) {
+            if command_pressed(Key::F) {
                 self.sidebar = SidebarSection::Search;
                 self.search_ui.request_focus = true;
                 self.command_frame.visible = false;
@@ -7864,7 +7873,7 @@ impl OttrinApp {
                 self.command_frame.message = None;
                 self.search_ui.scroll_to_selected = true;
             }
-            if ctrl && input.key_pressed(Key::Z) && !self.command_frame.visible {
+            if command_pressed(Key::Z) && !self.command_frame.visible {
                 self.sidebar = SidebarSection::Activity;
                 self.set_status_message("Activity history opened", true, 3);
             }
@@ -8034,18 +8043,18 @@ impl OttrinApp {
             }
 
             // ── Tabs ─────────────────────────────────────────────────────────
-            if ctrl && input.key_pressed(Key::T) {
+            if command_pressed(Key::T) {
                 let home = default_home_dir();
                 let idx = self.state.new_tab(home.clone());
                 let tab_id = self.state.tabs[idx].id;
                 self.focus_tab_idx(idx);
                 self.refresh_tab(tab_id, home);
             }
-            if ctrl && input.key_pressed(Key::W) {
+            if command_pressed(Key::W) {
                 let idx = self.state.active_tab_idx;
                 self.close_tab(idx);
             }
-            if ctrl && input.key_pressed(Key::Tab) {
+            if command_pressed(Key::Tab) {
                 let n = self.state.tabs.len();
                 let next = (self.state.active_tab_idx + 1) % n;
                 self.focus_tab_idx(next);
@@ -8053,11 +8062,7 @@ impl OttrinApp {
             }
 
             // ── Address bar ───────────────────────────────────────────────────
-            if input.events.iter().any(|event| {
-                matches!(event, egui::Event::Key {
-                    key: Key::L, pressed: true, modifiers, ..
-                } if modifiers.ctrl || modifiers.command)
-            }) {
+            if command_pressed(Key::L) {
                 let path = self.displayed_path().display().to_string();
                 let bar = self.address_bar_state_mut(tab_id);
                 bar.text = path;
@@ -8095,7 +8100,7 @@ impl OttrinApp {
 
             // ── File operations ───────────────────────────────────────────────
             if file_shortcuts_allowed {
-                if ctrl && input.key_pressed(Key::A) {
+                if command_pressed(Key::A) {
                     self.select_all();
                 }
                 if input.key_pressed(Key::F2) {
@@ -8111,7 +8116,7 @@ impl OttrinApp {
             }
 
             // ── Refresh ───────────────────────────────────────────────────────
-            if input.key_pressed(Key::F5) || (ctrl && input.key_pressed(Key::R)) {
+            if input.key_pressed(Key::F5) || command_pressed(Key::R) {
                 self.refresh_active_tab();
             }
 
@@ -24578,6 +24583,49 @@ mod tests {
             );
             assert!(!app.command_frame.visible);
             assert!(ctx.wants_keyboard_input());
+        }
+    }
+
+    #[test]
+    fn command_shortcuts_use_press_modifiers_after_the_chord_is_released() {
+        for key in [Key::A, Key::F, Key::Z, Key::T] {
+            let (_root, mut app, source) = clipboard_keyboard_fixture();
+            let ctx = Context::default();
+            let tabs = app.state.tabs.len();
+            let _ = ctx.run(
+                egui::RawInput {
+                    modifiers: egui::Modifiers::NONE,
+                    events: vec![
+                        egui::Event::Key {
+                            key,
+                            physical_key: None,
+                            pressed: true,
+                            repeat: false,
+                            modifiers: egui::Modifiers::CTRL,
+                        },
+                        egui::Event::Key {
+                            key,
+                            physical_key: None,
+                            pressed: false,
+                            repeat: false,
+                            modifiers: egui::Modifiers::NONE,
+                        },
+                    ],
+                    ..Default::default()
+                },
+                |ctx| app.handle_keyboard(ctx),
+            );
+            match key {
+                Key::A => assert!(
+                    app.tab_ui[&app.state.active_tab().id]
+                        .selected_paths
+                        .contains(&source)
+                ),
+                Key::F => assert_eq!(app.sidebar, SidebarSection::Search),
+                Key::Z => assert_eq!(app.sidebar, SidebarSection::Activity),
+                Key::T => assert_eq!(app.state.tabs.len(), tabs + 1),
+                _ => unreachable!(),
+            }
         }
     }
 
