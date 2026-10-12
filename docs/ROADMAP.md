@@ -368,3 +368,24 @@ and compiler runtimes are removed. The owned Windows guest was restored to its
 initial shutoff state; the existing installation checksum is unchanged. Copy
 Undo ownership across restart and safe retained-transaction reclamation remain
 open, as do the other platform and release gates listed above.
+
+### Copy retained-data ownership — publication evidence prerequisite
+
+Linux Copy now captures a content/tree/symlink snapshot of its private staged
+candidate before publication and carries that evidence into its Undo receipt.
+Copy Undo validates the current publication against that snapshot, preserving
+in-place edits rather than withdrawing the edited file or tree. The same
+content validator serves cross-filesystem Move Undo. A regression covers files
+and directories, plain and overwrite Copy: source, edited publication and any
+retained original overwrite backup are unchanged when Undo refuses the edit.
+
+All 336 regular platform tests pass (one existing ignored test), alongside
+strict Linux and Windows-target platform Clippy. Source receipt:
+`.hermes/evidence/copy-content-evidence/SOURCE_ACCEPTANCE.json`. This step is
+source-only; current deliverables remain the accepted `083fb3f` packages.
+Durable ownership/journal creation before publication, recovery discovery and
+UI ownership after restart, retained-backup evidence, interrupted Undo replay
+and safe reclamation are still unfinished. Windows Copy Undo remains
+unsupported in the platform implementation; Windows compilation alone does
+not close that separate capability gap. No automatic retained-data deletion
+has been enabled.

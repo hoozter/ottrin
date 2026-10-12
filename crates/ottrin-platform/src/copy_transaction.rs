@@ -180,6 +180,8 @@ pub(super) enum CopyPublication {
         retained_directory: RetainedCopyTransaction,
         published_path: PathBuf,
         published_identity: PathMoveIdentity,
+        #[cfg(target_os = "linux")]
+        published_content: Option<super::move_recovery::SourceTreeSnapshot>,
         displaced_identity: Option<PathMoveIdentity>,
     },
     Skipped {
@@ -621,6 +623,7 @@ mod linux {
             retained_directory,
             published_path: target,
             published_identity,
+            published_content: None,
             displaced_identity: None,
         })
     }
@@ -688,11 +691,18 @@ mod linux {
             // Persist the staging entry before publication.
             rustix::fs::fsync(&transaction.parent)
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
-            hook(TestPoint::AfterStaged).map_err(|message| PlatformError::Io(message.into()))
+            // Capture the bytes we staged before publication, including tree paths
+            // and symlink targets. An inode alone cannot identify later edits.
+            let content = super::super::move_transaction::source_tree_snapshot_for_path(
+                &transaction.candidate_path(),
+            )?;
+            hook(TestPoint::AfterStaged).map_err(|message| PlatformError::Io(message.into()))?;
+            Ok(content)
         })();
-        if let Err(error) = stage_result {
-            return Err(transaction.abandon(error));
-        }
+        let published_content = match stage_result {
+            Ok(content) => content,
+            Err(error) => return Err(transaction.abandon(error)),
+        };
 
         let published_identity = match rename_identity(&transaction.candidate_path()) {
             Ok(identity) => identity,
@@ -827,6 +837,7 @@ mod linux {
             retained_directory,
             published_path,
             published_identity,
+            published_content: Some(published_content),
             displaced_identity: retained_displaced_identity,
         })
     }

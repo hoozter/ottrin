@@ -1519,6 +1519,7 @@ impl PlatformOps for DefaultPlatform {
                 retained_transaction,
                 after_path,
                 published_identity,
+                published_content,
                 displaced_identity,
                 retained_directory,
             ) = match publication {
@@ -1527,11 +1528,13 @@ impl PlatformOps for DefaultPlatform {
                     retained_directory,
                     published_path,
                     published_identity,
+                    published_content,
                     displaced_identity,
                 } => (
                     retained_transaction,
                     published_path,
                     published_identity,
+                    published_content,
                     displaced_identity,
                     retained_directory,
                 ),
@@ -1556,7 +1559,10 @@ impl PlatformOps for DefaultPlatform {
                 "copy",
                 Some(retained_directory),
             )
-            .map(Some)
+            .map(|mut receipt| {
+                receipt.published_content = published_content;
+                Some(receipt)
+            })
         }
         #[cfg(not(target_os = "linux"))]
         {
@@ -1599,6 +1605,12 @@ impl PlatformOps for DefaultPlatform {
                     "Copy receipt has no retained directory ownership".into(),
                 ));
             }
+            if receipt.published_content.is_none() {
+                return Err(PlatformError::InvalidPathMoveUndoReceipt(
+                    "Copy receipt has no published content evidence".into(),
+                ));
+            }
+            validate_receipt_published_content(receipt)?;
             undo_path_move_linux(receipt)
         }
         #[cfg(not(target_os = "linux"))]
@@ -2428,6 +2440,22 @@ fn undo_receipt_for_published_identity(
 }
 
 #[cfg(target_os = "linux")]
+fn validate_receipt_published_content(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
+    if let Some(expected_content) = receipt.published_content.as_ref() {
+        let observed_content = move_transaction::source_tree_snapshot_for_path(&receipt.after_path)
+            .map_err(|_| {
+                PlatformError::StalePathMoveUndo(receipt.after_path.display().to_string())
+            })?;
+        if !expected_content.has_same_paths_and_content(&observed_content) {
+            return Err(PlatformError::StalePathMoveUndo(
+                receipt.after_path.display().to_string(),
+            ));
+        }
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
 fn undo_path_move_linux(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
     if let Some(directory) = receipt.retained_copy_directory.as_ref() {
         directory.validate_path(receipt.before_path.parent().ok_or_else(|| {
@@ -2581,17 +2609,7 @@ fn undo_cross_filesystem_path_move_linux_with_hook(
             receipt.after_path.display().to_string(),
         ));
     }
-    if let Some(expected_content) = receipt.published_content.as_ref() {
-        let observed_content = move_transaction::source_tree_snapshot_for_path(&receipt.after_path)
-            .map_err(|_| {
-                PlatformError::StalePathMoveUndo(receipt.after_path.display().to_string())
-            })?;
-        if !expected_content.has_same_paths_and_content(&observed_content) {
-            return Err(PlatformError::StalePathMoveUndo(
-                receipt.after_path.display().to_string(),
-            ));
-        }
-    }
+    validate_receipt_published_content(receipt)?;
     match std::fs::symlink_metadata(&receipt.before_path) {
         Ok(_) => {
             return Err(PlatformError::DestinationExists(
@@ -4820,6 +4838,74 @@ mod tests {
 
         assert!(!destination.exists());
         assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn copy_undo_preserves_in_place_edits_and_original_overwrite_backups() {
+        for directory in [false, true] {
+            for overwrite in [false, true] {
+                let root = TestDir::new("copy-content-edited");
+                let source_dir = root.path().join("source");
+                let destination_dir = root.path().join("destination");
+                std::fs::create_dir(&source_dir).unwrap();
+                std::fs::create_dir(&destination_dir).unwrap();
+                let source = source_dir.join("item");
+                let destination = destination_dir.join("item");
+                let data_path = |entry: &Path| {
+                    if directory {
+                        entry.join("child.txt")
+                    } else {
+                        entry.to_path_buf()
+                    }
+                };
+                if directory {
+                    std::fs::create_dir(&source).unwrap();
+                }
+                std::fs::write(data_path(&source), "copied original").unwrap();
+                if overwrite {
+                    if directory {
+                        std::fs::create_dir(&destination).unwrap();
+                    }
+                    std::fs::write(data_path(&destination), "displaced original").unwrap();
+                }
+                let receipt = DefaultPlatform
+                    .execute_copy_with_undo_receipt(
+                        &source,
+                        &destination_dir,
+                        if overwrite {
+                            ConflictAction::Overwrite
+                        } else {
+                            ConflictAction::Skip
+                        },
+                    )
+                    .unwrap()
+                    .unwrap();
+                let published_identity = rename_identity(&destination).unwrap();
+                std::fs::write(data_path(&destination), "later user edit").unwrap();
+                assert_eq!(rename_identity(&destination).unwrap(), published_identity);
+                assert!(matches!(
+                    DefaultPlatform.undo_copy_with_receipt(&receipt),
+                    Err(PlatformError::StalePathMoveUndo(_))
+                ));
+                assert_eq!(
+                    std::fs::read_to_string(data_path(&destination)).unwrap(),
+                    "later user edit"
+                );
+                assert_eq!(
+                    std::fs::read_to_string(data_path(&source)).unwrap(),
+                    "copied original"
+                );
+                if overwrite {
+                    assert_eq!(
+                        std::fs::read_to_string(data_path(&receipt.before_path)).unwrap(),
+                        "displaced original"
+                    );
+                } else {
+                    assert!(!receipt.before_path.exists());
+                }
+            }
+        }
     }
 
     #[cfg(target_os = "linux")]
