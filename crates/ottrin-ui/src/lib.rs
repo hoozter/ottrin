@@ -1576,55 +1576,64 @@ fn render_visual_sizing_controls(
     } else {
         "Fit page"
     };
-    if ui
-        .add(egui::Button::new("Fit page").small().themed(&c))
-        .on_hover_text("Show the complete page or image in the viewport.")
-        .clicked()
-    {
-        *visual_fit = true;
-        *visual_fit_width = false;
-    }
-    if ui
-        .add(egui::Button::new("Fit width").small().themed(&c))
-        .on_hover_text("Match the preview width and scroll vertically.")
-        .clicked()
-    {
-        *visual_fit = true;
-        *visual_fit_width = true;
-    }
-    if ui
-        .add(egui::Button::new("100%").small().themed(&c))
-        .on_hover_text("Show the page or image at its natural size and scroll.")
-        .clicked()
-    {
-        *visual_fit = false;
-        *visual_zoom = 1.0;
-    }
-    if ui
-        .add(egui::Button::new("−").small().themed(&c))
-        .on_hover_text("Zoom out")
-        .clicked()
-    {
-        *visual_fit = false;
-        *visual_zoom = (*visual_zoom / 1.2).clamp(0.1, 8.0);
-    }
-    ui.label(
-        RichText::new(if *visual_fit {
-            format!("{fit_label} · {}%", (*visual_zoom * 100.0).round() as u32)
-        } else {
-            format!("{}%", (*visual_zoom * 100.0).round() as u32)
-        })
-        .color(c.text_dim)
-        .size(10.5 * c.font_scale),
-    );
-    if ui
-        .add(egui::Button::new("+").small().themed(&c))
-        .on_hover_text("Zoom in")
-        .clicked()
-    {
-        *visual_fit = false;
-        *visual_zoom = (*visual_zoom * 1.2).clamp(0.1, 8.0);
-    }
+    ui.vertical(|ui| {
+        ui.horizontal_wrapped(|ui| {
+            if ui
+                .add(egui::Button::new("Fit page").small().themed(&c))
+                .on_hover_text("Show the complete page or image in the viewport.")
+                .clicked()
+            {
+                *visual_fit = true;
+                *visual_fit_width = false;
+            }
+            if ui
+                .add(egui::Button::new("Fit width").small().themed(&c))
+                .on_hover_text("Match the preview width and scroll vertically.")
+                .clicked()
+            {
+                *visual_fit = true;
+                *visual_fit_width = true;
+            }
+            if ui
+                .add(egui::Button::new("100%").small().themed(&c))
+                .on_hover_text("Show the page or image at its natural size and scroll.")
+                .clicked()
+            {
+                *visual_fit = false;
+                *visual_zoom = 1.0;
+            }
+        });
+        ui.horizontal_wrapped(|ui| {
+            if ui
+                .add(egui::Button::new("−").small().themed(&c))
+                .on_hover_text("Zoom out")
+                .clicked()
+            {
+                *visual_fit = false;
+                *visual_zoom = (*visual_zoom / 1.2).clamp(0.1, 8.0);
+            }
+            ui.add(
+                egui::Label::new(
+                    RichText::new(if *visual_fit {
+                        format!("{fit_label} · {}%", (*visual_zoom * 100.0).round() as u32)
+                    } else {
+                        format!("{}%", (*visual_zoom * 100.0).round() as u32)
+                    })
+                    .color(c.text_dim)
+                    .size(10.5 * c.font_scale),
+                )
+                .wrap_mode(egui::TextWrapMode::Extend),
+            );
+            if ui
+                .add(egui::Button::new("+").small().themed(&c))
+                .on_hover_text("Zoom in")
+                .clicked()
+            {
+                *visual_fit = false;
+                *visual_zoom = (*visual_zoom * 1.2).clamp(0.1, 8.0);
+            }
+        });
+    });
 }
 
 fn submit_sized_preview(

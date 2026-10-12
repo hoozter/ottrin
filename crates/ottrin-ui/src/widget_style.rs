@@ -307,6 +307,12 @@ mod tests {
                     for shape in &output.shapes {
                         if let Shape::Text(text) = &shape.shape {
                             let rect = Rect::from_min_size(text.pos, text.galley.size());
+                            assert_eq!(
+                                text.galley.rows.len(),
+                                1,
+                                "toolbar label split across rows: {}",
+                                text.galley.job.text
+                            );
                             assert!(
                                 bounds.expand(0.5).contains_rect(rect),
                                 "{} at {rect:?} outside {bounds:?}, scale {scale}",
