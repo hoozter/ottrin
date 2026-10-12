@@ -52,11 +52,13 @@ fn apply_button_style(ui: &mut Ui, colors: Colors) {
 
 impl Widget for ThemeButton<'_> {
     fn ui(self, ui: &mut Ui) -> Response {
-        ui.scope(|ui| {
-            apply_button_style(ui, self.colors);
-            self.button.ui(ui)
-        })
-        .inner
+        // Keep allocation in the caller's layout. A nested scope paints into
+        // the remainder of a wrapping row before the parent can move it.
+        let previous_style = ui.style().clone();
+        apply_button_style(ui, self.colors);
+        let response = self.button.ui(ui);
+        ui.set_style(previous_style);
+        response
     }
 }
 
@@ -252,6 +254,74 @@ mod tests {
     use super::*;
     use crate::{OttrinApp, ThemePreset};
     use egui::{Color32, Context, Rect, Vec2, epaint::Shape};
+
+    #[test]
+    fn preview_toolbar_controls_wrap_inside_narrow_panes() {
+        for dark in [true, false] {
+            for scale in [1.0, 1.35] {
+                for width in [180.0, 238.0, 320.0] {
+                    let ctx = Context::default();
+                    let mut app = OttrinApp::default();
+                    app.colors = Colors::preset(ThemePreset::Ottrin, dark);
+                    app.colors.font_scale = scale;
+                    app.apply_theme_to_ctx(&ctx);
+                    let mut bounds = Rect::NOTHING;
+                    let output = ctx.run(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                egui::Pos2::ZERO,
+                                Vec2::new(600.0, 400.0),
+                            )),
+                            ..Default::default()
+                        },
+                        |ctx| {
+                            egui::CentralPanel::default().show(ctx, |ui| {
+                                ui.scope_builder(
+                                    egui::UiBuilder::new().max_rect(Rect::from_min_size(
+                                        ui.cursor().min,
+                                        Vec2::new(width, 350.0),
+                                    )),
+                                    |ui| {
+                                        bounds = ui.max_rect();
+                                        ui.horizontal_wrapped(|ui| {
+                                            crate::render_visual_sizing_controls(
+                                                ui,
+                                                crate::PreviewKind::Pdf,
+                                                &mut true,
+                                                &mut false,
+                                                &mut 1.0,
+                                                app.colors,
+                                            );
+                                            ui.add(
+                                                Button::new("Expand preview")
+                                                    .small()
+                                                    .themed(&app.colors),
+                                            );
+                                        });
+                                    },
+                                );
+                            });
+                        },
+                    );
+                    let mut labels = Vec::new();
+                    for shape in &output.shapes {
+                        if let Shape::Text(text) = &shape.shape {
+                            let rect = Rect::from_min_size(text.pos, text.galley.size());
+                            assert!(
+                                bounds.expand(0.5).contains_rect(rect),
+                                "{} at {rect:?} outside {bounds:?}, scale {scale}",
+                                text.galley.job.text
+                            );
+                            labels.push(text.galley.job.text.as_str());
+                        }
+                    }
+                    for label in ["Fit page", "Fit width", "100%", "−", "+", "Expand preview"] {
+                        assert!(labels.contains(&label), "missing {label}");
+                    }
+                }
+            }
+        }
+    }
 
     #[test]
     fn narrow_destination_row_keeps_trailing_actions_inside_the_row() {
