@@ -42,20 +42,20 @@ ottrin_publish_artifact() {
 # Inspect the complete native Linux executable payload, including helpers.
 # No ABI fallback: invalid or unversioned payloads cannot be published.
 ottrin_native_glibc_requirement() {
-  local stage="$1"
-local minimum="$(
-  objdump -T \
-    "$stage/usr/bin/ottrin" \
-    "$stage/usr/bin/ottrin-indexd" \
-    "$stage/usr/bin/ottrin-legacy-doc-render" \
-    "$stage/usr/bin/ottrin-media-playback" \
-    "$stage/usr/libexec/ottrin/ottrin-priv-helper" \
-    | sed -nE '/\*UND\*/s/.*\(GLIBC_([0-9]+(\.[0-9]+)+)\).*/\1/p' \
-    | sort -Vu | tail -n 1
-)"
-test -n "$minimum" || {
-  printf 'Could not determine the native payload libc requirement.\n' >&2
-  exit 1
-}
+  local stage="$1" minimum
+  minimum="$(
+    objdump -T \
+      "$stage/usr/bin/ottrin" \
+      "$stage/usr/bin/ottrin-indexd" \
+      "$stage/usr/bin/ottrin-legacy-doc-render" \
+      "$stage/usr/bin/ottrin-media-playback" \
+      "$stage/usr/libexec/ottrin/ottrin-priv-helper" \
+      | sed -nE '/\*UND\*/s/.*\(GLIBC_([0-9]+(\.[0-9]+)+)\).*/\1/p' \
+      | sort -Vu | tail -n 1
+  )" || return 1
+  test -n "$minimum" || {
+    printf 'Could not determine the native payload libc requirement.\n' >&2
+    return 1
+  }
   printf '%s\n' "$minimum"
 }
