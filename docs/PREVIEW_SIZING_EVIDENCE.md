@@ -46,3 +46,9 @@ The implementation handoff records native select → Space Inspector captures fo
 - Main preview has egui clip/control/resize evidence, not exhaustive packaged main-pane acceptance for every document type. Standalone `preview PATH` and Windows native acceptance are not established by the Inspector captures.
 
 These boundaries remain in final QA; they do not require reopening unrelated implementation during this bounded source landing.
+
+## Miller resize correction — 2026-10-12
+
+Native Windows QA of the clean `cf40e58` portable package exposed an adjacent preview disappearing when a running window shrank from 1100 to 800 pixels; launching at the saved 800-pixel width worked. The production renderer now reveals the actual selected-column/preview bounds when shrinking a viewport whose preview was visible. Deliberate horizontal scrolling remains authoritative. Preview width uses the real viewport edge rather than the painter clip, which includes shadow bleed.
+
+The rendered regression covers startup, shrinking, complete preview visibility, vertical keyboard navigation without horizontal movement, actual horizontal wheel input and a later resize preserving that manual position. Linux UI checks pass: 344 tests, one ignored, strict all-target Clippy, formatting and diff validation. This is source verification; rebuilt package and native resize acceptance are pending. The earlier package screenshots and clean native Windows exit are retained in `.hermes/evidence/windows-refresh-20261012/`.

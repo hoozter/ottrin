@@ -1070,6 +1070,10 @@ struct TabUiState {
     miller_total_w_max: f32,
     // Saved horizontal scroll offset — used to freeze scroll on Up/Down.
     miller_h_offset: f32,
+    // Last rendered viewport geometry: resizing preserves a visible preview,
+    // while deliberate horizontal scrolling may leave it hidden.
+    miller_viewport_width: f32,
+    miller_preview_visible: bool,
     // Column scroll ids (must be stable)
     scroll_epoch: u64, // bump to reset scroll on navigation
 }
@@ -15983,6 +15987,15 @@ impl OttrinApp {
 
         // Read saved horizontal offset BEFORE the ScrollArea renders.
         let saved_h_offset = self.tab_ui.entry(tab_id).or_default().miller_h_offset;
+        let resized_visible_preview = {
+            let previous = self.tab_ui.entry(tab_id).or_default();
+            previous.miller_preview_visible && full.width() < previous.miller_viewport_width
+        };
+        let focus_has_file_preview = focus_selected
+            .as_ref()
+            .is_some_and(|entry| matches!(entry.kind, EntryKind::File));
+        let mut preview_bounds = None;
+        let mut focus_column_rect = None;
         let show_horizontal_scrollbar =
             ui.rect_contains_pointer(full) || scroll_left_nav || scroll_right_nav;
 
@@ -16223,6 +16236,9 @@ impl OttrinApp {
                         },
                     );
                     let rect = inner.response.rect;
+                    if col_idx == focus_col {
+                        focus_column_rect = Some(rect);
+                    }
 
                     if col_idx == focus_col || reveal_col == Some(col_idx) {
                         let clip = ui.clip_rect();
@@ -16237,13 +16253,15 @@ impl OttrinApp {
                         // Right/Enter: ALWAYS ensure focus + 1 column is
                         // visible.  The user must never be in the rightmost
                         // visible column.
-                        if Self::miller_should_reveal_focus_column(
-                            col_idx == focus_col && scroll_right_nav,
-                            reveal_col == Some(col_idx),
-                        ) {
+                        if !(col_idx == focus_col && focus_has_file_preview)
+                            && Self::miller_should_reveal_focus_column(
+                                col_idx == focus_col && scroll_right_nav,
+                                reveal_col == Some(col_idx),
+                            )
+                        {
                             let col_w =
                                 (MILLER_FIXED_WIDTH * scale.clamp(0.92, 1.22)).clamp(96.0, 620.0);
-                            let needed_right = rect.max.x + col_w;
+                            let needed_right = rect.max.x + MILLER_COLUMN_DIVIDER_WIDTH + col_w;
                             if needed_right > clip.right() {
                                 let padded = Rect::from_min_max(
                                     rect.min,
@@ -16302,10 +16320,30 @@ impl OttrinApp {
                     // File preview: fill from cursor to visible right edge,
                     // at least one standard column wide, capped at viewport
                     // width to prevent infinite scroll feedback loops.
-                    let visible_right = ui.clip_rect().max.x;
+                    // The painter clip includes shadow bleed beyond the real
+                    // viewport; it must not contribute to column width.
+                    let visible_right = full.right();
                     let preview_right = visible_right.max(cursor_x + col_w);
                     let fill_w = (preview_right - cursor_x).max(col_w).min(viewport_w);
-                    self.render_miller_file_preview(ui, entry, fill_w, h);
+                    let rect = self.render_miller_file_preview(ui, entry, fill_w, h);
+                    preview_bounds = Some(rect);
+                    if Self::miller_should_reveal_focus_column(
+                        scroll_right_nav || resized_visible_preview,
+                        reveal_col == Some(focus_col),
+                    ) && rect.right() > ui.clip_rect().right()
+                    {
+                        // Use the real pane bounds, including divider/layout
+                        // spacing, rather than estimating its right edge.
+                        let needed = focus_column_rect.map_or(rect, |focus| focus.union(rect));
+                        ui.scroll_to_rect_animation(
+                            needed,
+                            Some(egui::Align::RIGHT),
+                            ScrollAnimation {
+                                points_per_second: 600.0,
+                                duration: Rangef::new(0.15, 0.4),
+                            },
+                        );
+                    }
                 }
 
                 // ALWAYS pad with empty fill columns to reach fill_to.
@@ -16356,6 +16394,14 @@ impl OttrinApp {
         }
         if reveal_completed {
             self.tab_ui.entry(tab_id).or_default().miller_reveal = None;
+        }
+        {
+            let previous = self.tab_ui.entry(tab_id).or_default();
+            previous.miller_viewport_width = full.width();
+            previous.miller_preview_visible = preview_bounds.is_some_and(|rect| {
+                rect.left() >= sa_output.inner_rect.left() - 0.5
+                    && rect.right() <= sa_output.inner_rect.right() + 0.5
+            });
         }
 
         if let Some(cmd) = pending_op {
@@ -29321,6 +29367,31 @@ mod tests {
                 },
             );
         }
+        assert!(
+            app.tab_ui[&tab_id].miller_preview_visible,
+            "startup preview bounds must be visible"
+        );
+        // Once visible, shrinking the viewport must keep the complete preview
+        // beside the selected file instead of clipping it off the right edge.
+        for frame in 60..120 {
+            let _ = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(600.0, 600.0),
+                    )),
+                    time: Some(frame as f64 / 60.0),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+                },
+            );
+        }
+        assert!(
+            app.tab_ui[&tab_id].miller_preview_visible,
+            "resizing must preserve the complete rendered preview bounds"
+        );
         let (columns, current) = app.build_miller_model(tab_id);
         assert_eq!(
             columns[current].entries[columns[current].selected.expect("selected row")].path,
@@ -29333,16 +29404,16 @@ mod tests {
             + MILLER_FIXED_WIDTH;
         let offset = app.tab_ui[&tab_id].miller_h_offset;
         assert!(
-            needed_right - offset <= 800.0,
+            needed_right - offset <= 600.0,
             "preview not revealed: right {needed_right}, offset {offset}"
         );
         let _ = ctx.run(
             egui::RawInput {
                 screen_rect: Some(Rect::from_min_size(
                     egui::Pos2::ZERO,
-                    Vec2::new(800.0, 600.0),
+                    Vec2::new(600.0, 600.0),
                 )),
-                time: Some(1.1),
+                time: Some(2.1),
                 events: vec![egui::Event::Key {
                     key: Key::ArrowUp,
                     physical_key: None,
@@ -29366,6 +29437,55 @@ mod tests {
             app.tab_ui[&tab_id].miller_h_offset, offset,
             "Up/Down must preserve horizontal position"
         );
+        // A deliberate horizontal scroll must remain the user's choice when
+        // resizing later; only a previously visible preview is preserved.
+        for frame in 130..190 {
+            let events = if frame == 130 {
+                vec![
+                    egui::Event::PointerMoved(egui::pos2(300.0, 200.0)),
+                    egui::Event::MouseWheel {
+                        unit: egui::MouseWheelUnit::Point,
+                        delta: Vec2::new(200.0, 0.0),
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ]
+            } else {
+                Vec::new()
+            };
+            let _ = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(600.0, 600.0),
+                    )),
+                    time: Some(frame as f64 / 60.0),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+                },
+            );
+        }
+        let manually_scrolled = app.tab_ui[&tab_id].miller_h_offset;
+        assert!(manually_scrolled < offset, "wheel must move the viewport");
+        assert!(!app.tab_ui[&tab_id].miller_preview_visible);
+        for frame in 190..250 {
+            let _ = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(500.0, 600.0),
+                    )),
+                    time: Some(frame as f64 / 60.0),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+                },
+            );
+        }
+        assert_eq!(app.tab_ui[&tab_id].miller_h_offset, manually_scrolled);
     }
 
     #[test]
