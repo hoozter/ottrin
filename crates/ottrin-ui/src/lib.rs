@@ -1059,7 +1059,7 @@ fn load_retained_copy_activity() -> RetainedCopySnapshot {
     }
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(all(not(target_os = "linux"), not(test)))]
 fn load_retained_copy_activity() -> RetainedCopySnapshot {
     (Vec::new(), None)
 }
@@ -3845,8 +3845,14 @@ impl OttrinApp {
             .err()
             .map(str::to_owned);
 
+        #[cfg(not(test))]
         let mut retained_copy_activity_loader =
             RetainedActivityLoader::spawn_with(load_retained_copy_activity);
+        // Ordinary UI fixtures must not scan and lock other tests' Copy journals.
+        // Recovery integration tests explicitly inject their fixture discovery worker.
+        #[cfg(test)]
+        let mut retained_copy_activity_loader =
+            RetainedActivityLoader::spawn_with(|| (Vec::new(), None));
         let retained_copy_activity_error = retained_copy_activity_loader
             .request()
             .err()
@@ -10496,7 +10502,7 @@ impl OttrinApp {
     }
 
     fn empty_folder_content_width(column_width: f32) -> f32 {
-        (column_width - 24.0).clamp(96.0, 320.0)
+        (column_width - 24.0).clamp(0.0, 320.0)
     }
 
     fn render_empty_folder_state(
@@ -10525,82 +10531,99 @@ impl OttrinApp {
             }
         });
         let show_hint = show_drop_folder_hint && self.should_show_drop_folder_hint_for_dir(dir);
-        ui.add_space(16.0);
-        let column_width = ui.available_width();
-        let content_width = Self::empty_folder_content_width(column_width);
-        ui.allocate_ui_with_layout(
-            Vec2::new(column_width, if show_hint { 132.0 } else { 28.0 }),
-            Layout::top_down(Align::Center),
+        // A Miller column can be only partly visible beside the Smart Panel or
+        // after horizontal scrolling. Lay out its empty state in that visible
+        // portion instead of centering it in the off-screen column extent.
+        let visible_rect = context_rect.intersect(ui.clip_rect());
+        if visible_rect.width() <= 24.0 || visible_rect.height() <= 0.0 {
+            return;
+        }
+        ui.scope_builder(
+            UiBuilder::new()
+                .max_rect(visible_rect)
+                .layout(Layout::top_down(Align::Center)),
             |ui| {
-                ui.set_width(column_width);
-                ui.add_sized(
-                    Vec2::new(content_width, 18.0),
-                    egui::Label::new(
-                        RichText::new("This folder is empty")
-                            .color(c.text_muted)
-                            .size(12.0 * c.font_scale),
-                    )
-                    .wrap(),
-                );
-                if show_hint {
-                    ui.add_space(8.0);
-                    ui.add_sized(
-                        Vec2::new(content_width, 18.0),
-                        egui::Label::new(
-                            RichText::new("Set this folder as Drop Folder")
-                                .color(c.text_dim)
-                                .size(11.5 * c.font_scale)
-                                .strong(),
-                        )
-                        .wrap(),
-                    );
-                    ui.add_sized(
-                        Vec2::new(content_width, 30.0),
-                        egui::Label::new(
-                            RichText::new("Move or copy files here from anywhere.")
-                                .color(c.text_muted)
-                                .size(10.5 * c.font_scale),
-                        )
-                        .wrap(),
-                    );
-                    ui.add_space(8.0);
-                    if ui
-                        .add_sized(
-                            Vec2::new(content_width, 28.0),
-                            egui::Button::new(
-                                RichText::new(format!("{} Set as Drop Folder", MI_MOVE_TO_INBOX))
-                                    .size(11.5 * c.font_scale),
+                ui.add_space(16.0);
+                let column_width = visible_rect.width();
+                let content_width = Self::empty_folder_content_width(column_width);
+                ui.allocate_ui_with_layout(
+                    Vec2::new(column_width, if show_hint { 132.0 } else { 28.0 }),
+                    Layout::top_down(Align::Center),
+                    |ui| {
+                        ui.set_width(column_width);
+                        ui.add_sized(
+                            Vec2::new(content_width, 18.0),
+                            egui::Label::new(
+                                RichText::new("This folder is empty")
+                                    .color(c.text_muted)
+                                    .size(12.0 * c.font_scale),
                             )
-                            .themed(c),
-                        )
-                        .clicked()
-                    {
-                        self.set_drop_folder(dir.to_path_buf(), true, true);
+                            .wrap(),
+                        );
+                        if show_hint {
+                            ui.add_space(8.0);
+                            ui.add_sized(
+                                Vec2::new(content_width, 18.0),
+                                egui::Label::new(
+                                    RichText::new("Set this folder as Drop Folder")
+                                        .color(c.text_dim)
+                                        .size(11.5 * c.font_scale)
+                                        .strong(),
+                                )
+                                .wrap(),
+                            );
+                            ui.add_sized(
+                                Vec2::new(content_width, 30.0),
+                                egui::Label::new(
+                                    RichText::new("Move or copy files here from anywhere.")
+                                        .color(c.text_muted)
+                                        .size(10.5 * c.font_scale),
+                                )
+                                .wrap(),
+                            );
+                            ui.add_space(8.0);
+                            if ui
+                                .add_sized(
+                                    Vec2::new(content_width, 28.0),
+                                    egui::Button::new(
+                                        RichText::new(format!(
+                                            "{} Set as Drop Folder",
+                                            MI_MOVE_TO_INBOX
+                                        ))
+                                        .size(11.5 * c.font_scale),
+                                    )
+                                    .themed(c),
+                                )
+                                .clicked()
+                            {
+                                self.set_drop_folder(dir.to_path_buf(), true, true);
+                            }
+                        }
+                    },
+                );
+                if let Some(until) = self.drop_folder_confirm_until {
+                    if Instant::now() < until {
+                        ui.add_space(8.0);
+                        ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                            ui.label(
+                                RichText::new("✓ This folder is now your Drop Folder")
+                                    .color(c.accent)
+                                    .size(11.0 * c.font_scale)
+                                    .strong(),
+                            );
+                            ui.label(
+                                RichText::new("Right-click files and choose “Move to Drop Folder”")
+                                    .color(c.text_muted)
+                                    .size(10.5 * c.font_scale),
+                            );
+                        });
+                        ui.ctx().request_repaint();
+                    } else {
+                        self.drop_folder_confirm_until = None;
                     }
                 }
             },
         );
-        if let Some(until) = self.drop_folder_confirm_until {
-            if Instant::now() < until {
-                ui.add_space(8.0);
-                ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                    ui.label(
-                        RichText::new("✓ This folder is now your Drop Folder")
-                            .color(c.accent)
-                            .size(11.0 * c.font_scale)
-                            .strong(),
-                    );
-                    ui.label(
-                        RichText::new("Right-click files and choose “Move to Drop Folder”")
-                            .color(c.text_muted)
-                            .size(10.5 * c.font_scale),
-                    );
-                });
-                ui.ctx().request_repaint();
-            } else {
-                self.drop_folder_confirm_until = None;
-            }
-        }
     }
 
     // ── Command frame execution ───────────────────────────────────────────────
@@ -31250,10 +31273,58 @@ mod tests {
     }
 
     #[test]
-    fn empty_folder_actions_fit_and_center_inside_auto_sized_columns() {
-        assert_eq!(OttrinApp::empty_folder_content_width(120.0), 96.0);
-        assert_eq!(OttrinApp::empty_folder_content_width(240.0), 216.0);
-        assert_eq!(OttrinApp::empty_folder_content_width(480.0), 320.0);
+    fn empty_folder_message_fits_the_visible_part_of_a_scrolled_column() {
+        for dark in [true, false] {
+            for scale in [1.0, 1.35] {
+                for (left, width) in [(20.0, 100.0), (160.0, 100.0), (20.0, 240.0)] {
+                    let ctx = Context::default();
+                    let mut app = OttrinApp::default();
+                    app.colors = Colors::preset(ThemePreset::Ottrin, dark);
+                    app.colors.font_scale = scale;
+                    app.apply_theme_to_ctx(&ctx);
+                    let c = app.colors;
+                    let tab_id = app.state.active_tab().id;
+                    let column =
+                        Rect::from_min_size(egui::pos2(20.0, 20.0), Vec2::new(240.0, 400.0));
+                    let visible =
+                        Rect::from_min_size(egui::pos2(left, 20.0), Vec2::new(width, 400.0));
+                    let output = ctx.run(Default::default(), |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            ui.scope_builder(UiBuilder::new().max_rect(column), |ui| {
+                                ui.set_clip_rect(visible);
+                                app.render_empty_folder_state(
+                                    ui,
+                                    tab_id,
+                                    Path::new("/empty"),
+                                    &c,
+                                    false,
+                                );
+                            });
+                        });
+                    });
+                    let text = output
+                        .shapes
+                        .iter()
+                        .find_map(|shape| match &shape.shape {
+                            egui::Shape::Text(text)
+                                if text.galley.job.text == "This folder is empty" =>
+                            {
+                                Some(text)
+                            }
+                            _ => None,
+                        })
+                        .expect("empty folder caption is rendered");
+                    let bounds = text.galley.rect.translate(text.pos.to_vec2());
+                    assert!(
+                        visible.expand(1.0).contains_rect(bounds),
+                        "caption {bounds:?} exceeds visible column {visible:?}"
+                    );
+                    if width == 100.0 {
+                        assert!(text.galley.rows.len() > 1, "narrow caption must wrap");
+                    }
+                }
+            }
+        }
     }
 
     #[test]

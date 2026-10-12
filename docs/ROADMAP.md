@@ -749,3 +749,17 @@ Portable, DEB and RPM payload identities match the AppImage. Receipt:
 `dist/packages/COPY_RESTART_ACTIVITY_ACCEPTANCE.json`. This accepts the tested
 Linux same-filesystem restart workflow; the recovery/platform limits above remain
 open. The narrow Miller empty-state caption clips beside Activity and needs repair.
+
+### Empty-folder layout — clipped Miller columns
+
+Native Copy restart acceptance exposed a clipped empty-folder caption when the
+Activity panel leaves only part of a Miller column visible. Empty-state text and
+actions now lay out within the visible column rectangle, without changing saved
+column widths or horizontal scrolling. Captions wrap inside that width. A rendered
+regression covers left/right clipping, full columns, Dark/Light and enlarged text.
+All 355 regular UI tests pass (one ignored), with strict Linux and Windows-target
+UI Clippy. The run also exposed competing background discovery in ordinary UI test
+fixtures: those fixtures now use an empty worker, while recovery integration tests
+explicitly inject real discovery. Their journal, inverse and preservation assertions
+remain intact and pass in the concurrent suite. Exact-package layout acceptance is
+pending; the latest delivered `123e703` package retains its recorded scope above.
