@@ -773,6 +773,14 @@ struct OperationRecord {
     path_move_undo_token: Option<PathMoveUndoToken>,
 }
 
+impl OperationRecord {
+    fn can_clear_history(&self) -> bool {
+        // Running work must still receive its result. Undo receipts also own
+        // retained transaction data, including completed/failed Undo attempts.
+        self.status != OperationStatus::Queued && self.path_move_undo_token.is_none()
+    }
+}
+
 #[derive(Debug, Clone)]
 struct PathMoveUndoToken {
     receipt: OperationUndoReceipt,
@@ -9712,9 +9720,21 @@ impl OttrinApp {
             path_move_undo_token: None,
         });
         while self.operation_history.len() > 100 {
-            self.operation_history.pop_back();
+            let Some(index) = self
+                .operation_history
+                .iter()
+                .rposition(OperationRecord::can_clear_history)
+            else {
+                break;
+            };
+            self.operation_history.remove(index);
         }
         id
+    }
+
+    fn clear_finished_activity(&mut self) {
+        self.operation_history
+            .retain(|record| !record.can_clear_history());
     }
 
     fn finish_operation_record(
@@ -13340,13 +13360,13 @@ impl OttrinApp {
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                 if ui
                     .add_enabled(
-                        !self.operation_history.is_empty(),
-                        egui::Button::new("Clear").themed(&c),
+                        self.operation_history.iter().any(OperationRecord::can_clear_history),
+                        egui::Button::new("Clear finished").themed(&c),
                     )
-                    .on_hover_text("Clear this session's operation history.")
+                    .on_hover_text("Clear finished history. Running operations and entries that own Undo or retained transaction data stay available.")
                     .clicked()
                 {
-                    self.operation_history.clear();
+                    self.clear_finished_activity();
                 }
             });
         });
@@ -26556,6 +26576,116 @@ mod tests {
             Some("Copy undone")
         );
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn activity_trimming_and_clear_preserve_copy_undo_and_running_operations() {
+        let root = tempfile::tempdir().unwrap();
+        let source = root.path().join("source");
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&source).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(source.join("entry"), "copied bytes").unwrap();
+        std::fs::write(destination.join("entry"), "original bytes").unwrap();
+        let mut app = OttrinApp::default();
+        app.operation_history.clear();
+        assert!(app.run_file_op_bound(
+            FileCommand::Copy {
+                sources: vec![source.join("entry")],
+                destination: destination.clone(),
+                conflict: ConflictAction::Overwrite,
+            },
+            None,
+            Vec::new(),
+            None,
+            None,
+            None,
+        ));
+        let result = app.op_rx.recv_timeout(Duration::from_secs(3)).unwrap();
+        assert!(result.error.is_none());
+        let copy_id = result.op_id;
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+        let running_id = app.queue_activity_record_with_recoverability(
+            "Still running",
+            "",
+            OperationRecoverability::Informational,
+        );
+        for _ in 0..150 {
+            let id = app.queue_activity_record_with_recoverability(
+                "Finished",
+                "",
+                OperationRecoverability::Informational,
+            );
+            app.finish_operation_record(id, OperationStatus::Completed, None);
+        }
+        assert_eq!(app.operation_history.len(), 100);
+        assert!(
+            app.operation_history
+                .iter()
+                .any(|record| record.id == copy_id)
+        );
+        assert!(
+            app.operation_history
+                .iter()
+                .any(|record| record.id == running_id)
+        );
+        app.clear_finished_activity();
+        assert_eq!(app.operation_history.len(), 2);
+        app.run_path_move_undo(copy_id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(3))
+            .unwrap();
+        assert!(result.result.is_ok());
+        app.finish_path_move_undo(result.op_id, result.result, result.retryable);
+        assert_eq!(
+            std::fs::read_to_string(destination.join("entry")).unwrap(),
+            "original bytes"
+        );
+        assert_eq!(
+            std::fs::read_to_string(source.join("entry")).unwrap(),
+            "copied bytes"
+        );
+        // An Undone Copy still owns its withdrawn publication. A changed-path
+        // refusal likewise must not silently orphan its retained originals.
+        app.clear_finished_activity();
+        assert_eq!(app.operation_history.len(), 2);
+        let copy = app
+            .operation_history
+            .iter_mut()
+            .find(|record| record.id == copy_id)
+            .unwrap();
+        copy.path_move_undo = Some(PathMoveUndoState::Unavailable {
+            reason: "entry replaced".into(),
+        });
+        app.clear_finished_activity();
+        assert_eq!(app.operation_history.len(), 2);
+        app.finish_operation_record(running_id, OperationStatus::Failed, Some("failed".into()));
+        app.clear_finished_activity();
+        assert_eq!(app.operation_history.len(), 1);
+        assert_eq!(app.operation_history.front().unwrap().id, copy_id);
+    }
+
+    #[test]
+    fn activity_does_not_evict_running_work_when_every_entry_is_protected() {
+        let mut app = OttrinApp::default();
+        app.operation_history.clear();
+        for _ in 0..110 {
+            app.queue_activity_record_with_recoverability(
+                "Running",
+                "",
+                OperationRecoverability::Informational,
+            );
+        }
+        app.clear_finished_activity();
+        assert_eq!(app.operation_history.len(), 110);
+        assert!(
+            app.operation_history
+                .iter()
+                .all(|record| record.status == OperationStatus::Queued)
+        );
     }
 
     #[cfg(target_os = "linux")]

@@ -131,7 +131,16 @@ Undo. The shared batch loop retains completed-prefix receipts and recovery paths
 on a later Copy failure. GUI partial-failure acceptance and native Windows Copy
 acceptance remain separate.
 
-Retained Copy transaction data now has an Activity owner; safe expiry/reclamation
-is still open. The native screenshot also reveals the existing Activity renderer
-uses error ink for a successful Undo message; that UI consistency defect remains
-recorded in the roadmap.
+Retained Copy transaction data has an Activity owner. History trimming and
+“Clear finished” now preserve running operations and all records that still own
+Undo receipts, including completed or unavailable Copy Undo receipts with retained
+transaction data. Ordinary completed/failed history remains discardable. A real
+overwrite Copy regression survives 150 subsequent records and clearing, then
+restores the original destination bytes through Undo; an all-running history can
+exceed 100 records without losing results. All 348 regular UI tests and strict UI
+Clippy pass. Exact-package acceptance is pending for this change.
+
+Safe expiry/reclamation and durable Copy recovery ownership across application
+restarts remain open. Keeping session records does not implement those outcomes.
+The earlier successful-Undo error-ink defect has been corrected; its screenshot
+is historical.
