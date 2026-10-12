@@ -8194,12 +8194,20 @@ impl OttrinApp {
                 if input.key_pressed(Key::F2) {
                     self.begin_rename();
                 }
-                if input.key_pressed(Key::Delete) {
-                    if input.modifiers.shift {
-                        self.request_delete_selection(DeleteMode::Permanent);
+                if let Some(mode) = input.events.iter().find_map(|event| match event {
+                    egui::Event::Key {
+                        key: Key::Delete,
+                        pressed: true,
+                        modifiers,
+                        ..
+                    } => Some(if modifiers.shift {
+                        DeleteMode::Permanent
                     } else {
-                        self.request_delete_selection(DeleteMode::Trash);
-                    }
+                        DeleteMode::Trash
+                    }),
+                    _ => None,
+                }) {
+                    self.request_delete_selection(mode);
                 }
             }
 
@@ -24826,6 +24834,58 @@ mod tests {
                 Key::T => assert_eq!(app.state.tabs.len(), tabs + 1),
                 _ => unreachable!(),
             }
+        }
+    }
+
+    #[test]
+    fn delete_shortcut_uses_press_modifiers_instead_of_the_end_of_frame_state() {
+        for (pressed_modifiers, final_modifiers, expected_mode) in [
+            (
+                egui::Modifiers::SHIFT,
+                egui::Modifiers::NONE,
+                DeleteMode::Permanent,
+            ),
+            (
+                egui::Modifiers::NONE,
+                egui::Modifiers::SHIFT,
+                DeleteMode::Trash,
+            ),
+            (
+                egui::Modifiers::NONE,
+                egui::Modifiers::NONE,
+                DeleteMode::Trash,
+            ),
+        ] {
+            let (_root, mut app, source) = clipboard_keyboard_fixture();
+            app.select_all();
+            let ctx = Context::default();
+            let _ = ctx.run(
+                egui::RawInput {
+                    modifiers: final_modifiers,
+                    events: vec![
+                        egui::Event::Key {
+                            key: Key::Delete,
+                            physical_key: None,
+                            pressed: true,
+                            repeat: false,
+                            modifiers: pressed_modifiers,
+                        },
+                        egui::Event::Key {
+                            key: Key::Delete,
+                            physical_key: None,
+                            pressed: false,
+                            repeat: false,
+                            modifiers: final_modifiers,
+                        },
+                    ],
+                    ..Default::default()
+                },
+                |ctx| app.handle_keyboard(ctx),
+            );
+            let pending = app.pending_delete.as_ref().expect("delete confirmation");
+            assert_eq!(pending.requested_mode, expected_mode);
+            assert_eq!(pending.targets, vec![source.clone()]);
+            assert!(source.exists(), "shortcuts must still require confirmation");
         }
     }
 
