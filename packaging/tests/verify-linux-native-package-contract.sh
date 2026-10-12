@@ -80,4 +80,23 @@ for covered in \
 done
 grep -Fq 'Linux native package contract' "$PREFLIGHT"
 
+# Exercise the generated dependency, rather than only checking script text.
+for executable in ottrin-app ottrin-indexd ottrin-priv-helper ottrin-media-playback ottrin-legacy-doc-render; do
+  cp /bin/true "$BIN/$executable"
+done
+expected_libc="$(objdump -T /bin/true | sed -nE '/\*UND\*/s/.*\(GLIBC_([0-9]+(\.[0-9]+)+)\).*/\1/p' | sort -Vu | tail -n 1)"
+test -n "$expected_libc"
+OTTRIN_BUILD_DIR="$BIN" OTTRIN_SKIP_BUILD=1 OTTRIN_DIST_DIR="$TMP/dist" "$DEB"
+depends="$(dpkg-deb -f "$TMP/dist/ottrin_0.1.0_amd64.deb" Depends)"
+[[ "$depends" == "libc6 (>= $expected_libc),"* ]]
+# Reject a malformed helper even when the main binary is valid; keep the
+# previously published package intact on packaging failure.
+before="$(sha256sum "$TMP/dist/ottrin_0.1.0_amd64.deb")"
+printf '#!/bin/sh\nexit 0\n' > "$BIN/ottrin-priv-helper"
+if OTTRIN_BUILD_DIR="$BIN" OTTRIN_SKIP_BUILD=1 OTTRIN_DIST_DIR="$TMP/dist" "$DEB" > "$TMP/rejected.log" 2>&1; then
+  printf 'DEB accepted a non-ELF helper\n' >&2
+  exit 1
+fi
+[[ "$(sha256sum "$TMP/dist/ottrin_0.1.0_amd64.deb")" == "$before" ]]
+
 printf 'Linux native package staging contract: PASS\n'
