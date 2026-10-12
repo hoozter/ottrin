@@ -484,3 +484,29 @@ remain the accepted `76f441f` build. Restart mutation authority, Activity owners
 restoration, interrupted inverse replay and safe reclamation remain unfinished.
 No restart Undo or automatic retained-data deletion has been enabled. Windows
 Copy Undo remains unsupported.
+
+### Copy directory object evidence across restart — source verification
+
+Copy journal schema 2 records identity-only filesystem object handles for its
+publication parent and private transaction directory when the filesystem supplies
+them. Discovery compares those handles against newly opened objects, alongside
+the existing device/inode, boot and unique mount IDs. It also checks the opened
+local-journal directory itself. No descriptor is retained between sessions and
+no privileged handle-opening operation is used. Unsupported handles remain absent;
+other lookup errors are reported. Schema 1 records require review and are preserved,
+without an implicit migration or deletion path.
+
+An ordinary-user probe on the project filesystem observed immediate inode reuse
+after deletion/recreation, with a distinct object handle. Project-filesystem and
+tmpfs probes preserve handles across rename and distinguish replacements and
+symlinks. The regression suite checks those behaviors and refuses both altered
+generation evidence in otherwise matching journal pairs and malformed empty
+handles, without repairing either record or changing published contents.
+
+All 345 regular platform tests pass (one ignored), with strict Linux and
+Windows-target UI Clippy and formatting checks. Evidence:
+`.hermes/evidence/copy-object-handles/`. This is source-only; Linux packages remain
+the accepted `76f441f` build. Directory evidence is one part of restart authority:
+published/backup tree object evidence, current-content validation, fresh session
+guards, Activity ownership, interrupted inverse replay and safe reclamation remain
+unfinished. Matching journals still do not grant restart Undo or deletion authority.

@@ -9,6 +9,74 @@ use super::{PathMoveIdentity, PlatformError};
 use serde::{Deserialize, Serialize};
 use std::path::{Component, Path, PathBuf};
 
+/// Identity-only filesystem evidence, scoped by the record's boot and unique
+/// mount IDs. Its filesystem-defined identifier can distinguish reused inode
+/// numbers. No descriptor is retained between sessions.
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ObjectHandle {
+    kind: i32,
+    bytes: Vec<u8>,
+}
+
+impl ObjectHandle {
+    fn capture(fd: &rustix::fd::OwnedFd) -> std::io::Result<Option<Self>> {
+        use rustix::fd::AsRawFd;
+        // file_handle has a flexible byte array. This storage supplies its
+        // correctly aligned header and Linux's current MAX_HANDLE_SZ capacity.
+        #[repr(C)]
+        struct Storage {
+            size: libc::c_uint,
+            kind: libc::c_int,
+            bytes: [u8; 128],
+        }
+        let mut storage = Storage {
+            size: 128,
+            kind: 0,
+            bytes: [0; 128],
+        };
+        let mut mount_id = 0;
+        // SAFETY: fd is live; the empty C string and both output buffers remain
+        // valid for the call. Storage matches file_handle's header layout and
+        // provides the advertised byte capacity. AT_EMPTY_PATH addresses the
+        // opened object, including a symlink opened with O_PATH | O_NOFOLLOW.
+        let result = unsafe {
+            libc::syscall(
+                libc::SYS_name_to_handle_at,
+                fd.as_raw_fd(),
+                c"".as_ptr(),
+                &mut storage as *mut Storage,
+                &mut mount_id as *mut libc::c_int,
+                // Linux UAPI AT_HANDLE_FID aliases AT_REMOVEDIR (0x200).
+                libc::AT_EMPTY_PATH | libc::AT_REMOVEDIR,
+            )
+        };
+        if result != 0 {
+            let error = std::io::Error::last_os_error();
+            return match error.raw_os_error() {
+                Some(libc::EOPNOTSUPP | libc::ENOSYS) => Ok(None),
+                // An unchanged capacity means this particular object cannot
+                // supply a handle; an increased capacity is a real size error.
+                Some(libc::EOVERFLOW) if storage.size <= 128 => Ok(None),
+                _ => Err(error),
+            };
+        }
+        if storage.size == 0 || storage.size > 128 {
+            return Err(std::io::Error::other(
+                "invalid filesystem object handle size",
+            ));
+        }
+        Ok(Some(Self {
+            kind: storage.kind,
+            bytes: storage.bytes[..storage.size as usize].to_vec(),
+        }))
+    }
+
+    fn valid(&self) -> bool {
+        !self.bytes.is_empty() && self.bytes.len() <= 128
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum CopyPhase {
@@ -28,6 +96,8 @@ pub(super) struct CopyRecord {
     transaction_identity: PathMoveIdentity,
     parent_mount: u64,
     transaction_mount: u64,
+    parent_handle: Option<ObjectHandle>,
+    transaction_handle: Option<ObjectHandle>,
     boot_id: String,
     publication_identity: PathMoveIdentity,
     publication_content: SourceTreeSnapshot,
@@ -73,11 +143,12 @@ impl CopyRecord {
                     "Copy journal directory binding changed".into(),
                 ));
             }
-            bindings.push((identity, mount));
+            let handle = ObjectHandle::capture(directory).map_err(journal_error)?;
+            bindings.push((identity, mount, handle));
         }
         let [
-            (parent_identity, parent_mount),
-            (transaction_identity, transaction_mount),
+            (parent_identity, parent_mount, parent_handle),
+            (transaction_identity, transaction_mount, transaction_handle),
         ] = <[_; 2]>::try_from(bindings).expect("two verified Copy directories");
         let source_parent = source
             .parent()
@@ -91,7 +162,7 @@ impl CopyRecord {
                     .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?,
             );
         Ok(Self {
-            schema: 1,
+            schema: 2,
             phase: CopyPhase::PublicationIntent,
             source: NativePath::encode(&source),
             publication: NativePath::encode(publication),
@@ -100,6 +171,8 @@ impl CopyRecord {
             transaction_identity,
             parent_mount,
             transaction_mount,
+            parent_handle,
+            transaction_handle,
             boot_id: std::fs::read_to_string("/proc/sys/kernel/random/boot_id")
                 .map_err(|error| PlatformError::Io(error.to_string()))?
                 .trim()
@@ -161,7 +234,11 @@ impl CopyRecord {
         let source = self.source.decode().map_err(journal_error)?;
         let publication = self.publication.decode().map_err(journal_error)?;
         let transaction = self.transaction.decode().map_err(journal_error)?;
-        if self.schema != 1
+        if self.schema != 2
+            || [&self.parent_handle, &self.transaction_handle]
+                .into_iter()
+                .flatten()
+                .any(|handle| !handle.valid())
             || [
                 source.as_path(),
                 publication.as_path(),
@@ -295,6 +372,13 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
                         "opened Copy transaction directory does not match its journal".into(),
                     ));
                 }
+                if let Some(expected) = &record.transaction_handle
+                    && ObjectHandle::capture(&fd).map_err(journal_error)?.as_ref() != Some(expected)
+                {
+                    return Err(PlatformError::Io(
+                        "opened Copy transaction object generation changed".into(),
+                    ));
+                }
                 let local = super::move_recovery::LinuxJournalDirectory::for_copy_stage(&fd)
                     .map_err(journal_error)?;
                 let local = local.read_copy_record("copy-journal")?;
@@ -330,12 +414,18 @@ impl CopyRecord {
                 "Copy directory evidence belongs to another boot; review is required".into(),
             ));
         }
-        for (path, identity, mount) in [
-            (parent, &self.parent_identity, self.parent_mount),
+        for (path, identity, mount, handle) in [
+            (
+                parent,
+                &self.parent_identity,
+                self.parent_mount,
+                &self.parent_handle,
+            ),
             (
                 transaction.as_path(),
                 &self.transaction_identity,
                 self.transaction_mount,
+                &self.transaction_handle,
             ),
         ] {
             let metadata = std::fs::symlink_metadata(path).map_err(journal_error)?;
@@ -349,7 +439,74 @@ impl CopyRecord {
                     "Copy directory or mount binding changed".into(),
                 ));
             }
+            if let Some(expected) = handle {
+                let fd = rustix::fs::open(
+                    path,
+                    rustix::fs::OFlags::PATH
+                        | rustix::fs::OFlags::NOFOLLOW
+                        | rustix::fs::OFlags::CLOEXEC,
+                    rustix::fs::Mode::empty(),
+                )
+                .map_err(journal_error)?;
+                let opened = rustix::fs::fstat(&fd).map_err(journal_error)?;
+                use rustix::fd::AsRawFd;
+                let opened_mount = super::local_storage::local_path_mount_identity(
+                    &PathBuf::from(format!("/proc/self/fd/{}", fd.as_raw_fd())),
+                    true,
+                )
+                .map_err(journal_error)?;
+                if (opened.st_dev, opened.st_ino) != (identity.device, identity.inode)
+                    || opened_mount != mount
+                    || ObjectHandle::capture(&fd).map_err(journal_error)?.as_ref() != Some(expected)
+                {
+                    return Err(PlatformError::Io(
+                        "Copy directory object generation changed".into(),
+                    ));
+                }
+            }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn handle(path: &Path) -> std::io::Result<Option<ObjectHandle>> {
+        let fd = rustix::fs::open(
+            path,
+            rustix::fs::OFlags::PATH | rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::CLOEXEC,
+            rustix::fs::Mode::empty(),
+        )?;
+        ObjectHandle::capture(&fd)
+    }
+
+    #[test]
+    fn object_handles_preserve_rename_identity_and_distinguish_symlinks_and_replacements() {
+        for base in [std::env::temp_dir(), std::env::current_dir().unwrap()] {
+            let root = tempfile::Builder::new()
+                .prefix(".ottrin-object-handle-")
+                .tempdir_in(base)
+                .unwrap();
+            let path = root.path().join("item");
+            std::fs::write(&path, "contents").unwrap();
+            let Some(original) = handle(&path).unwrap() else {
+                continue;
+            };
+            let renamed = root.path().join("renamed");
+            std::fs::rename(&path, &renamed).unwrap();
+            assert_eq!(handle(&renamed).unwrap().as_ref(), Some(&original));
+            std::fs::write(&path, "contents").unwrap();
+            assert_ne!(handle(&path).unwrap().as_ref(), Some(&original));
+            let link = root.path().join("link");
+            std::os::unix::fs::symlink(&path, &link).unwrap();
+            assert_ne!(handle(&path).unwrap(), handle(&link).unwrap());
+            std::fs::remove_file(&renamed).unwrap();
+            assert_eq!(
+                handle(&renamed).unwrap_err().kind(),
+                std::io::ErrorKind::NotFound
+            );
+        }
     }
 }

@@ -1586,7 +1586,14 @@ mod tests {
     #[test]
     fn copy_registry_discovery_reports_changed_or_missing_local_evidence_without_repairs() {
         use super::super::{CopyRecoveryEvidence, discover_retained_copy_transactions_at};
-        for damage in ["missing", "mismatch", "replacement", "fifo"] {
+        for damage in [
+            "missing",
+            "mismatch",
+            "replacement",
+            "fifo",
+            "generation",
+            "empty-handle",
+        ] {
             let root = TestDir::new("registry-local-review");
             let source = root.0.join("item");
             let destination = root.0.join("destination");
@@ -1623,6 +1630,33 @@ mod tests {
                     )
                     .unwrap();
                 }
+                "generation" | "empty-handle" => {
+                    let mut value: serde_json::Value =
+                        serde_json::from_slice(&std::fs::read(&journal).unwrap()).unwrap();
+                    if value["transaction_handle"].is_null() {
+                        continue;
+                    }
+                    if damage == "empty-handle" {
+                        value["transaction_handle"]["bytes"] = serde_json::json!([]);
+                    } else {
+                        let byte = value["transaction_handle"]["bytes"][0].as_u64().unwrap();
+                        value["transaction_handle"]["bytes"][0] = (byte ^ 1).into();
+                    }
+                    let encoded = serde_json::to_vec(&value).unwrap();
+                    std::fs::write(&journal, &encoded).unwrap();
+                    let id = stage
+                        .file_name()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .strip_prefix(".ottrin-txn-")
+                        .unwrap();
+                    std::fs::write(
+                        root.0.join("copies").join(format!("{id}.journal")),
+                        &encoded,
+                    )
+                    .unwrap();
+                }
                 _ => unreachable!(),
             }
             let before = std::fs::symlink_metadata(&journal).ok();
@@ -1632,6 +1666,24 @@ mod tests {
                 entries[0].evidence,
                 CopyRecoveryEvidence::NeedsReview { .. }
             ));
+            if matches!(damage, "generation" | "empty-handle") {
+                let CopyRecoveryEvidence::NeedsReview { reason } = &entries[0].evidence else {
+                    unreachable!()
+                };
+                assert!(
+                    reason.contains(if damage == "generation" {
+                        "generation changed"
+                    } else {
+                        "invalid Copy journal"
+                    }),
+                    "{reason}"
+                );
+                let id = &entries[0].transaction_id;
+                assert_eq!(
+                    std::fs::read(&journal).unwrap(),
+                    std::fs::read(root.0.join("copies").join(format!("{id}.journal"))).unwrap()
+                );
+            }
             assert_eq!(
                 std::fs::symlink_metadata(&journal).is_ok(),
                 before.is_some()
@@ -1701,7 +1753,7 @@ mod tests {
             ));
             let encoded = std::fs::read(stage.join("copy-journal")).unwrap();
             let record: serde_json::Value = serde_json::from_slice(&encoded).unwrap();
-            assert_eq!(record["schema"], 1);
+            assert_eq!(record["schema"], 2);
             assert_eq!(record["phase"], "published");
             let target: NativePath = serde_json::from_value(record["publication"].clone()).unwrap();
             assert_eq!(target.decode().unwrap(), destination.join("item"));
