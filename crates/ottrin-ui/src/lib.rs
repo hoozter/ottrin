@@ -10534,7 +10534,14 @@ impl OttrinApp {
         // A Miller column can be only partly visible beside the Smart Panel or
         // after horizontal scrolling. Lay out its empty state in that visible
         // portion instead of centering it in the off-screen column extent.
-        let visible_rect = context_rect.intersect(ui.clip_rect());
+        let mut visible_rect = context_rect.intersect(ui.clip_rect());
+        // Expanded Smart Panel content overlays the file view rather than
+        // resizing it. Center empty-state content in the uncovered portion.
+        if let Some(panel) = self.smart_panel_rect
+            && panel.intersects(visible_rect)
+        {
+            visible_rect.max.x = visible_rect.max.x.min(panel.min.x);
+        }
         if visible_rect.width() <= 24.0 || visible_rect.height() <= 0.0 {
             return;
         }
@@ -31284,6 +31291,8 @@ mod tests {
         let mut app = OttrinApp::default();
         app.state.active_tab_mut().current_dir = destination;
         app.state.config.miller_column_width_mode = MillerColumnWidthMode::Fixed;
+        app.sidebar = SidebarSection::Activity;
+        app.state.config.smart_panel_width = 420.0;
         let tab_id = app.state.active_tab().id;
         let (columns, current) = app.build_miller_model(tab_id);
         let before: f32 = columns[..current]
@@ -31292,7 +31301,7 @@ mod tests {
                 app.miller_column_width(&col.dir, &col.entries) + MILLER_COLUMN_DIVIDER_WIDTH
             })
             .sum();
-        let viewport = Rect::from_min_size(egui::pos2(20.0, 20.0), Vec2::new(600.0, 400.0));
+        let viewport = Rect::from_min_size(egui::pos2(20.0, 20.0), Vec2::new(1060.0, 400.0));
         app.apply_theme_to_ctx(&ctx);
         let mut output = None;
         for _ in 0..3 {
@@ -31306,7 +31315,9 @@ mod tests {
                 },
                 |ctx| {
                     egui::CentralPanel::default().show(ctx, |ui| {
-                        ui.scope_builder(UiBuilder::new().max_rect(viewport), |ui| {
+                        let (file_rect, panel_rect) = app.compute_smart_panel_layout(viewport);
+                        app.smart_panel_rect = Some(panel_rect);
+                        ui.scope_builder(UiBuilder::new().max_rect(file_rect), |ui| {
                             let id = ui.make_persistent_id(egui::Id::new(("miller_h", tab_id)));
                             let mut state =
                                 egui::scroll_area::State::load(ctx, id).unwrap_or_default();
@@ -31330,8 +31341,12 @@ mod tests {
             })
             .expect("current empty column caption");
         let bounds = text.galley.rect.translate(text.pos.to_vec2());
+        let uncovered = Rect::from_min_max(
+            viewport.min,
+            egui::pos2(app.smart_panel_rect.unwrap().left(), viewport.bottom()),
+        );
         assert!(
-            viewport.expand(1.0).contains_rect(bounds),
+            uncovered.expand(1.0).contains_rect(bounds),
             "empty caption {bounds:?} escapes the file viewport {viewport:?}"
         );
         assert!(

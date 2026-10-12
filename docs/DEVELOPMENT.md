@@ -46,12 +46,12 @@ A configured native probe also exposed a missing `/bin` sandbox mount: `/usr/lib
 
 ## Build And Verify
 
-Run filesystem and UI tests with private XDG state, configuration, cache and data directories, and remove that test profile after all test processes exit. Copy recovery journals must never be written into the operator's state directory.
+Run filesystem and UI tests with private XDG state, configuration, cache and data directories, and remove that test profile after all test processes exit. Copy recovery journals must never be written into the operator's state directory. `scripts/test-workspace.py` provides the disposable home and state while retaining Cargo/Rustup caches and the session IPC needed by systemd-isolated renderers. Forward Cargo test options to that runner; native graphical QA uses its own private display harness.
 
 ```sh
 cargo fmt --check
 cargo check --workspace --all-targets
-cargo test --workspace
+python3 scripts/test-workspace.py --workspace
 cargo clippy --workspace --all-targets -- -D warnings
 cargo build --release
 ```

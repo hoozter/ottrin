@@ -70,7 +70,9 @@ optional_gate() {
 
 run_gate "Formatting" cargo fmt --all --check
 run_gate "Workspace check" cargo check --workspace --all-targets
-run_gate "Workspace tests" cargo test --workspace
+run_gate "Disposable test profile cleanup" \
+  env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/tests -p test_workspace_profile.py
+run_gate "Workspace tests" python3 scripts/test-workspace.py --workspace
 run_gate "Strict Clippy" \
   cargo clippy --workspace --all-targets --all-features -- -D warnings
 

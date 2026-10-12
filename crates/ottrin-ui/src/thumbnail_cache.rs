@@ -2168,10 +2168,8 @@ mod tests {
         if !ottrin_preview::eps_preview_runtime_is_available() {
             return;
         }
-        let eps = std::env::temp_dir().join(format!(
-            "ottrin-eps-cache-target-{}.eps",
-            std::process::id()
-        ));
+        let fixture = tempfile::tempdir().expect("private EPS fixture");
+        let eps = fixture.path().join("document.eps");
         std::fs::write(
             &eps,
             b"%!PS-Adobe-3.0 EPSF-3.0\n%%BoundingBox: 0 0 160 100\n1 0 0 setrgbcolor\n10 10 140 80 rectfill\nshowpage\n",
@@ -2192,8 +2190,6 @@ mod tests {
         );
         assert!(image::load_from_memory(&thumbnail).is_ok());
         assert!(full_preview_bytes_at_page(&eps, 128, 0).is_some());
-
-        std::fs::remove_file(eps).expect("remove EPS fixture");
     }
 
     #[test]
