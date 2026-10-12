@@ -646,3 +646,34 @@ Safe expiry/reclamation of Copy transaction stages is still open. Receipt
 ownership and successful Undo do not establish that transaction storage has
 been reclaimed. Native Windows has no Copy Undo receipts yet; cross-compilation
 does not establish Windows Copy acceptance.
+
+Copy and created-entry receipts guard the original parent and transaction
+identities with one shared, nonblocking Linux inotify instance. Watches are
+registered through the already-open publication directories, before those
+handles close. Deletion, unmount, removed watches, queue overflow, and read
+failure invalidate the proof. Directory identities and Linux unique mount IDs
+must also match; a bind remount must not revive an old receipt even when its
+inodes are unchanged. No watcher thread or periodic polling is needed.
+
+Undo opens and verifies directory handles only for its inverse, then uses
+`renameat` relative to those handles. Destination aliases cannot redirect that
+mutation after validation. Named parent/stage replacement, including published
+hard links preserving file inode identity, is refused. Long-lived directory
+handles were rejected after a private namespace probe demonstrated they prevent
+ordinary unmount; the replacement watch design has a dedicated ignored private
+mount test for ordinary unmount, tmpfs replacement, and same-inode bind remount.
+
+This guards session ownership but does not reclaim retained transaction data.
+History eviction/Clear, durable cleanup intent, changed retained-content refusal,
+and safe recursive reclamation still need one explicit lifecycle. Never replace
+that work with deletion by transaction name or age. Native physical removable
+acceptance and exact rebuilt-package acceptance remain separate requirements.
+
+Run the mount fixture only inside an explicitly owned child namespace:
+
+```sh
+OTTRIN_QA_PARENT_MOUNT_NAMESPACE="$(readlink /proc/self/ns/mnt)" \
+  unshare --user --map-root-user --mount cargo test -p ottrin-platform --lib \
+  tests::copy_receipt_does_not_pin_mount_and_refuses_after_unmount_and_replacement \
+  -- --ignored --exact --nocapture
+```

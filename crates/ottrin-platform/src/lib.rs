@@ -12,7 +12,11 @@ use std::sync::{OnceLock, RwLock};
 use std::time::SystemTime;
 use thiserror::Error;
 
+#[cfg(target_os = "linux")]
+pub use copy_transaction::RetainedCopyTransaction;
 mod copy_transaction;
+#[cfg(target_os = "linux")]
+mod directory_watch;
 #[cfg(target_os = "linux")]
 use copy_transaction::CopyPublication;
 use copy_transaction::copy_entry_transactional;
@@ -260,6 +264,8 @@ pub struct PathMoveUndoReceipt {
     published_content: Option<move_recovery::SourceTreeSnapshot>,
     #[cfg(target_os = "linux")]
     cross_filesystem_state: std::sync::Arc<std::sync::OnceLock<CrossFilesystemUndoState>>,
+    #[cfg(target_os = "linux")]
+    retained_copy_directory: Option<RetainedCopyTransaction>,
 }
 
 /// Session-only proof for restoring a Linux permission change to the exact
@@ -1253,6 +1259,7 @@ impl PlatformOps for DefaultPlatform {
                     requirement: PathMoveUndoRequirement::None,
                     published_content: None,
                     cross_filesystem_state: Default::default(),
+                    retained_copy_directory: None,
                 }))
         }
         #[cfg(not(target_os = "linux"))]
@@ -1296,6 +1303,7 @@ impl PlatformOps for DefaultPlatform {
             let publication = copy_transaction::create_empty_file(parent, name)?;
             let CopyPublication::Published {
                 retained_transaction,
+                retained_directory,
                 published_path,
                 published_identity,
                 ..
@@ -1310,6 +1318,7 @@ impl PlatformOps for DefaultPlatform {
                 None,
                 PathMoveUndoRequirement::EmptyFile,
                 "file creation",
+                Some(retained_directory),
             )
             .map(Some)
         }
@@ -1352,6 +1361,7 @@ impl PlatformOps for DefaultPlatform {
             let publication = copy_transaction::create_empty_directory(parent, name)?;
             let CopyPublication::Published {
                 retained_transaction,
+                retained_directory,
                 published_path,
                 published_identity,
                 ..
@@ -1366,6 +1376,7 @@ impl PlatformOps for DefaultPlatform {
                 None,
                 PathMoveUndoRequirement::EmptyDirectory,
                 "folder creation",
+                Some(retained_directory),
             )
             .map(Some)
         }
@@ -1413,6 +1424,7 @@ impl PlatformOps for DefaultPlatform {
             let publication = copy_transaction::create_symlink(parent, name, target)?;
             let CopyPublication::Published {
                 retained_transaction,
+                retained_directory,
                 published_path,
                 published_identity,
                 ..
@@ -1427,6 +1439,7 @@ impl PlatformOps for DefaultPlatform {
                 None,
                 PathMoveUndoRequirement::None,
                 "symlink creation",
+                Some(retained_directory),
             )
             .map(Some)
         }
@@ -1502,31 +1515,38 @@ impl PlatformOps for DefaultPlatform {
             validate_copy_source(source)?;
             reject_directory_copy_into_itself(source, destination)?;
             let publication = copy_entry_transactional(source, destination, conflict)?;
-            let (retained_transaction, after_path, published_identity, displaced_identity) =
-                match publication {
-                    CopyPublication::Published {
-                        retained_transaction,
-                        published_path,
-                        published_identity,
-                        displaced_identity,
-                    } => (
-                        retained_transaction,
-                        published_path,
-                        published_identity,
-                        displaced_identity,
-                    ),
-                    CopyPublication::Skipped {
-                        retained_transaction: None,
-                    } => return Ok(None),
-                    CopyPublication::Skipped {
-                        retained_transaction: Some(transaction),
-                    } => {
-                        return Err(PlatformError::CommittedCleanupPending {
+            let (
+                retained_transaction,
+                after_path,
+                published_identity,
+                displaced_identity,
+                retained_directory,
+            ) = match publication {
+                CopyPublication::Published {
+                    retained_transaction,
+                    retained_directory,
+                    published_path,
+                    published_identity,
+                    displaced_identity,
+                } => (
+                    retained_transaction,
+                    published_path,
+                    published_identity,
+                    displaced_identity,
+                    retained_directory,
+                ),
+                CopyPublication::Skipped {
+                    retained_transaction: None,
+                } => return Ok(None),
+                CopyPublication::Skipped {
+                    retained_transaction: Some(transaction),
+                } => {
+                    return Err(PlatformError::CommittedCleanupPending {
                         transaction: transaction.display().to_string(),
                         message: "copy was skipped; its private staged candidate was retained because pathname-based cleanup cannot prove ownership".into(),
                     });
-                    }
-                };
+                }
+            };
             undo_receipt_for_published_identity(
                 retained_transaction,
                 after_path,
@@ -1534,6 +1554,7 @@ impl PlatformOps for DefaultPlatform {
                 displaced_identity,
                 PathMoveUndoRequirement::None,
                 "copy",
+                Some(retained_directory),
             )
             .map(Some)
         }
@@ -1573,6 +1594,11 @@ impl PlatformOps for DefaultPlatform {
     fn undo_copy_with_receipt(&self, receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
         #[cfg(target_os = "linux")]
         {
+            if receipt.retained_copy_directory.is_none() {
+                return Err(PlatformError::InvalidPathMoveUndoReceipt(
+                    "Copy receipt has no retained directory ownership".into(),
+                ));
+            }
             undo_path_move_linux(receipt)
         }
         #[cfg(not(target_os = "linux"))]
@@ -1639,6 +1665,7 @@ impl PlatformOps for DefaultPlatform {
                         requirement: PathMoveUndoRequirement::None,
                         published_content,
                         cross_filesystem_state: Default::default(),
+                        retained_copy_directory: None,
                     })
                 }
             };
@@ -2345,6 +2372,7 @@ fn undo_receipt_for_published_identity(
     displaced_identity: Option<PathMoveIdentity>,
     requirement: PathMoveUndoRequirement,
     operation: &str,
+    retained_copy_directory: Option<RetainedCopyTransaction>,
 ) -> Result<PathMoveUndoReceipt, PlatformError> {
     let observed_identity =
         rename_identity(&after_path).map_err(|error| PlatformError::CommittedCleanupPending {
@@ -2360,6 +2388,12 @@ fn undo_receipt_for_published_identity(
                 "{operation} completed, but the destination entry was replaced before its undo receipt could be issued"
             ),
         });
+    }
+    if let Some(directory) = retained_copy_directory.as_ref() {
+        directory.validate_path(&retained_transaction).and_then(|()| directory.validate_publication_parent(&after_path)).map_err(|error| PlatformError::CommittedCleanupPending {
+            transaction: retained_transaction.display().to_string(),
+            message: format!("{operation} completed, but its retained directory ownership changed before the Undo receipt could be issued: {error}"),
+        })?;
     }
     let before_path = retained_transaction.join(copy_transaction::CANDIDATE);
     if let Some(expected_displaced) = displaced_identity.as_ref() {
@@ -2389,11 +2423,21 @@ fn undo_receipt_for_published_identity(
         requirement,
         published_content: None,
         cross_filesystem_state: Default::default(),
+        retained_copy_directory,
     })
 }
 
 #[cfg(target_os = "linux")]
 fn undo_path_move_linux(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
+    if let Some(directory) = receipt.retained_copy_directory.as_ref() {
+        directory.validate_path(receipt.before_path.parent().ok_or_else(|| {
+            PlatformError::InvalidPathMoveUndoReceipt(
+                "receipt has no retained transaction parent".into(),
+            )
+        })?)?;
+        directory.validate_publication_parent(&receipt.after_path)?;
+    }
+
     if receipt.before_path == receipt.after_path
         || receipt.before_path.parent().is_none()
         || receipt.after_path.parent().is_none()
@@ -2405,10 +2449,10 @@ fn undo_path_move_linux(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformErr
     use std::os::unix::fs::MetadataExt;
     let before_parent = receipt.before_path.parent().expect("validated parent");
     let after_parent = receipt.after_path.parent().expect("validated parent");
-    let before_device = std::fs::symlink_metadata(before_parent)
+    let before_device = std::fs::metadata(before_parent)
         .map_err(|error| PlatformError::Io(error.to_string()))?
         .dev();
-    let after_device = std::fs::symlink_metadata(after_parent)
+    let after_device = std::fs::metadata(after_parent)
         .map_err(|error| PlatformError::Io(error.to_string()))?
         .dev();
     if before_device != after_device {
@@ -2482,12 +2526,18 @@ fn undo_path_move_linux(receipt: &PathMoveUndoReceipt) -> Result<(), PlatformErr
                 Err(error) => return Err(PlatformError::Io(error.to_string())),
             }
         }
-        exchange_paths(&receipt.after_path, displaced_path)?;
+        if let Some(directory) = receipt.retained_copy_directory.as_ref() {
+            directory.withdraw_publication(&receipt.after_path, &receipt.before_path, true)?;
+        } else {
+            exchange_paths(&receipt.after_path, displaced_path)?;
+        }
         if receipt.retained_displaced_path.is_some() {
             rename_without_replacement(displaced_path, &receipt.before_path)?;
             cleanup_completed_overwrite_move_undo(displaced_path)?;
         }
         Ok(())
+    } else if let Some(directory) = receipt.retained_copy_directory.as_ref() {
+        directory.withdraw_publication(&receipt.after_path, &receipt.before_path, false)
     } else {
         rename_without_replacement(&receipt.after_path, &receipt.before_path)
     }
@@ -5089,6 +5139,301 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    fn copy_undo_rejects_replaced_retained_directory_and_parent_even_with_published_hardlink() {
+        for replace_parent in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let source = root.path().join("source");
+            let destination = root.path().join("destination");
+            std::fs::write(&source, "copied bytes").unwrap();
+            std::fs::create_dir(&destination).unwrap();
+            let receipt = DefaultPlatform
+                .execute_copy_with_undo_receipt(&source, &destination, ConflictAction::Skip)
+                .unwrap()
+                .unwrap();
+            let stage = receipt.before_path().parent().unwrap().to_path_buf();
+            let saved = root.path().join("held-original");
+            if replace_parent {
+                std::fs::rename(&destination, &saved).unwrap();
+                std::fs::create_dir(&destination).unwrap();
+                // Entry identity alone cannot distinguish this new parent.
+                std::fs::hard_link(saved.join("source"), destination.join("source")).unwrap();
+                std::fs::create_dir(&stage).unwrap();
+            } else {
+                std::fs::rename(&stage, &saved).unwrap();
+                std::fs::create_dir(&stage).unwrap();
+            }
+            std::fs::write(stage.join("candidate"), "unrelated replacement data").unwrap();
+            assert!(matches!(
+                DefaultPlatform.undo_copy_with_receipt(&receipt),
+                Err(PlatformError::StalePathMoveUndo(_))
+            ));
+            assert_eq!(
+                std::fs::read_to_string(destination.join("source")).unwrap(),
+                "copied bytes"
+            );
+            assert_eq!(
+                std::fs::read_to_string(stage.join("candidate")).unwrap(),
+                "unrelated replacement data"
+            );
+            if replace_parent {
+                std::fs::rename(&destination, root.path().join("preserved-replacement")).unwrap();
+                std::fs::rename(saved, &destination).unwrap();
+            } else {
+                std::fs::rename(&stage, root.path().join("preserved-replacement")).unwrap();
+                std::fs::rename(saved, &stage).unwrap();
+            }
+            DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+            assert!(!destination.join("source").exists());
+            assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
+            assert_eq!(
+                std::fs::read_to_string(receipt.before_path()).unwrap(),
+                "copied bytes"
+            );
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn copy_undo_rejects_same_filesystem_destination_alias_retarget_with_identical_file_inode() {
+        use std::os::unix::fs::symlink;
+        let root = tempfile::tempdir().unwrap();
+        let actual = root.path().join("actual");
+        let other = root.path().join("other");
+        let alias = root.path().join("alias");
+        let source = root.path().join("source");
+        std::fs::create_dir(&actual).unwrap();
+        std::fs::create_dir(&other).unwrap();
+        std::fs::write(&source, "copied bytes").unwrap();
+        symlink(&actual, &alias).unwrap();
+        let receipt = DefaultPlatform
+            .execute_copy_with_undo_receipt(&source, &alias, ConflictAction::Skip)
+            .unwrap()
+            .unwrap();
+        std::fs::hard_link(actual.join("source"), other.join("source")).unwrap();
+        std::fs::remove_file(&alias).unwrap();
+        symlink(&other, &alias).unwrap();
+        assert!(matches!(
+            DefaultPlatform.undo_copy_with_receipt(&receipt),
+            Err(PlatformError::StalePathMoveUndo(_))
+        ));
+        for parent in [&actual, &other] {
+            assert_eq!(
+                std::fs::read_to_string(parent.join("source")).unwrap(),
+                "copied bytes"
+            );
+        }
+        std::fs::remove_file(&alias).unwrap();
+        symlink(&actual, &alias).unwrap();
+        DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+        assert!(!actual.join("source").exists());
+        assert_eq!(
+            std::fs::read_to_string(other.join("source")).unwrap(),
+            "copied bytes"
+        );
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn copy_undo_follows_destination_directory_alias_across_filesystems() {
+        use std::os::unix::fs::{MetadataExt, symlink};
+        let root = tempfile::tempdir().unwrap();
+        let other = tempfile::tempdir_in("/dev/shm").unwrap();
+        assert_ne!(
+            root.path().metadata().unwrap().dev(),
+            other.path().metadata().unwrap().dev(),
+            "native fixture requires two filesystems"
+        );
+        let alias = root.path().join("alias");
+        let source = root.path().join("source");
+        std::fs::write(&source, "copied bytes").unwrap();
+        symlink(other.path(), &alias).unwrap();
+        let receipt = DefaultPlatform
+            .execute_copy_with_undo_receipt(&source, &alias, ConflictAction::Skip)
+            .unwrap()
+            .unwrap();
+        DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+        assert!(!other.path().join("source").exists());
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
+        assert_eq!(
+            std::fs::read_to_string(receipt.before_path()).unwrap(),
+            "copied bytes"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn copy_withdrawal_remains_in_original_directory_when_alias_changes_after_validation() {
+        use std::os::unix::fs::symlink;
+        let root = tempfile::tempdir().unwrap();
+        let actual = root.path().join("actual");
+        let other = root.path().join("other");
+        let alias = root.path().join("alias");
+        let source = root.path().join("source");
+        std::fs::create_dir(&actual).unwrap();
+        std::fs::create_dir(&other).unwrap();
+        std::fs::write(&source, "copied bytes").unwrap();
+        symlink(&actual, &alias).unwrap();
+        let receipt = DefaultPlatform
+            .execute_copy_with_undo_receipt(&source, &alias, ConflictAction::Skip)
+            .unwrap()
+            .unwrap();
+        let directory = receipt.retained_copy_directory.as_ref().unwrap();
+        directory
+            .validate_publication_parent(receipt.after_path())
+            .unwrap();
+        std::fs::hard_link(actual.join("source"), other.join("source")).unwrap();
+        std::fs::remove_file(&alias).unwrap();
+        symlink(&other, &alias).unwrap();
+        // Exercise the production primitive after an adversarial alias change
+        // between validation and its syscall; pathname rename would hit other.
+        directory
+            .withdraw_publication(receipt.after_path(), receipt.before_path(), false)
+            .unwrap();
+        assert!(!actual.join("source").exists());
+        assert_eq!(
+            std::fs::read_to_string(other.join("source")).unwrap(),
+            "copied bytes"
+        );
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "copied bytes");
+        assert_eq!(
+            std::fs::read_to_string(receipt.before_path()).unwrap(),
+            "copied bytes"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    #[ignore = "requires an explicitly owned private user/mount namespace"]
+    fn copy_receipt_does_not_pin_mount_and_refuses_after_unmount_and_replacement() {
+        use std::process::Command;
+        let parent_namespace = std::env::var("OTTRIN_QA_PARENT_MOUNT_NAMESPACE")
+            .expect("explicit private namespace required");
+        let current_namespace = std::fs::read_link("/proc/self/ns/mnt").unwrap();
+        assert_ne!(current_namespace.to_string_lossy(), parent_namespace);
+        assert!(
+            Command::new("mount")
+                .args(["--make-rprivate", "/"])
+                .status()
+                .unwrap()
+                .success()
+        );
+        // Keep every fixture pathname on a namespace-owned filesystem. Even
+        // SIGKILL/cancellation cannot leave fixture data in the host /tmp.
+        assert!(
+            Command::new("mount")
+                .args(["-t", "tmpfs", "-o", "mode=1777", "tmpfs", "/tmp"])
+                .status()
+                .unwrap()
+                .success()
+        );
+        let root = tempfile::tempdir().unwrap();
+        let mount_path = root.path().join("destination");
+        std::fs::create_dir(&mount_path).unwrap();
+        struct PrivateMount(std::path::PathBuf);
+        impl Drop for PrivateMount {
+            fn drop(&mut self) {
+                // This verified-private pathname is owned by this fixture.
+                // Ordinary unmount is asserted below; lazy detach here is only
+                // failure/cancellation teardown for the disposable namespace.
+                let _ = Command::new("umount").arg("-l").arg(&self.0).output();
+            }
+        }
+        let mount = PrivateMount(mount_path.clone());
+        let attach = || {
+            assert!(
+                Command::new("mount")
+                    .args(["-t", "tmpfs", "tmpfs"])
+                    .arg(&mount.0)
+                    .status()
+                    .unwrap()
+                    .success()
+            );
+        };
+        attach();
+        let source = root.path().join("source");
+        std::fs::write(&source, "original source").unwrap();
+        let receipt = DefaultPlatform
+            .execute_copy_with_undo_receipt(&source, &mount_path, ConflictAction::Skip)
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            std::fs::read(mount_path.join("source")).unwrap(),
+            b"original source"
+        );
+        let unmount = Command::new("umount").arg(&mount.0).output().unwrap();
+        assert!(
+            unmount.status.success(),
+            "live receipt prevented unmount: {}",
+            String::from_utf8_lossy(&unmount.stderr)
+        );
+        attach();
+        let replacement = mount_path.join("source");
+        std::fs::write(&replacement, "replacement data").unwrap();
+        assert!(DefaultPlatform.undo_copy_with_receipt(&receipt).is_err());
+        assert_eq!(std::fs::read(&replacement).unwrap(), b"replacement data");
+        assert_eq!(std::fs::read(&source).unwrap(), b"original source");
+        assert!(
+            Command::new("umount")
+                .arg(&mount.0)
+                .status()
+                .unwrap()
+                .success()
+        );
+        // Bind-mount replacement deliberately preserves directory/file inode
+        // identities: unique mount generation must still invalidate the receipt.
+        let backing = root.path().join("backing");
+        std::fs::create_dir(&backing).unwrap();
+        let bind = || {
+            assert!(
+                Command::new("mount")
+                    .arg("--bind")
+                    .arg(&backing)
+                    .arg(&mount.0)
+                    .status()
+                    .unwrap()
+                    .success()
+            );
+        };
+        bind();
+        let bind_receipt = DefaultPlatform
+            .execute_copy_with_undo_receipt(&source, &mount_path, ConflictAction::Skip)
+            .unwrap()
+            .unwrap();
+        assert!(
+            Command::new("umount")
+                .arg(&mount.0)
+                .status()
+                .unwrap()
+                .success()
+        );
+        bind();
+        assert_eq!(
+            rename_identity(bind_receipt.after_path()).unwrap(),
+            bind_receipt.identity
+        );
+        assert!(
+            DefaultPlatform
+                .undo_copy_with_receipt(&bind_receipt)
+                .is_err()
+        );
+        assert_eq!(
+            std::fs::read(mount_path.join("source")).unwrap(),
+            b"original source"
+        );
+        assert_eq!(std::fs::read(&source).unwrap(), b"original source");
+        assert!(
+            Command::new("umount")
+                .arg(&mount.0)
+                .status()
+                .unwrap()
+                .success()
+        );
+        drop(mount);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn copy_receipt_is_not_issued_for_an_entry_replaced_after_publication() {
         let dir = TestDir::new("copy-receipt-publication-race");
         let transaction = dir.path().join("transaction");
@@ -5106,6 +5451,7 @@ mod tests {
             None,
             PathMoveUndoRequirement::None,
             "copy",
+            None,
         );
 
         assert!(matches!(
@@ -6449,6 +6795,7 @@ mod tests {
                     requirement: PathMoveUndoRequirement::None,
                     published_content: None,
                     cross_filesystem_state: Default::default(),
+                    retained_copy_directory: None,
                 }))
             } else {
                 Err(PlatformError::CleanupPending {

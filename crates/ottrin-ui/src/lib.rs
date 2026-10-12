@@ -13433,7 +13433,8 @@ impl OttrinApp {
                         });
                         if let Some(msg) = &record.message {
                             ui.add_space(4.0);
-                            ui.label(RichText::new(msg).color(c.error).size(10.0 * c.font_scale));
+                            let message_color = if matches!(record.path_move_undo, Some(PathMoveUndoState::Undone)) { c.text_muted } else { c.error };
+                            ui.label(RichText::new(msg).color(message_color).size(10.0 * c.font_scale));
                         }
                         if path_move_undo_action_is_available(
                             record.status,

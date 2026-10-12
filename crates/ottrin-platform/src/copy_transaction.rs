@@ -7,6 +7,167 @@ use std::ffi::OsStr;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
+/// Session identity guards for a published Copy/create transaction's directories.
+#[cfg(target_os = "linux")]
+#[derive(Debug, Clone)]
+pub struct RetainedCopyTransaction(std::sync::Arc<RetainedCopyDirectories>);
+
+#[cfg(target_os = "linux")]
+#[derive(Debug)]
+struct RetainedCopyDirectories {
+    parent_mount: u64,
+    stage_mount: u64,
+    parent_identity: (u64, u64),
+    stage_identity: (u64, u64),
+    parent_path: PathBuf,
+    stage_path: PathBuf,
+    parent_watch: super::directory_watch::DirectoryWatch,
+    stage_watch: super::directory_watch::DirectoryWatch,
+}
+
+#[cfg(target_os = "linux")]
+impl PartialEq for RetainedCopyTransaction {
+    fn eq(&self, other: &Self) -> bool {
+        std::sync::Arc::ptr_eq(&self.0, &other.0)
+    }
+}
+#[cfg(target_os = "linux")]
+impl Eq for RetainedCopyTransaction {}
+
+#[cfg(target_os = "linux")]
+impl RetainedCopyTransaction {
+    fn validate_watches(&self) -> Result<(), PlatformError> {
+        self.0
+            .parent_watch
+            .validate()
+            .and_then(|()| self.0.stage_watch.validate())
+            .map_err(|_| PlatformError::StalePathMoveUndo(self.0.stage_path.display().to_string()))
+    }
+
+    fn open_directories(&self) -> Result<(std::fs::File, std::fs::File), PlatformError> {
+        use std::os::unix::fs::MetadataExt;
+        self.validate_watches()?;
+        let open = |path: &Path, identity: (u64, u64), mount: u64| {
+            let fd = rustix::fs::open(
+                path,
+                rustix::fs::OFlags::RDONLY
+                    | rustix::fs::OFlags::DIRECTORY
+                    | rustix::fs::OFlags::NOFOLLOW
+                    | rustix::fs::OFlags::CLOEXEC,
+                rustix::fs::Mode::empty(),
+            )
+            .map_err(|_| PlatformError::StalePathMoveUndo(path.display().to_string()))?;
+            let file = std::fs::File::from(fd);
+            let observed = file
+                .metadata()
+                .map_err(|error| PlatformError::Io(error.to_string()))?;
+            if identity != (observed.dev(), observed.ino())
+                || super::local_storage::local_path_mount_identity(
+                    &std::path::PathBuf::from(format!(
+                        "/proc/self/fd/{}",
+                        std::os::fd::AsRawFd::as_raw_fd(&file)
+                    )),
+                    true,
+                )
+                .map_err(|error| PlatformError::Io(error.to_string()))?
+                    != mount
+            {
+                return Err(PlatformError::StalePathMoveUndo(path.display().to_string()));
+            }
+            Ok(file)
+        };
+        let parent = open(
+            &self.0.parent_path,
+            self.0.parent_identity,
+            self.0.parent_mount,
+        )?;
+        let stage = open(
+            &self.0.stage_path,
+            self.0.stage_identity,
+            self.0.stage_mount,
+        )?;
+        self.validate_watches()?;
+        Ok((parent, stage))
+    }
+
+    pub(super) fn validate_path(&self, path: &Path) -> Result<(), PlatformError> {
+        use std::os::unix::fs::MetadataExt;
+        let parent = path.parent().ok_or_else(|| {
+            PlatformError::InvalidPathMoveUndoReceipt("transaction has no parent".into())
+        })?;
+        self.validate_watches()?;
+        for (named, held, mount) in [
+            (parent, self.0.parent_identity, self.0.parent_mount),
+            (path, self.0.stage_identity, self.0.stage_mount),
+        ] {
+            let observed = std::fs::symlink_metadata(named)
+                .map_err(|_| PlatformError::StalePathMoveUndo(named.display().to_string()))?;
+            if !observed.is_dir()
+                || held != (observed.dev(), observed.ino())
+                || super::local_storage::local_path_mount_identity(named, false)
+                    .map_err(|error| PlatformError::Io(error.to_string()))?
+                    != mount
+            {
+                return Err(PlatformError::StalePathMoveUndo(
+                    named.display().to_string(),
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    pub(super) fn validate_publication_parent(
+        &self,
+        published: &Path,
+    ) -> Result<(), PlatformError> {
+        use std::os::unix::fs::MetadataExt;
+        let parent = published.parent().ok_or_else(|| {
+            PlatformError::InvalidPathMoveUndoReceipt("publication has no parent".into())
+        })?;
+        self.validate_watches()?;
+        let held = self.0.parent_identity;
+        // Destinations may legitimately be directory symlinks. Follow the alias,
+        // but require its actual directory to remain the originally opened one.
+        let observed = std::fs::metadata(parent)
+            .map_err(|_| PlatformError::StalePathMoveUndo(parent.display().to_string()))?;
+        if !observed.is_dir()
+            || held != (observed.dev(), observed.ino())
+            || super::local_storage::local_path_mount_identity(parent, true)
+                .map_err(|error| PlatformError::Io(error.to_string()))?
+                != self.0.parent_mount
+        {
+            return Err(PlatformError::StalePathMoveUndo(
+                parent.display().to_string(),
+            ));
+        }
+        Ok(())
+    }
+
+    pub(super) fn withdraw_publication(
+        &self,
+        published: &Path,
+        retained: &Path,
+        exchange: bool,
+    ) -> Result<(), PlatformError> {
+        let name = published.file_name().ok_or_else(|| {
+            PlatformError::InvalidPathMoveUndoReceipt("publication has no entry name".into())
+        })?;
+        let flags = if exchange {
+            rustix::fs::RenameFlags::EXCHANGE
+        } else {
+            rustix::fs::RenameFlags::NOREPLACE
+        };
+        let (parent, stage) = self.open_directories()?;
+        rustix::fs::renameat_with(&parent, name, &stage, CANDIDATE, flags).map_err(|error| {
+            if error == rustix::io::Errno::EXIST {
+                PlatformError::DestinationExists(retained.display().to_string())
+            } else {
+                PlatformError::Io(error.to_string())
+            }
+        })
+    }
+}
+
 #[cfg(target_os = "linux")]
 pub(super) const CANDIDATE: &str = "candidate";
 
@@ -15,6 +176,8 @@ pub(super) const CANDIDATE: &str = "candidate";
 pub(super) enum CopyPublication {
     Published {
         retained_transaction: PathBuf,
+        #[cfg(target_os = "linux")]
+        retained_directory: RetainedCopyTransaction,
         published_path: PathBuf,
         published_identity: PathMoveIdentity,
         displaced_identity: Option<PathMoveIdentity>,
@@ -287,6 +450,38 @@ mod linux {
         fn retain(self) -> PathBuf {
             self.recovery_path()
         }
+
+        fn retain_for_undo(self) -> Result<(PathBuf, RetainedCopyTransaction), PlatformError> {
+            use std::os::unix::fs::MetadataExt;
+            let path = self.recovery_path();
+            let result = (|| {
+                let parent = std::fs::File::from(self.parent);
+                let stage = std::fs::File::from(self.stage);
+                let parent_info = parent.metadata()?;
+                let stage_info = stage.metadata()?;
+                let directories = RetainedCopyDirectories {
+                    parent_mount: super::super::local_storage::local_path_mount_identity(
+                        &PathBuf::from(format!("/proc/self/fd/{}", parent.as_raw_fd())),
+                        true,
+                    )?,
+                    stage_mount: super::super::local_storage::local_path_mount_identity(
+                        &PathBuf::from(format!("/proc/self/fd/{}", stage.as_raw_fd())),
+                        true,
+                    )?,
+                    parent_identity: (parent_info.dev(), parent_info.ino()),
+                    stage_identity: (stage_info.dev(), stage_info.ino()),
+                    parent_path: path.parent().expect("transaction parent").to_path_buf(),
+                    stage_path: path.clone(),
+                    parent_watch: super::super::directory_watch::DirectoryWatch::new(&parent)?,
+                    stage_watch: super::super::directory_watch::DirectoryWatch::new(&stage)?,
+                };
+                Ok::<_, std::io::Error>(RetainedCopyTransaction(std::sync::Arc::new(directories)))
+            })();
+            result.map(|guard| (path.clone(), guard)).map_err(|error| PlatformError::CommittedCleanupPending {
+                transaction: path.display().to_string(),
+                message: format!("publication completed but directory identity watches could not be established: {error}"),
+            })
+        }
     }
 
     #[cfg(test)]
@@ -420,8 +615,10 @@ mod linux {
                 message: format!("created {entry_kind} parent flush failed: {error}"),
             }
         })?;
+        let (retained_transaction, retained_directory) = transaction.retain_for_undo()?;
         Ok(CopyPublication::Published {
-            retained_transaction: transaction.retain(),
+            retained_transaction,
+            retained_directory,
             published_path: target,
             published_identity,
             displaced_identity: None,
@@ -624,8 +821,10 @@ mod linux {
             }
         })?;
         let published_path = destination_dir.join(&target_name);
+        let (retained_transaction, retained_directory) = transaction.retain_for_undo()?;
         Ok(CopyPublication::Published {
-            retained_transaction: transaction.retain(),
+            retained_transaction,
+            retained_directory,
             published_path,
             published_identity,
             displaced_identity: retained_displaced_identity,
