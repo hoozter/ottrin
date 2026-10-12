@@ -16,6 +16,21 @@ use thiserror::Error;
 pub use copy_transaction::RetainedCopyTransaction;
 #[cfg(target_os = "linux")]
 mod copy_recovery;
+#[cfg(target_os = "linux")]
+pub use copy_recovery::{CopyPhase, CopyRecoveryEvidence, RetainedCopyStatus};
+
+/// Reads retained Copy status without creating recovery data or granting Undo authority.
+#[cfg(target_os = "linux")]
+pub fn discover_retained_copy_transactions_at(
+    root: &Path,
+) -> Result<Vec<RetainedCopyStatus>, PlatformError> {
+    copy_recovery::discover_at(root)
+}
+
+#[cfg(target_os = "linux")]
+pub fn discover_retained_copy_transactions() -> Result<Vec<RetainedCopyStatus>, PlatformError> {
+    copy_recovery::discover_at(&copy_recovery::configured_root()?)
+}
 mod copy_transaction;
 #[cfg(target_os = "linux")]
 mod directory_watch;
@@ -233,6 +248,7 @@ pub fn is_windows_reserved_creation_name(name: &str) -> bool {
 /// callers: only this crate may compare it before an inverse rename.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(target_os = "linux", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(target_os = "linux", serde(deny_unknown_fields))]
 pub struct PathMoveIdentity {
     #[cfg(target_os = "linux")]
     device: u64,

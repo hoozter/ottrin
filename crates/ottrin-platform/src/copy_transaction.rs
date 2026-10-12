@@ -776,13 +776,35 @@ mod linux {
         } else {
             None
         };
+        let registry = if record.is_some() {
+            match super::super::copy_recovery::open_registry() {
+                Ok(registry) => Some(registry),
+                Err(error) => return Err(transaction.abandon(error)),
+            }
+        } else {
+            None
+        };
+        let mut registration = match registry.as_ref() {
+            Some(_) => match journal.try_lock_recovery() {
+                Ok(registration) => Some(registration),
+                Err(error) => return Err(transaction.abandon(PlatformError::Io(error.to_string()))),
+            },
+            None => None,
+        };
         let mut retained_displaced_identity = None;
         let mut retained_displaced_content = None;
         loop {
             if let Some(record) = record.as_mut() {
                 record.set_target(&publication_parent.join(&target_name));
                 record.clear_displaced();
-                if let Err(error) = journal.persist_copy_record(record) {
+                if let Err(error) = registration
+                    .as_mut()
+                    .expect("Copy record owns transaction lock")
+                    .persist_copy_in_registry(
+                        registry.as_ref().expect("Copy registry exists"),
+                        record,
+                    )
+                {
                     return Err(transaction.abandon(PlatformError::Io(error.to_string())));
                 }
                 if let Err(message) = hook(TestPoint::PublicationIntentDurable) {
@@ -831,7 +853,14 @@ mod linux {
                             };
                         if let Some(record) = record.as_mut() {
                             record.set_displaced(displaced_identity, displaced_content.clone());
-                            if let Err(error) = journal.persist_copy_record(record) {
+                            if let Err(error) = registration
+                                .as_mut()
+                                .expect("Copy record owns transaction lock")
+                                .persist_copy_in_registry(
+                                    registry.as_ref().expect("Copy registry exists"),
+                                    record,
+                                )
+                            {
                                 return Err(
                                     transaction.abandon(PlatformError::Io(error.to_string()))
                                 );
@@ -943,14 +972,16 @@ mod linux {
         })?;
         if let Some(record) = record.as_mut() {
             record.mark_published();
-            journal.persist_copy_record(record).map_err(|error| {
-                PlatformError::CommittedCleanupPending {
+            registration
+                .as_mut()
+                .expect("Copy record owns transaction lock")
+                .persist_copy_in_registry(registry.as_ref().expect("Copy registry exists"), record)
+                .map_err(|error| PlatformError::CommittedCleanupPending {
                     transaction: transaction.recovery_path().display().to_string(),
                     message: format!(
                         "Copy was published but its journal update is uncertain: {error}"
                     ),
-                }
-            })?;
+                })?;
         }
         let published_path = destination_dir.join(&target_name);
         let (retained_transaction, retained_directory) = transaction.retain_for_undo()?;
@@ -1035,7 +1066,7 @@ mod tests {
     use super::*;
     use std::process::Command;
 
-    struct TestDir(PathBuf);
+    struct TestDir(PathBuf, Option<PathBuf>);
     impl TestDir {
         fn new(label: &str) -> Self {
             loop {
@@ -1043,7 +1074,12 @@ mod tests {
                 let path = std::env::temp_dir()
                     .join(format!("ottrin-copy-{label}-{}", suffix.to_string_lossy()));
                 match std::fs::create_dir(&path) {
-                    Ok(()) => return Self(path),
+                    Ok(()) => {
+                        let previous = super::super::move_transaction::replace_test_recovery_root(
+                            Some(path.join("move-state")),
+                        );
+                        return Self(path, previous);
+                    }
                     Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
                     Err(error) => panic!("create test directory: {error}"),
                 }
@@ -1053,6 +1089,7 @@ mod tests {
     impl Drop for TestDir {
         fn drop(&mut self) {
             let _ = std::fs::remove_dir_all(&self.0);
+            let _ = super::super::move_transaction::replace_test_recovery_root(self.1.take());
         }
     }
 
@@ -1396,6 +1433,256 @@ mod tests {
     }
 
     #[test]
+    fn independent_copies_share_registry_without_contending_on_one_global_lock() {
+        struct ScopedRoot(Option<PathBuf>);
+        impl Drop for ScopedRoot {
+            fn drop(&mut self) {
+                super::super::move_transaction::replace_test_recovery_root(self.0.take());
+            }
+        }
+        let root = TestDir::new("registry-concurrent");
+        let destination = root.0.join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(root.0.join("first"), "first bytes").unwrap();
+        std::fs::write(root.0.join("second"), "second bytes").unwrap();
+        let shared_root = root.0.join("move-state");
+        let (ready_tx, ready_rx) = std::sync::mpsc::sync_channel(0);
+        let (release_tx, release_rx) = std::sync::mpsc::channel();
+        std::thread::scope(|scope| {
+            let first_source = root.0.join("first");
+            let first_destination = &destination;
+            let first_root = &shared_root;
+            let first = scope.spawn(move || {
+                let _guard =
+                    ScopedRoot(super::super::move_transaction::replace_test_recovery_root(
+                        Some(first_root.clone()),
+                    ));
+                copy_with_test_hook(
+                    &first_source,
+                    first_destination,
+                    ConflictAction::Skip,
+                    |point| {
+                        if point == TestPoint::PublicationIntentDurable {
+                            ready_tx.send(()).unwrap();
+                            release_rx
+                                .recv_timeout(std::time::Duration::from_secs(3))
+                                .map_err(|_| "concurrent Copy release timed out")?;
+                        }
+                        Ok(())
+                    },
+                )
+            });
+            ready_rx
+                .recv_timeout(std::time::Duration::from_secs(3))
+                .unwrap();
+            let second = scope
+                .spawn(|| {
+                    let _guard =
+                        ScopedRoot(super::super::move_transaction::replace_test_recovery_root(
+                            Some(shared_root.clone()),
+                        ));
+                    super::copy_entry_transactional(
+                        &root.0.join("second"),
+                        &destination,
+                        ConflictAction::Skip,
+                    )
+                })
+                .join()
+                .unwrap();
+            release_tx.send(()).unwrap();
+            second.unwrap();
+            first.join().unwrap().unwrap();
+        });
+        assert_eq!(
+            std::fs::read_to_string(destination.join("first")).unwrap(),
+            "first bytes"
+        );
+        assert_eq!(
+            std::fs::read_to_string(destination.join("second")).unwrap(),
+            "second bytes"
+        );
+        assert_eq!(
+            super::super::discover_retained_copy_transactions_at(&root.0.join("copies"))
+                .unwrap()
+                .len(),
+            2
+        );
+    }
+
+    #[test]
+    fn copy_and_move_registry_markers_coexist_and_replaced_roots_are_rejected() {
+        use super::super::move_recovery::LinuxJournalDirectory;
+        let root = TestDir::new("registry-markers");
+        let move_root = root.0.join("move-state");
+        std::fs::create_dir(&move_root).unwrap();
+        LinuxJournalDirectory::open_configured(&move_root).unwrap();
+        let move_marker = root.0.join(".ottrin-move-recovery-root");
+        let move_before = std::fs::read(&move_marker).unwrap();
+        let source = root.0.join("item");
+        let destination = root.0.join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&source, "new-complete").unwrap();
+        super::copy_entry_transactional(&source, &destination, ConflictAction::Skip).unwrap();
+        assert_eq!(std::fs::read(&move_marker).unwrap(), move_before);
+        LinuxJournalDirectory::open_configured_read_only(&move_root).unwrap();
+        let registry = root.0.join("copies");
+        assert_eq!(
+            super::super::discover_retained_copy_transactions_at(&registry)
+                .unwrap()
+                .len(),
+            1
+        );
+        std::fs::rename(&registry, root.0.join("retained-registry")).unwrap();
+        std::fs::create_dir(&registry).unwrap();
+        assert!(super::super::discover_retained_copy_transactions_at(&registry).is_err());
+        assert_eq!(std::fs::read(&move_marker).unwrap(), move_before);
+    }
+
+    #[test]
+    fn copy_registry_discovery_survives_a_fresh_process_and_does_not_modify_data() {
+        use super::super::{
+            CopyPhase, CopyRecoveryEvidence, discover_retained_copy_transactions_at,
+        };
+        const ROOT_ENV: &str = "OTTRIN_COPY_DISCOVERY_TEST_REGISTRY";
+        if let Some(registry) = std::env::var_os(ROOT_ENV) {
+            let entries = discover_retained_copy_transactions_at(Path::new(&registry)).unwrap();
+            assert_eq!(entries.len(), 1);
+            assert_eq!(entries[0].phase, Some(CopyPhase::Published));
+            assert_eq!(entries[0].evidence, CopyRecoveryEvidence::MatchingJournals);
+            return;
+        }
+        let root = TestDir::new("registry-fresh-process");
+        let source = root.0.join("item");
+        let destination = root.0.join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&source, "new-complete").unwrap();
+        let stage = retained_transaction(super::copy_entry_transactional(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+        ));
+        let local_before = std::fs::read(stage.join("copy-journal")).unwrap();
+        let registry = root.0.join("copies");
+        let entries_before = super::super::copy_recovery::discover_at(&registry).unwrap();
+        let central = registry.join(format!("{}.journal", entries_before[0].transaction_id));
+        let central_before = std::fs::read(&central).unwrap();
+        let status = Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", "copy_transaction::tests::copy_registry_discovery_survives_a_fresh_process_and_does_not_modify_data", "--nocapture"])
+            .env(ROOT_ENV, &registry).env("XDG_STATE_HOME", root.0.join("state"))
+            .status().unwrap();
+        assert!(status.success());
+        assert_eq!(
+            std::fs::read(stage.join("copy-journal")).unwrap(),
+            local_before
+        );
+        assert_eq!(std::fs::read(central).unwrap(), central_before);
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "new-complete");
+        assert_eq!(
+            std::fs::read_to_string(destination.join("item")).unwrap(),
+            "new-complete"
+        );
+    }
+
+    #[test]
+    fn copy_registry_discovery_reports_changed_or_missing_local_evidence_without_repairs() {
+        use super::super::{CopyRecoveryEvidence, discover_retained_copy_transactions_at};
+        for damage in ["missing", "mismatch", "replacement", "fifo"] {
+            let root = TestDir::new("registry-local-review");
+            let source = root.0.join("item");
+            let destination = root.0.join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            std::fs::write(&source, "new-complete").unwrap();
+            let stage = retained_transaction(super::copy_entry_transactional(
+                &source,
+                &destination,
+                ConflictAction::Skip,
+            ));
+            let journal = stage.join("copy-journal");
+            match damage {
+                "missing" => std::fs::remove_file(&journal).unwrap(),
+                "mismatch" => {
+                    let mut value: serde_json::Value =
+                        serde_json::from_slice(&std::fs::read(&journal).unwrap()).unwrap();
+                    value["phase"] = "publication-intent".into();
+                    std::fs::write(&journal, serde_json::to_vec(&value).unwrap()).unwrap();
+                }
+                "replacement" => {
+                    let bytes = std::fs::read(&journal).unwrap();
+                    std::fs::rename(&stage, root.0.join("retained-original")).unwrap();
+                    std::fs::create_dir(&stage).unwrap();
+                    std::fs::write(&journal, bytes).unwrap();
+                }
+                "fifo" => {
+                    std::fs::remove_file(&journal).unwrap();
+                    rustix::fs::mknodat(
+                        rustix::fs::CWD,
+                        &journal,
+                        rustix::fs::FileType::Fifo,
+                        rustix::fs::Mode::RUSR | rustix::fs::Mode::WUSR,
+                        0,
+                    )
+                    .unwrap();
+                }
+                _ => unreachable!(),
+            }
+            let before = std::fs::symlink_metadata(&journal).ok();
+            let entries = discover_retained_copy_transactions_at(&root.0.join("copies")).unwrap();
+            assert_eq!(entries.len(), 1);
+            assert!(matches!(
+                entries[0].evidence,
+                CopyRecoveryEvidence::NeedsReview { .. }
+            ));
+            assert_eq!(
+                std::fs::symlink_metadata(&journal).is_ok(),
+                before.is_some()
+            );
+            if damage == "mismatch" {
+                let value: serde_json::Value =
+                    serde_json::from_slice(&std::fs::read(&journal).unwrap()).unwrap();
+                assert_eq!(value["phase"], "publication-intent");
+            }
+            assert_eq!(
+                std::fs::read_to_string(destination.join("item")).unwrap(),
+                "new-complete"
+            );
+        }
+    }
+
+    #[test]
+    fn copy_registry_discovery_is_read_only_when_root_is_missing_or_journal_is_corrupt() {
+        use super::super::{CopyRecoveryEvidence, discover_retained_copy_transactions_at};
+        let root = TestDir::new("registry-read-only");
+        let registry = root.0.join("copies");
+        assert!(
+            discover_retained_copy_transactions_at(&registry)
+                .unwrap()
+                .is_empty()
+        );
+        assert!(!registry.exists());
+        assert!(!root.0.join(".ottrin-copy-recovery-root").exists());
+        let source = root.0.join("item");
+        let destination = root.0.join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&source, "new-complete").unwrap();
+        let stage = retained_transaction(super::copy_entry_transactional(
+            &source,
+            &destination,
+            ConflictAction::Skip,
+        ));
+        let local = std::fs::read(stage.join("copy-journal")).unwrap();
+        let entries = discover_retained_copy_transactions_at(&registry).unwrap();
+        let central = registry.join(format!("{}.journal", entries[0].transaction_id));
+        std::fs::write(&central, b"corrupt record").unwrap();
+        let entries = discover_retained_copy_transactions_at(&registry).unwrap();
+        assert!(matches!(
+            entries[0].evidence,
+            CopyRecoveryEvidence::NeedsReview { .. }
+        ));
+        assert_eq!(std::fs::read(central).unwrap(), b"corrupt record");
+        assert_eq!(std::fs::read(stage.join("copy-journal")).unwrap(), local);
+    }
+
+    #[test]
     fn completed_copy_journal_binds_publication_and_overwrite_backup() {
         use super::super::move_recovery::{NativePath, SourceTreeSnapshot};
         for overwrite in [false, true] {
@@ -1513,7 +1800,8 @@ mod tests {
             std::fs::write(destination.join("item"), "old-complete").unwrap();
             let status = Command::new(std::env::current_exe().unwrap())
                 .args(["--exact", "copy_transaction::tests::sigkill_immediately_before_and_after_exchange_preserves_both_entries", "--nocapture"])
-                .env("OTTRIN_SIGKILL_ROOT", &root.0).env("OTTRIN_SIGKILL_POINT", point).status().unwrap();
+                .env("OTTRIN_SIGKILL_ROOT", &root.0).env("OTTRIN_SIGKILL_POINT", point)
+                .env("XDG_STATE_HOME", root.0.join("state")).status().unwrap();
             assert!(!status.success());
             use std::os::unix::process::ExitStatusExt;
             assert_eq!(

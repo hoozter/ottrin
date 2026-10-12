@@ -455,3 +455,32 @@ remain the accepted `76f441f` build. Central registration/discovery, validation 
 restart authority, Activity ownership restoration, interrupted Undo replay and safe
 reclamation remain unfinished. Local records alone do not enable restart Undo or
 automatic deletion. Windows Copy Undo remains a separate unsupported capability.
+
+
+### Copy central registration and read-only restart discovery — source verification
+
+Linux Copy now registers each destination-local transaction in its configured
+state-home Copy registry before publication. Central and local records share the
+atomic journal writer and advance together; Copy uses a transaction-local lock
+so unrelated Copies can publish concurrently. Copy and Move roots have separate
+identity markers validated through the same root-opening implementation.
+
+The public discovery facade reads existing records without creating directories,
+markers or journals and without repairing or deleting data. It validates schemas,
+native paths, content-evidence shape, directory/mount bindings and journal pairs.
+Missing, replaced, malformed, mismatched or another-boot evidence remains visible
+as needing review. Matching journals alone do not grant restart Undo authority or
+prove that the publication/backup contents remain unchanged. Journal and marker
+reads reject unsafe ownership/permissions, symlinks and non-regular entries;
+substituted FIFOs are rejected without blocking.
+
+All 344 regular platform and 351 regular UI tests pass (one ignored in each), with
+strict Linux/Windows-target UI Clippy and formatting checks. Fresh-process,
+read-only/no-creation, altered/missing local record, FIFO, registry replacement,
+Move/Copy marker coexistence and concurrent Copy checks pass. Verification uses
+private state-home data and removes it after execution. Evidence:
+`.hermes/evidence/copy-registry/`. This is source-only; current Linux packages
+remain the accepted `76f441f` build. Restart mutation authority, Activity ownership
+restoration, interrupted inverse replay and safe reclamation remain unfinished.
+No restart Undo or automatic retained-data deletion has been enabled. Windows
+Copy Undo remains unsupported.

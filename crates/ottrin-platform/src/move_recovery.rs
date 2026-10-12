@@ -98,6 +98,48 @@ impl SourceTreeSnapshot {
         }
     }
 
+    pub(super) fn has_complete_content_evidence(&self) -> bool {
+        let mut previous: Option<PathBuf> = None;
+        if self.entries.is_empty() {
+            return false;
+        }
+        for (index, entry) in self.entries.iter().enumerate() {
+            let Ok(path) = entry.path.decode() else {
+                return false;
+            };
+            if (index == 0 && !path.as_os_str().is_empty())
+                || (index > 0 && path.as_os_str().is_empty())
+                || path
+                    .components()
+                    .any(|part| !matches!(part, std::path::Component::Normal(_)))
+                || previous.as_ref().is_some_and(|previous| previous >= &path)
+            {
+                return false;
+            }
+            let valid_content = match (&entry.content, entry.identity.file_type) {
+                (
+                    Some(SourceContentEvidence::Regular { sha256_hex, .. }),
+                    LinuxFileType::Regular,
+                ) => {
+                    sha256_hex.len() == 64
+                        && sha256_hex
+                            .bytes()
+                            .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
+                }
+                (Some(SourceContentEvidence::Directory), LinuxFileType::Directory) => true,
+                (Some(SourceContentEvidence::Symlink { target }), LinuxFileType::Symlink) => {
+                    target.decode().is_ok()
+                }
+                _ => false,
+            };
+            if !valid_content {
+                return false;
+            }
+            previous = Some(path);
+        }
+        true
+    }
+
     pub fn has_same_paths_and_content(&self, other: &Self) -> bool {
         self.entries.len() == other.entries.len()
             && self
@@ -2137,6 +2179,46 @@ impl LinuxJournalDirectory {
         self.replace_named("copy-journal", record)
     }
 
+    pub(super) fn read_copy_record(
+        &self,
+        name: &str,
+    ) -> Result<super::copy_recovery::CopyRecord, super::PlatformError> {
+        let encoded = self
+            .read_named(name)
+            .map_err(|error| super::PlatformError::Io(error.to_string()))?;
+        super::copy_recovery::CopyRecord::parse(&encoded)
+    }
+
+    pub(super) fn discover_copy_records(
+        &self,
+    ) -> Result<Vec<super::copy_recovery::CopyRegistryEntry>, JournalError> {
+        let mut directory = rustix::fs::Dir::read_from(&self.directory)
+            .map_err(|error| JournalError::Io(error.to_string()))?;
+        let mut records = Vec::new();
+        while let Some(entry) = directory.read() {
+            let entry = entry.map_err(|error| JournalError::Io(error.to_string()))?;
+            let bytes = entry.file_name().to_bytes();
+            let Some(stem) = bytes.strip_suffix(b".journal") else {
+                continue;
+            };
+            let id = String::from_utf8_lossy(stem).into_owned();
+            let record = if stem.len() != 32
+                || !stem.iter().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+            {
+                Err(super::PlatformError::Io(
+                    "invalid Copy registry filename".into(),
+                ))
+            } else {
+                self.read_copy_record(
+                    std::str::from_utf8(bytes).expect("validated journal filename"),
+                )
+            };
+            records.push((id, record));
+        }
+        records.sort_unstable_by(|a, b| a.0.cmp(&b.0));
+        Ok(records)
+    }
+
     /// Pins the transaction-relative claimed source before runtime cleanup can be interrupted.
     pub fn claimed_source_cleanup_authority(
         &self,
@@ -2179,17 +2261,25 @@ impl LinuxJournalDirectory {
     }
 
     pub fn open_configured(path: &Path) -> Result<Self, LinuxCentralRootOpenError> {
-        Self::open_configured_inner(path, true)
+        Self::open_configured_inner(path, true, ".ottrin-move-recovery-root")
     }
 
     /// Opens an already-anchored recovery root without creating an anchor or any journal data.
     pub fn open_configured_read_only(path: &Path) -> Result<Self, LinuxCentralRootOpenError> {
-        Self::open_configured_inner(path, false)
+        Self::open_configured_inner(path, false, ".ottrin-move-recovery-root")
+    }
+
+    pub(super) fn open_copy_registry(
+        path: &Path,
+        initialize_anchor: bool,
+    ) -> Result<Self, LinuxCentralRootOpenError> {
+        Self::open_configured_inner(path, initialize_anchor, ".ottrin-copy-recovery-root")
     }
 
     fn open_configured_inner(
         path: &Path,
         initialize_anchor: bool,
+        anchor_name: &str,
     ) -> Result<Self, LinuxCentralRootOpenError> {
         use rustix::fs::{
             AtFlags, FileType, Mode, OFlags, fstat, fsync as fsync_directory, openat, renameat,
@@ -2198,12 +2288,11 @@ impl LinuxJournalDirectory {
         use rustix::process::geteuid;
 
         #[derive(Serialize, Deserialize)]
+        #[serde(deny_unknown_fields)]
         struct CentralRootAnchor {
             device: u64,
             inode: u64,
         }
-
-        const ANCHOR: &str = ".ottrin-move-recovery-root";
 
         let directory_name = path
             .file_name()
@@ -2244,12 +2333,20 @@ impl LinuxJournalDirectory {
         // identity check.
         match openat(
             &parent,
-            ANCHOR,
-            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            anchor_name,
+            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC | OFlags::NONBLOCK,
             Mode::empty(),
         ) {
             Ok(anchor_file) => {
                 use std::io::Read;
+                let anchor_metadata = fstat(&anchor_file)
+                    .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
+                if FileType::from_raw_mode(anchor_metadata.st_mode) != FileType::RegularFile
+                    || anchor_metadata.st_uid != geteuid().as_raw()
+                    || anchor_metadata.st_mode & 0o022 != 0
+                {
+                    return Err(LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable);
+                }
 
                 let mut encoded = Vec::new();
                 std::fs::File::from(anchor_file)
@@ -2272,7 +2369,7 @@ impl LinuxJournalDirectory {
                 let mut random = [0_u8; 16];
                 getrandom::fill(&mut random)
                     .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
-                let next_name = format!("{ANCHOR}.next-{}", encode_hex(&random));
+                let next_name = format!("{anchor_name}.next-{}", encode_hex(&random));
                 let next = openat(
                     &parent,
                     next_name.as_str(),
@@ -2291,7 +2388,7 @@ impl LinuxJournalDirectory {
                     .and_then(|()| file.sync_all())
                     .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
 
-                renameat(&parent, next_name.as_str(), &parent, ANCHOR)
+                renameat(&parent, next_name.as_str(), &parent, anchor_name)
                     .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
                 fsync_directory(&parent)
                     .map_err(|_| LinuxCentralRootOpenError::StableIdentityAuthorityUnavailable)?;
@@ -3061,7 +3158,7 @@ impl LinuxJournalDirectory {
         let journal = openat(
             &self.directory,
             name,
-            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC | OFlags::NONBLOCK,
             Mode::empty(),
         )
         .map_err(|error| {
@@ -3071,6 +3168,17 @@ impl LinuxJournalDirectory {
                 LinuxJournalReadError::Io(error.to_string())
             }
         })?;
+        let metadata = rustix::fs::fstat(&journal)
+            .map_err(|error| LinuxJournalReadError::Io(error.to_string()))?;
+        if rustix::fs::FileType::from_raw_mode(metadata.st_mode)
+            != rustix::fs::FileType::RegularFile
+            || metadata.st_uid != rustix::process::geteuid().as_raw()
+            || metadata.st_mode & 0o022 != 0
+        {
+            return Err(LinuxJournalReadError::Io(
+                "journal is not an owned regular file with safe permissions".into(),
+            ));
+        }
         let mut encoded = Vec::new();
         File::from(journal)
             .read_to_end(&mut encoded)
@@ -3202,6 +3310,18 @@ impl LinuxJournalDirectory {
 
 #[cfg(target_os = "linux")]
 impl LinuxRecoveryLock<'_> {
+    pub(super) fn persist_copy_in_registry(
+        &mut self,
+        registry: &LinuxJournalDirectory,
+        record: &super::copy_recovery::CopyRecord,
+    ) -> Result<(), JournalError> {
+        let id = record
+            .transaction_id()
+            .map_err(|error| JournalError::Io(error.to_string()))?;
+        registry.replace_named(&format!("{id}.journal"), record)?;
+        self.central.persist_copy_record(record)
+    }
+
     pub fn prepare_with_local(
         &mut self,
         local: &LinuxJournalDirectory,
@@ -8096,10 +8216,11 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn central_discovery_surfaces_filename_record_transaction_mismatch_without_mutation() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-move-discover-id-mismatch-{}",
-            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
-        ));
+        let fixture = tempfile::Builder::new()
+            .prefix("ottrin-move-discover-id-mismatch-")
+            .tempdir()
+            .unwrap();
+        let root = fixture.path().to_path_buf();
         std::fs::create_dir_all(&root).unwrap();
         let filename_transaction_id = [0x58; 16];
         let record_transaction_id = [0x59; 16];
@@ -8116,6 +8237,8 @@ mod tests {
         let name = "58585858585858585858585858585858.journal";
         let encoded = serde_json::to_vec(&record).unwrap();
         std::fs::write(root.join(name), &encoded).unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(root.join(name), std::fs::Permissions::from_mode(0o600)).unwrap();
         let directory = LinuxJournalDirectory::open(&root).unwrap();
 
         let discovered = directory.discover_prepared();
@@ -9559,10 +9682,23 @@ mod tests {
      {
         use std::os::unix::fs::MetadataExt;
 
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-move-overwrite-exchange-interruption-{}",
-            encode_hex(&getrandom::u64().unwrap().to_ne_bytes())
-        ));
+        fn write_private_journal(path: &Path, bytes: impl AsRef<[u8]>) -> std::io::Result<()> {
+            use std::io::Write;
+            use std::os::unix::fs::OpenOptionsExt;
+            std::fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .mode(0o600)
+                .open(path)?
+                .write_all(bytes.as_ref())
+        }
+
+        let fixture = tempfile::Builder::new()
+            .prefix("ottrin-move-overwrite-exchange-interruption-")
+            .tempdir()
+            .unwrap();
+        let root = fixture.path().to_path_buf();
         let central_path = root.join("central");
         let local_path = root.join(".ottrin-move-42424242424242424242424242424242");
         let destination_path = root.join("destination");
@@ -10134,7 +10270,7 @@ mod tests {
                 &local,
                 [0x42; 16],
                 preflight,
-                || std::fs::write(&local_journal, b"corrupted cleanup-pending evidence").unwrap(),
+                || write_private_journal(&local_journal, b"corrupted cleanup-pending evidence").unwrap(),
             ),
             Err(LinuxAdvanceClaimedSourceDeletionPendingError::LocalJournalContentChanged)
         );
@@ -10142,7 +10278,8 @@ mod tests {
             std::fs::read(&central_journal).unwrap(),
             central_before_local_journal_content_boundary
         );
-        std::fs::write(&local_journal, &local_before_local_journal_content_boundary).unwrap();
+        write_private_journal(&local_journal, &local_before_local_journal_content_boundary)
+            .unwrap();
         assert_eq!(
             std::fs::read(&local_journal).unwrap(),
             local_before_local_journal_content_boundary
@@ -10172,11 +10309,11 @@ mod tests {
                 &local,
                 [0x42; 16],
                 preflight,
-                || std::fs::write(&central_journal, b"corrupted central cleanup-pending evidence").unwrap(),
+                || write_private_journal(&central_journal, b"corrupted central cleanup-pending evidence").unwrap(),
             ),
             Err(LinuxAdvanceClaimedSourceDeletionPendingError::CentralJournalContentChanged)
         );
-        std::fs::write(
+        write_private_journal(
             &central_journal,
             &central_before_central_journal_content_boundary,
         )
@@ -10224,6 +10361,9 @@ mod tests {
                         &local_before_central_only_boundary,
                     )
                     .unwrap();
+                    use std::os::unix::fs::PermissionsExt;
+                    std::fs::set_permissions(&substituted_local_after_central_persistence,
+                        std::fs::Permissions::from_mode(0o600)).unwrap();
                     std::fs::rename(&local_journal, &local_after_central_persistence_backup)
                         .unwrap();
                     std::fs::rename(
@@ -10254,7 +10394,7 @@ mod tests {
             std::fs::read(&published_target).unwrap(),
             b"new target after exchange"
         );
-        std::fs::write(&central_journal, &central_before_central_only_boundary).unwrap();
+        write_private_journal(&central_journal, &central_before_central_only_boundary).unwrap();
         std::fs::remove_file(&local_journal).unwrap();
         std::fs::rename(&local_after_central_persistence_backup, &local_journal).unwrap();
         local
@@ -10276,7 +10416,7 @@ mod tests {
                 [0x42; 16],
                 preflight,
                 || {
-                    std::fs::write(
+                    write_private_journal(
                         &local_journal,
                         [local_before_central_only_content_boundary.as_slice(), b"\n"].concat(),
                     )
@@ -10300,8 +10440,8 @@ mod tests {
             std::fs::read(&published_target).unwrap(),
             b"new target after exchange"
         );
-        std::fs::write(&central_journal, &central_before_central_only_boundary).unwrap();
-        std::fs::write(&local_journal, &local_before_central_only_content_boundary).unwrap();
+        write_private_journal(&central_journal, &central_before_central_only_boundary).unwrap();
+        write_private_journal(&local_journal, &local_before_central_only_content_boundary).unwrap();
         // After central durability, a byte-identical claimed-source replacement must not
         // inherit the opaque preflight before the matching local record is persisted.
         let claimed_after_central_persistence_backup =
@@ -10346,7 +10486,7 @@ mod tests {
             std::fs::read(&published_target).unwrap(),
             b"new target after exchange"
         );
-        std::fs::write(&central_journal, &central_before_central_only_boundary).unwrap();
+        write_private_journal(&central_journal, &central_before_central_only_boundary).unwrap();
         std::fs::remove_dir_all(&claimed_path).unwrap();
         std::fs::rename(&claimed_after_central_persistence_backup, &claimed_path).unwrap();
         let preflight = recovery
@@ -10523,6 +10663,9 @@ mod tests {
                         std::fs::read(&central_journal).unwrap(),
                     )
                     .unwrap();
+                    use std::os::unix::fs::PermissionsExt;
+                    std::fs::set_permissions(&substituted_central_after_unlinked_persistence,
+                        std::fs::Permissions::from_mode(0o600)).unwrap();
                     std::fs::rename(
                         &central_journal,
                         &central_after_unlinked_persistence_backup,
@@ -10554,7 +10697,7 @@ mod tests {
         );
         std::fs::remove_file(&central_journal).unwrap();
         std::fs::rename(&central_after_unlinked_persistence_backup, &central_journal).unwrap();
-        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
+        write_private_journal(&central_journal, &central_before_unlinked_persistence).unwrap();
         // The durable central journal must also be content-stable before matching local
         // persistence; an in-place edit remains central-only restart evidence.
         assert!(matches!(
@@ -10563,11 +10706,11 @@ mod tests {
                 &source_parent,
                 &destination_parent,
                 [0x42; 16],
-                || std::fs::write(&central_journal, b"corrupted durable post-unlink evidence").unwrap(),
+                || write_private_journal(&central_journal, b"corrupted durable post-unlink evidence").unwrap(),
             ),
             Err(LinuxAdvanceClaimedSourceUnlinkedError::CentralDurableCentralJournalContentChanged { .. })
         ));
-        std::fs::write(
+        write_private_journal(
             &central_journal,
             serde_json::to_vec(&claimed_source_unlinked).unwrap(),
         )
@@ -10587,7 +10730,7 @@ mod tests {
             std::fs::read(&retained_displaced).unwrap(),
             b"displaced target retained"
         );
-        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
+        write_private_journal(&central_journal, &central_before_unlinked_persistence).unwrap();
         // Once the central post-unlink marker is durable, a byte-identical local-journal
         // replacement must not be overwritten by its matching local persistence. The durable
         // restart classification must remain central-only and all retained destination data
@@ -10608,6 +10751,9 @@ mod tests {
                         &local_before_unlinked_central_only_boundary,
                     )
                     .unwrap();
+                    use std::os::unix::fs::PermissionsExt;
+                    std::fs::set_permissions(&substituted_local_after_unlinked_central,
+                        std::fs::Permissions::from_mode(0o600)).unwrap();
                     std::fs::rename(&local_journal, &local_after_unlinked_central_backup)
                         .unwrap();
                     std::fs::rename(&substituted_local_after_unlinked_central, &local_journal)
@@ -10635,7 +10781,7 @@ mod tests {
             std::fs::read(&retained_displaced).unwrap(),
             b"displaced target retained"
         );
-        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
+        write_private_journal(&central_journal, &central_before_unlinked_persistence).unwrap();
         std::fs::remove_file(&local_journal).unwrap();
         std::fs::rename(&local_after_unlinked_central_backup, &local_journal).unwrap();
         // Identity alone is insufficient after central durability: an in-place local-journal
@@ -10649,7 +10795,7 @@ mod tests {
                 &destination_parent,
                 [0x42; 16],
                 || {
-                    std::fs::write(
+                    write_private_journal(
                         &local_journal,
                         [
                             local_before_unlinked_central_content_boundary.as_slice(),
@@ -10677,8 +10823,8 @@ mod tests {
             std::fs::read(&retained_displaced).unwrap(),
             b"displaced target retained"
         );
-        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
-        std::fs::write(
+        write_private_journal(&central_journal, &central_before_unlinked_persistence).unwrap();
+        write_private_journal(
             &local_journal,
             &local_before_unlinked_central_content_boundary,
         )
@@ -10711,7 +10857,7 @@ mod tests {
             b"displaced target retained"
         );
         std::fs::rename(&claimed_path, &unlink_backup).unwrap();
-        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
+        write_private_journal(&central_journal, &central_before_unlinked_persistence).unwrap();
         // A durable post-unlink marker must not let a replacement source-transaction
         // directory inherit the matching local persistence merely because the old anchored
         // descriptor still contains plausible journal evidence.
@@ -10742,7 +10888,7 @@ mod tests {
             b"displaced target retained"
         );
         std::fs::rename(&reparented_local_after_unlinked, &local_path).unwrap();
-        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
+        write_private_journal(&central_journal, &central_before_unlinked_persistence).unwrap();
         assert_eq!(
             central.load_published_restart_state(&local, [0x42; 16]),
             Ok(LinuxPublishedRestartState::MatchingPair(
@@ -10783,7 +10929,7 @@ mod tests {
             std::fs::read(&retained_displaced).unwrap(),
             b"displaced target retained"
         );
-        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
+        write_private_journal(&central_journal, &central_before_unlinked_persistence).unwrap();
         // A byte-identical replacement at the anchored name is equally untrusted: the old
         // local descriptor must not grant the new directory matching-persistence authority.
         let substituted_local_after_unlinked = root.join("substituted-local-after-unlinked");
@@ -10792,6 +10938,12 @@ mod tests {
         std::fs::write(
             substituted_local_after_unlinked.join("journal"),
             std::fs::read(&local_journal).unwrap(),
+        )
+        .unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(
+            substituted_local_after_unlinked.join("journal"),
+            std::fs::Permissions::from_mode(0o600),
         )
         .unwrap();
         assert!(matches!(
@@ -10825,7 +10977,7 @@ mod tests {
         std::fs::remove_file(local_path.join("journal")).unwrap();
         std::fs::remove_dir(&local_path).unwrap();
         std::fs::rename(&local_after_unlinked_backup, &local_path).unwrap();
-        std::fs::write(&central_journal, &central_before_unlinked_persistence).unwrap();
+        write_private_journal(&central_journal, &central_before_unlinked_persistence).unwrap();
         let failed = recovery.advance_cross_device_overwrite_to_claimed_source_unlinked_with_local_after_central_local_failure(
                 &local,
                 &source_parent,
@@ -10963,7 +11115,7 @@ mod tests {
                 [0x42; 16],
                 || {
                     std::fs::rename(&local_journal, &replaced_journal_backup).unwrap();
-                    std::fs::write(&local_journal, &journal_bytes).unwrap();
+                    write_private_journal(&local_journal, &journal_bytes).unwrap();
                 },
             ),
             Err(LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged)
@@ -11034,13 +11186,14 @@ mod tests {
                 &destination_parent,
                 [0x42; 16],
                 || {},
-                || std::fs::write(&local_journal, b"modified after final journal check").unwrap(),
+                || write_private_journal(&local_journal, b"modified after final journal check")
+                    .unwrap(),
             ),
             Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
                 LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged
             ))
         );
-        std::fs::write(&local_journal, final_journal_bytes).unwrap();
+        write_private_journal(&local_journal, final_journal_bytes).unwrap();
         // The final topology scan itself is still only an observation. A reparent immediately
         // after it must be surfaced as a typed rejection instead of being obscured by the
         // prospective preflight's generic no-mutation outcome.
@@ -11079,7 +11232,7 @@ mod tests {
                 (
                     || {},
                     || {},
-                    || std::fs::write(&local_journal, b"modified after final topology scan")
+                    || write_private_journal(&local_journal, b"modified after final topology scan")
                         .unwrap(),
                 ),
             ),
@@ -11087,7 +11240,7 @@ mod tests {
                 LinuxInspectClaimedSourceDirectoryCleanupError::JournalChanged
             ))
         );
-        std::fs::write(&local_journal, journal_before_final_topology_change).unwrap();
+        write_private_journal(&local_journal, journal_before_final_topology_change).unwrap();
         // The matching central record is equally part of the durable authority. Corruption
         // after the final source-local scan must remain a strict restart-evidence rejection.
         let central_before_final_topology_change = std::fs::read(&central_journal).unwrap();
@@ -11101,7 +11254,7 @@ mod tests {
                     || {},
                     || {},
                     || {
-                        std::fs::write(
+                        write_private_journal(
                             &central_journal,
                             b"corrupt central journal after final topology scan",
                         )
@@ -11119,7 +11272,7 @@ mod tests {
                 )
             ))
         ));
-        std::fs::write(&central_journal, central_before_final_topology_change).unwrap();
+        write_private_journal(&central_journal, central_before_final_topology_change).unwrap();
         // A parseable but stale central phase is also not authority. Its atomic central-journal
         // replacement is caught by the final anchored identity check before it can be parsed.
         let central_mismatch = recovery
@@ -11161,8 +11314,11 @@ mod tests {
                     || {},
                     || {
                         std::fs::rename(&central_journal, &substituted_central_journal).unwrap();
-                        std::fs::write(&central_journal, &central_before_identity_substitution)
-                            .unwrap();
+                        write_private_journal(
+                            &central_journal,
+                            &central_before_identity_substitution,
+                        )
+                        .unwrap();
                     },
                 ),
             ),
@@ -11183,7 +11339,7 @@ mod tests {
                 &destination_parent,
                 [0x42; 16],
                 || {
-                    std::fs::write(
+                    write_private_journal(
                         &central_journal,
                         b"corrupt central journal after final identity check",
                     )
@@ -11200,7 +11356,7 @@ mod tests {
                 )
             ))
         ));
-        std::fs::write(&central_journal, central_before_final_content_change).unwrap();
+        write_private_journal(&central_journal, central_before_final_content_change).unwrap();
         // A syntactically valid but different central phase written through the same inode is
         // evidence mismatch too; it must not be mistaken for a clean prospective preflight.
         central
@@ -11214,7 +11370,7 @@ mod tests {
                 &source_parent,
                 &destination_parent,
                 [0x42; 16],
-                || std::fs::write(&central_journal, &central_cleanup_pending_bytes).unwrap(),
+                || write_private_journal(&central_journal, &central_cleanup_pending_bytes).unwrap(),
             ),
             Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(
                 LinuxInspectClaimedSourceDirectoryCleanupError::Retained(
@@ -11259,8 +11415,11 @@ mod tests {
                         &substituted_central_journal_after_final_reload,
                     )
                     .unwrap();
-                    std::fs::write(&central_journal, &central_before_final_reload_substitution)
-                        .unwrap();
+                    write_private_journal(
+                        &central_journal,
+                        &central_before_final_reload_substitution,
+                    )
+                    .unwrap();
                 },
             ),
             Err(LinuxClaimedSourceDirectoryCleanupPreflightError::Inspect(

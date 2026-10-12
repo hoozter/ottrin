@@ -8051,7 +8051,7 @@ fn flush_tree_bottom_up(path: &Path) -> Result<(), PlatformError> {
 }
 
 #[cfg(target_os = "linux")]
-fn default_recovery_root() -> Result<std::path::PathBuf, PlatformError> {
+pub(super) fn default_recovery_root() -> Result<std::path::PathBuf, PlatformError> {
     #[cfg(test)]
     if let Some(root) = TEST_RECOVERY_ROOT.with(|root| root.borrow().clone()) {
         return Ok(root);
