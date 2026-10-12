@@ -667,7 +667,9 @@ This guards session ownership but does not reclaim retained transaction data.
 History eviction/Clear, durable cleanup intent, changed retained-content refusal,
 and safe recursive reclamation still need one explicit lifecycle. Never replace
 that work with deletion by transaction name or age. Native physical removable
-acceptance and exact rebuilt-package acceptance remain separate requirements.
+acceptance remains separate from the passing private mount test. Exact rebuilt
+AppImage acceptance is recorded in
+`dist/packages/COPY_DIRECTORY_OWNERSHIP_ACCEPTANCE.json`.
 
 Run the mount fixture only inside an explicitly owned child namespace:
 
