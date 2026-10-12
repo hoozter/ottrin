@@ -7,9 +7,9 @@ Published at the stable `dist/packages/` paths:
 - `ottrin_0.1.0_amd64.deb`.
 - `ottrin-0.1.0-1.x86_64.rpm`.
 
-The AppImage and portable/RPM payloads currently use clean revision `6e8cef0`. The DEB uses package revision `9b0f6db`, with the same accepted `6e8cef0` executable bytes and corrected libc admission metadata. Exact checksums and provenance are adjacent to each artifact; `LINUX_PACKAGES_ACCEPTANCE.json` distinguishes current DEB verification from prior package runtime evidence.
+The AppImage and portable/RPM payloads currently use clean revision `6e8cef0`. The DEB and RPM use package revision `221e02b`, with the same accepted `6e8cef0` executable code and corrected libc/authentication dependencies. Exact checksums and provenance are adjacent to each artifact; `LINUX_PACKAGES_ACCEPTANCE.json` distinguishes current native package verification from prior package runtime evidence.
 
-The earlier `6e8cef0` DEB passed fresh Ubuntu 24.04.5 VM installation, standard-user text-preview launch/clean exit, same-version reinstall/removal with preferences preserved, and real systemd user-service installation/status/restart/removal. Receipt: `DEB_INSTALL_ACCEPTANCE.json`. The current metadata-only DEB has payload and CLI verification in `DEB_LIBC_ACCEPTANCE.json`; its VM installation has not been repeated.
+The earlier `6e8cef0` DEB passed fresh Ubuntu 24.04.5 VM installation, standard-user text-preview launch/clean exit, same-version reinstall/removal with preferences preserved, and real systemd user-service installation/status/restart/removal. Receipt: `DEB_INSTALL_ACCEPTANCE.json`. The current DEB/RPM have payload and generated dependency verification in `NATIVE_AUTH_RUNTIME_ACCEPTANCE.json`, including extracted DEB CLI launch; their clean-system installation has not been repeated.
 
 Portable PDFium placement and exact archive PDF preview are accepted. Native packages use distribution runtime libraries, and portable media playback uses system GStreamer. Cross-version upgrade, fresh RPM installation, full desktop integration, helper authentication and reboot/logout service persistence remain open. Historical receipts apply only to their recorded artifact hashes.
 
