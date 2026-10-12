@@ -179,3 +179,7 @@ Run this gate once the implementation outcomes above are source-complete and exa
 - Version, artifact names, checksums and generated release notes agree.
 - Required signatures verify after download.
 - David reviews the release notes and any remaining known limitations. No blocker is waived without a written decision.
+
+### Windows MSI desktop integration — 2026-10-12
+
+The per-user MSI now defines Ottrin and Uninstall Ottrin Start menu shortcuts, an Installed Apps icon, and uninstall ownership for its menu folder and registration marker. Both Windows portable builders carry `assets/icon.ico`, derived from the authoritative 256-pixel `assets/icon.png` at 16, 24, 32, 48, 64, 128 and 256 pixels. The MSI embeds this small icon resource rather than duplicating the application executable. Native package verification is pending; normal installation checks do not close the separately recorded Windows Installer rollback gate.

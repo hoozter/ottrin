@@ -135,7 +135,7 @@ cp "$BUILD_DIR/ottrin-legacy-doc-render.exe" "$STAGE/bin/ottrin-legacy-doc-rende
 cp "$BUILD_DIR/ottrin-priv-helper.exe" "$STAGE/bin/ottrin-priv-helper.exe"
 download_verify_and_package_pdfium "$STAGE/bin/pdfium"
 package_graphics_compatibility_runtime "$STAGE/bin" "$STAGE/third-party-notices"
-cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/logo.svg" "$STAGE/assets/"
+cp "$ROOT/assets/icon.svg" "$ROOT/assets/icon.png" "$ROOT/assets/icon.ico" "$ROOT/assets/logo.svg" "$STAGE/assets/"
 cp "$ROOT/README.md" "$STAGE/"
 cp "$ROOT/LICENSE" "$STAGE/"
 cp "$ROOT/docs/USER_GUIDE.md" "$ROOT/docs/DEVELOPMENT.md" "$ROOT/docs/ROADMAP.md" \

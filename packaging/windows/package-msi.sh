@@ -21,6 +21,7 @@ MSI="$DIST_DIR/Ottrin-$VERSION-windows-x64.msi"
 
 required=(
   bin/ottrin.exe
+  assets/icon.ico
   bin/ottrin-office-render.exe
   bin/ottrin-legacy-doc-render.exe
   bin/ottrin-priv-helper.exe

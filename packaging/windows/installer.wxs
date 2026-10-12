@@ -11,6 +11,8 @@
          Stable component identities let Windows Installer retain shared files. -->
     <MajorUpgrade Schedule="afterInstallExecute" DowngradeErrorMessage="A newer version of Ottrin is already installed." />
     <MediaTemplate EmbedCab="yes" />
+    <Icon Id="OttrinApp.ico" SourceFile="$(var.Stage)/assets/icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="OttrinApp.ico" />
 
     <StandardDirectory Id="LocalAppDataFolder">
       <Directory Id="ProgramsFolder" Name="Programs">
@@ -19,6 +21,22 @@
         </Directory>
       </Directory>
     </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="OttrinProgramMenuFolder" Name="Ottrin" />
+    </StandardDirectory>
+
+    <Component Id="StartMenuComponent" Directory="OttrinProgramMenuFolder" Guid="*">
+      <Shortcut Id="ApplicationShortcut" Name="Ottrin"
+          Target="[#MainExecutable]" WorkingDirectory="BinFolder"
+          Icon="OttrinApp.ico" IconIndex="0" />
+      <Shortcut Id="UninstallShortcut" Name="Uninstall Ottrin"
+          Target="[System64Folder]msiexec.exe" Arguments="/x [ProductCode]"
+          WorkingDirectory="System64Folder" Icon="OttrinApp.ico" IconIndex="0" />
+      <RemoveFolder Id="RemoveOttrinProgramMenuFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\Ottrin\MSI" Name="StartMenuInstalled"
+          Type="integer" Value="1" KeyPath="yes" />
+    </Component>
 
     <Component Id="MainExecutableComponent" Directory="BinFolder" Guid="*">
       <File Id="MainExecutable" Source="$(var.Stage)/bin/ottrin.exe" KeyPath="yes" />
@@ -37,6 +55,7 @@
     <Feature Id="MainFeature" Title="Ottrin" Level="1">
       <ComponentRef Id="MainExecutableComponent" />
       <ComponentRef Id="IndexTransactionComponent" />
+      <ComponentRef Id="StartMenuComponent" />
       <ComponentGroupRef Id="PortablePayload" />
     </Feature>
 

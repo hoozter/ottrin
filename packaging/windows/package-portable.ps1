@@ -160,7 +160,7 @@ Copy-Item "$BuildDir\ottrin-app.exe" "$Stage\bin\ottrin.exe"
 Copy-Item "$BuildDir\ottrin-priv-helper.exe" "$Stage\bin\ottrin-priv-helper.exe"
 Resolve-PdfiumRuntime (Join-Path $Stage "bin\pdfium")
 Resolve-GraphicsCompatibilityRuntime (Join-Path $Stage "bin") (Join-Path $Stage "third-party-notices")
-Copy-Item "$Root\assets\icon.svg", "$Root\assets\icon.png", "$Root\assets\logo.svg" "$Stage\assets\"
+Copy-Item "$Root\assets\icon.svg", "$Root\assets\icon.png", "$Root\assets\icon.ico", "$Root\assets\logo.svg" "$Stage\assets\"
 Copy-Item "$Root\README.md" "$Stage\"
 Copy-Item "$Root\LICENSE" "$Stage\"
 Copy-Item "$Root\docs\USER_GUIDE.md", "$Root\docs\DEVELOPMENT.md", "$Root\docs\ROADMAP.md", "$Root\docs\RELEASE_NOTES.md", "$Root\docs\RELEASE_CHECKLIST.md" "$Stage\docs\"
