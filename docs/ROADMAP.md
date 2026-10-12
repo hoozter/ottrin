@@ -634,3 +634,35 @@ This prerequisite is source-only; packages remain unchanged. Copy startup Activi
 ownership, grouped batch history, interrupted-publication/pair reconciliation,
 reclamation and broader filesystem/platform acceptance remain open. No startup
 inverse or retained-data deletion is enabled by this change.
+
+### Durable Copy operation grouping and order — source verification
+
+Copy journal schema 4 records one operation ID, the original zero-based item
+position and requested item count. A batch allocates its ID before any item is
+published; every publication/Undo phase in both journals retains that metadata.
+Single-item Copy uses its transaction ID as the operation ID. Skipped items do not
+shift later positions, and a batch stopped by failure retains the original count.
+Discovery exposes this metadata for startup Activity grouping. Missing records
+can indicate Skip, failure or interruption; item count alone never proves batch
+completion.
+
+The public single/batch APIs share one receipt/publication implementation with
+explicit operation metadata; no thread-local grouping state is used. Invalid IDs,
+zero counts, out-of-range positions, missing metadata and earlier schemas are
+retained for review and refuse restart receipt admission. No migration or deletion
+of earlier retained data is performed.
+
+A new-process test discovers a batch with a skipped middle item and an independent
+single Copy, restores receipts and runs inverses in reverse original order. It
+checks matching journal pairs, unchanged metadata through Undo, source preservation
+and untouched skipped/independent files. Additional tests cover a batch failing
+after its first publication and malformed/missing/older metadata refusal without
+data or journal mutation. All 357 regular platform and 353 regular UI tests pass
+(one ignored in each), with strict Linux/Windows-target UI Clippy and formatting
+checks. Evidence: `.hermes/evidence/copy-operation-order/`.
+
+This is source-only; stable packages remain unchanged. Startup Activity still needs
+to merge these operation groups, validate duplicate/conflicting group metadata and
+own their guarded receipts. Interrupted-publication/pair reconciliation, safe
+reclamation, cross-boot ownership and broader filesystem/platform acceptance
+remain open. No automatic startup inverse or retained-data deletion is enabled.

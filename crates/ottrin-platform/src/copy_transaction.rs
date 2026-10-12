@@ -261,6 +261,7 @@ pub(super) fn copy_entry_for_move_undo(
     linux::copy_for_move_undo(source, destination_dir, conflict)
 }
 
+#[cfg(any(not(target_os = "linux"), test))]
 pub(super) fn copy_entry_transactional(
     source: &Path,
     destination_dir: &Path,
@@ -268,12 +269,22 @@ pub(super) fn copy_entry_transactional(
 ) -> Result<CopyPublication, PlatformError> {
     #[cfg(target_os = "linux")]
     {
-        linux::copy(source, destination_dir, conflict)
+        linux::copy(source, destination_dir, conflict, None)
     }
     #[cfg(not(target_os = "linux"))]
     {
         portable::copy(source, destination_dir, conflict)
     }
+}
+
+#[cfg(target_os = "linux")]
+pub(super) fn copy_entry_for_operation(
+    source: &Path,
+    destination_dir: &Path,
+    conflict: ConflictAction,
+    operation: Option<&super::copy_recovery::CopyOperation>,
+) -> Result<CopyPublication, PlatformError> {
+    linux::copy(source, destination_dir, conflict, operation)
 }
 
 #[cfg(target_os = "linux")]
@@ -309,15 +320,20 @@ pub(super) fn create_symlink(
 }
 
 #[cfg(any(target_os = "linux", test))]
-fn random_transaction_name() -> Result<OsString, PlatformError> {
+pub(super) fn random_transaction_id() -> Result<String, PlatformError> {
     let mut random = [0_u8; 16];
     getrandom::fill(&mut random).map_err(|error| PlatformError::Io(error.to_string()))?;
-    let mut name = String::from(".ottrin-txn-");
+    let mut name = String::new();
     for byte in random {
         use std::fmt::Write;
         write!(&mut name, "{byte:02x}").expect("writing to a String cannot fail");
     }
-    Ok(name.into())
+    Ok(name)
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn random_transaction_name() -> Result<OsString, PlatformError> {
+    random_transaction_id().map(|id| format!(".ottrin-txn-{id}").into())
 }
 
 fn reject_self_copy(source: &Path, target: &Path) -> Result<(), PlatformError> {
@@ -566,12 +582,13 @@ mod linux {
         source: &Path,
         destination_dir: &Path,
         conflict: ConflictAction,
+        operation: Option<&super::super::copy_recovery::CopyOperation>,
     ) -> Result<CopyPublication, PlatformError> {
         copy_impl(
             source,
             destination_dir,
             conflict,
-            JournalOwner::Copy,
+            JournalOwner::Copy(operation.cloned()),
             |_| Ok(()),
         )
     }
@@ -698,11 +715,17 @@ mod linux {
         conflict: ConflictAction,
         hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
     ) -> Result<CopyPublication, PlatformError> {
-        copy_impl(source, destination_dir, conflict, JournalOwner::Copy, hook)
+        copy_impl(
+            source,
+            destination_dir,
+            conflict,
+            JournalOwner::Copy(None),
+            hook,
+        )
     }
 
     enum JournalOwner {
-        Copy,
+        Copy(Option<super::super::copy_recovery::CopyOperation>),
         MoveUndo,
     }
 
@@ -776,7 +799,7 @@ mod linux {
                 .map_err(|error| PlatformError::Io(error.to_string()))?;
             // Capture the bytes we staged before publication, including tree paths
             // and symlink targets. An inode alone cannot identify later edits.
-            let evidence = if matches!(journal_owner, JournalOwner::Copy) {
+            let evidence = if matches!(journal_owner, JournalOwner::Copy(_)) {
                 super::super::copy_recovery::tree_evidence(&transaction.candidate_path())?
             } else {
                 (
@@ -808,7 +831,7 @@ mod linux {
         };
         let transaction_path = transaction.recovery_path();
         let publication_parent = transaction_path.parent().expect("transaction parent");
-        let mut record = if matches!(journal_owner, JournalOwner::Copy) {
+        let mut record = if matches!(journal_owner, JournalOwner::Copy(_)) {
             Some(
                 match super::super::copy_recovery::CopyRecord::publication_intent(
                     source,
@@ -816,6 +839,10 @@ mod linux {
                     &transaction_path,
                     (published_content.clone(), published_objects),
                     [&transaction.parent, &transaction.stage],
+                    match &journal_owner {
+                        JournalOwner::Copy(operation) => operation.as_ref(),
+                        JournalOwner::MoveUndo => None,
+                    },
                 ) {
                     Ok(record) => record,
                     Err(error) => return Err(transaction.abandon(error)),
@@ -883,7 +910,7 @@ mod linux {
                         // Capture the original before it is displaced. Open writers
                         // can still edit that inode after the exchange; those edits
                         // must invalidate Undo/reclamation rather than be discarded.
-                        let displaced_evidence = if matches!(journal_owner, JournalOwner::Copy) {
+                        let displaced_evidence = if matches!(journal_owner, JournalOwner::Copy(_)) {
                             super::super::copy_recovery::tree_evidence(
                                 &transaction.parent_path(&target_name),
                             )
@@ -1031,7 +1058,7 @@ mod linux {
         }
         let published_path = destination_dir.join(&target_name);
         let (retained_transaction, retained_directory) =
-            transaction.retain_for_undo(matches!(journal_owner, JournalOwner::Copy))?;
+            transaction.retain_for_undo(matches!(journal_owner, JournalOwner::Copy(_)))?;
         Ok(CopyPublication::Published {
             retained_transaction,
             retained_directory,
@@ -1946,7 +1973,19 @@ mod tests {
             ));
             let encoded = std::fs::read(stage.join("copy-journal")).unwrap();
             let record: serde_json::Value = serde_json::from_slice(&encoded).unwrap();
-            assert_eq!(record["schema"], 3);
+            assert_eq!(record["schema"], 4);
+            assert_eq!(record["operation"]["item_index"], 0);
+            assert_eq!(record["operation"]["item_count"], 1);
+            assert_eq!(
+                record["operation"]["id"],
+                stage
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .strip_prefix(".ottrin-txn-")
+                    .unwrap()
+            );
             assert_eq!(record["phase"], "published");
             let target: NativePath = serde_json::from_value(record["publication"].clone()).unwrap();
             assert_eq!(target.decode().unwrap(), destination.join("item"));

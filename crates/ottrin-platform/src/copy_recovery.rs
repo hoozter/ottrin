@@ -154,11 +154,43 @@ pub enum CopyPhase {
     Undone,
 }
 
+/// Durable grouping and original ordering for a Copy operation. Missing item
+/// records can mean Skip, failure, or interruption; this is not completion proof.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CopyOperation {
+    pub id: String,
+    pub item_index: usize,
+    pub item_count: usize,
+}
+
+impl CopyOperation {
+    pub(super) fn new_batch(item_count: usize) -> Result<Self, PlatformError> {
+        let operation = Self {
+            id: super::copy_transaction::random_transaction_id()?,
+            item_index: 0,
+            item_count,
+        };
+        operation.validate()?;
+        Ok(operation)
+    }
+
+    fn validate(&self) -> Result<(), PlatformError> {
+        if !valid_transaction_id(&self.id) || self.item_index >= self.item_count {
+            return Err(PlatformError::Io(
+                "invalid Copy operation identity or ordering".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(super) struct CopyRecord {
     schema: u16,
     phase: CopyPhase,
+    operation: CopyOperation,
     source: NativePath,
     publication: NativePath,
     transaction: NativePath,
@@ -229,6 +261,7 @@ impl CopyRecord {
         transaction: &Path,
         publication_evidence: (SourceTreeSnapshot, Vec<TreeObject>),
         directories: [&rustix::fd::OwnedFd; 2],
+        operation: Option<&CopyOperation>,
     ) -> Result<Self, PlatformError> {
         let parent = transaction
             .parent()
@@ -275,9 +308,21 @@ impl CopyRecord {
                     .file_name()
                     .ok_or_else(|| PlatformError::InvalidSource(source.display().to_string()))?,
             );
+        let operation = operation.cloned().unwrap_or_else(|| CopyOperation {
+            id: transaction
+                .file_name()
+                .and_then(|name| name.to_str())
+                .and_then(|name| name.strip_prefix(".ottrin-txn-"))
+                .unwrap_or_default()
+                .to_owned(),
+            item_index: 0,
+            item_count: 1,
+        });
+        operation.validate()?;
         Ok(Self {
-            schema: 3,
+            schema: 4,
             phase: CopyPhase::PublicationIntent,
+            operation,
             source: NativePath::encode(&source),
             publication: NativePath::encode(publication),
             transaction: NativePath::encode(transaction),
@@ -339,7 +384,8 @@ impl CopyRecord {
         let source = self.source.decode().map_err(journal_error)?;
         let publication = self.publication.decode().map_err(journal_error)?;
         let transaction = self.transaction.decode().map_err(journal_error)?;
-        if self.schema != 3
+        self.operation.validate()?;
+        if self.schema != 4
             || !valid_objects(&self.publication_content, &self.publication_objects)
             || self.displaced_content.is_some() != self.displaced_objects.is_some()
             || self
@@ -671,6 +717,7 @@ pub enum CopyRecoveryEvidence {
 pub struct RetainedCopyStatus {
     pub transaction_id: String,
     pub phase: Option<CopyPhase>,
+    pub operation: Option<CopyOperation>,
     pub source: Option<PathBuf>,
     pub publication: Option<PathBuf>,
     pub transaction: Option<PathBuf>,
@@ -692,6 +739,7 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
             let mut status = RetainedCopyStatus {
                 transaction_id: id.clone(),
                 phase: None,
+                operation: None,
                 source: None,
                 publication: None,
                 transaction: None,
@@ -707,6 +755,7 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
                     ));
                 }
                 status.phase = Some(record.phase);
+                status.operation = Some(record.operation.clone());
                 status.source = Some(record.source.decode().map_err(journal_error)?);
                 status.publication = Some(record.publication.decode().map_err(journal_error)?);
                 let transaction = record.transaction.decode().map_err(journal_error)?;
@@ -959,6 +1008,182 @@ mod tests {
     impl Drop for PrivateRoot {
         fn drop(&mut self) {
             super::super::move_transaction::replace_test_recovery_root(self.0.take());
+        }
+    }
+
+    #[test]
+    fn copy_batch_order_and_skipped_slots_survive_a_fresh_process_and_undo() {
+        const ROOT_ENV: &str = "OTTRIN_COPY_OPERATION_TEST_ROOT";
+        if let Some(root) = std::env::var_os(ROOT_ENV) {
+            let root = PathBuf::from(root);
+            let _registry = PrivateRoot::new(&root);
+            let destination = root.join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            let sources: Vec<_> = ["first", "skip", "last"]
+                .into_iter()
+                .map(|name| {
+                    let source = root.join(name);
+                    std::fs::write(&source, name).unwrap();
+                    source
+                })
+                .collect();
+            std::fs::write(destination.join("skip"), "keep-original").unwrap();
+            let batch = DefaultPlatform.execute_copy_batch_with_undo_receipts(
+                &sources,
+                &destination,
+                super::super::ConflictAction::Skip,
+            );
+            assert!(batch.error.is_none(), "{:?}", batch.error);
+            assert_eq!(batch.completed_sources, 3);
+            assert_eq!(batch.undo_receipts.len(), 2);
+            let single = root.join("single");
+            std::fs::write(&single, "single").unwrap();
+            DefaultPlatform
+                .execute_copy_with_undo_receipt(
+                    &single,
+                    &destination,
+                    super::super::ConflictAction::Skip,
+                )
+                .unwrap()
+                .unwrap();
+            return;
+        }
+        let root = tempfile::tempdir().unwrap();
+        let _registry = PrivateRoot::new(root.path());
+        let child = std::process::Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", "copy_recovery::tests::copy_batch_order_and_skipped_slots_survive_a_fresh_process_and_undo", "--nocapture"])
+            .env(ROOT_ENV, root.path()).spawn().unwrap();
+        assert!(wait_owned_child(child).success());
+        let mut entries = discover_at(&root.path().join("copies")).unwrap();
+        assert_eq!(entries.len(), 3);
+        let single = entries
+            .iter()
+            .find(|entry| entry.source.as_deref() == Some(root.path().join("single").as_path()))
+            .unwrap();
+        let single_operation = single.operation.clone().unwrap();
+        assert_eq!(single_operation.item_count, 1);
+        assert_eq!(single_operation.item_index, 0);
+        assert_eq!(single_operation.id, single.transaction_id);
+        entries.retain(|entry| entry.operation.as_ref().unwrap().id != single_operation.id);
+        entries.sort_by_key(|entry| entry.operation.as_ref().unwrap().item_index);
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[0].operation.as_ref().unwrap().item_index, 0);
+        assert_eq!(entries[1].operation.as_ref().unwrap().item_index, 2);
+        let operation_id = &entries[0].operation.as_ref().unwrap().id;
+        assert_ne!(operation_id, &single_operation.id);
+        assert_eq!(operation_id, &entries[1].operation.as_ref().unwrap().id);
+        let mut journal_bytes = Vec::new();
+        for entry in entries.iter().rev() {
+            let operation = entry.operation.as_ref().unwrap();
+            assert_eq!(operation.item_count, 3);
+            let central = root
+                .path()
+                .join("copies")
+                .join(format!("{}.journal", entry.transaction_id));
+            let local = entry.transaction.as_ref().unwrap().join("copy-journal");
+            let before = std::fs::read(&central).unwrap();
+            assert_eq!(before, std::fs::read(&local).unwrap());
+            let receipt =
+                super::super::restore_retained_copy_undo_receipt(&entry.transaction_id).unwrap();
+            assert_eq!(before, std::fs::read(&central).unwrap());
+            DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+            journal_bytes.push((central, local, operation.clone()));
+        }
+        for (central, local, expected) in journal_bytes {
+            let record = CopyRecord::parse(&std::fs::read(&central).unwrap()).unwrap();
+            assert_eq!(record.operation, expected);
+            assert_eq!(record.phase, CopyPhase::Undone);
+            assert_eq!(
+                std::fs::read(central).unwrap(),
+                std::fs::read(local).unwrap()
+            );
+        }
+        let destination = root.path().join("destination");
+        for name in ["first", "last"] {
+            assert!(!destination.join(name).exists());
+            assert_eq!(
+                std::fs::read_to_string(root.path().join(name)).unwrap(),
+                name
+            );
+        }
+        assert_eq!(
+            std::fs::read_to_string(destination.join("skip")).unwrap(),
+            "keep-original"
+        );
+        assert_eq!(
+            std::fs::read_to_string(destination.join("single")).unwrap(),
+            "single"
+        );
+    }
+
+    #[test]
+    fn partial_copy_batch_retains_original_count_without_claiming_missing_items_completed() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = PrivateRoot::new(root.path());
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let first = root.path().join("first");
+        let second = destination.join("second");
+        std::fs::write(&first, "first-data").unwrap();
+        std::fs::write(&second, "second-data").unwrap();
+        let batch = DefaultPlatform.execute_copy_batch_with_undo_receipts(
+            &[first, second.clone()],
+            &destination,
+            super::super::ConflictAction::Overwrite,
+        );
+        assert!(batch.error.is_some());
+        assert_eq!(batch.completed_sources, 1);
+        let entries = discover_at(&root.path().join("copies")).unwrap();
+        assert_eq!(entries.len(), 1);
+        let operation = entries[0].operation.as_ref().unwrap();
+        assert_eq!(operation.item_count, 2);
+        assert_eq!(operation.item_index, 0);
+        assert_eq!(std::fs::read_to_string(second).unwrap(), "second-data");
+    }
+
+    #[test]
+    fn invalid_or_missing_copy_operation_metadata_is_retained_for_review_without_mutation() {
+        for change in ["id", "zero-count", "index", "missing", "old-schema"] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = PrivateRoot::new(root.path());
+            let receipt = copy_fixture(root.path(), false, false);
+            let entry = discover_at(&root.path().join("copies")).unwrap().remove(0);
+            let central = root
+                .path()
+                .join("copies")
+                .join(format!("{}.journal", entry.transaction_id));
+            let local = entry.transaction.as_ref().unwrap().join("copy-journal");
+            let mut value: serde_json::Value =
+                serde_json::from_slice(&std::fs::read(&central).unwrap()).unwrap();
+            match change {
+                "id" => value["operation"]["id"] = "../bad".into(),
+                "zero-count" => value["operation"]["item_count"] = 0.into(),
+                "index" => value["operation"]["item_index"] = 1.into(),
+                "missing" => {
+                    value.as_object_mut().unwrap().remove("operation");
+                }
+                "old-schema" => value["schema"] = 3.into(),
+                _ => unreachable!(),
+            }
+            let encoded = serde_json::to_vec(&value).unwrap();
+            std::fs::write(&central, &encoded).unwrap();
+            std::fs::write(&local, &encoded).unwrap();
+            let status = discover_at(&root.path().join("copies")).unwrap().remove(0);
+            assert!(
+                matches!(status.evidence, CopyRecoveryEvidence::NeedsReview { .. }),
+                "{change}"
+            );
+            assert!(status.operation.is_none());
+            assert!(
+                super::super::restore_retained_copy_undo_receipt(&entry.transaction_id).is_err()
+            );
+            assert_eq!(std::fs::read(&central).unwrap(), encoded);
+            assert_eq!(std::fs::read(&local).unwrap(), encoded);
+            assert_eq!(std::fs::read(receipt.after_path()).unwrap(), b"new-data");
+            assert_eq!(
+                std::fs::read(root.path().join("item")).unwrap(),
+                b"new-data"
+            );
         }
     }
 

@@ -17,7 +17,7 @@ pub use copy_transaction::RetainedCopyTransaction;
 #[cfg(target_os = "linux")]
 mod copy_recovery;
 #[cfg(target_os = "linux")]
-pub use copy_recovery::{CopyPhase, CopyRecoveryEvidence, RetainedCopyStatus};
+pub use copy_recovery::{CopyOperation, CopyPhase, CopyRecoveryEvidence, RetainedCopyStatus};
 
 /// Reads retained Copy status without creating recovery data or granting Undo authority.
 #[cfg(target_os = "linux")]
@@ -45,6 +45,7 @@ mod copy_transaction;
 mod directory_watch;
 #[cfg(target_os = "linux")]
 use copy_transaction::CopyPublication;
+#[cfg(not(target_os = "linux"))]
 use copy_transaction::copy_entry_transactional;
 pub mod move_recovery;
 mod move_transaction;
@@ -1544,62 +1545,7 @@ impl PlatformOps for DefaultPlatform {
     ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
         #[cfg(target_os = "linux")]
         {
-            ensure_existing_dir(destination)?;
-            validate_copy_source(source)?;
-            reject_directory_copy_into_itself(source, destination)?;
-            let publication = copy_entry_transactional(source, destination, conflict)?;
-            let (
-                retained_transaction,
-                after_path,
-                published_identity,
-                published_content,
-                displaced_content,
-                displaced_identity,
-                retained_directory,
-            ) = match publication {
-                CopyPublication::Published {
-                    retained_transaction,
-                    retained_directory,
-                    published_path,
-                    published_identity,
-                    published_content,
-                    displaced_content,
-                    displaced_identity,
-                } => (
-                    retained_transaction,
-                    published_path,
-                    published_identity,
-                    published_content,
-                    displaced_content,
-                    displaced_identity,
-                    retained_directory,
-                ),
-                CopyPublication::Skipped {
-                    retained_transaction: None,
-                } => return Ok(None),
-                CopyPublication::Skipped {
-                    retained_transaction: Some(transaction),
-                } => {
-                    return Err(PlatformError::CommittedCleanupPending {
-                        transaction: transaction.display().to_string(),
-                        message: "copy was skipped; its private staged candidate was retained because pathname-based cleanup cannot prove ownership".into(),
-                    });
-                }
-            };
-            undo_receipt_for_published_identity(
-                retained_transaction,
-                after_path,
-                published_identity,
-                displaced_identity,
-                PathMoveUndoRequirement::None,
-                "copy",
-                Some(retained_directory),
-            )
-            .map(|mut receipt| {
-                receipt.published_content = published_content;
-                receipt.retained_displaced_content = displaced_content;
-                Some(receipt)
-            })
+            self.copy_with_operation(source, destination, conflict, None)
         }
         #[cfg(not(target_os = "linux"))]
         {
@@ -1630,6 +1576,33 @@ impl PlatformOps for DefaultPlatform {
                 error: Some(error),
             };
         }
+        #[cfg(target_os = "linux")]
+        {
+            if sources.is_empty() {
+                return CopyBatchResult {
+                    completed_sources: 0,
+                    undo_receipts: Vec::new(),
+                    error: None,
+                };
+            }
+            let mut operation = match copy_recovery::CopyOperation::new_batch(sources.len()) {
+                Ok(operation) => operation,
+                Err(error) => {
+                    return CopyBatchResult {
+                        completed_sources: 0,
+                        undo_receipts: Vec::new(),
+                        error: Some(error),
+                    };
+                }
+            };
+            execute_copy_batch_with(sources, |source| {
+                let result =
+                    self.copy_with_operation(source, destination, conflict, Some(&operation));
+                operation.item_index += 1;
+                result
+            })
+        }
+        #[cfg(not(target_os = "linux"))]
         execute_copy_batch_with(sources, |source| {
             self.execute_copy_with_undo_receipt(source, destination, conflict)
         })
@@ -1832,6 +1805,73 @@ impl PlatformOps for DefaultPlatform {
 }
 
 impl DefaultPlatform {
+    #[cfg(target_os = "linux")]
+    fn copy_with_operation(
+        &self,
+        source: &Path,
+        destination: &Path,
+        conflict: ConflictAction,
+        operation: Option<&copy_recovery::CopyOperation>,
+    ) -> Result<Option<PathMoveUndoReceipt>, PlatformError> {
+        ensure_existing_dir(destination)?;
+        validate_copy_source(source)?;
+        reject_directory_copy_into_itself(source, destination)?;
+        let publication =
+            copy_transaction::copy_entry_for_operation(source, destination, conflict, operation)?;
+        let (
+            retained_transaction,
+            after_path,
+            published_identity,
+            published_content,
+            displaced_content,
+            displaced_identity,
+            retained_directory,
+        ) = match publication {
+            CopyPublication::Published {
+                retained_transaction,
+                retained_directory,
+                published_path,
+                published_identity,
+                published_content,
+                displaced_content,
+                displaced_identity,
+            } => (
+                retained_transaction,
+                published_path,
+                published_identity,
+                published_content,
+                displaced_content,
+                displaced_identity,
+                retained_directory,
+            ),
+            CopyPublication::Skipped {
+                retained_transaction: None,
+            } => return Ok(None),
+            CopyPublication::Skipped {
+                retained_transaction: Some(transaction),
+            } => {
+                return Err(PlatformError::CommittedCleanupPending {
+                        transaction: transaction.display().to_string(),
+                        message: "copy was skipped; its private staged candidate was retained because pathname-based cleanup cannot prove ownership".into(),
+                    });
+            }
+        };
+        undo_receipt_for_published_identity(
+            retained_transaction,
+            after_path,
+            published_identity,
+            displaced_identity,
+            PathMoveUndoRequirement::None,
+            "copy",
+            Some(retained_directory),
+        )
+        .map(|mut receipt| {
+            receipt.published_content = published_content;
+            receipt.retained_displaced_content = displaced_content;
+            Some(receipt)
+        })
+    }
+
     /// Launches only a descriptor freshly discoverable for this exact target.
     /// This intentionally delegates desktop-entry interpretation to GIO rather
     /// than interpreting an `Exec` field. A successful return means GIO accepted
