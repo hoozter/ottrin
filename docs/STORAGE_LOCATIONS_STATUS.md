@@ -138,7 +138,16 @@ transaction data. Ordinary completed/failed history remains discardable. A real
 overwrite Copy regression survives 150 subsequent records and clearing, then
 restores the original destination bytes through Undo; an all-running history can
 exceed 100 records without losing results. All 348 regular UI tests and strict UI
-Clippy pass. Exact-package acceptance is pending for this change.
+Clippy pass on Linux and for the Windows target. The exact AppImage from clean
+revision `89fa193`, SHA-256
+`b8d37746dcc0ce49e48b9c68c791fef3f98c96ae57c1bdbdd48530655af3d7db`,
+passes Dark 100% and Light 150%: clear finished Trash history, retain Copy Undo,
+then remove the copied destination without changing the source. Both launches
+exit normally and all private processes/profiles are removed. Portable, DEB and
+RPM candidates are refreshed and their executables/renderer/source identities
+pass the production package comparison. Receipt:
+`dist/packages/ACTIVITY_RETENTION_ACCEPTANCE.json`. Current Windows packages
+remain at the preceding revision; native installation acceptance is separate.
 
 Safe expiry/reclamation and durable Copy recovery ownership across application
 restarts remain open. Keeping session records does not implement those outcomes.
