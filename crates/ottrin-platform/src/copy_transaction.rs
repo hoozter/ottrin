@@ -191,6 +191,16 @@ pub(super) enum CopyPublication {
     },
 }
 
+/// Move Undo owns its restoration staging through the Move recovery protocol.
+#[cfg(target_os = "linux")]
+pub(super) fn copy_entry_for_move_undo(
+    source: &Path,
+    destination_dir: &Path,
+    conflict: ConflictAction,
+) -> Result<CopyPublication, PlatformError> {
+    linux::copy_for_move_undo(source, destination_dir, conflict)
+}
+
 pub(super) fn copy_entry_transactional(
     source: &Path,
     destination_dir: &Path,
@@ -493,6 +503,7 @@ mod linux {
     pub(super) enum TestPoint {
         AfterStageCreated,
         AfterStaged,
+        PublicationIntentDurable,
         BeforeExchange,
         BeforeDisplacedIdentityCheck,
         AfterExchange,
@@ -503,6 +514,7 @@ mod linux {
     enum TestPoint {
         AfterStageCreated,
         AfterStaged,
+        PublicationIntentDurable,
         BeforeExchange,
         BeforeDisplacedIdentityCheck,
         AfterExchange,
@@ -513,7 +525,13 @@ mod linux {
         destination_dir: &Path,
         conflict: ConflictAction,
     ) -> Result<CopyPublication, PlatformError> {
-        copy_impl(source, destination_dir, conflict, |_| Ok(()))
+        copy_impl(
+            source,
+            destination_dir,
+            conflict,
+            JournalOwner::Copy,
+            |_| Ok(()),
+        )
     }
 
     /// Creates an identity-checked private transaction in `destination_dir` for a caller-owned
@@ -638,13 +656,33 @@ mod linux {
         conflict: ConflictAction,
         hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
     ) -> Result<CopyPublication, PlatformError> {
-        copy_impl(source, destination_dir, conflict, hook)
+        copy_impl(source, destination_dir, conflict, JournalOwner::Copy, hook)
+    }
+
+    enum JournalOwner {
+        Copy,
+        MoveUndo,
+    }
+
+    pub(super) fn copy_for_move_undo(
+        source: &Path,
+        destination_dir: &Path,
+        conflict: ConflictAction,
+    ) -> Result<CopyPublication, PlatformError> {
+        copy_impl(
+            source,
+            destination_dir,
+            conflict,
+            JournalOwner::MoveUndo,
+            |_| Ok(()),
+        )
     }
 
     fn copy_impl(
         source: &Path,
         destination_dir: &Path,
         conflict: ConflictAction,
+        journal_owner: JournalOwner,
         mut hook: impl FnMut(TestPoint) -> Result<(), &'static str>,
     ) -> Result<CopyPublication, PlatformError> {
         let name = source
@@ -713,9 +751,44 @@ mod linux {
                 return Err(transaction.abandon(PlatformError::Io(error.to_string())));
             }
         };
+        let journal = match super::super::move_recovery::LinuxJournalDirectory::for_copy_stage(
+            &transaction.stage,
+        ) {
+            Ok(journal) => journal,
+            Err(error) => return Err(transaction.abandon(PlatformError::Io(error.to_string()))),
+        };
+        let transaction_path = transaction.recovery_path();
+        let publication_parent = transaction_path.parent().expect("transaction parent");
+        let mut record = if matches!(journal_owner, JournalOwner::Copy) {
+            Some(
+                match super::super::copy_recovery::CopyRecord::publication_intent(
+                    source,
+                    &publication_parent.join(&target_name),
+                    &transaction_path,
+                    published_identity.clone(),
+                    published_content.clone(),
+                    [&transaction.parent, &transaction.stage],
+                ) {
+                    Ok(record) => record,
+                    Err(error) => return Err(transaction.abandon(error)),
+                },
+            )
+        } else {
+            None
+        };
         let mut retained_displaced_identity = None;
         let mut retained_displaced_content = None;
         loop {
+            if let Some(record) = record.as_mut() {
+                record.set_target(&publication_parent.join(&target_name));
+                record.clear_displaced();
+                if let Err(error) = journal.persist_copy_record(record) {
+                    return Err(transaction.abandon(PlatformError::Io(error.to_string())));
+                }
+                if let Err(message) = hook(TestPoint::PublicationIntentDurable) {
+                    return Err(transaction.abandon(PlatformError::Io(message.into())));
+                }
+            }
             match renameat_with(
                 &transaction.stage,
                 CANDIDATE,
@@ -747,6 +820,23 @@ mod linux {
                                 Ok(content) => content,
                                 Err(error) => return Err(transaction.abandon(error)),
                             };
+                        let displaced_identity =
+                            match rename_identity(&transaction.parent_path(&target_name)) {
+                                Ok(identity) => identity,
+                                Err(error) => {
+                                    return Err(
+                                        transaction.abandon(PlatformError::Io(error.to_string()))
+                                    );
+                                }
+                            };
+                        if let Some(record) = record.as_mut() {
+                            record.set_displaced(displaced_identity, displaced_content.clone());
+                            if let Err(error) = journal.persist_copy_record(record) {
+                                return Err(
+                                    transaction.abandon(PlatformError::Io(error.to_string()))
+                                );
+                            }
+                        }
                         if let Err(message) = hook(TestPoint::BeforeExchange) {
                             return Err(transaction.abandon(PlatformError::Io(message.into())));
                         }
@@ -845,6 +935,23 @@ mod linux {
                 message: error.to_string(),
             }
         })?;
+        rustix::fs::fsync(&transaction.stage).map_err(|error| {
+            PlatformError::CommittedCleanupPending {
+                transaction: transaction.recovery_path().display().to_string(),
+                message: error.to_string(),
+            }
+        })?;
+        if let Some(record) = record.as_mut() {
+            record.mark_published();
+            journal.persist_copy_record(record).map_err(|error| {
+                PlatformError::CommittedCleanupPending {
+                    transaction: transaction.recovery_path().display().to_string(),
+                    message: format!(
+                        "Copy was published but its journal update is uncertain: {error}"
+                    ),
+                }
+            })?;
+        }
         let published_path = destination_dir.join(&target_name);
         let (retained_transaction, retained_directory) = transaction.retain_for_undo()?;
         Ok(CopyPublication::Published {
@@ -1289,6 +1396,89 @@ mod tests {
     }
 
     #[test]
+    fn completed_copy_journal_binds_publication_and_overwrite_backup() {
+        use super::super::move_recovery::{NativePath, SourceTreeSnapshot};
+        for overwrite in [false, true] {
+            let root = TestDir::new("journal-published");
+            let source = root.0.join("item");
+            let destination = root.0.join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            std::fs::write(&source, "new-complete").unwrap();
+            if overwrite {
+                std::fs::write(destination.join("item"), "old-complete").unwrap();
+            }
+            let stage = retained_transaction(super::copy_entry_transactional(
+                &source,
+                &destination,
+                ConflictAction::Overwrite,
+            ));
+            let encoded = std::fs::read(stage.join("copy-journal")).unwrap();
+            let record: serde_json::Value = serde_json::from_slice(&encoded).unwrap();
+            assert_eq!(record["schema"], 1);
+            assert_eq!(record["phase"], "published");
+            let target: NativePath = serde_json::from_value(record["publication"].clone()).unwrap();
+            assert_eq!(target.decode().unwrap(), destination.join("item"));
+            let content: SourceTreeSnapshot =
+                serde_json::from_value(record["publication_content"].clone()).unwrap();
+            let observed = super::super::move_transaction::source_tree_snapshot_for_path(
+                &destination.join("item"),
+            )
+            .unwrap();
+            assert!(content.has_same_paths_and_content(&observed));
+            let identity: PathMoveIdentity =
+                serde_json::from_value(record["publication_identity"].clone()).unwrap();
+            assert_eq!(
+                identity,
+                rename_identity(&destination.join("item")).unwrap()
+            );
+            if overwrite {
+                let backup: SourceTreeSnapshot =
+                    serde_json::from_value(record["displaced_content"].clone()).unwrap();
+                let observed = super::super::move_transaction::source_tree_snapshot_for_path(
+                    &stage.join(CANDIDATE),
+                )
+                .unwrap();
+                assert!(backup.has_same_paths_and_content(&observed));
+                let identity: PathMoveIdentity =
+                    serde_json::from_value(record["displaced_identity"].clone()).unwrap();
+                assert_eq!(identity, rename_identity(&stage.join(CANDIDATE)).unwrap());
+            } else {
+                assert!(record["displaced_identity"].is_null());
+                assert!(record["displaced_content"].is_null());
+            }
+            assert_eq!(std::fs::read_to_string(&source).unwrap(), "new-complete");
+        }
+    }
+
+    #[test]
+    fn failed_copy_journal_write_refuses_publication_and_preserves_both_versions() {
+        let root = TestDir::new("journal-write-failure");
+        let source = root.0.join("item");
+        let destination = root.0.join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        std::fs::write(&source, "new-complete").unwrap();
+        std::fs::write(destination.join("item"), "old-complete").unwrap();
+        let result =
+            copy_with_test_hook(&source, &destination, ConflictAction::Overwrite, |point| {
+                if point == TestPoint::AfterStaged {
+                    std::fs::create_dir(transactions(&destination)[0].join("copy-journal"))
+                        .unwrap();
+                }
+                Ok(())
+            });
+        assert!(matches!(result, Err(PlatformError::CleanupPending { .. })));
+        assert_eq!(std::fs::read_to_string(&source).unwrap(), "new-complete");
+        assert_eq!(
+            std::fs::read_to_string(destination.join("item")).unwrap(),
+            "old-complete"
+        );
+        assert_eq!(
+            std::fs::read_to_string(transactions(&destination)[0].join(CANDIDATE)).unwrap(),
+            "new-complete"
+        );
+    }
+
+    #[test]
     fn sigkill_immediately_before_and_after_exchange_preserves_both_entries() {
         if let (Ok(root), Ok(point)) = (
             std::env::var("OTTRIN_SIGKILL_ROOT"),
@@ -1325,6 +1515,28 @@ mod tests {
                 .args(["--exact", "copy_transaction::tests::sigkill_immediately_before_and_after_exchange_preserves_both_entries", "--nocapture"])
                 .env("OTTRIN_SIGKILL_ROOT", &root.0).env("OTTRIN_SIGKILL_POINT", point).status().unwrap();
             assert!(!status.success());
+            use std::os::unix::process::ExitStatusExt;
+            assert_eq!(
+                status.signal(),
+                Some(9),
+                "child must reach the SIGKILL boundary"
+            );
+            let stage = &transactions(&destination)[0];
+            let record: serde_json::Value =
+                serde_json::from_slice(&std::fs::read(stage.join("copy-journal")).unwrap())
+                    .unwrap();
+            assert_eq!(record["phase"], "publication-intent");
+            assert!(!record["displaced_identity"].is_null());
+            let backup: super::super::move_recovery::SourceTreeSnapshot =
+                serde_json::from_value(record["displaced_content"].clone()).unwrap();
+            let original = if point == "before" {
+                destination.join("item")
+            } else {
+                stage.join(CANDIDATE)
+            };
+            assert!(backup.has_same_paths_and_content(
+                &super::super::move_transaction::source_tree_snapshot_for_path(&original).unwrap(),
+            ));
             let final_value = std::fs::read_to_string(destination.join("item")).unwrap();
             let staged_value =
                 std::fs::read_to_string(transactions(&destination)[0].join(CANDIDATE)).unwrap();

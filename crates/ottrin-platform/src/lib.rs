@@ -14,6 +14,8 @@ use thiserror::Error;
 
 #[cfg(target_os = "linux")]
 pub use copy_transaction::RetainedCopyTransaction;
+#[cfg(target_os = "linux")]
+mod copy_recovery;
 mod copy_transaction;
 #[cfg(target_os = "linux")]
 mod directory_watch;
@@ -230,6 +232,7 @@ pub fn is_windows_reserved_creation_name(name: &str) -> bool {
 /// symlink entry rather than the symlink target. It is intentionally opaque to
 /// callers: only this crate may compare it before an inverse rename.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(target_os = "linux", derive(serde::Serialize, serde::Deserialize))]
 pub struct PathMoveIdentity {
     #[cfg(target_os = "linux")]
     device: u64,
@@ -2670,16 +2673,19 @@ fn undo_cross_filesystem_path_move_linux_with_hook(
     } else {
         None
     };
-    let restored =
-        match copy_entry_transactional(&receipt.after_path, before_parent, ConflictAction::Skip) {
-            Ok(restored) => restored,
-            Err(error) => {
-                if let Some(transaction) = destination_transaction.as_ref() {
-                    let _ = std::fs::remove_dir(transaction);
-                }
-                return Err(error);
+    let restored = match copy_transaction::copy_entry_for_move_undo(
+        &receipt.after_path,
+        before_parent,
+        ConflictAction::Skip,
+    ) {
+        Ok(restored) => restored,
+        Err(error) => {
+            if let Some(transaction) = destination_transaction.as_ref() {
+                let _ = std::fs::remove_dir(transaction);
             }
-        };
+            return Err(error);
+        }
+    };
     let CopyPublication::Published {
         retained_transaction,
         published_path,

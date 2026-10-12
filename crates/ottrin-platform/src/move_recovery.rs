@@ -2123,6 +2123,20 @@ impl LinuxRetainedSourceTransaction {
 
 #[cfg(target_os = "linux")]
 impl LinuxJournalDirectory {
+    /// Use the existing journal writer with an already verified private Copy stage.
+    pub(super) fn for_copy_stage(directory: &OwnedFd) -> Result<Self, JournalError> {
+        let directory = rustix::io::fcntl_dupfd_cloexec(directory, 0)
+            .map_err(|error| JournalError::Io(error.to_string()))?;
+        Ok(Self { directory })
+    }
+
+    pub(super) fn persist_copy_record(
+        &self,
+        record: &super::copy_recovery::CopyRecord,
+    ) -> Result<(), JournalError> {
+        self.replace_named("copy-journal", record)
+    }
+
     /// Pins the transaction-relative claimed source before runtime cleanup can be interrupted.
     pub fn claimed_source_cleanup_authority(
         &self,

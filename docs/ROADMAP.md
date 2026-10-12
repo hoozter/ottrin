@@ -433,3 +433,25 @@ accepted `083fb3f` artifacts. Durable Copy journal ownership/discovery across
 restart, interrupted inverse replay and safe reclamation remain unfinished.
 No automatic retained-data deletion has been enabled, and these focused checks
 do not close installer lifecycle or full daily-driver acceptance.
+
+
+### Copy destination-local journal — source verification
+
+Linux Copy now writes a versioned `copy-journal` in its private destination-local
+transaction before publication. It records native source/target paths, original
+staged content and identity, directory/mount bindings and boot identity. Overwrite
+intent records the displaced entry and content before exchange. Both namespace
+directories are synced before the journal advances to Published. The shared
+atomic journal writer remains authoritative; no separate persistence engine was
+added. Move Undo explicitly owns its restoration staging through its existing
+protocol, without creating a second Copy-owned record there.
+
+All 339 regular platform tests and 351 regular UI tests pass (one ignored in each),
+with strict Linux/Windows-target UI Clippy and formatting checks. The real SIGKILL
+fixtures verify durable overwrite evidence immediately before and after exchange;
+a journal-write failure refuses publication and preserves both versions. Evidence:
+`.hermes/evidence/copy-local-journal/`. This is source-only; current Linux packages
+remain the accepted `76f441f` build. Central registration/discovery, validation of
+restart authority, Activity ownership restoration, interrupted Undo replay and safe
+reclamation remain unfinished. Local records alone do not enable restart Undo or
+automatic deletion. Windows Copy Undo remains a separate unsupported capability.
