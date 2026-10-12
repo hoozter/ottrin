@@ -10777,7 +10777,7 @@ impl OttrinApp {
             let selected = view_mode == mode;
             let check = if selected { MI_CHECK } else { " " };
             if ui
-                .add(aligned_menu_button(check.trim(), icon, label, &c).themed(&c))
+                .add(aligned_menu_button(check, icon, label, &c).themed(&c))
                 .clicked()
             {
                 self.set_tab_view_mode(tab_id, mode);
@@ -10791,20 +10791,37 @@ impl OttrinApp {
                 ui.add_enabled(
                     false,
                     aligned_menu_button("", MI_IMAGE, "Miller preview column handles previews", &c)
+                        .indicator_column()
                         .themed(&c),
                 );
             }
             ViewMode::List => {
                 let on = self.thumbnails_enabled_for(ViewMode::List, &current_dir);
                 let check = if on { MI_CHECK } else { " " };
-                if menu_item(ui, check, "Show thumbnails in this folder", &c).clicked() {
+                if ui
+                    .add(aligned_menu_button(
+                        check,
+                        MI_IMAGE,
+                        "Show thumbnails in this folder",
+                        &c,
+                    ))
+                    .clicked()
+                {
                     self.set_folder_thumbnails(ViewMode::List, &current_dir, !on);
                 }
             }
             ViewMode::Grid => {
                 let on = self.thumbnails_enabled_for(ViewMode::Grid, &current_dir);
                 let check = if on { MI_CHECK } else { " " };
-                if menu_item(ui, check, "Show thumbnails in this folder", &c).clicked() {
+                if ui
+                    .add(aligned_menu_button(
+                        check,
+                        MI_IMAGE,
+                        "Show thumbnails in this folder",
+                        &c,
+                    ))
+                    .clicked()
+                {
                     self.set_folder_thumbnails(ViewMode::Grid, &current_dir, !on);
                 }
             }
@@ -10812,7 +10829,15 @@ impl OttrinApp {
 
         let hidden_on = self.state.config.show_hidden_files;
         let hidden_check = if hidden_on { MI_CHECK } else { " " };
-        if menu_item(ui, hidden_check, "Show hidden files", &c).clicked() {
+        if ui
+            .add(aligned_menu_button(
+                hidden_check,
+                MI_VISIBILITY,
+                "Show hidden files",
+                &c,
+            ))
+            .clicked()
+        {
             self.state.config.show_hidden_files = !hidden_on;
             if let Some(dir) = self.state.tab_by_id(tab_id).map(|t| t.current_dir.clone()) {
                 self.refresh_tab(tab_id, dir);
@@ -10825,15 +10850,18 @@ impl OttrinApp {
                 .size(11.5 * c.font_scale)
                 .color(c.text_dim),
         );
-        for (sort_by, label) in [
-            (SortBy::Name, "Name"),
-            (SortBy::Kind, "Type"),
-            (SortBy::Size, "Size"),
-            (SortBy::Modified, "Modified"),
+        for (sort_by, label, icon) in [
+            (SortBy::Name, "Name", MI_SORT_NAME),
+            (SortBy::Kind, "Type", MI_DESCRIPTION),
+            (SortBy::Size, "Size", MI_STORAGE),
+            (SortBy::Modified, "Modified", MI_HISTORY),
         ] {
             let selected = sort.by == sort_by;
             let check = if selected { MI_CHECK } else { " " };
-            if menu_item(ui, check, label, &c).clicked() {
+            if ui
+                .add(aligned_menu_button(check, icon, label, &c))
+                .clicked()
+            {
                 let dir = self.state.tab_by_id(tab_id).map(|t| t.current_dir.clone());
                 if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
                     tab.sort.by = sort_by;
@@ -10850,7 +10878,19 @@ impl OttrinApp {
             } else {
                 "Descending"
             };
-            if menu_item(ui, MI_SETTINGS_BACKUP_RESTORE, label, &c).clicked() {
+            if ui
+                .add(aligned_menu_button(
+                    " ",
+                    if sort.ascending {
+                        MI_SORT_ASCENDING
+                    } else {
+                        MI_SORT_DESCENDING
+                    },
+                    label,
+                    &c,
+                ))
+                .clicked()
+            {
                 let dir = self.state.tab_by_id(tab_id).map(|t| t.current_dir.clone());
                 if let Some(tab) = self.state.tab_by_id_mut(tab_id) {
                     tab.sort.ascending = !tab.sort.ascending;
@@ -10868,14 +10908,17 @@ impl OttrinApp {
                     .size(11.5 * c.font_scale)
                     .color(c.text_dim),
             );
-            for (col, label) in [
-                (ListColumn::Kind, "Type"),
-                (ListColumn::Size, "Size"),
-                (ListColumn::Modified, "Modified"),
+            for (col, label, icon) in [
+                (ListColumn::Kind, "Type", MI_DESCRIPTION),
+                (ListColumn::Size, "Size", MI_STORAGE),
+                (ListColumn::Modified, "Modified", MI_HISTORY),
             ] {
                 let on = self.state.config.list_columns.contains(&col);
                 let check = if on { MI_CHECK } else { " " };
-                if menu_item(ui, check, label, &c).clicked() {
+                if ui
+                    .add(aligned_menu_button(check, icon, label, &c))
+                    .clicked()
+                {
                     if on {
                         self.state.config.list_columns.retain(|c| c != &col);
                     } else {
@@ -10886,7 +10929,15 @@ impl OttrinApp {
         }
 
         ui.add(egui::Separator::default().horizontal().spacing(4.0));
-        if menu_item(ui, MI_SETTINGS, "Global View Settings…", &c).clicked() {
+        if ui
+            .add(aligned_menu_button(
+                " ",
+                MI_SETTINGS,
+                "Global View Settings…",
+                &c,
+            ))
+            .clicked()
+        {
             self.settings_tab = SettingsTab::General;
             self.show_settings = true;
             egui::Popup::close_id(ui.ctx(), popup_id);
@@ -12519,7 +12570,7 @@ impl OttrinApp {
                                                     ui.horizontal(|ui| {
                                                         ui.spacing_mut().button_padding = Vec2::new(3.0 * c.font_scale, 4.0 * c.font_scale);
                                                         let resp = ui.add(
-                                                            aligned_menu_button(if is_current { MI_CHECK } else { "" }, MI_BOOKMARK, &truncate_name(name, 14), &c)
+                                                            aligned_menu_button(if is_current { MI_CHECK } else { " " }, MI_BOOKMARK, &truncate_name(name, 14), &c)
                                                                 .width((ui.available_width() - 3.0 * (24.0 * c.font_scale + ui.spacing().item_spacing.x)).max(40.0)).themed(&c)
                                                         );
                                                         if resp.hovered() {
@@ -12585,7 +12636,7 @@ impl OttrinApp {
                                                     ui.horizontal(|ui| {
                                                         ui.spacing_mut().button_padding = Vec2::new(3.0 * c.font_scale, 4.0 * c.font_scale);
                                                         let resp = ui.add(
-                                                            aligned_menu_button(if is_current { MI_CHECK } else { "" }, MI_FOLDER, &truncate_name(name, 16), &c)
+                                                            aligned_menu_button(if is_current { MI_CHECK } else { " " }, MI_FOLDER, &truncate_name(name, 16), &c)
 
                                                             .width((ui.available_width() - (24.0 * c.font_scale + ui.spacing().item_spacing.x)).max(40.0)).themed(&c)
                                                         );
@@ -19682,7 +19733,7 @@ impl OttrinApp {
                                     for (mode, label, icon_mi) in &view_opts {
                                         let sel = self.state.config.default_view_mode == *mode;
                                         let check = if sel { MI_CHECK } else { " " };
-                                        if ui.add(aligned_menu_button(check.trim(), icon_mi, label, &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
+                                        if ui.add(aligned_menu_button(check, icon_mi, label, &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
                                             self.state.config.default_view_mode = *mode;
                                             self.persist_config();
                                         }
@@ -19699,13 +19750,13 @@ impl OttrinApp {
                                     ui.add_space(6.0);
                                     let grid_thumbs = self.state.config.grid_show_thumbnails;
                                     let grid_check = if grid_thumbs { MI_CHECK } else { "  " };
-                                    if ui.add(aligned_menu_button(grid_check.trim(), "", "Show thumbnails in Grid view", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
+                                    if ui.add(aligned_menu_button(grid_check, "", "Show thumbnails in Grid view", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
                                         self.state.config.grid_show_thumbnails = !grid_thumbs;
                                         self.persist_config();
                                     }
                                     let list_thumbs = self.state.config.list_show_thumbnails;
                                     let list_check = if list_thumbs { MI_CHECK } else { "  " };
-                                    if ui.add(aligned_menu_button(list_check.trim(), "", "Show thumbnails in List view", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
+                                    if ui.add(aligned_menu_button(list_check, "", "Show thumbnails in List view", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
                                         self.state.config.list_show_thumbnails = !list_thumbs;
                                         self.persist_config();
                                     }
@@ -19740,7 +19791,7 @@ impl OttrinApp {
                                         ] {
                                             let selected = self.state.config.graphics_renderer == preference;
                                             let check = if selected { MI_CHECK } else { "  " };
-                                            if ui.add(aligned_menu_button(check.trim(), "", label, &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
+                                            if ui.add(aligned_menu_button(check, "", label, &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
                                                 self.state.config.graphics_renderer = preference;
                                                 self.persist_config();
                                                 self.set_status_message("Graphics preference saved. Restart Ottrin to apply it.", true, 8);
@@ -19873,7 +19924,7 @@ impl OttrinApp {
                                     ui.add_space(12.0);
                                     let show_hidden = self.state.config.show_hidden_files;
                                     let icon = if show_hidden { MI_CHECK } else { "  " };
-                                    if ui.add(aligned_menu_button(icon.trim(), "", "Show hidden files", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
+                                    if ui.add(aligned_menu_button(icon, MI_VISIBILITY, "Show hidden files", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c)).clicked() {
                                         self.state.config.show_hidden_files = !show_hidden;
                                         self.refresh_active_tab();
                                     }
@@ -19923,7 +19974,7 @@ impl OttrinApp {
                                         let check = if enabled { MI_CHECK } else { "  " };
                                         if ui
                                             .add(
-                                                aligned_menu_button(check.trim(), "", "Use installed LibreOffice for Office previews", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c),
+                                                aligned_menu_button(check, "", "Use installed LibreOffice for Office previews", &c).frame_when_inactive(true).min_size(Vec2::new(ui.available_width(), 28.0 * c.font_scale)).themed(&c),
                                             )
                                             .clicked()
                                         {
@@ -21840,7 +21891,7 @@ impl eframe::App for OttrinApp {
 }
 
 fn menu_item(ui: &mut egui::Ui, icon: &str, label: &str, c: &Colors) -> egui::Response {
-    let (indicator, icon) = if icon == MI_CHECK {
+    let (indicator, icon) = if icon == MI_CHECK || icon == " " {
         (icon, "")
     } else {
         ("", icon.trim())

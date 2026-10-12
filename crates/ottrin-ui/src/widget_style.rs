@@ -116,6 +116,7 @@ impl Widget for ThemeTextEdit<'_> {
 /// Native Button still owns hit testing, focus, enabled state and label semantics.
 pub(crate) struct AlignedMenuButton {
     indicator: String,
+    indicator_column: bool,
     icon: String,
     label: String,
     colors: Colors,
@@ -132,7 +133,8 @@ pub(crate) fn aligned_menu_button(
     colors: &Colors,
 ) -> AlignedMenuButton {
     AlignedMenuButton {
-        indicator: indicator.to_owned(),
+        indicator: indicator.trim().to_owned(),
+        indicator_column: !indicator.is_empty(),
         icon: icon.to_owned(),
         label: label.to_owned(),
         colors: *colors,
@@ -144,6 +146,11 @@ pub(crate) fn aligned_menu_button(
 }
 
 impl AlignedMenuButton {
+    /// Choice groups reserve this column on every row; action-only menus omit it.
+    pub(crate) fn indicator_column(mut self) -> Self {
+        self.indicator_column = true;
+        self
+    }
     pub(crate) fn frame_when_inactive(mut self, framed: bool) -> Self {
         self.framed = framed;
         self
@@ -176,17 +183,24 @@ impl Widget for AlignedMenuButton {
             ui.spacing_mut().button_padding = egui::Vec2::new(6.0 * scale, 4.0 * scale);
             let indicator_id = ui.next_auto_id().with("indicator");
             let icon_id = ui.next_auto_id().with("icon");
-            let mut button = Button::new((
-                Atom::custom(indicator_id, Vec2::new(18.0 * scale, 20.0 * scale)),
-                Atom::custom(icon_id, Vec2::new(18.0 * scale, 20.0 * scale)),
+            let mut atoms = Vec::new();
+            if self.indicator_column {
+                atoms.push(Atom::custom(
+                    indicator_id,
+                    Vec2::new(14.0 * scale, 20.0 * scale),
+                ));
+            }
+            atoms.push(Atom::custom(icon_id, Vec2::new(18.0 * scale, 20.0 * scale)));
+            atoms.push(
                 RichText::new(self.label)
                     .size(12.5 * scale)
                     .atom_shrink(true),
-                Atom::grow(),
-            ))
-            .frame(true)
-            .frame_when_inactive(self.framed)
-            .min_size(self.min_size);
+            );
+            atoms.push(Atom::grow());
+            let mut button = Button::new(egui::Atoms::from(atoms))
+                .frame(true)
+                .frame_when_inactive(self.framed)
+                .min_size(self.min_size);
             if self.width.is_some() {
                 button = button.wrap_mode(egui::TextWrapMode::Truncate);
             }
@@ -411,6 +425,47 @@ mod tests {
     }
 
     #[test]
+    fn action_menu_omits_unused_check_column_and_keeps_icons_near_edge() {
+        let ctx = Context::default();
+        let mut app = OttrinApp::default();
+        app.apply_theme_to_ctx(&ctx);
+        let c = app.colors;
+        let mut rows = Vec::new();
+        let output = ctx.run(Default::default(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                for (marker, label) in [("", "Action"), (" ", "Choice")] {
+                    rows.push(
+                        ui.add(aligned_menu_button(
+                            marker,
+                            crate::icons::MI_SETTINGS,
+                            label,
+                            &c,
+                        ))
+                        .rect,
+                    );
+                }
+            });
+        });
+        let text_left = |label: &str| {
+            output
+                .shapes
+                .iter()
+                .find_map(|shape| match &shape.shape {
+                    Shape::Text(text) if text.galley.job.text == label => Some(text.pos.x),
+                    _ => None,
+                })
+                .unwrap()
+        };
+        let action_indent = text_left("Action") - rows[0].left();
+        let choice_indent = text_left("Choice") - rows[1].left();
+        assert!(
+            action_indent <= 32.0 * c.font_scale,
+            "Action label has excessive leading space: {action_indent}"
+        );
+        assert!((choice_indent - action_indent - 18.0 * c.font_scale).abs() < 1.0);
+    }
+
+    #[test]
     fn menu_rows_align_labels_and_icons_across_states_themes_and_text_scales() {
         for dark in [true, false] {
             for scale in [1.0, 1.35] {
@@ -447,7 +502,9 @@ mod tests {
                                 rows.push(
                                     ui.add_enabled(
                                         enabled,
-                                        aligned_menu_button(indicator, icon, label, &c).themed(&c),
+                                        aligned_menu_button(indicator, icon, label, &c)
+                                            .indicator_column()
+                                            .themed(&c),
                                     )
                                     .rect,
                                 );

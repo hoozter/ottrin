@@ -61,3 +61,7 @@ pub(crate) const MI_MOVE_TO_INBOX: &str = "\u{E168}"; // move_to_inbox (drop fol
 pub(crate) const MI_DASHBOARD_CUSTOMIZE: &str = "\u{E99B}"; // dashboard_customize (view options)
 pub(crate) const MI_TUNE: &str = "\u{E429}"; // tune (display settings / scale)
 pub(crate) const MI_EDIT: &str = "\u{E3C9}"; // edit
+
+pub(crate) const MI_SORT_NAME: &str = "\u{E053}"; // sort_by_alpha
+pub(crate) const MI_SORT_ASCENDING: &str = "\u{E5D8}"; // arrow_upward
+pub(crate) const MI_SORT_DESCENDING: &str = "\u{E5DB}"; // arrow_downward
