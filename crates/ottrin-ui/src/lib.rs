@@ -771,22 +771,14 @@ struct OperationRecord {
     message: Option<String>,
     path_move_paths: Option<(PathBuf, PathBuf)>,
     path_move_undo: Option<PathMoveUndoState>,
+    undo_kind: Option<PathMoveUndoKind>,
     path_move_undo_token: Option<PathMoveUndoToken>,
     retained_copy: Option<RetainedCopyOwnership>,
 }
 
 impl OperationRecord {
     fn undo_kind(&self) -> PathMoveUndoKind {
-        self.path_move_undo_token
-            .as_ref()
-            .map(|token| token.kind)
-            .unwrap_or_else(|| {
-                if self.retained_copy.is_some() {
-                    PathMoveUndoKind::Copy
-                } else {
-                    PathMoveUndoKind::Rename
-                }
-            })
+        self.undo_kind.expect("Undo state has an operation kind")
     }
 
     fn can_clear_history(&self) -> bool {
@@ -801,7 +793,6 @@ impl OperationRecord {
 #[derive(Debug, Clone)]
 struct PathMoveUndoToken {
     receipt: OperationUndoReceipt,
-    kind: PathMoveUndoKind,
     storage_bindings: Vec<StorageOperationBinding>,
     origin_tab_id: Option<u64>,
 }
@@ -1140,7 +1131,6 @@ fn restored_copy_token(receipts: Vec<PathMoveUndoReceipt>) -> Option<PathMoveUnd
         return None;
     }
     Some(PathMoveUndoToken {
-        kind: PathMoveUndoKind::Copy,
         storage_bindings: Vec::new(),
         origin_tab_id: None,
         receipt: OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt {
@@ -1154,7 +1144,7 @@ fn copy_receipt_transaction_ids(record: &OperationRecord) -> Vec<String> {
     let Some(token) = &record.path_move_undo_token else {
         return Vec::new();
     };
-    if token.kind != PathMoveUndoKind::Copy {
+    if record.undo_kind != Some(PathMoveUndoKind::Copy) {
         return Vec::new();
     }
     let receipts: &[PathMoveUndoReceipt] = match &token.receipt {
@@ -5856,6 +5846,7 @@ impl OttrinApp {
                 record.message = None;
                 record.detail = group.detail;
                 record.status = restored_copy_status(&group.undo);
+                record.undo_kind = Some(PathMoveUndoKind::Copy);
                 record.path_move_undo = Some(group.undo);
                 record.path_move_undo_token = restored_copy_token(group.receipts);
                 record.retained_copy = Some(group.ownership);
@@ -5872,6 +5863,7 @@ impl OttrinApp {
                     message: None,
                     path_move_paths: None,
                     path_move_undo: Some(group.undo),
+                    undo_kind: Some(PathMoveUndoKind::Copy),
                     path_move_undo_token: restored_copy_token(group.receipts),
                     retained_copy: Some(group.ownership),
                 });
@@ -6178,9 +6170,9 @@ impl OttrinApp {
                     receipt.after_path().to_path_buf(),
                 ));
                 record.path_move_undo = Some(PathMoveUndoState::Available);
+                record.undo_kind = Some(kind);
                 record.path_move_undo_token = Some(PathMoveUndoToken {
                     receipt,
-                    kind,
                     storage_bindings,
                     origin_tab_id: res.tab_id,
                 });
@@ -6358,19 +6350,19 @@ impl OttrinApp {
     }
 
     fn run_path_move_undo(&mut self, op_id: u64) {
-        let Some(token) = self
+        let Some((token, kind)) = self
             .operation_history
             .iter()
             .find(|record| record.id == op_id)
             .filter(|record| {
                 path_move_undo_action_is_available(record.status, record.path_move_undo.as_ref())
             })
-            .and_then(|record| record.path_move_undo_token.clone())
+            .and_then(|record| Some((record.path_move_undo_token.clone()?, record.undo_kind())))
         else {
             return;
         };
         if self.path_move_undo_conflicts(op_id, &token.receipt) {
-            self.set_status_message(path_move_undo_conflict_message(token.kind), false, 6);
+            self.set_status_message(path_move_undo_conflict_message(kind), false, 6);
             return;
         }
         self.reconcile_storage_location_availability(discover_storage_locations());
@@ -6398,7 +6390,7 @@ impl OttrinApp {
             ) {
                 Err(error) => (Err(error.to_string()), false),
                 Ok(())
-                    if token.kind == PathMoveUndoKind::Copy
+                    if kind == PathMoveUndoKind::Copy
                         && matches!(&token.receipt, OperationUndoReceipt::CopyBatch(_)) =>
                 {
                     let OperationUndoReceipt::CopyBatch(mut batch) = token.receipt.clone() else {
@@ -6421,7 +6413,7 @@ impl OttrinApp {
                     copy_batch_progress = Some(batch);
                     (result, retryable)
                 }
-                Ok(()) => match match (&token.kind, &token.receipt) {
+                Ok(()) => match match (&kind, &token.receipt) {
                     (PathMoveUndoKind::CreateFile, OperationUndoReceipt::PathMove(receipt)) => {
                         platform.undo_create_file_with_receipt(receipt)
                     }
@@ -6490,8 +6482,7 @@ impl OttrinApp {
                 .operation_history
                 .iter()
                 .find(|record| record.id == result.op_id)
-                .and_then(|record| record.path_move_undo_token.as_ref())
-                .is_some_and(|token| token.kind == PathMoveUndoKind::Copy);
+                .is_some_and(|record| record.undo_kind == Some(PathMoveUndoKind::Copy));
             let undo_failed = result.result.is_err();
             self.finish_path_move_undo(result.op_id, result.result, result.retryable);
             if copy_undo
@@ -6540,6 +6531,7 @@ impl OttrinApp {
                 )
             })
             .and_then(|record| {
+                let kind = record.undo_kind();
                 let token = record.path_move_undo_token.as_ref()?;
                 match result {
                     Ok(()) => {
@@ -6552,9 +6544,9 @@ impl OttrinApp {
                             token.receipt.before_path().to_path_buf(),
                             token.receipt.after_path().to_path_buf(),
                             token.origin_tab_id,
-                            token.kind,
+                            kind,
                         );
-                        if token.kind == PathMoveUndoKind::TextEdit {
+                        if kind == PathMoveUndoKind::TextEdit {
                             record.path_move_undo_token = None;
                         }
                         Some(completed)
@@ -6568,11 +6560,10 @@ impl OttrinApp {
                             token.receipt.before_path().to_path_buf(),
                             token.receipt.after_path().to_path_buf(),
                             token.origin_tab_id,
-                            token.kind,
+                            kind,
                         ))
                     }
                     Err(reason) => {
-                        let kind = token.kind;
                         record.path_move_undo = Some(PathMoveUndoState::Unavailable {
                             reason: reason.clone(),
                         });
@@ -8926,6 +8917,7 @@ impl OttrinApp {
                     {
                         record.status = OperationStatus::Completed;
                         record.finished_at = Some(Instant::now());
+                        record.undo_kind = Some(PathMoveUndoKind::TextEdit);
                         if save_undo_available
                             && let Ok(session) = undo_session
                             && let Ok(storage_bindings) = storage_bindings
@@ -8939,7 +8931,6 @@ impl OttrinApp {
                                     original,
                                     path: path.clone(),
                                 }),
-                                kind: PathMoveUndoKind::TextEdit,
                                 storage_bindings,
                                 origin_tab_id: Some(self.state.active_tab().id),
                             });
@@ -10159,6 +10150,7 @@ impl OttrinApp {
             message: None,
             path_move_paths: None,
             path_move_undo: None,
+            undo_kind: None,
             path_move_undo_token: None,
             retained_copy: None,
         });
@@ -29054,10 +29046,7 @@ mod tests {
         assert_eq!(record.title, "Edit text");
         assert_eq!(record.status, OperationStatus::Completed);
         assert_eq!(record.path_move_undo, Some(PathMoveUndoState::Available));
-        assert_eq!(
-            record.path_move_undo_token.as_ref().map(|token| token.kind),
-            Some(PathMoveUndoKind::TextEdit)
-        );
+        assert_eq!(record.undo_kind, Some(PathMoveUndoKind::TextEdit));
         let op_id = record.id;
 
         app.run_path_move_undo(op_id);
@@ -29074,6 +29063,42 @@ mod tests {
         }
 
         assert_eq!(std::fs::read_to_string(path).unwrap(), "original\n");
+        let record = app.operation_history.front().unwrap();
+        assert!(record.path_move_undo_token.is_none());
+        assert_eq!(record.undo_kind(), PathMoveUndoKind::TextEdit);
+        let ctx = Context::default();
+        app.apply_theme_to_ctx(&ctx);
+        let mut output = None;
+        for _ in 0..3 {
+            output = Some(ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(500.0, 500.0),
+                    )),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        app.render_activity_sidebar(ui);
+                    });
+                },
+            ));
+        }
+        let output = output.unwrap();
+        let labels: Vec<_> = output
+            .shapes
+            .iter()
+            .filter_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) => Some(text.galley.job.text.as_str()),
+                _ => None,
+            })
+            .collect();
+        assert!(
+            labels.contains(&"Text edit undone"),
+            "Activity labels: {labels:?}"
+        );
+        assert!(!labels.contains(&"Rename undone"));
         assert_eq!(
             app.operation_history.front().unwrap().path_move_undo,
             Some(PathMoveUndoState::Undone)
