@@ -13,7 +13,9 @@ use std::time::SystemTime;
 use thiserror::Error;
 
 mod copy_transaction;
-use copy_transaction::{CopyPublication, copy_entry_transactional};
+#[cfg(target_os = "linux")]
+use copy_transaction::CopyPublication;
+use copy_transaction::copy_entry_transactional;
 pub mod move_recovery;
 mod move_transaction;
 use move_transaction::move_entry_transactional;
@@ -68,6 +70,14 @@ pub struct FileProperties {
 pub enum MoveDisposition {
     Moved,
     Skipped,
+}
+
+/// Keeps every admitted Undo receipt even when a later Copy stops the batch.
+#[derive(Debug)]
+pub struct CopyBatchResult {
+    pub completed_sources: usize,
+    pub undo_receipts: Vec<PathMoveUndoReceipt>,
+    pub error: Option<PlatformError>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -901,6 +911,16 @@ pub trait PlatformOps: Send + Sync {
         })
         .map(|_| None)
     }
+    fn execute_copy_batch_with_undo_receipts(
+        &self,
+        sources: &[PathBuf],
+        destination: &Path,
+        conflict: ConflictAction,
+    ) -> CopyBatchResult {
+        execute_copy_batch_with(sources, |source| {
+            self.execute_copy_with_undo_receipt(source, destination, conflict)
+        })
+    }
     fn undo_copy_with_receipt(&self, receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
         let _ = receipt;
         Err(PlatformError::NotAvailable(
@@ -1070,12 +1090,19 @@ impl PlatformOps for DefaultPlatform {
                 destination,
                 conflict,
             } => {
-                ensure_existing_dir(destination)?;
-                for source in sources {
-                    validate_copy_source(source)?;
-                    reject_directory_copy_into_itself(source, destination)?;
+                let result =
+                    self.execute_copy_batch_with_undo_receipts(sources, destination, *conflict);
+                if let Some(error) = result.error {
+                    return Err(error);
                 }
-                execute_copy_batch(sources, destination, *conflict)?;
+                if !result.undo_receipts.is_empty() {
+                    return Err(PlatformError::CommittedCleanupPending {
+                        transaction: result.undo_receipts.iter()
+                            .filter_map(|receipt| receipt.before_path().parent())
+                            .map(|path| path.display().to_string()).collect::<Vec<_>>().join(", "),
+                        message: "copy completed; the caller did not retain its Undo receipts and their private transaction stages remain".into(),
+                    });
+                }
                 Ok(None)
             }
             FileCommand::Move {
@@ -1512,15 +1539,37 @@ impl PlatformOps for DefaultPlatform {
         }
         #[cfg(not(target_os = "linux"))]
         {
-            self.execute_command(&FileCommand::Copy {
-                sources: vec![source.to_path_buf()],
-                destination: destination.to_path_buf(),
-                conflict,
-            })
-            .map(|_| None)
+            ensure_existing_dir(destination)?;
+            validate_copy_source(source)?;
+            reject_directory_copy_into_itself(source, destination)?;
+            copy_entry_transactional(source, destination, conflict).map(|_| None)
         }
     }
 
+    fn execute_copy_batch_with_undo_receipts(
+        &self,
+        sources: &[PathBuf],
+        destination: &Path,
+        conflict: ConflictAction,
+    ) -> CopyBatchResult {
+        let validation = ensure_existing_dir(destination).and_then(|()| {
+            for source in sources {
+                validate_copy_source(source)?;
+                reject_directory_copy_into_itself(source, destination)?;
+            }
+            Ok(())
+        });
+        if let Err(error) = validation {
+            return CopyBatchResult {
+                completed_sources: 0,
+                undo_receipts: Vec::new(),
+                error: Some(error),
+            };
+        }
+        execute_copy_batch_with(sources, |source| {
+            self.execute_copy_with_undo_receipt(source, destination, conflict)
+        })
+    }
     fn undo_copy_with_receipt(&self, receipt: &PathMoveUndoReceipt) -> Result<(), PlatformError> {
         #[cfg(target_os = "linux")]
         {
@@ -2067,67 +2116,48 @@ fn execute_move_batch(
     Ok(completed_dispositions)
 }
 
-fn execute_copy_batch(
-    sources: &[PathBuf],
-    destination: &Path,
-    conflict: ConflictAction,
-) -> Result<(), PlatformError> {
-    execute_copy_batch_with(sources, |source| {
-        copy_entry_transactional(source, destination, conflict)
-    })
-}
-
 fn execute_copy_batch_with(
     sources: &[PathBuf],
-    mut execute: impl FnMut(&Path) -> Result<CopyPublication, PlatformError>,
-) -> Result<(), PlatformError> {
-    let total = sources.len();
-    let mut retained = Vec::new();
-    for (index, source) in sources.iter().enumerate() {
+    mut execute: impl FnMut(&Path) -> Result<Option<PathMoveUndoReceipt>, PlatformError>,
+) -> CopyBatchResult {
+    let mut result = CopyBatchResult {
+        completed_sources: 0,
+        undo_receipts: Vec::new(),
+        error: None,
+    };
+    for source in sources {
         match execute(source) {
-            Ok(CopyPublication::Published {
-                retained_transaction,
-                ..
-            }) => retained.push(retained_transaction),
-            Ok(CopyPublication::Skipped {
-                retained_transaction: Some(transaction),
-            }) => retained.push(transaction),
-            Ok(CopyPublication::Skipped {
-                retained_transaction: None,
-            }) => {}
+            Ok(receipt) => {
+                result.completed_sources += 1;
+                result.undo_receipts.extend(receipt);
+            }
             Err(error) => {
                 let current_committed =
                     matches!(error, PlatformError::CommittedCleanupPending { .. });
-                let completed = index + usize::from(current_committed);
-                if total > 1 && completed > 0 {
-                    let mut recovery_paths = retained.clone();
+                result.completed_sources += usize::from(current_committed);
+                result.error = Some(if sources.len() > 1 && result.completed_sources > 0 {
+                    let mut recovery_paths: Vec<PathBuf> = result
+                        .undo_receipts
+                        .iter()
+                        .filter_map(|receipt| receipt.before_path().parent().map(Path::to_path_buf))
+                        .collect();
                     recovery_paths.extend(error_recovery_paths(&error));
-                    return Err(PlatformError::PartialBatch {
-                        completed,
-                        total,
+                    PlatformError::PartialBatch {
+                        completed: result.completed_sources,
+                        total: sources.len(),
                         stopped_source: source.clone(),
                         completed_dispositions: Vec::new(),
                         message: message_with_recovery(&error, &recovery_paths),
                         recovery_paths,
-                    });
-                }
-                return Err(error);
+                    }
+                } else {
+                    error
+                });
+                break;
             }
         }
     }
-    if retained.is_empty() {
-        Ok(())
-    } else {
-        Err(PlatformError::CommittedCleanupPending {
-            transaction: retained
-                .iter()
-                .map(|path| path.display().to_string())
-                .collect::<Vec<_>>()
-                .join(", "),
-            message: "copy completed; private transaction stages were retained because pathname-based cleanup cannot prove ownership"
-                .into(),
-        })
-    }
+    result
 }
 
 impl DefaultPlatform {
@@ -6410,12 +6440,16 @@ mod tests {
 
         let result = execute_copy_batch_with(&sources, |source| {
             if source == Path::new("first") {
-                Ok(CopyPublication::Published {
-                    retained_transaction: first_stage.clone(),
-                    published_path: PathBuf::from("first-published"),
-                    published_identity: rename_identity(&first_stage.join("candidate")).unwrap(),
+                Ok(Some(PathMoveUndoReceipt {
+                    before_path: first_stage.join("candidate"),
+                    after_path: PathBuf::from("first-published"),
+                    identity: rename_identity(&first_stage.join("candidate")).unwrap(),
                     displaced_identity: None,
-                })
+                    retained_displaced_path: None,
+                    requirement: PathMoveUndoRequirement::None,
+                    published_content: None,
+                    cross_filesystem_state: Default::default(),
+                }))
             } else {
                 Err(PlatformError::CleanupPending {
                     transaction: second_stage.display().to_string(),
@@ -6424,8 +6458,9 @@ mod tests {
             }
         });
 
-        match result {
-            Err(PlatformError::PartialBatch {
+        assert_eq!(result.undo_receipts.len(), 1);
+        match result.error {
+            Some(PlatformError::PartialBatch {
                 completed,
                 recovery_paths,
                 message,

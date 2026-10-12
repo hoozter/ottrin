@@ -627,3 +627,22 @@ clipboard/paste worker, source-link and destination-link semantics, dangling-lin
 refusal, changed ancestors and unavailable-volume tombstones. As with existing
 volume checks, pathname mutation after the last worker check remains an OS race;
 transaction-level source/publication identity checks still apply.
+
+## Batch Copy receipt ownership
+
+Copy batch dispatch has one platform loop, returning a completed-source count,
+every identity-bound per-entry Undo receipt, and any failure. A later failure
+keeps earlier receipts and explicit recovery paths. The UI owns those receipts
+in Activity rather than falling back to the receipt-discarding command route.
+
+Batch Undo runs the existing Copy inverse in reverse order. It tracks a remaining
+index while retaining all receipts, including completed ones, so retry never
+repeats a completed inverse or drops ownership of its retained transaction data.
+Destination-wide overlap guards cover other batch entries and conflict-renamed
+outputs. A pathname replacement stops Undo without modifying the replacement;
+Activity reports progress and retains the remaining action for retry.
+
+Safe expiry/reclamation of Copy transaction stages is still open. Receipt
+ownership and successful Undo do not establish that transaction storage has
+been reclaimed. Native Windows has no Copy Undo receipts yet; cross-compilation
+does not establish Windows Copy acceptance.

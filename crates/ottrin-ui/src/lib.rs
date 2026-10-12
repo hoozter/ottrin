@@ -600,6 +600,7 @@ struct PathMoveUndoResult {
     op_id: u64,
     result: Result<(), String>,
     retryable: bool,
+    copy_batch_progress: Option<CopyBatchUndoReceipt>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -788,8 +789,17 @@ struct TextEditUndoReceipt {
 }
 
 #[derive(Debug, Clone)]
+struct CopyBatchUndoReceipt {
+    // Retain completed receipts too: their transaction data remains owned by
+    // this Activity record even after a later Undo stops or is retried.
+    receipts: Vec<PathMoveUndoReceipt>,
+    remaining: usize,
+}
+
+#[derive(Debug, Clone)]
 enum OperationUndoReceipt {
     PathMove(PathMoveUndoReceipt),
+    CopyBatch(CopyBatchUndoReceipt),
     Chmod(ChmodUndoReceipt),
     Trash(TrashUndoReceipt),
     TextEdit(TextEditUndoReceipt),
@@ -799,6 +809,11 @@ impl OperationUndoReceipt {
     fn before_path(&self) -> &Path {
         match self {
             Self::PathMove(receipt) => receipt.before_path(),
+            Self::CopyBatch(batch) => batch
+                .receipts
+                .first()
+                .expect("nonempty Copy batch")
+                .before_path(),
             Self::Chmod(receipt) => receipt.path(),
             Self::Trash(receipt) => receipt.original_path(),
             Self::TextEdit(receipt) => &receipt.path,
@@ -808,6 +823,13 @@ impl OperationUndoReceipt {
     fn after_path(&self) -> &Path {
         match self {
             Self::PathMove(receipt) => receipt.after_path(),
+            Self::CopyBatch(batch) => batch
+                .receipts
+                .first()
+                .expect("nonempty Copy batch")
+                .after_path()
+                .parent()
+                .expect("Copy destination parent"),
             Self::Chmod(receipt) => receipt.path(),
             Self::Trash(receipt) => receipt.trash_path(),
             Self::TextEdit(receipt) => &receipt.path,
@@ -5733,29 +5755,27 @@ impl OttrinApp {
                 OperationStatus::Completed,
                 res.warning.clone(),
             );
-            if res.warning.is_none()
-                && let (Some(kind), Some(receipt), Some(storage_bindings)) = (
-                    match &completed_cmd {
-                        FileCommand::CreateFile { .. } => Some(PathMoveUndoKind::CreateFile),
-                        FileCommand::CreateFolder { .. } => Some(PathMoveUndoKind::CreateFolder),
-                        FileCommand::Symlink { .. } => Some(PathMoveUndoKind::Symlink),
-                        FileCommand::Chmod { .. } => Some(PathMoveUndoKind::Chmod),
-                        FileCommand::Delete {
-                            targets,
-                            mode: DeleteMode::Trash,
-                        } if targets.len() == 1 => Some(PathMoveUndoKind::Trash),
-                        FileCommand::Rename { .. } => Some(PathMoveUndoKind::Rename),
-                        FileCommand::Copy { .. } => Some(PathMoveUndoKind::Copy),
-                        FileCommand::Move { .. } => Some(PathMoveUndoKind::Move),
-                        _ => None,
-                    },
-                    path_move_receipt,
-                    path_move_bindings,
-                )
-                && let Some(record) = self
-                    .operation_history
-                    .iter_mut()
-                    .find(|record| record.id == res.op_id)
+            if let (Some(kind), Some(receipt), Some(storage_bindings)) = (
+                match &completed_cmd {
+                    FileCommand::CreateFile { .. } => Some(PathMoveUndoKind::CreateFile),
+                    FileCommand::CreateFolder { .. } => Some(PathMoveUndoKind::CreateFolder),
+                    FileCommand::Symlink { .. } => Some(PathMoveUndoKind::Symlink),
+                    FileCommand::Chmod { .. } => Some(PathMoveUndoKind::Chmod),
+                    FileCommand::Delete {
+                        targets,
+                        mode: DeleteMode::Trash,
+                    } if targets.len() == 1 => Some(PathMoveUndoKind::Trash),
+                    FileCommand::Rename { .. } => Some(PathMoveUndoKind::Rename),
+                    FileCommand::Copy { .. } => Some(PathMoveUndoKind::Copy),
+                    FileCommand::Move { .. } => Some(PathMoveUndoKind::Move),
+                    _ => None,
+                },
+                path_move_receipt,
+                path_move_bindings,
+            ) && let Some(record) = self
+                .operation_history
+                .iter_mut()
+                .find(|record| record.id == res.op_id)
             {
                 record.path_move_paths = Some((
                     receipt.before_path().to_path_buf(),
@@ -5963,11 +5983,36 @@ impl OttrinApp {
         let platform = Arc::clone(&self.platform);
         let tx = self.path_move_undo_tx.clone();
         std::thread::spawn(move || {
+            let mut copy_batch_progress = None;
             let (result, retryable) = match validate_operation_storage_bindings(
                 &token.storage_bindings,
                 &discover_storage_locations(),
             ) {
                 Err(error) => (Err(error.to_string()), false),
+                Ok(())
+                    if token.kind == PathMoveUndoKind::Copy
+                        && matches!(&token.receipt, OperationUndoReceipt::CopyBatch(_)) =>
+                {
+                    let OperationUndoReceipt::CopyBatch(mut batch) = token.receipt.clone() else {
+                        unreachable!()
+                    };
+                    let total = batch.remaining;
+                    let mut result = Ok(());
+                    while batch.remaining > 0 {
+                        let receipt = &batch.receipts[batch.remaining - 1];
+                        if let Err(error) = platform.undo_copy_with_receipt(receipt) {
+                            result = Err(format!(
+                                "Batch Copy Undo stopped after {} of {total} entries: {error}",
+                                total - batch.remaining
+                            ));
+                            break;
+                        }
+                        batch.remaining -= 1;
+                    }
+                    let retryable = result.is_err();
+                    copy_batch_progress = Some(batch);
+                    (result, retryable)
+                }
                 Ok(()) => match match (&token.kind, &token.receipt) {
                     (PathMoveUndoKind::CreateFile, OperationUndoReceipt::PathMove(receipt)) => {
                         platform.undo_create_file_with_receipt(receipt)
@@ -6015,13 +6060,35 @@ impl OttrinApp {
                 op_id,
                 result,
                 retryable,
+                copy_batch_progress,
             });
         });
     }
 
     fn poll_path_move_undo_results(&mut self) {
         while let Ok(result) = self.path_move_undo_rx.try_recv() {
+            let stopped_copy = result.copy_batch_progress.is_some() && result.result.is_err();
+            let failure = result.result.as_ref().err().cloned();
+            if let Some(progress) = result.copy_batch_progress
+                && let Some(token) = self
+                    .operation_history
+                    .iter_mut()
+                    .find(|record| record.id == result.op_id)
+                    .and_then(|record| record.path_move_undo_token.as_mut())
+            {
+                token.receipt = OperationUndoReceipt::CopyBatch(progress);
+            }
             self.finish_path_move_undo(result.op_id, result.result, result.retryable);
+            if stopped_copy
+                && let Some(record) = self
+                    .operation_history
+                    .iter_mut()
+                    .find(|record| record.id == result.op_id)
+            {
+                record.message = failure.map(|reason| {
+                    format!("{reason}. Select Undo again to retry the remaining entries.")
+                });
+            }
         }
     }
 
@@ -9404,21 +9471,30 @@ impl OttrinApp {
                             sources,
                             destination,
                             conflict,
-                        } if sources.len() == 1 => {
-                            match platform.execute_copy_with_undo_receipt(
-                                &sources[0],
+                        } => {
+                            let copied = platform.execute_copy_batch_with_undo_receipts(
+                                sources,
                                 destination,
                                 *conflict,
-                            ) {
-                                Ok(receipt) => (
-                                    FileOpOutcome::Completed,
-                                    Vec::new(),
-                                    receipt.map(OperationUndoReceipt::PathMove),
-                                ),
-                                Err(error) => {
-                                    (classify_file_op_result(Err(error)), Vec::new(), None)
-                                }
-                            }
+                            );
+                            let outcome = classify_file_op_result(copied.error.map_or(Ok(()), Err));
+                            let receipt = if copied.undo_receipts.is_empty() {
+                                None
+                            } else if sources.len() == 1 {
+                                Some(OperationUndoReceipt::PathMove(
+                                    copied
+                                        .undo_receipts
+                                        .into_iter()
+                                        .next()
+                                        .expect("nonempty receipt"),
+                                ))
+                            } else {
+                                Some(OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt {
+                                    remaining: copied.undo_receipts.len(),
+                                    receipts: copied.undo_receipts,
+                                }))
+                            };
+                            (outcome, Vec::new(), receipt)
                         }
                         FileCommand::Move {
                             sources,
@@ -13396,6 +13472,10 @@ impl OttrinApp {
                                 PathMoveUndoKind::Rename => (
                                     "Undo rename",
                                     "Restore this renamed entry if it has not changed or been replaced.",
+                                ),
+                                PathMoveUndoKind::Copy if matches!(&record.path_move_undo_token.as_ref().map(|token| &token.receipt), Some(OperationUndoReceipt::CopyBatch(_))) => (
+                                    "Undo copied items",
+                                    "Reverse the remaining copied entries; already completed Undos are not repeated.",
                                 ),
                                 PathMoveUndoKind::Copy => (
                                     "Undo copy",
@@ -22930,9 +23010,7 @@ fn operation_recoverability(cmd: &FileCommand) -> OperationRecoverability {
         }
         | FileCommand::RecoverRetainedMove { .. } => OperationRecoverability::NotUndoable,
         FileCommand::ShowProperties { .. } => OperationRecoverability::Informational,
-        FileCommand::Copy { sources, .. } | FileCommand::Move { sources, .. }
-            if sources.len() > 1 =>
-        {
+        FileCommand::Move { sources, .. } if sources.len() > 1 => {
             OperationRecoverability::BatchUndoUnavailable
         }
         FileCommand::CreateFile { .. }
@@ -22955,12 +23033,8 @@ fn path_move_paths_for_command(cmd: &FileCommand) -> Option<(PathBuf, PathBuf)> 
             .parent()
             .map(|parent| (source.clone(), parent.join(new_name))),
         FileCommand::Symlink { link_path, .. } => Some((link_path.clone(), link_path.clone())),
-        FileCommand::Copy {
-            sources,
-            destination,
-            conflict: ConflictAction::Skip | ConflictAction::Rename,
-        }
-        | FileCommand::Move {
+        FileCommand::Copy { destination, .. } => Some((destination.clone(), destination.clone())),
+        FileCommand::Move {
             sources,
             destination,
             conflict: ConflictAction::Skip,
@@ -24176,26 +24250,6 @@ mod tests {
             assert!(activity.recovery_available);
             assert_eq!(activity.phase, phase);
         }
-    }
-
-    #[test]
-    fn multi_entry_copy_reports_that_batch_undo_is_unavailable() {
-        let command = FileCommand::Copy {
-            sources: vec![PathBuf::from("first"), PathBuf::from("second")],
-            destination: PathBuf::from("destination"),
-            conflict: ConflictAction::Skip,
-        };
-
-        assert_eq!(
-            operation_recoverability(&command),
-            OperationRecoverability::BatchUndoUnavailable
-        );
-        let (label, _, explanation) = operation_recoverability_label(
-            operation_recoverability(&command),
-            Colors::preset(ThemePreset::Ottrin, true),
-        );
-        assert_eq!(label, "No batch undo");
-        assert!(explanation.contains("partially reverse"));
     }
 
     #[test]
@@ -26380,6 +26434,129 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    fn batch_copy_activity_retains_receipts_and_resumes_only_remaining_undo_entries() {
+        let root = tempfile::tempdir().unwrap();
+        let source = root.path().join("source");
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&source).unwrap();
+        std::fs::create_dir(&destination).unwrap();
+        for name in ["a", "b"] {
+            std::fs::write(source.join(name), format!("copied {name}")).unwrap();
+            std::fs::write(destination.join(name), format!("original {name}")).unwrap();
+        }
+        let command = FileCommand::Copy {
+            sources: vec![source.join("a"), source.join("b")],
+            destination: destination.clone(),
+            conflict: ConflictAction::Overwrite,
+        };
+        let mut app = OttrinApp::default();
+        assert!(app.run_file_op_bound(command, None, Vec::new(), None, None, None));
+        let result = app.op_rx.recv_timeout(Duration::from_secs(3)).unwrap();
+        assert!(result.error.is_none());
+        assert!(
+            result.warning.is_none(),
+            "valid retained Undo receipts are not cleanup failures"
+        );
+        let id = result.op_id;
+        app.op_tx.send(result).unwrap();
+        app.poll_op_results();
+        let record = app
+            .operation_history
+            .iter()
+            .find(|record| record.id == id)
+            .unwrap();
+        assert_eq!(
+            record.recoverability,
+            OperationRecoverability::SessionTracked
+        );
+        let token = record.path_move_undo_token.as_ref().unwrap();
+        let OperationUndoReceipt::CopyBatch(batch) = &token.receipt else {
+            panic!("batch receipts missing")
+        };
+        assert_eq!(batch.receipts.len(), 2);
+        for name in ["a", "b"] {
+            assert_eq!(
+                std::fs::read_to_string(destination.join(name)).unwrap(),
+                format!("copied {name}")
+            );
+        }
+        // Undo runs in reverse publication order. Replace a so b completes first,
+        // then prove that retry does not undo b again or touch the replacement.
+        let saved_a = root.path().join("saved-published-a");
+        std::fs::rename(destination.join("a"), &saved_a).unwrap();
+        std::fs::write(destination.join("a"), "later replacement").unwrap();
+        app.run_path_move_undo(id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(3))
+            .unwrap();
+        assert!(result.result.is_err());
+        assert_eq!(result.copy_batch_progress.as_ref().unwrap().remaining, 1);
+        app.path_move_undo_tx.send(result).unwrap();
+        app.poll_path_move_undo_results();
+        assert_eq!(
+            std::fs::read_to_string(destination.join("a")).unwrap(),
+            "later replacement"
+        );
+        assert_eq!(
+            std::fs::read_to_string(destination.join("b")).unwrap(),
+            "original b"
+        );
+        let record = app
+            .operation_history
+            .iter()
+            .find(|record| record.id == id)
+            .unwrap();
+        assert!(matches!(
+            record.path_move_undo,
+            Some(PathMoveUndoState::Available)
+        ));
+        assert!(
+            record
+                .message
+                .as_ref()
+                .unwrap()
+                .contains("remaining entries")
+        );
+        std::fs::rename(
+            destination.join("a"),
+            root.path().join("preserved-replacement"),
+        )
+        .unwrap();
+        std::fs::rename(saved_a, destination.join("a")).unwrap();
+        app.run_path_move_undo(id);
+        let result = app
+            .path_move_undo_rx
+            .recv_timeout(Duration::from_secs(3))
+            .unwrap();
+        assert!(
+            result.result.is_ok(),
+            "only the still-pending a receipt may run"
+        );
+        app.path_move_undo_tx.send(result).unwrap();
+        app.poll_path_move_undo_results();
+        for name in ["a", "b"] {
+            assert_eq!(
+                std::fs::read_to_string(destination.join(name)).unwrap(),
+                format!("original {name}")
+            );
+            assert_eq!(
+                std::fs::read_to_string(source.join(name)).unwrap(),
+                format!("copied {name}")
+            );
+        }
+        assert!(matches!(
+            app.operation_history
+                .iter()
+                .find(|record| record.id == id)
+                .unwrap()
+                .path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        ));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn file_operation_worker_publishes_and_executes_undo_for_an_overwritten_copy() {
         let root = std::env::temp_dir().join(format!(
             "ottrin-ui-copy-overwrite-worker-undo-{}-{}",
@@ -26782,20 +26959,34 @@ mod tests {
     }
 
     #[test]
-    fn single_conflict_free_copy_records_its_source_and_destination_paths() {
-        let command = FileCommand::Copy {
-            sources: vec![PathBuf::from("/source/entry.txt")],
-            destination: PathBuf::from("/destination"),
-            conflict: ConflictAction::Skip,
-        };
-
-        assert_eq!(
-            path_move_paths_for_command(&command),
-            Some((
-                PathBuf::from("/source/entry.txt"),
-                PathBuf::from("/destination/entry.txt"),
-            ))
-        );
+    fn copy_reserves_all_destination_entries_for_undo_conflict_checks() {
+        for conflict in [
+            ConflictAction::Skip,
+            ConflictAction::Rename,
+            ConflictAction::Overwrite,
+        ] {
+            let command = FileCommand::Copy {
+                sources: vec![
+                    PathBuf::from("/source/first"),
+                    PathBuf::from("/source/second"),
+                ],
+                destination: PathBuf::from("/destination"),
+                conflict,
+            };
+            let (before, after) = path_move_paths_for_command(&command).unwrap();
+            for name in ["first", "second", "first (1)"] {
+                let affected = PathBuf::from("/destination").join(name);
+                assert!(path_move_paths_overlap(
+                    &before, &after, &affected, &affected
+                ));
+            }
+            assert!(!path_move_paths_overlap(
+                &before,
+                &after,
+                Path::new("/unrelated/item"),
+                Path::new("/unrelated/item")
+            ));
+        }
     }
 
     #[test]
