@@ -184,6 +184,12 @@ fn pdfium_library_dirs_from(
     if let Some(executable_dir) = executable_dir {
         dirs.push(executable_dir.join("pdfium/lib"));
         dirs.push(executable_dir.join("pdfium"));
+        #[cfg(target_os = "linux")]
+        if executable_dir.file_name().is_some_and(|name| name == "bin")
+            && let Some(prefix) = executable_dir.parent()
+        {
+            dirs.push(prefix.join("libexec/ottrin/pdfium/lib"));
+        }
         dirs.push(executable_dir);
     }
     for development_dir in development_dirs {
@@ -255,6 +261,16 @@ mod tests {
                 PathBuf::from("/workspace/runtime/pdfium"),
             ]
         );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn native_package_pdfium_is_discovered_relative_to_install_prefix() {
+        for prefix in ["/usr", "/tmp/extracted-package/usr"] {
+            let dirs =
+                pdfium_library_dirs_from(None, Some(PathBuf::from(prefix).join("bin")), vec![]);
+            assert!(dirs.contains(&PathBuf::from(prefix).join("libexec/ottrin/pdfium/lib")));
+        }
     }
 
     #[test]

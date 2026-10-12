@@ -15,6 +15,31 @@ BIN="$TMP/bin"
 STAGE="$TMP/stage"
 mkdir -p "$BIN"
 
+# Structural package fixtures use a local renderer payload. Real checksum refusal
+# is exercised separately below, with the unmodified checksum utility.
+mkdir -p "$TMP/pdfium/lib" "$TMP/pdfium/licenses" "$TMP/tools"
+cp /bin/true "$TMP/pdfium/lib/libpdfium.so"
+printf 'fixture license\n' > "$TMP/pdfium/LICENSE"
+printf 'fixture license\n' > "$TMP/pdfium/licenses/pdfium.txt"
+tar -czf "$TMP/pdfium.tgz" -C "$TMP/pdfium" .
+export OTTRIN_TEST_PDFIUM_ARCHIVE="$TMP/pdfium.tgz"
+cat > "$TMP/tools/curl" <<'MOCK'
+#!/bin/sh
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = '-o' ]; then cp "$OTTRIN_TEST_PDFIUM_ARCHIVE" "$2"; exit; fi
+  shift
+done
+exit 1
+MOCK
+cat > "$TMP/tools/sha256sum" <<'MOCK'
+#!/bin/sh
+if [ "${1:-}" = '-c' ]; then cat >/dev/null; exit 0; fi
+exec /usr/bin/sha256sum "$@"
+MOCK
+chmod +x "$TMP/tools/curl" "$TMP/tools/sha256sum"
+ORIGINAL_PATH="$PATH"
+export PATH="$TMP/tools:$PATH"
+
 for executable in ottrin-app ottrin-indexd ottrin-priv-helper ottrin-media-playback ottrin-legacy-doc-render; do
   printf '#!/bin/sh\nexit 0\n' > "$BIN/$executable"
   chmod 0755 "$BIN/$executable"
@@ -37,7 +62,10 @@ for payload in \
   usr/share/metainfo/org.ottrin.Ottrin.appdata.xml \
   usr/share/polkit-1/actions/org.ottrin.filesystem.policy \
   usr/share/ottrin/ottrin-index.service.in \
-  usr/share/doc/ottrin/SOURCE_REVISION.txt; do
+  usr/share/doc/ottrin/SOURCE_REVISION.txt \
+  usr/libexec/ottrin/pdfium/lib/libpdfium.so \
+  usr/libexec/ottrin/pdfium/LICENSE \
+  usr/libexec/ottrin/pdfium/licenses/pdfium.txt; do
   test -f "$STAGE/$payload"
 done
 
@@ -109,5 +137,19 @@ if OTTRIN_BUILD_DIR="$BIN" OTTRIN_SKIP_BUILD=1 OTTRIN_DIST_DIR="$TMP/dist" "$DEB
   exit 1
 fi
 [[ "$(sha256sum "$TMP/dist/ottrin_0.1.0_amd64.deb")" == "$before" ]]
+
+
+
+# An untrusted local archive must fail the actual pinned checksum before staging.
+if (
+  export PATH="$ORIGINAL_PATH"
+  source "$ROOT/packaging/linux/package-pdfium.sh"
+  PDFIUM_URL="file://$TMP/pdfium.tgz"
+  package_linux_pdfium "$TMP/rejected-pdfium"
+); then
+  printf 'PDFium package helper accepted a wrong archive checksum\n' >&2
+  exit 1
+fi
+test ! -e "$TMP/rejected-pdfium"
 
 printf 'Linux native package staging contract: PASS\n'

@@ -3,6 +3,7 @@ set -euo pipefail
 umask 022
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$ROOT/packaging/linux/package-pdfium.sh"
 VERSION="${OTTRIN_VERSION:-$(grep -m1 '^version = ' "$ROOT/Cargo.toml" | sed -E 's/version = "([^"]+)"/\1/')}"
 BUILD_DIR="${OTTRIN_BUILD_DIR:-$ROOT/target/release}"
 DEST="${1:?usage: stage-native-package.sh DESTINATION}"
@@ -39,6 +40,8 @@ mkdir -p \
   "$DEST/usr/share/ottrin" \
   "$DEST/usr/share/polkit-1/actions" \
   "$DEST/usr/share/doc/ottrin"
+
+package_linux_pdfium "$DEST/usr/libexec/ottrin/pdfium"
 
 install -m 0755 "$BUILD_DIR/ottrin-app" "$DEST/usr/bin/ottrin"
 install -m 0755 "$BUILD_DIR/ottrin-indexd" "$DEST/usr/bin/ottrin-indexd"

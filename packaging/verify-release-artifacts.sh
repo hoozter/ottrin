@@ -711,12 +711,22 @@ for stage in "$DEB_STAGE" "$RPM_STAGE"; do
       exit 1
     }
   done
+  for payload in lib/libpdfium.so LICENSE licenses/pdfium.txt; do
+    test -f "$stage/usr/libexec/ottrin/pdfium/$payload" || {
+      printf 'Native package is missing PDFium payload: %s\n' "$payload" >&2
+      exit 1
+    }
+  done
   # DEB preserves executable bytes; RPM performs standard symbol stripping.
   # Compare actual release code as well as the separately staged source note.
   for executable in usr/bin/ottrin usr/bin/ottrin-indexd \
     usr/bin/ottrin-media-playback usr/bin/ottrin-legacy-doc-render \
-    usr/libexec/ottrin/ottrin-priv-helper; do
+    usr/libexec/ottrin/ottrin-priv-helper \
+    usr/libexec/ottrin/pdfium/lib/libpdfium.so; do
     expected="$APPIMAGE_EXTRACT_DIR/squashfs-root/$executable"
+    if [[ "$executable" == usr/libexec/ottrin/pdfium/lib/libpdfium.so ]]; then
+      expected="$APPIMAGE_EXTRACT_DIR/squashfs-root/usr/bin/pdfium/lib/libpdfium.so"
+    fi
     if [[ "$stage" == "$DEB_STAGE" ]]; then
       cmp "$stage/$executable" "$expected"
     else

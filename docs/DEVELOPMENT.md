@@ -700,3 +700,5 @@ OTTRIN_QA_PARENT_MOUNT_NAMESPACE="$(readlink /proc/self/ns/mnt)" \
   tests::copy_receipt_does_not_pin_mount_and_refuses_after_unmount_and_replacement \
   -- --ignored --exact --nocapture
 ```
+
+Linux packages share the pinned PDFium download and license payload in `packaging/linux/package-pdfium.sh`. Native packages install it under `usr/libexec/ottrin/pdfium/lib`; runtime discovery resolves that location relative to the executable installation prefix, without an environment override. The native libc requirement includes the renderer, and release verification checks its payload and code identity alongside the application.

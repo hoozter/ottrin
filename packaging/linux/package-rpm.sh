@@ -65,6 +65,7 @@ cp -a %{_sourcedir}/stage/. %{buildroot}/
 /usr/bin/ottrin-legacy-doc-render
 /usr/bin/ottrin-media-playback
 /usr/libexec/ottrin/ottrin-priv-helper
+/usr/libexec/ottrin/pdfium
 /usr/share/applications/org.ottrin.Ottrin.desktop
 /usr/share/icons/hicolor/scalable/apps/ottrin.svg
 /usr/share/icons/hicolor/256x256/apps/ottrin.png

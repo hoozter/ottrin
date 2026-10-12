@@ -81,6 +81,7 @@ shell_scripts=(
   packaging/linux/package-portable.sh
   packaging/linux/sign-release-artifacts.sh
   packaging/linux/verify-release-signatures.sh
+  packaging/linux/package-pdfium.sh
   packaging/linux/stage-native-package.sh
   packaging/linux/package-deb.sh
   packaging/linux/package-rpm.sh
