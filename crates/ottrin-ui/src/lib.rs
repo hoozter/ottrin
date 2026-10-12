@@ -863,9 +863,7 @@ impl OperationUndoReceipt {
                 .receipts
                 .first()
                 .expect("nonempty Copy batch")
-                .after_path()
-                .parent()
-                .expect("Copy destination parent"),
+                .after_path(),
             Self::Chmod(receipt) => receipt.path(),
             Self::Trash(receipt) => receipt.trash_path(),
             Self::TextEdit(receipt) => &receipt.path,
@@ -1094,7 +1092,7 @@ fn group_retained_copy_activity(
                 _ => { reason = Some("Copy operation metadata is missing, duplicated or inconsistent".to_owned()); },
             }
             match &entry.evidence {
-                CopyRecoveryEvidence::UndoneObjectsAndContentsMatch => undone += 1,
+                CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch => undone += 1,
                 CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
                 | CopyRecoveryEvidence::UndoReadyToWithdraw
                 | CopyRecoveryEvidence::UndoWithdrawalMatches => {
@@ -6511,7 +6509,21 @@ impl OttrinApp {
     }
 
     fn finish_path_move_undo(&mut self, op_id: u64, result: Result<(), String>, retryable: bool) {
-        let Some((before_path, after_path, origin_tab_id, undo_kind)) = self
+        let affected_paths: Vec<_> = self
+            .operation_history
+            .iter()
+            .find(|record| record.id == op_id)
+            .and_then(|record| record.path_move_undo_token.as_ref())
+            .map(|token| {
+                token
+                    .receipt
+                    .path_pairs()
+                    .into_iter()
+                    .map(|(before, after)| (before.to_path_buf(), after.to_path_buf()))
+                    .collect()
+            })
+            .unwrap_or_default();
+        let Some((_before_path, after_path, origin_tab_id, undo_kind)) = self
             .operation_history
             .iter_mut()
             .find(|record| record.id == op_id)
@@ -6569,21 +6581,27 @@ impl OttrinApp {
         else {
             return;
         };
-        for parent in path_move_parent_directories(&before_path, &after_path) {
-            let restores_source_parent = before_path.parent() == Some(parent.as_path());
-            self.refresh_rename_parent(
-                &parent,
-                if restores_source_parent {
-                    origin_tab_id
-                } else {
-                    None
-                },
-                if restores_source_parent {
-                    &before_path
-                } else {
-                    &after_path
-                },
-            );
+        let mut refreshed = HashSet::new();
+        for (before_path, after_path) in affected_paths {
+            for parent in path_move_parent_directories(&before_path, &after_path) {
+                if !refreshed.insert(parent.clone()) {
+                    continue;
+                }
+                let restores_source_parent = before_path.parent() == Some(parent.as_path());
+                self.refresh_rename_parent(
+                    &parent,
+                    if restores_source_parent {
+                        origin_tab_id
+                    } else {
+                        None
+                    },
+                    if restores_source_parent {
+                        &before_path
+                    } else {
+                        &after_path
+                    },
+                );
+            }
         }
         if undo_kind == PathMoveUndoKind::TextEdit
             && self.preview.path.as_ref() == Some(&after_path)
@@ -29311,6 +29329,24 @@ mod tests {
         assert!(app.retained_copy_activity_error.is_none());
         app.merge_retained_copy_activity(groups);
         assert_eq!(app.operation_history.len(), 1);
+        app.state.tabs[0].current_dir = destination.clone();
+        app.state.tabs[0].view_mode = ViewMode::List;
+        app.refresh_active_tab();
+        let tab_id = app.state.active_tab().id;
+        let wait_listing = |app: &mut OttrinApp| {
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while app
+                .tab_ui
+                .get(&tab_id)
+                .is_some_and(|state| state.main.loading)
+            {
+                app.poll_listing_results();
+                assert!(Instant::now() < deadline);
+                std::thread::sleep(Duration::from_millis(1));
+            }
+        };
+        wait_listing(&mut app);
+        assert_eq!(app.tab_ui[&tab_id].main.entries.len(), 1);
         let record = &app.operation_history[0];
         assert!(!record.can_clear_history());
         let id = record.id;
@@ -29334,6 +29370,11 @@ mod tests {
             "successful Undo must not rescan all retained data"
         );
         assert!(app.operation_history[0].detail.contains("Undo complete"));
+        wait_listing(&mut app);
+        assert!(
+            app.tab_ui[&tab_id].main.entries.is_empty(),
+            "Undo must refresh the visible destination listing"
+        );
         for name in ["first", "last"] {
             assert!(!destination.join(name).exists());
             assert_eq!(
@@ -29341,11 +29382,17 @@ mod tests {
                 name
             );
         }
+        let later_copy = DefaultPlatform.execute_copy_batch_with_undo_receipts(
+            &sources,
+            &destination,
+            ConflictAction::Skip,
+        );
+        assert!(later_copy.error.is_none());
+        assert_eq!(later_copy.undo_receipts.len(), 2);
         let completed = discover();
         assert!(
-            completed
-                .iter()
-                .all(|entry| entry.evidence == CopyRecoveryEvidence::UndoneObjectsAndContentsMatch)
+            completed.iter().all(|entry| entry.evidence
+                == CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch)
         );
         let mut fresh = OttrinApp::default();
         fresh.merge_retained_copy_activity(group_retained_copy_activity(completed));

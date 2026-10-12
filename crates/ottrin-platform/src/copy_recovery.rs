@@ -640,7 +640,7 @@ fn undo_with_journals_with_hook(
         }
         CopyPhase::UndoIntent => record.undo_topology(stage)?,
         CopyPhase::Undone => {
-            record.validate_withdrawn_data()?;
+            record.validate_completed_data()?;
             return Ok(());
         }
     };
@@ -705,7 +705,7 @@ pub enum CopyRecoveryEvidence {
     PublishedObjectsAndContentsMatch,
     UndoReadyToWithdraw,
     UndoWithdrawalMatches,
-    UndoneObjectsAndContentsMatch,
+    UndoneRetainedObjectsAndContentsMatch,
     NeedsReview {
         reason: String,
     },
@@ -791,8 +791,8 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
                         UndoTopology::Withdrawn => CopyRecoveryEvidence::UndoWithdrawalMatches,
                     },
                     CopyPhase::Undone => {
-                        record.validate_withdrawn_data()?;
-                        CopyRecoveryEvidence::UndoneObjectsAndContentsMatch
+                        record.validate_completed_data()?;
+                        CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch
                     }
                 };
                 record.validate_namespace()?;
@@ -863,14 +863,20 @@ impl CopyRecord {
         Ok(())
     }
 
-    fn validate_withdrawn_data(&self) -> Result<(), PlatformError> {
+    // After durable completion, publication names belong to subsequent user
+    // work. Only the private copied candidate remains owned by this transaction.
+    fn validate_completed_data(&self) -> Result<(), PlatformError> {
         self.require_object_evidence()?;
         let transaction = self.transaction.decode().map_err(journal_error)?;
         self.validate_tree(
             &transaction.join(super::copy_transaction::CANDIDATE),
             &self.publication_content,
             &self.publication_objects,
-        )?;
+        )
+    }
+
+    fn validate_withdrawn_data(&self) -> Result<(), PlatformError> {
+        self.validate_completed_data()?;
         let publication = self.publication.decode().map_err(journal_error)?;
         if let Some((content, objects)) = self
             .displaced_content
@@ -1187,6 +1193,92 @@ mod tests {
         }
     }
 
+    #[test]
+    fn completed_copy_inverse_releases_publication_names_but_preserves_retained_validation() {
+        for overwrite in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = PrivateRoot::new(root.path());
+            let receipt = copy_fixture(root.path(), overwrite, false);
+            DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+            let entry = discover_at(&root.path().join("copies")).unwrap().remove(0);
+            let central = root
+                .path()
+                .join("copies")
+                .join(format!("{}.journal", entry.transaction_id));
+            let local = receipt.before_path().parent().unwrap().join("copy-journal");
+            let before = std::fs::read(&central).unwrap();
+            std::fs::write(receipt.after_path(), "later-user-work").unwrap();
+            let completed = discover_at(&root.path().join("copies")).unwrap().remove(0);
+            assert_eq!(
+                completed.evidence,
+                CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch
+            );
+            assert!(
+                super::super::restore_retained_copy_undo_receipt(&entry.transaction_id).is_err()
+            );
+            // An already completed active receipt is idempotent and cannot
+            // remove or replace unrelated work now using the released name.
+            DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+            assert_eq!(
+                std::fs::read(receipt.after_path()).unwrap(),
+                b"later-user-work"
+            );
+            assert_eq!(std::fs::read(&central).unwrap(), before);
+            assert_eq!(std::fs::read(&local).unwrap(), before);
+            std::fs::write(receipt.before_path(), "changed-retained-copy").unwrap();
+            assert!(matches!(
+                discover_at(&root.path().join("copies")).unwrap()[0].evidence,
+                CopyRecoveryEvidence::NeedsReview { .. }
+            ));
+            assert!(DefaultPlatform.undo_copy_with_receipt(&receipt).is_err());
+            assert_eq!(
+                std::fs::read(receipt.after_path()).unwrap(),
+                b"later-user-work"
+            );
+            assert_eq!(std::fs::read(&central).unwrap(), before);
+            assert_eq!(std::fs::read(&local).unwrap(), before);
+        }
+    }
+
+    #[test]
+    fn interrupted_copy_inverse_still_requires_the_full_withdrawn_namespace() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = PrivateRoot::new(root.path());
+        let receipt = copy_fixture(root.path(), false, false);
+        let parent = std::fs::File::open(root.path().join("destination")).unwrap();
+        let stage = std::fs::File::open(receipt.before_path().parent().unwrap()).unwrap();
+        assert!(
+            undo_with_journals_with_hook(&parent, &stage, &receipt, &mut |point| {
+                if point == UndoPoint::WithdrawalDone {
+                    Err(PlatformError::Io("test interruption".into()))
+                } else {
+                    Ok(())
+                }
+            })
+            .is_err()
+        );
+        let entry = discover_at(&root.path().join("copies")).unwrap().remove(0);
+        assert_eq!(entry.phase, Some(CopyPhase::UndoIntent));
+        let central = root
+            .path()
+            .join("copies")
+            .join(format!("{}.journal", entry.transaction_id));
+        let before = std::fs::read(&central).unwrap();
+        std::fs::write(receipt.after_path(), "new-user-work").unwrap();
+        assert!(matches!(
+            discover_at(&root.path().join("copies")).unwrap()[0].evidence,
+            CopyRecoveryEvidence::NeedsReview { .. }
+        ));
+        assert!(super::super::restore_retained_copy_undo_receipt(&entry.transaction_id).is_err());
+        assert!(DefaultPlatform.undo_copy_with_receipt(&receipt).is_err());
+        assert_eq!(
+            std::fs::read(receipt.after_path()).unwrap(),
+            b"new-user-work"
+        );
+        assert_eq!(std::fs::read(receipt.before_path()).unwrap(), b"new-data");
+        assert_eq!(std::fs::read(&central).unwrap(), before);
+    }
+
     fn copy_fixture(
         root: &Path,
         overwrite: bool,
@@ -1313,7 +1405,7 @@ mod tests {
                 DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
                 assert_eq!(
                     discover_at(&root.path().join("copies")).unwrap()[0].evidence,
-                    CopyRecoveryEvidence::UndoneObjectsAndContentsMatch
+                    CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch
                 );
                 if kind == "symlink" {
                     assert_eq!(
@@ -1399,7 +1491,7 @@ mod tests {
                 assert_eq!(statuses[0].phase, Some(CopyPhase::Undone));
                 assert_eq!(
                     statuses[0].evidence,
-                    CopyRecoveryEvidence::UndoneObjectsAndContentsMatch
+                    CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch
                 );
                 assert_eq!(
                     std::fs::read_to_string(receipt.before_path()).unwrap(),
@@ -1652,7 +1744,7 @@ mod tests {
                             CopyRecoveryEvidence::UndoWithdrawalMatches
                         }
                         UndoPoint::CompletedDurable => {
-                            CopyRecoveryEvidence::UndoneObjectsAndContentsMatch
+                            CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch
                         }
                     };
                     assert_eq!(
@@ -1727,7 +1819,7 @@ mod tests {
                     }
                     assert_eq!(
                         discover_at(&root.path().join("copies")).unwrap()[0].evidence,
-                        CopyRecoveryEvidence::UndoneObjectsAndContentsMatch
+                        CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch
                     );
                     assert_eq!(
                         std::fs::read_to_string(data_path(
