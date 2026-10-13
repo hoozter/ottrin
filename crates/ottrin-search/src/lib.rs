@@ -35,6 +35,10 @@ mod windows_identity;
 mod worker;
 #[cfg(target_os = "windows")]
 pub use windows_identity::IndexDaemonIdentity;
+#[cfg(target_os = "windows")]
+mod windows_pipe;
+#[cfg(target_os = "windows")]
+pub use windows_pipe::{WindowsIndexPipeListener, WindowsIndexPipeStream};
 
 use db::{
     SearchStore, SimpleTermPage, active_generation_contains_paths, generation_content_db_paths,

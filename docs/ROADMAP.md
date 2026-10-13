@@ -1347,3 +1347,25 @@ This public Windows transport component is not wired into a running daemon.
 Pipe ACLs, bounded I/O/cancellation, connected-peer metadata, service/server/client
 lifecycle, UI integration and end-to-end/idle acceptance remain required.
 Published application packages remain unchanged.
+
+
+### Continuous Windows indexing — native authenticated connection layer
+
+Windows named-pipe listener/stream components now use per-user protected ACLs,
+remote-client rejection, exclusive first-instance binding, and PID/SID checks of
+the actual connected peer before command data is sent. Read/write/connect waits
+have deadlines; pending operations are canceled and drained before buffers/event
+handles are released. Accepted/rejected/disconnected instances retain namespace
+ownership while their replacement is created. An abandoned-client regression
+initially failed: DisconnectNamedPipe did not make the instance immediately
+connectable. Replacing that instance before closing the old handle fixes it.
+Five regular native tests pass: round trip, collision refusal, accept timeout
+retry, read cancellation/recovery, buffered reply after close and abandoned-peer
+recovery (round-trip/collision share one test). Three coordinated native probes
+pass owner-server teardown, foreign-user ACL denial, and counterfeit-server
+PID/SID rejection with zero request bytes received. The early cross-user harness
+missed its stop deadline; its controller was fixed and final probes repeated.
+Receipt: `.hermes/evidence/windows-20261011/WINDOWS_PIPE_TRANSPORT_ACCEPTANCE.json`.
+This is transport acceptance only. Shared command dispatch, persistent Windows
+daemon/server/client lifecycle, UI integration, scheduling/update/shutdown and
+end-to-end idle CPU acceptance remain open. Published packages are unchanged.
