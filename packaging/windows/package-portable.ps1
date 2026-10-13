@@ -157,6 +157,7 @@ Remove-Item -Recurse -Force $StageRoot -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path "$Stage\bin", "$Stage\assets", "$Stage\docs", "$Stage\third-party-notices" | Out-Null
 
 Copy-Item "$BuildDir\ottrin-app.exe" "$Stage\bin\ottrin.exe"
+Copy-Item "$BuildDir\ottrin-indexd.exe" "$Stage\bin\ottrin-indexd.exe"
 Copy-Item "$BuildDir\ottrin-priv-helper.exe" "$Stage\bin\ottrin-priv-helper.exe"
 Resolve-PdfiumRuntime (Join-Path $Stage "bin\pdfium")
 Resolve-GraphicsCompatibilityRuntime (Join-Path $Stage "bin") (Join-Path $Stage "third-party-notices")

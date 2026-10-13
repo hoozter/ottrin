@@ -23,6 +23,7 @@ if (-not $Version) {
 
 $RequiredFiles = @(
     "bin\ottrin.exe",
+    "bin\ottrin-indexd.exe",
     "assets\icon.ico",
     "bin\ottrin-priv-helper.exe",
     "bin\pdfium\pdfium.dll",

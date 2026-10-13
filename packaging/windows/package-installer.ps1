@@ -25,6 +25,7 @@ if (-not $Version) {
 
 $RequiredFiles = @(
     "bin\ottrin.exe",
+    "bin\ottrin-indexd.exe",
     "bin\ottrin-priv-helper.exe",
     "bin\pdfium\pdfium.dll",
     "bin\pdfium\LICENSE",

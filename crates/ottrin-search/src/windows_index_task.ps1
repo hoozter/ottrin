@@ -43,7 +43,7 @@ $trigger.Repetition.Interval = "PT${interval}H"
 $trigger.Enabled = $true
 $action = $definition.Actions.Create(0)
 $action.Path = $executable
-$action.Arguments = 'index update'
+$action.Arguments = '--index-update'
 # Preserve the disabled state atomically and retain the existing permissions.
 # CREATE_OR_UPDATE | DONT_ADD_PRINCIPAL_ACE | IGNORE_REGISTRATION_TRIGGERS.
 $null = $folder.RegisterTaskDefinition($TaskName, $definition, 54, $null, $null, 3, $security)

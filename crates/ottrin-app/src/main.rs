@@ -831,23 +831,9 @@ fn run_index_writer(json: bool, rebuild: bool) -> Result<(), String> {
     }
     #[cfg(not(unix))]
     {
-        let mut service = ottrin_search::SearchService::new(configured_search_config());
-        service.start();
-        let startup = service.diagnostics();
-        if matches!(startup.status, SearchIndexStatus::Unavailable) {
-            service.stop();
-            return Err(startup
-                .last_error
-                .unwrap_or_else(|| "search service unavailable".to_string()));
-        }
-        let operation = if rebuild {
-            service.rebuild_index_blocking()
-        } else {
-            service.update_index_blocking()
-        };
-        let result = operation.and_then(|()| print_index_diagnostics(&service.diagnostics(), json));
-        service.stop();
-        result
+        let diagnostics = ottrin_search::SearchService::new(configured_search_config())
+            .run_single_update(rebuild)?;
+        print_index_diagnostics(&diagnostics, json)
     }
 }
 

@@ -234,14 +234,24 @@ impl SearchDaemonClient {
             .set_read_timeout(Some(read_timeout))
             .and_then(|()| stream.set_write_timeout(Some(CLIENT_IO_TIMEOUT)))
             .map_err(|error| error.to_string())?;
-        write_frame(
+        let write_error = write_frame(
             &mut stream,
             &RequestFrame {
                 version: PROTOCOL_VERSION,
                 request,
             },
-        )?;
-        let response: ResponseFrame = read_frame(&mut stream)?;
+        )
+        .err();
+        // A full listener can send a rejection immediately after accepting and
+        // close before our request finishes writing. Read its bounded error
+        // frame, but never accept a successful operation after a failed write.
+        let response: ResponseFrame = read_frame(&mut stream)
+            .map_err(|read_error| write_error.as_ref().cloned().unwrap_or(read_error))?;
+        if let Some(error) = write_error
+            && !matches!(response.response, DaemonResponse::Error { .. })
+        {
+            return Err(error);
+        }
         if response.version != PROTOCOL_VERSION {
             return Err(format!(
                 "index daemon protocol mismatch: client {PROTOCOL_VERSION}, server {}",

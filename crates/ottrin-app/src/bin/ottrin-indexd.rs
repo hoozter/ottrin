@@ -1,3 +1,5 @@
+#![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
+
 #[cfg(unix)]
 use std::path::PathBuf;
 
@@ -70,7 +72,22 @@ fn main() {
     }
 }
 
-#[cfg(not(unix))]
+#[cfg(target_os = "windows")]
+fn main() {
+    let args = std::env::args().skip(1).collect::<Vec<_>>();
+    if !args.is_empty() && args != ["--index-update"] {
+        eprintln!("usage: ottrin-indexd [--index-update]");
+        std::process::exit(2);
+    }
+    if let Err(error) =
+        ottrin_search::SearchService::new(ottrin_ui::load_config().search).run_single_update(false)
+    {
+        eprintln!("ottrin index refresh: {error}");
+        std::process::exit(1);
+    }
+}
+
+#[cfg(not(any(unix, target_os = "windows")))]
 fn main() {
     eprintln!("ottrin-indexd is currently supported only on Unix platforms");
     std::process::exit(1);

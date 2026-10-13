@@ -406,6 +406,25 @@ impl SearchService {
             .reconcile_blocking()
     }
 
+    /// Run one headless update and release the worker and writer lock before returning.
+    pub fn run_single_update(mut self, rebuild: bool) -> Result<SearchIndexDiagnostics, String> {
+        self.watch_filesystem = false;
+        self.start();
+        let startup = self.diagnostics();
+        let result = if matches!(startup.status, SearchIndexStatus::Unavailable) {
+            Err(startup
+                .last_error
+                .unwrap_or_else(|| "search service unavailable".to_string()))
+        } else if rebuild {
+            self.rebuild_index_blocking()
+        } else {
+            self.update_index_blocking()
+        };
+        let result = result.map(|()| self.diagnostics());
+        self.stop();
+        result
+    }
+
     #[cfg(unix)]
     fn begin_index_reconcile(&self) -> Result<mpsc::Receiver<Result<(), String>>, String> {
         self.worker
@@ -1983,9 +2002,8 @@ fn prepare_running_daemon_for_upgrade() -> Result<(), String> {
 }
 
 pub fn install_sqlite_schedule(config: &SearchConfig) -> Result<String, String> {
-    let ottrin = find_ottrin_binary().ok_or_else(|| {
-        "Could not find the ottrin executable next to the running app or on PATH.".to_string()
-    })?;
+    let ottrin = find_ottrin_binary()
+        .ok_or_else(|| "Could not find this package's index executable.".to_string())?;
 
     #[cfg(target_os = "linux")]
     {
@@ -2076,42 +2094,47 @@ pub fn uninstall_sqlite_schedule() -> Result<String, String> {
 }
 
 fn find_ottrin_binary() -> Option<PathBuf> {
-    let exe_name = if cfg!(target_os = "windows") {
-        "ottrin.exe"
-    } else {
-        "ottrin"
-    };
-    #[cfg(target_os = "linux")]
-    if let Some(wrapper) = create_appimage_index_wrapper() {
-        return Some(wrapper);
+    #[cfg(target_os = "windows")]
+    {
+        let current = std::env::current_exe().ok()?;
+        let dedicated = current.parent()?.join("ottrin-indexd.exe");
+        dedicated.is_file().then_some(dedicated)
     }
-    if let Ok(current) = std::env::current_exe() {
+    #[cfg(not(target_os = "windows"))]
+    {
+        let exe_name = "ottrin";
         #[cfg(target_os = "linux")]
-        if let Some(directory) = current.parent() {
-            let dedicated = directory.join("ottrin-indexd");
-            if dedicated.is_file() {
-                return Some(dedicated);
+        if let Some(wrapper) = create_appimage_index_wrapper() {
+            return Some(wrapper);
+        }
+        if let Ok(current) = std::env::current_exe() {
+            #[cfg(target_os = "linux")]
+            if let Some(directory) = current.parent() {
+                let dedicated = directory.join("ottrin-indexd");
+                if dedicated.is_file() {
+                    return Some(dedicated);
+                }
+            }
+            let current_name = current.file_name().and_then(|name| name.to_str());
+            if matches!(
+                current_name,
+                Some("ottrin" | "ottrin.exe" | "ottrin-app" | "ottrin-app.exe")
+            ) {
+                return Some(current);
+            }
+            if let Some(dir) = current.parent() {
+                let sibling = dir.join(exe_name);
+                if sibling.exists() {
+                    return Some(sibling);
+                }
             }
         }
-        let current_name = current.file_name().and_then(|name| name.to_str());
-        if matches!(
-            current_name,
-            Some("ottrin" | "ottrin.exe" | "ottrin-app" | "ottrin-app.exe")
-        ) {
-            return Some(current);
-        }
-        if let Some(dir) = current.parent() {
-            let sibling = dir.join(exe_name);
-            if sibling.exists() {
-                return Some(sibling);
-            }
-        }
+        std::env::var_os("PATH").and_then(|paths| {
+            std::env::split_paths(&paths)
+                .map(|dir| dir.join(exe_name))
+                .find(|candidate| candidate.exists())
+        })
     }
-    std::env::var_os("PATH").and_then(|paths| {
-        std::env::split_paths(&paths)
-            .map(|dir| dir.join(exe_name))
-            .find(|candidate| candidate.exists())
-    })
 }
 
 #[cfg(target_os = "linux")]
@@ -4069,6 +4092,35 @@ fn sort_results(v: &mut [(i64, SearchResultItem)], sort: SearchSort) {
 mod tests {
     use super::*;
     use std::fs;
+
+    #[test]
+    fn headless_single_update_commits_files_and_releases_the_writer_for_the_next_run() {
+        let fixture = temp_service_path("single-update").with_extension("fixture");
+        std::fs::create_dir(&fixture).unwrap();
+        let files = fixture.join("files");
+        std::fs::create_dir(&files).unwrap();
+        std::fs::write(files.join("first.txt"), "first").unwrap();
+        let store = fixture.join("search.db");
+        let config = SearchConfig {
+            include_roots: vec![files.clone()],
+            use_system_locate: false,
+            manage_locate_db: false,
+            ..SearchConfig::default()
+        };
+        let first = SearchService::new_with_store_path(config.clone(), store.clone())
+            .run_single_update(false)
+            .expect("first headless update");
+        assert_eq!(first.status, SearchIndexStatus::Ready);
+        assert_eq!(first.indexed_items, 1);
+        std::fs::write(files.join("second.txt"), "second").unwrap();
+        let second = SearchService::new_with_store_path(config, store)
+            .run_single_update(false)
+            .expect("second run acquires the released writer");
+        assert_eq!(second.status, SearchIndexStatus::Ready);
+        assert_eq!(second.indexed_items, 2);
+        assert_eq!(std::fs::read(files.join("first.txt")).unwrap(), b"first");
+        std::fs::remove_dir_all(fixture).unwrap();
+    }
 
     #[cfg(target_os = "linux")]
     #[test]

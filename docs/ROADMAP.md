@@ -943,3 +943,23 @@ to 146. This records a changing home session, not strict quiet idle. Evidence:
 `.hermes/evidence/index-idle-current/INSTALLED_UPGRADE.json` and
 `INSTALLED_SAMPLE.json`. Sustained quiet-idle and heavy-change acceptance remain
 open.
+
+### Windows background index process identity — source checkpoint
+
+The Windows scheduled refresh now targets the dedicated `ottrin-indexd.exe`
+with `--index-update`, replacing the main GUI executable as its task action.
+The dedicated process uses the Windows GUI PE subsystem to avoid console flashes;
+portable builders include it, installer manifests require it, and the release
+verifier requires its presence. This preserves the current Windows periodic
+refresh contract; continuous Windows daemon/IPC parity is not established.
+
+The CLI and dedicated refresh share one owned single-update implementation. It
+disables filesystem watching for this bounded run, commits the requested update
+and releases the worker/writer lock on completion or failure. Two consecutive
+updates against the same private database prove committed entries, source-byte
+preservation and writer reuse. All 214 regular search tests pass (two ignored).
+Strict Linux and Windows-target app/search Clippy pass. A newly exposed listener
+capacity race also now reads a bounded rejection after a failed request write,
+while refusing successful operation replies after failed writes; the real
+capacity regression and complete search suite pass. Windows portable, installer
+construction and native Task Scheduler/process acceptance remain required.
