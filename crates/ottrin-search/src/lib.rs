@@ -1678,7 +1678,7 @@ fn run_sqlite_windows_task(operation: SqliteWindowsTaskOperation) -> Result<bool
 #[cfg(target_os = "windows")]
 fn query_sqlite_windows_task() -> Result<Option<SqliteWindowsTaskRegistration>, String> {
     let script = format!(
-        "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Console]::OutputEncoding=[Text.UTF8Encoding]::new($false); {WINDOWS_INDEX_IDENTITY_SCRIPT}\n$service=New-Object -ComObject Schedule.Service; $service.Connect(); $task=Get-OttrinIndexTask ($service.GetFolder('\\')); if ($null -ne $task) {{ Assert-OttrinTaskOwner $task; [Console]::Out.Write($task.Xml) }}"
+        "try {{ $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Console]::OutputEncoding=[Text.UTF8Encoding]::new($false); {WINDOWS_INDEX_IDENTITY_SCRIPT}\n$service=New-Object -ComObject Schedule.Service; $service.Connect(); $task=Get-OttrinIndexTask ($service.GetFolder('\\')); if ($null -ne $task) {{ Assert-OttrinTaskOwner $task; [Console]::Out.Write($task.Xml) }} }} catch {{ [Console]::Error.Write($_.Exception.GetBaseException().Message); exit 1 }}"
     );
     let output = internal_command("powershell.exe")
         .args(["-NoProfile", "-NonInteractive", "-Command", &script])
