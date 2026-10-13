@@ -1292,3 +1292,23 @@ exact executable and medium-integrity account. Portable, NSIS, and MSI packages
 are refreshed from the same clean source. Native Settings rendering, current
 installer lifecycle, continuous daemon/IPC, and MSI registration rollback remain
 separate open gates.
+
+
+### Current Windows installer lifecycle — exact native acceptance
+
+Both installers from clean `4552483` now pass under a fresh non-administrator
+medium-integrity secondary interactive account. MSI SHA-256
+`42dca996e8429163a7a53a33e27eac11a6249d0cb6e6de6911abca931903f60c`
+passes silent installation/uninstall, all 51 portable payload hashes and both
+installed helper hashes, scoped indexd task, shortcut/icon registration, complete
+removal of product registration/payload/task/transaction files, and preference
+preservation. NSIS SHA-256
+`a4217d3184e63bedaab1cf6d0e5002c214acdbadd2cafbd6f5d3f3f13cf02077`
+passes silent install, same-version reinstall and uninstall, all 51 payload
+hashes, scoped indexd task, Installed Apps/shortcut registration/removal,
+generated-cache cleanup, and preference/user-source preservation. The account is
+reused sequentially only after MSI removal.
+`dist/WINDOWS_CURRENT_INSTALLER_LIFECYCLE_ACCEPTANCE.json` retains exact receipts
+and token scope. Native GUI/Installed Apps interaction, cross-version upgrades,
+continuous Windows daemon/IPC, and failed-transaction MSI registration rollback
+remain open; ordinary lifecycle success does not close those gates.
