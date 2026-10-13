@@ -979,6 +979,16 @@ same clean revision. Archive SHA-256 is
 NSIS is `205a329534ef39bece57f4a2fbc7a07fac389bb24f8e4ffd86dd359456d90a40`;
 MSI is `de9755ccabd44b0ef1a396218de662639d4830bd3c7ec924b55894cd96c13750`.
 This refresh supersedes the older installer artifacts; their prior lifecycle
-receipts do not establish acceptance of these new bytes. Refreshed MSI/NSIS
-installation, task registration, upgrade and removal checks remain open, as does
-continuous Windows daemon/IPC parity.
+receipts do not establish acceptance of these new bytes. The exact refreshed MSI now passes install and uninstall under a fresh ordinary
+standard user using an interactive, medium-integrity token. All 51 payload entries
+match their hashes, both Start menu shortcuts and icon bytes match, the installed
+index task targets `ottrin-indexd.exe --index-update`, and uninstall removes
+payload files, task, registration, menu folder and cached product icon while
+preserving preferences. Product state transitions from 5 to -1. Receipt:
+`dist/WINDOWS_CURRENT_MSI_LIFECYCLE.json`. The original installation receipt's
+file counter reports one JSON array; the hash-verification loop checks every
+entry, and the corrected uninstall receipt counts 51. Both batch-logon controls
+fail before package actions with Windows Installer 1601 / access denied, whether
+the service is initially stopped or started; this is separate from the passing
+interactive standard-user workflow. Refreshed NSIS lifecycle, cross-version
+upgrade, rollback and continuous Windows daemon/IPC parity remain open.
