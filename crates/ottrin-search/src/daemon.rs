@@ -1,7 +1,8 @@
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use crate::daemon_protocol::{
+    DaemonRequest, DaemonResponse, PROTOCOL_VERSION, RequestFrame, ResponseFrame, read_frame,
+    write_frame,
+};
 use std::fs;
-use std::io::{Read, Write};
 use std::os::fd::AsRawFd;
 use std::os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt};
 use std::os::unix::net::{UnixListener, UnixStream};
@@ -14,90 +15,10 @@ use std::time::{Duration, Instant};
 use crate::{SearchHandle, SearchIndexDiagnostics, SearchQueryResult, SearchService};
 use ottrin_core::{SearchConfig, SearchQuery};
 
-const PROTOCOL_VERSION: u16 = 1;
-const MAX_FRAME_BYTES: usize = 1024 * 1024;
 const MAX_ACTIVE_CLIENTS: usize = 64;
 const CLIENT_IO_TIMEOUT: Duration = Duration::from_secs(5);
 const OPERATION_IO_TIMEOUT: Duration = Duration::from_secs(6 * 60 * 60);
 static NEXT_OPERATION_ID: AtomicU64 = AtomicU64::new(1);
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-enum DaemonRequest {
-    Ping,
-    Status,
-    Query { query: SearchQuery },
-    UpdateConfig { config: SearchConfig },
-    Reconcile { operation_id: u64 },
-    Rebuild { operation_id: u64 },
-    ClearStorage,
-    Shutdown,
-    PrepareUpgrade,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct RequestFrame {
-    version: u16,
-    request: DaemonRequest,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct ResponseFrame {
-    version: u16,
-    response: DaemonResponse,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-enum DaemonResponse {
-    Pong,
-    Status {
-        diagnostics: Box<SearchIndexDiagnostics>,
-    },
-    Query {
-        result: SearchQueryResult,
-    },
-    Complete,
-    OperationComplete {
-        operation_id: u64,
-    },
-    StorageCleared {
-        bytes: u64,
-    },
-    Error {
-        code: String,
-        message: String,
-    },
-}
-
-fn write_frame<T: Serialize>(writer: &mut impl Write, value: &T) -> Result<(), String> {
-    let payload = serde_json::to_vec(value).map_err(|error| error.to_string())?;
-    if payload.len() > MAX_FRAME_BYTES {
-        return Err(format!("daemon frame exceeds {MAX_FRAME_BYTES} byte limit"));
-    }
-    let length = u32::try_from(payload.len()).map_err(|_| "daemon frame is too large")?;
-    writer
-        .write_all(&length.to_be_bytes())
-        .and_then(|()| writer.write_all(&payload))
-        .and_then(|()| writer.flush())
-        .map_err(|error| error.to_string())
-}
-
-fn read_frame<T: DeserializeOwned>(reader: &mut impl Read) -> Result<T, String> {
-    let mut length = [0_u8; 4];
-    reader
-        .read_exact(&mut length)
-        .map_err(|error| error.to_string())?;
-    let length = u32::from_be_bytes(length) as usize;
-    if length > MAX_FRAME_BYTES {
-        return Err(format!("daemon frame exceeds {MAX_FRAME_BYTES} byte limit"));
-    }
-    let mut payload = vec![0_u8; length];
-    reader
-        .read_exact(&mut payload)
-        .map_err(|error| error.to_string())?;
-    serde_json::from_slice(&payload).map_err(|error| error.to_string())
-}
 
 #[derive(Debug, Clone)]
 pub struct SearchDaemonClient {
@@ -641,21 +562,7 @@ mod tests {
             Ok(PathBuf::from("/run/ottrin-administrator/index-v1.sock"))
         );
     }
-    use std::io::Cursor;
     use std::time::{SystemTime, UNIX_EPOCH};
-
-    #[test]
-    fn daemon_protocol_round_trips_one_bounded_frame() {
-        let expected = RequestFrame {
-            version: PROTOCOL_VERSION,
-            request: DaemonRequest::Ping,
-        };
-        let mut bytes = Vec::new();
-        write_frame(&mut bytes, &expected).expect("write request frame");
-
-        let actual: RequestFrame = read_frame(&mut Cursor::new(bytes)).expect("read request frame");
-        assert_eq!(actual, expected);
-    }
 
     #[test]
     fn client_reports_the_connected_daemon_process() {
@@ -691,40 +598,6 @@ mod tests {
             .expect("join daemon")
             .expect("daemon clean exit");
         let _ = fs::remove_dir_all(root);
-    }
-
-    #[test]
-    fn daemon_protocol_binds_completion_to_the_requested_operation() {
-        let expected = RequestFrame {
-            version: PROTOCOL_VERSION,
-            request: DaemonRequest::Rebuild { operation_id: 41 },
-        };
-        let mut request_bytes = Vec::new();
-        write_frame(&mut request_bytes, &expected).expect("write operation request");
-        let actual: RequestFrame =
-            read_frame(&mut Cursor::new(request_bytes)).expect("read operation request");
-        assert_eq!(actual, expected);
-
-        let response = ResponseFrame {
-            version: PROTOCOL_VERSION,
-            response: DaemonResponse::OperationComplete { operation_id: 41 },
-        };
-        let mut response_bytes = Vec::new();
-        write_frame(&mut response_bytes, &response).expect("write operation response");
-        let actual: ResponseFrame =
-            read_frame(&mut Cursor::new(response_bytes)).expect("read operation response");
-        assert!(matches!(
-            actual.response,
-            DaemonResponse::OperationComplete { operation_id: 41 }
-        ));
-    }
-
-    #[test]
-    fn daemon_protocol_rejects_an_oversized_frame_before_reading_its_payload() {
-        let mut bytes = Cursor::new(((MAX_FRAME_BYTES as u32) + 1).to_be_bytes().to_vec());
-        let error = read_frame::<RequestFrame>(&mut bytes).expect_err("oversized frame must fail");
-        assert!(error.contains("exceeds"), "unexpected error: {error}");
-        assert_eq!(bytes.position(), 4, "payload must not be read or allocated");
     }
 
     #[test]

@@ -21,6 +21,9 @@ use walkdir::WalkDir;
 
 #[cfg(unix)]
 mod daemon;
+// Windows transport is not connected yet; its tests compile the same wire contract.
+#[cfg(any(unix, test))]
+mod daemon_protocol;
 mod db;
 #[allow(dead_code)] // Slice 2 mutation API is intentionally isolated until worker integration.
 mod mutation;

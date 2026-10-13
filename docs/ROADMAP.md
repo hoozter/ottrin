@@ -1312,3 +1312,20 @@ reused sequentially only after MSI removal.
 and token scope. Native GUI/Installed Apps interaction, cross-version upgrades,
 continuous Windows daemon/IPC, and failed-transaction MSI registration rollback
 remain open; ordinary lifecycle success does not close those gates.
+
+
+### Continuous Windows indexing — shared wire contract foundation
+
+The index daemon request/response schema and bounded frame codec now have one
+transport-independent implementation in `crates/ottrin-search/src/daemon_protocol.rs`.
+The existing Unix client/server use it directly; Windows test builds compile the
+same contract without suppressing dead-code validation or creating a second
+protocol. The Windows production daemon is still the one-shot updater. Native
+Windows execution of the compiled test binary passes six protocol tests: bounded
+round trips, operation identity, oversized input/output rejection, fragmented
+Unicode responses, and malformed/truncated requests. Fourteen Linux daemon and
+protocol tests, including live filesystem watch and snapshot restart, plus strict
+Linux/Windows all-target Clippy pass. This refactor is a foundation only. Secure
+Windows transport, peer authentication, persistent daemon lifecycle, remote UI
+search/configuration, startup/update/stop integration, idle CPU checks and native
+end-to-end acceptance remain required. Published packages are unchanged.
