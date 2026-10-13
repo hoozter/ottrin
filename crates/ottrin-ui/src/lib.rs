@@ -1130,7 +1130,7 @@ fn group_retained_copy_activity(
             None => "Retained Copy needs review".into(),
         };
         let receipt = if reason.is_none() && undone < entries.len() {
-            match ottrin_platform::restore_retained_copy_undo_plan(&entries[0].operation.as_ref().expect("validated operation").id) {
+            match ottrin_platform::restore_retained_copy_undo_plan(&entries) {
                 Ok(plan) if plan.transaction_ids() == entries.iter()
                     .filter(|entry| entry.phase != Some(ottrin_platform::CopyPhase::Undone))
                     .map(|entry| entry.transaction_id.as_str()).collect::<Vec<_>>() => Some(CopyBatchUndoReceipt::Retained(plan)),
@@ -3126,6 +3126,7 @@ impl OttrinApp {
     pub fn open_directory_at_startup(&mut self, path: PathBuf) {
         let tab_id = self.state.active_tab().id;
         self.navigate_tab_to(tab_id, path);
+        self.request_miller_reveal(tab_id);
     }
 
     /// Open a file's parent in the main window and reveal that file when its listing arrives.
@@ -30850,6 +30851,61 @@ mod tests {
             "opening a sibling from an ancestor-column context menu must keep the source tab path"
         );
         assert!(!OttrinApp::miller_pointer_rebases_anchor(false, false));
+    }
+
+    #[test]
+    fn startup_directory_reveals_the_destination_column_once() {
+        let fixture = tempfile::tempdir().unwrap();
+        let destination = fixture.path().join("one/two/three/four/five");
+        std::fs::create_dir_all(&destination).unwrap();
+        let mut app = OttrinApp::default();
+        app.state.active_tab_mut().view_mode = ViewMode::Miller;
+        app.state.config.miller_column_width_mode = MillerColumnWidthMode::Fixed;
+        app.state.config.folder_column_widths.clear();
+        app.state.config.miller_view_scale = 1.0;
+        app.open_directory_at_startup(destination.clone());
+        let tab_id = app.state.active_tab().id;
+        let ctx = Context::default();
+        let mut output = None;
+        for frame in 0..60 {
+            app.poll_listing_results();
+            output = Some(ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(600.0, 500.0),
+                    )),
+                    time: Some(frame as f64 / 60.0),
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+                },
+            ));
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert_eq!(app.state.active_tab().current_dir, destination);
+        assert!(app.tab_ui[&tab_id].miller_h_offset > 0.0);
+        assert!(
+            app.tab_ui[&tab_id].miller_reveal.is_none(),
+            "startup reveal must be consumed"
+        );
+        let output = output.unwrap();
+        let caption = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) if text.galley.job.text == "This folder is empty" => {
+                    Some((text, shape.clip_rect))
+                }
+                _ => None,
+            })
+            .expect("destination caption must be painted");
+        let bounds = caption.0.galley.rect.translate(caption.0.pos.to_vec2());
+        assert!(
+            caption.1.expand(1.0).contains_rect(bounds),
+            "destination caption clipped: {bounds:?}"
+        );
     }
 
     #[test]

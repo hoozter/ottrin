@@ -869,3 +869,32 @@ The Light batch harness was repeated under an explicit Python supervisor after a
 unified-session exit 143 observation. The supervised harness exits zero, both
 applications exit zero, all three inverse/restart checks pass and owned cleanup
 is empty. Receipt: `.hermes/evidence/copy-batch-plan/gui/Light-SUPERVISOR_EXIT.json`.
+
+
+### Scoped Copy restoration and startup directory reveal — source checkpoint
+
+Plan admission now consumes private observations retained by read-only discovery.
+The observation binds original records, evidence and complete observed operation
+membership. Admission revalidates only those records and their content/namespace;
+it no longer scans or hashes unrelated Copy publications. Public metadata edits,
+missing members, changed paired journals and captured external blockers refuse
+admission. Original-record comparison under the inverse lock remains unchanged.
+
+The same six-operation 2 MiB native fixture now reads 2,101,764 characters for one
+plan and 12,610,061 for all six, versus 12,611,475 and 75,668,306 previously: an
+83.34% reduction in plan-admission reads. These counters include journal/metadata
+reads, not just file contents. `.hermes/evidence/copy-batch-plan/SCOPED_READS.json`
+records the fixture and library identity. A thread-specific read-byte regression
+proves an unrelated 4 MiB publication is not reread, avoiding timing thresholds.
+
+Directory startup now requests the existing one-shot Miller reveal after navigation,
+as file startup already does. The rendered deep-directory fixture proves its empty
+caption is visible and the request is consumed. Ordinary later scrolling retains
+its existing policy. The target-column issue is source-fixed; exact packaged
+startup/Smart Panel checks remain necessary before final acceptance.
+
+All 365 regular platform tests and 359 regular UI tests pass (one ignored each),
+as do strict Linux/Windows-target platform/UI Clippy, formatting and diff checks.
+The current exact-package delivery remains `9622e61`; this new source checkpoint
+still requires construction and packaged GUI checks. Other roadmap requirements
+and platform acceptance gates remain open.

@@ -43,12 +43,13 @@ pub fn restore_retained_copy_undo_receipt(
     copy_recovery::restore_receipt(transaction_id)
 }
 /// Admits one restored Copy operation without changing its data or journals.
-/// The plan binds original records and lazily restores reverse-order authority.
+/// The plan binds private observations from discovery and lazily restores
+/// reverse-order authority without rereading unrelated operations.
 #[cfg(target_os = "linux")]
 pub fn restore_retained_copy_undo_plan(
-    operation_id: &str,
+    captured: &[RetainedCopyStatus],
 ) -> Result<RetainedCopyUndoPlan, PlatformError> {
-    copy_recovery::restore_plan(operation_id)
+    copy_recovery::restore_plan(captured)
 }
 mod copy_transaction;
 #[cfg(target_os = "linux")]

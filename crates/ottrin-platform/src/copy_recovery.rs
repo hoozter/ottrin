@@ -741,7 +741,7 @@ pub(super) fn open_registry() -> Result<super::move_recovery::LinuxJournalDirect
         .map_err(journal_error)
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CopyRecoveryEvidence {
     MatchingJournals,
     /// Point-in-time read-only validation; no Undo or deletion authority.
@@ -770,6 +770,14 @@ pub struct RetainedCopyStatus {
     pub publication: Option<PathBuf>,
     pub transaction: Option<PathBuf>,
     pub evidence: CopyRecoveryEvidence,
+    observation: Option<CopyObservation>,
+}
+
+#[derive(Debug)]
+struct CopyObservation {
+    record: CopyRecord,
+    evidence: CopyRecoveryEvidence,
+    members: std::sync::Arc<Vec<String>>,
 }
 
 /// Original-journal-bound reverse Undo for one restored Copy operation.
@@ -838,26 +846,64 @@ impl RetainedCopyUndoPlan {
     }
 }
 
-pub(super) fn restore_plan(operation_id: &str) -> Result<RetainedCopyUndoPlan, PlatformError> {
+pub(super) fn restore_plan(
+    captured: &[RetainedCopyStatus],
+) -> Result<RetainedCopyUndoPlan, PlatformError> {
     use super::move_recovery::LinuxJournalDirectory;
-    if !valid_transaction_id(operation_id) {
-        return Err(PlatformError::InvalidPathMoveUndoReceipt(
-            "invalid Copy operation ID".into(),
+    if captured.is_empty() {
+        return Err(PlatformError::NotAvailable(
+            "Copy operation has no retained entries",
         ));
     }
     let root = configured_root()?;
     let central = LinuxJournalDirectory::open_copy_registry(&root, false).map_err(journal_error)?;
-    let mut records: Vec<_> = central
-        .discover_copy_records()
-        .map_err(journal_error)?
-        .into_iter()
-        .filter_map(|(id, record)| {
-            record
-                .ok()
-                .filter(|record| record.operation.id == operation_id)
-                .map(|record| (id, record))
-        })
+    let mut captured_ids: Vec<_> = captured
+        .iter()
+        .map(|status| status.transaction_id.clone())
         .collect();
+    captured_ids.sort();
+    let mut records = Vec::with_capacity(captured.len());
+    for status in captured {
+        let observation = status
+            .observation
+            .as_ref()
+            .ok_or(PlatformError::NotAvailable(
+                "Copy status has no validated observation",
+            ))?;
+        let record = &observation.record;
+        if observation.members.as_ref() != &captured_ids
+            || status.transaction_id != record.transaction_id()?
+            || status.phase != Some(record.phase)
+            || status.operation.as_ref() != Some(&record.operation)
+            || status.evidence != observation.evidence
+            || status.source.as_ref() != Some(&record.source.decode().map_err(journal_error)?)
+            || status.publication.as_ref()
+                != Some(&record.publication.decode().map_err(journal_error)?)
+            || status.transaction.as_ref()
+                != Some(&record.transaction.decode().map_err(journal_error)?)
+            || central.read_copy_record(&format!("{}.journal", status.transaction_id))? != *record
+        {
+            return Err(PlatformError::InvalidPathMoveUndoReceipt(
+                "Copy observation or journal changed before batch admission".into(),
+            ));
+        }
+        match &observation.evidence {
+            CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
+            | CopyRecoveryEvidence::UndoReadyToWithdraw
+            | CopyRecoveryEvidence::UndoWithdrawalMatches
+            | CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch => {}
+            CopyRecoveryEvidence::PublicationRetainedByCopy { transaction_id }
+                if captured
+                    .iter()
+                    .any(|owner| &owner.transaction_id == transaction_id) => {}
+            _ => {
+                return Err(PlatformError::InvalidPathMoveUndoReceipt(
+                    "Captured Copy operation requires review or is externally blocked".into(),
+                ));
+            }
+        }
+        records.push((status.transaction_id.clone(), record.clone()));
+    }
     records.sort_by_key(|(_, record)| record.operation.item_index);
     if records.is_empty() {
         return Err(PlatformError::NotAvailable(
@@ -865,10 +911,12 @@ pub(super) fn restore_plan(operation_id: &str) -> Result<RetainedCopyUndoPlan, P
         ));
     }
     let count = records[0].1.operation.item_count;
+    let operation_id = &records[0].1.operation.id;
     let mut positions = std::collections::HashSet::new();
     for (id, record) in &records {
         record.operation.validate()?;
         if record.transaction_id()? != *id
+            || &record.operation.id != operation_id
             || record.operation.item_count != count
             || !positions.insert(record.operation.item_index)
         {
@@ -877,7 +925,12 @@ pub(super) fn restore_plan(operation_id: &str) -> Result<RetainedCopyUndoPlan, P
             ));
         }
     }
-    let statuses = discover_at(&root)?;
+    let statuses = discover_entries(
+        records
+            .iter()
+            .map(|(id, record)| (id.clone(), Ok(record.clone())))
+            .collect(),
+    )?;
     let mut entries = Vec::new();
     for (id, record) in &records {
         let status = statuses
@@ -944,6 +997,12 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
     let central = super::move_recovery::LinuxJournalDirectory::open_copy_registry(root, false)
         .map_err(journal_error)?;
     let entries = central.discover_copy_records().map_err(journal_error)?;
+    discover_entries(entries)
+}
+
+fn discover_entries(
+    entries: Vec<CopyRegistryEntry>,
+) -> Result<Vec<RetainedCopyStatus>, PlatformError> {
     let mut records = std::collections::BTreeMap::new();
     let mut statuses: Vec<_> = entries
         .into_iter()
@@ -955,6 +1014,7 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
                 source: None,
                 publication: None,
                 transaction: None,
+                observation: None,
                 evidence: CopyRecoveryEvidence::NeedsReview {
                     reason: String::new(),
                 },
@@ -1125,6 +1185,31 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
                 ready.push_back(index);
             }
         }
+    }
+    let mut members = std::collections::BTreeMap::<String, Vec<String>>::new();
+    for status in &statuses {
+        if let Some(operation) = &status.operation {
+            members
+                .entry(operation.id.clone())
+                .or_default()
+                .push(status.transaction_id.clone());
+        }
+    }
+    let members: std::collections::BTreeMap<_, _> = members
+        .into_iter()
+        .map(|(operation, mut ids)| {
+            ids.sort();
+            (operation, std::sync::Arc::new(ids))
+        })
+        .collect();
+    for status in &mut statuses {
+        status.observation = records
+            .remove(&status.transaction_id)
+            .map(|record| CopyObservation {
+                members: std::sync::Arc::clone(&members[&record.operation.id]),
+                record,
+                evidence: status.evidence.clone(),
+            });
     }
     Ok(statuses)
 }
@@ -1382,18 +1467,138 @@ mod tests {
     }
 
     #[test]
+    fn plan_admission_does_not_reread_unrelated_publication_contents() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = PrivateRoot::new(root.path());
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let own = root.path().join("own");
+        let unrelated = root.path().join("unrelated");
+        std::fs::write(&own, vec![1; 64 * 1024]).unwrap();
+        std::fs::write(&unrelated, vec![2; 4 * 1024 * 1024]).unwrap();
+        for source in [&own, &unrelated] {
+            DefaultPlatform
+                .execute_copy_with_undo_receipt(
+                    source,
+                    &destination,
+                    crate::ConflictAction::Overwrite,
+                )
+                .unwrap()
+                .unwrap();
+        }
+        let captured: Vec<_> = discover_at(&root.path().join("copies"))
+            .unwrap()
+            .into_iter()
+            .filter(|status| status.source.as_ref() == Some(&own))
+            .collect();
+        let read_chars = || {
+            std::fs::read_to_string("/proc/thread-self/io")
+                .unwrap()
+                .lines()
+                .find_map(|line| {
+                    line.strip_prefix("rchar: ")
+                        .map(|value| value.parse::<u64>().unwrap())
+                })
+                .unwrap()
+        };
+        let before = read_chars();
+        let mut plan = crate::restore_retained_copy_undo_plan(&captured).unwrap();
+        let bytes = read_chars() - before;
+        assert!(
+            bytes < 1024 * 1024,
+            "Unrelated 4 MiB publication was reread: {bytes}"
+        );
+        assert_eq!(plan.remaining(), 1);
+        plan.undo_next().unwrap();
+        assert!(!destination.join("own").exists());
+        assert_eq!(
+            std::fs::read(destination.join("unrelated")).unwrap(),
+            vec![2; 4 * 1024 * 1024]
+        );
+        assert_eq!(std::fs::read(own).unwrap(), vec![1; 64 * 1024]);
+    }
+
+    #[test]
+    fn plan_admission_refuses_changed_public_observation_and_stale_journals() {
+        let root = tempfile::tempdir().unwrap();
+        let _registry = PrivateRoot::new(root.path());
+        let (destination, _, ids, _) = overlapping_batch(root.path(), "file");
+        let mut captured = discover_at(&root.path().join("copies")).unwrap();
+        let index = captured
+            .iter()
+            .position(|entry| entry.transaction_id == ids[0])
+            .unwrap();
+        let original = captured[index].evidence.clone();
+        captured[index].evidence = CopyRecoveryEvidence::PublishedObjectsAndContentsMatch;
+        assert!(crate::restore_retained_copy_undo_plan(&captured).is_err());
+        captured[index].evidence = original;
+        let central = root
+            .path()
+            .join("copies")
+            .join(format!("{}.journal", ids[2]));
+        let local = destination
+            .join(format!(".ottrin-txn-{}", ids[2]))
+            .join("copy-journal");
+        let original_journal = std::fs::read(&central).unwrap();
+        let mut changed: serde_json::Value = serde_json::from_slice(&original_journal).unwrap();
+        changed["operation"]["item_count"] = serde_json::json!(4);
+        let bytes = serde_json::to_vec(&changed).unwrap();
+        std::fs::write(&central, &bytes).unwrap();
+        std::fs::write(&local, &bytes).unwrap();
+        assert!(crate::restore_retained_copy_undo_plan(&captured).is_err());
+        assert_eq!(
+            std::fs::read_to_string(destination.join("item")).unwrap(),
+            "version-2"
+        );
+        assert_eq!(std::fs::read(&central).unwrap(), bytes);
+        assert_eq!(std::fs::read(&local).unwrap(), bytes);
+        std::fs::write(&central, &original_journal).unwrap();
+        std::fs::write(&local, &original_journal).unwrap();
+        let foreign_parent = root.path().join("foreign");
+        std::fs::create_dir(&foreign_parent).unwrap();
+        let foreign = foreign_parent.join("item");
+        std::fs::write(&foreign, "outside-operation").unwrap();
+        DefaultPlatform
+            .execute_copy_with_undo_receipt(
+                &foreign,
+                &destination,
+                crate::ConflictAction::Overwrite,
+            )
+            .unwrap()
+            .unwrap();
+        let captured: Vec<_> = discover_at(&root.path().join("copies"))
+            .unwrap()
+            .into_iter()
+            .filter(|status| ids.contains(&status.transaction_id))
+            .collect();
+        let error = crate::restore_retained_copy_undo_plan(&captured).unwrap_err();
+        assert!(error.to_string().contains("externally blocked"), "{error}");
+        assert_eq!(
+            std::fs::read_to_string(destination.join("item")).unwrap(),
+            "outside-operation"
+        );
+        assert_eq!(
+            std::fs::read_to_string(foreign).unwrap(),
+            "outside-operation"
+        );
+    }
+
+    #[test]
     fn restored_overlapping_batch_plan_admits_each_inverse_lazily() {
         for kind in ["file", "directory", "symlink"] {
             let root = tempfile::tempdir().unwrap();
             let _registry = PrivateRoot::new(root.path());
-            let (destination, sources, ids, operation) = overlapping_batch(root.path(), kind);
+            let (destination, sources, ids, _) = overlapping_batch(root.path(), kind);
             let before: Vec<_> = ids
                 .iter()
                 .map(|id| {
                     std::fs::read(root.path().join("copies").join(format!("{id}.journal"))).unwrap()
                 })
                 .collect();
-            let mut plan = crate::restore_retained_copy_undo_plan(&operation).unwrap();
+            let mut plan = crate::restore_retained_copy_undo_plan(
+                &discover_at(&root.path().join("copies")).unwrap(),
+            )
+            .unwrap();
             assert_eq!(plan.remaining(), 3);
             assert_eq!(
                 plan.transaction_ids(),
@@ -1462,8 +1667,11 @@ mod tests {
         for completed in [0, 1] {
             let root = tempfile::tempdir().unwrap();
             let _registry = PrivateRoot::new(root.path());
-            let (destination, sources, ids, operation) = overlapping_batch(root.path(), "file");
-            let mut plan = crate::restore_retained_copy_undo_plan(&operation).unwrap();
+            let (destination, sources, ids, _) = overlapping_batch(root.path(), "file");
+            let mut plan = crate::restore_retained_copy_undo_plan(
+                &discover_at(&root.path().join("copies")).unwrap(),
+            )
+            .unwrap();
             for _ in 0..completed {
                 plan.undo_next().unwrap();
             }
