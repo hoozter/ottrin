@@ -10567,14 +10567,7 @@ impl OttrinApp {
         // A Miller column can be only partly visible beside the Smart Panel or
         // after horizontal scrolling. Lay out its empty state in that visible
         // portion instead of centering it in the off-screen column extent.
-        let mut visible_rect = context_rect.intersect(ui.clip_rect());
-        // Expanded Smart Panel content overlays the file view rather than
-        // resizing it. Center empty-state content in the uncovered portion.
-        if let Some(panel) = self.smart_panel_rect
-            && panel.intersects(visible_rect)
-        {
-            visible_rect.max.x = visible_rect.max.x.min(panel.min.x);
-        }
+        let visible_rect = context_rect.intersect(ui.clip_rect());
         if visible_rect.width() <= 24.0 || visible_rect.height() <= 0.0 {
             return;
         }
@@ -12454,21 +12447,22 @@ impl OttrinApp {
     }
 
     fn compute_smart_panel_layout(&mut self, avail: Rect) -> (Rect, Rect) {
-        let strip_w = SMART_PANEL_STRIP_WIDTH;
+        let strip_w = SMART_PANEL_STRIP_WIDTH.min(avail.width().max(0.0));
         // In Miller view, Info is rendered inline as the rightmost column
         // (Finder-style preview), so the sidebar only needs the icon strip.
         let is_miller = matches!(self.state.active_tab().view_mode, ViewMode::Miller);
         let sidebar_inline =
             is_miller && matches!(self.sidebar, SidebarSection::Info | SidebarSection::None);
         let is_expanded = self.sidebar != SidebarSection::None && !sidebar_inline;
-        let max_content_w = (avail.width() - 280.0).max(220.0);
+        let max_content_w = (avail.width() - strip_w - 280.0).max(0.0);
         let content_w = if sidebar_inline || !is_expanded {
             0.0
         } else {
             self.state
                 .config
                 .smart_panel_width
-                .clamp(260.0, max_content_w)
+                .max(260.0)
+                .min(max_content_w)
         };
         let panel_width = if content_w > 0.0 {
             strip_w + content_w
@@ -12479,9 +12473,10 @@ impl OttrinApp {
             egui::pos2(avail.max.x - panel_width, avail.min.y),
             Vec2::new(panel_width, avail.height()),
         );
-        // The file pane reserves the persistent icon strip; expanded smart-panel
-        // content opens as an overlay drawer instead of resizing file views.
-        let file_right = (avail.max.x - strip_w).max(avail.min.x);
+        // File views and their scrolling use the actual visible viewport. Reserve
+        // the expanded panel as well as its strip so navigation cannot reveal a
+        // column beneath the panel.
+        let file_right = panel_rect.left().max(avail.min.x);
         let file_rect = Rect::from_min_max(avail.min, egui::pos2(file_right, avail.max.y));
         (file_rect, panel_rect)
     }
@@ -30854,6 +30849,38 @@ mod tests {
     }
 
     #[test]
+    fn smart_panel_layout_reserves_visible_file_space_in_every_view() {
+        let mut app = OttrinApp::default();
+        app.state.config.smart_panel_width = 420.0;
+        for view in [ViewMode::Miller, ViewMode::List, ViewMode::Grid] {
+            app.state.active_tab_mut().view_mode = view;
+            for section in [
+                SidebarSection::None,
+                SidebarSection::Info,
+                SidebarSection::Activity,
+            ] {
+                app.sidebar = section;
+                for width in [200.0, 500.0, 1060.0] {
+                    let viewport =
+                        Rect::from_min_size(egui::pos2(20.0, 20.0), Vec2::new(width, 400.0));
+                    let (file, panel) = app.compute_smart_panel_layout(viewport);
+                    assert_eq!(file.right(), panel.left());
+                    assert_eq!(file.left(), viewport.left());
+                    assert_eq!(panel.right(), viewport.right());
+                    assert!(file.width() >= 0.0 && panel.width() >= 0.0);
+                    if section == SidebarSection::None
+                        || (view == ViewMode::Miller && section == SidebarSection::Info)
+                    {
+                        assert_eq!(panel.width(), SMART_PANEL_STRIP_WIDTH);
+                    } else if width == 1060.0 {
+                        assert_eq!(panel.width(), 420.0 + SMART_PANEL_STRIP_WIDTH);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn startup_directory_reveals_the_destination_column_once() {
         let fixture = tempfile::tempdir().unwrap();
         let destination = fixture.path().join("one/two/three/four/five");
@@ -30863,6 +30890,8 @@ mod tests {
         app.state.config.miller_column_width_mode = MillerColumnWidthMode::Fixed;
         app.state.config.folder_column_widths.clear();
         app.state.config.miller_view_scale = 1.0;
+        app.sidebar = SidebarSection::Activity;
+        app.state.config.smart_panel_width = 420.0;
         app.open_directory_at_startup(destination.clone());
         let tab_id = app.state.active_tab().id;
         let ctx = Context::default();
@@ -30873,13 +30902,20 @@ mod tests {
                 egui::RawInput {
                     screen_rect: Some(Rect::from_min_size(
                         egui::Pos2::ZERO,
-                        Vec2::new(600.0, 500.0),
+                        Vec2::new(1100.0, 690.0),
                     )),
                     time: Some(frame as f64 / 60.0),
                     ..Default::default()
                 },
                 |ctx| {
-                    egui::CentralPanel::default().show(ctx, |ui| app.render_miller(ui, tab_id));
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        let (file_rect, panel_rect) =
+                            app.compute_smart_panel_layout(ui.available_rect_before_wrap());
+                        app.smart_panel_rect = Some(panel_rect);
+                        ui.scope_builder(UiBuilder::new().max_rect(file_rect), |ui| {
+                            app.render_miller(ui, tab_id);
+                        });
+                    });
                 },
             ));
             std::thread::sleep(Duration::from_millis(1));
@@ -30905,6 +30941,10 @@ mod tests {
         assert!(
             caption.1.expand(1.0).contains_rect(bounds),
             "destination caption clipped: {bounds:?}"
+        );
+        assert!(
+            bounds.right() <= app.smart_panel_rect.unwrap().left(),
+            "startup destination must be visible beside the expanded panel: {bounds:?}"
         );
     }
 
