@@ -22,7 +22,7 @@ require_literal() {
 [[ -f "$POWERSHELL_PACKAGER" ]] || { printf 'Native Windows MSI packager is missing: %s\n' "$POWERSHELL_PACKAGER" >&2; exit 1; }
 
 # The MSI is per-user and delegates lifecycle ownership to the installed app.
-# Cleanup runs before RemoveFiles and a nonzero cleanup result aborts uninstall,
+# Cleanup runs before destructive standard actions and a nonzero result aborts uninstall,
 # preserving the installed payload and registration for a retry.
 require_literal "$SOURCE" 'Scope="perUser"'
 require_literal "$SOURCE" 'Schedule="afterInstallExecute"'
@@ -37,7 +37,11 @@ require_literal "$SOURCE" 'Execute="rollback"'
 require_literal "$SOURCE" 'After="SnapshotBackgroundIndex"'
 require_literal "$SOURCE" 'Execute="commit"'
 require_literal "$SOURCE" 'ExeCommand="--uninstall"'
-require_literal "$SOURCE" 'Before="RemoveFiles"'
+require_literal "$SOURCE" 'After="InstallInitialize"'
+require_literal "$SOURCE" 'After="RollbackRemovedIndex"'
+require_literal "$SOURCE" 'After="SnapshotRemovedIndex"'
+require_literal "$SOURCE" 'Before="InstallFinalize"'
+require_literal "$SOURCE" '.json.scripts\index-task-transaction.ps1'
 require_literal "$SOURCE" 'Return="check"'
 require_literal "$SOURCE" 'Condition="NOT REMOVE"'
 require_literal "$SOURCE" 'Condition="REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE"'

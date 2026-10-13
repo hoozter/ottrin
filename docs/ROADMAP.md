@@ -1202,3 +1202,24 @@ The disposable account/profile, encrypted temporary credential, actor tasks,
 product task and extracted guest fixtures are removed. The pre-existing guest
 installation checksum remains unchanged. The failed secondary-logon Run probe
 is retained separately within the lifecycle receipt and does not close its gate.
+
+
+### MSI failed-uninstall recovery — source repair and native helper verification
+
+The current `e937db7` MSI fails the locked-preview-cache uninstall probe: exit
+1603 retains all 53 installed files but deletes the user's scoped index task and
+leaves Windows Installer product state 1 (advertised). A normal retry then fails
+with error 2753 because MainExecutable is no longer marked for installation.
+Baseline: `.hermes/evidence/index-idle-current/MSI_UNINSTALL_FAILURE_BASELINE.json`.
+
+Uninstall now snapshots task state immediately after InstallInitialize and pairs
+cleanup with rollback before destructive standard actions. Both installation and
+uninstall commit from a transaction-owned copy of the same helper and identity
+script, so successful uninstall can remove its installed scripts before commit.
+Rollback and commit remove their transaction scripts; failed restoration retains
+its snapshot for diagnosis. The existing MSI source contract passes. A native
+standard-user helper probe restores task XML/security and verifies rollback and
+commit cleanup using only the detached transaction scripts. This is helper
+acceptance, not revised MSI package acceptance. The revised MSI still needs an
+exact-package locked-cache failure/retry test and ordinary install/uninstall
+checks before publication. Existing deliverables retain their prior provenance.

@@ -11,6 +11,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 . (Join-Path $PSScriptRoot 'windows-index-identity.ps1')
 $TaskName = Get-OttrinIndexTaskName
+$CommitDirectory = "$Snapshot.scripts"
 
 function Task-Folder {
     $service = New-Object -ComObject Schedule.Service
@@ -34,6 +35,11 @@ if ($Phase -eq 'Snapshot') {
         Move-Item -LiteralPath $Snapshot -Destination $retained
         throw "A previous index rollback snapshot requires attention: $retained"
     }
+    # Commit runs after RemoveFiles on uninstall, so it cannot depend on the
+    # installed payload. Keep one implementation in a transaction-owned copy.
+    if (Test-Path -LiteralPath $CommitDirectory) {
+        throw "A previous index transaction script directory requires attention: $CommitDirectory"
+    }
     $folder = Task-Folder
     $task = Existing-Task $folder
     if ($null -ne $task) { Assert-OttrinTaskOwner $task }
@@ -44,6 +50,14 @@ if ($Phase -eq 'Snapshot') {
     $file = [IO.File]::Open($Snapshot, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
     try { $file.Write($bytes, 0, $bytes.Length); $file.Flush($true) }
     finally { $file.Dispose() }
+    New-Item -Path $CommitDirectory -ItemType Directory | Out-Null
+    try {
+        Copy-Item -LiteralPath $PSCommandPath -Destination (Join-Path $CommitDirectory 'index-task-transaction.ps1')
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'windows-index-identity.ps1') -Destination $CommitDirectory
+    } catch {
+        Remove-Item -LiteralPath $CommitDirectory -Recurse
+        throw
+    }
 } elseif ($Phase -eq 'Rollback') {
     # Snapshot can fail before any mutation, in which case there is nothing to undo.
     if (-not (Test-Path -LiteralPath $Snapshot)) { return }
@@ -58,6 +72,8 @@ if ($Phase -eq 'Snapshot') {
     }
     # Keep the snapshot if restoration failed; never conceal scheduler errors.
     Remove-Item -LiteralPath $Snapshot
+    if (Test-Path -LiteralPath $CommitDirectory) { Remove-Item -LiteralPath $CommitDirectory -Recurse }
 } else {
     if (Test-Path -LiteralPath $Snapshot) { Remove-Item -LiteralPath $Snapshot }
+    if (Test-Path -LiteralPath $CommitDirectory) { Remove-Item -LiteralPath $CommitDirectory -Recurse }
 }
