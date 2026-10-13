@@ -1256,3 +1256,22 @@ full search suite passes (216 regular tests, two ignored). Native PowerShell 5.1
 checks real Scheduler absence and injected COM missing/denied/failure branches.
 This is source/helper acceptance, not full current packaged-app acceptance.
 Continuous Windows daemon/IPC and MSI registration rollback remain open.
+
+
+### Windows index task inspection — exact portable native acceptance
+
+The clean `95f7d39` portable archive (SHA-256
+`5644a55586b88352b6aa1211acecad46b73252ad6178f78ab3c15df34af50e90`)
+passes service status/setup/remove checks under a fresh non-administrator user.
+An actual task DACL denies query access: status correctly remains sourced from
+Task Scheduler with an unavailable diagnostic; restart and removal fail without
+changing task XML or last-run time. The full original security descriptor is
+restored, normal removal succeeds, status becomes absent, and preferences remain
+unchanged. `dist/WINDOWS_TASK_QUERY_NATIVE_ACCEPTANCE.json` records exact binary
+identity, medium-integrity token, cases, and limits. Error details still include
+a verbose PowerShell stack trace; concise user-facing error formatting remains
+open. This does not prove native Settings rendering or continuous daemon/IPC.
+The refreshed MSI is built from the same clean producer, SHA-256
+`a80b577de64cf636d005ddbd7bda27db787566bff13dca49bdd23bdc148d486f`.
+Its exact installation lifecycle has not been repeated. MSI registration
+rollback remains an open gate, independently of task query acceptance.
