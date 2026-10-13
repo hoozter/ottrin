@@ -944,7 +944,7 @@ to 146. This records a changing home session, not strict quiet idle. Evidence:
 `INSTALLED_SAMPLE.json`. Sustained quiet-idle and heavy-change acceptance remain
 open.
 
-### Windows background index process identity — source checkpoint
+### Windows background index process identity — native portable acceptance
 
 The Windows scheduled refresh now targets the dedicated `ottrin-indexd.exe`
 with `--index-update`, replacing the main GUI executable as its task action.
@@ -961,5 +961,24 @@ preservation and writer reuse. All 214 regular search tests pass (two ignored).
 Strict Linux and Windows-target app/search Clippy pass. A newly exposed listener
 capacity race also now reads a bounded rejection after a failed request write,
 while refusing successful operation replies after failed writes; the real
-capacity regression and complete search suite pass. Windows portable, installer
-construction and native Task Scheduler/process acceptance remain required.
+capacity regression and complete search suite pass.
+
+The exact portable archive from clean revision `8602748` now passes native
+limited-user Windows checks: the process is `ottrin-indexd`, has no main window,
+two consecutive refreshes commit 2,000 then 2,001 fixture entries, and the public
+service installer registers that executable with `--index-update`. An actual
+Scheduler run under the ordinary interactive token commits all 2,001 entries.
+Source bytes are preserved; the original task, preferences and cache are restored,
+and the private fixture is removed. Receipt collection initially failed at the
+provenance path and then at PowerShell metadata serialization; the corrected full
+rerun passes. Receipt: `dist/WINDOWS_INDEX_IDENTITY_ACCEPTANCE.json`.
+
+Portable, NSIS and MSI artifacts are refreshed at their stable paths from that
+same clean revision. Archive SHA-256 is
+`a9652ec7a0a0c4f20c7ae89414d93434c9d417b1200f7229fec001344ce72368`;
+NSIS is `205a329534ef39bece57f4a2fbc7a07fac389bb24f8e4ffd86dd359456d90a40`;
+MSI is `de9755ccabd44b0ef1a396218de662639d4830bd3c7ec924b55894cd96c13750`.
+This refresh supersedes the older installer artifacts; their prior lifecycle
+receipts do not establish acceptance of these new bytes. Refreshed MSI/NSIS
+installation, task registration, upgrade and removal checks remain open, as does
+continuous Windows daemon/IPC parity.
