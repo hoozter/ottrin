@@ -1275,3 +1275,20 @@ The refreshed MSI is built from the same clean producer, SHA-256
 `a80b577de64cf636d005ddbd7bda27db787566bff13dca49bdd23bdc148d486f`.
 Its exact installation lifecycle has not been repeated. MSI registration
 rollback remains an open gate, independently of task query acceptance.
+
+
+### Windows task query error display — exact native correction
+
+The clean `4552483` Windows portable archive, SHA-256
+`182b866abc927d6e294a1a87269fa74133ca803afe059df5a55329fedff67653`,
+passes the same fresh standard-user status/setup/remove and real task-ACL denial
+checks. The denied status, restart, and removal preserve the underlying error
+message and failure behavior without PowerShell source lines, stack metadata, or
+CLIXML. Task XML/last-run time are unchanged by denied management; the original
+security is restored before normal removal, and preferences are unchanged.
+Sixteen focused Windows search tests and strict Windows all-target Clippy pass.
+`dist/WINDOWS_TASK_ERROR_NATIVE_ACCEPTANCE.json` binds the native checks to the
+exact executable and medium-integrity account. Portable, NSIS, and MSI packages
+are refreshed from the same clean source. Native Settings rendering, current
+installer lifecycle, continuous daemon/IPC, and MSI registration rollback remain
+separate open gates.
