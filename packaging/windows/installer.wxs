@@ -44,7 +44,10 @@
 
     <Component Id="IndexTransactionComponent" Directory="BinFolder" Guid="*">
       <File Id="IndexTransactionScript" Source="$(sys.SOURCEFILEDIR)index-task-transaction.ps1" KeyPath="yes" />
-      <File Id="IndexIdentityScript" Source="$(sys.SOURCEFILEDIR)windows-index-identity.ps1" />
+    </Component>
+
+    <Component Id="IndexIdentityComponent" Directory="BinFolder" Guid="*">
+      <File Id="IndexIdentityScript" Source="$(sys.SOURCEFILEDIR)windows-index-identity.ps1" KeyPath="yes" />
     </Component>
 
     <ComponentGroup Id="PortablePayload" Directory="INSTALLFOLDER">
@@ -56,6 +59,7 @@
     <Feature Id="MainFeature" Title="Ottrin" Level="1">
       <ComponentRef Id="MainExecutableComponent" />
       <ComponentRef Id="IndexTransactionComponent" />
+      <ComponentRef Id="IndexIdentityComponent" />
       <ComponentRef Id="StartMenuComponent" />
       <ComponentGroupRef Id="PortablePayload" />
     </Feature>
