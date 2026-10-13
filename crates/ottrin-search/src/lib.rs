@@ -1383,12 +1383,7 @@ fn clear_search_storage_unlocked() -> Result<u64, String> {
     #[cfg(not(target_os = "linux"))]
     let paths = vec![index_cache_path(), locate_db_path()];
     for path in paths {
-        if let Ok(meta) = std::fs::metadata(&path) {
-            let len = meta.len();
-            std::fs::remove_file(&path)
-                .map_err(|e| format!("Failed to remove {}: {}", path.display(), e))?;
-            freed = freed.saturating_add(len);
-        }
+        freed = freed.saturating_add(remove_file_if_present(&path)?);
     }
     Ok(freed)
 }

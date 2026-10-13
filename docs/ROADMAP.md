@@ -1004,3 +1004,23 @@ the authoritative `preview_cache` path and passes. Receipt:
 not cross-version upgrade. Cross-version upgrade, failure recovery/rollback,
 interactive installer UI, installed GUI workflows and continuous Windows
 daemon/IPC parity remain open.
+
+
+### Cleanup failure reporting — source checkpoint
+
+Thumbnail-cache cleanup previously ignored read, metadata and removal failures,
+allowing Settings and CLI uninstall to report success while managed files remained.
+It now returns a path-specific error through both Settings cleanup actions and
+CLI uninstall. The existing NSIS failure branch therefore receives a nonzero
+cleanup exit instead of deleting the application after a hidden thumbnail-cache
+failure. Search fallback-file cleanup likewise uses its authoritative removal
+helper so inspection errors are propagated rather than skipped. Automatic
+zero-budget cache pruning logs cleanup failures.
+
+Private-directory regressions cover a missing cache, a blocked directory entry,
+preserved nested data, retry after removing the obstruction, an unreadable cache
+location, and removal of a symlink without changing its target. No recursive
+cache-root deletion is introduced. Current published Linux/Windows packages
+predate this change. Rebuilding and exact-package failure/retry acceptance,
+including a locked Windows preview-cache file and retained NSIS installation,
+remain required before claiming delivery.

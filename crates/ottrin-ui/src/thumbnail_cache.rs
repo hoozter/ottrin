@@ -1377,7 +1377,9 @@ pub(crate) fn preview_cache_stats() -> Option<(usize, u64)> {
 
 pub(crate) fn prune_preview_cache_dir(max_bytes: u64) {
     if max_bytes == 0 {
-        let _ = clear_preview_cache_dir();
+        if let Err(error) = clear_preview_cache_dir() {
+            eprintln!("Failed to clear thumbnail cache: {error}");
+        }
         return;
     }
     let Some(dir) = preview_cache_dir() else {
@@ -1414,24 +1416,33 @@ pub(crate) fn prune_preview_cache_dir(max_bytes: u64) {
     }
 }
 
-pub(crate) fn clear_preview_cache_dir() -> u64 {
-    let Some(dir) = preview_cache_dir() else {
-        return 0;
+fn clear_preview_cache_at(dir: &Path) -> Result<u64, String> {
+    let entries = match std::fs::read_dir(dir) {
+        Ok(entries) => entries,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(0),
+        Err(error) => return Err(format!("Failed to read {}: {error}", dir.display())),
     };
     let mut freed = 0_u64;
-    if let Ok(entries) = std::fs::read_dir(&dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            let bytes = entry.metadata().map(|m| m.len()).unwrap_or(0);
-            if std::fs::remove_file(path).is_ok() {
-                freed = freed.saturating_add(bytes);
-            }
-        }
+    for entry in entries {
+        let entry = entry.map_err(|error| format!("Failed to read {}: {error}", dir.display()))?;
+        let path = entry.path();
+        let bytes = std::fs::symlink_metadata(&path)
+            .map_err(|error| format!("Failed to inspect {}: {error}", path.display()))?
+            .len();
+        std::fs::remove_file(&path)
+            .map_err(|error| format!("Failed to remove {}: {error}", path.display()))?;
+        freed = freed.saturating_add(bytes);
     }
-    freed
+    Ok(freed)
 }
 
-pub fn clear_preview_cache_storage() -> u64 {
+pub(crate) fn clear_preview_cache_dir() -> Result<u64, String> {
+    let dir = preview_cache_dir()
+        .ok_or_else(|| "Cannot determine thumbnail cache directory".to_owned())?;
+    clear_preview_cache_at(&dir)
+}
+
+pub fn clear_preview_cache_storage() -> Result<u64, String> {
     clear_preview_cache_dir()
 }
 
@@ -1440,6 +1451,48 @@ mod tests {
     use super::*;
     use image::GenericImageView;
     use std::io::Write;
+
+    #[test]
+    fn cache_cleanup_reports_blocked_entries_and_allows_retry() {
+        let fixture = tempfile::tempdir().unwrap();
+        let cache = fixture.path().join("cache");
+        assert_eq!(clear_preview_cache_at(&cache).unwrap(), 0);
+        let blocked = cache.join("blocked");
+        std::fs::create_dir_all(&blocked).unwrap();
+        let preserved = blocked.join("preserved.txt");
+        std::fs::write(&preserved, b"preserve nested data").unwrap();
+        let error = clear_preview_cache_at(&cache).unwrap_err();
+        assert!(error.contains(&blocked.display().to_string()), "{error}");
+        assert_eq!(std::fs::read(&preserved).unwrap(), b"preserve nested data");
+        std::fs::remove_dir_all(&blocked).unwrap();
+        std::fs::write(cache.join("thumbnail"), b"cached bytes").unwrap();
+        assert_eq!(clear_preview_cache_at(&cache).unwrap(), 12);
+        assert_eq!(std::fs::read_dir(&cache).unwrap().count(), 0);
+    }
+
+    #[test]
+    fn cache_cleanup_reports_an_unreadable_cache_location() {
+        let fixture = tempfile::tempdir().unwrap();
+        let cache = fixture.path().join("cache");
+        std::fs::write(&cache, b"not a directory").unwrap();
+        let error = clear_preview_cache_at(&cache).unwrap_err();
+        assert!(error.contains(&cache.display().to_string()), "{error}");
+        assert_eq!(std::fs::read(&cache).unwrap(), b"not a directory");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn cache_cleanup_removes_links_without_touching_their_targets() {
+        let fixture = tempfile::tempdir().unwrap();
+        let cache = fixture.path().join("cache");
+        std::fs::create_dir(&cache).unwrap();
+        let source = fixture.path().join("source");
+        std::fs::write(&source, b"preserve source").unwrap();
+        std::os::unix::fs::symlink(&source, cache.join("link")).unwrap();
+        clear_preview_cache_at(&cache).unwrap();
+        assert_eq!(std::fs::read_dir(&cache).unwrap().count(), 0);
+        assert_eq!(std::fs::read(&source).unwrap(), b"preserve source");
+    }
 
     fn write_3mf_fixture(path: &Path) {
         let file = std::fs::File::create(path).expect("create 3MF fixture");

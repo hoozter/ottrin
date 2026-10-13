@@ -20409,7 +20409,10 @@ impl OttrinApp {
                                                 Ok(_) => {}
                                                 Err(err) => errors.push(err),
                                             }
-                                            freed = freed.saturating_add(clear_preview_cache_storage());
+                                            match clear_preview_cache_storage() {
+                                                Ok(bytes) => freed = freed.saturating_add(bytes),
+                                                Err(error) => errors.push(error),
+                                            }
                                             if platform_capabilities.terminal_launcher_visible
                                                 && let Err(err) = remove_terminal_launcher()
                                             {
@@ -21883,16 +21886,15 @@ impl OttrinApp {
                                                     .clicked()
                                                 {
                                                     if self.cache_clear_confirm {
-                                                        let freed = clear_preview_cache_dir();
                                                         self.cache_clear_confirm = false;
-                                                        self.set_status_message(
-                                                            format!(
-                                                                "Cleared thumbnail cache, freed {}",
-                                                                format_size(freed)
+                                                        match clear_preview_cache_dir() {
+                                                            Ok(freed) => self.set_status_message(
+                                                                format!("Cleared thumbnail cache, freed {}", format_size(freed)),
+                                                                true,
+                                                                4,
                                                             ),
-                                                            true,
-                                                            4,
-                                                        );
+                                                            Err(error) => self.set_status_message(error, false, 8),
+                                                        }
                                                     } else {
                                                         self.cache_clear_confirm = true;
                                                     }

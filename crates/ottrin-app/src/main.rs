@@ -396,9 +396,13 @@ fn handle_cli_action() -> bool {
         }
         Err(err) => errors.push(err),
     }
-    let preview_freed = clear_preview_cache_storage();
-    freed = freed.saturating_add(preview_freed);
-    println!("Removed thumbnail cache: {}", format_size(preview_freed));
+    match clear_preview_cache_storage() {
+        Ok(bytes) => {
+            freed = freed.saturating_add(bytes);
+            println!("Removed thumbnail cache: {}", format_size(bytes));
+        }
+        Err(error) => errors.push(error),
+    }
     match remove_terminal_launcher_file() {
         Ok(msg) => println!("{msg}"),
         Err(err) => errors.push(err),
