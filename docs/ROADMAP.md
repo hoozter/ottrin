@@ -787,3 +787,29 @@ Evidence: `.hermes/evidence/copy-completion-lifecycle/TEST_JOURNAL_CLEANUP.json`
 A rebuilt exact-package layout check is still required; it is not yet accepted.
 
 Activity operation identity now belongs to the history record instead of its disposable Undo receipt. Successful or refused text-edit Undo can release the editor session while preserving its text-edit classification; the rename fallback is removed. The save/Undo regression also inspects rendered Activity text. All 356 regular UI tests, the non-skipped native text save/Undo fixture, strict Linux/Windows-target UI Clippy and formatting pass. The correction is included in the current `c27403f` Linux package. Exact-package Dark 100% / Light 150% native text save/Undo, restored batch Copy Undo and caption layout acceptance pass. Native/portable payload identities pass; receipts are linked in the current delivery status above. Windows native GUI and broader editor/filesystem acceptance remain separate.
+
+
+### Overlapping Copy dependencies — source checkpoint
+
+Read-only Linux discovery now recognizes an older publication retained in a newer
+Copy's backup. It requires matching central/local records, namespace bindings,
+complete filesystem object evidence and unchanged content; dependencies must end
+in a fully validated current publication. Ordering comes from retained identity,
+not timestamps or transaction IDs. Ambiguous owners, cycles, changed data and
+missing records remain review cases. Discovery grants no Undo authority: an older
+receipt is refused until its newer overwrite is undone and the publication is
+freshly revalidated.
+
+Activity retains the blocker identities internally and describes the affected
+file to the user. Successful Undo requests a single background refresh only when
+it unblocks another owned Copy. A real two-operation UI regression proves the
+predecessor becomes available without a restart. Three-overwrite native fixtures
+cover files, directories and symlinks; publication/backup edits, journal mismatch
+and missing-owner controls preserve data and refuse admission.
+
+Overlaps within one batch still need lazy reverse-order receipt admission; this
+checkpoint does not close that requirement. Interrupted publication and journal
+pair reconciliation, safe reclamation, cross-boot ownership and Windows Copy
+remain open. The current `c27403f` package predates this source checkpoint.
+
+Source verification for this checkpoint passes 361 regular platform tests and 357 regular UI tests (one ignored in each), strict Linux/Windows-target platform/UI Clippy, formatting, and all four disposable-runner contracts. The runner now uses short private temporary paths compatible with Unix sockets; alias/directory Copy fixtures bind private journal roots rather than shared app state.

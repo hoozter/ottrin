@@ -703,6 +703,11 @@ pub enum CopyRecoveryEvidence {
     MatchingJournals,
     /// Point-in-time read-only validation; no Undo or deletion authority.
     PublishedObjectsAndContentsMatch,
+    /// The exact publication is retained by a newer validated overwrite.
+    /// No receipt is available until that overwrite is undone and revalidated.
+    PublicationRetainedByCopy {
+        transaction_id: String,
+    },
     UndoReadyToWithdraw,
     UndoWithdrawalMatches,
     UndoneRetainedObjectsAndContentsMatch,
@@ -733,7 +738,8 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
     let central = super::move_recovery::LinuxJournalDirectory::open_copy_registry(root, false)
         .map_err(journal_error)?;
     let entries = central.discover_copy_records().map_err(journal_error)?;
-    entries
+    let mut records = std::collections::BTreeMap::new();
+    let mut statuses: Vec<_> = entries
         .into_iter()
         .map(|(id, record)| {
             let mut status = RetainedCopyStatus {
@@ -780,23 +786,26 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
                     ));
                 }
                 record.validate_namespace()?;
-                let evidence = match record.phase {
-                    CopyPhase::Published => {
-                        record.validate_published_data(&fd)?;
-                        CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
-                    }
-                    CopyPhase::PublicationIntent => CopyRecoveryEvidence::MatchingJournals,
-                    CopyPhase::UndoIntent => match record.undo_topology(&fd)? {
-                        UndoTopology::Published => CopyRecoveryEvidence::UndoReadyToWithdraw,
-                        UndoTopology::Withdrawn => CopyRecoveryEvidence::UndoWithdrawalMatches,
-                    },
-                    CopyPhase::Undone => {
-                        record.validate_completed_data()?;
-                        CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch
-                    }
-                };
+                let evidence = (|| {
+                    Ok(match record.phase {
+                        CopyPhase::Published => {
+                            record.validate_published_data(&fd)?;
+                            CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
+                        }
+                        CopyPhase::PublicationIntent => CopyRecoveryEvidence::MatchingJournals,
+                        CopyPhase::UndoIntent => match record.undo_topology(&fd)? {
+                            UndoTopology::Published => CopyRecoveryEvidence::UndoReadyToWithdraw,
+                            UndoTopology::Withdrawn => CopyRecoveryEvidence::UndoWithdrawalMatches,
+                        },
+                        CopyPhase::Undone => {
+                            record.validate_completed_data()?;
+                            CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch
+                        }
+                    })
+                })();
                 record.validate_namespace()?;
-                Ok(evidence)
+                records.insert(id.clone(), record);
+                evidence
             })();
             status.evidence = match result {
                 Ok(evidence) => evidence,
@@ -806,7 +815,112 @@ pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, Platfo
             };
             Ok(status)
         })
-        .collect()
+        .collect::<Result<_, PlatformError>>()?;
+    // Establish ordering from exact retained object identity, never timestamps
+    // or random transaction IDs. Only chains ending in a validated publication
+    // can become dependencies; cycles and ambiguous owners remain NeedsReview.
+    let mut by_publication = std::collections::BTreeMap::<PathBuf, Vec<usize>>::new();
+    for (index, status) in statuses.iter().enumerate() {
+        if records.contains_key(&status.transaction_id)
+            && status.phase == Some(CopyPhase::Published)
+        {
+            by_publication
+                .entry(status.publication.clone().expect("validated publication"))
+                .or_default()
+                .push(index);
+        }
+    }
+    let mut dependents = vec![Vec::new(); statuses.len()];
+    for (index, status) in statuses.iter().enumerate() {
+        if !matches!(status.evidence, CopyRecoveryEvidence::NeedsReview { .. }) {
+            continue;
+        }
+        let Some(record) = records.get(&status.transaction_id) else {
+            continue;
+        };
+        let Some(candidates) = status
+            .publication
+            .as_ref()
+            .and_then(|path| by_publication.get(path))
+        else {
+            continue;
+        };
+        let owners: Vec<_> = candidates
+            .iter()
+            .copied()
+            .filter(|&owner| {
+                let newer = &records[&statuses[owner].transaction_id];
+                owner != index
+                    && newer.displaced_content.as_ref() == Some(&record.publication_content)
+                    && newer.displaced_objects.as_ref() == Some(&record.publication_objects)
+                    && (newer.operation.id != record.operation.id
+                        || newer.operation.item_index > record.operation.item_index)
+            })
+            .collect();
+        if owners.len() == 1 {
+            dependents[owners[0]].push(index);
+        }
+    }
+    let mut ready: std::collections::VecDeque<_> = statuses
+        .iter()
+        .enumerate()
+        .filter_map(|(index, status)| {
+            matches!(
+                status.evidence,
+                CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
+            )
+            .then_some(index)
+        })
+        .collect();
+    while let Some(owner_index) = ready.pop_front() {
+        for &index in &dependents[owner_index] {
+            let status = &statuses[index];
+            if status.phase != Some(CopyPhase::Published)
+                || !matches!(status.evidence, CopyRecoveryEvidence::NeedsReview { .. })
+            {
+                continue;
+            }
+            let record = &records[&status.transaction_id];
+            let owner = &statuses[owner_index];
+            let validation = (|| {
+                record.require_object_evidence()?;
+                record.validate_namespace()?;
+                let transaction = record.transaction.decode().map_err(journal_error)?;
+                let stage = rustix::fs::open(
+                    &transaction,
+                    rustix::fs::OFlags::RDONLY
+                        | rustix::fs::OFlags::DIRECTORY
+                        | rustix::fs::OFlags::NOFOLLOW
+                        | rustix::fs::OFlags::CLOEXEC,
+                    rustix::fs::Mode::empty(),
+                )
+                .map_err(journal_error)?;
+                record.validate_opened_directory(&stage, false)?;
+                record.validate_retained_backup(&stage)?;
+                let newer = &records[&owner.transaction_id];
+                newer.validate_namespace()?;
+                let backup = newer
+                    .transaction
+                    .decode()
+                    .map_err(journal_error)?
+                    .join(super::copy_transaction::CANDIDATE);
+                record.validate_tree(
+                    &backup,
+                    &record.publication_content,
+                    &record.publication_objects,
+                )?;
+                newer.validate_namespace()?;
+                record.validate_namespace()
+            })();
+            if validation.is_ok() {
+                let transaction_id = owner.transaction_id.clone();
+                statuses[index].evidence =
+                    CopyRecoveryEvidence::PublicationRetainedByCopy { transaction_id };
+                ready.push_back(index);
+            }
+        }
+    }
+    Ok(statuses)
 }
 
 impl CopyRecord {
@@ -834,6 +948,10 @@ impl CopyRecord {
             &self.publication_content,
             &self.publication_objects,
         )?;
+        self.validate_retained_backup(stage)
+    }
+
+    fn validate_retained_backup(&self, stage: &impl rustix::fd::AsFd) -> Result<(), PlatformError> {
         let transaction = self.transaction.decode().map_err(journal_error)?;
         if let Some((content, objects)) = self
             .displaced_content
@@ -1014,6 +1132,182 @@ mod tests {
     impl Drop for PrivateRoot {
         fn drop(&mut self) {
             super::super::move_transaction::replace_test_recovery_root(self.0.take());
+        }
+    }
+
+    #[test]
+    fn overlapping_copy_chain_is_read_only_and_unblocks_after_reverse_undo() {
+        for kind in ["file", "directory", "symlink"] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = PrivateRoot::new(root.path());
+            let destination = root.path().join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            let mut sources = Vec::new();
+            for version in 0..3 {
+                let directory = root.path().join(format!("source-{version}"));
+                std::fs::create_dir(&directory).unwrap();
+                let source = directory.join("item");
+                match kind {
+                    "directory" => {
+                        std::fs::create_dir(&source).unwrap();
+                        std::fs::write(source.join("leaf"), format!("version-{version}")).unwrap();
+                    }
+                    "symlink" => {
+                        std::os::unix::fs::symlink(format!("target-{version}"), &source).unwrap();
+                    }
+                    _ => std::fs::write(&source, format!("version-{version}")).unwrap(),
+                }
+                DefaultPlatform
+                    .execute_copy_with_undo_receipt(
+                        &source,
+                        &destination,
+                        crate::ConflictAction::Overwrite,
+                    )
+                    .unwrap()
+                    .unwrap();
+                sources.push(source);
+            }
+            let registry = root.path().join("copies");
+            let before: Vec<_> = std::fs::read_dir(&registry)
+                .unwrap()
+                .map(|entry| {
+                    let path = entry.unwrap().path();
+                    let bytes = std::fs::read(&path).unwrap();
+                    (path, bytes)
+                })
+                .collect();
+            let statuses = discover_at(&registry).unwrap();
+            let ids: Vec<_> = sources
+                .iter()
+                .map(|source| {
+                    statuses
+                        .iter()
+                        .find(|status| status.source.as_ref() == Some(source))
+                        .unwrap()
+                        .transaction_id
+                        .clone()
+                })
+                .collect();
+            for index in 0..2 {
+                let status = statuses
+                    .iter()
+                    .find(|status| status.transaction_id == ids[index])
+                    .unwrap();
+                assert_eq!(
+                    status.evidence,
+                    CopyRecoveryEvidence::PublicationRetainedByCopy {
+                        transaction_id: ids[index + 1].clone(),
+                    }
+                );
+                assert!(crate::restore_retained_copy_undo_receipt(&ids[index]).is_err());
+            }
+            for (path, bytes) in before {
+                assert_eq!(std::fs::read(path).unwrap(), bytes);
+            }
+            for index in (0..3).rev() {
+                let status = discover_at(&registry)
+                    .unwrap()
+                    .into_iter()
+                    .find(|status| status.transaction_id == ids[index])
+                    .unwrap();
+                assert_eq!(
+                    status.evidence,
+                    CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
+                );
+                let receipt = crate::restore_retained_copy_undo_receipt(&ids[index]).unwrap();
+                DefaultPlatform.undo_copy_with_receipt(&receipt).unwrap();
+            }
+            assert!(!destination.join("item").exists());
+            for (version, source) in sources.iter().enumerate() {
+                match kind {
+                    "directory" => assert_eq!(
+                        std::fs::read_to_string(source.join("leaf")).unwrap(),
+                        format!("version-{version}")
+                    ),
+                    "symlink" => assert_eq!(
+                        std::fs::read_link(source).unwrap(),
+                        PathBuf::from(format!("target-{version}"))
+                    ),
+                    _ => assert_eq!(
+                        std::fs::read_to_string(source).unwrap(),
+                        format!("version-{version}")
+                    ),
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn overlapping_copy_dependencies_refuse_changed_or_missing_evidence() {
+        for tamper in ["publication", "backup", "journal", "missing-owner"] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = PrivateRoot::new(root.path());
+            let destination = root.path().join("destination");
+            std::fs::create_dir(&destination).unwrap();
+            let mut sources = Vec::new();
+            for version in 0..2 {
+                let directory = root.path().join(format!("source-{version}"));
+                std::fs::create_dir(&directory).unwrap();
+                let source = directory.join("item");
+                std::fs::write(&source, format!("version-{version}")).unwrap();
+                DefaultPlatform
+                    .execute_copy_with_undo_receipt(
+                        &source,
+                        &destination,
+                        crate::ConflictAction::Overwrite,
+                    )
+                    .unwrap()
+                    .unwrap();
+                sources.push(source);
+            }
+            let registry = root.path().join("copies");
+            let statuses = discover_at(&registry).unwrap();
+            let newest = statuses
+                .iter()
+                .find(|status| status.source.as_ref() == Some(&sources[1]))
+                .unwrap();
+            let oldest = statuses
+                .iter()
+                .find(|status| status.source.as_ref() == Some(&sources[0]))
+                .unwrap();
+            let backup = newest
+                .transaction
+                .as_ref()
+                .unwrap()
+                .join(super::super::copy_transaction::CANDIDATE);
+            let local = newest.transaction.as_ref().unwrap().join("copy-journal");
+            let central = registry.join(format!("{}.journal", newest.transaction_id));
+            match tamper {
+                "publication" => std::fs::write(destination.join("item"), "external edit").unwrap(),
+                "backup" => std::fs::write(&backup, "external backup edit").unwrap(),
+                "journal" => std::fs::write(&local, "invalid journal").unwrap(),
+                _ => std::fs::remove_file(&central).unwrap(),
+            }
+            let paths = [destination.join("item"), backup, local];
+            let before: Vec<_> = paths
+                .iter()
+                .map(|path| std::fs::read(path).unwrap())
+                .collect();
+            assert!(
+                discover_at(&registry)
+                    .unwrap()
+                    .iter()
+                    .all(|status| matches!(
+                        status.evidence,
+                        CopyRecoveryEvidence::NeedsReview { .. }
+                    )),
+                "{tamper}"
+            );
+            assert!(crate::restore_retained_copy_undo_receipt(&oldest.transaction_id).is_err());
+            for (path, bytes) in paths.iter().zip(before) {
+                assert_eq!(std::fs::read(path).unwrap(), bytes);
+            }
+            for (version, source) in sources.iter().enumerate() {
+                assert_eq!(
+                    std::fs::read_to_string(source).unwrap(),
+                    format!("version-{version}")
+                );
+            }
         }
     }
 

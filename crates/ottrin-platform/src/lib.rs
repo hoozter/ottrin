@@ -5401,7 +5401,7 @@ mod tests {
     #[test]
     fn copy_undo_rejects_replaced_retained_directory_and_parent_even_with_published_hardlink() {
         for replace_parent in [false, true] {
-            let root = tempfile::tempdir().unwrap();
+            let root = TestDir::new("copy-directory-retarget");
             let source = root.path().join("source");
             let destination = root.path().join("destination");
             std::fs::write(&source, "copied bytes").unwrap();
@@ -5456,7 +5456,7 @@ mod tests {
     #[test]
     fn copy_undo_rejects_same_filesystem_destination_alias_retarget_with_identical_file_inode() {
         use std::os::unix::fs::symlink;
-        let root = tempfile::tempdir().unwrap();
+        let root = TestDir::new("copy-alias-retarget");
         let actual = root.path().join("actual");
         let other = root.path().join("other");
         let alias = root.path().join("alias");
@@ -5497,7 +5497,7 @@ mod tests {
     #[test]
     fn copy_undo_follows_destination_directory_alias_across_filesystems() {
         use std::os::unix::fs::{MetadataExt, symlink};
-        let root = tempfile::tempdir().unwrap();
+        let root = TestDir::new("copy-cross-filesystem-alias");
         let other = tempfile::tempdir_in("/dev/shm").unwrap();
         assert_ne!(
             root.path().metadata().unwrap().dev(),
@@ -5525,7 +5525,7 @@ mod tests {
     #[test]
     fn copy_withdrawal_remains_in_original_directory_when_alias_changes_after_validation() {
         use std::os::unix::fs::symlink;
-        let root = tempfile::tempdir().unwrap();
+        let root = TestDir::new("copy-withdrawal-alias");
         let actual = root.path().join("actual");
         let other = root.path().join("other");
         let alias = root.path().join("alias");

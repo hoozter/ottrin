@@ -62,7 +62,7 @@ def main():
     env = os.environ.copy()
     env.setdefault("CARGO_HOME", str(operator_home / ".cargo"))
     env.setdefault("RUSTUP_HOME", str(operator_home / ".rustup"))
-    with tempfile.TemporaryDirectory(prefix="ottrin-cargo-test-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="ot-") as temporary:
         profile = Path(temporary)
         for variable, directory in (
             ("HOME", "home"),
@@ -73,9 +73,9 @@ def main():
             ("XDG_DATA_HOME", "data"),
             ("APPDATA", "roaming"),
             ("LOCALAPPDATA", "local"),
-            ("TMPDIR", "temporary"),
-            ("TMP", "temporary"),
-            ("TEMP", "temporary"),
+            ("TMPDIR", "t"),
+            ("TMP", "t"),
+            ("TEMP", "t"),
         ):
             path = profile / directory
             path.mkdir(mode=0o700, exist_ok=True)
