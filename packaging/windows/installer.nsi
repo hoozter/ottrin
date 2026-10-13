@@ -3,6 +3,10 @@ RequestExecutionLevel user
 
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
+!include "FileFunc.nsh"
+
+Var CleanupAppHandle
+Var CleanupUninstallerHandle
 
 !ifndef VERSION
   !define VERSION "0.1.0"
@@ -68,6 +72,8 @@ SectionEnd
 
 Section "Uninstall"
   SetShellVarContext current
+  StrCpy $CleanupAppHandle 0
+  StrCpy $CleanupUninstallerHandle 0
 
   IfFileExists "$INSTDIR\bin\ottrin.exe" 0 cleanup_unavailable
   ClearErrors
@@ -91,6 +97,36 @@ cleanup_unavailable:
   Abort
 
 cleanup_files:
+  ; Keep the retry executables until every other payload file has gone. Holding
+  ; DELETE-access handles also prevents a new reader without delete sharing
+  ; from locking those executables halfway through removal.
+  System::Call 'kernel32::GetFileAttributesW(w "$INSTDIR\bin\ottrin.exe") i.r0'
+  IntCmp $0 -1 cleanup_delete_failed
+  IntOp $0 $0 & 1
+  IntCmp $0 0 +2
+  Goto cleanup_delete_failed
+  System::Call 'kernel32::CreateFileW(w "$INSTDIR\bin\ottrin.exe", i 0x10000, i 7, p 0, i 3, i 0, p 0) p.r0'
+  IntCmp $0 -1 cleanup_delete_failed
+  StrCpy $CleanupAppHandle $0
+  System::Call 'kernel32::GetFileAttributesW(w "$INSTDIR\Uninstall.exe") i.r0'
+  IntCmp $0 -1 cleanup_delete_failed
+  IntOp $0 $0 & 1
+  IntCmp $0 0 +2
+  Goto cleanup_delete_failed
+  System::Call 'kernel32::CreateFileW(w "$INSTDIR\Uninstall.exe", i 0x10000, i 7, p 0, i 3, i 0, p 0) p.r0'
+  IntCmp $0 -1 cleanup_delete_failed
+  StrCpy $CleanupUninstallerHandle $0
+  StrCpy $R0 0
+  ClearErrors
+  ${un.Locate} "$INSTDIR" "/L=F" "un.RemovePayloadFile"
+  IfErrors cleanup_delete_failed
+  IntCmp $R0 0 +2
+  Goto cleanup_delete_failed
+  Delete "$INSTDIR\bin\ottrin.exe"
+  IfErrors cleanup_delete_failed
+  Delete "$INSTDIR\Uninstall.exe"
+  IfErrors cleanup_delete_failed
+  Call un.ReleaseCleanupHandles
   ClearErrors
   RMDir /r "$INSTDIR"
   IfErrors cleanup_delete_failed
@@ -102,9 +138,30 @@ cleanup_files:
   Goto uninstall_complete
 
 cleanup_delete_failed:
+  Call un.ReleaseCleanupHandles
   MessageBox MB_OK|MB_ICONSTOP "Ottrin could not remove all application files. Installed Apps registration has been retained so uninstall can be retried." /SD IDOK
   SetErrorLevel 1
   Abort
 
 uninstall_complete:
 SectionEnd
+
+Function un.RemovePayloadFile
+  StrCmp $R9 "$INSTDIR\bin\ottrin.exe" payload_file_done
+  StrCmp $R9 "$INSTDIR\Uninstall.exe" payload_file_done
+  ClearErrors
+  Delete "$R9"
+  IfErrors 0 payload_file_done
+  StrCpy $R0 1
+payload_file_done:
+  Push ""
+FunctionEnd
+
+Function un.ReleaseCleanupHandles
+  StrCmp $CleanupAppHandle 0 +3
+  System::Call 'kernel32::CloseHandle(p $CleanupAppHandle)'
+  StrCpy $CleanupAppHandle 0
+  StrCmp $CleanupUninstallerHandle 0 +3
+  System::Call 'kernel32::CloseHandle(p $CleanupUninstallerHandle)'
+  StrCpy $CleanupUninstallerHandle 0
+FunctionEnd
