@@ -1610,12 +1610,12 @@ enum SqliteWindowsTaskOperation {
 
 #[cfg(any(target_os = "windows", test))]
 impl SqliteWindowsTaskOperation {
-    fn args(self) -> &'static [&'static str] {
+    fn args(self, task_name: &str) -> Vec<&str> {
         match self {
-            Self::Query => &["/Query", "/TN", "Ottrin Index"],
-            Self::QueryXml => &["/Query", "/TN", "Ottrin Index", "/XML"],
-            Self::Run => &["/Run", "/TN", "Ottrin Index"],
-            Self::Delete => &["/Delete", "/F", "/TN", "Ottrin Index"],
+            Self::Query => vec!["/Query", "/TN", task_name],
+            Self::QueryXml => vec!["/Query", "/TN", task_name, "/XML"],
+            Self::Run => vec!["/Run", "/TN", task_name],
+            Self::Delete => vec!["/Delete", "/F", "/TN", task_name],
         }
     }
 
@@ -1631,9 +1631,42 @@ impl SqliteWindowsTaskOperation {
 }
 
 #[cfg(target_os = "windows")]
+const WINDOWS_INDEX_IDENTITY_SCRIPT: &str =
+    include_str!("../../../packaging/windows/windows-index-identity.ps1");
+
+#[cfg(target_os = "windows")]
+fn windows_index_task_name() -> Result<String, String> {
+    static NAME: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+    if let Some(name) = NAME.get() {
+        return Ok(name.clone());
+    }
+    let script = format!(
+        "$ErrorActionPreference='Stop'; {WINDOWS_INDEX_IDENTITY_SCRIPT}\n[Console]::Out.Write((Get-OttrinIndexTaskName))"
+    );
+    let output = internal_command("powershell.exe")
+        .args(["-NoProfile", "-NonInteractive", "-Command", &script])
+        .output()
+        .map_err(|error| format!("Failed to resolve index task identity: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "Failed to resolve index task identity: {}",
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    let name = String::from_utf8(output.stdout)
+        .map_err(|error| format!("Invalid index task identity: {error}"))?;
+    if name.is_empty() {
+        return Err("Index task identity returned no name".to_owned());
+    }
+    let _ = NAME.set(name.clone());
+    Ok(name)
+}
+
+#[cfg(target_os = "windows")]
 fn run_sqlite_windows_task(operation: SqliteWindowsTaskOperation) -> Result<bool, String> {
+    let task_name = windows_index_task_name()?;
     internal_command("schtasks")
-        .args(operation.args())
+        .args(operation.args(&task_name))
         .status()
         .map(|status| status.success())
         .map_err(|error| format!("Failed to {}: {error}", operation.label()))
@@ -1642,8 +1675,9 @@ fn run_sqlite_windows_task(operation: SqliteWindowsTaskOperation) -> Result<bool
 #[cfg(target_os = "windows")]
 fn query_sqlite_windows_task() -> Result<Option<SqliteWindowsTaskRegistration>, String> {
     let operation = SqliteWindowsTaskOperation::QueryXml;
+    let task_name = windows_index_task_name()?;
     let output = internal_command("schtasks")
-        .args(operation.args())
+        .args(operation.args(&task_name))
         .output()
         .map_err(|error| format!("Failed to {}: {error}", operation.label()))?;
     if !output.status.success() {
@@ -2626,7 +2660,10 @@ fn install_sqlite_windows_task(config: &SearchConfig, ottrin: &Path) -> Result<S
             "-NoProfile",
             "-NonInteractive",
             "-Command",
-            include_str!("windows_index_task.ps1"),
+            &format!(
+                "{WINDOWS_INDEX_IDENTITY_SCRIPT}\n{}",
+                include_str!("windows_index_task.ps1")
+            ),
         ])
         .env("OTTRIN_TASK_INTERVAL_HOURS", interval.to_string())
         .env("OTTRIN_TASK_EXECUTABLE", ottrin)
@@ -4468,9 +4505,25 @@ mod tests {
     #[test]
     fn windows_status_query_requests_locale_independent_task_xml() {
         assert_eq!(
-            SqliteWindowsTaskOperation::QueryXml.args(),
-            ["/Query", "/TN", "Ottrin Index", "/XML"]
+            SqliteWindowsTaskOperation::QueryXml.args("Ottrin Index S-1-5-21-101"),
+            ["/Query", "/TN", "Ottrin Index S-1-5-21-101", "/XML"]
         );
+    }
+
+    #[test]
+    fn windows_task_management_uses_only_the_selected_user_identity() {
+        for operation in [
+            SqliteWindowsTaskOperation::Query,
+            SqliteWindowsTaskOperation::QueryXml,
+            SqliteWindowsTaskOperation::Run,
+            SqliteWindowsTaskOperation::Delete,
+        ] {
+            let first = operation.args("Ottrin Index S-1-5-21-101");
+            let second = operation.args("Ottrin Index S-1-5-21-102");
+            assert_ne!(first, second);
+            assert!(first.contains(&"Ottrin Index S-1-5-21-101"));
+            assert!(!first.contains(&"Ottrin Index"));
+        }
     }
 
     #[test]

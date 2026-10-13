@@ -9,7 +9,8 @@ param(
 # MSI owns this short-lived transaction; the application owns normal task setup.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
-$TaskName = 'Ottrin Index'
+. (Join-Path $PSScriptRoot 'windows-index-identity.ps1')
+$TaskName = Get-OttrinIndexTaskName
 
 function Task-Folder {
     $service = New-Object -ComObject Schedule.Service
@@ -33,25 +34,12 @@ if ($Phase -eq 'Snapshot') {
         Move-Item -LiteralPath $Snapshot -Destination $retained
         throw "A previous index rollback snapshot requires attention: $retained"
     }
-    $task = Existing-Task (Task-Folder)
-    $record = @{ version = 1; user = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value; xml = $null; security = $null }
-    if ($null -ne $task) {
-        $record.xml = $task.Xml
-        $record.security = $task.GetSecurityDescriptor(7)
-        # Ottrin uses the current interactive user, with no stored credentials.
-        if ($task.Definition.Principal.LogonType -ne 3) {
-            throw 'The existing index task uses an unsupported logon type; setup was not changed.'
-        }
-        $principal = $task.Definition.Principal.UserId
-        $owner = if ($principal.StartsWith('S-1-')) {
-            [Security.Principal.SecurityIdentifier]::new($principal)
-        } else {
-            ([Security.Principal.NTAccount]::new($principal)).Translate([Security.Principal.SecurityIdentifier])
-        }
-        if ($owner.Value -ne $record.user) {
-            throw 'The existing index task belongs to another user; setup was not changed.'
-        }
-    }
+    $folder = Task-Folder
+    $task = Existing-Task $folder
+    if ($null -ne $task) { Assert-OttrinTaskOwner $task }
+    $superseded = Get-OttrinSupersededTask $folder
+    $record = @{ version = 2; user = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value; tasks = @((Get-OttrinTaskRecord $TaskName $task)) }
+    if ($null -ne $superseded) { $record.tasks += (Get-OttrinTaskRecord 'Ottrin Index' $superseded) }
     $bytes = [Text.Encoding]::UTF8.GetBytes(($record | ConvertTo-Json -Compress))
     $file = [IO.File]::Open($Snapshot, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
     try { $file.Write($bytes, 0, $bytes.Length); $file.Flush($true) }
@@ -60,18 +48,13 @@ if ($Phase -eq 'Snapshot') {
     # Snapshot can fail before any mutation, in which case there is nothing to undo.
     if (-not (Test-Path -LiteralPath $Snapshot)) { return }
     $record = Get-Content -LiteralPath $Snapshot -Encoding UTF8 -Raw | ConvertFrom-Json
-    if ($record.version -ne 1 -or $record.user -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) {
+    if ($record.version -ne 2 -or $record.user -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) {
         throw 'Index rollback snapshot does not belong to this user or schema.'
     }
     $folder = Task-Folder
-    if ($null -eq $record.xml) {
-        if ($null -ne (Existing-Task $folder)) { $folder.DeleteTask($TaskName, 0) }
-    } else {
-        # XML retains triggers, enabled state, principal, actions and settings.
-        # Avoid an added principal ACE, injected XML security metadata and
-        # registration-trigger execution while restoring the prior definition.
-        $restored = $folder.RegisterTask($TaskName, $record.xml, 54, $null, $null, 3, $null)
-        $restored.SetSecurityDescriptor($record.security, 16)
+    foreach ($taskRecord in $record.tasks) {
+        if ($taskRecord.name -notin @($TaskName, 'Ottrin Index')) { throw 'Rollback task identity is outside this transaction.' }
+        Restore-OttrinTaskRecord $folder $taskRecord
     }
     # Keep the snapshot if restoration failed; never conceal scheduler errors.
     Remove-Item -LiteralPath $Snapshot

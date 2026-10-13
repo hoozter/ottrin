@@ -1130,3 +1130,24 @@ temporary batch-logon rights, command processes and extracted guest fixtures are
 removed. The pre-existing guest installation checksum remains unchanged. The
 failure is confirmed and remains unfixed; the next work is the authoritative
 user-scoped task identity and simultaneous native two-user acceptance.
+
+
+### Windows user-scoped task identity — source checkpoint
+
+One shared `windows-index-identity.ps1` defines the SID-based task name for the
+application's embedded setup/management code and the installed MSI transaction
+helper. Status/run/delete use the same identity (successful resolution is cached
+per application process; failures can retry). Setup retains current-user task
+permissions/disabled state and retires the old global registration only after
+checking its owner, action and logon type. A failed retirement restores prior
+registrations rather than leaving two writers scheduled. The MSI snapshot schema
+is updated to capture scoped and superseded owned registrations together; rollback
+checks current ownership before restoration or removal. No management operation
+falls back to the global name.
+
+All 214 existing regular search tests pass (two ignored), along with the added
+scoped-operation regression; strict Linux/Windows-target app/search checks and
+MSI source contract pass. Source completion does not close the native failure.
+Current deliverables predate the change. A clean rebuild, simultaneous two-user
+setup/management, retirement of an owned old task, preservation of a foreign
+old task, and native transaction rollback acceptance remain required.
