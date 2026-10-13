@@ -990,5 +990,17 @@ file counter reports one JSON array; the hash-verification loop checks every
 entry, and the corrected uninstall receipt counts 51. Both batch-logon controls
 fail before package actions with Windows Installer 1601 / access denied, whether
 the service is initially stopped or started; this is separate from the passing
-interactive standard-user workflow. Refreshed NSIS lifecycle, cross-version
-upgrade, rollback and continuous Windows daemon/IPC parity remain open.
+interactive standard-user workflow.
+
+The exact refreshed NSIS also passes fresh standard-user silent install,
+same-version reinstall and uninstall. All 51 payload hashes, Installed Apps
+registration/icon, Start menu targets and the dedicated index task match. The
+managed preview-cache file survives installation/reinstall and is removed by
+uninstall; preferences and a user-data control remain unchanged. An unknown file
+in the cache root is preserved deliberately. The first new cleanup fixture used
+that unknown-file location and failed; the corrected full three-phase run uses
+the authoritative `preview_cache` path and passes. Receipt:
+`dist/WINDOWS_CURRENT_NSIS_LIFECYCLE.json`. This proves same-version reinstall,
+not cross-version upgrade. Cross-version upgrade, failure recovery/rollback,
+interactive installer UI, installed GUI workflows and continuous Windows
+daemon/IPC parity remain open.
