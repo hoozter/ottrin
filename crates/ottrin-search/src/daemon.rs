@@ -302,6 +302,32 @@ fn daemon_socket_path_for_unix_user(
         })
 }
 
+fn accept_ready_client(listener: &UnixListener) -> std::io::Result<Option<UnixStream>> {
+    let mut descriptor = libc::pollfd {
+        fd: listener.as_raw_fd(),
+        events: libc::POLLIN,
+        revents: 0,
+    };
+    // Wait for socket readiness instead of waking every 10 ms. Incoming
+    // requests wake immediately; the timeout bounds shutdown from a worker.
+    // SAFETY: descriptor is initialized and live for the call, and its fd is
+    // owned by the listener, which remains alive throughout this function.
+    let ready = unsafe { libc::poll(&mut descriptor, 1, 100) };
+    if ready < 0 {
+        return Err(std::io::Error::last_os_error());
+    }
+    if ready == 0 {
+        return Ok(None);
+    }
+    if descriptor.revents & (libc::POLLERR | libc::POLLHUP | libc::POLLNVAL) != 0 {
+        return Err(std::io::Error::other(format!(
+            "index daemon listener readiness failed: {}",
+            descriptor.revents
+        )));
+    }
+    listener.accept().map(|(stream, _)| Some(stream))
+}
+
 pub fn run_search_daemon(
     config: SearchConfig,
     store_path: PathBuf,
@@ -329,8 +355,8 @@ pub fn run_search_daemon(
     let active_clients = Arc::new(AtomicUsize::new(0));
 
     while !shutdown.load(Ordering::Acquire) {
-        match listener.accept() {
-            Ok((mut stream, _)) => {
+        match accept_ready_client(&listener) {
+            Ok(Some(mut stream)) => {
                 if active_clients.fetch_add(1, Ordering::AcqRel) >= MAX_ACTIVE_CLIENTS {
                     active_clients.fetch_sub(1, Ordering::AcqRel);
                     let _ = write_frame(
@@ -376,9 +402,12 @@ pub fn run_search_daemon(
                     }
                 }
             }
-            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
-                thread::sleep(Duration::from_millis(10));
-            }
+            Ok(None) => {}
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    std::io::ErrorKind::WouldBlock | std::io::ErrorKind::Interrupted
+                ) => {}
             Err(error) => {
                 shutdown.store(true, Ordering::Release);
                 service.lock().expect("search service").stop();

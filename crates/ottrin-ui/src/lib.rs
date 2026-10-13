@@ -1326,10 +1326,11 @@ struct TabUiState {
     miller_total_w_max: f32,
     // Saved horizontal scroll offset — used to freeze scroll on Up/Down.
     miller_h_offset: f32,
-    // Last rendered viewport geometry: resizing preserves a visible preview,
+    // Last rendered viewport geometry: resizing preserves visible content,
     // while deliberate horizontal scrolling may leave it hidden.
     miller_viewport_width: f32,
     miller_preview_visible: bool,
+    miller_current_visible: bool,
     // Column scroll ids (must be stable)
     scroll_epoch: u64, // bump to reset scroll on navigation
 }
@@ -16586,8 +16587,15 @@ impl OttrinApp {
         let focus_has_file_preview = focus_selected
             .as_ref()
             .is_some_and(|entry| matches!(entry.kind, EntryKind::File));
+        let resized_visible_directory = {
+            let previous = self.tab_ui.entry(tab_id).or_default();
+            !focus_has_file_preview
+                && previous.miller_current_visible
+                && full.width() < previous.miller_viewport_width
+        };
         let mut preview_bounds = None;
         let mut focus_column_rect = None;
+        let mut current_column_rect = None;
         let show_horizontal_scrollbar =
             ui.rect_contains_pointer(full) || scroll_left_nav || scroll_right_nav;
 
@@ -16828,6 +16836,19 @@ impl OttrinApp {
                         },
                     );
                     let rect = inner.response.rect;
+                    if col_idx == current_col {
+                        current_column_rect = Some(rect);
+                        if resized_visible_directory && rect.right() > ui.clip_rect().right() {
+                            ui.scroll_to_rect_animation(
+                                rect,
+                                Some(egui::Align::RIGHT),
+                                ScrollAnimation {
+                                    points_per_second: 600.0,
+                                    duration: Rangef::new(0.15, 0.4),
+                                },
+                            );
+                        }
+                    }
                     if col_idx == focus_col {
                         focus_column_rect = Some(rect);
                     }
@@ -16990,6 +17011,10 @@ impl OttrinApp {
         {
             let previous = self.tab_ui.entry(tab_id).or_default();
             previous.miller_viewport_width = full.width();
+            previous.miller_current_visible = current_column_rect.is_some_and(|rect| {
+                rect.left() >= sa_output.inner_rect.left() - 0.5
+                    && rect.right() <= sa_output.inner_rect.right() + 0.5
+            });
             previous.miller_preview_visible = preview_bounds.is_some_and(|rect| {
                 rect.left() >= sa_output.inner_rect.left() - 0.5
                     && rect.right() <= sa_output.inner_rect.right() + 0.5
@@ -30890,13 +30915,17 @@ mod tests {
         app.state.config.miller_column_width_mode = MillerColumnWidthMode::Fixed;
         app.state.config.folder_column_widths.clear();
         app.state.config.miller_view_scale = 1.0;
-        app.sidebar = SidebarSection::Activity;
+        app.sidebar = SidebarSection::None;
         app.state.config.smart_panel_width = 420.0;
         app.open_directory_at_startup(destination.clone());
         let tab_id = app.state.active_tab().id;
         let ctx = Context::default();
         let mut output = None;
-        for frame in 0..60 {
+        for frame in 0..120 {
+            if frame == 60 {
+                assert!(app.tab_ui[&tab_id].miller_current_visible);
+                app.sidebar = SidebarSection::Activity;
+            }
             app.poll_listing_results();
             output = Some(ctx.run(
                 egui::RawInput {
@@ -30926,6 +30955,7 @@ mod tests {
             app.tab_ui[&tab_id].miller_reveal.is_none(),
             "startup reveal must be consumed"
         );
+        assert!(app.tab_ui[&tab_id].miller_current_visible);
         let output = output.unwrap();
         let caption = output
             .shapes
@@ -30945,6 +30975,51 @@ mod tests {
         assert!(
             bounds.right() <= app.smart_panel_rect.unwrap().left(),
             "startup destination must be visible beside the expanded panel: {bounds:?}"
+        );
+        let mut manually_scrolled = 0.0;
+        for frame in 120..240 {
+            if frame == 180 {
+                manually_scrolled = app.tab_ui[&tab_id].miller_h_offset;
+                assert!(!app.tab_ui[&tab_id].miller_current_visible);
+                app.state.config.smart_panel_width = 520.0;
+            }
+            let events = if frame == 120 {
+                vec![
+                    egui::Event::PointerMoved(egui::pos2(300.0, 200.0)),
+                    egui::Event::MouseWheel {
+                        unit: egui::MouseWheelUnit::Point,
+                        delta: Vec2::new(600.0, 0.0),
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ]
+            } else {
+                Vec::new()
+            };
+            let _ = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(1100.0, 690.0),
+                    )),
+                    time: Some(frame as f64 / 60.0),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        let (file_rect, panel_rect) =
+                            app.compute_smart_panel_layout(ui.available_rect_before_wrap());
+                        app.smart_panel_rect = Some(panel_rect);
+                        ui.scope_builder(UiBuilder::new().max_rect(file_rect), |ui| {
+                            app.render_miller(ui, tab_id)
+                        });
+                    });
+                },
+            );
+        }
+        assert_eq!(
+            app.tab_ui[&tab_id].miller_h_offset, manually_scrolled,
+            "expanding the panel must preserve deliberate horizontal scrolling"
         );
     }
 
