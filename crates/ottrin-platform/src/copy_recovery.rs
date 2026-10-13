@@ -185,7 +185,7 @@ impl CopyOperation {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(super) struct CopyRecord {
     schema: u16,
@@ -435,6 +435,13 @@ pub(super) fn valid_transaction_id(id: &str) -> bool {
 }
 
 pub(super) fn restore_receipt(id: &str) -> Result<super::PathMoveUndoReceipt, PlatformError> {
+    restore_bound_receipt(id, None)
+}
+
+fn restore_bound_receipt(
+    id: &str,
+    expected: Option<&CopyRecord>,
+) -> Result<super::PathMoveUndoReceipt, PlatformError> {
     use super::move_recovery::LinuxJournalDirectory;
     use rustix::fs::{Mode, OFlags};
     if !valid_transaction_id(id) {
@@ -445,6 +452,11 @@ pub(super) fn restore_receipt(id: &str) -> Result<super::PathMoveUndoReceipt, Pl
     let central = LinuxJournalDirectory::open_copy_registry(&configured_root()?, false)
         .map_err(journal_error)?;
     let record = central.read_copy_record(&format!("{id}.journal"))?;
+    if expected.is_some_and(|expected| expected != &record) {
+        return Err(PlatformError::InvalidPathMoveUndoReceipt(
+            "Copy journal changed after batch admission".into(),
+        ));
+    }
     if record.transaction_id()? != id {
         return Err(PlatformError::InvalidPathMoveUndoReceipt(
             "Copy registry filename does not match transaction".into(),
@@ -550,14 +562,26 @@ pub(super) fn undo_with_journals(
     parent: &std::fs::File,
     stage: &std::fs::File,
     receipt: &super::PathMoveUndoReceipt,
+    expected: Option<&CopyRecord>,
 ) -> Result<(), PlatformError> {
-    undo_with_journals_with_hook(parent, stage, receipt, &mut |_| Ok(()))
+    undo_bound_with_hook(parent, stage, receipt, expected, &mut |_| Ok(()))
 }
 
+#[cfg(test)]
 fn undo_with_journals_with_hook(
     parent: &std::fs::File,
     stage: &std::fs::File,
     receipt: &super::PathMoveUndoReceipt,
+    hook: &mut impl FnMut(UndoPoint) -> Result<(), PlatformError>,
+) -> Result<(), PlatformError> {
+    undo_bound_with_hook(parent, stage, receipt, None, hook)
+}
+
+fn undo_bound_with_hook(
+    parent: &std::fs::File,
+    stage: &std::fs::File,
+    receipt: &super::PathMoveUndoReceipt,
+    expected: Option<&CopyRecord>,
     hook: &mut impl FnMut(UndoPoint) -> Result<(), PlatformError>,
 ) -> Result<(), PlatformError> {
     use super::move_recovery::LinuxJournalDirectory;
@@ -581,6 +605,25 @@ fn undo_with_journals_with_hook(
         return Err(PlatformError::Io(
             "central and destination-local Copy journals differ".into(),
         ));
+    }
+    if let Some(expected) = expected {
+        let mut immutable = record.clone();
+        immutable.phase = expected.phase;
+        let permitted_phase = match expected.phase {
+            CopyPhase::Published => matches!(
+                record.phase,
+                CopyPhase::Published | CopyPhase::UndoIntent | CopyPhase::Undone
+            ),
+            CopyPhase::UndoIntent => {
+                matches!(record.phase, CopyPhase::UndoIntent | CopyPhase::Undone)
+            }
+            _ => false,
+        };
+        if &immutable != expected || !permitted_phase {
+            return Err(PlatformError::InvalidPathMoveUndoReceipt(
+                "Copy journal changed after batch admission".into(),
+            ));
+        }
     }
     let transaction = record.transaction.decode().map_err(journal_error)?;
     let publication = record.publication.decode().map_err(journal_error)?;
@@ -727,6 +770,169 @@ pub struct RetainedCopyStatus {
     pub publication: Option<PathBuf>,
     pub transaction: Option<PathBuf>,
     pub evidence: CopyRecoveryEvidence,
+}
+
+/// Original-journal-bound reverse Undo for one restored Copy operation.
+/// Admission is read-only. Each inverse obtains fresh object/content authority
+/// only when its publication has been restored by the preceding inverse.
+#[derive(Clone, Debug)]
+pub struct RetainedCopyUndoPlan {
+    entries: Vec<PlannedCopyUndo>,
+    remaining: usize,
+    inflight: Option<super::PathMoveUndoReceipt>,
+}
+
+#[derive(Clone, Debug)]
+struct PlannedCopyUndo {
+    id: String,
+    record: CopyRecord,
+    withdrawal: PathBuf,
+    publication: PathBuf,
+}
+
+impl RetainedCopyUndoPlan {
+    pub fn remaining(&self) -> usize {
+        self.remaining
+    }
+
+    pub fn path_pairs(&self) -> Vec<(&Path, &Path)> {
+        self.entries
+            .iter()
+            .map(|entry| (entry.withdrawal.as_path(), entry.publication.as_path()))
+            .collect()
+    }
+
+    pub fn transaction_ids(&self) -> Vec<&str> {
+        self.entries.iter().map(|entry| entry.id.as_str()).collect()
+    }
+
+    /// Stops without advancing on refusal. A started inverse retains its
+    /// original receipt for durable cleanup retries; it never adopts new evidence.
+    pub fn undo_next(&mut self) -> Result<(), PlatformError> {
+        let entry = self
+            .entries
+            .get(
+                self.remaining
+                    .checked_sub(1)
+                    .ok_or(PlatformError::NotAvailable(
+                        "Copy batch Undo is already complete",
+                    ))?,
+            )
+            .expect("remaining Copy plan entry");
+        if self.inflight.is_none() {
+            self.inflight = Some(restore_bound_receipt(&entry.id, Some(&entry.record))?);
+        }
+        let receipt = self.inflight.as_ref().expect("admitted Copy receipt");
+        let guard = receipt
+            .retained_copy_directory
+            .as_ref()
+            .expect("restored Copy directory");
+        if !guard.undo_durable_copy_bound(receipt, Some(&entry.record))? {
+            return Err(PlatformError::InvalidPathMoveUndoReceipt(
+                "Copy plan lost durable directory ownership".into(),
+            ));
+        }
+        self.remaining -= 1;
+        self.inflight = None;
+        Ok(())
+    }
+}
+
+pub(super) fn restore_plan(operation_id: &str) -> Result<RetainedCopyUndoPlan, PlatformError> {
+    use super::move_recovery::LinuxJournalDirectory;
+    if !valid_transaction_id(operation_id) {
+        return Err(PlatformError::InvalidPathMoveUndoReceipt(
+            "invalid Copy operation ID".into(),
+        ));
+    }
+    let root = configured_root()?;
+    let central = LinuxJournalDirectory::open_copy_registry(&root, false).map_err(journal_error)?;
+    let mut records: Vec<_> = central
+        .discover_copy_records()
+        .map_err(journal_error)?
+        .into_iter()
+        .filter_map(|(id, record)| {
+            record
+                .ok()
+                .filter(|record| record.operation.id == operation_id)
+                .map(|record| (id, record))
+        })
+        .collect();
+    records.sort_by_key(|(_, record)| record.operation.item_index);
+    if records.is_empty() {
+        return Err(PlatformError::NotAvailable(
+            "Copy operation has no retained entries",
+        ));
+    }
+    let count = records[0].1.operation.item_count;
+    let mut positions = std::collections::HashSet::new();
+    for (id, record) in &records {
+        record.operation.validate()?;
+        if record.transaction_id()? != *id
+            || record.operation.item_count != count
+            || !positions.insert(record.operation.item_index)
+        {
+            return Err(PlatformError::InvalidPathMoveUndoReceipt(
+                "Copy batch grouping is inconsistent".into(),
+            ));
+        }
+    }
+    let statuses = discover_at(&root)?;
+    let mut entries = Vec::new();
+    for (id, record) in &records {
+        let status = statuses
+            .iter()
+            .find(|status| &status.transaction_id == id)
+            .ok_or(PlatformError::NotAvailable(
+                "Copy batch journal disappeared",
+            ))?;
+        match &status.evidence {
+            CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
+            | CopyRecoveryEvidence::UndoReadyToWithdraw
+            | CopyRecoveryEvidence::UndoWithdrawalMatches => {}
+            CopyRecoveryEvidence::PublicationRetainedByCopy { transaction_id }
+                if records.iter().any(|(owner, newer)| {
+                    owner == transaction_id
+                        && newer.operation.item_index > record.operation.item_index
+                }) => {}
+            CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch => {}
+            _ => {
+                return Err(PlatformError::InvalidPathMoveUndoReceipt(
+                    "Copy batch requires review or is blocked by another operation".into(),
+                ));
+            }
+        }
+        if status.phase != Some(record.phase)
+            || status.operation.as_ref() != Some(&record.operation)
+            || central.read_copy_record(&format!("{id}.journal"))? != *record
+        {
+            return Err(PlatformError::InvalidPathMoveUndoReceipt(
+                "Copy journal changed during batch admission".into(),
+            ));
+        }
+        if record.phase != CopyPhase::Undone {
+            entries.push(PlannedCopyUndo {
+                id: id.clone(),
+                record: record.clone(),
+                withdrawal: record
+                    .transaction
+                    .decode()
+                    .map_err(journal_error)?
+                    .join(super::copy_transaction::CANDIDATE),
+                publication: record.publication.decode().map_err(journal_error)?,
+            });
+        }
+    }
+    if entries.is_empty() {
+        return Err(PlatformError::NotAvailable(
+            "Copy batch Undo is already complete",
+        ));
+    }
+    Ok(RetainedCopyUndoPlan {
+        remaining: entries.len(),
+        entries,
+        inflight: None,
+    })
 }
 
 pub(super) fn discover_at(root: &Path) -> Result<Vec<RetainedCopyStatus>, PlatformError> {
@@ -1132,6 +1338,178 @@ mod tests {
     impl Drop for PrivateRoot {
         fn drop(&mut self) {
             super::super::move_transaction::replace_test_recovery_root(self.0.take());
+        }
+    }
+
+    fn overlapping_batch(root: &Path, kind: &str) -> (PathBuf, Vec<PathBuf>, Vec<String>, String) {
+        let destination = root.join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let sources: Vec<_> = (0..3)
+            .map(|version| {
+                let directory = root.join(format!("source-{version}"));
+                std::fs::create_dir(&directory).unwrap();
+                let source = directory.join("item");
+                match kind {
+                    "directory" => {
+                        std::fs::create_dir(&source).unwrap();
+                        std::fs::write(source.join("leaf"), format!("version-{version}")).unwrap();
+                    }
+                    "symlink" => {
+                        std::os::unix::fs::symlink(format!("target-{version}"), &source).unwrap()
+                    }
+                    _ => std::fs::write(&source, format!("version-{version}")).unwrap(),
+                }
+                source
+            })
+            .collect();
+        let batch = DefaultPlatform.execute_copy_batch_with_undo_receipts(
+            &sources,
+            &destination,
+            crate::ConflictAction::Overwrite,
+        );
+        assert!(batch.error.is_none(), "{:?}", batch.error);
+        assert_eq!(batch.completed_sources, 3);
+        assert_eq!(batch.undo_receipts.len(), 3);
+        drop(batch);
+        let mut statuses = discover_at(&root.join("copies")).unwrap();
+        statuses.sort_by_key(|status| status.operation.as_ref().unwrap().item_index);
+        let operation = statuses[0].operation.as_ref().unwrap().id.clone();
+        let ids = statuses
+            .iter()
+            .map(|status| status.transaction_id.clone())
+            .collect();
+        (destination, sources, ids, operation)
+    }
+
+    #[test]
+    fn restored_overlapping_batch_plan_admits_each_inverse_lazily() {
+        for kind in ["file", "directory", "symlink"] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = PrivateRoot::new(root.path());
+            let (destination, sources, ids, operation) = overlapping_batch(root.path(), kind);
+            let before: Vec<_> = ids
+                .iter()
+                .map(|id| {
+                    std::fs::read(root.path().join("copies").join(format!("{id}.journal"))).unwrap()
+                })
+                .collect();
+            let mut plan = crate::restore_retained_copy_undo_plan(&operation).unwrap();
+            assert_eq!(plan.remaining(), 3);
+            assert_eq!(
+                plan.transaction_ids(),
+                ids.iter().map(String::as_str).collect::<Vec<_>>()
+            );
+            for (id, bytes) in ids.iter().zip(before) {
+                assert_eq!(
+                    std::fs::read(root.path().join("copies").join(format!("{id}.journal")))
+                        .unwrap(),
+                    bytes
+                );
+            }
+            assert!(crate::restore_retained_copy_undo_receipt(&ids[0]).is_err());
+            assert!(crate::restore_retained_copy_undo_receipt(&ids[1]).is_err());
+            for remaining in (0..3).rev() {
+                plan.undo_next().unwrap();
+                assert_eq!(plan.remaining(), remaining);
+                if remaining > 0 {
+                    let version = remaining - 1;
+                    match kind {
+                        "directory" => assert_eq!(
+                            std::fs::read_to_string(destination.join("item/leaf")).unwrap(),
+                            format!("version-{version}")
+                        ),
+                        "symlink" => assert_eq!(
+                            std::fs::read_link(destination.join("item")).unwrap(),
+                            PathBuf::from(format!("target-{version}"))
+                        ),
+                        _ => assert_eq!(
+                            std::fs::read_to_string(destination.join("item")).unwrap(),
+                            format!("version-{version}")
+                        ),
+                    }
+                }
+            }
+            assert!(plan.undo_next().is_err());
+            assert!(std::fs::symlink_metadata(destination.join("item")).is_err());
+            for (version, source) in sources.iter().enumerate() {
+                match kind {
+                    "directory" => assert_eq!(
+                        std::fs::read_to_string(source.join("leaf")).unwrap(),
+                        format!("version-{version}")
+                    ),
+                    "symlink" => assert_eq!(
+                        std::fs::read_link(source).unwrap(),
+                        PathBuf::from(format!("target-{version}"))
+                    ),
+                    _ => assert_eq!(
+                        std::fs::read_to_string(source).unwrap(),
+                        format!("version-{version}")
+                    ),
+                }
+            }
+            assert!(
+                discover_at(&root.path().join("copies"))
+                    .unwrap()
+                    .iter()
+                    .all(|status| status.evidence
+                        == CopyRecoveryEvidence::UndoneRetainedObjectsAndContentsMatch)
+            );
+        }
+    }
+
+    #[test]
+    fn restored_batch_plan_refuses_changed_paired_journals_without_advancing() {
+        for completed in [0, 1] {
+            let root = tempfile::tempdir().unwrap();
+            let _registry = PrivateRoot::new(root.path());
+            let (destination, sources, ids, operation) = overlapping_batch(root.path(), "file");
+            let mut plan = crate::restore_retained_copy_undo_plan(&operation).unwrap();
+            for _ in 0..completed {
+                plan.undo_next().unwrap();
+            }
+            // Exercise mutation after receipt restoration as well as before it.
+            if completed == 1 {
+                let entry = &plan.entries[plan.remaining - 1];
+                plan.inflight =
+                    Some(restore_bound_receipt(&entry.id, Some(&entry.record)).unwrap());
+            }
+            let index = 2 - completed;
+            let central = root
+                .path()
+                .join("copies")
+                .join(format!("{}.journal", ids[index]));
+            let local = destination
+                .join(format!(".ottrin-txn-{}", ids[index]))
+                .join("copy-journal");
+            let original = std::fs::read(&central).unwrap();
+            assert_eq!(std::fs::read(&local).unwrap(), original);
+            let mut changed: serde_json::Value = serde_json::from_slice(&original).unwrap();
+            changed["operation"]["item_count"] = serde_json::json!(4);
+            let bytes = serde_json::to_vec(&changed).unwrap();
+            std::fs::write(&central, &bytes).unwrap();
+            std::fs::write(&local, &bytes).unwrap();
+            let publication = std::fs::read(destination.join("item")).unwrap();
+            assert!(plan.undo_next().is_err());
+            assert_eq!(plan.remaining(), 3 - completed);
+            assert_eq!(
+                std::fs::read(destination.join("item")).unwrap(),
+                publication
+            );
+            assert_eq!(std::fs::read(&central).unwrap(), bytes);
+            assert_eq!(std::fs::read(&local).unwrap(), bytes);
+            for (version, source) in sources.iter().enumerate() {
+                assert_eq!(
+                    std::fs::read_to_string(source).unwrap(),
+                    format!("version-{version}")
+                );
+            }
+            // Restoring the admitted journal allows retry; no replacement is adopted.
+            std::fs::write(&central, &original).unwrap();
+            std::fs::write(&local, &original).unwrap();
+            while plan.remaining() > 0 {
+                plan.undo_next().unwrap();
+            }
+            assert!(!destination.join("item").exists());
         }
     }
 

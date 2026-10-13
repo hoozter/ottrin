@@ -805,11 +805,48 @@ struct TextEditUndoReceipt {
 }
 
 #[derive(Debug, Clone)]
-struct CopyBatchUndoReceipt {
-    // Retain completed receipts too: their transaction data remains owned by
-    // this Activity record even after a later Undo stops or is retried.
-    receipts: Vec<PathMoveUndoReceipt>,
-    remaining: usize,
+enum CopyBatchUndoReceipt {
+    // Completed session receipts retain their transaction ownership after a stop.
+    Session {
+        receipts: Vec<PathMoveUndoReceipt>,
+        remaining: usize,
+    },
+    #[cfg(target_os = "linux")]
+    Retained(ottrin_platform::RetainedCopyUndoPlan),
+}
+
+impl CopyBatchUndoReceipt {
+    fn remaining(&self) -> usize {
+        match self {
+            Self::Session { remaining, .. } => *remaining,
+            #[cfg(target_os = "linux")]
+            Self::Retained(plan) => plan.remaining(),
+        }
+    }
+    fn path_pairs(&self) -> Vec<(&Path, &Path)> {
+        match self {
+            Self::Session { receipts, .. } => receipts
+                .iter()
+                .map(|r| (r.before_path(), r.after_path()))
+                .collect(),
+            #[cfg(target_os = "linux")]
+            Self::Retained(plan) => plan.path_pairs(),
+        }
+    }
+    fn undo_next(&mut self, platform: &dyn PlatformOps) -> Result<(), PlatformError> {
+        match self {
+            Self::Session {
+                receipts,
+                remaining,
+            } => {
+                platform.undo_copy_with_receipt(&receipts[*remaining - 1])?;
+                *remaining -= 1;
+                Ok(())
+            }
+            #[cfg(target_os = "linux")]
+            Self::Retained(plan) => plan.undo_next(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -824,11 +861,7 @@ enum OperationUndoReceipt {
 impl OperationUndoReceipt {
     fn path_pairs(&self) -> Vec<(&Path, &Path)> {
         match self {
-            Self::CopyBatch(batch) => batch
-                .receipts
-                .iter()
-                .map(|receipt| (receipt.before_path(), receipt.after_path()))
-                .collect(),
+            Self::CopyBatch(batch) => batch.path_pairs(),
             _ => vec![(self.before_path(), self.after_path())],
         }
     }
@@ -836,11 +869,7 @@ impl OperationUndoReceipt {
     fn before_path(&self) -> &Path {
         match self {
             Self::PathMove(receipt) => receipt.before_path(),
-            Self::CopyBatch(batch) => batch
-                .receipts
-                .first()
-                .expect("nonempty Copy batch")
-                .before_path(),
+            Self::CopyBatch(batch) => batch.path_pairs().first().expect("nonempty Copy batch").0,
             Self::Chmod(receipt) => receipt.path(),
             Self::Trash(receipt) => receipt.original_path(),
             Self::TextEdit(receipt) => &receipt.path,
@@ -850,11 +879,7 @@ impl OperationUndoReceipt {
     fn after_path(&self) -> &Path {
         match self {
             Self::PathMove(receipt) => receipt.after_path(),
-            Self::CopyBatch(batch) => batch
-                .receipts
-                .first()
-                .expect("nonempty Copy batch")
-                .after_path(),
+            Self::CopyBatch(batch) => batch.path_pairs().first().expect("nonempty Copy batch").1,
             Self::Chmod(receipt) => receipt.path(),
             Self::Trash(receipt) => receipt.trash_path(),
             Self::TextEdit(receipt) => &receipt.path,
@@ -1038,7 +1063,7 @@ struct RestoredCopyActivity {
     ownership: RetainedCopyOwnership,
     detail: String,
     undo: PathMoveUndoState,
-    receipts: Vec<PathMoveUndoReceipt>,
+    receipt: Option<CopyBatchUndoReceipt>,
 }
 
 type RetainedCopySnapshot = (Vec<RestoredCopyActivity>, Option<String>);
@@ -1075,7 +1100,6 @@ fn group_retained_copy_activity(
         let expected = entries[0].operation.as_ref().map(|operation| operation.item_count);
         let mut positions = HashSet::new();
         let mut reason = None;
-        let mut receipts = Vec::new();
         let mut blocked_by = Vec::new();
         let mut undone = 0;
         for entry in &entries {
@@ -1089,14 +1113,12 @@ fn group_retained_copy_activity(
                 CopyRecoveryEvidence::PublishedObjectsAndContentsMatch
                 | CopyRecoveryEvidence::UndoReadyToWithdraw
                 | CopyRecoveryEvidence::UndoWithdrawalMatches => {
-                    match ottrin_platform::restore_retained_copy_undo_receipt(&entry.transaction_id) {
-                        Ok(receipt) => receipts.push(receipt),
-                        Err(error) => reason = Some(error.to_string()),
-                    }
                 },
                 CopyRecoveryEvidence::PublicationRetainedByCopy { transaction_id } => {
                     blocked_by.push(transaction_id.clone());
+                    if !entries.iter().any(|owner| &owner.transaction_id == transaction_id) {
                     reason = Some(format!("Undo the newer copy of {} first. Ottrin retains this version until that copy is undone.", entry.publication.as_ref().expect("validated Copy publication").display()));
+                    }
                 },
                 CopyRecoveryEvidence::NeedsReview { reason: error } => reason = Some(error.clone()),
                 CopyRecoveryEvidence::MatchingJournals => reason = Some("Copy publication was interrupted and needs reconciliation".into()),
@@ -1107,10 +1129,18 @@ fn group_retained_copy_activity(
             Some(count) => format!("Restored Copy · {} retained of {count} requested · {undone} already undone · other item outcomes unknown", entries.len()),
             None => "Retained Copy needs review".into(),
         };
+        let receipt = if reason.is_none() && undone < entries.len() {
+            match ottrin_platform::restore_retained_copy_undo_plan(&entries[0].operation.as_ref().expect("validated operation").id) {
+                Ok(plan) if plan.transaction_ids() == entries.iter()
+                    .filter(|entry| entry.phase != Some(ottrin_platform::CopyPhase::Undone))
+                    .map(|entry| entry.transaction_id.as_str()).collect::<Vec<_>>() => Some(CopyBatchUndoReceipt::Retained(plan)),
+                Ok(_) => { reason = Some("Copy batch changed during Activity restoration; refresh its status".into()); None },
+                Err(error) => { reason = Some(error.to_string()); None },
+            }
+        } else { None };
         let undo = if let Some(reason) = reason {
-            receipts.clear();
             PathMoveUndoState::Unavailable { reason }
-        } else if receipts.is_empty() {
+        } else if receipt.is_none() {
             PathMoveUndoState::Undone
         } else {
             PathMoveUndoState::Available
@@ -1119,7 +1149,7 @@ fn group_retained_copy_activity(
             ownership: RetainedCopyOwnership { key, transactions: entries.into_iter().map(|entry| entry.transaction_id).collect(), blocked_by, restored: true },
             detail,
             undo,
-            receipts,
+            receipt,
         }
     }).collect()
 }
@@ -1132,17 +1162,11 @@ fn restored_copy_status(undo: &PathMoveUndoState) -> OperationStatus {
     }
 }
 
-fn restored_copy_token(receipts: Vec<PathMoveUndoReceipt>) -> Option<PathMoveUndoToken> {
-    if receipts.is_empty() {
-        return None;
-    }
+fn restored_copy_token(receipt: Option<CopyBatchUndoReceipt>) -> Option<PathMoveUndoToken> {
     Some(PathMoveUndoToken {
         storage_bindings: Vec::new(),
         origin_tab_id: None,
-        receipt: OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt {
-            remaining: receipts.len(),
-            receipts,
-        }),
+        receipt: OperationUndoReceipt::CopyBatch(receipt?),
     })
 }
 
@@ -1153,16 +1177,12 @@ fn copy_receipt_transaction_ids(record: &OperationRecord) -> Vec<String> {
     if record.undo_kind != Some(PathMoveUndoKind::Copy) {
         return Vec::new();
     }
-    let receipts: &[PathMoveUndoReceipt] = match &token.receipt {
-        OperationUndoReceipt::PathMove(receipt) => std::slice::from_ref(receipt),
-        OperationUndoReceipt::CopyBatch(batch) => &batch.receipts,
-        _ => return Vec::new(),
-    };
-    receipts
+    token
+        .receipt
+        .path_pairs()
         .iter()
-        .filter_map(|receipt| {
-            receipt
-                .before_path()
+        .filter_map(|(before, _)| {
+            before
                 .parent()?
                 .file_name()?
                 .to_str()?
@@ -5854,7 +5874,7 @@ impl OttrinApp {
                 record.status = restored_copy_status(&group.undo);
                 record.undo_kind = Some(PathMoveUndoKind::Copy);
                 record.path_move_undo = Some(group.undo);
-                record.path_move_undo_token = restored_copy_token(group.receipts);
+                record.path_move_undo_token = restored_copy_token(group.receipt);
                 record.retained_copy = Some(group.ownership);
             } else {
                 let id = self.next_id();
@@ -5870,7 +5890,7 @@ impl OttrinApp {
                     path_move_paths: None,
                     path_move_undo: Some(group.undo),
                     undo_kind: Some(PathMoveUndoKind::Copy),
-                    path_move_undo_token: restored_copy_token(group.receipts),
+                    path_move_undo_token: restored_copy_token(group.receipt),
                     retained_copy: Some(group.ownership),
                 });
             }
@@ -6402,18 +6422,16 @@ impl OttrinApp {
                     let OperationUndoReceipt::CopyBatch(mut batch) = token.receipt.clone() else {
                         unreachable!()
                     };
-                    let total = batch.remaining;
+                    let total = batch.remaining();
                     let mut result = Ok(());
-                    while batch.remaining > 0 {
-                        let receipt = &batch.receipts[batch.remaining - 1];
-                        if let Err(error) = platform.undo_copy_with_receipt(receipt) {
+                    while batch.remaining() > 0 {
+                        if let Err(error) = batch.undo_next(platform.as_ref()) {
                             result = Err(format!(
                                 "Batch Copy Undo stopped after {} of {total} entries: {error}",
-                                total - batch.remaining
+                                total - batch.remaining()
                             ));
                             break;
                         }
-                        batch.remaining -= 1;
                     }
                     let retryable = result.is_err();
                     copy_batch_progress = Some(batch);
@@ -9963,10 +9981,12 @@ impl OttrinApp {
                                         .expect("nonempty receipt"),
                                 ))
                             } else {
-                                Some(OperationUndoReceipt::CopyBatch(CopyBatchUndoReceipt {
-                                    remaining: copied.undo_receipts.len(),
-                                    receipts: copied.undo_receipts,
-                                }))
+                                Some(OperationUndoReceipt::CopyBatch(
+                                    CopyBatchUndoReceipt::Session {
+                                        remaining: copied.undo_receipts.len(),
+                                        receipts: copied.undo_receipts,
+                                    },
+                                ))
                             };
                             (outcome, Vec::new(), receipt)
                         }
@@ -27411,7 +27431,7 @@ mod tests {
         let OperationUndoReceipt::CopyBatch(batch) = &token.receipt else {
             panic!("batch receipts missing")
         };
-        assert_eq!(batch.receipts.len(), 2);
+        assert_eq!(batch.path_pairs().len(), 2);
         for name in ["a", "b"] {
             assert_eq!(
                 std::fs::read_to_string(destination.join(name)).unwrap(),
@@ -27429,7 +27449,7 @@ mod tests {
             .recv_timeout(Duration::from_secs(3))
             .unwrap();
         assert!(result.result.is_err());
-        assert_eq!(result.copy_batch_progress.as_ref().unwrap().remaining, 1);
+        assert_eq!(result.copy_batch_progress.as_ref().unwrap().remaining(), 1);
         app.path_move_undo_tx.send(result).unwrap();
         app.poll_path_move_undo_results();
         assert_eq!(
@@ -29303,6 +29323,88 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    fn restored_copy_activity_undo_handles_overlapping_items_in_one_batch() {
+        let root = tempfile::tempdir().unwrap();
+        let destination = root.path().join("destination");
+        std::fs::create_dir(&destination).unwrap();
+        let sources: Vec<_> = (0..3)
+            .map(|version| {
+                let directory = root.path().join(format!("source-{version}"));
+                std::fs::create_dir(&directory).unwrap();
+                let source = directory.join("item");
+                std::fs::write(&source, format!("version-{version}")).unwrap();
+                source
+            })
+            .collect();
+        let batch = DefaultPlatform.execute_copy_batch_with_undo_receipts(
+            &sources,
+            &destination,
+            ConflictAction::Overwrite,
+        );
+        assert!(batch.error.is_none(), "{:?}", batch.error);
+        let ids: Vec<_> = batch
+            .undo_receipts
+            .iter()
+            .map(|receipt| {
+                receipt
+                    .before_path()
+                    .parent()
+                    .unwrap()
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .strip_prefix(".ottrin-txn-")
+                    .unwrap()
+                    .to_owned()
+            })
+            .collect();
+        drop(batch);
+        let discover = || {
+            ottrin_platform::discover_retained_copy_transactions()
+                .unwrap()
+                .into_iter()
+                .filter(|entry| ids.contains(&entry.transaction_id))
+                .collect()
+        };
+        let groups = group_retained_copy_activity(discover());
+        assert_eq!(groups.len(), 1);
+        assert_eq!(groups[0].undo, PathMoveUndoState::Available);
+        assert_eq!(groups[0].receipt.as_ref().unwrap().remaining(), 3);
+        let mut app = OttrinApp::default();
+        app.merge_retained_copy_activity(groups);
+        assert_eq!(app.operation_history.len(), 1);
+        let id = app.operation_history[0].id;
+        app.run_path_move_undo(id);
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while matches!(
+            app.operation_history[0].path_move_undo,
+            Some(PathMoveUndoState::UndoQueued)
+        ) {
+            app.poll_path_move_undo_results();
+            assert!(Instant::now() < deadline);
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert_eq!(
+            app.operation_history[0].path_move_undo,
+            Some(PathMoveUndoState::Undone)
+        );
+        assert!(!destination.join("item").exists());
+        for (version, source) in sources.iter().enumerate() {
+            assert_eq!(
+                std::fs::read_to_string(source).unwrap(),
+                format!("version-{version}")
+            );
+        }
+        let completed = group_retained_copy_activity(discover());
+        assert_eq!(completed[0].undo, PathMoveUndoState::Undone);
+        assert!(completed[0].receipt.is_none());
+        assert_eq!(completed[0].ownership.transactions.len(), 3);
+        assert!(completed[0].detail.contains("3 already undone"));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn restored_copy_activity_groups_undo_and_retains_completed_and_review_owners() {
         use ottrin_platform::CopyRecoveryEvidence;
         let root = tempfile::tempdir().unwrap();
@@ -29349,13 +29451,13 @@ mod tests {
         let groups = group_retained_copy_activity(discover());
         assert_eq!(groups.len(), 1);
         assert_eq!(groups[0].undo, PathMoveUndoState::Available);
-        assert_eq!(groups[0].receipts.len(), 2);
+        assert_eq!(groups[0].receipt.as_ref().unwrap().remaining(), 2);
         let mut conflict = OttrinApp::default();
         conflict.queue_operation_record(FileCommand::Rename {
             source: destination.join("last"),
             new_name: "other".into(),
         });
-        let token = restored_copy_token(groups[0].receipts.clone()).unwrap();
+        let token = restored_copy_token(groups[0].receipt.clone()).unwrap();
         assert!(conflict.path_move_undo_conflicts(u64::MAX, &token.receipt));
         let mut duplicate = discover();
         duplicate[1].operation.as_mut().unwrap().item_index =
@@ -29365,19 +29467,27 @@ mod tests {
             rejected[0].undo,
             PathMoveUndoState::Unavailable { .. }
         ));
-        assert!(rejected[0].receipts.is_empty());
+        assert!(rejected[0].receipt.is_none());
         let mut inconsistent = discover();
         inconsistent[1].operation.as_mut().unwrap().item_count += 1;
         assert!(matches!(
             group_retained_copy_activity(inconsistent)[0].undo,
             PathMoveUndoState::Unavailable { .. }
         ));
+        let mut stale_snapshot = discover();
+        stale_snapshot.pop();
+        let rejected = group_retained_copy_activity(stale_snapshot);
+        assert!(matches!(
+            rejected[0].undo,
+            PathMoveUndoState::Unavailable { .. }
+        ));
+        assert!(rejected[0].receipt.is_none());
         // Simulate an inverse interrupted after the final item completed.
         DefaultPlatform
             .undo_copy_with_receipt(batch.undo_receipts.last().unwrap())
             .unwrap();
         let groups = group_retained_copy_activity(discover());
-        assert_eq!(groups[0].receipts.len(), 1);
+        assert_eq!(groups[0].receipt.as_ref().unwrap().remaining(), 1);
         assert_eq!(groups[0].undo, PathMoveUndoState::Available);
         let mut app = OttrinApp::default();
         let filter_ids = ids.clone();
@@ -29648,7 +29758,7 @@ mod tests {
             },
             detail: "restored".into(),
             undo: PathMoveUndoState::Undone,
-            receipts: Vec::new(),
+            receipt: None,
         };
         app.operation_history[0].retained_copy = Some(RetainedCopyOwnership {
             restored: false,

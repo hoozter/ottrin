@@ -73,6 +73,13 @@ impl RetainedCopyTransaction {
         &self,
         receipt: &super::PathMoveUndoReceipt,
     ) -> Result<bool, PlatformError> {
+        self.undo_durable_copy_bound(receipt, None)
+    }
+    pub(super) fn undo_durable_copy_bound(
+        &self,
+        receipt: &super::PathMoveUndoReceipt,
+        expected: Option<&super::copy_recovery::CopyRecord>,
+    ) -> Result<bool, PlatformError> {
         if !self.0.durable_copy {
             return Ok(false);
         }
@@ -81,7 +88,7 @@ impl RetainedCopyTransaction {
         })?)?;
         self.validate_publication_parent(&receipt.after_path)?;
         let (parent, stage) = self.open_directories()?;
-        super::copy_recovery::undo_with_journals(&parent, &stage, receipt)?;
+        super::copy_recovery::undo_with_journals(&parent, &stage, receipt, expected)?;
         self.validate_watches()?;
         Ok(true)
     }

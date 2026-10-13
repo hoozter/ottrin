@@ -813,3 +813,29 @@ pair reconciliation, safe reclamation, cross-boot ownership and Windows Copy
 remain open. The current `2003969` package contains this checkpoint. Exact-package Dark 100% / Light 150% fresh-process restoration and both Undo actions pass, including automatic predecessor admission, unchanged sources, paired completed journals, visible empty caption and normal exits. Fixture publications were produced by the source-built platform API, not the packaged GUI. Native/portable payload identity checks pass; native installation/authentication remains separate. Receipt: `dist/packages/COPY_DEPENDENCY_ACCEPTANCE.json`.
 
 Source verification for this checkpoint passes 361 regular platform tests and 357 regular UI tests (one ignored in each), strict Linux/Windows-target platform/UI Clippy, formatting, and all four disposable-runner contracts. The runner now uses short private temporary paths compatible with Unix sockets; alias/directory Copy fixtures bind private journal roots rather than shared app state.
+
+
+### Restored overlapping Copy batches — source checkpoint
+
+Restored Activity now admits an opaque reverse-order plan for one Copy operation,
+including overlapping entries. The plan binds the original validated records and
+obtains a fresh receipt only after a newer inverse has restored the next
+publication. Matching transaction IDs alone grant no authority. Original journal
+fields are checked again under the inverse transaction lock; only permitted Undo
+phase progression is accepted. A refused inverse retains its progress and its
+original in-flight receipt for retry without adopting changed evidence.
+
+Activity uses one batch worker for live receipts and restored plans. It rejects
+stale grouping snapshots, external blockers, inconsistent ordering and changed
+data. Native platform fixtures cover three overlapping files, directories and
+symlinks, read-only admission, original source preservation, completed journals,
+and paired-journal edits before restoration and after receipt admission. The real
+Activity worker regression completes all three inverses in one batch; existing
+partial/completed ownership and external-operation refresh tests remain covered.
+
+Source verification passes 363 regular platform tests and 358 regular UI tests
+(one ignored in each), strict Linux/Windows-target platform/UI Clippy, formatting
+and diff checks. This source checkpoint is not yet accepted in an exact package;
+the stable AppImage remains the verified `2003969` delivery above until candidate
+construction and packaged GUI checks finish. Windows native Copy, interrupted
+publication reconciliation, safe reclamation and cross-boot ownership remain open.

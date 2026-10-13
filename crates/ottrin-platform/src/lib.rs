@@ -17,7 +17,9 @@ pub use copy_transaction::RetainedCopyTransaction;
 #[cfg(target_os = "linux")]
 mod copy_recovery;
 #[cfg(target_os = "linux")]
-pub use copy_recovery::{CopyOperation, CopyPhase, CopyRecoveryEvidence, RetainedCopyStatus};
+pub use copy_recovery::{
+    CopyOperation, CopyPhase, CopyRecoveryEvidence, RetainedCopyStatus, RetainedCopyUndoPlan,
+};
 
 /// Reads retained Copy status without creating recovery data or granting Undo authority.
 #[cfg(target_os = "linux")]
@@ -39,6 +41,14 @@ pub fn restore_retained_copy_undo_receipt(
     transaction_id: &str,
 ) -> Result<PathMoveUndoReceipt, PlatformError> {
     copy_recovery::restore_receipt(transaction_id)
+}
+/// Admits one restored Copy operation without changing its data or journals.
+/// The plan binds original records and lazily restores reverse-order authority.
+#[cfg(target_os = "linux")]
+pub fn restore_retained_copy_undo_plan(
+    operation_id: &str,
+) -> Result<RetainedCopyUndoPlan, PlatformError> {
+    copy_recovery::restore_plan(operation_id)
 }
 mod copy_transaction;
 #[cfg(target_os = "linux")]
