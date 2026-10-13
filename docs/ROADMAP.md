@@ -1175,3 +1175,30 @@ Both disposable accounts/profiles, three owned product registrations, actor task
 temporary batch-logon rights and compiler/extracted guest fixtures are removed;
 the pre-existing guest installation checksum is unchanged. Runtime main/indexer
 hashes in the refreshed packages match the exact native-tested binaries.
+
+
+### Refreshed scoped MSI — exact installed lifecycle acceptance
+
+The exact clean `e937db7` MSI, SHA-256
+`fd600666e72a0cce60b9a233dcea742f802f2de1dfd6f0bdfa7d6e0a65a528b8`,
+passes native install/uninstall under a fresh standard account with an interactive
+secondary-logon token. All 51 portable payload entries match; both installed
+`index-task-transaction.ps1` and `windows-index-identity.ps1` match their source
+bytes. Shortcuts/working directory, shortcut/Installed Apps icon bytes, per-user
+SID task target/arguments and installed product state 5 pass. Uninstall removes
+payload/scripts, scoped task, menu folder, registration/marker and cached product
+icon, transitions product state to -1 and preserves the saved preferences.
+Receipt: `dist/MSI_SCOPED_LIFECYCLE_ACCEPTANCE.json`.
+
+An additional scheduled-run probe calls public `index service-restart` from the
+same secondary-logon account. The task does not execute (last result `0x41303`,
+last-run time unset); the bounded probe expires without an indexed fixture.
+The account has no primary signed-in desktop session. This is retained as an
+unsuccessful context probe, not product index acceptance or a proven daemon bug.
+A real signed-in-session run remains required; packaged MSI failure/rollback,
+cross-version upgrade and interactive installer UI are also still open.
+
+The disposable account/profile, encrypted temporary credential, actor tasks,
+product task and extracted guest fixtures are removed. The pre-existing guest
+installation checksum remains unchanged. The failed secondary-logon Run probe
+is retained separately within the lifecycle receipt and does not close its gate.
