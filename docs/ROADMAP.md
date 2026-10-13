@@ -864,3 +864,8 @@ cleanup claims are corrected by `.hermes/evidence/menu-alignment/ORPHAN_CLEANUP.
 The harness now verifies environment identity and cleans private processes before
 removing the profile. Fresh Dark/Light success and cancellation with a live private
 daemon both pass; no test processes/profile remain.
+
+The Light batch harness was repeated under an explicit Python supervisor after a
+unified-session exit 143 observation. The supervised harness exits zero, both
+applications exit zero, all three inverse/restart checks pass and owned cleanup
+is empty. Receipt: `.hermes/evidence/copy-batch-plan/gui/Light-SUPERVISOR_EXIT.json`.
