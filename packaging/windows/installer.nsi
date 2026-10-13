@@ -56,12 +56,12 @@ Section "Ottrin" SEC_MAIN
   ExecWait '"$INSTDIR\bin\ottrin.exe" index service-install' $0
   IfErrors background_integration_launch_failed
   ${If} $0 != 0
-    MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background search refresh could not be enabled. You can retry from Search settings."
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background search refresh could not be enabled. You can retry from Search settings." /SD IDOK
   ${EndIf}
   Goto background_integration_done
 
 background_integration_launch_failed:
-  MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background search refresh could not be enabled. You can retry from Search settings."
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background search refresh could not be enabled. You can retry from Search settings." /SD IDOK
 
 background_integration_done:
 SectionEnd
@@ -74,17 +74,20 @@ Section "Uninstall"
   ExecWait '"$INSTDIR\bin\ottrin.exe" --uninstall' $0
   IfErrors cleanup_launch_failed
   ${If} $0 != 0
-    MessageBox MB_OK|MB_ICONSTOP "Ottrin could not remove its background integration and generated data. The application has been left installed so cleanup can be retried."
+    MessageBox MB_OK|MB_ICONSTOP "Ottrin could not remove its background integration and generated data. The application has been left installed so cleanup can be retried." /SD IDOK
+    SetErrorLevel 1
     Abort
   ${EndIf}
   Goto cleanup_files
 
 cleanup_launch_failed:
-  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not start its cleanup process. The application has been left installed so cleanup can be retried."
+  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not start its cleanup process. The application has been left installed so cleanup can be retried." /SD IDOK
+  SetErrorLevel 1
   Abort
 
 cleanup_unavailable:
-  MessageBox MB_OK|MB_ICONSTOP "Ottrin's cleanup executable is missing. The application has been left installed to avoid an incomplete uninstall."
+  MessageBox MB_OK|MB_ICONSTOP "Ottrin's cleanup executable is missing. The application has been left installed to avoid an incomplete uninstall." /SD IDOK
+  SetErrorLevel 1
   Abort
 
 cleanup_files:
@@ -99,7 +102,8 @@ cleanup_files:
   Goto uninstall_complete
 
 cleanup_delete_failed:
-  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not remove all application files. Installed Apps registration has been retained so uninstall can be retried."
+  MessageBox MB_OK|MB_ICONSTOP "Ottrin could not remove all application files. Installed Apps registration has been retained so uninstall can be retried." /SD IDOK
+  SetErrorLevel 1
   Abort
 
 uninstall_complete:
