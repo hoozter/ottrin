@@ -1240,3 +1240,19 @@ Windows Installer logs rollback errors 3 and 5. The failed test and causal logs
 are retained in `.hermes/evidence/msi-rollback-current/`; the compact receipt is
 `dist/MSI_UNINSTALL_ROLLBACK_ACCEPTANCE.json`. Current Windows artifact pointers
 record the exact scope and failing gate. Linux artifacts are unchanged.
+
+
+### Windows index task inspection — distinguish unavailable from absent
+
+Windows service status and restart/uninstall preflight no longer interpret every
+failed `schtasks` query as a missing registration. One shared scoped-task lookup
+returns absence only for ERROR_FILE_NOT_FOUND and propagates access denial or
+other scheduler failures. Setup, MSI snapshots, and status use that lookup.
+Status inspects authenticated task ownership and Settings XML through Scheduler
+COM, with explicit UTF-8 output, instead of parsing localized command failures.
+Management stops before Run/Delete when inspection fails. Source tests cover
+absence, invalid XML, query errors, and prevention of subsequent mutations; the
+full search suite passes (216 regular tests, two ignored). Native PowerShell 5.1
+checks real Scheduler absence and injected COM missing/denied/failure branches.
+This is source/helper acceptance, not full current packaged-app acceptance.
+Continuous Windows daemon/IPC and MSI registration rollback remain open.

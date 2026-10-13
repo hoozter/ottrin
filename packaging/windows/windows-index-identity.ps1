@@ -3,6 +3,14 @@ function Get-OttrinIndexTaskName {
     'Ottrin Index ' + [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 }
 
+function Get-OttrinIndexTask($folder) {
+    try { return $folder.GetTask((Get-OttrinIndexTaskName)) }
+    catch {
+        if ($_.Exception.GetBaseException().HResult -eq -2147024894) { return $null }
+        throw
+    }
+}
+
 function Get-OttrinTaskOwner($task) {
     $principal = $task.Definition.Principal.UserId
     if ($principal.StartsWith('S-1-')) { return $principal }

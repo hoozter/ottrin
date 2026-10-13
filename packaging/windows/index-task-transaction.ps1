@@ -19,14 +19,6 @@ function Task-Folder {
     $service.GetFolder('\')
 }
 
-function Existing-Task($folder) {
-    try { return $folder.GetTask($TaskName) }
-    catch {
-        if ($_.Exception.GetBaseException().HResult -eq -2147024894) { return $null }
-        throw
-    }
-}
-
 if ($Phase -eq 'Snapshot') {
     if (Test-Path -LiteralPath $Snapshot) {
         # A failed restoration remains available for diagnosis/recovery. Do not
@@ -41,7 +33,7 @@ if ($Phase -eq 'Snapshot') {
         throw "A previous index transaction script directory requires attention: $CommitDirectory"
     }
     $folder = Task-Folder
-    $task = Existing-Task $folder
+    $task = Get-OttrinIndexTask $folder
     if ($null -ne $task) { Assert-OttrinTaskOwner $task }
     $superseded = Get-OttrinSupersededTask $folder
     $record = @{ version = 2; user = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value; tasks = @((Get-OttrinTaskRecord $TaskName $task)) }

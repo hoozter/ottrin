@@ -10,11 +10,7 @@ $user = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 $service = New-Object -ComObject Schedule.Service
 $service.Connect()
 $folder = $service.GetFolder('\')
-$existing = $null
-try { $existing = $folder.GetTask($TaskName) }
-catch {
-    if ($_.Exception.GetBaseException().HResult -ne -2147024894) { throw }
-}
+$existing = Get-OttrinIndexTask $folder
 $superseded = Get-OttrinSupersededTask $folder
 $prior = if ($null -ne $existing) { $existing } else { $superseded }
 $existingRecord = Get-OttrinTaskRecord $TaskName $existing

@@ -1603,19 +1603,17 @@ fn sqlite_windows_task_status_with(
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum SqliteWindowsTaskOperation {
     Query,
-    QueryXml,
     Run,
     Delete,
 }
 
 #[cfg(any(target_os = "windows", test))]
 impl SqliteWindowsTaskOperation {
-    fn args(self, task_name: &str) -> Vec<&str> {
+    fn args(self, task_name: &str) -> Option<Vec<&str>> {
         match self {
-            Self::Query => vec!["/Query", "/TN", task_name],
-            Self::QueryXml => vec!["/Query", "/TN", task_name, "/XML"],
-            Self::Run => vec!["/Run", "/TN", task_name],
-            Self::Delete => vec!["/Delete", "/F", "/TN", task_name],
+            Self::Query => None,
+            Self::Run => Some(vec!["/Run", "/TN", task_name]),
+            Self::Delete => Some(vec!["/Delete", "/F", "/TN", task_name]),
         }
     }
 
@@ -1623,7 +1621,6 @@ impl SqliteWindowsTaskOperation {
     fn label(self) -> &'static str {
         match self {
             Self::Query => "query the Ottrin Index task",
-            Self::QueryXml => "inspect the Ottrin Index task",
             Self::Run => "start the Ottrin Index task",
             Self::Delete => "delete the Ottrin Index task",
         }
@@ -1664,9 +1661,15 @@ fn windows_index_task_name() -> Result<String, String> {
 
 #[cfg(target_os = "windows")]
 fn run_sqlite_windows_task(operation: SqliteWindowsTaskOperation) -> Result<bool, String> {
+    if operation == SqliteWindowsTaskOperation::Query {
+        return query_sqlite_windows_task().map(|task| task.is_some());
+    }
     let task_name = windows_index_task_name()?;
+    let args = operation
+        .args(&task_name)
+        .ok_or("Task query requires authenticated inspection")?;
     internal_command("schtasks")
-        .args(operation.args(&task_name))
+        .args(args)
         .status()
         .map(|status| status.success())
         .map_err(|error| format!("Failed to {}: {error}", operation.label()))
@@ -1674,16 +1677,33 @@ fn run_sqlite_windows_task(operation: SqliteWindowsTaskOperation) -> Result<bool
 
 #[cfg(target_os = "windows")]
 fn query_sqlite_windows_task() -> Result<Option<SqliteWindowsTaskRegistration>, String> {
-    let operation = SqliteWindowsTaskOperation::QueryXml;
-    let task_name = windows_index_task_name()?;
-    let output = internal_command("schtasks")
-        .args(operation.args(&task_name))
+    let script = format!(
+        "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Console]::OutputEncoding=[Text.UTF8Encoding]::new($false); {WINDOWS_INDEX_IDENTITY_SCRIPT}\n$service=New-Object -ComObject Schedule.Service; $service.Connect(); $task=Get-OttrinIndexTask ($service.GetFolder('\\')); if ($null -ne $task) {{ Assert-OttrinTaskOwner $task; [Console]::Out.Write($task.Xml) }}"
+    );
+    let output = internal_command("powershell.exe")
+        .args(["-NoProfile", "-NonInteractive", "-Command", &script])
         .output()
-        .map_err(|error| format!("Failed to {}: {error}", operation.label()))?;
-    if !output.status.success() {
+        .map_err(|error| format!("Failed to inspect the Ottrin Index task: {error}"))?;
+    parse_sqlite_windows_task_query(output.status.success(), &output.stdout, &output.stderr)
+}
+
+#[cfg(any(target_os = "windows", test))]
+fn parse_sqlite_windows_task_query(
+    success: bool,
+    stdout: &[u8],
+    stderr: &[u8],
+) -> Result<Option<SqliteWindowsTaskRegistration>, String> {
+    if !success {
+        let detail = String::from_utf8_lossy(if stderr.is_empty() { stdout } else { stderr });
+        return Err(format!(
+            "Failed to inspect the Ottrin Index task: {}",
+            detail.trim()
+        ));
+    }
+    if stdout.iter().all(u8::is_ascii_whitespace) {
         return Ok(None);
     }
-    parse_sqlite_windows_task_xml(&output.stdout).map(Some)
+    parse_sqlite_windows_task_xml(stdout).map(Some)
 }
 
 #[cfg(any(target_os = "windows", test))]
@@ -4503,23 +4523,46 @@ mod tests {
     }
 
     #[test]
-    fn windows_status_query_requests_locale_independent_task_xml() {
-        assert_eq!(
-            SqliteWindowsTaskOperation::QueryXml.args("Ottrin Index S-1-5-21-101"),
-            ["/Query", "/TN", "Ottrin Index S-1-5-21-101", "/XML"]
+    fn windows_task_query_distinguishes_absence_from_access_and_parse_failures() {
+        assert!(
+            parse_sqlite_windows_task_query(true, b"", b"")
+                .unwrap()
+                .is_none()
         );
+        assert!(
+            parse_sqlite_windows_task_query(false, b"", b"Access is denied")
+                .unwrap_err()
+                .contains("Access is denied")
+        );
+        assert!(parse_sqlite_windows_task_query(true, b"not XML", b"").is_err());
+    }
+
+    #[test]
+    fn windows_task_management_stops_on_query_errors() {
+        for remove in [false, true] {
+            let mut calls = Vec::new();
+            let mut run = |operation| {
+                calls.push(operation);
+                Err("Access is denied".to_string())
+            };
+            let result = if remove {
+                uninstall_sqlite_windows_task_with(&mut run)
+            } else {
+                restart_sqlite_windows_task_with(&mut run)
+            };
+            assert_eq!(result.unwrap_err(), "Access is denied");
+            assert_eq!(calls, [SqliteWindowsTaskOperation::Query]);
+        }
     }
 
     #[test]
     fn windows_task_management_uses_only_the_selected_user_identity() {
         for operation in [
-            SqliteWindowsTaskOperation::Query,
-            SqliteWindowsTaskOperation::QueryXml,
             SqliteWindowsTaskOperation::Run,
             SqliteWindowsTaskOperation::Delete,
         ] {
-            let first = operation.args("Ottrin Index S-1-5-21-101");
-            let second = operation.args("Ottrin Index S-1-5-21-102");
+            let first = operation.args("Ottrin Index S-1-5-21-101").unwrap();
+            let second = operation.args("Ottrin Index S-1-5-21-102").unwrap();
             assert_ne!(first, second);
             assert!(first.contains(&"Ottrin Index S-1-5-21-101"));
             assert!(!first.contains(&"Ottrin Index"));
