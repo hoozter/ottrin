@@ -1223,3 +1223,20 @@ commit cleanup using only the detached transaction scripts. This is helper
 acceptance, not revised MSI package acceptance. The revised MSI still needs an
 exact-package locked-cache failure/retry test and ordinary install/uninstall
 checks before publication. Existing deliverables retain their prior provenance.
+
+
+### MSI uninstall rollback — exact revised-package result
+
+The clean `1f29a94` MSI (SHA-256
+`792a51b4187dc4cd797b94b2fdd654a15eeb0989e3c2c10fac77affff2433962`)
+passes fresh standard-user installation, including all 51 portable payload hashes,
+both installed transaction/identity scripts, scoped task, shortcuts, and icons.
+The locked-cache uninstall failure now restores the task XML and security and
+removes its transaction snapshot/scripts. All payload hashes remain intact.
+However, the full recovery gate still fails: product state becomes 1 (advertised),
+and a subsequent ordinary uninstall fails with error 2753/1603. This remains an
+open registration/rollback defect; task recovery alone does not close it.
+Windows Installer logs rollback errors 3 and 5. The failed test and causal logs
+are retained in `.hermes/evidence/msi-rollback-current/`; the compact receipt is
+`dist/MSI_UNINSTALL_ROLLBACK_ACCEPTANCE.json`. Current Windows artifact pointers
+record the exact scope and failing gate. Linux artifacts are unchanged.
