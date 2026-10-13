@@ -30,7 +30,12 @@ mod mutation;
 mod plan;
 mod scanner;
 mod watch;
+#[cfg(target_os = "windows")]
+mod windows_identity;
 mod worker;
+#[cfg(target_os = "windows")]
+pub use windows_identity::IndexDaemonIdentity;
+
 use db::{
     SearchStore, SimpleTermPage, active_generation_contains_paths, generation_content_db_paths,
     query_indexed_content_page, query_simple_term_page, search_db_path,

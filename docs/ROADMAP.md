@@ -1329,3 +1329,21 @@ Linux/Windows all-target Clippy pass. This refactor is a foundation only. Secure
 Windows transport, peer authentication, persistent daemon lifecycle, remote UI
 search/configuration, startup/update/stop integration, idle CPU checks and native
 end-to-end acceptance remain required. Published packages are unchanged.
+
+
+### Continuous Windows indexing — native process identity foundation
+
+`IndexDaemonIdentity` obtains the current user SID from the Windows process token,
+derives a per-user pipe endpoint name, and rejects a peer PID whose token belongs
+to another user or cannot be inspected. Process/token handles are owned and
+released on all result paths; the temporary SID allocation is freed. It does not
+authenticate executable provenance or a connected pipe: transport callers must
+obtain peer PIDs from kernel pipe metadata. Four native Windows tests pass,
+including current-process acceptance, invalid-PID rejection, a live owned peer
+running as another account, and no handle-count growth across 100 inspections.
+Strict Linux/Windows all-target Clippy pass. Native test executable SHA-256:
+`2454e75712375b2f21ea99843629dafc9b4598e8e96ade5544b92a0f4f6be3cc`.
+This public Windows transport component is not wired into a running daemon.
+Pipe ACLs, bounded I/O/cancellation, connected-peer metadata, service/server/client
+lifecycle, UI integration and end-to-end/idle acceptance remain required.
+Published application packages remain unchanged.
