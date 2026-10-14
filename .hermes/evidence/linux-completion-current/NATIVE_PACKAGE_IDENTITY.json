@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-15",
+  "verifier_source_sha256": "aa4a7329a2ae3a55a5e151cc9a08e542ce69600ef6afb24e8c3964afd3667d31",
+  "checks": [
+    "Current exact DEB/RPM accepted by production native verification block",
+    "Five executables and PDFium renderer: DEB bytes and RPM code/readonly sections match exact AppImage",
+    "Payload-derived GLIBC, polkit metadata and native embedded revision verified",
+    "Portable five executables/PDFium match exact AppImage; embedded clean revision matches",
+    "All 19 portable entry requirements match exact archive"
+  ],
+  "artifacts": {
+    "Ottrin-0.1.0-x86_64.AppImage": {
+      "sha256": "dc9496042ce54d4df373de2ce8a25ab121fadc7491a79272116d9056892b25d9",
+      "source_revision": "af78252bdab900599d40ba8c8d74db29dbda48bc"
+    },
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": {
+      "sha256": "9379dfd393dc06e01332ed5f7655081f9bbf2f6c81d817b632d727444d687161",
+      "source_revision": "af78252bdab900599d40ba8c8d74db29dbda48bc"
+    },
+    "ottrin_0.1.0_amd64.deb": {
+      "sha256": "94d672c67adf54b2e64e4d5df056e7f051d5857f67195c99727135170b61dbee",
+      "source_revision": "af78252bdab900599d40ba8c8d74db29dbda48bc"
+    },
+    "ottrin-0.1.0-1.x86_64.rpm": {
+      "sha256": "eac83fc0a2d93e8b8e0519322b2979f0d96a4e419ba9468d60808237b220f7a1",
+      "source_revision": "af78252bdab900599d40ba8c8d74db29dbda48bc"
+    }
+  },
+  "embedded_native_provenance": {
+    "deb": "Ottrin source revision\nVersion: 0.1.0\nGit revision: af78252bdab900599d40ba8c8d74db29dbda48bc\nTracked tree: clean\n",
+    "rpm": "Ottrin source revision\nVersion: 0.1.0\nGit revision: af78252bdab900599d40ba8c8d74db29dbda48bc\nTracked tree: clean\n"
+  },
+  "cleanup": "Private AppImage/native package extractions and modified fixture removed",
+  "limits": [
+    "Full multi-platform release verifier not run: exact current-release Windows/macOS artifacts remain separate gates",
+    "Native install/authentication behavior not covered by metadata verifier"
+  ]
+}

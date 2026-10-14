@@ -1,0 +1,22 @@
+{
+  "verified_date": "2026-10-15",
+  "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
+  "provenance": {
+    "artifact": "Ottrin-0.1.0-x86_64.AppImage",
+    "revision": "af78252bdab900599d40ba8c8d74db29dbda48bc",
+    "sha256": "dc9496042ce54d4df373de2ce8a25ab121fadc7491a79272116d9056892b25d9",
+    "built_from_tracked_clean_source": true
+  },
+  "checks": [
+    "Exact AppImage launched in private Xvfb/DBus; Dark 100% and Light 150% screenshots visually inspected",
+    "Main menu omits unused selection gutter; meaningful icons on hidden-files and all sort options",
+    "Both GUI runs close normally and all private processes/profiles are removed"
+  ],
+  "screenshots": [
+    ".hermes/evidence/linux-completion-current/gui/dark-100-refined-main.png",
+    ".hermes/evidence/linux-completion-current/gui/dark-100-refined-view.png",
+    ".hermes/evidence/linux-completion-current/gui/light-150-refined-main.png",
+    ".hermes/evidence/linux-completion-current/gui/light-150-refined-view.png"
+  ],
+  "scope": "Focused packaged menu visual acceptance, not the full appearance audit"
+}
