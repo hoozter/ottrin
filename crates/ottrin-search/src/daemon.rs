@@ -1,194 +1,23 @@
-use crate::daemon_protocol::{
-    DaemonRequest, DaemonResponse, PROTOCOL_VERSION, RequestFrame, ResponseFrame, read_frame,
-    write_frame,
-};
+use crate::daemon_client::CLIENT_IO_TIMEOUT;
+#[cfg(test)]
+use crate::daemon_client::SearchDaemonClient;
+#[cfg(test)]
+use crate::daemon_protocol::{DaemonRequest, RequestFrame, read_frame};
+use crate::daemon_protocol::{DaemonResponse, PROTOCOL_VERSION, ResponseFrame, write_frame};
 use std::fs;
 use std::os::fd::AsRawFd;
 use std::os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use crate::{SearchHandle, SearchIndexDiagnostics, SearchQueryResult, SearchService};
-use ottrin_core::{SearchConfig, SearchQuery};
+use crate::{SearchHandle, SearchService};
+use ottrin_core::SearchConfig;
 
 const MAX_ACTIVE_CLIENTS: usize = 64;
-const CLIENT_IO_TIMEOUT: Duration = Duration::from_secs(5);
-const OPERATION_IO_TIMEOUT: Duration = Duration::from_secs(6 * 60 * 60);
-static NEXT_OPERATION_ID: AtomicU64 = AtomicU64::new(1);
-
-#[derive(Debug, Clone)]
-pub struct SearchDaemonClient {
-    socket_path: PathBuf,
-}
-
-impl SearchDaemonClient {
-    pub fn new(socket_path: PathBuf) -> Self {
-        Self { socket_path }
-    }
-
-    pub fn connect_default() -> Result<Self, String> {
-        Ok(Self::new(default_daemon_socket_path()?))
-    }
-
-    pub fn ping(&self) -> Result<(), String> {
-        match self.transact(DaemonRequest::Ping)? {
-            DaemonResponse::Pong => Ok(()),
-            response => Err(unexpected_response(response)),
-        }
-    }
-
-    pub fn server_pid(&self) -> Result<u32, String> {
-        let stream = UnixStream::connect(&self.socket_path).map_err(|error| error.to_string())?;
-        let credentials = peer_credentials(&stream)?;
-        if credentials.uid != current_uid() {
-            return Err("index daemon belongs to another user".to_string());
-        }
-        u32::try_from(credentials.pid)
-            .map_err(|_| "index daemon reported an invalid process id".to_string())
-    }
-
-    pub fn diagnostics(&self) -> Result<SearchIndexDiagnostics, String> {
-        match self.transact(DaemonRequest::Status)? {
-            DaemonResponse::Status { diagnostics } => Ok(*diagnostics),
-            response => Err(unexpected_response(response)),
-        }
-    }
-
-    pub fn query(&self, query: SearchQuery) -> Result<SearchQueryResult, String> {
-        match self.transact(DaemonRequest::Query { query })? {
-            DaemonResponse::Query { result } => Ok(result),
-            response => Err(unexpected_response(response)),
-        }
-    }
-
-    pub fn update_config(&self, config: SearchConfig) -> Result<(), String> {
-        self.expect_complete(DaemonRequest::UpdateConfig { config })
-    }
-
-    pub fn reconcile(&self) -> Result<(), String> {
-        self.run_operation(false)
-    }
-
-    pub fn rebuild(&self) -> Result<(), String> {
-        self.run_operation(true)
-    }
-
-    pub fn clear_storage(&self) -> Result<u64, String> {
-        match self.transact(DaemonRequest::ClearStorage)? {
-            DaemonResponse::StorageCleared { bytes } => Ok(bytes),
-            response => Err(unexpected_response(response)),
-        }
-    }
-
-    pub fn shutdown(&self) -> Result<(), String> {
-        self.expect_complete(DaemonRequest::Shutdown)
-    }
-
-    pub fn prepare_upgrade(&self) -> Result<(), String> {
-        self.expect_complete(DaemonRequest::PrepareUpgrade)
-    }
-
-    /// Wait for persisted index work and filesystem watches to be released before
-    /// replacing the daemon. Large watched trees can exceed the request timeout.
-    pub fn prepare_upgrade_and_wait(&self) -> Result<(), String> {
-        self.prepare_upgrade()?;
-        let deadline = Instant::now() + Duration::from_secs(30);
-        while self.socket_path.exists() && Instant::now() < deadline {
-            thread::sleep(Duration::from_millis(10));
-        }
-        if self.socket_path.exists() {
-            return Err(
-                "Ottrin index daemon did not finish preparing for upgrade within 30 seconds"
-                    .to_string(),
-            );
-        }
-        Ok(())
-    }
-
-    fn run_operation(&self, rebuild: bool) -> Result<(), String> {
-        let operation_id = NEXT_OPERATION_ID.fetch_add(1, Ordering::Relaxed);
-        let request = if rebuild {
-            DaemonRequest::Rebuild { operation_id }
-        } else {
-            DaemonRequest::Reconcile { operation_id }
-        };
-        match self.transact(request)? {
-            DaemonResponse::OperationComplete {
-                operation_id: completed,
-            } if completed == operation_id => Ok(()),
-            DaemonResponse::OperationComplete {
-                operation_id: completed,
-            } => Err(format!(
-                "index daemon completed operation {completed}, expected {operation_id}"
-            )),
-            response => Err(unexpected_response(response)),
-        }
-    }
-
-    fn expect_complete(&self, request: DaemonRequest) -> Result<(), String> {
-        match self.transact(request)? {
-            DaemonResponse::Complete => Ok(()),
-            response => Err(unexpected_response(response)),
-        }
-    }
-
-    fn transact(&self, request: DaemonRequest) -> Result<DaemonResponse, String> {
-        let mut stream = UnixStream::connect(&self.socket_path).map_err(|error| {
-            format!(
-                "could not connect to Ottrin index daemon at {}: {error}",
-                self.socket_path.display()
-            )
-        })?;
-        let read_timeout = if matches!(
-            request,
-            DaemonRequest::Reconcile { .. } | DaemonRequest::Rebuild { .. }
-        ) {
-            OPERATION_IO_TIMEOUT
-        } else {
-            CLIENT_IO_TIMEOUT
-        };
-        stream
-            .set_read_timeout(Some(read_timeout))
-            .and_then(|()| stream.set_write_timeout(Some(CLIENT_IO_TIMEOUT)))
-            .map_err(|error| error.to_string())?;
-        let write_error = write_frame(
-            &mut stream,
-            &RequestFrame {
-                version: PROTOCOL_VERSION,
-                request,
-            },
-        )
-        .err();
-        // A full listener can send a rejection immediately after accepting and
-        // close before our request finishes writing. Read its bounded error
-        // frame, but never accept a successful operation after a failed write.
-        let response: ResponseFrame = read_frame(&mut stream)
-            .map_err(|read_error| write_error.as_ref().cloned().unwrap_or(read_error))?;
-        if let Some(error) = write_error
-            && !matches!(response.response, DaemonResponse::Error { .. })
-        {
-            return Err(error);
-        }
-        if response.version != PROTOCOL_VERSION {
-            return Err(format!(
-                "index daemon protocol mismatch: client {PROTOCOL_VERSION}, server {}",
-                response.version
-            ));
-        }
-        match response.response {
-            DaemonResponse::Error { code, message } => Err(format!("{code}: {message}")),
-            response => Ok(response),
-        }
-    }
-}
-
-fn unexpected_response(response: DaemonResponse) -> String {
-    format!("unexpected index daemon response: {response:?}")
-}
 
 pub fn default_daemon_socket_path() -> Result<PathBuf, String> {
     let socket_path = daemon_socket_path_for_unix_user(
@@ -376,113 +205,7 @@ fn serve_client(
         .set_read_timeout(Some(CLIENT_IO_TIMEOUT))
         .and_then(|()| stream.set_write_timeout(Some(CLIENT_IO_TIMEOUT)))
         .map_err(|error| error.to_string())?;
-    let frame: RequestFrame = read_frame(&mut stream)?;
-    let response = if frame.version != PROTOCOL_VERSION {
-        DaemonResponse::Error {
-            code: "protocol_mismatch".to_string(),
-            message: format!(
-                "client protocol {}, server protocol {PROTOCOL_VERSION}",
-                frame.version
-            ),
-        }
-    } else {
-        dispatch_request(frame.request, service, search, shutdown)
-    };
-    write_frame(
-        &mut stream,
-        &ResponseFrame {
-            version: PROTOCOL_VERSION,
-            response,
-        },
-    )
-}
-
-fn dispatch_request(
-    request: DaemonRequest,
-    service: &Arc<Mutex<SearchService>>,
-    search: &SearchHandle,
-    shutdown: &AtomicBool,
-) -> DaemonResponse {
-    let result = match request {
-        DaemonRequest::Ping => return DaemonResponse::Pong,
-        DaemonRequest::Status => {
-            return DaemonResponse::Status {
-                diagnostics: Box::new(search.diagnostics()),
-            };
-        }
-        DaemonRequest::Query { query } => {
-            return DaemonResponse::Query {
-                result: search.query_with_diagnostics(query),
-            };
-        }
-        DaemonRequest::UpdateConfig { config } => {
-            service
-                .lock()
-                .expect("search service")
-                .update_config(config);
-            Ok(())
-        }
-        DaemonRequest::Reconcile { operation_id } => {
-            return complete_operation(
-                operation_id,
-                service
-                    .lock()
-                    .expect("search service")
-                    .begin_index_reconcile(),
-            );
-        }
-        DaemonRequest::Rebuild { operation_id } => {
-            return complete_operation(
-                operation_id,
-                service
-                    .lock()
-                    .expect("search service")
-                    .begin_rebuild_index(),
-            );
-        }
-        DaemonRequest::ClearStorage => {
-            return match service.lock().expect("search service").clear_storage() {
-                Ok(bytes) => DaemonResponse::StorageCleared { bytes },
-                Err(message) => DaemonResponse::Error {
-                    code: "operation_failed".to_string(),
-                    message,
-                },
-            };
-        }
-        DaemonRequest::Shutdown => {
-            shutdown.store(true, Ordering::Release);
-            Ok(())
-        }
-        DaemonRequest::PrepareUpgrade => {
-            shutdown.store(true, Ordering::Release);
-            Ok(())
-        }
-    };
-    match result {
-        Ok(()) => DaemonResponse::Complete,
-        Err(message) => DaemonResponse::Error {
-            code: "operation_failed".to_string(),
-            message,
-        },
-    }
-}
-
-fn complete_operation(
-    operation_id: u64,
-    started: Result<std::sync::mpsc::Receiver<Result<(), String>>, String>,
-) -> DaemonResponse {
-    let result = started.and_then(|completion| {
-        completion
-            .recv()
-            .map_err(|_| "Search worker stopped before operation completed".to_string())?
-    });
-    match result {
-        Ok(()) => DaemonResponse::OperationComplete { operation_id },
-        Err(message) => DaemonResponse::Error {
-            code: "operation_failed".to_string(),
-            message,
-        },
-    }
+    crate::daemon_server::serve_frame(&mut stream, service, search, shutdown)
 }
 
 fn bind_socket(path: &Path) -> Result<UnixListener, String> {
@@ -514,7 +237,7 @@ fn bind_socket(path: &Path) -> Result<UnixListener, String> {
     Ok(listener)
 }
 
-fn peer_credentials(stream: &UnixStream) -> Result<libc::ucred, String> {
+pub(super) fn peer_credentials(stream: &UnixStream) -> Result<libc::ucred, String> {
     let mut credentials = libc::ucred {
         pid: 0,
         uid: 0,
@@ -545,7 +268,7 @@ fn verify_peer(stream: &UnixStream) -> Result<(), String> {
     Ok(())
 }
 
-fn current_uid() -> u32 {
+pub(super) fn current_uid() -> u32 {
     // SAFETY: getuid has no preconditions and no side effects.
     unsafe { libc::getuid() }
 }
@@ -553,7 +276,7 @@ fn current_uid() -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ottrin_core::{SearchIndexStatus, SearchScope, SearchSort};
+    use ottrin_core::{SearchIndexStatus, SearchQuery, SearchScope, SearchSort};
 
     #[test]
     fn administrator_socket_path_ignores_preserved_user_runtime() {

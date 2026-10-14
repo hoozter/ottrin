@@ -15,7 +15,7 @@ use windows_sys::Win32::System::IO::{CancelIoEx, GetOverlappedResult, OVERLAPPED
 use windows_sys::Win32::System::Pipes::*;
 use windows_sys::Win32::System::Threading::{CreateEventW, WaitForSingleObject};
 
-const MAX_INSTANCES: u32 = 64;
+pub(super) const MAX_INSTANCES: u32 = 64;
 const DEFAULT_IO_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// Keeps the next listening instance open while accepted connections are served.
@@ -104,7 +104,9 @@ impl WindowsIndexPipeStream {
         let handle = connect_raw(&identity.pipe_name(), timeout)?;
         let pid = pipe_peer_pid(handle.as_raw_handle(), false)?;
         // Authenticate the actual connected process before sending any request data.
-        identity.verify_process(pid).map_err(io::Error::other)?;
+        identity
+            .verify_process(pid)
+            .map_err(|error| io::Error::new(io::ErrorKind::PermissionDenied, error))?;
         Ok(Self {
             handle,
             timeout: DEFAULT_IO_TIMEOUT,

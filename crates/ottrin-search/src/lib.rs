@@ -12,7 +12,7 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 #[cfg(test)]
 use std::sync::Mutex;
-#[cfg(unix)]
+#[cfg(any(unix, target_os = "windows"))]
 use std::sync::mpsc;
 use std::sync::{Arc, RwLock, atomic::AtomicBool};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -21,9 +21,12 @@ use walkdir::WalkDir;
 
 #[cfg(unix)]
 mod daemon;
-// Windows transport is not connected yet; its tests compile the same wire contract.
-#[cfg(any(unix, test))]
+#[cfg(any(unix, target_os = "windows"))]
+mod daemon_client;
+#[cfg(any(unix, target_os = "windows"))]
 mod daemon_protocol;
+#[cfg(any(unix, target_os = "windows"))]
+mod daemon_server;
 mod db;
 #[allow(dead_code)] // Slice 2 mutation API is intentionally isolated until worker integration.
 mod mutation;
@@ -200,7 +203,13 @@ impl SearchIndexDiagnostics {
 }
 
 #[cfg(unix)]
-pub use daemon::{SearchDaemonClient, default_daemon_socket_path, run_search_daemon};
+pub use daemon::{default_daemon_socket_path, run_search_daemon};
+#[cfg(any(unix, target_os = "windows"))]
+pub use daemon_client::SearchDaemonClient;
+#[cfg(target_os = "windows")]
+mod windows_daemon;
+#[cfg(target_os = "windows")]
+pub use windows_daemon::run_windows_search_daemon;
 
 pub struct SearchService {
     config: Arc<RwLock<SearchConfig>>,
@@ -399,7 +408,7 @@ impl SearchService {
             .rebuild_blocking()
     }
 
-    #[cfg(unix)]
+    #[cfg(any(unix, target_os = "windows"))]
     fn begin_rebuild_index(&self) -> Result<mpsc::Receiver<Result<(), String>>, String> {
         self.worker
             .as_ref()
@@ -437,7 +446,7 @@ impl SearchService {
         result
     }
 
-    #[cfg(unix)]
+    #[cfg(any(unix, target_os = "windows"))]
     fn begin_index_reconcile(&self) -> Result<mpsc::Receiver<Result<(), String>>, String> {
         self.worker
             .as_ref()

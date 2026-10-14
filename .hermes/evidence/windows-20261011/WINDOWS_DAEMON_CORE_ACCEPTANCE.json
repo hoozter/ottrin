@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-14",
+  "test_executable_sha256": "c258391b4a20a749b104057889f51e0d2051b5e56ce9b53fa0495c0388d01983",
+  "source_sha256": {
+    "crates/ottrin-search/src/daemon_client.rs": "abba3ef79fd9d02cc4a5ba5228931e9c03dca4166760ea644210026dc729dfd6",
+    "crates/ottrin-search/src/daemon_server.rs": "b39a037d6357c99ffff47478b7b2aa0c2babaf25f0eeee7d03a3a1ad6ca4fc87",
+    "crates/ottrin-search/src/windows_daemon.rs": "f327d2eaaee7283c6c0d4eac2b7613c503c68e55897a440254327783d57b393f",
+    "crates/ottrin-search/tests/windows_daemon.rs": "9b337c0dbee21572aadcc775da987d852bdc963a9e6cd91687e28929c9955d51",
+    "crates/ottrin-search/src/daemon.rs": "a1a7a4b78edec68ada103319d8291a5a1135dba7781285f71fab0f93f73354e5",
+    "crates/ottrin-search/src/lib.rs": "c69cb5a152a6ad82f014da3ad310d8cd9375740c6b2180449cdc4ce72d22d3d3",
+    "crates/ottrin-search/src/windows_pipe.rs": "59f1338df8b33b7e792b1d77c90e44626e8c27d912863f7af2a0c81c984e0bc6",
+    "crates/ottrin-app/src/bin/ottrin-indexd.rs": "e718aa16f59a2f330ce966164a02e8103f4a5920e439cb3c49e1b4173c883215"
+  },
+  "native_result": "1 integration test passed, 1.03 seconds",
+  "checks": [
+    "Authenticated per-user pipe ping and kernel peer PID",
+    "Initial reconcile and query",
+    "Filesystem watcher publishes new file",
+    "Rebuild and diagnostics",
+    "Replace configured root then reconcile and query",
+    "Clear storage and expected not-running operation error",
+    "Shutdown, endpoint removal and subsequent writer-lock acquisition"
+  ],
+  "scope": "Windows native SYSTEM token, server thread within integration-test process; production library and SQLite staged-generation path. Not standalone daemon executable, UI, scheduler, installer or idle-performance acceptance. Published packages unchanged.",
+  "initial_failure": {
+    "test_only_snapshot_binary_sha256": "33fbca313920d81235d65da7fc0391106fe7ef395d88dfc831949d7179e86345",
+    "cause": "Library cfg(test) disables staged generations; immediate reconcile after plan change reports active generation belongs to a different scan plan. Moved Windows flow into integration test to exercise production storage. No production-worker repair inferred."
+  },
+  "host_checks": [
+    "5 Linux daemon tests passed",
+    "Strict Linux and Windows app/search all-target Clippy passed"
+  ],
+  "log": ".hermes/evidence/windows-20261011/windows-daemon-native-integration.log"
+}

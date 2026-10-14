@@ -1369,3 +1369,26 @@ Receipt: `.hermes/evidence/windows-20261011/WINDOWS_PIPE_TRANSPORT_ACCEPTANCE.js
 This is transport acceptance only. Shared command dispatch, persistent Windows
 daemon/server/client lifecycle, UI integration, scheduling/update/shutdown and
 end-to-end idle CPU acceptance remain open. Published packages are unchanged.
+
+
+### Continuous Windows indexing — persistent daemon core
+
+The authenticated Windows pipe now serves the existing persistent SearchService
+worker through one shared client API and command dispatcher with Unix. Windows
+`ottrin-indexd --index-daemon` enters that server; active clients are bounded by
+the pipe instance capacity, rejected peers do not terminate the listener, and
+shutdown stops watchers and releases the writer lock before relinquishing the
+endpoint. The scheduled task and GUI still use their preceding paths.
+
+A native Windows integration test passes ping/peer PID, reconcile/query, watched
+file changes, rebuild, replacement folder configuration, storage clearing, an
+expected error after clearing, shutdown and subsequent writer-lock acquisition.
+It links the production library/storage path but runs the server on a thread
+inside the test process with the guest SYSTEM token. The initial library-test
+flow failed because its test-only storage disables staged generations; the flow
+was moved to an integration test rather than adapting production code to that
+fixture. Receipt: `.hermes/evidence/windows-20261011/WINDOWS_DAEMON_CORE_ACCEPTANCE.json`.
+Five Linux daemon regressions and strict Linux/Windows app/search all-target
+Clippy pass. This does not establish standalone daemon lifetime, standard-user
+startup, scheduler/update integration, UI routing, packaged end-to-end behavior
+or idle CPU acceptance. Published packages are unchanged.
