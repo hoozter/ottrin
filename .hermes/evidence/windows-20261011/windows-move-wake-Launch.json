@@ -1,0 +1,15 @@
+{
+  "source_hash": "54A2D686BD1947AC446A98EC89882F538B6521EBA458B3C3EB023A26A6821E9D",
+  "title": "Ottrin",
+  "window": {
+    "Left": 78,
+    "Top": 78,
+    "Right": 1178,
+    "Bottom": 768
+  },
+  "source_volume": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}\\",
+  "phase": "Launch",
+  "destination_volume": "\\\\?\\Volume{8dc4b400-0000-0000-0000-010000000000}\\",
+  "pid": 7688,
+  "status": "pass"
+}

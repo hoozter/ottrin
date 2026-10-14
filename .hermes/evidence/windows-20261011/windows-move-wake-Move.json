@@ -1,0 +1,14 @@
+{
+  "source_removed_at_capture": true,
+  "settled_capture_elapsed_ms": 2719,
+  "capture_elapsed_ms": 647,
+  "destination_exists_at_capture": true,
+  "phase": "Move",
+  "status": "pass",
+  "window": {
+    "Left": 78,
+    "Top": 78,
+    "Right": 1178,
+    "Bottom": 768
+  }
+}

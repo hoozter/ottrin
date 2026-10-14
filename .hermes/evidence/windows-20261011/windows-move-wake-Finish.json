@@ -1,0 +1,17 @@
+{
+  "gui_exit": 0,
+  "destination_hash": "54A2D686BD1947AC446A98EC89882F538B6521EBA458B3C3EB023A26A6821E9D",
+  "phase": "Finish",
+  "source_removed": true,
+  "status": "pass",
+  "modules": [
+    {
+      "ModuleName": "opengl32.dll",
+      "FileName": "C:\\OttrinQA-20261011\\move-wake-payload\\Ottrin-0.1.0-windows-x64\\bin\\opengl32.dll"
+    },
+    {
+      "ModuleName": "libgallium_wgl.dll",
+      "FileName": "C:\\OttrinQA-20261011\\move-wake-payload\\Ottrin-0.1.0-windows-x64\\bin\\libgallium_wgl.dll"
+    }
+  ]
+}

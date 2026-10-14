@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-15",
+  "source_revision": "43cfa62459601489dca3393af196012aef536793",
+  "tracked_clean_source": true,
+  "stage": ".hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "d0ea7bbd3853afb6cffb1fe6bd95767848c9813d97790decbf99e55e838a8683",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "0599eea892a8be8022d3e1d77d7100f7911b15d0a40edbbbc797feef89caf810"
+  },
+  "checks": {
+    "portable_exact_payload_match": 51,
+    "nsis_embedded_payload_digest_presence": 51,
+    "public_cross_volume_regular_file_move": "pass",
+    "first_visible_destination_capture_ms": 647,
+    "source_removed_at_first_capture": true,
+    "destination_hash_matches_source": true,
+    "native_gui_exit": 0,
+    "packaged_portable_cleanup": "pass; no owned app/index process or private index files remain",
+    "runtime": "Native Windows standard-user session, packaged Mesa modules"
+  },
+  "evidence": [
+    "windows-move-wake-Launch.json",
+    "windows-move-wake-Move.json",
+    "windows-move-wake-Finish.json",
+    "windows-move-wake-before.png",
+    "windows-move-wake-after.png",
+    "windows-move-wake-settled.png",
+    "windows-move-wake-cleanup.json"
+  ],
+  "cleanup": {
+    "guest_fixtures_removed": true,
+    "qa_tasks_removed": true,
+    "owned_virtual_disk_detached_and_removed": true,
+    "account_preferences_and_source_preserved": true,
+    "overlay_state": "shut off",
+    "backing_content_mtime_unchanged": true,
+    "superseded_candidate_msi_removed": true
+  },
+  "limits": [
+    "647 ms is one observed end-to-end capture, not a guaranteed latency bound or comparative benchmark",
+    "Public dist downloads unchanged; candidate portable/NSIS refreshed only",
+    "MSI refresh and current NSIS native installer lifecycle remain open",
+    "Overwrite, directory and recovery Move scenarios remain separate",
+    "Raw Windows verbatim path prefixes remain a UI formatting follow-up"
+  ]
+}

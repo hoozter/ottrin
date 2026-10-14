@@ -1880,3 +1880,34 @@ All 364 regular UI tests pass (one ignored). Linux and Windows compiler checks
 are recorded with the implementation commit. This is source-level notification
 acceptance: packaged native response timing and refreshed packages remain open;
 existing package receipts retain their original artifact scope.
+
+### Packaged Windows completion notifications and session cleanup
+
+The stable Windows candidate stage is refreshed from clean tracked revision
+`43cfa62459601489dca3393af196012aef536793`. Portable SHA-256 is
+`d0ea7bbd3853afb6cffb1fe6bd95767848c9813d97790decbf99e55e838a8683`;
+NSIS SHA-256 is
+`0599eea892a8be8022d3e1d77d7100f7911b15d0a40edbbbc797feef89caf810`.
+All 51 portable payload files exactly match the stage; the NSIS embedded payload
+contains all 51 corresponding digests. The superseded candidate MSI and its
+checksum are removed to avoid mixing revisions in the current candidate folder.
+Public downloads remain unchanged; MSI refresh and the new NSIS package's native
+installer lifecycle remain open.
+
+The exact portable passes native standard-user/Mesa cross-volume regular-file
+Move through Ctrl+X, path navigation and Ctrl+V. Without further input, the first
+capture at 647 ms displays the destination file; the source is already removed.
+A 2719 ms capture agrees. Destination bytes match the source hash. This is one
+observed capture, not a guaranteed latency bound or a comparative benchmark.
+Normal GUI closure returns zero, and the same package's portable cleanup succeeds
+without leaving its app/index processes or private index files. The QA account's
+separate saved preferences and source fixture retain their original hashes.
+
+Receipt: `.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
+Screenshots and phase results are exported before cleanup. Owned actors, private
+profile, payload/archive, scripts and detached virtual disk are removed; overlay
+is shut off and backing content mtime is unchanged. The first scheduled actor returned one without a launch receipt; retrying with
+process-scoped Bypass for the QA script succeeds. No machine/user execution policy
+is changed, and the original failure is not attributed to the app.
+Overwrite/directory/recovery Move, Linux packaged timing and Windows display-path
+polish remain separate gates.
