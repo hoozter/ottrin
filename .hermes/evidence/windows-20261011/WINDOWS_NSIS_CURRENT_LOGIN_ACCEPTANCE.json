@@ -1,0 +1,37 @@
+{
+  "status": "pass",
+  "date": "2026-10-14",
+  "source_revision": "160b803e80bd9444c4eecee193a171113c8dc5e9",
+  "artifact": ".hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64-setup.exe",
+  "sha256": "48f6d318a7a1bc702406c84ddea9645aedaaeca2d03c4ad7e61b6f4f577bba2e",
+  "checks": [
+    "Actual signed-in standard QA account; exact NSIS install succeeds and daemon serves fixture",
+    "Real reboot while installed scheduled daemon is running",
+    "Running login task and new-boot LastRunTime verified before any CLI query; Verify phase does not demand-start/restart task or daemon",
+    "Per-user login trigger starts installed daemon automatically; 0x41301 means task still running, not failure",
+    "Read-only query returns saved fixture and status reports active ready watch",
+    "Preferences and source hashes unchanged through reboot and subsequent uninstall",
+    "Ordinary uninstall bootstrap returns zero; final state app/task/index removed"
+  ],
+  "boot": "2026-10-14T23:53:30.5000000+02:00",
+  "task_last_run": "2026-10-14T23:53:42.0000000",
+  "task_last_result": 267009,
+  "evidence": [
+    "windows-nsis-login-current-install.json",
+    "windows-nsis-login-current-verify.json",
+    "windows-nsis-login-current-remove.json"
+  ],
+  "cleanup": {
+    "owned_actors_removed": true,
+    "owned_processes": 0,
+    "guest_installer_scripts_results_removed": true,
+    "overlay_shut_off": true,
+    "backing_content_mtime_unchanged": true,
+    "owned_account_source_preferences_retained_for_followup": true
+  },
+  "limits": [
+    "Focused NSIS sign-in/index restoration only; no new graphics, full GUI or heavy-index acceptance",
+    "MSI failed-transaction registration rollback remains open",
+    "Public dist downloads unchanged"
+  ]
+}

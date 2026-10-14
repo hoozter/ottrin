@@ -1803,3 +1803,27 @@ overlay is shut off and backing content mtime unchanged. Owned profile/source/
 preferences and staged candidates remain needed for subsequent native gates.
 Public downloads are unchanged. Current MSI registration rollback, exact-package
 login/reboot, interactive installer UI and broader Windows acceptance remain open.
+
+### Current NSIS candidate — real login startup and saved-index restoration
+
+The 160b803 NSIS candidate, SHA-256
+`48f6d318a7a1bc702406c84ddea9645aedaaeca2d03c4ad7e61b6f4f577bba2e`,
+passes actual standard-user sign-in after a real guest reboot with its scheduled
+daemon installed. The new boot is `2026-10-14T23:53:30.5000000+02:00`; the index
+task runs automatically at `23:53:42`, before any verification CLI query.
+The task is running with one instance and a login trigger. LastTaskResult
+267009 (`0x41301`) means running, not an error. The verification phase contains
+no demand-start or restart, so it does not manufacture login-trigger evidence.
+
+Read-only query returns the saved fixture; status reports ready with one watched
+root. Preferences and source hashes remain unchanged through reboot and removal.
+Subsequent ordinary uninstall bootstrap exits zero, and final-state checks find
+no app directory, task or generated index. Receipt:
+`.hermes/evidence/windows-20261011/WINDOWS_NSIS_CURRENT_LOGIN_ACCEPTANCE.json`.
+
+Owned actor tasks/processes and guest installer/scripts/results are removed;
+overlay is shut off with backing content mtime unchanged. The owned account/
+source/preferences and current candidates remain needed for other native gates.
+Published downloads are unchanged. This closes focused current-package login/
+saved-index acceptance, not graphics, full GUI, heavy-index CPU or MSI
+failed-transaction registration rollback.

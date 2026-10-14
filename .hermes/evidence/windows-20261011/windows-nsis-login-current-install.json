@@ -1,0 +1,27 @@
+{
+  "boot": "2026-10-14T23:49:51.5000000+02:00",
+  "source_hash": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+  "installer_sha256": "48f6d318a7a1bc702406c84ddea9645aedaaeca2d03c4ad7e61b6f4f577bba2e",
+  "query": {
+    "items": [
+      {
+        "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+        "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+        "name": "scheduled-daemon-fixture.txt",
+        "kind": "File",
+        "is_executable": false,
+        "symlink_target_is_dir": null,
+        "size_bytes": 27,
+        "modified_unix_secs": 1792013981,
+        "content_snippet": null
+      }
+    ],
+    "total": 1,
+    "status": "Ready",
+    "error": null
+  },
+  "phase": "Install",
+  "daemon_instances": 1,
+  "status": "pass",
+  "preference_hash": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793"
+}

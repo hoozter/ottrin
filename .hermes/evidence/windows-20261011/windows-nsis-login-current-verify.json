@@ -1,0 +1,52 @@
+{
+  "boot": "2026-10-14T23:53:30.5000000+02:00",
+  "source_hash": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+  "task_xml": "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n  <RegistrationInfo>\r\n    <Description>Ottrin continuous background index service</Description>\r\n    <URI>\\Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1029</URI>\r\n  </RegistrationInfo>\r\n  <Principals>\r\n    <Principal id=\"Author\">\r\n      <UserId>S-1-5-21-3183210791-1673105385-3262580894-1029</UserId>\r\n      <LogonType>InteractiveToken</LogonType>\r\n    </Principal>\r\n  </Principals>\r\n  <Settings>\r\n    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\r\n    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\r\n    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>\r\n    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n    <IdleSettings>\r\n      <Duration>PT10M</Duration>\r\n      <WaitTimeout>PT1H</WaitTimeout>\r\n      <StopOnIdleEnd>true</StopOnIdleEnd>\r\n      <RestartOnIdle>false</RestartOnIdle>\r\n    </IdleSettings>\r\n  </Settings>\r\n  <Triggers>\r\n    <LogonTrigger>\r\n      <UserId>DESKTOP-81GHP8U\\OttrinIndexQA</UserId>\r\n    </LogonTrigger>\r\n  </Triggers>\r\n  <Actions Context=\"Author\">\r\n    <Exec>\r\n      <Command>C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin-indexd.exe</Command>\r\n      <Arguments>--index-daemon</Arguments>\r\n    </Exec>\r\n  </Actions>\r\n</Task>",
+  "task_last_result": 267009,
+  "query": {
+    "items": [
+      {
+        "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+        "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+        "name": "scheduled-daemon-fixture.txt",
+        "kind": "File",
+        "is_executable": false,
+        "symlink_target_is_dir": null,
+        "size_bytes": 27,
+        "modified_unix_secs": 1792013981,
+        "content_snippet": null
+      }
+    ],
+    "total": 1,
+    "status": "Ready",
+    "error": null
+  },
+  "index_status": {
+    "active_root": null,
+    "active_root_index": 0,
+    "configured_roots": 1,
+    "database_bytes": 81920,
+    "detail": "Ready \u252c\u2556 1 indexed",
+    "error": null,
+    "estimated_total_items": null,
+    "freelist_bytes": 0,
+    "freelist_pages": 0,
+    "indexed_items": 1,
+    "last_completed_indexed_items": 1,
+    "last_progress_unix_secs": 1792014829,
+    "last_scan_completed_unix_secs": 1792014829,
+    "last_scan_duration_ms": null,
+    "last_scan_started_unix_secs": null,
+    "snapshot_revision": 1,
+    "status": "ready",
+    "total_roots": 0,
+    "wal_bytes": 4152,
+    "watched_roots": 1,
+    "watcher_error": null,
+    "watcher_ready": true
+  },
+  "phase": "Verify",
+  "task_last_run": "2026-10-14T23:53:42.0000000",
+  "status": "pass",
+  "preference_hash": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793"
+}
