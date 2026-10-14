@@ -207,7 +207,7 @@ Watcher propagation is measured with a uniquely named disposable file beneath a 
 
 Raw full-rebuild evidence is retained at `.hermes/evidence/full-index-memory-2026-08-15.json`. Direct-delta evidence and historical architecture transitions are retained at `.hermes/evidence/index-direct-delta-2026-08-15.md`. Separate content-store evidence is retained at `.hermes/evidence/fts-separate-store-verification-2026-08-16.md`.
 
-## Current packaged populated-index acceptance — 2026-10-15
+## Prior packaged populated-index sample — 2026-10-15 (af78252)
 
 Exact stable AppImage source `af78252`, SHA-256
 `dc9496042ce54d4df373de2ce8a25ab121fadc7491a79272116d9056892b25d9`,
@@ -255,3 +255,43 @@ A live cancellation check sends SIGTERM during the populated quiet phase. The
 runner exits 143, stops its private daemon, removes its profile/extraction and
 produces no passing receipt. Evidence:
 `.hermes/evidence/index-populated-current/CANCELLATION_ACCEPTANCE.json`.
+
+
+## Current packaged offline freshness and return to idle — 2026-10-15
+
+Clean 554591d AppImage SHA-256:
+`3758bae8aabda470eb224b7b2889cff6018b480ccbcb2f2fe8dd893e9db5ed55`.
+The previous saved-snapshot/no-scan startup could not see changes made while the
+daemon was stopped. Source now keeps cached queries available during watcher
+setup and performs one background reconciliation. Cached query availability is
+covered by the blocked-watcher source regression. This exact package verifies
+completed freshness against the filesystem and IPC query results.
+
+| Private metadata-only 10,000-file case | Observed result |
+|---|---:|
+| Initial quiet CPU, 30.034 s | 0.033% of one core |
+| Ordinary 2,000-change burst, complete metadata/query freshness | 3,052.432 ms |
+| Ordinary burst replaces generation / starts full scan | Neither |
+| After-burst quiet CPU, 30.033 s | 0.100% of one core |
+| Offline create/edit/rename/delete: completed startup freshness | 508.305 ms |
+| After-startup-validation quiet CPU, 30.037 s | 0.067% of one core |
+| After-startup-validation RSS | 9,024 KiB |
+
+Startup validation performs a scan even when the saved plan matches, since Linux
+filesystem watches cannot report offline changes. Ordinary live events keep the
+incremental path. These are observed cases, not latency guarantees, content-enabled
+or live-home measurements. The personal running service/profile is unchanged.
+Receipt: `.hermes/evidence/index-populated-current/OFFLINE_FIXED_PACKAGE.json`.
+
+```sh
+python3 scripts/index-populated-qa.py \
+  dist/packages/Ottrin-0.1.0-x86_64.AppImage \
+  .hermes/evidence/index-populated-current/OFFLINE_FIXED_PACKAGE.json \
+  --offline-changes
+```
+
+The default runner now requires startup validation completion; it does not retain
+the earlier no-scan criterion. `--quiet-seconds 0` skips CPU samples for a focused
+correctness repro and must not be treated as resource acceptance. Shutdown and
+failure cleanup release owned processes and disposable profiles. Larger corpus,
+content-enabled, live-home and native Windows acceptance remain separate gates.

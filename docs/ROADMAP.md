@@ -20,7 +20,7 @@ These repairs do not close the full Linux daily-driver or Windows release gates 
 
 This snapshot reconciles the roadmap with local source, package provenance and retained acceptance receipts. It is not a fresh full-platform test run. `.hermes/coordinator-worker-report.md` is historical: its HEAD and Linux artifact inventory predate the changes below, and its `active` label does not establish a running worker or goal.
 
-- **Linux:** current stable AppImage, portable, DEB and RPM are built from clean source `af78252`. AppImage SHA-256: `dc9496042ce54d4df373de2ce8a25ab121fadc7491a79272116d9056892b25d9`. Exact-package session cleanup failure/retry, no-login-unit daemon shutdown, Dark 100% / Light 150% regular-file Move/listing and menu visuals pass. Native/portable payload identities pass. Receipt: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. Existing personal settings, service definition and running daemon are preserved; the running daemon remains its previous binary until a deliberate restart. Fresh native installation/upgrade, broader Wayland/graphics, authentication, sustained performance and full daily-driver acceptance remain open.
+- **Linux:** stable AppImage, portable, DEB and RPM are built from clean source `554591d`. AppImage SHA-256: `3758bae8aabda470eb224b7b2889cff6018b480ccbcb2f2fe8dd893e9db5ed55`. Exact-package offline restart freshness, populated/burst/post-restart quiet CPU, session cleanup, Dark 100% / Light 150% Move/menu checks and native/portable payload identities pass. Receipt: `dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`. Personal settings/unit/running daemon remain untouched; the verified launcher uses this package on the next service start. Fresh native install/upgrade, live-home/content-enabled performance, broader graphics/authentication and full daily-driver acceptance remain open.
 - **Linux remaining before the new deferred outcome:** clean-desktop package installation/launch; the consolidated daily-driver workflow including cross-volume conflicts, interruption/recovery and editor recovery; real removable-volume lifecycle; supported installed-LibreOffice conversion/fallback; audible representative media; the packaged helper/polkit permission matrix; and an explicit assistive-integration decision. Existing Xvfb and focused native checks narrow these tasks but do not close them. Accessibility is currently disabled after an upstream lifecycle defect.
 - **Windows:** current portable/NSIS/MSI packages are built from clean revision `4552483`; all three current artifact hashes match `dist/WINDOWS_PACKAGES_ACCEPTANCE.json`. Exact fresh standard-user silent MSI install/uninstall and NSIS install/reinstall/uninstall are accepted in `dist/WINDOWS_CURRENT_INSTALLER_LIFECYCLE_ACCEPTANCE.json`. Concise task-query error/refusal behavior is accepted in `dist/WINDOWS_TASK_ERROR_NATIVE_ACCEPTANCE.json`. Current failed-transaction MSI registration rollback, cross-version upgrade and interactive installer acceptance remain open. Earlier cleanup failure/retry and GUI receipts retain their original artifact scope. Native ordinary-user evidence exists for text saving, many Move/recovery cases and scheduled indexing including simultaneous two-user coexistence, Office conversion before the unfinished containment changes, and a generated video thumbnail. This is substantial implementation progress; focused package checks below do not close full Windows release acceptance. Cross-volume Move is enabled in source after native transaction and guest power-cut checks; its public workflow/package acceptance remains open. The Office UI provider remains gated. Historical AppContainer diagnostics passed isolation fixtures but timed out on DOCX and Kit initialization; the committed production helper now supersedes that conversion path. See `.hermes/evidence/windows-20261010/office-appcontainer-private-temp-env-results.log`, `office-appcontainer-kit-budget-results.log`, `office-appcontainer-private-temp-docx-results.log` and `office-appcontainer-kit-stack-results.log`. A fresh isolated guest on October 11 passes all ten containment/process fixtures after making fixture executable access self-contained (`9d20378`). The Windows production converter now uses the packaged LibreOfficeKit helper instead of the CLI global pipe denied by AppContainer. Two fresh-profile production DOCX checks pass (7.31s and 9.93s), covering PDFium rendering/text, source preservation and cleanup; in-flight cancellation passes (2.65s). All 17 Linux provider contracts and strict Windows helper Clippy pass. The latest contained nine-format sweep passes DOC/DOCX/ODT but times out on XLS/XLSX/XLSM/ODS/PPTX/ODP. An uncontained ordinary-user Calc control also times out; a message-pump experiment returns a load failure. Both threading experiments are rejected, with production code unchanged. Macro suppression is unaccepted because its positive control did not execute. All-format/fidelity/fallback and exact-package acceptance remain open, so the Office UI provider stays gated. Current native evidence is in `.hermes/evidence/windows-20261011/REPORT.md`.
 - **Windows continuous-indexing source:** the shared authenticated daemon now handles UI/CLI queries and writes, configuration, watches and service lifecycle. Native standalone startup/reuse/restart/stop, per-user login-task definition, live task replacement/removal, and short populated-index quiet CPU checks pass within their documented fixture scopes. No-argument indexd launches the persistent daemon; one-shot indexd mode is removed. These changes are newer than the published `4552483` packages. Actual scheduled-daemon execution, GUI search/lifetime and current packaged upgrade/rollback remain required before publishing the replacement candidates.
@@ -2039,3 +2039,34 @@ previous no-scan restart criterion cannot prove the intended freshness contract.
 Refreshed package acceptance and startup/resource measurements still need to be
 completed before claiming this source repair is delivered. The personal running
 index remains untouched; all failed baseline/test profiles are torn down.
+
+
+### Delivered Linux offline-freshness repair
+
+Stable Linux AppImage, portable, DEB and RPM are refreshed from clean source
+554591d. AppImage SHA-256:
+`3758bae8aabda470eb224b7b2889cff6018b480ccbcb2f2fe8dd893e9db5ed55`.
+The exact metadata-only 10,000-file package now catches create/edit/rename/delete
+while stopped within 508.305 ms of restart, including correct canonical paths,
+sizes and returned query results, with periodic refresh disabled. Startup performs
+one background validation and replaces the persisted generation when complete;
+cached availability is preserved. The earlier no-scan warm-start result belongs
+to af78252 and does not establish the intended offline freshness contract.
+
+Quiet CPU over three 30-second samples is 0.033% before the ordinary 2,000-change
+burst, 0.100% afterward and 0.067% after offline restart validation. Ordinary
+notification updates remain incremental and converge in 3,052.432 ms. Both
+private instances exit normally; no profile/socket/process remains. Dark 100% /
+Light 150% packaged Move/menu visuals and normal exits pass, as does cleanup
+failure/retry/no-unit shutdown. Native/portable payload/provenance/ABI/polkit
+comparisons pass. Receipt:
+`.hermes/evidence/index-populated-current/OFFLINE_PACKAGE_ACCEPTANCE.json`.
+
+All four candidates replace their stable deliverables; temporary package staging
+is removed. The existing personal configuration/service hashes and running daemon
+identity/executable remain unchanged. The service's apparent cached executable is
+actually a 96-byte shell launcher pointing to the updated public AppImage; no
+extra cached-binary mutation is required. Its next start gets the repair. Existing
+running code remains the preceding version until that start. Windows source
+compile/lint passes, but Windows package refresh/native offline-change, current
+native install/upgrade and wider resource/platform acceptance remain open.

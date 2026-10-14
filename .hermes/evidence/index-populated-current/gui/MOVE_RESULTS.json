@@ -1,0 +1,18 @@
+[
+  {
+    "theme": "Dark",
+    "scale": "1",
+    "capture_elapsed_ms": 647,
+    "settled_capture_elapsed_ms": 2761,
+    "source_removed": true,
+    "destination_bytes_match": true
+  },
+  {
+    "theme": "Light",
+    "scale": "1.5",
+    "capture_elapsed_ms": 780,
+    "settled_capture_elapsed_ms": 2945,
+    "source_removed": true,
+    "destination_bytes_match": true
+  }
+]

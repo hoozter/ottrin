@@ -1,7 +1,7 @@
 {
-  "artifact_sha256": "dc9496042ce54d4df373de2ce8a25ab121fadc7491a79272116d9056892b25d9",
-  "expected_revision": "af78252bdab900599d40ba8c8d74db29dbda48bc",
-  "source_provenance": "Ottrin source revision\nVersion: 0.1.0\nGit revision: af78252bdab900599d40ba8c8d74db29dbda48bc\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "artifact_sha256": "3758bae8aabda470eb224b7b2889cff6018b480ccbcb2f2fe8dd893e9db5ed55",
+  "expected_revision": "554591dc563a1d3b28199a8b0bf7323ddac65510",
+  "source_provenance": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 554591dc563a1d3b28199a8b0bf7323ddac65510\nWorking tree: clean\nTracked diff SHA-256: none\n",
   "same_live_daemon_after_failure": true,
   "session_daemon_stopped": true,
   "checks": [

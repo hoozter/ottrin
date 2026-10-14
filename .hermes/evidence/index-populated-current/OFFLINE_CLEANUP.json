@@ -1,0 +1,21 @@
+{
+  "artifact_sha256": "3758bae8aabda470eb224b7b2889cff6018b480ccbcb2f2fe8dd893e9db5ed55",
+  "expected_revision": "554591dc563a1d3b28199a8b0bf7323ddac65510",
+  "source_provenance": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 554591dc563a1d3b28199a8b0bf7323ddac65510\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "same_live_daemon_after_failure": true,
+  "session_daemon_stopped": true,
+  "checks": [
+    "Exact AppImage cleanup exits 1 and identifies blocked entry",
+    "Nested data, user source and preferences preserved",
+    "Failed cleanup retains the same live session daemon and database bytes",
+    "Retry exits 0, stops unscheduled session daemon and removes generated index/cache files"
+  ],
+  "exit_codes": [
+    1,
+    0
+  ],
+  "cleanup": {
+    "private_profile_removed": true,
+    "owned_commands_exited": true
+  }
+}

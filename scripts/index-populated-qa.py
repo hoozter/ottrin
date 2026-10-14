@@ -229,6 +229,8 @@ with tempfile.TemporaryDirectory(prefix='ottrin-populated-') as temporary:
                 'watcher_ready': restored['watcher_ready']}
             result['restored_diagnostics'] = restored
             assert result['restart']['startup_validation_completed'], result['restart']
+            time.sleep(2)
+            quiet_sample('after_restart_idle')
             assert request('shutdown')['type'] == 'complete'
             assert process.wait(timeout=10) == 0 and not endpoint.exists()
     finally:
