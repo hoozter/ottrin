@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-14",
+  "source_revision": "0aea0d85e48edae20af4b8803292b65ec1cbd862",
+  "tracked_source_clean": true,
+  "portable": {
+    "path": ".hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64-portable.zip",
+    "sha256": "fcd6dc0440a14e836944383c3f53a36c33285521f9920668719828097992e624",
+    "matching_archive_and_native_extract_files": 51
+  },
+  "nsis": {
+    "path": ".hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64-setup.exe",
+    "sha256": "344807cbd3b350f81b66a10c26cb4f0ceade99fa61d80fef04a8dc48f5cf12e8",
+    "matching_extracted_payload_files": 51,
+    "native_installer_lifecycle": "not run"
+  },
+  "native_gui_checks": [
+    "Primary signed-in user, least-privilege interactive token; private APPDATA/LOCALAPPDATA; Mesa override",
+    "Ready index with active watch",
+    "Ctrl+F query visible; screenshot inspected: exactly one result row, no normal/verbatim duplicate",
+    "CLI independently returns exactly one result",
+    "Normal GUI exit code zero",
+    "Daemon remains running and watches new file after GUI closure; CLI finds that file",
+    "Saved Miller preference retained",
+    "Owned daemon prepared and process exits"
+  ],
+  "native_result": {
+    "watch_after_close": true,
+    "limits": "Mesa; screenshot requires inspection; no scheduled daemon or installer acceptance",
+    "user": "DESKTOP-81GHP8U\\campbell",
+    "search_count": 1,
+    "gui_exit": 0,
+    "daemon_pid": 4732,
+    "status": "pass",
+    "view_preference": "Miller"
+  },
+  "screenshot": ".hermes/evidence/windows-20261011/windows-fixed-candidate-gui-search.png",
+  "scope": "Exact candidate portable GUI/search/lifetime acceptance in one Dark/Mesa desktop fixture; no native-WGPU, Light/scaling matrix, real login-trigger daemon, current install/upgrade/uninstall/rollback or broad daily-driver acceptance. Candidates retained for required follow-up validation. Accepted dist downloads unchanged.",
+  "cleanup": {
+    "native_processes_absent": true,
+    "actor_registration_removed": true,
+    "private_profile_and_guest_staging_removed": true,
+    "host_actor_and_disposable_nsis_extraction_removed": true,
+    "owned_vm": "shut off",
+    "required_candidate_packages_and_stage": "retained"
+  }
+}

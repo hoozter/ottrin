@@ -1,0 +1,10 @@
+{
+    "watch_after_close":  true,
+    "limits":  "Mesa; screenshot requires inspection; no scheduled daemon or installer acceptance",
+    "user":  "DESKTOP-81GHP8U\\campbell",
+    "search_count":  1,
+    "gui_exit":  0,
+    "daemon_pid":  4732,
+    "status":  "pass",
+    "view_preference":  "Miller"
+}

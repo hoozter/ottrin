@@ -1556,3 +1556,29 @@ this label is compile checked. Receipt:
 Discard the rejected candidate after consumers exit, rebuild from the fixed
 commit and repeat exact-package GUI search before publication. Scheduled daemon
 and installer acceptance remain open. Accepted dist packages are unchanged.
+
+
+### Fixed Windows candidate — exact native GUI search and daemon lifetime
+
+The clean 0aea0d8 portable candidate, SHA-256
+`fcd6dc0440a14e836944383c3f53a36c33285521f9920668719828097992e624`,
+passes native signed-in least-privilege/Mesa GUI checks with a private profile.
+Ctrl+F search renders exactly one result row; the screenshot is inspected and
+the CLI independently confirms one result. The window exits normally, preserves
+Miller preference, and leaves the daemon watching: a file created after GUI
+closure becomes searchable through the CLI. The owned daemon then exits on
+preparation. All 51 archive/native-extracted files match staging.
+
+The same-source NSIS candidate, SHA-256
+`344807cbd3b350f81b66a10c26cb4f0ceade99fa61d80fef04a8dc48f5cf12e8`,
+contains 51 extracted payload files matching that stage. No current NSIS
+lifecycle result is claimed. Both candidates remain at the stable task staging
+path `.hermes/packaging-tmp/windows-current` for installer/scheduled-daemon
+validation. Receipt:
+`.hermes/evidence/windows-20261011/WINDOWS_FIXED_CANDIDATE_GUI_ACCEPTANCE.json`.
+
+This closes the duplicate-row GUI regression and focused post-window daemon
+lifetime checks for this candidate. Native graphics, broader theme/scaling, real
+login-trigger execution and installer upgrade/rollback remain open. Owned native
+GUI/daemon/actor/profile/extraction fixtures are removed; accepted dist downloads
+remain unchanged.
