@@ -14,7 +14,7 @@ use egui_extras::{
     Column, TableBuilder,
     syntax_highlighting::{CodeTheme, SyntectSettings, highlight_with},
 };
-#[cfg(all(unix, not(test)))]
+#[cfg(all(any(unix, target_os = "windows"), not(test)))]
 use ottrin_core::SearchResponse;
 use ottrin_core::{
     AppConfig, AppState, ConflictAction, ContentFileGroup, DeleteMode, EntryKind, FileCommand,
@@ -44,10 +44,12 @@ use ottrin_preview::load_preview;
 use ottrin_preview::{
     PreviewData, PreviewKind, PreviewRequest, is_complete_text_preview, load_preview_cancellable,
 };
-#[cfg(all(unix, not(test)))]
+#[cfg(all(any(unix, target_os = "windows"), not(test)))]
 use ottrin_search::SearchDaemonClient;
+#[cfg(any(not(target_os = "windows"), test))]
+use ottrin_search::SearchHandle;
 use ottrin_search::{
-    LocateScheduleStatus, SearchHandle, SearchIndexDiagnostics, SearchQueryResult, SearchService,
+    LocateScheduleStatus, SearchIndexDiagnostics, SearchQueryResult, SearchService,
 };
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::path::{Path, PathBuf};
@@ -2181,22 +2183,26 @@ struct AdministratorSessionIndex {
 }
 
 struct UiSearchService {
-    #[cfg(all(unix, not(test)))]
+    #[cfg(all(any(unix, target_os = "windows"), not(test)))]
     client: Option<SearchDaemonClient>,
     #[cfg(all(unix, not(test)))]
     administrator_session: Option<AdministratorSessionIndex>,
-    #[cfg(all(unix, not(test)))]
+    #[cfg(all(any(unix, target_os = "windows"), not(test)))]
     diagnostics_cache: Mutex<(Instant, SearchIndexDiagnostics)>,
-    #[cfg(any(not(unix), test))]
+    #[cfg(any(not(any(unix, target_os = "windows")), test))]
     local: SearchService,
 }
 
 impl UiSearchService {
     fn new(config: SearchConfig) -> Self {
-        #[cfg(all(unix, not(test)))]
+        #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
             // SAFETY: geteuid has no preconditions and no side effects.
-            let client = daemon_connection_required(unsafe { libc::geteuid() }).then(|| {
+            #[cfg(unix)]
+            let required = daemon_connection_required(unsafe { libc::geteuid() });
+            #[cfg(target_os = "windows")]
+            let required = true;
+            let client = required.then(|| {
                 SearchDaemonClient::connect_default()
                     .expect("the package-owned index daemon path was validated before GUI startup")
             });
@@ -2214,13 +2220,14 @@ impl UiSearchService {
             );
             let mut service = Self {
                 client,
+                #[cfg(unix)]
                 administrator_session: None,
                 diagnostics_cache: Mutex::new((Instant::now(), diagnostics)),
             };
             service.update_config(config);
             service
         }
-        #[cfg(any(not(unix), test))]
+        #[cfg(any(not(any(unix, target_os = "windows")), test))]
         {
             #[cfg(test)]
             {
@@ -2229,7 +2236,7 @@ impl UiSearchService {
                     local: SearchService::new_with_store_path(config, store),
                 }
             }
-            #[cfg(all(not(unix), not(test)))]
+            #[cfg(all(not(any(unix, target_os = "windows")), not(test)))]
             Self {
                 local: SearchService::new(config),
             }
@@ -2237,7 +2244,7 @@ impl UiSearchService {
     }
 
     fn start(&mut self) {
-        #[cfg(any(not(unix), test))]
+        #[cfg(any(not(any(unix, target_os = "windows")), test))]
         self.local.start();
     }
 
@@ -2247,7 +2254,7 @@ impl UiSearchService {
             session.service.stop();
             let _ = remove_administrator_session_index_directory(&session.paths);
         }
-        #[cfg(any(not(unix), test))]
+        #[cfg(any(not(any(unix, target_os = "windows")), test))]
         self.local.stop();
     }
 
@@ -2393,19 +2400,23 @@ impl UiSearchService {
                         (Instant::now(), SearchIndexDiagnostics::unavailable(error));
                 }
             }
-        } else if let Some(client) = &self.client
+            return;
+        }
+        #[cfg(all(any(unix, target_os = "windows"), not(test)))]
+        if let Some(client) = &self.client
             && let Err(error) = client.update_config(config)
         {
             self.record_daemon_error(error);
         }
-        #[cfg(any(not(unix), test))]
+        #[cfg(any(not(any(unix, target_os = "windows")), test))]
         self.local.update_config(config);
     }
 
     fn diagnostics(&self) -> SearchIndexDiagnostics {
-        #[cfg(all(unix, not(test)))]
+        #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
             let mut cache = self.diagnostics_cache.lock().expect("search diagnostics");
+            #[cfg(unix)]
             if let Some(session) = &self.administrator_session {
                 return session.service.diagnostics();
             }
@@ -2424,24 +2435,25 @@ impl UiSearchService {
             }
             cache.1.clone()
         }
-        #[cfg(any(not(unix), test))]
+        #[cfg(any(not(any(unix, target_os = "windows")), test))]
         {
             self.local.diagnostics()
         }
     }
 
     fn handle(&self) -> UiSearchHandle {
-        #[cfg(all(unix, not(test)))]
+        #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
             UiSearchHandle {
                 remote: self.client.clone(),
+                #[cfg(unix)]
                 administrator_session: self
                     .administrator_session
                     .as_ref()
                     .map(|session| session.service.handle()),
             }
         }
-        #[cfg(any(not(unix), test))]
+        #[cfg(any(not(any(unix, target_os = "windows")), test))]
         {
             UiSearchHandle {
                 local: self.local.handle(),
@@ -2450,23 +2462,27 @@ impl UiSearchService {
     }
 
     fn rebuild_index(&mut self) {
-        #[cfg(all(unix, not(test)))]
+        #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
+            #[cfg(unix)]
             if let Some(session) = &mut self.administrator_session {
                 session.service.rebuild_index();
-            } else if let Some(client) = self.client.clone() {
+                return;
+            }
+            if let Some(client) = self.client.clone() {
                 std::thread::spawn(move || {
                     let _ = client.rebuild();
                 });
             }
         }
-        #[cfg(any(not(unix), test))]
+        #[cfg(any(not(any(unix, target_os = "windows")), test))]
         self.local.rebuild_index();
     }
 
     fn clear_storage(&mut self) -> Result<u64, String> {
-        #[cfg(all(unix, not(test)))]
+        #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
+            #[cfg(unix)]
             if let Some(mut session) = self.administrator_session.take() {
                 let bytes = session.service.clear_storage()?;
                 session.service.stop();
@@ -2480,13 +2496,13 @@ impl UiSearchService {
             client.shutdown()?;
             Ok(bytes)
         }
-        #[cfg(any(not(unix), test))]
+        #[cfg(any(not(any(unix, target_os = "windows")), test))]
         {
             self.local.clear_storage()
         }
     }
 
-    #[cfg(all(unix, not(test)))]
+    #[cfg(all(any(unix, target_os = "windows"), not(test)))]
     fn record_daemon_error(&self, error: String) {
         let mut cache = self.diagnostics_cache.lock().expect("search diagnostics");
         cache.0 = Instant::now();
@@ -2496,11 +2512,11 @@ impl UiSearchService {
 }
 
 struct UiSearchHandle {
-    #[cfg(all(unix, not(test)))]
+    #[cfg(all(any(unix, target_os = "windows"), not(test)))]
     remote: Option<SearchDaemonClient>,
     #[cfg(all(unix, not(test)))]
     administrator_session: Option<SearchHandle>,
-    #[cfg(any(not(unix), test))]
+    #[cfg(any(not(any(unix, target_os = "windows")), test))]
     local: SearchHandle,
 }
 
@@ -2510,11 +2526,12 @@ impl UiSearchHandle {
         query: SearchQuery,
         cancelled: &AtomicBool,
     ) -> SearchQueryResult {
-        #[cfg(all(unix, not(test)))]
+        #[cfg(all(any(unix, target_os = "windows"), not(test)))]
         {
             if cancelled.load(Ordering::Acquire) {
                 return unavailable_search_result("Search cancelled".to_string());
             }
+            #[cfg(unix)]
             if let Some(session) = &self.administrator_session {
                 return session.query_cancellable_with_diagnostics(query, cancelled);
             }
@@ -2529,7 +2546,7 @@ impl UiSearchHandle {
                 Err(error) => unavailable_search_result(error),
             }
         }
-        #[cfg(any(not(unix), test))]
+        #[cfg(any(not(any(unix, target_os = "windows")), test))]
         {
             self.local
                 .query_cancellable_with_diagnostics(query, cancelled)
@@ -2537,7 +2554,7 @@ impl UiSearchHandle {
     }
 }
 
-#[cfg(all(unix, not(test)))]
+#[cfg(all(any(unix, target_os = "windows"), not(test)))]
 fn unavailable_search_result(error: String) -> SearchQueryResult {
     SearchQueryResult {
         response: SearchResponse {

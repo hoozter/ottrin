@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-14",
+  "source_sha256": {
+    "crates/ottrin-app/src/main.rs": "576bde44cf9293ed09d914cffb7b7ce39ada43f1a3ec81e2d2d18ce5a4a98969",
+    "crates/ottrin-search/src/lib.rs": "6320536d6a69bbca1bf8bae914290d465d910dd369a2aa50de74cc14f81acb26",
+    "crates/ottrin-search/src/windows_daemon.rs": "1c4bb6a3348b436d4d7cc8f1bed7cdb9c9e82f062253e88039a036ed61095302",
+    "crates/ottrin-search/src/windows_index_task.ps1": "f1485bdff5113ef6a617e2cac5ae46d5e513246de9904ba74c12f923ade83552",
+    "crates/ottrin-search/tests/windows_daemon.rs": "42a9b9de884a8a0b53a84cb1e7b06818c7d8739fcbdd5a75ada296ddddea727a",
+    "crates/ottrin-ui/src/lib.rs": "f85773de7726d22bedf5e37e9c074fbdc188e002fcb64068246d957b25903bee"
+  },
+  "native_standalone_executable_sha256": "20a36823331590dfcc41cbd67d3a430b0ed0a48bbacc05291c6b1af1e919ecd5",
+  "native_test_executable_sha256": "a2b37fadb7639e5c4c9c40eead0066f12c4cc3f09f2031998ad483419172eaf4",
+  "native_standalone_checks": [
+    "Current standalone indexd compiled from source; debug symbols stripped for QA upload",
+    "Private profile cold startup via shared ensure API",
+    "Second startup reuses same daemon PID",
+    "Reconcile and exact file query",
+    "Daemon survives temporary client drop",
+    "Upgrade shutdown then restart with persisted index",
+    "Private profile and processes removed"
+  ],
+  "native_scheduler_checks": [
+    "Primary signed-in user, interactive least-privilege actor",
+    "Production registration script with QA-only task name and global retirement disabled in fixture",
+    "Single user login trigger, --index-daemon action, PT0S runtime",
+    "Daemon permitted on battery",
+    "Disabled state and security descriptor preserved on registration replacement",
+    "Actor task result zero, both QA registrations removed"
+  ],
+  "initial_fixture_errors": [
+    "Scheduler normalized trigger UserId to account name; corrected fixture to compare SIDs",
+    "Running-instance refresh raced completed task; controller polls registration state instead",
+    "Expected missing-registration catch left controller failure exit status; final controller explicitly exits zero after successful checks and cleanup"
+  ],
+  "host_checks": [
+    "218 regular Linux search tests pass; two ignored",
+    "Strict Linux and Windows app/search all-target Clippy pass",
+    "22 Linux application binary tests pass"
+  ],
+  "scope": "Standalone daemon uses guest SYSTEM token; registration checks use signed-in user. No real login-cycle daemon trigger, native GUI search/lifetime, installer/update/rollback, or idle CPU acceptance in this checkpoint. Published packages unchanged.",
+  "logs": [
+    "windows-standalone-startup.log",
+    "windows-scheduler-native.log"
+  ],
+  "cleanup": {
+    "owned_guest_processes_absent": true,
+    "qa_task_registrations_absent": true,
+    "private_profile_removed": true,
+    "guest_uploads_and_actor_files_removed": true,
+    "host_stripped_executable_and_actor_file_removed": true,
+    "owned_vm": "shut off"
+  }
+}

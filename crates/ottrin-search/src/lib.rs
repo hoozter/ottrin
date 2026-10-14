@@ -209,7 +209,7 @@ pub use daemon_client::SearchDaemonClient;
 #[cfg(target_os = "windows")]
 mod windows_daemon;
 #[cfg(target_os = "windows")]
-pub use windows_daemon::run_windows_search_daemon;
+pub use windows_daemon::{ensure_windows_search_daemon, run_windows_search_daemon};
 
 pub struct SearchService {
     config: Arc<RwLock<SearchConfig>>,
@@ -505,7 +505,14 @@ impl SearchService {
             }
             Err("The session index did not become ready. Its startup diagnostics are available in the application log.".to_string())
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(target_os = "windows")]
+        {
+            let executable =
+                find_ottrin_binary().ok_or("Cannot locate this package's index daemon")?;
+            ensure_windows_search_daemon(&executable)?;
+            Ok("Indexing is running.".to_string())
+        }
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         restart_sqlite_schedule()
     }
 
@@ -521,7 +528,12 @@ impl SearchService {
             prepare_running_daemon_for_upgrade()?;
             Ok("Indexing stopped. Your saved index is kept. Opening Ottrin again starts indexing for that session.".to_string())
         }
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(target_os = "windows")]
+        {
+            prepare_running_windows_daemon()?;
+            Ok("Indexing stopped. Your saved index and login setup are kept.".to_string())
+        }
+        #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         Err("Stopping the background index service is not available on this platform.".to_string())
     }
 
@@ -1600,7 +1612,7 @@ fn sqlite_windows_task_status_with(
         Ok(Some(registration)) if registration.enabled => LocateScheduleStatus {
             source: "Windows Task Scheduler".to_string(),
             enabled: true,
-            detail: "Ready for scheduled refresh".to_string(),
+            detail: "Enabled at login".to_string(),
         },
         Ok(Some(_)) => LocateScheduleStatus {
             source: "Windows Task Scheduler".to_string(),
@@ -1681,11 +1693,21 @@ fn windows_index_task_name() -> Result<String, String> {
 }
 
 #[cfg(target_os = "windows")]
+fn prepare_running_windows_daemon() -> Result<(), String> {
+    let client = SearchDaemonClient::connect_default()?;
+    if client.ping().is_ok() {
+        client.prepare_upgrade_and_wait()?;
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
 fn run_sqlite_windows_task(operation: SqliteWindowsTaskOperation) -> Result<bool, String> {
     if operation == SqliteWindowsTaskOperation::Query {
         return query_sqlite_windows_task().map(|task| task.is_some());
     }
     let task_name = windows_index_task_name()?;
+    prepare_running_windows_daemon()?;
     let args = operation
         .args(&task_name)
         .ok_or("Task query requires authenticated inspection")?;
@@ -2093,7 +2115,10 @@ pub fn install_sqlite_schedule(config: &SearchConfig) -> Result<String, String> 
 
     #[cfg(target_os = "windows")]
     {
-        install_sqlite_windows_task(config, &ottrin)
+        let _ = config; // Refresh timing belongs to the persistent worker, not its startup task.
+        query_sqlite_windows_task()?; // Inspection failures must precede any runtime changes.
+        prepare_running_windows_daemon()?;
+        install_sqlite_windows_task(&ottrin)
     }
 
     #[cfg(not(any(target_os = "linux", target_os = "windows")))]
@@ -2694,8 +2719,7 @@ fn systemd_exec_quote(path: &Path) -> String {
 }
 
 #[cfg(target_os = "windows")]
-fn install_sqlite_windows_task(config: &SearchConfig, ottrin: &Path) -> Result<String, String> {
-    let interval = sqlite_windows_task_interval(config)?;
+fn install_sqlite_windows_task(ottrin: &Path) -> Result<String, String> {
     let output = internal_command("powershell.exe")
         .args([
             "-NoProfile",
@@ -2706,7 +2730,6 @@ fn install_sqlite_windows_task(config: &SearchConfig, ottrin: &Path) -> Result<S
                 include_str!("windows_index_task.ps1")
             ),
         ])
-        .env("OTTRIN_TASK_INTERVAL_HOURS", interval.to_string())
         .env("OTTRIN_TASK_EXECUTABLE", ottrin)
         .output()
         .map_err(|error| format!("Failed to configure the index task: {error}"))?;
@@ -2722,21 +2745,6 @@ fn install_sqlite_windows_task(config: &SearchConfig, ottrin: &Path) -> Result<S
         return Err("Index task setup returned no result".to_string());
     }
     Ok(message)
-}
-
-#[cfg(any(target_os = "windows", test))]
-fn sqlite_windows_task_interval(config: &SearchConfig) -> Result<u32, String> {
-    let interval = config.refresh_interval_hours;
-    if interval == 0 {
-        return Err("Periodic search refresh is disabled in Search settings".to_string());
-    }
-    if interval > 744 {
-        return Err(
-            "Windows Task Scheduler repetition intervals cannot exceed 31 days (744 hours)"
-                .to_string(),
-        );
-    }
-    Ok(interval)
 }
 
 #[cfg(target_os = "linux")]
@@ -4516,7 +4524,7 @@ mod tests {
 
         assert_eq!(status.source, "Windows Task Scheduler");
         assert!(status.enabled);
-        assert_eq!(status.detail, "Ready for scheduled refresh");
+        assert_eq!(status.detail, "Enabled at login");
     }
 
     #[test]
@@ -4591,24 +4599,6 @@ mod tests {
     }
 
     #[test]
-    fn windows_background_install_accepts_the_task_scheduler_repetition_range() {
-        for interval in [1, 6, 24, 168, 744] {
-            let config = SearchConfig {
-                refresh_interval_hours: interval,
-                ..SearchConfig::default()
-            };
-            assert_eq!(sqlite_windows_task_interval(&config).unwrap(), interval);
-        }
-        for interval in [0, 745, u32::MAX] {
-            let config = SearchConfig {
-                refresh_interval_hours: interval,
-                ..SearchConfig::default()
-            };
-            assert!(sqlite_windows_task_interval(&config).is_err());
-        }
-    }
-
-    #[test]
     fn windows_task_xml_reads_the_invariant_enabled_flag_from_utf16() {
         let xml = r#"<?xml version="1.0" encoding="UTF-16"?>
 <Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
@@ -4635,7 +4625,7 @@ mod tests {
             assert_eq!(
                 status.detail,
                 if expected {
-                    "Ready for scheduled refresh"
+                    "Enabled at login"
                 } else {
                     "Installed but disabled"
                 }

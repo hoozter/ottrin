@@ -84,3 +84,76 @@ pub fn run_windows_search_daemon(config: SearchConfig, store: PathBuf) -> Result
     }
     result
 }
+
+/// Start or replace this user's daemon using the executable owned by this package.
+/// The GUI and command-line writers use this path rather than opening another writer.
+pub fn ensure_windows_search_daemon(
+    executable: &std::path::Path,
+) -> Result<crate::SearchDaemonClient, String> {
+    use std::os::windows::process::CommandExt;
+    use std::process::{Command, Stdio};
+    let client = crate::SearchDaemonClient::connect_default()?;
+    if client.ping().is_ok() {
+        if same_executable_content(&client.server_executable()?, executable)
+            .map_err(|error| format!("Cannot compare index daemon executables: {error}"))?
+        {
+            return Ok(client);
+        }
+        client.prepare_upgrade_and_wait()?;
+    }
+    let mut child = Command::new(executable)
+        .arg("--index-daemon")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .creation_flags(0x08000000) // CREATE_NO_WINDOW; daemon survives the launching GUI.
+        .spawn()
+        .map_err(|error| format!("Cannot start the index daemon: {error}"))?;
+    let deadline = Instant::now() + Duration::from_secs(30);
+    loop {
+        if client.ping().is_ok() {
+            // Another window may have won the exclusive pipe bind.
+            if same_executable_content(&client.server_executable()?, executable)
+                .map_err(|error| format!("Cannot compare index daemon executables: {error}"))?
+            {
+                return Ok(client);
+            }
+            return Err("Another Ottrin installation started a different index daemon".to_string());
+        }
+        if let Some(status) = child.try_wait().map_err(|error| error.to_string())? {
+            return Err(format!(
+                "Index daemon exited before becoming ready ({status})"
+            ));
+        }
+        if Instant::now() >= deadline {
+            return Err("Ottrin index daemon did not become ready within 30 seconds".to_string());
+        }
+        std::thread::sleep(Duration::from_millis(25));
+    }
+}
+
+fn same_executable_content(
+    left: &std::path::Path,
+    right: &std::path::Path,
+) -> std::io::Result<bool> {
+    use std::io::Read;
+    let mut left = std::fs::File::open(left)?;
+    let mut right = std::fs::File::open(right)?;
+    let length = left.metadata()?.len();
+    if length != right.metadata()?.len() {
+        return Ok(false);
+    }
+    let mut remaining = length;
+    let mut a = [0u8; 65536];
+    let mut b = [0u8; 65536];
+    while remaining != 0 {
+        let size = remaining.min(a.len() as u64) as usize;
+        left.read_exact(&mut a[..size])?;
+        right.read_exact(&mut b[..size])?;
+        if a[..size] != b[..size] {
+            return Ok(false);
+        }
+        remaining -= size as u64;
+    }
+    Ok(true)
+}

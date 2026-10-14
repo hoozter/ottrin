@@ -1413,3 +1413,36 @@ The actor links production storage but is an integration-test executable under
 the guest SYSTEM token; it does not establish packaged standalone startup,
 standard-user scheduler behavior, UI routing or idle CPU acceptance. Windows
 GUI and scheduling integration remain next; published packages are unchanged.
+
+
+### Continuous Windows indexing — application routing and login task source
+
+Windows production UI now uses the shared remote search client for queries,
+diagnostics, configuration, rebuild and clearing; closing the GUI does not own
+or stop the daemon. Application startup and command-line index writers use the
+package-owned standalone daemon, reusing equal executable content or preparing
+a different running version before replacement. Status/search use the daemon
+when connected and retain read-only persisted snapshots when it is absent.
+Windows session Start/Stop now use the daemon. Scheduler install changes from
+periodic one-shot updates to a per-user login trigger for `--index-daemon`, with
+no execution-time limit or battery stop. Refresh timing belongs to the worker.
+Inspection errors precede task-management runtime changes; disabled state and
+permissions are preserved. The obsolete scheduler repetition-limit code/tests
+are removed.
+
+The current standalone indexd passes native cold startup, reuse of the same PID,
+reconcile/query, client disconnection, graceful upgrade shutdown and restart
+with retained index using a private profile under SYSTEM. Native registration
+under the primary signed-in user's least-privilege interactive token passes
+login-trigger/action/runtime/battery checks and disabled-state/security retention
+on replacement. The fixture substitutes QA task names and disables retirement
+of the historical global registration; it does not run the daemon at a real
+login. Its initial assertion did not account for Task Scheduler account-name
+normalization; the corrected check resolves SIDs. Controller task completion and
+expected missing-task exit status were also corrected. Final actor/controller
+exit normally and both QA registrations are removed. 218 regular Linux search
+tests pass (two ignored), along with strict Linux/Windows all-target Clippy.
+Receipt: `.hermes/evidence/windows-20261011/WINDOWS_UI_DAEMON_SOURCE_ACCEPTANCE.json`.
+Native GUI search/lifetime, actual scheduled execution/login cycle, update
+management, current installers and idle CPU acceptance remain open. Published
+packages are unchanged and retain their earlier provenance.

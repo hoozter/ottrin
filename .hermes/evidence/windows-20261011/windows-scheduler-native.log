@@ -1,0 +1,3 @@
+PASS: native interactive-user login trigger, per-user action, unlimited runtime, battery policy, disabled-state and DACL preservation
+Actor exited normally with task result 0
+QA task cleanup completed

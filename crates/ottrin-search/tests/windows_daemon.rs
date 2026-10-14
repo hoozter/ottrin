@@ -157,3 +157,83 @@ fn windows_daemon_actor() {
     };
     run_windows_search_daemon(config, root.join("index.db")).unwrap();
 }
+
+#[test]
+#[ignore = "requires an explicit private profile and current standalone indexd executable"]
+fn windows_standalone_daemon_cold_start_reuse_and_restart() {
+    let executable =
+        PathBuf::from(std::env::var_os("OTTRIN_QA_INDEXD").expect("owned standalone executable"));
+    let profile =
+        PathBuf::from(std::env::var_os("OTTRIN_QA_PROFILE").expect("owned private profile"));
+    assert_eq!(
+        std::env::var_os("APPDATA").map(PathBuf::from),
+        Some(profile.clone())
+    );
+    assert_eq!(
+        std::env::var_os("LOCALAPPDATA").map(PathBuf::from),
+        Some(profile.join("cache"))
+    );
+    assert!(
+        profile
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .starts_with("ottrin-standalone-qa-")
+    );
+    fs::create_dir_all(profile.join("files")).unwrap();
+    fs::create_dir_all(profile.join("ottrin")).unwrap();
+    fs::write(
+        profile.join("files/standalone-fixture.txt"),
+        "standalone fixture",
+    )
+    .unwrap();
+    let mut config = ottrin_core::AppConfig::default();
+    config.search.include_roots = vec![profile.join("files")];
+    config.search.refresh_interval_hours = 0;
+    config.search.use_system_locate = false;
+    config.search.manage_locate_db = false;
+    fs::write(
+        profile.join("ottrin/config.json"),
+        serde_json::to_vec(&config).unwrap(),
+    )
+    .unwrap();
+    let client = ottrin_search::ensure_windows_search_daemon(&executable).unwrap();
+    struct Cleanup(SearchDaemonClient, PathBuf);
+    impl Drop for Cleanup {
+        fn drop(&mut self) {
+            let _ = self.0.prepare_upgrade_and_wait();
+            fs::remove_dir_all(&self.1).unwrap();
+        }
+    }
+    let _cleanup = Cleanup(client.clone(), profile);
+    let pid = client.server_pid().unwrap();
+    assert_ne!(pid, std::process::id());
+    assert_eq!(client.server_executable().unwrap(), executable);
+    let reused = ottrin_search::ensure_windows_search_daemon(&executable).unwrap();
+    assert_eq!(
+        reused.server_pid().unwrap(),
+        pid,
+        "Second startup replaced a current daemon"
+    );
+    client.reconcile().unwrap();
+    let query = SearchQuery {
+        text: "standalone-fixture.txt".into(),
+        scope: SearchScope::Global,
+        root_path: None,
+        include_hidden_system: false,
+        sort: SearchSort::Relevance,
+        limit: 20,
+        offset: 0,
+        content_search: false,
+    };
+    assert_eq!(client.query(query.clone()).unwrap().response.items.len(), 1);
+    drop(reused);
+    client.ping().unwrap();
+    client.prepare_upgrade_and_wait().unwrap();
+    let restarted = ottrin_search::ensure_windows_search_daemon(&executable).unwrap();
+    assert_ne!(restarted.server_pid().unwrap(), pid);
+    restarted.reconcile().unwrap();
+    assert_eq!(restarted.query(query).unwrap().response.items.len(), 1);
+    restarted.prepare_upgrade_and_wait().unwrap();
+    assert!(client.ping().is_err());
+}

@@ -224,6 +224,11 @@ fn main() {
         eprintln!("ottrin: {error}");
         std::process::exit(1);
     }
+    #[cfg(target_os = "windows")]
+    if let Err(error) = ensure_index_daemon() {
+        report_windows_startup_failure("Ottrin index could not start", &error);
+        std::process::exit(1);
+    }
     install_windows_startup_panic_hook();
     if let Err(error) = run_gui(gui_target) {
         eprintln!("ottrin: {error}");
@@ -573,7 +578,7 @@ fn should_ensure_index_daemon(effective_uid: u32) -> bool {
     effective_uid != 0
 }
 
-#[cfg(unix)]
+#[cfg(any(unix, target_os = "windows"))]
 fn connected_index_daemon() -> Option<ottrin_search::SearchDaemonClient> {
     let client = ottrin_search::SearchDaemonClient::connect_default().ok()?;
     client.ping().ok()?;
@@ -702,6 +707,16 @@ fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
     Err("Ottrin index daemon did not become ready within 30 seconds".to_string())
 }
 
+#[cfg(target_os = "windows")]
+fn ensure_index_daemon() -> Result<ottrin_search::SearchDaemonClient, String> {
+    let current = std::env::current_exe().map_err(|error| error.to_string())?;
+    let executable = current
+        .parent()
+        .ok_or("Cannot locate the application directory")?
+        .join("ottrin-indexd.exe");
+    ottrin_search::ensure_windows_search_daemon(&executable)
+}
+
 fn resolve_direct_open_path(path: &std::path::Path) -> Result<GuiLaunchTarget, String> {
     let resolved = std::fs::canonicalize(path).map_err(|error| match error.kind() {
         std::io::ErrorKind::NotFound => format!("path does not exist: {}", path.display()),
@@ -750,7 +765,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
 
     match action {
         HeadlessAction::IndexStatus { json } => {
-            #[cfg(unix)]
+            #[cfg(any(unix, target_os = "windows"))]
             if let Some(client) = connected_index_daemon() {
                 return print_index_diagnostics(&client.diagnostics()?, json);
             }
@@ -770,7 +785,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
                 offset: 0,
                 content_search: false,
             };
-            #[cfg(unix)]
+            #[cfg(any(unix, target_os = "windows"))]
             if let Some(client) = connected_index_daemon() {
                 return print_search_response(client.query(query)?.response, json);
             }
@@ -822,7 +837,7 @@ fn run_headless_action(action: HeadlessAction) -> Result<(), String> {
 }
 
 fn run_index_writer(json: bool, rebuild: bool) -> Result<(), String> {
-    #[cfg(unix)]
+    #[cfg(any(unix, target_os = "windows"))]
     {
         let client = ensure_index_daemon()?;
         client.update_config(configured_search_config())?;
@@ -833,7 +848,7 @@ fn run_index_writer(json: bool, rebuild: bool) -> Result<(), String> {
         }
         print_index_diagnostics(&client.diagnostics()?, json)
     }
-    #[cfg(not(unix))]
+    #[cfg(not(any(unix, target_os = "windows")))]
     {
         let diagnostics = ottrin_search::SearchService::new(configured_search_config())
             .run_single_update(rebuild)?;
