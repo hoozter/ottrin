@@ -1642,3 +1642,30 @@ Its test account/source/preferences and candidate staging remain necessary for
 MSI follow-up. Published downloads are unchanged. Upgrade during an actively
 writing old refresh, numbered-version upgrade, MSI, rollback and interactive
 installer acceptance remain open; this result does not close those gates.
+
+### Continuous Windows MSI candidate — ordinary native lifecycle
+
+The same clean 0aea0d8 stage now has a native WiX 5.0.2 MSI candidate at
+`.hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64.msi`, SHA-256
+`cdd87f89da6adfc1edc61539026bc9d87d7e8f1c4c931920a71798afdc22f529`.
+The authoritative shell packager runs from a temporary clean checkout of the
+candidate revision, retaining exact source/documentation/payload checks. A
+QA-only native compiler adapter is restricted to the disposable Windows overlay;
+Microsoft runtime downloads are verified against official SHA-512 metadata.
+
+Actual signed-in standard-user silent installation and removal both return zero.
+Windows Installer product state is installed (5), then unknown (-1). All 53
+installed files match the portable stage plus exact-source transaction/identity
+scripts. The running per-user login daemon serves one fixture result with an
+active watch. Preferences and source hashes remain unchanged. Uninstall removes
+the app directory, index task, generated database and Start menu entry. Native
+MSI logs confirm successful install/cleanup actions and final engine returns.
+Receipt: `.hermes/evidence/windows-20261011/WINDOWS_MSI_CONTINUOUS_LIFECYCLE_ACCEPTANCE.json`.
+
+Owned actor/processes, guest compiler/payload/archive/scripts, host compiler
+archives and temporary source checkout are removed. The overlay is shut off,
+backing content mtime unchanged; its owned account/source/preferences and the
+candidate MSI remain needed for follow-up. Published downloads are unchanged.
+This closes ordinary silent lifecycle only. MSI upgrade/repair, interactive GUI,
+failed-transaction rollback and the previously reproduced registration rollback
+defect remain open.

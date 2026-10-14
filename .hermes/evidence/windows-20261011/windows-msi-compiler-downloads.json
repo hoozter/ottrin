@@ -1,0 +1,9 @@
+{
+  "dotnet_metadata": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json",
+  "dotnet_version": "8.0.32",
+  "runtime_url": "https://builds.dotnet.microsoft.com/dotnet/Runtime/8.0.32/dotnet-runtime-8.0.32-win-x64.zip",
+  "runtime_sha512": "f0349e793d8081c682c01d736db695c9c1ec268c6173648913543db219e44cbf2e952c7ef94fc37946b0f2bb95ca1898d972a43591b8e44d5a1659f4911904c0",
+  "wix_url": "https://api.nuget.org/v3-flatcontainer/wix/5.0.2/wix.5.0.2.nupkg",
+  "wix_version": "5.0.2",
+  "wix_sha256": "f30ef0c74e2a986126539c5780be93ac24e8136eaf723b1937b26272703ae173"
+}

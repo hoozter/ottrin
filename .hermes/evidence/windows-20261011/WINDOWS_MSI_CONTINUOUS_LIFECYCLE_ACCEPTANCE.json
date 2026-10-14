@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-14",
+  "status": "pass",
+  "source_revision": "0aea0d85e48edae20af4b8803292b65ec1cbd862",
+  "candidate": ".hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64.msi",
+  "msi_sha256": "cdd87f89da6adfc1edc61539026bc9d87d7e8f1c4c931920a71798afdc22f529",
+  "product_code": "{04DF5144-F432-49CD-BC35-0B5FAF20ECA3}",
+  "compiler": {
+    "dotnet_metadata": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json",
+    "dotnet_version": "8.0.32",
+    "runtime_url": "https://builds.dotnet.microsoft.com/dotnet/Runtime/8.0.32/dotnet-runtime-8.0.32-win-x64.zip",
+    "runtime_sha512": "f0349e793d8081c682c01d736db695c9c1ec268c6173648913543db219e44cbf2e952c7ef94fc37946b0f2bb95ca1898d972a43591b8e44d5a1659f4911904c0",
+    "wix_url": "https://api.nuget.org/v3-flatcontainer/wix/5.0.2/wix.5.0.2.nupkg",
+    "wix_version": "5.0.2",
+    "wix_sha256": "f30ef0c74e2a986126539c5780be93ac24e8136eaf723b1937b26272703ae173"
+  },
+  "build": "Authoritative package-msi.sh executed in clean detached 0aea0d8 checkout against its unchanged portable stage; native WiX 5.0.2 compiler via disposable-overlay adapter",
+  "checks": [
+    "Actually signed-in standard OttrinIndexQA account, non-elevated actor",
+    "Install and uninstall msiexec both return zero; product states installed 5 then unknown -1",
+    "53 installed files match portable manifest plus exact-source transaction and identity scripts",
+    "Scheduled --index-daemon task running with one login trigger; live index ready and watcher active, fixture query total one",
+    "Preferences and source hashes unchanged through install/removal",
+    "Install directory, generated database, Start menu and index task absent after uninstall"
+  ],
+  "evidence": [
+    "windows-msi-continuous-result.json",
+    "windows-msi-candidate-hashes.json",
+    "windows-msi-continuous-actions.txt"
+  ],
+  "raw_log_sha256": {
+    "windows-msi-continuous-install.log": "5c113c02e8ffd38bf810e92c2d09c4ff518fbcbf1cc5bb3e2ed64156ebd5d284",
+    "windows-msi-continuous-uninstall.log": "7a5f3ef1f6a663eb4cd1bbfa35ea88753e5beacc410186bef5ea693013cbd395"
+  },
+  "cleanup": {
+    "owned_tasks_removed": true,
+    "owned_processes": 0,
+    "guest_tools_archives_payload_scripts_results_removed": true,
+    "temporary_source_checkout_removed": true,
+    "host_tool_downloads_removed": true,
+    "overlay_shut_off": true,
+    "backing_content_mtime_unchanged": true,
+    "account_source_preferences_retained_for_rollback_followup": true,
+    "candidate_retained_for_upgrade_rollback": true
+  },
+  "limits": [
+    "Ordinary silent lifecycle only; no MSI upgrade, repair, GUI or failed-transaction rollback acceptance",
+    "Published dist packages unchanged",
+    "Previously reproduced MSI rollback registration defect remains open"
+  ]
+}
