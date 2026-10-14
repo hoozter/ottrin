@@ -1,0 +1,60 @@
+{
+  "phase": "helper-verified",
+  "current_case": "unchanged-running",
+  "product_state_before": 1,
+  "after_xml": "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n  <RegistrationInfo>\r\n    <Description>Ottrin continuous background index service</Description>\r\n    <URI>\\Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1029</URI>\r\n  </RegistrationInfo>\r\n  <Principals>\r\n    <Principal id=\"Author\">\r\n      <UserId>S-1-5-21-3183210791-1673105385-3262580894-1029</UserId>\r\n      <LogonType>InteractiveToken</LogonType>\r\n    </Principal>\r\n  </Principals>\r\n  <Settings>\r\n    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\r\n    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\r\n    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>\r\n    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n    <IdleSettings>\r\n      <Duration>PT10M</Duration>\r\n      <WaitTimeout>PT1H</WaitTimeout>\r\n      <StopOnIdleEnd>true</StopOnIdleEnd>\r\n      <RestartOnIdle>false</RestartOnIdle>\r\n    </IdleSettings>\r\n  </Settings>\r\n  <Triggers>\r\n    <LogonTrigger>\r\n      <UserId>DESKTOP-81GHP8U\\OttrinIndexQA</UserId>\r\n    </LogonTrigger>\r\n  </Triggers>\r\n  <Actions Context=\"Author\">\r\n    <Exec>\r\n      <Command>C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin-indexd.exe</Command>\r\n      <Arguments>--index-daemon</Arguments>\r\n    </Exec>\r\n  </Actions>\r\n</Task>",
+  "query": {
+    "items": [
+      {
+        "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+        "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+        "name": "scheduled-daemon-fixture.txt",
+        "kind": "File",
+        "is_executable": false,
+        "symlink_target_is_dir": null,
+        "size_bytes": 24,
+        "modified_unix_secs": 1792008407,
+        "content_snippet": null
+      }
+    ],
+    "total": 1,
+    "status": "Ready",
+    "error": null
+  },
+  "before_xml": "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n  <RegistrationInfo>\r\n    <Description>Ottrin continuous background index service</Description>\r\n    <URI>\\Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1029</URI>\r\n  </RegistrationInfo>\r\n  <Principals>\r\n    <Principal id=\"Author\">\r\n      <UserId>S-1-5-21-3183210791-1673105385-3262580894-1029</UserId>\r\n      <LogonType>InteractiveToken</LogonType>\r\n    </Principal>\r\n  </Principals>\r\n  <Settings>\r\n    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\r\n    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\r\n    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>\r\n    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n    <IdleSettings>\r\n      <Duration>PT10M</Duration>\r\n      <WaitTimeout>PT1H</WaitTimeout>\r\n      <StopOnIdleEnd>true</StopOnIdleEnd>\r\n      <RestartOnIdle>false</RestartOnIdle>\r\n    </IdleSettings>\r\n  </Settings>\r\n  <Triggers>\r\n    <LogonTrigger>\r\n      <UserId>DESKTOP-81GHP8U\\OttrinIndexQA</UserId>\r\n    </LogonTrigger>\r\n  </Triggers>\r\n  <Actions Context=\"Author\">\r\n    <Exec>\r\n      <Command>C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin-indexd.exe</Command>\r\n      <Arguments>--index-daemon</Arguments>\r\n    </Exec>\r\n  </Actions>\r\n</Task>",
+  "status": "pass",
+  "cases": [
+    {
+      "xml_preserved": true,
+      "case": "enabled-running",
+      "instances_after": 1,
+      "security_preserved": true,
+      "running_before": true,
+      "enabled_after": true
+    },
+    {
+      "xml_preserved": true,
+      "case": "disabled-running",
+      "instances_after": 1,
+      "security_preserved": true,
+      "running_before": true,
+      "enabled_after": false
+    },
+    {
+      "xml_preserved": true,
+      "case": "enabled-idle",
+      "instances_after": 0,
+      "security_preserved": true,
+      "running_before": false,
+      "enabled_after": true
+    },
+    {
+      "xml_preserved": true,
+      "case": "unchanged-running",
+      "instances_after": 1,
+      "security_preserved": true,
+      "running_before": true,
+      "enabled_after": true
+    }
+  ]
+}

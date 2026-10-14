@@ -1,0 +1,11 @@
+{
+  "exit": 1,
+  "task_retained_running": true,
+  "stdout": "",
+  "phase": "cache-failure-preserved-index",
+  "database_sha256": "0D6E332A4A6C005CCC0C5D50081BBDF4C917C63011638636CFF3F366368227A4",
+  "stderr": "ottrin: Failed to remove C:\\Users\\OttrinIndexQA\\AppData\\Local\\ottrin\\preview_cache\\rollback-owned-locked: The process cannot access the file because it is being used by another process. (os error 32)\n",
+  "source_executable_sha256": "1b76358e86ba159d10a7578ed031fecaef720bfb19ccc77493fd1894dd589c5a",
+  "status": "pass",
+  "index_bytes_preserved": true
+}

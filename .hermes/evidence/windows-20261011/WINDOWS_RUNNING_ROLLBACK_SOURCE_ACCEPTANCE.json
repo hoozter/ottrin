@@ -1,0 +1,103 @@
+{
+  "status": "partial",
+  "date": "2026-10-14",
+  "baseline_candidate_sha256": "b6f46322965d6e6b3a9624349dc49c2bc7d0fe576c901fcbdbcfc70165351771",
+  "baseline": {
+    "locked_cache_failure_exit": 1603,
+    "product_state_after_failure": 1,
+    "running_instances_before": 1,
+    "running_instances_after": 0,
+    "database_after_failure": false,
+    "all_payload_files_retained": 53
+  },
+  "implemented": [
+    "Uninstall clears expendable preview cache first and returns its error before removing service/search storage",
+    "Task snapshots schema 3 capture actual live-instance intent",
+    "Task restoration preserves an unchanged instance, resumes formerly running tasks and retains idle state",
+    "Disabled-running restoration waits for startup before restoring disabled login state; XML/security retained"
+  ],
+  "native_checks": {
+    "helper_cases": [
+      {
+        "xml_preserved": true,
+        "case": "enabled-running",
+        "instances_after": 1,
+        "security_preserved": true,
+        "running_before": true,
+        "enabled_after": true
+      },
+      {
+        "xml_preserved": true,
+        "case": "disabled-running",
+        "instances_after": 1,
+        "security_preserved": true,
+        "running_before": true,
+        "enabled_after": false
+      },
+      {
+        "xml_preserved": true,
+        "case": "enabled-idle",
+        "instances_after": 0,
+        "security_preserved": true,
+        "running_before": false,
+        "enabled_after": true
+      },
+      {
+        "xml_preserved": true,
+        "case": "unchanged-running",
+        "instances_after": 1,
+        "security_preserved": true,
+        "running_before": true,
+        "enabled_after": true
+      }
+    ],
+    "unchanged_instance_guid_assertion": "passed",
+    "helper_post_restore_query_total": 1,
+    "source_cli_blocked_cache": {
+      "exit": 1,
+      "task_retained_running": true,
+      "stdout": "",
+      "phase": "cache-failure-preserved-index",
+      "database_sha256": "0D6E332A4A6C005CCC0C5D50081BBDF4C917C63011638636CFF3F366368227A4",
+      "stderr": "ottrin: Failed to remove C:\\Users\\OttrinIndexQA\\AppData\\Local\\ottrin\\preview_cache\\rollback-owned-locked: The process cannot access the file because it is being used by another process. (os error 32)\n",
+      "source_executable_sha256": "1b76358e86ba159d10a7578ed031fecaef720bfb19ccc77493fd1894dd589c5a",
+      "status": "pass",
+      "index_bytes_preserved": true
+    }
+  },
+  "source_checks": {
+    "windows_release_app_build": "passed",
+    "windows_app_search_all_targets_strict_clippy": "passed",
+    "formatting": "passed",
+    "msi_source_contract": "passed"
+  },
+  "repair_observation": "Standard-user /i repair refused with 1602 at SECUREREPAIR; no security policy/ACL changes attempted",
+  "evidence": [
+    "windows-msi-running-rollback-baseline.json",
+    "windows-msi-running-helper-result.json",
+    "windows-uninstall-cache-guard-result.json",
+    "windows-msi-running-repair-probe.json",
+    "windows-running-rollback-causal-errors.txt",
+    "windows-rollback-overlay-cleanup.json"
+  ],
+  "raw_log_sha256": {
+    "windows-msi-running-rollback-failure.log": "a7deb5975742a44b0e68dc75df307955427208c758e4f7f5328bf9744a462dc1",
+    "windows-msi-running-repair.log": "3ed9e39da5899cc0af6c6d619221be684c8c2b3b0e01eb7e335cbc9c86c6dbda"
+  },
+  "cleanup": {
+    "overlay_removed": true,
+    "owned_disk_removed": true,
+    "owned_nvram_tpm_removed_by_libvirt": true,
+    "backing_content_mtime_unchanged": true,
+    "backing_vm_state": "shut off",
+    "cleanup_method": "Discarded the task-owned COW overlay after saving results; did not repair MSI registration or change Windows security policy",
+    "template_retained_for_fresh_future_qa": true
+  },
+  "limits": [
+    "Not full MSI rollback acceptance: per-user product registration remains broken in the exact candidate baseline",
+    "New fixes are source/helper acceptance only; replacement packages not yet built or published",
+    "CLI cache guard executable was built before the final helper reconciliation refinement; its cache guard code is unchanged and helper variants were independently executed from final source",
+    "The corrupted task-owned overlay was discarded, not repaired; original backing guest unchanged",
+    "Blocked cache may have had other expendable cache entries removed before reporting failure; service/index/preferences/source are preserved"
+  ]
+}

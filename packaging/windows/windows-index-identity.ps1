@@ -59,20 +59,52 @@ function Get-OttrinSupersededTask($folder) {
 }
 
 function Get-OttrinTaskRecord($name, $task) {
-    @{ name = $name; xml = $(if ($null -ne $task) { $task.Xml } else { $null }); security = $(if ($null -ne $task) { $task.GetSecurityDescriptor(7) } else { $null }) }
+    @{ name = $name; xml = $(if ($null -ne $task) { $task.Xml } else { $null }); security = $(if ($null -ne $task) { $task.GetSecurityDescriptor(7) } else { $null }); running = ($null -ne $task -and $task.GetInstances(0).Count -ne 0) }
 }
 
 function Restore-OttrinTaskRecord($folder, $record) {
+    if ($record.running -isnot [bool]) { throw 'Rollback task running state is invalid.' }
     $existing = $null
     try { $existing = $folder.GetTask($record.name) }
     catch {
         if ($_.Exception.GetBaseException().HResult -ne -2147024894) { throw }
     }
-    if ($null -ne $existing) { Stop-OttrinIndexTask $existing }
-    if ($null -eq $record.xml) {
-        if ($null -ne $existing) { $folder.DeleteTask($record.name, 0) }
+    if ($null -ne $existing) { Assert-OttrinTaskOwner $existing }
+    $restored = $null
+    if ($null -ne $existing -and $existing.Xml -eq $record.xml -and
+        $existing.GetSecurityDescriptor(7) -eq $record.security) {
+        # A cleanup failure can leave the original task untouched. Preserve its
+        # live instance instead of stopping and replacing an identical task.
+        $restored = $existing
     } else {
-        $restored = $folder.RegisterTask($record.name, $record.xml, 54, $null, $null, 3, $null)
-        $restored.SetSecurityDescriptor($record.security, 16)
+        if ($null -ne $existing) { Stop-OttrinIndexTask $existing }
+        if ($null -eq $record.xml) {
+            if ($null -ne $existing) { $folder.DeleteTask($record.name, 0) }
+        } else {
+            $restored = $folder.RegisterTask($record.name, $record.xml, 54, $null, $null, 3, $null)
+            $restored.SetSecurityDescriptor($record.security, 16)
+        }
+    }
+    if ($null -ne $restored) {
+        if ($record.running -and $restored.GetInstances(0).Count -eq 0) {
+            # Resume captured instance intent, independently of future triggers.
+            # Disabled tasks can have live instances; preserve that distinction.
+            $enabled = $restored.Enabled
+            try {
+                if (-not $enabled) { $restored.Enabled = $true }
+                $instance = $restored.RunEx($null, 2, 0, $null)
+                if ($null -eq $instance) { throw 'Restored index task did not accept a restart.' }
+                $deadline = [DateTime]::UtcNow.AddSeconds(10)
+                while ($instance.State -ne 4) {
+                    $instance.Refresh()
+                    if ([DateTime]::UtcNow -ge $deadline) { throw 'Restored index task did not start within 10 seconds.' }
+                    Start-Sleep -Milliseconds 20
+                }
+            } finally {
+                if (-not $enabled) { $restored.Enabled = $false }
+            }
+        } elseif (-not $record.running -and $restored.GetInstances(0).Count -ne 0) {
+            Stop-OttrinIndexTask $restored
+        }
     }
 }

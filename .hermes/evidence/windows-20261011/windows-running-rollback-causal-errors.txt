@@ -1,0 +1,24 @@
+windows-msi-running-rollback-failure.log
+CustomAction CleanupBeforeUninstall returned actual error code 1 (note this may not be 100% accurate if translation happened inside sandbox)
+MSI (s) (F4:D0) [23:01:31:978]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\TempPackages 3: 5
+MSI (s) (F4:D0) [23:01:31:978]: Error in rollback skipped.	Return: 3
+MSI (s) (F4:D0) [23:01:31:980]: Note: 1: 1401 2: HKEY_USERS\S-1-5-21-3183210791-1673105385-3262580894-1029\Software\Microsoft\Installer\UpgradeCodes\2EC40340E0993504E9ADFAE39645C8D9 3: 1307
+MSI (s) (F4:D0) [23:01:31:980]: Error in rollback skipped.	Return: 3
+MSI (s) (F4:D0) [23:01:31:992]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{2FB8E710-BCA3-4C03-8229-1CE8521B6F42} 3: 5
+MSI (s) (F4:D0) [23:01:31:992]: Error in rollback skipped.	Return: 3
+MSI (s) (F4:D0) [23:01:31:992]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1029\Products\017E8BF23ACB30C42892C18E25B1F624\InstallProperties 3: 5
+MSI (s) (F4:D0) [23:01:31:994]: Error in rollback skipped.	Return: 3
+MSI (s) (F4:D0) [23:01:31:994]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1029\Products\017E8BF23ACB30C42892C18E25B1F624\InstallProperties 3: 5
+MSI (s) (F4:D0) [23:01:31:996]: Error in rollback skipped.	Return: 3
+MSI (s) (F4:D0) [23:01:31:996]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1029\Products\017E8BF23ACB30C42892C18E25B1F624\InstallProperties 3: 5
+MSI (s) (F4:D0) [23:01:31:996]: Error in rollback skipped.	Return: 3
+MSI (s) (F4:D0) [23:01:31:998]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1029\Products\017E8BF23ACB30C42892C18E25B1F624\InstallProperties 3: 5
+MSI (s) (F4:D0) [23:01:31:998]: Error in rollback skipped.	Return: 3
+MSI (s) (F4:D0) [23:01:32:000]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-21-3183210791-1673105385-3262580894-1029\Products\017E8BF23ACB30C42892C18E25B1F624\Usage 3: 5
+MSI (s) (F4:D0) [23:01:32:000]: Error in rollback skipped.	Return: 3
+MSI (s) (F4:D0) [23:01:32:002]: Note: 1: 1401 2: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\2EC40340E0993504E9ADFAE39645C8D9 3: 5
+
+windows-msi-running-repair.log
+MSI (s) (F4:8C) [23:05:13:243]: SECUREREPAIR: SecureRepair Failed. Error code: 3B8A56BA8
+MSI (s) (F4:8C) [23:05:13:309]: MainEngineThread is returning 1602
+MSI (c) (EC:5C) [23:05:13:323]: MainEngineThread is returning 1602

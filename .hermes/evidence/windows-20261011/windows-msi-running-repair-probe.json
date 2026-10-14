@@ -1,0 +1,6 @@
+{
+  "phase": "install",
+  "status": "fail",
+  "error": "msiexec exit 1602: /i C:\\OttrinQA-20261011\\msi-rollback-current.msi /qn /norestart /l*v C:\\OttrinQA-20261011\\msi-rollback-live-tests\\repair.log",
+  "stack": "at Assert, C:\\OttrinQA-20261011\\msi-running-helper-actor.ps1: line 4\r\nat Invoke-Msi, C:\\OttrinQA-20261011\\msi-running-helper-actor.ps1: line 9\r\nat <ScriptBlock>, C:\\OttrinQA-20261011\\msi-running-helper-actor.ps1: line 30"
+}

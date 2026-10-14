@@ -1,0 +1,9 @@
+{
+  "overlay_removed": true,
+  "owned_disk_removed": true,
+  "owned_nvram_tpm_removed_by_libvirt": true,
+  "backing_content_mtime_unchanged": true,
+  "backing_vm_state": "shut off",
+  "cleanup_method": "Discarded the task-owned COW overlay after saving results; did not repair MSI registration or change Windows security policy",
+  "template_retained_for_fresh_future_qa": true
+}

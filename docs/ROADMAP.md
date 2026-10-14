@@ -1707,3 +1707,42 @@ rollback/live-worker follow-up. Portable/NSIS were rebuilt coherently but this
 new native acceptance is MSI-specific. Public dist downloads are unchanged.
 Active-old-writer upgrade, numbered-release upgrade, interactive installer,
 MSI repair and failed-transaction rollback remain open.
+
+### Windows failed-uninstall lifecycle — source fixes, registration gate open
+
+A fresh native test of the 85f1395 MSI candidate (SHA-256
+`b6f46322965d6e6b3a9624349dc49c2bc7d0fe576c901fcbdbcfc70165351771`)
+reproduces locked-cache uninstall failure: all 53 payload files and task XML/
+security survive, but product state becomes advertised (1), the running daemon
+is left stopped, and the generated index was deleted before the cache error.
+Standard-user silent repair is then refused with 1602 at `SECUREREPAIR`.
+No MSI security-policy or registry-permission workaround is applied. The
+[upstream per-user registration report](https://github.com/wixtoolset/issues/issues/8574)
+is still open; this is related evidence, not proof of its complete root cause.
+
+Two Ottrin-owned problems are fixed in source. Cleanup now clears the expendable
+thumbnail cache first and returns its error before dismantling a usable index/
+service. A native source-built CLI reports the actual sharing violation while
+retaining the running task, byte-identical database, preferences and source.
+Snapshot schema 3 records actual running instances. Restoration leaves identical
+live tasks intact, resumes captured running state after task removal, and keeps
+idle tasks idle. A disabled-running task is temporarily enabled for demand start,
+then disabled again after startup; future login state is preserved.
+
+Native standard-user helper checks pass enabled-running, disabled-running,
+enabled-idle and unchanged-running cases, exact XML/security preservation,
+unchanged InstanceGuid preservation, transaction artifact cleanup and a live
+one-result query. An initial abrupt-stop probe and stale COM XML observation are
+retained; the final fixture uses production graceful removal and fresh task
+queries. Release Windows app build, strict Windows app/search all-target Clippy,
+formatting and MSI source contract pass. Receipt:
+`.hermes/evidence/windows-20261011/WINDOWS_RUNNING_ROLLBACK_SOURCE_ACCEPTANCE.json`.
+
+These are source/helper checks, not an updated MSI package or full rollback
+acceptance. Rebuild coherent candidates and repeat packaged failure/retry before
+publication; product-registration rollback remains open independently. All test
+processes and the corrupted task-owned overlay/disk/NVRAM/TPM are removed after
+saving evidence. Cleanup discards the disposable environment rather than
+claiming MSI recovery. Backing guest is shut off with unchanged content mtime;
+published downloads and prior candidate packages remain unchanged. The compact
+VM template remains available for fresh subsequent native QA.

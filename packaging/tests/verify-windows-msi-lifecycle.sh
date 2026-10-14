@@ -23,7 +23,8 @@ require_literal() {
 
 # The MSI is per-user and delegates lifecycle ownership to the installed app.
 # Cleanup runs before destructive standard actions and a nonzero result aborts uninstall,
-# preserving the installed payload and registration for a retry.
+# scheduling task restoration. Native failure/retry checks must separately
+# verify payload, process, data and Windows Installer registration restoration.
 require_literal "$SOURCE" 'Scope="perUser"'
 require_literal "$SOURCE" 'Schedule="afterInstallExecute"'
 require_literal "$SOURCE" 'ExeCommand="index service-install"'

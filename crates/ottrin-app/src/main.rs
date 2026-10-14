@@ -390,6 +390,19 @@ fn handle_cli_action() -> bool {
     let mut freed = 0_u64;
     let mut errors = Vec::new();
 
+    // A blocked thumbnail cache must not dismantle a usable index/service.
+    // This expendable cache is the first cleanup boundary; report its failure
+    // before changing the background task or saved search storage.
+    match clear_preview_cache_storage() {
+        Ok(bytes) => {
+            freed = freed.saturating_add(bytes);
+            println!("Removed thumbnail cache: {}", format_size(bytes));
+        }
+        Err(error) => {
+            eprintln!("ottrin: {error}");
+            std::process::exit(1);
+        }
+    }
     match ottrin_search::SearchService::uninstall_sqlite_schedule() {
         Ok(msg) => println!("{msg}"),
         Err(err) => errors.push(err),
@@ -400,13 +413,6 @@ fn handle_cli_action() -> bool {
             println!("Removed search storage: {}", format_size(bytes));
         }
         Err(err) => errors.push(err),
-    }
-    match clear_preview_cache_storage() {
-        Ok(bytes) => {
-            freed = freed.saturating_add(bytes);
-            println!("Removed thumbnail cache: {}", format_size(bytes));
-        }
-        Err(error) => errors.push(error),
     }
     match remove_terminal_launcher_file() {
         Ok(msg) => println!("{msg}"),

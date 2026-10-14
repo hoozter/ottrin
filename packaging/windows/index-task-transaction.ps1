@@ -36,7 +36,7 @@ if ($Phase -eq 'Snapshot') {
     $task = Get-OttrinIndexTask $folder
     if ($null -ne $task) { Assert-OttrinTaskOwner $task }
     $superseded = Get-OttrinSupersededTask $folder
-    $record = @{ version = 2; user = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value; tasks = @((Get-OttrinTaskRecord $TaskName $task)) }
+    $record = @{ version = 3; user = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value; tasks = @((Get-OttrinTaskRecord $TaskName $task)) }
     if ($null -ne $superseded) { $record.tasks += (Get-OttrinTaskRecord 'Ottrin Index' $superseded) }
     $bytes = [Text.Encoding]::UTF8.GetBytes(($record | ConvertTo-Json -Compress))
     $file = [IO.File]::Open($Snapshot, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
@@ -54,7 +54,7 @@ if ($Phase -eq 'Snapshot') {
     # Snapshot can fail before any mutation, in which case there is nothing to undo.
     if (-not (Test-Path -LiteralPath $Snapshot)) { return }
     $record = Get-Content -LiteralPath $Snapshot -Encoding UTF8 -Raw | ConvertFrom-Json
-    if ($record.version -ne 2 -or $record.user -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) {
+    if ($record.version -ne 3 -or $record.user -ne [Security.Principal.WindowsIdentity]::GetCurrent().User.Value) {
         throw 'Index rollback snapshot does not belong to this user or schema.'
     }
     $folder = Task-Folder
