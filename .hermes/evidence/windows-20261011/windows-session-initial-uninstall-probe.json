@@ -1,0 +1,4 @@
+{
+    "error":  "Installed files remain\r\nAt C:\\OttrinQA-20261011\\index-session-tests\\finish.ps1:36 char:25\r\n+  if(Test-Path $install){throw \u0027Installed files remain\u0027}\r\n+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : OperationStopped: (Installed files remain:String) [], RuntimeException\r\n    + FullyQualifiedErrorId : Installed files remain\r\n \r\n",
+    "status":  "fail"
+}

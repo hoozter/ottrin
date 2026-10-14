@@ -1,0 +1,10 @@
+{
+    "limits":  "Daemon left running for real reboot trigger check; uninstall pending",
+    "task":  "Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1029",
+    "sid":  "S-1-5-21-3183210791-1673105385-3262580894-1029",
+    "preference_hash":  "FA1D4D2B286F7E9FA02C15D9A02D5D06A436BEBF97CE59DC0FA88D127BEBD525",
+    "daemon_pid":  1240,
+    "status":  "pass",
+    "install":  "C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin",
+    "phase":  "reinstalled"
+}

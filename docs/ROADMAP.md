@@ -1582,3 +1582,34 @@ lifetime checks for this candidate. Native graphics, broader theme/scaling, real
 login-trigger execution and installer upgrade/rollback remain open. Owned native
 GUI/daemon/actor/profile/extraction fixtures are removed; accepted dist downloads
 remain unchanged.
+
+
+### Continuous Windows candidate — real sign-in and NSIS lifecycle
+
+The 0aea0d8 NSIS candidate (SHA-256
+`344807cbd3b350f81b66a10c26cb4f0ceade99fa61d80fef04a8dc48f5cf12e8`)
+passes fresh silent install and same-version reinstall under a fresh standard
+account actually signed into Windows. All 51 installed payload files match
+staging; scheduled daemon setup starts it and public reconcile/query/restart
+work. The test reboots the guest with the daemon running: the per-user login
+trigger starts the installed daemon on the new boot, and its retained index
+serves the fixture with an active watch. Public service removal stops it, deletes
+the task and retains the database/preferences. Full uninstall subsequently
+removes installed files, Installed Apps/Start menu entries and generated index,
+while preserving preferences and user source.
+
+The first uninstall probe waited only for the bootstrap launcher and saw files
+remaining while its copied worker completed. Independent standard-user final
+verification passes after completion; this is retained as a fixture observation,
+not a product failure or a claimed worker exit code. Receipt:
+`.hermes/evidence/windows-20261011/WINDOWS_SCHEDULED_NSIS_LIFECYCLE_ACCEPTANCE.json`.
+
+Testing uses the disposable `ottrin-index-qa` qcow2 overlay and a fresh signed-in
+standard account, so real task startup uses its real profile without changing
+the existing guest's index. The base VM remains shut off and backing content
+mtime is unchanged; libvirt adjusted access ownership while mode stays 0600.
+Actors/processes and script fixtures are cleaned up; the shut-off overlay and
+candidates remain needed for MSI/cross-version checks. Do not run the backing VM
+while reusing this overlay; verify backing mtime before resuming. MSI, cross-version
+upgrade, failed-transaction rollback and installer GUI remain open. Accepted
+dist downloads are unchanged.

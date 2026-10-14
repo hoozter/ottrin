@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+      "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+      "name": "scheduled-daemon-fixture.txt",
+      "kind": "File",
+      "is_executable": false,
+      "symlink_target_is_dir": null,
+      "size_bytes": 24,
+      "modified_unix_secs": 1792008407,
+      "content_snippet": null
+    }
+  ],
+  "total": 1,
+  "status": "Ready",
+  "error": null
+}

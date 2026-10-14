@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-14",
+  "candidate_revision": "0aea0d85e48edae20af4b8803292b65ec1cbd862",
+  "nsis_sha256": "344807cbd3b350f81b66a10c26cb4f0ceade99fa61d80fef04a8dc48f5cf12e8",
+  "portable_sha256": "fcd6dc0440a14e836944383c3f53a36c33285521f9920668719828097992e624",
+  "native_result": {
+    "same_version_reinstall": true,
+    "initial_uninstall_probe": "Bootstrap exited before worker; final worker state independently verified",
+    "preferences_preserved": true,
+    "scheduled_restart": true,
+    "installer_sha256": "344807cbd3b350f81b66a10c26cb4f0ceade99fa61d80fef04a8dc48f5cf12e8",
+    "service_removal_preserved_db": true,
+    "real_login_trigger": true,
+    "status": "pass",
+    "sid": "S-1-5-21-3183210791-1673105385-3262580894-1029",
+    "fresh_install": true,
+    "service_removal_stopped_daemon": true,
+    "full_uninstall_files_registration_shortcuts_index_removed": true,
+    "retained_login_query_count": 1,
+    "source_preserved": true,
+    "scope": "Same-version silent NSIS and real login; no MSI/cross-version/rollback/installer GUI"
+  },
+  "installed_payload_files": 51,
+  "environment": "Disposable qcow2 overlay; fresh standard OttrinIndexQA account actually signed in; interactive least-privilege actors; no APPDATA redirection for service/installer",
+  "real_reboot": {
+    "boot": "2026-10-14T22:09:40.5000000+02:00",
+    "index_task_last_run": "2026-10-14T22:09:51.0000000",
+    "task_state_after_sign_in": 4,
+    "last_result_while_running": 267009
+  },
+  "base_protection": {
+    "base_vm": "ottrin-qa-20261011",
+    "base_shut_off": true,
+    "backing_file_opened_read_only": true,
+    "content_mtime_before_and_after": "1792007729.962647502",
+    "note": "Libvirt adjusted backing-file owner/group for QEMU access; mode remains 0600; guest disk content mtime unchanged"
+  },
+  "initial_fixture_limit": "Uninstall bootstrap process returned before its copied worker completed; first probe rejected remaining files. Independent standard-user verification after worker completion passed all final-state checks. Raw initial result retained.",
+  "scope": "Exact silent NSIS fresh install, same-version reinstall, scheduled restart, real login trigger, removal and uninstall. No MSI, cross-version upgrade, forced failure/rollback, installer GUI, broad daily-driver or signing acceptance. Accepted dist downloads unchanged.",
+  "cleanup": {
+    "test_processes_exited": true,
+    "actor_tasks_removed": true,
+    "native_installer_script_fixtures_removed": true,
+    "overlay_vm": "shut off; retained for required cross-version/MSI validation",
+    "fresh_profile": "retained only inside disposable overlay",
+    "candidate_packages": "retained at stable task staging"
+  }
+}

@@ -1,0 +1,17 @@
+{
+    "same_version_reinstall":  true,
+    "initial_uninstall_probe":  "Bootstrap exited before worker; final worker state independently verified",
+    "preferences_preserved":  true,
+    "scheduled_restart":  true,
+    "installer_sha256":  "344807cbd3b350f81b66a10c26cb4f0ceade99fa61d80fef04a8dc48f5cf12e8",
+    "service_removal_preserved_db":  true,
+    "real_login_trigger":  true,
+    "status":  "pass",
+    "sid":  "S-1-5-21-3183210791-1673105385-3262580894-1029",
+    "fresh_install":  true,
+    "service_removal_stopped_daemon":  true,
+    "full_uninstall_files_registration_shortcuts_index_removed":  true,
+    "retained_login_query_count":  1,
+    "source_preserved":  true,
+    "scope":  "Same-version silent NSIS and real login; no MSI/cross-version/rollback/installer GUI"
+}
