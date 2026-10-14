@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-14",
+  "status": "pass",
+  "scope": "Native standard-user NSIS upgrade from published periodic-index source revision to continuous-daemon candidate; both package versions are 0.1.0",
+  "old": {
+    "revision": "4552483669cfd383fcb680a9f15f716a3a2b21b6",
+    "sha256": "a4217d3184e63bedaab1cf6d0e5002c214acdbadd2cafbd6f5d3f3f13cf02077",
+    "payload_files_verified": 51
+  },
+  "candidate": {
+    "revision": "0aea0d85e48edae20af4b8803292b65ec1cbd862",
+    "sha256": "344807cbd3b350f81b66a10c26cb4f0ceade99fa61d80fef04a8dc48f5cf12e8",
+    "payload_files_verified": 51
+  },
+  "checks": [
+    "Old scheduled task has --index-update and six-hour TimeTrigger",
+    "Upgrade exits zero and replaces all payload bytes",
+    "New task has --index-daemon and one LogonTrigger, is running, and owner resolves to actual standard user SID",
+    "Public index update returns ready and active watcher; query returns one fixture",
+    "Before-install preference and user-source hashes equal post-upgrade and post-uninstall hashes",
+    "Public service-remove removes task and retains database",
+    "Uninstaller bootstrap exits zero; final state removes install directory, generated database, Installed Apps key and Start menu entry"
+  ],
+  "fixture_observations": [
+    "Initial owner assertion incorrectly compared account-name string with SID; native resolved owner matches intended SID",
+    "Initial CLI helper invocation failed; explicit bounded ProcessStartInfo verification passes against the already-upgraded install",
+    "Failed fixture probes retained; installer migration itself was not rolled back by these assertions"
+  ],
+  "evidence": [
+    "windows-upgrade-initial-probe.json",
+    "windows-upgrade-command-probe.json",
+    "windows-upgrade-verified.json",
+    "windows-upgrade-removed.json"
+  ],
+  "cleanup": {
+    "actor_tasks_removed": true,
+    "owned_processes": 0,
+    "guest_installers_scripts_results_removed": true,
+    "overlay_state": "shut off",
+    "base_vm_state": "shut off",
+    "backing_content_mtime_unchanged": true,
+    "test_account_source_preferences_retained_for_next_gate": true,
+    "candidate_staging_retained_for_msi": true
+  },
+  "limits": [
+    "Not an application-version-number upgrade; both versions are 0.1.0",
+    "Does not establish upgrade while a long-running old index refresh actively writes",
+    "MSI, failed-transaction rollback, interactive installer GUI, and broad platform acceptance remain open",
+    "Public dist packages unchanged"
+  ]
+}

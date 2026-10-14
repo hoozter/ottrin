@@ -1,0 +1,36 @@
+{
+  "preference_hash": "3C1EDA53FD67D4237F5360902CD634D7815718D77581506F7657BB120311DAAC",
+  "new_payload_files": 51,
+  "phase": "upgraded",
+  "service_status": "source=Windows Task Scheduler\nenabled=true\ndetail=Enabled at login\n",
+  "task_owner_sid": "S-1-5-21-3183210791-1673105385-3262580894-1029",
+  "stack": null,
+  "preference_hash_before": "3C1EDA53FD67D4237F5360902CD634D7815718D77581506F7657BB120311DAAC",
+  "old_payload_files": 51,
+  "old_task_xml": "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n  <RegistrationInfo>\r\n    <Description>Ottrin background index refresh</Description>\r\n    <URI>\\Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1029</URI>\r\n  </RegistrationInfo>\r\n  <Principals>\r\n    <Principal id=\"Author\">\r\n      <UserId>S-1-5-21-3183210791-1673105385-3262580894-1029</UserId>\r\n      <LogonType>InteractiveToken</LogonType>\r\n    </Principal>\r\n  </Principals>\r\n  <Settings>\r\n    <DisallowStartIfOnBatteries>true</DisallowStartIfOnBatteries>\r\n    <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>\r\n    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n    <IdleSettings>\r\n      <Duration>PT10M</Duration>\r\n      <WaitTimeout>PT1H</WaitTimeout>\r\n      <StopOnIdleEnd>true</StopOnIdleEnd>\r\n      <RestartOnIdle>false</RestartOnIdle>\r\n    </IdleSettings>\r\n  </Settings>\r\n  <Triggers>\r\n    <TimeTrigger>\r\n      <StartBoundary>2026-10-14T22:31:33</StartBoundary>\r\n      <Repetition>\r\n        <Interval>PT6H</Interval>\r\n      </Repetition>\r\n    </TimeTrigger>\r\n  </Triggers>\r\n  <Actions Context=\"Author\">\r\n    <Exec>\r\n      <Command>C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin-indexd.exe</Command>\r\n      <Arguments>--index-update</Arguments>\r\n    </Exec>\r\n  </Actions>\r\n</Task>",
+  "error": null,
+  "source_hash_before": "00ACB2202AC5E33561E03A16A37E0BA76B9915DC0EE74E18BA6F46395AACEB8F",
+  "upgrade_exit": 0,
+  "status": "pass",
+  "query": {
+    "items": [
+      {
+        "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+        "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+        "name": "scheduled-daemon-fixture.txt",
+        "kind": "File",
+        "is_executable": false,
+        "symlink_target_is_dir": null,
+        "size_bytes": 24,
+        "modified_unix_secs": 1792008407,
+        "content_snippet": null
+      }
+    ],
+    "total": 1,
+    "status": "Ready",
+    "error": null
+  },
+  "new_task_xml": "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n  <RegistrationInfo>\r\n    <SecurityDescriptor>O:S-1-5-21-3183210791-1673105385-3262580894-1029G:S-1-5-21-3183210791-1673105385-3262580894-513D:AI(A;ID;0x1f019f;;;BA)(A;ID;0x1f019f;;;SY)(A;ID;FA;;;S-1-5-21-3183210791-1673105385-3262580894-1029)</SecurityDescriptor>\r\n    <Description>Ottrin continuous background index service</Description>\r\n    <URI>\\Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1029</URI>\r\n  </RegistrationInfo>\r\n  <Principals>\r\n    <Principal id=\"Author\">\r\n      <UserId>S-1-5-21-3183210791-1673105385-3262580894-1029</UserId>\r\n      <LogonType>InteractiveToken</LogonType>\r\n    </Principal>\r\n  </Principals>\r\n  <Settings>\r\n    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\r\n    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\r\n    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>\r\n    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n    <IdleSettings>\r\n      <Duration>PT10M</Duration>\r\n      <WaitTimeout>PT1H</WaitTimeout>\r\n      <StopOnIdleEnd>true</StopOnIdleEnd>\r\n      <RestartOnIdle>false</RestartOnIdle>\r\n    </IdleSettings>\r\n  </Settings>\r\n  <Triggers>\r\n    <LogonTrigger>\r\n      <UserId>DESKTOP-81GHP8U\\OttrinIndexQA</UserId>\r\n    </LogonTrigger>\r\n  </Triggers>\r\n  <Actions Context=\"Author\">\r\n    <Exec>\r\n      <Command>C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin-indexd.exe</Command>\r\n      <Arguments>--index-daemon</Arguments>\r\n    </Exec>\r\n  </Actions>\r\n</Task>",
+  "update": "{\n  \"active_root\": null,\n  \"active_root_index\": 0,\n  \"configured_roots\": 1,\n  \"database_bytes\": 28672,\n  \"detail\": \"Ready \u252c\u2556 1 indexed\",\n  \"error\": null,\n  \"estimated_total_items\": null,\n  \"freelist_bytes\": 0,\n  \"freelist_pages\": 0,\n  \"indexed_items\": 1,\n  \"last_completed_indexed_items\": 1,\n  \"last_progress_unix_secs\": 1792009955,\n  \"last_scan_completed_unix_secs\": 1792009955,\n  \"last_scan_duration_ms\": null,\n  \"last_scan_started_unix_secs\": 1792009955,\n  \"snapshot_revision\": 4,\n  \"status\": \"ready\",\n  \"total_roots\": 1,\n  \"wal_bytes\": 0,\n  \"watched_roots\": 1,\n  \"watcher_error\": null,\n  \"watcher_ready\": true\n}\n",
+  "source_hash": "00ACB2202AC5E33561E03A16A37E0BA76B9915DC0EE74E18BA6F46395AACEB8F"
+}

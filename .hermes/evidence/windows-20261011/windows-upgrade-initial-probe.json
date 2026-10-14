@@ -1,0 +1,10 @@
+{
+  "upgrade_exit": 0,
+  "old_task_xml": "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n  <RegistrationInfo>\r\n    <Description>Ottrin background index refresh</Description>\r\n    <URI>\\Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1029</URI>\r\n  </RegistrationInfo>\r\n  <Principals>\r\n    <Principal id=\"Author\">\r\n      <UserId>S-1-5-21-3183210791-1673105385-3262580894-1029</UserId>\r\n      <LogonType>InteractiveToken</LogonType>\r\n    </Principal>\r\n  </Principals>\r\n  <Settings>\r\n    <DisallowStartIfOnBatteries>true</DisallowStartIfOnBatteries>\r\n    <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>\r\n    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n    <IdleSettings>\r\n      <Duration>PT10M</Duration>\r\n      <WaitTimeout>PT1H</WaitTimeout>\r\n      <StopOnIdleEnd>true</StopOnIdleEnd>\r\n      <RestartOnIdle>false</RestartOnIdle>\r\n    </IdleSettings>\r\n  </Settings>\r\n  <Triggers>\r\n    <TimeTrigger>\r\n      <StartBoundary>2026-10-14T22:30:18</StartBoundary>\r\n      <Repetition>\r\n        <Interval>PT6H</Interval>\r\n      </Repetition>\r\n    </TimeTrigger>\r\n  </Triggers>\r\n  <Actions Context=\"Author\">\r\n    <Exec>\r\n      <Command>C:\\Users\\OttrinIndexQA\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin-indexd.exe</Command>\r\n      <Arguments>--index-update</Arguments>\r\n    </Exec>\r\n  </Actions>\r\n</Task>",
+  "old_payload_files": 51,
+  "error": "Task owner differs",
+  "phase": "upgrade",
+  "stack": "at Assert, C:\\OttrinQA-20261011\\index-upgrade-actor.ps1: line 5\r\nat <ScriptBlock>, C:\\OttrinQA-20261011\\index-upgrade-actor.ps1: line 51",
+  "status": "fail",
+  "new_payload_files": 51
+}

@@ -1,0 +1,12 @@
+{
+  "bootstrap_exit": 0,
+  "source_hash": "00ACB2202AC5E33561E03A16A37E0BA76B9915DC0EE74E18BA6F46395AACEB8F",
+  "task_removed": true,
+  "service_remove": "SUCCESS: The scheduled task \"Ottrin Index S-1-5-21-3183210791-1673105385-3262580894-1029\" was successfully deleted.\r\nBackground Ottrin index task removed.\n",
+  "database_retained_after_service_remove": true,
+  "phase": "uninstalled",
+  "installed_files_removed": true,
+  "generated_index_removed": true,
+  "status": "pass",
+  "preference_hash": "3C1EDA53FD67D4237F5360902CD634D7815718D77581506F7657BB120311DAAC"
+}

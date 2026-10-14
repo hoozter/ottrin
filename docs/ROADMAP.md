@@ -1613,3 +1613,32 @@ candidates remain needed for MSI/cross-version checks. Do not run the backing VM
 while reusing this overlay; verify backing mtime before resuming. MSI, cross-version
 upgrade, failed-transaction rollback and installer GUI remain open. Accepted
 dist downloads are unchanged.
+
+### Windows NSIS periodic-task migration — native standard-user acceptance
+
+The published 4552483 installer (SHA-256
+`a4217d3184e63bedaab1cf6d0e5002c214acdbadd2cafbd6f5d3f3f13cf02077`)
+upgrades successfully to the 0aea0d8 continuous-daemon candidate (SHA-256
+`344807cbd3b350f81b66a10c26cb4f0ceade99fa61d80fef04a8dc48f5cf12e8`)
+under the actual signed-in standard test account. Both package versions are
+0.1.0: this verifies a source-revision/task-definition migration, not a numbered
+version upgrade. All 51 installed payload files match each respective stage.
+The six-hour `--index-update` TimeTrigger becomes a running `--index-daemon`
+LogonTrigger belonging to the same user. Public update/query report ready,
+active watch and one fixture result. Preference and source-file hashes captured
+before installation remain identical after upgrade and full uninstall.
+
+Public service removal deletes the task and retains the database; full uninstall
+then removes installed files, generated index, Installed Apps and Start menu
+entries. Uninstaller bootstrap exit zero and independently inspected final state
+are recorded, not a copied worker exit code. Initial fixture assertions needed
+account-name-to-SID normalization and explicit bounded CLI process handling;
+the unsuccessful probes are retained alongside passing native verification.
+Receipt: `.hermes/evidence/windows-20261011/WINDOWS_NSIS_PERIODIC_UPGRADE_ACCEPTANCE.json`.
+
+Owned actor tasks/processes and guest installers/scripts/results are removed;
+the reusable overlay is shut off and backing content mtime remains unchanged.
+Its test account/source/preferences and candidate staging remain necessary for
+MSI follow-up. Published downloads are unchanged. Upgrade during an actively
+writing old refresh, numbered-version upgrade, MSI, rollback and interactive
+installer acceptance remain open; this result does not close those gates.
