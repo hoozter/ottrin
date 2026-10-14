@@ -5,11 +5,12 @@ use ottrin_search::SearchDaemonClient;
 use ottrin_search::{SearchService, run_windows_search_daemon};
 use std::fs;
 use std::path::PathBuf;
+use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant};
 struct Fixture {
     root: PathBuf,
     client: SearchDaemonClient,
-    server: Option<std::thread::JoinHandle<Result<(), String>>>,
+    server: Option<Child>,
 }
 impl Fixture {
     fn start() -> Self {
@@ -23,15 +24,17 @@ impl Fixture {
         ));
         fs::create_dir_all(root.join("files")).unwrap();
         fs::write(root.join("files/original.txt"), "original content").unwrap();
-        let config = SearchConfig {
-            include_roots: vec![root.join("files")],
-            use_system_locate: false,
-            manage_locate_db: false,
-            refresh_interval_hours: 0,
-            ..SearchConfig::default()
-        };
-        let store = root.join("index.db");
-        let server = std::thread::spawn(move || run_windows_search_daemon(config, store));
+        let server = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "windows_daemon_actor",
+                "--ignored",
+                "--nocapture",
+            ])
+            .env("OTTRIN_DAEMON_TEST_ROOT", &root)
+            .stdin(Stdio::null())
+            .spawn()
+            .unwrap();
         let fixture = Self {
             root,
             client: SearchDaemonClient::connect_default().unwrap(),
@@ -59,15 +62,24 @@ impl Fixture {
             .unwrap()
     }
     fn shutdown(&mut self) {
-        self.client.shutdown().unwrap();
-        self.server.take().unwrap().join().unwrap().unwrap();
+        self.client.prepare_upgrade_and_wait().unwrap();
+        assert!(self.server.take().unwrap().wait().unwrap().success());
     }
 }
 impl Drop for Fixture {
     fn drop(&mut self) {
         if let Some(server) = self.server.take() {
             let _ = self.client.shutdown();
-            let _ = server.join();
+            let mut server = server;
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while server.try_wait().unwrap().is_none() {
+                if Instant::now() >= deadline {
+                    server.kill().unwrap();
+                    break;
+                }
+                std::thread::sleep(Duration::from_millis(20));
+            }
+            let _ = server.wait();
         }
         fs::remove_dir_all(&self.root).unwrap();
     }
@@ -75,7 +87,14 @@ impl Drop for Fixture {
 #[test]
 fn windows_persistent_daemon_serves_commands_watches_changes_and_releases_store() {
     let mut fixture = Fixture::start();
-    assert_eq!(fixture.client.server_pid().unwrap(), std::process::id());
+    assert_eq!(
+        fixture.client.server_pid().unwrap(),
+        fixture.server.as_ref().unwrap().id()
+    );
+    assert_eq!(
+        fixture.client.server_executable().unwrap(),
+        std::env::current_exe().unwrap()
+    );
     fixture.client.reconcile().unwrap();
     assert!(!fixture.query("original.txt").response.items.is_empty());
     fs::write(fixture.root.join("files/watched.txt"), "watched content").unwrap();
@@ -122,4 +141,19 @@ fn windows_persistent_daemon_serves_commands_watches_changes_and_releases_store(
         "Daemon left its writer lock held"
     );
     reopened.stop();
+}
+
+#[test]
+#[ignore = "daemon subprocess launched only by the owning integration fixture"]
+fn windows_daemon_actor() {
+    let root =
+        PathBuf::from(std::env::var_os("OTTRIN_DAEMON_TEST_ROOT").expect("owned fixture path"));
+    let config = SearchConfig {
+        include_roots: vec![root.join("files")],
+        use_system_locate: false,
+        manage_locate_db: false,
+        refresh_interval_hours: 0,
+        ..SearchConfig::default()
+    };
+    run_windows_search_daemon(config, root.join("index.db")).unwrap();
 }

@@ -7,6 +7,9 @@ use ottrin_core::{SearchConfig, SearchQuery};
 #[cfg(unix)]
 use std::os::unix::net::UnixStream;
 #[cfg(unix)]
+type DaemonStream = UnixStream;
+#[cfg(target_os = "windows")]
+type DaemonStream = crate::WindowsIndexPipeStream;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
@@ -131,6 +134,32 @@ impl SearchDaemonClient {
         Ok(())
     }
 
+    #[cfg(target_os = "windows")]
+    fn server_process(&self) -> Result<crate::windows_identity::IndexPeerProcess, String> {
+        let stream = crate::WindowsIndexPipeStream::connect(&self.identity, CLIENT_IO_TIMEOUT)
+            .map_err(|error| error.to_string())?;
+        // Keep the authenticated pipe alive until its process object is captured.
+        self.identity.open_process(stream.peer_pid())
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn server_executable(&self) -> Result<PathBuf, String> {
+        self.server_process()?.executable()
+    }
+
+    /// Wait for the authenticated server process to exit before replacing its files.
+    #[cfg(target_os = "windows")]
+    pub fn prepare_upgrade_and_wait(&self) -> Result<(), String> {
+        let stream = crate::WindowsIndexPipeStream::connect(&self.identity, CLIENT_IO_TIMEOUT)
+            .map_err(|error| error.to_string())?;
+        let process = self.identity.open_process(stream.peer_pid())?;
+        // Send preparation on the same authenticated connection whose process we captured.
+        match self.transact_stream(stream, DaemonRequest::PrepareUpgrade)? {
+            DaemonResponse::Complete => process.wait_for_exit(Duration::from_secs(30)),
+            response => Err(unexpected_response(response)),
+        }
+    }
+
     fn run_operation(&self, rebuild: bool) -> Result<(), String> {
         let operation_id = NEXT_OPERATION_ID.fetch_add(1, Ordering::Relaxed);
         let request = if rebuild {
@@ -160,15 +189,23 @@ impl SearchDaemonClient {
 
     fn transact(&self, request: DaemonRequest) -> Result<DaemonResponse, String> {
         #[cfg(unix)]
-        let mut stream = UnixStream::connect(&self.socket_path).map_err(|error| {
+        let stream = UnixStream::connect(&self.socket_path).map_err(|error| {
             format!(
                 "could not connect to Ottrin index daemon at {}: {error}",
                 self.socket_path.display()
             )
         })?;
         #[cfg(target_os = "windows")]
-        let mut stream = crate::WindowsIndexPipeStream::connect(&self.identity, CLIENT_IO_TIMEOUT)
+        let stream = crate::WindowsIndexPipeStream::connect(&self.identity, CLIENT_IO_TIMEOUT)
             .map_err(|error| error.to_string())?;
+        self.transact_stream(stream, request)
+    }
+
+    fn transact_stream(
+        &self,
+        mut stream: DaemonStream,
+        request: DaemonRequest,
+    ) -> Result<DaemonResponse, String> {
         let read_timeout = if matches!(
             request,
             DaemonRequest::Reconcile { .. } | DaemonRequest::Rebuild { .. }

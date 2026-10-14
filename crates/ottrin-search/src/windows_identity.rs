@@ -1,13 +1,20 @@
 //! Process-token identity used to authenticate the Windows index daemon transport.
+use std::ffi::OsString;
 use std::io;
 use std::mem;
+use std::os::windows::ffi::OsStringExt;
 use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
+use std::path::PathBuf;
 use std::ptr;
-use windows_sys::Win32::Foundation::{ERROR_INSUFFICIENT_BUFFER, HANDLE, LocalFree};
+use std::time::Duration;
+use windows_sys::Win32::Foundation::{
+    ERROR_INSUFFICIENT_BUFFER, HANDLE, LocalFree, WAIT_OBJECT_0, WAIT_TIMEOUT,
+};
 use windows_sys::Win32::Security::Authorization::ConvertSidToStringSidW;
 use windows_sys::Win32::Security::{GetTokenInformation, TOKEN_QUERY, TOKEN_USER, TokenUser};
 use windows_sys::Win32::System::Threading::{
-    OpenProcess, OpenProcessToken, PROCESS_QUERY_LIMITED_INFORMATION,
+    OpenProcess, OpenProcessToken, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE,
+    QueryFullProcessImageNameW, WaitForSingleObject,
 };
 
 /// Per-user endpoint identity and peer validation for the Windows index daemon.
@@ -40,22 +47,77 @@ impl IndexDaemonIdentity {
         }
         Ok(())
     }
+
+    /// Capture and authenticate the process object, avoiding PID reuse while waiting.
+    pub(crate) fn open_process(&self, pid: u32) -> Result<IndexPeerProcess, String> {
+        let process = open_process(pid, PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SYNCHRONIZE)?;
+        if process_handle_user_sid(process.as_raw_handle())? != self.sid {
+            return Err("The index daemon peer belongs to another Windows user".to_string());
+        }
+        Ok(IndexPeerProcess(process))
+    }
 }
 
-fn process_user_sid(pid: u32) -> Result<String, String> {
-    // SAFETY: no pointers; requesting limited query access and a non-inheritable handle.
-    let process = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
+pub(crate) struct IndexPeerProcess(OwnedHandle);
+
+impl IndexPeerProcess {
+    pub(crate) fn executable(&self) -> Result<PathBuf, String> {
+        let mut buffer = vec![0u16; 32768];
+        let mut length = buffer.len() as u32;
+        // SAFETY: process handle stays live; buffer and length are writable and bounded.
+        if unsafe {
+            QueryFullProcessImageNameW(self.0.as_raw_handle(), 0, buffer.as_mut_ptr(), &mut length)
+        } == 0
+        {
+            return Err(format!(
+                "Cannot inspect index daemon executable: {}",
+                io::Error::last_os_error()
+            ));
+        }
+        Ok(PathBuf::from(OsString::from_wide(
+            &buffer[..length as usize],
+        )))
+    }
+
+    pub(crate) fn wait_for_exit(&self, timeout: Duration) -> Result<(), String> {
+        let millis = timeout.as_millis().min(u128::from(u32::MAX - 1)) as u32;
+        // SAFETY: owned process handle has SYNCHRONIZE rights and remains live through the wait.
+        match unsafe { WaitForSingleObject(self.0.as_raw_handle(), millis) } {
+            WAIT_OBJECT_0 => Ok(()),
+            WAIT_TIMEOUT => Err(
+                "Ottrin index daemon did not finish preparing for upgrade within 30 seconds"
+                    .to_string(),
+            ),
+            _ => Err(format!(
+                "Cannot wait for index daemon exit: {}",
+                io::Error::last_os_error()
+            )),
+        }
+    }
+}
+
+fn open_process(pid: u32, access: u32) -> Result<OwnedHandle, String> {
+    // SAFETY: no pointers; requesting query/synchronization access and a non-inheritable handle.
+    let process = unsafe { OpenProcess(access, 0, pid) };
     if process.is_null() {
         return Err(format!(
             "Cannot inspect index daemon process {pid}: {}",
             io::Error::last_os_error()
         ));
     }
-    // SAFETY: OpenProcess returned a live owned handle, released once by OwnedHandle.
-    let process = unsafe { OwnedHandle::from_raw_handle(process) };
+    // SAFETY: successful OpenProcess transfers ownership; OwnedHandle closes it once.
+    Ok(unsafe { OwnedHandle::from_raw_handle(process) })
+}
+
+fn process_user_sid(pid: u32) -> Result<String, String> {
+    let process = open_process(pid, PROCESS_QUERY_LIMITED_INFORMATION)?;
+    process_handle_user_sid(process.as_raw_handle())
+}
+
+fn process_handle_user_sid(process: HANDLE) -> Result<String, String> {
     let mut token = ptr::null_mut();
     // SAFETY: process stays live and token points to writable handle storage.
-    if unsafe { OpenProcessToken(process.as_raw_handle(), TOKEN_QUERY, &mut token) } == 0 {
+    if unsafe { OpenProcessToken(process, TOKEN_QUERY, &mut token) } == 0 {
         return Err(format!(
             "Cannot inspect index daemon process token: {}",
             io::Error::last_os_error()

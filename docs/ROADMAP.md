@@ -1392,3 +1392,24 @@ Five Linux daemon regressions and strict Linux/Windows app/search all-target
 Clippy pass. This does not establish standalone daemon lifetime, standard-user
 startup, scheduler/update integration, UI routing, packaged end-to-end behavior
 or idle CPU acceptance. Published packages are unchanged.
+
+
+### Continuous Windows indexing — captured process upgrade lifecycle
+
+The Windows client can inspect the authenticated server executable and prepare
+an upgrade while waiting up to 30 seconds for that captured process object to
+exit. The process handle is opened and its token checked while the authenticated
+pipe is live; preparation is sent on that same connection. Query-only peer
+authentication retains its limited rights; synchronization rights are requested
+only for captured lifetime/executable inspection.
+
+Native integration now runs the daemon in an owned subprocess, verifies its
+distinct kernel-reported PID and executable, repeats indexing/watcher/config/clear
+checks, and verifies process exit, endpoint removal and writer-lock reacquisition
+after preparation. Both parent and child exit normally. Fourteen Linux
+daemon/protocol tests and strict Linux/Windows app/search all-target Clippy pass.
+Receipt: `.hermes/evidence/windows-20261011/WINDOWS_DAEMON_PROCESS_ACCEPTANCE.json`.
+The actor links production storage but is an integration-test executable under
+the guest SYSTEM token; it does not establish packaged standalone startup,
+standard-user scheduler behavior, UI routing or idle CPU acceptance. Windows
+GUI and scheduling integration remain next; published packages are unchanged.

@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-14",
+  "test_executable_sha256": "a3bb2380157855232abf9e6ceeb9af05061e5e042a57ad739c2059cf6bbd9c48",
+  "source_sha256": {
+    "crates/ottrin-search/src/windows_identity.rs": "a180c7f64d1751567a7f33197311a7a8737653812effbd34300a0975f917d2db",
+    "crates/ottrin-search/src/daemon_client.rs": "e6a47a13cababa46ed8d81a4df1ac56a73bc4e39abfda1f2cff4c8c5afd05f58",
+    "crates/ottrin-search/tests/windows_daemon.rs": "e9c5bdb06ef0dd7c492cd825517cdace3dd39823c1aa3a2bcecae5314a54cacc"
+  },
+  "native_result": "Parent integration test passed in 0.98s; owned child daemon actor exited normally in 0.93s",
+  "checks": [
+    "Distinct authenticated server PID matches the spawned child",
+    "Server executable matches child executable path",
+    "Production SQLite staged-generation indexing/query and filesystem watcher",
+    "Rebuild, configuration replacement, storage clearing and expected stopped-worker error",
+    "Upgrade request sent over same connection as captured server process",
+    "Bounded process-handle wait for daemon exit",
+    "Pipe no longer reachable and writer lock can be acquired again"
+  ],
+  "scope": "Native Windows, SYSTEM token, separate daemon process hosted by production-library integration-test executable. Not packaged ottrin-indexd, standard-user scheduler, GUI, or idle CPU acceptance. Published packages unchanged.",
+  "host_checks": [
+    "14 Linux daemon/protocol tests passed",
+    "Strict Windows and Linux app/search all-target Clippy passed"
+  ],
+  "log": ".hermes/evidence/windows-20261011/windows-daemon-native-process.log"
+}
