@@ -1015,6 +1015,11 @@ impl WorkerLoop {
                 };
             }
             self.start_scan(None);
+        } else {
+            // Watches cannot report changes made while the daemon was stopped.
+            // Keep the saved snapshot queryable while validating it once after
+            // watch setup, including when periodic refresh is disabled.
+            self.start_scan_with_mode(None, ScanMode::Reconcile);
         }
         true
     }
@@ -2571,14 +2576,28 @@ mod tests {
         Arc<RwLock<IndexState>>,
         mpsc::Receiver<ControlledScan>,
     ) {
+        let baseline = store_state
+            .lock()
+            .expect("store")
+            .active
+            .as_ref()
+            .map(|snapshot| snapshot.items().to_vec());
         let index = Arc::new(RwLock::new(IndexState::default()));
         let (launcher, scans) = controlled_launcher();
         let worker = spawn_with(
             cfg,
             Arc::clone(&index),
-            Box::new(MemoryStore(store_state)),
+            Box::new(MemoryStore(Arc::clone(&store_state))),
             launcher,
         );
+        if let Some(baseline) = baseline {
+            // These cases exercise an already-running index. Complete its
+            // one-time startup validation before observing later operations.
+            let startup = scans.recv_timeout(WAIT).expect("startup validation");
+            startup.complete(baseline);
+            barrier(&worker.commands);
+            store_state.lock().expect("store").commits.clear();
+        }
         (worker, index, scans)
     }
 
@@ -2849,13 +2868,23 @@ mod tests {
         let (lock, ready) = &*release;
         *lock.lock().expect("watch setup release") = true;
         ready.notify_all();
+        let startup = scans
+            .recv_timeout(WAIT)
+            .expect("startup reconciliation after watch setup");
+        assert_eq!(snapshot_items(&index), vec![prior.item().path.clone()]);
+        startup.complete(vec![owned("/root", "changed-offline.txt")]);
+        barrier(&worker.commands);
+        assert_eq!(
+            snapshot_items(&index),
+            vec![PathBuf::from("/root/changed-offline.txt")]
+        );
         worker.stop();
 
         assert_eq!(items_while_blocked, vec![prior.item().path.clone()]);
         assert_eq!(status_while_blocked, SearchIndexStatus::Ready);
         assert!(
             scans.try_recv().is_err(),
-            "a matching cached snapshot must not start a filesystem scan"
+            "startup validation must run only once"
         );
     }
 
@@ -3172,8 +3201,10 @@ mod tests {
             launcher,
         );
         barrier(&worker.commands);
+        let startup = scans.recv_timeout(WAIT).expect("startup validation");
         worker.request_rebuild();
         let scan = scans.recv_timeout(WAIT).expect("scan");
+        assert!(startup.cancelled.load(Ordering::Acquire));
         scan.commands
             .send(Command::ScanFinished {
                 revision: scan.revision,
@@ -3219,8 +3250,10 @@ mod tests {
             launcher,
         );
         barrier(&worker.commands);
+        let startup = scans.recv_timeout(WAIT).expect("startup validation");
         worker.request_rebuild();
         let scan = scans.recv_timeout(WAIT).expect("scan");
+        assert!(startup.cancelled.load(Ordering::Acquire));
         scan.commands
             .send(Command::ScanFinished {
                 revision: scan.revision,
@@ -3603,7 +3636,9 @@ mod tests {
             expected_epoch: u64,
             publish: &mut dyn FnMut(&GenerationSnapshot),
         ) -> Result<(), StoreBackendError> {
-            if std::mem::take(&mut self.fail_next) {
+            if matches!(&mutation, IndexMutation::Delta { remove_trees, .. } if remove_trees.as_slice() != plan.roots())
+                && std::mem::take(&mut self.fail_next)
+            {
                 return Err(StoreBackendError::Other(
                     "injected delta commit failure".to_string(),
                 ));
@@ -3650,7 +3685,12 @@ mod tests {
             }),
             launcher,
         );
+        scans
+            .recv_timeout(WAIT)
+            .expect("startup validation")
+            .complete(Vec::new());
         barrier(&worker.commands);
+        store.lock().expect("store").commits.clear();
         worker
             .commands
             .send(Command::FilesystemEvent {
@@ -3696,7 +3736,7 @@ mod tests {
         let (entered_tx, entered_rx) = mpsc::channel();
         let release = Arc::new((Mutex::new(false), Condvar::new()));
         let index = Arc::new(RwLock::new(IndexState::default()));
-        let (launcher, _scans) = controlled_launcher();
+        let (launcher, scans) = controlled_launcher();
         let worker = spawn_with(
             cfg,
             Arc::clone(&index),
@@ -3707,7 +3747,18 @@ mod tests {
             }),
             launcher,
         );
+        // Establish the unchanged startup snapshot before blocking the event commit.
+        *release.0.lock().expect("release") = true;
+        scans
+            .recv_timeout(WAIT)
+            .expect("startup validation")
+            .complete(vec![prior.clone()]);
         barrier(&worker.commands);
+        entered_rx
+            .recv_timeout(WAIT)
+            .expect("startup commit entered");
+        *release.0.lock().expect("release") = false;
+        state.lock().expect("store").commits.clear();
         worker
             .commands
             .send(Command::FilesystemEvent {

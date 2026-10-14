@@ -1,0 +1,21 @@
+{
+  "artifact_sha256": "dc9496042ce54d4df373de2ce8a25ab121fadc7491a79272116d9056892b25d9",
+  "source_revision": "af78252bdab900599d40ba8c8d74db29dbda48bc",
+  "scope": "Exact packaged 10000-file metadata-only corpus, periodic refresh disabled, four mutations while stopped",
+  "restart_status": "Ready",
+  "watcher_ready": true,
+  "last_scan_started_unix_secs": null,
+  "missing_names": [
+    "renamed-offline.txt",
+    "born-offline.txt"
+  ],
+  "unexpected_names": [
+    "seed-03000.txt",
+    "seed-04000.txt"
+  ],
+  "wrong_size_names": [
+    "seed-02000.txt"
+  ],
+  "result": "Offline metadata remains stale after 15-second readiness/freshness deadline",
+  "cleanup": "Runner finally stopped its private daemon; temporary directory removed; no passing receipt produced"
+}

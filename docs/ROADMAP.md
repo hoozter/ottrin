@@ -2011,3 +2011,31 @@ and measurement scope.
 The new populated-index runner's cancellation contract also passes: SIGTERM at a
 live quiet-phase checkpoint exits 143 with no private process/profile and no
 passing receipt. Evidence: `index-populated-current/CANCELLATION_ACCEPTANCE.json`.
+
+### Offline index freshness defect — baseline and source repair
+
+Extending the current packaged 10,000-file gate exposes a real restart defect:
+with periodic refresh disabled, create/edit/rename/delete while stopped are not
+reconciled. The af78252 AppImage returns Ready and establishes watches while its
+canonical rows retain two obsolete paths, omit two new paths and retain an old
+size. The 15-second freshness deadline rejects this state. Baseline:
+`.hermes/evidence/index-populated-current/OFFLINE_BASELINE_FAILURE.json`.
+Earlier unchanged-corpus restart timing remains valid for that artifact, but it
+does not establish offline freshness.
+
+Source now keeps the saved snapshot queryable during watcher setup and starts a
+single background reconciliation after watches are installed. Normal notification
+bursts keep their existing incremental path. The real-filesystem regression covers
+all four offline changes with refresh disabled; controlled startup regression
+proves cached availability before reconciliation and fresh publication afterward.
+Steady-state controlled fixtures explicitly complete initial validation before
+observing later events; commit/failure/cancellation assertions remain intact.
+The shared service-test filename helper now uses portable numeric timestamps.
+
+All 220 regular search tests pass (two explicit storage measurements ignored),
+and strict Linux/Windows all-target search Clippy passes. The populated runner
+now supports offline mutations and requires startup validation completion; the
+previous no-scan restart criterion cannot prove the intended freshness contract.
+Refreshed package acceptance and startup/resource measurements still need to be
+completed before claiming this source repair is delivered. The personal running
+index remains untouched; all failed baseline/test profiles are torn down.

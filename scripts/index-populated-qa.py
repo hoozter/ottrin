@@ -17,7 +17,10 @@ import time
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('appimage', type=Path)
 parser.add_argument('receipt', type=Path)
+parser.add_argument('--offline-changes', action='store_true')
+parser.add_argument('--quiet-seconds', type=float, default=30)
 args = parser.parse_args()
+assert args.quiet_seconds >= 0
 artifact = args.appimage.resolve()
 receipt = args.receipt.resolve()
 receipt.parent.mkdir(parents=True, exist_ok=True)
@@ -129,10 +132,13 @@ with tempfile.TemporaryDirectory(prefix='ottrin-populated-') as temporary:
         return int(fields[11])+int(fields[12]), int(memory['VmRSS'].split()[0])
 
     def quiet_sample(label):
-        print(label+': measuring 30 seconds without IPC or file changes', flush=True)
+        if args.quiet_seconds == 0:
+            result[label] = {'skipped': True}
+            return
+        print(label+f': measuring {args.quiet_seconds:g} seconds without IPC or file changes', flush=True)
         before, _ = counters()
         started = time.monotonic()
-        while time.monotonic()-started < 30:
+        while time.monotonic()-started < args.quiet_seconds:
             assert process.poll() is None, 'daemon exited during quiet sample'
             time.sleep(.1)
         after, rss = counters()
@@ -196,6 +202,13 @@ with tempfile.TemporaryDirectory(prefix='ottrin-populated-') as temporary:
             assert request('shutdown')['type'] == 'complete'
             assert process.wait(timeout=10) == 0
             assert not endpoint.exists()
+            if args.offline_changes:
+                files[2000].write_bytes(b'changed while daemon was stopped, with a new size')
+                files[3000].rename(files[3000].with_name('renamed-offline.txt'))
+                files[4000].unlink()
+                (corpus/'bucket-099'/'born-offline.txt').write_bytes(b'created offline')
+                expected = {str(p): p.stat().st_size for p in corpus.rglob('*.txt')}
+                result['offline_changes'] = {'modified': 1, 'renamed': 1, 'deleted': 1, 'created': 1}
             started = time.monotonic()
             process = subprocess.Popen([str(binary)], env=env, stdout=log,
                                        stderr=subprocess.STDOUT, start_new_session=True)
@@ -205,17 +218,17 @@ with tempfile.TemporaryDirectory(prefix='ottrin-populated-') as temporary:
                 restored = status() if endpoint.exists() else {}
                 if restored.get('status') == 'Ready' and restored.get('watcher_ready'):
                     restored_generation, restored_rows = rows()
-                    if restored_rows == expected and queries_match(expected):
+                    if restored_rows == expected and queries_match(expected) and restored.get('last_scan_started_unix_secs') is not None and (restored.get('detail') or '').startswith('Ready'):
                         break
-                assert time.monotonic() < deadline, restored
+                assert time.monotonic() < deadline, {'diagnostics': restored, 'missing': sorted(set(expected)-set(restored_rows)), 'unexpected': sorted(set(restored_rows)-set(expected)), 'wrong_sizes': [p for p in expected.keys() & restored_rows.keys() if expected[p] != restored_rows[p]]}
                 time.sleep(.05)
             result['restart'] = {
                 'ready_with_complete_metadata_and_query_results_ms': round((time.monotonic()-started)*1000, 3),
                 'generation_unchanged': restored_generation == generation,
-                'no_scan_started_in_new_process': restored['last_scan_started_unix_secs'] is None,
+                'startup_validation_completed': restored['last_scan_started_unix_secs'] is not None and (restored.get('detail') or '').startswith('Ready'),
                 'watcher_ready': restored['watcher_ready']}
             result['restored_diagnostics'] = restored
-            assert result['restart']['generation_unchanged'] and result['restart']['no_scan_started_in_new_process'], result['restart']
+            assert result['restart']['startup_validation_completed'], result['restart']
             assert request('shutdown')['type'] == 'complete'
             assert process.wait(timeout=10) == 0 and not endpoint.exists()
     finally:

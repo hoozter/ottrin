@@ -4837,9 +4837,12 @@ mod tests {
 
     fn temp_service_path(name: &str) -> PathBuf {
         std::env::temp_dir().join(format!(
-            "ottrin-search-service-{name}-{}-{:?}.db",
+            "ottrin-search-service-{name}-{}-{}.db",
             std::process::id(),
             SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("system clock after epoch")
+                .as_nanos()
         ))
     }
 
@@ -5232,6 +5235,54 @@ mod tests {
 
         assert_eq!(exits.load(Ordering::Acquire), 1, "stop must join the scan");
         let _ = fs::remove_file(db_path);
+    }
+
+    #[test]
+    fn persisted_restart_reconciles_files_changed_while_stopped() {
+        struct Fixture(PathBuf);
+        impl Drop for Fixture {
+            fn drop(&mut self) {
+                std::fs::remove_dir_all(&self.0).expect("remove offline-change fixture");
+            }
+        }
+        let fixture = Fixture(temp_service_path("offline-changes").with_extension("fixture"));
+        let corpus = fixture.0.join("corpus");
+        std::fs::create_dir_all(&corpus).unwrap();
+        let edited = corpus.join("edited.txt");
+        let deleted = corpus.join("deleted.txt");
+        let renamed = corpus.join("before-rename.txt");
+        for path in [&edited, &deleted, &renamed] {
+            std::fs::write(path, "original").unwrap();
+        }
+        let cfg = SearchConfig {
+            include_roots: vec![corpus.clone()],
+            use_system_locate: false,
+            manage_locate_db: false,
+            refresh_interval_hours: 0,
+            ..SearchConfig::default()
+        };
+        let database = fixture.0.join("search.db");
+        let mut first = SearchService::new_with_store_path(cfg.clone(), database.clone());
+        first.start();
+        first.rebuild_index_blocking().unwrap();
+        first.stop();
+        std::fs::write(&edited, "changed while indexing was stopped").unwrap();
+        std::fs::remove_file(&deleted).unwrap();
+        std::fs::rename(&renamed, corpus.join("after-rename.txt")).unwrap();
+        std::fs::write(corpus.join("created.txt"), "created offline").unwrap();
+        let mut restarted = SearchService::new_with_store_path(cfg, database);
+        restarted.start();
+        wait_until(Duration::from_secs(5), || {
+            let edited_result = restarted.query(query_by_name("edited.txt"));
+            restarted.query(query_by_name("created.txt")).total == 1
+                && restarted.query(query_by_name("deleted.txt")).total == 0
+                && restarted.query(query_by_name("before-rename.txt")).total == 0
+                && restarted.query(query_by_name("after-rename.txt")).total == 1
+                && edited_result.items.first().is_some_and(|item| {
+                    item.size_bytes == Some("changed while indexing was stopped".len() as u64)
+                })
+        });
+        restarted.stop();
     }
 
     #[test]
