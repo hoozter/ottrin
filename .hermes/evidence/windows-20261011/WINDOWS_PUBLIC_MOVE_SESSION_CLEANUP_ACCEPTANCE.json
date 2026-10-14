@@ -1,0 +1,68 @@
+{
+  "status": "partial",
+  "date": "2026-10-14",
+  "portable_revision": "160b803e80bd9444c4eecee193a171113c8dc5e9",
+  "portable_sha256": "07e54ad17514b4593ff06cd46550a638f48d954fde00085178514e298312ebe1",
+  "public_move": {
+    "workflow": "Selected fixture in real native GUI; Ctrl+X, Ctrl+L, target directory, Ctrl+V",
+    "renderer": "Packaged Mesa OpenGL; loaded module paths recorded",
+    "different_ntfs_volumes": true,
+    "source_removed": true,
+    "destination_sha256": "54A2D686BD1947AC446A98EC89882F538B6521EBA458B3C3EB023A26A6821E9D",
+    "gui_exit": 0,
+    "destination_visible_after_settling": true
+  },
+  "regression": {
+    "old_unregistered_cleanup_exit": 1,
+    "owned_daemon_remained": true,
+    "database_remained": true,
+    "cause": "No-task removal returned before preparing the live session daemon; writer lock then blocked storage removal"
+  },
+  "fix": "Absent Windows task removal calls shared authenticated daemon shutdown after successful task inspection; Linux no-service removal also prepares its session daemon",
+  "native_fixed_cli": {
+    "exit": 0,
+    "stdout": "Removed thumbnail cache: 0 B\nSession indexing stopped; no background Ottrin index task was installed.\nRemoved search storage: 80 KB\nNo terminal launcher was installed.\nSaved preferences kept. Use --uninstall --purge-config to remove them too.\nCleanup freed 80 KB.\n",
+    "database_present": false,
+    "fixed": true,
+    "stderr": "",
+    "daemon_pids": [],
+    "status": "pass",
+    "executable_sha256": "41ed9898e9bd3d8eabc107919bf1676aad8475c7a55ca04b729a8184814db94e"
+  },
+  "source_checks": {
+    "focused_windows_search_tests": 16,
+    "windows_app_search_strict_all_target_clippy": "passed",
+    "linux_search_strict_all_target_clippy": "passed",
+    "windows_release_app_build": "passed",
+    "formatting": "passed"
+  },
+  "fixture_notes": [
+    "First-run Windows privacy setup obscured GUI and was completed with optional choices disabled in owned test account",
+    "Early 2-second capture showed empty folder; 10-second settled capture shows destination; no responsiveness threshold accepted",
+    "Initial exit-code observation lacked captured process handle; repeated normal closure returns zero",
+    "Existing portable Finish result remains fail because its original cleanup failed; separate fixed-source cleanup result passes"
+  ],
+  "evidence": [
+    "windows-move-current-Launch.json",
+    "windows-move-current-Move.json",
+    "windows-move-current-Finish.json",
+    "windows-move-current-desktop.png",
+    "windows-move-current-after.png",
+    "windows-session-cleanup-baseline.json",
+    "windows-session-cleanup-fixed.json"
+  ],
+  "cleanup": {
+    "owned_actors_processes_removed": true,
+    "private_profile_payload_archives_removed": true,
+    "owned_ntfs_vhd_detached_and_deleted": true,
+    "overlay_shut_off": true,
+    "backing_content_mtime_unchanged": true
+  },
+  "limits": [
+    "Conflict-free regular-file cross-volume Move only; overwrite, directories, failures/recovery and broader UI remain unaccepted on this artifact",
+    "New session-uninstall fix is source/native CLI acceptance, not packaged delivery",
+    "Linux no-service path is compiled/linted but native shutdown not yet executed for this change",
+    "Windows verbatim path prefix remains visible in source breadcrumbs/details; user-facing formatting follow-up required",
+    "MSI registration rollback and publication gates remain open; public downloads unchanged"
+  ]
+}

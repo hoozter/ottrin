@@ -1827,3 +1827,37 @@ source/preferences and current candidates remain needed for other native gates.
 Published downloads are unchanged. This closes focused current-package login/
 saved-index acceptance, not graphics, full GUI, heavy-index CPU or MSI
 failed-transaction registration rollback.
+
+### Current Windows public Move — regular-file integrity and session cleanup fix
+
+The clean 160b803 portable candidate (SHA-256
+`07e54ad17514b4593ff06cd46550a638f48d954fde00085178514e298312ebe1`)
+passes conflict-free regular-file Move through its native standard-user/Mesa GUI:
+select source, Ctrl+X, Ctrl+L to a separate NTFS virtual disk, then Ctrl+V.
+Source/destination volume identities differ; the source is removed and the
+published destination SHA-256 matches. A settled capture displays the destination
+file, and normal GUI closure returns zero. The early two-second capture is
+retained separately; this does not establish an acceptable responsiveness bound.
+
+The same workflow exposes a portable cleanup defect: no Task Scheduler
+registration caused removal to return before stopping the live session daemon.
+Subsequent index deletion failed on its writer lock, with the daemon/data left
+behind. Source removal now prepares the authenticated session daemon when task
+inspection confirms absence; inspection errors still precede runtime changes.
+Linux no-service removal uses its existing daemon preparation path as well.
+Native revised Windows CLI cleanup returns zero, stops the captured old package's
+session daemon and removes its database. Sixteen focused search tests, strict
+Windows app/search and Linux search all-target Clippy, release Windows app build,
+formatting and diff checks pass. This fix still needs coherent packaging.
+
+Receipt: `.hermes/evidence/windows-20261011/WINDOWS_PUBLIC_MOVE_SESSION_CLEANUP_ACCEPTANCE.json`.
+First-run privacy setup obscured the initial GUI; optional choices were disabled
+in the owned account before input. A process-handle fixture correction verifies
+normal exit independently. The original portable Finish receipt remains failed
+because its cleanup failed; fixed-source cleanup is a separate passing receipt.
+Owned actors/processes, private profile/payload/archive and the detached virtual
+disk are removed. Overlay is shut off; backing content mtime unchanged. Public
+downloads are unchanged. Native Linux session shutdown, overwrite/directory Move,
+recovery, responsiveness, GUI breadth and MSI rollback remain open. Windows raw
+verbatim prefixes visible in source breadcrumbs/details need display formatting
+review before claiming interface polish.

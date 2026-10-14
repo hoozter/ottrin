@@ -1837,9 +1837,13 @@ fn restart_sqlite_windows_task_with(
 #[cfg(any(target_os = "windows", test))]
 fn uninstall_sqlite_windows_task_with(
     mut run: impl FnMut(SqliteWindowsTaskOperation) -> Result<bool, String>,
+    stop_session: impl FnOnce() -> Result<(), String>,
 ) -> Result<String, String> {
     if !run(SqliteWindowsTaskOperation::Query)? {
-        return Ok("No background Ottrin index task was installed.".to_string());
+        stop_session()?;
+        return Ok(
+            "Session indexing stopped; no background Ottrin index task was installed.".to_string(),
+        );
     }
     if !run(SqliteWindowsTaskOperation::Delete)? {
         return Err("Task Scheduler failed to delete the Ottrin Index task".to_string());
@@ -2267,13 +2271,17 @@ pub fn uninstall_sqlite_schedule() -> Result<String, String> {
         if changed {
             Ok("Background Ottrin index schedule removed.".to_string())
         } else {
-            Ok("No background Ottrin index schedule was installed.".to_string())
+            prepare_running_daemon_for_upgrade()?;
+            Ok(
+                "Session indexing stopped; no background Ottrin index schedule was installed."
+                    .to_string(),
+            )
         }
     }
 
     #[cfg(target_os = "windows")]
     {
-        uninstall_sqlite_windows_task_with(run_sqlite_windows_task)
+        uninstall_sqlite_windows_task_with(run_sqlite_windows_task, prepare_running_windows_daemon)
     }
 
     #[cfg(not(any(target_os = "linux", target_os = "windows")))]
@@ -4669,7 +4677,9 @@ mod tests {
                 Err("Access is denied".to_string())
             };
             let result = if remove {
-                uninstall_sqlite_windows_task_with(&mut run)
+                uninstall_sqlite_windows_task_with(&mut run, || {
+                    panic!("inspection failure must not stop a session daemon")
+                })
             } else {
                 restart_sqlite_windows_task_with(&mut run)
             };
@@ -4765,16 +4775,46 @@ mod tests {
     }
 
     #[test]
+    fn windows_unregistered_removal_stops_session_and_propagates_shutdown_failure() {
+        for fail in [false, true] {
+            let stopped = std::cell::Cell::new(false);
+            let result = uninstall_sqlite_windows_task_with(
+                |operation| {
+                    assert_eq!(operation, SqliteWindowsTaskOperation::Query);
+                    Ok(false)
+                },
+                || {
+                    stopped.set(true);
+                    if fail {
+                        Err("daemon did not exit".into())
+                    } else {
+                        Ok(())
+                    }
+                },
+            );
+            assert!(stopped.get());
+            if fail {
+                assert_eq!(result.unwrap_err(), "daemon did not exit");
+            } else {
+                assert!(result.unwrap().contains("Session indexing stopped"));
+            }
+        }
+    }
+
+    #[test]
     fn windows_background_removal_does_not_mask_task_scheduler_failure() {
         let mut operations = Vec::new();
-        let error = uninstall_sqlite_windows_task_with(|operation| {
-            operations.push(operation);
-            match operation {
-                SqliteWindowsTaskOperation::Query => Ok(true),
-                SqliteWindowsTaskOperation::Delete => Ok(false),
-                _ => panic!("removal must only query and delete"),
-            }
-        })
+        let error = uninstall_sqlite_windows_task_with(
+            |operation| {
+                operations.push(operation);
+                match operation {
+                    SqliteWindowsTaskOperation::Query => Ok(true),
+                    SqliteWindowsTaskOperation::Delete => Ok(false),
+                    _ => panic!("removal must only query and delete"),
+                }
+            },
+            || panic!("registered removal owns daemon shutdown"),
+        )
         .expect_err("failed deletion must block uninstall");
 
         assert_eq!(

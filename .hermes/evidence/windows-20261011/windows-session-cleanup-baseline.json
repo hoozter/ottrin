@@ -1,0 +1,12 @@
+{
+  "exit": 1,
+  "stdout": "Removed thumbnail cache: 0 B\nNo background Ottrin index task was installed.\nNo terminal launcher was installed.\nSaved preferences kept. Use --uninstall --purge-config to remove them too.\nCleanup freed 0 B.\n",
+  "database_present": true,
+  "fixed": false,
+  "stderr": "Cleanup completed with errors:\n  Search index is already owned by another Ottrin process (C:\\OttrinQA-20261011\\move-gui-current\\local\\ottrin\\search.db.lock): The process cannot access the file because another process has locked a portion of the file. (os error 33)\n",
+  "daemon_pids": [
+    4172
+  ],
+  "status": "pass",
+  "executable_sha256": "d17d8cf070280adfd6b9b69dfde9674081830d30e4e9bdb27be81f5921895e75"
+}

@@ -1,0 +1,10 @@
+{
+  "exit": 0,
+  "stdout": "Removed thumbnail cache: 0 B\nSession indexing stopped; no background Ottrin index task was installed.\nRemoved search storage: 80 KB\nNo terminal launcher was installed.\nSaved preferences kept. Use --uninstall --purge-config to remove them too.\nCleanup freed 80 KB.\n",
+  "database_present": false,
+  "fixed": true,
+  "stderr": "",
+  "daemon_pids": [],
+  "status": "pass",
+  "executable_sha256": "41ed9898e9bd3d8eabc107919bf1676aad8475c7a55ca04b729a8184814db94e"
+}
