@@ -1746,3 +1746,31 @@ saving evidence. Cleanup discards the disposable environment rather than
 claiming MSI recovery. Backing guest is shut off with unchanged content mtime;
 published downloads and prior candidate packages remain unchanged. The compact
 VM template remains available for fresh subsequent native QA.
+
+### Cleanup/lifetime fixes — coherent Windows candidates rebuilt
+
+Clean revision `160b803e80bd9444c4eecee193a171113c8dc5e9` now has coherent
+portable, NSIS and native WiX MSI candidates at the stable task staging path
+`.hermes/packaging-tmp/windows-current`. These include the blocked-cache cleanup
+guard and schema-3 running-state restoration, alongside the persistent daemon,
+path-identity and same-version replacement fixes.
+
+Current candidate SHA-256 values:
+- Portable: `07e54ad17514b4593ff06cd46550a638f48d954fde00085178514e298312ebe1`.
+- NSIS: `48f6d318a7a1bc702406c84ddea9645aedaaeca2d03c4ad7e61b6f4f577bba2e`.
+- MSI: `730d94edf407ee50ed3096a61715cfa6df6cde7e6b6bfc0b0f2904e29cc776a8`.
+
+All 51 portable archive files and 51 embedded NSIS files match staging. The
+53-file MSI embedded digest multiset matches the stage plus both exact-source
+helper scripts. All authoritative package builds pass against the same clean
+source/payload. Receipt:
+`.hermes/evidence/windows-20261011/WINDOWS_CLEANUP_FIXED_CANDIDATE_BUILD.json`.
+
+Host extraction/compiler archives and native compiler/payload/script fixtures
+are removed. A fresh disposable overlay is shut off and retained for required
+native lifecycle follow-up; its backing guest is still shut off with unchanged
+content mtime. No test account was created during this compiler-only run.
+Published downloads are unchanged. These are package-construction/payload
+checks, not new native install/upgrade/rollback/GUI acceptance. Repeat packaged
+lifecycle and blocked-cache recovery on these exact candidates; the per-user MSI
+registration rollback failure remains open independently.

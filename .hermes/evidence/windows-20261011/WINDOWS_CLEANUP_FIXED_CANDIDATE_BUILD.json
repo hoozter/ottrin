@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-14",
+  "source_revision": "160b803e80bd9444c4eecee193a171113c8dc5e9",
+  "tracked_clean_source": true,
+  "stage": ".hermes/packaging-tmp/windows-current/windows-payload/Ottrin-0.1.0-windows-x64",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "07e54ad17514b4593ff06cd46550a638f48d954fde00085178514e298312ebe1",
+    "Ottrin-0.1.0-windows-x64.msi": "730d94edf407ee50ed3096a61715cfa6df6cde7e6b6bfc0b0f2904e29cc776a8",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "48f6d318a7a1bc702406c84ddea9645aedaaeca2d03c4ad7e61b6f4f577bba2e"
+  },
+  "checks": {
+    "portable_payload_file_hashes_match_stage": 51,
+    "nsis_embedded_file_hashes_match_stage": 51,
+    "msi_embedded_digest_multiset_matches_stage_and_helpers": 53,
+    "authoritative_packagers": "Portable, NSIS and native WiX MSI builds passed against the same source/stage",
+    "native_lifecycle": "Not executed on this revision"
+  },
+  "includes": [
+    "Persistent Windows daemon and path identity fixes",
+    "Same-version MSI product replacement",
+    "Blocked-cache cleanup preserves index/service",
+    "Schema-3 task rollback preserves running/idle state"
+  ],
+  "cleanup": {
+    "host_extractions_removed": true,
+    "host_tool_archives_removed": true,
+    "guest_compiler_archives_payload_scripts_removed": true,
+    "overlay_state": "shut off",
+    "fresh_overlay_retained_for_required_lifecycle_testing": true,
+    "backing_content_mtime_unchanged": true
+  },
+  "limits": [
+    "Candidate packages remain in stable task staging; public dist downloads unchanged",
+    "Archive/embedded-payload checks do not prove install, upgrade, failed-transaction rollback or GUI acceptance",
+    "Known per-user MSI registration rollback failure remains open; source/helper lifecycle acceptance is recorded separately"
+  ]
+}
