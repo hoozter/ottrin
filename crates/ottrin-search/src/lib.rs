@@ -534,7 +534,9 @@ impl SearchService {
         }
         #[cfg(target_os = "windows")]
         {
+            query_sqlite_windows_task()?; // Do not mutate runtime after an inspection failure.
             prepare_running_windows_daemon()?;
+            stop_registered_windows_index_task()?;
             Ok("Indexing stopped. Your saved index and login setup are kept.".to_string())
         }
         #[cfg(not(any(target_os = "linux", target_os = "windows")))]
@@ -1706,12 +1708,31 @@ fn prepare_running_windows_daemon() -> Result<(), String> {
 }
 
 #[cfg(target_os = "windows")]
+fn stop_registered_windows_index_task() -> Result<(), String> {
+    let script = format!(
+        "try {{ $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; {WINDOWS_INDEX_IDENTITY_SCRIPT}\n$service=New-Object -ComObject Schedule.Service; $service.Connect(); $task=Get-OttrinIndexTask ($service.GetFolder('\\')); if ($null -ne $task) {{ Stop-OttrinIndexTask $task }} }} catch {{ [Console]::Error.Write($_.Exception.GetBaseException().Message); exit 1 }}"
+    );
+    let output = internal_command("powershell.exe")
+        .args(["-NoProfile", "-NonInteractive", "-Command", &script])
+        .output()
+        .map_err(|error| format!("Cannot stop the registered index task: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "Cannot stop the registered index task: {}",
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
 fn run_sqlite_windows_task(operation: SqliteWindowsTaskOperation) -> Result<bool, String> {
     if operation == SqliteWindowsTaskOperation::Query {
         return query_sqlite_windows_task().map(|task| task.is_some());
     }
     let task_name = windows_index_task_name()?;
     prepare_running_windows_daemon()?;
+    stop_registered_windows_index_task()?;
     let args = operation
         .args(&task_name)
         .ok_or("Task query requires authenticated inspection")?;

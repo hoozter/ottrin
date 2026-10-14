@@ -26,6 +26,20 @@ function Assert-OttrinTaskOwner($task) {
     }
 }
 
+# Caller first asks the authenticated daemon to exit gracefully when available.
+# Scheduler stop also handles prior one-shot tasks that have no daemon endpoint.
+function Stop-OttrinIndexTask($task) {
+    Assert-OttrinTaskOwner $task
+    $task.Stop(0)
+    $deadline = [DateTime]::UtcNow.AddSeconds(10)
+    while ($task.GetInstances(0).Count -ne 0 -or $task.State -eq 4) {
+        if ([DateTime]::UtcNow -ge $deadline) {
+            throw 'The index task did not stop within 10 seconds; its registration was retained.'
+        }
+        Start-Sleep -Milliseconds 20
+    }
+}
+
 # Retirement of the superseded registration is an upgrade operation only.
 # Status/run/remove never fall back to the old global namespace.
 function Get-OttrinSupersededTask($folder) {
@@ -54,7 +68,7 @@ function Restore-OttrinTaskRecord($folder, $record) {
     catch {
         if ($_.Exception.GetBaseException().HResult -ne -2147024894) { throw }
     }
-    if ($null -ne $existing) { Assert-OttrinTaskOwner $existing }
+    if ($null -ne $existing) { Stop-OttrinIndexTask $existing }
     if ($null -eq $record.xml) {
         if ($null -ne $existing) { $folder.DeleteTask($record.name, 0) }
     } else {

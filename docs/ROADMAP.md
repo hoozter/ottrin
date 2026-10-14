@@ -1475,3 +1475,30 @@ Actual scheduled execution/install/upgrade/removal readiness, native GUI status,
 longer idle intervals, large trees and current packaged acceptance remain open.
 No new coordinated foreign-peer probe is claimed for the error classification.
 Published packages remain unchanged.
+
+
+### Continuous Windows indexing — running task replacement/removal
+
+Task registration replacement now stops and waits for the prior owned task
+instances before writing a new definition. Shared Stop-OttrinIndexTask validates
+owner/logon mode, requests scheduler stop and waits up to ten seconds for both
+instances and running state to clear; timeout retains the registration and is
+reported. Public Stop, task restart/removal and rollback task restoration use
+that same helper after graceful daemon preparation where available. This also
+handles a previous one-shot task that has no daemon endpoint. NSIS setup failure
+text now names the background index service and directs users to Services
+settings.
+
+A native least-privilege actor in the primary signed-in user's session starts
+three real scheduled sleeping workers and captures their process handles.
+Replacement through the production setup script, explicit shared Stop preserving
+XML/security, and rollback deletion each stop the captured worker. Actor/task
+cleanup succeeds. The fixture substitutes QA task names and a harmless PowerShell
+target for file-existence validation; it does not run the new --index-daemon
+action or touch the existing installation/index. Receipt:
+`.hermes/evidence/windows-20261011/WINDOWS_RUNNING_TASK_STOP_ACCEPTANCE.json`.
+Fifteen focused Windows scheduling regressions on Linux, strict Linux/Windows
+all-target Clippy, and MSI/NSIS lifecycle source contracts pass. Actual scheduled
+index daemon execution, data preservation during upgrade/rollback, descendant
+process teardown and exact current installers remain open. Published packages
+are unchanged.

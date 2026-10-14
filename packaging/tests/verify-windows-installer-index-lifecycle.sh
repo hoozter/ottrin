@@ -19,8 +19,8 @@ require_literal() {
 # path, and a failure must leave an explicit, usable installed-app state rather
 # than pretending background refresh succeeded.
 require_literal 'ExecWait '\''"$INSTDIR\bin\ottrin.exe" index service-install'\'' $0'
-require_literal 'Ottrin was installed, but its background search refresh could not be enabled.'
-require_literal 'You can retry from Search settings.'
+require_literal 'Ottrin was installed, but its background index service could not be enabled.'
+require_literal 'You can retry from Services settings.'
 require_literal 'background_integration_done:'
 require_literal 'ExecWait '\''"$INSTDIR\bin\ottrin.exe" --uninstall'\'' $0'
 require_literal 'The application has been left installed so cleanup can be retried.'

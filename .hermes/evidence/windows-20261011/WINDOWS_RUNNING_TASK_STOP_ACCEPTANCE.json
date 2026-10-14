@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-14",
+  "source_sha256": {
+    "packaging/windows/windows-index-identity.ps1": "f965405402c328eaadc30370fce24e283de402301f4afeef5a54924d4d03d76d",
+    "crates/ottrin-search/src/windows_index_task.ps1": "2bac23739e333cee860b4c45229356453c115b0225c4051e7d38da90c61ff014",
+    "crates/ottrin-search/src/lib.rs": "b2ba9cf30828708a1aeae919c7649c20c3d21e5953477330ee074777d6d3c15d",
+    "packaging/windows/installer.nsi": "179a35b0d8be987786efc9632c6a9f081915a625e3630804cd0fcb31dcfc89d3",
+    "packaging/tests/verify-windows-installer-index-lifecycle.sh": "cb54d844d62fdf2d39764a84a125384738d2e2f4ab04a35b3a739b7288df9aed"
+  },
+  "native_checks": [
+    "Signed-in user actor rejects an elevated Administrator token",
+    "Actual scheduled PowerShell worker publishes PID; process handle captured before stop",
+    "Production registration script stops prior worker before updating action to --index-daemon",
+    "Explicit shared stop helper preserves task XML/security",
+    "Shared rollback restoration with an absent snapshot stops worker then deletes registration",
+    "All three captured workers exit; actor task result zero; QA registrations removed"
+  ],
+  "host_checks": [
+    "15 focused Windows-scheduling search regressions pass on Linux",
+    "Strict Windows and Linux app/search all-target Clippy pass",
+    "MSI and NSIS lifecycle source-contract checks pass"
+  ],
+  "scope": "Live task lifecycle under least-privilege primary signed-in user, using QA task names and a harmless sleeping PowerShell worker. New definition target is PowerShell as a file-existence fixture; new --index-daemon action is not run. No real index store or user installation is changed. This is shared helper/source-script acceptance, not current packaged installer upgrade/rollback, actual scheduled index daemon execution or descendant-process acceptance. Published packages unchanged.",
+  "log": ".hermes/evidence/windows-20261011/windows-running-task-native.log",
+  "cleanup": {
+    "owned_processes_absent": true,
+    "qa_registrations_absent": true,
+    "guest_fixture_directory_removed": true,
+    "host_actor_worker_scripts_removed": true,
+    "owned_vm": "shut off"
+  }
+}

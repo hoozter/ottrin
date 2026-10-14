@@ -60,12 +60,12 @@ Section "Ottrin" SEC_MAIN
   ExecWait '"$INSTDIR\bin\ottrin.exe" index service-install' $0
   IfErrors background_integration_launch_failed
   ${If} $0 != 0
-    MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background search refresh could not be enabled. You can retry from Search settings." /SD IDOK
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background index service could not be enabled. You can retry from Services settings." /SD IDOK
   ${EndIf}
   Goto background_integration_done
 
 background_integration_launch_failed:
-  MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background search refresh could not be enabled. You can retry from Search settings." /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Ottrin was installed, but its background index service could not be enabled. You can retry from Services settings." /SD IDOK
 
 background_integration_done:
 SectionEnd

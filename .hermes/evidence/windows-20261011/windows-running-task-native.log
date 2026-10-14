@@ -1,0 +1,4 @@
+PASS: least-privilege live task replacement, explicit stop preserving XML/security, and rollback deletion all stop the captured worker process
+
+Actor exited normally with task result 0
+QA registrations removed

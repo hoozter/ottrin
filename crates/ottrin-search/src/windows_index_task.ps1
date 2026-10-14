@@ -39,9 +39,10 @@ $action.Path = $executable
 $action.Arguments = '--index-daemon'
 # Preserve the disabled state atomically and retain the existing permissions.
 # CREATE_OR_UPDATE | DONT_ADD_PRINCIPAL_ACE | IGNORE_REGISTRATION_TRIGGERS.
+if ($null -ne $existing) { Stop-OttrinIndexTask $existing }
 $registered = $folder.RegisterTaskDefinition($TaskName, $definition, 54, $null, $null, 3, $security)
 if ($null -ne $superseded) {
-    try { $superseded.Enabled = $false; $superseded.Stop(0); $folder.DeleteTask('Ottrin Index', 0) }
+    try { $superseded.Enabled = $false; Stop-OttrinIndexTask $superseded; $folder.DeleteTask('Ottrin Index', 0) }
     catch {
         # A failed retirement must not leave two scheduled writers active.
         $registered.Enabled = $false
