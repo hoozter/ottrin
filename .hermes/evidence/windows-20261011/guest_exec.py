@@ -4,7 +4,9 @@ DOMAIN='ottrin-qa-20261011'
 def qga(command, arguments=None):
     request={'execute':command}
     if arguments is not None: request['arguments']=arguments
-    result=subprocess.run(['virsh','-c','qemu:///system','qemu-agent-command',DOMAIN,json.dumps(request),'--timeout','10'],capture_output=True,text=True,check=True)
+    result=subprocess.run(['virsh','-c','qemu:///system','qemu-agent-command',DOMAIN,json.dumps(request),'--timeout','10'],capture_output=True,text=True)
+    if result.returncode:
+        raise RuntimeError(f'{command} failed for {DOMAIN}: {result.stderr.strip()}')
     value=json.loads(result.stdout)
     if 'error' in value: raise RuntimeError(value['error'])
     return value['return']

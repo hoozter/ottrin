@@ -1774,3 +1774,32 @@ Published downloads are unchanged. These are package-construction/payload
 checks, not new native install/upgrade/rollback/GUI acceptance. Repeat packaged
 lifecycle and blocked-cache recovery on these exact candidates; the per-user MSI
 registration rollback failure remains open independently.
+
+### Current NSIS candidate — packaged cleanup failure/retry accepted
+
+The clean 160b803 NSIS candidate, SHA-256
+`48f6d318a7a1bc702406c84ddea9645aedaaeca2d03c4ad7e61b6f4f577bba2e`,
+passes actual signed-in standard-user silent install and same-version reinstall.
+All 51 installed files match staging; live update/query report ready and one
+fixture. Locked-preview-cache uninstall using `/S _?=INSTALLDIR` returns 1 while
+retaining all payload files, Installed Apps registration, the same live scheduled
+instance and byte-identical index database. The cleanup guard now has exact
+installer acceptance, beyond the preceding standalone source CLI check.
+
+After releasing the lock, ordinary silent retry exits its bootstrap with zero;
+final-state inspection verifies removal of app files, task, generated index,
+cache entries and Installed Apps/Start menu integration. Preferences and source
+hashes remain identical. The empty preview-cache directory remains. Copied
+worker exit code is not claimed. Receipt:
+`.hermes/evidence/windows-20261011/WINDOWS_NSIS_CLEANUP_RETRY_ACCEPTANCE.json`.
+
+The initial fresh-account run passed but its host export failed before fixture
+cleanup; the complete retained receipt comes from a repeat using the same owned
+preferences/source, exported and read back before cleanup. An upload interrupted
+by planned reboot was also repeated with checksum verification. QA transport
+errors now omit full request arguments while retaining action/server cause.
+Owned actors/processes and guest installer/script/result fixtures are removed;
+overlay is shut off and backing content mtime unchanged. Owned profile/source/
+preferences and staged candidates remain needed for subsequent native gates.
+Public downloads are unchanged. Current MSI registration rollback, exact-package
+login/reboot, interactive installer UI and broader Windows acceptance remain open.

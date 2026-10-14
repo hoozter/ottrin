@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-14",
+  "status": "pass",
+  "source_revision": "160b803e80bd9444c4eecee193a171113c8dc5e9",
+  "artifact": ".hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64-setup.exe",
+  "sha256": "48f6d318a7a1bc702406c84ddea9645aedaaeca2d03c4ad7e61b6f4f577bba2e",
+  "checks": [
+    "Actual signed-in standard account, non-elevated actor",
+    "Silent install and same-version reinstall return zero; all 51 payload files match staging",
+    "Live update/query report ready and exactly one fixture",
+    "Blocked preview-cache uninstall /S _?=INSTALLDIR returns 1; 51 payload files and Installed Apps registration retained",
+    "The same scheduled instance and byte-identical database remain through cleanup failure",
+    "Ordinary /S retry bootstrap exits zero; independently observed final state has app directory, task, generated index, cache entries, Installed Apps and Start menu removed",
+    "Preferences and source file hashes unchanged"
+  ],
+  "evidence": "windows-nsis-cleanup-current-result.json",
+  "fixture_observations": [
+    "Initial upload overlapped planned reboot; terminal transfer failure was followed by checksum-verified upload after boot",
+    "Initial fresh-account run passed, but host receipt export failed before owned result cleanup; repeated lifecycle uses retained owned preferences/source and its full receipt is exported/read-back verified",
+    "Empty preview_cache directory remains; there are no entries",
+    "QA transport errors now retain action/server cause without including the complete request; absent-domain read-only marker probe verifies arguments are omitted"
+  ],
+  "cleanup": {
+    "owned_actor_removed": true,
+    "owned_processes": 0,
+    "guest_installer_scripts_results_removed": true,
+    "overlay_shut_off": true,
+    "backing_content_mtime_unchanged": true,
+    "owned_profile_source_preferences_retained_for_next_gate": true
+  },
+  "limits": [
+    "Native NSIS lifecycle only; MSI product-registration rollback is not accepted",
+    "Copied uninstall worker exit code is not claimed; bootstrap and final removal state verified",
+    "Real login/reboot execution, installer GUI and broader Windows daily-driver acceptance not repeated on this exact candidate",
+    "Published dist downloads unchanged"
+  ]
+}
