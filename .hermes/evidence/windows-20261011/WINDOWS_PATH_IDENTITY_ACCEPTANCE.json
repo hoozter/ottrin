@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-14",
+  "rejected_candidate": {
+    "revision": "979db8f5658f34da4f4f2e69d81f0a2304e08f8b",
+    "portable_sha256": "c08414ea72e3ff3c79f3221d6fc4a825aa1648d5e8ade8a260d896331516e3d0",
+    "payload_files": 51,
+    "archive_and_guest_extract_match_stage": true,
+    "functional_native_gui": "Least-privilege signed-in user, Mesa: ready index, visible search, normal GUI exit, new file watched after closure, Miller preference retained",
+    "visual_rejection": "Same physical file appears under normal and verbatim Windows paths; candidate not published",
+    "screenshot": ".hermes/evidence/windows-20261011/windows-current-gui-search.png",
+    "fixture_corrections": [
+      "Renamed CLI helper to avoid Clear-Item alias",
+      "Refreshed HWND and activated own window",
+      "DPI-aware maximized capture replaced cropped capture"
+    ]
+  },
+  "backend_fix_source_sha256": {
+    "crates/ottrin-search/src/path_identity.rs": "620540dcbfa38f3f3f812aea8a4ea0779f0ca929b4218bd7dfa3e1cfcc8f7073",
+    "crates/ottrin-search/src/lib.rs": "8f7b8adbab0ddd4a2cf55932d9063270ee44eed9319aa8a263296d597d390620",
+    "crates/ottrin-search/src/plan.rs": "b547aea9f9900b477dd2315a3a2fb3c2dc7134ede27b464393343a1dfa68d89b",
+    "crates/ottrin-search/tests/windows_daemon.rs": "18433afed4d42074c532943c645d7d6672de2b4b780bef7401f26d6e6ae22e28"
+  },
+  "fixed_backend_daemon_sha256": "2d0b5269ba67ca1df5928c39de90e659cca3f51b183cb3173bc68846bb48f551",
+  "fixed_backend_test_sha256": "9fe31d3fd04c124d494d205b16ea6e35ec7b5f5dbe9765024b81ac5a5b937942",
+  "native_regression": "1 passed, 17.09s; both root forms in Global/CurrentFolder return one file; aliases form one root; lifecycle/retained queries pass",
+  "quiet_fixture_percent_of_one_core": 0.5208,
+  "host_checks": [
+    "218 regular Linux search tests pass; two ignored",
+    "Strict Linux and Windows app/search all-target Clippy pass"
+  ],
+  "scope": "Fixed backend: SYSTEM/private standalone fixture. Rejected GUI: exact release candidate, primary least-privilege/Mesa actor. Fixed backend not yet in release candidate or visually accepted. Services lifetime label compile checked only; daemon executable predates that label-only edit. No scheduled-daemon/installer acceptance. Accepted dist packages unchanged.",
+  "cleanup": {
+    "owned_processes_absent": true,
+    "actor_registration_removed": true,
+    "guest_profiles_and_staging_removed": true,
+    "rejected_host_candidate_removed": true,
+    "disposable_host_uploads_removed": true,
+    "owned_vm": "shut off"
+  }
+}

@@ -1528,3 +1528,31 @@ Receipt: `.hermes/evidence/windows-20261011/WINDOWS_DEFAULT_DAEMON_ACCEPTANCE.js
 Owned test processes/profile/staging are removed. Actual scheduled daemon
 execution, native GUI and replacement-package acceptance remain open; published
 packages are unchanged.
+
+
+### Current Windows candidate — native GUI rejection and path-identity repair
+
+The clean 979db8f portable candidate, SHA-256
+`c08414ea72e3ff3c79f3221d6fc4a825aa1648d5e8ade8a260d896331516e3d0`,
+contains 51 files matching staging and native extraction. Its signed-in
+least-privilege/Mesa GUI opens, searches, closes normally and preserves Miller
+preference; the daemon indexes a new file after GUI closure. The DPI-aware
+screenshot exposes duplicate results for normal/verbatim Windows paths. The
+candidate is rejected and not published. Initial fixture alias/focus errors are
+corrected before the functional pass and visual rejection.
+
+Windows configured and query roots now share filesystem path resolution,
+including exclude/content/active-volume roots and missing-child suffixes.
+Unicode/verbatim names are preserved; Unix behavior is unchanged. Native
+SYSTEM/private-fixture regression checks pass both root forms in Global and
+CurrentFolder returning one file and configured aliases producing one root.
+Lifecycle and retained queries pass; short quiet CPU is 0.5208% of one core,
+without a performance comparison. All 218 regular Linux search tests (two
+ignored) and strict Linux/Windows Clippy pass. Services wording now explains
+that closing windows leaves indexing running and sign-in startup is optional;
+this label is compile checked. Receipt:
+`.hermes/evidence/windows-20261011/WINDOWS_PATH_IDENTITY_ACCEPTANCE.json`.
+
+Discard the rejected candidate after consumers exit, rebuild from the fixed
+commit and repeat exact-package GUI search before publication. Scheduled daemon
+and installer acceptance remain open. Accepted dist packages are unchanged.

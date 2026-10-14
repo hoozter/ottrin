@@ -30,6 +30,8 @@ mod daemon_server;
 mod db;
 #[allow(dead_code)] // Slice 2 mutation API is intentionally isolated until worker integration.
 mod mutation;
+#[cfg(target_os = "windows")]
+mod path_identity;
 mod plan;
 mod scanner;
 mod watch;
@@ -260,6 +262,7 @@ impl SearchService {
     /// Callers that run an isolated instance, such as a test harness, can use
     /// this to avoid contending with the user's active search index.
     pub fn new_with_store_path(config: SearchConfig, store_path: PathBuf) -> Self {
+        let config = resolved_search_config(config);
         Self {
             config: Arc::new(RwLock::new(config)),
             index: Arc::new(RwLock::new(IndexState::default())),
@@ -385,6 +388,7 @@ impl SearchService {
     }
 
     pub fn update_config(&mut self, cfg: SearchConfig) {
+        let cfg = resolved_search_config(cfg);
         if let Ok(mut c) = self.config.write() {
             *c = cfg.clone();
         }
@@ -692,6 +696,8 @@ impl SearchHandle {
         query: SearchQuery,
         system_locate: fn(&str, Option<&Path>, bool, usize) -> Vec<SearchResultItem>,
     ) -> SearchResponse {
+        #[cfg(target_os = "windows")]
+        let query = resolved_search_query(query);
         let (status, items) = {
             let idx = self.index.read().expect("index read");
             (idx.status, Arc::clone(&idx.items))
@@ -1090,6 +1096,8 @@ impl SearchHandle {
     /// content. [`Self::query`] remains available for legacy callers that
     /// construct or serialize `SearchResponse` directly.
     pub fn query_with_diagnostics(&self, query: SearchQuery) -> SearchQueryResult {
+        #[cfg(target_os = "windows")]
+        let query = resolved_search_query(query);
         if !query.content_search {
             return SearchQueryResult {
                 response: self.query(query),
@@ -1142,6 +1150,8 @@ impl SearchHandle {
         query: SearchQuery,
         cancelled: &AtomicBool,
     ) -> SearchQueryResult {
+        #[cfg(target_os = "windows")]
+        let query = resolved_search_query(query);
         if !query.content_search {
             return self.query_with_diagnostics(query);
         }
@@ -1302,9 +1312,46 @@ impl Drop for SearchService {
     }
 }
 
+pub(crate) fn resolved_search_config(config: SearchConfig) -> SearchConfig {
+    #[cfg(target_os = "windows")]
+    {
+        let mut config = config;
+        for roots in [
+            &mut config.include_roots,
+            &mut config.exclude_roots,
+            &mut config.content_include_roots,
+            &mut config.content_exclude_roots,
+            &mut config.active_indexed_volume_roots,
+        ] {
+            for root in roots.iter_mut() {
+                *root = path_identity::resolved_index_path(root);
+            }
+            roots.sort();
+            roots.dedup();
+        }
+        config
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        config
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn resolved_search_query(mut query: SearchQuery) -> SearchQuery {
+    query.root_path = query
+        .root_path
+        .map(|path| path_identity::resolved_index_path(&path));
+    query
+}
+
 fn effective_roots(cfg: &SearchConfig) -> Vec<PathBuf> {
     let mut roots = cfg.include_roots.clone();
     roots.extend(cfg.active_indexed_volume_roots.iter().cloned());
+    #[cfg(target_os = "windows")]
+    for root in &mut roots {
+        *root = path_identity::resolved_index_path(root);
+    }
     roots.sort();
     roots.dedup();
     roots

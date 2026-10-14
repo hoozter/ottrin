@@ -270,6 +270,26 @@ fn windows_standalone_daemon_cold_start_reuse_and_restart() {
         offset: 0,
         content_search: false,
     };
+    let canonical_root = fs::canonicalize(profile.join("files")).unwrap();
+    for scope in [SearchScope::Global, SearchScope::CurrentFolder] {
+        for root in [profile.join("files"), canonical_root.clone()] {
+            let scoped = SearchQuery {
+                scope,
+                root_path: Some(root),
+                ..query.clone()
+            };
+            assert_eq!(
+                client.query(scoped).unwrap().response.items.len(),
+                1,
+                "Normal and verbatim roots must identify the same indexed file"
+            );
+        }
+    }
+    let mut aliases = config.search.clone();
+    aliases.include_roots.push(canonical_root);
+    client.update_config(aliases).unwrap();
+    client.reconcile().unwrap();
+    assert_eq!(client.diagnostics().unwrap().configured_root_count, 1);
     assert_eq!(client.query(query.clone()).unwrap().response.items.len(), 1);
     drop(reused);
     client.ping().unwrap();

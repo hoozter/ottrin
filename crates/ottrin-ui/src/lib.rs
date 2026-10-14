@@ -20075,7 +20075,7 @@ impl OttrinApp {
                 "Automatic startup at sign-in: Off".to_string()
             });
             if !stopped && let Some(error) = &diag.last_error { ui.label(RichText::new(error).color(c.error)); }
-            ui.label(if installed { "The installed service keeps your selected folders indexed after closing Ottrin. Update / reinstall connects it to this app version." } else { "Indexing starts when you open Ottrin. Enable automatic startup to keep indexing after closing Ottrin and start it when you sign in." });
+            ui.label(if installed { "The installed service keeps your selected folders indexed after closing Ottrin. Update / reinstall connects it to this app version." } else { "Indexing starts when you open Ottrin and continues after closing its windows. Enable automatic startup to also start indexing when you sign in." });
             ui.label("Stopping or uninstalling keeps your saved index and preferences. Opening Ottrin again starts a session index.");
             ui.add_space(6.0);
             ui.horizontal_wrapped(|ui| {

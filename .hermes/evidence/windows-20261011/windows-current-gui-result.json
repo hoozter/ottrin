@@ -1,0 +1,9 @@
+{
+    "gui_exit":  0,
+    "daemon_pid":  4720,
+    "limits":  "Mesa override; screenshot requires inspection; no scheduled daemon or installer acceptance",
+    "view_preference":  "Miller",
+    "watch_after_close":  true,
+    "user":  "DESKTOP-81GHP8U\\campbell",
+    "status":  "pass"
+}

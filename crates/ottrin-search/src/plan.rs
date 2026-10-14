@@ -30,6 +30,10 @@ pub(crate) struct ScanPlan {
 
 impl ScanPlan {
     pub(crate) fn new(config: &SearchConfig) -> Result<Self, String> {
+        #[cfg(target_os = "windows")]
+        let resolved = crate::resolved_search_config(config.clone());
+        #[cfg(target_os = "windows")]
+        let config = &resolved;
         Self::new_with_root_resolver(config, || crate::effective_roots(config))
     }
 
