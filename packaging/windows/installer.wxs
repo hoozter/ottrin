@@ -9,7 +9,11 @@
     <SummaryInformation Description="Ottrin file manager" />
     <!-- Retain the installed product until the replacement payload executes.
          Stable component identities let Windows Installer retain shared files. -->
-    <MajorUpgrade Schedule="afterInstallExecute" DowngradeErrorMessage="A newer version of Ottrin is already installed." />
+    <!-- Rebuilt local packages keep the same semantic version. Replace their
+         prior product registration instead of installing a second product.
+         Lower semantic versions remain blocked by the downgrade condition. -->
+    <MajorUpgrade Schedule="afterInstallExecute" AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="A newer version of Ottrin is already installed." />
     <MediaTemplate EmbedCab="yes" />
     <Icon Id="OttrinApp.ico" SourceFile="$(var.Stage)/assets/icon.ico" />
     <Property Id="ARPPRODUCTICON" Value="OttrinApp.ico" />

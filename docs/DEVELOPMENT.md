@@ -704,3 +704,15 @@ OTTRIN_QA_PARENT_MOUNT_NAMESPACE="$(readlink /proc/self/ns/mnt)" \
 ```
 
 Linux packages share the pinned PDFium download and license payload in `packaging/linux/package-pdfium.sh`. Native packages install it under `usr/libexec/ottrin/pdfium/lib`; runtime discovery resolves that location relative to the executable installation prefix, without an environment override. The native libc requirement includes the renderer, and release verification checks its payload and code identity alongside the application.
+
+### Windows MSI rebuild identity
+
+Ottrin's local MSI rebuilds retain the semantic package version and receive a new
+ProductCode. Treat equal-version packages as replacements using WiX
+`AllowSameVersionUpgrades`; otherwise Windows Installer registers both products
+against the same files. Lower semantic versions remain blocked. Same-version
+builds can replace each other in either direction; source commits are not an
+ordered Windows Installer version. Published releases must advance a first-three
+semantic version field when ordering/downgrade protection is required. Verify
+that upgrading removes the old product registration, retains only the new one,
+preserves preferences/source data and migrates the per-user index task.
