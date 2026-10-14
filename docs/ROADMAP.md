@@ -1861,3 +1861,22 @@ downloads are unchanged. Native Linux session shutdown, overwrite/directory Move
 recovery, responsiveness, GUI breadth and MSI rollback remain open. Windows raw
 verbatim prefixes visible in source breadcrumbs/details need display formatting
 review before claiming interface polish.
+
+### Event-driven directory and file-operation completion
+
+The Windows public Move observation exposed a missing UI notification path:
+ordinary file-operation, Undo and directory-listing workers queued results without
+requesting a repaint. Their visible completion depended on unrelated scheduled
+refreshes. These workers now share a result publisher that requests an immediate
+repaint only after successful result delivery. Both GUI constructors bind the
+context; headless callers retain their existing behavior. No additional idle
+polling timer is introduced, and dropped result receivers do not trigger paints.
+
+The actual listing worker regression waits for a repaint without input or UI
+polling, then confirms the result is already queued. The real Create File/Undo
+regression observes immediate notifications and verifies completed Activity and
+file removal. Its disposable fixture now tears down on assertion failure too.
+All 364 regular UI tests pass (one ignored). Linux and Windows compiler checks
+are recorded with the implementation commit. This is source-level notification
+acceptance: packaged native response timing and refreshed packages remain open;
+existing package receipts retain their original artifact scope.

@@ -2945,12 +2945,34 @@ fn advance_search_snapshot(last_seen: &mut u64, current: u64, has_query: bool) -
 
 // ── Main app struct ───────────────────────────────────────────────────────────
 
+/// Background results wake the GUI after publication, without an idle timer.
+/// The context is bound by the GUI constructors; headless callers need no wake.
+#[derive(Clone, Default)]
+struct ResultRepaint(Arc<Mutex<Option<Context>>>);
+
+impl ResultRepaint {
+    fn bind(&self, ctx: &Context) {
+        *self.0.lock().expect("result repaint context") = Some(ctx.clone());
+    }
+
+    fn send<T>(&self, tx: &Sender<T>, result: T) {
+        let ctx = self.0.lock().expect("result repaint context").clone();
+        if tx.send(result).is_ok()
+            && let Some(ctx) = ctx
+        {
+            ctx.request_repaint();
+        }
+    }
+}
+
 pub struct OttrinApp {
     state: AppState,
     colors: Colors,
 
     // Per-tab UI state keyed by tab_id
     tab_ui: HashMap<u64, TabUiState>,
+
+    result_repaint: ResultRepaint,
 
     // Async listing
     listing_tx: Sender<ListingRequest>,
@@ -3109,6 +3131,7 @@ impl OttrinApp {
         let config = load_config();
         let mut app =
             Self::new_with_config_and_graphics_status(config, GraphicsRuntimeStatus::default());
+        app.result_repaint.bind(&cc.egui_ctx);
         app.system_appearance = system_appearance::SystemAppearance::start(cc.egui_ctx.clone());
         app.reapply_theme(&cc.egui_ctx);
         app
@@ -3135,6 +3158,7 @@ impl OttrinApp {
 
         let config = load_config();
         let mut app = Self::new_with_config_and_graphics_status(config, graphics_runtime);
+        app.result_repaint.bind(&cc.egui_ctx);
         app.system_appearance = system_appearance::SystemAppearance::start(cc.egui_ctx.clone());
         app.reapply_theme(&cc.egui_ctx);
         app
@@ -3229,15 +3253,21 @@ impl OttrinApp {
             spawn_preview_loader_with(load_preview_cancellable);
         let (search_result_tx, search_result_rx) = mpsc::channel::<SearchQueryResponse>();
 
+        let result_repaint = ResultRepaint::default();
+        let listing_repaint = result_repaint.clone();
+
         // Single long-lived listing worker thread; later requests supersede stale responses.
         std::thread::spawn(move || {
             while let Ok(req) = listing_worker_rx.recv() {
                 let result = list_directory(&req.path, req.show_hidden);
-                let _ = listing_worker_tx.send(ListingResponse {
-                    key: req.key,
-                    request_id: req.request_id,
-                    result,
-                });
+                listing_repaint.send(
+                    &listing_worker_tx,
+                    ListingResponse {
+                        key: req.key,
+                        request_id: req.request_id,
+                        result,
+                    },
+                );
             }
         });
 
@@ -3905,6 +3935,7 @@ impl OttrinApp {
             state,
             colors,
             tab_ui: HashMap::new(),
+            result_repaint,
             listing_tx,
             listing_rx,
             op_tx,
@@ -6427,6 +6458,7 @@ impl OttrinApp {
         }
         let platform = Arc::clone(&self.platform);
         let tx = self.path_move_undo_tx.clone();
+        let result_repaint = self.result_repaint.clone();
         std::thread::spawn(move || {
             let mut copy_batch_progress = None;
             let (result, retryable) = match validate_operation_storage_bindings(
@@ -6499,12 +6531,15 @@ impl OttrinApp {
                     }
                 },
             };
-            let _ = tx.send(PathMoveUndoResult {
-                op_id,
-                result,
-                retryable,
-                copy_batch_progress,
-            });
+            result_repaint.send(
+                &tx,
+                PathMoveUndoResult {
+                    op_id,
+                    result,
+                    retryable,
+                    copy_batch_progress,
+                },
+            );
         });
     }
 
@@ -9892,6 +9927,7 @@ impl OttrinApp {
         let op_id = self.queue_operation_record(cmd.clone());
         let platform = Arc::clone(&self.platform);
         let op_tx = self.op_tx.clone();
+        let result_repaint = self.result_repaint.clone();
         let retry_cmd = cmd.clone();
         std::thread::spawn(move || {
             // This closes the queue-to-worker replacement window as far as the
@@ -10123,21 +10159,24 @@ impl OttrinApp {
                     bindings.clone()
                 }
             });
-            let _ = op_tx.send(OpResult {
-                op_id,
-                tab_id: refresh_tab,
-                cmd,
-                delete_nav,
-                error,
-                warning,
-                retry,
-                clipboard_generation,
-                completed_sources,
-                completed_source_paths,
-                move_dispositions,
-                path_move_receipt,
-                path_move_bindings,
-            });
+            result_repaint.send(
+                &op_tx,
+                OpResult {
+                    op_id,
+                    tab_id: refresh_tab,
+                    cmd,
+                    delete_nav,
+                    error,
+                    warning,
+                    retry,
+                    clipboard_generation,
+                    completed_sources,
+                    completed_source_paths,
+                    move_dispositions,
+                    path_move_receipt,
+                    path_move_bindings,
+                },
+            );
         });
         true
     }
@@ -27615,20 +27654,34 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn file_operation_worker_publishes_and_executes_undo_for_a_created_file() {
-        let root = std::env::temp_dir().join(format!(
-            "ottrin-ui-create-file-worker-undo-{}-{}",
-            std::process::id(),
-            Instant::now().elapsed().as_nanos()
-        ));
-        std::fs::create_dir_all(&root).unwrap();
+        let fixture = tempfile::tempdir().unwrap();
+        let root = fixture.path().to_path_buf();
         let created = root.join("notes.txt");
         let command = FileCommand::CreateFile {
             parent: root.clone(),
             name: "notes.txt".to_string(),
         };
         let mut app = OttrinApp::default();
+        let key = ListingKey::TabMain(app.state.active_tab().id);
+        let barrier = app.request_listing(key, root.clone());
+        loop {
+            let result = app.listing_rx.recv_timeout(Duration::from_secs(2)).unwrap();
+            if result.request_id == barrier {
+                break;
+            }
+        }
+        let ctx = Context::default();
+        let (wake_tx, wake_rx) = mpsc::channel();
+        ctx.set_request_repaint_callback(move |info| {
+            wake_tx.send(info.delay).unwrap();
+        });
+        app.result_repaint.bind(&ctx);
 
         assert!(app.run_file_op_bound(command, None, Vec::new(), Some(Vec::new()), None, None));
+        assert_eq!(
+            wake_rx.recv_timeout(Duration::from_secs(2)).unwrap(),
+            Duration::ZERO
+        );
         let result = app
             .op_rx
             .recv_timeout(Duration::from_secs(2))
@@ -27646,7 +27699,18 @@ mod tests {
             Some(PathMoveUndoState::Available)
         ));
         let op_id = record.id;
+        // A fresh context isolates the Undo notification from coalesced paints.
+        let undo_ctx = Context::default();
+        let (undo_wake_tx, undo_wake_rx) = mpsc::channel();
+        undo_ctx.set_request_repaint_callback(move |info| {
+            undo_wake_tx.send(info.delay).unwrap();
+        });
+        app.result_repaint.bind(&undo_ctx);
         app.run_path_move_undo(op_id);
+        assert_eq!(
+            undo_wake_rx.recv_timeout(Duration::from_secs(2)).unwrap(),
+            Duration::ZERO
+        );
         let result = app
             .path_move_undo_rx
             .recv_timeout(Duration::from_secs(2))
@@ -27659,7 +27723,6 @@ mod tests {
             Some(PathMoveUndoState::Undone)
         ));
         assert!(app.operation_history.front().unwrap().message.is_none());
-        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(target_os = "linux")]
@@ -29185,6 +29248,40 @@ mod tests {
             app.operation_history.front().unwrap().path_move_undo,
             Some(PathMoveUndoState::Undone)
         );
+    }
+
+    #[test]
+    fn listing_completion_wakes_the_ui_without_input_or_polling() {
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(root.path().join("ready.txt"), "ready").unwrap();
+        let mut app = OttrinApp::default();
+        let key = ListingKey::TabMain(app.state.active_tab().id);
+        // Drain constructor requests before binding the observed context.
+        let barrier = app.request_listing(key, root.path().to_path_buf());
+        loop {
+            let result = app.listing_rx.recv_timeout(Duration::from_secs(2)).unwrap();
+            if result.request_id == barrier {
+                break;
+            }
+        }
+        let ctx = Context::default();
+        let (wake_tx, wake_rx) = mpsc::channel();
+        ctx.set_request_repaint_callback(move |info| {
+            wake_tx.send(info.delay).unwrap();
+        });
+        app.result_repaint.bind(&ctx);
+        let request = app.request_listing(key, root.path().to_path_buf());
+        assert_eq!(
+            wake_rx.recv_timeout(Duration::from_secs(2)).unwrap(),
+            Duration::ZERO
+        );
+        // The callback must follow result publication: no UI polling loop needed.
+        let result = app
+            .listing_rx
+            .try_recv()
+            .expect("listing already published at wake");
+        assert_eq!(result.request_id, request);
+        assert!(result.result.is_ok());
     }
 
     #[test]
