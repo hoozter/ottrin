@@ -1985,3 +1985,29 @@ are moved into stable deliverable paths. Host configuration/service hashes and
 running daemon start identity/executable remain unchanged. The installed running
 daemon intentionally remains the preceding binary until a deliberate upgrade;
 no new live-home CPU/performance claim is made. Wider platform gates remain open.
+
+### Current Linux populated-index idle, burst and persisted restart
+
+Exact af78252 AppImage acceptance now covers 10,000 metadata-only files and 100
+directories. Both 30-second quiet samples measure 0.067% of one CPU core, before
+and after 500 each rename/delete/modify/create events. Canonical paths/sizes,
+query totals and returned result paths/sizes converge in 2,975.613 ms. The active
+generation and scan-start marker stay unchanged, proving this burst did not
+trigger the earlier full-root fallback. A normal daemon restart restores the
+updated index and active watcher in 255.323 ms without replacing its generation
+or starting a full scan. Both instances exit normally; profile/socket and all
+private processes are removed. The existing live daemon remains untouched.
+
+Runnable gate: `scripts/index-populated-qa.py`. Receipt and runner digest:
+`.hermes/evidence/index-populated-current/ACCEPTANCE.json`. Fixture assertions
+reject an incomplete app config's empty default root, use the actual nested wire
+query response, and distinguish non-persisted scan-start timestamps from a new
+scan. The accepted final run includes all correctness and resource assertions.
+This closes the controlled current-package populated quiet/burst/restart case;
+longer live-home, enabled-content, larger/adversarial, Windows and broad platform
+acceptance remain open. See `docs/SEARCH_PERFORMANCE.md` for exact reproduction
+and measurement scope.
+
+The new populated-index runner's cancellation contract also passes: SIGTERM at a
+live quiet-phase checkpoint exits 143 with no private process/profile and no
+passing receipt. Evidence: `index-populated-current/CANCELLATION_ACCEPTANCE.json`.

@@ -206,3 +206,52 @@ Watcher propagation is measured with a uniquely named disposable file beneath a 
 - No Explorer, Windows Search, Everything, FSearch, or other competitor comparison has yet been accepted. Such a comparison needs the same corpus, query set, cache-state definitions, and freshness checks.
 
 Raw full-rebuild evidence is retained at `.hermes/evidence/full-index-memory-2026-08-15.json`. Direct-delta evidence and historical architecture transitions are retained at `.hermes/evidence/index-direct-delta-2026-08-15.md`. Separate content-store evidence is retained at `.hermes/evidence/fts-separate-store-verification-2026-08-16.md`.
+
+## Current packaged populated-index acceptance — 2026-10-15
+
+Exact stable AppImage source `af78252`, SHA-256
+`dc9496042ce54d4df373de2ce8a25ab121fadc7491a79272116d9056892b25d9`,
+passes a private metadata-only corpus of 10,000 files in 100 directories.
+No GUI, login service or content extraction participates. Quiet samples contain
+no IPC clients or filesystem changes; percentages use one logical CPU core.
+
+| Check | Observed result |
+|---|---:|
+| Populated quiet CPU, 30.034 s | 0.067% of one core |
+| RSS at end of quiet sample | 9,084 KiB |
+| Burst | 500 rename + 500 delete + 500 modify + 500 create |
+| All metadata paths/sizes and returned query results correct | 2,975.613 ms from mutation start |
+| Full rescan / generation replacement during burst | Neither occurred |
+| After-burst quiet CPU, 30.032 s | 0.067% of one core |
+| RSS at end of after-burst sample | 11,892 KiB |
+| Restart with complete metadata/query results and active watcher | 255.323 ms |
+| Full scan / generation replacement on restart | Neither occurred |
+
+The canonical file set and sizes must exactly match the filesystem. Query totals
+and returned paths/sizes are checked for renamed, newly created and remaining
+seed files, including the modified-file sample. Restart uses the same persisted
+index; a fresh process must restore its generation without starting a scan.
+Both daemon instances shut down normally and remove their private socket. The
+runner tears down its processes and profile on failure, timeout and cancellation.
+Your existing live service/profile is not used or changed.
+
+Reproduce from the repository root:
+
+```sh
+python3 scripts/index-populated-qa.py \
+  dist/packages/Ottrin-0.1.0-x86_64.AppImage \
+  .hermes/evidence/index-populated-current/ACCEPTANCE.json
+```
+
+The runner verifies the exact artifact checksum and embedded clean provenance,
+requires 10,000 actual indexed files before measurement, and rejects quiet CPU
+at or above 0.5% of one core. Receipt:
+`.hermes/evidence/index-populated-current/ACCEPTANCE.json`.
+These observed timings are not latency guarantees. Longer live-home sampling,
+content-enabled work, larger/adversarial bursts, Windows and competitor comparison
+remain separate gates. No zero-CPU or broad daily-driver claim is inferred.
+
+A live cancellation check sends SIGTERM during the populated quiet phase. The
+runner exits 143, stops its private daemon, removes its profile/extraction and
+produces no passing receipt. Evidence:
+`.hermes/evidence/index-populated-current/CANCELLATION_ACCEPTANCE.json`.

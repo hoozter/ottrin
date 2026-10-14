@@ -1,0 +1,8 @@
+{
+  "signal": "SIGTERM",
+  "checkpoint": "populated_idle: measuring 30 seconds without IPC or file changes",
+  "runner_exit": 143,
+  "private_processes": [],
+  "temporary_profiles_removed": true,
+  "no_passing_receipt": true
+}
