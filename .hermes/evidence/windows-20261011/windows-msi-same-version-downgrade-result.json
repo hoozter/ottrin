@@ -1,0 +1,27 @@
+{
+  "fixture_product_code": "{C293CAD0-9B56-43A3-969B-5FD50EFBE09F}",
+  "fixture_version": "0.0.9",
+  "phase": "downgrade-blocked",
+  "payload_files": 53,
+  "query": {
+    "items": [
+      {
+        "path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures\\scheduled-daemon-fixture.txt",
+        "parent_path": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+        "name": "scheduled-daemon-fixture.txt",
+        "kind": "File",
+        "is_executable": false,
+        "symlink_target_is_dir": null,
+        "size_bytes": 24,
+        "modified_unix_secs": 1792008407,
+        "content_snippet": null
+      }
+    ],
+    "total": 1,
+    "status": "Ready",
+    "error": null
+  },
+  "fixture_sha256": "6092046e7e1a197706c9b6a7bd12ee7cdf74aeace033c8adc1c6a6d73470df99",
+  "downgrade_exit": 1603,
+  "status": "pass"
+}

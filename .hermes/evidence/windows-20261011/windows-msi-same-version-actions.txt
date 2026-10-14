@@ -1,0 +1,42 @@
+windows-msi-same-version-upgrade.log
+Action ended 22:45:17: LaunchConditions. Return value 1.
+Action ended 22:45:18: RollbackBackgroundIndex. Return value 1.
+Action ended 22:45:18: SnapshotBackgroundIndex. Return value 1.
+Action ended 22:45:18: InstallBackgroundIndex. Return value 1.
+Action ended 22:45:22: RemoveExistingProducts. Return value 1.
+Action ended 22:45:22: CommitBackgroundIndex. Return value 1.
+Action ended 22:45:23: InstallFinalize. Return value 1.
+Property(S): SecureCustomProperties = WIX_DOWNGRADE_DETECTED;WIX_UPGRADE_DETECTED
+MSI (s) (68:2C) [22:45:23:451]: Windows Installer installed the product. Product Name: Ottrin. Product Version: 0.1.0. Product Language: 0. Manufacturer: hoozter. Installation success or error status: 0.
+MSI (s) (68:2C) [22:45:23:460]: MainEngineThread is returning 0
+MSI (c) (D8:A0) [22:45:23:473]: MainEngineThread is returning 0
+
+windows-msi-fixed-upgrade.log
+MSI (s) (34:AC) [22:52:10:492]: PROPERTY CHANGE: Adding WIX_UPGRADE_DETECTED property. Its value is '{EC5E9EF7-DEE9-445B-B468-640E38A66EA7}'.
+Action ended 22:52:10: LaunchConditions. Return value 1.
+Action ended 22:52:11: RollbackBackgroundIndex. Return value 1.
+Action ended 22:52:11: SnapshotBackgroundIndex. Return value 1.
+Action ended 22:52:11: InstallBackgroundIndex. Return value 1.
+Action ended 22:52:15: LaunchConditions. Return value 1.
+Action ended 22:52:16: RemoveExistingProducts. Return value 0.
+Action ended 22:52:16: InstallFinalize. Return value 1.
+Property(N): SecureCustomProperties = WIX_DOWNGRADE_DETECTED;WIX_UPGRADE_DETECTED
+Action ended 22:52:16: RemoveExistingProducts. Return value 1.
+Action ended 22:52:16: CommitBackgroundIndex. Return value 1.
+Action ended 22:52:16: InstallFinalize. Return value 1.
+Property(S): WIX_UPGRADE_DETECTED = {EC5E9EF7-DEE9-445B-B468-640E38A66EA7}
+Property(S): SecureCustomProperties = WIX_DOWNGRADE_DETECTED;WIX_UPGRADE_DETECTED
+MSI (s) (34:AC) [22:52:16:602]: Windows Installer installed the product. Product Name: Ottrin. Product Version: 0.1.0. Product Language: 0. Manufacturer: hoozter. Installation success or error status: 0.
+MSI (s) (34:AC) [22:52:16:610]: MainEngineThread is returning 0
+MSI (c) (EC:EC) [22:52:16:624]: MainEngineThread is returning 0
+
+windows-msi-fixed-downgrade.log
+MSI (s) (34:5C) [22:52:44:105]: PROPERTY CHANGE: Adding WIX_DOWNGRADE_DETECTED property. Its value is '{2FB8E710-BCA3-4C03-8229-1CE8521B6F42}'.
+MSI (s) (34:5C) [22:52:44:108]: Product: Ottrin -- A newer version of Ottrin is already installed.
+A newer version of Ottrin is already installed.
+Action ended 22:52:44: LaunchConditions. Return value 3.
+Property(S): WIX_DOWNGRADE_DETECTED = {2FB8E710-BCA3-4C03-8229-1CE8521B6F42}
+Property(S): SecureCustomProperties = WIX_DOWNGRADE_DETECTED;WIX_UPGRADE_DETECTED
+MSI (s) (34:5C) [22:52:44:131]: Windows Installer installed the product. Product Name: Ottrin. Product Version: 0.0.9. Product Language: 0. Manufacturer: hoozter. Installation success or error status: 1603.
+MSI (s) (34:5C) [22:52:44:135]: MainEngineThread is returning 1603
+MSI (c) (6C:D0) [22:52:44:141]: MainEngineThread is returning 1603

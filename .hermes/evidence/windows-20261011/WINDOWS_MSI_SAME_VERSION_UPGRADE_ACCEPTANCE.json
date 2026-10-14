@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-14",
+  "status": "pass",
+  "source_revision": "85f1395",
+  "artifacts": {
+    "Ottrin-0.1.0-windows-x64-portable.zip": "e433275c574d2f8d11b90d4a94da63a2f9fa75743828a0ee7587433396a942fe",
+    "Ottrin-0.1.0-windows-x64.msi": "b6f46322965d6e6b3a9624349dc49c2bc7d0fe576c901fcbdbcfc70165351771",
+    "Ottrin-0.1.0-windows-x64-setup.exe": "59a0bafe0d863594a8869cda0b9a2afcda08abb606e9be88e1ba364af625b997"
+  },
+  "old_published_msi_sha256": "42dca996e8429163a7a53a33e27eac11a6249d0cb6e6de6911abca931903f60c",
+  "regression": "Published and original candidate both 0.1.0 installed with two registered products (state 5/5); all payload bytes updated despite stale old registration",
+  "fix": "MajorUpgrade AllowSameVersionUpgrades=yes, ordinary WiX replacement; lower semantic versions remain blocked",
+  "checks": [
+    "Signed-in least-privilege test account; old periodic MSI installs and indexes fixture",
+    "Fixed same-version MSI upgrade returns zero; old registration unknown -1, new fully installed 5",
+    "All 53 old and new payload files match their respective manifests",
+    "Login --index-daemon task running, live query one result and index watch ready",
+    "Preferences and source hashes unchanged",
+    "Native 0.0.9 QA-only fixture rejected with 1603 at newer-version LaunchConditions; current registration, 53 files and query preserved",
+    "Upgraded MSI removal returns zero, product unknown and app directory absent; preferences/source hashes unchanged"
+  ],
+  "evidence": [
+    "windows-msi-same-version-failure.json",
+    "windows-msi-upgrade-fixture-probe.json",
+    "windows-msi-same-version-upgrade-result.json",
+    "windows-msi-same-version-downgrade-result.json",
+    "windows-msi-fixed-upgrade-remove-result.json",
+    "windows-msi-same-version-fixed-hashes.json",
+    "windows-msi-old-hashes.json",
+    "windows-msi-same-version-actions.txt"
+  ],
+  "raw_log_sha256": {
+    "windows-msi-same-version-upgrade.log": "1f859fa0fc7cc971ec5c51dc68f169298d1081c12e690131aed672cb6c695406",
+    "windows-msi-fixed-upgrade.log": "352a687230403879a34a11096bb6ebfa6e591c3acc9e5bafe8e898167d87d9a2",
+    "windows-msi-fixed-downgrade.log": "21389b37796dd4e03a4654471145e5ab5fe46344b6a68a4a5536183a2587a336"
+  },
+  "fixture_note": "Initial Product-Code helper emitted null COM method outputs; suppressed those outputs and resumed from verified old install before identifying actual product-registration regression",
+  "cleanup": {
+    "owned_actor_tasks_removed": true,
+    "owned_processes": 0,
+    "guest_compiler_archives_payload_installers_scripts_results_removed": true,
+    "host_compiler_archives_removed": true,
+    "overlay_shut_off": true,
+    "backing_content_mtime_unchanged": true,
+    "test_profile_source_preferences_retained_for_next_gate": true,
+    "current_candidates_retained": true
+  },
+  "limits": [
+    "Both real packages version 0.1.0; same-version builds may replace each other in either source-revision direction",
+    "0.0.9 was a compiler-generated QA fixture, not a published release",
+    "Active-old-writer upgrade and failed-transaction rollback remain open",
+    "Portable/NSIS rebuilt coherently from this revision, but this acceptance is native MSI only",
+    "Published dist downloads unchanged"
+  ]
+}

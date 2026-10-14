@@ -1669,3 +1669,41 @@ candidate MSI remain needed for follow-up. Published downloads are unchanged.
 This closes ordinary silent lifecycle only. MSI upgrade/repair, interactive GUI,
 failed-transaction rollback and the previously reproduced registration rollback
 defect remain open.
+
+### Windows MSI same-version replacement — fixed and native regression verified
+
+The published 4552483 MSI and the original 0aea0d8 candidate both reported
+version 0.1.0. A real standard-user upgrade returned zero and replaced all 53
+files, but left both ProductCodes registered as installed. This is a product
+registration defect, separate from the open failed-transaction rollback defect.
+WiX's default equal-version behavior treats these builds as two products.
+
+Revision 85f1395 enables standard `AllowSameVersionUpgrades` for local rebuilds.
+A fresh published-to-fixed-candidate upgrade now returns zero, removes the old
+registration (state -1), and retains the new installed registration (state 5).
+Both old/new 53-file manifests match. The periodic index task becomes the running
+login daemon, with a ready live watch and one fixture result. Preference and
+source-file hashes remain identical. A native compiler-generated 0.0.9 fixture
+is rejected at the newer-version launch condition (1603), preserving current
+registration, all 53 installed files, preferences/source and search. Subsequent
+removal of the upgraded MSI succeeds and leaves no product/app directory.
+
+Current clean-source candidate hashes at `.hermes/packaging-tmp/windows-current`:
+- Portable: `e433275c574d2f8d11b90d4a94da63a2f9fa75743828a0ee7587433396a942fe`.
+- NSIS: `59a0bafe0d863594a8869cda0b9a2afcda08abb606e9be88e1ba364af625b997`.
+- MSI: `b6f46322965d6e6b3a9624349dc49c2bc7d0fe576c901fcbdbcfc70165351771`.
+
+Receipt: `.hermes/evidence/windows-20261011/WINDOWS_MSI_SAME_VERSION_UPGRADE_ACCEPTANCE.json`.
+The unsuccessful registration probe and causal MSI log excerpts are retained.
+An initial private ProductCode helper needed null COM-output suppression before
+that real regression was identified; its observation is recorded separately.
+Same-version builds may replace each other in either source-revision direction;
+ordered releases must advance a first-three semantic version field.
+
+Owned actors/processes, native compiler/fixture payloads/installers and host tool
+archives are removed; overlay is shut off with backing content mtime unchanged.
+The test profile/source/preferences and current candidates remain needed for
+rollback/live-worker follow-up. Portable/NSIS were rebuilt coherently but this
+new native acceptance is MSI-specific. Public dist downloads are unchanged.
+Active-old-writer upgrade, numbered-release upgrade, interactive installer,
+MSI repair and failed-transaction rollback remain open.

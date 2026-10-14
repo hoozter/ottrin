@@ -1,0 +1,19 @@
+{
+  "source_hash_before": "00ACB2202AC5E33561E03A16A37E0BA76B9915DC0EE74E18BA6F46395AACEB8F",
+  "new_product_code": [
+    null,
+    null,
+    "{04DF5144-F432-49CD-BC35-0B5FAF20ECA3}"
+  ],
+  "preference_hash_before": "3C1EDA53FD67D4237F5360902CD634D7815718D77581506F7657BB120311DAAC",
+  "old_product_code": [
+    null,
+    null,
+    "{EC5E9EF7-DEE9-445B-B468-640E38A66EA7}"
+  ],
+  "error": "Object reference not set to an instance of an object.",
+  "phase": "install",
+  "stack": "at <ScriptBlock>, C:\\OttrinQA-20261011\\msi-upgrade-actor.ps1: line 48",
+  "old_install_exit": 0,
+  "status": "fail"
+}
