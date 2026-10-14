@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-15",
+  "status": "pass",
+  "source_revision": "43cfa62459601489dca3393af196012aef536793",
+  "artifact": ".hermes/packaging-tmp/windows-current/Ottrin-0.1.0-windows-x64-setup.exe",
+  "sha256": "0599eea892a8be8022d3e1d77d7100f7911b15d0a40edbbbc797feef89caf810",
+  "checks": [
+    "Actual signed-in non-elevated standard QA account",
+    "Silent install and reinstall return zero; all 51 installed files match staging",
+    "Ready index, active watch and one fixture search result",
+    "Locked cache file: uninstall exits 1; complete payload and Installed Apps registration retained",
+    "Identical scheduled daemon instance and database bytes survive failed cleanup",
+    "Unlock and ordinary uninstall retry return bootstrap zero; final app, index task/database/cache entries/Installed Apps/Start menu removed",
+    "Preferences and source hashes unchanged"
+  ],
+  "evidence": "windows-nsis-completion-lifecycle-result.json",
+  "cleanup": {
+    "receipt": "windows-nsis-msi-completion-cleanup.json",
+    "overlay_state": "shut off",
+    "backing_content_mtime_unchanged": true,
+    "temporary_packaging_checkout_removed": true,
+    "compiler_runtime_and_guest_staging_removed": true
+  },
+  "limits": [
+    "MSI registration rollback remains open; NSIS results do not prove MSI lifecycle",
+    "Copied uninstall worker exit code not claimed; bootstrap and final removal state verified",
+    "Real login/reboot and installer GUI acceptance not repeated on this exact candidate",
+    "Public dist downloads unchanged"
+  ]
+}

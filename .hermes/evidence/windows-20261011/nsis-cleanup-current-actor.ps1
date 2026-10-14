@@ -1,7 +1,7 @@
-param([switch]$ReuseOwnedProfile)
+param([switch]$ReuseOwnedProfile, [Parameter(Mandatory=$true)][ValidatePattern('^[a-f0-9]{64}$')][string]$ExpectedInstallerSha256)
 $ProgressPreference='SilentlyContinue';$ErrorActionPreference='Stop'
 $b='C:\OttrinQA-20261011'
-$r="$b\nsis-cleanup-tests"
+$r="$b\nsis-current-lifecycle"
 $result=@{status='running';phase='seed'}
 function Assert($condition,$message){if(-not $condition){throw $message}}
 function Invoke-App([string]$Arguments){
@@ -53,17 +53,17 @@ try {
  }
  $prefHash=(Get-FileHash $pref).Hash;$sourceHash=(Get-FileHash $source).Hash
  $result.preference_hash_before=$prefHash;$result.source_hash_before=$sourceHash
- $result.installer_sha256=(Get-FileHash "$b\nsis-cleanup-fixed.exe").Hash.ToLower()
- Assert ($result.installer_sha256 -eq '48f6d318a7a1bc702406c84ddea9645aedaaeca2d03c4ad7e61b6f4f577bba2e') 'Wrong installer'
- $p=Start-Process "$b\nsis-cleanup-fixed.exe" -ArgumentList '/S' -PassThru;$null=$p.Handle
+ $result.installer_sha256=(Get-FileHash "$b\nsis-current-installer.exe").Hash.ToLower()
+ Assert ($result.installer_sha256 -eq $ExpectedInstallerSha256) 'Wrong installer'
+ $p=Start-Process "$b\nsis-current-installer.exe" -ArgumentList '/S' -PassThru;$null=$p.Handle
  Assert ($p.WaitForExit(120000) -and $p.ExitCode -eq 0) 'Install failed';$result.install_exit=$p.ExitCode
- $result.payload_files=Check-Payload 'nsis-cleanup-hashes.json'
+ $result.payload_files=Check-Payload 'nsis-current-hashes.json'
  $result.update=Invoke-App 'index update --json'
  $result.query=(Invoke-App 'search scheduled-daemon-fixture --json')|ConvertFrom-Json
  Assert ($result.query.total -eq 1) 'Expected one fixture result'
- $p=Start-Process "$b\nsis-cleanup-fixed.exe" -ArgumentList '/S' -PassThru;$null=$p.Handle
+ $p=Start-Process "$b\nsis-current-installer.exe" -ArgumentList '/S' -PassThru;$null=$p.Handle
  Assert ($p.WaitForExit(120000) -and $p.ExitCode -eq 0) 'Reinstall failed';$result.reinstall_exit=$p.ExitCode
- $null=Check-Payload 'nsis-cleanup-hashes.json'
+ $null=Check-Payload 'nsis-current-hashes.json'
  $scheduler=New-Object -ComObject Schedule.Service;$scheduler.Connect();$folder=$scheduler.GetFolder('\')
  $name='Ottrin Index '+$id.User.Value;$before=$folder.GetTask($name)
  Assert ($before.GetInstances(0).Count -eq 1) 'Index not running'
@@ -76,7 +76,7 @@ try {
  $p=Start-Process "$install\Uninstall.exe" -ArgumentList "/S _?=$install" -PassThru;$null=$p.Handle
  Assert ($p.WaitForExit(120000)) 'Failure probe timeout'
  Assert ($p.ExitCode -eq 1) "Blocked cleanup should return 1: $($p.ExitCode)";$result.failed_uninstall_exit=$p.ExitCode
- $null=Check-Payload 'nsis-cleanup-hashes.json'
+ $null=Check-Payload 'nsis-current-hashes.json'
  $after=$folder.GetTask($name)
  Assert ($after.Xml -eq $beforeXml -and $after.GetInstances(0).Count -eq 1) 'Service changed during failure'
  Assert ($after.GetInstances(0).Item(1).InstanceGuid -eq $instance) 'Daemon instance replaced'

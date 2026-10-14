@@ -1911,3 +1911,33 @@ process-scoped Bypass for the QA script succeeds. No machine/user execution poli
 is changed, and the original failure is not attributed to the app.
 Overwrite/directory/recovery Move, Linux packaged timing and Windows display-path
 polish remain separate gates.
+
+### Refreshed Windows NSIS native lifecycle and coherent MSI candidate
+
+The exact clean-43cfa62 NSIS candidate, SHA-256
+`0599eea892a8be8022d3e1d77d7100f7911b15d0a40edbbbc797feef89caf810`,
+passes native standard-user silent install/reinstall with all 51 payload hashes,
+Ready indexing, an active watch and one fixture result. A locked cache file makes
+uninstall return one while preserving complete payload/Installed Apps registration,
+the same running scheduled daemon instance and byte-identical database. Releasing
+the lock and retrying ordinary uninstall removes app, task, index/cache entries,
+Installed Apps and Start menu. Source and preferences retain their prior hashes.
+The shared QA actor now requires an explicit expected installer hash; a stale
+hardcoded artifact cannot silently satisfy the test.
+
+Receipt: `.hermes/evidence/windows-20261011/WINDOWS_NSIS_COMPLETION_LIFECYCLE_ACCEPTANCE.json`.
+The stable candidate MSI is also rebuilt coherently from clean source 43cfa62 with
+native WiX 5.0.2 in the owned overlay. SHA-256:
+`cca6eca82112f06501b26bdeeab6861fcbb939a57fc6532ffcd656d87ce4a79d`.
+Its embedded digest multiset contains all 53 expected payload/helper files. This
+is packaging acceptance, not installed-layout or MSI transaction acceptance.
+The current candidate receipt aggregates all three artifact hashes:
+`.hermes/evidence/windows-20261011/WINDOWS_COMPLETION_CANDIDATE_ACCEPTANCE.json`.
+
+Phase and cleanup receipts are exported and read-back validated before removal.
+Owned actors, installer/test staging, guest compiler runtime/archives and the
+clean temporary packaging checkout are removed. Overlay is shut off; backing
+content mtime unchanged. Useful retained host compiler cache is reused. Public
+downloads remain unchanged. Current MSI native lifecycle and product-registration
+rollback, exact NSIS login/reboot/installer GUI, Linux package refresh and broader
+platform daily-driver gates remain open.
