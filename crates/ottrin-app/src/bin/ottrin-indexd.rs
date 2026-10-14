@@ -75,24 +75,15 @@ fn main() {
 #[cfg(target_os = "windows")]
 fn main() {
     let args = std::env::args().skip(1).collect::<Vec<_>>();
-    if args == ["--index-daemon"] {
-        if let Err(error) = ottrin_search::run_windows_search_daemon(
-            ottrin_ui::load_config().search,
-            ottrin_search::SearchService::search_db_path(),
-        ) {
-            eprintln!("ottrin index daemon: {error}");
-            std::process::exit(1);
-        }
-        return;
-    }
-    if !args.is_empty() && args != ["--index-update"] {
-        eprintln!("usage: ottrin-indexd [--index-update | --index-daemon]");
+    if !args.is_empty() && args != ["--index-daemon"] {
+        eprintln!("usage: ottrin-indexd [--index-daemon]");
         std::process::exit(2);
     }
-    if let Err(error) =
-        ottrin_search::SearchService::new(ottrin_ui::load_config().search).run_single_update(false)
-    {
-        eprintln!("ottrin index refresh: {error}");
+    if let Err(error) = ottrin_search::run_windows_search_daemon(
+        ottrin_ui::load_config().search,
+        ottrin_search::SearchService::search_db_path(),
+    ) {
+        eprintln!("ottrin index daemon: {error}");
         std::process::exit(1);
     }
 }

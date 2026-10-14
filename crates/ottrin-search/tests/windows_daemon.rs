@@ -180,6 +180,15 @@ fn windows_standalone_daemon_cold_start_reuse_and_restart() {
             .to_string_lossy()
             .starts_with("ottrin-standalone-qa-")
     );
+    struct ProfileCleanup(PathBuf);
+    impl Drop for ProfileCleanup {
+        fn drop(&mut self) {
+            if self.0.exists() {
+                fs::remove_dir_all(&self.0).unwrap();
+            }
+        }
+    }
+    let _profile_cleanup = ProfileCleanup(profile.clone());
     fs::create_dir_all(profile.join("files")).unwrap();
     for number in 0..1000 {
         fs::write(
@@ -206,15 +215,41 @@ fn windows_standalone_daemon_cold_start_reuse_and_restart() {
         serde_json::to_vec(&config).unwrap(),
     )
     .unwrap();
+    struct DefaultChild(Child);
+    impl Drop for DefaultChild {
+        fn drop(&mut self) {
+            if self.0.try_wait().unwrap().is_none() {
+                self.0.kill().unwrap();
+            }
+            self.0.wait().unwrap();
+        }
+    }
+    let default = DefaultChild(
+        Command::new(&executable)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap(),
+    );
+    let client = SearchDaemonClient::connect_default().unwrap();
+    let deadline = Instant::now() + Duration::from_secs(5);
+    while client.ping().is_err() {
+        assert!(
+            Instant::now() < deadline,
+            "No-argument daemon did not become ready"
+        );
+        std::thread::sleep(Duration::from_millis(20));
+    }
+    assert_eq!(client.server_pid().unwrap(), default.0.id());
     let client = ottrin_search::ensure_windows_search_daemon(&executable).unwrap();
-    struct Cleanup(SearchDaemonClient, PathBuf);
+    struct Cleanup(SearchDaemonClient);
     impl Drop for Cleanup {
         fn drop(&mut self) {
             let _ = self.0.prepare_upgrade_and_wait();
-            fs::remove_dir_all(&self.1).unwrap();
         }
     }
-    let _cleanup = Cleanup(client.clone(), profile);
+    let _cleanup = Cleanup(client.clone());
     let pid = client.server_pid().unwrap();
     assert_ne!(pid, std::process::id());
     assert_eq!(client.server_executable().unwrap(), executable);
@@ -258,6 +293,18 @@ fn windows_standalone_daemon_cold_start_reuse_and_restart() {
     assert_eq!(restarted.query(query).unwrap().response.items.len(), 1);
     restarted.prepare_upgrade_and_wait().unwrap();
     assert!(client.ping().is_err());
+    assert_eq!(
+        Command::new(&executable)
+            .arg("--index-update")
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .unwrap()
+            .code(),
+        Some(2),
+        "Removed one-shot mode must fail explicitly"
+    );
 }
 
 fn measure_quiet_daemon_cpu(pid: u32) {

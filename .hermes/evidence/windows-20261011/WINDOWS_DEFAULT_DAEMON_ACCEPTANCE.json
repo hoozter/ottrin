@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-14",
+  "source_sha256": {
+    "crates/ottrin-app/src/bin/ottrin-indexd.rs": "8421f924aa397b5a0170491e5b6d9ab945efb129c8f5c9dce5bd93af5716f648",
+    "crates/ottrin-search/tests/windows_daemon.rs": "a64270a43e117f1aa577aa160ad5d2f22b65e97706f0c103ff8e268913397f11",
+    "docs/USER_GUIDE.md": "38d61eb8db36ce47f83a9d8ecce231e7b650a4988089b103d84841009092308a"
+  },
+  "daemon_executable_sha256": "037cc377ab8f05e6e8ac75e09a547bd9c7a1a92335dcea91741d219ff1aa3094",
+  "test_executable_sha256": "ad0b2a007481e92058af4f3b5a281e60949b1c969f34e2882297faae9ca31716",
+  "native_result": "1 passed in 18.74s",
+  "native_checks": [
+    "No-argument child process serves authenticated pipe; reported PID matches spawned child",
+    "Application ensure API reuses no-argument daemon",
+    "Public service session restart and stop",
+    "Populated 1001-file active-watch index retains query data across restart",
+    "Removed --index-update returns exit code 2",
+    "Test-owned process and private profile cleanup"
+  ],
+  "quiet_sample": {
+    "cpu_seconds": 0.015625,
+    "wall_seconds_rounded": 12.0,
+    "percent_of_one_core": 0.1302,
+    "max_percent_of_one_core": 1.0
+  },
+  "host_checks": [
+    "22 Linux application binary tests pass",
+    "Strict Linux and Windows app/search all-target Clippy pass",
+    "Current portable/MSI/NSIS hashes verified against manifest; all retain 4552483 revision"
+  ],
+  "scope": "Native standalone and public session API under SYSTEM with private fixture. No scheduled daemon execution, native GUI or current replacement package acceptance. Short idle measurement is not a performance comparison with prior builds. Historical --index-update remains recognized only for owned obsolete task retirement, not as a supported daemon mode. Published packages unchanged.",
+  "log": ".hermes/evidence/windows-20261011/windows-default-daemon-native.log",
+  "cleanup": {
+    "owned_processes_absent": true,
+    "private_profile_removed": true,
+    "guest_staging_removed": true,
+    "host_stripped_executable_removed": true,
+    "owned_vm": "shut off"
+  }
+}
