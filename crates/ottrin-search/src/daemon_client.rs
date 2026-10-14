@@ -142,6 +142,30 @@ impl SearchDaemonClient {
         self.identity.open_process(stream.peer_pid())
     }
 
+    /// A nonblocking endpoint-presence check for stopped-state presentation.
+    /// Presence alone does not authenticate a daemon; commands still verify its peer.
+    #[cfg(target_os = "windows")]
+    pub fn endpoint_present(&self) -> Result<bool, String> {
+        use windows_sys::Win32::Foundation::{ERROR_FILE_NOT_FOUND, ERROR_SEM_TIMEOUT};
+        use windows_sys::Win32::System::Pipes::{NMPWAIT_NOWAIT, WaitNamedPipeW};
+        let name: Vec<u16> = self
+            .identity
+            .pipe_name()
+            .encode_utf16()
+            .chain(Some(0))
+            .collect();
+        // SAFETY: name is a live NUL-terminated string; NOWAIT never waits for a busy pipe.
+        if unsafe { WaitNamedPipeW(name.as_ptr(), NMPWAIT_NOWAIT) } != 0 {
+            return Ok(true);
+        }
+        let error = std::io::Error::last_os_error();
+        match error.raw_os_error() {
+            Some(code) if code == ERROR_FILE_NOT_FOUND as i32 => Ok(false),
+            Some(code) if code == ERROR_SEM_TIMEOUT as i32 => Ok(true),
+            _ => Err(format!("Cannot inspect index daemon endpoint: {error}")),
+        }
+    }
+
     #[cfg(target_os = "windows")]
     pub fn server_executable(&self) -> Result<PathBuf, String> {
         self.server_process()?.executable()

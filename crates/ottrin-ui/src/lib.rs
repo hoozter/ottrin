@@ -20052,7 +20052,9 @@ impl OttrinApp {
             let diag = self.search_service.diagnostics();
             #[cfg(unix)]
             let stopped = ottrin_search::default_daemon_socket_path().is_ok_and(|path| !path.exists());
-            #[cfg(not(unix))]
+            #[cfg(all(target_os = "windows", not(test)))]
+            let stopped = diag.status == SearchIndexStatus::Unavailable && self.search_service.client.as_ref().is_some_and(|client| client.endpoint_present() == Ok(false));
+            #[cfg(any(all(target_os = "windows", test), not(any(unix, target_os = "windows"))))]
             let stopped = false;
             let index_status = match diag.status {
                 SearchIndexStatus::Ready => "Running — index ready",
@@ -20084,7 +20086,7 @@ impl OttrinApp {
                 if ui.add(egui::Button::new("Start / restart").themed(&c)).clicked() {
                     self.begin_service_action(ui.ctx(), SearchService::start_sqlite_schedule);
                 }
-                #[cfg(target_os = "linux")]
+                #[cfg(any(target_os = "linux", target_os = "windows"))]
                 if ui.add(egui::Button::new("Stop indexing").themed(&c)).clicked() {
                     self.begin_service_action(ui.ctx(), SearchService::stop_sqlite_schedule);
                 }

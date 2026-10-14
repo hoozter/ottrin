@@ -109,6 +109,20 @@ pub fn ensure_windows_search_daemon(
         .creation_flags(0x08000000) // CREATE_NO_WINDOW; daemon survives the launching GUI.
         .spawn()
         .map_err(|error| format!("Cannot start the index daemon: {error}"))?;
+    wait_for_daemon(executable, Some(&mut child))
+}
+
+pub(crate) fn wait_for_windows_search_daemon(
+    executable: &std::path::Path,
+) -> Result<crate::SearchDaemonClient, String> {
+    wait_for_daemon(executable, None)
+}
+
+fn wait_for_daemon(
+    executable: &std::path::Path,
+    mut child: Option<&mut std::process::Child>,
+) -> Result<crate::SearchDaemonClient, String> {
+    let client = crate::SearchDaemonClient::connect_default()?;
     let deadline = Instant::now() + Duration::from_secs(30);
     loop {
         if client.ping().is_ok() {
@@ -120,7 +134,9 @@ pub fn ensure_windows_search_daemon(
             }
             return Err("Another Ottrin installation started a different index daemon".to_string());
         }
-        if let Some(status) = child.try_wait().map_err(|error| error.to_string())? {
+        if let Some(child) = child.as_mut()
+            && let Some(status) = child.try_wait().map_err(|error| error.to_string())?
+        {
             return Err(format!(
                 "Index daemon exited before becoming ready ({status})"
             ));

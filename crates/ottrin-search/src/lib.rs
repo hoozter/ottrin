@@ -509,8 +509,12 @@ impl SearchService {
         {
             let executable =
                 find_ottrin_binary().ok_or("Cannot locate this package's index daemon")?;
+            if query_sqlite_windows_task()?.is_some_and(|task| task.enabled) {
+                return restart_sqlite_schedule();
+            }
+            prepare_running_windows_daemon()?;
             ensure_windows_search_daemon(&executable)?;
-            Ok("Indexing is running.".to_string())
+            Ok("Session indexing started / restarted.".to_string())
         }
         #[cfg(not(any(target_os = "linux", target_os = "windows")))]
         restart_sqlite_schedule()
@@ -2050,7 +2054,10 @@ pub fn restart_sqlite_schedule() -> Result<String, String> {
 
     #[cfg(target_os = "windows")]
     {
-        restart_sqlite_windows_task_with(run_sqlite_windows_task)
+        restart_sqlite_windows_task_with(run_sqlite_windows_task)?;
+        let executable = find_ottrin_binary().ok_or("Cannot locate this package's index daemon")?;
+        windows_daemon::wait_for_windows_search_daemon(&executable)?;
+        Ok("Background Ottrin index service restarted and ready.".to_string())
     }
 
     #[cfg(not(any(target_os = "linux", target_os = "windows")))]
@@ -2115,10 +2122,29 @@ pub fn install_sqlite_schedule(config: &SearchConfig) -> Result<String, String> 
 
     #[cfg(target_os = "windows")]
     {
-        let _ = config; // Refresh timing belongs to the persistent worker, not its startup task.
         query_sqlite_windows_task()?; // Inspection failures must precede any runtime changes.
+        let client = SearchDaemonClient::connect_default()?;
+        let was_running = client.ping().is_ok();
         prepare_running_windows_daemon()?;
-        install_sqlite_windows_task(&ottrin)
+        let message = install_sqlite_windows_task(&ottrin)?;
+        let registration =
+            query_sqlite_windows_task()?.ok_or("The index task disappeared after setup")?;
+        if registration.enabled {
+            if !run_sqlite_windows_task(SqliteWindowsTaskOperation::Run)? {
+                return Err(
+                    "The index task was installed but Task Scheduler could not start it"
+                        .to_string(),
+                );
+            }
+            let client = windows_daemon::wait_for_windows_search_daemon(&ottrin)?;
+            client.update_config(config.clone())?;
+            Ok(format!("{message} Index daemon is ready."))
+        } else {
+            if was_running {
+                ensure_windows_search_daemon(&ottrin)?.update_config(config.clone())?;
+            }
+            Ok(message)
+        }
     }
 
     #[cfg(not(any(target_os = "linux", target_os = "windows")))]

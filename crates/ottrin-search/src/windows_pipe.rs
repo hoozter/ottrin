@@ -57,7 +57,7 @@ impl WindowsIndexPipeListener {
             let pid = pipe_peer_pid(self.next.as_raw_handle(), true)?;
             self.identity
                 .verify_process(pid)
-                .map_err(io::Error::other)?;
+                .map_err(|error| io::Error::new(io::ErrorKind::PermissionDenied, error))?;
             // Preserve namespace ownership before transferring the connected instance.
             Ok::<_, io::Error>((pid, create_instance(&self.identity, false)?))
         })();

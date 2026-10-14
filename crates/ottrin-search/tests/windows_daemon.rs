@@ -181,6 +181,15 @@ fn windows_standalone_daemon_cold_start_reuse_and_restart() {
             .starts_with("ottrin-standalone-qa-")
     );
     fs::create_dir_all(profile.join("files")).unwrap();
+    for number in 0..1000 {
+        fs::write(
+            profile
+                .join("files")
+                .join(format!("idle-fixture-{number}.txt")),
+            "quiet file",
+        )
+        .unwrap();
+    }
     fs::create_dir_all(profile.join("ottrin")).unwrap();
     fs::write(
         profile.join("files/standalone-fixture.txt"),
@@ -229,11 +238,74 @@ fn windows_standalone_daemon_cold_start_reuse_and_restart() {
     assert_eq!(client.query(query.clone()).unwrap().response.items.len(), 1);
     drop(reused);
     client.ping().unwrap();
-    client.prepare_upgrade_and_wait().unwrap();
+    assert!(client.endpoint_present().unwrap());
+    SearchService::start_sqlite_schedule().unwrap();
+    let running = client.server_pid().unwrap();
+    assert_ne!(
+        running, pid,
+        "Explicit session restart must replace its process"
+    );
+    client.reconcile().unwrap();
+    let diagnostics = client.diagnostics().unwrap();
+    assert_eq!(diagnostics.indexed_items, 1001);
+    assert!(diagnostics.watcher_ready);
+    measure_quiet_daemon_cpu(running);
+    SearchService::stop_sqlite_schedule().unwrap();
+    assert!(!client.endpoint_present().unwrap());
     let restarted = ottrin_search::ensure_windows_search_daemon(&executable).unwrap();
     assert_ne!(restarted.server_pid().unwrap(), pid);
     restarted.reconcile().unwrap();
     assert_eq!(restarted.query(query).unwrap().response.items.len(), 1);
     restarted.prepare_upgrade_and_wait().unwrap();
     assert!(client.ping().is_err());
+}
+
+fn measure_quiet_daemon_cpu(pid: u32) {
+    use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
+    use windows_sys::Win32::Foundation::FILETIME;
+    use windows_sys::Win32::System::Threading::{
+        GetProcessTimes, OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION,
+    };
+    // SAFETY: no pointers, read-only process query access, non-inheritable handle.
+    let raw = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
+    assert!(!raw.is_null(), "Cannot query owned daemon process");
+    // SAFETY: successful OpenProcess transfers ownership; handle is closed once.
+    let process = unsafe { OwnedHandle::from_raw_handle(raw) };
+    let cpu_ticks = || {
+        let blank = FILETIME {
+            dwLowDateTime: 0,
+            dwHighDateTime: 0,
+        };
+        let (mut created, mut exited, mut kernel, mut user) = (blank, blank, blank, blank);
+        // SAFETY: process stays live, all output pointers target writable FILETIME values.
+        assert_ne!(
+            unsafe {
+                GetProcessTimes(
+                    process.as_raw_handle(),
+                    &mut created,
+                    &mut exited,
+                    &mut kernel,
+                    &mut user,
+                )
+            },
+            0
+        );
+        let ticks =
+            |time: FILETIME| (u64::from(time.dwHighDateTime) << 32) | u64::from(time.dwLowDateTime);
+        ticks(kernel) + ticks(user)
+    };
+    std::thread::sleep(Duration::from_millis(200));
+    let before = cpu_ticks();
+    let start = Instant::now();
+    std::thread::sleep(Duration::from_secs(12));
+    let elapsed = start.elapsed().as_secs_f64();
+    let cpu_seconds = (cpu_ticks() - before) as f64 / 10_000_000.0;
+    let percent_of_one_core = cpu_seconds / elapsed * 100.0;
+    println!(
+        "Quiet populated index: {cpu_seconds:.6} CPU seconds / {elapsed:.3} wall seconds = {percent_of_one_core:.4}% of one core"
+    );
+    assert!(
+        percent_of_one_core < 1.0,
+        "Quiet daemon consumed noticeable CPU: {percent_of_one_core}%"
+    );
 }

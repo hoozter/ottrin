@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-14",
+  "source_sha256": {
+    "crates/ottrin-search/src/daemon_client.rs": "30ddf8780988e668bd38244f340cc3cff2c60c65de4e4153b1f4ca0b5af8e4eb",
+    "crates/ottrin-search/src/lib.rs": "042af66fd4a7d5bef17bdc876afb83e7ed51f05832150021a19f18535c8486f2",
+    "crates/ottrin-search/src/windows_daemon.rs": "95bf8189b3259df6dcfaa3d073417d38434c845613532937e288952c2a1616f3",
+    "crates/ottrin-search/src/windows_pipe.rs": "90db95b9518579f60430082b58836b26a9e3a32feab9564582df8bcdd52db37a",
+    "crates/ottrin-search/tests/windows_daemon.rs": "3bb3f80d2ed4609f459caf1e4f2cec29fab23db1785637d7cb7b128b98e2a4cc",
+    "crates/ottrin-ui/src/lib.rs": "043468980a3d5aff6ef74902b6e954c679ec8ee43fcbbb0c4f64d9b3af528606"
+  },
+  "standalone_executable_sha256": "db64e687df75f242e7ceeed8a0027505e5c938e4942b2cac2404f492121a4db5",
+  "test_executable_sha256": "3c13c3b33ac56aa16adf4933b8b934ea6fe85061eb3023ccda6d850e9c900ea3",
+  "native_result": "1 passed in 15.60s",
+  "native_checks": [
+    "Private populated index with 1001 files and active watcher",
+    "Cold start and second launch reuse",
+    "Public service session restart replaces process PID",
+    "Nonblocking endpoint-presence check while running and after stopping",
+    "Public stop API releases process and endpoint",
+    "Restart retains saved index and exact query result",
+    "Owned processes and private profile absent after test"
+  ],
+  "quiet_sample": {
+    "cpu_seconds": 0.046875,
+    "wall_seconds_rounded": 12.0,
+    "percent_of_one_core": 0.3906,
+    "max_percent_of_one_core": 1.0,
+    "method": "GetProcessTimes kernel+user ticks divided by monotonic wall time; no client requests during interval"
+  },
+  "preceding_sample": {
+    "standalone_sha256": "20d0cfc6fd8a3a0674fb53fd988f912f11449849b693915e58ec5eb1442a5ba8",
+    "percent_of_one_core": 0.3906,
+    "scope": "Same fixture before peer error-classification fix; not evidence of a performance change"
+  },
+  "host_checks": [
+    "218 regular Linux search tests pass, two ignored",
+    "Strict Linux and Windows app/search all-target Clippy pass"
+  ],
+  "scope": "Native SYSTEM-token standalone/session lifecycle and short quiet fixture only. Scheduled install/restart readiness changes compile but actual scheduled execution, upgrade/removal, standard-user large-tree/GUI/long-idle and current packaged acceptance remain open. Stop button/stopped-state presentation cross-compiles; no new native visual QA. Rejected server peer error classification corrected; no new coordinated foreign-peer security probe in this checkpoint. Published packages unchanged.",
+  "log": ".hermes/evidence/windows-20261011/windows-service-ready-native.log",
+  "cleanup": {
+    "owned_processes_absent": true,
+    "private_profile_removed": true,
+    "guest_qa_staging_removed": true,
+    "host_stripped_upload_removed": true,
+    "owned_vm": "shut off"
+  }
+}

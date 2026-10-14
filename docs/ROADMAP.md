@@ -1446,3 +1446,32 @@ Receipt: `.hermes/evidence/windows-20261011/WINDOWS_UI_DAEMON_SOURCE_ACCEPTANCE.
 Native GUI search/lifetime, actual scheduled execution/login cycle, update
 management, current installers and idle CPU acceptance remain open. Published
 packages are unchanged and retain their earlier provenance.
+
+
+### Continuous Windows indexing — service readiness and quiet populated fixture
+
+Windows service install/restart now waits for the package-owned daemon to respond
+instead of reporting success solely from task registration/Run. Installation
+applies the caller's current search configuration after readiness; disabled
+registration retains its state and a previously running session. Explicit session
+Start/restart replaces the process, while Stop preserves index/login setup.
+Settings exposes Stop on Windows and uses a nonblocking pipe-presence check to
+distinguish stopped indexing from an unavailable live endpoint. Presence does
+not substitute for command peer authentication. Rejected server peers now return
+PermissionDenied so the daemon's rejection path can keep serving other clients.
+
+Native standalone/session testing under SYSTEM passes with a private populated
+1,001-file index and active watch: cold startup, reuse, public restart with a
+changed PID, endpoint presence, public stop, endpoint disappearance, restart,
+retained query result and cleanup. GetProcessTimes measures 0.046875 CPU seconds
+over 12.000 seconds of request-free quiet time (0.3906% of one CPU core), below
+the fixture's 1% limit. The preceding build before the peer-classification fix
+measured the same percentage; this is a scoped measurement, not evidence that
+that fix changed performance. 218 regular Linux search tests pass (two ignored),
+as do strict Linux/Windows all-target Clippy checks. Receipt:
+`.hermes/evidence/windows-20261011/WINDOWS_SERVICE_READY_IDLE_ACCEPTANCE.json`.
+
+Actual scheduled execution/install/upgrade/removal readiness, native GUI status,
+longer idle intervals, large trees and current packaged acceptance remain open.
+No new coordinated foreign-peer probe is claimed for the error classification.
+Published packages remain unchanged.
