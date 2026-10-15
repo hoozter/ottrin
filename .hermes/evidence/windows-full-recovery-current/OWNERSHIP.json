@@ -1,0 +1,7 @@
+{
+  "domain": "ottrin-qa-20261011",
+  "guest_root": "C:\\OttrinFullRecoveryQA",
+  "account": "OttrinFullRecoveryQA",
+  "purpose": "Current coherent Windows installer and real daemon/scheduler acceptance",
+  "restore": "Restore exact nonsecret Winlogon values; remove temporary credential/account/profile/tasks/root; preserve original campbell installation/profile; shut off guest"
+}

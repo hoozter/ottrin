@@ -2892,3 +2892,31 @@ Stable public packages remain unchanged. Next is full-payload interruption and
 recovery with the actual daemon/scheduler, plus the still-open MSI registration
 rollback gate. Current MSI upgrade/repair, GUI/DPI, reboot/login, Office, signing
 and full daily-driver acceptance retain their separate scopes.
+
+### Full-payload NSIS recovery with real indexing checkpoint (2026-10-15)
+
+The coherent `3ddb1bf` NSIS candidate now passes four native forced-termination
+and recovery cases with all 51 payload files, the actual daemon and the actual
+Task Scheduler controller. A separately hashed QA setup pauses after the old
+root moves, after candidate publication, after payload rollback, or after the
+commit decision. Each is force-terminated; the exact unmodified candidate
+`26888c2439a54e64eb046333cb7541598d4a2142de23805c09346590e9416211`
+then retries successfully under a fresh interactive non-administrator.
+
+Observation of the retry's new journal proves the correct original directory
+identity was restored before a new uncommitted installation, while the committed
+case retains the candidate identity. The retry's real task snapshot verifies
+recovered XML, security and running intent. The cases span all four login/runtime
+combinations. Binary and QWord registration values are restored before commit;
+committed DWORD values remain after it. Payload hashes, preference/source hashes
+and saved-index query/creation identity pass. Checkpoint payload hashes also
+match the complete current stage, excluding only the QA-generated uninstaller.
+
+Evidence: `.hermes/evidence/windows-full-recovery-current/ACCEPTANCE.json`.
+The owned process trees, index task, account, profile, credential, uploads and
+private setup outputs were removed; original guest data/login values were
+preserved. These are four selected termination boundaries, not arbitrary power
+loss, pre-journal initialization, hostile namespace races or the full state/fault
+cross-product. Stable public packages are unchanged. MSI registration rollback
+is the next installer gate; Office, wider GUI/DPI, reboot/login, signing and
+full daily-driver acceptance remain separate.

@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "owned_account_profile_password_tasks_removed": "ACCOUNT_CLEANUP.json",
+  "owned_guest_fixtures_and_uploads_removed": true,
+  "owned_processes_absent": true,
+  "original_guest_profile_and_installation_unchanged": true,
+  "host_private_setup_outputs_removed": true,
+  "qa_guest_state": "shut off"
+}

@@ -1,0 +1,59 @@
+{
+  "phase": "accepted",
+  "status": "pass",
+  "cases": [
+    {
+      "payload_files": 51,
+      "recovered_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000080000000277a2",
+      "enabled": true,
+      "running": true,
+      "typed_registration_verified": true,
+      "task_xml_security_and_runtime_preserved": true,
+      "committed_candidate_retained": false,
+      "point": "old-moved",
+      "preferences_source_and_saved_index_preserved": true,
+      "status": "pass",
+      "old_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000080000000277a2"
+    },
+    {
+      "payload_files": 51,
+      "recovered_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000c0000000277a6",
+      "enabled": false,
+      "running": true,
+      "typed_registration_verified": true,
+      "task_xml_security_and_runtime_preserved": true,
+      "committed_candidate_retained": false,
+      "point": "candidate-moved",
+      "preferences_source_and_saved_index_preserved": true,
+      "status": "pass",
+      "old_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000c0000000277a6"
+    },
+    {
+      "payload_files": 51,
+      "recovered_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000130000000277a7",
+      "enabled": true,
+      "running": false,
+      "typed_registration_verified": true,
+      "task_xml_security_and_runtime_preserved": true,
+      "committed_candidate_retained": false,
+      "point": "rolled-back",
+      "preferences_source_and_saved_index_preserved": true,
+      "status": "pass",
+      "old_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000130000000277a7"
+    },
+    {
+      "payload_files": 51,
+      "recovered_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000011000000027873",
+      "enabled": false,
+      "running": false,
+      "typed_registration_verified": true,
+      "task_xml_security_and_runtime_preserved": true,
+      "committed_candidate_retained": true,
+      "point": "committed",
+      "preferences_source_and_saved_index_preserved": true,
+      "status": "pass",
+      "old_root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000160000000277a8"
+    }
+  ],
+  "current_installer_sha256": "26888c2439a54e64eb046333cb7541598d4a2142de23805c09346590e9416211"
+}

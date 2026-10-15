@@ -1,0 +1,25 @@
+{
+  "status": "pass",
+  "cases": [
+    {
+      "point": "old-moved",
+      "interrupted_candidate51_file_hashes_match": true,
+      "no_repair_dword_or_qword_value_verified": true
+    },
+    {
+      "point": "candidate-moved",
+      "interrupted_candidate51_file_hashes_match": true,
+      "no_repair_dword_or_qword_value_verified": true
+    },
+    {
+      "point": "rolled-back",
+      "interrupted_candidate51_file_hashes_match": true,
+      "no_repair_dword_or_qword_value_verified": true
+    },
+    {
+      "point": "committed",
+      "interrupted_candidate51_file_hashes_match": true,
+      "no_repair_dword_or_qword_value_verified": true
+    }
+  ]
+}

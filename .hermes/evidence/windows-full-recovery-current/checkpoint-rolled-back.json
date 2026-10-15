@@ -1,0 +1,663 @@
+{
+  "transaction": {
+    "registry": [
+      {
+        "path": "Software\\Ottrin",
+        "values": [
+          {
+            "kind": 1,
+            "name": "InstallDir",
+            "value": "C:\\Users\\OttrinFullRecoveryQA\\AppData\\Local\\Programs\\Ottrin",
+            "exists": true
+          }
+        ],
+        "exists": true
+      },
+      {
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Ottrin",
+        "values": [
+          {
+            "kind": 1,
+            "name": "DisplayName",
+            "value": "Ottrin",
+            "exists": true
+          },
+          {
+            "kind": 1,
+            "name": "DisplayVersion",
+            "value": "0.1.0",
+            "exists": true
+          },
+          {
+            "kind": 1,
+            "name": "Publisher",
+            "value": "hoozter",
+            "exists": true
+          },
+          {
+            "kind": 1,
+            "name": "DisplayIcon",
+            "value": "C:\\Users\\OttrinFullRecoveryQA\\AppData\\Local\\Programs\\Ottrin\\bin\\ottrin.exe",
+            "exists": true
+          },
+          {
+            "kind": 1,
+            "name": "UninstallString",
+            "value": "\"C:\\Users\\OttrinFullRecoveryQA\\AppData\\Local\\Programs\\Ottrin\\Uninstall.exe\"",
+            "exists": true
+          },
+          {
+            "kind": 3,
+            "name": "NoModify",
+            "value": [
+              0,
+              255
+            ],
+            "exists": true
+          },
+          {
+            "kind": 11,
+            "name": "NoRepair",
+            "value": 4294967297,
+            "exists": true
+          }
+        ],
+        "exists": true
+      }
+    ],
+    "files": [
+      {
+        "path": "assets\\icon.ico",
+        "candidate": {
+          "sha256": "3DB24C16886D05B2AC588E8C0639DDFA440F7778083544C16806A4C088A9DD42",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b00000002786f"
+        },
+        "previous": {
+          "sha256": "3DB24C16886D05B2AC588E8C0639DDFA440F7778083544C16806A4C088A9DD42",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277b2"
+        }
+      },
+      {
+        "path": "assets\\icon.png",
+        "candidate": {
+          "sha256": "5D4198A3A9B1ACB860E57B3B761E340B2F0C3C2F28A7B9FA5B7CBD830381AF04",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b000000027872"
+        },
+        "previous": {
+          "sha256": "5D4198A3A9B1ACB860E57B3B761E340B2F0C3C2F28A7B9FA5B7CBD830381AF04",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000a0000000277b3"
+        }
+      },
+      {
+        "path": "assets\\icon.svg",
+        "candidate": {
+          "sha256": "33746E843FDE043387C7AE1F1D2A13C7CAB94E9B6BF136CC4144D99F911C94CE",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b000000027873"
+        },
+        "previous": {
+          "sha256": "33746E843FDE043387C7AE1F1D2A13C7CAB94E9B6BF136CC4144D99F911C94CE",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277b4"
+        }
+      },
+      {
+        "path": "assets\\logo.svg",
+        "candidate": {
+          "sha256": "F674B933A13C2A506E617774966B635D74F0FFBB01EB808105063B4B1189FF57",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b000000027874"
+        },
+        "previous": {
+          "sha256": "F674B933A13C2A506E617774966B635D74F0FFBB01EB808105063B4B1189FF57",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277b5"
+        }
+      },
+      {
+        "path": "bin\\dxil.dll",
+        "candidate": {
+          "sha256": "CBCFE883A09FD0CA1F98ABDF3A9553B560895E3283A136DA82A8381253A169DF",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000c000000027877"
+        },
+        "previous": {
+          "sha256": "CBCFE883A09FD0CA1F98ABDF3A9553B560895E3283A136DA82A8381253A169DF",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277b7"
+        }
+      },
+      {
+        "path": "bin\\libEGL.dll",
+        "candidate": {
+          "sha256": "CE36D60C5602920DF49A2C8939D903DA05DFE2610BFBB4BF0676E9EC3453DF3B",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b000000027878"
+        },
+        "previous": {
+          "sha256": "CE36D60C5602920DF49A2C8939D903DA05DFE2610BFBB4BF0676E9EC3453DF3B",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277ba"
+        }
+      },
+      {
+        "path": "bin\\libgallium_wgl.dll",
+        "candidate": {
+          "sha256": "A3917A52CC893F614C9E415F5442EB2981DD46BA636FC64B35D5BD4BE0FAEC7B",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b00000002787f"
+        },
+        "previous": {
+          "sha256": "A3917A52CC893F614C9E415F5442EB2981DD46BA636FC64B35D5BD4BE0FAEC7B",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277bc"
+        }
+      },
+      {
+        "path": "bin\\libGLESv2.dll",
+        "candidate": {
+          "sha256": "649F779B1B945433DFC2740E9FF1366E309686043999F7271E550079EADDE8E6",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b00000002787e"
+        },
+        "previous": {
+          "sha256": "649F779B1B945433DFC2740E9FF1366E309686043999F7271E550079EADDE8E6",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277bb"
+        }
+      },
+      {
+        "path": "bin\\opengl32.dll",
+        "candidate": {
+          "sha256": "52119774EB912D07C3ABFB6E3E894981F425B3C79D852F5363927E38FA3BDE7E",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b000000027886"
+        },
+        "previous": {
+          "sha256": "52119774EB912D07C3ABFB6E3E894981F425B3C79D852F5363927E38FA3BDE7E",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000a0000000277bd"
+        }
+      },
+      {
+        "path": "bin\\ottrin-indexd.exe",
+        "candidate": {
+          "sha256": "92E4554F50B776CD016C91353B240AFC50C8D8311EFB6F42D04B4414E13CA83A",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b000000027887"
+        },
+        "previous": {
+          "sha256": "8E7DEBCA5FBB2730A9CF163380D570F1B8C9BEB89E60FD8AF6E775258AE7FD38",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277be"
+        }
+      },
+      {
+        "path": "bin\\ottrin-legacy-doc-render.exe",
+        "candidate": {
+          "sha256": "5939B5F011C274ED2155037899655AF5B45A7ADDDA0B7032A60BCFB4D39DA80C",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000c000000027889"
+        },
+        "previous": {
+          "sha256": "5939B5F011C274ED2155037899655AF5B45A7ADDDA0B7032A60BCFB4D39DA80C",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277bf"
+        }
+      },
+      {
+        "path": "bin\\ottrin-office-render.exe",
+        "candidate": {
+          "sha256": "FFA89D3B1CB23B9DFA267654A2BE32CEF7D5517EF5962DC6F2E8451968750DF0",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b00000002788a"
+        },
+        "previous": {
+          "sha256": "FFA89D3B1CB23B9DFA267654A2BE32CEF7D5517EF5962DC6F2E8451968750DF0",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277c1"
+        }
+      },
+      {
+        "path": "bin\\ottrin-priv-helper.exe",
+        "candidate": {
+          "sha256": "DC022AAB4533009FDBDB070A48928D13AB167FD58ADADC2A40B2C3460890FCC4",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b00000002788b"
+        },
+        "previous": {
+          "sha256": "D65413F13E5A50229F76E9ECCDDC9FB4020F215331FB50F897FF3446575FCE13",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277c2"
+        }
+      },
+      {
+        "path": "bin\\ottrin.exe",
+        "candidate": {
+          "sha256": "E98CEA4295FCC2947366E3877136075F859B4659289D1DA04D77291981479887",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b00000002788c"
+        },
+        "previous": {
+          "sha256": "CFAE2FF24918012EC996DC4B42661242641DA077D64404126DA0C5DA2FA96D10",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000a0000000277c3"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\LICENSE",
+        "candidate": {
+          "sha256": "8854F4388F1CA13B3AD9BAA42E95F5546B4C0B17109C159256D3ECA7BE39B09B",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000013000000027891"
+        },
+        "previous": {
+          "sha256": "8854F4388F1CA13B3AD9BAA42E95F5546B4C0B17109C159256D3ECA7BE39B09B",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277cf"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\abseil.txt",
+        "candidate": {
+          "sha256": "F54FFF0B905DF5B3464527C652A30E903B172D6DCAB4D89B5E6F105D5E4A4603",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000019000000027896"
+        },
+        "previous": {
+          "sha256": "F54FFF0B905DF5B3464527C652A30E903B172D6DCAB4D89B5E6F105D5E4A4603",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000a0000000277df"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\agg23.txt",
+        "candidate": {
+          "sha256": "C110D3EA2AD77467CE0DCFF7D3337E6C8BE8049A5103F4B9BD5FD911A77972E5",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b000000027897"
+        },
+        "previous": {
+          "sha256": "C110D3EA2AD77467CE0DCFF7D3337E6C8BE8049A5103F4B9BD5FD911A77972E5",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277e9"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\fast_float.txt",
+        "candidate": {
+          "sha256": "BF1B57355FECA8FCE77EE95F48002F8D4789FB71B30EC7599C06CDA4901FBB2B",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000017000000027898"
+        },
+        "previous": {
+          "sha256": "BF1B57355FECA8FCE77EE95F48002F8D4789FB71B30EC7599C06CDA4901FBB2B",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277f0"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\freetype.txt",
+        "candidate": {
+          "sha256": "F4B133E25DF1F86AD3FFEA453AA0E613F0474F34778DBBB3E437E7B2724937D8",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000d000000027899"
+        },
+        "previous": {
+          "sha256": "F4B133E25DF1F86AD3FFEA453AA0E613F0474F34778DBBB3E437E7B2724937D8",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277f1"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\icu.txt",
+        "candidate": {
+          "sha256": "93679F4389D53B6835D89843F251844FB9BC455B35BAB036D3C8E7ABE497A47A",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000c00000002789b"
+        },
+        "previous": {
+          "sha256": "93679F4389D53B6835D89843F251844FB9BC455B35BAB036D3C8E7ABE497A47A",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277f2"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\lcms.txt",
+        "candidate": {
+          "sha256": "7312B68C5B25E9BF2B828706FB4E29588F22705112F411FD42E1F7D84C3D139A",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b00000002789c"
+        },
+        "previous": {
+          "sha256": "7312B68C5B25E9BF2B828706FB4E29588F22705112F411FD42E1F7D84C3D139A",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277f3"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\libjpeg_turbo.ijg",
+        "candidate": {
+          "sha256": "DB16A04128171879C60708D171B88D97345A2DD20F9BFC173680A4497C73F704",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000001200000002789d"
+        },
+        "previous": {
+          "sha256": "DB16A04128171879C60708D171B88D97345A2DD20F9BFC173680A4497C73F704",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277f4"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\libjpeg_turbo.md",
+        "candidate": {
+          "sha256": "BE2B2B5AB168BCE87BC3E31F2A5C5ADBA4B7F6E9E51D618E958D1D46972EBD95",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000f00000002789e"
+        },
+        "previous": {
+          "sha256": "BE2B2B5AB168BCE87BC3E31F2A5C5ADBA4B7F6E9E51D618E958D1D46972EBD95",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277f5"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\libopenjpeg.txt",
+        "candidate": {
+          "sha256": "C5AB0890A737C2DFA7BA675036554F6D17741D98629B0C2A145354D00617E6B2",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000e00000002789f"
+        },
+        "previous": {
+          "sha256": "C5AB0890A737C2DFA7BA675036554F6D17741D98629B0C2A145354D00617E6B2",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277f6"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\libpng.txt",
+        "candidate": {
+          "sha256": "452390433BA0F88AA3E2B122C647741B72A0C117CD6ED7A329B49785AECB5511",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000170000000278a0"
+        },
+        "previous": {
+          "sha256": "452390433BA0F88AA3E2B122C647741B72A0C117CD6ED7A329B49785AECB5511",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277f7"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\libtiff.txt",
+        "candidate": {
+          "sha256": "92B72BA97E6C2749C2A94BC0EF646B47080217F1E772A482B33CF5A5F98A6506",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278a4"
+        },
+        "previous": {
+          "sha256": "92B72BA97E6C2749C2A94BC0EF646B47080217F1E772A482B33CF5A5F98A6506",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277fb"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\llvm-libc.txt",
+        "candidate": {
+          "sha256": "3B6226C32E168C83B891D8D6F0D3C29C2116DC3EF93DC93C307B54F279ECF383",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278a5"
+        },
+        "previous": {
+          "sha256": "3B6226C32E168C83B891D8D6F0D3C29C2116DC3EF93DC93C307B54F279ECF383",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277fc"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\pdfium.txt",
+        "candidate": {
+          "sha256": "961EACD9633FFF6D051DB7208B755E9210E30EFAC7ADEC3E6A6D52798F0CCF0E",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278a6"
+        },
+        "previous": {
+          "sha256": "961EACD9633FFF6D051DB7208B755E9210E30EFAC7ADEC3E6A6D52798F0CCF0E",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277fe"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\simdutf.txt",
+        "candidate": {
+          "sha256": "C172A0BA936FF31230FEBB5DAD869E25CB7C1A07480C7A381BE8CF011BB52719",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278a7"
+        },
+        "previous": {
+          "sha256": "C172A0BA936FF31230FEBB5DAD869E25CB7C1A07480C7A381BE8CF011BB52719",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000277ff"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\licenses\\zlib.txt",
+        "candidate": {
+          "sha256": "33FD641C9F3B0E0BE64BC78FEA9E94807674CDD70C48477599226CB8956565FE",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278a8"
+        },
+        "previous": {
+          "sha256": "33FD641C9F3B0E0BE64BC78FEA9E94807674CDD70C48477599226CB8956565FE",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000009000000027802"
+        }
+      },
+      {
+        "path": "bin\\pdfium\\pdfium.dll",
+        "candidate": {
+          "sha256": "D3D9F4B7C9DABE3363F30779C5C3C715C47332749FA590E4B4A2B8B6780CB1C4",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000f000000027893"
+        },
+        "previous": {
+          "sha256": "D3D9F4B7C9DABE3363F30779C5C3C715C47332749FA590E4B4A2B8B6780CB1C4",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b0000000277d6"
+        }
+      },
+      {
+        "path": "docs\\DEVELOPMENT.md",
+        "candidate": {
+          "sha256": "5379810A2A140E8BF03B0260ECB3AAFA243CF4A03B9F7382B9D969212FDFBD95",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278ac"
+        },
+        "previous": {
+          "sha256": "4C356F608914B2BB9F96C524DA361EDBD0E0C103641BA5A4ADBF52EE46F824A0",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000009000000027809"
+        }
+      },
+      {
+        "path": "docs\\RELEASE_CHECKLIST.md",
+        "candidate": {
+          "sha256": "570FFB901F8ECA31EDC6411C51B8952FA0279C6F415CA1C900FC08AE7F445956",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278ad"
+        },
+        "previous": {
+          "sha256": "AE2F8B3EC3B6E5D265996804E151765E717C7155A256B63882ED66893A1A5CED",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000900000002780a"
+        }
+      },
+      {
+        "path": "docs\\RELEASE_NOTES.md",
+        "candidate": {
+          "sha256": "511F44E091476B8A45BF0D30451D984D8A871264467CA70F2DF10C8255E2CF3C",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278ae"
+        },
+        "previous": {
+          "sha256": "2EC79F74FC585FCEDD3363F5CDB7B997A72D13F82630DC1369A77E554E56B590",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000900000002780d"
+        }
+      },
+      {
+        "path": "docs\\ROADMAP.md",
+        "candidate": {
+          "sha256": "CF525DCE7014E16678E5C077A8FF68DE57AB9E110C3BC768BE6E3416F3D61823",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278af"
+        },
+        "previous": {
+          "sha256": "0D1634A3378964A8B74E40221F0F404A5532BCAB697972E5264F6E1031B37371",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000900000002780e"
+        }
+      },
+      {
+        "path": "docs\\USER_GUIDE.md",
+        "candidate": {
+          "sha256": "88E9F098194CF046F0E554B0331613C61953DCB09D7BACEB38B7D50731CF545A",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278b1"
+        },
+        "previous": {
+          "sha256": "38D61EB8DB36CE47F83A9D8ECCE231E7B650A4988089B103D84841009092308A",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000009000000027811"
+        }
+      },
+      {
+        "path": "LICENSE",
+        "candidate": {
+          "sha256": "2A92E02A6ADD5BB40115751EBD78BBCDCE35BA40D629136B2CD1F8F3884E80BB",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000d000000027869"
+        },
+        "previous": {
+          "sha256": "2A92E02A6ADD5BB40115751EBD78BBCDCE35BA40D629136B2CD1F8F3884E80BB",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000110000000277a8"
+        }
+      },
+      {
+        "path": "README.md",
+        "candidate": {
+          "sha256": "88DB7213730861639E2589E9F119CF0037F8A16C490671750F725F377239E08C",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000d00000002786a"
+        },
+        "previous": {
+          "sha256": "092C508C64C1252FB9D30C59257038E242A78410E1887C5B1BF3C43D523CD537",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000d0000000277a9"
+        }
+      },
+      {
+        "path": "RUNNING.md",
+        "candidate": {
+          "sha256": "1A961DA86973822997576F49F3E5FBB6ED0D563DEB73BAAAE9028DE5DAFB2697",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000d00000002786b"
+        },
+        "previous": {
+          "sha256": "1A961DA86973822997576F49F3E5FBB6ED0D563DEB73BAAAE9028DE5DAFB2697",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000c0000000277aa"
+        }
+      },
+      {
+        "path": "SOURCE_REVISION.txt",
+        "candidate": {
+          "sha256": "1B13AD08631D735C763F54ADE040DE3BCA9106E277EF2A7DCA0867F68604D2A6",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000d00000002786d"
+        },
+        "previous": {
+          "sha256": "A6C6907E8B67D360B52879597EB4A44E9EDEEF3A6CA5BF911A0FABC77C597005",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000e0000000277ad"
+        }
+      },
+      {
+        "path": "third-party-notices\\MANIFEST.txt",
+        "candidate": {
+          "sha256": "1789C9FE8D6CDF1F8F351FEC9AD49216B9D883C919753B47EFC6640BB1994A97",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278b3"
+        },
+        "previous": {
+          "sha256": "1789C9FE8D6CDF1F8F351FEC9AD49216B9D883C919753B47EFC6640BB1994A97",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000009000000027815"
+        }
+      },
+      {
+        "path": "third-party-notices\\mesa3d-26.1.3\\docs\\license.rst",
+        "candidate": {
+          "sha256": "0D1A0472ECC81830E75C20D59B0EA02841E3DB21255E0EBAD97AB682C54D6615",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000a0000000278bb"
+        },
+        "previous": {
+          "sha256": "0D1A0472ECC81830E75C20D59B0EA02841E3DB21255E0EBAD97AB682C54D6615",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000009000000027823"
+        }
+      },
+      {
+        "path": "third-party-notices\\mesa3d-26.1.3\\licenses\\Apache-2.0",
+        "candidate": {
+          "sha256": "7E4D3FBA250D15E9E0AFA380D4B611828FA2560CC8FDEBE95BCF2F01A487DE12",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000160000000278bd"
+        },
+        "previous": {
+          "sha256": "7E4D3FBA250D15E9E0AFA380D4B611828FA2560CC8FDEBE95BCF2F01A487DE12",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000009000000027825"
+        }
+      },
+      {
+        "path": "third-party-notices\\mesa3d-26.1.3\\licenses\\BSL-1.0",
+        "candidate": {
+          "sha256": "9B9FEA7520A816107FCAC2598B7C0155222F16BC430E989706B22F4367F1DF7D",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000200000000278bf"
+        },
+        "previous": {
+          "sha256": "9B9FEA7520A816107FCAC2598B7C0155222F16BC430E989706B22F4367F1DF7D",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000009000000027826"
+        }
+      },
+      {
+        "path": "third-party-notices\\mesa3d-26.1.3\\licenses\\exceptions\\Linux-Syscall-Note",
+        "candidate": {
+          "sha256": "9B4084655174654608FD037E9DDB4FEEADFADA01CD042E9C17B05AA7105B2B9F",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000d0000000278c7"
+        },
+        "previous": {
+          "sha256": "9B4084655174654608FD037E9DDB4FEEADFADA01CD042E9C17B05AA7105B2B9F",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000b000000027838"
+        }
+      },
+      {
+        "path": "third-party-notices\\mesa3d-26.1.3\\licenses\\GPL-1.0-or-later",
+        "candidate": {
+          "sha256": "8FF76F1528E6E4E9400C0F6B1F2D19D4979AAAC3BCC44BB707A55389132825C4",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000130000000278c0"
+        },
+        "previous": {
+          "sha256": "8FF76F1528E6E4E9400C0F6B1F2D19D4979AAAC3BCC44BB707A55389132825C4",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000009000000027827"
+        }
+      },
+      {
+        "path": "third-party-notices\\mesa3d-26.1.3\\licenses\\GPL-2.0-only",
+        "candidate": {
+          "sha256": "6667AD4063569CD53B13500550D93FCD3DC11BCF82C5514296AF013A0B720BA5",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000210000000278c2"
+        },
+        "previous": {
+          "sha256": "6667AD4063569CD53B13500550D93FCD3DC11BCF82C5514296AF013A0B720BA5",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000a000000027828"
+        }
+      },
+      {
+        "path": "third-party-notices\\mesa3d-26.1.3\\licenses\\MIT",
+        "candidate": {
+          "sha256": "323C587D0CCF10E376F8BF9A7F31FB4CA6078105194B42E0B1E0EE2BC9BDE71F",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000160000000278c3"
+        },
+        "previous": {
+          "sha256": "323C587D0CCF10E376F8BF9A7F31FB4CA6078105194B42E0B1E0EE2BC9BDE71F",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000900000002782a"
+        }
+      },
+      {
+        "path": "third-party-notices\\mesa3d-26.1.3\\licenses\\SGI-B-2.0",
+        "candidate": {
+          "sha256": "686BF035A1FD22076416FD3B90370AC67771E884BF57F55693D51F8CE7C710A7",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000130000000278c4"
+        },
+        "previous": {
+          "sha256": "686BF035A1FD22076416FD3B90370AC67771E884BF57F55693D51F8CE7C710A7",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000900000002782b"
+        }
+      },
+      {
+        "path": "third-party-notices\\Microsoft-DXC-LICENSE-MS.txt",
+        "candidate": {
+          "sha256": "734F72F239FE7B07B4C7203F294C1A7CE27095687278BAB7E56D630D7C672963",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000110000000278b4"
+        },
+        "previous": {
+          "sha256": "734F72F239FE7B07B4C7203F294C1A7CE27095687278BAB7E56D630D7C672963",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000009000000027816"
+        }
+      },
+      {
+        "path": "third-party-notices\\pal1000-LICENSE.txt",
+        "candidate": {
+          "sha256": "9CD0121DC070F0AC65C1FC266BEE74BDBBC22CEA4210AE72AE0C1F076448D4CC",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000120000000278b5"
+        },
+        "previous": {
+          "sha256": "9CD0121DC070F0AC65C1FC266BEE74BDBBC22CEA4210AE72AE0C1F076448D4CC",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000900000002781f"
+        }
+      },
+      {
+        "path": "Uninstall.exe",
+        "candidate": {
+          "sha256": "3429CFB36F6D092B2F5C114A175E7CB08C74239E0CCAD98DD4032A84E166AA58",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000090000000278c8"
+        },
+        "previous": {
+          "sha256": "F06D09205021BB83E2249CECCDEAAFDBCA1205CE23E861E696CC2E3FB4369B26",
+          "identity": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:0000000000000000000a00000002783a"
+        }
+      }
+    ],
+    "version": 2,
+    "root": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000012000000027863",
+    "staged": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000012000000027867",
+    "state": "rolled-back",
+    "previous": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:000000000000000000130000000277a7",
+    "target": "C:\\Users\\OttrinFullRecoveryQA\\AppData\\Local\\Programs\\Ottrin",
+    "links": [
+      {
+        "bytes": "TAAAAAEUAgAAAAAAwAAAAAAAAEabAAAAIAAAAAACngxKXN0BrbCmSMJc3QEAAp4MSlzdARd7tQEAAAAAAQAAAAAAAAAAAAAAAAAAAGYCOgAfSUcaA1lyP6dEicVVlf5rMO4mAAEAJgDvvhAAAADPVDJBwVzdAYiiKvXBXN0BdYjkSMJc3QEUAIIAdAAcAENGU0YWADEAAAAAAE9dtIISAEFwcERhdGEAAAB0Gllelt/TSI1nFzO87ii6xc36359nVkGJR8XHa8C2f0AACQAEAO++T120gk9dtIIuAAAAwmgCAAAAaAAAAAAAAAAAAAAAAAAAAMy01QBBAHAAcABEAGEAdABhAAAAQgBQADEAAAAAAE9dWoMQAExvY2FsADwACQAEAO++T120gk9dWoMuAAAA1GwCAAAAQwAAAAAAAAAAAAAAAAAAABaOAAFMAG8AYwBhAGwAAAAUAFoAMQAAAAAAT12dgxAAUHJvZ3JhbXMAAEIACQAEAO++T11Vg09dnYMuAAAAoXcCAAAACAAAAAAAAAAAAAAAAAAAAG9p7gBQAHIAbwBnAHIAYQBtAHMAAAAYAFQAMQAAAAAAT12hgxAAT3R0cmluAAA+AAkABADvvk9dnYNPXaGDLgAAAKd3AgAAABMAAAAAAAAAAAAAAAAAAAB/XMgATwB0AHQAcgBpAG4AAAAWAEoAMQAAAAAAT12hgxAAYmluADgACQAEAO++T12dg09doYMuAAAAtncCAAAACQAAAAAAAAAAAAAAAAAAADHb/gBiAGkAbgAAABIAYAAyABd7tQFPXQoRIABvdHRyaW4uZXhlAABGAAkABADvvk9dChFPXaGDLgAAAMN3AgAAAAoAAAAAAAAAAAAAAAAAAAAAAAAAbwB0AHQAcgBpAG4ALgBlAHgAZQAAABoAAAB5AAAAHAAAAAEAAAAcAAAALQAAAAAAAAB4AAAAEQAAAAMAAABtx4WUEAAAAABDOlxVc2Vyc1xPdHRyaW5GdWxsUmVjb3ZlcnlRQVxBcHBEYXRhXExvY2FsXFByb2dyYW1zXE90dHJpblxiaW5cb3R0cmluLmV4ZQAANgAuAC4AXAAuAC4AXAAuAC4AXAAuAC4AXAAuAC4AXAAuAC4AXABMAG8AYwBhAGwAXABQAHIAbwBnAHIAYQBtAHMAXABPAHQAdAByAGkAbgBcAGIAaQBuAFwAbwB0AHQAcgBpAG4ALgBlAHgAZQA7AEMAOgBcAFUAcwBlAHIAcwBcAE8AdAB0AHIAaQBuAEYAdQBsAGwAUgBlAGMAbwB2AGUAcgB5AFEAQQBcAEEAcABwAEQAYQB0AGEAXABMAG8AYwBhAGwAXABQAHIAbwBnAHIAYQBtAHMAXABPAHQAdAByAGkAbgAcAAAACwAAoHwPzvMBScxKhkjV1EsE7486AAAAYAAAAAMAAKBYAAAAAAAAAGRlc2t0b3AtODFnaHA4dQCEoCYCY/sJSrxbvLSufrGYSZIWebTI8RG1lozZRncOxISgJgJj+wlKvFu8tK5+sZhJkhZ5tMjxEbWWjNlGdw7E0gAAAAkAAKCNAAAAMVNQU+KKWEa8TDhDu/wTkyaYbc5xAAAABAAAAAAfAAAALwAAAFMALQAxAC0ANQAtADIAMQAtADMAMQA4ADMAMgAxADAANwA5ADEALQAxADYANwAzADEAMAA1ADMAOAA1AC0AMwAyADYAMgA1ADgAMAA4ADkANAAtADEAMAAzADAAAAAAAAAAAAA5AAAAMVNQU7EWbUStjXBIp0hALqQ9eIwdAAAAaAAAAABIAAAA2SCz2SH/DEe+Z6MTZbdt3QAAAAAAAAAAAAAAAA==",
+        "name": "Ottrin.lnk"
+      },
+      {
+        "bytes": "TAAAAAEUAgAAAAAAwAAAAAAAAEabAAAAIAAAALfu30jCXN0Boj3gSMJc3QGiPeBIwlzdAWYVAgAAAAAAAQAAAAAAAAAAAAAAAAAAACQCOgAfSUcaA1lyP6dEicVVlf5rMO4mAAEAJgDvvhAAAADPVDJBwVzdAYiiKvXBXN0BdYjkSMJc3QEUAIIAdAAcAENGU0YWADEAAAAAAE9dtIISAEFwcERhdGEAAAB0Gllelt/TSI1nFzO87ii6xc36359nVkGJR8XHa8C2f0AACQAEAO++T120gk9dtIIuAAAAwmgCAAAAaAAAAAAAAAAAAAAAAAAAAMy01QBBAHAAcABEAGEAdABhAAAAQgBQADEAAAAAAE9dWoMQAExvY2FsADwACQAEAO++T120gk9dWoMuAAAA1GwCAAAAQwAAAAAAAAAAAAAAAAAAABaOAAFMAG8AYwBhAGwAAAAUAFoAMQAAAAAAT12dgxAAUHJvZ3JhbXMAAEIACQAEAO++T11Vg09dnYMuAAAAoXcCAAAACAAAAAAAAAAAAAAAAAAAAG9p7gBQAHIAbwBnAHIAYQBtAHMAAAAYAFQAMQAAAAAAT12hgxAAT3R0cmluAAA+AAkABADvvk9dnYNPXaGDLgAAAKd3AgAAABMAAAAAAAAAAAAAAAAAAABJ7MUATwB0AHQAcgBpAG4AAAAWAGgAMgBmFQIAT12hgyAAVU5JTlNUfjEuRVhFAABMAAkABADvvk9doYNPXaGDLgAAADp4AgAAAAoAAAAAAAAAAAAAAAAAAABencUAVQBuAGkAbgBzAHQAYQBsAGwALgBlAHgAZQAAABwAAAB4AAAAHAAAAAEAAAAcAAAALQAAAAAAAAB3AAAAEQAAAAMAAABtx4WUEAAAAABDOlxVc2Vyc1xPdHRyaW5GdWxsUmVjb3ZlcnlRQVxBcHBEYXRhXExvY2FsXFByb2dyYW1zXE90dHJpblxVbmluc3RhbGwuZXhlAABsAC4ALgBcAC4ALgBcAC4ALgBcAC4ALgBcAC4ALgBcAC4ALgBcAC4ALgBcAC4ALgBcAC4ALgBcAFcASQBOAEQATwBXAFMAXABzAHkAcwB0AGUAbQAzADIAXABjAG8AbgBmAGkAZwBcAHMAeQBzAHQAZQBtAHAAcgBvAGYAaQBsAGUAXABBAHAAcABEAGEAdABhAFwATABvAGMAYQBsAFwAUAByAG8AZwByAGEAbQBzAFwATwB0AHQAcgBpAG4AXABVAG4AaQBuAHMAdABhAGwAbAAuAGUAeABlADsAQwA6AFwAVQBzAGUAcgBzAFwATwB0AHQAcgBpAG4ARgB1AGwAbABSAGUAYwBvAHYAZQByAHkAUQBBAFwAQQBwAHAARABhAHQAYQBcAEwAbwBjAGEAbABcAFAAcgBvAGcAcgBhAG0AcwBcAE8AdAB0AHIAaQBuABwAAAALAACgfA/O8wFJzEqGSNXUSwTvjzoAAABgAAAAAwAAoFgAAAAAAAAAZGVza3RvcC04MWdocDh1AISgJgJj+wlKvFu8tK5+sZhKkhZ5tMjxEbWWjNlGdw7EhKAmAmP7CUq8W7y0rn6xmEqSFnm0yPERtZaM2UZ3DsT/AAAACQAAoI0AAAAxU1BT4opYRrxMOEO7/BOTJphtznEAAAAEAAAAAB8AAAAvAAAAUwAtADEALQA1AC0AMgAxAC0AMwAxADgAMwAyADEAMAA3ADkAMQAtADEANgA3ADMAMQAwADUAMwA4ADUALQAzADIANgAyADUAOAAwADgAOQA0AC0AMQAwADMAMAAAAAAAAAAAADkAAAAxU1BTsRZtRK2NcEinSEAupD14jB0AAABoAAAAAEgAAADZILPZIf8MR75noxNlt23dAAAAAC0AAAAxU1BTVShMn3mfOUuo0OHULeHV8xEAAAAXAAAAABMAAAABAAAAAAAAAAAAAAAAAAAA",
+        "name": "Uninstall Ottrin.lnk"
+      }
+    ],
+    "candidate": "\\\\?\\Volume{d9b320d9-ff21-470c-be67-a31365b76ddd}:9e9485ec9485c76d:00000000000000000012000000027867",
+    "user": "S-1-5-21-3183210791-1673105385-3262580894-1030"
+  },
+  "point": "rolled-back",
+  "pid": 3368
+}

@@ -1,0 +1,46 @@
+{
+  "payload_source_revision": "3ddb1bf65ee514d1ecc69745df66055d2ae515e1",
+  "source_sha256": {
+    "packaging/windows/installer.nsi": "54118cc0168986a58117692e598111d7cd5a3e2c26c6969af014feb794e88aa0",
+    "packaging/windows/payload-transaction.ps1": "c47286ccd4ee7996b7bd5e8e58ffa8dd8cce53dc79737b3a410f2ad82503f992"
+  },
+  "fixture_sha256": {
+    "prepare-account.py": "91fc0049bdf90f14b2c6d876c1ea4cd80286a23a2a305ad470be1b02a572912f",
+    "prepare-root.py": "c5f456c962a96b12b5fa174e23f6479483d4c2bf1dca96c9943fd3335b3ff870",
+    "payload-transaction.qa.ps1": "40888421c11ab5304766eb73eba9e6293fe3155ec701ae1156fff4f4b996846e",
+    "pause.nsi": "54118cc0168986a58117692e598111d7cd5a3e2c26c6969af014feb794e88aa0",
+    "cleanup-account.ps1": "e2bbc5b1b5b335c454e1b32b81b11d0fb226a57151f3ab7ac81ba5eb8a6a89c3",
+    "transport.py": "01af3b60c9742e1327992c236da3a8b249d653195b80d4ab76de347ef5bcc1c0",
+    "rollback.nsi": "bb3d190027a210d8c01686b78e1926fd913d5eec9302ef6951163f514c8a1048",
+    "build.py": "a6e9e3affcb197014ff6cdb1e5a73ae157f8ca2ce640fb1cc48e4170a0e12589"
+  },
+  "artifacts": {
+    "pause.exe": "11feca12158fdf8a7ba3e2b19d47bea12ab782cafcb066bf4754342bbb5854a3",
+    "rollback.exe": "414b1a90367854180a06f897c77d59d36f32ccbcf3976d9cd69377c07138692d"
+  },
+  "scope": "QA-only checkpoints with exact current51-file payload and real embedded index controller; exact unmodified current installer retries recovery",
+  "guest_inputs_sha256": {
+    "baseline.exe": "fd917b1ef84c9601eb3529523ef6dd8d178ec33a4a33953379ab2d4c4045342c",
+    "current.exe": "26888c2439a54e64eb046333cb7541598d4a2142de23805c09346590e9416211",
+    "pause.exe": "11feca12158fdf8a7ba3e2b19d47bea12ab782cafcb066bf4754342bbb5854a3",
+    "rollback.exe": "414b1a90367854180a06f897c77d59d36f32ccbcf3976d9cd69377c07138692d",
+    "controller.exe": "92e4554f50b776cd016c91353b240afc50c8d8311efb6f42d04b4414e13ca83a",
+    "payload-transaction.qa.ps1": "40888421c11ab5304766eb73eba9e6293fe3155ec701ae1156fff4f4b996846e",
+    "payload.json": "8fac97014eeead58fefc8edfaad69ed2da7cc2c9a4a7a04f6b1d2339f7258a90",
+    "config-template.json": "6840ba357c4e150295aaddbf0c7520556bda0d850fee7fcb2ef3e89e675a2be7",
+    "actor.ps1": "ca5949d84df665edc3260b74e47e31629441fa0d514a1a7b584a9191e4639e85"
+  },
+  "executed_fixture_sha256": {
+    "prepare-account.py": "91fc0049bdf90f14b2c6d876c1ea4cd80286a23a2a305ad470be1b02a572912f",
+    "launch.py": "849be489da61a572125d938a9e4c41c1ae69ee6eb37947b7a4ada62dad588510",
+    "prepare-root.py": "c5f456c962a96b12b5fa174e23f6479483d4c2bf1dca96c9943fd3335b3ff870",
+    "actor.ps1": "ca5949d84df665edc3260b74e47e31629441fa0d514a1a7b584a9191e4639e85",
+    "payload-transaction.qa.ps1": "40888421c11ab5304766eb73eba9e6293fe3155ec701ae1156fff4f4b996846e",
+    "pause.nsi": "54118cc0168986a58117692e598111d7cd5a3e2c26c6969af014feb794e88aa0",
+    "cleanup-account.ps1": "36e70e35e64e8be240ade4821da014cbecf6447dc41ad1376e0f742d27d67ce6",
+    "transport.py": "01af3b60c9742e1327992c236da3a8b249d653195b80d4ab76de347ef5bcc1c0",
+    "collect-cleanup.py": "76e7dd831491b1d081537d67558870fb1df0c8110018f12e1d5bbe1dfda57241",
+    "rollback.nsi": "bb3d190027a210d8c01686b78e1926fd913d5eec9302ef6951163f514c8a1048",
+    "build.py": "a6e9e3affcb197014ff6cdb1e5a73ae157f8ca2ce640fb1cc48e4170a0e12589"
+  }
+}
