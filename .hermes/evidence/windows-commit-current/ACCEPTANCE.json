@@ -1,0 +1,32 @@
+{
+  "status": "pass",
+  "scope": "Source commit-decision and native isolated integration checkpoint; no production package promotion",
+  "implemented": [
+    "Activate restores runtime intent without deleting index rollback intent; requires existing snapshot",
+    "SealCommit persists payload decision before index Commit removes snapshot",
+    "Uncertain seal/commit results retain both records without inline rollback",
+    "Committed cleanup resumes after already retired leaves"
+  ],
+  "verification": [
+    "Explicit daemon phase parser test passes",
+    "Windows ottrin-search cross-target check and strict Clippy pass",
+    "Production NSIS default helper-path construction compiles",
+    "11 native model cases pass, including before/after-seal and snapshot-removal failure",
+    "Two real isolated scheduled tasks preserve stopped/running intent and new definition; Activate leaves snapshot bytes unchanged; Commit removes snapshot; missing Activate snapshot refused"
+  ],
+  "evidence": [
+    "BUILD.json",
+    "RESULTS.json",
+    "TASK_RESULTS.json",
+    "USER_CLEANUP.json",
+    "GUEST_CLEANUP.json"
+  ],
+  "result_interpretation": "RESULTS registry_shortcuts_checked is inherited fixture metadata. For SealBefore, SealAfter and Commit it does not mean old metadata was restored: those cases assert new payload and journal state retention plus explicit fixture recovery. Only pre-seal rollback cases compare original metadata/shortcut bytes.",
+  "limitations": [
+    "Automatic restart recovery remains open",
+    "Native model uses mock application/index executables, not a full actual-daemon installed-package acceptance",
+    "Real task checks execute authoritative embedded PowerShell with an isolated task-name prefix and no legacy task lookup",
+    "No arbitrary power-loss or namespace-race acceptance",
+    "Stable Linux and Windows packages unchanged"
+  ]
+}

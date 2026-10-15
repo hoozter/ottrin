@@ -172,7 +172,7 @@ mod windows_launch_tests {
         );
         assert_eq!(windows_launch(&args(&["--stop"])), Ok(WindowsLaunch::Stop));
         let path = "C:\\Users\\QA Ω\\AppData\\Local\\Temp\\index 'snapshot'.json";
-        for phase in ["Prepare", "Snapshot", "Rollback", "Commit"] {
+        for phase in ["Prepare", "Snapshot", "Rollback", "Activate", "Commit"] {
             assert_eq!(
                 windows_launch(&args(&["--installer-transaction", phase, path])),
                 Ok(WindowsLaunch::Transaction(

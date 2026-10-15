@@ -1,12 +1,12 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Snapshot', 'Rollback', 'Commit')]
+    [ValidateSet('Snapshot', 'Rollback', 'Activate', 'Commit')]
     [string]$Phase,
     [Parameter(Mandatory = $true)]
     [string]$Snapshot
 )
 
-# MSI owns this short-lived transaction; the application owns normal task setup.
+# Installers own this short-lived transaction; the application owns normal task setup.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 # The embedded controller supplies the shared identity functions in parent scope.
@@ -64,6 +64,9 @@ if ($Phase -eq 'Snapshot') {
     # Keep the snapshot if restoration failed; never conceal scheduler errors.
     Remove-Item -LiteralPath $Snapshot
 } else {
+    if ($Phase -eq 'Activate' -and -not (Test-Path -LiteralPath $Snapshot)) {
+        throw 'Index activation requires its rollback snapshot.'
+    }
     if (Test-Path -LiteralPath $Snapshot) {
         $record = Read-TransactionSnapshot
         $folder = Task-Folder
@@ -76,6 +79,8 @@ if ($Phase -eq 'Snapshot') {
         if ($null -ne $current -and $prior.Count -ne 0) {
             Restore-OttrinTaskRunningState $current $prior[0].running
         }
-        Remove-Item -LiteralPath $Snapshot
+        # NSIS activates before its durable payload decision. Keep rollback
+        # intent until that decision exists; MSI still uses the single Commit.
+        if ($Phase -eq 'Commit') { Remove-Item -LiteralPath $Snapshot }
     }
 }

@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "fixture_tasks_processes_uploads_and_root_removed": true,
+  "user_cleanup": "USER_CLEANUP.json",
+  "qa_guest_state": "shut off",
+  "host_fixture_staging_removed": true
+}

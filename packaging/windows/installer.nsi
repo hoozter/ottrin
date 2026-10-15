@@ -171,15 +171,26 @@ Section "Ottrin" SEC_MAIN
     Goto background_integration_launch_failed
   ${EndIf}
   ClearErrors
-  ExecWait '"$PLUGINSDIR\index-controller.exe" --installer-transaction Commit "$IndexTransactionSnapshot"' $0
+  ExecWait '"$PLUGINSDIR\index-controller.exe" --installer-transaction Activate "$IndexTransactionSnapshot"' $0
   IfErrors index_commit_failed
   ${If} $0 != 0
     Goto index_commit_failed
   ${EndIf}
+  ; From the seal attempt onward, an uncertain process result must retain both
+  ; journals for recovery instead of guessing whether rollback is still allowed.
   StrCpy $IndexTransactionActive 0
-  ; Index commit is the point of no return. A cleanup failure retains previous
-  ; files for review; it must not restore an old payload under the new task.
   StrCpy $PayloadTransactionActive 0
+  StrCpy $PayloadTransactionPhase SealCommit
+  Call RunPayloadTransaction
+  ${If} $0 != 0
+    Goto commit_recovery_required
+  ${EndIf}
+  ClearErrors
+  ExecWait '"$PLUGINSDIR\index-controller.exe" --installer-transaction Commit "$IndexTransactionSnapshot"' $0
+  IfErrors commit_recovery_required
+  ${If} $0 != 0
+    Goto commit_recovery_required
+  ${EndIf}
   StrCpy $PayloadTransactionPhase Commit
   Call RunPayloadTransaction
   ${If} $0 != 0
@@ -211,6 +222,11 @@ background_integration_launch_failed:
 
 index_commit_failed:
   MessageBox MB_OK|MB_ICONSTOP "Ottrin could not restore the previous indexing state after setup. The transaction record is retained at $IndexTransactionSnapshot if recovery fails. Retry setup or use Services settings." /SD IDOK
+  SetErrorLevel 1
+  Abort
+
+commit_recovery_required:
+  MessageBox MB_OK|MB_ICONSTOP "Setup could not finish recording the installation commit. The new installation and recovery records remain at $INSTDIR.ottrin-setup. Do not remove that directory; recovery is required before another setup or uninstall." /SD IDOK
   SetErrorLevel 1
   Abort
 

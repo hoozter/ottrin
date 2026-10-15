@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet('Initialize','Publish','BeginIntegration','Rollback','FinishRollback','Commit')][string]$Phase,
+    [ValidateSet('Initialize','Publish','BeginIntegration','Rollback','FinishRollback','SealCommit','Commit')][string]$Phase,
     [string]$Target=$env:OTTRIN_INSTALLER_TARGET
 )
 $ErrorActionPreference='Stop'
@@ -302,18 +302,22 @@ if ($Phase -eq 'Publish') {
 } elseif ($Phase -eq 'FinishRollback') {
     if($record.state -ne 'rolled-back'){throw 'Payload rollback has not completed.'}
     Finish $record
-} else {
+} elseif ($Phase -eq 'SealCommit') {
     if ($record.state -ne 'integrating') {throw 'Only an integrated installation can commit.'}
     Expect $Target $record.candidate
     # Persist the commit boundary before reclaiming anything from the old tree.
     $record.state='committed';Save $record
-    if ($null -ne $record.previous) {
+} else {
+    if ($record.state -ne 'committed') {throw 'The installation commit decision has not been recorded.'}
+    Expect $Target $record.candidate
+    if ($null -ne $record.previous -and (Test-Path -LiteralPath $Old)) {
         Expect $Old $record.previous
         $null=Files $Old | Out-Null # Refuse reparse entries before deleting any old file.
         foreach($entry in $record.files) {
             if ($null -ne $entry.previous) {
                 $path=Member $Old $entry.path
-                if (-not (Retire $path $entry.previous)) {throw "Previous payload changed and is retained: $path"}
+                # A committed cleanup may resume after earlier leaves were retired.
+                if ((Test-Path -LiteralPath $path) -and -not (Retire $path $entry.previous)) {throw "Previous payload changed and is retained: $path"}
             }
         }
         EmptyDirectories $Old

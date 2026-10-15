@@ -1,0 +1,25 @@
+{
+  "artifacts": {
+    "baseline": "8466f7d528c4329101b17910f7d1bd7dacca33281b4a8468baa619d6b6c65f96",
+    "fixed": "83b73f1656976d484c6426a150e88cb405810f0ad3dfc9df6cfc18f024103627",
+    "staging-fault": "dcbda390dacf88d20d1fd4d312c0edc4d610bff82aecd1b657874e3e8d96a7e7"
+  },
+  "production_sha256": {
+    "packaging/windows/installer.nsi": "1b62b74f3429407cfa93edc6db5d3ac03f4d83deb7ef2faad4883f8fd88159b9",
+    "packaging/windows/payload-transaction.ps1": "608be521b975118a62c83aec755b8368cf775074595d3a1b76303a4e89cd15ff",
+    "packaging/windows/index-task-transaction.ps1": "4f15f14fa3815f8bd9ea638dfe6418737ed342efe61f134046f55f23a41094bc",
+    "crates/ottrin-search/src/windows_installer.rs": "827865f9be3ac24f7c0bbc3eb9e5a0e978f691a46e5f4cbfde48200f9b47d330"
+  },
+  "fixture_sha256": {
+    "cleanup-user.ps1": "496ce17d15767b55a04e901d02cebbd77b493893031952702e561492b8ae9868",
+    "staging-fault.nsi": "b3773d3bc79706f3d4174a07664f8c048831416eb7e19d4676807a70ea3f2df9",
+    "task.ps1": "0ae0ed45cd87faefc2fe47cd94338095817942ce63f38076ebd962d2a344a6e8",
+    "baseline.nsi": "64ee04159eb571dea13ece25ff5afd7d84fadba4f18e7f4324b3be3e203cf699",
+    "actor.ps1": "2a1a9f3d73b3437bb987ddb608d3608b5ac461711f8c3b3d27b404180770897e",
+    "payload-transaction.qa.ps1": "beecdf8a7e50e819eb5045e4d0288399e26c1e7a8ecf99baeb235ebb30c4bd0d",
+    "fixed.nsi": "3516dc2d3ab52762217308c34367fdf5968fbd593d22b68f9c3a21ff2e1e3bad",
+    "mock.c": "80c417fd15a06afe7920ca0c8cde3e786320711a527afce44694ec7aeaa954bb",
+    "build.py": "55d6e52d82d57b79d6229034b212c4b615453d68fb4fef348a1187c1cc597770",
+    "collect-cleanup.py": "deaa4c2fe9c3f4f87e80cc2f0d4911779edf910631af89e2c16c6b635dd69f4a"
+  }
+}

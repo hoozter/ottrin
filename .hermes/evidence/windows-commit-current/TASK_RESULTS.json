@@ -1,0 +1,20 @@
+{
+  "missing_activation_snapshot_refused": true,
+  "status": "pass",
+  "cases": [
+    {
+      "commit_snapshot_removed": true,
+      "activation_snapshot_unchanged": true,
+      "running_intent_preserved": true,
+      "prior_running": false,
+      "new_definition_retained": true
+    },
+    {
+      "commit_snapshot_removed": true,
+      "activation_snapshot_unchanged": true,
+      "running_intent_preserved": true,
+      "prior_running": true,
+      "new_definition_retained": true
+    }
+  ]
+}

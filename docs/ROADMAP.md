@@ -2803,3 +2803,28 @@ removed; the QA guest is shut off. Stable packages remain unchanged. Next work i
 exact coherent Windows candidate construction with real scheduler, daemon and
 installation acceptance. The separate MSI registration rollback and Office
 provider gates remain open.
+
+### Windows NSIS durable commit decision checkpoint (2026-10-15)
+
+The controller now has an Activate phase that restores preexisting runtime
+intent while retaining the index rollback snapshot. NSIS then records the payload
+commit decision, removes the index snapshot, and reclaims the prior payload.
+Failures or uncertain process results during the commit write retain the new
+installation and recovery records without guessing whether rollback is allowed.
+Committed cleanup can resume after individual old leaves have already been
+retired. MSI retains its existing single Commit phase.
+
+Eleven isolated native installer cases pass, including failures immediately
+before and after the durable decision, activation failure, final snapshot-removal
+failure, and cleanup resumed after exact-object retirement of one old leaf.
+Two additional real disposable scheduled-task cases confirm stopped/running
+intent restoration, unchanged snapshot bytes after Activate, preservation of the
+new task definition, final snapshot removal, and missing-snapshot refusal.
+The daemon phase-parser test, Windows search-library check/strict Clippy and
+default NSIS construction pass. Evidence:
+`.hermes/evidence/windows-commit-current/ACCEPTANCE.json`.
+
+This is a source and isolated integration checkpoint. Automatic restart recovery,
+full coherent package/daemon acceptance, MSI registration rollback and the Office
+provider gates remain open. Stable packages are unchanged. Task-owned fixtures,
+integrations, processes and staging were removed; the owned guest was shut down.

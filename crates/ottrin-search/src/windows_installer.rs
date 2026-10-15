@@ -6,6 +6,7 @@ pub enum IndexInstallerPhase {
     Prepare,
     Snapshot,
     Rollback,
+    Activate,
     Commit,
 }
 
@@ -16,6 +17,7 @@ impl FromStr for IndexInstallerPhase {
             "Prepare" => Ok(Self::Prepare),
             "Snapshot" => Ok(Self::Snapshot),
             "Rollback" => Ok(Self::Rollback),
+            "Activate" => Ok(Self::Activate),
             "Commit" => Ok(Self::Commit),
             _ => Err("Unknown index installer phase"),
         }
@@ -30,6 +32,7 @@ pub fn run(phase: IndexInstallerPhase, snapshot: &std::path::Path) -> Result<(),
     let script_phase = match phase {
         IndexInstallerPhase::Prepare | IndexInstallerPhase::Snapshot => "Snapshot",
         IndexInstallerPhase::Rollback => "Rollback",
+        IndexInstallerPhase::Activate => "Activate",
         IndexInstallerPhase::Commit => "Commit",
     };
     // Parameters are environment data, never interpolated into executable code.
