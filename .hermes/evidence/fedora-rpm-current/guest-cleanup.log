@@ -1,0 +1,3 @@
+Removed '/home/ottrinqa/.config/systemd/user/default.target.wants/ottrin-index.service'.
+9b73a8247d79effe71d8d847279f9f713a9010189982c23a572e06aed13a55e4  /home/ottrinqa/.config/ottrin/config.json
+f3746e9dd3115f2d467913c2838b6be7845eb3bd52aaec8824f8587db9008edc  /home/ottrinqa/OttrinFixtures/rpm-native-fixture.txt

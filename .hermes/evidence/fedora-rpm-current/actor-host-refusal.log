@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/campbell/Projects/Ottrin/.hermes/evidence/fedora-rpm-current/installed-gui.py", line 4, in <module>
+    raise RuntimeError('This destructive package lifecycle fixture is restricted to the owned Fedora QA guest')
+RuntimeError: This destructive package lifecycle fixture is restricted to the owned Fedora QA guest

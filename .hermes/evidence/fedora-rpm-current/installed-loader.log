@@ -1,0 +1,100 @@
+ottrin-0.1.0-1.x86_64
+Ottrin source revision
+Version: 0.1.0
+Git revision: 41027a0cac4ddaf735bea28b608f3e0b824e8ea7
+Tracked tree: clean
+/usr/bin/ottrin
+	linux-vdso.so.1 (0x00007f334be6a000)
+	libgio-2.0.so.0 => /lib64/libgio-2.0.so.0 (0x00007f3349e12000)
+	libgobject-2.0.so.0 => /lib64/libgobject-2.0.so.0 (0x00007f3349db1000)
+	libglib-2.0.so.0 => /lib64/libglib-2.0.so.0 (0x00007f3349c4f000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f3349c22000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007f3349b0b000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f3349910000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f334be6c000)
+	libgmodule-2.0.so.0 => /lib64/libgmodule-2.0.so.0 (0x00007f334be55000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007f33498e6000)
+	libmount.so.1 => /lib64/libmount.so.1 (0x00007f334988d000)
+	libselinux.so.1 => /lib64/libselinux.so.1 (0x00007f334985a000)
+	libffi.so.8 => /lib64/libffi.so.8 (0x00007f334984a000)
+	libpcre2-8.so.0 => /lib64/libpcre2-8.so.0 (0x00007f3349799000)
+	libblkid.so.1 => /lib64/libblkid.so.1 (0x00007f334975c000)
+/usr/bin/ottrin-indexd
+	linux-vdso.so.1 (0x00007fea69779000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007fea6973f000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007fea690e9000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007fea68eee000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fea6977b000)
+/usr/bin/ottrin-media-playback
+	linux-vdso.so.1 (0x00007f653d8ae000)
+	libgstapp-1.0.so.0 => /lib64/libgstapp-1.0.so.0 (0x00007f653d815000)
+	libgstbase-1.0.so.0 => /lib64/libgstbase-1.0.so.0 (0x00007f653d78c000)
+	libgstreamer-1.0.so.0 => /lib64/libgstreamer-1.0.so.0 (0x00007f653d619000)
+	libgobject-2.0.so.0 => /lib64/libgobject-2.0.so.0 (0x00007f653d5b8000)
+	libglib-2.0.so.0 => /lib64/libglib-2.0.so.0 (0x00007f653d456000)
+	libgio-2.0.so.0 => /lib64/libgio-2.0.so.0 (0x00007f653d268000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f653d239000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f653d03e000)
+	libgmodule-2.0.so.0 => /lib64/libgmodule-2.0.so.0 (0x00007f653d038000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007f653cf21000)
+	libffi.so.8 => /lib64/libffi.so.8 (0x00007f653cf11000)
+	libpcre2-8.so.0 => /lib64/libpcre2-8.so.0 (0x00007f653ce5e000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007f653ce34000)
+	libmount.so.1 => /lib64/libmount.so.1 (0x00007f653cddb000)
+	libselinux.so.1 => /lib64/libselinux.so.1 (0x00007f653cda8000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f653d8b0000)
+	libblkid.so.1 => /lib64/libblkid.so.1 (0x00007f653cd6b000)
+/usr/bin/ottrin-legacy-doc-render
+	linux-vdso.so.1 (0x00007fb603074000)
+	libfontconfig.so.1 => /lib64/libfontconfig.so.1 (0x00007fb603014000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007fb602fe7000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007fb602ed0000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007fb602805000)
+	libfreetype.so.6 => /lib64/libfreetype.so.6 (0x00007fb602728000)
+	libxml2.so.2 => /lib64/libxml2.so.2 (0x00007fb6025b9000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fb603076000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007fb60258f000)
+	libbz2.so.1 => /lib64/libbz2.so.1 (0x00007fb602eba000)
+	libpng16.so.16 => /lib64/libpng16.so.16 (0x00007fb602552000)
+	libharfbuzz.so.0 => /lib64/libharfbuzz.so.0 (0x00007fb60241b000)
+	libbrotlidec.so.1 => /lib64/libbrotlidec.so.1 (0x00007fb602eab000)
+	liblzma.so.5 => /lib64/liblzma.so.5 (0x00007fb6023e5000)
+	libglib-2.0.so.0 => /lib64/libglib-2.0.so.0 (0x00007fb602283000)
+	libgraphite2.so.3 => /lib64/libgraphite2.so.3 (0x00007fb602263000)
+	libbrotlicommon.so.1 => /lib64/libbrotlicommon.so.1 (0x00007fb602240000)
+	libpcre2-8.so.0 => /lib64/libpcre2-8.so.0 (0x00007fb60218f000)
+/usr/libexec/ottrin/ottrin-priv-helper
+	linux-vdso.so.1 (0x00007f4f9b5c4000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f4f9b437000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f4f9b23c000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f4f9b5c6000)
+/usr/libexec/ottrin/pdfium/lib/libpdfium.so
+ldd: warning: you do not have execution permission for `/usr/libexec/ottrin/pdfium/lib/libpdfium.so'
+	linux-vdso.so.1 (0x00007f2dfee4e000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f2dfee3d000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007f2dfe6e9000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f2dfe6bc000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f2dfe4c1000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f2dfee50000)
+Ottrin — find, inspect, and manage files
+
+Usage:
+  ottrin                         Open the file manager
+  ottrin <FILE>                  Open the file directly in Quick Inspector
+  ottrin <DIRECTORY>             Open the file manager in that directory
+  ottrin --select <FILE>         Open the parent folder with the file selected
+  ottrin search <QUERY> [--json] Search indexed files (-s)
+  ottrin index [update] [--json]
+                                 Update the configured search index
+  ottrin index status [--json]   Show persisted index status without starting it
+  ottrin index rebuild [--json]
+                                 Build and atomically publish a fresh index
+  ottrin preview <FILE>          Open the full Quick Inspector (-p)
+  ottrin drop status             Show Drop Folder state
+  ottrin drop copy <PATH>…       Copy paths into the Drop Folder
+
+Options:
+  --renderer opengl  Recovery override for a compatible OpenGL driver
+  --helper-path PATH Developer override for privileged helper discovery
+  --uninstall        Remove Ottrin background jobs and generated data
+  --purge-config     With --uninstall, also remove saved preferences

@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-15",
+  "source_revision": "41027a0cac4ddaf735bea28b608f3e0b824e8ea7",
+  "rpm_sha256": "be7a9b9173e350be59f4e79f577e0e8ff8796596a572fadf8a5235f849843a38",
+  "overall_status": "partial; package-manager-only uninstall rejected",
+  "environment": "Fresh signed Fedora 44 Cloud image, ordinary SSH user, SELinux enforcing defaults, private Xvfb/software OpenGL",
+  "passed": [
+    "DNF resolves and installs exact unsigned local RPM without manually supplying runtime libraries",
+    "Installed RPM verification, five executable loaders and PDFium resolve before GUI test-tool installation",
+    "Actual installed GUI renders the selected text preview and exits normally",
+    "User systemd installation/update/query, same daemon through GUI open/close and after-close watch",
+    "Same-version DNF reinstall preserves verified installed payloads, preferences/source and running daemon",
+    "Explicit user service restart produces a new daemon and retains searchability",
+    "User service removal followed by DNF removal preserves preferences/source"
+  ],
+  "after_close_visibility_ms": 477,
+  "rejected": [
+    "Direct DNF removal with active integration leaves a running deleted daemon and an enabled unit pointing to the missing binary"
+  ],
+  "cause": "Native package builders have no pre-removal service lifecycle integration; the app-owned user unit is outside package ownership",
+  "required_followup": [
+    "Provide shared native package lifecycle cleanup for RPM/DEB, scoped to integration owned by the removed native executable",
+    "Preserve portable/AppImage integration, all user preferences and source files; normal reinstall/upgrade must preserve intended service state",
+    "Repeat direct removal and failure handling on native package managers, including multiple and offline users"
+  ],
+  "cleanup": "CLEANUP.json; owned guest/domain/volumes/seed/key removed, base retained once as a verified reusable cache",
+  "limits": [
+    "Cloud/private-display acceptance, not a GNOME/KDE or physical GPU/Wayland acceptance",
+    "Polkit permission matrix, media fidelity, cross-version upgrade and signing remain open",
+    "The current published RPM remains unchanged and still has the direct-removal defect"
+  ]
+}

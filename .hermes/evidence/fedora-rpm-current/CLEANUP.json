@@ -1,0 +1,11 @@
+{
+  "domain_removed": true,
+  "volumes_removed": {
+    "ottrin-fedora-rpm-work.qcow2": true,
+    "ottrin-fedora-rpm-seed.iso": true,
+    "ottrin-fedora-rpm-base.qcow2": true
+  },
+  "ssh_seed_and_private_key_removed": true,
+  "retained_shared_cache": ".hermes/tools/fedora44/Fedora-Cloud-Base-Generic-44-1.7.x86_64.qcow2",
+  "scope": "Only owned Fedora guest and volumes; existing networks and Windows guests preserved"
+}

@@ -1,0 +1,13 @@
+{
+  "status": "fail",
+  "scope": "Package-manager-only RPM removal with active user integration",
+  "rpm_sha256": "be7a9b9173e350be59f4e79f577e0e8ff8796596a572fadf8a5235f849843a38",
+  "package_query_exit": 1,
+  "daemon_installed": false,
+  "daemon_pid": 2065,
+  "live_executable": "/usr/bin/ottrin-indexd (deleted)",
+  "unit_remains": true,
+  "unit_text": "[Unit]\nDescription=Ottrin persistent search index\n\n[Service]\nType=simple\nExecStart=\"/usr/bin/ottrin-indexd\" --index-daemon\nRestart=on-failure\nRestartSec=2s\n\n[Install]\nWantedBy=default.target\n",
+  "active_state": "active",
+  "enabled_state": "enabled"
+}

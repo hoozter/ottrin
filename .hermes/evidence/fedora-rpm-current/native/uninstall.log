@@ -1,0 +1,53 @@
+Package                  Arch   Version           Repository        Size
+Removing:
+ ottrin                  x86_64 0:0.1.0-1         @commandline  53.7 MiB
+Removing unused dependencies:
+ alsa-lib                x86_64 0:1.2.16.1-1.fc44 updates        1.5 MiB
+ cdparanoia-libs         x86_64 0:10.2-50.fc44    fedora       113.3 KiB
+ duktape                 x86_64 0:2.7.0-11.fc44   fedora       623.6 KiB
+ graphene                x86_64 0:1.10.8-4.fc44   fedora       158.3 KiB
+ gstreamer1              x86_64 0:1.28.8-1.fc44   updates        5.5 MiB
+ gstreamer1-plugins-base x86_64 0:1.28.8-1.fc44   updates        7.5 MiB
+ iso-codes               noarch 0:4.20.1-3.fc44   fedora        22.3 MiB
+ libXcursor              x86_64 0:1.2.3-4.fc44    fedora        53.3 KiB
+ libXv                   x86_64 0:1.0.13-4.fc44   fedora        25.9 KiB
+ libglvnd-egl            x86_64 1:1.7.0-9.fc44    fedora        68.6 KiB
+ libgudev                x86_64 0:238-9.fc44      fedora        91.7 KiB
+ libvisual               x86_64 1:0.4.2-4.fc44    fedora       464.5 KiB
+ libwayland-cursor       x86_64 0:1.26.0-1.fc44   updates       37.2 KiB
+ libwayland-egl          x86_64 0:1.26.0-1.fc44   updates       12.3 KiB
+ libxkbcommon-x11        x86_64 0:1.13.1-2.fc44   fedora        35.4 KiB
+ mesa-libEGL             x86_64 0:26.2.4-1.fc44   updates      398.4 KiB
+ orc                     x86_64 0:0.4.41-3.fc44   fedora       721.9 KiB
+ polkit                  x86_64 0:127-2.fc44.2    fedora       493.8 KiB
+ polkit-libs             x86_64 0:127-2.fc44.2    fedora       220.4 KiB
+ polkit-pkla-compat      x86_64 0:0.1-32.fc44     fedora        89.1 KiB
+
+Transaction Summary:
+ Removing:          21 packages
+
+After this operation, 94 MiB will be freed (install 0 B, remove 94 MiB).
+Running transaction
+[ 1/22] Prepare transaction             100% | 362.0   B/s |  21.0   B |  00m00s
+[ 2/22] Removing ottrin-0:0.1.0-1.x86_6 100% |   1.2 KiB/s |  52.0   B |  00m00s
+[ 3/22] Removing gstreamer1-plugins-bas 100% |   5.3 KiB/s | 211.0   B |  00m00s
+[ 4/22] Removing polkit-pkla-compat-0:0 100% | 555.0   B/s |  30.0   B |  00m00s
+[ 5/22] Removing polkit-0:127-2.fc44.2. 100% |   1.7 KiB/s |  74.0   B |  00m00s
+[ 6/22] Removing libglvnd-egl-1:1.7.0-9 100% | 916.0   B/s |  11.0   B |  00m00s
+[ 7/22] Removing iso-codes-0:4.20.1-3.f 100% |  15.1 KiB/s |   1.2 KiB |  00m00s
+[ 8/22] Removing mesa-libEGL-0:26.2.4-1 100% | 500.0   B/s |   6.0   B |  00m00s
+[ 9/22] Removing duktape-0:2.7.0-11.fc4 100% |   1.1 KiB/s |  13.0   B |  00m00s
+[10/22] Removing polkit-libs-0:127-2.fc 100% |   1.0 KiB/s |  11.0   B |  00m00s
+[11/22] Removing libXv-0:1.0.13-4.fc44. 100% | 533.0   B/s |   8.0   B |  00m00s
+[12/22] Removing alsa-lib-0:1.2.16.1-1. 100% |   3.4 KiB/s | 101.0   B |  00m00s
+[13/22] Removing cdparanoia-libs-0:10.2 100% | 818.0   B/s |   9.0   B |  00m00s
+[14/22] Removing graphene-0:1.10.8-4.fc 100% | 611.0   B/s |  11.0   B |  00m00s
+[15/22] Removing gstreamer1-0:1.28.8-1. 100% |   3.5 KiB/s | 119.0   B |  00m00s
+[16/22] Removing libgudev-0:238-9.fc44. 100% | 500.0   B/s |  10.0   B |  00m00s
+[17/22] Removing orc-0:0.4.41-3.fc44.x8 100% | 772.0   B/s |  17.0   B |  00m00s
+[18/22] Removing libvisual-1:0.4.2-4.fc 100% |   1.4 KiB/s |  16.0   B |  00m00s
+[19/22] Removing libwayland-cursor-0:1. 100% | 636.0   B/s |   7.0   B |  00m00s
+[20/22] Removing libwayland-egl-0:1.26. 100% | 636.0   B/s |   7.0   B |  00m00s
+[21/22] Removing libXcursor-0:1.2.3-4.f 100% |   1.0 KiB/s |  11.0   B |  00m00s
+[22/22] Removing libxkbcommon-x11-0:1.1 100% |   8.0   B/s |   5.0   B |  00m01s
+Complete!

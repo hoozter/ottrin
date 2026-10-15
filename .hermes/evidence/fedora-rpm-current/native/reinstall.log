@@ -1,0 +1,20 @@
+Package             Arch   Version   Repository        Size
+Reinstalling:
+ ottrin             x86_64 0:0.1.0-1 @commandline  53.7 MiB
+   replacing ottrin x86_64 0:0.1.0-1 @commandline  53.7 MiB
+
+Transaction Summary:
+ Reinstalling:       1 package
+ Replacing:          1 package
+
+Updating and loading repositories:
+Repositories loaded.
+Total size of inbound packages is 23 MiB. Need to download 0 B.
+After this operation, 0 B extra will be used (install 54 MiB, remove 54 MiB).
+Running transaction
+[1/4] Verify package files              100% |  13.0   B/s |   1.0   B |  00m00s
+[2/4] Prepare transaction               100% |  35.0   B/s |   2.0   B |  00m00s
+[3/4] Reinstalling ottrin-0:0.1.0-1.x86 100% | 117.0 MiB/s |  53.7 MiB |  00m00s
+[4/4] Removing ottrin-0:0.1.0-1.x86_64  100% | 258.0   B/s |  52.0   B |  00m00s
+Warning: skipped OpenPGP checks for 1 package from repository: @commandline
+Complete!

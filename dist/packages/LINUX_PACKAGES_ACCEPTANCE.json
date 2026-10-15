@@ -17,5 +17,11 @@
   "limits": [
     "Focused GUI and package payload acceptance; prior CPU/offline/reboot/native installation receipts retain recorded artifacts",
     "Physical Wayland/GPU, full release and signing remain open"
-  ]
+  ],
+  "native_rpm_acceptance": {
+    "receipt": ".hermes/evidence/fedora-rpm-current/ACCEPTANCE.json",
+    "artifact_sha256": "be7a9b9173e350be59f4e79f577e0e8ff8796596a572fadf8a5235f849843a38",
+    "status": "Fresh Fedora install/run/reinstall and user service lifecycle pass; direct package removal with active service fails",
+    "release_gate": "open; fix native package service cleanup before accepting direct uninstall"
+  }
 }
