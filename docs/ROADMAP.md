@@ -2928,3 +2928,31 @@ The exact unpublished `3ddb1bf` MSI (`717890c74af6e259005b37ae057bf5eb273e6bafea
 A private prototype executes the queued cleanup before `ProcessComponents`, retains transaction rollback, and uses `InstallExecuteAgain` for late upgrade removal. Its log proves `InstallExecute` fails before `ProcessComponents` starts, yet it produces the identical registration failure and retry result. The hypothesis is rejected; production MSI authoring is unchanged. This does not establish the underlying engine/compiler/environment cause. No elevation, ACL/policy change, rollback disabling or manual MSI registry repair was applied. Current exact-MSI upgrade/repair follow-on did not run after corruption.
 
 Evidence: `.hermes/evidence/windows-msi-execution-current/ACCEPTANCE.json`. All three private VM domains, their thin overlay disks, private NVRAM/TPM and the rejected package were removed after guest shutdown and daemon teardown. Original QA machines remain off and preserved. Stable public packages are unchanged; the current candidate receipt now records this exact-artifact rejection. The MSI promotion gate remains open while other actionable roadmap work continues.
+
+### Empty pre-journal NSIS initialization recovery (2026-10-15)
+
+Setup retry now reclaims a journal-free transaction only when it contains no
+entries, or only its empty `new` staging directory. It validates directory
+identities, refuses reparse entries, and removes directories nonrecursively.
+Extraction, daemon preparation and payload publication have not begun at either
+of these initialization boundaries. File-containing, partial-journal and
+unexpected layouts remain refused with their contents retained.
+
+The native ordinary-user regression passes all 12 cases on Windows 11 IoT
+Enterprise LTSC build 26100: four real helper-process terminations (root/new,
+fresh/existing), followed by recovery, initialization retry and rollback; and
+eight refusal/preservation cases. Original directory identities and file hashes
+remain unchanged. A separate comparison reproduced the previous helper's
+refusal at all four interruption points. The final tracked regression runs
+without a historical source dependency, refuses administrator execution and
+terminates whole helper process trees during timeout/cancellation cleanup.
+Its exact source and helper hashes match the native uploads.
+
+The NSIS source lifecycle contract and construction with the corrected helper
+also pass. Evidence: `.hermes/evidence/windows-initialization-current/ACCEPTANCE.json`.
+The private construction output and both disposable native trial environments
+were removed; original QA machines remain off and preserved. Public packages
+are unchanged. This is helper-level interruption acceptance plus installer
+construction, not renewed full-package/daemon/scheduler acceptance. Torn journal
+recovery, arbitrary power loss and hostile namespace races remain separate;
+MSI registration rollback, Office and wider platform gates remain open.

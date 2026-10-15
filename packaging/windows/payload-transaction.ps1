@@ -272,6 +272,25 @@ if ($Phase -eq 'RecoveryPlan' -and (Test-Path -LiteralPath $Completed)) {
     }
     [IO.Directory]::Delete($Completed)
 }
+if ($Phase -eq 'RecoveryPlan' -and (Test-Path -LiteralPath $Root) -and -not (Test-Path -LiteralPath $Journal)) {
+    # Initialize creates these empty directories before publishing its first
+    # journal. A killed initializer cannot have extracted or moved a payload
+    # yet. Reclaim only that empty skeleton; never infer ownership of files or
+    # a partial journal. Nonrecursive deletion also refuses concurrent additions.
+    $rootIdentity=Identity $Root
+    $entries=@([IO.Directory]::EnumerateFileSystemEntries($Root))
+    if($entries.Count -eq 1 -and $entries[0] -ceq $New) {
+        $newIdentity=Identity $New
+        if(@([IO.Directory]::EnumerateFileSystemEntries($New)).Count -ne 0) {throw 'An incomplete installation initialization contains files; its contents are retained.'}
+        Expect $Root $rootIdentity
+        Expect $New $newIdentity
+        [IO.Directory]::Delete($New)
+    } elseif($entries.Count -ne 0) {
+        throw 'An incomplete installation initialization contains unexpected entries; its contents are retained.'
+    }
+    Expect $Root $rootIdentity
+    [IO.Directory]::Delete($Root)
+}
 if ($Phase -eq 'RecoveryPlan' -and -not (Test-Path -LiteralPath $Root)) {[Console]::Out.Write('none');return}
 $record=ReadRecord $Root
 if ($Phase -eq 'RecoveryPlan') {

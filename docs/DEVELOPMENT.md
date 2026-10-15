@@ -832,3 +832,18 @@ never put the only recovery record in the automatically deleted plugin directory
 A payload-copy error must return failure rather than silently leave an old daemon
 inside a new installation. Task restoration does not provide whole-payload
 rollback: failed partial replacements require a setup retry and must say so.
+
+The native Windows initialization recovery regression runs as an ordinary,
+non-administrator user:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File packaging/tests/windows-initialization-recovery.ps1 -Script C:\path\to\Ottrin\packaging\windows\payload-transaction.ps1 -Report C:\path\to\results.json
+```
+
+It force-terminates initializers before the first journal, verifies retry and
+rollback for fresh/existing installations, and checks refusal/preservation of
+file-containing, malformed and linked layouts. It owns and tears down its temp
+fixtures and processes. This helper-level test does not replace full NSIS
+package/daemon/scheduler interruption acceptance. A journal-free transaction may
+reclaim only its empty root or empty `new` child, using nonrecursive removal;
+partial journals, unexpected entries and reparse points must remain refused.
