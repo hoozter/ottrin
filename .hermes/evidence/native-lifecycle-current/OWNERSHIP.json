@@ -1,0 +1,11 @@
+{
+  "domain": "ottrin-native-lifecycle-qa",
+  "mac": "52:54:00:6f:74:45",
+  "pool": "default",
+  "volumes": [
+    "ottrin-native-lifecycle-base.qcow2",
+    "ottrin-native-lifecycle-work.qcow2",
+    "ottrin-native-lifecycle-seed.iso"
+  ],
+  "source_base": ".hermes/tools/fedora44/Fedora-Cloud-Base-Generic-44-1.7.x86_64.qcow2"
+}

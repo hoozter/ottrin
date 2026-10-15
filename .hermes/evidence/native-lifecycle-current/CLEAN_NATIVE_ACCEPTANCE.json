@@ -1,0 +1,26 @@
+{
+  "source_revision": "2350b212e42b637bdee51477555309707bd5b2a3",
+  "rpm_sha256": "ef1bbff8ffeafeca790441c1c5255cade14e2b6fd34664f842e45b7d1bf35410",
+  "status": "pass within recorded scope; publication pending",
+  "checks": [
+    "Exact clean RPM: same-version reinstall, active native users, canonical offline registration and protected Administrator lifecycle",
+    "Pre-removal ambiguity refuses before any active daemon stops",
+    "Independent portable service and session remain running with identical PIDs",
+    "Native unregistered session and controlled deleted-executable session stop before removal",
+    "Preferences, source files and protected SQLite state preserved",
+    "All four clean Linux formats pass payload identities and production native verifier, including lifecycle script/dependency guards",
+    "AppImage private GUI Dark100/Light150 main/View menus and actual Move operations pass"
+  ],
+  "evidence": [
+    "clean-managed/result.json",
+    "clean-session/result.json",
+    "CLEAN_PACKAGE_IDENTITIES.json",
+    "linux-gui/MOVE_RESULTS.json",
+    "linux-gui/LATEST_CLEANUP.json"
+  ],
+  "not_accepted": [
+    "Native DPKG/Ubuntu execution, cross-version upgrade and broader custom-environment audit",
+    "Current public package replacement; staged guide still describes the earlier published RPM defect and needs reconciliation before publication",
+    "Signing, physical graphics and the remaining full roadmap gates"
+  ]
+}

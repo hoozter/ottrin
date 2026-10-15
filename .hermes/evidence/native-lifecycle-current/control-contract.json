@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "scope": "DEB executable maintenance scripts/helper bytes and RPM scriptlet guards; not native DPKG lifecycle acceptance",
+  "helper_sha256": "2555a6281fb68fce83a78b071425dba5596eeb325694ca5dd0caa743bee1b8fc",
+  "deb_sha256": "af4988db85bcfc750027f7c86256fd62ba6396c5e533e534df7750a5137df290",
+  "rpm_sha256": "44c0fb8826a4f434ab13a30b48d3afb04c61d4fca6950a18c82ae7fdc4711bd5"
+}

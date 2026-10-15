@@ -1,0 +1,5 @@
+{
+  "status": "fail",
+  "scope": "Draft RPM native package lifecycle; multi-user Fedora 44",
+  "error": "[Errno 26] Text file busy: '/home/portableqa/portable/bin/ottrin-indexd'"
+}

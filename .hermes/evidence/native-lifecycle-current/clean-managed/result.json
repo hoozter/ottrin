@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "scope": "Clean RPM native package lifecycle; multi-user Fedora 44",
+  "source_revision": "2350b212e42b637bdee51477555309707bd5b2a3",
+  "rpm_sha256": "ef1bbff8ffeafeca790441c1c5255cade14e2b6fd34664f842e45b7d1bf35410",
+  "same_version_reinstall": {
+    "status": "pass",
+    "before": {
+      "ottrinqa": 10352,
+      "secondqa": 10380,
+      "portableqa": 10412
+    },
+    "after": {
+      "ottrinqa": 10733,
+      "secondqa": 10768,
+      "portableqa": 10412
+    },
+    "administrator_restarted": true,
+    "offline_registration_preserved": true,
+    "portable_preserved": true
+  },
+  "ambiguous_offline_override": "refused before any native or portable daemon stopped",
+  "direct_remove": "pass; active native users, offline registration and Administrator service removed; portable unit/PID and all preferences/source preserved"
+}

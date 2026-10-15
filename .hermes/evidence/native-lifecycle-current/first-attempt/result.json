@@ -1,0 +1,22 @@
+{
+  "status": "fail",
+  "scope": "Draft RPM native package lifecycle; multi-user Fedora 44",
+  "upgrade": {
+    "status": "pass",
+    "before": {
+      "ottrinqa": 1580,
+      "secondqa": 1608,
+      "portableqa": 1636
+    },
+    "after": {
+      "ottrinqa": 1955,
+      "secondqa": 1991,
+      "portableqa": 1636
+    },
+    "administrator_restarted": true,
+    "offline_registration_preserved": true,
+    "portable_preserved": true
+  },
+  "ambiguous_offline_override": "refused before any native or portable daemon stopped",
+  "error": "['dnf', '-y', 'remove', 'ottrin']: 1: After this operation, 54 MiB will be freed (install 0 B, remove 54 MiB).\nRunning transaction\n[1/2] Prepare transaction               100% |   0.0   B/s |   1.0   B |  00m02s\n>>> Running %preun scriptlet: ottrin-0:0.1.0-1.x86_64\n>>> Error in %preun scriptlet: ottrin-0:0.1.0-1.x86_64\n>>> Scriptlet output:\n>>> Removed '/home/ottrinqa/.config/systemd/user/default.target.wants/ottrin-index.service'.\n>>> Removed '/home/secondqa/.config/systemd/user/default.target.wants/ottrin-index.service'.\n>>> Failed to connect to user scope bus via local transport: No such file or directory\n>>> \n>>> [RPM] %preun(ottrin-0.1.0-1.x86_64) scriptlet failed, exit status 1\nTransaction failed: Rpm transaction failed.\n Package Arch   Version   Repository        Size\nRemoving:\n ottrin x86_64 0:0.1.0-1 @commandline  53.7 MiB\n\nTransaction Summary:\n Removing:           1 package\n\n"
+}

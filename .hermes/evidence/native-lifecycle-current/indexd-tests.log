@@ -1,0 +1,10 @@
+   Compiling ottrin-search v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-search)
+   Compiling ottrin-ui v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-ui)
+   Compiling ottrin-app v0.1.0 (/home/campbell/Projects/Ottrin/crates/ottrin-app)
+    Finished `test` profile [optimized + debuginfo] target(s) in 24.31s
+     Running unittests src/bin/ottrin-indexd.rs (target/debug/deps/ottrin_indexd-76fde0427140867b)
+
+running 1 test
+test tests::administrator_mode_uses_only_protected_fixed_paths ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

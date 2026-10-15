@@ -1,0 +1,13 @@
+{
+  "domain_removed": true,
+  "volumes_removed": {
+    "ottrin-native-lifecycle-base.qcow2": true,
+    "ottrin-native-lifecycle-work.qcow2": true,
+    "ottrin-native-lifecycle-seed.iso": true
+  },
+  "seed_ssh_key_and_disposable_profile_removed": true,
+  "superseded_draft_packages_removed": true,
+  "clean_required_staging_retained": ".hermes/packaging-tmp/linux-current",
+  "shared_fedora_base_cache_retained": ".hermes/tools/fedora44",
+  "operator_state": "Preferences/unit hashes unchanged; no host desktop interaction or native package installation"
+}

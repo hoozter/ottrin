@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "scope": "Draft RPM native package lifecycle; multi-user Fedora 44",
+  "upgrade": {
+    "status": "pass",
+    "before": {
+      "ottrinqa": 8231,
+      "secondqa": 8259,
+      "portableqa": 8292
+    },
+    "after": {
+      "ottrinqa": 8618,
+      "secondqa": 8655,
+      "portableqa": 8292
+    },
+    "administrator_restarted": true,
+    "offline_registration_preserved": true,
+    "portable_preserved": true
+  },
+  "ambiguous_offline_override": "refused before any native or portable daemon stopped",
+  "direct_remove": "pass; active native users, offline registration and Administrator service removed; portable unit/PID and all preferences/source preserved"
+}

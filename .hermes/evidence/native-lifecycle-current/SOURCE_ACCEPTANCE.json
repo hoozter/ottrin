@@ -1,0 +1,31 @@
+{
+  "status": "source and draft RPM verified; not published",
+  "source_base": "8e93e79b39957a2d22c747a3de5bd51f788ed17f",
+  "tracked_tree": "modified source checkpoint",
+  "helper_sha256": "2555a6281fb68fce83a78b071425dba5596eeb325694ca5dd0caa743bee1b8fc",
+  "draft_rpm_sha256": "44c0fb8826a4f434ab13a30b48d3afb04c61d4fca6950a18c82ae7fdc4711bd5",
+  "checks": [
+    "220 search tests pass, 2 ignored; indexd launch contract passes",
+    "Strict Linux and Windows app/search all-target Clippy; formatting and shell syntax pass",
+    "Actual draft RPM same-version reinstall refreshes running native daemons and Administrator service, preserving stopped/offline registration and foreign portable PID",
+    "Offline ambiguous override blocks removal before active daemons stop",
+    "Direct RPM removal stops native users and Administrator service; canonical offline registration removed; portable service and all preferences/source protected index remain",
+    "Unregistered native session daemon and previously deleted native executable stop; unregistered portable session remains running",
+    "DEB helper bytes, executable prerm/postinst, action guards and RPM preun/posttrans contracts inspected"
+  ],
+  "native_evidence": [
+    "managed-green/result.json",
+    "session-green/result.json"
+  ],
+  "failures_retained": [
+    "first-attempt/result.json",
+    "SECOND_HARNESS_ERROR.json",
+    "session-remove-red.log"
+  ],
+  "limits": [
+    "Draft RPM contains modified-tree provenance; no new public artifact yet",
+    "Native DPKG lifecycle and clean-artifact acceptance remain pending",
+    "Offline custom config roots outside canonical home configuration and nonstandard runtime namespaces require further audit; no broad all-configuration claim",
+    "This does not close physical graphics, signing or the rest of the roadmap"
+  ]
+}
