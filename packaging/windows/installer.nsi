@@ -41,19 +41,25 @@ InstallDir "$LOCALAPPDATA\Programs\Ottrin"
 
 !insertmacro MUI_LANGUAGE "English"
 
-Function .onInit
-  ; A second setup must not consume an active transaction's recovery journal.
+!macro InstallerInitialization Prefix
+Function ${Prefix}.onInit
+  ; Setup and uninstall must not mutate the same payload, background task or
+  ; recovery journal concurrently. Use the same lock for both entry points.
   ; Keep this handle until installer exit; Windows releases it on every exit path.
   System::Call 'kernel32::CreateMutexW(p 0, i 0, w "Global\OttrinInstaller") p.r0 ?e'
   Pop $1
   ${If} $0 == 0
   ${OrIf} $1 == 183
-    MessageBox MB_OK|MB_ICONSTOP "Another Ottrin installer is running, or setup could not acquire its installation lock. Finish the other setup and retry." /SD IDOK
+    MessageBox MB_OK|MB_ICONSTOP "Another Ottrin setup or uninstall is running, or its installation lock could not be acquired. Finish the other operation and retry." /SD IDOK
     SetErrorLevel 1
     Abort
   ${EndIf}
   StrCpy $InstallerMutex $0
 FunctionEnd
+!macroend
+
+!insertmacro InstallerInitialization ""
+!insertmacro InstallerInitialization "un"
 
 Section "Ottrin" SEC_MAIN
   SetShellVarContext current

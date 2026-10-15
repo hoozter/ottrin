@@ -1,0 +1,22 @@
+{
+  "status": "NSIS source repaired and native fixture accepted; production package refresh pending",
+  "baseline_revision": "c6064a03a672be92af157ccbc6b337af6d90f08c",
+  "source_sha256": "063878d6c543b3161f329da3340f77dc066ecad16c548f38df010180b0eb56b2",
+  "change": "One authoritative initializer acquires the same process-lifetime Global OttrinInstaller handle for setup and uninstall before any section or cleanup action",
+  "build": "BUILD.json",
+  "native": "RESULTS.json",
+  "cleanup": "CLEANUP.json",
+  "checks": [
+    "Baseline uninstaller removes fixture payload despite held installer mutex, exit0",
+    "Fixed uninstall refuses held mutex before invoking cleanup; payload hashes and registration unchanged; exit1",
+    "Fixed setup also refuses same held mutex; retry uninstall after release exits0",
+    "Real corrected uninstaller holds lock during gated cleanup; second uninstaller and setup refuse, exit1; only one cleanup call; original resumes and removes payload, exit0",
+    "Every case preserves external fixture source/preferences and removes isolated registration/shortcuts/user-data names"
+  ],
+  "scope": "Ordinary medium-integrity interactive Windows11 guest. Full NSIS scripts compiled with isolated registration/shortcut/data names and harmless mock app/controller; real common mutex unchanged. Not exact production payload/service lifecycle acceptance.",
+  "limits": [
+    "Full NSIS payload rollback after a partially completed copy remains open",
+    "MSI registration rollback remains rejected; MSI/NSIS cross-engine coordination is not established by this NSIS-only mutex fixture",
+    "Stable Windows and Linux packages unchanged; coherent Windows package refresh remains separate"
+  ]
+}

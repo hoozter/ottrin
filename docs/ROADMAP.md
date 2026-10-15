@@ -2732,3 +2732,27 @@ control and exact-package acceptance remain open. Evidence and precise scope:
 `.hermes/evidence/windows-office-loop-current/ACCEPTANCE.json`. Exact probe tasks,
 processes, uploads and copied fixture/profile directories were removed; the
 original corpus, stale lock and operator installation were preserved.
+
+
+### NSIS setup/uninstall exclusion — native source regression, 2026-10-15
+
+The NSIS installer acquired its process-lifetime installation mutex, but its
+uninstaller did not. Native before/after fixtures reproduce removal despite a
+held installer lock. Setup and uninstall now instantiate one shared initializer
+that acquires that same mutex before any section or cleanup action. The corrected
+uninstaller refuses with exit1 before invoking cleanup; installed file hashes
+and registration remain unchanged. Setup also refuses the held lock. Releasing
+the holder allows an ordinary uninstall retry to finish with exit0.
+
+A real corrected uninstaller paused in its fixture cleanup also excludes a second
+uninstaller and setup. Only one cleanup invocation occurs; the payload stays
+unchanged until the first cleanup resumes, then ordinary removal succeeds. All
+cases preserve external fixture source/preferences and remove their isolated
+registration, shortcut and user-data names. The native fixtures compile the full
+NSIS scripts with harmless mock executables and isolated integration names; this
+is source behavior acceptance, not exact production payload/service acceptance.
+Evidence: `.hermes/evidence/windows-installer-lock-current/ACCEPTANCE.json`.
+Owned task, processes, uploads and extracted fixtures were removed and the guest
+was shut down. Stable packages remain unchanged. Full NSIS payload rollback,
+coherent package refresh, MSI registration rollback and cross-engine coordination
+retain their separate open scopes.

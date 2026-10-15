@@ -1,0 +1,30 @@
+{
+  "status": "pass",
+  "groups": "\r\nGROUP INFORMATION\r\n-----------------\r\n\r\nGroup Name                                                    Type             SID          Attributes                                        \r\n============================================================= ================ ============ ==================================================\r\nEveryone                                                      Well-known group S-1-1-0      Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\Local account and member of Administrators group Well-known group S-1-5-114    Group used for deny only                          \r\nBUILTIN\\Administrators                                        Alias            S-1-5-32-544 Group used for deny only                          \r\nBUILTIN\\Users                                                 Alias            S-1-5-32-545 Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\INTERACTIVE                                      Well-known group S-1-5-4      Mandatory group, Enabled by default, Enabled group\r\nCONSOLE LOGON                                                 Well-known group S-1-2-1      Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\Authenticated Users                              Well-known group S-1-5-11     Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\This Organization                                Well-known group S-1-5-15     Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\Local account                                    Well-known group S-1-5-113    Mandatory group, Enabled by default, Enabled group\r\nLOCAL                                                         Well-known group S-1-2-0      Mandatory group, Enabled by default, Enabled group\r\nNT AUTHORITY\\NTLM Authentication                              Well-known group S-1-5-64-10  Mandatory group, Enabled by default, Enabled group\r\nMandatory Label\\Medium Mandatory Level                        Label            S-1-16-8192                                                    \r\n",
+  "cases": [
+    {
+      "case": "baseline",
+      "cleanup_called": true,
+      "payload_removed": true,
+      "held_lock_exit": 0
+    },
+    {
+      "setup_refuses_same_lock": true,
+      "retry_exit": 0,
+      "case": "fixed",
+      "held_lock_exit": 1,
+      "cleanup_called_under_lock": false,
+      "payload_and_registration_preserved_on_refusal": true
+    },
+    {
+      "cleanup_calls": 1,
+      "first_uninstall_exit": 0,
+      "real_uninstaller_held_lock": true,
+      "case": "overlap",
+      "payload_preserved_until_first_cleanup_resumes": true,
+      "second_uninstaller_exit": 1,
+      "concurrent_setup_exit": 1
+    }
+  ],
+  "identity": "desktop-81ghp8u\\campbell"
+}

@@ -1,0 +1,18 @@
+{
+  "scope": "QA-only full installer scripts with isolated registration/shortcut/data names and mock executables; actual shared mutex retained",
+  "source_sha256": "063878d6c543b3161f329da3340f77dc066ecad16c548f38df010180b0eb56b2",
+  "artifacts": {
+    "baseline": {
+      "sha256": "de7009c7f90b8ce1a5fdb72ba8df826e5761f97249772c7a2d79a5156b3e6a4c",
+      "script_sha256": "ecc38cf95cacd0e73b21ac17e4f86027031c1f2afe1d41eae3cf67ce2d24795e"
+    },
+    "fixed": {
+      "sha256": "dd9594f81fd161821c462b3bc21cf132a5416af3aba94baa86936090dc23fe82",
+      "script_sha256": "8b98b1ffc182d43a597a1e73dbfbe8cf47f0d3b9964976fb0b71087666c3fdcc"
+    }
+  },
+  "baseline_revision": "c6064a03a672be92af157ccbc6b337af6d90f08c",
+  "mock_source_sha256": "d64f38e1d2f858275d66bd18095f757db75050115aed02ed10218a5b46505824",
+  "compiler": "x86_64-w64-mingw32-gcc (GCC) 13-win32",
+  "mock_compile_command": "x86_64-w64-mingw32-gcc -municode .hermes/evidence/windows-installer-lock-current/mock-payload.c -o .hermes/packaging-tmp/installer-lock-current/stage/bin/ottrin.exe"
+}

@@ -1,0 +1,10 @@
+{
+  "scope": "Only named QA task, exact uploaded script and task-owned root removed",
+  "live_fixture_processes": 0,
+  "actor_checks": "All cases preserved external fixture source/preferences; mock registration, shortcuts and user-data names removed",
+  "owned_payload_fixture_runners_uploads_removed": true,
+  "task_removed": true,
+  "status": "pass",
+  "guest_final_state": "shut off",
+  "host_fixture_staging_removed": true
+}
