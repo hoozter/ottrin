@@ -1,0 +1,33 @@
+{
+  "status": "native GUI failure reproduced; source repair pending package verification",
+  "package_source_revision": "3cc1ca5ba820126bf15250b887ff2c15dab2d06b",
+  "installer_sha256": "2c0bc856166842e23c9fb98286212d60399b3915fad7dd296c8cb46a57453d80",
+  "completed_cases": 16,
+  "failed_case": "cross-batch-replace",
+  "error": "Moved source still exists",
+  "causal_journal_evidence": [
+    {
+      "source": "\\\\?\\C:\\Users\\OttrinTreeUIQA\\TreeQA3\\cross-batch-replace\\s\\alpha.txt",
+      "phase": "published",
+      "conflict": "Overwrite",
+      "destination_identity_present": true,
+      "retained_path_recorded": true
+    },
+    {
+      "source": "\\\\?\\C:\\Users\\OttrinTreeUIQA\\TreeQA3\\cross-batch-replace\\s\\beta.txt",
+      "phase": "prepared",
+      "conflict": "Overwrite",
+      "destination_identity_present": false,
+      "retained_path_recorded": true
+    },
+    {
+      "source": "\\\\?\\C:\\Users\\OttrinTreeUIQA\\TreeQA3\\cross-batch-replace\\s\\bundle \u03a9",
+      "phase": "published",
+      "conflict": "Overwrite",
+      "destination_identity_present": true,
+      "retained_path_recorded": true
+    }
+  ],
+  "cause": "Overwrite was passed to an unoccupied batch entry, creating a record without destination identity but with a retained destination path. Recovery correctly rejected inconsistent evidence.",
+  "repair": "Unoccupied Overwrite entry uses non-replacing Skip transaction; an entry racing into that name remains protected."
+}

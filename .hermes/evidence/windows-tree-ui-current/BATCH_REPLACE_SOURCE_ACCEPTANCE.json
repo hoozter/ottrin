@@ -1,0 +1,19 @@
+{
+  "status": "native regression passed; exact-package GUI retest pending",
+  "date": "2026-10-15",
+  "parent_revision": "3cc1ca5",
+  "native_test": "move_transaction::windows_source_tests::windows_native_cross_volume_replace_batch_moves_unoccupied_files_and_trees",
+  "test_executable_sha256": "9e72fbf42c810b7a7a747bdfd140ce8a4da574ff39012dccc0fc8110ada3d2f8",
+  "native_output": "\nrunning 1 test\ntest move_transaction::windows_source_tests::windows_native_cross_volume_replace_batch_moves_unoccupied_files_and_trees ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 124 filtered out; finished in 0.45s\n\n",
+  "source_sha256": "4940276d30ec1fec03c2a63e1024c16d89d662f5d0063326248b10d54976a381",
+  "limits": [
+    "One native regression with an existing target and unoccupied file/tree in one Replace batch",
+    "Original 3cc1ca5 NSIS accepted sixteen GUI cases and failed cross-volume mixed-batch Replace; current GUI package retest remains required"
+  ],
+  "checks": [
+    "Native Windows single regression: 1 passed, 0 failed",
+    "Strict Windows all-target platform Clippy passed",
+    "Linux Windows-contract tests: 45 passed, 0 failed",
+    "cargo fmt --all --check passed"
+  ]
+}

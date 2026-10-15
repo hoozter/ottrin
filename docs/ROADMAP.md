@@ -3132,3 +3132,24 @@ are pending for this repair. Configured-root ancestors, junction isolation,
 physical storage, the remaining native test portability failures, Office, MSI
 rollback and wider release gates retain their separate scopes. User testing
 remains deferred.
+
+
+### Windows mixed-batch Replace — source repair (2026-10-15)
+
+The clean `3cc1ca5` packages pass sixteen directory/mixed-batch GUI cases with
+indexing active, then fail cross-volume mixed-batch Replace. Existing conflicting
+entries publish correctly; a nonconflicting file remains untouched. Its prepared
+journal incorrectly records Overwrite without an existing destination identity,
+so recovery rejects inconsistent conflict evidence before staging. The preflight
+now uses a non-replacing transaction for an unoccupied Replace entry, preserving
+any target racing into that name. The native public batch regression passes with
+an existing file, an unoccupied file and an unoccupied populated tree. No recovery
+validation was relaxed. Package/UI retesting is still required.
+
+The four Linux packages were rebuilt from clean `3cc1ca5`; all payload identities
+are verified, and the exact AppImage's real daemon follows existing/new nested
+tree renames in a disposable XDG profile. The initial smoke fixture omitted
+required application config fields and fell back to defaults; it was discarded,
+corrected to use a complete config, and rerun. This is package/daemon acceptance,
+not fresh GUI or native distro lifecycle acceptance. Exact hashes/scopes are in
+`dist/packages/LINUX_PACKAGES_ACCEPTANCE.json`.

@@ -1546,7 +1546,15 @@ fn move_windows_cross_volume_preflight(
                 source,
                 destination_dir,
                 &destination_dir.join(source_name),
-                conflict,
+                // Replace applies only to an existing, identified destination.
+                // A mixed batch also contains unoccupied names; publish those
+                // without replacement and preserve any destination that races
+                // into existence before publication.
+                if conflict == ConflictAction::Overwrite && !destination_exists {
+                    ConflictAction::Skip
+                } else {
+                    conflict
+                },
                 source_handle,
                 destination_handle,
                 None,
@@ -9044,6 +9052,45 @@ mod windows_source_tests {
             std::fs::read(destination_root.join("batch.bin")).unwrap(),
             payload
         );
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    #[ignore = "requires OTTRIN_WINDOWS_CROSS_VOLUME_ROOT on a second native Windows volume"]
+    fn windows_native_cross_volume_replace_batch_moves_unoccupied_files_and_trees() {
+        use crate::PlatformOps;
+        let volume = std::path::PathBuf::from(
+            std::env::var_os("OTTRIN_WINDOWS_CROSS_VOLUME_ROOT")
+                .expect("set a second native Windows volume"),
+        );
+        let sources = crate::tests::TestDir::new("replace-batch-source");
+        let destination = crate::tests::TestDir::new_at(&volume, "replace-batch-destination");
+        let _recovery = super::replace_test_recovery_root(Some(sources.path().join("move-state")));
+        let file = sources.path().join("file.txt");
+        let tree = sources.path().join("tree");
+        std::fs::write(&file, b"new file").unwrap();
+        std::fs::create_dir_all(tree.join("nested")).unwrap();
+        std::fs::write(tree.join("nested/payload.txt"), b"new tree").unwrap();
+        let existing = sources.path().join("existing.txt");
+        std::fs::write(&existing, b"replacement").unwrap();
+        std::fs::write(destination.path().join("existing.txt"), b"displaced").unwrap();
+
+        let (_, dispositions) = crate::DefaultPlatform
+            .execute_command_with_move_dispositions(&ottrin_core::FileCommand::Move {
+                sources: vec![existing.clone(), file.clone(), tree.clone()],
+                destination: destination.path().to_path_buf(),
+                conflict: ConflictAction::Overwrite,
+            })
+            .expect("Replace batch must also move its nonconflicting entries");
+        assert_eq!(dispositions, vec![crate::MoveDisposition::Moved; 3]);
+        assert!(!existing.exists() && !file.exists() && !tree.exists());
+        for (path, bytes) in [
+            ("existing.txt", b"replacement".as_slice()),
+            ("file.txt", b"new file".as_slice()),
+            ("tree/nested/payload.txt", b"new tree".as_slice()),
+        ] {
+            assert_eq!(std::fs::read(destination.path().join(path)).unwrap(), bytes);
+        }
     }
 
     #[cfg(target_os = "windows")]
