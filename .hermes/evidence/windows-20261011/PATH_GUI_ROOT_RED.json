@@ -1,0 +1,25 @@
+{
+  "uninstalled": true,
+  "source_hash_after": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+  "preference_hash_before": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+  "scope": "Installed NSIS; standard interactive user; bundled OpenGL",
+  "preference_hash_restored": "2103659F5A0F491ACA2E012358E26B739C0C04FE9FA0418F7F537330CD839793",
+  "root_address": "\\\\?\\C:\\Users\\OttrinIndexQA\\OttrinFixtures",
+  "before": {
+    "instance": "{2A163F30-F719-4116-83B2-6015CC75C9DE}",
+    "pid": 4288
+  },
+  "stack": "at Assert, C:\\OttrinQA-20261011\\installed-index-gui-current-actor.ps1: line 10\r\nat <ScriptBlock>, C:\\OttrinQA-20261011\\installed-index-gui-current-actor.ps1: line 72",
+  "title": "Ottrin",
+  "open": {
+    "instance": "{2A163F30-F719-4116-83B2-6015CC75C9DE}",
+    "pid": 4288
+  },
+  "source_hash_before": "26F0DA9E473F8ED2B6A04C9FCC381D606D914A1E19B61195B43B9BDB63C8BA50",
+  "installer_sha256": "7e37ed7478e92680434e6f2d4e27a5e6dc22192e5f1c9171caf52c0583495f5a",
+  "app_sha256": "3c98190c78a3c6a9de2fd45b4df55c7d800a2a5f90569a5846222967ae3fd87e",
+  "gui_pid": 2308,
+  "status": "fail",
+  "error": "Drive breadcrumb did not navigate to the rooted drive",
+  "daemon_sha256": "752936803fe206067e47f01f447763151a51bd06da4697f5336a5c56295ff5e5"
+}

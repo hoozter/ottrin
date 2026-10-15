@@ -1,0 +1,16 @@
+{
+  "source_base": "790713079ce052cd3d0460173a232ccda3c35656",
+  "native_red": "PATH_GUI_ROOT_RED.json and path-gui-root-red-click.png show drive click entering the editor with the old fixture address",
+  "cause": "A click interaction registered over the whole address frame intercepted its breadcrumb buttons; the full-frame hover also replaced their cursor.",
+  "repair": "Only unused space after the final breadcrumb is the edit click/hover region. Root tabs without custom labels use the shared readable path formatter.",
+  "rendered_red": "Actual pointer click on the parent breadcrumb did not change the directory",
+  "rendered_green": "Same pointer click navigates without editing; a subsequent click on blank bar space enters editing with the original path",
+  "checks": {
+    "focused_pointer_regression": "pass",
+    "ui_suite": "369 passed; 1 ignored",
+    "linux_ui_all_targets_strict_clippy": "pass",
+    "windows_ui_all_targets_strict_clippy": "pass",
+    "fmt_diff": "pass"
+  },
+  "delivery": "Source checkpoint; rejected candidate was not published. Rebuild and repeat actual native drive/literal-space navigation before publication."
+}

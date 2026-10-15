@@ -2329,3 +2329,30 @@ Rebuild current Linux/Windows packages and inspect the native breadcrumb, search
 and Info labels, including drive-root navigation, before calling this delivered.
 Current stable downloads remain the accepted `d4ef8f9` palette repair. The path
 source changes do not close any remaining installer, Office or daily-driver gate.
+
+
+### Packaged breadcrumb click rejection and source repair — 2026-10-15
+
+The first `7907130` packaged Windows GUI attempt renders readable labels but
+fails real drive navigation: clicking the `C:\` breadcrumb opens the address
+editor at the unchanged fixture directory. The exact rejected NSIS digest is
+`7e37ed7478e92680434e6f2d4e27a5e6dc22192e5f1c9171caf52c0583495f5a`.
+`PATH_GUI_ROOT_RED.json` and `path-gui-root-red-click.png` in the Windows evidence
+directory record the failure. Its app was uninstalled and QA preferences restored;
+this candidate was not published or counted as acceptance.
+
+The address frame registered a click region over all breadcrumb buttons after
+rendering them. Its hover also overrode their pointing-hand cursor. The edit
+interaction now covers only unused space after the last breadcrumb. A rendered
+pointer regression independently reproduces the missed navigation, then verifies
+parent navigation without editing and blank-space editing with the original path.
+Automatic root-tab captions use the shared readable root formatter; explicit user
+tab labels remain authoritative.
+
+All 369 regular UI tests pass (one ignored), along with strict Linux and Windows
+UI all-target Clippy and formatting/diff checks. Source receipt:
+`.hermes/evidence/windows-20261011/BREADCRUMB_POINTER_SOURCE_ACCEPTANCE.json`.
+Rebuild the source and rerun the native drive-root and literal-space navigation
+checks before publishing. Current downloads remain the preceding accepted palette
+build. The rejected candidate's pure label/target tests did not prove clickability;
+this real packaged GUI gate is required.

@@ -11023,11 +11023,13 @@ impl OttrinApp {
                         let is_active = i == active;
                         let (label, tab_id, tab_dir) = {
                             let tab = &self.state.tabs[i];
-                            (
-                                tab.display_name().to_string(),
-                                tab.id,
-                                tab.current_dir.clone(),
-                            )
+                            let label = if tab.label.is_none() && tab.current_dir.parent().is_none()
+                            {
+                                path_label(&tab.current_dir)
+                            } else {
+                                tab.display_name().to_string()
+                            };
+                            (label, tab.id, tab.current_dir.clone())
                         };
                         let is_tandem_selected = self.tab_tandem_selection.contains(&tab_id);
 
@@ -12438,6 +12440,7 @@ impl OttrinApp {
                 .fill(c.toolbar_bg)
                 .corner_radius(c.border_radius)
                 .inner_margin(egui::Margin::symmetric(10, 3));
+            let mut crumb_right = None;
             let addr_resp = frame.show(ui, |ui| {
                 ui.set_width(ui.available_width());
                 ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
@@ -12471,6 +12474,7 @@ impl OttrinApp {
                             .frame(false)
                             .themed(&c),
                         );
+                        crumb_right = Some(resp.rect.right());
                         if resp.clicked() {
                             self.focus_tab(tab_id);
                             self.navigate_tab_to(tab_id, dest);
@@ -12488,13 +12492,23 @@ impl OttrinApp {
                     }
                 });
             });
-            // Click anywhere in the bar to switch to path-edit mode
+            // The edit target covers only unused space, never the breadcrumb buttons.
+            let frame_rect = addr_resp.response.rect;
+            let edit_rect = Rect::from_min_max(
+                egui::pos2(
+                    crumb_right
+                        .unwrap_or(frame_rect.left())
+                        .min(frame_rect.right()),
+                    frame_rect.top(),
+                ),
+                frame_rect.max,
+            );
             let bar_interact = ui.interact(
-                addr_resp.response.rect,
+                edit_rect,
                 egui::Id::new(("addr_bar_click", tab_id)),
                 Sense::click(),
             );
-            if addr_resp.response.hovered() {
+            if bar_interact.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::Text);
             }
             if bar_interact.clicked() {
@@ -25352,6 +25366,73 @@ mod tests {
         }];
         ui.main_sel = Some(0);
         (root, app, source)
+    }
+
+    #[test]
+    fn breadcrumb_click_navigates_while_blank_address_space_enters_editing() {
+        let (root, mut app, _) = clipboard_keyboard_fixture();
+        let child = root.path().join("nested/child");
+        std::fs::create_dir_all(&child).unwrap();
+        app.state.active_tab_mut().current_dir = child;
+        app.state.active_tab_mut().view_mode = ViewMode::List;
+        let tab_id = app.state.active_tab().id;
+        let ctx = Context::default();
+        let draw = |app: &mut OttrinApp, events: Vec<egui::Event>| {
+            ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        Vec2::new(900.0, 100.0),
+                    )),
+                    events,
+                    ..Default::default()
+                },
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        app.render_address_bar(ui, tab_id);
+                    });
+                },
+            )
+        };
+        let output = draw(&mut app, Vec::new());
+        let name = root.path().file_name().unwrap().to_str().unwrap();
+        let point = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) if text.galley.job.text.ends_with(name) => {
+                    Some(Rect::from_min_size(text.pos, text.galley.size()).center())
+                }
+                _ => None,
+            })
+            .expect("actual parent breadcrumb label");
+        let click = |pos| {
+            vec![
+                egui::Event::PointerMoved(pos),
+                egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed: true,
+                    modifiers: egui::Modifiers::NONE,
+                },
+                egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed: false,
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ]
+        };
+        let _ = draw(&mut app, click(point));
+        assert_eq!(app.state.active_tab().current_dir, root.path());
+        assert!(!app.address_bar_state(tab_id).is_some_and(|bar| bar.editing));
+        let _ = draw(&mut app, Vec::new());
+        let _ = draw(&mut app, click(egui::pos2(870.0, point.y)));
+        assert!(app.address_bar_state(tab_id).is_some_and(|bar| bar.editing));
+        assert_eq!(
+            app.address_bar_state(tab_id).unwrap().text,
+            root.path().display().to_string()
+        );
     }
 
     #[cfg(unix)]
