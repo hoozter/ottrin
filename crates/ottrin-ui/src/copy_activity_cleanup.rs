@@ -23,10 +23,32 @@ impl CopyCleanupUi {
         self.receiver.is_some()
     }
     pub(super) fn owns(&self, record: &OperationRecord) -> bool {
+        if self.active.is_empty() {
+            return false;
+        }
         let ids = transactions(record);
         self.active
             .iter()
             .any(|selection| selection.transactions.iter().any(|id| ids.contains(id)))
+    }
+    pub(super) fn failed(&self, record: &OperationRecord) -> bool {
+        !self.errors.is_empty()
+            && transactions(record)
+                .iter()
+                .any(|id| self.errors.contains_key(id))
+    }
+    pub(super) fn action_label(&self, record: &OperationRecord) -> &'static str {
+        if record
+            .retained_copy
+            .as_ref()
+            .is_some_and(|owner| owner.finalization.is_some())
+        {
+            "Finish Copy cleanup"
+        } else if self.failed(record) {
+            "Retry Copy cleanup"
+        } else {
+            "Discard Copy undo and clear…"
+        }
     }
     pub(super) fn progress(&self) -> &str {
         &self.progress
@@ -164,7 +186,21 @@ impl OttrinApp {
             })
             .collect::<Vec<_>>();
         if !selected.is_empty() {
-            self.copy_cleanup.confirmation = Some(selected);
+            let previously_authorized = selected.iter().all(|id| {
+                self.operation_history.iter().any(|record| {
+                    record.id == *id
+                        && (self.copy_cleanup.failed(record)
+                            || record
+                                .retained_copy
+                                .as_ref()
+                                .is_some_and(|owner| owner.finalization.is_some()))
+                })
+            });
+            if previously_authorized {
+                self.start_copy_cleanup(&selected);
+            } else {
+                self.copy_cleanup.confirmation = Some(selected);
+            }
         }
     }
 
@@ -286,11 +322,11 @@ impl OttrinApp {
                     }
                 }
             }
-            self.set_status_message("Copy cleanup could not finish. Retained entries stay in Activity with the error and a retry action.", false, 10);
+            self.set_status_message("Copy cleanup needs review in Activity.", false, 10);
         } else {
             self.set_status_message(
                 "Copy history cleared and retained storage reclaimed.",
-                false,
+                true,
                 6,
             );
         }
@@ -323,7 +359,7 @@ impl OttrinApp {
                 ui.set_width(400.0 * c.font_scale);
                 ui.label(RichText::new("Discard Copy undo and clear history?").color(c.heading).strong().size(15.0 * c.font_scale));
                 ui.add_space(8.0);
-                ui.label(format!("This clears {} finished Copy operation(s) and removes their retained undo versions. Current files and original sources stay in place. Undo will no longer be available.", ids.len()));
+                ui.label(format!("This clears {} finished Copy operation{} and removes the retained undo versions. Current files and original sources stay in place. Undo will no longer be available.", ids.len(), plural_s(ids.len())));
                 ui.label("Changed or uncertain retained data stays available for review and retry.");
                 ui.add_space(12.0);
                 ui.horizontal(|ui| {
@@ -447,13 +483,24 @@ mod tests {
             .iter()
             .map(|record| record.id)
             .collect::<Vec<_>>();
-        app.request_copy_cleanup(operations.clone());
-        assert!(app.copy_cleanup.confirmation.is_some());
-        assert!(!app.copy_cleanup.running());
-        assert!(
-            receipt.before_path().parent().unwrap().exists(),
-            "Request must not mutate before confirmation"
-        );
+        if case == "finalization" {
+            app.request_copy_cleanup(operations.clone());
+            assert!(app.copy_cleanup.confirmation.is_none());
+            assert!(
+                app.copy_cleanup.running(),
+                "Durable finalization resumes without asking for permission again"
+            );
+        } else {
+            app.request_copy_cleanup(operations.clone());
+            assert!(app.copy_cleanup.confirmation.is_some());
+            assert!(!app.copy_cleanup.running());
+        }
+        if case != "finalization" {
+            assert!(
+                receipt.before_path().parent().unwrap().exists(),
+                "Request must not mutate before confirmation"
+            );
+        }
         app.copy_cleanup.confirmation = None;
         app.start_copy_cleanup(&operations);
         assert!(app.copy_cleanup.running());
@@ -477,11 +524,28 @@ mod tests {
                 b"keep modified backup"
             );
             assert!(can_cleanup(&app.operation_history[0]));
+            assert!(
+                !app.status_message.as_ref().unwrap().ok,
+                "Cleanup failure must use error status styling"
+            );
+            assert_eq!(
+                app.copy_cleanup.action_label(&app.operation_history[0]),
+                "Retry Copy cleanup"
+            );
             std::fs::write(receipt.before_path(), "before").unwrap();
-            app.start_copy_cleanup(&operations);
+            app.request_copy_cleanup(operations.clone());
+            assert!(app.copy_cleanup.confirmation.is_none());
+            assert!(
+                app.copy_cleanup.running(),
+                "Explicit retry retains prior confirmation"
+            );
             wait(&mut app);
         }
         assert!(app.operation_history.is_empty());
+        assert!(
+            app.status_message.as_ref().unwrap().ok,
+            "Successful cleanup must use success status styling"
+        );
         assert!(app.copy_cleanup.errors.is_empty());
         assert!(
             ottrin_platform::discover_retained_copy_transactions()

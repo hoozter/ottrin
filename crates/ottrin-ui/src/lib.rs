@@ -1160,7 +1160,7 @@ fn group_retained_copy_activity(
             }
         }
         let detail = match expected {
-            Some(count) if count == entries.len() => format!("Restored Copy · {} retained item(s) · {undone} already undone", entries.len()),
+            Some(count) if count == entries.len() => format!("Restored Copy · {} retained item{} · {undone} already undone", entries.len(), plural_s(entries.len())),
             Some(count) => format!("Restored Copy · {} retained of {count} requested · {undone} already undone · other item outcomes unknown", entries.len()),
             None => "Retained Copy needs review".into(),
         };
@@ -6678,7 +6678,7 @@ impl OttrinApp {
                         record.path_move_undo = Some(PathMoveUndoState::Undone);
                         record.message = None;
                         if let Some(owner) = &record.retained_copy && owner.restored {
-                            record.detail = format!("Restored Copy · Undo complete for {} retained item(s) · transaction data preserved", owner.transactions.len());
+                            record.detail = format!("Restored Copy · Undo complete for {} retained item{} · transaction data preserved", owner.transactions.len(), plural_s(owner.transactions.len()));
                         }
                         let completed = (
                             token.receipt.before_path().to_path_buf(),
@@ -14277,7 +14277,9 @@ impl OttrinApp {
                                     ("Undo unavailable", c.error)
                                 }
                             };
-                            let label = if let PathMoveUndoState::Unavailable { reason } = path_move_undo {
+                            let label = if self.copy_cleanup.failed(record) {
+                                label.to_string()
+                            } else if let PathMoveUndoState::Unavailable { reason } = path_move_undo {
                                 format!("Undo unavailable: {reason}")
                             } else {
                                 label.to_string()
@@ -14297,9 +14299,7 @@ impl OttrinApp {
                             .saturating_duration_since(record.queued_at);
                         if copy_activity_cleanup::can_cleanup(record)
                             && ui.add_enabled(!self.copy_cleanup.running(), egui::Button::new(
-                                if record.retained_copy.as_ref().is_some_and(|owner| owner.finalization.is_some()) {
-                                    "Finish Copy cleanup"
-                                } else { "Discard Copy undo and clear…" }
+                                self.copy_cleanup.action_label(record)
                             ).themed(&c)).clicked() { clear_copy = Some(record.id); }
                         ui.label(
                             RichText::new(if record.retained_copy.as_ref().is_some_and(|owner| owner.restored) {
