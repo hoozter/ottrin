@@ -1,45 +1,41 @@
 {
-  "status": "source-level read-only cleanup admission implemented; reclamation remains unfinished",
-  "source_revision": "60c7177450b64a1586c76bc5a20f2b2247055ea2",
+  "status": "Linux source-level retained-payload reclamation implemented and verified; lifecycle finalization and Activity integration unfinished",
+  "source_revision": "03e16b11b689fd8b225387def9065c9816776a8b",
   "source_sha256": {
-    "crates/ottrin-platform/src/copy_cleanup.rs": "8203261daba8626f773b64eca6e38448b357e2735f786891b283f51308a4c2d0",
-    "crates/ottrin-platform/src/copy_recovery.rs": "ee7f2a18622a2092c675ae2e45749a788f811306ba0f7243480ce25015cb095b",
-    "crates/ottrin-platform/src/lib.rs": "5b10637a1bfb8efbc19564791d9cee4331c43b95e8adfda425ec972391f5540d"
+    "crates/ottrin-platform/src/copy_cleanup.rs": "a2c7c9f9e51466bab05a3d96461ea75db958c161b448a97758914875ce78d914",
+    "crates/ottrin-platform/src/copy_recovery.rs": "8055a788bf60d344c26fc0d4964f6c53b56f4b893896b6cfc730f58ea9665bee",
+    "crates/ottrin-platform/src/lib.rs": "0f08f0161708b9223089bbedcbd5cec67c0a3a0ceff60e6d3448cdc1cfce3f9a",
+    "crates/ottrin-platform/src/move_recovery.rs": "d59b5840c94853bd06333d7bc432bd3dd0509eb251f75372273556e3c5525845",
+    "crates/ottrin-ui/src/lib.rs": "07bc625bdc733194be828c4fde89cdc7c8cf53249c2e60e86a16c33d4d4663e9"
   },
-  "tests": {
-    "regular_platform_passed": 372,
-    "ignored": 1,
-    "new_cleanup_regressions": [
-      "copy_recovery::cleanup::tests::cleanup_rejects_changed_central_records_and_interrupted_phases",
-      "copy_recovery::cleanup::tests::completed_undo_cleanup_does_not_adopt_the_reused_destination",
-      "copy_recovery::cleanup::tests::cleanup_never_adopts_changed_observations_journals_or_stage_paths",
-      "copy_recovery::cleanup::tests::cleanup_checks_nested_backup_contents_and_symlink_entries_without_following_targets",
-      "copy_recovery::cleanup::tests::ancestor_overwrite_cannot_discard_a_nested_transactions_private_backup",
-      "copy_recovery::cleanup::tests::cleanup_requires_the_whole_batch_and_protects_external_copy_dependencies",
-      "copy_recovery::cleanup::tests::published_cleanup_uses_retained_data_without_reading_changed_publication"
-    ],
-    "linux_platform_and_ui_all_target_strict_clippy": "pass",
-    "windows_gnu_platform_and_ui_all_target_strict_clippy": "pass"
+  "checks": {
+    "platform_library": "383 passed; 1 ignored",
+    "focused_cleanup": "18 passed, including dedicated child helper; final full suite includes all cleanup tests",
+    "linux_platform_ui_all_targets_strict_clippy": "pass",
+    "windows_gnu_platform_ui_all_targets_strict_clippy": "pass; cross-target check only",
+    "sigkill": "Dedicated subprocess exits by SIGKILL at IntentDurable, EntryIntentDurable, Claimed, BeforeUnlink, Unlinked, ProgressDurable and CompleteDurable; another process reopens recorded intent and completes payload reclamation",
+    "journal_lag": "Synthetic restoration of previous local record after canonical write models one-step lag at intent and completion; read-only resume preserves bytes, worker reconciles and completes",
+    "active_mutation": "Changed ledger prefix, replaced ledger, identical-byte local-journal rewrite and new registry entry all refuse before unlink, preserving quarantined data",
+    "metadata_reads": "128-file retained tree reclaims below 20 times one journal size plus 512KiB; avoids per-node full-tree journal rereads",
+    "ownership": "Visible edits, root symlink targets, replaced ancestors, unknown stage entries, changed retained contents, full operation membership and external/nested generation-handle dependencies remain guarded",
+    "undo": "Durable cleanup intent revokes Undo before claims; discovery exposes Pending/Complete as unavailable with retained ownership"
   },
-  "checks": [
-    "Original private observations are shared by Undo and cleanup validation; public presentation fields cannot replace recorded authority",
-    "Visible publication edits/reuse do not authorize or block deletion of different retained objects; admission and revalidation read under1MiB despite a4MiB visible publication",
-    "Changed retained bytes, symlink replacement, unknown stage children, replaced directories and changed central/local journals are refused",
-    "Interrupted publication/Undo is refused; complete recorded batch membership and consistent ordering are required",
-    "Unselected operations retain whole-tree and nested parent/transaction/publication references",
-    "Ancestor-folder prototype regression first failed by admitting an older nested private backup, then passes after generation-handle dependency checks; no deletion was attempted"
-  ],
   "limits": [
-    "No deletion, durable cleanup intent, restart/progress recovery, journal/stage finalization or Activity Clear/history eviction integration yet",
-    "No automatic cleanup/expiry and no updated AppImage or other package claimed",
-    "The cleanup API is Linux-only; Windows Clippy is a cross-target client/build check, not native cleanup acceptance",
-    "Unknown/corrupt registry records, unavailable dependency evidence and possible cross-namespace generation-handle matches conservatively retain data",
-    "Deletion workers must acquire fresh per-entry authority; an eligibility result is not a persistent deletion capability"
+    "Private ledger/local journal/stage and canonical journal are intentionally retained after payload completion; finalization not implemented",
+    "Activity Clear/history eviction, background scheduling and UI retry not integrated; no automatic cleanup or expiry enabled",
+    "No AppImage or other package rebuilt or promoted; published artifacts retain their separately recorded source revision",
+    "No operator retained Copy transactions were reclaimed; mutations ran only in private temporary fixtures",
+    "Torn progress frames, unowned pre-intent artifacts, uncertain evidence, missing object generation authority and ambiguous cross-namespace dependencies retain data for review",
+    "SIGKILL tests cover seven named durable boundaries, not arbitrary power-loss durability or all syscall interruption windows",
+    "Physical removable-media and native Windows cleanup acceptance remain separate; cleanup API is Linux-only"
   ],
-  "fixture_notes": [
-    "The initial filename-based test filter matched0 tests. The module filter and final complete suite explicitly executed all7 regressions."
+  "logs": [
+    "payload-focused-tests.log",
+    "payload-platform-tests.log",
+    "payload-linux-clippy.log",
+    "payload-windows-clippy.log"
   ],
   "preserved_operator_config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
   "preserved_operator_service_unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
-  "cleanup": "Owned test profiles/directories use existing private-root and TempDir teardown; test processes exited. Task-owned diagnostic logs copied here, then removed from /tmp."
+  "cleanup": "Private fixtures use scoped recovery-root overrides and TempDir teardown; subprocesses were waited and exited. No display, bus, desktop, VM or service fixture was started. Diagnostic logs moved here from /tmp."
 }
