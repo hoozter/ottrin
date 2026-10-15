@@ -1,0 +1,45 @@
+{
+  "status": "source-level read-only cleanup admission implemented; reclamation remains unfinished",
+  "source_revision": "60c7177450b64a1586c76bc5a20f2b2247055ea2",
+  "source_sha256": {
+    "crates/ottrin-platform/src/copy_cleanup.rs": "8203261daba8626f773b64eca6e38448b357e2735f786891b283f51308a4c2d0",
+    "crates/ottrin-platform/src/copy_recovery.rs": "ee7f2a18622a2092c675ae2e45749a788f811306ba0f7243480ce25015cb095b",
+    "crates/ottrin-platform/src/lib.rs": "5b10637a1bfb8efbc19564791d9cee4331c43b95e8adfda425ec972391f5540d"
+  },
+  "tests": {
+    "regular_platform_passed": 372,
+    "ignored": 1,
+    "new_cleanup_regressions": [
+      "copy_recovery::cleanup::tests::cleanup_rejects_changed_central_records_and_interrupted_phases",
+      "copy_recovery::cleanup::tests::completed_undo_cleanup_does_not_adopt_the_reused_destination",
+      "copy_recovery::cleanup::tests::cleanup_never_adopts_changed_observations_journals_or_stage_paths",
+      "copy_recovery::cleanup::tests::cleanup_checks_nested_backup_contents_and_symlink_entries_without_following_targets",
+      "copy_recovery::cleanup::tests::ancestor_overwrite_cannot_discard_a_nested_transactions_private_backup",
+      "copy_recovery::cleanup::tests::cleanup_requires_the_whole_batch_and_protects_external_copy_dependencies",
+      "copy_recovery::cleanup::tests::published_cleanup_uses_retained_data_without_reading_changed_publication"
+    ],
+    "linux_platform_and_ui_all_target_strict_clippy": "pass",
+    "windows_gnu_platform_and_ui_all_target_strict_clippy": "pass"
+  },
+  "checks": [
+    "Original private observations are shared by Undo and cleanup validation; public presentation fields cannot replace recorded authority",
+    "Visible publication edits/reuse do not authorize or block deletion of different retained objects; admission and revalidation read under1MiB despite a4MiB visible publication",
+    "Changed retained bytes, symlink replacement, unknown stage children, replaced directories and changed central/local journals are refused",
+    "Interrupted publication/Undo is refused; complete recorded batch membership and consistent ordering are required",
+    "Unselected operations retain whole-tree and nested parent/transaction/publication references",
+    "Ancestor-folder prototype regression first failed by admitting an older nested private backup, then passes after generation-handle dependency checks; no deletion was attempted"
+  ],
+  "limits": [
+    "No deletion, durable cleanup intent, restart/progress recovery, journal/stage finalization or Activity Clear/history eviction integration yet",
+    "No automatic cleanup/expiry and no updated AppImage or other package claimed",
+    "The cleanup API is Linux-only; Windows Clippy is a cross-target client/build check, not native cleanup acceptance",
+    "Unknown/corrupt registry records, unavailable dependency evidence and possible cross-namespace generation-handle matches conservatively retain data",
+    "Deletion workers must acquire fresh per-entry authority; an eligibility result is not a persistent deletion capability"
+  ],
+  "fixture_notes": [
+    "The initial filename-based test filter matched0 tests. The module filter and final complete suite explicitly executed all7 regressions."
+  ],
+  "preserved_operator_config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
+  "preserved_operator_service_unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
+  "cleanup": "Owned test profiles/directories use existing private-root and TempDir teardown; test processes exited. Task-owned diagnostic logs copied here, then removed from /tmp."
+}
