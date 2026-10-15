@@ -2624,3 +2624,39 @@ These are bounded local optimized-test-build measurements, not a linear-scaling
 or universal performance claim. Whole-group repetition and broader resource
 profiling remain open. Exact-package delivery is recorded separately in
 `dist/packages/COPY_NAMESPACE_ACCEPTANCE.json` when promoted.
+
+
+### Copy finalization group scaling — 2026-10-15
+
+The multi-size profile reproduced quadratic finalization growth: 8/32/128 records
+used20/229/3330 ms wall time before this change. A worker-scoped namespace guard
+now invalidates the full admission proof on registry/metadata/ancestor/stage
+changes. It shares the metadata reader's single inotify descriptor, watches
+canonical inodes for outside-alias writes, and checks mount namespace identity
+and mount-table change events to catch same-inode bind rebinding. Only the exact
+worker-owned deletion events are consumed. Every target keeps independent
+full-content, generation, mount, name and pinned-file checks; full group
+validation remains at admission and phase boundaries. The manifest is rehashed
+after watch setup to close that startup interval even with coarse timestamps.
+
+Current-name checks remain authoritative. All lexical ancestors are watched;
+symlink ancestors, unknown/remote filesystems, exhausted watch resources or more
+than8,192 namespace watches use the same full validator between individual
+removals. No directory generation/namespace result is cached across workers.
+The notification and mount-table descriptors exist only during finalization.
+
+All408 regular platform tests pass (three ignored). The explicit ignored profile
+and private-user/mount-namespace bind test also pass. Targeted regressions refuse
+other-stage changes, new/replaced registry records, unselected dependency edits
+through outside hard links, another parent's ancestor replacement, and stage
+name reuse before any affected canonical journal is retired. Symlink-ancestor
+fallback, prior SIGKILL/retry cases and source/publication preservation pass.
+Strict Linux platform all-target Clippy passes.
+
+The final optimized-test-build profile measured14/42/149 ms wall time and
+10.383/38.090/149.277 ms thread CPU time for8/32/128 records; read calls were
+694/2733/10893. The 128-record finalization interval is about22 times faster in
+this fixture. Setup, payload reclamation, unrelated-registry scaling, unsupported
+notification topologies, arbitrary power loss and physical/native platform gates
+retain their separate scopes. Exact-package delivery is recorded in
+`dist/packages/COPY_GROUP_SCALING_ACCEPTANCE.json` when promoted.
