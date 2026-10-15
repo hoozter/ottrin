@@ -3,21 +3,21 @@
   "artifact": "/home/campbell/Projects/Ottrin/dist/packages/Ottrin-0.1.0-x86_64.AppImage",
   "provenance": {
     "artifact": "Ottrin-0.1.0-x86_64.AppImage",
-    "revision": "4fb827acc976caf5e4056aa8f947d11d93e16543",
-    "sha256": "cb4b4df9d25687fdde3e563c81f8fd9c8df37e95cbbfb29c05d679d48de7441f",
+    "revision": "eb10b1b7f42322a0e90f656280df869ebe21d93f",
+    "sha256": "291d915dcad494ffcd8af2daf9486c72cdd6bac08330d6c7f7bbc792b0b2ec30",
     "built_from_tracked_clean_source": true
   },
   "checks": [
-    "Exact AppImage main/View menu visual inspection in Dark100 and Light150",
-    "Complete semantic icons, compact action-only padding, consistent check and icon columns",
-    "List Name sort direction icon and actual ascending/descending order"
+    "Exact current AppImage main/View menus visually inspected in Dark100 and Light150",
+    "Complete semantic icons, compact action-only leading padding and separate consistent selection/icon columns",
+    "Name header and direction icons visible; enabled/disabled menu rows preserve their icon geometry"
   ],
   "screenshots": [
-    ".hermes/evidence/sort-header-current/dark100/main-menu-current.png",
-    ".hermes/evidence/sort-header-current/dark100/view-menu-current.png",
-    ".hermes/evidence/sort-header-current/light150/main-menu-current.png",
-    ".hermes/evidence/sort-header-current/light150/view-menu-current.png"
+    ".hermes/evidence/copy-activity-current/dark100/main-menu-current.png",
+    ".hermes/evidence/copy-activity-current/dark100/view-menu-current.png",
+    ".hermes/evidence/copy-activity-current/light150/main-menu-current.png",
+    ".hermes/evidence/copy-activity-current/light150/view-menu-current.png"
   ],
-  "requirement": "docs/DEVELOPMENT.md:22-30",
-  "scope": "Focused actual packaged menu acceptance, not a full appearance audit."
+  "requirement": "docs/DEVELOPMENT.md UI consistency requirements",
+  "scope": "Focused actual-package menu appearance. No new sorting-operation, full appearance or physical-desktop acceptance claim."
 }

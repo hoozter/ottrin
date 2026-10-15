@@ -1,0 +1,24 @@
+{
+  "status": "promoted verified Linux packages",
+  "source_revision": "eb10b1b7f42322a0e90f656280df869ebe21d93f",
+  "artifact_directory": "/home/campbell/Projects/Ottrin/dist/packages",
+  "artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "8f450b9c81bafac541498c63ec3f0eb86ab4f67b807cb5fa6064a516c411c99f",
+    "Ottrin-0.1.0-x86_64.AppImage": "291d915dcad494ffcd8af2daf9486c72cdd6bac08330d6c7f7bbc792b0b2ec30",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "fe08942bc7a1c13066f33d79e9c504f3896f8653df93376c84a1310ee09da2fc",
+    "ottrin_0.1.0_amd64.deb": "ca67af49a2166062380454c76b4c0ce363050be8b56f0ed3f6c078a1f32ed620"
+  },
+  "superseded_generated_artifacts": {
+    "ottrin-0.1.0-1.x86_64.rpm": "ba2c85002ebf2f76048e8ed4066da05c1a8b85a143e5dcd31dceaeef5367377d",
+    "Ottrin-0.1.0-x86_64.AppImage": "cb4b4df9d25687fdde3e563c81f8fd9c8df37e95cbbfb29c05d679d48de7441f",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "b095f096fa85029b9e02db39957aa3f981e10d4685cfb6089aa1ddbf31731597",
+    "ottrin_0.1.0_amd64.deb": "8afdacf4483ba539d81ab0406b82cc583a63f15c5c51c8caabb9b690ce91524e"
+  },
+  "gui_acceptance": [
+    "dark100/RESULTS.json",
+    "light150/RESULTS.json"
+  ],
+  "package_acceptance": "FINAL_PACKAGE_IDENTITIES.json",
+  "scope": "Exact AppImage Activity cleanup and menu workflow in private Xvfb/software rendering; all four Linux package contents verified. User acceptance, physical desktop and fresh distro lifecycle remain separate.",
+  "cleanup": "Verified candidates moved to stable paths; empty staging removed; private GUI fixtures, displays, buses and daemon peers exited."
+}

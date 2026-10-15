@@ -1,32 +1,29 @@
 {
   "date": "2026-10-15",
-  "source_revision": "4fb827acc976caf5e4056aa8f947d11d93e16543",
+  "source_revision": "eb10b1b7f42322a0e90f656280df869ebe21d93f",
   "artifacts": {
-    "ottrin-0.1.0-1.x86_64.rpm": "ba2c85002ebf2f76048e8ed4066da05c1a8b85a143e5dcd31dceaeef5367377d",
-    "Ottrin-0.1.0-x86_64.AppImage": "cb4b4df9d25687fdde3e563c81f8fd9c8df37e95cbbfb29c05d679d48de7441f",
-    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "b095f096fa85029b9e02db39957aa3f981e10d4685cfb6089aa1ddbf31731597",
-    "ottrin_0.1.0_amd64.deb": "8afdacf4483ba539d81ab0406b82cc583a63f15c5c51c8caabb9b690ce91524e"
+    "ottrin-0.1.0-1.x86_64.rpm": "8f450b9c81bafac541498c63ec3f0eb86ab4f67b807cb5fa6064a516c411c99f",
+    "Ottrin-0.1.0-x86_64.AppImage": "291d915dcad494ffcd8af2daf9486c72cdd6bac08330d6c7f7bbc792b0b2ec30",
+    "Ottrin-0.1.0-linux-x86_64-portable.tar.gz": "fe08942bc7a1c13066f33d79e9c504f3896f8653df93376c84a1310ee09da2fc",
+    "ottrin_0.1.0_amd64.deb": "ca67af49a2166062380454c76b4c0ce363050be8b56f0ed3f6c078a1f32ed620"
   },
   "checks": [
-    "production native verifier block; helper bytes/mode, hooks, dependencies, DEB exact and RPM code identities",
-    "portable six payload byte identities",
-    "all four formats contain exact current guide and release docs",
-    "clean embedded source revision",
-    "all package runtime identities checked against the actual rebuilt AppImage",
-    "Exact AppImage main/View menu visual inspection in Dark100 and Light150",
-    "Complete semantic icons, compact action-only padding, consistent check and icon columns",
-    "List Name sort direction icon and actual ascending/descending order",
-    "Search Modified descending marker; equal timestamp order not asserted",
-    "372 regular UI tests and one rendered header regression; strict Linux and Windows UI Clippy",
-    "Normal GUI exits and private process/display/profile teardown"
+    "Clean embedded source revision and verified current payload/document identities across AppImage, portable, DEB and RPM",
+    "398 platform and374 UI regular tests; strict Linux and Windows cross-target platform/UI checks",
+    "Exact AppImage Activity cleanup/cancel/refusal/retry/success workflow and main/View menu appearance in Dark100 and Light150",
+    "Normal GUI exits and scoped daemon/display/profile teardown",
+    "Native daemon ownership namespace cases rerun against current AppImage/RPM payloads"
   ],
-  "gui_evidence": ".hermes/evidence/sort-header-current",
-  "package_content_evidence": ".hermes/evidence/sort-header-current/FINAL_PACKAGE_IDENTITIES.json",
-  "native_runtime_identity": ".hermes/evidence/sort-header-current/NATIVE_RUNTIME_IDENTITIES.json",
-  "native_scope": "Current daemon/helper bytes match prior native-tested source723; no fresh distro lifecycle claim for this UI update. Prior lifecycle receipts retained.",
+  "gui_evidence": ".hermes/evidence/copy-activity-current",
+  "package_content_evidence": ".hermes/evidence/copy-activity-current/FINAL_PACKAGE_IDENTITIES.json",
+  "native_scope": "Current daemon bytes differ from prior native-tested source723. Current namespace-ownership and package-content checks pass; no new distro install/upgrade/reboot lifecycle claim. Prior lifecycle receipts retain their original source/artifact scope.",
   "limits": [
-    "Private Xvfb/software GL; physical Wayland/GPU acceptance remains separate",
-    "Full appearance and release matrices remain open",
-    "Windows compiled and candidate portable/NSIS staged; stable Windows packages unchanged pending native MSI and acceptance"
+    "Automatic expiry is disabled; ordinary capacity trimming continues to retain owned recovery receipts until an explicit supported cleanup",
+    "Other operation kinds retain their existing ownership and recovery limits; this work implements Linux Copy cleanup",
+    "Private Xvfb/software rendering does not prove physical Wayland/GPU, every theme/text-size, or native Windows cleanup acceptance",
+    "Large-operation resource profiling, arbitrary power loss and final syscall-race boundaries retain their separate scopes; torn/unknown evidence remains for review",
+    "Current namespace and package-content checks do not replace fresh distro package-manager install/upgrade/reboot acceptance. Prior distro receipts remain historical.",
+    "Windows stable packages are unchanged; MSI failed-registration rollback and remaining Windows gates are still open",
+    "No operator retained Copy data was reclaimed and no host service was changed or restarted"
   ]
 }

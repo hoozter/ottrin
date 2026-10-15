@@ -1,0 +1,15 @@
+{
+  "artifact_sha256": "ed95caa8102b678408f75d9dce44a0361511e7164a90901d3b247bd16c274e6b",
+  "theme": "Dark",
+  "scale": "1",
+  "status": "prototype-refinement-required",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: 422bc9b886413296c9bfe5395021714a06a75b49\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "changed_backup": "/tmp/ottrin-tabs-ubiuelmx/destination/.ottrin-txn-857af741a18cf258e9013960cf8de416/candidate",
+  "cleanup_workflow": "all private stages, journals and manifest absent; visible publication and source preserved",
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed",
+  "visual_issues": [
+    "Repeated cleanup/Undo error details",
+    "Retry action retained initial discard wording"
+  ]
+}

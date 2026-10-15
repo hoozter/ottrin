@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "checked_private_profiles": [
+    "/tmp/ottrin-tabs-ghiasmuy",
+    "/tmp/ottrin-tabs-my19e5jz",
+    "/tmp/ottrin-tabs-pfic0u7p",
+    "/tmp/ottrin-tabs-ubiuelmx"
+  ],
+  "remaining_processes": [],
+  "scope": "Read-only exact private HOME/runtime environment matching for GUI fixture profiles; no host process was stopped"
+}

@@ -2570,3 +2570,12 @@ mutation, changed-data refusal and retry, an overwrite chain and restart from
 partially removed metadata in disposable processes/profiles. Exact packaged UI
 workflow and visual acceptance, large-operation resource profiling and remaining
 release/platform gates retain their separate scopes until verified.
+
+
+### Activity Copy cleanup — verified Linux delivery, 2026-10-15
+
+Clean source `eb10b1b7f42322a0e90f656280df869ebe21d93f` is published at the stable Linux AppImage, portable, DEB and RPM paths. AppImage SHA-256: `291d915dcad494ffcd8af2daf9486c72cdd6bac08330d6c7f7bbc792b0b2ec30`. All398 regular platform tests and374 regular UI tests pass, with one ignored in each suite; Linux and Windows cross-target strict checks pass. Private subprocess cases cover actual background cleanup, changed-data refusal/retry, overwrite-chain ownership and interrupted finalization. A differential I/O regression first reproduced an unnecessary visible-file read in interrupted Undo observation; the early refusal corrects it before delivery.
+
+The exact delivered AppImage passes per-entry/bulk Clear confirmation, cancellation preserving the original backup, changed-data refusal, persistent error/retry, success styling, full selected stage/journal/manifest removal and source/publication preservation in Dark100 and Light150. The same actual package preserves complete menu icons, compact leading padding and separate check columns. The first visual previews exposed duplicated failure details, retry wording and an incorrect success color flag; those previews were corrected, rebuilt and retested before promotion. Normal exits and private fixture/display/daemon teardown are recorded. Current package contents and native namespace ownership checks pass; current daemon bytes differ from the older distro-tested payload, so older package-manager lifecycle receipts remain historical.
+
+This closes the explicit Linux Activity Copy cleanup integration and its focused package workflow. Automatic expiry remains disabled; other owned recovery receipts remain protected. Large-operation resource profiling, broader appearance/desktop/release matrices, arbitrary power-loss boundaries, physical hardware and native Windows gates retain their separate scopes. Operator data/settings/services are unchanged and user testing remains deferred. Evidence: `.hermes/evidence/copy-activity-current/` and `dist/packages/COPY_CLEANUP_ACCEPTANCE.json`. The overall roadmap remains open.

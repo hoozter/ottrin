@@ -1,0 +1,20 @@
+{
+  "artifact_sha256": "291d915dcad494ffcd8af2daf9486c72cdd6bac08330d6c7f7bbc792b0b2ec30",
+  "theme": "Light",
+  "scale": "1.5",
+  "status": "pass",
+  "source_note": "Ottrin source revision\nVersion: 0.1.0\nGit revision: eb10b1b7f42322a0e90f656280df869ebe21d93f\nWorking tree: clean\nTracked diff SHA-256: none\n",
+  "cancel_preserved_backup": true,
+  "changed_backup": "/tmp/ottrin-tabs-my19e5jz/destination/.ottrin-txn-dc3b9a6d5760dc6ffb35194f271ef474/candidate",
+  "cleanup_workflow": "all private stages, journals and manifest absent; visible publication and source preserved",
+  "visual_checks": [
+    "Light150 actual AppImage Activity/modal/menu hierarchy, spacing, typography and status colors inspected",
+    "Bulk Clear asks for confirmation; cancellation preserves exact backup bytes",
+    "Changed backup remains owned with one error detail and clear Retry action",
+    "Retry completes without a second confirmation",
+    "Visible publication and original source unchanged; every selected stage/journal/manifest absent",
+    "Main and View menus retain compact padding, complete semantic icons and separate check columns"
+  ],
+  "normal_app_exit": true,
+  "cleanup": "Owned app group, daemon pidfd, Xvfb and private profile removed"
+}

@@ -1,5 +1,5 @@
 {
-  "status": "Linux platform payload reclamation and group metadata finalization implemented; Activity integration and package acceptance unfinished",
+  "status": "Historical platform-finalization checkpoint; superseded by published Activity integration",
   "source_revision": "e8ff924d51d7549f84d2e9dff4695d12cadc8f56",
   "payload_foundation_revision": "03e16b1",
   "source_sha256": {
@@ -21,14 +21,6 @@
     "locks": "Active finalization excludes another worker; explicit unlock permits immediate retry even while a duplicated open-file description remains held; creation lock prevents overlapping transaction ownership across manifests",
     "preservation": "Visible publication edits, original sources and outside symlink targets are preserved; no operator retained data was reclaimed"
   },
-  "limits": [
-    "Activity background scheduling, progress/error/retry presentation, Clear and history eviction are not integrated; no UI cleanup or automatic expiry is enabled",
-    "No AppImage or other package rebuilt/promoted; stable deliverables retain their separately recorded revisions",
-    "Forced termination covers nine named finalization and seven payload boundaries; arbitrary power-loss durability and every syscall window are not established",
-    "Torn or unowned intent/manifest writes, unknown/corrupt registry records, changed evidence and unavailable generation authority conservatively retain data for review",
-    "Physical removable-media and native Windows cleanup acceptance remain separate; the implemented cleanup API is Linux-only",
-    "Group finalization currently revalidates full selected/registry metadata between stages; large-operation resource profiling remains part of the background integration work"
-  ],
   "notes": [
     "A parallel prototype retry encountered EAGAIN from the manifest flock; the isolated retry passed. Explicit lock release replaced reliance on last close, and a deterministic duplicated-descriptor regression now passes. No retry loop masks contention.",
     "Finalization manifest identity is bound to canonical serialized original records and file generations; IDs alone cannot rebuild a missing manifest to remove surviving data.",
@@ -41,5 +33,15 @@
   ],
   "preserved_operator_config_sha256": "5e8bc71c3a6cfc070cf9057a7f5390e129f5538e53bc11c7aef67c148778f303",
   "preserved_operator_service_unit_sha256": "07946d3a5f38d01938aee41f4ee0a2b304fc3b8bf09e1e551e956d84074e6350",
-  "cleanup": "Private TempDir fixtures and scoped recovery-root overrides tear down their own data; subprocesses exited and were waited. No display, bus, VM or service fixture was started. Task-owned diagnostic logs were moved here or removed; untracked operator AGENTS.md remains untouched."
+  "cleanup": "Private TempDir fixtures and scoped recovery-root overrides tear down their own data; subprocesses exited and were waited. No display, bus, VM or service fixture was started. Task-owned diagnostic logs were moved here or removed; untracked operator AGENTS.md remains untouched.",
+  "status_at_source_revision": "Linux platform payload reclamation and group metadata finalization implemented; Activity integration and package acceptance unfinished",
+  "superseded_by": ".hermes/evidence/copy-activity-current/DELIVERY.json",
+  "limits_at_source_revision": [
+    "Activity background scheduling, progress/error/retry presentation, Clear and history eviction are not integrated; no UI cleanup or automatic expiry is enabled",
+    "No AppImage or other package rebuilt/promoted; stable deliverables retain their separately recorded revisions",
+    "Forced termination covers nine named finalization and seven payload boundaries; arbitrary power-loss durability and every syscall window are not established",
+    "Torn or unowned intent/manifest writes, unknown/corrupt registry records, changed evidence and unavailable generation authority conservatively retain data for review",
+    "Physical removable-media and native Windows cleanup acceptance remain separate; the implemented cleanup API is Linux-only",
+    "Group finalization currently revalidates full selected/registry metadata between stages; large-operation resource profiling remains part of the background integration work"
+  ]
 }
